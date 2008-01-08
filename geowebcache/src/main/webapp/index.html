@@ -1,0 +1,21 @@
+<html>
+<head>
+	<script src="openlayers/OpenLayers.js"></script>
+</head>
+<body>
+  <div style="width:100%; height:100%" id="map"></div>
+  <script defer="defer" type="text/javascript">
+
+    var map = new OpenLayers.Map('map');
+    
+	var wms = new OpenLayers.Layer.WMS( "WMS", 
+        "geowebcache", 
+        {layers: 'topp-states', srs: 'EPSG:4326', styles: '', format: 'image/png', tiled: 'true'} );
+    
+    map.addLayer(wms);
+	
+    map.zoomToMaxExtent();
+
+  </script>
+</body>
+</html>
