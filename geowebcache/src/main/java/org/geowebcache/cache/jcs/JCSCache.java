@@ -80,7 +80,7 @@ public class JCSCache implements Cache {
 		return rtn;
 	}
 
-	public void remove(Object key) throws org.geowebcache.cache.CacheException {
+	public boolean remove(Object key) throws org.geowebcache.cache.CacheException {
 		try {
 			jcscache.remove(key);
 		} catch (org.apache.jcs.access.exception.CacheException jcse) {
@@ -90,6 +90,7 @@ public class JCSCache implements Cache {
 			log.error("Cache not setup: ", npe);
 			throw new CacheException(npe);
 		}
+		return true;
 	}
 
 	public void removeAll() throws org.geowebcache.cache.CacheException {

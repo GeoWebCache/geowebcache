@@ -92,6 +92,7 @@ public class FileCache implements Cache {
 		try {
 			InputStream is = new FileInputStream(fh);
 			is.read(data);
+			is.close();
 		} catch (FileNotFoundException fnfe) {
 			log.trace("Did not find " + filePath);
 			return null;
@@ -102,8 +103,10 @@ public class FileCache implements Cache {
 		return new RawTile(data);
 	}
 
-	public void remove(Object key) throws org.geowebcache.cache.CacheException {
-		// Do nothing for now
+	public boolean remove(Object key) throws org.geowebcache.cache.CacheException {
+		String filePath =  pathPrefix + File.separator + (String) key;
+		File fh = new File(filePath);
+		return fh.delete();
 	}
 
 	public void removeAll() throws org.geowebcache.cache.CacheException {

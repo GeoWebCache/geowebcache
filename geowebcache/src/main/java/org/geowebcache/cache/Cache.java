@@ -33,7 +33,7 @@ public interface Cache {
 
 	public void set(Object key, Object obj) throws CacheException;
 
-	public void remove(Object key) throws CacheException;
+	public boolean remove(Object key) throws CacheException;
 
 	public void removeAll() throws CacheException;
 	
