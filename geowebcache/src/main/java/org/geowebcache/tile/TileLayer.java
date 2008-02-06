@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.cache.Cache;
@@ -134,7 +136,10 @@ public class TileLayer {
 	 * @param wmsparams
 	 * @return
 	 */
-	public byte[] getData(WMSParameters wmsparams) throws IOException {
+	public byte[] getData(WMSParameters wmsparams,HttpServletResponse response) 
+	throws IOException {
+		String debugHeadersStr = null;
+		
 		int[] gridLoc = tileProfile.gridLocation(wmsparams.getBBOX());
 		
 		// This is a bit clumsy, but will have to be revisited
@@ -148,11 +153,24 @@ public class TileLayer {
 		}
 		
 		Object ck = (Object) cacheKey.createKey(gridLoc[0], gridLoc[1], gridLoc[2], imageExtension);
+		
+		if(debugHeaders) {
+			debugHeadersStr = 
+			"grid-location:"+gridLoc[0]+","+gridLoc[1]+","+gridLoc[2]+"--"
+			+"adjusted-bbox:"+adjustedbbox.getReadableString()+"--"
+			+"cachekey:"+ck.toString()+"--";
+		}
+		
 		RawTile tile = null;
 		try {
 			tile = (RawTile) cache.get(ck);
+
 			if(tile != null) {
 				//System.out.println(" GOT "+ (String) ck + " from cache.");
+				if(debugHeaders) {
+					response.addHeader("GEOWEBCACHE-DEBUG-HEADERS",
+							debugHeadersStr+"from-cache:true");
+				}
 				return tile.getData();
 			}
 		} catch (CacheException ce) {
@@ -183,6 +201,11 @@ public class TileLayer {
 		}
 		// Unlock the bbox
 		removeFromCacheQueue(adjustedbbox);
+		
+		if(debugHeaders) {
+			response.addHeader("GEOWEBCACHE-DEBUG-HEADERS",
+					debugHeadersStr + "from-cache:false");
+		}
 		
 		return tile.getData();
 	}

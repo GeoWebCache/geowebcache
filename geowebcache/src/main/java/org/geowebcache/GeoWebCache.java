@@ -118,7 +118,7 @@ public class GeoWebCache extends HttpServlet {
 		
 		// Get data (from backend, if necessary)
 		if(cachedLayer != null) { 
-			byte[] data = cachedLayer.getData(wmsparams);
+			byte[] data = cachedLayer.getData(wmsparams, response);
 			
 			// Did we get anything?
 			if(data == null || data.length == 0) {
