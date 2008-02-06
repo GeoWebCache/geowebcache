@@ -31,14 +31,8 @@ public class RawTile implements Serializable {
 	 * @serial
 	 */
 	private static final long serialVersionUID = -5171595780192211809L;
-
 	// Store the image  in memory
 	private byte[] data = null;
-	
-	// Why was this one needed?
-	//public RawTile() {
-		// empty
-	//}
 	
 	public RawTile(byte[] data) {
 		this.data = data;

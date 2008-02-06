@@ -50,6 +50,7 @@ public class TileLayer {
 	// Temporary!
 	String imageExtension = ".png";
 	String imageMIME = "image/png";
+	boolean debugHeaders = false;
 	
 	public TileLayer(String layerName, Properties props) throws CacheException {
 		this.name = layerName;
@@ -88,6 +89,10 @@ public class TileLayer {
 		String propImageMIME = props.getProperty("imagemime");
 		if(propImageMIME != null)
 			imageMIME = propImageMIME;
+
+		String propDebugHeaders = props.getProperty("debugHeaders");
+		if(propDebugHeaders != null)
+			debugHeaders = Boolean.valueOf(propDebugHeaders);
 	}
 	
 	private boolean supports(String format) {
@@ -101,15 +106,26 @@ public class TileLayer {
 	 * @param wmsparams
 	 * @return
 	 */
-	public boolean covers(WMSParameters wmsparams) {
-		boolean srs = wmsparams.getSrs().equalsIgnoreCase(this.tileProfile.srs);
+	public String covers(WMSParameters wmsparams) {
+		if( ! wmsparams.getSrs().equalsIgnoreCase(this.tileProfile.srs)) {
+			return "Unexpected SRS: "+wmsparams.getSrs()+" , expected "+this.tileProfile.srs;
+		}
 		
-		boolean format = this.supports(wmsparams.getImagemime().getMime());
+		if( ! this.supports(wmsparams.getImagemime().getMime())) {
+			return "Unsupported MIME type requested: " + wmsparams.getImagemime().getMime();
+		}
 		
 		BBOX reqbox = wmsparams.getBBOX();
-		boolean bbox = reqbox.isSane() && this.tileProfile.bbox.contains(reqbox);
+		if(! reqbox.isSane()) {
+			return "The requested bounding box "+reqbox.getReadableString()+" is not sane";
+		}
 		
-		return srs && format && bbox;
+		if( this.tileProfile.bbox.contains(reqbox) ) {
+			return "The layers bounding box "+this.tileProfile.bbox.getReadableString()
+			+" does not cover the requested bounding box " + reqbox.getReadableString();
+		}
+		// All good
+		return null;
 	}
 	
 	/**

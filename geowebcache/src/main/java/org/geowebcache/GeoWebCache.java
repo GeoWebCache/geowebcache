@@ -112,8 +112,9 @@ public class GeoWebCache extends HttpServlet {
 
 		// Parse request
 		WMSParameters wmsparams = new WMSParameters(request);
+		
 		// Check whether we serve this layer
-		TileLayer cachedLayer = findLayer(wmsparams);
+		TileLayer cachedLayer = findLayer(wmsparams, response);
 		
 		// Get data (from backend, if necessary)
 		if(cachedLayer != null) { 
@@ -143,14 +144,25 @@ public class GeoWebCache extends HttpServlet {
 	 * Finds the requested layer, provided request is within bounds
 	 * 
 	 * @param wmsparams
+	 * @param response
 	 * @return
 	 */
-	private TileLayer findLayer(WMSParameters wmsparams) {
+	private TileLayer findLayer(WMSParameters wmsparams, HttpServletResponse response) throws IOException{
 		TileLayer cachedLayer = (TileLayer) this.layers.get(wmsparams.getLayer());
 		
-		if(cachedLayer == null || !cachedLayer.covers(wmsparams)) {
-			return null;
+		if(cachedLayer == null) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			response.getOutputStream().print("Unknown layer: " + wmsparams.getLayer());
 		}
+		
+		if(cachedLayer != null) {
+			String errorMsg = cachedLayer.covers(wmsparams);
+			if(errorMsg != null) {
+				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+				response.getOutputStream().print(errorMsg);
+			}
+		}
+		
 		return cachedLayer;
 	}
 
