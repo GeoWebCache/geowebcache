@@ -43,8 +43,7 @@ import org.geowebcache.service.wms.WMSParameters;
 public class TileLayer {
 	private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayer.class);
 	String name;
-	WMSLayer wmsLayer;
-	TileProfile tileProfile;
+	LayerProfile profile;
 	Cache cache;
 	CacheKey cacheKey;
 	//ImageFormats[] formats = null;
@@ -60,8 +59,7 @@ public class TileLayer {
 	}
 	
 	private void setParametersFromProperties(Properties props) throws CacheException {
-		wmsLayer = new WMSLayer(props);
-		tileProfile = new TileProfile(props);
+		profile = new LayerProfile(props);
 		
 		// Image formats
 		//String propImageFormats = props.getProperty("imageFormats");
@@ -109,8 +107,8 @@ public class TileLayer {
 	 * @return
 	 */
 	public String covers(WMSParameters wmsparams) {
-		if( ! wmsparams.getSrs().equalsIgnoreCase(this.tileProfile.srs)) {
-			return "Unexpected SRS: "+wmsparams.getSrs()+" , expected "+this.tileProfile.srs;
+		if( ! wmsparams.getSrs().equalsIgnoreCase(this.profile.srs)) {
+			return "Unexpected SRS: "+wmsparams.getSrs()+" , expected "+this.profile.srs;
 		}
 		
 		if( ! this.supports(wmsparams.getImagemime().getMime())) {
@@ -122,8 +120,8 @@ public class TileLayer {
 			return "The requested bounding box "+reqbox.getReadableString()+" is not sane";
 		}
 		
-		if( this.tileProfile.bbox.contains(reqbox) ) {
-			return "The layers bounding box "+this.tileProfile.bbox.getReadableString()
+		if( this.profile.bbox.contains(reqbox) ) {
+			return "The layers bounding box "+this.profile.bbox.getReadableString()
 			+" does not cover the requested bounding box " + reqbox.getReadableString();
 		}
 		// All good
@@ -140,11 +138,11 @@ public class TileLayer {
 	throws IOException {
 		String debugHeadersStr = null;
 		
-		int[] gridLoc = tileProfile.gridLocation(wmsparams.getBBOX());
+		int[] gridLoc = profile.gridLocation(wmsparams.getBBOX());
 		
 		// This is a bit clumsy, but will have to be revisited
 		// when doing metatiling anyway
-		BBOX adjustedbbox = tileProfile.recreateBbox(gridLoc);
+		BBOX adjustedbbox = profile.recreateBbox(gridLoc);
 		
 		boolean wait = cacheQueue.containsKey(adjustedbbox); 
 		while(wait) {
@@ -180,14 +178,14 @@ public class TileLayer {
 		
 		// We only get here if the cache did not have anything sensible to say
 		//System.out.println(" FAILED to get "+ (String) ck + " from cache.");
-		if(this.tileProfile.transparent != null)
-			wmsparams.setIsTransparent(this.tileProfile.transparent);
-		if(this.tileProfile.tiled != null)
-			wmsparams.setIsTiled(this.tileProfile.tiled );			
+		if(this.profile.transparent != null)
+			wmsparams.setIsTransparent(this.profile.transparent);
+		if(this.profile.tiled != null)
+			wmsparams.setIsTiled(this.profile.tiled );			
 		wmsparams.setBBOX(adjustedbbox);
 		
 		// Set the actual layers we want to request
-		wmsparams.setLayer(this.wmsLayer.layers);
+		wmsparams.setLayer(this.profile.wmsLayers);
 		
 		// Force the mimetype
 		wmsparams.setImagemime(imageMIME);
@@ -219,10 +217,10 @@ public class TileLayer {
 	private RawTile forwardRequest(WMSParameters wmsparams) throws IOException {
 		// Ask the WMS server for the image
 		
-		log.trace("Forwarding request to " + this.wmsLayer.url);
+		log.trace("Forwarding request to " + this.profile.wmsURL);
 
 		// Create an outgoing WMS request to the server
-		Request wmsrequest = new Request(this.wmsLayer.url, wmsparams);
+		Request wmsrequest = new Request(this.profile.wmsURL, wmsparams);
 		Connection connection = new Connection(wmsrequest);
 
 		try {

@@ -26,8 +26,8 @@ import org.geowebcache.service.Parameters;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.Configuration;
 
-public class TileProfile {
-	private static Log log = LogFactory.getLog(org.geowebcache.layer.TileProfile.class);
+public class LayerProfile {
+	private static Log log = LogFactory.getLog(org.geowebcache.layer.LayerProfile.class);
 	
 	// This assumes image output
 	protected String srs = "EPSG:4326";
@@ -45,7 +45,7 @@ public class TileProfile {
 	protected String wmsURL = "http://localhost:8080/geoserver/wms";
 	protected String wmsLayers = "topp:states";
 	
-	public TileProfile(Properties props) {		
+	public LayerProfile(Properties props) {		
 		setParametersFromProperties(props);
 
 		if(log.isTraceEnabled()) {
