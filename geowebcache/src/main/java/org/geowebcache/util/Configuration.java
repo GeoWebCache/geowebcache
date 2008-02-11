@@ -30,8 +30,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.geowebcache.cache.CacheException;
+import org.geowebcache.layer.TileLayer;
 import org.geowebcache.service.wms.WMSParameters;
-import org.geowebcache.tile.TileLayer;
 
 
 public class Configuration {

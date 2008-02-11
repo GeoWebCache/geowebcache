@@ -23,11 +23,11 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.layer.BBOX;
+import org.geowebcache.layer.ImageFormat;
 import org.geowebcache.mime.ImageMimeType;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Parameters;
-import org.geowebcache.tile.BBOX;
-import org.geowebcache.tile.ImageFormat;
 
 
 @SuppressWarnings("unchecked")

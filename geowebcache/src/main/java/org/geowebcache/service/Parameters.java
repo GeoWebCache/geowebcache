@@ -27,8 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.tile.BBOX;
-import org.geowebcache.tile.ImageFormat;
+import org.geowebcache.layer.BBOX;
+import org.geowebcache.layer.ImageFormat;
 
 public abstract class Parameters {
 

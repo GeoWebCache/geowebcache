@@ -32,7 +32,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
-import org.geowebcache.tile.RawTile;
+import org.geowebcache.layer.RawTile;
 
 
 public class FileCache implements Cache {
