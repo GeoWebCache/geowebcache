@@ -27,7 +27,25 @@
 		    <artifactId>jcs</artifactId>
 		    <version>1.3</version>
 		</dependency>
-	
+
+		<!-- Java Advanced Imaging (JAI) -->
+		<dependency>
+		  <groupId>javax.media</groupId>
+		  <artifactId>jai_core</artifactId>
+		  <version>1.1.3</version>
+		</dependency>
+
+		<dependency>
+		  <groupId>javax.media</groupId>
+		  <artifactId>jai_codec</artifactId>
+		  <version>1.1.3</version>
+		</dependency>
+
+		<dependency>
+		  <groupId>javax.media</groupId>
+		  <artifactId>jai_imageio</artifactId>
+		  <version>1.1</version>
+		</dependency>
 	</dependencies>
 	
 	<build>

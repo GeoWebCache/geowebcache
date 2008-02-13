@@ -154,6 +154,9 @@ public abstract class Parameters {
 				} catch(UnsupportedEncodingException uee) {
 					log.fatal("Unsupported URL Encoding: ", uee);
 					return null;
+				} catch(NullPointerException npe) {
+					System.out.println("Missing value for parameter: " + param_name);
+					log.error("Missing value for parameter: " + param_name);
 				}
 			}
 		}

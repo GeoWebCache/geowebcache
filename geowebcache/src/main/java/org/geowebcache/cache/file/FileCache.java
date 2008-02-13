@@ -77,6 +77,8 @@ public class FileCache implements Cache {
 	 */
 	public Object get(Object key) throws org.geowebcache.cache.CacheException {
 		String filePath =  pathPrefix + File.separator + (String) key;
+		System.out.println("Want to read: " + filePath);
+		
 		File fh = new File(filePath);
 		
 		if(! fh.canRead() ) 
@@ -118,6 +120,8 @@ public class FileCache implements Cache {
 	 */
 	public void set(Object key, Object obj) throws org.geowebcache.cache.CacheException {
 		String filePath =  pathPrefix + File.separator + (String) key;
+		System.out.println("Want to write: " + filePath);
+		
 		File fh = new File(filePath);
 		File pfh = new File(fh.getParent());
 		

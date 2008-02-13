@@ -123,10 +123,11 @@ public class BBOX {
 	 * @return whether other is contained by this
 	 */
 	public boolean contains(BBOX other) {
-		return (coords[0] <= other.coords[0] && coords[1] <= other.coords[1] &&
-				coords[2] >= other.coords[2] && coords[3] >= other.coords[3]);
+		return (   coords[0] - equalityThreshold <= other.coords[0] 
+		        && coords[1] - equalityThreshold <= other.coords[1] 
+		        && coords[2] + equalityThreshold >= other.coords[2]
+		        && coords[3] + equalityThreshold >= other.coords[3] );
 	}
-
 
 	/**
 	 * Minimal sanity check

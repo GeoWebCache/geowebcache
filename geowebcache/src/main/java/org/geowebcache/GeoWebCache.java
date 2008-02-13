@@ -130,9 +130,11 @@ public class GeoWebCache extends HttpServlet {
 			//setHeader("ETag", token)
 			
 			// This should set it to 15 hours, but I doubt it is doing that
+			response.setStatus(HttpServletResponse.SC_OK);
 			response.setDateHeader("Expires", starttime + 60*15*1000);
 			response.setContentType(wmsparams.getImagemime().getMime());
-			response.setCharacterEncoding(wmsparams.getImagemime().getEncoding());
+			response.setContentLength(data.length);
+			//response.setCharacterEncoding(wmsparams.getImagemime().getEncoding());
 			sendData(response, data);
 		} else {
 			// Response: 404
@@ -169,6 +171,7 @@ public class GeoWebCache extends HttpServlet {
 	private void sendData(HttpServletResponse response, byte[] data) throws IOException {
 		log.trace("Sending data.");		
 		OutputStream os = response.getOutputStream();
+		System.out.println("Right before: " + data.length);
 		os.write(data);
 		os.flush();
 	}

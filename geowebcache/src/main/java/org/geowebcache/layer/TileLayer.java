@@ -17,8 +17,10 @@
     	
 package org.geowebcache.layer;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
@@ -46,12 +48,11 @@ public class TileLayer {
 	LayerProfile profile;
 	Cache cache;
 	CacheKey cacheKey;
-	//ImageFormats[] formats = null;
+	ImageFormat[] formats = null;
 	HashMap cacheQueue = new HashMap();
-	// Temporary!
-	String imageExtension = ".png";
-	String imageMIME = "image/png";
 	boolean debugHeaders = false;
+	Integer cacheLockWait = -1;
+
 	
 	public TileLayer(String layerName, Properties props) throws CacheException {
 		this.name = layerName;
@@ -60,13 +61,7 @@ public class TileLayer {
 	
 	private void setParametersFromProperties(Properties props) throws CacheException {
 		profile = new LayerProfile(props);
-		
-		// Image formats
-		//String propImageFormats = props.getProperty("imageFormats");
-		//if(propImageFormats != null)
-		//mimeTypes = new String[4];
-		//mimeTypes[0] = set
-		
+				
 		// Cache and CacheKey
 		String propCachetype = props.getProperty("cachetype");
 		if(propCachetype != null) {
@@ -81,22 +76,30 @@ public class TileLayer {
 		} else {
 			cacheKey = CacheKeyFactory.getCacheKey(propCacheKeytype, name);
 		}
-		
-		String propImageExtension = props.getProperty("imageextension");
-		if(propImageExtension != null)
-			imageExtension = propImageExtension;
 			
-		String propImageMIME = props.getProperty("imagemime");
-		if(propImageMIME != null)
-			imageMIME = propImageMIME;
-
+		String propImageMIME = props.getProperty("imagemimes");
+		if(propImageMIME != null) {
+			String[] mimes = propImageMIME.split(",");
+			formats = new ImageFormat[mimes.length];
+			for(int i=0;i<mimes.length;i++) {
+				formats[i] = ImageFormat.createFromMimeType(mimes[i]);
+			}
+		}
 		String propDebugHeaders = props.getProperty("debugHeaders");
 		if(propDebugHeaders != null)
 			debugHeaders = Boolean.valueOf(propDebugHeaders);
+		
+		String propCacheLockWait = props.getProperty("cachelockwait");
+		if(propCacheLockWait != null)
+			cacheLockWait = Integer.valueOf(propCacheLockWait);
 	}
 	
-	private boolean supports(String format) {
-		return true;
+	private boolean supports(String imageMime) {
+		for(int i=0; i<formats.length; i++) {
+			if(formats[i].getMimeType().equalsIgnoreCase(imageMime))
+				return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -120,7 +123,7 @@ public class TileLayer {
 			return "The requested bounding box "+reqbox.getReadableString()+" is not sane";
 		}
 		
-		if( this.profile.bbox.contains(reqbox) ) {
+		if(! this.profile.bbox.contains(reqbox) ) {
 			return "The layers bounding box "+this.profile.bbox.getReadableString()
 			+" does not cover the requested bounding box " + reqbox.getReadableString();
 		}
@@ -129,154 +132,141 @@ public class TileLayer {
 	}
 	
 	/**
-	 * 1) Check that there is no lock on the same bbox you are requesting
+	 * 1) Lock metatile
+	 * 2) Check whether tile is in cache -> If so, unlock metatile and return tile
+	 * 3) Create metatile
+	 * 4) Use metatile to forward request
+	 * 5) Get tiles, save them to cache
+	 * 6) Unlock metatile
+	 * 6) Return tile
 	 * 
 	 * @param wmsparams
 	 * @return
 	 */
-	public byte[] getData(WMSParameters wmsparams,HttpServletResponse response) 
-	throws IOException {
+	public byte[] getData(WMSParameters wmsparams,HttpServletResponse response) {
 		String debugHeadersStr = null;
 		
 		int[] gridLoc = profile.gridLocation(wmsparams.getBBOX());
 		
-		// This is a bit clumsy, but will have to be revisited
-		// when doing metatiling anyway
-		BBOX adjustedbbox = profile.recreateBbox(gridLoc);
+		MetaTile metaTile = new MetaTile(this.profile, gridLoc);
+		int[] metaGridLoc = metaTile.getMetaGridPos();
 		
-		boolean wait = cacheQueue.containsKey(adjustedbbox); 
+		// Acquire lock for this metatile
+		boolean wait = cacheQueue.containsKey(metaGridLoc); 
 		while(wait) {
+			if(this.cacheLockWait > 0) {
+				try {
+					Thread.sleep(cacheLockWait);
+				} catch (InterruptedException ie) {
+					log.error("Thread got interrupted... how come?");
+					ie.printStackTrace();
+					// No big deal, though we should quit if anyone prefers that.
+				}
+			} else {
+				Thread.yield();
+			}
 			Thread.yield();
-			wait = cacheQueue.containsKey(adjustedbbox);
+			wait = cacheQueue.containsKey(metaGridLoc);
 		}
 		
-		Object ck = (Object) cacheKey.createKey(gridLoc[0], gridLoc[1], gridLoc[2], imageExtension);
+		ImageFormat imageFormat = ImageFormat.createFromMimeType(wmsparams.getImagemime().getMime());
+		Object ck = cacheKey.createKey(gridLoc[0], gridLoc[1], gridLoc[2], imageFormat.getExtension());
 		
 		if(debugHeaders) {
 			debugHeadersStr = 
 			"grid-location:"+gridLoc[0]+","+gridLoc[1]+","+gridLoc[2]+"--"
-			+"adjusted-bbox:"+adjustedbbox.getReadableString()+"--"
 			+"cachekey:"+ck.toString()+"--";
 		}
 		
+		/********************  Check cache  ********************/
 		RawTile tile = null;
 		try {
 			tile = (RawTile) cache.get(ck);
-
 			if(tile != null) {
-				//System.out.println(" GOT "+ (String) ck + " from cache.");
+				
+				// Return lock
+				removeFromCacheQueue(metaGridLoc);
+				
 				if(debugHeaders) {
 					response.addHeader("GEOWEBCACHE-DEBUG-HEADERS",
-							debugHeadersStr+"from-cache:true");
+							debugHeadersStr
+							+"from-cache:true");
 				}
-				return tile.getData();
+				byte[] test = tile.getData();
+				System.out.println("Returning: " + test.length + " bytes.");
+				
+				return test;
 			}
 		} catch (CacheException ce) {
 			log.error("Failed to get " + wmsparams.toString() + " from cache");
 			ce.printStackTrace();
 		}
 		
-		// We only get here if the cache did not have anything sensible to say
-		//System.out.println(" FAILED to get "+ (String) ck + " from cache.");
-		if(this.profile.transparent != null)
-			wmsparams.setIsTransparent(this.profile.transparent);
-		if(this.profile.tiled != null)
-			wmsparams.setIsTiled(this.profile.tiled );			
-		wmsparams.setBBOX(adjustedbbox);
+		/********************  Request metatile  ********************/
+		metaTile.doRequest(imageFormat.getMimeType());
+		metaTile.createTiles();
+		int[][] gridPositions = metaTile.getGridPositions();
+		saveTiles(gridPositions, metaTile, imageFormat);
 		
-		// Set the actual layers we want to request
-		wmsparams.setLayer(this.profile.wmsLayers);
-		
-		// Force the mimetype
-		wmsparams.setImagemime(imageMIME);
-		tile = forwardRequest(wmsparams);
-		
+		// Try the cache again
 		try {
-			cache.set(ck, tile);
+			tile = (RawTile) cache.get(ck);
 		} catch (CacheException ce) {
-			log.error("Unable to save data to cache, stack trace follows: " + ce.getMessage());
+			log.error("Failed to get " + wmsparams.toString() + " from cache, after first seeding cache.");
 			ce.printStackTrace();
 		}
-		// Unlock the bbox
-		removeFromCacheQueue(adjustedbbox);
+		 
+		// Return lock
+		removeFromCacheQueue(metaGridLoc);
 		
 		if(debugHeaders) {
 			response.addHeader("GEOWEBCACHE-DEBUG-HEADERS",
 					debugHeadersStr + "from-cache:false");
 		}
-		
-		return tile.getData();
+		byte[] test = tile.getData();
+		System.out.println("Returning: " + test.length + " bytes.");
+		return test;
 	}
 	
-	/**
-	 * Ask the cache
-	 * 
-	 * @param wmsparams
-	 * @return
-	 */
-	private RawTile forwardRequest(WMSParameters wmsparams) throws IOException {
-		// Ask the WMS server for the image
-		
-		log.trace("Forwarding request to " + this.profile.wmsURL);
+	private void saveTiles(int[][] gridPositions, MetaTile metaTile, ImageFormat imageFormat) {
+		// Loop over the gridPositions, generate cache keys and save to cache
 
-		// Create an outgoing WMS request to the server
-		Request wmsrequest = new Request(this.profile.wmsURL, wmsparams);
-		Connection connection = new Connection(wmsrequest);
-
-		try {
-			connection.connect();
-		} catch(IOException ioe) {
-			log.error("Could not connect to WMS: ", ioe);
-			throw ioe;
-		}
-
-		// Should have some timeout functionality here
-		Response wmsresponse = connection.getResponse();
-
-		// If we have a proper response
-		InputStream is = wmsresponse.getInputStream();
-		
-		// This is sort of silly.. if you know of Library functions that do
-		// the same thing efficiently, please let me know (ak AT openplans org)
-		byte[] buffer = new byte[1024];
-		byte[] tmpBuffer = new byte[512];
-		int totalCount = 0;
-		
-		for(int c = 0; c != -1; c = is.read(tmpBuffer)) {
-			// Expand buffer if needed
-			if(totalCount + c >= buffer.length) {
-				int newLength = buffer.length * 2;
-				if(newLength < totalCount)
-					newLength = totalCount;
-				
-				byte[] newBuffer = new byte[newLength];
-				System.arraycopy(buffer, 0, newBuffer, 0, totalCount);
-				buffer = newBuffer;
+		for(int i=0; i < gridPositions.length; i++) {
+			int[] gridPos = gridPositions[i];
+			
+			Object ck = (Object) cacheKey.createKey(gridPos[0], gridPos[1], gridPos[2], imageFormat.getExtension());
+			
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			try {
+				metaTile.writeTileToStream(i, imageFormat.getJavaName(), out);
+			} catch(IOException ioe) {
+				log.error("Unable to write image tile to ByteArrayOutputStream: " + ioe.getMessage());
+				ioe.printStackTrace();
 			}
-			System.arraycopy(tmpBuffer, 0, buffer, totalCount, c);
-			totalCount += c;		
-		}
-		is.close();
-		
-		// Compact buffer
-		byte[] newBuffer = new byte[totalCount];
-		System.arraycopy(buffer, 0, newBuffer, 0, totalCount);
-		
-		return new RawTile(newBuffer);		
+			
+			RawTile tile = new RawTile(out.toByteArray());
+			try {
+				cache.set(ck, tile);
+			} catch (CacheException ce) {
+				log.error("Unable to save data to cache, stack trace follows: " + ce.getMessage());
+				ce.printStackTrace();
+			}
+		}		
 	}
+
 		
-	private synchronized boolean addToCacheQueue(BBOX boundingbox) {
-		if(cacheQueue.containsKey(boundingbox)) {
+	private synchronized boolean addToCacheQueue(int[] metaGridLoc) {
+		if(cacheQueue.containsKey(metaGridLoc)) {
 			return false;
 		} else {
-			cacheQueue.put(boundingbox, boundingbox);
+			cacheQueue.put(metaGridLoc, metaGridLoc);
 			return true;
 		}
 	}
 	
-	private synchronized boolean removeFromCacheQueue(BBOX boundingbox) {
-		if(cacheQueue.containsKey(boundingbox)) {
-			cacheQueue.remove(boundingbox);
+	private synchronized boolean removeFromCacheQueue(int[] metaGridLoc) {
+		if(cacheQueue.containsKey(metaGridLoc)) {
+			cacheQueue.remove(metaGridLoc);
 			return true;
 		}
 		return false;

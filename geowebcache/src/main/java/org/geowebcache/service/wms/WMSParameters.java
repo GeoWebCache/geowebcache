@@ -34,7 +34,6 @@ import org.geowebcache.service.Parameters;
 public class WMSParameters extends Parameters {
 	private static Log log = LogFactory.getLog(org.geowebcache.service.wms.WMSParameters.class);
 
-
 	// These constants should be in lower case
 	public static final String REQUEST_PARAM = "request";
 	public static final String VERSION_PARAM = "version";
@@ -49,7 +48,6 @@ public class WMSParameters extends Parameters {
 	public static final String WIDTH_PARAM = "width";
 	public static final String IMAGE_TYPE_PARAM = "format";
 	public static final String ERROR_TYPE_PARAM = "exceptions";
-
 
 	public WMSParameters() {
 	}

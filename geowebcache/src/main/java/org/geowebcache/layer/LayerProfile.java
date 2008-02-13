@@ -17,6 +17,7 @@
  */
 package org.geowebcache.layer;
 
+import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
 
@@ -38,16 +39,20 @@ public class LayerProfile {
 	protected int height = 256; 
 	protected int metaWidth = 1;
 	protected int metaHeight = 1;
+	protected String request = "map";
 	protected String version = "1.1.1";
-	protected String errorMime = "";
+	protected String errorMime = "application/vnd.ogc.se_inimage";
 	protected String transparent = null;
 	protected String tiled = null;
 	protected String wmsURL = "http://localhost:8080/geoserver/wms";
 	protected String wmsLayers = "topp:states";
+	protected String wmsStyles = null;
+	protected WMSParameters wmsparams = null;
+
 	
 	public LayerProfile(Properties props) {		
 		setParametersFromProperties(props);
-
+		
 		if(log.isTraceEnabled()) {
 			log.trace("Created a new layer: " + this.toString());
 		}
@@ -104,6 +109,10 @@ public class LayerProfile {
 		String propLayers = props.getProperty("wmslayers");
 		if(propLayers != null)
 			this.wmsLayers = propLayers;
+
+		String propStyles = props.getProperty("wmsstyles");
+		if(propStyles != null)
+			this.wmsStyles = propStyles;
 		
 		this.layerWidth = bbox.coords[2] - bbox.coords[0];
 		this.layerHeight = bbox.coords[3] - bbox.coords[1];
@@ -152,13 +161,42 @@ public class LayerProfile {
 	 * @param gridLoc
 	 * @return
 	 */
-	public BBOX recreateBbox(int[] gridLoc) {
-		double tileWidth = this.layerWidth / Math.pow(2, gridLoc[2]);
+	//public BBOX recreateBbox(int[] gridLoc) {
+	//	double tileWidth = this.layerWidth / Math.pow(2, gridLoc[2]);
 		
-		return new BBOX(bbox.coords[0] + tileWidth*gridLoc[0],
-						bbox.coords[1] + tileWidth*gridLoc[1],
-						bbox.coords[0] + tileWidth*(gridLoc[0] + 1),
-						bbox.coords[1] + tileWidth*(gridLoc[1] + 1));
-	}
+	//	return new BBOX(bbox.coords[0] + tileWidth*gridLoc[0],
+	//					bbox.coords[1] + tileWidth*gridLoc[1],
+	//					bbox.coords[0] + tileWidth*(gridLoc[0] + 1),
+	//					bbox.coords[1] + tileWidth*(gridLoc[1] + 1));
+	//}
 	
+	/**
+	 * Gets the template for a WMS request for this profile,
+	 * missing the response mimetype and the boundingbox.
+	 * 
+	 * This is just painful 
+	 * 	- clone?
+	 *  - IOException on mimetype?
+	 * 
+	 * -> Simplify WMSParameters?
+	 */
+	protected WMSParameters getWMSParamTemplate() {
+		wmsparams = new WMSParameters();
+		wmsparams.setRequest(request);
+		wmsparams.setVersion(version);
+		wmsparams.setLayer(wmsLayers);
+		wmsparams.setSrs(srs);
+		try { wmsparams.setErrormime(errorMime); } 
+		catch (IOException ioe) { ioe.printStackTrace(); }
+		wmsparams.setWidth(metaWidth*width);
+		wmsparams.setHeight(metaHeight*height);
+		if(transparent != null)
+			wmsparams.setIsTransparent(transparent);
+		if(tiled != null || metaHeight > 1 || metaWidth > 1)
+			wmsparams.setIsTiled(tiled);
+		if(wmsStyles != null)
+			wmsparams.setStyles(wmsStyles);
+		
+		return wmsparams;
+	}
 }
