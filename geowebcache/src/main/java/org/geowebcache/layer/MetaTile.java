@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
@@ -134,14 +136,17 @@ public class MetaTile {
 		URLConnection wmsBackendCon = wmsBackendUrl.openConnection();
 		
 		// Do we need to keep track of expiration headers?
-		if(profile.expireCache != LayerProfile.CACHE_USE_WMS_BACKEND_VALUE 
-				&& profile.expireClients != LayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
+		if(profile.expireCache == LayerProfile.CACHE_USE_WMS_BACKEND_VALUE 
+				|| profile.expireClients == LayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
 			
-			long wmsBackendExpiration = wmsBackendCon.getExpiration() - System.currentTimeMillis();
-			if(wmsBackendExpiration > 0) {
-				this.expiration = wmsBackendExpiration;
+			String cacheControlHeader = wmsBackendCon.getHeaderField("Cache-Control");
+			Long wmsBackendMaxAge = extractHeaderMaxAge(cacheControlHeader);
+			
+			if(wmsBackendMaxAge != null) {
+				log.info("Saved Cache-Control MaxAge from backend: " + wmsBackendMaxAge.toString());
+				this.expiration = wmsBackendMaxAge.longValue() * 1000;
 			} else {
-				log.equals("Profile requests expire headers from backend");
+				log.error("Layer profile wants MaxAge from backend, but backend does not provide this.");
 			}
 		}
 		
@@ -154,7 +159,7 @@ public class MetaTile {
 			System.out.println("Fetched "+  wmsrequest.toString());
 			log.debug("Requested and got: " + wmsrequest.toString());
 		}
-		System.out.println("Fetched image height: " + this.img.getHeight());
+		log.trace("Got image from backend, height: " + this.img.getHeight());
 	}
 	
 	protected void createTiles() {
@@ -176,7 +181,6 @@ public class MetaTile {
 				}
 			}
 		} else {
-			System.out.println("Taking a shortcut here.... ");
 			tiles[0] = this.img;
 		}
 	}
@@ -199,6 +203,18 @@ public class MetaTile {
 	//		log.error("Unable to find ImageWriter for format" + format);
 	//	}
 	//}
+	
+	private static Long extractHeaderMaxAge(String cacheControlHeader) {	
+        String expression = "max-age=([0-9]*)[ ,]";
+        Pattern p = Pattern.compile(expression);
+        Matcher m = p.matcher(cacheControlHeader.toLowerCase());
+
+        if(m.find()){
+            return new Long(Long.parseLong(m.group(1)));
+        }else{
+            return null;
+        }		
+	}
 	
 	protected int[][] getGridPositions() {
 		if(this.gridPositions == null)

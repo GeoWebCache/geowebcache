@@ -88,7 +88,7 @@ public class FileCache implements Cache {
 		}
 		
 		if(! fh.canRead() ) {
-			log.error("Unable to read " + filePath);
+			log.debug("Unable to read " + filePath);
 			return null;
 		}
 			

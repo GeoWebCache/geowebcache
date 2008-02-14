@@ -51,41 +51,15 @@ public class TileLayer {
 		setParametersFromProperties(props);
 	}
 	
-	private void setParametersFromProperties(Properties props) throws CacheException {
-		profile = new LayerProfile(props);
-				
-		// Cache and CacheKey
-		String propCachetype = props.getProperty("cachetype");
-		if(propCachetype != null) {
-			cache = CacheFactory.getCache(propCachetype, props);
-		} else {
-			cache = CacheFactory.getCache("org.geowebcache.cache.jcs.JCSCache", null);
-		}
-		
-		String propCacheKeytype = props.getProperty("cachekeytype");
-		if(propCacheKeytype == null) {
-			cacheKey = CacheKeyFactory.getCacheKey(cache.getDefaultCacheKeyName(), name);
-		} else {
-			cacheKey = CacheKeyFactory.getCacheKey(propCacheKeytype, name);
-		}
-			
-		String propImageMIME = props.getProperty("imagemimes");
-		if(propImageMIME != null) {
-			String[] mimes = propImageMIME.split(",");
-			formats = new ImageFormat[mimes.length];
-			for(int i=0;i<mimes.length;i++) {
-				formats[i] = ImageFormat.createFromMimeType(mimes[i]);
-			}
-		}
-		String propDebugHeaders = props.getProperty("debugheaders");
-		if(propDebugHeaders != null)
-			debugHeaders = Boolean.valueOf(propDebugHeaders);
-		
-		String propCacheLockWait = props.getProperty("cachelockwait");
-		if(propCacheLockWait != null)
-			cacheLockWait = Integer.valueOf(propCacheLockWait);
-	}
-	
+	/**
+	 * Checks to see whether we accept the given mimeType
+	 * 
+	 * Typically this list should be so short that a linear
+	 * search will be faster than hashing.
+	 * 
+	 * @param imageMime
+	 * @return
+	 */
 	private boolean supports(String imageMime) {
 		for(int i=0; i<formats.length; i++) {
 			if(formats[i].getMimeType().equalsIgnoreCase(imageMime))
@@ -124,13 +98,15 @@ public class TileLayer {
 	}
 	
 	/**
+	 * The main function
+	 * 
 	 * 1) Lock metatile
-	 * 2) Check whether tile is in cache -> If so, unlock metatile and return tile
+	 * 2) Check whether tile is in cache -> If so, unlock metatile, set Cache-Control and return tile
 	 * 3) Create metatile
 	 * 4) Use metatile to forward request
-	 * 5) Get tiles, save them to cache
+	 * 5) Get tiles (save them to cache)
 	 * 6) Unlock metatile
-	 * 6) Return tile
+	 * 6) Set Cache-Control, return tile
 	 * 
 	 * @param wmsparams
 	 * @return
@@ -143,7 +119,7 @@ public class TileLayer {
 		MetaTile metaTile = new MetaTile(this.profile, gridLoc);
 		int[] metaGridLoc = metaTile.getMetaGridPos();
 		
-		// Acquire lock for this metatile
+		/********************  Acquire lock  ********************/
 		boolean wait = cacheQueue.containsKey(metaGridLoc); 
 		while(wait) {
 			if(this.cacheLockWait > 0) {
@@ -185,6 +161,7 @@ public class TileLayer {
 								debugHeadersStr
 								+"from-cache:true");
 					}
+					setExpirationHeader(response);
 					return tile.getData();
 				}
 			} catch (CacheException ce) {
@@ -194,12 +171,13 @@ public class TileLayer {
 		}
 		/********************  Request metatile  ********************/
 		metaTile.doRequest(imageFormat.getMimeType());
+		saveExpirationInformation(metaTile);
 		metaTile.createTiles();
 		int[][] gridPositions = metaTile.getGridPositions();
 		
 		byte[] data = null;
-		// Mostly for completeness, don't laugh
 		if(profile.expireCache == LayerProfile.CACHE_NEVER) {
+			//Mostly for completeness, don't laugh
 			data = getTile(gridLoc, gridPositions, metaTile, imageFormat);
 		} else {
 			saveTiles(gridPositions, metaTile, imageFormat);
@@ -228,24 +206,35 @@ public class TileLayer {
 		}
 		return data;
 	}
-	
+	/**
+	 * Uses the HTTP 1.1 spec to set expiration headers
+	 * 
+	 * @param response
+	 */
 	public void setExpirationHeader(HttpServletResponse response){
 		if(profile.expireClients == LayerProfile.CACHE_VALUE_UNSET)
 			return;
 		
 		if(profile.expireClients > 0) {
-			response.setDateHeader("Expires", System.currentTimeMillis() + profile.expireClients);
+			response.setHeader("Cache-Control","max-age="+(profile.expireClients/1000)+", must-revalidate");
 		} else if(profile.expireClients == LayerProfile.CACHE_NEVER_EXPIRE) {
-			long oneYear = 3600*24*365*1000;
-			response.setDateHeader("Expires", System.currentTimeMillis() + oneYear);
+			long oneYear = 3600*24*365;
+			response.setHeader("Cache-Control","max-age="+oneYear);
 		} else if(profile.expireClients == LayerProfile.CACHE_NEVER) {
-			response.setDateHeader("Expires", 1);
+			response.setHeader("Cache-Control","no-cache");
+		} else {
+			return;
 		}
 	}
 	
+	/**
+	 * Loops over the gridPositions, generates cache keys and saves to cache
+	 * 
+	 * @param gridPositions
+	 * @param metaTile
+	 * @param imageFormat
+	 */
 	private void saveTiles(int[][] gridPositions, MetaTile metaTile, ImageFormat imageFormat) {
-		// Loop over the gridPositions, generate cache keys and save to cache
-
 		for(int i=0; i < gridPositions.length; i++) {
 			int[] gridPos = gridPositions[i];
 			
@@ -261,11 +250,6 @@ public class TileLayer {
 			
 			RawTile tile = new RawTile(out.toByteArray());
 			
-			if(profile.expireCache == LayerProfile.CACHE_USE_WMS_BACKEND_VALUE)
-				profile.expireCache = metaTile.getExpiration();
-			
-				log.info("Setting expireCache based on metaTile for layer "
-						+this.name+": "+profile.expireCache);
 			try {
 					cache.set(ck, tile, profile.expireCache);
 			} catch (CacheException ce) {
@@ -275,6 +259,15 @@ public class TileLayer {
 		}		
 	}
 	
+	/**
+	 * Get a particular tile out of a metatile. This is only used for layers that are not to be cached
+	 * 
+	 * @param gridPos
+	 * @param gridPositions
+	 * @param metaTile
+	 * @param imageFormat
+	 * @return
+	 */
 	private byte[] getTile(int[] gridPos, int[][] gridPositions, MetaTile metaTile, ImageFormat imageFormat) {		
 		for(int i=0; i < gridPositions.length; i++) {
 			int[] curPos = gridPositions[i];
@@ -293,7 +286,25 @@ public class TileLayer {
 		}
 		return null;
 	}
-			
+	
+	private void saveExpirationInformation(MetaTile metaTile) {
+		if(profile.expireCache == LayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
+			profile.expireCache = metaTile.getExpiration();
+			log.trace("Setting expireCache based on metaTile: " + profile.expireCache);
+		}
+		if(profile.expireClients == LayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
+			profile.expireClients = metaTile.getExpiration();
+			log.trace("Setting expireClients based on metaTile: " + profile.expireClients);
+		}	
+	}
+	
+	/**
+	 * Synchronization function, ensures that the same metatile is not
+	 * requested simultaneously by two threads.
+	 * 
+	 * @param metaGridLoc the grid positions of the tile
+	 * @return
+	 */
 	private synchronized boolean addToCacheQueue(int[] metaGridLoc) {
 		if(cacheQueue.containsKey(metaGridLoc)) {
 			return false;
@@ -303,11 +314,58 @@ public class TileLayer {
 		}
 	}
 	
+	/**
+	 * Synchronization function, ensures that the same metatile is not
+	 * requested simultaneously by two threads.
+	 * 
+	 * @param metaGridLoc the grid positions of the tile
+	 * @return
+	 */
 	private synchronized boolean removeFromCacheQueue(int[] metaGridLoc) {
 		if(cacheQueue.containsKey(metaGridLoc)) {
 			cacheQueue.remove(metaGridLoc);
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * 
+	 * @param props
+	 * @throws CacheException
+	 */
+	private void setParametersFromProperties(Properties props) throws CacheException {
+		profile = new LayerProfile(props);
+				
+		// Cache and CacheKey
+		String propCachetype = props.getProperty("cachetype");
+		if(propCachetype != null) {
+			cache = CacheFactory.getCache(propCachetype, props);
+		} else {
+			cache = CacheFactory.getCache("org.geowebcache.cache.jcs.JCSCache", null);
+		}
+		
+		String propCacheKeytype = props.getProperty("cachekeytype");
+		if(propCacheKeytype == null) {
+			cacheKey = CacheKeyFactory.getCacheKey(cache.getDefaultCacheKeyName(), name);
+		} else {
+			cacheKey = CacheKeyFactory.getCacheKey(propCacheKeytype, name);
+		}
+			
+		String propImageMIME = props.getProperty("imagemimes");
+		if(propImageMIME != null) {
+			String[] mimes = propImageMIME.split(",");
+			formats = new ImageFormat[mimes.length];
+			for(int i=0;i<mimes.length;i++) {
+				formats[i] = ImageFormat.createFromMimeType(mimes[i]);
+			}
+		}
+		String propDebugHeaders = props.getProperty("debugheaders");
+		if(propDebugHeaders != null)
+			debugHeaders = Boolean.valueOf(propDebugHeaders);
+		
+		String propCacheLockWait = props.getProperty("cachelockwait");
+		if(propCacheLockWait != null)
+			cacheLockWait = Integer.valueOf(propCacheLockWait);
 	}
 }
