@@ -115,6 +115,7 @@ public class Configuration {
 			FileInputStream in = new FileInputStream(propFile);
 			props = new Properties();
 			props.load(in);
+			in.close();
 		} catch(IOException ioe) {
 			log.error("Could not read " + propFile.getAbsolutePath() + " file: ", ioe);
 		}

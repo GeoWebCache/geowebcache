@@ -23,6 +23,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.apache.jcs.JCS;
+import org.apache.jcs.engine.ElementAttributes;
+import org.apache.jcs.engine.behavior.IElementAttributes;
+
+import org.geowebcache.layer.LayerProfile;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 
@@ -34,7 +38,6 @@ public class JCSCache implements Cache {
 	private static final String REGION_NAME = "geowebcache";
 
 	private JCS jcscache;
-
 
 	// Make this class a singleton to allow Cache interface methods to be public
 	// while preventing multiple instances
@@ -69,7 +72,7 @@ public class JCSCache implements Cache {
 	}
 
 	
-	public Object get(Object key) throws org.geowebcache.cache.CacheException {
+	public Object get(Object key, long ttl) throws org.geowebcache.cache.CacheException {
 		Object rtn;
 		try {
 			rtn = jcscache.get(key);
@@ -105,9 +108,15 @@ public class JCSCache implements Cache {
 		}
 	}
 
-	public void set(Object key, Object obj) throws org.geowebcache.cache.CacheException {
+	public void set(Object key, Object obj, long ttl) throws org.geowebcache.cache.CacheException {
 		try {
-			jcscache.put(key, obj);
+			if(ttl > 0) {
+				IElementAttributes ea = jcscache.getDefaultElementAttributes();
+				ea.setMaxLifeSeconds(ttl / 1000);
+				jcscache.put(key, obj, ea);
+			} else {
+				jcscache.put(key, obj);
+			}
 		} catch (org.apache.jcs.access.exception.CacheException jcse) {
 			log.error("Could not put object into JCS cache: ", jcse);
 			throw new org.geowebcache.cache.CacheException(jcse);

@@ -19,11 +19,8 @@ package org.geowebcache.layer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Properties;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -34,11 +31,6 @@ import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.cachekey.CacheKey;
 import org.geowebcache.cachekey.CacheKeyFactory;
-import org.geowebcache.mime.ImageMimeType;
-import org.geowebcache.service.Connection;
-import org.geowebcache.service.Parameters;
-import org.geowebcache.service.Request;
-import org.geowebcache.service.Response;
 import org.geowebcache.service.wms.WMSParameters;
 
 
@@ -85,7 +77,7 @@ public class TileLayer {
 				formats[i] = ImageFormat.createFromMimeType(mimes[i]);
 			}
 		}
-		String propDebugHeaders = props.getProperty("debugHeaders");
+		String propDebugHeaders = props.getProperty("debugheaders");
 		if(propDebugHeaders != null)
 			debugHeaders = Boolean.valueOf(propDebugHeaders);
 		
@@ -174,58 +166,81 @@ public class TileLayer {
 		
 		if(debugHeaders) {
 			debugHeadersStr = 
-			"grid-location:"+gridLoc[0]+","+gridLoc[1]+","+gridLoc[2]+"--"
-			+"cachekey:"+ck.toString()+"--";
+			"grid-location:"+gridLoc[0]+","+gridLoc[1]+","+gridLoc[2]+";"
+			+"cachekey:"+ck.toString()+";";
 		}
 		
 		/********************  Check cache  ********************/
 		RawTile tile = null;
-		try {
-			tile = (RawTile) cache.get(ck);
-			if(tile != null) {
-				
-				// Return lock
-				removeFromCacheQueue(metaGridLoc);
-				
-				if(debugHeaders) {
-					response.addHeader("GEOWEBCACHE-DEBUG-HEADERS",
-							debugHeadersStr
-							+"from-cache:true");
+		if(profile.expireCache != LayerProfile.CACHE_NEVER) {
+			try {
+				tile = (RawTile) cache.get(ck,this.profile.expireCache);
+				if(tile != null) {
+
+					// Return lock
+					removeFromCacheQueue(metaGridLoc);
+
+					if(debugHeaders) {
+						response.addHeader("geowebcache-debug",
+								debugHeadersStr
+								+"from-cache:true");
+					}
+					return tile.getData();
 				}
-				byte[] test = tile.getData();
-				System.out.println("Returning: " + test.length + " bytes.");
-				
-				return test;
+			} catch (CacheException ce) {
+				log.error("Failed to get " + wmsparams.toString() + " from cache");
+				ce.printStackTrace();
 			}
-		} catch (CacheException ce) {
-			log.error("Failed to get " + wmsparams.toString() + " from cache");
-			ce.printStackTrace();
 		}
-		
 		/********************  Request metatile  ********************/
 		metaTile.doRequest(imageFormat.getMimeType());
 		metaTile.createTiles();
 		int[][] gridPositions = metaTile.getGridPositions();
-		saveTiles(gridPositions, metaTile, imageFormat);
 		
-		// Try the cache again
-		try {
-			tile = (RawTile) cache.get(ck);
-		} catch (CacheException ce) {
-			log.error("Failed to get " + wmsparams.toString() + " from cache, after first seeding cache.");
-			ce.printStackTrace();
+		byte[] data = null;
+		// Mostly for completeness, don't laugh
+		if(profile.expireCache == LayerProfile.CACHE_NEVER) {
+			data = getTile(gridLoc, gridPositions, metaTile, imageFormat);
+		} else {
+			saveTiles(gridPositions, metaTile, imageFormat);
+						
+			// Try the cache again
+			try {
+				tile = (RawTile) cache.get(ck, this.profile.expireCache);
+			} catch (CacheException ce) {
+				log.error("Failed to get " + wmsparams.toString() + " from cache, after first seeding cache.");
+				ce.printStackTrace();
+			}
+			data = tile.getData();
+			
+			if(profile.expireClients == LayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
+				profile.expireClients = metaTile.getExpiration();
+				log.info("Setting expireClients based on metaTile: " + profile.expireClients);
+			}
 		}
-		 
+		
 		// Return lock
 		removeFromCacheQueue(metaGridLoc);
 		
 		if(debugHeaders) {
-			response.addHeader("GEOWEBCACHE-DEBUG-HEADERS",
-					debugHeadersStr + "from-cache:false");
+			response.addHeader("geowebcache-debug",
+					debugHeadersStr + "from-cache:false;wmsUrl:"+wmsparams.toString());
 		}
-		byte[] test = tile.getData();
-		System.out.println("Returning: " + test.length + " bytes.");
-		return test;
+		return data;
+	}
+	
+	public void setExpirationHeader(HttpServletResponse response){
+		if(profile.expireClients == LayerProfile.CACHE_VALUE_UNSET)
+			return;
+		
+		if(profile.expireClients > 0) {
+			response.setDateHeader("Expires", System.currentTimeMillis() + profile.expireClients);
+		} else if(profile.expireClients == LayerProfile.CACHE_NEVER_EXPIRE) {
+			long oneYear = 3600*24*365*1000;
+			response.setDateHeader("Expires", System.currentTimeMillis() + oneYear);
+		} else if(profile.expireClients == LayerProfile.CACHE_NEVER) {
+			response.setDateHeader("Expires", 1);
+		}
 	}
 	
 	private void saveTiles(int[][] gridPositions, MetaTile metaTile, ImageFormat imageFormat) {
@@ -245,21 +260,45 @@ public class TileLayer {
 			}
 			
 			RawTile tile = new RawTile(out.toByteArray());
+			
+			if(profile.expireCache == LayerProfile.CACHE_USE_WMS_BACKEND_VALUE)
+				profile.expireCache = metaTile.getExpiration();
+			
+				log.info("Setting expireCache based on metaTile for layer "
+						+this.name+": "+profile.expireCache);
 			try {
-				cache.set(ck, tile);
+					cache.set(ck, tile, profile.expireCache);
 			} catch (CacheException ce) {
 				log.error("Unable to save data to cache, stack trace follows: " + ce.getMessage());
 				ce.printStackTrace();
 			}
 		}		
 	}
-
-		
+	
+	private byte[] getTile(int[] gridPos, int[][] gridPositions, MetaTile metaTile, ImageFormat imageFormat) {		
+		for(int i=0; i < gridPositions.length; i++) {
+			int[] curPos = gridPositions[i];
+			
+			if(curPos.equals(gridPos)) {
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				try {
+					metaTile.writeTileToStream(i, imageFormat.getJavaName(), out);
+				} catch(IOException ioe) {
+					log.error("Unable to write image tile to ByteArrayOutputStream: " + ioe.getMessage());
+					ioe.printStackTrace();
+				}
+				
+				return out.toByteArray();
+			}
+		}
+		return null;
+	}
+			
 	private synchronized boolean addToCacheQueue(int[] metaGridLoc) {
 		if(cacheQueue.containsKey(metaGridLoc)) {
 			return false;
 		} else {
-			cacheQueue.put(metaGridLoc, metaGridLoc);
+			cacheQueue.put(metaGridLoc, new Boolean(true));
 			return true;
 		}
 	}

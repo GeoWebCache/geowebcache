@@ -1,16 +1,30 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Arne Kepp, The Open Planning Project, Copyright 2008
+ *  
+ */
 package org.geowebcache.layer;
 
-import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
-import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
+import java.net.URLConnection;
 
 import javax.imageio.ImageIO;
-import javax.media.jai.JAI;
-import javax.media.jai.operator.CropDescriptor;
+import javax.imageio.ImageWriter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,6 +40,9 @@ public class MetaTile {
 	int[][] gridPositions = null;
 	private BufferedImage img = null;
 	private BufferedImage[] tiles = null;
+	private long expiration = LayerProfile.CACHE_VALUE_UNSET;
+	ImageWriter imageWriter = null;
+	
 	
 	
 	protected MetaTile(LayerProfile profile, int[] initGridPosition) {
@@ -113,8 +130,23 @@ public class MetaTile {
 		
 		// Create an outgoing WMS request to the server
 		Request wmsrequest = new Request(this.profile.wmsURL, wmsparams);
-
-		this.img = ImageIO.read(new URL(wmsrequest.toString()));
+		URL wmsBackendUrl = new URL(wmsrequest.toString());
+		URLConnection wmsBackendCon = wmsBackendUrl.openConnection();
+		
+		// Do we need to keep track of expiration headers?
+		if(profile.expireCache != LayerProfile.CACHE_USE_WMS_BACKEND_VALUE 
+				&& profile.expireClients != LayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
+			
+			long wmsBackendExpiration = wmsBackendCon.getExpiration() - System.currentTimeMillis();
+			if(wmsBackendExpiration > 0) {
+				this.expiration = wmsBackendExpiration;
+			} else {
+				log.equals("Profile requests expire headers from backend");
+			}
+		}
+		
+		img = ImageIO.read(wmsBackendCon.getInputStream());
+		
 		if(img == null) {
 			System.out.println("Failed fetching "+  wmsrequest.toString());
 			log.equals("Failed fetching: " + wmsrequest.toString());
@@ -130,7 +162,7 @@ public class MetaTile {
 		
 		if(tiles.length > 1) {
 			//final int tileSize = key.getTileSize();
-			final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
+			//final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
 			int yfix = profile.height*profile.metaHeight;
 		
 			for(int y=0; y < profile.metaHeight; y++) {	
@@ -140,11 +172,7 @@ public class MetaTile {
 					int i = x * profile.width;
 					int j = (y+1) * profile.height;
 
-					tiles[tile] = img.getSubimage(i,profile.height*profile.metaHeight-j, profile.width, profile.height);
-					//System.out.println("CropDescriptor.create("+img.toString()+","+new Float(i)+","+new Float(j)+","+new Float(profile.width)+","+new Float(profile.width));
-					//tiles[tile] = CropDescriptor.create(img, new Float(i), new Float(j), new Float(profile.width), new Float(profile.width), no_cache);
-					//tiles[tile] = CropDescriptor.create(img, new Float(x), new Float(y), new Float(profile.width), new Float(profile.height), null);
-					//System.out.println("Produced: " + tiles[tile].toString());
+					tiles[tile] = img.getSubimage(i,yfix-j, profile.width, profile.height);
 				}
 			}
 		} else {
@@ -157,10 +185,20 @@ public class MetaTile {
 		if(this.tiles == null) {
 			return false;
 		} else {
+			//if(this.imageWriter == null)
+			//	initImageWriter(format);
 			javax.imageio.ImageIO.write(tiles[tileIdx], format, os);
 			return true;
 		}
 	}
+	
+	//private void initImageWriter(String format) {
+	//	imageWriter = javax.imageio.ImageIO.getImageWritersByFormatName(format).next();
+	//	
+	//	if(imageWriter == null) {
+	//		log.error("Unable to find ImageWriter for format" + format);
+	//	}
+	//}
 	
 	protected int[][] getGridPositions() {
 		if(this.gridPositions == null)
@@ -171,5 +209,9 @@ public class MetaTile {
 	
 	protected BufferedImage getRawImage() {
 		return this.img;
+	}
+	
+	protected long getExpiration(){
+		return this.expiration;
 	}
 }

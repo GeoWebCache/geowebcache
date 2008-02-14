@@ -33,7 +33,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.Configuration;
 
-public class GeoWebCache extends HttpServlet {
+public class GeoWebCache extends HttpServlet {	
 	private static final long serialVersionUID = 4175613925719485006L;
 	private static Log log = LogFactory.getLog(org.geowebcache.GeoWebCache.class);
 	private static final String DEFAULT_REL_CONFIG_DIR = "WEB-INF" + File.separator + "classes";
@@ -69,8 +69,6 @@ public class GeoWebCache extends HttpServlet {
 					// Probably running Jetty through Eclipse?
 					configDir = dir + "../resources";
 				}
-				
-				System.out.println("Arne: " + configDir);
 			}
 		}
 		
@@ -131,7 +129,7 @@ public class GeoWebCache extends HttpServlet {
 			
 			// This should set it to 15 hours, but I doubt it is doing that
 			response.setStatus(HttpServletResponse.SC_OK);
-			response.setDateHeader("Expires", starttime + 60*15*1000);
+			//response.setDateHeader("Expires", starttime + 60*15*1000);
 			response.setContentType(wmsparams.getImagemime().getMime());
 			response.setContentLength(data.length);
 			//response.setCharacterEncoding(wmsparams.getImagemime().getEncoding());
@@ -171,7 +169,6 @@ public class GeoWebCache extends HttpServlet {
 	private void sendData(HttpServletResponse response, byte[] data) throws IOException {
 		log.trace("Sending data.");		
 		OutputStream os = response.getOutputStream();
-		System.out.println("Right before: " + data.length);
 		os.write(data);
 		os.flush();
 	}

@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.geowebcache.layer.LayerProfile;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.layer.RawTile;
@@ -75,14 +76,22 @@ public class FileCache implements Cache {
 	/** 
 	 * See if file exists, read file
 	 */
-	public Object get(Object key) throws org.geowebcache.cache.CacheException {
+	public Object get(Object key, long ttl) throws org.geowebcache.cache.CacheException {
 		String filePath =  pathPrefix + File.separator + (String) key;
-		System.out.println("Want to read: " + filePath);
+		log.trace("Attempting to read"+filePath);
 		
 		File fh = new File(filePath);
 		
-		if(! fh.canRead() ) 
+		if(ttl > 0 && fh.lastModified() > System.currentTimeMillis() - ttl) {
+			log.debug(filePath +" had expired, last modified " + fh.lastModified());
 			return null;
+		}
+		
+		if(! fh.canRead() ) {
+			log.error("Unable to read " + filePath);
+			return null;
+		}
+			
 		
 		long length = fh.length();
 		
@@ -99,6 +108,7 @@ public class FileCache implements Cache {
 			log.trace("Did not find " + filePath);
 			return null;
 		} catch (IOException ioe) {
+			log.error("IOException reading from "+filePath+": "+ioe.getMessage());
 			throw new CacheException(ioe);
 		}
 		
@@ -115,13 +125,12 @@ public class FileCache implements Cache {
 		// Do nothing for now
 	}
 
-	/**
-	 * 
-	 */
-	public void set(Object key, Object obj) throws org.geowebcache.cache.CacheException {
-		String filePath =  pathPrefix + File.separator + (String) key;
-		System.out.println("Want to write: " + filePath);
+	public void set(Object key, Object obj, long ttl) throws org.geowebcache.cache.CacheException {
+		if(ttl == LayerProfile.CACHE_NEVER)
+			return;
 		
+		String filePath =  pathPrefix + File.separator + (String) key;
+		log.trace("Attempting write to "+filePath);
 		File fh = new File(filePath);
 		File pfh = new File(fh.getParent());
 		
@@ -136,6 +145,7 @@ public class FileCache implements Cache {
 			} catch (FileNotFoundException fnfe) {
 				throw new CacheException(fnfe);
 			} catch (IOException ioe) {
+				log.error("IOException writing to "+filePath+": "+ioe.getMessage());
 				throw new CacheException(ioe);
 			}
 		} else {

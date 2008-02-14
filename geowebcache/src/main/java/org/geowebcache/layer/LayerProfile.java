@@ -29,6 +29,11 @@ import org.geowebcache.util.Configuration;
 
 public class LayerProfile {
 	private static Log log = LogFactory.getLog(org.geowebcache.layer.LayerProfile.class);
+
+	public static final int CACHE_NEVER = 0;
+	public static final int CACHE_VALUE_UNSET = -1;
+	public static final int CACHE_NEVER_EXPIRE = -2;
+	public static final int CACHE_USE_WMS_BACKEND_VALUE = -4;
 	
 	// This assumes image output
 	protected String srs = "EPSG:4326";
@@ -48,7 +53,8 @@ public class LayerProfile {
 	protected String wmsLayers = "topp:states";
 	protected String wmsStyles = null;
 	protected WMSParameters wmsparams = null;
-
+	protected long expireClients = CACHE_USE_WMS_BACKEND_VALUE; 
+	protected long expireCache =  CACHE_NEVER_EXPIRE;
 	
 	public LayerProfile(Properties props) {		
 		setParametersFromProperties(props);
@@ -98,7 +104,7 @@ public class LayerProfile {
 				metaWidth = Integer.parseInt(metatiling[0]);
 				metaHeight = Integer.parseInt(metatiling[1]);
 			} else {
-				// Raise hell
+				log.error("Unable to interpret metatiling="+propMetatiling+", expected something like 3x3");
 			}
 		}
 		
@@ -113,6 +119,14 @@ public class LayerProfile {
 		String propStyles = props.getProperty("wmsstyles");
 		if(propStyles != null)
 			this.wmsStyles = propStyles;
+		
+		String propExpireClients = props.getProperty("expireclients");
+		if(propExpireClients != null)
+			expireClients = Integer.parseInt(propExpireClients);
+
+		String propExpireCache = props.getProperty("expireCache");
+		if(propExpireCache != null)
+			expireCache = Integer.parseInt(propExpireCache);
 		
 		this.layerWidth = bbox.coords[2] - bbox.coords[0];
 		this.layerHeight = bbox.coords[3] - bbox.coords[1];
