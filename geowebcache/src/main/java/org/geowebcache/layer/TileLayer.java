@@ -12,13 +12,14 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Arne Kepp, The Open Planning Project, Copyright 2007
+ * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
     	
 package org.geowebcache.layer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -41,39 +42,23 @@ public class TileLayer {
 	Cache cache;
 	CacheKey cacheKey;
 	ImageFormat[] formats = null;
-	HashMap cacheQueue = new HashMap();
+	HashMap procQueue = new HashMap();
 	boolean debugHeaders = false;
 	Integer cacheLockWait = -1;
-
+	Seeder seeder = null;
 	
 	public TileLayer(String layerName, Properties props) throws CacheException {
 		this.name = layerName;
 		setParametersFromProperties(props);
 	}
-	
-	/**
-	 * Checks to see whether we accept the given mimeType
-	 * 
-	 * Typically this list should be so short that a linear
-	 * search will be faster than hashing.
-	 * 
-	 * @param imageMime
-	 * @return
-	 */
-	private boolean supports(String imageMime) {
-		for(int i=0; i<formats.length; i++) {
-			if(formats[i].getMimeType().equalsIgnoreCase(imageMime))
-				return true;
-		}
-		return false;
-	}
+
 	
 	/**
 	 * Rough checks to see whether the request is within bounds
-	 * and whether we support the format
+	 * and whether we support the format.
 	 * 
 	 * @param wmsparams
-	 * @return
+	 * @return null if okay, error message otherwise.
 	 */
 	public String covers(WMSParameters wmsparams) {
 		if( ! wmsparams.getSrs().equalsIgnoreCase(this.profile.srs)) {
@@ -120,22 +105,7 @@ public class TileLayer {
 		int[] metaGridLoc = metaTile.getMetaGridPos();
 		
 		/********************  Acquire lock  ********************/
-		boolean wait = cacheQueue.containsKey(metaGridLoc); 
-		while(wait) {
-			if(this.cacheLockWait > 0) {
-				try {
-					Thread.sleep(cacheLockWait);
-				} catch (InterruptedException ie) {
-					log.error("Thread got interrupted... how come?");
-					ie.printStackTrace();
-					// No big deal, though we should quit if anyone prefers that.
-				}
-			} else {
-				Thread.yield();
-			}
-			Thread.yield();
-			wait = cacheQueue.containsKey(metaGridLoc);
-		}
+		waitForQueue(metaGridLoc);
 		
 		ImageFormat imageFormat = ImageFormat.createFromMimeType(wmsparams.getImagemime().getMime());
 		Object ck = cacheKey.createKey(gridLoc[0], gridLoc[1], gridLoc[2], imageFormat.getExtension());
@@ -154,7 +124,7 @@ public class TileLayer {
 				if(tile != null) {
 
 					// Return lock
-					removeFromCacheQueue(metaGridLoc);
+					removeFromQueue(metaGridLoc);
 
 					if(debugHeaders) {
 						response.addHeader("geowebcache-debug",
@@ -179,6 +149,7 @@ public class TileLayer {
 		if(profile.expireCache == LayerProfile.CACHE_NEVER) {
 			//Mostly for completeness, don't laugh
 			data = getTile(gridLoc, gridPositions, metaTile, imageFormat);
+			
 		} else {
 			saveTiles(gridPositions, metaTile, imageFormat);
 						
@@ -190,28 +161,92 @@ public class TileLayer {
 				ce.printStackTrace();
 			}
 			data = tile.getData();
-			
-			if(profile.expireClients == LayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
-				profile.expireClients = metaTile.getExpiration();
-				log.info("Setting expireClients based on metaTile: " + profile.expireClients);
-			}
 		}
 		
 		// Return lock
-		removeFromCacheQueue(metaGridLoc);
-		
+		removeFromQueue(metaGridLoc);
+
+		setExpirationHeader(response);
 		if(debugHeaders) {
 			response.addHeader("geowebcache-debug",
 					debugHeadersStr + "from-cache:false;wmsUrl:"+wmsparams.toString());
 		}
 		return data;
 	}
+	
+	public int seed(int zoomStart, int zoomStop, String format, BBOX bounds, HttpServletResponse response) 
+	throws IOException {
+		if(seeder == null)
+			seeder = new Seeder(this);
+		
+		String complaint = null;
+		// Check that we support this
+		if(bounds == null) {
+			bounds = profile.bbox;
+		} else {
+			if(! profile.bbox.contains(bounds)) {
+				complaint = "Request to seed outside of bounds: "+ bounds.toString();
+				log.error(complaint);
+				response.sendError(400, complaint);
+				return -1;
+			}
+		}
+		ImageFormat imageFormat = ImageFormat.createFromMimeType(format);
+		
+		if(imageFormat == null ||! this.supports(imageFormat.getMimeType())) {
+			complaint = "Imageformat "+format+" is not supported by layer";
+			log.error(complaint);
+			response.sendError(400, complaint);
+			return -1;
+		}
+			
+		if(profile.expireCache == LayerProfile.CACHE_NEVER) {
+			complaint = "Layers is configured to never cache!";
+			log.error(complaint);
+			response.sendError(400, complaint);
+			return -1;
+		}
+		
+		if(zoomStart < 0 || zoomStop < 0) {
+			complaint = "zoomStart("+zoomStart+") and zoomStop("+zoomStop+") have to greater than zero";
+			log.error(complaint);
+			response.sendError(400, complaint);
+			return -1;
+		}
+		if(zoomStart > 50 || zoomStart > 50) {
+			complaint = "zoomStart("+zoomStart+") and zoomStop("+zoomStop+") should be less than 50";
+			log.error(complaint);
+			response.sendError(400, complaint);
+			return -1;
+		}
+		if(zoomStop < zoomStart) {
+			complaint = "zoomStart("+zoomStart+") must be smaller than or equal to zoomStop("+zoomStop+")";
+			log.error(complaint);
+			response.sendError(400, complaint);
+			return -1;
+		}
+		OutputStream os = response.getOutputStream();
+		System.out.print("seeder.doSeed("+zoomStart+","+zoomStop+","
+				+imageFormat.getMimeType()+","+bounds.getReadableString()+",stream");
+		
+		int retVal = seeder.doSeed(zoomStart, zoomStop, imageFormat, bounds, os);
+		os.close();
+		
+		return retVal;
+	}
+	
+	public int purge(OutputStream os){
+		// Loop over directories 
+		// Not implemented
+		return 0;
+	}
+	
 	/**
 	 * Uses the HTTP 1.1 spec to set expiration headers
 	 * 
 	 * @param response
 	 */
-	public void setExpirationHeader(HttpServletResponse response){
+	private void setExpirationHeader(HttpServletResponse response){
 		if(profile.expireClients == LayerProfile.CACHE_VALUE_UNSET)
 			return;
 		
@@ -222,8 +257,8 @@ public class TileLayer {
 			response.setHeader("Cache-Control","max-age="+oneYear);
 		} else if(profile.expireClients == LayerProfile.CACHE_NEVER) {
 			response.setHeader("Cache-Control","no-cache");
-		} else {
-			return;
+		} else if(profile.expireCache == LayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
+			response.setHeader("geowebcache-error","No CacheControl information available");
 		}
 	}
 	
@@ -234,7 +269,7 @@ public class TileLayer {
 	 * @param metaTile
 	 * @param imageFormat
 	 */
-	private void saveTiles(int[][] gridPositions, MetaTile metaTile, ImageFormat imageFormat) {
+	protected void saveTiles(int[][] gridPositions, MetaTile metaTile, ImageFormat imageFormat) {
 		for(int i=0; i < gridPositions.length; i++) {
 			int[] gridPos = gridPositions[i];
 			
@@ -287,7 +322,7 @@ public class TileLayer {
 		return null;
 	}
 	
-	private void saveExpirationInformation(MetaTile metaTile) {
+	protected void saveExpirationInformation(MetaTile metaTile) {
 		if(profile.expireCache == LayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
 			profile.expireCache = metaTile.getExpiration();
 			log.trace("Setting expireCache based on metaTile: " + profile.expireCache);
@@ -298,18 +333,44 @@ public class TileLayer {
 		}	
 	}
 	
+	
+	/**
+	 * 
+	 * @param metaGridLoc
+	 * @return
+	 */
+	protected boolean waitForQueue(int[] metaGridLoc) {
+		boolean wait = this.addToQueue(metaGridLoc); 
+		while(wait) {
+			if(this.cacheLockWait > 0) {
+				try {
+					Thread.sleep(this.cacheLockWait);
+				} catch (InterruptedException ie) {
+					log.error("Thread got interrupted... how come?");
+					ie.printStackTrace();
+				}
+			} else {
+				Thread.yield();
+			}
+			Thread.yield();
+			wait = this.addToQueue(metaGridLoc);
+		}
+		return true;
+	}
 	/**
 	 * Synchronization function, ensures that the same metatile is not
 	 * requested simultaneously by two threads.
 	 * 
+	 * TODO Should add a Long representing timestamp, to avoid dead tiles
+	 * 
 	 * @param metaGridLoc the grid positions of the tile
 	 * @return
 	 */
-	private synchronized boolean addToCacheQueue(int[] metaGridLoc) {
-		if(cacheQueue.containsKey(metaGridLoc)) {
+	private synchronized boolean addToQueue(int[] metaGridLoc) {
+		if(procQueue.containsKey(metaGridLoc)) {
 			return false;
 		} else {
-			cacheQueue.put(metaGridLoc, new Boolean(true));
+			procQueue.put(metaGridLoc, new Boolean(true));
 			return true;
 		}
 	}
@@ -321,9 +382,9 @@ public class TileLayer {
 	 * @param metaGridLoc the grid positions of the tile
 	 * @return
 	 */
-	private synchronized boolean removeFromCacheQueue(int[] metaGridLoc) {
-		if(cacheQueue.containsKey(metaGridLoc)) {
-			cacheQueue.remove(metaGridLoc);
+	protected synchronized boolean removeFromQueue(int[] metaGridLoc) {
+		if(procQueue.containsKey(metaGridLoc)) {
+			procQueue.remove(metaGridLoc);
 			return true;
 		}
 		return false;
@@ -367,5 +428,22 @@ public class TileLayer {
 		String propCacheLockWait = props.getProperty("cachelockwait");
 		if(propCacheLockWait != null)
 			cacheLockWait = Integer.valueOf(propCacheLockWait);
+	}
+	
+	/**
+	 * Checks to see whether we accept the given mimeType
+	 * 
+	 * Typically this list should be so short that a linear
+	 * search will be faster than hashing.
+	 * 
+	 * @param imageMime
+	 * @return
+	 */
+	private boolean supports(String imageMime) {
+		for(int i=0; i<formats.length; i++) {
+			if(formats[i].getMimeType().equalsIgnoreCase(imageMime))
+				return true;
+		}
+		return false;
 	}
 }

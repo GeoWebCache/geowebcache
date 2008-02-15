@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -29,7 +30,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.layer.BBOX;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.service.Parameters;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.Configuration;
 
@@ -106,18 +109,34 @@ public class GeoWebCache extends HttpServlet {
 			log.debug(request.getRequestURI());
 		}
 
+		// For some reason getPathTranslated returns null
+		String contextPath = request.getContextPath();
+		String requestURI = request.getRequestURI();
+		String subPath = requestURI.substring(contextPath.length(), requestURI.length()).toLowerCase();
+		
+		if(subPath.equals("/wms")) {
+			doGetWMS(request, response);
+		} else if(subPath.equals("/seed")) {
+			doGetSeed(request, response);
+		}
+	}
+	
+	public void doGetWMS(HttpServletRequest request,
+			HttpServletResponse response)
+	throws ServletException, IOException {
+		
 		long starttime = System.currentTimeMillis();
 
 		// Parse request
 		WMSParameters wmsparams = new WMSParameters(request);
-		
+
 		// Check whether we serve this layer
 		TileLayer cachedLayer = findLayer(wmsparams, response);
-		
+
 		// Get data (from backend, if necessary)
 		if(cachedLayer != null) { 
 			byte[] data = cachedLayer.getData(wmsparams, response);
-			
+
 			// Did we get anything?
 			if(data == null || data.length == 0) {
 				// Response: 404
@@ -133,6 +152,50 @@ public class GeoWebCache extends HttpServlet {
 			// Response: 404
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 		}
+	}
+	
+	
+	public void doGetSeed(HttpServletRequest request,
+			HttpServletResponse response)
+	throws ServletException, IOException {
+		
+		System.out.println("doGetSeed!");
+		
+		Map params = request.getParameterMap();
+		String[] strLayers = (String[]) params.get("layers");
+		
+		TileLayer layer = (TileLayer) this.layers.get(strLayers[0]);
+		if(layer == null) {
+			response.sendError(400, "No layers or unknown layer "+strLayers);
+			// complain loudly and quit
+			System.out.println("No layers?");
+		}
+		
+		BBOX reqBounds = null;
+		if(params.containsKey("bbox"))
+			reqBounds = new BBOX(((String[]) params.get("bbox"))[0]);
+
+			
+		
+		String[] strStart = (String[]) params.get("start");
+		String[] strStop = (String[]) params.get("stop");
+		
+		int start = -1; 
+		if(strStart != null)
+			start = Integer.valueOf(strStart[0]);
+
+		int stop = -1;
+		if(strStop != null)
+			stop = Integer.valueOf(strStop[0]);
+		
+		String[] format = (String[]) params.get("format");
+		String strFormat = null;
+		
+		if(format != null)
+			strFormat = format[0];
+		
+		layer.seed(start, stop,strFormat, reqBounds, response);
+		response.flushBuffer();
 	}
 	
 	/**

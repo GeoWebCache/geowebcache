@@ -45,11 +45,27 @@ public class MetaTile {
 	private long expiration = LayerProfile.CACHE_VALUE_UNSET;
 	ImageWriter imageWriter = null;
 	
-	
-	
+	/**
+	 * Used for requests by clients
+	 * 
+	 * @param profile
+	 * @param initGridPosition
+	 */
 	protected MetaTile(LayerProfile profile, int[] initGridPosition) {
 		this.profile = profile;
 		this.calcMetaGrid(initGridPosition);
+	}
+	
+	/**
+	 * Used for seeder
+	 * 
+	 * @param profile
+	 * @param metaGrid
+	 * @param doesNothing
+	 */
+	protected MetaTile(LayerProfile profile, int[] metaGrid, boolean doesNothing) {
+		this.profile = profile;
+		this.metaGrid = metaGrid;
 	}
 	
 	/**
@@ -154,7 +170,7 @@ public class MetaTile {
 		
 		if(img == null) {
 			System.out.println("Failed fetching "+  wmsrequest.toString());
-			log.equals("Failed fetching: " + wmsrequest.toString());
+			log.error("Failed fetching: " + wmsrequest.toString());
 		} else {
 			System.out.println("Fetched "+  wmsrequest.toString());
 			log.debug("Requested and got: " + wmsrequest.toString());

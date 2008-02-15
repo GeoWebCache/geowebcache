@@ -9,7 +9,12 @@
 
 	<servlet-mapping>
 		<servlet-name>GeoWebCache</servlet-name>
-		<url-pattern>/geowebcache</url-pattern>
+		<url-pattern>/wms</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>GeoWebCache</servlet-name>
+		<url-pattern>/seed</url-pattern>
 	</servlet-mapping>
 </web-app>
 

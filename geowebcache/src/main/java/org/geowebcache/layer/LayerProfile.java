@@ -38,8 +38,8 @@ public class LayerProfile {
 	// This assumes image output
 	protected String srs = "EPSG:4326";
 	protected BBOX bbox = new BBOX(-180.0, -90.0, 180.0, 90.0);
-	double layerWidth = 360.0;
-	double layerHeight = 180.0;
+	double layerWidth = -1;
+	double layerHeight = -1;
 	protected int width = 256;
 	protected int height = 256; 
 	protected int metaWidth = 1;
@@ -166,6 +166,44 @@ public class LayerProfile {
 		if(log.isTraceEnabled()) {
 			log.trace("zoomLevel: " + retVals[0] + " x:" + retVals[1]+ " y:" + retVals[2]);
 		}
+		return retVals;
+	}
+	
+	/**
+	 * Calculates bottom left and top right grid positions for a particular zoomlevel 
+	 * 
+	 * @param bounds
+	 * @return
+	 */
+	private int[] gridExtent(int zoomLevel, BBOX bounds) {
+		int[] retVals = new int[4];
+		
+		double tileWidth = layerWidth / (Math.pow(2, zoomLevel));
+		// min X
+		retVals[0] = (int) Math.round((bounds.coords[0] - bbox.coords[0])/tileWidth - 0.49);
+		// min Y
+		retVals[1] = (int) Math.round((bounds.coords[1] - bbox.coords[1])/tileWidth - 0.49);
+		// max X
+		retVals[2] = (int) Math.round((bounds.coords[2] - bbox.coords[0])/tileWidth + 0.49);
+		// max Y
+		retVals[3] = (int) Math.round((bounds.coords[3] - bbox.coords[1])/tileWidth + 0.49);
+		
+		return retVals;
+	}
+	
+	/**
+	 * Used for seeding, returns gridExtent but adjusts for meta tile size
+	 * 
+	 * @return
+	 */
+	protected int[] metaGridExtent(int zoomLevel, BBOX bounds) {
+		int[] retVals = gridExtent(zoomLevel, bounds);
+		
+		retVals[0] = retVals[0] - (retVals[0] % this.metaWidth);
+		retVals[1] = retVals[1] - (retVals[1] % this.metaHeight);
+		retVals[2] = retVals[2] + (retVals[2] % this.metaWidth);
+		retVals[3] = retVals[3] + (retVals[3] % this.metaHeight);
+		
 		return retVals;
 	}
 	

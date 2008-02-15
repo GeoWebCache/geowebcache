@@ -36,21 +36,13 @@ import org.geowebcache.service.wms.WMSParameters;
 
 public class Configuration {
 	private static Log log = LogFactory.getLog(org.geowebcache.util.Configuration.class);
-	//private static final String NAMESPACE = "org.geowebcache";
-	//private static final String DEFAULT_SERVER = "http://localhost:8080/geoserver/wms";
-	//private static final String DEFAULT_SERVICE = "wms";
-	//private static final String DEFAULT_CACHE = NAMESPACE + ".cache.JCS";
-	//private static final String DEFAULT_RESOLUTION_CONSTRAINT = "NO";
-	private static final String DEFAULT_FORWARD_ON_ERROR = "NO";
-
 	private Properties props = null;
-
-	private WMSParameters wmsparams = null;
-	private String server = null;
-	private String service = null;
-	private String cache = null;
-	private Set resolutions = null;
-	private boolean forward_errors;
+	//private WMSParameters wmsparams = null;
+	//private String server = null;
+	//private String service = null;
+	//private String cache = null;
+	//private Set resolutions = null;
+	//private boolean forward_errors;
 
 	private File[] propFiles = null;
 	private HashMap layers = new HashMap();
@@ -102,11 +94,6 @@ public class Configuration {
 		this.propFiles = propFiles;
 	}
 	
-	
-	//public static Configuration getInstance() {
-	//	return singleton_inst;
-	//}
-	
 	private Properties readProperties(File propFile) {
 		props = null;
 		
@@ -125,110 +112,6 @@ public class Configuration {
 	public HashMap getLayers() {
 		return this.layers;
 	}
-//
-//
-//	// TODO: configuration should be layer-based: specify a list of layers,
-//	// and then configure them
-//
-//	private WMSParameters extractWMSParameters(Properties props) {
-//
-//		wmsparams = new WMSParameters();
-//
-//		if(this.service == null) {
-//			setService();
-//		}
-//
-////		wmsparams.setAllFromString(
-////				props.getProperty(WMSParameters.REQUEST_PARAM.toLowerCase()),
-////				props.getProperty(WMSParameters.VERSION_PARAM.toLowerCase()),
-////				props.getProperty(WMSParameters.TILED_PARAM.toLowerCase()),
-//				//props.getProperty(WMSParameters.SRS_PARAM.toLowerCase()),
-////				props.getProperty(WMSParameters.LAYER_PARAM.toLowerCase()),
-////				props.getProperty(WMSParameters.STYLES_PARAM.toLowerCase()),
-////				props.getProperty(WMSParameters.BBOX_PARAM.toLowerCase()),
-//				//props.getProperty(WMSParameters.ORIGIN_PARAM.toLowerCase()),
-////				props.getProperty(WMSParameters.HEIGHT_PARAM.toLowerCase()),
-////				props.getProperty(WMSParameters.WIDTH_PARAM.toLowerCase()),
-//				//props.getProperty(WMSParameters.IMAGE_TYPE_PARAM.toLowerCase()),
-//				//props.getProperty(WMSParameters.ERROR_TYPE_PARAM.toLowerCase())
-////		);
-//
-//		log.info("Default WMS Parameters set to: " + wmsparams.toString());
-//		
-//		return wmsparams;
-//	}
-//
-////	private void setServer() {
-////		this.server = props.getProperty(NAMESPACE + ".server", DEFAULT_SERVER);
-////		log.info("Server set to: " + this.server);
-////	}
-//
-////	private void setService() {
-////		this.service = props.getProperty( NAMESPACE + ".service", DEFAULT_SERVICE).toLowerCase();
-//		log.info("Service set to: " + this.service);
-//	}
-//
-//	private void setCacheType() {
-//		this.cache = props.getProperty(NAMESPACE + ".cache", DEFAULT_CACHE);
-//		log.info("Cache type set to: " + this.cache);
-//	}
-//
-//	@SuppressWarnings("unchecked")
-//	private void setResolutionConstraints() {
-//		String res_str = props.getProperty(NAMESPACE + ".resolution_constraint", DEFAULT_RESOLUTION_CONSTRAINT);
-//		log.info("Resolution constraint set to: " + res_str);
-//
-//		if(res_str.equalsIgnoreCase("NO") || res_str.equalsIgnoreCase("NONE")) {
-//			this.resolutions = null;
-//		} else {
-//			this.resolutions = new HashSet();
-//			String[] res_array = res_str.split(",");
-//
-//			for(int i = 0; i < res_array.length; ++i) {
-//				this.resolutions.add(Double.valueOf(res_array[i]));
-//			}
-//
-//			if(log.isTraceEnabled()) {
-//				log.trace("Parsed resolutions as: " + this.resolutions.toString());
-//			}
-//		}
-//	}
-//
-//	private void setForwardOnError() {
-//		String forward = props.getProperty( NAMESPACE + ".forward_on_error", DEFAULT_FORWARD_ON_ERROR);
-//		this.forward_errors = (forward.equalsIgnoreCase("YES") || forward.equalsIgnoreCase("TRUE"));
-//
-//		if(this.forward_errors) {
-//			log.info("Forwarding on error enabled.");
-//		} else {
-//			log.info("Forwarding on error disabled.");
-//		}
-//	}
-//
-//	// TODO: make generic service instead of wms
-//	public WMSParameters getParameters() {
-//		return this.wmsparams;
-//	}
-//
-//	public String getServer() {
-//		return this.server;
-//	}
-//
-//	public String getService() {
-//		return this.service;
-//	}
-//
-//	public String getCacheType() {
-//		return this.cache;
-//	}
-//
-//	public Set getResolutionConstraints() {
-//		return this.resolutions;
-//	}
-//
-//	public boolean getForwardOnError() {
-//		return this.forward_errors;
-//	}
 }
 
 class ExtensionFileListFilter implements FilenameFilter {
