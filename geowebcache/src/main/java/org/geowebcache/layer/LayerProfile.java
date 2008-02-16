@@ -213,14 +213,14 @@ public class LayerProfile {
 	 * @param gridLoc
 	 * @return
 	 */
-	//public BBOX recreateBbox(int[] gridLoc) {
-	//	double tileWidth = this.layerWidth / Math.pow(2, gridLoc[2]);
+	public BBOX recreateBbox(int[] gridLoc) {
+		double tileWidth = this.layerWidth / Math.pow(2, gridLoc[2]);
 		
-	//	return new BBOX(bbox.coords[0] + tileWidth*gridLoc[0],
-	//					bbox.coords[1] + tileWidth*gridLoc[1],
-	//					bbox.coords[0] + tileWidth*(gridLoc[0] + 1),
-	//					bbox.coords[1] + tileWidth*(gridLoc[1] + 1));
-	//}
+		return new BBOX(bbox.coords[0] + tileWidth*gridLoc[0],
+						bbox.coords[1] + tileWidth*gridLoc[1],
+						bbox.coords[0] + tileWidth*(gridLoc[0] + 1),
+						bbox.coords[1] + tileWidth*(gridLoc[1] + 1));
+	}
 	
 	/**
 	 * Gets the template for a WMS request for this profile,

@@ -92,13 +92,13 @@ public class BBOX {
 	 */
 	public String toString() {
 		StringBuffer buff = new StringBuffer(40);
-		buff.append(coords[0]);
+		buff.append(Double.toString(coords[0]));
 		buff.append(',');
-		buff.append(coords[1]);
+		buff.append(Double.toString(coords[1]));
 		buff.append(',');
-		buff.append(coords[2]);
+		buff.append(Double.toString(coords[2]));
 		buff.append(',');
-		buff.append(coords[3]);
+		buff.append(Double.toString(coords[3]));
 		return buff.toString();
 	}
 

@@ -166,7 +166,7 @@ public class GeoWebCache extends HttpServlet {
 		
 		TileLayer layer = (TileLayer) this.layers.get(strLayers[0]);
 		if(layer == null) {
-			response.sendError(400, "No layers or unknown layer "+strLayers);
+			response.sendError(400, "No layers or unknown layer "+strLayers[0]);
 			// complain loudly and quit
 			System.out.println("No layers?");
 		}

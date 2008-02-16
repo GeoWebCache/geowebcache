@@ -100,7 +100,8 @@ public class TileLayer {
 		String debugHeadersStr = null;
 		
 		int[] gridLoc = profile.gridLocation(wmsparams.getBBOX());
-		
+		System.out.println("orig:      "+wmsparams.getBBOX().getReadableString());
+		System.out.println("recreated: "+profile.recreateBbox(gridLoc).getReadableString());
 		MetaTile metaTile = new MetaTile(this.profile, gridLoc);
 		int[] metaGridLoc = metaTile.getMetaGridPos();
 		
@@ -226,8 +227,8 @@ public class TileLayer {
 			return -1;
 		}
 		OutputStream os = response.getOutputStream();
-		System.out.print("seeder.doSeed("+zoomStart+","+zoomStop+","
-				+imageFormat.getMimeType()+","+bounds.getReadableString()+",stream");
+		System.out.println("seeder.doSeed("+zoomStart+","+zoomStop+","
+				+imageFormat.getMimeType()+","+bounds.getReadableString()+",stream)");
 		
 		int retVal = seeder.doSeed(zoomStart, zoomStop, imageFormat, bounds, os);
 		os.close();
