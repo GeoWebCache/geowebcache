@@ -100,8 +100,8 @@ public class TileLayer {
 		String debugHeadersStr = null;
 		
 		int[] gridLoc = profile.gridLocation(wmsparams.getBBOX());
-		System.out.println("orig:      "+wmsparams.getBBOX().getReadableString());
-		System.out.println("recreated: "+profile.recreateBbox(gridLoc).getReadableString());
+		//System.out.println("orig:      "+wmsparams.getBBOX().getReadableString());
+		//System.out.println("recreated: "+profile.recreateBbox(gridLoc).getReadableString());
 		MetaTile metaTile = new MetaTile(this.profile, gridLoc);
 		int[] metaGridLoc = metaTile.getMetaGridPos();
 		
@@ -161,7 +161,11 @@ public class TileLayer {
 				log.error("Failed to get " + wmsparams.toString() + " from cache, after first seeding cache.");
 				ce.printStackTrace();
 			}
-			data = tile.getData();
+			if(tile != null) {
+				data = tile.getData();
+			} else {
+				log.error("The cache returned null even after forwarding the request. Check the WMS and cache backends, you may also have found a bug.");
+			}
 		}
 		
 		// Return lock
@@ -181,6 +185,7 @@ public class TileLayer {
 			seeder = new Seeder(this);
 		
 		String complaint = null;
+		
 		// Check that we support this
 		if(bounds == null) {
 			bounds = profile.bbox;
@@ -192,6 +197,11 @@ public class TileLayer {
 				return -1;
 			}
 		}
+		if(format == null) {
+			log.info("User did not specify format for seeding, assuming image/png.");
+			format = "image/png";
+		}
+			
 		ImageFormat imageFormat = ImageFormat.createFromMimeType(format);
 		
 		if(imageFormat == null ||! this.supports(imageFormat.getMimeType())) {
@@ -209,29 +219,28 @@ public class TileLayer {
 		}
 		
 		if(zoomStart < 0 || zoomStop < 0) {
-			complaint = "zoomStart("+zoomStart+") and zoomStop("+zoomStop+") have to greater than zero";
+			complaint = "start("+zoomStart+") and stop("+zoomStop+") have to greater than zero";
 			log.error(complaint);
 			response.sendError(400, complaint);
 			return -1;
 		}
 		if(zoomStart > 50 || zoomStart > 50) {
-			complaint = "zoomStart("+zoomStart+") and zoomStop("+zoomStop+") should be less than 50";
+			complaint = "start("+zoomStart+") and stop("+zoomStop+") should be less than 50";
 			log.error(complaint);
 			response.sendError(400, complaint);
 			return -1;
 		}
 		if(zoomStop < zoomStart) {
-			complaint = "zoomStart("+zoomStart+") must be smaller than or equal to zoomStop("+zoomStop+")";
+			complaint = "start("+zoomStart+") must be smaller than or equal to stop("+zoomStop+")";
 			log.error(complaint);
 			response.sendError(400, complaint);
 			return -1;
 		}
-		OutputStream os = response.getOutputStream();
-		System.out.println("seeder.doSeed("+zoomStart+","+zoomStop+","
-				+imageFormat.getMimeType()+","+bounds.getReadableString()+",stream)");
 		
-		int retVal = seeder.doSeed(zoomStart, zoomStop, imageFormat, bounds, os);
-		os.close();
+		log.info("seeder.doSeed("+zoomStart+","+zoomStop+","
+				+imageFormat.getMimeType()+","+bounds.toString()+",stream)");
+		
+		int retVal = seeder.doSeed(zoomStart, zoomStop, imageFormat, bounds, response);
 		
 		return retVal;
 	}
@@ -404,7 +413,7 @@ public class TileLayer {
 		if(propCachetype != null) {
 			cache = CacheFactory.getCache(propCachetype, props);
 		} else {
-			cache = CacheFactory.getCache("org.geowebcache.cache.jcs.JCSCache", null);
+			cache = CacheFactory.getCache("org.geowebcache.cache.file.FileCache", null);
 		}
 		
 		String propCacheKeytype = props.getProperty("cachekeytype");

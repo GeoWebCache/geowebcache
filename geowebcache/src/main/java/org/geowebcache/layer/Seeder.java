@@ -18,7 +18,9 @@
 package org.geowebcache.layer;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.PrintWriter;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,29 +33,36 @@ public class Seeder {
 		this.layer = layer;
 	}
 	
-	public int doSeed(int zoomStart, int zoomStop,  ImageFormat imageFormat, BBOX bounds, OutputStream os) throws IOException {
-		infoStart(os, zoomStart, zoomStop, bounds);
+	public int doSeed(int zoomStart, int zoomStop,  ImageFormat imageFormat, BBOX bounds, HttpServletResponse response) throws IOException {
+		//response.setContentType("text/plain");
+		
+		PrintWriter pw = response.getWriter();
+		
+		infoStart(pw, zoomStart, zoomStop, bounds);
 		
 		for(int level=zoomStart; level <= zoomStop; level++) {
 			int[] gridBounds = layer.profile.metaGridExtent(level, bounds);
-			infoLevelStart(os, level, gridBounds);
+			infoLevelStart(pw, level, gridBounds);
 			int count = 0;
 			for(int gridy=gridBounds[1]; gridy<gridBounds[3]; gridy += layer.profile.metaHeight) {
 				for(int gridx=gridBounds[0]; gridx<gridBounds[2]; gridx += layer.profile.metaWidth) {
-					infoTile(os, count++);
+					infoTile(pw, count++);
 					int[] metaGrid = {gridx,gridy,
 							gridx+layer.profile.metaWidth,gridy+layer.profile.metaWidth,level};
 					MetaTile metaTile = new MetaTile(layer.profile,metaGrid,true);
 					
 					processTile(metaTile, imageFormat);
 					
+					response.flushBuffer();
 				}
 			}
 			
-			infoLevelStop(os);
+			infoLevelStop(pw);
 		}
 
-		infoEnd(os);
+		infoEnd(pw);
+		pw.close();
+		
 		return 0;
 	}
 	
@@ -71,49 +80,52 @@ public class Seeder {
 		return 0;
 	}
 	
-	private void infoStart(OutputStream os, int zoomStart, int zoomStop, BBOX bounds) 
+	private void infoStart(PrintWriter pw, int zoomStart, int zoomStop, BBOX bounds) 
 	throws IOException {
-		if(os != null)
+		if(pw == null)
 			return;
-		
-		os.write(("<table><tr><td>Seeding "+layer.name
+		pw.print("<table><tr><td>Seeding "+layer.name
 				+" from level "+zoomStart+" to level "+zoomStop
-				+" for bounds "+bounds.getReadableString()+"</td></tr>").getBytes());
+				+" for bounds "+bounds.getReadableString()+"</td></tr>");
+		pw.flush();
 	}
 		
-	private void infoEnd(OutputStream os) 
+	private void infoEnd(PrintWriter pw) 
 	throws IOException {
-		if(os != null)
+		if(pw == null)
 			return;
 		
-		os.write(("</table").getBytes());
+		pw.print("</table");
 	}
 	
-	private void infoLevelStart(OutputStream os, int level, int[] gridBounds) 
+	private void infoLevelStart(PrintWriter pw, int level, int[] gridBounds) 
 	throws IOException {
-		if(os != null)
+		if(pw == null)
 			return;
 		
 		int tileCount = (gridBounds[2] - gridBounds[0]) * (gridBounds[3] - gridBounds[1]);
-		os.write(("<tr><td>Level "+level+", "+(
+		pw.print("<tr><td>Level "+level+", "+(
 				tileCount / (layer.profile.metaHeight*layer.profile.metaWidth)
-				)+" metatiles ("+tileCount+" tiles)</td></tr><tr><td>").getBytes());
+				)+" metatiles ("+tileCount+" tiles)</td></tr><tr><td>");
+		pw.flush();
 	}
 	
-	private void infoLevelStop(OutputStream os) 
+	private void infoLevelStop(PrintWriter pw) 
 	throws IOException {
-		if(os != null)
+		if(pw == null)
 			return;
 		
-		os.write(("</td></tr>").getBytes());
+		pw.print("</td></tr>");
 	}
 	
-	private void infoTile(OutputStream os, int count) 
+	private void infoTile(PrintWriter pw, int count) 
 	throws IOException {
-		if(os != null)
+		if(pw == null)
 			return;
 		
-		os.write(("" + count +", ").getBytes());
+		//System.out.println("Count: " + count);
+		pw.print("" + count +", ");
+		pw.flush();
 	}
 	
 }

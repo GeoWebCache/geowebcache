@@ -19,13 +19,10 @@ package org.geowebcache.layer;
 
 import java.io.IOException;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.service.Parameters;
 import org.geowebcache.service.wms.WMSParameters;
-import org.geowebcache.util.Configuration;
 
 public class LayerProfile {
 	private static Log log = LogFactory.getLog(org.geowebcache.layer.LayerProfile.class);
@@ -122,11 +119,11 @@ public class LayerProfile {
 		
 		String propExpireClients = props.getProperty("expireclients");
 		if(propExpireClients != null)
-			expireClients = Integer.parseInt(propExpireClients);
+			expireClients = Integer.parseInt(propExpireClients) * 1000;
 
 		String propExpireCache = props.getProperty("expireCache");
 		if(propExpireCache != null)
-			expireCache = Integer.parseInt(propExpireCache);
+			expireCache = Integer.parseInt(propExpireCache) * 1000;
 		
 		this.layerWidth = bbox.coords[2] - bbox.coords[0];
 		this.layerHeight = bbox.coords[3] - bbox.coords[1];

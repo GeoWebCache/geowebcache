@@ -1,32 +1,35 @@
-<html>
-<head>
-	<script src="lib/OpenLayers.js"></script>
-</head>
-<body>
-  <div style="width:100%; height:100%" id="map"></div>
-  <script defer="defer" type="text/javascript">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>OpenLayers Basic Single WMS Example</title>
+    <link rel="stylesheet" href="openlayers/theme/default/style.css" type="text/css" />
+    <style type="text/css">
+        #map {
+            width: 768px;
+            height: 512px;
+            border: 1px solid black;
+        }
+    </style>
+    <script src="openlayers/lib/OpenLayers.js"></script>
+    <script type="text/javascript">
+        var map, layer;
+        function init(){
+            map = new OpenLayers.Map( 'map' );
+            layer = new OpenLayers.Layer.WMS("topp-states-4326",
+                    "wms",
+                    {layers: 'topp-states', format: 'image/png'} );
+            map.addLayer(layer);
+            map.zoomToMaxExtent();
+        }
+    </script>
 
-            var options = {
-                projection: new OpenLayers.Projection("EPSG:900913"),
-                displayProjection: new OpenLayers.Projection("EPSG:900913"),
-                units: "m",
-                maxResolution: 156543.0339,
-                maxExtent: new OpenLayers.Bounds(-20037508, -20037508,
-                                                 20037508, 20037508.34)
-            };
-            map = new OpenLayers.Map('map', options);
+  </head>
+  <body onload="init()">
+    <h1 id="title">Basic Single WMS Example</h1>
 
-	//var p = new OpenLayers.Projection("EPSG:900913");
-	//var map = new OpenLayers.Map('map',{ projection: p});
-    
-	var wms = new OpenLayers.Layer.WMS( "WMS", 
-        "wms",
-    	{layers: 'topp-states', format: 'image/png', tiled: 'true'} );
-    
-    map.addLayer(wms);
-	
-    map.zoomToMaxExtent();
+    <div id="tags"></div>
 
-  </script>
-</body>
+    <div id="shortdesc">EPSG:4326</div>
+    <div id="map"></div>
+  </body>
 </html>
+

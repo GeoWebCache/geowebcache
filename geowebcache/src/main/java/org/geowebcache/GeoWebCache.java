@@ -124,9 +124,6 @@ public class GeoWebCache extends HttpServlet {
 	public void doGetWMS(HttpServletRequest request,
 			HttpServletResponse response)
 	throws ServletException, IOException {
-		
-		long starttime = System.currentTimeMillis();
-
 		// Parse request
 		WMSParameters wmsparams = new WMSParameters(request);
 
@@ -146,7 +143,6 @@ public class GeoWebCache extends HttpServlet {
 			response.setStatus(HttpServletResponse.SC_OK);
 			response.setContentType(wmsparams.getImagemime().getMime());
 			response.setContentLength(data.length);
-			//response.setCharacterEncoding(wmsparams.getImagemime().getEncoding());
 			sendData(response, data);
 		} else {
 			// Response: 404
@@ -157,19 +153,22 @@ public class GeoWebCache extends HttpServlet {
 	
 	public void doGetSeed(HttpServletRequest request,
 			HttpServletResponse response)
-	throws ServletException, IOException {
-		
-		System.out.println("doGetSeed!");
+	throws ServletException, IOException {		
 		
 		Map params = request.getParameterMap();
 		String[] strLayers = (String[]) params.get("layers");
 		
 		TileLayer layer = (TileLayer) this.layers.get(strLayers[0]);
+		
 		if(layer == null) {
+			response.setContentType("text/plain");
 			response.sendError(400, "No layers or unknown layer "+strLayers[0]);
 			// complain loudly and quit
-			System.out.println("No layers?");
+			log.error("No layers?");
 		}
+		
+		response.setContentType("text/html");
+		response.setBufferSize(12);
 		
 		BBOX reqBounds = null;
 		if(params.containsKey("bbox"))
@@ -210,12 +209,14 @@ public class GeoWebCache extends HttpServlet {
 		
 		if(cachedLayer == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			response.setContentType("text/plain");
 			response.getOutputStream().print("Unknown layer: " + wmsparams.getLayer());
 		}
 		
 		if(cachedLayer != null) {
 			String errorMsg = cachedLayer.covers(wmsparams);
 			if(errorMsg != null) {
+				response.setContentType("text/plain");
 				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 				response.getOutputStream().print(errorMsg);
 			}

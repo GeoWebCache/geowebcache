@@ -144,7 +144,8 @@ public class MetaTile {
 	}
 	
 	private void forwardRequest(WMSParameters wmsparams) throws IOException {
-		log.trace("Forwarding request to " + this.profile.wmsURL);
+		if(log.isTraceEnabled())
+			log.trace("Forwarding request to " + this.profile.wmsURL);
 		
 		// Create an outgoing WMS request to the server
 		Request wmsrequest = new Request(this.profile.wmsURL, wmsparams);
@@ -169,13 +170,15 @@ public class MetaTile {
 		img = ImageIO.read(wmsBackendCon.getInputStream());
 		
 		if(img == null) {
-			System.out.println("Failed fetching "+  wmsrequest.toString());
+			//System.out.println("Failed fetching "+  wmsrequest.toString());
 			log.error("Failed fetching: " + wmsrequest.toString());
-		} else {
-			System.out.println("Fetched "+  wmsrequest.toString());
+		} else if(log.isDebugEnabled()) {
+			//System.out.println("Fetched "+  wmsrequest.toString());
 			log.debug("Requested and got: " + wmsrequest.toString());
 		}
-		log.trace("Got image from backend, height: " + this.img.getHeight());
+		
+		if(log.isTraceEnabled())
+			log.trace("Got image from backend, height: " + this.img.getHeight());
 	}
 	
 	protected void createTiles() {
@@ -220,7 +223,10 @@ public class MetaTile {
 	//	}
 	//}
 	
-	private static Long extractHeaderMaxAge(String cacheControlHeader) {	
+	private static Long extractHeaderMaxAge(String cacheControlHeader) {
+		if(cacheControlHeader == null)
+			return null;
+		
         String expression = "max-age=([0-9]*)[ ,]";
         Pattern p = Pattern.compile(expression);
         Matcher m = p.matcher(cacheControlHeader.toLowerCase());
