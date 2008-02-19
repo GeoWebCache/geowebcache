@@ -44,6 +44,7 @@ public class MetaTile {
 	private BufferedImage[] tiles = null;
 	private long expiration = LayerProfile.CACHE_VALUE_UNSET;
 	ImageWriter imageWriter = null;
+	public boolean failed = false;
 	
 	/**
 	 * Used for requests by clients
@@ -140,6 +141,7 @@ public class MetaTile {
 		} catch (IOException ioe) {
 			log.error("Error forwarding request, "+wmsparams.toString()+" "+ioe.getMessage());
 			ioe.printStackTrace();
+			this.failed = true;
 		}
 	}
 	

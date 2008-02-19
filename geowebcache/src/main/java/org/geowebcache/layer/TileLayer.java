@@ -142,6 +142,10 @@ public class TileLayer {
 		}
 		/********************  Request metatile  ********************/
 		metaTile.doRequest(imageFormat.getMimeType());
+		if(metaTile.failed) {
+			removeFromQueue(metaGridLoc);
+			return null;
+		}
 		saveExpirationInformation(metaTile);
 		metaTile.createTiles();
 		int[][] gridPositions = metaTile.getGridPositions();
