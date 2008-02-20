@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -33,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.BBOX;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.service.Parameters;
+import org.geowebcache.service.ve.VEConverter;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.Configuration;
 
@@ -91,6 +93,17 @@ public class GeoWebCache extends HttpServlet {
 		//TODO
 		log.trace("Completed loading configuration");
 	}
+	
+	/**
+	 * Loops over all the layers and calls destroy() on their caches.
+	 */
+	public void destroy() {
+		Iterator iter = layers.entrySet().iterator();
+		while(iter.hasNext()) {
+			TileLayer tl = (TileLayer) iter.next();
+			tl.destroy();
+		}
+	}
 
 	/**
 	 * And it goes a little something like this
@@ -118,6 +131,8 @@ public class GeoWebCache extends HttpServlet {
 			doGetWMS(request, response);
 		} else if(subPath.equals("/seed")) {
 			doGetSeed(request, response);
+		} else if(subPath.equals("/ve")) {
+			doGetVE(request, response);
 		}
 	}
 	
@@ -128,9 +143,17 @@ public class GeoWebCache extends HttpServlet {
 		WMSParameters wmsparams = new WMSParameters(request);
 
 		// Check whether we serve this layer
-		TileLayer cachedLayer = findLayer(wmsparams, response);
+		TileLayer cachedLayer = findLayer(wmsparams.getLayer(), response);
 
+		if(cachedLayer != null)
+			cachedLayer = checkLayer(cachedLayer, wmsparams, response);
+				
 		// Get data (from backend, if necessary)
+		wmsGetData(cachedLayer, wmsparams, response);
+	}
+	
+	private void wmsGetData(TileLayer cachedLayer, WMSParameters wmsparams, HttpServletResponse response) 
+	throws IOException {
 		if(cachedLayer != null) { 
 			byte[] data = cachedLayer.getData(wmsparams, response);
 
@@ -174,8 +197,6 @@ public class GeoWebCache extends HttpServlet {
 		if(params.containsKey("bbox"))
 			reqBounds = new BBOX(((String[]) params.get("bbox"))[0]);
 
-			
-		
 		String[] strStart = (String[]) params.get("start");
 		String[] strStop = (String[]) params.get("stop");
 		
@@ -196,6 +217,25 @@ public class GeoWebCache extends HttpServlet {
 		layer.seed(start, stop,strFormat, reqBounds, response);
 		response.flushBuffer();
 	}
+
+	public void doGetVE(HttpServletRequest request,
+			HttpServletResponse response)
+	throws ServletException, IOException {
+		
+		Map params = request.getParameterMap();
+		String[] strLayers = (String[]) params.get("layers");
+		String strLayer = strLayers[0];
+
+		String[] strQuadKeys = (String[]) params.get("quadkey");
+		String strQuadKey = strQuadKeys[0];
+		
+		BBOX bbox = VEConverter.convertQuadKey(strQuadKey);
+		TileLayer cachedLayer = findLayer(strLayer, response);
+		WMSParameters wmsparams = cachedLayer.getWMSParamTemplate();
+		wmsparams.setBBOX(bbox);
+		
+		wmsGetData(cachedLayer, wmsparams, response);
+	}
 	
 	/**
 	 * Finds the requested layer, provided request is within bounds
@@ -204,25 +244,31 @@ public class GeoWebCache extends HttpServlet {
 	 * @param response
 	 * @return
 	 */
-	private TileLayer findLayer(WMSParameters wmsparams, HttpServletResponse response) throws IOException{
-		TileLayer cachedLayer = (TileLayer) this.layers.get(wmsparams.getLayer());
+	private TileLayer findLayer(String strLayer, HttpServletResponse response) throws IOException{
+		TileLayer cachedLayer = (TileLayer) this.layers.get(strLayer);
 		
 		if(cachedLayer == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			response.setContentType("text/plain");
-			response.getOutputStream().print("Unknown layer: " + wmsparams.getLayer());
-		}
-		
-		if(cachedLayer != null) {
-			String errorMsg = cachedLayer.covers(wmsparams);
-			if(errorMsg != null) {
-				response.setContentType("text/plain");
-				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-				response.getOutputStream().print(errorMsg);
-			}
+			response.getOutputStream().print("Unknown layer: " + strLayer);
 		}
 		
 		return cachedLayer;
+	}
+	
+	private TileLayer checkLayer(TileLayer cachedLayer, WMSParameters wmsparams, HttpServletResponse response)
+	 throws IOException{
+		
+		String errorMsg = cachedLayer.covers(wmsparams);
+			
+		if(errorMsg != null) {
+			response.setContentType("text/plain");
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			response.getOutputStream().print(errorMsg);
+			return null;
+		} else {
+			return cachedLayer;
+		}
 	}
 
 	private void sendData(HttpServletResponse response, byte[] data) throws IOException {
@@ -231,4 +277,7 @@ public class GeoWebCache extends HttpServlet {
 		os.write(data);
 		os.flush();
 	}
+	
+
+	
 }

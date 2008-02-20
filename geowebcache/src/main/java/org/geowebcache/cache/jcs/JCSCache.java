@@ -57,9 +57,16 @@ public class JCSCache implements Cache {
 	
 	
 	public void init(Properties props) {
-		
+		// nothing to do
 	}
 
+	public void destroy() {
+		this.jcscache.dispose();
+		this.jcscache = null;
+		// Force a garbage collection
+		System.gc();
+	}
+	
 	public void setUp() throws org.geowebcache.cache.CacheException {
 		if(jcscache == null) {
 			try {

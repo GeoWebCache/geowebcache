@@ -64,8 +64,12 @@ public class BBOX {
 			coords[2] = Double.valueOf(BBOX[2]).doubleValue();
 			coords[3] = Double.valueOf(BBOX[3]).doubleValue();
 
-		} else if(BBOX.length == 1) {
-			setFromBBOXString(BBOX[0]);
+		} else {
+			String tmp = "";
+			for(int i = 0; i< BBOX.length; i++) {
+				tmp += "[" + BBOX[i] + "] ";
+			}
+			log.error("Doesnt understand " + BBOX);
 		}
 	}
 

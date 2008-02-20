@@ -59,6 +59,10 @@ public class FileCache implements Cache {
 			this.pathPrefix = System.getenv("TEMP");
 		}
 	}
+	
+	public void destroy() {
+		// nothing to do
+	}
 
 	/**
 	 * 1) Test whether pathPrefix exists and

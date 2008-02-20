@@ -24,6 +24,8 @@ import org.geowebcache.cache.CacheException;
 public interface Cache {
 	public void init(Properties props) throws CacheException;
 	
+	public void destroy();
+	
 	public void setUp() throws CacheException;
 	
 	public String getDefaultCacheKeyName();

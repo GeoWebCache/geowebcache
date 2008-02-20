@@ -102,6 +102,7 @@ public class TileLayer {
 		int[] gridLoc = profile.gridLocation(wmsparams.getBBOX());
 		//System.out.println("orig:      "+wmsparams.getBBOX().getReadableString());
 		//System.out.println("recreated: "+profile.recreateBbox(gridLoc).getReadableString());
+		
 		MetaTile metaTile = new MetaTile(this.profile, gridLoc);
 		int[] metaGridLoc = metaTile.getMetaGridPos();
 		
@@ -459,5 +460,21 @@ public class TileLayer {
 				return true;
 		}
 		return false;
+	}
+	
+	public WMSParameters getWMSParamTemplate() {
+		WMSParameters ret = this.profile.getWMSParamTemplate();
+		try {
+			ret.setImagemime(this.formats[0].getMimeType());
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+		return ret;
+	}
+	
+	public void destroy() {
+		this.cache.destroy();
+		// Not that it really matters:
+		this.procQueue.clear();
 	}
 }
