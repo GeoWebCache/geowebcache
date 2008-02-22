@@ -29,7 +29,7 @@ public class BBOX {
 	protected double[] coords = new double[4];
 
 	public BBOX(String BBOX) {
-		setFromBBOXString(BBOX);
+		setFromBBOXString(BBOX,0);
 		if(log.isTraceEnabled()) {
 			log.trace("Created BBOX: " + getReadableString());
 		}
@@ -58,12 +58,18 @@ public class BBOX {
 	 * @param BBOX
 	 */
 	public void setFromStringArray(String[] BBOX) {
+		setFromStringArray(BBOX,0);
+	}
+	
+	public void setFromStringArray(String[] BBOX, int recWatch) {
 		if(BBOX.length == 4) {
 			coords[0] = Double.valueOf(BBOX[0]).doubleValue();
 			coords[1] = Double.valueOf(BBOX[1]).doubleValue();
 			coords[2] = Double.valueOf(BBOX[2]).doubleValue();
 			coords[3] = Double.valueOf(BBOX[3]).doubleValue();
 
+		} else if(recWatch < 4) {
+			setFromBBOXString(BBOX[0], recWatch);
 		} else {
 			String tmp = "";
 			for(int i = 0; i< BBOX.length; i++) {
@@ -77,9 +83,9 @@ public class BBOX {
 	 * Parses the BBOX parameters from a comma separted value list
 	 * @param BBOX
 	 */
-	public void setFromBBOXString(String BBOX) {
+	public void setFromBBOXString(String BBOX, int recWatch) {
 		String[] tokens = BBOX.split(DELIMITER);
-		setFromStringArray(tokens);
+		setFromStringArray(tokens, recWatch +1);
 	}
 
 	/**

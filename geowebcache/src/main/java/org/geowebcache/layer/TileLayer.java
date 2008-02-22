@@ -436,6 +436,7 @@ public class TileLayer {
 				formats[i] = ImageFormat.createFromMimeType(mimes[i]);
 			}
 		}
+		
 		String propDebugHeaders = props.getProperty("debugheaders");
 		if(propDebugHeaders != null)
 			debugHeaders = Boolean.valueOf(propDebugHeaders);

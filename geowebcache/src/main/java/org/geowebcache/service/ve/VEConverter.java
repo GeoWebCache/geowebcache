@@ -56,7 +56,7 @@ public class VEConverter {
 			
 			if(curChar == '0') {
 				// X,Y stay
-			} else if(curChar == '1') {		
+			} else if(curChar == '1') {
 				xPos += extent;
 				// Y stays
 			} else if(curChar == '2') {

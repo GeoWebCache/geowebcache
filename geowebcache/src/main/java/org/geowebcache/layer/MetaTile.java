@@ -85,14 +85,16 @@ public class MetaTile {
 	/**
 	 * Calculates he bounding box for the meta tile based on the 
 	 * grid calculated above.
+	 * 
+	 * TODO verify this is the right bbox
 	 */
 	protected void calcMetaBbox() {		
 		double tileWidth = profile.layerWidth / Math.pow(2, metaGrid[4]);
 		metaBbox = new BBOX(
-						profile.bbox.coords[0] + tileWidth*metaGrid[0],
-						profile.bbox.coords[1] + tileWidth*metaGrid[1],
-						profile.bbox.coords[0] + tileWidth*metaGrid[2],
-						profile.bbox.coords[1] + tileWidth*metaGrid[3] );
+						profile.grid.coords[0] + tileWidth*metaGrid[0],
+						profile.grid.coords[1] + tileWidth*metaGrid[1],
+						profile.grid.coords[0] + tileWidth*metaGrid[2],
+						profile.grid.coords[1] + tileWidth*metaGrid[3] );
 	}
 	
 	/**
@@ -183,6 +185,7 @@ public class MetaTile {
 			log.trace("Got image from backend, height: " + this.img.getHeight());
 	}
 	
+	// TODO verify we dont cross the date boundary
 	protected void createTiles() {
 		tiles = new BufferedImage[profile.metaWidth*profile.metaHeight];
 		
