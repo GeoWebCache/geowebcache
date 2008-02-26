@@ -47,9 +47,12 @@ public class LayerProfile {
 	protected String errorMime = "application/vnd.ogc.se_inimage";
 	protected String transparent = null;
 	protected String tiled = null;
+	protected String bgcolor = null;
+	protected String palette = null;
 	protected String wmsURL = "http://localhost:8080/geoserver/wms";
 	protected String wmsLayers = "topp:states";
 	protected String wmsStyles = null;
+	
 	protected WMSParameters wmsparams = null;
 	protected long expireClients = CACHE_USE_WMS_BACKEND_VALUE; 
 	protected long expireCache =  CACHE_NEVER_EXPIRE;
@@ -143,6 +146,13 @@ public class LayerProfile {
 		if(propTransparent != null)
 			this.transparent = propTransparent;
 		
+		String propBgcolor = props.getProperty("bgcolor");
+		if(propBgcolor != null)
+			this.bgcolor = propBgcolor;
+	
+		String propPalette = props.getProperty("palette");
+		if(propPalette != null)
+			this.palette = propPalette;
 
 		
 		String propUrl = props.getProperty("wmsurl");
@@ -324,6 +334,10 @@ public class LayerProfile {
 			wmsparams.setIsTransparent(transparent);
 		if(tiled != null || metaHeight > 1 || metaWidth > 1)
 			wmsparams.setIsTiled(tiled);
+		if(bgcolor != null)
+			wmsparams.setBgColor(bgcolor);
+		if(palette != null)
+			wmsparams.setPalette(palette);
 		if(wmsStyles != null)
 			wmsparams.setStyles(wmsStyles);
 		

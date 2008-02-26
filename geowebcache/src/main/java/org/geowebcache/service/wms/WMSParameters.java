@@ -39,6 +39,8 @@ public class WMSParameters extends Parameters {
 	public static final String VERSION_PARAM = "version";
 	public static final String TILED_PARAM = "tiled";
 	public static final String TRANSPARENT_PARAM = "transparent";
+	public static final String BGCOLOR_PARAM = "bgcolor";
+	public static final String PALETTE_PARAM = "palette";
 	public static final String SRS_PARAM = "srs";
 	public static final String LAYER_PARAM = "layers";
 	public static final String STYLES_PARAM = "styles";
@@ -158,6 +160,22 @@ public class WMSParameters extends Parameters {
 		set(TRANSPARENT_PARAM, Boolean.valueOf(transparent));
 	}
 
+	public String getPalette() {
+		return convertToString(get(PALETTE_PARAM));
+	}
+	
+	public void setPalette(String palette) {
+		set(PALETTE_PARAM, palette);
+	}
+	
+	public String getBgColor() {
+		return convertToString(get(BGCOLOR_PARAM));
+	}
+
+	public void setBgColor(String bgcolor) {
+		set(BGCOLOR_PARAM, bgcolor);
+	}
+	
 	/**
 	 * @return the errormime
 	 */
