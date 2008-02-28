@@ -34,12 +34,12 @@
             map = new OpenLayers.Map('map', options );
             var layerstates = new OpenLayers.Layer.WMS( "States",
                 "wms",
-                {layers: 'topp-states900913', format: 'image/png'});
+                {layers: 'nyc', format: 'image/png'});
             map.addLayer(layerstates);
             map.addControl(new OpenLayers.Control.LayerSwitcher());
             map.addControl(new OpenLayers.Control.MousePosition());
             //map.zoomToMaxExtent();
-            map.setCenter(new OpenLayers.LonLat(-100,34).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject()), 4)
+            map.setCenter(new OpenLayers.LonLat(-74.0,40.75).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject()), 12)
         }
     </script>
 

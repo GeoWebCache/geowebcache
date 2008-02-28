@@ -82,20 +82,7 @@ public class MetaTile {
 		metaGrid[4] = grid[2];
 	}
 	
-	/**
-	 * Calculates he bounding box for the meta tile based on the 
-	 * grid calculated above.
-	 * 
-	 * TODO verify this is the right bbox
-	 */
-	protected void calcMetaBbox() {		
-		double tileWidth = profile.layerWidth / Math.pow(2, metaGrid[4]);
-		metaBbox = new BBOX(
-						profile.grid.coords[0] + tileWidth*metaGrid[0],
-						profile.grid.coords[1] + tileWidth*metaGrid[1],
-						profile.grid.coords[0] + tileWidth*metaGrid[2],
-						profile.grid.coords[1] + tileWidth*metaGrid[3] );
-	}
+
 	
 	/**
 	 * The bottom left grid position and zoomlevel for this metatile,
@@ -127,7 +114,7 @@ public class MetaTile {
 	
 	
 	protected void doRequest(String imageMime) {
-		this.calcMetaBbox();
+		this.metaBbox = profile.gridCalc.calcMetaBbox(metaGrid);
 		WMSParameters wmsparams = profile.getWMSParamTemplate();
 		
 		// Fill in the blanks

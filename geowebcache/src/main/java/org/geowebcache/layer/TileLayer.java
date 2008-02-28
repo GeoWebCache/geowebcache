@@ -99,7 +99,7 @@ public class TileLayer {
 	public byte[] getData(WMSParameters wmsparams,HttpServletResponse response) {
 		String debugHeadersStr = null;
 		
-		int[] gridLoc = profile.gridLocation(wmsparams.getBBOX());
+		int[] gridLoc = profile.gridCalc.gridLocation(wmsparams.getBBOX());
 		//System.out.println("orig:      "+wmsparams.getBBOX().getReadableString());
 		//System.out.println("recreated: "+profile.recreateBbox(gridLoc).getReadableString());
 		

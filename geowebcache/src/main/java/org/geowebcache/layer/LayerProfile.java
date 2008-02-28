@@ -35,9 +35,8 @@ public class LayerProfile {
 	// This assumes image output
 	protected String srs = "EPSG:4326";
 	protected BBOX bbox = null;
-	protected BBOX grid = null;
-	double layerWidth = -1;
-	double layerHeight = -1;
+	protected GridCalculator gridCalc = null;
+	
 	protected int width = 256;
 	protected int height = 256; 
 	protected int metaWidth = 1;
@@ -82,40 +81,34 @@ public class LayerProfile {
 			}
 		}
 		
+		BBOX gridBase = null;
 		String propGrid = props.getProperty("grid");
 		if(propGrid != null) {
-			grid = new BBOX(propGrid);
-			if(! grid.isSane()) {
-				log.error("The grid "+propGrid+" intepreted as " + grid.toString() + " is not sane.");
+			gridBase = new BBOX(propGrid);
+			if(! gridBase.isSane()) {
+				log.error("The grid "+propGrid+" intepreted as " + gridBase.toString() + " is not sane.");
 			}
 		} else {
-			grid = new BBOX(-180.0, -90.0, 180.0, 90.0);
+			gridBase = new BBOX(-180.0, -90.0, 180.0, 90.0);
 		}
-		
-		// Calculate
-		this.layerWidth = grid.coords[2] - grid.coords[0];
-		this.layerHeight = grid.coords[3] - grid.coords[1];
+		gridCalc = new GridCalculator(gridBase);
+
 		
 		// The following depends on metatiling and grid
 		String propBbox = props.getProperty("bbox");
 		if(propBbox != null) {
 			BBOX layerBounds = new BBOX(propBbox);
+			log.info("Specified bbox " + layerBounds.toString() + ".");
 			
-			if(! grid.isSane()) {
-				log.error("The bbox "+propBbox+" intepreted as " + layerBounds.toString() + " is not sane.");
-			} else {
-				log.info("Specified bbox " + layerBounds.toString() + ".");
-				int[] gridLayerLoc = gridExpandedLocation(layerBounds);
-				log.info("Grid location for bounding box - "
-					+"x: " + gridLayerLoc[0] + "  y:" + gridLayerLoc[1]+ "  z:" + gridLayerLoc[2]);
-				bbox = recreateBbox(gridLayerLoc);
+			if(! layerBounds.isSane()) {
+				log.error("The bbox "+propBbox+" intepreted as " 
+						+ layerBounds.toString() + " is not sane.");
+			} else if(! gridBase.contains(layerBounds)){
+				log.error("The bbox "+propBbox+" intepreted as " 
+						+ layerBounds.toString() + " is not contained by the grid: " + gridBase.toString());
+			} else {	
+				bbox = gridCalc.expandedBbox(layerBounds);
 				log.info("Recreated bbox: " + bbox.toString());
-			
-				if(bbox.contains(layerBounds)) {
-					log.info("Adjusted bbox " + bbox.toString() + " covers specified bbox.");
-				} else {
-					log.info("Adjusted bbox " + bbox.toString() + " does NOT cover specified bbox");
-				}
 			}
 		} else {
 			bbox = new BBOX(-180.0, -90.0, 180.0, 90.0);
@@ -175,108 +168,6 @@ public class LayerProfile {
 		if(propExpireCache != null)
 			expireCache = Integer.parseInt(propExpireCache) * 1000;
 		
-		
-
-	}
-	
-	/**
-	 * Works like gridLocation, except it e 
-	 * @param tileBounds the bounds of the requested tile
-	 * @return [0] = x coordinate , [1] y coordinate, [2] = zoomLevel, 
-	 */
-	public int[] gridExpandedLocation(BBOX layerBounds) {
-		
-		int[] retVals = new int[3];
-		
-		// Find the closest zoomlevel, zoom out if necessary
-		double reqTileWidth = layerBounds.coords[2] - layerBounds.coords[0];
-		double gridTileWidth = grid.coords[2] - grid.coords[0];
-		
-		double zoomLevel = Math.log((gridTileWidth / reqTileWidth) / Math.log(2));
-		
-		// Do a bit of rounding
-		if(Math.abs(zoomLevel - Math.round(zoomLevel)) < 0.03) {
-			// Close enough, we'll use this zoomLevel directly 
-			retVals[2] = (int) Math.round(zoomLevel - 1.0);
-			
-		} else {
-			// Need to go one level out
-			retVals[2] = (int) Math.round(zoomLevel - 1.0);
-			
-			if(retVals[2] < 0) {
-				log.error("Problem with layer bounds: " + layerBounds.toString());
-			}
-		}
-		
-		// Recalculate tileWidth
-		double tileWidth = gridTileWidth / (Math.pow(2, retVals[2]));
-		
-		// X
-		retVals[0] = (int) Math.round((layerBounds.coords[0] - grid.coords[0])/tileWidth);
-		// Y
-		retVals[1] = (int) Math.round((layerBounds.coords[1] - grid.coords[1])/tileWidth);
-		
-		return retVals;
-	}
-	
-	/**
-	 * Determines the location in a three dimensional grid based on
-	 * WMS recommendations.
-	 * 
-	 * It creates a grid of (2^zoomLevel x 2^zoomLevel) tiles. 0,0 denotes the bottom
-	 * left corner. The tile's location in this grid is determined as
-	 * follows:
-	 * 
-	 * <ol><li>Based on the width of the requested tile the desired zoomlevel
-	 * is determined.</li>
-	 * <li>The rounded zoomLevel is used to divide the width into 2^zoomLevel segments</li>
-	 * <li>The min X value is used to determine the X position on this grid</li>
-	 * <li>The min Y value is used to determine the Y position on this grid</li>
-	 * </ol>
-	 * 
-	 * @param tileBounds the bounds of the requested tile
-	 * @return [0] = x coordinate , [1] y coordinate, [2] = zoomLevel, 
-	 */
-	public int[] gridLocation(BBOX tileBounds) {
-		int[] retVals = new int[3];
-		
-		double reqTileWidth = tileBounds.coords[2] - tileBounds.coords[0];
-		// (Z) Zoom level 
-		retVals[2] = (int) Math.round(Math.log(this.layerWidth / reqTileWidth) / Math.log(2));
-		
-		double tileWidth = layerWidth / (Math.pow(2, retVals[2]));
-		// X
-		retVals[0] = (int) Math.round((tileBounds.coords[0] - grid.coords[0])/tileWidth);
-		// Y
-		retVals[1] = (int) Math.round((tileBounds.coords[1] - grid.coords[1])/tileWidth);
-		
-		if(log.isTraceEnabled()) {
-			log.trace("x: " + retVals[0] + " y:" + retVals[1]+ " z:" + retVals[2]);
-		}
-		return retVals;
-	}
-	
-	
-	/**
-	 * Calculates bottom left and top right grid positions for a particular zoomlevel 
-	 * 
-	 * @param bounds
-	 * @return
-	 */
-	private int[] gridExtent(int zoomLevel, BBOX bounds) {
-		int[] retVals = new int[4];
-		
-		double tileWidth = layerWidth / (Math.pow(2, zoomLevel));
-		// min X
-		retVals[0] = (int) Math.round((bounds.coords[0] - grid.coords[0])/tileWidth);
-		// min Y
-		retVals[1] = (int) Math.round((bounds.coords[1] - grid.coords[1])/tileWidth);
-		// max X
-		retVals[2] = (int) Math.round((bounds.coords[2] - grid.coords[0])/tileWidth);
-		// max Y
-		retVals[3] = (int) Math.round((bounds.coords[3] - grid.coords[1])/tileWidth);
-		
-		return retVals;
 	}
 	
 	/**
@@ -285,7 +176,7 @@ public class LayerProfile {
 	 * @return
 	 */
 	protected int[] metaGridExtent(int zoomLevel, BBOX bounds) {
-		int[] retVals = gridExtent(zoomLevel, bounds);
+		int[] retVals = gridCalc.gridExtent(zoomLevel, bounds);
 		
 		retVals[0] = retVals[0] - (retVals[0] % this.metaWidth);
 		retVals[1] = retVals[1] - (retVals[1] % this.metaHeight);
@@ -294,22 +185,7 @@ public class LayerProfile {
 		
 		return retVals;
 	}
-	
-	/**
-	 * Uses the location on the grid to determine 
-	 * 
-	 * @param gridLoc
-	 * @return
-	 */
-	public BBOX recreateBbox(int[] gridLoc) {
-		double tileWidth = this.layerWidth / Math.pow(2, gridLoc[2]);
 		
-		return new BBOX(grid.coords[0] + tileWidth*gridLoc[0],
-						grid.coords[1] + tileWidth*gridLoc[1],
-						grid.coords[0] + tileWidth*(gridLoc[0] + 1),
-						grid.coords[1] + tileWidth*(gridLoc[1] + 1));
-	}
-	
 	/**
 	 * Gets the template for a WMS request for this profile,
 	 * missing the response mimetype and the boundingbox.
