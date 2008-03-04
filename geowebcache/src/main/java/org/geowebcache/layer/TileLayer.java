@@ -74,8 +74,8 @@ public class TileLayer {
 			return "The requested bounding box "+reqbox.getReadableString()+" is not sane";
 		}
 		
-		if(! this.profile.bbox.contains(reqbox) ) {
-			return "The layers bounding box "+this.profile.bbox.getReadableString()
+		if(! this.profile.gridBase.contains(reqbox) ) {
+			return "The layers grid box "+this.profile.gridBase.getReadableString()
 			+" does not cover the requested bounding box " + reqbox.getReadableString();
 		}
 		// All good
@@ -96,10 +96,20 @@ public class TileLayer {
 	 * @param wmsparams
 	 * @return
 	 */
-	public byte[] getData(WMSParameters wmsparams,HttpServletResponse response) {
+	public byte[] getData(WMSParameters wmsparams,HttpServletResponse response) throws IOException {
 		String debugHeadersStr = null;
 		
+		// Internal representation
 		int[] gridLoc = profile.gridCalc.gridLocation(wmsparams.getBBOX());
+		
+		// Final preflight check
+		if(profile.gridCalc.inRange(gridLoc) < 0) {
+			String complaint = "Adjusted request ("+profile.gridCalc.recreateBbox(gridLoc).toString()+")"
+							+ " falls outside of the bounding box ("+profile.bbox.toString()+")";
+			log.error(complaint);
+			response.sendError(400, complaint);
+			return null;
+		}
 		//System.out.println("orig:      "+wmsparams.getBBOX().getReadableString());
 		//System.out.println("recreated: "+profile.recreateBbox(gridLoc).getReadableString());
 		
@@ -229,14 +239,14 @@ public class TileLayer {
 			response.sendError(400, complaint);
 			return -1;
 		}
-		if(zoomStart > 50 || zoomStart > 50) {
-			complaint = "start("+zoomStart+") and stop("+zoomStop+") should be less than 50";
+		if(zoomStart < profile.zoomStart) {
+			complaint = "start("+zoomStart+") should be greater than or equal to " + profile.zoomStart;
 			log.error(complaint);
 			response.sendError(400, complaint);
 			return -1;
 		}
-		if(zoomStop < zoomStart) {
-			complaint = "start("+zoomStart+") must be smaller than or equal to stop("+zoomStop+")";
+		if(zoomStop > profile.zoomStop) {
+			complaint = "stop("+zoomStop+") should be less than or equal to " + profile.zoomStop;
 			log.error(complaint);
 			response.sendError(400, complaint);
 			return -1;

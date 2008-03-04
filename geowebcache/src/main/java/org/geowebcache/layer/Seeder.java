@@ -41,7 +41,7 @@ public class Seeder {
 		infoStart(pw, zoomStart, zoomStop, bounds);
 		
 		for(int level=zoomStart; level <= zoomStop; level++) {
-			int[] gridBounds = layer.profile.metaGridExtent(level, bounds);
+			int[] gridBounds = layer.profile.gridCalc.metaGridExtent(level, bounds);
 			infoLevelStart(pw, level, gridBounds);
 			int count = 0;
 			for(int gridy=gridBounds[1]; gridy<gridBounds[3]; gridy += layer.profile.metaHeight) {

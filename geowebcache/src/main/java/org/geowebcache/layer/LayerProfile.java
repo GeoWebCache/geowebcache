@@ -35,12 +35,14 @@ public class LayerProfile {
 	// This assumes image output
 	protected String srs = "EPSG:4326";
 	protected BBOX bbox = null;
+	protected BBOX gridBase = null;
 	protected GridCalculator gridCalc = null;
-	
 	protected int width = 256;
 	protected int height = 256; 
 	protected int metaWidth = 1;
 	protected int metaHeight = 1;
+	protected int zoomStart = 0;
+	protected int zoomStop = 25;
 	protected String request = "map";
 	protected String version = "1.1.1";
 	protected String errorMime = "application/vnd.ogc.se_inimage";
@@ -70,6 +72,14 @@ public class LayerProfile {
 			this.srs = propSrs;
 		
 		
+		String propZoomStart = props.getProperty("zoomStart");
+		if(propZoomStart != null)
+			zoomStart = Integer.parseInt(propZoomStart);
+		
+		String propZoomStop = props.getProperty("zoomStop");
+		if(propZoomStop != null)
+			zoomStop = Integer.parseInt(propZoomStop);
+		
 		String propMetatiling = props.getProperty("metatiling");
 		if(propMetatiling != null) {
 			String[] metatiling = propMetatiling.split("x");
@@ -81,7 +91,6 @@ public class LayerProfile {
 			}
 		}
 		
-		BBOX gridBase = null;
 		String propGrid = props.getProperty("grid");
 		if(propGrid != null) {
 			gridBase = new BBOX(propGrid);
@@ -91,7 +100,7 @@ public class LayerProfile {
 		} else {
 			gridBase = new BBOX(-180.0, -90.0, 180.0, 90.0);
 		}
-		gridCalc = new GridCalculator(gridBase);
+		gridCalc = new GridCalculator(this, gridBase);
 
 		
 		// The following depends on metatiling and grid
@@ -106,9 +115,11 @@ public class LayerProfile {
 			} else if(! gridBase.contains(layerBounds)){
 				log.error("The bbox "+propBbox+" intepreted as " 
 						+ layerBounds.toString() + " is not contained by the grid: " + gridBase.toString());
-			} else {	
-				bbox = gridCalc.expandedBbox(layerBounds);
-				log.info("Recreated bbox: " + bbox.toString());
+			} else {
+				gridCalc.calculateGridBounds(layerBounds, zoomStart, zoomStop);
+				
+				bbox = layerBounds; // adjust to the closest grid ?
+				//log.info("Recreated bbox: " + bbox.toString());
 			}
 		} else {
 			bbox = new BBOX(-180.0, -90.0, 180.0, 90.0);
@@ -168,22 +179,6 @@ public class LayerProfile {
 		if(propExpireCache != null)
 			expireCache = Integer.parseInt(propExpireCache) * 1000;
 		
-	}
-	
-	/**
-	 * Used for seeding, returns gridExtent but adjusts for meta tile size
-	 * 
-	 * @return
-	 */
-	protected int[] metaGridExtent(int zoomLevel, BBOX bounds) {
-		int[] retVals = gridCalc.gridExtent(zoomLevel, bounds);
-		
-		retVals[0] = retVals[0] - (retVals[0] % this.metaWidth);
-		retVals[1] = retVals[1] - (retVals[1] % this.metaHeight);
-		retVals[2] = retVals[2] + (retVals[2] % this.metaWidth);
-		retVals[3] = retVals[3] + (retVals[3] % this.metaHeight);
-		
-		return retVals;
 	}
 		
 	/**
