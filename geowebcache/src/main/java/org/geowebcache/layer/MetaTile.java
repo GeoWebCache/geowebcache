@@ -40,6 +40,8 @@ public class MetaTile {
 	LayerProfile profile = null;
 	int[] metaGrid  = new int[5]; //minx,miny,maxx,maxy,zoomlevel
 	BBOX metaBbox = null;
+	int metaX = -1;
+	int metaY = -1;
 	int[][] gridPositions = null;
 	private BufferedImage img = null;
 	private BufferedImage[] tiles = null;
@@ -75,11 +77,12 @@ public class MetaTile {
 	 * @param grid
 	 */
 	protected void calcMetaGrid(int[] grid) {
-		metaGrid[0] = grid[0] - (grid[0] % profile.metaWidth);
-		metaGrid[2] = metaGrid[0] + profile.metaWidth;
+		int[] gridBounds = profile.gridCalc.getGridBounds(metaGrid[4]);
 		
+		metaGrid[0] = grid[0] - (grid[0] % profile.metaWidth);
+		metaGrid[2] = Math.min(metaGrid[0]+profile.metaWidth, gridBounds[2]);		
 		metaGrid[1] = grid[1] - (grid[1] % profile.metaHeight);
-		metaGrid[3] = metaGrid[1] + profile.metaHeight;
+		metaGrid[3] = Math.min(metaGrid[1]+profile.metaHeight, gridBounds[3]);
 		metaGrid[4] = grid[2];
 	}
 	
@@ -99,13 +102,16 @@ public class MetaTile {
 	 * Creates an array with all the grid positions, used for cache keys
 	 */
 	protected void fillGridPositions() {
-		int tileCount = profile.metaWidth*profile.metaHeight;
-		this.gridPositions = new int[tileCount][4];
+		int[] gridBounds = profile.gridCalc.getGridBounds(metaGrid[4]);
 		
-		for(int y=0; y < profile.metaHeight; y++) {	
-			for(int x=0; x< profile.metaWidth; x++) {
-				int tile = y*profile.metaWidth + x;
-				
+		this.metaX = Math.min(metaGrid[0]+profile.metaWidth, gridBounds[2]);
+		this.metaY = Math.min(metaGrid[1]+profile.metaHeight, gridBounds[3]);
+		
+		this.gridPositions = new int[metaX*metaY][3];
+
+		for(int y=0; y < metaY; y++) {
+			for(int x=0; x< metaX; x++) {
+				int tile = y*metaX + x;
 				gridPositions[tile][0] = metaGrid[0] + x;
 				gridPositions[tile][1] = metaGrid[1] + y;
 				gridPositions[tile][2] = metaGrid[4];
@@ -187,21 +193,20 @@ public class MetaTile {
 			log.trace("Got image from backend, height: " + this.img.getHeight());
 	}
 	
-	// TODO verify we dont cross the date boundary
 	protected void createTiles() {
-		tiles = new BufferedImage[profile.metaWidth*profile.metaHeight];
+		tiles = new BufferedImage[metaX*metaY];
 		
 		if(tiles.length > 1) {
 			//final int tileSize = key.getTileSize();
 			//final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
-			int yfix = profile.height*profile.metaHeight;
+			int yfix = metaX*metaY;
 		
-			for(int y=0; y < profile.metaHeight; y++) {	
-				for(int x=0; x< profile.metaWidth; x++) {
-					int tile = y*profile.metaWidth + x;
+			for(int y=0; y < metaY; y++) {	
+				for(int x=0; x< metaX; x++) {
+					int tile = y*metaX + x;
 				
-					int i = x * profile.width;
-					int j = (y+1) * profile.height;
+					int i = x * metaX;
+					int j = (y+1) * metaY;
 
 					tiles[tile] = img.getSubimage(i,yfix-j, profile.width, profile.height);
 				}
@@ -246,9 +251,6 @@ public class MetaTile {
 	}
 	
 	protected int[][] getGridPositions() {
-		if(this.gridPositions == null)
-			fillGridPositions();
-		
 		return this.gridPositions;
 	}
 	

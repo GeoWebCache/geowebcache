@@ -10,6 +10,7 @@ public class GridCalculator {
 	private int[][] gridLevels = null;
 	private LayerProfile profile = null;
 	
+	//TODO this code does not handle coordinate systems where the base height is bigger than the width
 	//private double layerHeight;
 	
 	protected GridCalculator(LayerProfile profile, BBOX gridBase) {
@@ -37,20 +38,34 @@ public class GridCalculator {
 			gridLevels[level][3] = (int) Math.ceil((layerBounds.coords[3] - base.coords[1])/tileWidth) - 1;
 			
 			// Adjust for metatiling if appropriate
-			// TODO make sure that -1 is appropriate
-			if(baseWidth/tileWidth  > metaLarger) {
+			// TODO taller than wide
+			int tileCount = (int) Math.round(baseWidth/tileWidth);
+			if(tileCount > metaLarger) {
 				// Round down
 				gridLevels[level][0] = gridLevels[level][0] - (gridLevels[level][0] % profile.metaWidth);
-				// Round up
-				gridLevels[level][2] = gridLevels[level][2] - (gridLevels[level][2] % profile.metaWidth) + profile.metaWidth -1;
 				// Round down
 				gridLevels[level][1] = gridLevels[level][1] - (gridLevels[level][1] % profile.metaHeight);
-				// Round up
+				// Naive round up
+				gridLevels[level][2] = gridLevels[level][2] - (gridLevels[level][2] % profile.metaWidth) + profile.metaWidth -1;
+				// Naive round up
 				gridLevels[level][3] = gridLevels[level][3] - (gridLevels[level][3] % profile.metaHeight) + profile.metaHeight -1;
-			}   
+				
+				// Fix for naive round ups, imagine applying a 3x3 metatile to a 4x4 grid
+				if(gridLevels[level][2] >= tileCount) {
+					gridLevels[level][2] = tileCount - 1;
+				}
+				if(gridLevels[level][3] >= tileCount) {
+					gridLevels[level][3] = tileCount - 1;
+				}
+			}
+			
 			// For the next round
 			tileWidth = tileWidth / 2;
 		}
+	}
+	
+	protected int[] getGridBounds(int zoomLevel) {
+		return this.gridLevels[zoomLevel].clone();
 	}
 	
 	/**
