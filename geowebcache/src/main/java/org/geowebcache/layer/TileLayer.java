@@ -189,7 +189,7 @@ public class TileLayer {
 		setExpirationHeader(response);
 		if(debugHeaders) {
 			response.addHeader("geowebcache-debug",
-					debugHeadersStr + "from-cache:false;wmsUrl:"+wmsparams.toString());
+					debugHeadersStr + "from-cache:false;wmsUrl:"+profile.wmsURL[profile.curWmsURL]+wmsparams.toString());
 		}
 		return data;
 	}

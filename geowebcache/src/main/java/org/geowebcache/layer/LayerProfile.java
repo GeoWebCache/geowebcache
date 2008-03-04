@@ -50,7 +50,8 @@ public class LayerProfile {
 	protected String tiled = null;
 	protected String bgcolor = null;
 	protected String palette = null;
-	protected String wmsURL = "http://localhost:8080/geoserver/wms";
+	protected String wmsURL[] = {"http://localhost:8080/geoserver/wms"};
+	protected int curWmsURL = 0;
 	protected String wmsLayers = "topp:states";
 	protected String wmsStyles = null;
 	
@@ -160,9 +161,10 @@ public class LayerProfile {
 
 		
 		String propUrl = props.getProperty("wmsurl");
-		if(propUrl != null)
-			this.wmsURL = propUrl;
-
+		if(propUrl != null) {
+			this.wmsURL = propUrl.split(",");
+		}
+		
 		String propLayers = props.getProperty("wmslayers");
 		if(propLayers != null)
 			this.wmsLayers = propLayers;
@@ -179,6 +181,16 @@ public class LayerProfile {
 		if(propExpireCache != null)
 			expireCache = Integer.parseInt(propExpireCache) * 1000;
 		
+	}
+	
+	/**
+	 * Get the WMS backend URL that should be used next according to the round robin.
+	 * 
+	 * @return the next URL
+	 */
+	protected String nextWmsURL() {
+		curWmsURL = (curWmsURL + 1) % this.wmsURL.length;
+		return wmsURL[curWmsURL];
 	}
 		
 	/**

@@ -20,6 +20,7 @@ package org.geowebcache.layer;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.regex.Matcher;
@@ -125,21 +126,35 @@ public class MetaTile {
 		
 		// Ask the WMS server, saves returned image into metaTile
 		// TODO add exception for configurations that do not use metatiling
-		try {
-			forwardRequest(wmsparams);
-		} catch (IOException ioe) {
-			log.error("Error forwarding request, "+wmsparams.toString()+" "+ioe.getMessage());
-			ioe.printStackTrace();
+		
+		int backendTries = 0; // keep track of how many backends we have tried
+		while(img == null && backendTries < profile.wmsURL.length) {
+			String backendURL = profile.nextWmsURL();
+			
+			try {
+				forwardRequest(wmsparams,backendURL);
+			} catch (ConnectException ce) {
+				log.error("Error forwarding request, "
+						+backendURL+wmsparams.toString()+" "+ce.getMessage());
+			} catch (IOException ioe) {
+				log.error("Error forwarding request, "
+						+backendURL+wmsparams.toString()+" "+ioe.getMessage());
+				ioe.printStackTrace();
+			}
+			backendTries++;
+		}
+		
+		if(img == null) {
 			this.failed = true;
 		}
 	}
 	
-	private void forwardRequest(WMSParameters wmsparams) throws IOException {
+	private void forwardRequest(WMSParameters wmsparams, String backendURL) throws IOException, ConnectException {
 		if(log.isTraceEnabled())
 			log.trace("Forwarding request to " + this.profile.wmsURL);
 		
 		// Create an outgoing WMS request to the server
-		Request wmsrequest = new Request(this.profile.wmsURL, wmsparams);
+		Request wmsrequest = new Request(backendURL, wmsparams);
 		URL wmsBackendUrl = new URL(wmsrequest.toString());
 		URLConnection wmsBackendCon = wmsBackendUrl.openConnection();
 		
