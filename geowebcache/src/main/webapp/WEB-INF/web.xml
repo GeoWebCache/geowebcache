@@ -19,6 +19,12 @@
 	
 	<servlet-mapping>
 		<servlet-name>GeoWebCache</servlet-name>
+		<url-pattern>/gmaps</url-pattern>
+	</servlet-mapping>
+	
+	
+	<servlet-mapping>
+		<servlet-name>GeoWebCache</servlet-name>
 		<url-pattern>/seed</url-pattern>
 	</servlet-mapping>
 </web-app>

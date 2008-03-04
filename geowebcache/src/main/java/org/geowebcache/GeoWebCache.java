@@ -34,9 +34,11 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.BBOX;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.service.Parameters;
+import org.geowebcache.service.gmaps.GMapsConverter;
 import org.geowebcache.service.ve.VEConverter;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.Configuration;
+import org.geowebcache.util.ServletUtils;
 
 public class GeoWebCache extends HttpServlet {	
 	private static final long serialVersionUID = 4175613925719485006L;
@@ -129,10 +131,12 @@ public class GeoWebCache extends HttpServlet {
 		
 		if(subPath.equals("/wms")) {
 			doGetWMS(request, response);
-		} else if(subPath.equals("/seed")) {
-			doGetSeed(request, response);
 		} else if(subPath.equals("/ve")) {
 			doGetVE(request, response);
+		} else if(subPath.equals("/gmaps")) {
+			doGetGmaps(request, response);
+		} else if(subPath.equals("/seed")) {
+			doGetSeed(request, response);
 		}
 	}
 	
@@ -179,13 +183,12 @@ public class GeoWebCache extends HttpServlet {
 	throws ServletException, IOException {		
 		
 		Map params = request.getParameterMap();
-		String[] strLayers = (String[]) params.get("layers");
-		
-		TileLayer layer = (TileLayer) this.layers.get(strLayers[0]);
+		String strLayers = ServletUtils.stringFromMap(params, "layers");
+		TileLayer layer = (TileLayer) this.layers.get(strLayers);
 		
 		if(layer == null) {
 			response.setContentType("text/plain");
-			response.sendError(400, "No layers or unknown layer "+strLayers[0]);
+			response.sendError(400, "No layers or unknown layer "+strLayers);
 			// complain loudly and quit
 			log.error("No layers?");
 		}
@@ -197,24 +200,19 @@ public class GeoWebCache extends HttpServlet {
 		if(params.containsKey("bbox"))
 			reqBounds = new BBOX(((String[]) params.get("bbox"))[0]);
 
-		String[] strStart = (String[]) params.get("start");
-		String[] strStop = (String[]) params.get("stop");
+		String strStart = ServletUtils.stringFromMap(params, "start");
+		String strStop = ServletUtils.stringFromMap(params, "stop");
+		String strFormat = ServletUtils.stringFromMap(params, "format");
 		
 		int start = -1; 
 		if(strStart != null)
-			start = Integer.valueOf(strStart[0]);
+			start = Integer.valueOf(strStart);
 
 		int stop = -1;
 		if(strStop != null)
-			stop = Integer.valueOf(strStop[0]);
+			stop = Integer.valueOf(strStop);
 		
-		String[] format = (String[]) params.get("format");
-		String strFormat = null;
-		
-		if(format != null)
-			strFormat = format[0];
-		
-		layer.seed(start, stop,strFormat, reqBounds, response);
+		layer.seed(start, stop, strFormat, reqBounds, response);
 		response.flushBuffer();
 	}
 
@@ -223,16 +221,40 @@ public class GeoWebCache extends HttpServlet {
 	throws ServletException, IOException {
 		
 		Map params = request.getParameterMap();
-		String[] strLayers = (String[]) params.get("layers");
-		String strLayer = strLayers[0];
-
-		String[] strQuadKeys = (String[]) params.get("quadkey");
-		String strQuadKey = strQuadKeys[0];
+		String strLayer = ServletUtils.stringFromMap(params, "layers");
+		String strQuadKey = ServletUtils.stringFromMap(params, "quadkey");
 		
 		BBOX bbox = VEConverter.convertQuadKey(strQuadKey);
+		
 		TileLayer cachedLayer = findLayer(strLayer, response);
 		WMSParameters wmsparams = cachedLayer.getWMSParamTemplate();
 		wmsparams.setBBOX(bbox);
+		
+		// A late sanity check
+		if(cachedLayer != null)
+			cachedLayer = checkLayer(cachedLayer, wmsparams, response);
+		
+		wmsGetData(cachedLayer, wmsparams, response);
+	}
+	
+	public void doGetGmaps(HttpServletRequest request,
+			HttpServletResponse response)
+	throws ServletException, IOException {
+		Map params = request.getParameterMap();
+		String strLayer = ServletUtils.stringFromMap(params, "layers");
+		String strZoom = ServletUtils.stringFromMap(params, "zoom");
+		String strX = ServletUtils.stringFromMap(params, "x");
+		String strY = ServletUtils.stringFromMap(params, "y");
+		
+		BBOX bbox = GMapsConverter.convert(Integer.parseInt(strZoom), Integer.parseInt(strX), Integer.parseInt(strY));
+		
+		TileLayer cachedLayer = findLayer(strLayer, response);
+		WMSParameters wmsparams = cachedLayer.getWMSParamTemplate();
+		wmsparams.setBBOX(bbox);
+		
+		// A late sanity check
+		if(cachedLayer != null)
+			cachedLayer = checkLayer(cachedLayer, wmsparams, response);
 		
 		wmsGetData(cachedLayer, wmsparams, response);
 	}
