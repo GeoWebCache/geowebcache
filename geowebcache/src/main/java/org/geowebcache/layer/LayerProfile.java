@@ -41,6 +41,8 @@ public class LayerProfile {
 	protected int height = 256; 
 	protected int metaWidth = 1;
 	protected int metaHeight = 1;
+	protected double maxTileWidth = -1.0;
+	protected double maxTileHeight = -1.0;
 	protected int zoomStart = 0;
 	protected int zoomStop = 25;
 	protected String request = "map";
@@ -72,6 +74,15 @@ public class LayerProfile {
 		if(propSrs != null)
 			this.srs = propSrs;
 		
+		if(srs.equalsIgnoreCase("EPSG:4326")) {
+			this.maxTileWidth = 180.0;
+			this.maxTileHeight = 180.0;
+		} else if(srs.equalsIgnoreCase("EPSG:900912")){
+			this.maxTileWidth = 20037508.34*2;
+			this.maxTileHeight = 20037508.34*2;
+		} else {
+			log.error("May not interpret SRS " + srs + " correctly.");
+		}
 		
 		String propZoomStart = props.getProperty("zoomStart");
 		if(propZoomStart != null)

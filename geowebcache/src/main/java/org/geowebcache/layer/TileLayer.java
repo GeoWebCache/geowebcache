@@ -155,6 +155,7 @@ public class TileLayer {
 		metaTile.doRequest(imageFormat.getMimeType());
 		if(metaTile.failed) {
 			removeFromQueue(metaGridLoc);
+			log.error("MetaTile failed.");
 			return null;
 		}
 		saveExpirationInformation(metaTile);

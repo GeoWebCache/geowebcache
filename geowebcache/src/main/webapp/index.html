@@ -25,7 +25,7 @@
             map = new OpenLayers.Map('map');
             var layerstates = new OpenLayers.Layer.WMS( "States",
                 "wms",
-                {layers: 'topp-states', format: 'image/png'});
+                {layers: 'states', format: 'image/png'});
             map.addLayer(layerstates);
             map.addControl(new OpenLayers.Control.LayerSwitcher());
             map.addControl(new OpenLayers.Control.MousePosition());

@@ -7,6 +7,7 @@ public class GridCalculator {
 	private static Log log = LogFactory.getLog(org.geowebcache.layer.GridCalculator.class);
 	private BBOX base = null;
 	private double baseWidth;
+	private double baseHeight;
 	private int[][] gridLevels = null;
 	private LayerProfile profile = null;
 	
@@ -17,50 +18,59 @@ public class GridCalculator {
 		this.base = gridBase;
 		// Calculate
 		this.baseWidth = base.coords[2] - base.coords[0];
-		//this.layerHeight = base.coords[3] - base.coords[1];
+		this.baseHeight = base.coords[3] - base.coords[1];
 		this.profile = profile;
 	}
 	
 	protected void calculateGridBounds(BBOX layerBounds, int zoomStart, int zoomStop) {
 		gridLevels = new int[zoomStop + 1][4]; // We'll just waste a few bytes, for cheap lookups
+
+		double tileWidth = profile.maxTileWidth;
+		double tileHeight = profile.maxTileHeight;
 		
-		double tileWidth = baseWidth;
+		int tileCountX = (int) Math.round(baseWidth/tileWidth);
+		int tileCountY = (int) Math.round(baseHeight/tileHeight);
+		
 		int metaLarger = (profile.metaHeight > profile.metaWidth) ? profile.metaHeight : profile.metaWidth;
 		
 		for(int level = 0; level <= zoomStop; level++) {
 			// Min X
 			gridLevels[level][0] = (int) Math.floor((layerBounds.coords[0] - base.coords[0])/tileWidth);
 			// Min Y
-			gridLevels[level][1] = (int) Math.floor((layerBounds.coords[1] - base.coords[1])/tileWidth);
+			gridLevels[level][1] = (int) Math.floor((layerBounds.coords[1] - base.coords[1])/tileHeight);
 			// Max X
 			gridLevels[level][2] = (int) Math.ceil((layerBounds.coords[2] - base.coords[0])/tileWidth) - 1;
 			// Max Y
-			gridLevels[level][3] = (int) Math.ceil((layerBounds.coords[3] - base.coords[1])/tileWidth) - 1;
+			gridLevels[level][3] = (int) Math.ceil((layerBounds.coords[3] - base.coords[1])/tileHeight) - 1;
 			
 			// Adjust for metatiling if appropriate
-			// TODO taller than wide
-			int tileCount = (int) Math.round(baseWidth/tileWidth);
-			if(tileCount > metaLarger) {
+
+			
+			if(tileCountX > metaLarger || tileCountY > metaLarger) {
 				// Round down
 				gridLevels[level][0] = gridLevels[level][0] - (gridLevels[level][0] % profile.metaWidth);
 				// Round down
 				gridLevels[level][1] = gridLevels[level][1] - (gridLevels[level][1] % profile.metaHeight);
 				// Naive round up
-				gridLevels[level][2] = gridLevels[level][2] - (gridLevels[level][2] % profile.metaWidth) + profile.metaWidth -1;
+				gridLevels[level][2] = gridLevels[level][2] - (gridLevels[level][2] % profile.metaWidth) + (profile.metaWidth -1);
 				// Naive round up
-				gridLevels[level][3] = gridLevels[level][3] - (gridLevels[level][3] % profile.metaHeight) + profile.metaHeight -1;
+				gridLevels[level][3] = gridLevels[level][3] - (gridLevels[level][3] % profile.metaHeight) + (profile.metaHeight -1);
 				
 				// Fix for naive round ups, imagine applying a 3x3 metatile to a 4x4 grid
-				if(gridLevels[level][2] >= tileCount) {
-					gridLevels[level][2] = tileCount - 1;
+				if(gridLevels[level][2] >= tileCountX) {
+					gridLevels[level][2] = tileCountX - 1;
 				}
-				if(gridLevels[level][3] >= tileCount) {
-					gridLevels[level][3] = tileCount - 1;
+				if(gridLevels[level][3] >= tileCountY) {
+					gridLevels[level][3] = tileCountY - 1;
 				}
 			}
 			
 			// For the next round
 			tileWidth = tileWidth / 2;
+			tileHeight = tileHeight / 2;
+			
+			tileCountX = tileCountX * 2;
+			tileCountY = tileCountY * 2;
 		}
 	}
 	
