@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,11 +58,13 @@ public class MetaTile {
 	 */
 	protected MetaTile(LayerProfile profile, int[] initGridPosition) {
 		this.profile = profile;
+		System.out.println("AK5");
 		this.calcMetaGrid(initGridPosition);
+		System.out.println("AK6");
 	}
 	
 	/**
-	 * Used for seeder
+	 * Used for seeder to distinguish int[]s
 	 * 
 	 * @param profile
 	 * @param metaGrid
@@ -76,14 +79,19 @@ public class MetaTile {
 	 * Calculates the tile positions covered by this metatile
 	 * @param grid
 	 */
-	protected void calcMetaGrid(int[] grid) {
-		int[] gridBounds = profile.gridCalc.getGridBounds(metaGrid[4]);
+	protected void calcMetaGrid(int[] gridLoc) {
+		System.out.println("AK1 "+profile.toString());
+		System.out.println("AK1.5 "+profile.gridCalc.toString());
 		
-		metaGrid[0] = grid[0] - (grid[0] % profile.metaWidth);
+		int[] gridBounds = profile.gridCalc.getGridBounds(gridLoc[2]);
+		
+		System.out.println("AK2");
+		metaGrid[0] = gridLoc[0] - (gridLoc[0] % profile.metaWidth);
 		metaGrid[2] = Math.min(metaGrid[0]+profile.metaWidth, gridBounds[2]);		
-		metaGrid[1] = grid[1] - (grid[1] % profile.metaHeight);
+		metaGrid[1] = gridLoc[1] - (gridLoc[1] % profile.metaHeight);
 		metaGrid[3] = Math.min(metaGrid[1]+profile.metaHeight, gridBounds[3]);
-		metaGrid[4] = grid[2];
+		metaGrid[4] = gridLoc[2];
+		System.out.println("AK3");
 	}
 	
 
@@ -260,5 +268,9 @@ public class MetaTile {
 	
 	protected long getExpiration(){
 		return this.expiration;
+	}
+	
+	public String debugString() {
+		return "metaBbox: "+metaBbox.toString()+ " metaX: "+metaX+" metaY: "+metaY+" metaGrid:"+Arrays.toString(metaGrid);
 	}
 }
