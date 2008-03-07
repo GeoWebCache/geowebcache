@@ -38,9 +38,9 @@ import org.geowebcache.service.wms.WMSParameters;
 public class MetaTile {
 	private static Log log = LogFactory.getLog(org.geowebcache.layer.MetaTile.class);
 	
-	LayerProfile profile = null;
-	int[] metaGrid  = new int[5]; //minx,miny,maxx,maxy,zoomlevel
-	BBOX metaBbox = null;
+	private LayerProfile profile = null;
+	protected int[] metaGrid  = new int[5]; //minx,miny,maxx,maxy,zoomlevel
+	protected BBOX metaBbox = null;
 	int metaX = -1;
 	int metaY = -1;
 	int[][] gridPositions = null;
@@ -77,6 +77,7 @@ public class MetaTile {
 	
 	/**
 	 * Calculates the tile positions covered by this metatile
+	 * 
 	 * @param grid
 	 */
 	protected void calcMetaGrid(int[] gridLoc) {
