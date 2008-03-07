@@ -61,6 +61,13 @@ public class LayerProfile {
 	protected long expireClients = CACHE_USE_WMS_BACKEND_VALUE; 
 	protected long expireCache =  CACHE_NEVER_EXPIRE;
 	
+	/**
+	 * Only for testin purposes
+	 */
+	public LayerProfile() {		
+
+	}
+	
 	public LayerProfile(Properties props) {		
 		setParametersFromProperties(props);
 		
@@ -68,7 +75,7 @@ public class LayerProfile {
 			log.trace("Created a new layer: " + this.toString());
 		}
 	}
-
+	
 	private void setParametersFromProperties(Properties props) {
 		String propSrs = props.getProperty("srs");
 		if(propSrs != null)
@@ -112,7 +119,7 @@ public class LayerProfile {
 		} else {
 			gridBase = new BBOX(-180.0, -90.0, 180.0, 90.0);
 		}
-		gridCalc = new GridCalculator(this, gridBase);
+		gridCalc = new GridCalculator(this);
 
 		
 		// The following depends on metatiling and grid
@@ -128,8 +135,6 @@ public class LayerProfile {
 				log.error("The bbox "+propBbox+" intepreted as " 
 						+ layerBounds.toString() + " is not contained by the grid: " + gridBase.toString());
 			} else {
-				gridCalc.calculateGridBounds(layerBounds, zoomStart, zoomStop);
-				
 				bbox = layerBounds; // adjust to the closest grid ?
 				//log.info("Recreated bbox: " + bbox.toString());
 			}

@@ -58,9 +58,8 @@ public class MetaTile {
 	 */
 	protected MetaTile(LayerProfile profile, int[] initGridPosition) {
 		this.profile = profile;
-		System.out.println("AK5");
 		this.calcMetaGrid(initGridPosition);
-		System.out.println("AK6");
+		this.metaBbox = profile.gridCalc.calcMetaBbox(metaGrid);
 	}
 	
 	/**
@@ -73,6 +72,7 @@ public class MetaTile {
 	protected MetaTile(LayerProfile profile, int[] metaGrid, boolean doesNothing) {
 		this.profile = profile;
 		this.metaGrid = metaGrid;
+		this.metaBbox = profile.gridCalc.calcMetaBbox(metaGrid);
 	}
 	
 	/**
@@ -80,18 +80,13 @@ public class MetaTile {
 	 * @param grid
 	 */
 	protected void calcMetaGrid(int[] gridLoc) {
-		System.out.println("AK1 "+profile.toString());
-		System.out.println("AK1.5 "+profile.gridCalc.toString());
-		
 		int[] gridBounds = profile.gridCalc.getGridBounds(gridLoc[2]);
 		
-		System.out.println("AK2");
 		metaGrid[0] = gridLoc[0] - (gridLoc[0] % profile.metaWidth);
 		metaGrid[2] = Math.min(metaGrid[0]+profile.metaWidth, gridBounds[2]);		
 		metaGrid[1] = gridLoc[1] - (gridLoc[1] % profile.metaHeight);
 		metaGrid[3] = Math.min(metaGrid[1]+profile.metaHeight, gridBounds[3]);
 		metaGrid[4] = gridLoc[2];
-		System.out.println("AK3");
 	}
 	
 
@@ -129,7 +124,7 @@ public class MetaTile {
 	
 	
 	protected void doRequest(String imageMime) {
-		this.metaBbox = profile.gridCalc.calcMetaBbox(metaGrid);
+		
 		WMSParameters wmsparams = profile.getWMSParamTemplate();
 		
 		// Fill in the blanks
@@ -271,6 +266,9 @@ public class MetaTile {
 	}
 	
 	public String debugString() {
-		return "metaBbox: "+metaBbox.toString()+ " metaX: "+metaX+" metaY: "+metaY+" metaGrid:"+Arrays.toString(metaGrid);
+		if(metaBbox == null)
+			System.out.println("metaBbox is null");
+
+		return "metaBbox: "+metaBbox.toString()+ " metaX: "+metaX+" metaY: "+metaY+" metaGrid: "+Arrays.toString(metaGrid);
 	}
 }

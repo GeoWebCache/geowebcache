@@ -1,5 +1,7 @@
 package org.geowebcache.layer;
 
+import java.util.Arrays;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -14,15 +16,21 @@ public class GridCalculator {
 	//TODO this code does not handle coordinate systems where the base height is bigger than the width
 	//private double layerHeight;
 	
-	protected GridCalculator(LayerProfile profile, BBOX gridBase) {
-		this.base = gridBase;
+	protected GridCalculator(LayerProfile profile) {
+		this.profile = profile;
+		this.base = profile.gridBase;
+		
 		// Calculate
 		this.baseWidth = base.coords[2] - base.coords[0];
 		this.baseHeight = base.coords[3] - base.coords[1];
-		this.profile = profile;
+		
+		calculateGridBounds();
 	}
 	
-	protected void calculateGridBounds(BBOX layerBounds, int zoomStart, int zoomStop) {
+	private void calculateGridBounds() {
+		BBOX layerBounds = profile.bbox;		
+		int zoomStop = profile.zoomStop;
+		
 		gridLevels = new int[zoomStop + 1][4]; // We'll just waste a few bytes, for cheap lookups
 
 		double tileWidth = profile.maxTileWidth;
@@ -34,6 +42,7 @@ public class GridCalculator {
 		int metaLarger = (profile.metaHeight > profile.metaWidth) ? profile.metaHeight : profile.metaWidth;
 		
 		for(int level = 0; level <= zoomStop; level++) {
+			//System.out.println("lb: " +layerBounds+ " base:" + base+" tileWidth: " + tileWidth);
 			// Min X
 			gridLevels[level][0] = (int) Math.floor((layerBounds.coords[0] - base.coords[0])/tileWidth);
 			// Min Y
@@ -43,9 +52,10 @@ public class GridCalculator {
 			// Max Y
 			gridLevels[level][3] = (int) Math.ceil((layerBounds.coords[3] - base.coords[1])/tileHeight) - 1;
 			
-			// Adjust for metatiling if appropriate
-
+			//System.out.println("postOrig: " + Arrays.toString(gridLevels[level]));
 			
+			//System.out.println("tileCountX "+tileCountX + "  metaLarger: "+metaLarger + " baseWidth: "+baseWidth);
+			// Adjust for metatiling if appropriate
 			if(tileCountX > metaLarger || tileCountY > metaLarger) {
 				// Round down
 				gridLevels[level][0] = gridLevels[level][0] - (gridLevels[level][0] % profile.metaWidth);
@@ -56,6 +66,8 @@ public class GridCalculator {
 				// Naive round up
 				gridLevels[level][3] = gridLevels[level][3] - (gridLevels[level][3] % profile.metaHeight) + (profile.metaHeight -1);
 				
+				//System.out.println("postAdjust: " + Arrays.toString(gridLevels[level]));
+				
 				// Fix for naive round ups, imagine applying a 3x3 metatile to a 4x4 grid
 				if(gridLevels[level][2] >= tileCountX) {
 					gridLevels[level][2] = tileCountX - 1;
@@ -63,6 +75,7 @@ public class GridCalculator {
 				if(gridLevels[level][3] >= tileCountY) {
 					gridLevels[level][3] = tileCountY - 1;
 				}
+				//System.out.println("postFix: " + Arrays.toString(gridLevels[level]));
 			}
 			
 			// For the next round
