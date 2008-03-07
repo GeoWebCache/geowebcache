@@ -84,7 +84,7 @@ public class LayerProfile {
 		if(srs.equalsIgnoreCase("EPSG:4326")) {
 			this.maxTileWidth = 180.0;
 			this.maxTileHeight = 180.0;
-		} else if(srs.equalsIgnoreCase("EPSG:900912")){
+		} else if(srs.equalsIgnoreCase("EPSG:900913")){
 			this.maxTileWidth = 20037508.34*2;
 			this.maxTileHeight = 20037508.34*2;
 		} else {
@@ -119,8 +119,6 @@ public class LayerProfile {
 		} else {
 			gridBase = new BBOX(-180.0, -90.0, 180.0, 90.0);
 		}
-		gridCalc = new GridCalculator(this);
-
 		
 		// The following depends on metatiling and grid
 		String propBbox = props.getProperty("bbox");
@@ -141,8 +139,9 @@ public class LayerProfile {
 		} else {
 			bbox = new BBOX(-180.0, -90.0, 180.0, 90.0);
 		}
-
-
+		
+		gridCalc = new GridCalculator(this);
+		
 		String propWidth = props.getProperty("width");
 		if(propWidth != null)
 			this.width = Integer.parseInt(propWidth);

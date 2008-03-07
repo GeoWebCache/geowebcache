@@ -41,8 +41,8 @@ public class MetaTile {
 	private LayerProfile profile = null;
 	protected int[] metaGrid  = new int[5]; //minx,miny,maxx,maxy,zoomlevel
 	protected BBOX metaBbox = null;
-	int metaX = -1;
-	int metaY = -1;
+	int metaX = -1; // The actual X metatiling factor, after adjusting to bounds
+	int metaY = -1; // The actual Y metatiling factor, after adjusting to bounds.
 	int[][] gridPositions = null;
 	private BufferedImage img = null;
 	private BufferedImage[] tiles = null;
@@ -60,6 +60,7 @@ public class MetaTile {
 		this.profile = profile;
 		this.calcMetaGrid(initGridPosition);
 		this.metaBbox = profile.gridCalc.calcMetaBbox(metaGrid);
+		fillGridPositions();
 	}
 	
 	/**
@@ -73,6 +74,7 @@ public class MetaTile {
 		this.profile = profile;
 		this.metaGrid = metaGrid;
 		this.metaBbox = profile.gridCalc.calcMetaBbox(metaGrid);
+		fillGridPositions();
 	}
 	
 	/**
@@ -108,8 +110,8 @@ public class MetaTile {
 	protected void fillGridPositions() {
 		int[] gridBounds = profile.gridCalc.getGridBounds(metaGrid[4]);
 		
-		this.metaX = Math.min(metaGrid[0]+profile.metaWidth, gridBounds[2]);
-		this.metaY = Math.min(metaGrid[1]+profile.metaHeight, gridBounds[3]);
+		this.metaX = metaGrid[0] - Math.min(metaGrid[0]+profile.metaWidth, gridBounds[2]);
+		this.metaY = metaGrid[1] - Math.min(metaGrid[1]+profile.metaHeight, gridBounds[3]);
 		
 		this.gridPositions = new int[metaX*metaY][3];
 

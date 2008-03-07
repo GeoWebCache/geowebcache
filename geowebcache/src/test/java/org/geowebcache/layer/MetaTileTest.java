@@ -30,12 +30,11 @@ public class MetaTileTest extends TestCase {
         
         int[] solution = {0, 0, 1, 0, 0};
         boolean test = Arrays.equals(mt.metaGrid,solution);
-        if(test) {
-        	assert(test);
-        } else {
+        if(! test) {
         	System.out.println("1 - " + mt.debugString());
         	System.out.println("test1MetaTile {" + Arrays.toString(solution ) + "} {" + mt.metaGrid +"}" );
         }
+        assert(test);
  	}
 	
 	public void test2MetaTile() throws Exception {
@@ -55,12 +54,11 @@ public class MetaTileTest extends TestCase {
         
         int[] solution = {69,36,72,39,6};
         boolean test = Arrays.equals(mt.metaGrid,solution);
-        if(test) {
-        	assert(test);
-        } else {
-        	System.out.println("1 - " + mt.debugString());
+        if(! test) {
+        	System.out.println("2 - " + mt.debugString());
         	System.out.println("test2MetaTile {" + Arrays.toString(solution ) + "} {" + Arrays.toString(mt.metaGrid) +"}" );
         }
+        assert(test);
  	}
 	
 	public void test3MetaTile() throws Exception {
@@ -80,12 +78,11 @@ public class MetaTileTest extends TestCase {
         
         int[] solution = {0, 0, 0, 0, 0};
         boolean test = Arrays.equals(mt.metaGrid,solution);
-        if(test) {
-        	assert(test);
-        } else {
-        	System.out.println("1 - " + mt.debugString());
+        if(! test) {
+        	System.out.println("3 - " + mt.debugString());
         	System.out.println("test3MetaTile {" + Arrays.toString(solution ) + "} {" + mt.metaGrid +"}" );
         }
+        assert(test);
  	}
 	
 	public void test4MetaTile() throws Exception {
@@ -103,13 +100,14 @@ public class MetaTileTest extends TestCase {
         int[] gridPos = {70,70,6};
         MetaTile mt = new MetaTile(profile,gridPos);
         
-        int[] solution = {69,36,72,39,6};
+        int[] solution = {69, 69, 63, 63,6};
         boolean test = Arrays.equals(mt.metaGrid,solution);
         if(test) {
-        	assert(test);
+        	
         } else {
-        	System.out.println("1 - " + mt.debugString());
+        	System.out.println("4 - " + mt.debugString());
         	System.out.println("test4MetaTile {" + Arrays.toString(solution ) + "} {" + Arrays.toString(mt.metaGrid) +"}" );
         }
+        assert(test);
  	}
 }
