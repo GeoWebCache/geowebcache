@@ -19,17 +19,17 @@ package org.geowebcache.cache;
 
 public class CacheException extends Exception {
 
-	/**
-	 * @serial
-	 */
-	private static final long serialVersionUID = 5780366956485468901L;
+    /**
+     * @serial
+     */
+    private static final long serialVersionUID = 5780366956485468901L;
 
-	public CacheException(String msg) {
-		super(msg);
-	}
+    public CacheException(String msg) {
+        super(msg);
+    }
 
-	public CacheException(Throwable thrw) {
-		super(thrw);
-	}
+    public CacheException(Throwable thrw) {
+        super(thrw);
+    }
 
 }

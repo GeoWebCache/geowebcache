@@ -24,43 +24,49 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class Connection {
-	private static Log log = LogFactory.getLog(org.geowebcache.service.Connection.class);
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.service.Connection.class);
 
-	private Request request = null;
-	private URLConnection outgoing_request = null;
+    private Request request = null;
 
-	public Connection(Request request) {
-		setRequest(request);
-	}
+    private URLConnection outgoing_request = null;
 
-	public void connect() throws IOException {
-		try {
-			System.out.println("Requesting: " + request.getURL());
-			outgoing_request = request.getURL().openConnection();
-		} catch(IOException ioe) {
-			log.error("Failed to connect to " + request.toString() + " : ", ioe);
-		}
-	}
+    public Connection(Request request) {
+        setRequest(request);
+    }
 
-	/**
-	 * @return the request
-	 */
-	public Request getRequest() {
-		return request;
-	}
+    public void connect() throws IOException {
+        try {
+            System.out.println("Requesting: " + request.getURL());
+            outgoing_request = request.getURL().openConnection();
+        } catch (IOException ioe) {
+            log
+                    .error(
+                            "Failed to connect to " + request.toString()
+                                    + " : ", ioe);
+        }
+    }
 
-	/**
-	 * @param request the request to set
-	 */
-	public void setRequest(Request request) {
-		this.request = request;
-	}
+    /**
+     * @return the request
+     */
+    public Request getRequest() {
+        return request;
+    }
 
-	/**
-	 * @return the Response for this connection
-	 */
-	public Response getResponse() {
-		return new Response(outgoing_request);
-	}
+    /**
+     * @param request
+     *            the request to set
+     */
+    public void setRequest(Request request) {
+        this.request = request;
+    }
+
+    /**
+     * @return the Response for this connection
+     */
+    public Response getResponse() {
+        return new Response(outgoing_request);
+    }
 
 }

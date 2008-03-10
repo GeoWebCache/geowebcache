@@ -27,28 +27,30 @@ import org.geowebcache.mime.MimeType;
 
 public class Response {
 
-	private static Log log = LogFactory.getLog(org.geowebcache.service.Response.class);
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.service.Response.class);
 
-	private URLConnection connection = null;
+    private URLConnection connection = null;
 
-	public Response(URLConnection connection) {
-		this.connection = connection;
-	}
+    public Response(URLConnection connection) {
+        this.connection = connection;
+    }
 
-	public MimeType getMimetype() {
-		MimeType mime;
-		try {
-			mime = new MimeType(connection.getContentType(), connection.getContentEncoding());
-		} catch(IOException ioe) {
-			log.error("Mime type error: ", ioe);
-			mime = new MimeType();
-			mime.setToDefault();
-		}
-		return mime;
-	}
+    public MimeType getMimetype() {
+        MimeType mime;
+        try {
+            mime = new MimeType(connection.getContentType(), connection
+                    .getContentEncoding());
+        } catch (IOException ioe) {
+            log.error("Mime type error: ", ioe);
+            mime = new MimeType();
+            mime.setToDefault();
+        }
+        return mime;
+    }
 
-	public InputStream getInputStream() throws IOException {
-		return connection.getInputStream();
-	}
+    public InputStream getInputStream() throws IOException {
+        return connection.getInputStream();
+    }
 
 }

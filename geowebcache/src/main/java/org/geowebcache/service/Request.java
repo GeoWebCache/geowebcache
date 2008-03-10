@@ -25,66 +25,69 @@ import org.apache.commons.logging.LogFactory;
 
 public class Request {
 
-	private static Log log = LogFactory.getLog(org.geowebcache.service.Request.class);
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.service.Request.class);
 
-	private URL server = null;
-	private Parameters params = null;
+    private URL server = null;
 
-	public Request(String server, Parameters params) {
-		this.setServer(server);
-		//this.setParametersFromConfiguration();
-		if(this.params != null) {
-			this.params.merge(params);
-		} else {
-			this.params = params;
-		}
-	}
-	
-	/**
-	 * @return the address URL
-	 */
-	public URL getServer() {
-		return server;
-	}
+    private Parameters params = null;
 
-	/**
-	 * @param address the address URL to set
-	 */
-	public void setServer(URL server) {
-		this.server = server;
-	}
+    public Request(String server, Parameters params) {
+        this.setServer(server);
+        // this.setParametersFromConfiguration();
+        if (this.params != null) {
+            this.params.merge(params);
+        } else {
+            this.params = params;
+        }
+    }
 
-	public void setServer(String address) {
-		try {
-			server = new URL(address);
-		} catch(MalformedURLException mue) {
-			log.error("Invalid server URL String: ", mue);
-			// Do nothing, leave this.server set to previous value
-		}
-	}
+    /**
+     * @return the address URL
+     */
+    public URL getServer() {
+        return server;
+    }
 
-	public Parameters getParameters() {
-		return params;
-	}
+    /**
+     * @param address
+     *            the address URL to set
+     */
+    public void setServer(URL server) {
+        this.server = server;
+    }
 
-	public void setParameters(Parameters params) {
-		this.params = params;
-	}
+    public void setServer(String address) {
+        try {
+            server = new URL(address);
+        } catch (MalformedURLException mue) {
+            log.error("Invalid server URL String: ", mue);
+            // Do nothing, leave this.server set to previous value
+        }
+    }
 
-	public URL getURL() {
-		URL address = null;
-		try {
-			address = new URL(server.toExternalForm() + params.getURLString());
-			log.debug("url: " + address);
-		} catch(MalformedURLException mue) {
-			log.error("Invalid URL from server and parameters: ", mue);
-		}
-		return address;
-	}
+    public Parameters getParameters() {
+        return params;
+    }
 
-	@Override
-	public String toString() {
-		return getURL().toString();
-	}
+    public void setParameters(Parameters params) {
+        this.params = params;
+    }
+
+    public URL getURL() {
+        URL address = null;
+        try {
+            address = new URL(server.toExternalForm() + params.getURLString());
+            log.debug("url: " + address);
+        } catch (MalformedURLException mue) {
+            log.error("Invalid URL from server and parameters: ", mue);
+        }
+        return address;
+    }
+
+    @Override
+    public String toString() {
+        return getURL().toString();
+    }
 
 }

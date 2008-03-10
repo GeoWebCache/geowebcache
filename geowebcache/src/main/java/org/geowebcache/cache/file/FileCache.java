@@ -28,139 +28,147 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.geowebcache.layer.LayerProfile;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
+import org.geowebcache.layer.LayerProfile;
 import org.geowebcache.layer.RawTile;
-
 
 public class FileCache implements Cache {
 
-	private static Log log = LogFactory.getLog(org.geowebcache.cache.file.FileCache.class);
-	
-	// The path where this FileCache stores files
-	private String pathPrefix = null;
-	
-	public FileCache() {
-		// nothing, for factory
-	}
-	
-	/**
-	 * Check props , run setUp() on given directory
-	 */
-	public void init(Properties props) throws org.geowebcache.cache.CacheException {
-		String propPathPrefix = props.getProperty("filecachepath");
-		if(propPathPrefix != null) {
-			pathPrefix = propPathPrefix;
-		} else {
-			// Try to use %TEMP%
-			pathPrefix = System.getenv("TEMP");
-		}
-	}
-	
-	public void destroy() {
-		// nothing to do
-	}
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.cache.file.FileCache.class);
 
-	/**
-	 * 1) Test whether pathPrefix exists and
-	 * 2) is writeable
-	 */
-	public void setUp() throws org.geowebcache.cache.CacheException {
-		File path = new File(pathPrefix);
-		if(path.exists() && path.isDirectory() && path.canWrite()) {
-			log.trace("Succesfully opened " + pathPrefix + " for writing");
-		} else {
-			throw new CacheException("Can not write to " + pathPrefix + ", the path is not an existing directory or not writeable");
-		}
-	}
+    // The path where this FileCache stores files
+    private String pathPrefix = null;
 
-	/** 
-	 * See if file exists, read file
-	 */
-	public Object get(Object key, long ttl) throws org.geowebcache.cache.CacheException {
-		String filePath =  pathPrefix + File.separator + (String) key;
-		log.trace("Attempting to read"+filePath);
-		
-		File fh = new File(filePath);
-		
-		if(ttl > 0 && fh.lastModified() > System.currentTimeMillis() - ttl) {
-			log.debug(filePath +" had expired, last modified " + fh.lastModified());
-			return null;
-		}
-		
-		if(! fh.canRead() ) {
-			log.debug("Unable to read " + filePath);
-			return null;
-		}
-			
-		
-		long length = fh.length();
-		
-		if(length < 1) {
-			return null;
-		}
-		
-		byte[] data = new byte[(int) length];
-		
-		try {
-			InputStream is = new FileInputStream(fh);
-			is.read(data);
-			is.close();
-		} catch (FileNotFoundException fnfe) {
-			log.trace("Did not find " + filePath);
-			return null;
-		} catch (IOException ioe) {
-			log.error("IOException reading from "+filePath+": "+ioe.getMessage());
-			throw new CacheException(ioe);
-		}
-		
-		return new RawTile(data);
-	}
+    public FileCache() {
+        // nothing, for factory
+    }
 
-	public boolean remove(Object key) throws org.geowebcache.cache.CacheException {
-		String filePath =  pathPrefix + File.separator + (String) key;
-		File fh = new File(filePath);
-		return fh.delete();
-	}
+    /**
+     * Check props , run setUp() on given directory
+     */
+    public void init(Properties props)
+            throws org.geowebcache.cache.CacheException {
+        String propPathPrefix = props.getProperty("filecachepath");
+        if (propPathPrefix != null) {
+            pathPrefix = propPathPrefix;
+        } else {
+            // Try to use %TEMP%
+            pathPrefix = System.getenv("TEMP");
+        }
+    }
 
-	public void removeAll() throws org.geowebcache.cache.CacheException {
-		// Do nothing for now
-	}
+    public void destroy() {
+        // nothing to do
+    }
 
-	public void set(Object key, Object obj, long ttl) throws org.geowebcache.cache.CacheException {
-		if(ttl == LayerProfile.CACHE_NEVER) {
-			return;
-		}
-		
-		String filePath =  pathPrefix + File.separator + (String) key;
-		log.trace("Attempting write to "+filePath);
-		File fh = new File(filePath);
-		File pfh = new File(fh.getParent());
-		
-		RawTile tile = (RawTile) obj;
-		
-		if(pfh.mkdirs() || (pfh.exists() && pfh.isDirectory() && pfh.canWrite() )) {
-			try {
-				FileOutputStream os = new FileOutputStream(fh);
-				os.write(tile.getData());
-				os.flush();
-				os.close();
-			} catch (FileNotFoundException fnfe) {
-				throw new CacheException(fnfe);
-			} catch (IOException ioe) {
-				log.error("IOException writing to "+filePath+": "+ioe.getMessage());
-				throw new CacheException(ioe);
-			}
-		} else {
-			throw new CacheException("Unable to create directories: " + pfh.getAbsolutePath());
-		}
-	}
+    /**
+     * 1) Test whether pathPrefix exists and 2) is writeable
+     */
+    public void setUp() throws org.geowebcache.cache.CacheException {
+        File path = new File(pathPrefix);
+        if (path.exists() && path.isDirectory() && path.canWrite()) {
+            log.trace("Succesfully opened " + pathPrefix + " for writing");
+        } else {
+            throw new CacheException(
+                    "Can not write to "
+                            + pathPrefix
+                            + ", the path is not an existing directory or not writeable");
+        }
+    }
 
-	public String getDefaultCacheKeyName() {
-		return "org.geowebcache.cachekey.FilePathKey";
-	}
+    /**
+     * See if file exists, read file
+     */
+    public Object get(Object key, long ttl)
+            throws org.geowebcache.cache.CacheException {
+        String filePath = pathPrefix + File.separator + (String) key;
+        log.trace("Attempting to read" + filePath);
 
+        File fh = new File(filePath);
+
+        if (ttl > 0 && fh.lastModified() > System.currentTimeMillis() - ttl) {
+            log.debug(filePath + " had expired, last modified "
+                    + fh.lastModified());
+            return null;
+        }
+
+        if (!fh.canRead()) {
+            log.debug("Unable to read " + filePath);
+            return null;
+        }
+
+        long length = fh.length();
+
+        if (length < 1) {
+            return null;
+        }
+
+        byte[] data = new byte[(int) length];
+
+        try {
+            InputStream is = new FileInputStream(fh);
+            is.read(data);
+            is.close();
+        } catch (FileNotFoundException fnfe) {
+            log.trace("Did not find " + filePath);
+            return null;
+        } catch (IOException ioe) {
+            log.error("IOException reading from " + filePath + ": "
+                    + ioe.getMessage());
+            throw new CacheException(ioe);
+        }
+
+        return new RawTile(data);
+    }
+
+    public boolean remove(Object key)
+            throws org.geowebcache.cache.CacheException {
+        String filePath = pathPrefix + File.separator + (String) key;
+        File fh = new File(filePath);
+        return fh.delete();
+    }
+
+    public void removeAll() throws org.geowebcache.cache.CacheException {
+        // Do nothing for now
+    }
+
+    public void set(Object key, Object obj, long ttl)
+            throws org.geowebcache.cache.CacheException {
+        if (ttl == LayerProfile.CACHE_NEVER) {
+            return;
+        }
+
+        String filePath = pathPrefix + File.separator + (String) key;
+        log.trace("Attempting write to " + filePath);
+        File fh = new File(filePath);
+        File pfh = new File(fh.getParent());
+
+        RawTile tile = (RawTile) obj;
+
+        if (pfh.mkdirs()
+                || (pfh.exists() && pfh.isDirectory() && pfh.canWrite())) {
+            try {
+                FileOutputStream os = new FileOutputStream(fh);
+                os.write(tile.getData());
+                os.flush();
+                os.close();
+            } catch (FileNotFoundException fnfe) {
+                throw new CacheException(fnfe);
+            } catch (IOException ioe) {
+                log.error("IOException writing to " + filePath + ": "
+                        + ioe.getMessage());
+                throw new CacheException(ioe);
+            }
+        } else {
+            throw new CacheException("Unable to create directories: "
+                    + pfh.getAbsolutePath());
+        }
+    }
+
+    public String getDefaultCacheKeyName() {
+        return "org.geowebcache.cachekey.FilePathKey";
+    }
 
 }

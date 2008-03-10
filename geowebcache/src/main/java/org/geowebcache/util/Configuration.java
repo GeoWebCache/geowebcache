@@ -21,114 +21,123 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-
 import java.util.HashMap;
 import java.util.Properties;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.layer.TileLayer;
 
-
 public class Configuration {
-	private static Log log = LogFactory.getLog(org.geowebcache.util.Configuration.class);
-	private Properties props = null;
-	//private WMSParameters wmsparams = null;
-	//private String server = null;
-	//private String service = null;
-	//private String cache = null;
-	//private Set resolutions = null;
-	//private boolean forward_errors;
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.util.Configuration.class);
 
-	private File[] propFiles = null;
-	private HashMap layers = new HashMap();
-	
-	// Make Configuration a singleton
-	//private static final Configuration singleton_inst = new Configuration();
+    private Properties props = null;
 
-	public Configuration(File configDirH) {		
-		//Find all the property files and process each one into a TileLayer
-		findPropFiles(configDirH);
-		if(propFiles != null) {
-			log.trace("Found " + propFiles.length + " property files.");
-		} else {
-			log.error("Found no property files!");
-		}
-		
-		//Loop over the property files, create TileLayers
-		for(int i=0; i<propFiles.length; i++) {
-			Properties props = readProperties(propFiles[i]);
-			if(props == null) {
-				continue;
-			}
-			
-			String layerName = propFiles[i].getName();
-			String[] nameComps = layerName.split("\\.");
-			layerName = nameComps[0].substring(6);
-			
-			log.trace("Adding layer " + layerName);
-			
-			TileLayer layer = null;
-			try {	
-				layer = new TileLayer(layerName, props);
-			} catch (CacheException ce) {
-				log.trace("CacheException, failed to add layer " + layerName);
-				ce.printStackTrace();
-			}
-			
-			if(layer != null) {
-				layers.put(layerName, layer);
-			}
-		}
-	}
-	
-	/**
-	 * Find all the .properties files in the configuration file directory.
-	 * @param configDirH
-	 */
-	private void findPropFiles(File configDirH) {
-		FilenameFilter select = new ExtensionFileListFilter("layer_","properties");
-		File[] propFiles = configDirH.listFiles(select);
-		this.propFiles = propFiles;
-	}
-	
-	private Properties readProperties(File propFile) {
-		props = null;
-		
-		log.debug("Found " + propFile.getAbsolutePath() + " file.");
-		try {
-			FileInputStream in = new FileInputStream(propFile);
-			props = new Properties();
-			props.load(in);
-			in.close();
-		} catch(IOException ioe) {
-			log.error("Could not read " + propFile.getAbsolutePath() + " file: ", ioe);
-		}
-		return props;
-	}
-	
-	public HashMap getLayers() {
-		return layers;
-	}
+    // private WMSParameters wmsparams = null;
+    // private String server = null;
+    // private String service = null;
+    // private String cache = null;
+    // private Set resolutions = null;
+    // private boolean forward_errors;
+
+    private File[] propFiles = null;
+
+    private HashMap layers = new HashMap();
+
+    // Make Configuration a singleton
+    // private static final Configuration singleton_inst = new
+    // Configuration();
+
+    public Configuration(File configDirH) {
+        // Find all the property files and process each one into a TileLayer
+        findPropFiles(configDirH);
+        if (propFiles != null) {
+            log.trace("Found " + propFiles.length + " property files.");
+        } else {
+            log.error("Found no property files!");
+        }
+
+        // Loop over the property files, create TileLayers
+        for (int i = 0; i < propFiles.length; i++) {
+            Properties props = readProperties(propFiles[i]);
+            if (props == null) {
+                continue;
+            }
+
+            String layerName = propFiles[i].getName();
+            String[] nameComps = layerName.split("\\.");
+            layerName = nameComps[0].substring(6);
+
+            log.trace("Adding layer " + layerName);
+
+            TileLayer layer = null;
+            try {
+                layer = new TileLayer(layerName, props);
+            } catch (CacheException ce) {
+                log.trace("CacheException, failed to add layer " + layerName);
+                ce.printStackTrace();
+            }
+
+            if (layer != null) {
+                layers.put(layerName, layer);
+            }
+        }
+    }
+
+    /**
+     * Find all the .properties files in the configuration file directory.
+     * 
+     * @param configDirH
+     */
+    private void findPropFiles(File configDirH) {
+        FilenameFilter select = new ExtensionFileListFilter("layer_",
+                "properties");
+        File[] propFiles = configDirH.listFiles(select);
+        this.propFiles = propFiles;
+    }
+
+    private Properties readProperties(File propFile) {
+        props = null;
+
+        log.debug("Found " + propFile.getAbsolutePath() + " file.");
+        try {
+            FileInputStream in = new FileInputStream(propFile);
+            props = new Properties();
+            props.load(in);
+            in.close();
+        } catch (IOException ioe) {
+            log.error("Could not read " + propFile.getAbsolutePath()
+                    + " file: ", ioe);
+        }
+        return props;
+    }
+
+    public HashMap getLayers() {
+        return layers;
+    }
 }
 
 class ExtensionFileListFilter implements FilenameFilter {
-	private String prefix;
-	private String extension; 
+    private String prefix;
 
-	public ExtensionFileListFilter(String prefix, String extension) {
-		this.prefix = prefix;
-		this.extension = extension;
-	}
+    private String extension;
 
-	public boolean accept(File directory, String filename) {
-		if (prefix != null && extension != null) {
-			System.out.println(" properties: " + directory.getAbsolutePath() + " " + filename);
-			boolean ret = filename.endsWith('.' + extension) && filename.startsWith(prefix);
-			return ret;
-		} else {
-			return false;
-		}
-	}
+    public ExtensionFileListFilter(String prefix, String extension) {
+        this.prefix = prefix;
+        this.extension = extension;
+    }
+
+    public boolean accept(File directory, String filename) {
+        if (prefix != null && extension != null) {
+            System.out.println(" properties: " + directory.getAbsolutePath()
+                    + " " + filename);
+            boolean ret = filename.endsWith('.' + extension)
+                    && filename.startsWith(prefix);
+            return ret;
+        } else {
+            return false;
+        }
+    }
 }

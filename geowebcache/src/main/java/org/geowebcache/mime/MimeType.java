@@ -24,100 +24,106 @@ import org.apache.commons.logging.LogFactory;
 
 public class MimeType {
 
-	private static Log log = LogFactory.getLog(org.geowebcache.mime.MimeType.class);
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.mime.MimeType.class);
 
-	private static final String DEFAULT_MIME = "application/octet-stream";
-	private static final char SEPARATOR = '/';
-	private String encoding = null;
+    private static final String DEFAULT_MIME = "application/octet-stream";
 
-	private String mimetype =  null;
+    private static final char SEPARATOR = '/';
 
-	public MimeType() {
-	}
+    private String encoding = null;
 
-	/**
-	 * @param mime is the full MIME string
-	 * @throws IOException
-	 */
-	public MimeType(String mime) throws IOException {
-		setMime(mime);
-	}
+    private String mimetype = null;
 
-	public MimeType(String mime, String encoding) throws IOException {
-		setMime(mime);
-		this.encoding = encoding;
-	}
+    public MimeType() {
+    }
 
-	public void setToDefault() {
-		try {
-			setMime(DEFAULT_MIME);
-		} catch (IOException e) {
-			log.error("Invalid default MIME type!");
-		}
-	}
+    /**
+     * @param mime
+     *            is the full MIME string
+     * @throws IOException
+     */
+    public MimeType(String mime) throws IOException {
+        setMime(mime);
+    }
 
-	/**
-	 * @return the MIME String
-	 */
-	public String getMime() {
-		return (mimetype);
-	}
+    public MimeType(String mime, String encoding) throws IOException {
+        setMime(mime);
+        this.encoding = encoding;
+    }
 
-	/**
-	 * @param mimetype is the full MIME string
-	 * @throws IOException
-	 */
-	public void setMime(String mimetype) throws IOException {
-		mimetype = mimetype.toLowerCase();
-		if(mimetype.length() > 0) {
-			this.mimetype = mimetype;
-			log.trace("Set MIME type to: " + this.mimetype);
-		} else {
-			log.error("Cannot set MIME type to null!");
-			throw new IOException("Invalid MIME Type: " + mimetype);
-		}
-	}
+    public void setToDefault() {
+        try {
+            setMime(DEFAULT_MIME);
+        } catch (IOException e) {
+            log.error("Invalid default MIME type!");
+        }
+    }
 
-	/**
-	 * @return the type
-	 */
-	public String getFormat() {
-		int sep_index = mimetype.indexOf(SEPARATOR);
-		sep_index++;
-		String format;
-		try {
-			format = mimetype.substring(sep_index);
-		} catch (IndexOutOfBoundsException iobe) {
-			format = getMime();
-		}
-		return format;
-	}
+    /**
+     * @return the MIME String
+     */
+    public String getMime() {
+        return (mimetype);
+    }
 
-	@Override
-	public String toString() {
-		return getMime();
-	}
+    /**
+     * @param mimetype
+     *            is the full MIME string
+     * @throws IOException
+     */
+    public void setMime(String mimetype) throws IOException {
+        mimetype = mimetype.toLowerCase();
+        if (mimetype.length() > 0) {
+            this.mimetype = mimetype;
+            log.trace("Set MIME type to: " + this.mimetype);
+        } else {
+            log.error("Cannot set MIME type to null!");
+            throw new IOException("Invalid MIME Type: " + mimetype);
+        }
+    }
 
-	public String toFullString() {
-		return getMime() + ", " + getEncoding();
-	}
+    /**
+     * @return the type
+     */
+    public String getFormat() {
+        int sep_index = mimetype.indexOf(SEPARATOR);
+        sep_index++;
+        String format;
+        try {
+            format = mimetype.substring(sep_index);
+        } catch (IndexOutOfBoundsException iobe) {
+            format = getMime();
+        }
+        return format;
+    }
 
-	/**
-	 * @return the encoding
-	 */
-	public String getEncoding() {
-		return encoding;
-	}
+    @Override
+    public String toString() {
+        return getMime();
+    }
 
-	/**
-	 * @param encoding the encoding to set
-	 */
-	public void setEncoding(String encoding) {
-		this.encoding = encoding;
-		log.trace("Set character encoding to: " + this.encoding);
-	}
+    public String toFullString() {
+        return getMime() + ", " + getEncoding();
+    }
 
-	public boolean equals(MimeType other) {
-		return mimetype.equals(other.getMime());
-	}
+    /**
+     * @return the encoding
+     */
+    public String getEncoding() {
+        return encoding;
+    }
+
+    /**
+     * @param encoding
+     *            the encoding to set
+     */
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+        log.trace("Set character encoding to: " + this.encoding);
+    }
+
+    public boolean equals(MimeType other) {
+        return mimetype.equals(other.getMime());
+    }
 }

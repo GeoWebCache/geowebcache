@@ -25,240 +25,272 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.service.wms.WMSParameters;
 
 public class LayerProfile {
-	private static Log log = LogFactory.getLog(org.geowebcache.layer.LayerProfile.class);
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.layer.LayerProfile.class);
 
-	public static final int CACHE_NEVER = 0;
-	public static final int CACHE_VALUE_UNSET = -1;
-	public static final int CACHE_NEVER_EXPIRE = -2;
-	public static final int CACHE_USE_WMS_BACKEND_VALUE = -4;
-	
-	// This assumes image output
-	protected String srs = "EPSG:4326";
-	protected BBOX bbox = null;
-	protected BBOX gridBase = null;
-	protected GridCalculator gridCalc = null;
-	protected int width = 256;
-	protected int height = 256; 
-	protected int metaWidth = 1;
-	protected int metaHeight = 1;
-	protected double maxTileWidth = -1.0;
-	protected double maxTileHeight = -1.0;
-	protected int zoomStart = 0;
-	protected int zoomStop = 25;
-	protected String request = "map";
-	protected String version = "1.1.1";
-	protected String errorMime = "application/vnd.ogc.se_inimage";
-	protected String transparent = null;
-	protected String tiled = null;
-	protected String bgcolor = null;
-	protected String palette = null;
-	protected String wmsURL[] = {"http://localhost:8080/geoserver/wms"};
-	protected int curWmsURL = 0;
-	protected String wmsLayers = "topp:states";
-	protected String wmsStyles = null;
-	
-	protected WMSParameters wmsparams = null;
-	protected long expireClients = CACHE_USE_WMS_BACKEND_VALUE; 
-	protected long expireCache =  CACHE_NEVER_EXPIRE;
-	
-	/**
-	 * Only for testin purposes
-	 */
-	public LayerProfile() {		
+    public static final int CACHE_NEVER = 0;
 
-	}
-	
-	public LayerProfile(Properties props) {		
-		setParametersFromProperties(props);
-		
-		if(log.isTraceEnabled()) {
-			log.trace("Created a new layer: " + toString());
-		}
-	}
-	
-	private void setParametersFromProperties(Properties props) {
-		String propSrs = props.getProperty("srs");
-		if(propSrs != null) {
-			srs = propSrs;
-		}
-		
-		if(srs.equalsIgnoreCase("EPSG:4326")) {
-			maxTileWidth = 180.0;
-			maxTileHeight = 180.0;
-		} else if(srs.equalsIgnoreCase("EPSG:900913")){
-			maxTileWidth = 20037508.34*2;
-			maxTileHeight = 20037508.34*2;
-		} else {
-			log.error("May not interpret SRS " + srs + " correctly.");
-		}
-		
-		String propZoomStart = props.getProperty("zoomStart");
-		if(propZoomStart != null) {
-			zoomStart = Integer.parseInt(propZoomStart);
-		}
-		
-		String propZoomStop = props.getProperty("zoomStop");
-		if(propZoomStop != null) {
-			zoomStop = Integer.parseInt(propZoomStop);
-		}
-		
-		String propMetatiling = props.getProperty("metatiling");
-		if(propMetatiling != null) {
-			String[] metatiling = propMetatiling.split("x");
-			if(metatiling != null && metatiling.length == 2) {
-				metaWidth = Integer.parseInt(metatiling[0]);
-				metaHeight = Integer.parseInt(metatiling[1]);
-			} else {
-				log.error("Unable to interpret metatiling="+propMetatiling+", expected something like 3x3");
-			}
-		}
-		
-		String propGrid = props.getProperty("grid");
-		if(propGrid != null) {
-			gridBase = new BBOX(propGrid);
-			if(! gridBase.isSane()) {
-				log.error("The grid "+propGrid+" intepreted as " + gridBase.toString() + " is not sane.");
-			}
-		} else {
-			gridBase = new BBOX(-180.0, -90.0, 180.0, 90.0);
-		}
-		
-		// The following depends on metatiling and grid
-		String propBbox = props.getProperty("bbox");
-		if(propBbox != null) {
-			BBOX layerBounds = new BBOX(propBbox);
-			log.info("Specified bbox " + layerBounds.toString() + ".");
-			
-			if(! layerBounds.isSane()) {
-				log.error("The bbox "+propBbox+" intepreted as " 
-						+ layerBounds.toString() + " is not sane.");
-			} else if(! gridBase.contains(layerBounds)){
-				log.error("The bbox "+propBbox+" intepreted as " 
-						+ layerBounds.toString() + " is not contained by the grid: " + gridBase.toString());
-			} else {
-				bbox = layerBounds; // adjust to the closest grid ?
-				//log.info("Recreated bbox: " + bbox.toString());
-			}
-		} else {
-			bbox = new BBOX(-180.0, -90.0, 180.0, 90.0);
-		}
-		
-		gridCalc = new GridCalculator(this);
-		
-		String propWidth = props.getProperty("width");
-		if(propWidth != null) {
-			width = Integer.parseInt(propWidth);
-		}
-		
-		String propHeight = props.getProperty("height");
-		if(propHeight != null) {
-			height = Integer.parseInt(propHeight);
-		}
-		
-		String propVersion = props.getProperty("version");
-		if(propVersion != null) {
-			version = propVersion;
-		}
+    public static final int CACHE_VALUE_UNSET = -1;
 
-		String propErrorMime = props.getProperty("errormime");
-		if(propErrorMime != null) {
-			errorMime = propErrorMime;
-		}
-		
-		String propTiled = props.getProperty("tiled");
-		if(propTiled != null) {
-			tiled = propTiled;
-		}
-	
-		String propTransparent = props.getProperty("transparent");
-		if(propTransparent != null) {
-			transparent = propTransparent;
-		}
-		
-		String propBgcolor = props.getProperty("bgcolor");
-		if(propBgcolor != null) {
-			bgcolor = propBgcolor;
-		}
-	
-		String propPalette = props.getProperty("palette");
-		if(propPalette != null) {
-			palette = propPalette;
-		}
+    public static final int CACHE_NEVER_EXPIRE = -2;
 
-		
-		String propUrl = props.getProperty("wmsurl");
-		if(propUrl != null) {
-			wmsURL = propUrl.split(",");
-		}
-		
-		String propLayers = props.getProperty("wmslayers");
-		if(propLayers != null) {
-			wmsLayers = propLayers;
-		}
+    public static final int CACHE_USE_WMS_BACKEND_VALUE = -4;
 
-		String propStyles = props.getProperty("wmsstyles");
-		if(propStyles != null) {
-			wmsStyles = propStyles;
-		}
-		
-		String propExpireClients = props.getProperty("expireclients");
-		if(propExpireClients != null) {
-			expireClients = Integer.parseInt(propExpireClients) * 1000;
-		}
+    // This assumes image output
+    protected String srs = "EPSG:4326";
 
-		String propExpireCache = props.getProperty("expireCache");
-		if(propExpireCache != null) {
-			expireCache = Integer.parseInt(propExpireCache) * 1000;
-		}
-		
-	}
-	
-	/**
-	 * Get the WMS backend URL that should be used next according to the round robin.
-	 * 
-	 * @return the next URL
-	 */
-	protected String nextWmsURL() {
-		curWmsURL = (curWmsURL + 1) % wmsURL.length;
-		return wmsURL[curWmsURL];
-	}
-		
-	/**
-	 * Gets the template for a WMS request for this profile,
-	 * missing the response mimetype and the boundingbox.
-	 * 
-	 * This is just painful 
-	 * 	- clone?
-	 *  - IOException on mimetype?
-	 * 
-	 * -> Simplify WMSParameters?
-	 */
-	protected WMSParameters getWMSParamTemplate() {
-		wmsparams = new WMSParameters();
-		wmsparams.setRequest(request);
-		wmsparams.setVersion(version);
-		wmsparams.setLayer(wmsLayers);
-		wmsparams.setSrs(srs);
-		try { wmsparams.setErrormime(errorMime); } 
-		catch (IOException ioe) { ioe.printStackTrace(); }
-		wmsparams.setWidth(metaWidth*width);
-		wmsparams.setHeight(metaHeight*height);
-		if(transparent != null) {
-			wmsparams.setIsTransparent(transparent);
-		}
-		if(tiled != null || metaHeight > 1 || metaWidth > 1) {
-			wmsparams.setIsTiled(tiled);
-		}
-		if(bgcolor != null) {
-			wmsparams.setBgColor(bgcolor);
-		}
-		if(palette != null) {
-			wmsparams.setPalette(palette);
-		}
-		if(wmsStyles != null) {
-			wmsparams.setStyles(wmsStyles);
-		}
-		
-		return wmsparams;
-	}
+    protected BBOX bbox = null;
+
+    protected BBOX gridBase = null;
+
+    protected GridCalculator gridCalc = null;
+
+    protected int width = 256;
+
+    protected int height = 256;
+
+    protected int metaWidth = 1;
+
+    protected int metaHeight = 1;
+
+    protected double maxTileWidth = -1.0;
+
+    protected double maxTileHeight = -1.0;
+
+    protected int zoomStart = 0;
+
+    protected int zoomStop = 25;
+
+    protected String request = "map";
+
+    protected String version = "1.1.1";
+
+    protected String errorMime = "application/vnd.ogc.se_inimage";
+
+    protected String transparent = null;
+
+    protected String tiled = null;
+
+    protected String bgcolor = null;
+
+    protected String palette = null;
+
+    protected String wmsURL[] = { "http://localhost:8080/geoserver/wms" };
+
+    protected int curWmsURL = 0;
+
+    protected String wmsLayers = "topp:states";
+
+    protected String wmsStyles = null;
+
+    protected WMSParameters wmsparams = null;
+
+    protected long expireClients = CACHE_USE_WMS_BACKEND_VALUE;
+
+    protected long expireCache = CACHE_NEVER_EXPIRE;
+
+    /**
+     * Only for testin purposes
+     */
+    public LayerProfile() {
+
+    }
+
+    public LayerProfile(Properties props) {
+        setParametersFromProperties(props);
+
+        if (log.isTraceEnabled()) {
+            log.trace("Created a new layer: " + toString());
+        }
+    }
+
+    private void setParametersFromProperties(Properties props) {
+        String propSrs = props.getProperty("srs");
+        if (propSrs != null) {
+            srs = propSrs;
+        }
+
+        if (srs.equalsIgnoreCase("EPSG:4326")) {
+            maxTileWidth = 180.0;
+            maxTileHeight = 180.0;
+        } else if (srs.equalsIgnoreCase("EPSG:900913")) {
+            maxTileWidth = 20037508.34 * 2;
+            maxTileHeight = 20037508.34 * 2;
+        } else {
+            log.error("May not interpret SRS " + srs + " correctly.");
+        }
+
+        String propZoomStart = props.getProperty("zoomStart");
+        if (propZoomStart != null) {
+            zoomStart = Integer.parseInt(propZoomStart);
+        }
+
+        String propZoomStop = props.getProperty("zoomStop");
+        if (propZoomStop != null) {
+            zoomStop = Integer.parseInt(propZoomStop);
+        }
+
+        String propMetatiling = props.getProperty("metatiling");
+        if (propMetatiling != null) {
+            String[] metatiling = propMetatiling.split("x");
+            if (metatiling != null && metatiling.length == 2) {
+                metaWidth = Integer.parseInt(metatiling[0]);
+                metaHeight = Integer.parseInt(metatiling[1]);
+            } else {
+                log.error("Unable to interpret metatiling=" + propMetatiling
+                        + ", expected something like 3x3");
+            }
+        }
+
+        String propGrid = props.getProperty("grid");
+        if (propGrid != null) {
+            gridBase = new BBOX(propGrid);
+            if (!gridBase.isSane()) {
+                log.error("The grid " + propGrid + " intepreted as "
+                        + gridBase.toString() + " is not sane.");
+            }
+        } else {
+            gridBase = new BBOX(-180.0, -90.0, 180.0, 90.0);
+        }
+
+        // The following depends on metatiling and grid
+        String propBbox = props.getProperty("bbox");
+        if (propBbox != null) {
+            BBOX layerBounds = new BBOX(propBbox);
+            log.info("Specified bbox " + layerBounds.toString() + ".");
+
+            if (!layerBounds.isSane()) {
+                log.error("The bbox " + propBbox + " intepreted as "
+                        + layerBounds.toString() + " is not sane.");
+            } else if (!gridBase.contains(layerBounds)) {
+                log.error("The bbox " + propBbox + " intepreted as "
+                        + layerBounds.toString()
+                        + " is not contained by the grid: "
+                        + gridBase.toString());
+            } else {
+                bbox = layerBounds; // adjust to the closest grid ?
+                // log.info("Recreated bbox: " + bbox.toString());
+            }
+        } else {
+            bbox = new BBOX(-180.0, -90.0, 180.0, 90.0);
+        }
+
+        gridCalc = new GridCalculator(this);
+
+        String propWidth = props.getProperty("width");
+        if (propWidth != null) {
+            width = Integer.parseInt(propWidth);
+        }
+
+        String propHeight = props.getProperty("height");
+        if (propHeight != null) {
+            height = Integer.parseInt(propHeight);
+        }
+
+        String propVersion = props.getProperty("version");
+        if (propVersion != null) {
+            version = propVersion;
+        }
+
+        String propErrorMime = props.getProperty("errormime");
+        if (propErrorMime != null) {
+            errorMime = propErrorMime;
+        }
+
+        String propTiled = props.getProperty("tiled");
+        if (propTiled != null) {
+            tiled = propTiled;
+        }
+
+        String propTransparent = props.getProperty("transparent");
+        if (propTransparent != null) {
+            transparent = propTransparent;
+        }
+
+        String propBgcolor = props.getProperty("bgcolor");
+        if (propBgcolor != null) {
+            bgcolor = propBgcolor;
+        }
+
+        String propPalette = props.getProperty("palette");
+        if (propPalette != null) {
+            palette = propPalette;
+        }
+
+        String propUrl = props.getProperty("wmsurl");
+        if (propUrl != null) {
+            wmsURL = propUrl.split(",");
+        }
+
+        String propLayers = props.getProperty("wmslayers");
+        if (propLayers != null) {
+            wmsLayers = propLayers;
+        }
+
+        String propStyles = props.getProperty("wmsstyles");
+        if (propStyles != null) {
+            wmsStyles = propStyles;
+        }
+
+        String propExpireClients = props.getProperty("expireclients");
+        if (propExpireClients != null) {
+            expireClients = Integer.parseInt(propExpireClients) * 1000;
+        }
+
+        String propExpireCache = props.getProperty("expireCache");
+        if (propExpireCache != null) {
+            expireCache = Integer.parseInt(propExpireCache) * 1000;
+        }
+
+    }
+
+    /**
+     * Get the WMS backend URL that should be used next according to the round
+     * robin.
+     * 
+     * @return the next URL
+     */
+    protected String nextWmsURL() {
+        curWmsURL = (curWmsURL + 1) % wmsURL.length;
+        return wmsURL[curWmsURL];
+    }
+
+    /**
+     * Gets the template for a WMS request for this profile, missing the
+     * response mimetype and the boundingbox.
+     * 
+     * This is just painful - clone? - IOException on mimetype? -> Simplify
+     * WMSParameters?
+     */
+    protected WMSParameters getWMSParamTemplate() {
+        wmsparams = new WMSParameters();
+        wmsparams.setRequest(request);
+        wmsparams.setVersion(version);
+        wmsparams.setLayer(wmsLayers);
+        wmsparams.setSrs(srs);
+        try {
+            wmsparams.setErrormime(errorMime);
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+        wmsparams.setWidth(metaWidth * width);
+        wmsparams.setHeight(metaHeight * height);
+        if (transparent != null) {
+            wmsparams.setIsTransparent(transparent);
+        }
+        if (tiled != null || metaHeight > 1 || metaWidth > 1) {
+            wmsparams.setIsTiled(tiled);
+        }
+        if (bgcolor != null) {
+            wmsparams.setBgColor(bgcolor);
+        }
+        if (palette != null) {
+            wmsparams.setPalette(palette);
+        }
+        if (wmsStyles != null) {
+            wmsparams.setStyles(wmsStyles);
+        }
+
+        return wmsparams;
+    }
 }

@@ -18,39 +18,41 @@
 package org.geowebcache.layer;
 
 public class ImageFormat {
-	protected String mimeType;
-	protected String extension;
-	protected String javaName;
-	
-	public ImageFormat(String mimeType, String extension, String javaName) {
-		this.mimeType = mimeType;
-		this.extension = extension;
-		this.javaName = javaName;
-	}
-	
-	public static ImageFormat createFromMimeType(String mimeType) {
-		if(mimeType.equalsIgnoreCase("image/png")) {
-			return new ImageFormat("image/png",".png","png");
-		} else if(mimeType.equalsIgnoreCase("image/jpeg")) {
-			return new ImageFormat("image/jpeg",".jpeg","jpeg");
-		} else if(mimeType.equalsIgnoreCase("image/gif")) {
-			return new ImageFormat("image/gif",".gif","gif");
-		} else if(mimeType.equalsIgnoreCase("image/tiff")) {
-			return new ImageFormat("image/tiff",".tiff","tiff");
-		} else {
-			return null;
-		}		
-	}
-	
-	public String getMimeType() {
-		return mimeType;
-	}
-	
-	public String getExtension() {
-		return extension;
-	}
-	
-	public String getJavaName() {
-		return javaName;
-	}
+    protected String mimeType;
+
+    protected String extension;
+
+    protected String javaName;
+
+    public ImageFormat(String mimeType, String extension, String javaName) {
+        this.mimeType = mimeType;
+        this.extension = extension;
+        this.javaName = javaName;
+    }
+
+    public static ImageFormat createFromMimeType(String mimeType) {
+        if (mimeType.equalsIgnoreCase("image/png")) {
+            return new ImageFormat("image/png", ".png", "png");
+        } else if (mimeType.equalsIgnoreCase("image/jpeg")) {
+            return new ImageFormat("image/jpeg", ".jpeg", "jpeg");
+        } else if (mimeType.equalsIgnoreCase("image/gif")) {
+            return new ImageFormat("image/gif", ".gif", "gif");
+        } else if (mimeType.equalsIgnoreCase("image/tiff")) {
+            return new ImageFormat("image/tiff", ".tiff", "tiff");
+        } else {
+            return null;
+        }
+    }
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public String getExtension() {
+        return extension;
+    }
+
+    public String getJavaName() {
+        return javaName;
+    }
 }

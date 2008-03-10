@@ -24,58 +24,63 @@ import org.apache.commons.logging.LogFactory;
 
 public class ImageMimeType extends MimeType {
 
-	private static Log log = LogFactory.getLog(org.geowebcache.mime.ImageMimeType.class);
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.mime.ImageMimeType.class);
 
-	private static final String IMAGE_MIME_PREFIX = "image/";
+    private static final String IMAGE_MIME_PREFIX = "image/";
 
-	public ImageMimeType() {
-		super();
-	}
+    public ImageMimeType() {
+        super();
+    }
 
-	/**
-	 * @param mime is the full MIME string
-	 * @throws IOException
-	 */
-	public ImageMimeType(String mime) throws IOException {
-		super(mime);
-	}
+    /**
+     * @param mime
+     *            is the full MIME string
+     * @throws IOException
+     */
+    public ImageMimeType(String mime) throws IOException {
+        super(mime);
+    }
 
-	/**
-	 * @param mime is
-	 * @throws IOException
-	 */
-	public ImageMimeType(MimeType mime) throws IOException {
-		setMime(mime.getMime());
-		setEncoding(mime.getEncoding());
-	}
+    /**
+     * @param mime
+     *            is
+     * @throws IOException
+     */
+    public ImageMimeType(MimeType mime) throws IOException {
+        setMime(mime.getMime());
+        setEncoding(mime.getEncoding());
+    }
 
-	/**
-	 * @param mimetype is the full MIME string
-	 * @throws IOException
-	 */
-	@Override
-	public void setMime(String mimetype) throws IOException {
-		if(mimetype.startsWith(IMAGE_MIME_PREFIX)) {
-			super.setMime(mimetype);
-		} else {
-			log.error("Invalid MIME Type: " + mimetype);
-			throw new IOException("Invalid MIME Type: " + mimetype);
-		}
-	}
+    /**
+     * @param mimetype
+     *            is the full MIME string
+     * @throws IOException
+     */
+    @Override
+    public void setMime(String mimetype) throws IOException {
+        if (mimetype.startsWith(IMAGE_MIME_PREFIX)) {
+            super.setMime(mimetype);
+        } else {
+            log.error("Invalid MIME Type: " + mimetype);
+            throw new IOException("Invalid MIME Type: " + mimetype);
+        }
+    }
 
-	/**
-	 * @param format is an image format
-	 */
-	public void setFormat(String imageformat) {
-			try {
-				super.setMime(IMAGE_MIME_PREFIX + imageformat);
-			} catch (IOException ioe) {
-				log.error("Failed to set Image Format!");
-			}
-	}
+    /**
+     * @param format
+     *            is an image format
+     */
+    public void setFormat(String imageformat) {
+        try {
+            super.setMime(IMAGE_MIME_PREFIX + imageformat);
+        } catch (IOException ioe) {
+            log.error("Failed to set Image Format!");
+        }
+    }
 
-	public static boolean isImageMime(String mime) {
-		return (mime.startsWith(IMAGE_MIME_PREFIX));
-	}
+    public static boolean isImageMime(String mime) {
+        return (mime.startsWith(IMAGE_MIME_PREFIX));
+    }
 
 }

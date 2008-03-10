@@ -20,56 +20,54 @@ package org.geowebcache.cachekey;
 import java.io.File;
 
 public class FilePathKey implements CacheKey {
-	String layerPrefix;
-		
-	public void init(String prefix) {
-		layerPrefix = prefix;
-	}
+    String layerPrefix;
 
-	public String createKey(int x, int y, int z, String format) {	
-		String filename = 
-			layerPrefix
-			+ File.separator + zeroPadder(z - 1, 2)
-			+ File.separator + zeroPadder( x / 1000000, 3) 
-			+ File.separator + zeroPadder((x / 1000 )% 1000, 3)
-			+ File.separator + zeroPadder( x % 1000, 3) 
-			+ File.separator + zeroPadder( y / 1000000, 3)
-			+ File.separator + zeroPadder((y / 1000)%1000, 3)
-			+ File.separator + zeroPadder( y % 1000, 3) 
-			+ format;
-		//String fileName = Integer.toString(z) +"-"+ Integer.toString(x) +"-"+ Integer.toString(y) + format + "";
-		return 	filename;
-	}
+    public void init(String prefix) {
+        layerPrefix = prefix;
+    }
 
-	public int getType() {
-		return KEY_FILE_PATH;
-	}
-	
-	/**
-	 * Silly way to pad numbers with leading zeros, since I don't
-	 * know a fast way of doing this in Java.
-	 * 
-	 * @param number
-	 * @param order
-	 * @return
-	 */
-	private static String zeroPadder(int number, int order) {
-		if(order == 3) {
-			if(number < 100) {
-				if(number < 10) {
-					return "00"+Integer.toString(number);
-				} else {
-					return "0"+Integer.toString(number);
-				}
-			} else {
-				return Integer.toString(number);
-			}
-		} else{ //assume (order == 2)
-			if(number < 10) {
-				return "0" + Integer.toString(number);
-			} else {
-				return Integer.toString(number);
-			}
-		}
-	}
+    public String createKey(int x, int y, int z, String format) {
+        String filename = layerPrefix + File.separator + zeroPadder(z - 1, 2)
+                + File.separator + zeroPadder(x / 1000000, 3) + File.separator
+                + zeroPadder((x / 1000) % 1000, 3) + File.separator
+                + zeroPadder(x % 1000, 3) + File.separator
+                + zeroPadder(y / 1000000, 3) + File.separator
+                + zeroPadder((y / 1000) % 1000, 3) + File.separator
+                + zeroPadder(y % 1000, 3) + format;
+        // String fileName = Integer.toString(z) +"-"+ Integer.toString(x) +"-"+
+        // Integer.toString(y) + format + "";
+        return filename;
+    }
+
+    public int getType() {
+        return KEY_FILE_PATH;
+    }
+
+    /**
+     * Silly way to pad numbers with leading zeros, since I don't know a fast
+     * way of doing this in Java.
+     * 
+     * @param number
+     * @param order
+     * @return
+     */
+    private static String zeroPadder(int number, int order) {
+        if (order == 3) {
+            if (number < 100) {
+                if (number < 10) {
+                    return "00" + Integer.toString(number);
+                } else {
+                    return "0" + Integer.toString(number);
+                }
+            } else {
+                return Integer.toString(number);
+            }
+        } else { // assume (order == 2)
+            if (number < 10) {
+                return "0" + Integer.toString(number);
+            } else {
+                return Integer.toString(number);
+            }
+        }
+    }
 }

@@ -24,53 +24,55 @@ import org.geowebcache.layer.BBOX;
  * 
  */
 public class VEConverter {
-	private static Log log = LogFactory.getLog(org.geowebcache.service.ve.VEConverter.class);
-	
-	/**
-	 * Convert a quadkey into a bounding box for EPSG:900913
-	 * 
-	 * @param quadKey
-	 * @return
-	 */
-	public static BBOX convertQuadKey(String quadKey) {
-		char[] quadArray = quadKey.toCharArray();
-		
-		int zoomLevel = quadArray.length;
-		
-		double extent = 20037508.34*2;
-		
-		// Start in the top left hand corner
-		double xPos = -20037508.34;
-		double yPos = 20037508.34;
-		
-		// Now we traverse the quadArray from left to right, interpretation
-		//  0 1
-		//  2 3
-		// see http://msdn2.microsoft.com/en-us/library/bb259689.aspx
-		//
-		// What we'll end up with is the top left hand corner of the bbox
-		//
-		for(int i=0; i<zoomLevel; i++) {
-			char curChar = quadArray[i];
-			extent = extent/2; // For each round half as much is at stake
-			
-			if(curChar == '0') {
-				// X,Y stay
-			} else if(curChar == '1') {
-				xPos += extent;
-				// Y stays
-			} else if(curChar == '2') {
-				// X stays
-				yPos -= extent;	
-			} else if(curChar == '3') {
-				xPos += extent;
-				yPos -= extent;
-			} else {
-				log.error("Don't know how to interpret quadKey: "+quadKey);
-			}	
-		}
-		
-		// xPos and yPos are the top left hand corner, extent is tilewidth
-		return new BBOX(xPos, yPos - extent, xPos + extent, yPos);
-	}
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.service.ve.VEConverter.class);
+
+    /**
+     * Convert a quadkey into a bounding box for EPSG:900913
+     * 
+     * @param quadKey
+     * @return
+     */
+    public static BBOX convertQuadKey(String quadKey) {
+        char[] quadArray = quadKey.toCharArray();
+
+        int zoomLevel = quadArray.length;
+
+        double extent = 20037508.34 * 2;
+
+        // Start in the top left hand corner
+        double xPos = -20037508.34;
+        double yPos = 20037508.34;
+
+        // Now we traverse the quadArray from left to right, interpretation
+        // 0 1
+        // 2 3
+        // see http://msdn2.microsoft.com/en-us/library/bb259689.aspx
+        //
+        // What we'll end up with is the top left hand corner of the bbox
+        //
+        for (int i = 0; i < zoomLevel; i++) {
+            char curChar = quadArray[i];
+            extent = extent / 2; // For each round half as much is at
+            // stake
+
+            if (curChar == '0') {
+                // X,Y stay
+            } else if (curChar == '1') {
+                xPos += extent;
+                // Y stays
+            } else if (curChar == '2') {
+                // X stays
+                yPos -= extent;
+            } else if (curChar == '3') {
+                xPos += extent;
+                yPos -= extent;
+            } else {
+                log.error("Don't know how to interpret quadKey: " + quadKey);
+            }
+        }
+
+        // xPos and yPos are the top left hand corner, extent is tilewidth
+        return new BBOX(xPos, yPos - extent, xPos + extent, yPos);
+    }
 }

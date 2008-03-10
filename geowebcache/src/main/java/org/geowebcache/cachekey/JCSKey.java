@@ -20,32 +20,36 @@ package org.geowebcache.cachekey;
 import java.io.Serializable;
 
 public class JCSKey implements Serializable, CacheKey {
-	private int prefix;
-	private int x;
-	private int y;
-	private int z;
-	private String format;
+    private int prefix;
 
-	public JCSKey() {
-	}
-	
-	private JCSKey(int x, int y, int z, String format) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.format = format;
-	}
+    private int x;
 
-	public void init(String prefix) {
-		this.prefix = prefix.hashCode();
-	}
-	
-	public JCSKey createKey(int x, int y, int z, String format) {
-		return new JCSKey(x,y,z,format);
-	}
+    private int y;
 
-	public int getType() {
-		return KEY_SERIALIZABLE_OBJECT;
-	}
-	
+    private int z;
+
+    private String format;
+
+    public JCSKey() {
+    }
+
+    private JCSKey(int x, int y, int z, String format) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.format = format;
+    }
+
+    public void init(String prefix) {
+        this.prefix = prefix.hashCode();
+    }
+
+    public JCSKey createKey(int x, int y, int z, String format) {
+        return new JCSKey(x, y, z, format);
+    }
+
+    public int getType() {
+        return KEY_SERIALIZABLE_OBJECT;
+    }
+
 }

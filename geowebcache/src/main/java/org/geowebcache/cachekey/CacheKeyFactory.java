@@ -21,29 +21,31 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class CacheKeyFactory {
-	private static Log log = LogFactory.getLog(org.geowebcache.cachekey.CacheKeyFactory.class);
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.cachekey.CacheKeyFactory.class);
 
-	public static CacheKey getCacheKey(String cachekeytype, String prefix) {
-		CacheKey cachekey = null;
-		if(log.isTraceEnabled()) {
-			log.trace("Using cache class: " + cachekeytype);
-		}
-		try {
-			Class cache_key_class = Class.forName(cachekeytype);
-			cachekey = (CacheKey) cache_key_class.newInstance();
-			cachekey.init(prefix);
-			
-		} catch(ClassNotFoundException cnf) {
-			log.fatal("Could not get cache key class: " + cachekeytype, cnf);
-		} catch(IllegalAccessException iae) {
-			log.fatal("Could not access cache key class: " + cachekeytype, iae);
-		} catch(InstantiationException ie) {
-			log.fatal("Could not create instance of cache key class: " + cachekeytype, ie);
-		}
+    public static CacheKey getCacheKey(String cachekeytype, String prefix) {
+        CacheKey cachekey = null;
+        if (log.isTraceEnabled()) {
+            log.trace("Using cache class: " + cachekeytype);
+        }
+        try {
+            Class cache_key_class = Class.forName(cachekeytype);
+            cachekey = (CacheKey) cache_key_class.newInstance();
+            cachekey.init(prefix);
 
-		if(log.isTraceEnabled()) {
-			log.trace("Created cache key: " + cachekey.getClass());
-		}
-		return cachekey;
-	}
+        } catch (ClassNotFoundException cnf) {
+            log.fatal("Could not get cache key class: " + cachekeytype, cnf);
+        } catch (IllegalAccessException iae) {
+            log.fatal("Could not access cache key class: " + cachekeytype, iae);
+        } catch (InstantiationException ie) {
+            log.fatal("Could not create instance of cache key class: "
+                    + cachekeytype, ie);
+        }
+
+        if (log.isTraceEnabled()) {
+            log.trace("Created cache key: " + cachekey.getClass());
+        }
+        return cachekey;
+    }
 }

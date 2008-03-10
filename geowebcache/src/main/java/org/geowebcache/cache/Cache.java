@@ -19,43 +19,45 @@ package org.geowebcache.cache;
 
 import java.util.Properties;
 
-import org.geowebcache.cache.CacheException;
-
 public interface Cache {
-	public void init(Properties props) throws CacheException;
-	
-	public void destroy();
-	
-	public void setUp() throws CacheException;
-	
-	public String getDefaultCacheKeyName();
+    public void init(Properties props) throws CacheException;
 
-	/**
-	 * 
-	 * Note that maxAge is only honored if the backend supports it.
-	 * See static value defined on GeoWebCache 
-	 * 
-	 * @param key the cache key
-	 * @param ttl the maximum age of the object, in milliseconds
-	 * @return
-	 * @throws CacheException
-	 */
-	public Object get(Object key, long ttl) throws CacheException;
+    public void destroy();
 
-	/**
-	 * 
-	 * Note that ttl is only honored if the backend supports it.
-	 * See static value defined on GeoWebCache 
-	 * 
-	 * @param key
-	 * @param obj
-	 * @param ttl the maximum amount of time to cache the object, in milliseconds
-	 * @throws CacheException
-	 */
-	public void set(Object key, Object obj, long ttl) throws CacheException;
+    public void setUp() throws CacheException;
 
-	public boolean remove(Object key) throws CacheException;
+    public String getDefaultCacheKeyName();
 
-	public void removeAll() throws CacheException;
-	
+    /**
+     * 
+     * Note that maxAge is only honored if the backend supports it. See static
+     * value defined on GeoWebCache
+     * 
+     * @param key
+     *            the cache key
+     * @param ttl
+     *            the maximum age of the object, in milliseconds
+     * @return
+     * @throws CacheException
+     */
+    public Object get(Object key, long ttl) throws CacheException;
+
+    /**
+     * 
+     * Note that ttl is only honored if the backend supports it. See static
+     * value defined on GeoWebCache
+     * 
+     * @param key
+     * @param obj
+     * @param ttl
+     *            the maximum amount of time to cache the object, in
+     *            milliseconds
+     * @throws CacheException
+     */
+    public void set(Object key, Object obj, long ttl) throws CacheException;
+
+    public boolean remove(Object key) throws CacheException;
+
+    public void removeAll() throws CacheException;
+
 }

@@ -24,30 +24,29 @@ import org.geowebcache.layer.BBOX;
  * 
  */
 public class GMapsConverter {
-	private static Log log = LogFactory.getLog(org.geowebcache.service.gmaps.GMapsConverter.class);
-	
-	/**
-	 * Convert Google's tiling coordinates into a bounding box for EPSG:900913
-	 * 
-	 * see http://code.google.com/apis/maps/documentation/overlays.html#Custom_Map_Types
-	 * 
-	 * @param quadKey
-	 * @return
-	 */
-	public static BBOX convert(int zoomLevel, int x, int y) {
-		double extent = 20037508.34*2;
-		
-		// Start in the top left hand corner
-		double xPos = -20037508.34;
-		double yPos = 20037508.34;
-		
-		double tileWidth = extent / (Math.pow(2, zoomLevel));
-		
-		// xPos and yPos are the top left hand corner, extent is tilewidth
-		return new BBOX(
-				xPos + x*tileWidth, 
-				yPos - y*tileWidth,
-				xPos + (x+1)*tileWidth, 
-				yPos - (y+1)*tileWidth );
-	}
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.service.gmaps.GMapsConverter.class);
+
+    /**
+     * Convert Google's tiling coordinates into a bounding box for EPSG:900913
+     * 
+     * see
+     * http://code.google.com/apis/maps/documentation/overlays.html#Custom_Map_Types
+     * 
+     * @param quadKey
+     * @return
+     */
+    public static BBOX convert(int zoomLevel, int x, int y) {
+        double extent = 20037508.34 * 2;
+
+        // Start in the top left hand corner
+        double xPos = -20037508.34;
+        double yPos = 20037508.34;
+
+        double tileWidth = extent / (Math.pow(2, zoomLevel));
+
+        // xPos and yPos are the top left hand corner, extent is tilewidth
+        return new BBOX(xPos + x * tileWidth, yPos - y * tileWidth, xPos
+                + (x + 1) * tileWidth, yPos - (y + 1) * tileWidth);
+    }
 }

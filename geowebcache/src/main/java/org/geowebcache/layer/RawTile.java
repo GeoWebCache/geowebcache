@@ -17,9 +17,9 @@
  */
 package org.geowebcache.layer;
 
-import java.io.Serializable;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 
 /**
  * Facilitates use with JCS and other backends that only deal with objects.
@@ -27,22 +27,23 @@ import java.io.OutputStream;
  * @author Arne Kepp, The Open Planning Project
  */
 public class RawTile implements Serializable {
-	/**
-	 * @serial
-	 */
-	private static final long serialVersionUID = -5171595780192211809L;
-	// Store the image  in memory
-	private byte[] data = null;
-	
-	public RawTile(byte[] data) {
-		this.data = data;
-	}
+    /**
+     * @serial
+     */
+    private static final long serialVersionUID = -5171595780192211809L;
 
-	public byte[] getData() {
-		return data;
-	}
-	
-	public void write(OutputStream out) throws IOException {
-		out.write(data);
-	}
+    // Store the image in memory
+    private byte[] data = null;
+
+    public RawTile(byte[] data) {
+        this.data = data;
+    }
+
+    public byte[] getData() {
+        return data;
+    }
+
+    public void write(OutputStream out) throws IOException {
+        out.write(data);
+    }
 }

@@ -23,12 +23,13 @@ package org.geowebcache.cachekey;
  * @author Arne Kepp, The Open Planning Project, (C) 2007
  */
 public interface CacheKey {
-	static int KEY_FILE_PATH = 1;
-	static int KEY_SERIALIZABLE_OBJECT = 2;
-		
-	public void init(String prefix);
-	
-	public Object createKey(int x, int y, int z, String format);
-	
-	int getType();
+    static int KEY_FILE_PATH = 1;
+
+    static int KEY_SERIALIZABLE_OBJECT = 2;
+
+    public void init(String prefix);
+
+    public Object createKey(int x, int y, int z, String format);
+
+    int getType();
 }
