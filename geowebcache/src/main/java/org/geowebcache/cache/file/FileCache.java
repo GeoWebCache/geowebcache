@@ -24,7 +24,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.FileLock;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -53,10 +52,10 @@ public class FileCache implements Cache {
 	public void init(Properties props) throws org.geowebcache.cache.CacheException {
 		String propPathPrefix = props.getProperty("filecachepath");
 		if(propPathPrefix != null) {
-			this.pathPrefix = propPathPrefix;
+			pathPrefix = propPathPrefix;
 		} else {
 			// Try to use %TEMP%
-			this.pathPrefix = System.getenv("TEMP");
+			pathPrefix = System.getenv("TEMP");
 		}
 	}
 	
@@ -69,11 +68,11 @@ public class FileCache implements Cache {
 	 * 2) is writeable
 	 */
 	public void setUp() throws org.geowebcache.cache.CacheException {
-		File path = new File(this.pathPrefix);
+		File path = new File(pathPrefix);
 		if(path.exists() && path.isDirectory() && path.canWrite()) {
 			log.trace("Succesfully opened " + pathPrefix + " for writing");
 		} else {
-			throw new CacheException("Can not write to " + this.pathPrefix + ", the path is not an existing directory or not writeable");
+			throw new CacheException("Can not write to " + pathPrefix + ", the path is not an existing directory or not writeable");
 		}
 	}
 
@@ -99,8 +98,9 @@ public class FileCache implements Cache {
 		
 		long length = fh.length();
 		
-		if(length < 1)
+		if(length < 1) {
 			return null;
+		}
 		
 		byte[] data = new byte[(int) length];
 		
@@ -130,8 +130,9 @@ public class FileCache implements Cache {
 	}
 
 	public void set(Object key, Object obj, long ttl) throws org.geowebcache.cache.CacheException {
-		if(ttl == LayerProfile.CACHE_NEVER)
+		if(ttl == LayerProfile.CACHE_NEVER) {
 			return;
+		}
 		
 		String filePath =  pathPrefix + File.separator + (String) key;
 		log.trace("Attempting write to "+filePath);

@@ -45,14 +45,15 @@ public class ImageMimeType extends MimeType {
 	 * @throws IOException
 	 */
 	public ImageMimeType(MimeType mime) throws IOException {
-		this.setMime(mime.getMime());
-		this.setEncoding(mime.getEncoding());
+		setMime(mime.getMime());
+		setEncoding(mime.getEncoding());
 	}
 
 	/**
 	 * @param mimetype is the full MIME string
 	 * @throws IOException
 	 */
+	@Override
 	public void setMime(String mimetype) throws IOException {
 		if(mimetype.startsWith(IMAGE_MIME_PREFIX)) {
 			super.setMime(mimetype);

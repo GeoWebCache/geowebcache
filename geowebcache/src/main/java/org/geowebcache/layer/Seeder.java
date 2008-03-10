@@ -82,8 +82,9 @@ public class Seeder {
 	
 	private void infoStart(PrintWriter pw, int zoomStart, int zoomStop, BBOX bounds) 
 	throws IOException {
-		if(pw == null)
+		if(pw == null) {
 			return;
+		}
 		pw.print("<table><tr><td>Seeding "+layer.name
 				+" from level "+zoomStart+" to level "+zoomStop
 				+" for bounds "+bounds.getReadableString()+"</td></tr>");
@@ -92,16 +93,18 @@ public class Seeder {
 		
 	private void infoEnd(PrintWriter pw) 
 	throws IOException {
-		if(pw == null)
+		if(pw == null) {
 			return;
+		}
 		
 		pw.print("</table");
 	}
 	
 	private void infoLevelStart(PrintWriter pw, int level, int[] gridBounds) 
 	throws IOException {
-		if(pw == null)
+		if(pw == null) {
 			return;
+		}
 		
 		int tileCount = (gridBounds[2] - gridBounds[0]) * (gridBounds[3] - gridBounds[1]);
 		pw.print("<tr><td>Level "+level+", "+(
@@ -112,16 +115,18 @@ public class Seeder {
 	
 	private void infoLevelStop(PrintWriter pw) 
 	throws IOException {
-		if(pw == null)
+		if(pw == null) {
 			return;
+		}
 		
 		pw.print("</td></tr>");
 	}
 	
 	private void infoTile(PrintWriter pw, int count) 
 	throws IOException {
-		if(pw == null)
+		if(pw == null) {
 			return;
+		}
 		
 		//System.out.println("Count: " + count);
 		pw.print("" + count +", ");

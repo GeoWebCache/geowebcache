@@ -22,7 +22,6 @@ import java.net.URL;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.util.Configuration;
 
 public class Request {
 
@@ -57,7 +56,7 @@ public class Request {
 
 	public void setServer(String address) {
 		try {
-			this.server = new URL(address);
+			server = new URL(address);
 		} catch(MalformedURLException mue) {
 			log.error("Invalid server URL String: ", mue);
 			// Do nothing, leave this.server set to previous value
@@ -75,7 +74,7 @@ public class Request {
 	public URL getURL() {
 		URL address = null;
 		try {
-			address = new URL(this.server.toExternalForm() + this.params.getURLString());
+			address = new URL(server.toExternalForm() + params.getURLString());
 			log.debug("url: " + address);
 		} catch(MalformedURLException mue) {
 			log.error("Invalid URL from server and parameters: ", mue);
@@ -83,6 +82,7 @@ public class Request {
 		return address;
 	}
 
+	@Override
 	public String toString() {
 		return getURL().toString();
 	}

@@ -72,32 +72,35 @@ public class LayerProfile {
 		setParametersFromProperties(props);
 		
 		if(log.isTraceEnabled()) {
-			log.trace("Created a new layer: " + this.toString());
+			log.trace("Created a new layer: " + toString());
 		}
 	}
 	
 	private void setParametersFromProperties(Properties props) {
 		String propSrs = props.getProperty("srs");
-		if(propSrs != null)
-			this.srs = propSrs;
+		if(propSrs != null) {
+			srs = propSrs;
+		}
 		
 		if(srs.equalsIgnoreCase("EPSG:4326")) {
-			this.maxTileWidth = 180.0;
-			this.maxTileHeight = 180.0;
+			maxTileWidth = 180.0;
+			maxTileHeight = 180.0;
 		} else if(srs.equalsIgnoreCase("EPSG:900913")){
-			this.maxTileWidth = 20037508.34*2;
-			this.maxTileHeight = 20037508.34*2;
+			maxTileWidth = 20037508.34*2;
+			maxTileHeight = 20037508.34*2;
 		} else {
 			log.error("May not interpret SRS " + srs + " correctly.");
 		}
 		
 		String propZoomStart = props.getProperty("zoomStart");
-		if(propZoomStart != null)
+		if(propZoomStart != null) {
 			zoomStart = Integer.parseInt(propZoomStart);
+		}
 		
 		String propZoomStop = props.getProperty("zoomStop");
-		if(propZoomStop != null)
+		if(propZoomStop != null) {
 			zoomStop = Integer.parseInt(propZoomStop);
+		}
 		
 		String propMetatiling = props.getProperty("metatiling");
 		if(propMetatiling != null) {
@@ -143,58 +146,70 @@ public class LayerProfile {
 		gridCalc = new GridCalculator(this);
 		
 		String propWidth = props.getProperty("width");
-		if(propWidth != null)
-			this.width = Integer.parseInt(propWidth);
+		if(propWidth != null) {
+			width = Integer.parseInt(propWidth);
+		}
 		
 		String propHeight = props.getProperty("height");
-		if(propHeight != null)
-			this.height = Integer.parseInt(propHeight);
+		if(propHeight != null) {
+			height = Integer.parseInt(propHeight);
+		}
 		
 		String propVersion = props.getProperty("version");
-		if(propVersion != null)
-			this.version = propVersion;
+		if(propVersion != null) {
+			version = propVersion;
+		}
 
 		String propErrorMime = props.getProperty("errormime");
-		if(propErrorMime != null)
-			this.errorMime = propErrorMime;
+		if(propErrorMime != null) {
+			errorMime = propErrorMime;
+		}
 		
 		String propTiled = props.getProperty("tiled");
-		if(propTiled != null)
-			this.tiled = propTiled;
+		if(propTiled != null) {
+			tiled = propTiled;
+		}
 	
 		String propTransparent = props.getProperty("transparent");
-		if(propTransparent != null)
-			this.transparent = propTransparent;
+		if(propTransparent != null) {
+			transparent = propTransparent;
+		}
 		
 		String propBgcolor = props.getProperty("bgcolor");
-		if(propBgcolor != null)
-			this.bgcolor = propBgcolor;
+		if(propBgcolor != null) {
+			bgcolor = propBgcolor;
+		}
 	
 		String propPalette = props.getProperty("palette");
-		if(propPalette != null)
-			this.palette = propPalette;
+		if(propPalette != null) {
+			palette = propPalette;
+		}
 
 		
 		String propUrl = props.getProperty("wmsurl");
 		if(propUrl != null) {
-			this.wmsURL = propUrl.split(",");
+			wmsURL = propUrl.split(",");
 		}
 		
 		String propLayers = props.getProperty("wmslayers");
-		if(propLayers != null)
-			this.wmsLayers = propLayers;
+		if(propLayers != null) {
+			wmsLayers = propLayers;
+		}
 
 		String propStyles = props.getProperty("wmsstyles");
-		if(propStyles != null)
-			this.wmsStyles = propStyles;
+		if(propStyles != null) {
+			wmsStyles = propStyles;
+		}
 		
 		String propExpireClients = props.getProperty("expireclients");
-		if(propExpireClients != null)
+		if(propExpireClients != null) {
 			expireClients = Integer.parseInt(propExpireClients) * 1000;
+		}
 
 		String propExpireCache = props.getProperty("expireCache");
-		if(propExpireCache != null)
+		if(propExpireCache != null) {
 			expireCache = Integer.parseInt(propExpireCache) * 1000;
+		}
 		
 	}
 	
@@ -204,7 +219,7 @@ public class LayerProfile {
 	 * @return the next URL
 	 */
 	protected String nextWmsURL() {
-		curWmsURL = (curWmsURL + 1) % this.wmsURL.length;
+		curWmsURL = (curWmsURL + 1) % wmsURL.length;
 		return wmsURL[curWmsURL];
 	}
 		
@@ -228,16 +243,21 @@ public class LayerProfile {
 		catch (IOException ioe) { ioe.printStackTrace(); }
 		wmsparams.setWidth(metaWidth*width);
 		wmsparams.setHeight(metaHeight*height);
-		if(transparent != null)
+		if(transparent != null) {
 			wmsparams.setIsTransparent(transparent);
-		if(tiled != null || metaHeight > 1 || metaWidth > 1)
+		}
+		if(tiled != null || metaHeight > 1 || metaWidth > 1) {
 			wmsparams.setIsTiled(tiled);
-		if(bgcolor != null)
+		}
+		if(bgcolor != null) {
 			wmsparams.setBgColor(bgcolor);
-		if(palette != null)
+		}
+		if(palette != null) {
 			wmsparams.setPalette(palette);
-		if(wmsStyles != null)
+		}
+		if(wmsStyles != null) {
 			wmsparams.setStyles(wmsStyles);
+		}
 		
 		return wmsparams;
 	}

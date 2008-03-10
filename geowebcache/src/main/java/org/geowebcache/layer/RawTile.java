@@ -39,7 +39,7 @@ public class RawTile implements Serializable {
 	}
 
 	public byte[] getData() {
-		return this.data;
+		return data;
 	}
 	
 	public void write(OutputStream out) throws IOException {

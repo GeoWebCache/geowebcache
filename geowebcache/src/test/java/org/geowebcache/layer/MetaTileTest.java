@@ -1,6 +1,5 @@
 package org.geowebcache.layer;
 
-import java.util.Properties;
 import java.util.Arrays;
 
 import junit.framework.TestCase;
@@ -8,6 +7,7 @@ import junit.framework.TestCase;
 public class MetaTileTest extends TestCase {
 	
 	
+	@Override
 	protected void setUp() throws Exception {
         super.setUp();
 	}

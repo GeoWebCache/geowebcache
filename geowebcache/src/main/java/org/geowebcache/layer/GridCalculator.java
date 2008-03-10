@@ -1,7 +1,5 @@
 package org.geowebcache.layer;
 
-import java.util.Arrays;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -18,11 +16,11 @@ public class GridCalculator {
 	
 	protected GridCalculator(LayerProfile profile) {
 		this.profile = profile;
-		this.base = profile.gridBase;
+		base = profile.gridBase;
 		
 		// Calculate
-		this.baseWidth = base.coords[2] - base.coords[0];
-		this.baseHeight = base.coords[3] - base.coords[1];
+		baseWidth = base.coords[2] - base.coords[0];
+		baseHeight = base.coords[3] - base.coords[1];
 		
 		calculateGridBounds();
 	}
@@ -88,7 +86,7 @@ public class GridCalculator {
 	}
 	
 	protected int[] getGridBounds(int zoomLevel) {
-		return this.gridLevels[zoomLevel].clone();
+		return gridLevels[zoomLevel].clone();
 	}
 	
 	/**
@@ -215,7 +213,7 @@ public class GridCalculator {
 	 * @return
 	 */
 	protected int[] metaGridExtent(int zoomLevel, BBOX bounds) {
-		int[] retVals = this.gridExtent(zoomLevel, bounds);
+		int[] retVals = gridExtent(zoomLevel, bounds);
 		retVals[0] = retVals[0] - (retVals[0] % profile.metaWidth);
 		retVals[1] = retVals[1] - (retVals[1] % profile.metaHeight);
 		retVals[2] = retVals[2] + (retVals[2] % profile.metaWidth);

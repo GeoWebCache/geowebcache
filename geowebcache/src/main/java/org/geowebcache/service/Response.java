@@ -38,7 +38,7 @@ public class Response {
 	public MimeType getMimetype() {
 		MimeType mime;
 		try {
-			mime = new MimeType(this.connection.getContentType(), this.connection.getContentEncoding());
+			mime = new MimeType(connection.getContentType(), connection.getContentEncoding());
 		} catch(IOException ioe) {
 			log.error("Mime type error: ", ioe);
 			mime = new MimeType();
@@ -48,7 +48,7 @@ public class Response {
 	}
 
 	public InputStream getInputStream() throws IOException {
-		return this.connection.getInputStream();
+		return connection.getInputStream();
 	}
 
 }

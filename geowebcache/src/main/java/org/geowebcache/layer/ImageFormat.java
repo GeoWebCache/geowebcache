@@ -43,14 +43,14 @@ public class ImageFormat {
 	}
 	
 	public String getMimeType() {
-		return this.mimeType;
+		return mimeType;
 	}
 	
 	public String getExtension() {
-		return this.extension;
+		return extension;
 	}
 	
 	public String getJavaName() {
-		return this.javaName;
+		return javaName;
 	}
 }

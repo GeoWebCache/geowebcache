@@ -100,6 +100,7 @@ public class BBOX {
 	/**
 	 * Returns a comma separated value String suitable for URL output
 	 */
+	@Override
 	public String toString() {
 		StringBuffer buff = new StringBuffer(40);
 		buff.append(Double.toString(coords[0]));
@@ -147,6 +148,7 @@ public class BBOX {
 		return (coords[0] < coords[2] && coords[1] < coords[3]);
 	}
 	
+	@Override
 	public int hashCode() {
 		return  Float.floatToIntBits((float) coords[0]) ^ Float.floatToIntBits((float) coords[2]);
 	}

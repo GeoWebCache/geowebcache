@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.BBOX;
-import org.geowebcache.layer.ImageFormat;
 
 public abstract class Parameters {
 
@@ -64,7 +63,7 @@ public abstract class Parameters {
 		}
 
 		if(log.isTraceEnabled()) {
-			log.trace("Results from setting from HttpServletRequest: " + this.getReadableString());
+			log.trace("Results from setting from HttpServletRequest: " + getReadableString());
 		}
 	}
 
@@ -73,15 +72,15 @@ public abstract class Parameters {
 	 */
 	@SuppressWarnings("unchecked")
 	public void set(String key, Object value) {
-		this.params.put(key.toLowerCase(), value);
+		params.put(key.toLowerCase(), value);
 	}
 
 	public Object get(String key) {
-		return this.params.get(key.toLowerCase());
+		return params.get(key.toLowerCase());
 	}
 
 	public void remove(String key) {
-		this.params.remove(key.toLowerCase());
+		params.remove(key.toLowerCase());
 	}
 
 
@@ -136,7 +135,7 @@ public abstract class Parameters {
 		StringBuffer arg_str = new StringBuffer(256);
 		String param_name;
 
-		Iterator itr = this.params.keySet().iterator();
+		Iterator itr = params.keySet().iterator();
 		while(itr.hasNext()) {
 			param_name = (String)itr.next();
 			if(param_name != null && param_name.length() > 0) {
@@ -166,6 +165,7 @@ public abstract class Parameters {
 	/**
 	 * Returns a URL string. If a StringBuffer is desired instead, use getURLString()
 	 */
+	@Override
 	public String toString() {
 		return getURLString().toString();
 	}
@@ -177,11 +177,11 @@ public abstract class Parameters {
 		String key;
 		String rtrn = "";
 
-		Iterator itr = this.params.keySet().iterator();
+		Iterator itr = params.keySet().iterator();
 		while(itr.hasNext()) {
 			key = (String)itr.next();
 			if(key != null && key.length() > 0) {
-				Object value = this.params.get(key);
+				Object value = params.get(key);
 				if(value != null) {
 					rtrn += key + '=' + convertToString(value) + ' ';
 				} else {

@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.BBOX;
-import org.geowebcache.layer.ImageFormat;
 import org.geowebcache.mime.ImageMimeType;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Parameters;
@@ -61,6 +60,7 @@ public class WMSParameters extends Parameters {
 	/**
 	 * @return the bbox
 	 */
+	@Override
 	public BBOX getBBOX() {
 		Object obj = get(BBOX_PARAM);
 		if(obj == null) {
@@ -253,6 +253,7 @@ public class WMSParameters extends Parameters {
 	/**
 	 * @return the layer
 	 */
+	@Override
 	public String getLayer() {
 		return convertToString(get(LAYER_PARAM));
 	}
@@ -383,16 +384,36 @@ public class WMSParameters extends Parameters {
 	 */
 	public void setAllFromString(String request, String version, String istiled, String srs, String layer, String styles, String bbox, String origin, String height, String width,
 			String imagemime, String errormime) {
-		if(request != null) this.setRequest(request);
-		if(version != null) this.setVersion(version);
-		if(istiled != null) this.setIsTiled(istiled);
-		if(srs != null) this.setSrs(srs);
-		if(layer != null) this.setLayer(layer);
-		if(styles != null) this.setStyles(styles);
-		if(bbox != null) this.setBBOX(bbox);
-		if(origin != null) this.setOrigin(origin);
-		if(height != null) this.setHeight(height);
-		if(width != null) this.setWidth(width);
+		if(request != null) {
+			setRequest(request);
+		}
+		if(version != null) {
+			setVersion(version);
+		}
+		if(istiled != null) {
+			this.setIsTiled(istiled);
+		}
+		if(srs != null) {
+			setSrs(srs);
+		}
+		if(layer != null) {
+			setLayer(layer);
+		}
+		if(styles != null) {
+			setStyles(styles);
+		}
+		if(bbox != null) {
+			this.setBBOX(bbox);
+		}
+		if(origin != null) {
+			setOrigin(origin);
+		}
+		if(height != null) {
+			this.setHeight(height);
+		}
+		if(width != null) {
+			this.setWidth(width);
+		}
 		if(imagemime != null) {
 			try {
 				this.setImagemime(imagemime);

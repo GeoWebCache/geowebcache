@@ -23,7 +23,7 @@ public class FilePathKey implements CacheKey {
 	String layerPrefix;
 		
 	public void init(String prefix) {
-		this.layerPrefix = prefix;
+		layerPrefix = prefix;
 	}
 
 	public String createKey(int x, int y, int z, String format) {	

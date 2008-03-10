@@ -23,10 +23,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.apache.jcs.JCS;
-import org.apache.jcs.engine.ElementAttributes;
 import org.apache.jcs.engine.behavior.IElementAttributes;
 
-import org.geowebcache.layer.LayerProfile;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 
@@ -61,8 +59,8 @@ public class JCSCache implements Cache {
 	}
 
 	public void destroy() {
-		this.jcscache.dispose();
-		this.jcscache = null;
+		jcscache.dispose();
+		jcscache = null;
 		// Force a garbage collection
 		System.gc();
 	}

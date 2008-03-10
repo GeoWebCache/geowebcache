@@ -33,7 +33,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.BBOX;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.service.Parameters;
 import org.geowebcache.service.gmaps.GMapsConverter;
 import org.geowebcache.service.ve.VEConverter;
 import org.geowebcache.service.wms.WMSParameters;
@@ -53,6 +52,7 @@ public class GeoWebCache extends HttpServlet {
 	 * 3) create the necessary objects
 	 * 4) TODO Digester for Etags, if desirable
 	 */
+	@Override
 	public void init() throws ServletException {
 		// 1) Get the configuration directory
 		String configDir = System.getProperty("GEOWEBCACHE_CONFIG_DIR");
@@ -88,8 +88,8 @@ public class GeoWebCache extends HttpServlet {
 			throw new ServletException("Unable to read configuration from " + configDir);
 		}
 		// 3) Read the configuration files and create corresponding objects in layers.
-		this.configuration = new Configuration(configDirH);
-		this.layers = configuration.getLayers();
+		configuration = new Configuration(configDirH);
+		layers = configuration.getLayers();
 		
 		// 4) Digest mechanism
 		//TODO
@@ -99,6 +99,7 @@ public class GeoWebCache extends HttpServlet {
 	/**
 	 * Loops over all the layers and calls destroy() on their caches.
 	 */
+	@Override
 	public void destroy() {
 		Iterator iter = layers.entrySet().iterator();
 		while(iter.hasNext()) {
@@ -115,6 +116,7 @@ public class GeoWebCache extends HttpServlet {
 	 * 4) Ask TileLayer for best fit for the given parameters
 	 * 5) Return tile
 	 */
+	@Override
 	public void doGet(HttpServletRequest request,
 						HttpServletResponse response)
 						throws ServletException, IOException {
@@ -149,8 +151,9 @@ public class GeoWebCache extends HttpServlet {
 		// Check whether we serve this layer
 		TileLayer cachedLayer = findLayer(wmsparams.getLayer(), response);
 
-		if(cachedLayer != null)
+		if(cachedLayer != null) {
 			cachedLayer = checkLayer(cachedLayer, wmsparams, response);
+		}
 				
 		// Get data (from backend, if necessary)
 		wmsGetData(cachedLayer, wmsparams, response);
@@ -184,7 +187,7 @@ public class GeoWebCache extends HttpServlet {
 		
 		Map params = request.getParameterMap();
 		String strLayers = ServletUtils.stringFromMap(params, "layers");
-		TileLayer layer = (TileLayer) this.layers.get(strLayers);
+		TileLayer layer = (TileLayer) layers.get(strLayers);
 		
 		if(layer == null) {
 			response.setContentType("text/plain");
@@ -197,20 +200,23 @@ public class GeoWebCache extends HttpServlet {
 		response.setBufferSize(12);
 		
 		BBOX reqBounds = null;
-		if(params.containsKey("bbox"))
+		if(params.containsKey("bbox")) {
 			reqBounds = new BBOX(((String[]) params.get("bbox"))[0]);
+		}
 
 		String strStart = ServletUtils.stringFromMap(params, "start");
 		String strStop = ServletUtils.stringFromMap(params, "stop");
 		String strFormat = ServletUtils.stringFromMap(params, "format");
 		
 		int start = -1; 
-		if(strStart != null)
+		if(strStart != null) {
 			start = Integer.valueOf(strStart);
+		}
 
 		int stop = -1;
-		if(strStop != null)
+		if(strStop != null) {
 			stop = Integer.valueOf(strStop);
+		}
 		
 		layer.seed(start, stop, strFormat, reqBounds, response);
 		response.flushBuffer();
@@ -231,8 +237,9 @@ public class GeoWebCache extends HttpServlet {
 		wmsparams.setBBOX(bbox);
 		
 		// A late sanity check
-		if(cachedLayer != null)
+		if(cachedLayer != null) {
 			cachedLayer = checkLayer(cachedLayer, wmsparams, response);
+		}
 		
 		wmsGetData(cachedLayer, wmsparams, response);
 	}
@@ -253,8 +260,9 @@ public class GeoWebCache extends HttpServlet {
 		wmsparams.setBBOX(bbox);
 		
 		// A late sanity check
-		if(cachedLayer != null)
+		if(cachedLayer != null) {
 			cachedLayer = checkLayer(cachedLayer, wmsparams, response);
+		}
 		
 		wmsGetData(cachedLayer, wmsparams, response);
 	}
@@ -267,7 +275,7 @@ public class GeoWebCache extends HttpServlet {
 	 * @return
 	 */
 	private TileLayer findLayer(String strLayer, HttpServletResponse response) throws IOException{
-		TileLayer cachedLayer = (TileLayer) this.layers.get(strLayer);
+		TileLayer cachedLayer = (TileLayer) layers.get(strLayer);
 		
 		if(cachedLayer == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);

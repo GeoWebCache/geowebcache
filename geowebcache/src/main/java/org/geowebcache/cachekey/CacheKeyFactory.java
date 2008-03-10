@@ -17,9 +17,6 @@
  */
 package org.geowebcache.cachekey;
 
-import java.util.Properties;
-
-import org.geowebcache.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

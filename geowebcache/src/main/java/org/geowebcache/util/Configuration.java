@@ -24,14 +24,11 @@ import java.io.IOException;
 
 import java.util.HashMap;
 import java.util.Properties;
-import java.util.Set;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.service.wms.WMSParameters;
 
 
 public class Configuration {
@@ -53,19 +50,20 @@ public class Configuration {
 	public Configuration(File configDirH) {		
 		//Find all the property files and process each one into a TileLayer
 		findPropFiles(configDirH);
-		if(this.propFiles != null) {
+		if(propFiles != null) {
 			log.trace("Found " + propFiles.length + " property files.");
 		} else {
 			log.error("Found no property files!");
 		}
 		
 		//Loop over the property files, create TileLayers
-		for(int i=0; i<this.propFiles.length; i++) {
-			Properties props = readProperties(this.propFiles[i]);
-			if(props == null)
+		for(int i=0; i<propFiles.length; i++) {
+			Properties props = readProperties(propFiles[i]);
+			if(props == null) {
 				continue;
+			}
 			
-			String layerName = this.propFiles[i].getName();
+			String layerName = propFiles[i].getName();
 			String[] nameComps = layerName.split("\\.");
 			layerName = nameComps[0].substring(6);
 			
@@ -79,8 +77,9 @@ public class Configuration {
 				ce.printStackTrace();
 			}
 			
-			if(layer != null)
-				this.layers.put(layerName, layer);
+			if(layer != null) {
+				layers.put(layerName, layer);
+			}
 		}
 	}
 	
@@ -110,7 +109,7 @@ public class Configuration {
 	}
 	
 	public HashMap getLayers() {
-		return this.layers;
+		return layers;
 	}
 }
 

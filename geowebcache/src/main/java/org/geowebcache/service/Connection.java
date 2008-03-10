@@ -30,7 +30,7 @@ public class Connection {
 	private URLConnection outgoing_request = null;
 
 	public Connection(Request request) {
-		this.setRequest(request);
+		setRequest(request);
 	}
 
 	public void connect() throws IOException {

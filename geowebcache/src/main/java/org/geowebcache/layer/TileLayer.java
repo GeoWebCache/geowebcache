@@ -48,7 +48,7 @@ public class TileLayer {
 	Seeder seeder = null;
 	
 	public TileLayer(String layerName, Properties props) throws CacheException {
-		this.name = layerName;
+		name = layerName;
 		setParametersFromProperties(props);
 	}
 
@@ -61,11 +61,11 @@ public class TileLayer {
 	 * @return null if okay, error message otherwise.
 	 */
 	public String covers(WMSParameters wmsparams) {
-		if( ! wmsparams.getSrs().equalsIgnoreCase(this.profile.srs)) {
-			return "Unexpected SRS: "+wmsparams.getSrs()+" , expected "+this.profile.srs;
+		if( ! wmsparams.getSrs().equalsIgnoreCase(profile.srs)) {
+			return "Unexpected SRS: "+wmsparams.getSrs()+" , expected "+profile.srs;
 		}
 		
-		if( ! this.supports(wmsparams.getImagemime().getMime())) {
+		if( ! supports(wmsparams.getImagemime().getMime())) {
 			return "Unsupported MIME type requested: " + wmsparams.getImagemime().getMime();
 		}
 		
@@ -74,8 +74,8 @@ public class TileLayer {
 			return "The requested bounding box "+reqbox.getReadableString()+" is not sane";
 		}
 		
-		if(! this.profile.gridBase.contains(reqbox) ) {
-			return "The layers grid box "+this.profile.gridBase.getReadableString()
+		if(! profile.gridBase.contains(reqbox) ) {
+			return "The layers grid box "+profile.gridBase.getReadableString()
 			+" does not cover the requested bounding box " + reqbox.getReadableString();
 		}
 		// All good
@@ -113,7 +113,7 @@ public class TileLayer {
 		//System.out.println("orig:      "+wmsparams.getBBOX().getReadableString());
 		//System.out.println("recreated: "+profile.recreateBbox(gridLoc).getReadableString());
 		
-		MetaTile metaTile = new MetaTile(this.profile, gridLoc);
+		MetaTile metaTile = new MetaTile(profile, gridLoc);
 		int[] metaGridLoc = metaTile.getMetaGridPos();
 		
 		/********************  Acquire lock  ********************/
@@ -132,7 +132,7 @@ public class TileLayer {
 		RawTile tile = null;
 		if(profile.expireCache != LayerProfile.CACHE_NEVER) {
 			try {
-				tile = (RawTile) cache.get(ck,this.profile.expireCache);
+				tile = (RawTile) cache.get(ck,profile.expireCache);
 				if(tile != null) {
 
 					// Return lock
@@ -172,7 +172,7 @@ public class TileLayer {
 						
 			// Try the cache again
 			try {
-				tile = (RawTile) cache.get(ck, this.profile.expireCache);
+				tile = (RawTile) cache.get(ck, profile.expireCache);
 			} catch (CacheException ce) {
 				log.error("Failed to get " + wmsparams.toString() + " from cache, after first seeding cache.");
 				ce.printStackTrace();
@@ -197,8 +197,9 @@ public class TileLayer {
 	
 	public int seed(int zoomStart, int zoomStop, String format, BBOX bounds, HttpServletResponse response) 
 	throws IOException {
-		if(seeder == null)
+		if(seeder == null) {
 			seeder = new Seeder(this);
+		}
 		
 		String complaint = null;
 		
@@ -220,7 +221,7 @@ public class TileLayer {
 			
 		ImageFormat imageFormat = ImageFormat.createFromMimeType(format);
 		
-		if(imageFormat == null ||! this.supports(imageFormat.getMimeType())) {
+		if(imageFormat == null ||! supports(imageFormat.getMimeType())) {
 			complaint = "Imageformat "+format+" is not supported by layer";
 			log.error(complaint);
 			response.sendError(400, complaint);
@@ -273,8 +274,9 @@ public class TileLayer {
 	 * @param response
 	 */
 	private void setExpirationHeader(HttpServletResponse response){
-		if(profile.expireClients == LayerProfile.CACHE_VALUE_UNSET)
+		if(profile.expireClients == LayerProfile.CACHE_VALUE_UNSET) {
 			return;
+		}
 		
 		if(profile.expireClients > 0) {
 			response.setHeader("Cache-Control","max-age="+(profile.expireClients/1000)+", must-revalidate");
@@ -299,7 +301,7 @@ public class TileLayer {
 		for(int i=0; i < gridPositions.length; i++) {
 			int[] gridPos = gridPositions[i];
 			
-			Object ck = (Object) cacheKey.createKey(gridPos[0], gridPos[1], gridPos[2], imageFormat.getExtension());
+			Object ck = cacheKey.createKey(gridPos[0], gridPos[1], gridPos[2], imageFormat.getExtension());
 			
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			try {
@@ -366,11 +368,11 @@ public class TileLayer {
 	 * @return
 	 */
 	protected boolean waitForQueue(int[] metaGridLoc) {
-		boolean wait = this.addToQueue(metaGridLoc); 
+		boolean wait = addToQueue(metaGridLoc); 
 		while(wait) {
-			if(this.cacheLockWait > 0) {
+			if(cacheLockWait > 0) {
 				try {
-					Thread.sleep(this.cacheLockWait);
+					Thread.sleep(cacheLockWait);
 				} catch (InterruptedException ie) {
 					log.error("Thread got interrupted... how come?");
 					ie.printStackTrace();
@@ -379,7 +381,7 @@ public class TileLayer {
 				Thread.yield();
 			}
 			Thread.yield();
-			wait = this.addToQueue(metaGridLoc);
+			wait = addToQueue(metaGridLoc);
 		}
 		return true;
 	}
@@ -449,12 +451,14 @@ public class TileLayer {
 		}
 		
 		String propDebugHeaders = props.getProperty("debugheaders");
-		if(propDebugHeaders != null)
+		if(propDebugHeaders != null) {
 			debugHeaders = Boolean.valueOf(propDebugHeaders);
+		}
 		
 		String propCacheLockWait = props.getProperty("cachelockwait");
-		if(propCacheLockWait != null)
+		if(propCacheLockWait != null) {
 			cacheLockWait = Integer.valueOf(propCacheLockWait);
+		}
 	}
 	
 	/**
@@ -468,16 +472,17 @@ public class TileLayer {
 	 */
 	private boolean supports(String imageMime) {
 		for(int i=0; i<formats.length; i++) {
-			if(formats[i].getMimeType().equalsIgnoreCase(imageMime))
+			if(formats[i].getMimeType().equalsIgnoreCase(imageMime)) {
 				return true;
+			}
 		}
 		return false;
 	}
 	
 	public WMSParameters getWMSParamTemplate() {
-		WMSParameters ret = this.profile.getWMSParamTemplate();
+		WMSParameters ret = profile.getWMSParamTemplate();
 		try {
-			ret.setImagemime(this.formats[0].getMimeType());
+			ret.setImagemime(formats[0].getMimeType());
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
@@ -485,8 +490,8 @@ public class TileLayer {
 	}
 	
 	public void destroy() {
-		this.cache.destroy();
+		cache.destroy();
 		// Not that it really matters:
-		this.procQueue.clear();
+		procQueue.clear();
 	}
 }

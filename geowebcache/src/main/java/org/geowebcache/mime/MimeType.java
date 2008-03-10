@@ -40,17 +40,17 @@ public class MimeType {
 	 * @throws IOException
 	 */
 	public MimeType(String mime) throws IOException {
-		this.setMime(mime);
+		setMime(mime);
 	}
 
 	public MimeType(String mime, String encoding) throws IOException {
-		this.setMime(mime);
+		setMime(mime);
 		this.encoding = encoding;
 	}
 
 	public void setToDefault() {
 		try {
-			this.setMime(DEFAULT_MIME);
+			setMime(DEFAULT_MIME);
 		} catch (IOException e) {
 			log.error("Invalid default MIME type!");
 		}
@@ -88,17 +88,18 @@ public class MimeType {
 		try {
 			format = mimetype.substring(sep_index);
 		} catch (IndexOutOfBoundsException iobe) {
-			format = this.getMime();
+			format = getMime();
 		}
 		return format;
 	}
 
+	@Override
 	public String toString() {
-		return this.getMime();
+		return getMime();
 	}
 
 	public String toFullString() {
-		return this.getMime() + ", " + this.getEncoding();
+		return getMime() + ", " + getEncoding();
 	}
 
 	/**
@@ -117,6 +118,6 @@ public class MimeType {
 	}
 
 	public boolean equals(MimeType other) {
-		return this.mimetype.equals(other.getMime());
+		return mimetype.equals(other.getMime());
 	}
 }
