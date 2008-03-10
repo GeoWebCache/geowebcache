@@ -49,10 +49,10 @@ public class MetaTileTest extends TestCase {
         profile.zoomStop = 20;
     	
         profile.gridCalc = new GridCalculator(profile);
-        int[] gridPos = {70,38,6};
+        int[] gridPos = {127,63,6};
         MetaTile mt = new MetaTile(profile,gridPos);
         
-        int[] solution = {69,36,72,39,6};
+        int[] solution = {126, 63, 127, 63, 6};
         boolean test = Arrays.equals(mt.metaGrid,solution);
         if(! test) {
         	System.out.println("2 - " + mt.debugString());
