@@ -18,6 +18,7 @@
 package org.geowebcache.layer;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.RasterFormatException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
@@ -72,7 +73,7 @@ public class MetaTile {
     protected MetaTile(LayerProfile profile, int[] initGridPosition) {
         this.profile = profile;
         calcMetaGrid(initGridPosition);
-        metaBbox = profile.gridCalc.calcMetaBbox(metaGrid);
+        metaBbox = profile.gridCalc.calcMetaBbox(metaGrid, metaX, metaY);
         fillGridPositions();
     }
 
@@ -86,7 +87,7 @@ public class MetaTile {
     protected MetaTile(LayerProfile profile, int[] metaGrid, boolean doesNothing) {
         this.profile = profile;
         this.metaGrid = metaGrid;
-        metaBbox = profile.gridCalc.calcMetaBbox(metaGrid);
+        metaBbox = profile.gridCalc.calcMetaBbox(metaGrid, metaX, metaY);
         fillGridPositions();
     }
 
@@ -155,10 +156,10 @@ public class MetaTile {
     protected void fillGridPositions() {
         int[] gridBounds = profile.gridCalc.getGridBounds(metaGrid[4]);
 
-        metaX = metaGrid[0]
-                - Math.min(metaGrid[0] + profile.metaWidth, gridBounds[2]);
-        metaY = metaGrid[1]
-                - Math.min(metaGrid[1] + profile.metaHeight, gridBounds[3]);
+        //metaX = metaGrid[0]
+        //        - Math.min(metaGrid[0] + profile.metaWidth, gridBounds[2]);
+        //metaY = metaGrid[1]
+        //        - Math.min(metaGrid[1] + profile.metaHeight, gridBounds[3]);
 
         gridPositions = new int[metaX * metaY][3];
 
@@ -183,6 +184,8 @@ public class MetaTile {
             ioe.printStackTrace();
         }
 
+        wmsparams.setWidth(metaX * profile.width);
+        wmsparams.setHeight(metaY * profile.height);
         wmsparams.setBBOX(metaBbox);
 
         // Ask the WMS server, saves returned image into metaTile
@@ -261,17 +264,22 @@ public class MetaTile {
             // final int tileSize = key.getTileSize();
             // final RenderingHints no_cache = new
             // RenderingHints(JAI.KEY_TILE_CACHE, null);
-            int yfix = metaX * metaY;
-
+            
             for (int y = 0; y < metaY; y++) {
                 for (int x = 0; x < metaX; x++) {
                     int tile = y * metaX + x;
 
-                    int i = x * metaX;
-                    int j = (y + 1) * metaY;
-
-                    tiles[tile] = img.getSubimage(i, yfix - j, profile.width,
+                    int i = x * profile.width;
+                    int j = (metaY - 1 - y) * profile.height;
+                    
+                    try {
+                        System.out.println("i: " + i + "  j:"+j);
+                        tiles[tile] = img.getSubimage(i, j, profile.width,
                             profile.height);
+                    } catch(RasterFormatException rfe) {
+                        log.error("Unable to get i: "+i+", j:"+ j);
+                        rfe.printStackTrace();
+                    }
                 }
             }
         } else {
@@ -286,6 +294,10 @@ public class MetaTile {
         } else {
             // if(this.imageWriter == null)
             // initImageWriter(format);
+            if(tiles == null || tiles.length < tileIdx || tiles[tileIdx] == null 
+                    || format == null || os == null)
+                log.error("tiles: " + tiles + " tiles.length:" + tiles.length 
+                        + " tileIdx:" + tileIdx + " format:" + format + " img" + tiles[tileIdx]);
             javax.imageio.ImageIO.write(tiles[tileIdx], format, os);
             return true;
         }

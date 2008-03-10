@@ -273,8 +273,6 @@ public class LayerProfile {
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
-        wmsparams.setWidth(metaWidth * width);
-        wmsparams.setHeight(metaHeight * height);
         if (transparent != null) {
             wmsparams.setIsTransparent(transparent);
         }

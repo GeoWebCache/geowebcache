@@ -118,7 +118,7 @@ public class TileLayer {
             String complaint = "Adjusted request ("
                     + profile.gridCalc.recreateBbox(gridLoc).toString() + ")"
                     + " falls outside of the bounding box ("
-                    + profile.bbox.toString() + ")";
+                    + profile.bbox.toString() + "), error " + profile.gridCalc.inRange(gridLoc);
             log.error(complaint);
             response.sendError(400, complaint);
             return null;
@@ -197,8 +197,8 @@ public class TileLayer {
             if (tile != null) {
                 data = tile.getData();
             } else {
-                log
-                        .error("The cache returned null even after forwarding the request. Check the WMS and cache backends, you may also have found a bug.");
+                log.error("The cache returned null even after forwarding the request."
+                        +" Check the WMS and cache backends, you may also have found a bug.");
             }
         }
 
@@ -328,6 +328,7 @@ public class TileLayer {
      */
     protected void saveTiles(int[][] gridPositions, MetaTile metaTile,
             ImageFormat imageFormat) {
+        
         for (int i = 0; i < gridPositions.length; i++) {
             int[] gridPos = gridPositions[i];
 

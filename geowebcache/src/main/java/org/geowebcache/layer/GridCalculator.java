@@ -1,5 +1,7 @@
 package org.geowebcache.layer;
 
+import java.util.Arrays;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -36,9 +38,9 @@ public class GridCalculator {
     private void calculateGridBounds() {
         BBOX layerBounds = profile.bbox;
         int zoomStop = profile.zoomStop;
-
-        gridLevels = new int[zoomStop + 1][4]; // We'll just waste a few bytes,
-        // for cheap lookups
+        
+        // We'll just waste a few bytes, for cheap lookups
+        gridLevels = new int[zoomStop + 1][4]; 
 
         double tileWidth = profile.maxTileWidth;
         double tileHeight = profile.maxTileHeight;
@@ -66,12 +68,13 @@ public class GridCalculator {
             gridLevels[level][3] = (int) Math
                     .ceil((layerBounds.coords[3] - base.coords[1]) / tileHeight) - 1;
 
-            // System.out.println("postOrig: " +
-            // Arrays.toString(gridLevels[level]));
+            //System.out.println("postOrig: " +
+            //Arrays.toString(gridLevels[level]));
 
-            // System.out.println("tileCountX "+tileCountX + " metaLarger:
-            // "+metaLarger + " baseWidth: "+baseWidth);
-            // Adjust for metatiling if appropriate
+            //System.out.println("tileCountX "+tileCountX + " metaLarger: "
+            //+ metaLarger + " baseWidth: "+baseWidth);
+            
+            //Adjust for metatiling if appropriate
             if (tileCountX > metaLarger || tileCountY > metaLarger) {
                 // Round down
                 gridLevels[level][0] = gridLevels[level][0]
@@ -88,8 +91,8 @@ public class GridCalculator {
                         - (gridLevels[level][3] % profile.metaHeight)
                         + (profile.metaHeight - 1);
 
-                // System.out.println("postAdjust: " +
-                // Arrays.toString(gridLevels[level]));
+                //System.out.println("postAdjust: " +
+                //Arrays.toString(gridLevels[level]));
 
                 // Fix for naive round ups, imagine applying a 3x3 metatile to a
                 // 4x4 grid
@@ -99,8 +102,8 @@ public class GridCalculator {
                 if (gridLevels[level][3] >= tileCountY) {
                     gridLevels[level][3] = tileCountY - 1;
                 }
-                // System.out.println("postFix: " +
-                // Arrays.toString(gridLevels[level]));
+                //System.out.println("postFix: " +
+                //Arrays.toString(gridLevels[level]));
             }
 
             // For the next round
@@ -192,7 +195,7 @@ public class GridCalculator {
      * @param bounds
      * @return
      */
-    protected int[] gridExtent(int zoomLevel, BBOX bounds) {
+    protected int[] gridSeedExtent(int zoomLevel, BBOX bounds) {
         int[] retVals = new int[4];
 
         double tileWidth = baseWidth / (Math.pow(2, zoomLevel));
@@ -233,13 +236,14 @@ public class GridCalculator {
      * 
      * TODO verify this is the right bbox
      */
-    protected BBOX calcMetaBbox(int[] metaGrid) {
+    protected BBOX calcMetaBbox(int[] metaGrid, int metaX, int metaY) {
         double tileWidth = baseWidth / Math.pow(2, metaGrid[4]);
-
-        BBOX metaBbox = new BBOX(base.coords[0] + tileWidth * metaGrid[0],
-                base.coords[1] + tileWidth * metaGrid[1], base.coords[0]
-                        + tileWidth * metaGrid[2], base.coords[1] + tileWidth
-                        * metaGrid[3]);
+        
+        BBOX metaBbox = new BBOX(
+                base.coords[0] + tileWidth * metaGrid[0],
+                base.coords[1] + tileWidth * metaGrid[1], 
+                base.coords[0] + tileWidth * (metaX + 1),
+                base.coords[1] + tileWidth * (metaY + 1));
 
         return metaBbox;
     }
@@ -249,8 +253,8 @@ public class GridCalculator {
      * 
      * @return
      */
-    protected int[] metaGridExtent(int zoomLevel, BBOX bounds) {
-        int[] retVals = gridExtent(zoomLevel, bounds);
+    protected int[] metaGridSeedExtent(int zoomLevel, BBOX bounds) {
+        int[] retVals = gridSeedExtent(zoomLevel, bounds);
         retVals[0] = retVals[0] - (retVals[0] % profile.metaWidth);
         retVals[1] = retVals[1] - (retVals[1] % profile.metaHeight);
         retVals[2] = retVals[2] + (retVals[2] % profile.metaWidth);
