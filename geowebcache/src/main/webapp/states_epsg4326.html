@@ -17,7 +17,7 @@
     }
     </style>
 
-    <script src="http://openlayers.org/dev/lib/OpenLayers.js"></script>
+    <script src="openlayers/OpenLayers.js"></script>
     <script type="text/javascript">
 
         var map, layer;
@@ -28,8 +28,8 @@
                 "wms",
                 {layers: 'states_epsg4326', format: 'image/png'});
             map.addLayer(layerstates);
-            map.addControl(new OpenLayers.Control.LayerSwitcher());
-            map.addControl(new OpenLayers.Control.MousePosition());
+            //map.addControl(new OpenLayers.Control.LayerSwitcher());
+            //map.addControl(new OpenLayers.Control.MousePosition());
             //map.zoomToMaxExtent();
             map.setCenter(new OpenLayers.LonLat(-100,34), 4);
         }

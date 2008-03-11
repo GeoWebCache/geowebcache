@@ -17,9 +17,10 @@
     }
     </style>
 
-    <script src="http://openlayers.org/dev/lib/OpenLayers.js"></script>
+    <script src="openlayers/OpenLayers.js"></script>
     <script type="text/javascript">
         var map, layer;
+
         var mapOptions = {
                 projection: new OpenLayers.Projection("EPSG:900913"),
                 units: "m",
@@ -27,17 +28,23 @@
                 maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34,
                                                  20037508.34, 20037508.34)
         };
+        
+        var bounds = new OpenLayers.Bounds(
+                -1.4013638160836494E7, 2800980.392294403,
+                -7326449.711306851, 6407530.794256898
+            );
 
         function init(){
             map = new OpenLayers.Map('map', mapOptions );
-            var layerstates = new OpenLayers.Layer.WMS( "States EPSG:900913",
+            var layerstates = new OpenLayers.Layer.WMS( "States",
                 "wms",
                 {layers: 'states_epsg900913', format: 'image/png'});
             map.addLayer(layerstates);
-            map.addControl(new OpenLayers.Control.LayerSwitcher());
-            map.addControl(new OpenLayers.Control.MousePosition());
+            //map.addControl(new OpenLayers.Control.LayerSwitcher());
+            //map.addControl(new OpenLayers.Control.MousePosition());
             //map.zoomToMaxExtent();
-            map.setCenter(new OpenLayers.LonLat(-100,34).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject()), 4)
+            //map.setCenter(new OpenLayers.LonLat(-100,34).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject()), 4)
+            map.zoomToExtent(bounds);
         }
     </script>
 
