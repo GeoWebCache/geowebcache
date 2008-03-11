@@ -170,7 +170,7 @@ public class TileLayer {
             }
         }
         /** ****************** Request metatile ******************* */
-        metaTile.doRequest(profile, imageFormat.getMimeType());
+        String requestURL = metaTile.doRequest(profile, imageFormat.getMimeType());
         if (metaTile.failed) {
             removeFromQueue(metaGridLoc);
             log.error("MetaTile failed.");
@@ -211,7 +211,7 @@ public class TileLayer {
         if (debugHeaders) {
             response.addHeader("geowebcache-debug", debugHeadersStr
                     + "from-cache:false;wmsUrl:"
-                    + profile.wmsURL[profile.curWmsURL] + wmsparams.toString());
+                    + requestURL);
         }
         return data;
     }

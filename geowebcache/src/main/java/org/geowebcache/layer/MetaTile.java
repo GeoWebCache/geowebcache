@@ -166,7 +166,7 @@ public class MetaTile {
         return tilesGridPositions;
     }
 
-    protected void doRequest(LayerProfile profile, String imageMime) {
+    protected String doRequest(LayerProfile profile, String imageMime) {
         WMSParameters wmsparams = profile.getWMSParamTemplate();
 
         // Fill in the blanks
@@ -180,11 +180,13 @@ public class MetaTile {
         wmsparams.setHeight(metaY * profile.height);
         wmsparams.setBBOX(profile.gridCalc.bboxFromGridBounds(metaTileGridBounds));
 
+        
         // Ask the WMS server, saves returned image into metaTile
         // TODO add exception for configurations that do not use metatiling
+        String backendURL = "";
         int backendTries = 0; // keep track of how many backends we have tried
         while (img == null && backendTries < profile.wmsURL.length) {
-            String backendURL = profile.nextWmsURL();
+            backendURL = profile.nextWmsURL();
 
             try {
                 forwardRequest(profile, wmsparams, backendURL);
@@ -202,6 +204,8 @@ public class MetaTile {
         if (img == null) {
             failed = true;
         }
+        
+        return backendURL + wmsparams.toString();
     }
 
     private void forwardRequest(LayerProfile profile, WMSParameters wmsparams, String backendURL)
