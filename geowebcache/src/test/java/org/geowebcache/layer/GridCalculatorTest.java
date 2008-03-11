@@ -16,12 +16,12 @@ public class GridCalculatorTest extends TestCase {
         profile.gridBase = new BBOX(-180, -90, 180, 90);
         profile.metaHeight = 1;
         profile.metaWidth = 1;
-        profile.maxTileWidth = 180.0;
-        profile.maxTileHeight = 180.0;
+        double maxTileWidth = 180.0;
+        double maxTileHeight = 180.0;
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile);
+        GridCalculator gridCalc = new GridCalculator(profile, maxTileWidth, maxTileHeight);
 
         int[][] solution = { { 1, 0, 1, 0 }, { 2, 1, 3, 1 }, { 4, 2, 7, 3 },
                 { 8, 4, 15, 7 }, { 16, 8, 31, 15 } };
@@ -43,12 +43,12 @@ public class GridCalculatorTest extends TestCase {
         profile.gridBase = new BBOX(-180, -90, 180, 90);
         profile.metaHeight = 3;
         profile.metaWidth = 3;
-        profile.maxTileWidth = 180.0;
-        profile.maxTileHeight = 180.0;
+        double maxTileWidth = 180.0;
+        double maxTileHeight = 180.0;
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile);
+        GridCalculator gridCalc = new GridCalculator(profile, maxTileWidth, maxTileHeight);
 
         int[][] solution = { { 1, 0, 1, 0 }, { 0, 0, 3, 1 }, { 3, 0, 7, 3 },
                 { 6, 3, 15, 7 }, { 15, 6, 31, 15 }, { 30, 15, 63, 31 },
@@ -71,12 +71,12 @@ public class GridCalculatorTest extends TestCase {
         profile.gridBase = new BBOX(-180, -90, 180, 90);
         profile.metaHeight = 3;
         profile.metaWidth = 3;
-        profile.maxTileWidth = 180.0;
-        profile.maxTileHeight = 180.0;
+        double maxTileWidth = 180.0;
+        double maxTileHeight = 180.0;
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile);
+        GridCalculator gridCalc = new GridCalculator(profile, maxTileWidth, maxTileHeight);
 
         int[][] solution = { { 0, 0, 1, 0 }, { 0, 0, 2, 1 }, { 3, 0, 5, 2 },
                 { 6, 3, 8, 5 }, { 15, 6, 17, 8 }, { 30, 12, 35, 17 },
@@ -99,12 +99,12 @@ public class GridCalculatorTest extends TestCase {
         profile.gridBase = new BBOX(-180, -90, 180, 90);
         profile.metaHeight = 4;
         profile.metaWidth = 4;
-        profile.maxTileWidth = 180.0;
-        profile.maxTileHeight = 180.0;
+        double maxTileWidth = 180.0;
+        double maxTileHeight = 180.0;
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile);
+        GridCalculator gridCalc = new GridCalculator(profile, maxTileWidth, maxTileHeight);
 
         int[][] solution = { { 1, 0, 1, 0 }, { 3, 1, 3, 1 }, { 4, 0, 7, 3 },
                 { 12, 4, 15, 7 }, { 28, 12, 31, 15 } };
@@ -127,12 +127,12 @@ public class GridCalculatorTest extends TestCase {
                 20037508.34);
         profile.metaHeight = 1;
         profile.metaWidth = 1;
-        profile.maxTileWidth = 20037508.34 * 2;
-        profile.maxTileHeight = 20037508.34 * 2;
+        double maxTileWidth = 20037508.34 * 2;
+        double maxTileHeight = 20037508.34 * 2;
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile);
+        GridCalculator gridCalc = new GridCalculator(profile, maxTileWidth, maxTileHeight);
 
         int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 2, 2, 3, 3 },
                 { 4, 4, 7, 7 }, { 8, 8, 15, 15 } };
@@ -156,12 +156,12 @@ public class GridCalculatorTest extends TestCase {
                 20037508.34);
         profile.metaHeight = 3;
         profile.metaWidth = 3;
-        profile.maxTileWidth = 20037508.34 * 2;
-        profile.maxTileHeight = 20037508.34 * 2;
+        double maxTileWidth = 20037508.34 * 2;
+        double maxTileHeight = 20037508.34 * 2;
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile);
+        GridCalculator gridCalc = new GridCalculator(profile, maxTileWidth, maxTileHeight);
 
         int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 0, 0, 3, 3 },
                 { 3, 3, 7, 7 }, { 6, 6, 15, 15 }, { 15, 15, 31, 31 },
@@ -186,12 +186,12 @@ public class GridCalculatorTest extends TestCase {
                 20037508.34);
         profile.metaHeight = 3;
         profile.metaWidth = 3;
-        profile.maxTileWidth = 20037508.34 * 2;
-        profile.maxTileHeight = 20037508.34 * 2;
+        double maxTileWidth = 20037508.34 * 2;
+        double maxTileHeight = 20037508.34 * 2;
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile);
+        GridCalculator gridCalc = new GridCalculator(profile, maxTileWidth, maxTileHeight);
 
         int[][] solution = { { 0, 0, 0, 0 }, { 0, 0, 1, 1 }, { 0, 0, 2, 2 },
                 { 3, 3, 5, 5 }, { 6, 6, 8, 8 }, { 15, 15, 17, 17 },

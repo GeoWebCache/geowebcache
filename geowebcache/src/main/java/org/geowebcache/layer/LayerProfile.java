@@ -53,15 +53,11 @@ public class LayerProfile {
 
     protected int metaHeight = 1;
 
-    protected double maxTileWidth = -1.0;
-
-    protected double maxTileHeight = -1.0;
-
     protected int zoomStart = 0;
 
     protected int zoomStop = 25;
 
-    protected String request = "map";
+    protected String request = "GetMap";
 
     protected String version = "1.1.1";
 
@@ -109,7 +105,8 @@ public class LayerProfile {
         if (propSrs != null) {
             srs = propSrs;
         }
-
+        
+        double maxTileWidth, maxTileHeight;
         if (srs.equalsIgnoreCase("EPSG:4326")) {
             maxTileWidth = 180.0;
             maxTileHeight = 180.0;
@@ -117,7 +114,11 @@ public class LayerProfile {
             maxTileWidth = 20037508.34 * 2;
             maxTileHeight = 20037508.34 * 2;
         } else {
-            log.error("May not interpret SRS " + srs + " correctly.");
+            //TODO some fancy code to guess other SRSes, throw exception for now
+            maxTileWidth = 20037508.34 * 2;
+            maxTileHeight = 20037508.34 * 2;
+            log.error("GeoWebCache only handles EPSG:4326 and EPSG:900913!");
+            throw new RuntimeException("GeoWebCache only handles EPSG:4326 and EPSG:900913!");
         }
 
         String propZoomStart = props.getProperty("zoomStart");
@@ -175,7 +176,7 @@ public class LayerProfile {
             bbox = new BBOX(-180.0, -90.0, 180.0, 90.0);
         }
 
-        gridCalc = new GridCalculator(this);
+        gridCalc = new GridCalculator(this, maxTileWidth, maxTileHeight);
 
         String propWidth = props.getProperty("width");
         if (propWidth != null) {

@@ -37,51 +37,51 @@ public class Seeder {
 
     public int doSeed(int zoomStart, int zoomStop, ImageFormat imageFormat,
             BBOX bounds, HttpServletResponse response) throws IOException {
-        // response.setContentType("text/plain");
-
-        PrintWriter pw = response.getWriter();
-
-        infoStart(pw, zoomStart, zoomStop, bounds);
-
-        for (int level = zoomStart; level <= zoomStop; level++) {
-            int[] gridBounds = layer.profile.gridCalc.metaGridSeedExtent(level,bounds);
-            infoLevelStart(pw, level, gridBounds);
-            int count = 0;
-            for (int gridy = gridBounds[1]; gridy < gridBounds[3]; gridy += layer.profile.metaHeight) {
-                for (int gridx = gridBounds[0]; gridx < gridBounds[2]; gridx += layer.profile.metaWidth) {
-                    infoTile(pw, count++);
-                    int[] metaGrid = { gridx, gridy,
-                            gridx + layer.profile.metaWidth,
-                            gridy + layer.profile.metaWidth, level };
-                    MetaTile metaTile = new MetaTile(layer.profile, metaGrid,
-                            true);
-
-                    processTile(metaTile, imageFormat);
-
-                    response.flushBuffer();
-                }
-            }
-
-            infoLevelStop(pw);
-        }
-
-        infoEnd(pw);
-        pw.close();
+//        // response.setContentType("text/plain");
+//
+//        PrintWriter pw = response.getWriter();
+//
+//        infoStart(pw, zoomStart, zoomStop, bounds);
+//
+//        for (int level = zoomStart; level <= zoomStop; level++) {
+//            int[] gridBounds = layer.profile.gridCalc.metaGridSeedExtent(level,bounds);
+//            infoLevelStart(pw, level, gridBounds);
+//            int count = 0;
+//            for (int gridy = gridBounds[1]; gridy < gridBounds[3]; gridy += layer.profile.metaHeight) {
+//                for (int gridx = gridBounds[0]; gridx < gridBounds[2]; gridx += layer.profile.metaWidth) {
+//                    infoTile(pw, count++);
+//                    int[] metaGrid = { gridx, gridy,
+//                            gridx + layer.profile.metaWidth,
+//                            gridy + layer.profile.metaWidth, level };
+//                    MetaTile metaTile = new MetaTile(layer.profile, metaGrid,
+//                            true);
+//
+//                    processTile(metaTile, imageFormat);
+//
+//                    response.flushBuffer();
+//                }
+//            }
+//
+//            infoLevelStop(pw);
+//        }
+//
+//        infoEnd(pw);
+//        pw.close();
 
         return 0;
     }
 
     private int processTile(MetaTile metaTile, ImageFormat imageFormat) {
-        int[] metaGridLoc = metaTile.getMetaGridPos();
-        layer.waitForQueue(metaGridLoc);
-
-        metaTile.doRequest(imageFormat.getMimeType());
-        layer.saveExpirationInformation(metaTile);
-        metaTile.createTiles();
-        int[][] gridPositions = metaTile.getGridPositions();
-        layer.saveTiles(gridPositions, metaTile, imageFormat);
-
-        layer.removeFromQueue(metaGridLoc);
+//        int[] metaGridLoc = metaTile.getMetaGridPos();
+//        layer.waitForQueue(metaGridLoc);
+//
+//        metaTile.doRequest(imageFormat.getMimeType());
+//        layer.saveExpirationInformation(metaTile);
+//        metaTile.createTiles();
+//        int[][] gridPositions = metaTile.getGridPositions();
+//        layer.saveTiles(gridPositions, metaTile, imageFormat);
+//
+//        layer.removeFromQueue(metaGridLoc);
         return 0;
     }
 

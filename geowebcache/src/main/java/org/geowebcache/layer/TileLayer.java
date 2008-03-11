@@ -114,11 +114,11 @@ public class TileLayer {
         int[] gridLoc = profile.gridCalc.gridLocation(wmsparams.getBBOX());
 
         // Final preflight check
-        if (profile.gridCalc.inRange(gridLoc) < 0) {
+        if (profile.gridCalc.isInRange(gridLoc) != null) {
             String complaint = "Adjusted request ("
-                    + profile.gridCalc.recreateBbox(gridLoc).toString() + ")"
-                    + " falls outside of the bounding box ("
-                    + profile.bbox.toString() + "), error " + profile.gridCalc.inRange(gridLoc);
+                    + profile.gridCalc.bboxFromGridLocation(gridLoc).toString() + ")"
+                    + " falls outside of the bounding box (" + profile.bbox.toString() + "),"
+                    + " error: " +profile.gridCalc.isInRange(gridLoc);
             log.error(complaint);
             response.sendError(400, complaint);
             return null;
@@ -127,7 +127,9 @@ public class TileLayer {
         // System.out.println("recreated:
         // "+profile.recreateBbox(gridLoc).getReadableString());
 
-        MetaTile metaTile = new MetaTile(profile, gridLoc);
+        MetaTile metaTile = new MetaTile(profile.gridCalc.getGridBounds(gridLoc[2]), 
+                gridLoc, profile.metaWidth, profile.metaHeight);
+        
         int[] metaGridLoc = metaTile.getMetaGridPos();
 
         /** ****************** Acquire lock ******************* */
@@ -168,15 +170,15 @@ public class TileLayer {
             }
         }
         /** ****************** Request metatile ******************* */
-        metaTile.doRequest(imageFormat.getMimeType());
+        metaTile.doRequest(profile, imageFormat.getMimeType());
         if (metaTile.failed) {
             removeFromQueue(metaGridLoc);
             log.error("MetaTile failed.");
             return null;
         }
         saveExpirationInformation(metaTile);
-        metaTile.createTiles();
-        int[][] gridPositions = metaTile.getGridPositions();
+        metaTile.createTiles(profile);
+        int[][] gridPositions = metaTile.getTilesGridPositions();
 
         byte[] data = null;
         if (profile.expireCache == LayerProfile.CACHE_NEVER) {
