@@ -21,6 +21,9 @@ public class GridCalculator {
     
     private double maxTileHeight;
     
+    // Used for unprojected profiles
+    private int gridConstant;
+    
     private int[][] gridLevels = null;
 
     private LayerProfile profile = null;
@@ -40,6 +43,7 @@ public class GridCalculator {
 
         this.maxTileWidth = maxTileWidth;
         this.maxTileHeight = maxTileHeight;
+        this.gridConstant = (int) Math.round(baseWidth / baseHeight - 1.0);
         
         calculateGridBounds();
     }
@@ -156,9 +160,10 @@ public class GridCalculator {
         double reqTileWidth = tileBounds.coords[2] - tileBounds.coords[0];
         
         // (Z) Zoom level
-        retVals[2] = (int) Math.round(Math.log(baseWidth / reqTileWidth) / Math.log(2));
+        // For EPSG 4326, reqTileWidth = 0.087         log(4096)         /  log(2)        - 1;     -> 11
+        retVals[2] = (int) Math.round(Math.log(baseWidth / reqTileWidth) / (Math.log(2))) - gridConstant;
 
-        double tileWidth = baseWidth / (Math.pow(2, retVals[2]));
+        double tileWidth = baseWidth / (Math.pow(2, retVals[2] + gridConstant));
         
         // X
         double xdiff = tileBounds.coords[0] - base.coords[0];
@@ -185,19 +190,22 @@ public class GridCalculator {
         }
 
         int[] bounds = gridLevels[location[2]];
+        
+        String gridDebug = " Extra debug information bounds: " + Arrays.toString(bounds) 
+        + " gridLoc: " + Arrays.toString(location);
 
         // Check X
         if (location[0] < bounds[0]) {
-            return "gridX ("+location[0]+") must be at least " +  bounds[0];
+            return "gridX ("+location[0]+") must be at least " +  bounds[0] + gridDebug;
         } else if(location[0] > bounds[2]) {
-            return "gridX ("+location[0]+") can be at most " +  bounds[2];
+            return "gridX ("+location[0]+") can be at most " +  bounds[2] + gridDebug;
         }
 
         // Check Y
         if (location[0] < bounds[0]) {
-            return "gridY ("+location[1]+") must be at least " +  bounds[1];
+            return "gridY ("+location[1]+") must be at least " +  bounds[1] + gridDebug;
         } else if(location[0] > bounds[2]) {
-            return "gridY ("+location[1]+") can be at most " +  bounds[3];
+            return "gridY ("+location[1]+") can be at most " +  bounds[3] + gridDebug;
         }
 
         return null;
@@ -238,7 +246,7 @@ public class GridCalculator {
      * @return
      */
     public BBOX bboxFromGridLocation(int[] gridLoc) {
-        double tileWidth = baseWidth / Math.pow(2, gridLoc[2]);
+        double tileWidth = baseWidth / Math.pow(2, gridLoc[2] + gridConstant);
 
         return new BBOX(
                 base.coords[0] + tileWidth*gridLoc[0], 
@@ -258,7 +266,7 @@ public class GridCalculator {
      */
 
     public BBOX bboxFromGridBounds(int[] gridBounds) {
-        double tileWidth = baseWidth / Math.pow(2, gridBounds[4]);
+        double tileWidth = baseWidth / Math.pow(2, gridBounds[4] + gridConstant);
         
         return new BBOX(
                 base.coords[0] + tileWidth *  gridBounds[0],
