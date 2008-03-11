@@ -161,9 +161,11 @@ public class GridCalculator {
         double tileWidth = baseWidth / (Math.pow(2, retVals[2]));
         
         // X
-        retVals[0] = (int) Math.round((tileBounds.coords[0] - base.coords[0]) / tileWidth);
+        double xdiff = tileBounds.coords[0] - base.coords[0];
+        retVals[0] = (int) Math.round(xdiff / tileWidth);
         // Y
-        retVals[1] = (int) Math.round((tileBounds.coords[1] - base.coords[1]) / tileWidth);
+        double ydiff = tileBounds.coords[1] - base.coords[1];
+        retVals[1] = (int) Math.round(ydiff / tileWidth);
 
         
         if (log.isTraceEnabled()) {

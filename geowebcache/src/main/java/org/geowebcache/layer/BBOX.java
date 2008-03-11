@@ -163,4 +163,52 @@ public class BBOX {
         return Float.floatToIntBits((float) coords[0])
                 ^ Float.floatToIntBits((float) coords[2]);
     }
+
+    /**
+     * GeoServer fails the entire tile if it crosses the max extents, dateline boundary.
+     * 
+     * This reduces the bounding box slightly, to accomodate for this.
+     * 
+     * This is a bad hack, but a necessary one.
+     * 
+     * @param srs
+     */
+    public void adjustForGeoServer(String srs) {
+        double minX = 0;
+        double minY = 0;
+        double maxX = 0;
+        double maxY = 0;
+        
+        if(srs.equalsIgnoreCase("epsg:900913")) {
+            minX = -20037508.34 * 0.999;
+            minY = -20037508.34 * 0.999;
+            maxX = 20037508.34 * 0.999;
+            maxY = 20037508.34 * 0.999;
+                        
+        } else if(srs.equalsIgnoreCase("epsg:4326")) {
+            minX = -180.0 * 0.999;
+            minY = -90.0 * 0.9995;
+            maxX = 180.0 * 0.999;
+            maxY =  90.0* 0.9995;
+        } else {
+            return;
+        }
+        
+        if(this.coords[0] < minX ) {
+            this.coords[0] = minX;
+            log.warn("Limited minX bounds "+Double.toString(minX)+" to avoid GeoServer problems");
+        }
+        if(this.coords[1] < minY ) {
+            this.coords[1] = minY;
+            log.warn("Limited minY bounds "+Double.toString(minY)+" to avoid GeoServer problems");
+        }
+        if(this.coords[2] > maxX ) {
+            this.coords[2] = maxX;
+            log.warn("Limited maxX bounds "+Double.toString(maxX)+" to avoid GeoServer problems");
+        }
+        if(this.coords[3] > maxY ) {
+            this.coords[3] = maxY;
+            log.warn("Limited maxY bounds "+Double.toString(maxY)+" to avoid GeoServer problems");
+        }
+    }
 }

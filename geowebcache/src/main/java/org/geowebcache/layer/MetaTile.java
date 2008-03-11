@@ -178,7 +178,9 @@ public class MetaTile {
 
         wmsparams.setWidth(metaX * profile.width);
         wmsparams.setHeight(metaY * profile.height);
-        wmsparams.setBBOX(profile.gridCalc.bboxFromGridBounds(metaTileGridBounds));
+        BBOX metaBbox = profile.gridCalc.bboxFromGridBounds(metaTileGridBounds);
+        metaBbox.adjustForGeoServer(wmsparams.getSrs());
+        wmsparams.setBBOX(metaBbox);
 
         
         // Ask the WMS server, saves returned image into metaTile
