@@ -471,7 +471,7 @@ public class TileLayer {
      */
     private void setParametersFromProperties(Properties props)
             throws CacheException {
-        profile = new LayerProfile(props);
+        profile = new LayerProfile(this.name, props);
 
         // Cache and CacheKey
         String propCachetype = props.getProperty("cachetype");

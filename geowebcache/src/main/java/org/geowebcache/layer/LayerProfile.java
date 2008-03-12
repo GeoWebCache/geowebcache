@@ -36,7 +36,6 @@ public class LayerProfile {
 
     public static final int CACHE_USE_WMS_BACKEND_VALUE = -4;
 
-    // This assumes image output
     protected String srs = "EPSG:4326";
 
     protected BBOX bbox = null;
@@ -92,7 +91,9 @@ public class LayerProfile {
 
     }
 
-    public LayerProfile(Properties props) {
+    public LayerProfile(String layerName, Properties props) {
+        log.info("Processing " + layerName);
+        
         setParametersFromProperties(props);
 
         if (log.isTraceEnabled()) {
@@ -151,7 +152,13 @@ public class LayerProfile {
                         + gridBase.toString() + " is not sane.");
             }
         } else {
-            gridBase = new BBOX(-180.0, -90.0, 180.0, 90.0);
+            if(srs.equalsIgnoreCase("EPSG:900913")) {
+                log.info("Using default grid for EPSG:900913");
+                gridBase = new BBOX(-180.0, -90.0, 180.0, 90.0);
+            } else {
+                log.info("Using default grid, assuming EPSG:4326");
+                gridBase = new BBOX(-180.0, -90.0, 180.0, 90.0);
+            }
         }
 
         // The following depends on metatiling and grid
@@ -169,11 +176,12 @@ public class LayerProfile {
                         + " is not contained by the grid: "
                         + gridBase.toString());
             } else {
-                bbox = layerBounds; // adjust to the closest grid ?
-                // log.info("Recreated bbox: " + bbox.toString());
+                bbox = layerBounds;
             }
-        } else {
-            bbox = new BBOX(-180.0, -90.0, 180.0, 90.0);
+        } 
+        if(bbox == null) {
+            log.info("Bounding box not properly specified, reverting to grid extent");
+            bbox = gridBase;
         }
 
         gridCalc = new GridCalculator(this, maxTileWidth, maxTileHeight);
