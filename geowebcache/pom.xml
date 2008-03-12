@@ -26,6 +26,20 @@
       <groupId>jcs</groupId>
       <artifactId>jcs</artifactId>
       <version>1.3</version>
+       <exclusions>
+         <exclusion>
+           <groupId>mysql</groupId>
+           <artifactId>mysql-connector-java</artifactId>
+         </exclusion>
+         <exclusion>
+           <groupId>berkeleydb</groupId>
+           <artifactId>berkeleydb</artifactId>
+         </exclusion>
+         <exclusion>
+           <groupId>hsqldb</groupId>
+           <artifactId>hsqldb</artifactId>
+         </exclusion>
+       </exclusions>
     </dependency>
 
     <dependency>
