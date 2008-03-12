@@ -180,16 +180,16 @@ public class BBOX {
         double maxY = 0;
         
         if(srs.equalsIgnoreCase("epsg:900913")) {
-            minX = -20037508.34 * 0.999;
-            minY = -20037508.34 * 0.999;
-            maxX = 20037508.34 * 0.999;
-            maxY = 20037508.34 * 0.999;
+            minX = -20037508.34 * 0.995;
+            minY = -20037508.34 * 0.995;
+            maxX = 20037508.34 * 0.995;
+            maxY = 20037508.34 * 0.995;
                         
         } else if(srs.equalsIgnoreCase("epsg:4326")) {
-            minX = -180.0 * 0.999;
-            minY = -90.0 * 0.9995;
-            maxX = 180.0 * 0.999;
-            maxY =  90.0* 0.9995;
+            minX = -180.0 * 0.9999;
+            minY = -90.0 * 0.99995;
+            maxX = 180.0 * 0.9999;
+            maxY =  90.0* 0.99995;
         } else {
             return;
         }

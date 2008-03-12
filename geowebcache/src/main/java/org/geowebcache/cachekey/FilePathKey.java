@@ -27,7 +27,7 @@ public class FilePathKey implements CacheKey {
     }
 
     public String createKey(int x, int y, int z, String format) {
-        String filename = layerPrefix + File.separator + zeroPadder(z - 1, 2)
+        String filename = layerPrefix + File.separator + zeroPadder(z, 2)
                 + File.separator + zeroPadder(x / 1000000, 3) + File.separator
                 + zeroPadder((x / 1000) % 1000, 3) + File.separator
                 + zeroPadder(x % 1000, 3) + File.separator

@@ -184,7 +184,7 @@ public class LayerProfile {
             bbox = gridBase;
         }
 
-        gridCalc = new GridCalculator(this, maxTileWidth, maxTileHeight);
+        gridCalc = new GridCalculator(this, this.bbox, maxTileWidth, maxTileHeight);
 
         String propWidth = props.getProperty("width");
         if (propWidth != null) {

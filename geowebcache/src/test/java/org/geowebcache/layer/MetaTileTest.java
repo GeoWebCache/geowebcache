@@ -22,7 +22,7 @@ public class MetaTileTest extends TestCase {
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile, maxTileWidth, maxTileHeight);
+        GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
         int[] gridPos = { 0, 0, 0 };
         //int[] gridBounds, int[] tileGridPosition, int metaX, int metaY
         MetaTile mt = new MetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
@@ -48,7 +48,7 @@ public class MetaTileTest extends TestCase {
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile, maxTileWidth, maxTileHeight);
+        GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
         int[] gridPos = { 127, 63, 6 };
         MetaTile mt = new MetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
 
@@ -74,7 +74,7 @@ public class MetaTileTest extends TestCase {
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile, maxTileWidth, maxTileHeight);
+        GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
         int[] gridPos = { 0, 0, 0 };
         MetaTile mt = new MetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
 
@@ -99,7 +99,7 @@ public class MetaTileTest extends TestCase {
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile, maxTileWidth, maxTileHeight);
+        GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
         int[] gridPos = { 70, 70, 6 };
         MetaTile mt = new MetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
 

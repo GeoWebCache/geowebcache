@@ -33,7 +33,7 @@ public class GridCalculator {
     // is bigger than the width
     // private double layerHeight;
 
-    protected GridCalculator(LayerProfile profile, double maxTileWidth,
+    protected GridCalculator(LayerProfile profile, BBOX bounds, double maxTileWidth,
             double maxTileHeight) {
         this.profile = profile;
         base = profile.gridBase;
@@ -45,12 +45,11 @@ public class GridCalculator {
         this.maxTileWidth = maxTileWidth;
         this.maxTileHeight = maxTileHeight;
         this.gridConstant = (int) Math.round(baseWidth / baseHeight - 1.0);
-
-        calculateGridBounds();
+        
+        calculateGridBounds(bounds);
     }
 
-    private void calculateGridBounds() {
-        BBOX layerBounds = profile.bbox;
+    private void calculateGridBounds(BBOX layerBounds) {
         int zoomStop = profile.zoomStop;
 
         // We'll just waste a few bytes, for cheap lookups
@@ -221,33 +220,6 @@ public class GridCalculator {
         return null;
     }
 
-    // /**
-    // * Calculates bottom left and top right grid positions for a particular
-    // * zoomlevel
-    // *
-    // * @param bounds
-    // * @return
-    // */
-    // protected int[] gridSeedExtent(int zoomLevel, BBOX bounds) {
-    // int[] retVals = new int[4];
-    //
-    // double tileWidth = baseWidth / (Math.pow(2, zoomLevel));
-    // // min X
-    // retVals[0] = (int) Math.round((bounds.coords[0] - base.coords[0])
-    // / tileWidth);
-    // // min Y
-    // retVals[1] = (int) Math.round((bounds.coords[1] - base.coords[1])
-    // / tileWidth);
-    // // max X
-    // retVals[2] = (int) Math.round((bounds.coords[2] - base.coords[0])
-    // / tileWidth) - 1;
-    // // max Y
-    // retVals[3] = (int) Math.round((bounds.coords[3] - base.coords[1])
-    // / tileWidth) - 1;
-    //
-    // return retVals;
-    // }
-
     /**
      * Uses the location on the grid to determine bounding box for a single
      * tile.
@@ -283,19 +255,4 @@ public class GridCalculator {
                         + tileWidth * (gridBounds[2] + 1), base.coords[1]
                         + tileWidth * (gridBounds[3] + 1));
     }
-
-    // /**
-    // * Used for seeding, returns gridExtent but adjusts for meta tile size
-    // *
-    // * @return
-    // */
-    // protected int[] metaGridSeedExtent(int zoomLevel, BBOX bounds) {
-    // int[] retVals = gridSeedExtent(zoomLevel, bounds);
-    // retVals[0] = retVals[0] - (retVals[0] % profile.metaWidth);
-    // retVals[1] = retVals[1] - (retVals[1] % profile.metaHeight);
-    // retVals[2] = retVals[2] + (retVals[2] % profile.metaWidth);
-    // retVals[3] = retVals[3] + (retVals[3] % profile.metaHeight);
-    // return retVals;
-    // }
-
 }

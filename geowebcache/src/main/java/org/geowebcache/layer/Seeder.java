@@ -26,8 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class Seeder {
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.Seeder.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.layer.Seeder.class);
 
     TileLayer layer = null;
 
@@ -37,51 +36,66 @@ public class Seeder {
 
     public int doSeed(int zoomStart, int zoomStop, ImageFormat imageFormat,
             BBOX bounds, HttpServletResponse response) throws IOException {
-//        // response.setContentType("text/plain");
-//
-//        PrintWriter pw = response.getWriter();
-//
-//        infoStart(pw, zoomStart, zoomStop, bounds);
-//
-//        for (int level = zoomStart; level <= zoomStop; level++) {
-//            int[] gridBounds = layer.profile.gridCalc.metaGridSeedExtent(level,bounds);
-//            infoLevelStart(pw, level, gridBounds);
-//            int count = 0;
-//            for (int gridy = gridBounds[1]; gridy < gridBounds[3]; gridy += layer.profile.metaHeight) {
-//                for (int gridx = gridBounds[0]; gridx < gridBounds[2]; gridx += layer.profile.metaWidth) {
-//                    infoTile(pw, count++);
-//                    int[] metaGrid = { gridx, gridy,
-//                            gridx + layer.profile.metaWidth,
-//                            gridy + layer.profile.metaWidth, level };
-//                    MetaTile metaTile = new MetaTile(layer.profile, metaGrid,
-//                            true);
-//
-//                    processTile(metaTile, imageFormat);
-//
-//                    response.flushBuffer();
-//                }
-//            }
-//
-//            infoLevelStop(pw);
-//        }
-//
-//        infoEnd(pw);
-//        pw.close();
+        response.setContentType("text/html");
 
+        PrintWriter pw = response.getWriter();
+
+        infoStart(pw, zoomStart, zoomStop, bounds);
+
+        GridCalculator gc = null;
+        if (layer.profile.srs.equalsIgnoreCase("EPSG:4326")) {
+            gc = new GridCalculator(layer.profile, bounds, 180.0, 180.0);
+        } else if (layer.profile.srs.equalsIgnoreCase("EPSG:900913")) {
+            gc = new GridCalculator(layer.profile, bounds, 20037508.34*2, 20037508.34*2);
+        }
+        
+        for (int level = zoomStart; level <= zoomStop; level++) {
+            int[] gridBounds = gc.getGridBounds(level);
+            infoLevelStart(pw, level, gridBounds);
+            
+            int count = 0;
+            
+            for (int gridy = gridBounds[1]; gridy <= gridBounds[3];  ) {
+                
+                for (int gridx = gridBounds[0]; gridx <= gridBounds[2]; ) {
+                    
+                    infoTile(pw, count++);
+                    int[] gridLoc = { gridx , gridy , level };
+                    
+                    MetaTile metaTile = new MetaTile(
+                            gridBounds, gridLoc, 
+                            layer.profile.metaWidth, layer.profile.metaHeight);
+
+                    processTile(metaTile, imageFormat);
+
+                    response.flushBuffer();
+                    
+                    // Next column
+                    gridx += layer.profile.metaWidth;
+                }
+                // Next row
+                gridy += layer.profile.metaHeight;
+            }
+
+            log.info("Completed seeding level " + level + " for layer " + layer.name);
+            infoLevelStop(pw);
+        }
+
+        infoEnd(pw);
+        pw.close();
         return 0;
     }
 
     private int processTile(MetaTile metaTile, ImageFormat imageFormat) {
-//        int[] metaGridLoc = metaTile.getMetaGridPos();
-//        layer.waitForQueue(metaGridLoc);
-//
-//        metaTile.doRequest(imageFormat.getMimeType());
-//        layer.saveExpirationInformation(metaTile);
-//        metaTile.createTiles();
-//        int[][] gridPositions = metaTile.getGridPositions();
-//        layer.saveTiles(gridPositions, metaTile, imageFormat);
-//
-//        layer.removeFromQueue(metaGridLoc);
+        int[] metaGridLoc = metaTile.getMetaGridPos();
+        layer.waitForQueue(metaGridLoc);
+        metaTile.doRequest(layer.profile, imageFormat.getMimeType());
+        layer.saveExpirationInformation(metaTile);
+        metaTile.createTiles(layer.profile);
+        int[][] tilesGridPositions = metaTile.getTilesGridPositions();
+        layer.saveTiles(tilesGridPositions, metaTile, imageFormat);
+
+        layer.removeFromQueue(metaGridLoc);
         return 0;
     }
 
@@ -90,7 +104,7 @@ public class Seeder {
         if (pw == null) {
             return;
         }
-        pw.print("<table><tr><td>Seeding " + layer.name + " from level "
+        pw.print("<html><body><table><tr><td>Seeding " + layer.name + " from level "
                 + zoomStart + " to level " + zoomStop + " for bounds "
                 + bounds.getReadableString() + "</td></tr>");
         pw.flush();
@@ -101,24 +115,29 @@ public class Seeder {
             return;
         }
 
-        pw.print("</table");
+        pw.print("</table></body></html>");
     }
 
     private void infoLevelStart(PrintWriter pw, int level, int[] gridBounds)
-            throws IOException {
+    throws IOException {
         if (pw == null) {
             return;
         }
 
-        int tileCount = (gridBounds[2] - gridBounds[0])
-                * (gridBounds[3] - gridBounds[1]);
-        pw
-                .print("<tr><td>Level "
-                        + level
-                        + ", "
-                        + (tileCount / (layer.profile.metaHeight * layer.profile.metaWidth))
-                        + " metatiles (" + tileCount
-                        + " tiles)</td></tr><tr><td>");
+        int tileCountX = (gridBounds[2] - gridBounds[0] + 1);
+        int tileCountY = (gridBounds[3] - gridBounds[1] + 1);
+        double metaCountX = ((double) tileCountX )/ layer.profile.metaWidth;
+        double metaCountY = ((double) tileCountY ) / layer.profile.metaHeight;
+        int metaTileCountX = (int) Math.ceil(metaCountX);
+        int metaTileCountY = (int) Math.ceil(metaCountY);
+        
+        //tileCount / (layer.profile.metaHeight * layer.profile.metaWidth)
+        pw.print("<tr><td>Level "
+                + level
+                + ", ~"
+                + metaTileCountX*metaTileCountY
+                + " metatile(s) [" + tileCountX*tileCountY
+                + " tile(s)]</td></tr><tr><td>");
         pw.flush();
     }
 
