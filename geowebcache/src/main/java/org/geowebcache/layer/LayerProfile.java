@@ -156,7 +156,7 @@ public class LayerProfile {
         } else {
             if(srs.equalsIgnoreCase("EPSG:900913")) {
                 log.info("Using default grid for EPSG:900913");
-                gridBase = new BBOX(-180.0, -90.0, 180.0, 90.0);
+                gridBase = new BBOX(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
             } else {
                 log.info("Using default grid, assuming EPSG:4326");
                 gridBase = new BBOX(-180.0, -90.0, 180.0, 90.0);
