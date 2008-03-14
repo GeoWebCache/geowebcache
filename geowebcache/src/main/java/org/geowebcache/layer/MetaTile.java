@@ -17,6 +17,12 @@
  */
 package org.geowebcache.layer;
 
+import java.awt.RenderingHints;
+import java.awt.image.RenderedImage;
+
+import javax.media.jai.JAI;
+import javax.media.jai.operator.CropDescriptor;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
 import java.io.IOException;
@@ -56,11 +62,12 @@ public class MetaTile {
 
     private BufferedImage img = null;
 
-    private BufferedImage[] tiles = null;
-
+    //private BufferedImage[] tiles = null;
+    private RenderedImage[] tiles = null;
+    
     private long expiration = LayerProfile.CACHE_VALUE_UNSET;
 
-    ImageWriter imageWriter = null;
+    //ImageWriter imageWriter = null;
 
     public boolean failed = false;
 
@@ -234,8 +241,8 @@ public class MetaTile {
                         + wmsBackendMaxAge.toString());
                 expiration = wmsBackendMaxAge.longValue() * 1000;
             } else {
-                log
-                        .error("Layer profile wants MaxAge from backend, but backend does not provide this.");
+                log.error("Layer profile wants MaxAge from backend,"
+                		+" but backend does not provide this.");
             }
         }
 
@@ -255,24 +262,28 @@ public class MetaTile {
     }
 
     protected void createTiles(LayerProfile profile) {
-        tiles = new BufferedImage[metaX * metaY];
+    	//tiles = new BufferedImage[metaX * metaY];
 
+        tiles = new RenderedImage[metaX * metaY];
+        final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
+        
         if (tiles.length > 1) {
             // final int tileSize = key.getTileSize();
-            // final RenderingHints no_cache = new
-            // RenderingHints(JAI.KEY_TILE_CACHE, null);
-            
+        	
             for (int y = 0; y < metaY; y++) {
                 for (int x = 0; x < metaX; x++) {
-                    int tile = y * metaX + x;
-
                     int i = x * profile.width;
                     int j = (metaY - 1 - y) * profile.height;
                     
                     try {
-                        //System.out.println("i: " + i + "  j:"+j);
-                        tiles[tile] = img.getSubimage(i, j, profile.width,
-                            profile.height);
+                    	RenderedImage tile = CropDescriptor.create(
+                    			img, 
+                    			new Float(i), new Float(j), 
+                    			new Float(profile.width), new Float(profile.height), 
+                    			no_cache);
+                    	
+                    	tiles[y * metaX + x] = tile;
+                    	
                     } catch(RasterFormatException rfe) {
                         log.error("Unable to get i: "+i+", j:"+ j);
                         rfe.printStackTrace();
@@ -289,25 +300,14 @@ public class MetaTile {
         if (tiles == null) {
             return false;
         } else {
-            // if(this.imageWriter == null)
-            // initImageWriter(format);
-            //if(tiles == null || tiles.length < tileIdx || tiles[tileIdx] == null 
-            //        || format == null || os == null)
-            //    log.error("tiles: " + tiles + " tiles.length:" + tiles.length 
-            //            + " tileIdx:" + tileIdx + " format:" + format + " img" + tiles[tileIdx]);
-            javax.imageio.ImageIO.write(tiles[tileIdx], format, os);
+            if(! javax.imageio.ImageIO.write(tiles[tileIdx], format, os)) {
+            	log.error("javax.imageio.ImageIO.write("
+            			+tiles[tileIdx].toString()+ ","
+            			+ format + "," + os.toString() + ")");
+            }
             return true;
         }
     }
-
-    // private void initImageWriter(String format) {
-    // imageWriter =
-    // javax.imageio.ImageIO.getImageWritersByFormatName(format).next();
-    //	
-    // if(imageWriter == null) {
-    // log.error("Unable to find ImageWriter for format" + format);
-    // }
-    // }
 
     private static Long extractHeaderMaxAge(String cacheControlHeader) {
         if (cacheControlHeader == null) {
@@ -338,7 +338,6 @@ public class MetaTile {
     }
 
     public String debugString() {
-        
         return " metaX: " + metaX + " metaY: " + metaY + " metaGrid: "
                 + Arrays.toString(metaTileGridBounds);
     }

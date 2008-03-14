@@ -187,7 +187,7 @@ public class TileLayer {
 
         } else {
             saveTiles(gridPositions, metaTile, imageFormat);
-
+            
             // Try the cache again
             try {
                 tile = (RawTile) cache.get(ck, profile.expireCache);
@@ -339,7 +339,9 @@ public class TileLayer {
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             try {
-                metaTile.writeTileToStream(i, imageFormat.getJavaName(), out);
+                if( ! metaTile.writeTileToStream(i, imageFormat.getJavaName(), out)) {
+                	log.error("metaTile.writeTileToStream returned false, no tiles saved");
+                }
             } catch (IOException ioe) {
                 log
                         .error("Unable to write image tile to ByteArrayOutputStream: "
