@@ -17,7 +17,12 @@
  */
 package org.geowebcache.layer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class ImageFormat {
+    private static Log log = LogFactory.getLog(org.geowebcache.layer.ImageFormat.class);
+    
     protected String mimeType;
 
     protected String extension;
@@ -39,8 +44,11 @@ public class ImageFormat {
             return new ImageFormat("image/gif", ".gif", "gif");
         } else if (mimeType.equalsIgnoreCase("image/tiff")) {
             return new ImageFormat("image/tiff", ".tiff", "tiff");
+        } else if (mimeType.equalsIgnoreCase("image/png8")) {
+            return new ImageFormat("image/png8", ".png8", "png");
         } else {
-            return null;
+            log.error("Unknown image MIME type: " + mimeType + " falling back to PNG.");
+            return new ImageFormat("image/png", ".png", "png");
         }
     }
 
