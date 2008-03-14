@@ -54,7 +54,7 @@ public class TileLayer {
 
     Integer cacheLockWait = -1;
 
-    Seeder seeder = null;
+    HashMap seeders = new HashMap();
 
     public TileLayer(String layerName, Properties props) throws CacheException {
         name = layerName;
@@ -218,9 +218,6 @@ public class TileLayer {
 
     public int seed(int zoomStart, int zoomStop, String format, BBOX bounds,
             HttpServletResponse response) throws IOException {
-        if (seeder == null) {
-            seeder = new Seeder(this);
-        }
 
         String complaint = null;
 
@@ -236,21 +233,29 @@ public class TileLayer {
                 return -1;
             }
         }
+        
+        ImageFormat imageFormat = null;
         if (format == null) {
-            log
-                    .info("User did not specify format for seeding, assuming image/png.");
-            format = "image/png";
+        	imageFormat = formats[0];
+            log.info("User did not specify format for seeding, assuming " + formats[0].getMimeType());
+        } else {
+        	imageFormat = ImageFormat.createFromMimeType(format);
+        		
+        	if(!supports(imageFormat.getMimeType())) {
+        		complaint = "Imageformat " + format + " is not supported by layer";
+        		log.error(complaint);
+        		response.sendError(400, complaint);
+        		return -1;
+        	}
         }
-
-        ImageFormat imageFormat = ImageFormat.createFromMimeType(format);
-
-        if (imageFormat == null || !supports(imageFormat.getMimeType())) {
-            complaint = "Imageformat " + format + " is not supported by layer";
-            log.error(complaint);
-            response.sendError(400, complaint);
-            return -1;
+        
+        Seeder seeder = (Seeder) seeders.get(imageFormat.mimeType);
+        
+        if(seeder == null) {
+        	seeder = new Seeder(this);
+        	seeders.put(imageFormat.mimeType, seeder);
         }
-
+        
         if (profile.expireCache == LayerProfile.CACHE_NEVER) {
             complaint = "Layers is configured to never cache!";
             log.error(complaint);
@@ -294,6 +299,7 @@ public class TileLayer {
     public int purge(OutputStream os) {
         // Loop over directories
         // Not implemented
+    	log.error("purge() has not been implemented yet. Do you want to sponsor it? :) ");
         return 0;
     }
 
@@ -343,8 +349,7 @@ public class TileLayer {
                 	log.error("metaTile.writeTileToStream returned false, no tiles saved");
                 }
             } catch (IOException ioe) {
-                log
-                        .error("Unable to write image tile to ByteArrayOutputStream: "
+                log.error("Unable to write image tile to ByteArrayOutputStream: "
                                 + ioe.getMessage());
                 ioe.printStackTrace();
             }
@@ -498,7 +503,17 @@ public class TileLayer {
             formats = new ImageFormat[mimes.length];
             for (int i = 0; i < mimes.length; i++) {
                 formats[i] = ImageFormat.createFromMimeType(mimes[i]);
+                if(formats[i] == null) {
+                	log.error("Unable to match " + mimes[i] + " to a supported format.");
+                }
             }
+        }
+        
+        if(formats == null || formats[0] == null) {
+        	log.error("Unable not determine supported MIME types based on configuration,"
+        			+" falling back to image/png");
+        	formats = new ImageFormat[0];
+        	formats[0] = ImageFormat.createFromMimeType("image/png");
         }
 
         String propDebugHeaders = props.getProperty("debugheaders");

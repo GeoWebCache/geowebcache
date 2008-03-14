@@ -40,7 +40,7 @@ public class Seeder {
 
         PrintWriter pw = response.getWriter();
 
-        infoStart(pw, zoomStart, zoomStop, bounds);
+        infoStart(pw, zoomStart, zoomStop, imageFormat, bounds);
 
         GridCalculator gc = null;
         if (layer.profile.srs.equalsIgnoreCase("EPSG:4326")) {
@@ -100,13 +100,15 @@ public class Seeder {
     }
 
     private void infoStart(PrintWriter pw, int zoomStart, int zoomStop,
-            BBOX bounds) throws IOException {
+            ImageFormat imageFormat, BBOX bounds) throws IOException {
         if (pw == null) {
             return;
         }
-        pw.print("<html><body><table><tr><td>Seeding " + layer.name + " from level "
-                + zoomStart + " to level " + zoomStop + " for bounds "
-                + bounds.getReadableString() + "</td></tr>");
+        pw.print("<html><body><table><tr><td>Seeding " + layer.name 
+        		+ " from level "+ zoomStart + " to level " + zoomStop 
+                + " for format " + imageFormat.getMimeType() 
+                + " and bounds " + bounds.getReadableString() 
+                + "</td></tr>");
         pw.flush();
     }
 
