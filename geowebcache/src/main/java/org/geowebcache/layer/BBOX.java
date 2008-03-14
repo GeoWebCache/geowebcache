@@ -26,7 +26,7 @@ public class BBOX {
 
     private static String DELIMITER = ",";
 
-    private static double equalityThreshold = 0.01;
+    private static double equalityThreshold = 0.03;
 
     // minx, miny, maxx, maxy
     protected double[] coords = new double[4];
