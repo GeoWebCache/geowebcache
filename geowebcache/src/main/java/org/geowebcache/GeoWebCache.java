@@ -159,7 +159,7 @@ public class GeoWebCache extends HttpServlet {
         TileLayer cachedLayer = findLayer(wmsparams.getLayer(), response);
 
         if (cachedLayer != null) {
-            cachedLayer = checkLayer(cachedLayer, wmsparams, response);
+            cachedLayer = checkLayer(cachedLayer, wmsparams, request, response);
         }
 
         // Get data (from backend, if necessary)
@@ -242,7 +242,7 @@ public class GeoWebCache extends HttpServlet {
 
         // A late sanity check
         if (cachedLayer != null) {
-            cachedLayer = checkLayer(cachedLayer, wmsparams, response);
+            cachedLayer = checkLayer(cachedLayer, wmsparams, request, response);
         }
 
         wmsGetData(cachedLayer, wmsparams, response);
@@ -265,7 +265,7 @@ public class GeoWebCache extends HttpServlet {
 
         // A late sanity check
         if (cachedLayer != null) {
-            cachedLayer = checkLayer(cachedLayer, wmsparams, response);
+            cachedLayer = checkLayer(cachedLayer, wmsparams, request, response);
         }
 
         wmsGetData(cachedLayer, wmsparams, response);
@@ -292,7 +292,7 @@ public class GeoWebCache extends HttpServlet {
     }
 
     private TileLayer checkLayer(TileLayer cachedLayer,
-            WMSParameters wmsparams, HttpServletResponse response)
+            WMSParameters wmsparams, HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
         String errorMsg = cachedLayer.covers(wmsparams);
@@ -300,6 +300,7 @@ public class GeoWebCache extends HttpServlet {
         if (errorMsg != null) {
             response.setContentType("text/plain");
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            errorMsg = errorMsg + "\n\n" + " Raw query string: " + request.getQueryString();
             response.getOutputStream().print(errorMsg);
             return null;
         } else {
