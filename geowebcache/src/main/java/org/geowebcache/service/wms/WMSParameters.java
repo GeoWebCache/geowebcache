@@ -18,6 +18,9 @@
 package org.geowebcache.service.wms;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -63,6 +66,8 @@ public class WMSParameters extends Parameters {
     public static final String IMAGE_TYPE_PARAM = "format";
 
     public static final String ERROR_TYPE_PARAM = "exceptions";
+    
+    public static final String VENDOR_PARAMS = "vendorparameters";
 
     public WMSParameters() {
     }
@@ -190,7 +195,7 @@ public class WMSParameters extends Parameters {
     public void setBgColor(String bgcolor) {
         set(BGCOLOR_PARAM, bgcolor);
     }
-
+    
     /**
      * @return the errormime
      */
@@ -398,66 +403,118 @@ public class WMSParameters extends Parameters {
     public void setWidth(String width) {
         setWidth(Integer.parseInt(width));
     }
+    
+    public String getVendorParams() {
+        return convertToString(get(VENDOR_PARAMS));
+    }
+
+    public void setVendorParams(String request) {
+        set(VENDOR_PARAMS, request);
+    }
 
     /**
-     * Sets all properties at once
+     * Outputs an HTTP parameter string
      * 
-     * @param srs
-     * @param layer
-     * @param bbox
-     * @param origin
-     * @param height
-     * @param width
-     * @param imagemime
-     * @param errormime
+     * This is identical to Parameters.getURLString() but makes an exception
+     * for VENDOR_PARAMS
+     * 
      */
-    public void setAllFromString(String request, String version,
-            String istiled, String srs, String layer, String styles,
-            String bbox, String origin, String height, String width,
-            String imagemime, String errormime) {
-        if (request != null) {
-            setRequest(request);
-        }
-        if (version != null) {
-            setVersion(version);
-        }
-        if (istiled != null) {
-            this.setIsTiled(istiled);
-        }
-        if (srs != null) {
-            setSrs(srs);
-        }
-        if (layer != null) {
-            setLayer(layer);
-        }
-        if (styles != null) {
-            setStyles(styles);
-        }
-        if (bbox != null) {
-            this.setBBOX(bbox);
-        }
-        if (origin != null) {
-            setOrigin(origin);
-        }
-        if (height != null) {
-            this.setHeight(height);
-        }
-        if (width != null) {
-            this.setWidth(width);
-        }
-        if (imagemime != null) {
-            try {
-                this.setImagemime(imagemime);
-            } catch (IOException ioe) {
-                log.error("Error setting image format: ", ioe);
+    public StringBuffer getURLString() {
+        StringBuffer arg_str = new StringBuffer(256);
+        String param_name;
+ 
+        Iterator itr = super.params.keySet().iterator();
+        while (itr.hasNext()) {
+            param_name = (String) itr.next();
+            if (param_name != null && param_name.length() > 0) {
+                if (arg_str == null || arg_str.length() == 0) {
+                    arg_str.append('?');
+                } else {
+                    arg_str.append('&');
+                }
+
+                try {
+                	if(param_name.equalsIgnoreCase(VENDOR_PARAMS)) {
+                		arg_str.append(URLEncoder.encode(
+                				convertToString(get(param_name)), CHARSET));
+                	} else {
+                		arg_str.append(URLEncoder.encode(param_name, CHARSET));
+                		arg_str.append('=');
+                		arg_str.append(URLEncoder.encode(
+                				convertToString(get(param_name)), CHARSET));
+                	}
+
+                } catch (UnsupportedEncodingException uee) {
+                    log.fatal("Unsupported URL Encoding: ", uee);
+                    return null;
+                } catch (NullPointerException npe) {
+                    System.out.println("Missing value for parameter: "
+                            + param_name);
+                    log.error("Missing value for parameter: " + param_name);
+                }
             }
         }
-        if (errormime != null) {
-            try {
-                this.setErrormime(errormime);
-            } catch (IOException ioe) {
-                log.error("Error setting exception format: ", ioe);
-            }
-        }
+        return arg_str;
     }
+//    /**
+//     * Sets all properties at once
+//     * 
+//     * @param srs
+//     * @param layer
+//     * @param bbox
+//     * @param origin
+//     * @param height
+//     * @param width
+//     * @param imagemime
+//     * @param errormime
+//     */
+//    public void setAllFromString(String request, String version,
+//            String istiled, String srs, String layer, String styles,
+//            String bbox, String origin, String height, String width,
+//            String imagemime, String errormime) {
+//        if (request != null) {
+//            setRequest(request);
+//        }
+//        if (version != null) {
+//            setVersion(version);
+//        }
+//        if (istiled != null) {
+//            this.setIsTiled(istiled);
+//        }
+//        if (srs != null) {
+//            setSrs(srs);
+//        }
+//        if (layer != null) {
+//            setLayer(layer);
+//        }
+//        if (styles != null) {
+//            setStyles(styles);
+//        }
+//        if (bbox != null) {
+//            this.setBBOX(bbox);
+//        }
+//        if (origin != null) {
+//            setOrigin(origin);
+//        }
+//        if (height != null) {
+//            this.setHeight(height);
+//        }
+//        if (width != null) {
+//            this.setWidth(width);
+//        }
+//        if (imagemime != null) {
+//            try {
+//                this.setImagemime(imagemime);
+//            } catch (IOException ioe) {
+//                log.error("Error setting image format: ", ioe);
+//            }
+//        }
+//        if (errormime != null) {
+//            try {
+//                this.setErrormime(errormime);
+//            } catch (IOException ioe) {
+//                log.error("Error setting exception format: ", ioe);
+//            }
+//        }
+//    }
 }

@@ -69,6 +69,8 @@ public class LayerProfile {
     protected String bgcolor = null;
 
     protected String palette = null;
+    
+    protected String vendorParameters = null;
 
     protected String wmsURL[] = { "http://localhost:8080/geoserver/wms" };
 
@@ -226,6 +228,11 @@ public class LayerProfile {
             palette = propPalette;
         }
 
+        String propVendorParameters = props.getProperty("vendorparameters");
+        if (propVendorParameters != null) {
+        	vendorParameters = propVendorParameters;
+        }
+        
         String propUrl = props.getProperty("wmsurl");
         if (propUrl != null) {
             wmsURL = propUrl.split(",");
@@ -293,6 +300,9 @@ public class LayerProfile {
         }
         if (palette != null) {
             wmsparams.setPalette(palette);
+        }
+        if (vendorParameters != null) {
+            wmsparams.setVendorParams(vendorParameters);
         }
         if (wmsStyles != null) {
             wmsparams.setStyles(wmsStyles);

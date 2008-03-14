@@ -35,9 +35,9 @@ public abstract class Parameters {
             .getLog(org.geowebcache.service.Parameters.class);
 
     // Charset to use for URL strings
-    private static final String CHARSET = "UTF-8";
+    protected static final String CHARSET = "UTF-8";
 
-    private Map params;
+    protected Map params;
 
     public Parameters() {
         params = new HashMap();
