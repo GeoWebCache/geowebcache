@@ -237,6 +237,13 @@ public class GeoWebCache extends HttpServlet {
         BBOX bbox = VEConverter.convertQuadKey(strQuadKey);
 
         TileLayer cachedLayer = findLayer(strLayer, response);
+        
+        if (cachedLayer == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.setContentType("text/plain");
+            response.getOutputStream().print("Unknown layer: " + strLayer);
+        }
+        
         WMSParameters wmsparams = cachedLayer.getWMSParamTemplate();
         wmsparams.setBBOX(bbox);
 
@@ -260,6 +267,13 @@ public class GeoWebCache extends HttpServlet {
                 .parseInt(strX), Integer.parseInt(strY));
 
         TileLayer cachedLayer = findLayer(strLayer, response);
+        
+        if (cachedLayer == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.setContentType("text/plain");
+            response.getOutputStream().print("Unknown layer: " + strLayer);
+        }
+        
         WMSParameters wmsparams = cachedLayer.getWMSParamTemplate();
         wmsparams.setBBOX(bbox);
 
