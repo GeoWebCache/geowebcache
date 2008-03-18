@@ -74,7 +74,7 @@ public class TileLayer {
                     + profile.srs;
         }
 
-        if (!supports(wmsparams.getImagemime().getMime())) {
+        if (!supportsImageFormat(wmsparams.getImagemime().getMime())) {
             return "Unsupported MIME type requested: "
                     + wmsparams.getImagemime().getMime();
         }
@@ -241,7 +241,7 @@ public class TileLayer {
         } else {
         	imageFormat = ImageFormat.createFromMimeType(format);
         		
-        	if(!supports(imageFormat.getMimeType())) {
+        	if(!supportsImageFormat(imageFormat.getMimeType())) {
         		complaint = "Imageformat " + format + " is not supported by layer";
         		log.error(complaint);
         		response.sendError(400, complaint);
@@ -528,6 +528,17 @@ public class TileLayer {
     }
 
     /**
+     * Whether the layer supports the given SRS, wrapped to
+     * keep the ability to support multiple profiles or projections per layer.
+     *  
+     * @param srs string representation of SRS
+     * @return whether this SRS is supported by the layer configuration
+     */
+    public boolean supportsSRS(String srs) {
+    	return profile.srs.equalsIgnoreCase(srs);
+    }
+    
+    /**
      * Checks to see whether we accept the given mimeType
      * 
      * Typically this list should be so short that a linear search will be
@@ -536,7 +547,7 @@ public class TileLayer {
      * @param imageMime
      * @return
      */
-    private boolean supports(String imageMime) {
+    private boolean supportsImageFormat(String imageMime) {
         for (int i = 0; i < formats.length; i++) {
             if (formats[i].getMimeType().equalsIgnoreCase(imageMime)) {
                 return true;

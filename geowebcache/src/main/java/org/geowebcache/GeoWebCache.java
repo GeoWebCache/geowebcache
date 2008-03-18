@@ -242,6 +242,11 @@ public class GeoWebCache extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             response.setContentType("text/plain");
             response.getOutputStream().print("Unknown layer: " + strLayer);
+        } else if(! cachedLayer.supportsSRS("EPSG:900913")) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.setContentType("text/plain");
+            response.getOutputStream().print("You can only use this service with tile layers"
+            		+ " configured to support EPSG:900913 \n\n");
         }
         
         WMSParameters wmsparams = cachedLayer.getWMSParamTemplate();
@@ -272,6 +277,13 @@ public class GeoWebCache extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             response.setContentType("text/plain");
             response.getOutputStream().print("Unknown layer: " + strLayer);
+            return;
+        } else if(! cachedLayer.supportsSRS("EPSG:900913")) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.setContentType("text/plain");
+            response.getOutputStream().print("You can only use this service with tile layers"
+            		+" configured to support EPSG:900913 \n\n");
+            return;
         }
         
         WMSParameters wmsparams = cachedLayer.getWMSParamTemplate();

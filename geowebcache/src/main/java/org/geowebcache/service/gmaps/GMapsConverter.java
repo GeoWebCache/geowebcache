@@ -46,7 +46,10 @@ public class GMapsConverter {
         double tileWidth = extent / (Math.pow(2, zoomLevel));
 
         // xPos and yPos are the top left hand corner, extent is tilewidth
-        return new BBOX(xPos + x * tileWidth, yPos - y * tileWidth, xPos
-                + (x + 1) * tileWidth, yPos - (y + 1) * tileWidth);
+        return new BBOX(
+        		xPos + x * tileWidth, 
+        		yPos - (y + 1) * tileWidth,
+        		xPos + (x + 1) * tileWidth,
+        		yPos - (y) * tileWidth);
     }
 }
