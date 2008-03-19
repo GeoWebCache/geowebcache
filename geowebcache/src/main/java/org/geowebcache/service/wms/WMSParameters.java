@@ -435,8 +435,7 @@ public class WMSParameters extends Parameters {
 
                 try {
                 	if(param_name.equalsIgnoreCase(VENDOR_PARAMS)) {
-                		arg_str.append(URLEncoder.encode(
-                				convertToString(get(param_name)), CHARSET));
+                		arg_str.append(get(VENDOR_PARAMS));
                 	} else {
                 		arg_str.append(URLEncoder.encode(param_name, CHARSET));
                 		arg_str.append('=');
