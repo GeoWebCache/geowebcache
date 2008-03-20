@@ -62,37 +62,74 @@ public class TileLayer {
     }
 
     /**
-     * Rough checks to see whether the request is within bounds and whether we
-     * support the format.
+     * Rough checks to see whether the layers supports
+     * the requested projection, returns error message otherwise
      * 
-     * @param wmsparams
+     * @param srs Name of projection, for example "EPSG:4326"
      * @return null if okay, error message otherwise.
      */
-    public String covers(WMSParameters wmsparams) {
-        if (!wmsparams.getSrs().equalsIgnoreCase(profile.srs)) {
-            return "Unexpected SRS: " + wmsparams.getSrs() + " , expected "
+    public String supportsProjection(String srs) {
+        if (srs.equalsIgnoreCase(profile.srs)) {
+            return null;
+            
+        } else {
+            return "Unexpected SRS: " + srs + " , expected "
                     + profile.srs;
-        }
-
-        if (!supportsImageFormat(wmsparams.getImagemime().getMime())) {
+        }   
+    }
+    
+    /**
+     * Rough checks to see whether the layers supports
+     * the requested mimeType. Null assumes the default format
+     * and is supported.
+     * 
+     * Returns error message otherwise
+     * 
+     * @param mimeType MIME type or null, example "image/png"
+     * @return null if okay, error message otherwise.
+     */
+    public String supportsMIME(String mimeType) {
+        if (mimeType == null || supportsImageFormat(mimeType)) {
+            return null;
+        } else {
             return "Unsupported MIME type requested: "
-                    + wmsparams.getImagemime().getMime();
+                    + mimeType;
         }
+    }
+    
+//
+//        BBOX reqbox = wmsparams.getBBOX();
+//        if (!reqbox.isSane()) {
+//            return "The requested bounding box " + reqbox.getReadableString()
+//                    + " is not sane";
+//        }
+//
+//        if (!profile.gridBase.contains(reqbox)) {
+//            return "The layers grid box "
+//                    + profile.gridBase.getReadableString()
+//                    + " does not cover the requested bounding box "
+//                    + reqbox.getReadableString();
+//        }
+//        // All good
+//        return null;
+//    }
 
-        BBOX reqbox = wmsparams.getBBOX();
-        if (!reqbox.isSane()) {
-            return "The requested bounding box " + reqbox.getReadableString()
-                    + " is not sane";
-        }
-
-        if (!profile.gridBase.contains(reqbox)) {
-            return "The layers grid box "
-                    + profile.gridBase.getReadableString()
-                    + " does not cover the requested bounding box "
-                    + reqbox.getReadableString();
-        }
-        // All good
-        return null;
+    /**
+     * Wrapper for getData() below
+     * 
+     * @param wmsparams
+     * @param response
+     * @return
+     * @throws IOException
+     */
+    public byte[] getData(WMSParameters wmsParams, HttpServletResponse response)
+    throws IOException {
+        int[] gridLoc = profile.gridCalc.gridLocation(wmsParams.getBBOX());
+        
+        ImageFormat imageFormat = ImageFormat.createFromMimeType(wmsParams
+                .getImagemime().getMime());
+        
+        return getData(gridLoc, imageFormat, wmsParams.toString(), response);
     }
 
     /**
@@ -106,13 +143,10 @@ public class TileLayer {
      * @param wmsparams
      * @return
      */
-    public byte[] getData(WMSParameters wmsparams, HttpServletResponse response)
-            throws IOException {
+    public byte[] getData(int[] gridLoc, ImageFormat imageFormat, String requestURI,
+            HttpServletResponse response) throws IOException {
         String debugHeadersStr = null;
-
-        // Internal representation
-        int[] gridLoc = profile.gridCalc.gridLocation(wmsparams.getBBOX());
-
+        
         // Final preflight check
         if (profile.gridCalc.isInRange(gridLoc) != null) {
             String complaint = "Adjusted request ("
@@ -123,9 +157,10 @@ public class TileLayer {
             response.sendError(400, complaint);
             return null;
         }
-        // System.out.println("orig: "+wmsparams.getBBOX().getReadableString());
-        // System.out.println("recreated:
-        // "+profile.recreateBbox(gridLoc).getReadableString());
+        // System.out.println(
+        // "orig: "+wmsparams.getBBOX().getReadableString());
+        // System.out.println(
+        // "recreated: "+profile.recreateBbox(gridLoc).getReadableString());
 
         MetaTile metaTile = new MetaTile(profile.gridCalc.getGridBounds(gridLoc[2]), 
                 gridLoc, profile.metaWidth, profile.metaHeight);
@@ -135,8 +170,6 @@ public class TileLayer {
         /** ****************** Acquire lock ******************* */
         waitForQueue(metaGridLoc);
 
-        ImageFormat imageFormat = ImageFormat.createFromMimeType(wmsparams
-                .getImagemime().getMime());
         Object ck = cacheKey.createKey(gridLoc[0], gridLoc[1], gridLoc[2],
                 imageFormat.getExtension());
 
@@ -164,7 +197,7 @@ public class TileLayer {
                     return tile.getData();
                 }
             } catch (CacheException ce) {
-                log.error("Failed to get " + wmsparams.toString()
+                log.error("Failed to get " + requestURI
                         + " from cache");
                 ce.printStackTrace();
             }
@@ -192,7 +225,7 @@ public class TileLayer {
             try {
                 tile = (RawTile) cache.get(ck, profile.expireCache);
             } catch (CacheException ce) {
-                log.error("Failed to get " + wmsparams.toString()
+                log.error("Failed to get " + requestURI
                         + " from cache, after first seeding cache.");
                 ce.printStackTrace();
             }

@@ -28,22 +28,20 @@ public class VEConverter {
             .getLog(org.geowebcache.service.ve.VEConverter.class);
 
     /**
-     * Convert a quadkey into a bounding box for EPSG:900913
+     * Convert a quadkey into the internal representation {x,y,z}
+     * of a grid location
      * 
      * @param quadKey
-     * @return
+     * @return internal representation
      */
-    public static BBOX convertQuadKey(String quadKey) {
+    public static int[] convert(String quadKey) {
         char[] quadArray = quadKey.toCharArray();
 
         int zoomLevel = quadArray.length;
 
-        double extent = 20037508.34 * 2;
-
-        // Start in the top left hand corner
-        double xPos = -20037508.34;
-        double yPos = 20037508.34;
-
+        int extent = (int) Math.pow(2, zoomLevel);
+        int yPos = 0;
+        int xPos = 0;
         // Now we traverse the quadArray from left to right, interpretation
         // 0 1
         // 2 3
@@ -53,26 +51,28 @@ public class VEConverter {
         //
         for (int i = 0; i < zoomLevel; i++) {
             char curChar = quadArray[i];
-            extent = extent / 2; // For each round half as much is at
-            // stake
+            
+            // For each round half as much is at stake
+            extent = extent / 2;
 
             if (curChar == '0') {
-                // X,Y stay
+                //X stays
+                yPos += extent;
             } else if (curChar == '1') {
                 xPos += extent;
-                // Y stays
+                yPos += extent;
             } else if (curChar == '2') {
-                // X stays
-                yPos -= extent;
+                //X stays
+                //Y stays
             } else if (curChar == '3') {
                 xPos += extent;
-                yPos -= extent;
+                //Y stays
             } else {
                 log.error("Don't know how to interpret quadKey: " + quadKey);
             }
         }
-
-        // xPos and yPos are the top left hand corner, extent is tilewidth
-        return new BBOX(xPos, yPos - extent, xPos + extent, yPos);
+        
+        int[] gridLoc = {xPos, yPos, zoomLevel};
+        return gridLoc;
     }
 }

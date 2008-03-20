@@ -32,8 +32,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.BBOX;
+import org.geowebcache.layer.ImageFormat;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.service.gmaps.GMapsConverter;
+import org.geowebcache.service.kml.KMLService;
 import org.geowebcache.service.ve.VEConverter;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.Configuration;
@@ -145,6 +147,8 @@ public class GeoWebCache extends HttpServlet {
             doGetVE(request, response);
         } else if (subPath.equals("/gmaps")) {
             doGetGmaps(request, response);
+        } else if (subPath.equals("/kml")) {
+            doGetKML(request, response);
         } else if (subPath.equals("/seed")) {
             doGetSeed(request, response);
         }
@@ -152,41 +156,96 @@ public class GeoWebCache extends HttpServlet {
 
     public void doGetWMS(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
+        
         // Parse request
         WMSParameters wmsparams = new WMSParameters(request);
 
         // Check whether we serve this layer
-        TileLayer cachedLayer = findLayer(wmsparams.getLayer(), response);
+        TileLayer cachedLayer = findAndCheckLayer(wmsparams, request, response);
 
         if (cachedLayer != null) {
-            cachedLayer = checkLayer(cachedLayer, wmsparams, request, response);
-        }
-
-        // Get data (from backend, if necessary)
-        wmsGetData(cachedLayer, wmsparams, response);
-    }
-
-    private void wmsGetData(TileLayer cachedLayer, WMSParameters wmsparams,
-            HttpServletResponse response) throws IOException {
-        if (cachedLayer != null) {
+            // Get data
             byte[] data = cachedLayer.getData(wmsparams, response);
-
-            // Did we get anything?
-            if (data == null || data.length == 0) {
-                // Response: 404
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                return;
-            }
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.setContentType(wmsparams.getImagemime().getMime());
-            response.setContentLength(data.length);
-            sendData(response, data);
+            
+            // Will also return error message, if appropriate
+            sendData(response, wmsparams.getImagemime().getMime(), data);
         } else {
-            // Response: 404
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            // finAndCheckLayer() has already set error message
         }
     }
 
+
+    public void doGetVE(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        Map params = request.getParameterMap();
+        String strLayer = ServletUtils.stringFromMap(params, "layers");
+        String strQuadKey = ServletUtils.stringFromMap(params, "quadkey");
+        String strFormat = ServletUtils.stringFromMap(params, "format");
+        
+        int[] gridLoc = VEConverter.convert(strQuadKey);
+
+        forwardToBackend(
+                strLayer, strFormat, "EPSG:900913", gridLoc, request, response);
+    }
+
+    public void doGetGmaps(HttpServletRequest request,
+            HttpServletResponse response) throws ServletException, IOException {
+        Map params = request.getParameterMap();
+        String strLayer = ServletUtils.stringFromMap(params, "layers");
+        String strZoom = ServletUtils.stringFromMap(params, "zoom");
+        String strX = ServletUtils.stringFromMap(params, "x");
+        String strY = ServletUtils.stringFromMap(params, "y");
+        String strFormat = ServletUtils.stringFromMap(params, "format");
+        
+        int[] gridLoc = GMapsConverter.convert(Integer.parseInt(strZoom), Integer
+                .parseInt(strX), Integer.parseInt(strY));
+
+        forwardToBackend(
+                strLayer, strFormat, "EPSG:900913", gridLoc, request, response);
+    }
+    
+    public void doGetKML(HttpServletRequest request,
+            HttpServletResponse response) throws ServletException, IOException {
+        Map params = request.getParameterMap();
+        
+        String strLayer = ServletUtils.stringFromMap(params, "layers");
+        String strZoom = ServletUtils.stringFromMap(params, "z");
+        String strX = ServletUtils.stringFromMap(params, "x");
+        String strY = ServletUtils.stringFromMap(params, "y");
+        String strFormat = ServletUtils.stringFromMap(params, "format");
+        
+        int[] gridLoc = { 
+                    Integer.parseInt(strX),
+                    Integer.parseInt(strY),
+                    Integer.parseInt(strZoom) };
+        
+        if(strFormat.equals("application/vnd.google-earth.kml+xml")
+                || strFormat.equals("application/vnd.google-earth.kmz+xml")) {
+            // We need to make a nice little XML document
+            TileLayer cachedLayer = findAndCheckLayer(
+                    strLayer, "EPSG:4326", strFormat, request, response);
+            if(cachedLayer != null) {
+                KMLService.getOverlayKML(cachedLayer, response);
+            }
+        } else {
+            // Client wants an image
+            forwardToBackend(
+                    strLayer, strFormat, "EPSG:4326", gridLoc, request, response);
+        }
+            
+    }
+    
+    /**
+     * Function for setting up seeding
+     * 
+     * TODO replace
+     * 
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
     public void doGetSeed(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
 
@@ -226,120 +285,133 @@ public class GeoWebCache extends HttpServlet {
         layer.seed(start, stop, strFormat, reqBounds, response);
         response.flushBuffer();
     }
-
-    public void doGetVE(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        Map params = request.getParameterMap();
-        String strLayer = ServletUtils.stringFromMap(params, "layers");
-        String strQuadKey = ServletUtils.stringFromMap(params, "quadkey");
-
-        BBOX bbox = VEConverter.convertQuadKey(strQuadKey);
-
-        TileLayer cachedLayer = findLayer(strLayer, response);
-        
-        if (cachedLayer == null) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.setContentType("text/plain");
-            response.getOutputStream().print("Unknown layer: " + strLayer);
-        } else if(! cachedLayer.supportsSRS("EPSG:900913")) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.setContentType("text/plain");
-            response.getOutputStream().print("You can only use this service with tile layers"
-            		+ " configured to support EPSG:900913 \n\n");
-        }
-        
-        WMSParameters wmsparams = cachedLayer.getWMSParamTemplate();
-        wmsparams.setBBOX(bbox);
-
-        // A late sanity check
-        if (cachedLayer != null) {
-            cachedLayer = checkLayer(cachedLayer, wmsparams, request, response);
-        }
-
-        wmsGetData(cachedLayer, wmsparams, response);
-    }
-
-    public void doGetGmaps(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
-        Map params = request.getParameterMap();
-        String strLayer = ServletUtils.stringFromMap(params, "layers");
-        String strZoom = ServletUtils.stringFromMap(params, "zoom");
-        String strX = ServletUtils.stringFromMap(params, "x");
-        String strY = ServletUtils.stringFromMap(params, "y");
-
-        BBOX bbox = GMapsConverter.convert(Integer.parseInt(strZoom), Integer
-                .parseInt(strX), Integer.parseInt(strY));
-
-        TileLayer cachedLayer = findLayer(strLayer, response);
-        
-        if (cachedLayer == null) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.setContentType("text/plain");
-            response.getOutputStream().print("Unknown layer: " + strLayer);
-            return;
-        } else if(! cachedLayer.supportsSRS("EPSG:900913")) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.setContentType("text/plain");
-            response.getOutputStream().print("You can only use this service with tile layers"
-            		+" configured to support EPSG:900913 \n\n");
-            return;
-        }
-        
-        WMSParameters wmsparams = cachedLayer.getWMSParamTemplate();
-        wmsparams.setBBOX(bbox);
-
-        // A late sanity check
-        if (cachedLayer != null) {
-            cachedLayer = checkLayer(cachedLayer, wmsparams, request, response);
-        }
-
-        wmsGetData(cachedLayer, wmsparams, response);
-    }
-
+    
+    
     /**
-     * Finds the requested layer, provided request is within bounds
+     * Wrapper function that picks layer, SRS and MIME type out of
+     * the WMS parameters to pass on to the findAndCheckLayer
+     * function below.
      * 
-     * @param wmsparams
+     * @param wmsParams
+     * @param request
      * @param response
      * @return
+     * @throws IOException
      */
-    private TileLayer findLayer(String strLayer, HttpServletResponse response)
-            throws IOException {
-        TileLayer cachedLayer = (TileLayer) layers.get(strLayer);
-
-        if (cachedLayer == null) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.setContentType("text/plain");
-            response.getOutputStream().print("Unknown layer: " + strLayer);
-        }
-
-        return cachedLayer;
+    private TileLayer findAndCheckLayer(WMSParameters wmsParams,
+            HttpServletRequest request, HttpServletResponse response)
+    throws IOException {
+        
+        return findAndCheckLayer(wmsParams.getLayer(), wmsParams.getSrs(), 
+                wmsParams.getImagemime().getMime(), request, response);
     }
+    
 
-    private TileLayer checkLayer(TileLayer cachedLayer,
-            WMSParameters wmsparams, HttpServletRequest request, HttpServletResponse response)
+    /**
+     * Looks up the layer and does basic checks, 
+     * whether it supports the projection and the MIME type
+     * 
+     * It returns a null and writes error message to the
+     * response object if any of these are amiss.
+     * 
+     * @param strLayer external name of layer(s)
+     * @param srs requested projection
+     * @param mimeType requested MIME type for response
+     * @param request the original request object
+     * @param response the response object
+     * @return the matching tile layer
+     * @throws IOException
+     */
+    private TileLayer findAndCheckLayer(String strLayer, String srs, 
+            String mimeType, HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
-        String errorMsg = cachedLayer.covers(wmsparams);
-
+        String errorMsg = null;
+        
+        // Check whether we actually know this layer
+        TileLayer cachedLayer = (TileLayer) layers.get(strLayer);
+        if(cachedLayer == null) {
+            errorMsg = "Unknown layer: " + strLayer;
+        }
+        // Check projection support
+        if(errorMsg == null)
+            errorMsg = cachedLayer.supportsProjection(srs);
+        
+        // Check MIME support
+        if(errorMsg == null)
+            errorMsg = cachedLayer.supportsMIME(mimeType);
+        
         if (errorMsg != null) {
             response.setContentType("text/plain");
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             errorMsg = errorMsg + "\n\n" + " Raw query string: " + request.getQueryString();
             response.getOutputStream().print(errorMsg);
+            log.debug(errorMsg);
             return null;
         } else {
             return cachedLayer;
         }
     }
-
-    private void sendData(HttpServletResponse response, byte[] data)
+    
+    /**
+     * Actually send the data back to the client, or an error if there is none.
+     * 
+     * @param response Where to write the response
+     * @param mimeType MIME type to set for the response
+     * @param data the data
+     * @throws IOException
+     */
+    private void sendData(HttpServletResponse response, String mimeType, byte[] data)
             throws IOException {
-        log.trace("Sending data.");
+        
+        // Did we get anything?
+        if (data == null || data.length == 0) {
+            log.trace("sendData() had nothing to return");
+            
+            // Response: 500 , should not have gotten here
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            return;
+        }
+        
+        log.trace("sendData() Sending data.");
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType(mimeType);
+        response.setContentLength(data.length);
         OutputStream os = response.getOutputStream();
         os.write(data);
         os.flush();
+    }
+    
+    /**
+     * Checks whether the requested layer is supported and forwards
+     * the request to the appropriate layer object, after running a few
+     * tests on the request. 
+     * 
+     * @param strLayer
+     * @param strFormat
+     * @param SRS
+     * @param gridLoc
+     * @param request
+     * @param response
+     * @throws IOException
+     */
+    private void forwardToBackend(String strLayer, String strFormat, String SRS, int[] gridLoc,
+            HttpServletRequest request, HttpServletResponse response) throws IOException {
+        
+        TileLayer cachedLayer = findAndCheckLayer(
+                strLayer, SRS, strFormat, request, response);
+
+        if (cachedLayer != null) {
+            ImageFormat imgFormat = ImageFormat.createFromMimeType(strFormat);
+            
+            byte[] data = cachedLayer.getData(
+                    gridLoc, imgFormat, request.getQueryString(), response);
+            
+            // Will also return error message, if appropriate
+            sendData(response, strFormat, data);
+        } else {
+            // finAndCheckLayer() has already set error message
+        }
     }
 
 }
