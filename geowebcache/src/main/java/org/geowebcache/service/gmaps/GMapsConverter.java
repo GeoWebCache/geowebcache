@@ -16,17 +16,11 @@
  */
 package org.geowebcache.service.gmaps;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.geowebcache.layer.BBOX;
-
 /**
- * 
+ * Class to convert from Google Maps coordinates into the internal
+ * representation of a tile.
  */
 public class GMapsConverter {
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.service.gmaps.GMapsConverter.class);
-
     /**
      * Convert Google's tiling coordinates into an {x,y,x}
      * 
@@ -37,10 +31,10 @@ public class GMapsConverter {
      * @return
      */
     public static int[] convert(int zoomLevel, int x, int y) {
-        int extent = (int) Math.pow(2, zoomLevel);
+    	// Extent is the total number of tiles in y direction
+    	int extent = (int) Math.pow(2, zoomLevel);
         
-        // xPos and yPos are the top left hand corner, extent is totalt number of tiles
-        
+        // xPos and yPos correspond to the top left hand corner
         int[] gridLoc = {x, extent - y - 1, zoomLevel};
         return gridLoc;
     }

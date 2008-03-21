@@ -18,10 +18,10 @@ package org.geowebcache.service.ve;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.layer.BBOX;
 
 /**
- * 
+ * Class to convert from Virtual Earth quad keys to the internal
+ * representation of a tile.
  */
 public class VEConverter {
     private static Log log = LogFactory
@@ -42,6 +42,7 @@ public class VEConverter {
         int extent = (int) Math.pow(2, zoomLevel);
         int yPos = 0;
         int xPos = 0;
+        
         // Now we traverse the quadArray from left to right, interpretation
         // 0 1
         // 2 3
