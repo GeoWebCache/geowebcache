@@ -15,9 +15,11 @@
  * @author Arne Kepp, The Open Planning Project, Copyright 2007
  *  
  */
-package org.geowebcache.cachekey;
+package org.geowebcache.cache.file;
 
 import java.io.File;
+
+import org.geowebcache.cache.CacheKey;
 
 public class FilePathKey implements CacheKey {
     String layerPrefix;

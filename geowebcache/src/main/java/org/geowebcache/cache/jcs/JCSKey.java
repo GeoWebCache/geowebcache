@@ -15,9 +15,11 @@
  * @author Arne Kepp, The Open Planning Project, Copyright 2007
  *  
  */
-package org.geowebcache.cachekey;
+package org.geowebcache.cache.jcs;
 
 import java.io.Serializable;
+
+import org.geowebcache.cache.CacheKey;
 
 public class JCSKey implements Serializable, CacheKey {
     private int prefix;

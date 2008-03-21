@@ -30,8 +30,8 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheFactory;
-import org.geowebcache.cachekey.CacheKey;
-import org.geowebcache.cachekey.CacheKeyFactory;
+import org.geowebcache.cache.CacheKey;
+import org.geowebcache.cache.CacheKeyFactory;
 import org.geowebcache.service.wms.WMSParameters;
 
 public class TileLayer {

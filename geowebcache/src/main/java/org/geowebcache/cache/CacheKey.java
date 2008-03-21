@@ -15,7 +15,7 @@
  * @author Arne Kepp, The Open Planning Project, Copyright 2007
  *  
  */
-package org.geowebcache.cachekey;
+package org.geowebcache.cache;
 
 /**
  * Interface to define cache keys.

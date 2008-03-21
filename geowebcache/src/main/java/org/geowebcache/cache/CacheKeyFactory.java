@@ -15,14 +15,14 @@
  * @author Arne Kepp, The Open Planning Project, Copyright 2007
  *  
  */
-package org.geowebcache.cachekey;
+package org.geowebcache.cache;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class CacheKeyFactory {
     private static Log log = LogFactory
-            .getLog(org.geowebcache.cachekey.CacheKeyFactory.class);
+            .getLog(org.geowebcache.cache.CacheKeyFactory.class);
 
     public static CacheKey getCacheKey(String cachekeytype, String prefix) {
         CacheKey cachekey = null;
