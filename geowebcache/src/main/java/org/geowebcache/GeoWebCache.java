@@ -402,7 +402,7 @@ public class GeoWebCache extends HttpServlet {
                 strLayer, SRS, strFormat, request, response);
 
         if (cachedLayer != null) {
-            ImageFormat imgFormat = ImageFormat.createFromMimeType(strFormat);
+        	ImageFormat imgFormat = cachedLayer.getImageFormat(strFormat);
             
             byte[] data = cachedLayer.getData(
                     gridLoc, imgFormat, request.getQueryString(), response);

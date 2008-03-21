@@ -230,10 +230,16 @@ public class TileLayer {
                 ce.printStackTrace();
             }
             if (tile != null) {
-                data = tile.getData();
-            } else {
-                log.error("The cache returned null even after forwarding the request."
-                        +" Check the WMS and cache backends, you may also have found a bug.");
+                data = tile.getData();         
+            }
+            
+            // Final debug check, only relevant if all tiles were within bounds
+            if(data == null && gridPositions.length == profile.metaHeight * profile.metaWidth) {
+            	log.error("The cache returned null even after forwarding the request \n"
+            			+ requestURI
+            			+ " to \n"
+            			+ requestURL
+                        +"\n Please check the WMS and cache backends.");
             }
         }
 
@@ -332,7 +338,7 @@ public class TileLayer {
     public int purge(OutputStream os) {
         // Loop over directories
         // Not implemented
-    	log.error("purge() has not been implemented yet. Do you want to sponsor it? :) ");
+    	log.error("purge() has not been implemented yet. Maybe you want to sponsor it? ;) ");
         return 0;
     }
 
@@ -530,6 +536,7 @@ public class TileLayer {
             cacheKey = CacheKeyFactory.getCacheKey(propCacheKeytype, name);
         }
 
+        // Check whether the configuration specifies what MIME types are legal
         String propImageMIME = props.getProperty("imagemimes");
         if (propImageMIME != null) {
             String[] mimes = propImageMIME.split(",");
@@ -542,18 +549,23 @@ public class TileLayer {
             }
         }
         
+        // Set default to image/png, if none were specified or acceptable
         if(formats == null || formats[0] == null) {
         	log.error("Unable not determine supported MIME types based on configuration,"
         			+" falling back to image/png");
         	formats = new ImageFormat[0];
         	formats[0] = ImageFormat.createFromMimeType("image/png");
         }
-
+        
+        // Whether to include debug headers with every returned tile
         String propDebugHeaders = props.getProperty("debugheaders");
         if (propDebugHeaders != null) {
             debugHeaders = Boolean.valueOf(propDebugHeaders);
         }
 
+        // How long the system should wait before assuming a thread,
+        // that was trying to get a tile from cache or backend,
+        // is dead.
         String propCacheLockWait = props.getProperty("cachelockwait");
         if (propCacheLockWait != null) {
             cacheLockWait = Integer.valueOf(propCacheLockWait);
@@ -589,6 +601,20 @@ public class TileLayer {
         return false;
     }
 
+    /**
+     * Returns the default image format if strFormat is unset
+     * 
+     * @param strFormat
+     * @return ImageFormat equivalent, or default ImageFormat
+     */
+	public ImageFormat getImageFormat(String strFormat) {
+		if(strFormat == null) {
+			return this.formats[0];
+		} else {
+			return ImageFormat.createFromMimeType(strFormat);
+		}
+	}
+    
     public WMSParameters getWMSParamTemplate() {
         WMSParameters ret = profile.getWMSParamTemplate();
         try {
@@ -604,4 +630,6 @@ public class TileLayer {
         // Not that it really matters:
         procQueue.clear();
     }
+
+
 }
