@@ -91,7 +91,7 @@ public class Seeder {
         layer.waitForQueue(metaGridLoc);
         metaTile.doRequest(layer.profile, imageFormat.getMimeType());
         layer.saveExpirationInformation(metaTile);
-        metaTile.createTiles(layer.profile);
+        metaTile.createTiles(layer.profile.width, layer.profile.height);
         int[][] tilesGridPositions = metaTile.getTilesGridPositions();
         layer.saveTiles(tilesGridPositions, metaTile, imageFormat);
 

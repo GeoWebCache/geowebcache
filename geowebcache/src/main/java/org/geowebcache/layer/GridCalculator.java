@@ -177,8 +177,8 @@ public class GridCalculator {
 
         // (Z) Zoom level
         // For EPSG 4326, reqTileWidth = 0.087 log(4096) / log(2) - 1; -> 11
-        retVals[2] = (int) Math.round(Math.log(baseWidth / reqTileWidth)
-                / (Math.log(2)))
+        retVals[2] =
+        	(int) Math.round( Math.log(baseWidth / reqTileWidth) / (Math.log(2)))
                 - gridConstant;
 
         double tileWidth = baseWidth / (Math.pow(2, retVals[2] + gridConstant));

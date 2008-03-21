@@ -97,6 +97,7 @@ public class TileLayer {
         }
     }
     
+    //TODO move to input checks for WMS layer
 //
 //        BBOX reqbox = wmsparams.getBBOX();
 //        if (!reqbox.isSane()) {
@@ -210,7 +211,7 @@ public class TileLayer {
             return null;
         }
         saveExpirationInformation(metaTile);
-        metaTile.createTiles(profile);
+        metaTile.createTiles(profile.width, profile.height);
         int[][] gridPositions = metaTile.getTilesGridPositions();
 
         byte[] data = null;
