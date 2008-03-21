@@ -168,7 +168,7 @@ public class FileCache implements Cache {
     }
 
     public String getDefaultCacheKeyName() {
-        return "org.geowebcache.cachekey.FilePathKey";
+        return "org.geowebcache.cache.file.FilePathKey";
     }
 
 }

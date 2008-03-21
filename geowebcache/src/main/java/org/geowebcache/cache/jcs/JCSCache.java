@@ -133,7 +133,7 @@ public class JCSCache implements Cache {
     }
 
     public String getDefaultCacheKeyName() {
-        return "org.geowebache.cachekey.JCSKey";
+        return "org.geowebache.cache.jcs.JCSKey";
     }
 
 }
