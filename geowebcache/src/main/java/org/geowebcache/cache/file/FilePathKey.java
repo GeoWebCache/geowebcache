@@ -35,7 +35,7 @@ public class FilePathKey implements CacheKey {
                 + zeroPadder(x % 1000, 3) + File.separator
                 + zeroPadder(y / 1000000, 3) + File.separator
                 + zeroPadder((y / 1000) % 1000, 3) + File.separator
-                + zeroPadder(y % 1000, 3) + format;
+                + zeroPadder(y % 1000, 3) + "." + format;
         // String fileName = Integer.toString(z) +"-"+ Integer.toString(x) +"-"+
         // Integer.toString(y) + format + "";
         return filename;
