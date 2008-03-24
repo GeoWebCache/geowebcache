@@ -15,7 +15,7 @@
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
 
-package org.geowebcache.layer;
+package org.geowebcache.layer.wms;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -26,7 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class Seeder {
-    private static Log log = LogFactory.getLog(org.geowebcache.layer.Seeder.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.Seeder.class);
 
     TileLayer layer = null;
 

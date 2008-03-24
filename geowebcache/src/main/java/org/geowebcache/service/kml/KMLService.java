@@ -2,8 +2,8 @@ package org.geowebcache.service.kml;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.geowebcache.layer.BBOX;
-import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.wms.BBOX;
+import org.geowebcache.layer.wms.TileLayer;
 
 public class KMLService {
 

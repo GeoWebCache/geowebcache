@@ -15,7 +15,7 @@
  * @author Arne Kepp, The Open Planning Project, Copyright 2007
  *  
  */
-package org.geowebcache.layer;
+package org.geowebcache.layer.wms;
 
 import java.io.IOException;
 import java.io.OutputStream;

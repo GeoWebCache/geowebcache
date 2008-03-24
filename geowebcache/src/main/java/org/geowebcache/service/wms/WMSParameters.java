@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.layer.BBOX;
+import org.geowebcache.layer.wms.BBOX;
 import org.geowebcache.mime.ImageMimeType;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Parameters;

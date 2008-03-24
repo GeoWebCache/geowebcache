@@ -15,14 +15,14 @@
  * @author Chris Whitney
  *  
  */
-package org.geowebcache.layer;
+package org.geowebcache.layer.wms;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class BBOX {
     private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.BBOX.class);
+            .getLog(org.geowebcache.layer.wms.BBOX.class);
 
     private static String DELIMITER = ",";
 

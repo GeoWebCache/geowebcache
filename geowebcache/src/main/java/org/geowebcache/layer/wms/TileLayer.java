@@ -15,7 +15,7 @@
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
 
-package org.geowebcache.layer;
+package org.geowebcache.layer.wms;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -36,7 +36,7 @@ import org.geowebcache.service.wms.WMSParameters;
 
 public class TileLayer {
     private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.TileLayer.class);
+            .getLog(org.geowebcache.layer.wms.TileLayer.class);
 
     String name;
 

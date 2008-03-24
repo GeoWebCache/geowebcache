@@ -27,7 +27,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.cache.CacheException;
-import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.wms.TileLayer;
 
 public class Configuration {
     private static Log log = LogFactory

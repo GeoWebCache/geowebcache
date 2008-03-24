@@ -14,7 +14,7 @@
  * 
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
-package org.geowebcache.layer;
+package org.geowebcache.layer.wms;
 
 import java.util.Arrays;
 
@@ -23,7 +23,7 @@ import org.apache.commons.logging.LogFactory;
 
 public class GridCalculator {
     private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.GridCalculator.class);
+            .getLog(org.geowebcache.layer.wms.GridCalculator.class);
 
     private BBOX base = null;
 

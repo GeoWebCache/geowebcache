@@ -15,13 +15,13 @@
  * @author Arne Kepp, The Open Planning Project, Copyright 2007
  *  
  */
-package org.geowebcache.layer;
+package org.geowebcache.layer.wms;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class ImageFormat {
-    private static Log log = LogFactory.getLog(org.geowebcache.layer.ImageFormat.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.ImageFormat.class);
     
     protected String mimeType;
 

@@ -15,7 +15,7 @@
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  *  
  */
-package org.geowebcache.layer;
+package org.geowebcache.layer.wms;
 
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
@@ -44,7 +44,7 @@ import org.geowebcache.service.wms.WMSParameters;
 
 public class MetaTile {
     private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.MetaTile.class);
+            .getLog(org.geowebcache.layer.wms.MetaTile.class);
 
     protected int[] metaTileGridBounds = null; // minx,miny,maxx,maxy,zoomlevel
 
