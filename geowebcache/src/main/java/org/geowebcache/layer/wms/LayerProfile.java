@@ -23,6 +23,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.service.wms.WMSParameters;
+import org.geowebcache.util.wms.BBOX;
 
 public class LayerProfile {
     private static Log log = LogFactory

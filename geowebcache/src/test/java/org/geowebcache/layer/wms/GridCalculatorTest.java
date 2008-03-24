@@ -2,9 +2,9 @@ package org.geowebcache.layer.wms;
 
 import java.util.Arrays;
 
-import org.geowebcache.layer.wms.BBOX;
 import org.geowebcache.layer.wms.GridCalculator;
 import org.geowebcache.layer.wms.LayerProfile;
+import org.geowebcache.util.wms.BBOX;
 
 import junit.framework.TestCase;
 

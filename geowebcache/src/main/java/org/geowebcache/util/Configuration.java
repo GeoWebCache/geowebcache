@@ -27,7 +27,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.cache.CacheException;
-import org.geowebcache.layer.wms.TileLayer;
+import org.geowebcache.layer.wms.WMSLayer;
 
 public class Configuration {
     private static Log log = LogFactory
@@ -72,9 +72,9 @@ public class Configuration {
 
             log.trace("Adding layer " + layerName);
 
-            TileLayer layer = null;
+            WMSLayer layer = null;
             try {
-                layer = new TileLayer(layerName, props);
+                layer = new WMSLayer(layerName, props);
             } catch (CacheException ce) {
                 log.trace("CacheException, failed to add layer " + layerName);
                 ce.printStackTrace();

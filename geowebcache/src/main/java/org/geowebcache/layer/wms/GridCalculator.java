@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.util.wms.BBOX;
 
 public class GridCalculator {
     private static Log log = LogFactory
@@ -40,7 +41,7 @@ public class GridCalculator {
     // Used for unprojected profiles
     private int gridConstant;
 
-    private int[][] gridLevels = null;
+    private int[][] boundsGridLevels = null;
 
     private LayerProfile profile = null;
 
@@ -62,14 +63,14 @@ public class GridCalculator {
         this.maxTileHeight = maxTileHeight;
         this.gridConstant = (int) Math.round(baseWidth / baseHeight - 1.0);
         
-        calculateGridBounds(bounds);
+        boundsGridLevels = calculateGridBounds(bounds);
     }
 
-    private void calculateGridBounds(BBOX layerBounds) {
+    private int[][] calculateGridBounds(BBOX layerBounds) {
         int zoomStop = profile.zoomStop;
 
         // We'll just waste a few bytes, for cheap lookups
-        gridLevels = new int[zoomStop + 1][4];
+        int[][] gridLevels = new int[zoomStop + 1][4];
 
         double tileWidth = maxTileWidth;
         double tileHeight = maxTileHeight;
@@ -143,10 +144,11 @@ public class GridCalculator {
             tileCountX = tileCountX * 2;
             tileCountY = tileCountY * 2;
         }
+        return gridLevels;
     }
 
     protected int[] getGridBounds(int zoomLevel) {
-        return gridLevels[zoomLevel].clone();
+        return boundsGridLevels[zoomLevel].clone();
     }
 
     /**
@@ -204,12 +206,12 @@ public class GridCalculator {
             return "zoomlevel (" + location[2] + ")must be at least "
                     + profile.zoomStart;
         }
-        if (location[2] >= gridLevels.length) {
+        if (location[2] >= boundsGridLevels.length) {
             return "zoomlevel (" + location[2] + ") must be at most "
-                    + gridLevels.length;
+                    + boundsGridLevels.length;
         }
 
-        int[] bounds = gridLevels[location[2]];
+        int[] bounds = boundsGridLevels[location[2]];
 
         String gridDebug = " Extra debug information bounds: "
                 + Arrays.toString(bounds) + " gridLoc: "
@@ -270,5 +272,17 @@ public class GridCalculator {
                 base.coords[1] + tileWidth * gridBounds[1], base.coords[0]
                         + tileWidth * (gridBounds[2] + 1), base.coords[1]
                         + tileWidth * (gridBounds[3] + 1));
+    }
+    
+    /**
+     * Calculate the extent of the grid for the requested bounds.
+     * 
+     * It is up to you to verify that these bounds are within the bounds of the layer.
+     * 
+     * @param requestedBounds bounds for the request
+     * @return the corresponding array
+     */
+    public int[][] coveredGridLevels(BBOX requestedBounds) {
+        return calculateGridBounds(requestedBounds);
     }
 }

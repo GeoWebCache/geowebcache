@@ -26,8 +26,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.layer.wms.BBOX;
 import org.geowebcache.service.Parameters;
+import org.geowebcache.util.wms.BBOX;
 
 @SuppressWarnings("unchecked")
 public class WMSParameters extends Parameters {

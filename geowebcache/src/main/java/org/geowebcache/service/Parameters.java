@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.layer.wms.BBOX;
+import org.geowebcache.util.wms.BBOX;
 
 public abstract class Parameters {
 

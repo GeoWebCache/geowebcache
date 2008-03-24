@@ -32,12 +32,15 @@ import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.cache.CacheKey;
 import org.geowebcache.cache.CacheKeyFactory;
+import org.geowebcache.layer.RawTile;
+import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.service.wms.WMSParameters;
+import org.geowebcache.util.wms.BBOX;
 
-public class TileLayer {
+public class WMSLayer implements TileLayer {
     private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.wms.TileLayer.class);
+            .getLog(org.geowebcache.layer.wms.WMSLayer.class);
 
     String name;
 
@@ -55,9 +58,7 @@ public class TileLayer {
 
     Integer cacheLockWait = -1;
 
-    HashMap seeders = new HashMap();
-
-    public TileLayer(String layerName, Properties props) throws CacheException {
+    public WMSLayer(String layerName, Properties props) throws CacheException {
         name = layerName;
         setParametersFromProperties(props);
     }
@@ -103,23 +104,38 @@ public class TileLayer {
             + " is not supported by layer configuration";
     }
     
-    //TODO move to input checks for WMS layer
-//
-//        BBOX reqbox = wmsparams.getBBOX();
-//        if (!reqbox.isSane()) {
-//            return "The requested bounding box " + reqbox.getReadableString()
-//                    + " is not sane";
-//        }
-//
-//        if (!profile.gridBase.contains(reqbox)) {
-//            return "The layers grid box "
-//                    + profile.gridBase.getReadableString()
-//                    + " does not cover the requested bounding box "
-//                    + reqbox.getReadableString();
-//        }
-//        // All good
-//        return null;
-//    }
+    /**
+     * Rough checks to see whether the specified bounding box
+     * is supported by the current layer.
+     * 
+     * Returns error message if not.
+     * 
+     * @param srs the string representation 
+     * @param reqBounds the requested bounds
+     * @return null if okay, error message otherwise.
+     */
+    public String supportsBbox(String srs, BBOX reqBounds) {
+        String errorMsg = this.supportsProjection(srs);
+        if(errorMsg != null) {
+            return errorMsg;
+        }
+
+        if (!reqBounds.isSane()) {
+            return "The requested bounding box " + reqBounds.getReadableString()
+            + " is not sane";
+        }
+
+        if (!profile.gridBase.contains(reqBounds)) {
+            return "The layers grid box "
+            + profile.gridBase.getReadableString()
+            + " does not cover the requested bounding box "
+            + reqBounds.getReadableString();
+        }
+        
+        // All ok
+        return null;
+    }
+    
 
     /**
      * Wrapper for getData() below
@@ -133,10 +149,7 @@ public class TileLayer {
     throws IOException {
         int[] gridLoc = profile.gridCalc.gridLocation(wmsParams.getBBOX());
         
-        ImageMime imageFormat = ImageMime.createFromMimeType(
-                wmsParams.getImageMime());
-        
-        return getData(gridLoc, imageFormat, wmsParams.toString(), response);
+        return getData(gridLoc, wmsParams.getImageMime(), wmsParams.toString(), response);
     }
 
     /**
@@ -150,9 +163,11 @@ public class TileLayer {
      * @param wmsparams
      * @return
      */
-    public byte[] getData(int[] gridLoc, ImageMime imageFormat, String requestURI,
+    public byte[] getData(int[] gridLoc, String mimeType, String requestURI,
             HttpServletResponse response) throws IOException {
         String debugHeadersStr = null;
+        
+        ImageMime mime = ImageMime.createFromMimeType(mimeType);
 
         // Final preflight check
         // TODO move outside
@@ -162,7 +177,7 @@ public class TileLayer {
                     + profile.gridCalc.bboxFromGridLocation(gridLoc).toString() + ")"
                     + " falls outside of the bounding box (" + profile.bbox.toString() + "),"
                     + " error: " +profile.gridCalc.isInRange(gridLoc);
-        } else if(imageFormat == null) {
+        } else if(mime == null) {
             complaint = "Image format cannot be null in getData()";
         }
         
@@ -177,7 +192,7 @@ public class TileLayer {
         // System.out.println(
         // "recreated: "+profile.recreateBbox(gridLoc).getReadableString());
 
-        MetaTile metaTile = new MetaTile(profile.gridCalc.getGridBounds(gridLoc[2]), 
+        WMSMetaTile metaTile = new WMSMetaTile(profile.gridCalc.getGridBounds(gridLoc[2]), 
                 gridLoc, profile.metaWidth, profile.metaHeight);
         
         int[] metaGridLoc = metaTile.getMetaGridPos();
@@ -186,7 +201,7 @@ public class TileLayer {
         waitForQueue(metaGridLoc);
 
         Object ck = cacheKey.createKey(gridLoc[0], gridLoc[1], gridLoc[2],
-                imageFormat.getFileExtension());
+                mime.getFileExtension());
 
         if (debugHeaders) {
             debugHeadersStr = "grid-location:" + gridLoc[0] + "," + gridLoc[1]
@@ -218,7 +233,7 @@ public class TileLayer {
             }
         }
         /** ****************** Request metatile ******************* */
-        String requestURL = metaTile.doRequest(profile, imageFormat.getMimeType());
+        String requestURL = metaTile.doRequest(profile, mime.getMimeType());
         if (metaTile.failed) {
             removeFromQueue(metaGridLoc);
             log.error("MetaTile failed.");
@@ -231,10 +246,10 @@ public class TileLayer {
         byte[] data = null;
         if (profile.expireCache == LayerProfile.CACHE_NEVER) {
             // Mostly for completeness, don't laugh
-            data = getTile(gridLoc, gridPositions, metaTile, imageFormat);
+            data = getTile(gridLoc, gridPositions, metaTile, mime);
 
         } else {
-            saveTiles(gridPositions, metaTile, imageFormat);
+            saveTiles(gridPositions, metaTile, mime);
             
             // Try the cache again
             try {
@@ -268,86 +283,6 @@ public class TileLayer {
                     + requestURL);
         }
         return data;
-    }
-
-    public int seed(int zoomStart, int zoomStop, String format, BBOX bounds,
-            HttpServletResponse response) throws IOException {
-
-        String complaint = null;
-
-        // Check that we support this
-        if (bounds == null) {
-            bounds = profile.bbox;
-        } else {
-            if (!profile.bbox.contains(bounds)) {
-                complaint = "Request to seed outside of bounds: "
-                        + bounds.toString();
-                log.error(complaint);
-                response.sendError(400, complaint);
-                return -1;
-            }
-        }
-        
-        ImageMime mime = null;
-        if (format == null) {
-        	mime = mimes[0];
-            log.info("User did not specify format for seeding, assuming " + mimes[0].getMimeType());
-        } else {
-        	mime = ImageMime.createFromMimeType(format);
-        	complaint = supportsMime(mime.getMimeType());
-                
-        	if(complaint != null) {
-        		log.error(complaint);
-        		response.sendError(400, complaint);
-        		return -1;
-        	}
-        }
-        
-        Seeder seeder = (Seeder) seeders.get(mime.getMimeType());
-        
-        if(seeder == null) {
-        	seeder = new Seeder(this);
-        	seeders.put(mime.getMimeType(), seeder);
-        }
-        
-        if (profile.expireCache == LayerProfile.CACHE_NEVER) {
-            complaint = "Layers is configured to never cache!";
-            log.error(complaint);
-            response.sendError(400, complaint);
-            return -1;
-        }
-
-        if (zoomStart < 0 || zoomStop < 0) {
-            complaint = "start(" + zoomStart + ") and stop(" + zoomStop
-                    + ") have to greater than zero";
-            log.error(complaint);
-            response.sendError(400, complaint);
-            return -1;
-        }
-        if (zoomStart < profile.zoomStart) {
-            complaint = "start(" + zoomStart
-                    + ") should be greater than or equal to "
-                    + profile.zoomStart;
-            log.error(complaint);
-            response.sendError(400, complaint);
-            return -1;
-        }
-        if (zoomStop > profile.zoomStop) {
-            complaint = "stop(" + zoomStop
-                    + ") should be less than or equal to " + profile.zoomStop;
-            log.error(complaint);
-            response.sendError(400, complaint);
-            return -1;
-        }
-
-        log.info("seeder.doSeed(" + zoomStart + "," + zoomStop + ","
-                + mime.getMimeType() + "," + bounds.toString()
-                + ",stream)");
-
-        int retVal = seeder.doSeed(zoomStart, zoomStop, mime, bounds,
-                response);
-
-        return retVal;
     }
 
     public int purge(OutputStream os) {
@@ -388,7 +323,7 @@ public class TileLayer {
      * @param metaTile
      * @param imageFormat
      */
-    protected void saveTiles(int[][] gridPositions, MetaTile metaTile,
+    protected void saveTiles(int[][] gridPositions, WMSMetaTile metaTile,
             ImageMime imageFormat) {
         
         for (int i = 0; i < gridPositions.length; i++) {
@@ -431,7 +366,7 @@ public class TileLayer {
      * @return
      */
     private byte[] getTile(int[] gridPos, int[][] gridPositions,
-            MetaTile metaTile, ImageMime imageFormat) {
+            WMSMetaTile metaTile, ImageMime imageFormat) {
         for (int i = 0; i < gridPositions.length; i++) {
             int[] curPos = gridPositions[i];
 
@@ -453,7 +388,7 @@ public class TileLayer {
         return null;
     }
 
-    protected void saveExpirationInformation(MetaTile metaTile) {
+    protected void saveExpirationInformation(WMSMetaTile metaTile) {
         if (profile.expireCache == LayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
             profile.expireCache = metaTile.getExpiration();
             log.trace("Setting expireCache based on metaTile: "
@@ -588,17 +523,6 @@ public class TileLayer {
     }
 
     /**
-     * Whether the layer supports the given SRS, wrapped to
-     * keep the ability to support multiple profiles or projections per layer.
-     *  
-     * @param srs string representation of SRS
-     * @return whether this SRS is supported by the layer configuration
-     */
-    public boolean supportsSRS(String srs) {
-    	return profile.srs.equalsIgnoreCase(srs);
-    }
-
-    /**
      * Returns the default image format if strFormat is unset
      * 
      * @param strFormat
@@ -624,5 +548,32 @@ public class TileLayer {
         procQueue.clear();
     }
 
+    public BBOX getBounds() {
+        return this.profile.bbox;
+    }
 
+    public String getProjection() {
+        return this.profile.srs;
+    }
+
+    public int[][] getCoveredGridLevels(BBOX bounds) {
+        BBOX adjustedBounds = bounds;
+        if(!this.profile.bbox.contains(bounds)) {
+            adjustedBounds = BBOX.intersection(this.profile.bbox, bounds);
+            log.warn("Adjusting bounds from "
+                    + bounds.toString() + " to " + adjustedBounds.toString());
+        }
+        return this.profile.gridCalc.coveredGridLevels(adjustedBounds);
+    }
+
+    public int[] getMetaTilingFactors() {
+        int[] factorArray = {profile.metaWidth , profile.metaHeight};
+        return factorArray;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    
 }

@@ -15,21 +15,21 @@
  * @author Chris Whitney
  *  
  */
-package org.geowebcache.layer.wms;
+package org.geowebcache.util.wms;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class BBOX {
     private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.wms.BBOX.class);
+            .getLog(org.geowebcache.util.wms.BBOX.class);
 
     private static String DELIMITER = ",";
 
     private static double equalityThreshold = 0.03;
 
     // minx, miny, maxx, maxy
-    protected double[] coords = new double[4];
+    public double[] coords = new double[4];
 
     public BBOX(String BBOX) {
         setFromBBOXString(BBOX, 0);
@@ -164,6 +164,30 @@ public class BBOX {
                 ^ Float.floatToIntBits((float) coords[2]);
     }
 
+    
+    public static BBOX intersection(BBOX bboxA, BBOX bboxB) {
+        BBOX retBbox = new BBOX(0,0,0,0);
+
+        for(int i=0; i<2; i++) {
+            if(bboxA.coords[i] > bboxB.coords[i]) {
+                retBbox.coords[i] = bboxA.coords[i];
+            } else {
+                retBbox.coords[i] = bboxB.coords[i];
+            }
+        }
+        
+        for(int i=2; i<4; i++) {
+            if(bboxA.coords[i] < bboxB.coords[i]) {
+                retBbox.coords[i] = bboxA.coords[i];
+            } else {
+                retBbox.coords[i] = bboxB.coords[i];
+            }
+        }
+        
+        return retBbox;
+    }
+    
+    
     /**
      * GeoServer fails the entire tile if it crosses the max extents, dateline boundary.
      * 

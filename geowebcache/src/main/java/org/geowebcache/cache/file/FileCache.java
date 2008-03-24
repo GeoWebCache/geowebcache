@@ -30,8 +30,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
+import org.geowebcache.layer.RawTile;
 import org.geowebcache.layer.wms.LayerProfile;
-import org.geowebcache.layer.wms.RawTile;
 
 public class FileCache implements Cache {
 

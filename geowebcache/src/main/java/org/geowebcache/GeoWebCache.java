@@ -31,8 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.layer.wms.BBOX;
-import org.geowebcache.layer.wms.TileLayer;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.service.gmaps.GMapsConverter;
 import org.geowebcache.service.kml.KMLService;
@@ -40,6 +39,7 @@ import org.geowebcache.service.ve.VEConverter;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.Configuration;
 import org.geowebcache.util.ServletUtils;
+import org.geowebcache.util.wms.BBOX;
 
 public class GeoWebCache extends HttpServlet {
     private static final long serialVersionUID = 4175613925719485006L;
@@ -116,7 +116,7 @@ public class GeoWebCache extends HttpServlet {
     public void destroy() {
         Iterator iter = layers.entrySet().iterator();
         while (iter.hasNext()) {
-            TileLayer tl = (TileLayer) iter.next();
+            WMSLayer tl = (WMSLayer) iter.next();
             tl.destroy();
         }
     }
@@ -149,9 +149,10 @@ public class GeoWebCache extends HttpServlet {
             doGetGmaps(request, response);
         } else if (subPath.equals("/kml")) {
             doGetKML(request, response);
-        } else if (subPath.equals("/seed")) {
-            doGetSeed(request, response);
         }
+//        } else if (subPath.equals("/seed")) {
+//            doGetSeed(request, response);
+//        }
     }
 
     public void doGetWMS(HttpServletRequest request,
@@ -161,7 +162,7 @@ public class GeoWebCache extends HttpServlet {
         WMSParameters wmsparams = new WMSParameters(request);
 
         // Check whether we serve this layer
-        TileLayer cachedLayer = findAndCheckLayer(wmsparams, request, response);
+        WMSLayer cachedLayer = findAndCheckLayer(wmsparams, request, response);
 
         if (cachedLayer != null) {
             // Get data
@@ -223,7 +224,7 @@ public class GeoWebCache extends HttpServlet {
         if(strFormat.equals("application/vnd.google-earth.kml+xml")
                 || strFormat.equals("application/vnd.google-earth.kmz+xml")) {
             // We need to make a nice little XML document
-            TileLayer cachedLayer = findAndCheckLayer(
+            WMSLayer cachedLayer = findAndCheckLayer(
                     strLayer, "EPSG:4326", strFormat, request, response);
             if(cachedLayer != null) {
                 KMLService.getOverlayKML(cachedLayer, response);
@@ -236,55 +237,55 @@ public class GeoWebCache extends HttpServlet {
             
     }
     
-    /**
-     * Function for setting up seeding
-     * 
-     * TODO replace
-     * 
-     * @param request
-     * @param response
-     * @throws ServletException
-     * @throws IOException
-     */
-    public void doGetSeed(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
-
-        Map params = request.getParameterMap();
-        String strLayers = ServletUtils.stringFromMap(params, "layers");
-        TileLayer layer = (TileLayer) layers.get(strLayers);
-
-        if (layer == null) {
-            response.setContentType("text/plain");
-            response.sendError(400, "No layers or unknown layer " + strLayers);
-            // complain loudly and quit
-            log.error("No layers?");
-        }
-
-        response.setContentType("text/html");
-        response.setBufferSize(12);
-
-        BBOX reqBounds = null;
-        if (params.containsKey("bbox")) {
-            reqBounds = new BBOX(((String[]) params.get("bbox"))[0]);
-        }
-
-        String strStart = ServletUtils.stringFromMap(params, "start");
-        String strStop = ServletUtils.stringFromMap(params, "stop");
-        String strFormat = ServletUtils.stringFromMap(params, "format");
-
-        int start = -1;
-        if (strStart != null) {
-            start = Integer.valueOf(strStart);
-        }
-
-        int stop = -1;
-        if (strStop != null) {
-            stop = Integer.valueOf(strStop);
-        }
-
-        layer.seed(start, stop, strFormat, reqBounds, response);
-        response.flushBuffer();
-    }
+//    /**
+//     * Function for setting up seeding
+//     * 
+//     * TODO replace
+//     * 
+//     * @param request
+//     * @param response
+//     * @throws ServletException
+//     * @throws IOException
+//     */
+//    public void doGetSeed(HttpServletRequest request,
+//            HttpServletResponse response) throws ServletException, IOException {
+//
+//        Map params = request.getParameterMap();
+//        String strLayers = ServletUtils.stringFromMap(params, "layers");
+//        WMSLayer layer = (WMSLayer) layers.get(strLayers);
+//
+//        if (layer == null) {
+//            response.setContentType("text/plain");
+//            response.sendError(400, "No layers or unknown layer " + strLayers);
+//            // complain loudly and quit
+//            log.error("No layers?");
+//        }
+//
+//        response.setContentType("text/html");
+//        response.setBufferSize(12);
+//
+//        BBOX reqBounds = null;
+//        if (params.containsKey("bbox")) {
+//            reqBounds = new BBOX(((String[]) params.get("bbox"))[0]);
+//        }
+//
+//        String strStart = ServletUtils.stringFromMap(params, "start");
+//        String strStop = ServletUtils.stringFromMap(params, "stop");
+//        String strFormat = ServletUtils.stringFromMap(params, "format");
+//
+//        int start = -1;
+//        if (strStart != null) {
+//            start = Integer.valueOf(strStart);
+//        }
+//
+//        int stop = -1;
+//        if (strStop != null) {
+//            stop = Integer.valueOf(strStop);
+//        }
+//
+//        layer.seed(start, stop, strFormat, reqBounds, response);
+//        response.flushBuffer();
+//    }
     
     
     /**
@@ -298,7 +299,7 @@ public class GeoWebCache extends HttpServlet {
      * @return
      * @throws IOException
      */
-    private TileLayer findAndCheckLayer(WMSParameters wmsParams,
+    private WMSLayer findAndCheckLayer(WMSParameters wmsParams,
             HttpServletRequest request, HttpServletResponse response)
     throws IOException {
         
@@ -322,14 +323,14 @@ public class GeoWebCache extends HttpServlet {
      * @return the matching tile layer
      * @throws IOException
      */
-    private TileLayer findAndCheckLayer(String strLayer, String srs, 
+    private WMSLayer findAndCheckLayer(String strLayer, String srs, 
             String mimeType, HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
         String errorMsg = null;
         
         // Check whether we actually know this layer
-        TileLayer cachedLayer = (TileLayer) layers.get(strLayer);
+        WMSLayer cachedLayer = (WMSLayer) layers.get(strLayer);
         if(cachedLayer == null) {
             errorMsg = "Unknown layer: " + strLayer;
         }
@@ -398,14 +399,13 @@ public class GeoWebCache extends HttpServlet {
     private void forwardToBackend(String strLayer, String strFormat, String SRS, int[] gridLoc,
             HttpServletRequest request, HttpServletResponse response) throws IOException {
         
-        TileLayer cachedLayer = findAndCheckLayer(
+        WMSLayer cachedLayer = findAndCheckLayer(
                 strLayer, SRS, strFormat, request, response);
 
         if (cachedLayer != null) {
-        	ImageMime imgFormat = cachedLayer.getImageFormat(strFormat);
             
             byte[] data = cachedLayer.getData(
-                    gridLoc, imgFormat, request.getQueryString(), response);
+                    gridLoc, strFormat, request.getQueryString(), response);
             
             // Will also return error message, if appropriate
             sendData(response, strFormat, data);

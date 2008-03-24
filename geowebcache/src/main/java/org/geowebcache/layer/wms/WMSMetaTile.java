@@ -39,20 +39,14 @@ import javax.imageio.ImageWriter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.layer.MetaTile;
 import org.geowebcache.service.Request;
 import org.geowebcache.service.wms.WMSParameters;
+import org.geowebcache.util.wms.BBOX;
 
-public class MetaTile {
+public class WMSMetaTile extends MetaTile {
     private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.wms.MetaTile.class);
-
-    protected int[] metaTileGridBounds = null; // minx,miny,maxx,maxy,zoomlevel
-
-    int metaX; // X metatiling factor, after adjusting to bounds
-
-    int metaY; // Y metatiling factor, after adjusting to bounds
-
-    int[][] tilesGridPositions = null; // the grid positions of the individual tiles
+    .getLog(org.geowebcache.layer.wms.WMSMetaTile.class);
 
     private BufferedImage img = null; // buffer for storing the metatile
 
@@ -68,87 +62,11 @@ public class MetaTile {
      * @param profile
      * @param initGridPosition
      */
-    protected MetaTile(int[] gridBounds, int[] tileGridPosition, int metaX, int metaY) {
-        this.metaX = metaX;
-        this.metaY = metaY;
-        
-        metaTileGridBounds = calculateMetaTileGridBounds(gridBounds, tileGridPosition);
-        tilesGridPositions = calculateTilesGridPositions();
+    protected WMSMetaTile(int[] gridBounds, int[] tileGridPosition, int metaX, int metaY) {
+        super(gridBounds, tileGridPosition, metaX, metaY);
     }
 
-    /**
-     * Figures out the bounds of the metatile, in terms of the gridposition
-     * of all contained tiles. To get the BBOX you need to add one tilewidth
-     * to the top and right.
-     * 
-     * It also updates metaX and metaY to the actual metatiling factors
-     * 
-     * @param gridBounds
-     * @param tileGridPosition
-     * @return
-     */
-    private int[] calculateMetaTileGridBounds(int[] gridBounds, int[] tileGridPosition) {
-        // Sanity checks that are hopefully redundant
-        if(  ! (tileGridPosition[0] >= gridBounds[0] && tileGridPosition[0] <= gridBounds[2])
-                &&(tileGridPosition[1] >= gridBounds[1] && tileGridPosition[1] <= gridBounds[3])
-                &&(tileGridPosition[2] >= gridBounds[0] && tileGridPosition[2] <= gridBounds[2])
-                &&(tileGridPosition[3] >= gridBounds[1] && tileGridPosition[3] <= gridBounds[3])) {
-            log.error("calculateMetaTileGridBounds(): " + Arrays.toString(gridBounds) +" "+ Arrays.toString(tileGridPosition) );
-            return null;
-        }
-        
-        int[] metaTileGridBounds = new int[5];
-        metaTileGridBounds[0] = tileGridPosition[0] - (tileGridPosition[0] % metaX);
-        metaTileGridBounds[1] = tileGridPosition[1] - (tileGridPosition[1] % metaY);
-        metaTileGridBounds[2] = Math.min( metaTileGridBounds[0] + metaX - 1, gridBounds[2]);
-        metaTileGridBounds[3] = Math.min( metaTileGridBounds[1] + metaY - 1, gridBounds[3]);
-        metaTileGridBounds[4] = tileGridPosition[2];
-        
-        // Save the actual metatiling factor, important at the boundaries
-        metaX = metaTileGridBounds[2] - metaTileGridBounds[0] + 1;
-        metaY = metaTileGridBounds[3] - metaTileGridBounds[1] + 1;
-        
-        return metaTileGridBounds;
-    }
-
-    /**
-     * The bottom left grid position and zoomlevel for this metatile, used for
-     * locking.
-     * 
-     * @return
-     */
-    protected int[] getMetaGridPos() {
-        int[] gridPos = { metaTileGridBounds[0], metaTileGridBounds[1], metaTileGridBounds[4] };
-        return gridPos;
-    }
     
-    /**
-     * The bounds for the metatile
-     * 
-     * @return
-     */
-    protected int[] getMetaTileGridBounds() {
-        return metaTileGridBounds;
-    }
-
-    /**
-     * Creates an array with all the grid positions, used for cache keys
-     */
-    protected int[][] calculateTilesGridPositions() {        
-        int[][] tilesGridPositions = new int[metaX * metaY][3];
-
-        for (int y = 0; y < metaY; y++) {
-            for (int x = 0; x < metaX; x++) {
-                int tile = y * metaX + x;
-                tilesGridPositions[tile][0] = metaTileGridBounds[0] + x;
-                tilesGridPositions[tile][1] = metaTileGridBounds[1] + y;
-                tilesGridPositions[tile][2] = metaTileGridBounds[4];
-            }
-        }
-        
-        return tilesGridPositions;
-    }
-
     /**
      * Requests a metatile from the backend, or consults multiple backends
      * if necessary, and saves the result in the internal buffer for
@@ -164,7 +82,7 @@ public class MetaTile {
         // Fill in the blanks
         wmsparams.setImageMime(imageMime);
 
-        wmsparams.setWidth(metaX * profile.width);
+        wmsparams.setWidth(super.metaX * profile.width);
         wmsparams.setHeight(metaY * profile.height);
         BBOX metaBbox = profile.gridCalc.bboxFromGridBounds(metaTileGridBounds);
         metaBbox.adjustForGeoServer(wmsparams.getSrs());
@@ -326,10 +244,6 @@ public class MetaTile {
         } else {
             return null;
         }
-    }
-
-    protected int[][] getTilesGridPositions() {
-        return tilesGridPositions;
     }
 
     protected BufferedImage getRawImage() {

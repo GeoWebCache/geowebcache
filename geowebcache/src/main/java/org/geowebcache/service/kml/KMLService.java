@@ -2,8 +2,8 @@ package org.geowebcache.service.kml;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.geowebcache.layer.wms.BBOX;
-import org.geowebcache.layer.wms.TileLayer;
+import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.util.wms.BBOX;
 
 public class KMLService {
 
@@ -32,15 +32,15 @@ public class KMLService {
      </kml>
      */
     
-    public static void getOverlayKML(TileLayer layer, HttpServletResponse response){
+    public static void getOverlayKML(WMSLayer layer, HttpServletResponse response){
         
     }
     
-    private static void SuperOverlay(TileLayer layer, HttpServletResponse response) {
+    private static void SuperOverlay(WMSLayer layer, HttpServletResponse response) {
 
     }
     
-    private static void Overlay(TileLayer layer, HttpServletResponse response) {
+    private static void Overlay(WMSLayer layer, HttpServletResponse response) {
 
     }
 }

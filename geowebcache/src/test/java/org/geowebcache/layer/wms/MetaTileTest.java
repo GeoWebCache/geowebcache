@@ -2,10 +2,10 @@ package org.geowebcache.layer.wms;
 
 import java.util.Arrays;
 
-import org.geowebcache.layer.wms.BBOX;
 import org.geowebcache.layer.wms.GridCalculator;
 import org.geowebcache.layer.wms.LayerProfile;
-import org.geowebcache.layer.wms.MetaTile;
+import org.geowebcache.layer.wms.WMSMetaTile;
+import org.geowebcache.util.wms.BBOX;
 
 import junit.framework.TestCase;
 
@@ -30,7 +30,7 @@ public class MetaTileTest extends TestCase {
         GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
         int[] gridPos = { 0, 0, 0 };
         //int[] gridBounds, int[] tileGridPosition, int metaX, int metaY
-        MetaTile mt = new MetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
+        WMSMetaTile mt = new WMSMetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
 
         int[] solution = { 0, 0, 0, 0, 0 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
@@ -55,7 +55,7 @@ public class MetaTileTest extends TestCase {
 
         GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
         int[] gridPos = { 127, 63, 6 };
-        MetaTile mt = new MetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
+        WMSMetaTile mt = new WMSMetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
 
         int[] solution = { 126, 63, 127, 63, 6 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
@@ -81,7 +81,7 @@ public class MetaTileTest extends TestCase {
 
         GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
         int[] gridPos = { 0, 0, 0 };
-        MetaTile mt = new MetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
+        WMSMetaTile mt = new WMSMetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
 
         int[] solution = { 0, 0, 0, 0, 0 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
@@ -106,7 +106,7 @@ public class MetaTileTest extends TestCase {
 
         GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
         int[] gridPos = { 70, 70, 6 };
-        MetaTile mt = new MetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
+        WMSMetaTile mt = new WMSMetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
 
         int[] solution = { 69, 69, 63, 63, 6 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
