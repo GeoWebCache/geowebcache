@@ -23,7 +23,6 @@ import java.net.URLConnection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.mime.MimeType;
 
 public class Response {
 
@@ -36,17 +35,8 @@ public class Response {
         this.connection = connection;
     }
 
-    public MimeType getMimetype() {
-        MimeType mime;
-        try {
-            mime = new MimeType(connection.getContentType(), connection
-                    .getContentEncoding());
-        } catch (IOException ioe) {
-            log.error("Mime type error: ", ioe);
-            mime = new MimeType();
-            mime.setToDefault();
-        }
-        return mime;
+    public String getMimetype() {
+        return connection.getContentType();
     }
 
     public InputStream getInputStream() throws IOException {

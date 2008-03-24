@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.mime.ImageMime;
 
 public class Seeder {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.Seeder.class);
@@ -34,7 +35,7 @@ public class Seeder {
         this.layer = layer;
     }
 
-    public int doSeed(int zoomStart, int zoomStop, ImageFormat imageFormat,
+    public int doSeed(int zoomStart, int zoomStop, ImageMime imageFormat,
             BBOX bounds, HttpServletResponse response) throws IOException {
         response.setContentType("text/html");
 
@@ -86,7 +87,7 @@ public class Seeder {
         return 0;
     }
 
-    private int processTile(MetaTile metaTile, ImageFormat imageFormat) {
+    private int processTile(MetaTile metaTile, ImageMime imageFormat) {
         int[] metaGridLoc = metaTile.getMetaGridPos();
         layer.waitForQueue(metaGridLoc);
         metaTile.doRequest(layer.profile, imageFormat.getMimeType());
@@ -100,7 +101,7 @@ public class Seeder {
     }
 
     private void infoStart(PrintWriter pw, int zoomStart, int zoomStop,
-            ImageFormat imageFormat, BBOX bounds) throws IOException {
+            ImageMime imageFormat, BBOX bounds) throws IOException {
         if (pw == null) {
             return;
         }

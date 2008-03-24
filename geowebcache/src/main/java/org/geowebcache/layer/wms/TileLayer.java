@@ -32,6 +32,7 @@ import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.cache.CacheKey;
 import org.geowebcache.cache.CacheKeyFactory;
+import org.geowebcache.mime.ImageMime;
 import org.geowebcache.service.wms.WMSParameters;
 
 public class TileLayer {
@@ -46,7 +47,7 @@ public class TileLayer {
 
     CacheKey cacheKey;
 
-    ImageFormat[] formats = null;
+    ImageMime[] mimes = null;
 
     HashMap procQueue = new HashMap();
 
@@ -88,13 +89,18 @@ public class TileLayer {
      * @param mimeType MIME type or null, example "image/png"
      * @return null if okay, error message otherwise.
      */
-    public String supportsMIME(String mimeType) {
-        if (mimeType == null || supportsImageFormat(mimeType)) {
-            return null;
-        } else {
-            return "Unsupported MIME type requested: "
-                    + mimeType;
+    public String supportsMime(String mimeType) {
+        if (mimeType == null) {
+            return "MIME type was null";
         }
+        
+        for(int i=0; i<mimes.length; i++) {
+            if(mimeType.equalsIgnoreCase(mimes[i].getMimeType())) {
+                return null;
+            }
+        }
+        return "MIME type " +mimeType
+            + " is not supported by layer configuration";
     }
     
     //TODO move to input checks for WMS layer
@@ -127,8 +133,8 @@ public class TileLayer {
     throws IOException {
         int[] gridLoc = profile.gridCalc.gridLocation(wmsParams.getBBOX());
         
-        ImageFormat imageFormat = ImageFormat.createFromMimeType(wmsParams
-                .getImagemime().getMime());
+        ImageMime imageFormat = ImageMime.createFromMimeType(
+                wmsParams.getImageMime());
         
         return getData(gridLoc, imageFormat, wmsParams.toString(), response);
     }
@@ -144,20 +150,28 @@ public class TileLayer {
      * @param wmsparams
      * @return
      */
-    public byte[] getData(int[] gridLoc, ImageFormat imageFormat, String requestURI,
+    public byte[] getData(int[] gridLoc, ImageMime imageFormat, String requestURI,
             HttpServletResponse response) throws IOException {
         String debugHeadersStr = null;
-        
+
         // Final preflight check
+        // TODO move outside
+        String complaint = null;
         if (profile.gridCalc.isInRange(gridLoc) != null) {
-            String complaint = "Adjusted request ("
+             complaint = "Adjusted request ("
                     + profile.gridCalc.bboxFromGridLocation(gridLoc).toString() + ")"
                     + " falls outside of the bounding box (" + profile.bbox.toString() + "),"
                     + " error: " +profile.gridCalc.isInRange(gridLoc);
+        } else if(imageFormat == null) {
+            complaint = "Image format cannot be null in getData()";
+        }
+        
+        if(complaint != null) {
             log.error(complaint);
             response.sendError(400, complaint);
             return null;
         }
+        
         // System.out.println(
         // "orig: "+wmsparams.getBBOX().getReadableString());
         // System.out.println(
@@ -172,7 +186,7 @@ public class TileLayer {
         waitForQueue(metaGridLoc);
 
         Object ck = cacheKey.createKey(gridLoc[0], gridLoc[1], gridLoc[2],
-                imageFormat.getExtension());
+                imageFormat.getFileExtension());
 
         if (debugHeaders) {
             debugHeadersStr = "grid-location:" + gridLoc[0] + "," + gridLoc[1]
@@ -274,26 +288,26 @@ public class TileLayer {
             }
         }
         
-        ImageFormat imageFormat = null;
+        ImageMime mime = null;
         if (format == null) {
-        	imageFormat = formats[0];
-            log.info("User did not specify format for seeding, assuming " + formats[0].getMimeType());
+        	mime = mimes[0];
+            log.info("User did not specify format for seeding, assuming " + mimes[0].getMimeType());
         } else {
-        	imageFormat = ImageFormat.createFromMimeType(format);
-        		
-        	if(!supportsImageFormat(imageFormat.getMimeType())) {
-        		complaint = "Imageformat " + format + " is not supported by layer";
+        	mime = ImageMime.createFromMimeType(format);
+        	complaint = supportsMime(mime.getMimeType());
+                
+        	if(complaint != null) {
         		log.error(complaint);
         		response.sendError(400, complaint);
         		return -1;
         	}
         }
         
-        Seeder seeder = (Seeder) seeders.get(imageFormat.mimeType);
+        Seeder seeder = (Seeder) seeders.get(mime.getMimeType());
         
         if(seeder == null) {
         	seeder = new Seeder(this);
-        	seeders.put(imageFormat.mimeType, seeder);
+        	seeders.put(mime.getMimeType(), seeder);
         }
         
         if (profile.expireCache == LayerProfile.CACHE_NEVER) {
@@ -327,10 +341,10 @@ public class TileLayer {
         }
 
         log.info("seeder.doSeed(" + zoomStart + "," + zoomStop + ","
-                + imageFormat.getMimeType() + "," + bounds.toString()
+                + mime.getMimeType() + "," + bounds.toString()
                 + ",stream)");
 
-        int retVal = seeder.doSeed(zoomStart, zoomStop, imageFormat, bounds,
+        int retVal = seeder.doSeed(zoomStart, zoomStop, mime, bounds,
                 response);
 
         return retVal;
@@ -375,17 +389,17 @@ public class TileLayer {
      * @param imageFormat
      */
     protected void saveTiles(int[][] gridPositions, MetaTile metaTile,
-            ImageFormat imageFormat) {
+            ImageMime imageFormat) {
         
         for (int i = 0; i < gridPositions.length; i++) {
             int[] gridPos = gridPositions[i];
 
             Object ck = cacheKey.createKey(gridPos[0], gridPos[1], gridPos[2],
-                    imageFormat.getExtension());
+                    imageFormat.getFileExtension());
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             try {
-                if( ! metaTile.writeTileToStream(i, imageFormat.getJavaName(), out)) {
+                if( ! metaTile.writeTileToStream(i, imageFormat.getInternalName(), out)) {
                 	log.error("metaTile.writeTileToStream returned false, no tiles saved");
                 }
             } catch (IOException ioe) {
@@ -417,14 +431,14 @@ public class TileLayer {
      * @return
      */
     private byte[] getTile(int[] gridPos, int[][] gridPositions,
-            MetaTile metaTile, ImageFormat imageFormat) {
+            MetaTile metaTile, ImageMime imageFormat) {
         for (int i = 0; i < gridPositions.length; i++) {
             int[] curPos = gridPositions[i];
 
             if (curPos.equals(gridPos)) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 try {
-                    metaTile.writeTileToStream(i, imageFormat.getJavaName(),
+                    metaTile.writeTileToStream(i, imageFormat.getInternalName(),
                             out);
                 } catch (IOException ioe) {
                     log
@@ -540,22 +554,22 @@ public class TileLayer {
         // Check whether the configuration specifies what MIME types are legal
         String propImageMIME = props.getProperty("imagemimes");
         if (propImageMIME != null) {
-            String[] mimes = propImageMIME.split(",");
-            formats = new ImageFormat[mimes.length];
+            String[] mimeStrs = propImageMIME.split(",");
+            mimes = new ImageMime[mimeStrs.length];
             for (int i = 0; i < mimes.length; i++) {
-                formats[i] = ImageFormat.createFromMimeType(mimes[i]);
-                if(formats[i] == null) {
-                	log.error("Unable to match " + mimes[i] + " to a supported format.");
+                mimes[i] = ImageMime.createFromMimeType(mimeStrs[i]);
+                if(mimes[i] == null) {
+                	log.error("Unable to match " + mimeStrs[i] + " to a supported format.");
                 }
             }
         }
         
         // Set default to image/png, if none were specified or acceptable
-        if(formats == null || formats[0] == null) {
+        if(mimes == null || mimes[0] == null) {
         	log.error("Unable not determine supported MIME types based on configuration,"
         			+" falling back to image/png");
-        	formats = new ImageFormat[0];
-        	formats[0] = ImageFormat.createFromMimeType("image/png");
+        	mimes = new ImageMime[0];
+        	mimes[0] = ImageMime.createFromMimeType("image/png");
         }
         
         // Whether to include debug headers with every returned tile
@@ -583,24 +597,6 @@ public class TileLayer {
     public boolean supportsSRS(String srs) {
     	return profile.srs.equalsIgnoreCase(srs);
     }
-    
-    /**
-     * Checks to see whether we accept the given mimeType
-     * 
-     * Typically this list should be so short that a linear search will be
-     * faster than hashing.
-     * 
-     * @param imageMime
-     * @return
-     */
-    private boolean supportsImageFormat(String imageMime) {
-        for (int i = 0; i < formats.length; i++) {
-            if (formats[i].getMimeType().equalsIgnoreCase(imageMime)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     /**
      * Returns the default image format if strFormat is unset
@@ -608,21 +604,17 @@ public class TileLayer {
      * @param strFormat
      * @return ImageFormat equivalent, or default ImageFormat
      */
-	public ImageFormat getImageFormat(String strFormat) {
-		if(strFormat == null) {
-			return this.formats[0];
-		} else {
-			return ImageFormat.createFromMimeType(strFormat);
-		}
-	}
+    public ImageMime getImageFormat(String strFormat) {
+        if(strFormat == null) {
+            return this.mimes[0];
+        } else {
+            return ImageMime.createFromMimeType(strFormat);
+        }
+    }
     
     public WMSParameters getWMSParamTemplate() {
         WMSParameters ret = profile.getWMSParamTemplate();
-        try {
-            ret.setImagemime(formats[0].getMimeType());
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
+        ret.setImageMime(mimes[0].getMimeType());
         return ret;
     }
 

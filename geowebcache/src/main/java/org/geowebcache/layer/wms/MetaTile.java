@@ -162,11 +162,7 @@ public class MetaTile {
         WMSParameters wmsparams = profile.getWMSParamTemplate();
 
         // Fill in the blanks
-        try {
-            wmsparams.setImagemime(imageMime);
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
+        wmsparams.setImageMime(imageMime);
 
         wmsparams.setWidth(metaX * profile.width);
         wmsparams.setHeight(metaY * profile.height);

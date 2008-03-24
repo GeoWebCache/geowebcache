@@ -32,8 +32,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.wms.BBOX;
-import org.geowebcache.layer.wms.ImageFormat;
 import org.geowebcache.layer.wms.TileLayer;
+import org.geowebcache.mime.ImageMime;
 import org.geowebcache.service.gmaps.GMapsConverter;
 import org.geowebcache.service.kml.KMLService;
 import org.geowebcache.service.ve.VEConverter;
@@ -168,7 +168,7 @@ public class GeoWebCache extends HttpServlet {
             byte[] data = cachedLayer.getData(wmsparams, response);
             
             // Will also return error message, if appropriate
-            sendData(response, wmsparams.getImagemime().getMime(), data);
+            sendData(response, wmsparams.getImageMime(), data);
         } else {
             // finAndCheckLayer() has already set error message
         }
@@ -303,7 +303,7 @@ public class GeoWebCache extends HttpServlet {
     throws IOException {
         
         return findAndCheckLayer(wmsParams.getLayer(), wmsParams.getSrs(), 
-                wmsParams.getImagemime().getMime(), request, response);
+                wmsParams.getImageMime(), request, response);
     }
     
 
@@ -339,7 +339,7 @@ public class GeoWebCache extends HttpServlet {
         
         // Check MIME support
         if(errorMsg == null)
-            errorMsg = cachedLayer.supportsMIME(mimeType);
+            errorMsg = cachedLayer.supportsMime(mimeType);
         
         if (errorMsg != null) {
             response.setContentType("text/plain");
@@ -402,7 +402,7 @@ public class GeoWebCache extends HttpServlet {
                 strLayer, SRS, strFormat, request, response);
 
         if (cachedLayer != null) {
-        	ImageFormat imgFormat = cachedLayer.getImageFormat(strFormat);
+        	ImageMime imgFormat = cachedLayer.getImageFormat(strFormat);
             
             byte[] data = cachedLayer.getData(
                     gridLoc, imgFormat, request.getQueryString(), response);

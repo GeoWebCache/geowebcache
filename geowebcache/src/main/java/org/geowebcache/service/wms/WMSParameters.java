@@ -27,8 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.wms.BBOX;
-import org.geowebcache.mime.ImageMimeType;
-import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Parameters;
 
 @SuppressWarnings("unchecked")
@@ -199,70 +197,25 @@ public class WMSParameters extends Parameters {
     /**
      * @return the errormime
      */
-    public MimeType getErrormime() {
-        Object obj = get(ERROR_TYPE_PARAM);
-        if (obj == null) {
-            return null;
-        }
-        MimeType mime = null;
-        if (obj.getClass().equals(MimeType.class)) {
-            mime = (MimeType) obj;
-        } else {
-            try {
-                mime = new MimeType(convertToString(obj));
-                setErrormime(mime);
-            } catch (IOException ioe) {
-                log.error("Error creating error mime type", ioe);
-            }
-        }
-        return mime;
+    public String getErrormime() {
+        return convertToString(get(ERROR_TYPE_PARAM));
     }
 
-    /**
-     * @param errormime
-     *            the errormime to set
-     */
-    public void setErrormime(MimeType errormime) {
-        set(ERROR_TYPE_PARAM, errormime);
-    }
 
     /**
      * @param errormime
      *            the errormime to set
      * @throws IOException
      */
-    public void setErrormime(String errormime) throws IOException {
-        setErrormime(new MimeType(errormime));
+    public void setErrorMime(String errorMime) {
+        set(ERROR_TYPE_PARAM, errorMime);
     }
 
     /**
      * @return the imagemime
      */
-    public ImageMimeType getImagemime() {
-        Object obj = get(IMAGE_TYPE_PARAM);
-        if (obj == null) {
-            return null;
-        }
-        ImageMimeType mime = null;
-        if (obj.getClass().equals(ImageMimeType.class)) {
-            mime = (ImageMimeType) obj;
-        } else {
-            try {
-                mime = new ImageMimeType(convertToString(obj));
-                setImagemime(mime);
-            } catch (IOException ioe) {
-                log.error("Error creating image mime type", ioe);
-            }
-        }
-        return mime;
-    }
-
-    /**
-     * @param imagemime
-     *            the imagemime to set
-     */
-    public void setImagemime(ImageMimeType imagemime) {
-        set(IMAGE_TYPE_PARAM, imagemime);
+    public String getImageMime() {
+        return convertToString(get(IMAGE_TYPE_PARAM));
     }
 
     /**
@@ -270,8 +223,8 @@ public class WMSParameters extends Parameters {
      *            the errormime to set
      * @throws IOException
      */
-    public void setImagemime(String imagemime) throws IOException {
-        setImagemime(new ImageMimeType(imagemime));
+    public void setImageMime(String imageMime) {
+        set(IMAGE_TYPE_PARAM, imageMime);
     }
 
     /**
@@ -447,8 +400,8 @@ public class WMSParameters extends Parameters {
                     log.fatal("Unsupported URL Encoding: ", uee);
                     return null;
                 } catch (NullPointerException npe) {
-                    System.out.println("Missing value for parameter: "
-                            + param_name);
+                    //System.out.println("Missing value for parameter: "
+                    //        + param_name);
                     log.error("Missing value for parameter: " + param_name);
                 }
             }

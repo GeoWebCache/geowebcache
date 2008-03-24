@@ -284,11 +284,8 @@ public class LayerProfile {
         wmsparams.setVersion(version);
         wmsparams.setLayer(wmsLayers);
         wmsparams.setSrs(srs);
-        try {
-            wmsparams.setErrormime(errorMime);
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
+        wmsparams.setErrorMime(errorMime);
+
         if (transparent != null) {
             wmsparams.setIsTransparent(transparent);
         }
