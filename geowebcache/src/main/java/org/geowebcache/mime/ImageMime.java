@@ -23,7 +23,7 @@ import org.apache.commons.logging.LogFactory;
 public class ImageMime extends MimeType {
     private static Log log = LogFactory.getLog(org.geowebcache.mime.ImageMime.class);
 
-    public ImageMime(String mimeType, String extension, String internalName) {
+    public ImageMime(String mimeType, String fileExtension, String internalName) {
         super();
         if(mimeType.substring(0,6).equalsIgnoreCase("image/")) {
             super.mimeType = mimeType;
@@ -34,7 +34,7 @@ public class ImageMime extends MimeType {
         }
         if(fileExtension == null || fileExtension.length() == 0) {
             log.warn("Setting file extension based on mimeType for " + mimeType);
-            fileExtension = mimeType.substring(6, mimeType.length());
+            super.fileExtension = mimeType.substring(6, mimeType.length());
         }
         // Don't try to guess an internal name
     }
