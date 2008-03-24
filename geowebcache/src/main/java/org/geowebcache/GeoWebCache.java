@@ -31,15 +31,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.layer.wms.WMSLayer;
-import org.geowebcache.mime.ImageMime;
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileRequest;
 import org.geowebcache.service.gmaps.GMapsConverter;
-import org.geowebcache.service.kml.KMLService;
 import org.geowebcache.service.ve.VEConverter;
+import org.geowebcache.service.wms.WMSConverter;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.Configuration;
 import org.geowebcache.util.ServletUtils;
-import org.geowebcache.util.wms.BBOX;
 
 public class GeoWebCache extends HttpServlet {
     private static final long serialVersionUID = 4175613925719485006L;
@@ -116,7 +115,7 @@ public class GeoWebCache extends HttpServlet {
     public void destroy() {
         Iterator iter = layers.entrySet().iterator();
         while (iter.hasNext()) {
-            WMSLayer tl = (WMSLayer) iter.next();
+            TileLayer tl = (TileLayer) iter.next();
             tl.destroy();
         }
     }
@@ -147,9 +146,10 @@ public class GeoWebCache extends HttpServlet {
             doGetVE(request, response);
         } else if (subPath.equals("/gmaps")) {
             doGetGmaps(request, response);
-        } else if (subPath.equals("/kml")) {
-            doGetKML(request, response);
-        }
+        } 
+//      else if (subPath.equals("/kml")) {
+//            doGetKML(request, response);
+//        }
 //        } else if (subPath.equals("/seed")) {
 //            doGetSeed(request, response);
 //        }
@@ -159,20 +159,19 @@ public class GeoWebCache extends HttpServlet {
             HttpServletResponse response) throws ServletException, IOException {
         
         // Parse request
-        WMSParameters wmsparams = new WMSParameters(request);
+        WMSParameters wmsParams = new WMSParameters(request);
 
         // Check whether we serve this layer
-        WMSLayer cachedLayer = findAndCheckLayer(wmsparams, request, response);
+        TileLayer cachedLayer = findAndCheckLayer(wmsParams, request, response);
 
         if (cachedLayer != null) {
             // Get data
-            byte[] data = cachedLayer.getData(wmsparams, response);
+            TileRequest tileReq = WMSConverter.convert(wmsParams, cachedLayer, response);
             
-            // Will also return error message, if appropriate
-            sendData(response, wmsparams.getImageMime(), data);
-        } else {
-            // finAndCheckLayer() has already set error message
+            forwardToBackend(cachedLayer, tileReq, request, response);
         }
+        
+        // finAndCheckLayer() has already set error message
     }
 
 
@@ -184,10 +183,17 @@ public class GeoWebCache extends HttpServlet {
         String strQuadKey = ServletUtils.stringFromMap(params, "quadkey");
         String strFormat = ServletUtils.stringFromMap(params, "format");
         
-        int[] gridLoc = VEConverter.convert(strQuadKey);
-
-        forwardToBackend(
-                strLayer, strFormat, "EPSG:900913", gridLoc, request, response);
+        TileLayer cachedLayer = findAndCheckLayer(
+                strLayer, "EPSG:900913", strFormat, request, response);
+        
+        if(cachedLayer != null) {
+            TileRequest tileReq = new TileRequest(
+                    VEConverter.convert(strQuadKey, response),
+                    strFormat);
+            
+            forwardToBackend(cachedLayer, tileReq, request, response);
+        } 
+        // finAndCheckLayer() has already set error message
     }
 
     public void doGetGmaps(HttpServletRequest request,
@@ -199,43 +205,52 @@ public class GeoWebCache extends HttpServlet {
         String strY = ServletUtils.stringFromMap(params, "y");
         String strFormat = ServletUtils.stringFromMap(params, "format");
         
-        int[] gridLoc = GMapsConverter.convert(Integer.parseInt(strZoom), Integer
-                .parseInt(strX), Integer.parseInt(strY));
+        TileLayer cachedLayer = findAndCheckLayer(
+                strLayer, "EPSG:900913", strFormat, request, response);
+        
+        if(cachedLayer != null) {
+            TileRequest tileReq = new TileRequest(
+                    GMapsConverter.convert(
+                            Integer.parseInt(strZoom), 
+                            Integer.parseInt(strX), 
+                            Integer.parseInt(strY), response),
+                            strFormat);
+            forwardToBackend(cachedLayer, tileReq, request, response);
 
-        forwardToBackend(
-                strLayer, strFormat, "EPSG:900913", gridLoc, request, response);
+        }
+        // findAndCheckLayer() has already set error message
     }
     
-    public void doGetKML(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
-        Map params = request.getParameterMap();
-        
-        String strLayer = ServletUtils.stringFromMap(params, "layers");
-        String strZoom = ServletUtils.stringFromMap(params, "z");
-        String strX = ServletUtils.stringFromMap(params, "x");
-        String strY = ServletUtils.stringFromMap(params, "y");
-        String strFormat = ServletUtils.stringFromMap(params, "format");
-        
-        int[] gridLoc = { 
-                    Integer.parseInt(strX),
-                    Integer.parseInt(strY),
-                    Integer.parseInt(strZoom) };
-        
-        if(strFormat.equals("application/vnd.google-earth.kml+xml")
-                || strFormat.equals("application/vnd.google-earth.kmz+xml")) {
-            // We need to make a nice little XML document
-            WMSLayer cachedLayer = findAndCheckLayer(
-                    strLayer, "EPSG:4326", strFormat, request, response);
-            if(cachedLayer != null) {
-                KMLService.getOverlayKML(cachedLayer, response);
-            }
-        } else {
-            // Client wants an image
-            forwardToBackend(
-                    strLayer, strFormat, "EPSG:4326", gridLoc, request, response);
-        }
-            
-    }
+//    public void doGetKML(HttpServletRequest request,
+//            HttpServletResponse response) throws ServletException, IOException {
+//        Map params = request.getParameterMap();
+//        
+//        String strLayer = ServletUtils.stringFromMap(params, "layers");
+//        String strZoom = ServletUtils.stringFromMap(params, "z");
+//        String strX = ServletUtils.stringFromMap(params, "x");
+//        String strY = ServletUtils.stringFromMap(params, "y");
+//        String strFormat = ServletUtils.stringFromMap(params, "format");
+//        
+//        int[] gridLoc = { 
+//                    Integer.parseInt(strX),
+//                    Integer.parseInt(strY),
+//                    Integer.parseInt(strZoom) };
+//        
+//        if(strFormat.equals("application/vnd.google-earth.kml+xml")
+//                || strFormat.equals("application/vnd.google-earth.kmz+xml")) {
+//            // We need to make a nice little XML document
+//            TileLayer cachedLayer = findAndCheckLayer(
+//                    strLayer, "EPSG:4326", strFormat, request, response);
+//            if(cachedLayer != null) {
+//                KMLService.getOverlayKML(cachedLayer, response);
+//            }
+//        } else {
+//            // Client wants an image
+//            forwardToBackend(
+//                    strLayer, strFormat, "EPSG:4326", gridLoc, request, response);
+//        }
+//            
+//    }
     
 //    /**
 //     * Function for setting up seeding
@@ -299,7 +314,7 @@ public class GeoWebCache extends HttpServlet {
      * @return
      * @throws IOException
      */
-    private WMSLayer findAndCheckLayer(WMSParameters wmsParams,
+    private TileLayer findAndCheckLayer(WMSParameters wmsParams,
             HttpServletRequest request, HttpServletResponse response)
     throws IOException {
         
@@ -323,14 +338,14 @@ public class GeoWebCache extends HttpServlet {
      * @return the matching tile layer
      * @throws IOException
      */
-    private WMSLayer findAndCheckLayer(String strLayer, String srs, 
+    private TileLayer findAndCheckLayer(String strLayer, String srs, 
             String mimeType, HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
         String errorMsg = null;
         
         // Check whether we actually know this layer
-        WMSLayer cachedLayer = (WMSLayer) layers.get(strLayer);
+        TileLayer cachedLayer = (TileLayer) layers.get(strLayer);
         if(cachedLayer == null) {
             errorMsg = "Unknown layer: " + strLayer;
         }
@@ -383,35 +398,15 @@ public class GeoWebCache extends HttpServlet {
         os.flush();
     }
     
-    /**
-     * Checks whether the requested layer is supported and forwards
-     * the request to the appropriate layer object, after running a few
-     * tests on the request. 
-     * 
-     * @param strLayer
-     * @param strFormat
-     * @param SRS
-     * @param gridLoc
-     * @param request
-     * @param response
-     * @throws IOException
-     */
-    private void forwardToBackend(String strLayer, String strFormat, String SRS, int[] gridLoc,
-            HttpServletRequest request, HttpServletResponse response) throws IOException {
-        
-        WMSLayer cachedLayer = findAndCheckLayer(
-                strLayer, SRS, strFormat, request, response);
+    private void forwardToBackend(
+            TileLayer cachedLayer, TileRequest tileReq,
+            HttpServletRequest request, HttpServletResponse response
+    ) throws IOException {
 
-        if (cachedLayer != null) {
-            
-            byte[] data = cachedLayer.getData(
-                    gridLoc, strFormat, request.getQueryString(), response);
-            
-            // Will also return error message, if appropriate
-            sendData(response, strFormat, data);
-        } else {
-            // finAndCheckLayer() has already set error message
-        }
+        byte[] data = cachedLayer.getData(tileReq, request.getQueryString(), response);
+
+        // Will also return error message, if appropriate
+        sendData(response, tileReq.mimeType, data);
     }
 
 }

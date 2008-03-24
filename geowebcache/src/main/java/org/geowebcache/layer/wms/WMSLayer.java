@@ -34,6 +34,7 @@ import org.geowebcache.cache.CacheKey;
 import org.geowebcache.cache.CacheKeyFactory;
 import org.geowebcache.layer.RawTile;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileRequest;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.wms.BBOX;
@@ -92,7 +93,8 @@ public class WMSLayer implements TileLayer {
      */
     public String supportsMime(String mimeType) {
         if (mimeType == null) {
-            return "MIME type was null";
+            log.trace("MIME type was null");
+            return null;
         }
         
         for(int i=0; i<mimes.length; i++) {
@@ -145,12 +147,12 @@ public class WMSLayer implements TileLayer {
      * @return
      * @throws IOException
      */
-    public byte[] getData(WMSParameters wmsParams, HttpServletResponse response)
-    throws IOException {
-        int[] gridLoc = profile.gridCalc.gridLocation(wmsParams.getBBOX());
-        
-        return getData(gridLoc, wmsParams.getImageMime(), wmsParams.toString(), response);
-    }
+    //public byte[] getData(WMSParameters wmsParams, HttpServletResponse response)
+    //throws IOException {
+    //    int[] gridLoc = profile.gridCalc.gridLocation(wmsParams.getBBOX());
+    //    
+    //    return getData(gridLoc, wmsParams.getImageMime(), wmsParams.toString(), response);
+    //}
 
     /**
      * The main function
@@ -163,12 +165,18 @@ public class WMSLayer implements TileLayer {
      * @param wmsparams
      * @return
      */
-    public byte[] getData(int[] gridLoc, String mimeType, String requestURI,
+    public byte[] getData(TileRequest tileRequest, String requestURI,
             HttpServletResponse response) throws IOException {
         String debugHeadersStr = null;
+        ImageMime mime = null;
         
-        ImageMime mime = ImageMime.createFromMimeType(mimeType);
-
+        if(tileRequest.mimeType == null) {
+            mime = this.mimes[0];
+        } else {
+            mime = ImageMime.createFromMimeType(tileRequest.mimeType);
+        }
+        int[] gridLoc = tileRequest.gridLoc;
+        
         // Final preflight check
         // TODO move outside
         String complaint = null;
@@ -575,5 +583,8 @@ public class WMSLayer implements TileLayer {
         return this.name;
     }
 
+    public int[] gridLocForBounds(BBOX tileBounds) {
+        return profile.gridCalc.gridLocation(tileBounds);
+    }
     
 }

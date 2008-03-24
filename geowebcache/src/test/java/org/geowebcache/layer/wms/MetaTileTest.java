@@ -2,7 +2,6 @@ package org.geowebcache.layer.wms;
 
 import java.util.Arrays;
 
-import org.geowebcache.layer.wms.GridCalculator;
 import org.geowebcache.layer.wms.LayerProfile;
 import org.geowebcache.layer.wms.WMSMetaTile;
 import org.geowebcache.util.wms.BBOX;

@@ -24,12 +24,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.layer.MetaTile;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.wms.GridCalculator;
-import org.geowebcache.layer.wms.LayerProfile;
-import org.geowebcache.layer.wms.WMSMetaTile;
-import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.layer.TileRequest;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.util.wms.BBOX;
 
@@ -67,7 +63,8 @@ public class Seeder {
                     infoTile(pw, count++);
                     int[] gridLoc = { gridx , gridy , level };
                     
-                    layer.getData(gridLoc, imageFormat.getMimeType(), "seeder", response);
+                    TileRequest tileReq = new TileRequest(gridLoc, imageFormat.getMimeType());
+                    layer.getData(tileReq, "seeder", response);
                     
                     // Next column
                     gridx += metaTilingFactors[0];

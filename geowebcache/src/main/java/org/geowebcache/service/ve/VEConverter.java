@@ -16,8 +16,11 @@
  */
 package org.geowebcache.service.ve;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.layer.TileRequest;
 
 /**
  * Class to convert from Virtual Earth quad keys to the internal
@@ -34,7 +37,7 @@ public class VEConverter {
      * @param quadKey
      * @return internal representation
      */
-    public static int[] convert(String quadKey) {
+    public static int[] convert(String quadKey, HttpServletResponse response) {
         char[] quadArray = quadKey.toCharArray();
 
         int zoomLevel = quadArray.length;
@@ -70,10 +73,12 @@ public class VEConverter {
                 //Y stays
             } else {
                 log.error("Don't know how to interpret quadKey: " + quadKey);
+                return null;
             }
         }
         
         int[] gridLoc = {xPos, yPos, zoomLevel};
+        
         return gridLoc;
     }
 }

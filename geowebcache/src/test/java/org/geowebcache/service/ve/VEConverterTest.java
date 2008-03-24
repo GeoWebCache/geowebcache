@@ -23,32 +23,32 @@ public class VEConverterTest extends TestCase {
     public void testVEConverter() throws Exception {
     	/* Check origin location */
     	String quadKey = "2";
-    	int[] gridLoc = VEConverter.convert(quadKey);
+    	int[] gridLoc = VEConverter.convert(quadKey, null);
     	int[] solution = {0,0,1};
     	assert(Arrays.equals(gridLoc, solution));
     	
     	/* Check zoomlevel */
     	quadKey = "22";
     	solution[0] = 0; solution[1] = 0; solution[2] = 2;
-    	gridLoc = VEConverter.convert(quadKey);
+    	gridLoc = VEConverter.convert(quadKey, null);
     	assert(Arrays.equals(gridLoc, solution));
     	
     	/* Check top right */
     	quadKey = "1";
     	solution[0] = 1; solution[1] = 1; solution[2] = 1;
-    	gridLoc = VEConverter.convert(quadKey);
+    	gridLoc = VEConverter.convert(quadKey, null);
     	assert(Arrays.equals(gridLoc, solution));
     	
     	/* Check top right, zoomlevel */
     	quadKey = "11";
     	solution[0] = 3; solution[1] = 3; solution[2] = 2;
-    	gridLoc = VEConverter.convert(quadKey);
+    	gridLoc = VEConverter.convert(quadKey, null);
     	assert(Arrays.equals(gridLoc, solution));
     	
     	/* Check middle */
     	quadKey = "122";
     	solution[0] = 4; solution[1] = 4; solution[2] = 3;
-    	gridLoc = VEConverter.convert(quadKey);
+    	gridLoc = VEConverter.convert(quadKey, null);
     	assert(Arrays.equals(gridLoc, solution));
     }
 }
