@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.geowebcache.layer.wms.LayerProfile;
 import org.geowebcache.layer.wms.WMSMetaTile;
 import org.geowebcache.util.wms.BBOX;
+import org.geowebcache.util.wms.GridCalculator;
 
 import junit.framework.TestCase;
 
@@ -26,7 +27,12 @@ public class MetaTileTest extends TestCase {
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
+        GridCalculator gridCalc = new GridCalculator(
+                profile.gridBase, profile.bbox, 
+                profile.zoomStart, profile.zoomStop, 
+                profile.metaWidth, profile.metaHeight, 
+                maxTileWidth, maxTileHeight);
+        
         int[] gridPos = { 0, 0, 0 };
         //int[] gridBounds, int[] tileGridPosition, int metaX, int metaY
         WMSMetaTile mt = new WMSMetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
@@ -52,7 +58,12 @@ public class MetaTileTest extends TestCase {
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
+        GridCalculator gridCalc = new GridCalculator(
+                profile.gridBase, profile.bbox, 
+                profile.zoomStart, profile.zoomStop, 
+                profile.metaWidth, profile.metaHeight, 
+                maxTileWidth, maxTileHeight);
+        
         int[] gridPos = { 127, 63, 6 };
         WMSMetaTile mt = new WMSMetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
 
@@ -78,7 +89,12 @@ public class MetaTileTest extends TestCase {
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
+        GridCalculator gridCalc = new GridCalculator(
+                profile.gridBase, profile.bbox, 
+                profile.zoomStart, profile.zoomStop, 
+                profile.metaWidth, profile.metaHeight, 
+                maxTileWidth, maxTileHeight);
+        
         int[] gridPos = { 0, 0, 0 };
         WMSMetaTile mt = new WMSMetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
 
@@ -103,7 +119,12 @@ public class MetaTileTest extends TestCase {
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
+        GridCalculator gridCalc = new GridCalculator(
+                profile.gridBase, profile.bbox, 
+                profile.zoomStart, profile.zoomStop, 
+                profile.metaWidth, profile.metaHeight, 
+                maxTileWidth, maxTileHeight);
+        
         int[] gridPos = { 70, 70, 6 };
         WMSMetaTile mt = new WMSMetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
 

@@ -14,72 +14,82 @@
  * 
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
-package org.geowebcache.layer.wms;
+package org.geowebcache.util.wms;
 
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.util.wms.BBOX;
+import org.geowebcache.layer.wms.LayerProfile;
 
 public class GridCalculator {
     private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.wms.GridCalculator.class);
+            .getLog(org.geowebcache.util.wms.GridCalculator.class);
 
-    private BBOX base = null;
+    private BBOX gridBounds = null;
 
     // The following are the width of the actual layer
-    private double baseWidth;
+    private double gridWidth;
 
-    private double baseHeight;
+    private double gridHeight;
 
     // The following are for a tile, zoomed out all the way
     private double maxTileWidth;
 
     private double maxTileHeight;
+    
+    private int zoomStart;
+    
+    private int zoomStop; 
+    
+    private int metaWidth;
+    
+    private int metaHeight;
 
     // Used for unprojected profiles
     private int gridConstant;
 
     private int[][] boundsGridLevels = null;
 
-    private LayerProfile profile = null;
-
     // TODO this code does not handle coordinate systems where the base
     // height
     // is bigger than the width
     // private double layerHeight;
 
-    protected GridCalculator(LayerProfile profile, BBOX bounds, double maxTileWidth,
-            double maxTileHeight) {
-        this.profile = profile;
-        base = profile.gridBase;
-
+    public GridCalculator(BBOX gridBounds, BBOX layerBounds, 
+            int zoomStart, int zoomStop,
+            int metaWidth, int metaHeight, 
+            double maxTileWidth, double maxTileHeight) {
+        
+        this.gridBounds = gridBounds;
+        this.zoomStart = zoomStart;
+        this.zoomStop = zoomStop;
+        this.metaWidth = metaWidth;
+        this.metaHeight = metaHeight;
+        
         // Calculate
-        baseWidth = base.coords[2] - base.coords[0];
-        baseHeight = base.coords[3] - base.coords[1];
+        gridWidth = gridBounds.coords[2] - gridBounds.coords[0];
+        gridHeight = gridBounds.coords[3] - gridBounds.coords[1];
 
         this.maxTileWidth = maxTileWidth;
         this.maxTileHeight = maxTileHeight;
-        this.gridConstant = (int) Math.round(baseWidth / baseHeight - 1.0);
+        this.gridConstant = (int) Math.round(gridWidth / gridHeight - 1.0);
         
-        boundsGridLevels = calculateGridBounds(bounds);
+        boundsGridLevels = calculateGridBounds(layerBounds);
     }
 
     private int[][] calculateGridBounds(BBOX layerBounds) {
-        int zoomStop = profile.zoomStop;
-
         // We'll just waste a few bytes, for cheap lookups
         int[][] gridLevels = new int[zoomStop + 1][4];
 
         double tileWidth = maxTileWidth;
         double tileHeight = maxTileHeight;
 
-        int tileCountX = (int) Math.round(baseWidth / maxTileWidth);
-        int tileCountY = (int) Math.round(baseHeight / maxTileHeight);
+        int tileCountX = (int) Math.round(gridWidth / maxTileWidth);
+        int tileCountY = (int) Math.round(gridHeight / maxTileHeight);
 
-        int metaLarger = (profile.metaHeight > profile.metaWidth) ? profile.metaHeight
-                : profile.metaWidth;
+        int metaLarger = 
+            (metaHeight > metaWidth) ? metaHeight : metaWidth;
 
         // System.out.println("lb: " +layerBounds+ " base:" + base+
         // " tileWidth: " + tileWidth);
@@ -87,17 +97,17 @@ public class GridCalculator {
         for (int level = 0; level <= zoomStop; level++) {
             // Min X
             gridLevels[level][0] = (int) Math
-                    .floor((layerBounds.coords[0] - base.coords[0]) / tileWidth);
+                    .floor((layerBounds.coords[0] - gridBounds.coords[0]) / tileWidth);
             // Min Y
             gridLevels[level][1] = (int) Math
-                    .floor((layerBounds.coords[1] - base.coords[1])
+                    .floor((layerBounds.coords[1] - gridBounds.coords[1])
                             / tileHeight);
             // Max X
             gridLevels[level][2] = (int) Math
-                    .ceil((layerBounds.coords[2] - base.coords[0]) / tileWidth) - 1;
+                    .ceil((layerBounds.coords[2] - gridBounds.coords[0]) / tileWidth) - 1;
             // Max Y
             gridLevels[level][3] = (int) Math
-                    .ceil((layerBounds.coords[3] - base.coords[1]) / tileHeight) - 1;
+                    .ceil((layerBounds.coords[3] - gridBounds.coords[1]) / tileHeight) - 1;
 
             // System.out.println("postOrig: " +
             // Arrays.toString(gridLevels[level]));
@@ -109,18 +119,18 @@ public class GridCalculator {
             if (tileCountX > metaLarger || tileCountY > metaLarger) {
                 // Round down
                 gridLevels[level][0] = gridLevels[level][0]
-                        - (gridLevels[level][0] % profile.metaWidth);
+                        - (gridLevels[level][0] % metaWidth);
                 // Round down
                 gridLevels[level][1] = gridLevels[level][1]
-                        - (gridLevels[level][1] % profile.metaHeight);
+                        - (gridLevels[level][1] % metaHeight);
                 // Naive round up
                 gridLevels[level][2] = gridLevels[level][2]
-                        - (gridLevels[level][2] % profile.metaWidth)
-                        + (profile.metaWidth - 1);
+                        - (gridLevels[level][2] % metaWidth)
+                        + (metaWidth - 1);
                 // Naive round up
                 gridLevels[level][3] = gridLevels[level][3]
-                        - (gridLevels[level][3] % profile.metaHeight)
-                        + (profile.metaHeight - 1);
+                        - (gridLevels[level][3] % metaHeight)
+                        + (metaHeight - 1);
 
                 // System.out.println("postAdjust: " +
                 // Arrays.toString(gridLevels[level]));
@@ -147,7 +157,7 @@ public class GridCalculator {
         return gridLevels;
     }
 
-    protected int[] getGridBounds(int zoomLevel) {
+    public int[] getGridBounds(int zoomLevel) {
         return boundsGridLevels[zoomLevel].clone();
     }
 
@@ -180,16 +190,16 @@ public class GridCalculator {
         // (Z) Zoom level
         // For EPSG 4326, reqTileWidth = 0.087 log(4096) / log(2) - 1; -> 11
         retVals[2] =
-        	(int) Math.round( Math.log(baseWidth / reqTileWidth) / (Math.log(2)))
+        	(int) Math.round( Math.log(gridWidth / reqTileWidth) / (Math.log(2)))
                 - gridConstant;
 
-        double tileWidth = baseWidth / (Math.pow(2, retVals[2] + gridConstant));
+        double tileWidth = gridWidth / (Math.pow(2, retVals[2] + gridConstant));
 
         // X
-        double xdiff = tileBounds.coords[0] - base.coords[0];
+        double xdiff = tileBounds.coords[0] - gridBounds.coords[0];
         retVals[0] = (int) Math.round(xdiff / tileWidth);
         // Y
-        double ydiff = tileBounds.coords[1] - base.coords[1];
+        double ydiff = tileBounds.coords[1] - gridBounds.coords[1];
         retVals[1] = (int) Math.round(ydiff / tileWidth);
 
         if (log.isTraceEnabled()) {
@@ -202,9 +212,9 @@ public class GridCalculator {
 
     public String isInRange(int[] location) {
         // Check Z
-        if (location[2] < profile.zoomStart) {
+        if (location[2] < zoomStart) {
             return "zoomlevel (" + location[2] + ")must be at least "
-                    + profile.zoomStart;
+                    + zoomStart;
         }
         if (location[2] >= boundsGridLevels.length) {
             return "zoomlevel (" + location[2] + ") must be at most "
@@ -246,11 +256,11 @@ public class GridCalculator {
      * @return
      */
     public BBOX bboxFromGridLocation(int[] gridLoc) {
-        double tileWidth = baseWidth / Math.pow(2, gridLoc[2] + gridConstant);
+        double tileWidth = gridWidth / Math.pow(2, gridLoc[2] + gridConstant);
 
-        return new BBOX(base.coords[0] + tileWidth * gridLoc[0], base.coords[1]
-                + tileWidth * gridLoc[1], base.coords[0] + tileWidth
-                * (gridLoc[0] + 1), base.coords[1] + tileWidth
+        return new BBOX(gridBounds.coords[0] + tileWidth * gridLoc[0], gridBounds.coords[1]
+                + tileWidth * gridLoc[1], gridBounds.coords[0] + tileWidth
+                * (gridLoc[0] + 1), gridBounds.coords[1] + tileWidth
                 * (gridLoc[1] + 1));
     }
 
@@ -264,14 +274,15 @@ public class GridCalculator {
      * @return
      */
 
-    public BBOX bboxFromGridBounds(int[] gridBounds) {
-        double tileWidth = baseWidth
-                / Math.pow(2, gridBounds[4] + gridConstant);
+    public BBOX bboxFromGridBounds(int[] gridLocBounds) {
+        double tileWidth = gridWidth
+                / Math.pow(2,  gridLocBounds[4] + gridConstant);
 
-        return new BBOX(base.coords[0] + tileWidth * gridBounds[0],
-                base.coords[1] + tileWidth * gridBounds[1], base.coords[0]
-                        + tileWidth * (gridBounds[2] + 1), base.coords[1]
-                        + tileWidth * (gridBounds[3] + 1));
+        return new BBOX(
+                gridBounds.coords[0] + tileWidth *  gridLocBounds[0],
+                gridBounds.coords[1] + tileWidth *  gridLocBounds[1], 
+                gridBounds.coords[0] + tileWidth * ( gridLocBounds[2] + 1), 
+                gridBounds.coords[1] + tileWidth * ( gridLocBounds[3] + 1));
     }
     
     /**

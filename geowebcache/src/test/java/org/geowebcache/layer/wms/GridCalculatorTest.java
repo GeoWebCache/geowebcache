@@ -2,9 +2,9 @@ package org.geowebcache.layer.wms;
 
 import java.util.Arrays;
 
-import org.geowebcache.layer.wms.GridCalculator;
 import org.geowebcache.layer.wms.LayerProfile;
 import org.geowebcache.util.wms.BBOX;
+import org.geowebcache.util.wms.GridCalculator;
 
 import junit.framework.TestCase;
 
@@ -26,7 +26,11 @@ public class GridCalculatorTest extends TestCase {
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile, bbox, maxTileWidth, maxTileHeight);
+        GridCalculator gridCalc = new GridCalculator(
+                profile.gridBase, bbox, 
+                profile.zoomStart, profile.zoomStop, 
+                profile.metaWidth, profile.metaHeight, 
+                maxTileWidth, maxTileHeight);
 
         int[][] solution = { { 1, 0, 1, 0 }, { 2, 1, 3, 1 }, { 4, 2, 7, 3 },
                 { 8, 4, 15, 7 }, { 16, 8, 31, 15 } };
@@ -53,7 +57,11 @@ public class GridCalculatorTest extends TestCase {
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
+        GridCalculator gridCalc = new GridCalculator(
+                profile.gridBase, profile.bbox, 
+                profile.zoomStart, profile.zoomStop, 
+                profile.metaWidth, profile.metaHeight, 
+                maxTileWidth, maxTileHeight);
 
         int[][] solution = { { 1, 0, 1, 0 }, { 0, 0, 3, 1 }, { 3, 0, 7, 3 },
                 { 6, 3, 15, 7 }, { 15, 6, 31, 15 }, { 30, 15, 63, 31 },
@@ -81,8 +89,12 @@ public class GridCalculatorTest extends TestCase {
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
-
+        GridCalculator gridCalc = new GridCalculator(
+                profile.gridBase, profile.bbox, 
+                profile.zoomStart, profile.zoomStop, 
+                profile.metaWidth, profile.metaHeight, 
+                maxTileWidth, maxTileHeight);
+        
         int[][] solution = { { 0, 0, 1, 0 }, { 0, 0, 2, 1 }, { 3, 0, 5, 2 },
                 { 6, 3, 8, 5 }, { 15, 6, 17, 8 }, { 30, 12, 35, 17 },
                 { 60, 27, 68, 35 }, { 120, 54, 137, 71 } };
@@ -109,8 +121,12 @@ public class GridCalculatorTest extends TestCase {
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
-
+        GridCalculator gridCalc = new GridCalculator(
+                profile.gridBase, profile.bbox, 
+                profile.zoomStart, profile.zoomStop, 
+                profile.metaWidth, profile.metaHeight, 
+                maxTileWidth, maxTileHeight);
+        
         int[][] solution = { { 1, 0, 1, 0 }, { 3, 1, 3, 1 }, { 4, 0, 7, 3 },
                 { 12, 4, 15, 7 }, { 28, 12, 31, 15 } };
 
@@ -137,8 +153,12 @@ public class GridCalculatorTest extends TestCase {
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
-
+        GridCalculator gridCalc = new GridCalculator(
+                profile.gridBase, profile.bbox, 
+                profile.zoomStart, profile.zoomStop, 
+                profile.metaWidth, profile.metaHeight, 
+                maxTileWidth, maxTileHeight);
+        
         int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 2, 2, 3, 3 },
                 { 4, 4, 7, 7 }, { 8, 8, 15, 15 } };
 
@@ -166,8 +186,12 @@ public class GridCalculatorTest extends TestCase {
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
-
+        GridCalculator gridCalc = new GridCalculator(
+                profile.gridBase, profile.bbox, 
+                profile.zoomStart, profile.zoomStop, 
+                profile.metaWidth, profile.metaHeight, 
+                maxTileWidth, maxTileHeight);
+        
         int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 0, 0, 3, 3 },
                 { 3, 3, 7, 7 }, { 6, 6, 15, 15 }, { 15, 15, 31, 31 },
                 { 30, 30, 63, 63 } };
@@ -196,8 +220,12 @@ public class GridCalculatorTest extends TestCase {
         profile.zoomStart = 0;
         profile.zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(profile, profile.bbox, maxTileWidth, maxTileHeight);
-
+        GridCalculator gridCalc = new GridCalculator(
+                profile.gridBase, profile.bbox, 
+                profile.zoomStart, profile.zoomStop, 
+                profile.metaWidth, profile.metaHeight, 
+                maxTileWidth, maxTileHeight);
+        
         int[][] solution = { { 0, 0, 0, 0 }, { 0, 0, 1, 1 }, { 0, 0, 2, 2 },
                 { 3, 3, 5, 5 }, { 6, 6, 8, 8 }, { 15, 15, 17, 17 },
                 { 30, 30, 32, 32 }, { 60, 60, 65, 65 } };

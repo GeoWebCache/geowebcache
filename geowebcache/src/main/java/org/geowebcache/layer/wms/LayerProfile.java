@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.wms.BBOX;
+import org.geowebcache.util.wms.GridCalculator;
 
 public class LayerProfile {
     private static Log log = LogFactory
@@ -187,7 +188,12 @@ public class LayerProfile {
             bbox = gridBase;
         }
 
-        gridCalc = new GridCalculator(this, this.bbox, maxTileWidth, maxTileHeight);
+        // Create a grid calculator based on this information
+        gridCalc = new GridCalculator(
+                gridBase, bbox, 
+                zoomStart, zoomStop, 
+                metaWidth, metaHeight, 
+                maxTileWidth, maxTileHeight);
 
         String propWidth = props.getProperty("width");
         if (propWidth != null) {
