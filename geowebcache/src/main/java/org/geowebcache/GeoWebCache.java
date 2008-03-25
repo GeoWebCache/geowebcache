@@ -33,12 +33,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
+import org.geowebcache.seeder.Seeder;
 import org.geowebcache.service.gmaps.GMapsConverter;
 import org.geowebcache.service.ve.VEConverter;
 import org.geowebcache.service.wms.WMSConverter;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.Configuration;
 import org.geowebcache.util.ServletUtils;
+import org.geowebcache.util.wms.BBOX;
 
 public class GeoWebCache extends HttpServlet {
     private static final long serialVersionUID = 4175613925719485006L;
@@ -146,13 +148,13 @@ public class GeoWebCache extends HttpServlet {
             doGetVE(request, response);
         } else if (subPath.equals("/gmaps")) {
             doGetGmaps(request, response);
-        } 
+//        } 
 //      else if (subPath.equals("/kml")) {
 //            doGetKML(request, response);
 //        }
-//        } else if (subPath.equals("/seed")) {
-//            doGetSeed(request, response);
-//        }
+        } else if (subPath.equals("/seed")) {
+            doGetSeed(request, response);
+        }
     }
 
     public void doGetWMS(HttpServletRequest request,
@@ -252,55 +254,54 @@ public class GeoWebCache extends HttpServlet {
 //            
 //    }
     
-//    /**
-//     * Function for setting up seeding
-//     * 
-//     * TODO replace
-//     * 
-//     * @param request
-//     * @param response
-//     * @throws ServletException
-//     * @throws IOException
-//     */
-//    public void doGetSeed(HttpServletRequest request,
-//            HttpServletResponse response) throws ServletException, IOException {
-//
-//        Map params = request.getParameterMap();
-//        String strLayers = ServletUtils.stringFromMap(params, "layers");
-//        WMSLayer layer = (WMSLayer) layers.get(strLayers);
-//
-//        if (layer == null) {
-//            response.setContentType("text/plain");
-//            response.sendError(400, "No layers or unknown layer " + strLayers);
-//            // complain loudly and quit
-//            log.error("No layers?");
-//        }
-//
-//        response.setContentType("text/html");
-//        response.setBufferSize(12);
-//
-//        BBOX reqBounds = null;
-//        if (params.containsKey("bbox")) {
-//            reqBounds = new BBOX(((String[]) params.get("bbox"))[0]);
-//        }
-//
-//        String strStart = ServletUtils.stringFromMap(params, "start");
-//        String strStop = ServletUtils.stringFromMap(params, "stop");
-//        String strFormat = ServletUtils.stringFromMap(params, "format");
-//
-//        int start = -1;
-//        if (strStart != null) {
-//            start = Integer.valueOf(strStart);
-//        }
-//
-//        int stop = -1;
-//        if (strStop != null) {
-//            stop = Integer.valueOf(strStop);
-//        }
-//
-//        layer.seed(start, stop, strFormat, reqBounds, response);
-//        response.flushBuffer();
-//    }
+    /**
+     * Function for setting up seeding
+     * 
+     * TODO replace
+     * 
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
+    public void doGetSeed(HttpServletRequest request,
+            HttpServletResponse response) throws ServletException, IOException {
+
+        Map params = request.getParameterMap();
+        String strLayers = ServletUtils.stringFromMap(params, "layers");
+        TileLayer layer = (TileLayer) layers.get(strLayers);
+
+        if (layer == null) {
+            response.setContentType("text/plain");
+            response.sendError(400, "No layers or unknown layer " + strLayers);
+            log.error("No layers or unknown layer " + strLayers);
+        }
+
+        response.setContentType("text/html");
+        response.setBufferSize(12);
+
+        BBOX reqBounds = null;
+        if (params.containsKey("bbox")) {
+            reqBounds = new BBOX(((String[]) params.get("bbox"))[0]);
+        }
+
+        String strStart = ServletUtils.stringFromMap(params, "start");
+        String strStop = ServletUtils.stringFromMap(params, "stop");
+        String strFormat = ServletUtils.stringFromMap(params, "format");
+
+        int start = -1;
+        if (strStart != null) {
+            start = Integer.valueOf(strStart);
+        }
+
+        int stop = -1;
+        if (strStop != null) {
+            stop = Integer.valueOf(strStop);
+        }
+
+        Seeder.seed(layer, start, stop, strFormat, reqBounds, response);
+        response.flushBuffer();
+    }
     
     
     /**

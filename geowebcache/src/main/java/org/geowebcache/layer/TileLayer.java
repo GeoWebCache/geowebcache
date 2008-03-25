@@ -19,6 +19,7 @@ package org.geowebcache.layer;
 import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.wms.BBOX;
 
 public interface TileLayer {
@@ -34,6 +35,7 @@ public interface TileLayer {
     public BBOX getBounds();
     public int[] getMetaTilingFactors();
     public int[][] getCoveredGridLevels(BBOX bounds);
+    public MimeType getDefaultMimeType();
     public String getName();
     public void destroy();
     public int[] gridLocForBounds(BBOX bounds);

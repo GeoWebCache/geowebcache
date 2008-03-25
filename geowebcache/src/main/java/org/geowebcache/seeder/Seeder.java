@@ -29,6 +29,12 @@ import org.geowebcache.layer.TileRequest;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.util.wms.BBOX;
 
+/**
+ * This code is very much temporary and will be replaced with a
+ * good and multithreaded seeder at the first chance.
+ * 
+ * @author ak
+ */
 public class Seeder {
     private static Log log = LogFactory.getLog(org.geowebcache.seeder.Seeder.class);
 
@@ -144,60 +150,53 @@ public class Seeder {
         pw.flush();
     }
     
-//    public int seed(int zoomStart, int zoomStop, String format, BBOX bounds,
-//            HttpServletResponse response) throws IOException {
-//
-//        String complaint = null;
-//
-//        // Check that we support this
-//        if (bounds == null) {
-//            bounds = profile.bbox;
-//        } else {
-//            if (!profile.bbox.contains(bounds)) {
-//                complaint = "Request to seed outside of bounds: "
-//                        + bounds.toString();
-//                log.error(complaint);
-//                response.sendError(400, complaint);
-//                return -1;
-//            }
-//        }
-//        
-//        ImageMime mime = null;
-//        if (format == null) {
-//                mime = mimes[0];
-//            log.info("User did not specify format for seeding, assuming " + mimes[0].getMimeType());
-//        } else {
-//                mime = ImageMime.createFromMimeType(format);
-//                complaint = supportsMime(mime.getMimeType());
-//                
-//                if(complaint != null) {
-//                        log.error(complaint);
-//                        response.sendError(400, complaint);
-//                        return -1;
-//                }
-//        }
-//        
-//        Seeder seeder = (Seeder) seeders.get(mime.getMimeType());
-//        
-//        if(seeder == null) {
-//                seeder = new Seeder(this);
-//                seeders.put(mime.getMimeType(), seeder);
-//        }
-//        
-//        if (profile.expireCache == LayerProfile.CACHE_NEVER) {
-//            complaint = "Layers is configured to never cache!";
-//            log.error(complaint);
-//            response.sendError(400, complaint);
-//            return -1;
-//        }
-//
-//        if (zoomStart < 0 || zoomStop < 0) {
-//            complaint = "start(" + zoomStart + ") and stop(" + zoomStop
-//                    + ") have to greater than zero";
-//            log.error(complaint);
-//            response.sendError(400, complaint);
-//            return -1;
-//        }
+    public static int seed(TileLayer layer, int zoomStart, int zoomStop, String format, BBOX bounds,
+            HttpServletResponse response) throws IOException {
+
+        String complaint = null;
+
+        // Check that we support this
+        if (bounds == null) {
+            bounds = layer.getBounds();
+        } else {
+            if (null == layer.supportsBbox(layer.getProjection(), bounds)) {
+                complaint = "Request to seed outside of bounds: "
+                        + bounds.toString();
+                log.error(complaint);
+                response.sendError(400, complaint);
+                return -1;
+            }
+        }
+        
+        ImageMime mime = null;
+        if (format == null) {
+            mime = (ImageMime) layer.getDefaultMimeType();
+            log.info("User did not specify format for seeding, assuming " + mime.getMimeType());
+        } else {
+                mime = ImageMime.createFromMimeType(format);
+                complaint = layer.supportsMime(mime.getMimeType());
+                
+                if(complaint != null) {
+                        log.error(complaint);
+                        response.sendError(400, complaint);
+                        return -1;
+                }
+        }
+        
+       //if (profile.expireCache == LayerProfile.CACHE_NEVER) {
+       //     complaint = "Layers is configured to never cache!";
+       //     log.error(complaint);
+       //     response.sendError(400, complaint);
+       //     return -1;
+       // }
+
+        if (zoomStart < 0 || zoomStop < 0) {
+            complaint = "start(" + zoomStart + ") and stop(" + zoomStop
+                    + ") have to greater than zero";
+            log.error(complaint);
+            response.sendError(400, complaint);
+            return -1;
+        }
 //        if (zoomStart < profile.zoomStart) {
 //            complaint = "start(" + zoomStart
 //                    + ") should be greater than or equal to "
@@ -213,15 +212,18 @@ public class Seeder {
 //            response.sendError(400, complaint);
 //            return -1;
 //        }
-//
-//        log.info("seeder.doSeed(" + zoomStart + "," + zoomStop + ","
-//                + mime.getMimeType() + "," + bounds.toString()
-//                + ",stream)");
-//
-//        int retVal = seeder.doSeed(zoomStart, zoomStop, mime, bounds,
-//                response);
-//
-//        return retVal;
-//    }
+
+        log.info("seeder.doSeed(" + zoomStart + "," + zoomStop + ","
+                + mime.getMimeType() + "," + bounds.toString()
+                + ",stream)");
+
+        // Create a new seeder if we get here
+        Seeder aSeeder = new Seeder(layer);
+        
+        int retVal = aSeeder.doSeed(
+                zoomStart, zoomStop, mime, bounds,response);
+
+        return retVal;
+    }
 
 }

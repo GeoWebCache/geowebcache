@@ -36,6 +36,7 @@ import org.geowebcache.layer.RawTile;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.mime.ImageMime;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.wms.BBOX;
 
@@ -585,6 +586,10 @@ public class WMSLayer implements TileLayer {
 
     public int[] gridLocForBounds(BBOX tileBounds) {
         return profile.gridCalc.gridLocation(tileBounds);
+    }
+
+    public MimeType getDefaultMimeType() {
+        return mimes[0];
     }
     
 }
