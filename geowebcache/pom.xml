@@ -67,6 +67,28 @@
       <artifactId>jai_imageio</artifactId>
       <version>1.1</version>
     </dependency>
+
+    <!-- Spring dependencies -->
+   <dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-beans</artifactId>
+    <version>1.2.5</version>
+   </dependency>
+   <dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-core</artifactId>
+    <version>1.2.5</version>
+   </dependency>
+   <dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-context</artifactId>
+    <version>1.2.5</version>
+   </dependency>
+   <dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-webmvc</artifactId>
+    <version>1.2.5</version>
+   </dependency>
     
         <!--  Jetty starter dependencies -->
     <dependency>
@@ -125,7 +147,7 @@
 	  <scanIntervalSeconds>10</scanIntervalSeconds>
 	  <connectors>
 	    <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-	      <port>8090</port>
+	      <port>8080</port>
 	      <maxIdleTime>60000</maxIdleTime>
 	    </connector>
 	  </connectors>

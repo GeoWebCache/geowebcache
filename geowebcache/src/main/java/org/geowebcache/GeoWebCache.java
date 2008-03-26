@@ -41,6 +41,7 @@ import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.Configuration;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
+import org.springframework.context.ApplicationContext;
 
 public class GeoWebCache extends HttpServlet {
     private static final long serialVersionUID = 4175613925719485006L;
@@ -48,6 +49,8 @@ public class GeoWebCache extends HttpServlet {
     private static Log log = LogFactory
             .getLog(org.geowebcache.GeoWebCache.class);
 
+    static ApplicationContext context;
+    
     private static final String DEFAULT_REL_CONFIG_DIR = "WEB-INF"
             + File.separator + "classes";
 
