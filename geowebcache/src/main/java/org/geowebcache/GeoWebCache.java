@@ -42,6 +42,8 @@ import org.geowebcache.util.Configuration;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
 import org.springframework.context.ApplicationContext;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.AbstractController;
 
 public class GeoWebCache extends HttpServlet {
     private static final long serialVersionUID = 4175613925719485006L;
