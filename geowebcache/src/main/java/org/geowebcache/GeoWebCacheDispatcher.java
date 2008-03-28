@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.service.Service;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
@@ -24,15 +25,18 @@ public class GeoWebCacheDispatcher extends AbstractController {
     public static final String TYPE_SEED = "/seed";
     
     ApplicationContext context = null;
-    //ApplicationContext context = null;
     
-    private HashMap layers = null;
+    private TileLayerDispatcher tileLayerDispatcher = null;
     private HashMap services = null;
     
     public GeoWebCacheDispatcher() {
         super();
     }
-        
+    
+    public void setTileLayerDispatcher() {
+    	this.tileLayerDispatcher = tileLayerDispatcher;
+    }
+    
     private void loadServices() {
         Map serviceBeans = context.getBeansOfType(Service.class);
         Iterator beanIter = serviceBeans.keySet().iterator();
@@ -41,10 +45,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
             Service aService = (Service) serviceBeans.get(beanIter.next());
             services.put(aService.getPathName(), aService);
         }
-    }
-    
-    private void addLayerHandlers() {
-        //layers = context.getBeansOfType(TileLayer.class);
     }
     
     protected ModelAndView handleRequestInternal(
@@ -75,6 +75,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
         String layerIdent = service.getLayerIdentifier(request);
         
         // 3) Get the configuration that has to respond to this request
+        TileLayer layer = tileLayerDispatcher.getTileLayer(layerIdent);
+        System.out.println(layer.getName());
         
         // 4) Convert to internal representation, using info from request and layer 
         
@@ -95,14 +97,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         
         return (Service) services.get(serviceType);
     }
-    
-    private TileLayer findLayer(String layerIdentifier) {
-        if(this.layers == null)
-            addLayerHandlers();
         
-        return (TileLayer) layers.get(layerIdentifier);
-    }
-    
     private void writeError(HttpServletResponse response, 
             int httpCode, String errorMsg) {
         

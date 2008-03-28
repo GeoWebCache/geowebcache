@@ -22,45 +22,65 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.io.Resource;
 
-public class PropertiesConfiguration {
+public class PropertiesConfiguration implements Configuration, ApplicationContextAware {
     private static Log log = LogFactory
             .getLog(org.geowebcache.util.PropertiesConfiguration.class);
 
-    private Properties props = null;
+    //private File configDirH;
+    private String configDir = null;
+    private ApplicationContext context;
+
+    public PropertiesConfiguration (String configDir) {
+    	this.configDir = configDir;
+    }
     
-    private File[] propFiles = null;
 
-    private HashMap layers = new HashMap();
-
-    public PropertiesConfiguration(File configDirH) {
-        // Find all the property files and process each one into a TileLayer
-        findPropFiles(configDirH);
+	public Map getTileLayers() {
+		// Find all the property files and process each one into a TileLayer
+		Resource resource = context.getResource("classpath:"+this.configDir);
+		
+		File[] propFiles = null; //findPropFiles(configDirH);
+		String test = null;
+		try { 
+        	test = resource.getFile().getAbsolutePath();
+        } catch (IOException ioe) {
+        	ioe.printStackTrace();
+        }
+        
         if (propFiles != null) {
             log.trace("Found " + propFiles.length + " property files.");
         } else {
             log.error("Found no property files!");
         }
 
+        HashMap layers = new HashMap();
+        
         // Loop over the property files, create TileLayers
         for (int i = 0; i < propFiles.length; i++) {
             Properties props = readProperties(propFiles[i]);
             if (props == null) {
                 continue;
             }
-
+            
             String layerName = propFiles[i].getName();
             String[] nameComps = layerName.split("\\.");
-            layerName = nameComps[0].substring(6);
+            layerName = new String(nameComps[0].substring(6));
 
             log.trace("Adding layer " + layerName);
 
+            // TODO need support for other types of layers
             WMSLayer layer = null;
             try {
                 layer = new WMSLayer(layerName, props);
@@ -73,24 +93,28 @@ public class PropertiesConfiguration {
                 layers.put(layerName, layer);
             }
         }
+        return layers;
     }
+	
+	public String getIdentifier() {
+		return configDir;
+	}
 
     /**
      * Find all the .properties files in the configuration file directory.
      * 
      * @param configDirH
      */
-    private void findPropFiles(File configDirH) {
+    private File[] findPropFiles(File configDirH) {
         FilenameFilter select = new ExtensionFileListFilter("layer_",
                 "properties");
-        File[] propFiles = configDirH.listFiles(select);
-        this.propFiles = propFiles;
+        return configDirH.listFiles(select);
     }
 
+    
     private Properties readProperties(File propFile) {
-        props = null;
-
         log.debug("Found " + propFile.getAbsolutePath() + " file.");
+        Properties props = null;
         try {
             FileInputStream in = new FileInputStream(propFile);
             props = new Properties();
@@ -103,9 +127,10 @@ public class PropertiesConfiguration {
         return props;
     }
 
-    public HashMap getLayers() {
-        return layers;
-    }
+
+	public void setApplicationContext(ApplicationContext arg0) throws BeansException {
+		context = arg0;
+	}
 }
 
 class ExtensionFileListFilter implements FilenameFilter {

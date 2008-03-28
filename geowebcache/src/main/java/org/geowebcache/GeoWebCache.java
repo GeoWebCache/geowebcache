@@ -38,7 +38,7 @@ import org.geowebcache.service.gmaps.GMapsConverter;
 import org.geowebcache.service.ve.VEConverter;
 import org.geowebcache.service.wms.WMSConverter;
 import org.geowebcache.service.wms.WMSParameters;
-import org.geowebcache.util.Configuration;
+import org.geowebcache.util.PropertiesConfiguration;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
 import org.springframework.context.ApplicationContext;
@@ -56,7 +56,7 @@ public class GeoWebCache extends HttpServlet {
     private static final String DEFAULT_REL_CONFIG_DIR = "WEB-INF"
             + File.separator + "classes";
 
-    private Configuration configuration = null;
+    private PropertiesConfiguration configuration = null;
 
     
 

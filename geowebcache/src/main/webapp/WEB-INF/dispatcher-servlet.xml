@@ -2,8 +2,20 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
+	<!-- Add configuration beans here -->
+	<bean id="defaultConfig" class="org.geowebcache.util.PropertiesConfiguration">
+		<constructor-arg type="java.lang.String" value=""/>
+	</bean>
+	
+	<!-- For each configuration bean above, add them below to activate -->
+	<bean id="tLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
+		<property name="configuration" ref="defaultConfig"/>
+	</bean>
+				
 	<!-- controller for handling all incoming requests -->
-	<bean id="geowebcacheDispatcher" class="org.geowebcache.GeoWebCacheDispatcher"/>
+	<bean id="geowebcacheDispatcher" class="org.geowebcache.GeoWebCacheDispatcher">
+		<property name="tileLayerDispatcher" ref="tLDispatcher"/>
+	</bean>
 	
 	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
 		<property name="alwaysUseFullPath" value="true"/>
