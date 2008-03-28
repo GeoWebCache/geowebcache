@@ -29,9 +29,9 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.layer.wms.WMSLayer;
 
-public class Configuration {
+public class PropertiesConfiguration {
     private static Log log = LogFactory
-            .getLog(org.geowebcache.util.Configuration.class);
+            .getLog(org.geowebcache.util.PropertiesConfiguration.class);
 
     private Properties props = null;
     
@@ -39,7 +39,7 @@ public class Configuration {
 
     private HashMap layers = new HashMap();
 
-    public Configuration(File configDirH) {
+    public PropertiesConfiguration(File configDirH) {
         // Find all the property files and process each one into a TileLayer
         findPropFiles(configDirH);
         if (propFiles != null) {
