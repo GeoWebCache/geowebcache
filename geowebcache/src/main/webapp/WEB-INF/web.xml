@@ -4,9 +4,9 @@
 	<display-name>GeoWebCache</display-name>
 	
 	<!--  spring context loader -->
-  	<listener>
+  	<!-- listener>
     	<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-  	</listener>
+  	</listener -->
    
   	<!-- spring dispatcher servlet, dispatches incoming requests to controllers -->
   	<servlet>
@@ -14,31 +14,11 @@
     	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>	
     	<load-on-startup>1</load-on-startup>
   	</servlet>
-
-	<!-- servlet>
-		<servlet-name>dispatcher</servlet-name>
-		<servlet-class>org.geowebcache.GeoWebCache</servlet-class>
- 	</servlet -->
  	
 	<servlet-mapping>
-		<servlet-name>dispatcher</servlet-name>
-		<url-pattern>/wms</url-pattern>
-	</servlet-mapping>
-	
-	<servlet-mapping>
-		<servlet-name>dispatcher</servlet-name>
-		<url-pattern>/ve</url-pattern>
-	</servlet-mapping>
-	
-	<servlet-mapping>
-		<servlet-name>dispatcher</servlet-name>
-		<url-pattern>/gmaps</url-pattern>
-	</servlet-mapping>
-	
-	<servlet-mapping>
-		<servlet-name>dispatcher</servlet-name>
-		<url-pattern>/seed</url-pattern>
-	</servlet-mapping>
+  		<servlet-name>dispatcher</servlet-name>
+		<url-pattern>/service/*</url-pattern>
+  	</servlet-mapping>
 </web-app>
 
 

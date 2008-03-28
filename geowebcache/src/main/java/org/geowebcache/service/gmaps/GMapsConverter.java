@@ -16,18 +16,29 @@
  */
 package org.geowebcache.service.gmaps;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.service.Service;
 
 /**
  * Class to convert from Google Maps coordinates into the internal
  * representation of a tile.
  */
-public class GMapsConverter {
-    private static Log log = LogFactory
-    .getLog(org.geowebcache.service.gmaps.GMapsConverter.class);
+public class GMapsConverter extends Service {
+    public static final String SERVICE_GMAPS = "/gmaps";
+    
+    private static Log log = LogFactory.getLog(org.geowebcache.service.gmaps.GMapsConverter.class);
+    
+    public GMapsConverter() {
+        super(SERVICE_GMAPS);
+    }
+    
+    public String getLayerIdentifier(HttpServletRequest request) {
+        return super.getLayersParameter(request);
+    }
     
     /**
      * Convert Google's tiling coordinates into an {x,y,x}

@@ -16,16 +16,30 @@
  */
 package org.geowebcache.service.wms;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
+import org.geowebcache.service.Service;
 
-public class WMSConverter {
+public class WMSConverter extends Service {
+    public static final String SERVICE_WMS = "/wms";
+    
+    public WMSConverter() {
+        super(SERVICE_WMS);
+    }
+    
+    public String getLayerIdentifier(HttpServletRequest request) {
+        return super.getLayersParameter(request);
+    }
+    
     public static TileRequest convert(WMSParameters wmsParams, 
             TileLayer layer, HttpServletResponse response) {
         return new TileRequest(
                 layer.gridLocForBounds(wmsParams.getBBOX()),
                 wmsParams.getImageMime());
     }
+    
+
 }

@@ -49,7 +49,7 @@ public class GeoWebCache extends HttpServlet {
     private static final long serialVersionUID = 4175613925719485006L;
 
     private static Log log = LogFactory
-            .getLog(org.geowebcache.GeoWebCache.class);
+    .getLog(org.geowebcache.GeoWebCache.class);
 
     static ApplicationContext context;
     

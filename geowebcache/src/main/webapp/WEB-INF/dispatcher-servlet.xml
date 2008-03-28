@@ -3,6 +3,23 @@
 
 <beans>
 	<!-- controller for handling all incoming requests -->
-	<bean id="dispatcher" 
-		class="org.geowebcache.GeoWebCacheDispatcher"/>
+	<bean id="geowebcacheDispatcher" class="org.geowebcache.GeoWebCacheDispatcher"/>
+	
+	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+		<property name="alwaysUseFullPath" value="true"/>
+	 	<property name="mappings">
+      		<props>
+        		<prop key="/service/**">geowebcacheDispatcher</prop>
+			</props>
+    	</property>
+    </bean>
+    
+    <!-- Services, make sure you name the bean the same as the path -->
+    <bean id="serviceWMS" 
+    	class="org.geowebcache.service.wms.WMSConverter"/>
+	<bean id="serviceGMaps"
+		class="org.geowebcache.service.gmaps.GMapsConverter"/>
+	<bean id="serviceVE"
+		class="org.geowebcache.service.ve.VEConverter"/>
+	
 </beans>

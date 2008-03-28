@@ -16,19 +16,31 @@
  */
 package org.geowebcache.service.ve;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.service.Service;
 
 /**
  * Class to convert from Virtual Earth quad keys to the internal
  * representation of a tile.
  */
-public class VEConverter {
+public class VEConverter extends Service {
+    public static final String SERVICE_VE = "/ve";
+    
     private static Log log = LogFactory
             .getLog(org.geowebcache.service.ve.VEConverter.class);
 
+    public VEConverter() {
+        super(SERVICE_VE);
+    }
+    
+    public String getLayerIdentifier(HttpServletRequest request) {
+        return super.getLayersParameter(request);
+    }
+    
     /**
      * Convert a quadkey into the internal representation {x,y,z}
      * of a grid location
