@@ -72,9 +72,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
         Service service = findService(request);
 
         // 2) Find out what layer will be used
-        System.out.println("Hells yeah!");
+        String layerIdent = service.getLayerIdentifier(request);
         
-        // 3) Get the backend that has to respond to this request
+        // 3) Get the configuration that has to respond to this request
         
         // 4) Convert to internal representation, using info from request and layer 
         

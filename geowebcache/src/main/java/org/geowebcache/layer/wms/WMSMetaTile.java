@@ -52,7 +52,7 @@ public class WMSMetaTile extends MetaTile {
 
     private RenderedImage[] tiles = null; // array with tiles (after cropping)
     
-    private long expiration = LayerProfile.CACHE_VALUE_UNSET;
+    private long expiration = WMSLayerProfile.CACHE_VALUE_UNSET;
 
     public boolean failed = false;
 
@@ -76,7 +76,7 @@ public class WMSMetaTile extends MetaTile {
      * @param imageMime the desired image format
      * @return
      */
-    protected String doRequest(LayerProfile profile, String imageMime) {
+    protected String doRequest(WMSLayerProfile profile, String imageMime) {
         WMSParameters wmsparams = profile.getWMSParamTemplate();
 
         // Fill in the blanks
@@ -97,8 +97,8 @@ public class WMSMetaTile extends MetaTile {
         while (img == null && backendTries < profile.wmsURL.length) {
             backendURL = profile.nextWmsURL();
             
-            boolean saveExpiration = (profile.expireCache == LayerProfile.CACHE_USE_WMS_BACKEND_VALUE
-                    || profile.expireClients == LayerProfile.CACHE_USE_WMS_BACKEND_VALUE);
+            boolean saveExpiration = (profile.expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE
+                    || profile.expireClients == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE);
 
             try {
                 forwardRequest(wmsparams, backendURL, saveExpiration);

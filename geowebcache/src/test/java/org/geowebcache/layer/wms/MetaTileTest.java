@@ -2,7 +2,7 @@ package org.geowebcache.layer.wms;
 
 import java.util.Arrays;
 
-import org.geowebcache.layer.wms.LayerProfile;
+import org.geowebcache.layer.wms.WMSLayerProfile;
 import org.geowebcache.layer.wms.WMSMetaTile;
 import org.geowebcache.util.wms.BBOX;
 import org.geowebcache.util.wms.GridCalculator;
@@ -17,7 +17,7 @@ public class MetaTileTest extends TestCase {
     }
 
     public void test1MetaTile() throws Exception {
-        LayerProfile profile = new LayerProfile();
+        WMSLayerProfile profile = new WMSLayerProfile();
         profile.bbox = new BBOX(0, 0, 180, 90);
         profile.gridBase = new BBOX(-180, -90, 180, 90);
         profile.metaHeight = 1;
@@ -48,7 +48,7 @@ public class MetaTileTest extends TestCase {
     }
 
     public void test2MetaTile() throws Exception {
-        LayerProfile profile = new LayerProfile();
+        WMSLayerProfile profile = new WMSLayerProfile();
         profile.bbox = new BBOX(0, 0, 180, 90);
         profile.gridBase = new BBOX(-180, -90, 180, 90);
         profile.metaHeight = 3;
@@ -78,7 +78,7 @@ public class MetaTileTest extends TestCase {
     }
 
     public void test3MetaTile() throws Exception {
-        LayerProfile profile = new LayerProfile();
+        WMSLayerProfile profile = new WMSLayerProfile();
         profile.bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
         profile.gridBase = new BBOX(-20037508.34, -20037508.34, 20037508.34,
                 20037508.34);
@@ -109,7 +109,7 @@ public class MetaTileTest extends TestCase {
     }
 
     public void test4MetaTile() throws Exception {
-        LayerProfile profile = new LayerProfile();
+        WMSLayerProfile profile = new WMSLayerProfile();
         profile.bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
         profile.gridBase = new BBOX(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
         profile.metaHeight = 3;

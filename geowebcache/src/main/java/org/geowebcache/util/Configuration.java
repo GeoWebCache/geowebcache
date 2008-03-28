@@ -34,21 +34,10 @@ public class Configuration {
             .getLog(org.geowebcache.util.Configuration.class);
 
     private Properties props = null;
-
-    // private WMSParameters wmsparams = null;
-    // private String server = null;
-    // private String service = null;
-    // private String cache = null;
-    // private Set resolutions = null;
-    // private boolean forward_errors;
-
+    
     private File[] propFiles = null;
 
     private HashMap layers = new HashMap();
-
-    // Make Configuration a singleton
-    // private static final Configuration singleton_inst = new
-    // Configuration();
 
     public Configuration(File configDirH) {
         // Find all the property files and process each one into a TileLayer

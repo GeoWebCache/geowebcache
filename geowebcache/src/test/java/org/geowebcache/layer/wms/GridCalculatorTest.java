@@ -2,7 +2,7 @@ package org.geowebcache.layer.wms;
 
 import java.util.Arrays;
 
-import org.geowebcache.layer.wms.LayerProfile;
+import org.geowebcache.layer.wms.WMSLayerProfile;
 import org.geowebcache.util.wms.BBOX;
 import org.geowebcache.util.wms.GridCalculator;
 
@@ -15,7 +15,7 @@ public class GridCalculatorTest extends TestCase {
     }
 
     public void test1gridLevels4326() throws Exception {
-        LayerProfile profile = new LayerProfile();
+        WMSLayerProfile profile = new WMSLayerProfile();
         profile.bbox = null;
         BBOX bbox = new BBOX(0, 0, 180, 90);
         profile.gridBase = new BBOX(-180, -90, 180, 90);
@@ -47,7 +47,7 @@ public class GridCalculatorTest extends TestCase {
     }
 
     public void test2gridLevels4326() throws Exception {
-        LayerProfile profile = new LayerProfile();
+        WMSLayerProfile profile = new WMSLayerProfile();
         profile.bbox = new BBOX(0, 0, 180, 90);
         profile.gridBase = new BBOX(-180, -90, 180, 90);
         profile.metaHeight = 3;
@@ -79,7 +79,7 @@ public class GridCalculatorTest extends TestCase {
     }
 
     public void test3gridLevels4326() throws Exception {
-        LayerProfile profile = new LayerProfile();
+        WMSLayerProfile profile = new WMSLayerProfile();
         profile.bbox = new BBOX(-10.0, -10.0, 10.0, 10.0);
         profile.gridBase = new BBOX(-180, -90, 180, 90);
         profile.metaHeight = 3;
@@ -111,7 +111,7 @@ public class GridCalculatorTest extends TestCase {
     }
 
     public void test4gridLevels4326() throws Exception {
-        LayerProfile profile = new LayerProfile();
+        WMSLayerProfile profile = new WMSLayerProfile();
         profile.bbox = new BBOX(175.0, 87.0, 180.0, 90.0);
         profile.gridBase = new BBOX(-180, -90, 180, 90);
         profile.metaHeight = 4;
@@ -142,7 +142,7 @@ public class GridCalculatorTest extends TestCase {
     }
 
     public void test1gridLevels900913() throws Exception {
-        LayerProfile profile = new LayerProfile();
+        WMSLayerProfile profile = new WMSLayerProfile();
         profile.bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
         profile.gridBase = new BBOX(-20037508.34, -20037508.34, 20037508.34,
                 20037508.34);
@@ -175,7 +175,7 @@ public class GridCalculatorTest extends TestCase {
     }
 
     public void test2gridLevels900913() throws Exception {
-        LayerProfile profile = new LayerProfile();
+        WMSLayerProfile profile = new WMSLayerProfile();
         profile.bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
         profile.gridBase = new BBOX(-20037508.34, -20037508.34, 20037508.34,
                 20037508.34);
@@ -209,7 +209,7 @@ public class GridCalculatorTest extends TestCase {
     }
 
     public void test3gridLevels900913() throws Exception {
-        LayerProfile profile = new LayerProfile();
+        WMSLayerProfile profile = new WMSLayerProfile();
         profile.bbox = new BBOX(-500000, -500000, 500000, 500000);
         profile.gridBase = new BBOX(-20037508.34, -20037508.34, 20037508.34,
                 20037508.34);

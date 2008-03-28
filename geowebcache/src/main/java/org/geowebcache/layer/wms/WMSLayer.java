@@ -46,7 +46,7 @@ public class WMSLayer implements TileLayer {
 
     String name;
 
-    LayerProfile profile;
+    WMSLayerProfile profile;
 
     Cache cache;
 
@@ -220,7 +220,7 @@ public class WMSLayer implements TileLayer {
 
         /** ****************** Check cache ******************* */
         RawTile tile = null;
-        if (profile.expireCache != LayerProfile.CACHE_NEVER) {
+        if (profile.expireCache != WMSLayerProfile.CACHE_NEVER) {
             try {
                 tile = (RawTile) cache.get(ck, profile.expireCache);
                 if (tile != null) {
@@ -253,7 +253,7 @@ public class WMSLayer implements TileLayer {
         int[][] gridPositions = metaTile.getTilesGridPositions();
 
         byte[] data = null;
-        if (profile.expireCache == LayerProfile.CACHE_NEVER) {
+        if (profile.expireCache == WMSLayerProfile.CACHE_NEVER) {
             // Mostly for completeness, don't laugh
             data = getTile(gridLoc, gridPositions, metaTile, mime);
 
@@ -307,19 +307,19 @@ public class WMSLayer implements TileLayer {
      * @param response
      */
     private void setExpirationHeader(HttpServletResponse response) {
-        if (profile.expireClients == LayerProfile.CACHE_VALUE_UNSET) {
+        if (profile.expireClients == WMSLayerProfile.CACHE_VALUE_UNSET) {
             return;
         }
 
         if (profile.expireClients > 0) {
             response.setHeader("Cache-Control", "max-age="
                     + (profile.expireClients / 1000) + ", must-revalidate");
-        } else if (profile.expireClients == LayerProfile.CACHE_NEVER_EXPIRE) {
+        } else if (profile.expireClients == WMSLayerProfile.CACHE_NEVER_EXPIRE) {
             long oneYear = 3600 * 24 * 365;
             response.setHeader("Cache-Control", "max-age=" + oneYear);
-        } else if (profile.expireClients == LayerProfile.CACHE_NEVER) {
+        } else if (profile.expireClients == WMSLayerProfile.CACHE_NEVER) {
             response.setHeader("Cache-Control", "no-cache");
-        } else if (profile.expireCache == LayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
+        } else if (profile.expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
             response.setHeader("geowebcache-error",
                     "No CacheControl information available");
         }
@@ -398,12 +398,12 @@ public class WMSLayer implements TileLayer {
     }
 
     protected void saveExpirationInformation(WMSMetaTile metaTile) {
-        if (profile.expireCache == LayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
+        if (profile.expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
             profile.expireCache = metaTile.getExpiration();
             log.trace("Setting expireCache based on metaTile: "
                     + profile.expireCache);
         }
-        if (profile.expireClients == LayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
+        if (profile.expireClients == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
             profile.expireClients = metaTile.getExpiration();
             log.trace("Setting expireClients based on metaTile: "
                     + profile.expireClients);
@@ -476,7 +476,7 @@ public class WMSLayer implements TileLayer {
      */
     private void setParametersFromProperties(Properties props)
             throws CacheException {
-        profile = new LayerProfile(this.name, props);
+        profile = new WMSLayerProfile(this.name, props);
 
         // Cache and CacheKey
         String propCachetype = props.getProperty("cachetype");

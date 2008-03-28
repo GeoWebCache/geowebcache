@@ -31,7 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.layer.RawTile;
-import org.geowebcache.layer.wms.LayerProfile;
+import org.geowebcache.layer.wms.WMSLayerProfile;
 
 public class FileCache implements Cache {
 
@@ -136,7 +136,7 @@ public class FileCache implements Cache {
 
     public void set(Object key, Object obj, long ttl)
             throws org.geowebcache.cache.CacheException {
-        if (ttl == LayerProfile.CACHE_NEVER) {
+        if (ttl == WMSLayerProfile.CACHE_NEVER) {
             return;
         }
 
