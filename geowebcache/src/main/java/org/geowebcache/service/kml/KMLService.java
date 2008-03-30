@@ -19,7 +19,6 @@ package org.geowebcache.service.kml;
 import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.layer.wms.WMSLayer;
-import org.geowebcache.util.wms.BBOX;
 
 public class KMLService {
 

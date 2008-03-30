@@ -1,8 +1,26 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Arne Kepp, The Open Planning Project, Copyright 2008
+ */
 package org.geowebcache.service;
 
-import java.util.Enumeration;
-
 import javax.servlet.http.HttpServletRequest;
+
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileRequest;
+import org.geowebcache.util.ServletUtils;
 
 public class Service {
     
@@ -31,25 +49,14 @@ public class Service {
                 +"getLayerIdentifier(HttpSerlvetRequest)" );
     }
     
+    public TileRequest getTileRequest(TileLayer tileLayer, HttpServletRequest request) {
+        throw new RuntimeException(
+                "Service for " + pathName  + " needs to override "
+                +"getTileRequest(TileLayer, HttpSerlvetRequest)" );
+    }
+    
     protected String getLayersParameter(HttpServletRequest request) {
-        String layerId = request.getParameter("layers");
-        
-        if(layerId == null) {
-            layerId = request.getParameter("LAYERS");
-            
-            if(layerId == null) {
-                Enumeration enume = request.getParameterNames();
-                while(enume.hasMoreElements()) {
-                    String enumKey = (String) enume.nextElement();
-                    if(enumKey.equalsIgnoreCase("layers")) {
-                        layerId = request.getParameter(enumKey);
-                    }
-                }
-            }
-        }
-        
-        
-        return layerId;
+        return ServletUtils.stringFromMap(request.getParameterMap(), "layers");
     }
     
     

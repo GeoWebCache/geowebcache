@@ -37,7 +37,7 @@
         function init(){
             map = new OpenLayers.Map('map', mapOptions );
             var layerstates = new OpenLayers.Layer.WMS( "States",
-                "wms",
+                "service/wms",
                 {layers: 'states_epsg900913', format: 'image/png'});
             map.addLayer(layerstates);
             //map.addControl(new OpenLayers.Control.LayerSwitcher());

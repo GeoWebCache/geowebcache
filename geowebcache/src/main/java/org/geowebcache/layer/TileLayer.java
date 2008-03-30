@@ -17,6 +17,7 @@
 package org.geowebcache.layer;
 
 import java.io.IOException;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.mime.MimeType;
@@ -28,7 +29,7 @@ public interface TileLayer {
     public String supportsMime(String mimeType);
     public String supportsBbox(String srs, BBOX bounds);
     
-    public byte[] getData(TileRequest tileRequest, String requestURI, 
+    public TileResponse getResponse(TileRequest tileRequest, String requestURI, 
             HttpServletResponse response) throws IOException;
     
     public String getProjection();

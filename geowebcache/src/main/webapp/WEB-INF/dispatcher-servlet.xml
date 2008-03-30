@@ -4,12 +4,12 @@
 <beans>
 	<!-- Add configuration beans here -->
 	<bean id="defaultConfig" class="org.geowebcache.util.PropertiesConfiguration">
-		<constructor-arg type="java.lang.String" value=""/>
+		<constructor-arg type="java.lang.String" value="/home/ak/geowebcache/src/main/resources"/>
 	</bean>
 	
 	<!-- For each configuration bean above, add them below to activate -->
 	<bean id="tLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
-		<property name="configuration" ref="defaultConfig"/>
+		<property name="config" ref="defaultConfig"/>
 	</bean>
 				
 	<!-- controller for handling all incoming requests -->

@@ -21,7 +21,7 @@ public class TileLayerDispatcher {
 		return (TileLayer) layers.get(layerIdent);
 	}
 
-	public void setConfiguration(Configuration config) {
+	public void setConfig(Configuration config) {
 		Map configLayers = config.getTileLayers();
 		log.info("Adding layers from " + config.getIdentifier());
 		if(configLayers != null && configLayers.size() > 0 ){

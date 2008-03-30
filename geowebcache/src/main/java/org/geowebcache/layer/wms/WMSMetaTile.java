@@ -18,13 +18,9 @@
 package org.geowebcache.layer.wms;
 
 import java.awt.RenderingHints;
-import java.awt.image.RenderedImage;
-
-import javax.media.jai.JAI;
-import javax.media.jai.operator.CropDescriptor;
-
 import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
+import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
@@ -35,7 +31,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
+import javax.media.jai.JAI;
+import javax.media.jai.operator.CropDescriptor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

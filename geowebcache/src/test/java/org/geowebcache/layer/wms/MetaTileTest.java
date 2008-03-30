@@ -2,12 +2,10 @@ package org.geowebcache.layer.wms;
 
 import java.util.Arrays;
 
-import org.geowebcache.layer.wms.WMSLayerProfile;
-import org.geowebcache.layer.wms.WMSMetaTile;
+import junit.framework.TestCase;
+
 import org.geowebcache.util.wms.BBOX;
 import org.geowebcache.util.wms.GridCalculator;
-
-import junit.framework.TestCase;
 
 public class MetaTileTest extends TestCase {
 

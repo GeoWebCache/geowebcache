@@ -20,7 +20,6 @@ import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.layer.wms.WMSLayerProfile;
 
 public class GridCalculator {
     private static Log log = LogFactory
@@ -37,13 +36,13 @@ public class GridCalculator {
     private double maxTileWidth;
 
     private double maxTileHeight;
-    
+
     private int zoomStart;
-    
-    private int zoomStop; 
-    
+
+    private int zoomStop;
+
     private int metaWidth;
-    
+
     private int metaHeight;
 
     // Used for unprojected profiles
@@ -56,17 +55,16 @@ public class GridCalculator {
     // is bigger than the width
     // private double layerHeight;
 
-    public GridCalculator(BBOX gridBounds, BBOX layerBounds, 
-            int zoomStart, int zoomStop,
-            int metaWidth, int metaHeight, 
-            double maxTileWidth, double maxTileHeight) {
-        
+    public GridCalculator(BBOX gridBounds, BBOX layerBounds, int zoomStart,
+            int zoomStop, int metaWidth, int metaHeight, double maxTileWidth,
+            double maxTileHeight) {
+
         this.gridBounds = gridBounds;
         this.zoomStart = zoomStart;
         this.zoomStop = zoomStop;
         this.metaWidth = metaWidth;
         this.metaHeight = metaHeight;
-        
+
         // Calculate
         gridWidth = gridBounds.coords[2] - gridBounds.coords[0];
         gridHeight = gridBounds.coords[3] - gridBounds.coords[1];
@@ -74,7 +72,7 @@ public class GridCalculator {
         this.maxTileWidth = maxTileWidth;
         this.maxTileHeight = maxTileHeight;
         this.gridConstant = (int) Math.round(gridWidth / gridHeight - 1.0);
-        
+
         boundsGridLevels = calculateGridBounds(layerBounds);
     }
 
@@ -88,8 +86,7 @@ public class GridCalculator {
         int tileCountX = (int) Math.round(gridWidth / maxTileWidth);
         int tileCountY = (int) Math.round(gridHeight / maxTileHeight);
 
-        int metaLarger = 
-            (metaHeight > metaWidth) ? metaHeight : metaWidth;
+        int metaLarger = (metaHeight > metaWidth) ? metaHeight : metaWidth;
 
         // System.out.println("lb: " +layerBounds+ " base:" + base+
         // " tileWidth: " + tileWidth);
@@ -97,17 +94,20 @@ public class GridCalculator {
         for (int level = 0; level <= zoomStop; level++) {
             // Min X
             gridLevels[level][0] = (int) Math
-                    .floor((layerBounds.coords[0] - gridBounds.coords[0]) / tileWidth);
+                    .floor((layerBounds.coords[0] - gridBounds.coords[0])
+                            / tileWidth);
             // Min Y
             gridLevels[level][1] = (int) Math
                     .floor((layerBounds.coords[1] - gridBounds.coords[1])
                             / tileHeight);
             // Max X
             gridLevels[level][2] = (int) Math
-                    .ceil((layerBounds.coords[2] - gridBounds.coords[0]) / tileWidth) - 1;
+                    .ceil((layerBounds.coords[2] - gridBounds.coords[0])
+                            / tileWidth) - 1;
             // Max Y
             gridLevels[level][3] = (int) Math
-                    .ceil((layerBounds.coords[3] - gridBounds.coords[1]) / tileHeight) - 1;
+                    .ceil((layerBounds.coords[3] - gridBounds.coords[1])
+                            / tileHeight) - 1;
 
             // System.out.println("postOrig: " +
             // Arrays.toString(gridLevels[level]));
@@ -125,8 +125,7 @@ public class GridCalculator {
                         - (gridLevels[level][1] % metaHeight);
                 // Naive round up
                 gridLevels[level][2] = gridLevels[level][2]
-                        - (gridLevels[level][2] % metaWidth)
-                        + (metaWidth - 1);
+                        - (gridLevels[level][2] % metaWidth) + (metaWidth - 1);
                 // Naive round up
                 gridLevels[level][3] = gridLevels[level][3]
                         - (gridLevels[level][3] % metaHeight)
@@ -189,8 +188,8 @@ public class GridCalculator {
 
         // (Z) Zoom level
         // For EPSG 4326, reqTileWidth = 0.087 log(4096) / log(2) - 1; -> 11
-        retVals[2] =
-        	(int) Math.round( Math.log(gridWidth / reqTileWidth) / (Math.log(2)))
+        retVals[2] = (int) Math.round(Math.log(gridWidth / reqTileWidth)
+                / (Math.log(2)))
                 - gridConstant;
 
         double tileWidth = gridWidth / (Math.pow(2, retVals[2] + gridConstant));
@@ -258,10 +257,10 @@ public class GridCalculator {
     public BBOX bboxFromGridLocation(int[] gridLoc) {
         double tileWidth = gridWidth / Math.pow(2, gridLoc[2] + gridConstant);
 
-        return new BBOX(gridBounds.coords[0] + tileWidth * gridLoc[0], gridBounds.coords[1]
-                + tileWidth * gridLoc[1], gridBounds.coords[0] + tileWidth
-                * (gridLoc[0] + 1), gridBounds.coords[1] + tileWidth
-                * (gridLoc[1] + 1));
+        return new BBOX(gridBounds.coords[0] + tileWidth * gridLoc[0],
+                gridBounds.coords[1] + tileWidth * gridLoc[1],
+                gridBounds.coords[0] + tileWidth * (gridLoc[0] + 1),
+                gridBounds.coords[1] + tileWidth * (gridLoc[1] + 1));
     }
 
     /**
@@ -276,15 +275,14 @@ public class GridCalculator {
 
     public BBOX bboxFromGridBounds(int[] gridLocBounds) {
         double tileWidth = gridWidth
-                / Math.pow(2,  gridLocBounds[4] + gridConstant);
+                / Math.pow(2, gridLocBounds[4] + gridConstant);
 
-        return new BBOX(
-                gridBounds.coords[0] + tileWidth *  gridLocBounds[0],
-                gridBounds.coords[1] + tileWidth *  gridLocBounds[1], 
-                gridBounds.coords[0] + tileWidth * ( gridLocBounds[2] + 1), 
-                gridBounds.coords[1] + tileWidth * ( gridLocBounds[3] + 1));
+        return new BBOX(gridBounds.coords[0] + tileWidth * gridLocBounds[0],
+                gridBounds.coords[1] + tileWidth * gridLocBounds[1],
+                gridBounds.coords[0] + tileWidth * (gridLocBounds[2] + 1),
+                gridBounds.coords[1] + tileWidth * (gridLocBounds[3] + 1));
     }
-    
+
     /**
      * Calculate the extent of the grid for the requested bounds.
      * 

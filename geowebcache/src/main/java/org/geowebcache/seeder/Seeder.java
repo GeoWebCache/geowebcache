@@ -69,8 +69,8 @@ public class Seeder {
                     infoTile(pw, count++);
                     int[] gridLoc = { gridx , gridy , level };
                     
-                    TileRequest tileReq = new TileRequest(gridLoc, imageFormat.getMimeType());
-                    layer.getData(tileReq, "seeder", response);
+                    TileRequest tileReq = new TileRequest(gridLoc, imageFormat.getMimeType(), layer.getProjection());
+                    layer.getResponse(tileReq, "seeder", response);
                     
                     // Next column
                     gridx += metaTilingFactors[0];

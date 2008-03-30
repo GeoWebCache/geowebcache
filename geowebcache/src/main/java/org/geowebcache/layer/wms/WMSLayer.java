@@ -35,6 +35,7 @@ import org.geowebcache.cache.CacheKeyFactory;
 import org.geowebcache.layer.RawTile;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
+import org.geowebcache.layer.TileResponse;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.wms.WMSParameters;
@@ -166,7 +167,7 @@ public class WMSLayer implements TileLayer {
      * @param wmsparams
      * @return
      */
-    public byte[] getData(TileRequest tileRequest, String requestURI,
+    public TileResponse getResponse(TileRequest tileRequest, String requestURI,
             HttpServletResponse response) throws IOException {
         String debugHeadersStr = null;
         ImageMime mime = null;
@@ -233,7 +234,7 @@ public class WMSLayer implements TileLayer {
                                 + "from-cache:true");
                     }
                     setExpirationHeader(response);
-                    return tile.getData();
+                    return new TileResponse(tile.getData() , mime.toString());
                 }
             } catch (CacheException ce) {
                 log.error("Failed to get " + requestURI
@@ -291,7 +292,7 @@ public class WMSLayer implements TileLayer {
                     + "from-cache:false;wmsUrl:"
                     + requestURL);
         }
-        return data;
+        return new TileResponse(data, mime.toString());
     }
 
     public int purge(OutputStream os) {

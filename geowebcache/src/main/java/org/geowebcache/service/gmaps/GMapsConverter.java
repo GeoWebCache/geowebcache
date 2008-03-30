@@ -16,12 +16,16 @@
  */
 package org.geowebcache.service.gmaps;
 
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileRequest;
 import org.geowebcache.service.Service;
+import org.geowebcache.util.ServletUtils;
 
 /**
  * Class to convert from Google Maps coordinates into the internal
@@ -29,17 +33,32 @@ import org.geowebcache.service.Service;
  */
 public class GMapsConverter extends Service {
     public static final String SERVICE_GMAPS = "/gmaps";
-    
-    private static Log log = LogFactory.getLog(org.geowebcache.service.gmaps.GMapsConverter.class);
-    
+
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.service.gmaps.GMapsConverter.class);
+
     public GMapsConverter() {
         super(SERVICE_GMAPS);
     }
-    
+
     public String getLayerIdentifier(HttpServletRequest request) {
         return super.getLayersParameter(request);
     }
-    
+
+    public TileRequest getTileRequest(TileLayer tileLayer, HttpServletRequest request) {
+        Map params = request.getParameterMap();
+        
+        String mimeType = ServletUtils.stringFromMap(params, "format");
+        String strZoom = ServletUtils.stringFromMap(params, "zoom");
+        String strX = ServletUtils.stringFromMap(params, "x");
+        String strY = ServletUtils.stringFromMap(params, "y");
+
+        int[] gridLoc = GMapsConverter.convert(Integer.parseInt(strZoom), Integer
+                .parseInt(strX), Integer.parseInt(strY));
+        
+        return new TileRequest(gridLoc, mimeType,"EPSG:900913");
+    }
+
     /**
      * Convert Google's tiling coordinates into an {x,y,x}
      * 
@@ -49,23 +68,23 @@ public class GMapsConverter extends Service {
      * @param quadKey
      * @return
      */
-    public static int[] convert(int zoomLevel, int x, int y, HttpServletResponse response) {
-    	// Extent is the total number of tiles in y direction
-    	int extent = (int) Math.pow(2, zoomLevel);
-        
-        if(x < 0 || x > extent - 1) {
+    public static int[] convert(int zoomLevel, int x, int y) {
+        // Extent is the total number of tiles in y direction
+        int extent = (int) Math.pow(2, zoomLevel);
+
+        if (x < 0 || x > extent - 1) {
             log.error("The X coordinate is not sane: " + x);
             return null;
         }
-        
-        if(y < 0 || y > extent - 1) {
+
+        if (y < 0 || y > extent - 1) {
             log.error("The Y coordinate is not sane: " + y);
             return null;
         }
-        
+
         // xPos and yPos correspond to the top left hand corner
-        int[] gridLoc = {x, extent - y - 1, zoomLevel};
-        
+        int[] gridLoc = { x, extent - y - 1, zoomLevel };
+
         return gridLoc;
     }
 }

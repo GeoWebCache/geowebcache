@@ -2,11 +2,10 @@ package org.geowebcache.layer.wms;
 
 import java.util.Arrays;
 
-import org.geowebcache.layer.wms.WMSLayerProfile;
+import junit.framework.TestCase;
+
 import org.geowebcache.util.wms.BBOX;
 import org.geowebcache.util.wms.GridCalculator;
-
-import junit.framework.TestCase;
 
 public class GridCalculatorTest extends TestCase {
     @Override

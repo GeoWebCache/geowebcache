@@ -1,6 +1,24 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Arne Kepp, The Open Planning Project, Copyright 2008
+ */
+
 package org.geowebcache;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -13,11 +31,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.TileRequest;
+import org.geowebcache.layer.TileResponse;
 import org.geowebcache.service.Service;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
 
+/**
+ * This is the main router for requests
+ * 
+ */
 public class GeoWebCacheDispatcher extends AbstractController {
     private static Log log = LogFactory.getLog(org.geowebcache.GeoWebCacheDispatcher.class);
     
@@ -33,10 +57,21 @@ public class GeoWebCacheDispatcher extends AbstractController {
         super();
     }
     
-    public void setTileLayerDispatcher() {
+    /**
+     * Setter method for Spring.
+     * 
+     * @param tileLayerDispatcher
+     */
+    public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {
     	this.tileLayerDispatcher = tileLayerDispatcher;
     }
     
+    /**
+     * Services convert HTTP requests into the internal grid representation
+     * and specify what layer the response should come from.
+     * 
+     * Unlike other objects, they are looked up on startup.
+     */
     private void loadServices() {
         Map serviceBeans = context.getBeansOfType(Service.class);
         Iterator beanIter = serviceBeans.keySet().iterator();
@@ -47,6 +82,12 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
     }
     
+    /**
+     * Spring function for MVC, this is the entry point for the application.
+     * 
+     * If a tile is requested the request will be handed off to 
+     * handleServiceRequest.
+     */
     protected ModelAndView handleRequestInternal(
             HttpServletRequest request, HttpServletResponse response
             ) throws Exception {
@@ -65,6 +106,15 @@ public class GeoWebCacheDispatcher extends AbstractController {
         return null;
     }
     
+    
+    /** 
+     * This is the main method for handling service requests.
+     * See comments in the code.
+     * 
+     * @param request
+     * @param response
+     * @throws Exception
+     */
     private void handleServiceRequest(HttpServletRequest request, 
             HttpServletResponse response) throws Exception {
         
@@ -76,13 +126,15 @@ public class GeoWebCacheDispatcher extends AbstractController {
         
         // 3) Get the configuration that has to respond to this request
         TileLayer layer = tileLayerDispatcher.getTileLayer(layerIdent);
-        System.out.println(layer.getName());
         
         // 4) Convert to internal representation, using info from request and layer 
+        TileRequest tileRequest = service.getTileRequest(layer, request);
         
         // 5) Ask the layer to provide the tile
+        TileResponse tileResponse = layer.getResponse(tileRequest, request.getRequestURI(), response);
         
         // 6) Write response
+        
     }
     
     private Service findService(HttpServletRequest request) {
@@ -112,5 +164,26 @@ public class GeoWebCacheDispatcher extends AbstractController {
             // Do nothing at this point
         }
         log.error(errorMsg);
+    }
+    
+    private void writeData(HttpServletResponse response, 
+            TileResponse tileResponse) throws IOException {
+
+        // Did we get anything?
+        if (tileResponse.data == null || tileResponse.data.length == 0) {
+            log.trace("sendData() had nothing to return");
+
+            // Response: 500 , should not have gotten here
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            return;
+        }
+
+        log.trace("sendData() Sending data.");
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType(tileResponse.mimeType);
+        response.setContentLength(tileResponse.data.length);
+        OutputStream os = response.getOutputStream();
+        os.write(tileResponse.data);
+        os.flush();
     }
 }

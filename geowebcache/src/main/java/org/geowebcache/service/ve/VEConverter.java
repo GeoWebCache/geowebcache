@@ -16,47 +16,62 @@
  */
 package org.geowebcache.service.ve;
 
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileRequest;
 import org.geowebcache.service.Service;
+import org.geowebcache.util.ServletUtils;
 
 /**
- * Class to convert from Virtual Earth quad keys to the internal
- * representation of a tile.
+ * Class to convert from Virtual Earth quad keys to the internal representation
+ * of a tile.
  */
 public class VEConverter extends Service {
     public static final String SERVICE_VE = "/ve";
-    
+
     private static Log log = LogFactory
             .getLog(org.geowebcache.service.ve.VEConverter.class);
 
     public VEConverter() {
         super(SERVICE_VE);
     }
-    
+
     public String getLayerIdentifier(HttpServletRequest request) {
         return super.getLayersParameter(request);
     }
-    
+
+    public TileRequest getTileRequest(TileLayer tileLayer,
+            HttpServletRequest request) {
+        Map params = request.getParameterMap();
+        String strQuadKey = ServletUtils.stringFromMap(params, "quadkey");
+        String mimeType = ServletUtils.stringFromMap(params, "format");
+
+        int[] gridLoc = VEConverter.convert(strQuadKey);
+
+        return new TileRequest(gridLoc, mimeType, "EPSG:900913");
+    }
+
     /**
-     * Convert a quadkey into the internal representation {x,y,z}
-     * of a grid location
+     * Convert a quadkey into the internal representation {x,y,z} of a grid
+     * location
      * 
      * @param quadKey
      * @return internal representation
      */
-    public static int[] convert(String quadKey, HttpServletResponse response) {
-        char[] quadArray = quadKey.toCharArray();
+    public static int[] convert(String strQuadKey) {
+        char[] quadArray = strQuadKey.toCharArray();
 
         int zoomLevel = quadArray.length;
 
         int extent = (int) Math.pow(2, zoomLevel);
         int yPos = 0;
         int xPos = 0;
-        
+
         // Now we traverse the quadArray from left to right, interpretation
         // 0 1
         // 2 3
@@ -66,30 +81,30 @@ public class VEConverter extends Service {
         //
         for (int i = 0; i < zoomLevel; i++) {
             char curChar = quadArray[i];
-            
+
             // For each round half as much is at stake
             extent = extent / 2;
 
             if (curChar == '0') {
-                //X stays
+                // X stays
                 yPos += extent;
             } else if (curChar == '1') {
                 xPos += extent;
                 yPos += extent;
             } else if (curChar == '2') {
-                //X stays
-                //Y stays
+                // X stays
+                // Y stays
             } else if (curChar == '3') {
                 xPos += extent;
-                //Y stays
+                // Y stays
             } else {
-                log.error("Don't know how to interpret quadKey: " + quadKey);
+                log.error("Don't know how to interpret quadKey: " + strQuadKey);
                 return null;
             }
         }
-        
-        int[] gridLoc = {xPos, yPos, zoomLevel};
-        
+
+        int[] gridLoc = { xPos, yPos, zoomLevel };
+
         return gridLoc;
     }
 }

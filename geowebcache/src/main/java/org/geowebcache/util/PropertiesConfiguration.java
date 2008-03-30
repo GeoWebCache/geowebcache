@@ -32,7 +32,6 @@ import org.geowebcache.layer.wms.WMSLayer;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.io.Resource;
 
 public class PropertiesConfiguration implements Configuration, ApplicationContextAware {
     private static Log log = LogFactory
@@ -49,20 +48,25 @@ public class PropertiesConfiguration implements Configuration, ApplicationContex
 
 	public Map getTileLayers() {
 		// Find all the property files and process each one into a TileLayer
-		Resource resource = context.getResource("classpath:"+this.configDir);
-		
-		File[] propFiles = null; //findPropFiles(configDirH);
-		String test = null;
-		try { 
-        	test = resource.getFile().getAbsolutePath();
-        } catch (IOException ioe) {
-        	ioe.printStackTrace();
-        }
+		//Resource resource = context.getResource(this.configDir);
+		//Resource resource = context.getResource("classpath:./../classes");
+		File[] propFiles = null; //
+		//String test = null;
+		File pfh = null;
+		//File pfh = new File("");
+		//try {
+			//pfh = resource.getFile();
+			pfh = new File(this.configDir);
+			propFiles = findPropFiles(pfh);
+        	//test = propConfigDir.getAbsolutePath();
+        //} catch (IOException ioe) {
+        //	ioe.printStackTrace();
+        //}
         
-        if (propFiles != null) {
+        if (propFiles != null && propFiles.length > 0) {
             log.trace("Found " + propFiles.length + " property files.");
         } else {
-            log.error("Found no property files!");
+            log.error("Found no property files in "+this.configDir+", absolute directory "+pfh.getAbsolutePath());
         }
 
         HashMap layers = new HashMap();
