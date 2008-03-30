@@ -134,7 +134,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         TileResponse tileResponse = layer.getResponse(tileRequest, request.getRequestURI(), response);
         
         // 6) Write response
-        
+        writeData(response, tileResponse);
     }
     
     private Service findService(HttpServletRequest request) {
