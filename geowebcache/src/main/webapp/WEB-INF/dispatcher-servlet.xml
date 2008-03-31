@@ -5,6 +5,7 @@
 	<!-- Add configuration beans here -->
 	<bean id="defaultConfig" class="org.geowebcache.util.PropertiesConfiguration">
 		<constructor-arg type="java.lang.String" value="/home/ak/geowebcache/src/main/resources"/>
+		<constructor-arg type="org.geowebcache.cache.CacheFactory" ref="cacheFactory"/>
 	</bean>
 	
 	<!-- For each configuration bean above, add them below to activate -->
@@ -16,6 +17,25 @@
 	<bean id="geowebcacheDispatcher" class="org.geowebcache.GeoWebCacheDispatcher">
 		<property name="tileLayerDispatcher" ref="tLDispatcher"/>
 	</bean>
+	    
+    <!-- Services, make sure you name the bean the same as the path -->
+    <bean id="serviceWMS" 
+    	class="org.geowebcache.service.wms.WMSConverter"/>
+	<bean id="serviceGMaps"
+		class="org.geowebcache.service.gmaps.GMapsConverter"/>
+	<bean id="serviceVE"
+		class="org.geowebcache.service.ve.VEConverter"/>
+	
+	<!-- Caches and associated Cache Keys -->
+	<bean id="cacheJCS" class="org.geowebcache.cache.jcs.JCSCache">
+		<property name="defaultKeyBeanId"><value>cacheKeyJCS</value></property>
+	</bean>
+	<bean id="cacheKeyJCS" class="org.geowebcache.cache.jcs.JCSKey"/>
+	
+	<bean id="cacheFile" class="org.geowebcache.cache.file.FileCache">
+		<property name="defaultKeyBeanId"><value>cacheKeyFile</value></property>
+	</bean>
+	<bean id="cacheKeyFile" class="org.geowebcache.cache.file.FilePathKey"/>
 	
 	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
 		<property name="alwaysUseFullPath" value="true"/>
@@ -26,12 +46,12 @@
     	</property>
     </bean>
     
-    <!-- Services, make sure you name the bean the same as the path -->
-    <bean id="serviceWMS" 
-    	class="org.geowebcache.service.wms.WMSConverter"/>
-	<bean id="serviceGMaps"
-		class="org.geowebcache.service.gmaps.GMapsConverter"/>
-	<bean id="serviceVE"
-		class="org.geowebcache.service.ve.VEConverter"/>
+    <!-- Cache and CacheKey factories -->
+    <bean id="cacheKeyFactory" class="org.geowebcache.cache.CacheKeyFactory"/>
+    
+	<bean id="cacheFactory" class="org.geowebcache.cache.CacheFactory">
+		<constructor-arg type="org.geowebcache.cache.CacheKeyFactory" ref="cacheKeyFactory"/>
+		<property name="defaultCacheBeanId"><value>cacheFile</value></property>
+	</bean>
 	
 </beans>

@@ -32,6 +32,8 @@ public class JCSCache implements Cache {
             .getLog(org.geowebcache.cache.jcs.JCSCache.class);
 
     private static final String REGION_NAME = "geowebcache";
+    
+    private String defaultKeyBeanId = null;
 
     private JCS jcscache;
 
@@ -53,6 +55,10 @@ public class JCSCache implements Cache {
         return singleton_inst;
     }
 
+	public void setUp(String cachePrefix) throws CacheException {
+		// Do nothing
+	}
+	
     public void init(Properties props) {
         // nothing to do
     }
@@ -131,9 +137,12 @@ public class JCSCache implements Cache {
             throw new CacheException(npe);
         }
     }
-
-    public String getDefaultCacheKeyName() {
-        return "org.geowebache.cache.jcs.JCSKey";
+    
+    public void setDefaultKeyBeanId(String defaultKeyBeanId) {
+    	this.defaultKeyBeanId = defaultKeyBeanId;
     }
 
+    public String getDefaultKeyBeanId() {
+    	return this.defaultKeyBeanId;
+    }
 }

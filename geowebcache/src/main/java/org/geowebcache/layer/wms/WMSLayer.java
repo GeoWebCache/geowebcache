@@ -52,6 +52,8 @@ public class WMSLayer implements TileLayer {
     Cache cache;
 
     CacheKey cacheKey;
+    
+    String cachePrefix = null;
 
     ImageMime[] mimes = null;
 
@@ -60,10 +62,10 @@ public class WMSLayer implements TileLayer {
     boolean debugHeaders = false;
 
     Integer cacheLockWait = -1;
-
-    public WMSLayer(String layerName, Properties props) throws CacheException {
+    
+    public WMSLayer(String layerName, Properties props, CacheFactory cacheFactory) throws CacheException {
         name = layerName;
-        setParametersFromProperties(props);
+        setParametersFromProperties(props, cacheFactory);
     }
 
     /**
@@ -139,22 +141,6 @@ public class WMSLayer implements TileLayer {
         // All ok
         return null;
     }
-    
-
-    /**
-     * Wrapper for getData() below
-     * 
-     * @param wmsparams
-     * @param response
-     * @return
-     * @throws IOException
-     */
-    //public byte[] getData(WMSParameters wmsParams, HttpServletResponse response)
-    //throws IOException {
-    //    int[] gridLoc = profile.gridCalc.gridLocation(wmsParams.getBBOX());
-    //    
-    //    return getData(gridLoc, wmsParams.getImageMime(), wmsParams.toString(), response);
-    //}
 
     /**
      * The main function
@@ -210,8 +196,8 @@ public class WMSLayer implements TileLayer {
         /** ****************** Acquire lock ******************* */
         waitForQueue(metaGridLoc);
 
-        Object ck = cacheKey.createKey(gridLoc[0], gridLoc[1], gridLoc[2],
-                mime.getFileExtension());
+        Object ck = cacheKey.createKey(cachePrefix, gridLoc[0], gridLoc[1], gridLoc[2],
+                getProjection(), mime.getFileExtension());
 
         if (debugHeaders) {
             debugHeadersStr = "grid-location:" + gridLoc[0] + "," + gridLoc[1]
@@ -339,7 +325,7 @@ public class WMSLayer implements TileLayer {
         for (int i = 0; i < gridPositions.length; i++) {
             int[] gridPos = gridPositions[i];
 
-            Object ck = cacheKey.createKey(gridPos[0], gridPos[1], gridPos[2],
+            Object ck = cacheKey.createKey(cachePrefix, gridPos[0], gridPos[1], gridPos[2], getProjection(),
                     imageFormat.getFileExtension());
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -475,27 +461,39 @@ public class WMSLayer implements TileLayer {
      * @param props
      * @throws CacheException
      */
-    private void setParametersFromProperties(Properties props)
+    private void setParametersFromProperties(Properties props, CacheFactory cacheFactory)
             throws CacheException {
         profile = new WMSLayerProfile(this.name, props);
 
         // Cache and CacheKey
-        String propCachetype = props.getProperty("cachetype");
-        if (propCachetype != null) {
-            cache = CacheFactory.getCache(propCachetype, props);
+        String propCacheBeanId = props.getProperty("cachebeanid");
+        if (propCacheBeanId != null) {
+            cache = cacheFactory.getCache(propCacheBeanId);
+            if(cache == null) {
+            	log.error("Unable to create cache for bean id " + propCacheBeanId);
+            }
         } else {
-            cache = CacheFactory.getCache(
-                    "org.geowebcache.cache.file.FileCache", null);
+            cache = cacheFactory.getDefaultCache();
         }
 
-        String propCacheKeytype = props.getProperty("cachekeytype");
-        if (propCacheKeytype == null) {
-            cacheKey = CacheKeyFactory.getCacheKey(cache
-                    .getDefaultCacheKeyName(), name);
+        String propCacheKeyBeanId = props.getProperty("cachebeanid");
+        if (propCacheKeyBeanId == null) {
+        	cacheKey =  cacheFactory.getCacheKeyFactory().getCacheKey(cache.getDefaultKeyBeanId());
         } else {
-            cacheKey = CacheKeyFactory.getCacheKey(propCacheKeytype, name);
+        	cacheKey = cacheFactory.getCacheKeyFactory().getCacheKey(propCacheKeyBeanId);
         }
 
+        String propCachePrefix = props.getProperty("cacheprefix");
+        if (propCachePrefix == null) {
+        	cachePrefix = name;
+        	log.warn("cachePrefix not defined for layer " + name + ", using name instead");
+        } else {
+        	cachePrefix = propCachePrefix;
+        }
+        
+        // Initialize the cache
+        cache.setUp(cachePrefix);
+        
         // Check whether the configuration specifies what MIME types are legal
         String propImageMIME = props.getProperty("imagemimes");
         if (propImageMIME != null) {

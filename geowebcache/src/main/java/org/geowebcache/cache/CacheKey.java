@@ -24,12 +24,11 @@ package org.geowebcache.cache;
  */
 public interface CacheKey {
     static int KEY_FILE_PATH = 1;
-
     static int KEY_SERIALIZABLE_OBJECT = 2;
 
-    public void init(String prefix);
+    public void init();
 
-    public Object createKey(int x, int y, int z, String format);
+    public Object createKey(String prefix, int x, int y, int z, String SRS, String format);
 
     int getType();
 }

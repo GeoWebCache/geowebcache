@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.cache.CacheException;
+import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -37,12 +38,15 @@ public class PropertiesConfiguration implements Configuration, ApplicationContex
     private static Log log = LogFactory
             .getLog(org.geowebcache.util.PropertiesConfiguration.class);
 
-    //private File configDirH;
     private String configDir = null;
+    
     private ApplicationContext context;
 
-    public PropertiesConfiguration (String configDir) {
+    private CacheFactory cacheFactory = null;
+    
+    public PropertiesConfiguration (String configDir, CacheFactory cacheFactory) {
     	this.configDir = configDir;
+    	this.cacheFactory = cacheFactory;
     }
     
 
@@ -87,7 +91,7 @@ public class PropertiesConfiguration implements Configuration, ApplicationContex
             // TODO need support for other types of layers
             WMSLayer layer = null;
             try {
-                layer = new WMSLayer(layerName, props);
+                layer = new WMSLayer(layerName, props, cacheFactory);
             } catch (CacheException ce) {
                 log.trace("CacheException, failed to add layer " + layerName);
                 ce.printStackTrace();

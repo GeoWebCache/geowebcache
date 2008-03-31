@@ -17,38 +17,69 @@
  */
 package org.geowebcache.cache;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.service.Service;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-public class CacheFactory {
+public class CacheFactory implements ApplicationContextAware {
     private static Log log = LogFactory
             .getLog(org.geowebcache.cache.CacheFactory.class);
-
-    public static Cache getCache(String cachetype, Properties props)
-            throws CacheException {
-        Cache cache = null;
-        if (log.isTraceEnabled()) {
-            log.trace("Using cache class: " + cachetype);
-        }
-        try {
-            Class cache_class = Class.forName(cachetype);
-            cache = (Cache) cache_class.newInstance();
-            cache.init(props);
-
-        } catch (ClassNotFoundException cnf) {
-            log.fatal("Could not get cache class: " + cachetype, cnf);
-        } catch (IllegalAccessException iae) {
-            log.fatal("Could not access cache class: " + cachetype, iae);
-        } catch (InstantiationException ie) {
-            log.fatal("Could not create instance of cache class: " + cachetype,
-                    ie);
-        }
-
-        if (log.isTraceEnabled()) {
-            log.trace("Created cache: " + cache.getClass());
-        }
-        return cache;
+    
+    private ApplicationContext context = null;
+    
+    private HashMap caches = null;
+    
+    private String defaultCacheBeandId = null;
+    
+    private CacheKeyFactory cacheKeyFactory = null;
+    
+    public CacheFactory(CacheKeyFactory cacheKeyFactory) {
+    	this.cacheKeyFactory = cacheKeyFactory;
     }
+    
+    public Cache getCache(String cacheBeanId) {
+        if(caches == null) {
+        	loadCaches();
+        }
+    	return (Cache) caches.get(cacheBeanId);
+    }
+    
+    public Cache getDefaultCache() {
+        if(caches == null) {
+        	loadCaches();
+        }
+        return (Cache) caches.get(defaultCacheBeandId);
+    }
+    
+    private void loadCaches() {
+        Map cacheBeans = context.getBeansOfType(Cache.class);
+        Iterator beanIter = cacheBeans.keySet().iterator();
+        
+        caches = new HashMap();
+        while(beanIter.hasNext()) {
+        	String beanId = (String) beanIter.next();
+            Cache aCache = (Cache) cacheBeans.get(beanId);
+            caches.put(beanId, aCache);
+        }
+    }
+    
+    public void setDefaultCacheBeanId(String defaultCacheBeanId) {
+    	this.defaultCacheBeandId = defaultCacheBeanId;
+    }
+    
+   public CacheKeyFactory getCacheKeyFactory() {
+	   return this.cacheKeyFactory;
+   }
+    
+	public void setApplicationContext(ApplicationContext arg0) throws BeansException {
+		context = arg0;
+	}
 }

@@ -22,15 +22,14 @@ import java.io.File;
 import org.geowebcache.cache.CacheKey;
 
 public class FilePathKey implements CacheKey {
-    String layerPrefix;
-
-    public void init(String prefix) {
-        layerPrefix = prefix;
+    public void init() {
     }
 
-    public String createKey(int x, int y, int z, String format) {
-        String filename = layerPrefix + File.separator + zeroPadder(z, 2)
-                + File.separator + zeroPadder(x / 1000000, 3) + File.separator
+    public String createKey(String prefix, int x, int y, int z, String SRS, String format) {
+    	SRS = SRS.replace(':', '_');
+        String filename = prefix + File.separator + SRS + File.separator
+        		+ zeroPadder(z, 2) + File.separator 
+        		+ zeroPadder(x / 1000000, 3) + File.separator
                 + zeroPadder((x / 1000) % 1000, 3) + File.separator
                 + zeroPadder(x % 1000, 3) + File.separator
                 + zeroPadder(y / 1000000, 3) + File.separator

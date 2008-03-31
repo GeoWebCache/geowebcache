@@ -17,35 +17,49 @@
  */
 package org.geowebcache.cache;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-public class CacheKeyFactory {
+public class CacheKeyFactory implements ApplicationContextAware {
     private static Log log = LogFactory
             .getLog(org.geowebcache.cache.CacheKeyFactory.class);
 
-    public static CacheKey getCacheKey(String cachekeytype, String prefix) {
-        CacheKey cachekey = null;
-        if (log.isTraceEnabled()) {
-            log.trace("Using cache class: " + cachekeytype);
-        }
-        try {
-            Class cache_key_class = Class.forName(cachekeytype);
-            cachekey = (CacheKey) cache_key_class.newInstance();
-            cachekey.init(prefix);
-
-        } catch (ClassNotFoundException cnf) {
-            log.fatal("Could not get cache key class: " + cachekeytype, cnf);
-        } catch (IllegalAccessException iae) {
-            log.fatal("Could not access cache key class: " + cachekeytype, iae);
-        } catch (InstantiationException ie) {
-            log.fatal("Could not create instance of cache key class: "
-                    + cachekeytype, ie);
-        }
-
-        if (log.isTraceEnabled()) {
-            log.trace("Created cache key: " + cachekey.getClass());
-        }
-        return cachekey;
+    
+    private ApplicationContext context = null;
+    
+    private HashMap cacheKeys = null;
+    
+    public CacheKeyFactory() {
+    	
     }
+    
+    public CacheKey getCacheKey(String cacheKeyBeanId) {
+        if(cacheKeys == null) {
+        	loadCacheKeys();
+        }
+    	return (CacheKey) cacheKeys.get(cacheKeyBeanId);
+    }
+        
+    private void loadCacheKeys() {
+        Map cacheBeans = context.getBeansOfType(CacheKey.class);
+        Iterator beanIter = cacheBeans.keySet().iterator();
+        
+        cacheKeys = new HashMap();
+        while(beanIter.hasNext()) {
+        	String beanId = (String) beanIter.next();
+            CacheKey aCacheKey = (CacheKey) cacheBeans.get(beanId);
+            cacheKeys.put(beanId, aCacheKey);
+        }
+    }
+    
+	public void setApplicationContext(ApplicationContext arg0) throws BeansException {
+		context = arg0;
+	}
 }

@@ -20,13 +20,15 @@ package org.geowebcache.cache;
 import java.util.Properties;
 
 public interface Cache {
+	public void setDefaultKeyBeanId(String defaultKeyBeanId);
+	
     public void init(Properties props) throws CacheException;
 
     public void destroy();
 
-    public void setUp() throws CacheException;
+    public void setUp(String cachePrefix) throws CacheException;
 
-    public String getDefaultCacheKeyName();
+    public String getDefaultKeyBeanId();
 
     /**
      * 

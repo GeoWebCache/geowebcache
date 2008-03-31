@@ -22,32 +22,36 @@ import java.io.Serializable;
 import org.geowebcache.cache.CacheKey;
 
 public class JCSKey implements Serializable, CacheKey {
-    private int prefix;
+    private String prefix;
 
     private int x;
 
     private int y;
 
     private int z;
+    
+    private String SRS;
 
     private String format;
 
     public JCSKey() {
     }
 
-    private JCSKey(int x, int y, int z, String format) {
-        this.x = x;
+    private JCSKey(String prefix, int x, int y, int z, String SRS, String format) {
+        this.prefix = prefix;
+    	this.x = x;
         this.y = y;
         this.z = z;
+        this.SRS = SRS;
         this.format = format;
     }
 
-    public void init(String prefix) {
-        this.prefix = prefix.hashCode();
+    public void init() {
+    	// Do nothing
     }
 
-    public JCSKey createKey(int x, int y, int z, String format) {
-        return new JCSKey(x, y, z, format);
+    public JCSKey createKey(String prefix, int x, int y, int z, String SRS, String format) {
+        return new JCSKey(prefix, x, y, z, SRS, format);
     }
 
     public int getType() {
