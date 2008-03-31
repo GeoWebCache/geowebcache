@@ -35,6 +35,7 @@ import org.geowebcache.layer.TileRequest;
 import org.geowebcache.layer.TileResponse;
 import org.geowebcache.service.Service;
 import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
 
@@ -48,7 +49,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     public static final String TYPE_SERVICE = "/service";
     public static final String TYPE_SEED = "/seed";
     
-    ApplicationContext context = null;
+    WebApplicationContext context = null;
     
     private TileLayerDispatcher tileLayerDispatcher = null;
     private HashMap services = null;
@@ -92,11 +93,15 @@ public class GeoWebCacheDispatcher extends AbstractController {
             HttpServletRequest request, HttpServletResponse response
             ) throws Exception {
         // Basics
-        context = getApplicationContext();
+        context = (WebApplicationContext) getApplicationContext();
         String requestType = new String(request.getServletPath());
         
         if(requestType.equalsIgnoreCase(TYPE_SERVICE)) {
-            handleServiceRequest(request, response);
+        	try {
+        		handleServiceRequest(request, response);
+        	} catch (Exception e) {
+        		writeError(response, 400, e.getMessage());
+        	}
         } else if(requestType.equalsIgnoreCase(TYPE_SEED)) {
             //handleSeedRequest(request, response);
             writeError(response, 400, "Seeding is currently not supported");

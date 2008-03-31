@@ -4,13 +4,21 @@
 <beans>
 	<!-- Add configuration beans here -->
 	<bean id="defaultConfig" class="org.geowebcache.util.PropertiesConfiguration">
-		<constructor-arg type="java.lang.String" value="/home/ak/geowebcache/src/main/resources"/>
 		<constructor-arg type="org.geowebcache.cache.CacheFactory" ref="cacheFactory"/>
+		<!-- 
+			By default GeoWebCache will look for .properties 
+			files in the resources folder, below oare some examples.
+		-->
+		<!-- property name="absolutePath"><value>/etc/geowebcache/conf</value></property -->
+		<!-- property name="absolutePath"><value>c:\geowebcache\conf</value></property -->
+		<!-- property name="relativePath"><value>resources</value></property -->
+		<!-- property name="relativePath"><value>resources</value></property -->	
 	</bean>
 	
 	<!-- For each configuration bean above, add them below to activate -->
 	<bean id="tLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
 		<property name="config" ref="defaultConfig"/>
+		<!-- Add additional Configuration beans here -->
 	</bean>
 				
 	<!-- controller for handling all incoming requests -->
