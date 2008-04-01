@@ -40,8 +40,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
 
 /**
- * This is the main router for requests
- * 
+ * This is the main router for requests of all types.
  */
 public class GeoWebCacheDispatcher extends AbstractController {
     private static Log log = LogFactory.getLog(org.geowebcache.GeoWebCacheDispatcher.class);
@@ -59,9 +58,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
     }
     
     /**
-     * Setter method for Spring.
+     * Setter method for Spring. TileLayerDispatcher is a class for
+     * looking up TileLayer objects based on the name of the layer.
      * 
-     * @param tileLayerDispatcher
+     * @param tileLayerDispatcher a class for looking up TileLayer objects
      */
     public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {
     	this.tileLayerDispatcher = tileLayerDispatcher;
@@ -71,7 +71,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * Services convert HTTP requests into the internal grid representation
      * and specify what layer the response should come from.
      * 
-     * Unlike other objects, they are looked up on startup.
+     * The classpath is scanned for objects extending Service, thereby
+     * making it easy to add new services.
      */
     private void loadServices() {
         Map serviceBeans = context.getBeansOfType(Service.class);
@@ -82,12 +83,12 @@ public class GeoWebCacheDispatcher extends AbstractController {
             services.put(aService.getPathName(), aService);
         }
     }
-    
     /**
      * Spring function for MVC, this is the entry point for the application.
      * 
      * If a tile is requested the request will be handed off to 
      * handleServiceRequest.
+     * 
      */
     protected ModelAndView handleRequestInternal(
             HttpServletRequest request, HttpServletResponse response
@@ -116,9 +117,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * This is the main method for handling service requests.
      * See comments in the code.
      * 
-     * @param request
-     * @param response
-     * @throws Exception
+     * @param request 
+     * @param response 
+     * @throws Exception 
      */
     private void handleServiceRequest(HttpServletRequest request, 
             HttpServletResponse response) throws Exception {
@@ -142,6 +143,13 @@ public class GeoWebCacheDispatcher extends AbstractController {
         writeData(response, tileResponse);
     }
     
+    /**
+     * Helper function for looking up the service that should handle
+     * the request. 
+     * 
+     * @param request full HttpServletRequest
+     * @return
+     */
     private Service findService(HttpServletRequest request) {
         if(this.services == null)
             loadServices();
@@ -154,7 +162,15 @@ public class GeoWebCacheDispatcher extends AbstractController {
         
         return (Service) services.get(serviceType);
     }
-        
+    
+    /**
+     * Wrapper method for writing an error back to the client,
+     * and logging it at the same time. 
+     * 
+     * @param response where to write to
+     * @param httpCode the HTTP code to provide
+     * @param errorMsg the actual error message, human readable
+     */
     private void writeError(HttpServletResponse response, 
             int httpCode, String errorMsg) {
         
@@ -171,6 +187,14 @@ public class GeoWebCacheDispatcher extends AbstractController {
         log.error(errorMsg);
     }
     
+    /**
+     * Happy ending, sets the headers and writes the response back
+     * to the client.
+     * 
+     * @param response where to write to
+     * @param tileResponse the response with the data and MIME type
+     * @throws IOException
+     */
     private void writeData(HttpServletResponse response, 
             TileResponse tileResponse) throws IOException {
 
