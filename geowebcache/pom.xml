@@ -8,17 +8,36 @@
   <name>geowebcache</name>
   <url>http://geowebcache.org</url>
 
-  <repositories>
+  <repositories>  
+  <repository>
+	<id>geotools</id>
+	<name>geotools</name>
+	<url>http://maven.geotools.fr/repository/</url>
+	<snapshots>
+	  <enabled>false</enabled>
+	</snapshots>
+	<layout>legacy</layout>
+  </repository>
+
     <repository>
       <id>refractions</id>
       <name>refractions</name>
       <url>http://lists.refractions.net/m2</url>
       <snapshots>
-	<enabled>false</enabled>
+		<enabled>false</enabled>
       </snapshots>
     </repository>
+    
   </repositories>  
   <dependencies>
+   
+   
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt2-wms</artifactId>
+      <version>2.5-SNAPSHOT</version>
+    </dependency>
+   
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
@@ -76,6 +95,18 @@
       <groupId>javax.media</groupId>
       <artifactId>jai_imageio</artifactId>
       <version>1.1</version>
+    </dependency>
+
+    <dependency>
+		<groupId>jdom</groupId>
+        <artifactId>jdom</artifactId>
+        <version>1.0</version>
+        <exclusions>
+        	<exclusion>
+        		<groupId>xerces</groupId>
+   				<artifactId>xerces</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
 
     <!-- Spring dependencies -->
