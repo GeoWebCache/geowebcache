@@ -20,6 +20,7 @@ package org.geowebcache;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -34,6 +35,7 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.layer.TileResponse;
 import org.geowebcache.service.Service;
+import org.mortbay.jetty.EofException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
@@ -101,6 +103,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         	try {
         		handleServiceRequest(request, response);
         	} catch (Exception e) {
+        		e.printStackTrace();
         		writeError(response, 400, e.getMessage());
         	}
         } else if(requestType.equalsIgnoreCase(TYPE_SEED)) {
@@ -182,11 +185,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
         
         log.error(errorMsg);
-        
+            
         try {
         	OutputStream os = response.getOutputStream();
         	os.write(errorMsg.getBytes());
-        	os.flush();
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
@@ -216,8 +218,14 @@ public class GeoWebCacheDispatcher extends AbstractController {
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType(tileResponse.mimeType);
         response.setContentLength(tileResponse.data.length);
-        OutputStream os = response.getOutputStream();
-        os.write(tileResponse.data);
-        os.flush();
+        try {
+        	OutputStream os = response.getOutputStream();
+        	os.write(tileResponse.data);
+        	os.flush();
+        } catch (EofException eof) {
+        	log.error("Caught org.mortbay.jetty.EofException");
+        } catch (SocketException se) {
+        	log.error("Caught java.net.SocketException");
+        }
     }
 }

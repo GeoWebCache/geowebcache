@@ -214,10 +214,10 @@ public class FileCache implements Cache {
 
 		String msgPrefix = null;
 		int iVar = 0;
-		for (; iVar < varStrs.length && defaultCachePrefix == null; iVar++) {
+		for (int i =0; i < varStrs.length && defaultCachePrefix == null; i++) {
 			for (int j = 0; j < typeStrs.length && defaultCachePrefix == null; j++) {
 				String value = null;
-				String varStr = new String(varStrs[iVar]);
+				String varStr = new String(varStrs[i]);
 				String typeStr = typeStrs[j];
 
 				switch (j) {
@@ -257,6 +257,7 @@ public class FileCache implements Cache {
 
 				// Sweet, we can work with this
 				this.defaultCachePrefix = value;
+				iVar = i;
 			}
 		}
 		if (this.defaultCachePrefix == null) {

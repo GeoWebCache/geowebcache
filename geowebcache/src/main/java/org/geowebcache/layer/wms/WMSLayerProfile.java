@@ -35,6 +35,8 @@ public class WMSLayerProfile {
     
     public static final String WMS_BBOX = "bbox";
     
+    public static final String WMS_METATILING = "metatiling";
+    
     public static final int CACHE_NEVER = 0;
 
     public static final int CACHE_VALUE_UNSET = -1;
@@ -141,7 +143,7 @@ public class WMSLayerProfile {
             zoomStop = Integer.parseInt(propZoomStop);
         }
 
-        String propMetatiling = props.getProperty("metatiling");
+        String propMetatiling = props.getProperty(WMS_METATILING);
         if (propMetatiling != null) {
             String[] metatiling = propMetatiling.split("x");
             if (metatiling != null && metatiling.length == 2) {

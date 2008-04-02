@@ -28,13 +28,16 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
 	private String url = null;
 
-	private String mimeTypes;
+	private String mimeTypes = null;
+	
+	private String metaTiling = null;
 
-	public GetCapabilitiesConfiguration(CacheFactory cacheFactory, String url,
-			String mimeTypes) {
+	public GetCapabilitiesConfiguration(CacheFactory cacheFactory, 
+			String url, String mimeTypes, String metaTiling) {
 		this.cacheFactory = cacheFactory;
 		this.url = url;
 		this.mimeTypes = mimeTypes;
+		this.metaTiling = metaTiling;
 
 		log.info("Constructing from url " + url);
 	}
@@ -126,7 +129,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
 		props.setProperty(WMSLayerProfile.WMS_SRS, "EPSG:4326");
 		props.setProperty(WMSLayerProfile.WMS_BBOX, bboxStr);
 
-		if (this.mimeTypes == null || this.mimeTypes.isEmpty()) {
+		if (this.mimeTypes == null || this.mimeTypes.length() == 0) {
 			props.setProperty(WMSLayer.WMS_MIMETYPES, "image/png");
 		} else {
 			props.setProperty(WMSLayer.WMS_MIMETYPES, this.mimeTypes);
@@ -134,6 +137,11 @@ public class GetCapabilitiesConfiguration implements Configuration {
 		log.debug("Creating new layer " + name + " with properties: "
 				+ props.toString());
 
+		if(this.metaTiling == null || this.metaTiling.length() == 0) {
+			props.setProperty(WMSLayerProfile.WMS_METATILING, "3x3");
+		} else {
+			props.setProperty(WMSLayerProfile.WMS_METATILING, metaTiling);
+		}
 		WMSLayer layer = new WMSLayer(name, props, this.cacheFactory);
 
 		return layer;
