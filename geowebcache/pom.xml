@@ -22,7 +22,7 @@
   <repository>
 	<id>geotools</id>
 	<name>geotools</name>
-	<url>http://maven.geotools.fr/repository/</url>
+	<url>http://maven.geotools.fr/repository</url>
 	<snapshots>
 	  <enabled>false</enabled>
 	</snapshots>
