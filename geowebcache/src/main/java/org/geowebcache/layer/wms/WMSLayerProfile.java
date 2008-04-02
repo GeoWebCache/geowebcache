@@ -29,6 +29,12 @@ public class WMSLayerProfile {
     private static Log log = LogFactory
             .getLog(org.geowebcache.layer.wms.WMSLayerProfile.class);
 
+    public static final String WMS_URL = "wmsurl";
+    
+    public static final String WMS_SRS = "srs";
+    
+    public static final String WMS_BBOX = "bbox";
+    
     public static final int CACHE_NEVER = 0;
 
     public static final int CACHE_VALUE_UNSET = -1;
@@ -88,7 +94,7 @@ public class WMSLayerProfile {
     protected long expireCache = CACHE_NEVER_EXPIRE;
 
     /**
-     * Only for testin purposes
+     * Only for testing purposes
      */
     public WMSLayerProfile() {
 
@@ -105,7 +111,7 @@ public class WMSLayerProfile {
     }
 
     private void setParametersFromProperties(Properties props) {
-        String propSrs = props.getProperty("srs");
+        String propSrs = props.getProperty(WMS_SRS);
         if (propSrs != null) {
             srs = propSrs;
         }
@@ -165,7 +171,7 @@ public class WMSLayerProfile {
         }
 
         // The following depends on metatiling and grid
-        String propBbox = props.getProperty("bbox");
+        String propBbox = props.getProperty(WMS_BBOX);
         if (propBbox != null) {
             BBOX layerBounds = new BBOX(propBbox);
             log.info("Specified bbox " + layerBounds.toString() + ".");
@@ -239,7 +245,7 @@ public class WMSLayerProfile {
         	vendorParameters = propVendorParameters;
         }
         
-        String propUrl = props.getProperty("wmsurl");
+        String propUrl = props.getProperty(WMS_URL);
         if (propUrl != null) {
             wmsURL = propUrl.split(",");
         }

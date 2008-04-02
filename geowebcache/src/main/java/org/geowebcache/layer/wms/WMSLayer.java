@@ -45,6 +45,8 @@ public class WMSLayer implements TileLayer {
     private static Log log = LogFactory
             .getLog(org.geowebcache.layer.wms.WMSLayer.class);
 
+    public static final String WMS_MIMETYPES = "mimetypes";
+    
     String name;
 
     WMSLayerProfile profile;
@@ -495,7 +497,7 @@ public class WMSLayer implements TileLayer {
         cache.setUp(cachePrefix);
         
         // Check whether the configuration specifies what MIME types are legal
-        String propImageMIME = props.getProperty("imagemimes");
+        String propImageMIME = props.getProperty("mimetypes");
         if (propImageMIME != null) {
             String[] mimeStrs = propImageMIME.split(",");
             mimes = new ImageMime[mimeStrs.length];
