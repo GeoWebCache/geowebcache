@@ -19,15 +19,15 @@
  </properties>
 
   <repositories>  
-  <repository>
-	<id>geotools</id>
-	<name>geotools</name>
-	<url>http://maven.geotools.fr/repository</url>
-	<snapshots>
-	  <enabled>false</enabled>
-	</snapshots>
-	<layout>legacy</layout>
-  </repository>
+    <repository>
+      <id>geotools</id>
+      <name>geotools</name>
+      <url>http://maven.geotools.fr/repository</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <layout>legacy</layout>
+    </repository>
     <repository>
       <id>geotools</id>
       <name>geotools</name>
@@ -45,7 +45,23 @@
         <enabled>true</enabled>
       </snapshots>
     </repository>
+    <repository>
+      <id>opengeo</id>
+      <name>opengeo</name>
+      <url>http://repo.opengeo.org</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
   </repositories>  
+
+  <distributionManagement>
+    <repository>
+      <id>opengeo</id>
+      <name>opengeo</name>
+      <url>dav:http://repo.opengeo.org</url>
+    </repository>
+  </distributionManagement>
 
   <dependencies>
 
@@ -245,7 +261,15 @@
       </plugin>
 
     </plugins>
-    
+
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav</artifactId>
+        <version>1.0-beta-2</version>
+      </extension>
+    </extensions>
+
     <finalName>geowebcache</finalName>
     
   </build>
