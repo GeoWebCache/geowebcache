@@ -61,12 +61,13 @@ public class FileCache implements Cache {
 			return;
 		} else {
 			if (!path.exists()) {
-				if (path.mkdirs()) {
-					log
-							.info(cachePrefix
-									+ " did not exist, have been created.");
-					return;
-				}
+				//if (path.mkdirs()) {
+				//	log
+				//			.info(cachePrefix
+				//					+ " did not exist, have been created.");
+				//	return;
+				//}
+				log.error("Would really like to create :" +path.getAbsolutePath());
 			}
 		}
 

@@ -27,7 +27,7 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.cache.CacheException;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.springframework.beans.BeansException;
@@ -42,9 +42,9 @@ public class PropertiesConfiguration implements Configuration,
 			.getLog(org.geowebcache.util.PropertiesConfiguration.class);
 
 	private String absPath = null;
-	
+
 	private String relPath = null;
-	
+
 	private File configDirH = null;
 
 	private WebApplicationContext context;
@@ -55,11 +55,11 @@ public class PropertiesConfiguration implements Configuration,
 		this.cacheFactory = cacheFactory;
 	}
 
-	public Map getTileLayers() {
-		if(configDirH == null) {
+	public Map getTileLayers() throws GeoWebCacheException {
+		if (configDirH == null) {
 			determineConfigDirH();
 		}
-		
+
 		// Find all the property files and process each one into a TileLayer
 		File[] propFiles = findPropFiles(configDirH);
 
@@ -88,13 +88,7 @@ public class PropertiesConfiguration implements Configuration,
 			log.trace("Adding layer " + layerName);
 
 			// TODO need support for other types of layers
-			WMSLayer layer = null;
-			try {
-				layer = new WMSLayer(layerName, props, cacheFactory);
-			} catch (CacheException ce) {
-				log.trace("CacheException, failed to add layer " + layerName);
-				ce.printStackTrace();
-			}
+			WMSLayer layer = new WMSLayer(layerName, props, cacheFactory);
 
 			if (layer != null) {
 				layers.put(layerName, layer);
@@ -108,15 +102,16 @@ public class PropertiesConfiguration implements Configuration,
 			configDirH = new File(absPath);
 			return;
 		}
-		
-		if(relPath == null) {
-			log.warn("No configuration directory was specified, reverting to default: ");
+
+		if (relPath == null) {
+			log
+					.warn("No configuration directory was specified, reverting to default: ");
 			relPath = ".";
 		}
-		
-		ServletContextResource servResource = 
-			new ServletContextResource(context.getServletContext(), relPath);
-		
+
+		ServletContextResource servResource = new ServletContextResource(
+				context.getServletContext(), relPath);
+
 		try {
 			configDirH = servResource.getFile();
 		} catch (IOException ioe) {
@@ -126,11 +121,13 @@ public class PropertiesConfiguration implements Configuration,
 		}
 		log.warn("Configuration directory set to: "
 				+ configDirH.getAbsolutePath());
-		
-		if(! configDirH.exists() || ! configDirH.canRead()) {
-			log.error(configDirH.getAbsoluteFile() + " cannot be read or does not exist!");
+
+		if (!configDirH.exists() || !configDirH.canRead()) {
+			log.error(configDirH.getAbsoluteFile()
+					+ " cannot be read or does not exist!");
 		}
 	}
+
 	/**
 	 * Find all the .properties files in the configuration file directory.
 	 * 

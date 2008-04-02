@@ -6,6 +6,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.cache.CacheException;
 import org.geowebcache.util.Configuration;
 
 public class TileLayerDispatcher {
@@ -22,7 +24,14 @@ public class TileLayerDispatcher {
 	}
 
 	public void setConfig(Configuration config) {
-		Map configLayers = config.getTileLayers();
+		Map configLayers = null;
+		try {
+			configLayers = config.getTileLayers();
+		} catch (GeoWebCacheException gwcce) {
+			log.error("Failed to add layers from " + config.getIdentifier());
+			 gwcce.printStackTrace();
+		}
+		
 		log.info("Adding layers from " + config.getIdentifier());
 		if(configLayers != null && configLayers.size() > 0 ){
 			Iterator iter = configLayers.keySet().iterator();

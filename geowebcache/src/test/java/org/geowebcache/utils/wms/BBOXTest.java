@@ -15,9 +15,10 @@ public class BBOXTest extends TestCase {
     }
 
     /**
-     * GetCapabilitiesConfiguration is dependent on the toString
-     * function, this verifies that this functions output remains
-     * as expected.
+     * Verifies that this functions output remains
+     * as expected, since we communicate a lot using strings.
+     * 
+     * Ff not you should figure out where it is used.
      *  
      * @throws Exception
      */

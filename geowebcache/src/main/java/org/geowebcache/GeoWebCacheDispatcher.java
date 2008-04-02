@@ -177,14 +177,15 @@ public class GeoWebCacheDispatcher extends AbstractController {
         response.setContentType("text/plain");
         response.setStatus(httpCode);
         
+        log.error(errorMsg);
+        
         try {
             Writer errorWriter = response.getWriter();
             errorWriter.write(errorMsg);
             errorWriter.close();
         } catch (IOException ioe) {
-            // Do nothing at this point
+            ioe.printStackTrace();
         }
-        log.error(errorMsg);
     }
     
     /**
