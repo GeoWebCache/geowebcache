@@ -19,7 +19,9 @@ package org.geowebcache.cache;
 
 import java.util.Properties;
 
-public interface Cache {
+import org.springframework.context.ApplicationContextAware;
+
+public interface Cache extends ApplicationContextAware {
 	public void setDefaultKeyBeanId(String defaultKeyBeanId);
 	
     public void init(Properties props) throws CacheException;
@@ -29,6 +31,8 @@ public interface Cache {
     public void setUp(String cachePrefix) throws CacheException;
 
     public String getDefaultKeyBeanId();
+    
+    public String getDefaultPrefix(String param) throws CacheException;
 
     /**
      * 

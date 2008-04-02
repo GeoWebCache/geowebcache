@@ -487,10 +487,14 @@ public class WMSLayer implements TileLayer {
 
         String propCachePrefix = props.getProperty("cacheprefix");
         if (propCachePrefix == null) {
-        	cachePrefix = name;
-        	log.warn("cachePrefix not defined for layer " + name + ", using name instead");
+        	String sanitizedName = name.replace(':', '_');
+        	cachePrefix = cache.getDefaultPrefix(sanitizedName);
+        	
+        	log.warn("cachePrefix not defined for layer " + name 
+        			+ ", using default prefifx and name instead: " + cachePrefix);
         } else {
         	cachePrefix = propCachePrefix;
+        	log.info("Using cache prefix " + cachePrefix + " for layer " + name);
         }
         
         // Initialize the cache

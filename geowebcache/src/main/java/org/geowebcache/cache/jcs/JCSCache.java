@@ -25,6 +25,9 @@ import org.apache.jcs.JCS;
 import org.apache.jcs.engine.behavior.IElementAttributes;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.WebApplicationContext;
 
 public class JCSCache implements Cache {
 
@@ -36,6 +39,8 @@ public class JCSCache implements Cache {
     private String defaultKeyBeanId = null;
 
     private JCS jcscache;
+    
+    private WebApplicationContext context = null;
 
     // Make this class a singleton to allow Cache interface methods to be
     // public
@@ -138,6 +143,10 @@ public class JCSCache implements Cache {
         }
     }
     
+    public String getDefaultPrefix(String param) {
+    	return param;
+    }
+    
     public void setDefaultKeyBeanId(String defaultKeyBeanId) {
     	this.defaultKeyBeanId = defaultKeyBeanId;
     }
@@ -145,4 +154,9 @@ public class JCSCache implements Cache {
     public String getDefaultKeyBeanId() {
     	return this.defaultKeyBeanId;
     }
+       
+	public void setApplicationContext(ApplicationContext arg0)
+	throws BeansException {
+		context = (WebApplicationContext) arg0;
+	}
 }

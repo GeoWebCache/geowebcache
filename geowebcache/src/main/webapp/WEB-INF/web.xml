@@ -10,15 +10,20 @@
    
   	<!-- spring dispatcher servlet, dispatches incoming requests to controllers -->
   	<servlet>
-    	<servlet-name>dispatcher</servlet-name>
+    	<servlet-name>geowebcache</servlet-name>
     	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>	
     	<load-on-startup>1</load-on-startup>
   	</servlet>
  	
 	<servlet-mapping>
-  		<servlet-name>dispatcher</servlet-name>
+  		<servlet-name>geowebcache</servlet-name>
 		<url-pattern>/service/*</url-pattern>
   	</servlet-mapping>
+  	
+  	<context-param>                                                                                                                                                              
+    	<param-name>GEOSERVER_DATA_DIR</param-name>                                                                                                                               
+    	<param-value>/tmp</param-value>                                                                                  
+    </context-param>   
 </web-app>
 
 

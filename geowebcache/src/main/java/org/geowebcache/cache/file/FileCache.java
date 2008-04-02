@@ -26,24 +26,37 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import javax.servlet.ServletContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.layer.RawTile;
 import org.geowebcache.layer.wms.WMSLayerProfile;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.WebApplicationContext;
 
 public class FileCache implements Cache {
+	public final static String GWC_CACHE_DIR = "GEOWEBCACHE_CACHE_DIR";
+
+	public final static String GS_DATA_DIR = "GEOSERVER_DATA_DIR";
 
 	private static Log log = LogFactory
 			.getLog(org.geowebcache.cache.file.FileCache.class);
 
 	private String defaultKeyBeanId = null;
 
+	private String defaultCachePrefix = null;
+
+	private WebApplicationContext context = null;
+
 	/**
 	 * Check props , run setUp() on given directory
 	 */
 	public void init(Properties props) {
+
 	}
 
 	public void destroy() {
@@ -57,17 +70,17 @@ public class FileCache implements Cache {
 			throws org.geowebcache.cache.CacheException {
 		File path = new File(cachePrefix);
 		if (path.exists() && path.isDirectory() && path.canWrite()) {
-			log.info("Succesfully opened " + cachePrefix + " for writing");
+			log.info("Succesfully opened " + path.getAbsolutePath()
+					+ " for writing");
 			return;
 		} else {
 			if (!path.exists()) {
-				//if (path.mkdirs()) {
-				//	log
-				//			.info(cachePrefix
-				//					+ " did not exist, have been created.");
-				//	return;
-				//}
-				log.error("Would really like to create :" +path.getAbsolutePath());
+				if (path.mkdirs()) {
+					log
+							.info(cachePrefix
+									+ " did not exist, has been created recursively.");
+					return;
+				}
 			}
 		}
 
@@ -166,11 +179,118 @@ public class FileCache implements Cache {
 		}
 	}
 
+	public String getDefaultPrefix(String param) throws CacheException {
+		if (this.defaultCachePrefix == null) {
+			determineDefaultPrefix();
+			if (this.defaultCachePrefix == null) {
+				throw new CacheException(
+						"Unable to find writable path for cache.");
+			}
+		}
+
+		return this.defaultCachePrefix + File.separator + param;
+	}
+
+	/**
+	 * Looks for <br>
+	 * 1) GEOWEBCACHE_CACHE_DIR<br> 
+	 * 2) GEOSERVER_DATA_DIR<br> 
+	 * 3) %TEMP%, $TEMP<br>
+	 * <br>
+	 * Using<br>
+	 * A) Java environment variable<br>
+	 * B) Servlet context parameter<br>
+	 * C) System environment variable<br>
+	 * 
+	 */
+	public void determineDefaultPrefix() {
+
+		ServletContext serlvCtx = context.getServletContext();
+
+		final String[] typeStrs = { "Java environment variable ",
+				"Servlet context parameter ", "System environment variable " };
+
+		final String[] varStrs = { GWC_CACHE_DIR, GS_DATA_DIR, "TEMP", "TMP" };
+
+		String msgPrefix = null;
+		int iVar = 0;
+		for (; iVar < varStrs.length && defaultCachePrefix == null; iVar++) {
+			for (int j = 0; j < typeStrs.length && defaultCachePrefix == null; j++) {
+				String value = null;
+				String varStr = new String(varStrs[iVar]);
+				String typeStr = typeStrs[j];
+
+				switch (j) {
+				case 1:
+					value = System.getProperty(varStr);
+					break;
+				case 2:
+					value = serlvCtx.getInitParameter(varStr);
+					break;
+				case 3:
+					value = System.getenv(varStr);
+					break;
+				}
+
+				if (value == null || value.equalsIgnoreCase("")) {
+					log.info("Found " + typeStr + varStr + " to be unset");
+					continue;
+				}
+
+				File fh = new File(value);
+
+				// Being a bit pessimistic here
+				msgPrefix = "Found " + typeStr + varStr + " set to " + value;
+
+				if (!fh.exists()) {
+					log.error(msgPrefix + " , but this path does not exist");
+					continue;
+				}
+				if (!fh.isDirectory()) {
+					log.error(msgPrefix + " , which is not a directory");
+					continue;
+				}
+				if (!fh.canWrite()) {
+					log.error(msgPrefix + " , which is not writeable");
+					continue;
+				}
+
+				// Sweet, we can work with this
+				this.defaultCachePrefix = value;
+			}
+		}
+		if (this.defaultCachePrefix == null) {
+			log.error("Found no usable default cache prefixes !!! "
+					+ "Please set " + GWC_CACHE_DIR);
+		} else {
+			switch (iVar) {
+			case 0: // GEOWEBCACHE_CACHE_DIR, do nothing
+				break;
+
+			case 1: // GEOSERVER_DATA_DIR, prefix
+				this.defaultCachePrefix = this.defaultCachePrefix
+						+ File.separator + "gwc";
+				break;
+
+			case 2: // TEMP directories
+			case 3:
+				this.defaultCachePrefix = this.defaultCachePrefix
+						+ File.separator + "geowebcache";
+			}
+			log.info(msgPrefix + ", using it as the default prefix.");
+		}
+	}
+
 	public void setDefaultKeyBeanId(String defaultKeyBeanId) {
 		this.defaultKeyBeanId = defaultKeyBeanId;
 	}
 
 	public String getDefaultKeyBeanId() {
 		return this.defaultKeyBeanId;
+	}
+
+	public void setApplicationContext(ApplicationContext arg0)
+			throws BeansException {
+		context = (WebApplicationContext) arg0;
 	}
 }

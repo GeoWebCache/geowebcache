@@ -17,92 +17,99 @@
  */
 package org.geowebcache.cache;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.web.context.WebApplicationContext;
 
 public class CacheFactory implements ApplicationContextAware {
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.cache.CacheFactory.class);
 
-    private ApplicationContext context = null;
+	private static Log log = LogFactory
+			.getLog(org.geowebcache.cache.CacheFactory.class);
 
-    private HashMap caches = null;
+	private WebApplicationContext context = null;
 
-    private String defaultCacheBeanId = null;
+	private HashMap caches = null;
 
-    private CacheKeyFactory cacheKeyFactory = null;
+	private String defaultCacheBeanId = null;
 
-    public CacheFactory(CacheKeyFactory cacheKeyFactory) {
-        this.cacheKeyFactory = cacheKeyFactory;
-    }
+	private CacheKeyFactory cacheKeyFactory = null;
 
-    /**
-     * Scans the classes for the specified bean and returns it, or null if it is
-     * not found.
-     * 
-     * @param cacheBeanId
-     *            the name, as defined in the Spring XML
-     * @return singleton of the appropriate cache type, null otherwise
-     */
-    public Cache getCache(String cacheBeanId) {
-        if (caches == null) {
-            loadCaches();
-        }
-        Cache cache = (Cache) caches.get(cacheBeanId);
-        if (cache == null) {
-            log.error("Did not find cache for bean id " + cacheBeanId);
-        } else {
-            log.debug("Returning cache for " + cacheBeanId);
-        }
-        return cache;
-    }
 
-    /**
-     * Get the default cache, based on the default bean set in
-     * Spring's XML configuration 
-     * 
-     * @return default cache
-     */
-    public Cache getDefaultCache() {
-        log.warn("Recevied request for default cache, returning "
-                + defaultCacheBeanId);
-        return getCache(defaultCacheBeanId);
-    }
 
-    /**
-     * Uses Spring to scan classpath for classes that
-     * implement the interface Cache.
-     */
-    private void loadCaches() {
-        Map cacheBeans = context.getBeansOfType(Cache.class);
-        Iterator beanIter = cacheBeans.keySet().iterator();
+	public CacheFactory(CacheKeyFactory cacheKeyFactory) {
+		this.cacheKeyFactory = cacheKeyFactory;
+	}
 
-        caches = new HashMap();
-        while (beanIter.hasNext()) {
-            String beanId = (String) beanIter.next();
-            Cache aCache = (Cache) cacheBeans.get(beanId);
-            caches.put(beanId, aCache);
-            log.debug("Added bean for " + beanId);
-        }
-    }
+	/**
+	 * Scans the classes for the specified bean and returns it, or null if it is
+	 * not found.
+	 * 
+	 * @param cacheBeanId
+	 *            the name, as defined in the Spring XML
+	 * @return singleton of the appropriate cache type, null otherwise
+	 */
+	public Cache getCache(String cacheBeanId) {
+		if (caches == null) {
+			loadCaches();
+		}
+		Cache cache = (Cache) caches.get(cacheBeanId);
+		if (cache == null) {
+			log.error("Did not find cache for bean id " + cacheBeanId);
+		} else {
+			log.debug("Returning cache for " + cacheBeanId);
+		}
+		return cache;
+	}
 
-    public void setDefaultCacheBeanId(String defaultCacheBeanId) {
-        this.defaultCacheBeanId = defaultCacheBeanId;
-    }
+	/**
+	 * Get the default cache, based on the default bean set in
+	 * Spring's XML configuration 
+	 * 
+	 * @return default cache
+	 */
+	public Cache getDefaultCache() {
+		log.warn("Received request for default cache, returning "
+				+ defaultCacheBeanId);
+		return getCache(defaultCacheBeanId);
+	}
 
-    public CacheKeyFactory getCacheKeyFactory() {
-        return this.cacheKeyFactory;
-    }
+	/**
+	 * Uses Spring to scan classpath for classes that
+	 * implement the interface Cache.
+	 */
+	private void loadCaches() {
+		Map cacheBeans = context.getBeansOfType(Cache.class);
+		Iterator beanIter = cacheBeans.keySet().iterator();
 
-    public void setApplicationContext(ApplicationContext arg0)
-            throws BeansException {
-        context = arg0;
-    }
+		caches = new HashMap();
+		while (beanIter.hasNext()) {
+			String beanId = (String) beanIter.next();
+			Cache aCache = (Cache) cacheBeans.get(beanId);
+			caches.put(beanId, aCache);
+			log.debug("Added bean for " + beanId);
+		}
+	}
+
+	public void setDefaultCacheBeanId(String defaultCacheBeanId) {
+		this.defaultCacheBeanId = defaultCacheBeanId;
+	}
+
+	public CacheKeyFactory getCacheKeyFactory() {
+		return this.cacheKeyFactory;
+	}
+
+	public void setApplicationContext(ApplicationContext arg0)
+			throws BeansException {
+		context = (WebApplicationContext) arg0;
+	}
 }
