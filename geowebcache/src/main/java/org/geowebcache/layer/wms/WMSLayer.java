@@ -170,11 +170,11 @@ public class WMSLayer implements TileLayer {
         // Final preflight check
         // TODO move outside
         String complaint = null;
-        if (profile.gridCalc.isInRange(gridLoc) != null) {
-             complaint = "Adjusted request ("
+        if (log.isDebugEnabled() && profile.gridCalc.isInRange(gridLoc) != null) {
+              log.debug("Adjusted request ("
                     + profile.gridCalc.bboxFromGridLocation(gridLoc).toString() + ")"
                     + " falls outside of the bounding box (" + profile.bbox.toString() + "),"
-                    + " error: " +profile.gridCalc.isInRange(gridLoc);
+                    + " error: " +profile.gridCalc.isInRange(gridLoc));
         } else if(mime == null) {
             complaint = "Image format cannot be null in getData()";
         }

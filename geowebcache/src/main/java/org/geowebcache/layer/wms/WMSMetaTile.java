@@ -146,7 +146,8 @@ public class WMSMetaTile extends MetaTile {
                 expiration = wmsBackendMaxAge.longValue() * 1000;
             } else {
                 log.error("Layer profile wants MaxAge from backend,"
-                		+" but backend does not provide this.");
+                		+" but backend does not provide this. Setting to 7200 seconds.");
+                expiration = 7200 * 1000;
             }
         }
 
