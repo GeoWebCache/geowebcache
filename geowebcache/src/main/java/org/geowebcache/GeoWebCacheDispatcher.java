@@ -206,7 +206,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             TileResponse tileResponse) throws IOException {
 
         // Did we get anything?
-        if (tileResponse.data == null || tileResponse.data.length == 0) {
+        if (tileResponse == null || tileResponse.data == null || tileResponse.data.length == 0) {
             log.trace("sendData() had nothing to return");
 
             // Response: 500 , should not have gotten here
@@ -223,7 +223,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         	os.write(tileResponse.data);
         	os.flush();
         } catch (EofException eof) {
-        	log.error("Caught org.mortbay.jetty.EofException");
+        	log.debug("Caught org.mortbay.jetty.EofException");
         } catch (SocketException se) {
         	log.error("Caught java.net.SocketException");
         }

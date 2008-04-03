@@ -56,13 +56,13 @@ public abstract class MetaTile {
      */
     private int[] calculateMetaTileGridBounds(int[] gridBounds, int[] tileGridPosition) {
         // Sanity checks that are hopefully redundant
-        if(  ! (tileGridPosition[0] >= gridBounds[0] && tileGridPosition[0] <= gridBounds[2])
-                &&(tileGridPosition[1] >= gridBounds[1] && tileGridPosition[1] <= gridBounds[3])
-                &&(tileGridPosition[2] >= gridBounds[0] && tileGridPosition[2] <= gridBounds[2])
-                &&(tileGridPosition[3] >= gridBounds[1] && tileGridPosition[3] <= gridBounds[3])) {
-            log.error("calculateMetaTileGridBounds(): " + Arrays.toString(gridBounds) +" "+ Arrays.toString(tileGridPosition) );
-            return null;
-        }
+        //if(  ! (tileGridPosition[0] >= gridBounds[0] && tileGridPosition[0] <= gridBounds[2])
+        //        &&(tileGridPosition[1] >= gridBounds[1] && tileGridPosition[1] <= gridBounds[3])
+        //        &&(tileGridPosition[2] >= gridBounds[0] && tileGridPosition[2] <= gridBounds[2])
+        //        &&(tileGridPosition[3] >= gridBounds[1] && tileGridPosition[3] <= gridBounds[3])) {
+        //    log.error("calculateMetaTileGridBounds(): " + Arrays.toString(gridBounds) +" "+ Arrays.toString(tileGridPosition) );
+        //    return null;
+        //}
         
         int[] metaTileGridBounds = new int[5];
         metaTileGridBounds[0] = tileGridPosition[0] - (tileGridPosition[0] % metaX);
