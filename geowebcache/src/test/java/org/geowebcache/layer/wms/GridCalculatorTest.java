@@ -14,21 +14,19 @@ public class GridCalculatorTest extends TestCase {
     }
 
     public void test1gridLevels4326() throws Exception {
-        WMSLayerProfile profile = new WMSLayerProfile();
-        profile.bbox = null;
         BBOX bbox = new BBOX(0, 0, 180, 90);
-        profile.gridBase = new BBOX(-180, -90, 180, 90);
-        profile.metaHeight = 1;
-        profile.metaWidth = 1;
+        BBOX gridBase = new BBOX(-180, -90, 180, 90);
+        int metaHeight = 1;
+        int metaWidth = 1;
         double maxTileWidth = 180.0;
         double maxTileHeight = 180.0;
-        profile.zoomStart = 0;
-        profile.zoomStop = 20;
+        int zoomStart = 0;
+        int zoomStop = 20;
 
         GridCalculator gridCalc = new GridCalculator(
-                profile.gridBase, bbox, 
-                profile.zoomStart, profile.zoomStop, 
-                profile.metaWidth, profile.metaHeight, 
+                gridBase, bbox, 
+                zoomStart, zoomStop, 
+                metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
 
         int[][] solution = { { 1, 0, 1, 0 }, { 2, 1, 3, 1 }, { 4, 2, 7, 3 },
@@ -46,20 +44,19 @@ public class GridCalculatorTest extends TestCase {
     }
 
     public void test2gridLevels4326() throws Exception {
-        WMSLayerProfile profile = new WMSLayerProfile();
-        profile.bbox = new BBOX(0, 0, 180, 90);
-        profile.gridBase = new BBOX(-180, -90, 180, 90);
-        profile.metaHeight = 3;
-        profile.metaWidth = 3;
+        BBOX bbox = new BBOX(0, 0, 180, 90);
+        BBOX gridBase = new BBOX(-180, -90, 180, 90);
+        int metaHeight = 3;
+        int metaWidth = 3;
         double maxTileWidth = 180.0;
         double maxTileHeight = 180.0;
-        profile.zoomStart = 0;
-        profile.zoomStop = 20;
+        int zoomStart = 0;
+        int zoomStop = 20;
 
         GridCalculator gridCalc = new GridCalculator(
-                profile.gridBase, profile.bbox, 
-                profile.zoomStart, profile.zoomStop, 
-                profile.metaWidth, profile.metaHeight, 
+                gridBase, bbox, 
+                zoomStart, zoomStop, 
+                metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
 
         int[][] solution = { { 1, 0, 1, 0 }, { 0, 0, 3, 1 }, { 3, 0, 7, 3 },
@@ -78,20 +75,19 @@ public class GridCalculatorTest extends TestCase {
     }
 
     public void test3gridLevels4326() throws Exception {
-        WMSLayerProfile profile = new WMSLayerProfile();
-        profile.bbox = new BBOX(-10.0, -10.0, 10.0, 10.0);
-        profile.gridBase = new BBOX(-180, -90, 180, 90);
-        profile.metaHeight = 3;
-        profile.metaWidth = 3;
+        BBOX bbox = new BBOX(-10.0, -10.0, 10.0, 10.0);
+        BBOX gridBase = new BBOX(-180, -90, 180, 90);
+        int metaHeight = 3;
+        int metaWidth = 3;
         double maxTileWidth = 180.0;
         double maxTileHeight = 180.0;
-        profile.zoomStart = 0;
-        profile.zoomStop = 20;
+        int zoomStart = 0;
+        int zoomStop = 20;
 
         GridCalculator gridCalc = new GridCalculator(
-                profile.gridBase, profile.bbox, 
-                profile.zoomStart, profile.zoomStop, 
-                profile.metaWidth, profile.metaHeight, 
+                gridBase, bbox, 
+                zoomStart, zoomStop, 
+                metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
         
         int[][] solution = { { 0, 0, 1, 0 }, { 0, 0, 2, 1 }, { 3, 0, 5, 2 },
@@ -110,22 +106,21 @@ public class GridCalculatorTest extends TestCase {
     }
 
     public void test4gridLevels4326() throws Exception {
-        WMSLayerProfile profile = new WMSLayerProfile();
-        profile.bbox = new BBOX(175.0, 87.0, 180.0, 90.0);
-        profile.gridBase = new BBOX(-180, -90, 180, 90);
-        profile.metaHeight = 4;
-        profile.metaWidth = 4;
+        BBOX bbox = new BBOX(175.0, 87.0, 180.0, 90.0);
+        BBOX gridBase = new BBOX(-180, -90, 180, 90);
+        int metaHeight = 4;
+        int metaWidth = 4;
         double maxTileWidth = 180.0;
         double maxTileHeight = 180.0;
-        profile.zoomStart = 0;
-        profile.zoomStop = 20;
+        int zoomStart = 0;
+        int zoomStop = 20;
 
         GridCalculator gridCalc = new GridCalculator(
-                profile.gridBase, profile.bbox, 
-                profile.zoomStart, profile.zoomStop, 
-                profile.metaWidth, profile.metaHeight, 
+                gridBase, bbox, 
+                zoomStart, zoomStop, 
+                metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
-        
+                
         int[][] solution = { { 1, 0, 1, 0 }, { 3, 1, 3, 1 }, { 4, 0, 7, 3 },
                 { 12, 4, 15, 7 }, { 28, 12, 31, 15 } };
 
@@ -141,23 +136,23 @@ public class GridCalculatorTest extends TestCase {
     }
 
     public void test1gridLevels900913() throws Exception {
-        WMSLayerProfile profile = new WMSLayerProfile();
-        profile.bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
-        profile.gridBase = new BBOX(-20037508.34, -20037508.34, 20037508.34,
-                20037508.34);
-        profile.metaHeight = 1;
-        profile.metaWidth = 1;
+        BBOX bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
+        BBOX gridBase = new BBOX(
+        		-20037508.34, -20037508.34, 
+        		20037508.34, 20037508.34);
+        int metaHeight = 1;
+        int metaWidth = 1;
         double maxTileWidth = 20037508.34 * 2;
         double maxTileHeight = 20037508.34 * 2;
-        profile.zoomStart = 0;
-        profile.zoomStop = 20;
+        int zoomStart = 0;
+        int zoomStop = 20;
 
         GridCalculator gridCalc = new GridCalculator(
-                profile.gridBase, profile.bbox, 
-                profile.zoomStart, profile.zoomStop, 
-                profile.metaWidth, profile.metaHeight, 
+                gridBase, bbox, 
+                zoomStart, zoomStop, 
+                metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
-        
+                
         int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 2, 2, 3, 3 },
                 { 4, 4, 7, 7 }, { 8, 8, 15, 15 } };
 
@@ -174,23 +169,23 @@ public class GridCalculatorTest extends TestCase {
     }
 
     public void test2gridLevels900913() throws Exception {
-        WMSLayerProfile profile = new WMSLayerProfile();
-        profile.bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
-        profile.gridBase = new BBOX(-20037508.34, -20037508.34, 20037508.34,
-                20037508.34);
-        profile.metaHeight = 3;
-        profile.metaWidth = 3;
+        BBOX bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
+        BBOX gridBase = new BBOX(
+        		-20037508.34, -20037508.34, 
+        		20037508.34, 20037508.34);
+        int metaHeight = 3;
+        int metaWidth = 3;
         double maxTileWidth = 20037508.34 * 2;
         double maxTileHeight = 20037508.34 * 2;
-        profile.zoomStart = 0;
-        profile.zoomStop = 20;
+        int zoomStart = 0;
+        int zoomStop = 20;
 
         GridCalculator gridCalc = new GridCalculator(
-                profile.gridBase, profile.bbox, 
-                profile.zoomStart, profile.zoomStop, 
-                profile.metaWidth, profile.metaHeight, 
+                gridBase, bbox, 
+                zoomStart, zoomStop, 
+                metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
-        
+                
         int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 0, 0, 3, 3 },
                 { 3, 3, 7, 7 }, { 6, 6, 15, 15 }, { 15, 15, 31, 31 },
                 { 30, 30, 63, 63 } };
@@ -208,23 +203,23 @@ public class GridCalculatorTest extends TestCase {
     }
 
     public void test3gridLevels900913() throws Exception {
-        WMSLayerProfile profile = new WMSLayerProfile();
-        profile.bbox = new BBOX(-500000, -500000, 500000, 500000);
-        profile.gridBase = new BBOX(-20037508.34, -20037508.34, 20037508.34,
-                20037508.34);
-        profile.metaHeight = 3;
-        profile.metaWidth = 3;
+        BBOX bbox = new BBOX(-500000, -500000, 500000, 500000);
+        BBOX gridBase = new BBOX(
+        		-20037508.34, -20037508.34, 
+        		20037508.34, 20037508.34);
+        int metaHeight = 3;
+        int metaWidth = 3;
         double maxTileWidth = 20037508.34 * 2;
         double maxTileHeight = 20037508.34 * 2;
-        profile.zoomStart = 0;
-        profile.zoomStop = 20;
+        int zoomStart = 0;
+        int zoomStop = 20;
 
         GridCalculator gridCalc = new GridCalculator(
-                profile.gridBase, profile.bbox, 
-                profile.zoomStart, profile.zoomStop, 
-                profile.metaWidth, profile.metaHeight, 
+                gridBase, bbox, 
+                zoomStart, zoomStop, 
+                metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
-        
+                
         int[][] solution = { { 0, 0, 0, 0 }, { 0, 0, 1, 1 }, { 0, 0, 2, 2 },
                 { 3, 3, 5, 5 }, { 6, 6, 8, 8 }, { 15, 15, 17, 17 },
                 { 30, 30, 32, 32 }, { 60, 60, 65, 65 } };

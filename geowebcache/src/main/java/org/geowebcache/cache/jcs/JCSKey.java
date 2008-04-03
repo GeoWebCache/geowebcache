@@ -20,6 +20,7 @@ package org.geowebcache.cache.jcs;
 import java.io.Serializable;
 
 import org.geowebcache.cache.CacheKey;
+import org.geowebcache.layer.SRS;
 
 public class JCSKey implements Serializable, CacheKey {
     private String prefix;
@@ -30,19 +31,19 @@ public class JCSKey implements Serializable, CacheKey {
 
     private int z;
     
-    private String SRS;
+    private String srsStr;
 
     private String format;
 
     public JCSKey() {
     }
 
-    private JCSKey(String prefix, int x, int y, int z, String SRS, String format) {
+    private JCSKey(String prefix, int x, int y, int z, SRS srs, String format) {
         this.prefix = prefix;
     	this.x = x;
         this.y = y;
         this.z = z;
-        this.SRS = SRS;
+        this.srsStr = srs.toString();
         this.format = format;
     }
 
@@ -50,8 +51,8 @@ public class JCSKey implements Serializable, CacheKey {
     	// Do nothing
     }
 
-    public JCSKey createKey(String prefix, int x, int y, int z, String SRS, String format) {
-        return new JCSKey(prefix, x, y, z, SRS, format);
+    public JCSKey createKey(String prefix, int x, int y, int z, SRS srs, String format) {
+        return new JCSKey(prefix, x, y, z, srs, format);
     }
 
     public int getType() {

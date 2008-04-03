@@ -27,12 +27,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.cache.CacheKey;
-import org.geowebcache.cache.CacheKeyFactory;
 import org.geowebcache.layer.RawTile;
+import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.layer.TileResponse;
@@ -42,559 +43,597 @@ import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.wms.BBOX;
 
 public class WMSLayer implements TileLayer {
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.wms.WMSLayer.class);
+	private static Log log = LogFactory
+			.getLog(org.geowebcache.layer.wms.WMSLayer.class);
 
-    public static final String WMS_MIMETYPES = "mimetypes";
-    
-    String name;
+	public static final String WMS_MIMETYPES = "mimetypes";
 
-    WMSLayerProfile profile;
+	String name;
 
-    Cache cache;
+	WMSLayerProfile profile;
 
-    CacheKey cacheKey;
-    
-    String cachePrefix = null;
+	Cache cache;
 
-    ImageMime[] mimes = null;
+	CacheKey cacheKey;
 
-    HashMap procQueue = new HashMap();
+	String cachePrefix = null;
 
-    boolean debugHeaders = false;
+	ImageMime[] mimes = null;
 
-    Integer cacheLockWait = -1;
-    
-    public WMSLayer(String layerName, Properties props, CacheFactory cacheFactory) throws CacheException {
-        name = layerName;
-        setParametersFromProperties(props, cacheFactory);
-    }
+	HashMap procQueue = new HashMap();
 
-    /**
-     * Rough checks to see whether the layers supports
-     * the requested projection, returns error message otherwise
-     * 
-     * @param srs Name of projection, for example "EPSG:4326"
-     * @return null if okay, error message otherwise.
-     */
-    public String supportsProjection(String srs) {
-        if (srs.equalsIgnoreCase(profile.srs)) {
-            return null;
-            
-        } else {
-            return "Unexpected SRS: " + srs + " , expected "
-                    + profile.srs;
-        }   
-    }
-    
-    /**
-     * Rough checks to see whether the layers supports
-     * the requested mimeType. Null assumes the default format
-     * and is supported.
-     * 
-     * Returns error message otherwise
-     * 
-     * @param mimeType MIME type or null, example "image/png"
-     * @return null if okay, error message otherwise.
-     */
-    public String supportsMime(String mimeType) {
-        if (mimeType == null) {
-            log.trace("MIME type was null");
-            return null;
-        }
-        
-        for(int i=0; i<mimes.length; i++) {
-            if(mimeType.equalsIgnoreCase(mimes[i].getMimeType())) {
-                return null;
-            }
-        }
-        return "MIME type " +mimeType
-            + " is not supported by layer configuration";
-    }
-    
-    /**
-     * Rough checks to see whether the specified bounding box
-     * is supported by the current layer.
-     * 
-     * Returns error message if not.
-     * 
-     * @param srs the string representation 
-     * @param reqBounds the requested bounds
-     * @return null if okay, error message otherwise.
-     */
-    public String supportsBbox(String srs, BBOX reqBounds) {
-        String errorMsg = this.supportsProjection(srs);
-        if(errorMsg != null) {
-            return errorMsg;
-        }
+	boolean debugHeaders = false;
 
-        if (!reqBounds.isSane()) {
-            return "The requested bounding box " + reqBounds.getReadableString()
-            + " is not sane";
-        }
+	Integer cacheLockWait = -1;
 
-        if (!profile.gridBase.contains(reqBounds)) {
-            return "The layers grid box "
-            + profile.gridBase.getReadableString()
-            + " does not cover the requested bounding box "
-            + reqBounds.getReadableString();
-        }
-        
-        // All ok
-        return null;
-    }
+	public WMSLayer(String layerName, Properties props,
+			CacheFactory cacheFactory) throws GeoWebCacheException {
+		name = layerName;
+		setParametersFromProperties(props, cacheFactory);
+	}
 
-    /**
-     * The main function
-     * 
-     * 1) Lock metatile 2) Check whether tile is in cache -> If so, unlock
-     * metatile, set Cache-Control and return tile 3) Create metatile 4) Use
-     * metatile to forward request 5) Get tiles (save them to cache) 6) Unlock
-     * metatile 6) Set Cache-Control, return tile
-     * 
-     * @param wmsparams
-     * @return
-     */
-    public TileResponse getResponse(TileRequest tileRequest, String requestURI,
-            HttpServletResponse response) throws IOException {
-        String debugHeadersStr = null;
-        ImageMime mime = null;
-        
-        if(tileRequest.mimeType == null) {
-            mime = this.mimes[0];
-        } else {
-            mime = ImageMime.createFromMimeType(tileRequest.mimeType);
-        }
-        int[] gridLoc = tileRequest.gridLoc;
-        
-        // Final preflight check
-        // TODO move outside
-        String complaint = null;
-        if (log.isDebugEnabled() && profile.gridCalc.isInRange(gridLoc) != null) {
-              log.debug("Adjusted request ("
-                    + profile.gridCalc.bboxFromGridLocation(gridLoc).toString() + ")"
-                    + " falls outside of the bounding box (" + profile.bbox.toString() + "),"
-                    + " error: " +profile.gridCalc.isInRange(gridLoc));
-        } else if(mime == null) {
-            complaint = "Image format cannot be null in getData()";
-        }
-        
-        if(complaint != null) {
-            log.error(complaint);
-            response.sendError(400, complaint);
-            return null;
-        }
-        
-        // System.out.println(
-        // "orig: "+wmsparams.getBBOX().getReadableString());
-        // System.out.println(
-        // "recreated: "+profile.recreateBbox(gridLoc).getReadableString());
+	/**
+	 * Rough checks to see whether the layers supports
+	 * the requested projection, returns error message otherwise
+	 * 
+	 * @param srs Name of projection, for example "EPSG:4326"
+	 * @return null if okay, error message otherwise.
+	 */
+	public String supportsProjection(SRS srs) {
+		for (int i = 0; i < profile.srs.length; i++) {
+			if (srs.equals(profile.srs[i])) {
+				return null;
+			}
+		}
+		return "Unexpected SRS: " + srs.toString();
+	}
 
-        WMSMetaTile metaTile = new WMSMetaTile(profile.gridCalc.getGridBounds(gridLoc[2]), 
-                gridLoc, profile.metaWidth, profile.metaHeight);
-        
-        int[] metaGridLoc = metaTile.getMetaGridPos();
+	/**
+	 * Rough checks to see whether the layers supports
+	 * the requested mimeType. Null assumes the default format
+	 * and is supported.
+	 * 
+	 * Returns error message otherwise
+	 * 
+	 * @param mimeType MIME type or null, example "image/png"
+	 * @return null if okay, error message otherwise.
+	 */
+	public String supportsMime(String mimeType) {
+		if (mimeType == null) {
+			log.trace("MIME type was null");
+			return null;
+		}
 
-        /** ****************** Acquire lock ******************* */
-        waitForQueue(metaGridLoc);
+		for (int i = 0; i < mimes.length; i++) {
+			if (mimeType.equalsIgnoreCase(mimes[i].getMimeType())) {
+				return null;
+			}
+		}
+		return "MIME type " + mimeType
+				+ " is not supported by layer configuration";
+	}
 
-        Object ck = cacheKey.createKey(cachePrefix, gridLoc[0], gridLoc[1], gridLoc[2],
-                getProjection(), mime.getFileExtension());
+	/**
+	 * Rough checks to see whether the specified bounding box
+	 * is supported by the current layer.
+	 * 
+	 * Returns error message if not.
+	 * 
+	 * @param srs the string representation 
+	 * @param reqBounds the requested bounds
+	 * @return null if okay, error message otherwise.
+	 */
+	public String supportsBbox(SRS srs, BBOX reqBounds) {
+		String errorMsg = this.supportsProjection(srs);
+		if (errorMsg != null) {
+			return errorMsg;
+		}
 
-        if (debugHeaders) {
-            debugHeadersStr = "grid-location:" + gridLoc[0] + "," + gridLoc[1]
-                    + "," + gridLoc[2] + ";" + "cachekey:" + ck.toString()
-                    + ";";
-        }
+		if (!reqBounds.isSane()) {
+			return "The requested bounding box "
+					+ reqBounds.getReadableString() + " is not sane";
+		}
 
-        /** ****************** Check cache ******************* */
-        RawTile tile = null;
-        if (profile.expireCache != WMSLayerProfile.CACHE_NEVER) {
-            try {
-                tile = (RawTile) cache.get(ck, profile.expireCache);
-                if (tile != null) {
+		if (!profile.gridBase[getSRSIndex(srs)].contains(reqBounds)) {
+			return "The layers grid box "
+					+ profile.gridBase[getSRSIndex(srs)].getReadableString()
+					+ " does not cover the requested bounding box "
+					+ reqBounds.getReadableString();
+		}
 
-                    // Return lock
-                    removeFromQueue(metaGridLoc);
+		// All ok
+		return null;
+	}
 
-                    if (debugHeaders) {
-                        response.addHeader("geowebcache-debug", debugHeadersStr
-                                + "from-cache:true");
-                    }
-                    setExpirationHeader(response);
-                    return new TileResponse(tile.getData() , mime.toString());
-                }
-            } catch (CacheException ce) {
-                log.error("Failed to get " + requestURI
-                        + " from cache");
-                ce.printStackTrace();
-            }
-        }
-        /** ****************** Request metatile ******************* */
-        String requestURL = metaTile.doRequest(profile, mime.getMimeType());
-        if (metaTile.failed) {
-            removeFromQueue(metaGridLoc);
-            log.error("MetaTile failed.");
-            return null;
-        }
-        saveExpirationInformation(metaTile);
-        metaTile.createTiles(profile.width, profile.height);
-        int[][] gridPositions = metaTile.getTilesGridPositions();
+	/**
+	 * The main function
+	 * 
+	 * 1) Lock metatile 2) Check whether tile is in cache -> If so, unlock
+	 * metatile, set Cache-Control and return tile 3) Create metatile 4) Use
+	 * metatile to forward request 5) Get tiles (save them to cache) 6) Unlock
+	 * metatile 6) Set Cache-Control, return tile
+	 * 
+	 * @param wmsparams
+	 * @return
+	 */
+	public TileResponse getResponse(TileRequest tileRequest, String requestURI,
+			HttpServletResponse response) throws IOException {
+		String debugHeadersStr = null;
+		ImageMime mime = null;
 
-        byte[] data = null;
-        if (profile.expireCache == WMSLayerProfile.CACHE_NEVER) {
-            // Mostly for completeness, don't laugh
-            data = getTile(gridLoc, gridPositions, metaTile, mime);
+		if (tileRequest.mimeType == null) {
+			mime = this.mimes[0];
+		} else {
+			mime = ImageMime.createFromMimeType(tileRequest.mimeType);
+		}
+		int[] gridLoc = tileRequest.gridLoc;
 
-        } else {
-            saveTiles(gridPositions, metaTile, mime);
-            
-            // Try the cache again
-            try {
-                tile = (RawTile) cache.get(ck, profile.expireCache);
-            } catch (CacheException ce) {
-                log.error("Failed to get " + requestURI
-                        + " from cache, after first seeding cache.");
-                ce.printStackTrace();
-            }
-            if (tile != null) {
-                data = tile.getData();         
-            }
-            
-            // Final debug check, only relevant if all tiles were within bounds
-            if(data == null && gridPositions.length == profile.metaHeight * profile.metaWidth) {
-            	log.error("The cache returned null even after forwarding the request \n"
-            			+ requestURI
-            			+ " to \n"
-            			+ requestURL
-                        +"\n Please check the WMS and cache backends.");
-            }
-        }
+		int idx = getSRSIndex(tileRequest.SRS);
+		// Final preflight check
+		// TODO move outside
+		String complaint = null;
+		if (log.isDebugEnabled()
+				&& profile.gridCalc[idx].isInRange(gridLoc) != null) {
+			log.debug("Adjusted request ("
+					+ profile.gridCalc[idx].bboxFromGridLocation(gridLoc)
+							.toString() + ")"
+					+ " falls outside of the bounding box ("
+					+ profile.bbox.toString() + ")," + " error: "
+					+ profile.gridCalc[idx].isInRange(gridLoc));
+		} else if (mime == null) {
+			complaint = "Image format cannot be null in getData()";
+		}
 
-        // Return lock
-        removeFromQueue(metaGridLoc);
+		if (complaint != null) {
+			log.error(complaint);
+			response.sendError(400, complaint);
+			return null;
+		}
 
-        setExpirationHeader(response);
-        if (debugHeaders) {
-            response.addHeader("geowebcache-debug", debugHeadersStr
-                    + "from-cache:false;wmsUrl:"
-                    + requestURL);
-        }
-        return new TileResponse(data, mime.toString());
-    }
+		// System.out.println(
+		// "orig: "+wmsparams.getBBOX().getReadableString());
+		// System.out.println(
+		// "recreated: "+profile.recreateBbox(gridLoc).getReadableString());
 
-    public int purge(OutputStream os) {
-        // Loop over directories
-        // Not implemented
-    	log.error("purge() has not been implemented yet. Maybe you want to sponsor it? ;) ");
-        return 0;
-    }
+		WMSMetaTile metaTile = new WMSMetaTile(tileRequest.SRS,
+				profile.gridCalc[idx].getGridBounds(gridLoc[2]), gridLoc,
+				profile.metaWidth, profile.metaHeight);
 
-    /**
-     * Uses the HTTP 1.1 spec to set expiration headers
-     * 
-     * @param response
-     */
-    private void setExpirationHeader(HttpServletResponse response) {
-        if (profile.expireClients == WMSLayerProfile.CACHE_VALUE_UNSET) {
-            return;
-        }
+		int[] metaGridLoc = metaTile.getMetaGridPos();
 
-        if (profile.expireClients > 0) {
-            response.setHeader("Cache-Control", "max-age="
-                    + (profile.expireClients / 1000) + ", must-revalidate");
-        } else if (profile.expireClients == WMSLayerProfile.CACHE_NEVER_EXPIRE) {
-            long oneYear = 3600 * 24 * 365;
-            response.setHeader("Cache-Control", "max-age=" + oneYear);
-        } else if (profile.expireClients == WMSLayerProfile.CACHE_NEVER) {
-            response.setHeader("Cache-Control", "no-cache");
-        } else if (profile.expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
-            response.setHeader("geowebcache-error",
-                    "No CacheControl information available");
-        }
-    }
+		/** ****************** Acquire lock ******************* */
+		waitForQueue(metaGridLoc);
 
-    /**
-     * Loops over the gridPositions, generates cache keys and saves to cache
-     * 
-     * @param gridPositions
-     * @param metaTile
-     * @param imageFormat
-     */
-    protected void saveTiles(int[][] gridPositions, WMSMetaTile metaTile,
-            ImageMime imageFormat) {
-        
-        for (int i = 0; i < gridPositions.length; i++) {
-            int[] gridPos = gridPositions[i];
+		Object ck = cacheKey.createKey(cachePrefix, gridLoc[0], gridLoc[1],
+				gridLoc[2], metaTile.getSRS(), mime.getFileExtension());
 
-            Object ck = cacheKey.createKey(cachePrefix, gridPos[0], gridPos[1], gridPos[2], getProjection(),
-                    imageFormat.getFileExtension());
+		if (debugHeaders) {
+			debugHeadersStr = "grid-location:" + gridLoc[0] + "," + gridLoc[1]
+					+ "," + gridLoc[2] + ";" + "cachekey:" + ck.toString()
+					+ ";";
+		}
 
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            try {
-                if( ! metaTile.writeTileToStream(i, imageFormat.getInternalName(), out)) {
-                	log.error("metaTile.writeTileToStream returned false, no tiles saved");
-                }
-            } catch (IOException ioe) {
-                log.error("Unable to write image tile to ByteArrayOutputStream: "
-                                + ioe.getMessage());
-                ioe.printStackTrace();
-            }
+		/** ****************** Check cache ******************* */
+		RawTile tile = null;
+		if (profile.expireCache != WMSLayerProfile.CACHE_NEVER) {
+			try {
+				tile = (RawTile) cache.get(ck, profile.expireCache);
+				if (tile != null) {
 
-            RawTile tile = new RawTile(out.toByteArray());
+					// Return lock
+					removeFromQueue(metaGridLoc);
 
-            try {
-                cache.set(ck, tile, profile.expireCache);
-            } catch (CacheException ce) {
-                log.error("Unable to save data to cache, stack trace follows: "
-                        + ce.getMessage());
-                ce.printStackTrace();
-            }
-        }
-    }
+					if (debugHeaders) {
+						response.addHeader("geowebcache-debug", debugHeadersStr
+								+ "from-cache:true");
+					}
+					setExpirationHeader(response);
+					return new TileResponse(tile.getData(), mime.toString());
+				}
+			} catch (CacheException ce) {
+				log.error("Failed to get " + requestURI + " from cache");
+				ce.printStackTrace();
+			}
+		}
+		/** ****************** Request metatile ******************* */
+		String requestURL = null;
+		try {
+			requestURL = metaTile.doRequest(
+				profile, tileRequest.SRS, mime.getMimeType());
+		} catch(GeoWebCacheException gwce) {
+			log.error(gwce.toString());
+		}
+		
+		if (metaTile.failed || requestURL == null) {
+			removeFromQueue(metaGridLoc);
+			log.error("MetaTile failed.");
+			return null;
+		}
+		saveExpirationInformation(metaTile);
+		metaTile.createTiles(profile.width, profile.height);
+		int[][] gridPositions = metaTile.getTilesGridPositions();
 
-    /**
-     * Get a particular tile out of a metatile. This is only used for layers
-     * that are not to be cached
-     * 
-     * @param gridPos
-     * @param gridPositions
-     * @param metaTile
-     * @param imageFormat
-     * @return
-     */
-    private byte[] getTile(int[] gridPos, int[][] gridPositions,
-            WMSMetaTile metaTile, ImageMime imageFormat) {
-        for (int i = 0; i < gridPositions.length; i++) {
-            int[] curPos = gridPositions[i];
+		byte[] data = null;
+		if (profile.expireCache == WMSLayerProfile.CACHE_NEVER) {
+			// Mostly for completeness, don't laugh
+			data = getTile(gridLoc, gridPositions, metaTile, mime);
 
-            if (curPos.equals(gridPos)) {
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                try {
-                    metaTile.writeTileToStream(i, imageFormat.getInternalName(),
-                            out);
-                } catch (IOException ioe) {
-                    log
-                            .error("Unable to write image tile to ByteArrayOutputStream: "
-                                    + ioe.getMessage());
-                    ioe.printStackTrace();
-                }
+		} else {
+			saveTiles(gridPositions, metaTile, mime);
 
-                return out.toByteArray();
-            }
-        }
-        return null;
-    }
+			// Try the cache again
+			try {
+				tile = (RawTile) cache.get(ck, profile.expireCache);
+			} catch (CacheException ce) {
+				log.error("Failed to get " + requestURI
+						+ " from cache, after first seeding cache.");
+				ce.printStackTrace();
+			}
+			if (tile != null) {
+				data = tile.getData();
+			}
 
-    protected void saveExpirationInformation(WMSMetaTile metaTile) {
-        if (profile.expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
-            profile.expireCache = metaTile.getExpiration();
-            log.trace("Setting expireCache based on metaTile: "
-                    + profile.expireCache);
-        }
-        if (profile.expireClients == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
-            profile.expireClients = metaTile.getExpiration();
-            log.trace("Setting expireClients based on metaTile: "
-                    + profile.expireClients);
-        }
-    }
+			// Final debug check, only relevant if all tiles were within bounds
+			if (data == null
+					&& gridPositions.length == profile.metaHeight
+							* profile.metaWidth) {
+				log
+						.error("The cache returned null even after forwarding the request \n"
+								+ requestURI
+								+ " to \n"
+								+ requestURL
+								+ "\n Please check the WMS and cache backends.");
+			}
+		}
 
-    /**
-     * 
-     * @param metaGridLoc
-     * @return
-     */
-    protected boolean waitForQueue(int[] metaGridLoc) {
-        boolean wait = addToQueue(metaGridLoc);
-        while (wait) {
-            if (cacheLockWait > 0) {
-                try {
-                    Thread.sleep(cacheLockWait);
-                } catch (InterruptedException ie) {
-                    log.error("Thread got interrupted... how come?");
-                    ie.printStackTrace();
-                }
-            } else {
-                Thread.yield();
-            }
-            Thread.yield();
-            wait = addToQueue(metaGridLoc);
-        }
-        return true;
-    }
+		// Return lock
+		removeFromQueue(metaGridLoc);
 
-    /**
-     * Synchronization function, ensures that the same metatile is not requested
-     * simultaneously by two threads.
-     * 
-     * TODO Should add a Long representing timestamp, to avoid dead tiles
-     * 
-     * @param metaGridLoc
-     *            the grid positions of the tile
-     * @return
-     */
-    private synchronized boolean addToQueue(int[] metaGridLoc) {
-        if (procQueue.containsKey(metaGridLoc)) {
-            return false;
-        } else {
-            procQueue.put(metaGridLoc, new Boolean(true));
-            return true;
-        }
-    }
+		setExpirationHeader(response);
+		if (debugHeaders) {
+			response.addHeader("geowebcache-debug", debugHeadersStr
+					+ "from-cache:false;wmsUrl:" + requestURL);
+		}
+		return new TileResponse(data, mime.toString());
+	}
 
-    /**
-     * Synchronization function, ensures that the same metatile is not requested
-     * simultaneously by two threads.
-     * 
-     * @param metaGridLoc
-     *            the grid positions of the tile
-     * @return
-     */
-    protected synchronized boolean removeFromQueue(int[] metaGridLoc) {
-        if (procQueue.containsKey(metaGridLoc)) {
-            procQueue.remove(metaGridLoc);
-            return true;
-        }
-        return false;
-    }
+	public int purge(OutputStream os) {
+		// Loop over directories
+		// Not implemented
+		log
+				.error("purge() has not been implemented yet. Maybe you want to sponsor it? ;) ");
+		return 0;
+	}
 
-    /**
-     * 
-     * @param props
-     * @throws CacheException
-     */
-    private void setParametersFromProperties(Properties props, CacheFactory cacheFactory)
-            throws CacheException {
-        profile = new WMSLayerProfile(this.name, props);
+	/**
+	 * Uses the HTTP 1.1 spec to set expiration headers
+	 * 
+	 * @param response
+	 */
+	private void setExpirationHeader(HttpServletResponse response) {
+		if (profile.expireClients == WMSLayerProfile.CACHE_VALUE_UNSET) {
+			return;
+		}
 
-        // Cache and CacheKey
-        String propCacheBeanId = props.getProperty("cachebeanid");
-        if (propCacheBeanId != null) {
-            cache = cacheFactory.getCache(propCacheBeanId);
-            if(cache == null) {
-            	log.error("Unable to create cache for bean id " + propCacheBeanId);
-            }
-        } else {
-            cache = cacheFactory.getDefaultCache();
-        }
+		if (profile.expireClients > 0) {
+			response.setHeader("Cache-Control", "max-age="
+					+ (profile.expireClients / 1000) + ", must-revalidate");
+		} else if (profile.expireClients == WMSLayerProfile.CACHE_NEVER_EXPIRE) {
+			long oneYear = 3600 * 24 * 365;
+			response.setHeader("Cache-Control", "max-age=" + oneYear);
+		} else if (profile.expireClients == WMSLayerProfile.CACHE_NEVER) {
+			response.setHeader("Cache-Control", "no-cache");
+		} else if (profile.expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
+			response.setHeader("geowebcache-error",
+					"No CacheControl information available");
+		}
+	}
 
-        String propCacheKeyBeanId = props.getProperty("cachebeanid");
-        if (propCacheKeyBeanId == null) {
-        	cacheKey =  cacheFactory.getCacheKeyFactory().getCacheKey(cache.getDefaultKeyBeanId());
-        } else {
-        	cacheKey = cacheFactory.getCacheKeyFactory().getCacheKey(propCacheKeyBeanId);
-        }
+	/**
+	 * Loops over the gridPositions, generates cache keys and saves to cache
+	 * 
+	 * @param gridPositions
+	 * @param metaTile
+	 * @param imageFormat
+	 */
+	protected void saveTiles(int[][] gridPositions, WMSMetaTile metaTile,
+			ImageMime imageFormat) {
 
-        String propCachePrefix = props.getProperty("cacheprefix");
-        if (propCachePrefix == null) {
-        	String sanitizedName = name.replace(':', '_');
-        	cachePrefix = cache.getDefaultPrefix(sanitizedName);
-        	
-        	log.warn("cachePrefix not defined for layer " + name 
-        			+ ", using default prefifx and name instead: " + cachePrefix);
-        } else {
-        	cachePrefix = propCachePrefix;
-        	log.info("Using cache prefix " + cachePrefix + " for layer " + name);
-        }
-        
-        // Initialize the cache
-        cache.setUp(cachePrefix);
-        
-        // Check whether the configuration specifies what MIME types are legal
-        String propImageMIME = props.getProperty("mimetypes");
-        if (propImageMIME != null) {
-            String[] mimeStrs = propImageMIME.split(",");
-            mimes = new ImageMime[mimeStrs.length];
-            for (int i = 0; i < mimes.length; i++) {
-                mimes[i] = ImageMime.createFromMimeType(mimeStrs[i]);
-                if(mimes[i] == null) {
-                	log.error("Unable to match " + mimeStrs[i] + " to a supported format.");
-                }
-            }
-        }
-        
-        // Set default to image/png, if none were specified or acceptable
-        if(mimes == null || mimes[0] == null) {
-        	log.error("Unable not determine supported MIME types based on configuration,"
-        			+" falling back to image/png");
-        	mimes = new ImageMime[0];
-        	mimes[0] = ImageMime.createFromMimeType("image/png");
-        }
-        
-        // Whether to include debug headers with every returned tile
-        String propDebugHeaders = props.getProperty("debugheaders");
-        if (propDebugHeaders != null) {
-            debugHeaders = Boolean.valueOf(propDebugHeaders);
-        }
+		for (int i = 0; i < gridPositions.length; i++) {
+			int[] gridPos = gridPositions[i];
 
-        // How long the system should wait before assuming a thread,
-        // that was trying to get a tile from cache or backend,
-        // is dead.
-        String propCacheLockWait = props.getProperty("cachelockwait");
-        if (propCacheLockWait != null) {
-            cacheLockWait = Integer.valueOf(propCacheLockWait);
-        }
-    }
+			Object ck = cacheKey.createKey(cachePrefix, gridPos[0], gridPos[1],
+					gridPos[2], metaTile.getSRS(), imageFormat
+							.getFileExtension());
 
-    /**
-     * Returns the default image format if strFormat is unset
-     * 
-     * @param strFormat
-     * @return ImageFormat equivalent, or default ImageFormat
-     */
-    public ImageMime getImageFormat(String strFormat) {
-        if(strFormat == null) {
-            return this.mimes[0];
-        } else {
-            return ImageMime.createFromMimeType(strFormat);
-        }
-    }
-    
-    public WMSParameters getWMSParamTemplate() {
-        WMSParameters ret = profile.getWMSParamTemplate();
-        ret.setImageMime(mimes[0].getMimeType());
-        return ret;
-    }
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			try {
+				if (!metaTile.writeTileToStream(i, imageFormat
+						.getInternalName(), out)) {
+					log
+							.error("metaTile.writeTileToStream returned false, no tiles saved");
+				}
+			} catch (IOException ioe) {
+				log
+						.error("Unable to write image tile to ByteArrayOutputStream: "
+								+ ioe.getMessage());
+				ioe.printStackTrace();
+			}
 
-    public void destroy() {
-        cache.destroy();
-        // Not that it really matters:
-        procQueue.clear();
-    }
+			RawTile tile = new RawTile(out.toByteArray());
 
-    public BBOX getBounds() {
-        return this.profile.bbox;
-    }
+			try {
+				cache.set(ck, tile, profile.expireCache);
+			} catch (CacheException ce) {
+				log.error("Unable to save data to cache, stack trace follows: "
+						+ ce.getMessage());
+				ce.printStackTrace();
+			}
+		}
+	}
 
-    public String getProjection() {
-        return this.profile.srs;
-    }
+	/**
+	 * Get a particular tile out of a metatile. This is only used for layers
+	 * that are not to be cached
+	 * 
+	 * @param gridPos
+	 * @param gridPositions
+	 * @param metaTile
+	 * @param imageFormat
+	 * @return
+	 */
+	private byte[] getTile(int[] gridPos, int[][] gridPositions,
+			WMSMetaTile metaTile, ImageMime imageFormat) {
+		for (int i = 0; i < gridPositions.length; i++) {
+			int[] curPos = gridPositions[i];
 
-    public int[][] getCoveredGridLevels(BBOX bounds) {
-        BBOX adjustedBounds = bounds;
-        if(!this.profile.bbox.contains(bounds)) {
-            adjustedBounds = BBOX.intersection(this.profile.bbox, bounds);
-            log.warn("Adjusting bounds from "
-                    + bounds.toString() + " to " + adjustedBounds.toString());
-        }
-        return this.profile.gridCalc.coveredGridLevels(adjustedBounds);
-    }
+			if (curPos.equals(gridPos)) {
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				try {
+					metaTile.writeTileToStream(i,
+							imageFormat.getInternalName(), out);
+				} catch (IOException ioe) {
+					log
+							.error("Unable to write image tile to ByteArrayOutputStream: "
+									+ ioe.getMessage());
+					ioe.printStackTrace();
+				}
 
-    public int[] getMetaTilingFactors() {
-        int[] factorArray = {profile.metaWidth , profile.metaHeight};
-        return factorArray;
-    }
+				return out.toByteArray();
+			}
+		}
+		return null;
+	}
 
-    public String getName() {
-        return this.name;
-    }
+	protected void saveExpirationInformation(WMSMetaTile metaTile) {
+		if (profile.expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
+			profile.expireCache = metaTile.getExpiration();
+			log.trace("Setting expireCache based on metaTile: "
+					+ profile.expireCache);
+		}
+		if (profile.expireClients == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
+			profile.expireClients = metaTile.getExpiration();
+			log.trace("Setting expireClients based on metaTile: "
+					+ profile.expireClients);
+		}
+	}
 
-    public int[] gridLocForBounds(BBOX tileBounds) {
-        return profile.gridCalc.gridLocation(tileBounds);
-    }
+	/**
+	 * 
+	 * @param metaGridLoc
+	 * @return
+	 */
+	protected boolean waitForQueue(int[] metaGridLoc) {
+		boolean wait = addToQueue(metaGridLoc);
+		while (wait) {
+			if (cacheLockWait > 0) {
+				try {
+					Thread.sleep(cacheLockWait);
+				} catch (InterruptedException ie) {
+					log.error("Thread got interrupted... how come?");
+					ie.printStackTrace();
+				}
+			} else {
+				Thread.yield();
+			}
+			Thread.yield();
+			wait = addToQueue(metaGridLoc);
+		}
+		return true;
+	}
 
-    public MimeType getDefaultMimeType() {
-        return mimes[0];
-    }
-    
+	/**
+	 * Synchronization function, ensures that the same metatile is not requested
+	 * simultaneously by two threads.
+	 * 
+	 * TODO Should add a Long representing timestamp, to avoid dead tiles
+	 * 
+	 * @param metaGridLoc
+	 *            the grid positions of the tile
+	 * @return
+	 */
+	private synchronized boolean addToQueue(int[] metaGridLoc) {
+		if (procQueue.containsKey(metaGridLoc)) {
+			return false;
+		} else {
+			procQueue.put(metaGridLoc, new Boolean(true));
+			return true;
+		}
+	}
+
+	/**
+	 * Synchronization function, ensures that the same metatile is not requested
+	 * simultaneously by two threads.
+	 * 
+	 * @param metaGridLoc
+	 *            the grid positions of the tile
+	 * @return
+	 */
+	protected synchronized boolean removeFromQueue(int[] metaGridLoc) {
+		if (procQueue.containsKey(metaGridLoc)) {
+			procQueue.remove(metaGridLoc);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param props
+	 * @throws CacheException
+	 */
+	private void setParametersFromProperties(Properties props,
+			CacheFactory cacheFactory) throws GeoWebCacheException {
+		profile = new WMSLayerProfile(this.name, props);
+
+		// Cache and CacheKey
+		String propCacheBeanId = props.getProperty("cachebeanid");
+		if (propCacheBeanId != null) {
+			cache = cacheFactory.getCache(propCacheBeanId);
+			if (cache == null) {
+				log.error("Unable to create cache for bean id "
+						+ propCacheBeanId);
+			}
+		} else {
+			cache = cacheFactory.getDefaultCache();
+		}
+
+		String propCacheKeyBeanId = props.getProperty("cachebeanid");
+		if (propCacheKeyBeanId == null) {
+			cacheKey = cacheFactory.getCacheKeyFactory().getCacheKey(
+					cache.getDefaultKeyBeanId());
+		} else {
+			cacheKey = cacheFactory.getCacheKeyFactory().getCacheKey(
+					propCacheKeyBeanId);
+		}
+
+		String propCachePrefix = props.getProperty("cacheprefix");
+		if (propCachePrefix == null) {
+			String sanitizedName = name.replace(':', '_');
+			cachePrefix = cache.getDefaultPrefix(sanitizedName);
+
+			log.warn("cachePrefix not defined for layer " + name
+					+ ", using default prefifx and name instead: "
+					+ cachePrefix);
+		} else {
+			cachePrefix = propCachePrefix;
+			log
+					.info("Using cache prefix " + cachePrefix + " for layer "
+							+ name);
+		}
+
+		// Initialize the cache
+		cache.setUp(cachePrefix);
+
+		// Check whether the configuration specifies what MIME types are legal
+		String propImageMIME = props.getProperty("mimetypes");
+		if (propImageMIME != null) {
+			String[] mimeStrs = propImageMIME.split(",");
+			mimes = new ImageMime[mimeStrs.length];
+			for (int i = 0; i < mimes.length; i++) {
+				mimes[i] = ImageMime.createFromMimeType(mimeStrs[i]);
+				if (mimes[i] == null) {
+					log.error("Unable to match " + mimeStrs[i]
+							+ " to a supported format.");
+				}
+			}
+		}
+
+		// Set default to image/png, if none were specified or acceptable
+		if (mimes == null || mimes[0] == null) {
+			log
+					.error("Unable not determine supported MIME types based on configuration,"
+							+ " falling back to image/png");
+			mimes = new ImageMime[0];
+			mimes[0] = ImageMime.createFromMimeType("image/png");
+		}
+
+		// Whether to include debug headers with every returned tile
+		String propDebugHeaders = props.getProperty("debugheaders");
+		if (propDebugHeaders != null) {
+			debugHeaders = Boolean.valueOf(propDebugHeaders);
+		}
+
+		// How long the system should wait before assuming a thread,
+		// that was trying to get a tile from cache or backend,
+		// is dead.
+		String propCacheLockWait = props.getProperty("cachelockwait");
+		if (propCacheLockWait != null) {
+			cacheLockWait = Integer.valueOf(propCacheLockWait);
+		}
+	}
+
+	/**
+	 * Returns the default image format if strFormat is unset
+	 * 
+	 * @param strFormat
+	 * @return ImageFormat equivalent, or default ImageFormat
+	 */
+	public ImageMime getImageFormat(String strFormat) {
+		if (strFormat == null) {
+			return this.mimes[0];
+		} else {
+			return ImageMime.createFromMimeType(strFormat);
+		}
+	}
+
+	public WMSParameters getWMSParamTemplate() {
+		WMSParameters ret = profile.getWMSParamTemplate();
+		ret.setImageMime(mimes[0].getMimeType());
+		return ret;
+	}
+
+	public void destroy() {
+		cache.destroy();
+		// Not that it really matters:
+		procQueue.clear();
+	}
+
+	public BBOX getBounds(int srsIdx) {
+		return this.profile.bbox[srsIdx];
+	}
+
+	public int[][] getCoveredGridLevels(int srsIdx, BBOX bounds) {
+		BBOX adjustedBounds = bounds;
+		if (!this.profile.bbox[srsIdx].contains(bounds)) {
+			adjustedBounds = BBOX.intersection(this.profile.bbox[srsIdx],
+					bounds);
+			log.warn("Adjusting bounds from " + bounds.toString() + " to "
+					+ adjustedBounds.toString());
+		}
+		return this.profile.gridCalc[srsIdx].coveredGridLevels(adjustedBounds);
+	}
+
+	public int[] getMetaTilingFactors() {
+		int[] factorArray = { profile.metaWidth, profile.metaHeight };
+		return factorArray;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public int[] gridLocForBounds(int srsIdx, BBOX tileBounds) {
+		return profile.gridCalc[srsIdx].gridLocation(tileBounds);
+	}
+
+	public MimeType getDefaultMimeType() {
+		return mimes[0];
+	}
+
+	public SRS[] getProjections() {
+		return profile.srs;
+	}
+
+	/**
+	 * Returns the array index for the given SRS.
+	 * This value is used to look up corresponding bounding boxes,
+	 * grids etc. 
+	 * 
+	 * @param reqSRS
+	 * @return the array index for this SRS, -1 otherwise
+	 */
+	public int getSRSIndex(SRS reqSRS) {
+		return profile.getSRSIndex(reqSRS);
+	}
 }

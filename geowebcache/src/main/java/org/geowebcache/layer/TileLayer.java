@@ -25,20 +25,21 @@ import org.geowebcache.util.wms.BBOX;
 
 public interface TileLayer {
 
-    public String supportsProjection(String srs);
+    public String supportsProjection(SRS srs);
     public String supportsMime(String mimeType);
-    public String supportsBbox(String srs, BBOX bounds);
+    public String supportsBbox(SRS srs, BBOX bounds);
     
     public TileResponse getResponse(TileRequest tileRequest, String requestURI, 
             HttpServletResponse response) throws IOException;
     
-    public String getProjection();
-    public BBOX getBounds();
+    public SRS[] getProjections();
+    public int getSRSIndex(SRS reqSRS);
+    public BBOX getBounds(int srsIdx);
     public int[] getMetaTilingFactors();
-    public int[][] getCoveredGridLevels(BBOX bounds);
+    public int[][] getCoveredGridLevels(int srsIdx, BBOX bounds);
     public MimeType getDefaultMimeType();
     public String getName();
     public void destroy();
-    public int[] gridLocForBounds(BBOX bounds);
+    public int[] gridLocForBounds(int srsIdx, BBOX bounds);
     
 }

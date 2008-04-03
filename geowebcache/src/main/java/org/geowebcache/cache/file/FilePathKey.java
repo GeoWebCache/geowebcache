@@ -20,14 +20,15 @@ package org.geowebcache.cache.file;
 import java.io.File;
 
 import org.geowebcache.cache.CacheKey;
+import org.geowebcache.layer.SRS;
 
 public class FilePathKey implements CacheKey {
     public void init() {
     }
 
-    public String createKey(String prefix, int x, int y, int z, String SRS, String format) {
-    	SRS = SRS.replace(':', '_');
-        String filename = prefix + File.separator + SRS + File.separator
+    public String createKey(String prefix, int x, int y, int z, SRS srs, String format) {
+    	String srsStr = srs.toString().replace(':', '_');
+        String filename = prefix + File.separator + srsStr + File.separator
         		+ zeroPadder(z, 2) + File.separator 
         		+ zeroPadder(x / 1000000, 3) + File.separator
                 + zeroPadder((x / 1000) % 1000, 3) + File.separator

@@ -114,8 +114,17 @@ public class GetCapabilitiesConfiguration implements Configuration {
 				log.info("Found layer: " + layer.getName()
 						+ " with LatLon bbox " + bboxStr);
 
-				WMSLayer wmsLayer = getLayer(name, wmsUrl, bboxStr);
-				layerMap.put(name, wmsLayer);
+				WMSLayer wmsLayer = null;
+				try {
+					wmsLayer = getLayer(name, wmsUrl, bboxStr);
+				} catch (GeoWebCacheException gwc) {
+					log.error("Error creating "+layer.getName()
+							+": "+gwc.getMessage());
+				}
+				
+				if(wmsLayer != null) {
+					layerMap.put(name, wmsLayer);
+				}
 			}
 		}
 
@@ -123,10 +132,10 @@ public class GetCapabilitiesConfiguration implements Configuration {
 	}
 
 	private WMSLayer getLayer(String name, String wmsurl, String bboxStr)
-			throws CacheException {
+			throws GeoWebCacheException {
 		Properties props = new Properties();
 		props.setProperty(WMSLayerProfile.WMS_URL, wmsurl);
-		props.setProperty(WMSLayerProfile.WMS_SRS, "EPSG:4326");
+		props.setProperty(WMSLayerProfile.WMS_SRS, "EPSG:4326;EPSG:900913");
 		props.setProperty(WMSLayerProfile.WMS_BBOX, bboxStr);
 
 		if (this.mimeTypes == null || this.mimeTypes.length() == 0) {

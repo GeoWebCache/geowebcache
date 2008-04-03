@@ -33,9 +33,12 @@ public abstract class MetaTile {
 
     protected int metaY; // Y metatiling factor, after adjusting to bounds
 
+    protected SRS srs;
     
     
-    protected MetaTile(int[] gridBounds, int[] tileGridPosition, int metaX, int metaY) {
+    protected MetaTile(SRS srs, int[] gridBounds, int[] tileGridPosition,
+    		int metaX, int metaY) {
+    	this.srs = srs;
         this.metaX = metaX;
         this.metaY = metaY;
         
@@ -118,5 +121,9 @@ public abstract class MetaTile {
     
     public int[][] getTilesGridPositions() {
         return tilesGridPositions;
+    }
+    
+    public SRS getSRS() {
+    	return this.srs;
     }
 }

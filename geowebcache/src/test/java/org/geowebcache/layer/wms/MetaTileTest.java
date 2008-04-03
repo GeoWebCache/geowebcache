@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import junit.framework.TestCase;
 
+import org.geowebcache.layer.SRS;
 import org.geowebcache.util.wms.BBOX;
 import org.geowebcache.util.wms.GridCalculator;
 
@@ -15,25 +16,25 @@ public class MetaTileTest extends TestCase {
     }
 
     public void test1MetaTile() throws Exception {
-        WMSLayerProfile profile = new WMSLayerProfile();
-        profile.bbox = new BBOX(0, 0, 180, 90);
-        profile.gridBase = new BBOX(-180, -90, 180, 90);
-        profile.metaHeight = 1;
-        profile.metaWidth = 1;
+        BBOX bbox = new BBOX(0, 0, 180, 90);
+        BBOX gridBase = new BBOX(-180, -90, 180, 90);
+        int metaHeight = 1;
+        int metaWidth = 1;
         double maxTileWidth = 180.0;
         double maxTileHeight = 180.0;
-        profile.zoomStart = 0;
-        profile.zoomStop = 20;
-
+        int zoomStart = 0;
+        int zoomStop = 20;
+        SRS srs = new SRS(4326);
+        
         GridCalculator gridCalc = new GridCalculator(
-                profile.gridBase, profile.bbox, 
-                profile.zoomStart, profile.zoomStop, 
-                profile.metaWidth, profile.metaHeight, 
+                gridBase, bbox, 
+                zoomStart, zoomStop, 
+                metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
         
         int[] gridPos = { 0, 0, 0 };
         //int[] gridBounds, int[] tileGridPosition, int metaX, int metaY
-        WMSMetaTile mt = new WMSMetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
+        WMSMetaTile mt = new WMSMetaTile(srs, gridCalc.getGridBounds(gridPos[2]), gridPos, metaWidth, metaHeight);
 
         int[] solution = { 0, 0, 0, 0, 0 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
@@ -46,24 +47,25 @@ public class MetaTileTest extends TestCase {
     }
 
     public void test2MetaTile() throws Exception {
-        WMSLayerProfile profile = new WMSLayerProfile();
-        profile.bbox = new BBOX(0, 0, 180, 90);
-        profile.gridBase = new BBOX(-180, -90, 180, 90);
-        profile.metaHeight = 3;
-        profile.metaWidth = 3;
+        BBOX bbox = new BBOX(0, 0, 180, 90);
+        BBOX gridBase = new BBOX(-180, -90, 180, 90);
+        int metaHeight = 3;
+        int metaWidth = 3;
         double maxTileWidth = 180.0;
         double maxTileHeight = 180.0;
-        profile.zoomStart = 0;
-        profile.zoomStop = 20;
-
+        int zoomStart = 0;
+        int zoomStop = 20;
+        SRS srs = new SRS(4326);
+        
         GridCalculator gridCalc = new GridCalculator(
-                profile.gridBase, profile.bbox, 
-                profile.zoomStart, profile.zoomStop, 
-                profile.metaWidth, profile.metaHeight, 
+                gridBase, bbox, 
+                zoomStart, zoomStop, 
+                metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
         
         int[] gridPos = { 127, 63, 6 };
-        WMSMetaTile mt = new WMSMetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
+        WMSMetaTile mt = new WMSMetaTile(srs, 
+        		gridCalc.getGridBounds(gridPos[2]), gridPos, metaWidth, metaHeight);
 
         int[] solution = { 126, 63, 127, 63, 6 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
@@ -76,26 +78,28 @@ public class MetaTileTest extends TestCase {
     }
 
     public void test3MetaTile() throws Exception {
-        WMSLayerProfile profile = new WMSLayerProfile();
-        profile.bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
-        profile.gridBase = new BBOX(-20037508.34, -20037508.34, 20037508.34,
-                20037508.34);
-        profile.metaHeight = 1;
-        profile.metaWidth = 1;
+        BBOX bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
+        BBOX gridBase = new BBOX(
+        		-20037508.34, -20037508.34, 
+        		20037508.34, 20037508.34);
+        int metaHeight = 1;
+        int metaWidth = 1;
         double maxTileWidth = 20037508.34 * 2;
         double maxTileHeight = 20037508.34 * 2;
-        profile.zoomStart = 0;
-        profile.zoomStop = 20;
-
-        GridCalculator gridCalc = new GridCalculator(
-                profile.gridBase, profile.bbox, 
-                profile.zoomStart, profile.zoomStop, 
-                profile.metaWidth, profile.metaHeight, 
-                maxTileWidth, maxTileHeight);
+        int zoomStart = 0;
+        int zoomStop = 20;
+        SRS srs = new SRS(900913);
         
+        GridCalculator gridCalc = new GridCalculator(
+                gridBase, bbox, 
+                zoomStart, zoomStop, 
+                metaWidth, metaHeight, 
+                maxTileWidth, maxTileHeight);
+              
         int[] gridPos = { 0, 0, 0 };
-        WMSMetaTile mt = new WMSMetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
-
+        WMSMetaTile mt = new WMSMetaTile(srs, 
+        		gridCalc.getGridBounds(gridPos[2]), gridPos, metaWidth, metaHeight);
+        
         int[] solution = { 0, 0, 0, 0, 0 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
         if (!test) {
@@ -107,25 +111,28 @@ public class MetaTileTest extends TestCase {
     }
 
     public void test4MetaTile() throws Exception {
-        WMSLayerProfile profile = new WMSLayerProfile();
-        profile.bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
-        profile.gridBase = new BBOX(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
-        profile.metaHeight = 3;
-        profile.metaWidth = 3;
+        BBOX bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
+        BBOX gridBase = new BBOX(
+        		-20037508.34, -20037508.34, 
+        		20037508.34, 20037508.34);
+        int metaHeight = 3;
+        int metaWidth = 3;
         double maxTileWidth = 20037508.34 * 2;
         double maxTileHeight = 20037508.34 * 2;
-        profile.zoomStart = 0;
-        profile.zoomStop = 20;
-
+        int zoomStart = 0;
+        int zoomStop = 20;
+        SRS srs = new SRS(900913);
+        
         GridCalculator gridCalc = new GridCalculator(
-                profile.gridBase, profile.bbox, 
-                profile.zoomStart, profile.zoomStop, 
-                profile.metaWidth, profile.metaHeight, 
+                gridBase, bbox, 
+                zoomStart, zoomStop, 
+                metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
         
         int[] gridPos = { 70, 70, 6 };
-        WMSMetaTile mt = new WMSMetaTile(gridCalc.getGridBounds(gridPos[2]), gridPos, profile.metaWidth, profile.metaHeight);
-
+        WMSMetaTile mt = new WMSMetaTile(srs, 
+        		gridCalc.getGridBounds(gridPos[2]), gridPos, metaWidth, metaHeight);
+        
         int[] solution = { 69, 69, 63, 63, 6 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
         if (test) {

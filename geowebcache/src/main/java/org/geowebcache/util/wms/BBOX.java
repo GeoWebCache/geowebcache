@@ -19,6 +19,7 @@ package org.geowebcache.util.wms;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.layer.SRS;
 
 public class BBOX {
     private static Log log = LogFactory
@@ -196,43 +197,49 @@ public class BBOX {
      * This is a bad hack, but a necessary one.
      * 
      * @param srs
+     * @throws BBOXException 
      */
-    public void adjustForGeoServer(String srs) {
+    public void adjustForGeoServer(SRS srs) throws BBOXException {
         double minX = 0;
         double minY = 0;
         double maxX = 0;
         double maxY = 0;
         
-        if(srs.equalsIgnoreCase("epsg:900913")) {
+        if(srs.getNumber() == 900913) {
             minX = -20037508.34 * 0.995;
             minY = -20037508.34 * 0.995;
             maxX = 20037508.34 * 0.995;
             maxY = 20037508.34 * 0.995;
                         
-        } else if(srs.equalsIgnoreCase("epsg:4326")) {
-            minX = -180.0 * 0.9999;
-            minY = -90.0 * 0.99995;
-            maxX = 180.0 * 0.9999;
-            maxY =  90.0* 0.99995;
+        } else if(srs.getNumber() == 4326) {
+            minX = -180.0 * 0.995;
+            minY = -90.0 * 0.995;
+            maxX = 180.0 * 0.995;
+            maxY =  90.0 * 0.995;
         } else {
             return;
         }
         
-        if(this.coords[0] < minX ) {
+        if(this.coords[0] < minX) {
             this.coords[0] = minX;
-            log.warn("Limited minX bounds "+Double.toString(minX)+" to avoid GeoServer problems");
+            log.trace("Limited minX bounds "+Double.toString(minX)+" to avoid GeoServer problems");
         }
-        if(this.coords[1] < minY ) {
+        if(this.coords[1] < minY) {
             this.coords[1] = minY;
-            log.warn("Limited minY bounds "+Double.toString(minY)+" to avoid GeoServer problems");
+            log.trace("Limited minY bounds "+Double.toString(minY)+" to avoid GeoServer problems");
         }
-        if(this.coords[2] > maxX ) {
+        if(this.coords[2] > maxX) {
             this.coords[2] = maxX;
-            log.warn("Limited maxX bounds "+Double.toString(maxX)+" to avoid GeoServer problems");
+            log.trace("Limited maxX bounds "+Double.toString(maxX)+" to avoid GeoServer problems");
         }
-        if(this.coords[3] > maxY ) {
+        if(this.coords[3] > maxY) {
             this.coords[3] = maxY;
-            log.warn("Limited maxY bounds "+Double.toString(maxY)+" to avoid GeoServer problems");
+            log.trace("Limited maxY bounds "+Double.toString(maxY)+" to avoid GeoServer problems");
+        }
+        
+        // Need to do another sanity check at this point
+        if(! this.isSane()) {
+        	throw new BBOXException("Adjusted BBOX " + this.toString() + " is no longer sane.");
         }
     }
 }

@@ -17,18 +17,22 @@
  */
 package org.geowebcache.cache;
 
+import org.geowebcache.layer.SRS;
+
 /**
  * Interface to define cache keys.
  * 
  * @author Arne Kepp, The Open Planning Project, (C) 2007
  */
 public interface CacheKey {
-    static int KEY_FILE_PATH = 1;
-    static int KEY_SERIALIZABLE_OBJECT = 2;
+	static int KEY_FILE_PATH = 1;
 
-    public void init();
+	static int KEY_SERIALIZABLE_OBJECT = 2;
 
-    public Object createKey(String prefix, int x, int y, int z, String SRS, String format);
+	public void init();
 
-    int getType();
+	public Object createKey(String prefix, int x, int y, int z, SRS srs,
+			String format);
+
+	int getType();
 }

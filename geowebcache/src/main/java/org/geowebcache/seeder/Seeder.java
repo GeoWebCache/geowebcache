@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.mime.ImageMime;
@@ -44,13 +45,24 @@ public class Seeder {
         this.layer = layer;
     }
 
-    public int doSeed(int zoomStart, int zoomStop, ImageMime imageFormat,
-            BBOX bounds, HttpServletResponse response) throws IOException {
+    /**
+     * 
+     * @param zoomStart
+     * @param zoomStop
+     * @param imageFormat
+     * @param srs
+     * @param bounds
+     * @param response
+     * @return
+     * @throws IOException
+     */
+    private int doSeed(int zoomStart, int zoomStop, ImageMime imageFormat,
+            SRS srs, BBOX bounds, HttpServletResponse response) throws IOException {
         response.setContentType("text/html");
 
         PrintWriter pw = response.getWriter();
-        
-        int[][] coveredGridLevels = layer.getCoveredGridLevels(bounds);
+        int srsIdx = layer.getSRSIndex(srs);
+        int[][] coveredGridLevels = layer.getCoveredGridLevels(srsIdx, bounds);
         int[] metaTilingFactors = layer.getMetaTilingFactors();
         
         infoStart(pw, zoomStart, zoomStop, imageFormat, bounds);
@@ -69,7 +81,7 @@ public class Seeder {
                     infoTile(pw, count++);
                     int[] gridLoc = { gridx , gridy , level };
                     
-                    TileRequest tileReq = new TileRequest(gridLoc, imageFormat.getMimeType(), layer.getProjection());
+                    TileRequest tileReq = new TileRequest(gridLoc, imageFormat.getMimeType(), srs);
                     layer.getResponse(tileReq, "seeder", response);
                     
                     // Next column
@@ -150,16 +162,30 @@ public class Seeder {
         pw.flush();
     }
     
-    public static int seed(TileLayer layer, int zoomStart, int zoomStop, String format, BBOX bounds,
+    /**
+     * 
+     * @param layer
+     * @param zoomStart
+     * @param zoomStop
+     * @param format
+     * @param bounds
+     * @param response
+     * @return
+     * @throws IOException
+     */
+    public static int seed(TileLayer layer, int zoomStart, int zoomStop, 
+    		String format, SRS srs, BBOX bounds,
             HttpServletResponse response) throws IOException {
 
         String complaint = null;
 
+        int srsIdx = layer.getSRSIndex(srs);
+        
         // Check that we support this
         if (bounds == null) {
-            bounds = layer.getBounds();
+            bounds = layer.getBounds(srsIdx);
         } else {
-            if (null == layer.supportsBbox(layer.getProjection(), bounds)) {
+            if (null == layer.supportsBbox(srs, bounds)) {
                 complaint = "Request to seed outside of bounds: "
                         + bounds.toString();
                 log.error(complaint);
@@ -221,7 +247,7 @@ public class Seeder {
         Seeder aSeeder = new Seeder(layer);
         
         int retVal = aSeeder.doSeed(
-                zoomStart, zoomStop, mime, bounds,response);
+                zoomStart, zoomStop, mime, srs, bounds,response);
 
         return retVal;
     }

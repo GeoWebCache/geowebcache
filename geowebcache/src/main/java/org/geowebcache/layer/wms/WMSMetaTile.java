@@ -36,7 +36,9 @@ import javax.media.jai.operator.CropDescriptor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.MetaTile;
+import org.geowebcache.layer.SRS;
 import org.geowebcache.service.Request;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.wms.BBOX;
@@ -59,8 +61,8 @@ public class WMSMetaTile extends MetaTile {
      * @param profile
      * @param initGridPosition
      */
-    protected WMSMetaTile(int[] gridBounds, int[] tileGridPosition, int metaX, int metaY) {
-        super(gridBounds, tileGridPosition, metaX, metaY);
+    protected WMSMetaTile(SRS srs, int[] gridBounds, int[] tileGridPosition, int metaX, int metaY) {
+        super(srs, gridBounds, tileGridPosition, metaX, metaY);
     }
 
     
@@ -73,16 +75,18 @@ public class WMSMetaTile extends MetaTile {
      * @param imageMime the desired image format
      * @return
      */
-    protected String doRequest(WMSLayerProfile profile, String imageMime) {
+    protected String doRequest(WMSLayerProfile profile, SRS srs, String imageMime) 
+    throws GeoWebCacheException {
         WMSParameters wmsparams = profile.getWMSParamTemplate();
 
+        int srsIdx = profile.getSRSIndex(srs);
         // Fill in the blanks
         wmsparams.setImageMime(imageMime);
-
+        wmsparams.setSrs(srs.toString());
         wmsparams.setWidth(super.metaX * profile.width);
         wmsparams.setHeight(metaY * profile.height);
-        BBOX metaBbox = profile.gridCalc.bboxFromGridBounds(metaTileGridBounds);
-        metaBbox.adjustForGeoServer(wmsparams.getSrs());
+        BBOX metaBbox = profile.gridCalc[srsIdx].bboxFromGridBounds(metaTileGridBounds);
+        metaBbox.adjustForGeoServer(srs);
         wmsparams.setBBOX(metaBbox);
 
         

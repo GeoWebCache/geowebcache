@@ -222,10 +222,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
         	OutputStream os = response.getOutputStream();
         	os.write(tileResponse.data);
         	os.flush();
-        } catch (EofException eof) {
-        	log.debug("Caught org.mortbay.jetty.EofException");
-        } catch (SocketException se) {
-        	log.error("Caught java.net.SocketException");
+        } catch (IOException ioe) {
+        	log.debug("Caught IOException"+ioe.getMessage());
         }
     }
 }

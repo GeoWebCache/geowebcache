@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.service.Service;
@@ -53,7 +54,8 @@ public class VEConverter extends Service {
 
         int[] gridLoc = VEConverter.convert(strQuadKey);
 
-        return new TileRequest(gridLoc, mimeType, "EPSG:900913");
+        SRS srs = new SRS(900913);
+        return new TileRequest(gridLoc, mimeType, srs);
     }
 
     /**

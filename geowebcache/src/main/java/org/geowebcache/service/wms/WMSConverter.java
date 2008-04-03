@@ -18,6 +18,8 @@ package org.geowebcache.service.wms;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.service.Service;
@@ -34,11 +36,14 @@ public class WMSConverter extends Service {
     }
 
     public TileRequest getTileRequest(TileLayer tileLayer,
-            HttpServletRequest request) {
+            HttpServletRequest request) throws GeoWebCacheException {
 
         WMSParameters wmsParams = new WMSParameters(request);
 
-        return new TileRequest(tileLayer.gridLocForBounds(wmsParams.getBBOX()),
-                wmsParams.getImageMime(), wmsParams.getSrs());
+        SRS srs = new SRS(wmsParams.getSrs());
+        int srsIdx = tileLayer.getSRSIndex(srs);
+        return new TileRequest(
+        		tileLayer.gridLocForBounds(srsIdx,wmsParams.getBBOX()),
+                wmsParams.getImageMime(), srs);
     }
 }
