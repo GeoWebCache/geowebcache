@@ -1,277 +1,279 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.opengeo</groupId>
-  <artifactId>geowebcache</artifactId>
-  <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
-  <name>geowebcache</name>
-  <url>http://geowebcache.org</url>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.opengeo</groupId>
+	<artifactId>geowebcache</artifactId>
+	<packaging>jar</packaging>
+	<version>1.0-SNAPSHOT</version>
+	<name>geowebcache</name>
+	<url>http://geowebcache.org</url>
 
- <properties>
-  <gs.version>1.7.0-SNAPSHOT</gs.version>
-  <gt.version>2.5-SNAPSHOT</gt.version>
-  <spring.version>2.5.2</spring.version>
-  <java.awt.headless>true</java.awt.headless>
-  <jalopy.phase>disabled</jalopy.phase>
-  <jalopy.srcExcludesPattern>disabled</jalopy.srcExcludesPattern>
-  <test.maxHeapSize>512M</test.maxHeapSize>
- </properties>
+	<properties>
+		<gs.version>1.7.0-SNAPSHOT</gs.version>
+		<gt.version>2.5-SNAPSHOT</gt.version>
+		<spring.version>2.5.2</spring.version>
+		<java.awt.headless>true</java.awt.headless>
+		<jalopy.phase>disabled</jalopy.phase>
+		<jalopy.srcExcludesPattern>disabled</jalopy.srcExcludesPattern>
+		<test.maxHeapSize>512M</test.maxHeapSize>
+	</properties>
 
-  <repositories>  
-    <repository>
-      <id>geotools</id>
-      <name>geotools</name>
-      <url>http://maven.geotools.fr/repository</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <layout>legacy</layout>
-    </repository>
-    <repository>
-      <id>geotools</id>
-      <name>geotools</name>
-      <url>http://maven.geotools.fr/repository/</url>
-      <snapshots>
-      <enabled>false</enabled>
-      </snapshots>
-      <layout>legacy</layout>
-    </repository>
-    <repository>
-      <id>refractions</id>
-      <name>refractions</name>
-      <url>http://lists.refractions.net/m2</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>opengeo</id>
-      <name>opengeo</name>
-      <url>http://repo.opengeo.org</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>  
+	<repositories>
+		<repository>
+			<id>geotools</id>
+			<name>geotools</name>
+			<url>http://maven.geotools.fr/repository</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<layout>legacy</layout>
+		</repository>
+		<repository>
+			<id>geotools</id>
+			<name>geotools</name>
+			<url>http://maven.geotools.fr/repository/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<layout>legacy</layout>
+		</repository>
+		<repository>
+			<id>refractions</id>
+			<name>refractions</name>
+			<url>http://lists.refractions.net/m2</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>opengeo</id>
+			<name>opengeo</name>
+			<url>http://repo.opengeo.org</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
 
-  <distributionManagement>
-    <repository>
-      <id>opengeo</id>
-      <name>opengeo</name>
-      <url>dav:http://repo.opengeo.org</url>
-    </repository>
-  </distributionManagement>
+	<distributionManagement>
+		<repository>
+			<id>opengeo</id>
+			<name>opengeo</name>
+			<url>dav:http://repo.opengeo.org</url>
+		</repository>
+	</distributionManagement>
 
-  <dependencies>
+	<dependencies>
 
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt2-wms</artifactId>
-      <version>2.5-SNAPSHOT</version>
-    </dependency>
-   
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <version>2.4</version>
-      <scope>provided</scope>
-    </dependency>
-    
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>1.1</version>
-    </dependency>
-    
-    <dependency>
-      <groupId>jcs</groupId>
-      <artifactId>jcs</artifactId>
-      <version>1.3</version>
-       <exclusions>
-         <exclusion>
-           <groupId>mysql</groupId>
-           <artifactId>mysql-connector-java</artifactId>
-         </exclusion>
-         <exclusion>
-           <groupId>berkeleydb</groupId>
-           <artifactId>berkeleydb</artifactId>
-         </exclusion>
-         <exclusion>
-           <groupId>hsqldb</groupId>
-           <artifactId>hsqldb</artifactId>
-         </exclusion>
-       </exclusions>
-    </dependency>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt2-wms</artifactId>
+			<version>2.5-SNAPSHOT</version>
+		</dependency>
 
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.4</version>
+			<scope>provided</scope>
+		</dependency>
 
-    <!-- Java Advanced Imaging (JAI) -->
-    <dependency>
-      <groupId>javax.media</groupId>
-      <artifactId>jai_core</artifactId>
-      <version>1.1.3</version>
-    </dependency>
-    
-    <dependency>
-      <groupId>javax.media</groupId>
-      <artifactId>jai_codec</artifactId>
-      <version>1.1.3</version>
-    </dependency>
-    
-    <dependency>
-      <groupId>javax.media</groupId>
-      <artifactId>jai_imageio</artifactId>
-      <version>1.1</version>
-    </dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1</version>
+		</dependency>
 
-   <dependency>
-    <groupId>org.geotools</groupId>
-    <artifactId>gt2-wms</artifactId>
-    <version>${gt.version}</version>
-   </dependency>
-    <!-- dependency>
-	<groupId>jdom</groupId>
-        <artifactId>jdom</artifactId>
-        <version>1.0</version>
-        <exclusions>
-          <exclusion>
-	    <groupId>xerces</groupId>
-	    <artifactId>xerces</artifactId>
-	  </exclusion>
-        </exclusions>
-    </dependency -->
+		<dependency>
+			<groupId>jcs</groupId>
+			<artifactId>jcs</artifactId>
+			<version>1.3</version>
+			<exclusions>
+				<exclusion>
+					<groupId>mysql</groupId>
+					<artifactId>mysql-connector-java</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>berkeleydb</groupId>
+					<artifactId>berkeleydb</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>hsqldb</groupId>
+					<artifactId>hsqldb</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
-    <!-- Spring dependencies -->
-   <dependency>
-    <groupId>org.springframework</groupId>
-    <artifactId>spring-beans</artifactId>
-    <version>${spring.version}</version>
-   </dependency>
-   <dependency>
-    <groupId>org.springframework</groupId>
-    <artifactId>spring-core</artifactId>
-    <version>${spring.version}</version>
-   </dependency>
-   <dependency>
-    <groupId>org.springframework</groupId>
-    <artifactId>spring-context</artifactId>
-    <version>${spring.version}</version>
-   </dependency>
-   <dependency>
-    <groupId>org.springframework</groupId>
-    <artifactId>spring-webmvc</artifactId>
-    <version>${spring.version}</version>
-   </dependency>
-    
-    <!--  Jetty starter dependencies -->
-    <dependency>
-      <groupId>org.mortbay.jetty</groupId>
-      <artifactId>jetty</artifactId>
-      <version>6.1.8</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mortbay.jetty</groupId>
-      <artifactId>jsp-2.0</artifactId>
-      <version>6.1.8</version>
-      <type>pom</type>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-simple</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>jcl104-over-slf4j</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-  </dependencies>
-  
-  <build>
-    <plugins>
-      <plugin>
-         <groupId>org.codehaus.mojo</groupId>
-         <artifactId>tomcat-maven-plugin</artifactId>
-         <configuration>
-           <url>http://localhost:8080/manager</url>
-           <server>localhost</server>
-         </configuration>
-      </plugin>
-      
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
-        </configuration>
-      </plugin>
-      
-      <plugin>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>maven-jetty-plugin</artifactId>
-        <configuration>
-          <scanIntervalSeconds>10</scanIntervalSeconds>
-          <connectors>
-            <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-              <port>8080</port>
-              <maxIdleTime>60000</maxIdleTime>
-            </connector>
-          </connectors>
-        </configuration>
-      </plugin>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
 
-      <plugin>
-        <artifactId>maven-war-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>install</phase>
-            <goals>
-              <goal>war</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+		<!-- Java Advanced Imaging (JAI) -->
+		<dependency>
+			<groupId>javax.media</groupId>
+			<artifactId>jai_core</artifactId>
+			<version>1.1.3</version>
+		</dependency>
 
-      <plugin>
-        <artifactId>maven-source-plugin</artifactId>
-        <configuration>
-          <attach>true</attach>
-        </configuration>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+		<dependency>
+			<groupId>javax.media</groupId>
+			<artifactId>jai_codec</artifactId>
+			<version>1.1.3</version>
+		</dependency>
 
-    </plugins>
+		<dependency>
+			<groupId>javax.media</groupId>
+			<artifactId>jai_imageio</artifactId>
+			<version>1.1</version>
+		</dependency>
 
-    <extensions>
-      <extension>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-webdav</artifactId>
-        <version>1.0-beta-2</version>
-      </extension>
-    </extensions>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt2-wms</artifactId>
+			<version>${gt.version}</version>
+		</dependency>
+		<!-- dependency>
+			<groupId>jdom</groupId>
+			<artifactId>jdom</artifactId>
+			<version>1.0</version>
+			<exclusions>
+			<exclusion>
+			<groupId>xerces</groupId>
+			<artifactId>xerces</artifactId>
+			</exclusion>
+			</exclusions>
+			</dependency -->
 
-    <finalName>geowebcache</finalName>
-    
-  </build>
-  
+		<!-- Spring dependencies -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+
+		<!--  Jetty starter dependencies -->
+		<dependency>
+			<groupId>org.mortbay.jetty</groupId>
+			<artifactId>jetty</artifactId>
+			<version>6.1.8</version>
+			<!-- scope>test</scope -->
+		</dependency>
+		<dependency>
+			<groupId>org.mortbay.jetty</groupId>
+			<artifactId>jsp-2.0</artifactId>
+			<version>6.1.8</version>
+			<type>pom</type>
+			<!-- scope>test</scope -->
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-simple</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>jcl104-over-slf4j</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>tomcat-maven-plugin</artifactId>
+				<configuration>
+					<url>http://localhost:8080/manager</url>
+					<server>localhost</server>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>maven-jetty-plugin</artifactId>
+				<configuration>
+					<scanIntervalSeconds>10</scanIntervalSeconds>
+					<connectors>
+						<connector
+							implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+							<port>8080</port>
+							<maxIdleTime>60000</maxIdleTime>
+						</connector>
+					</connectors>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-war-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<goals>
+							<goal>war</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-source-plugin</artifactId>
+				<configuration>
+					<attach>true</attach>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-webdav</artifactId>
+				<version>1.0-beta-2</version>
+			</extension>
+		</extensions>
+
+		<finalName>geowebcache</finalName>
+
+	</build>
+
 </project>
