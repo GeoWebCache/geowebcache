@@ -120,6 +120,15 @@ public class BBOX {
         return buff.toString();
     }
 
+    public String toKML() {
+        return "<LatLonAltBox>"
+        +"<north>"+Double.toString(coords[3])+"</north>"
+        +"<south>"+Double.toString(coords[1])+"</south>"
+        +"<east>"+Double.toString(coords[2])+"</east>"
+        +"<west>"+Double.toString(coords[0])+"</west>"
+        +"</LatLonAltBox>";
+    }
+    
     /**
      * Comparing whether the differences between the bounding boxes can be
      * ignored.

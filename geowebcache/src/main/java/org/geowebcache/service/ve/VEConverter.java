@@ -26,6 +26,7 @@ import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.service.Service;
+import org.geowebcache.service.ServiceRequest;
 import org.geowebcache.util.ServletUtils;
 
 /**
@@ -42,8 +43,8 @@ public class VEConverter extends Service {
         super(SERVICE_VE);
     }
 
-    public String getLayerIdentifier(HttpServletRequest request) {
-        return super.getLayersParameter(request);
+    public ServiceRequest getServiceRequest(HttpServletRequest request)  {
+        return new ServiceRequest(super.getLayersParameter(request));
     }
 
     public TileRequest getTileRequest(TileLayer tileLayer,

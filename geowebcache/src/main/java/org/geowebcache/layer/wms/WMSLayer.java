@@ -613,7 +613,7 @@ public class WMSLayer implements TileLayer {
 		return this.name;
 	}
 
-	public int[] gridLocForBounds(int srsIdx, BBOX tileBounds) {
+	public int[] getGridLocForBounds(int srsIdx, BBOX tileBounds) {
 		return profile.gridCalc[srsIdx].gridLocation(tileBounds);
 	}
 
@@ -635,5 +635,9 @@ public class WMSLayer implements TileLayer {
 	 */
 	public int getSRSIndex(SRS reqSRS) {
 		return profile.getSRSIndex(reqSRS);
+	}
+
+	public BBOX getBboxForGridLoc(int srsIdx, int[] gridLoc) {
+		return profile.gridCalc[srsIdx].bboxFromGridLocation(gridLoc);
 	}
 }

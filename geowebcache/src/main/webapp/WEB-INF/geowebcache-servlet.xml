@@ -41,7 +41,9 @@
 		class="org.geowebcache.service.gmaps.GMapsConverter"/>
 	<bean id="serviceVE"
 		class="org.geowebcache.service.ve.VEConverter"/>
-	
+	<bean id="serviceKML"
+		class="org.geowebcache.service.kml.KMLService"/>
+			
 	<!-- Caches and associated Cache Keys -->
 	<bean id="cacheJCS" class="org.geowebcache.cache.jcs.JCSCache">
 		<property name="defaultKeyBeanId"><value>cacheKeyJCS</value></property>

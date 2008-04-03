@@ -23,6 +23,7 @@ import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.service.Service;
+import org.geowebcache.service.ServiceRequest;
 
 public class WMSConverter extends Service {
     public static final String SERVICE_WMS = "/wms";
@@ -31,8 +32,8 @@ public class WMSConverter extends Service {
         super(SERVICE_WMS);
     }
 
-    public String getLayerIdentifier(HttpServletRequest request) {
-        return super.getLayersParameter(request);
+    public ServiceRequest getServiceRequest(HttpServletRequest request)  {
+        return new ServiceRequest(super.getLayersParameter(request));
     }
 
     public TileRequest getTileRequest(TileLayer tileLayer,
@@ -43,7 +44,7 @@ public class WMSConverter extends Service {
         SRS srs = new SRS(wmsParams.getSrs());
         int srsIdx = tileLayer.getSRSIndex(srs);
         return new TileRequest(
-        		tileLayer.gridLocForBounds(srsIdx,wmsParams.getBBOX()),
+        		tileLayer.getGridLocForBounds(srsIdx,wmsParams.getBBOX()),
                 wmsParams.getImageMime(), srs);
     }
 }

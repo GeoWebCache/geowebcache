@@ -35,6 +35,7 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.layer.TileResponse;
 import org.geowebcache.service.Service;
+import org.geowebcache.service.ServiceRequest;
 import org.mortbay.jetty.EofException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
@@ -130,20 +131,27 @@ public class GeoWebCacheDispatcher extends AbstractController {
         // 1) Figure out what Service should handle this request
         Service service = findService(request);
 
-        // 2) Find out what layer will be used
-        String layerIdent = service.getLayerIdentifier(request);
+        // 2) Find out what layer will be used and how
+        ServiceRequest servReq = service.getServiceRequest(request);
         
         // 3) Get the configuration that has to respond to this request
-        TileLayer layer = tileLayerDispatcher.getTileLayer(layerIdent);
+        TileLayer layer = 
+        	tileLayerDispatcher.getTileLayer(servReq.getLayerIdent());
         
-        // 4) Convert to internal representation, using info from request and layer 
-        TileRequest tileRequest = service.getTileRequest(layer, request);
+        // Check where this should be dispatched
+        if(servReq.getType() == ServiceRequest.SERVICE_REQUEST_TILE) {
+        	// A4) Convert to internal representation, using info from request and layer 
+        	TileRequest tileRequest = service.getTileRequest(layer, request);
         
-        // 5) Ask the layer to provide the tile
-        TileResponse tileResponse = layer.getResponse(tileRequest, request.getRequestURI(), response);
+        	// A5) Ask the layer to provide the tile
+        	TileResponse tileResponse = layer.getResponse(tileRequest, request.getRequestURI(), response);
         
-        // 6) Write response
-        writeData(response, tileResponse);
+        	// A6) Write response
+        	writeData(response, tileResponse);
+        } else {
+        	// B4 The service object takes it from here
+        	service.handleRequest(layer, request, response);
+        }
     }
     
     /**

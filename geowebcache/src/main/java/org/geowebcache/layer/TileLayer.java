@@ -40,6 +40,7 @@ public interface TileLayer {
     public MimeType getDefaultMimeType();
     public String getName();
     public void destroy();
-    public int[] gridLocForBounds(int srsIdx, BBOX bounds);
+    public int[] getGridLocForBounds(int srsIdx, BBOX bounds);
+    public BBOX getBboxForGridLoc(int srsIdx, int[] gridLoc);
     
 }
