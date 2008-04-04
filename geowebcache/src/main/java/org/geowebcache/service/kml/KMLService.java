@@ -193,11 +193,13 @@ public class KMLService extends Service {
 		int[][] linkGridLocs = tileLayer.getZoomInGridLoc(srsIdx, gridLoc);
 
 		for (int i = 0; i < 4; i++) {
-			// Need to prep the grid location for the next one
-			BBOX linkBbox = tileLayer
-					.getBboxForGridLoc(srsIdx, linkGridLocs[i]);
-			xml += createNetworkLinkElement(tileLayer, linkGridLocs[i],
-					linkBbox);
+			// Only add this link if it is within the bounds
+			if (linkGridLocs[i][2] > 0) {
+				BBOX linkBbox = tileLayer.getBboxForGridLoc(srsIdx,
+						linkGridLocs[i]);
+				xml += createNetworkLinkElement(tileLayer, linkGridLocs[i],
+						linkBbox);
+			}
 		}
 
 		// 3) Overlay
@@ -215,7 +217,7 @@ public class KMLService extends Service {
 				+ "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
 				+ "<Document>\n"
 				+ "<Region>\n"
-				+ "<Lod><minLodPixels>128</minLodPixels><maxLodPixels>-1</maxLodPixels></Lod>\n"
+				+ "<Lod><minLodPixels>128</minLodPixels><maxLodPixels>384</maxLodPixels></Lod>\n"
 				+ bbox.toKML() + "</Region>\n";
 	}
 
@@ -229,7 +231,8 @@ public class KMLService extends Service {
 				+ gridLocString
 				+ "</name>"
 				+ "<Region>"
-				+ "<Lod><minLodPixels>128</minLodPixels><maxLodPixels>-1</maxLodPixels></Lod>"
+				// Chould technically be 192 to 384, centered around 256, but this creates gaps
+				+ "<Lod><minLodPixels>150</minLodPixels><maxLodPixels>384</maxLodPixels></Lod>"
 				+ bbox.toKML() + "</Region>" + "<Link>" + "<href>"
 				+ gridLocString + ".kml</href>"
 				+ "<viewRefreshMode>onRegion</viewRefreshMode>" + "</Link>"

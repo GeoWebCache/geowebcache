@@ -303,8 +303,11 @@ public class GridCalculator {
      * 0 1
      * 2 3
      * 
+     * If a location is outside the bounds then the zoomLevel
+     * (third entry) is set to -1
+     * 
      * @param gridLoc
-     * @return
+     * @return the four underlying tiles
      */
     public int[][] getZoomInGridLoc(int[] gridLoc) {
     	int[][] retVal = new int[4][3];
@@ -322,9 +325,29 @@ public class GridCalculator {
 
     	retVal[0][2] = retVal[1][2] = retVal[2][2] = retVal[3][2] = z;
     	
+    	// Need to check that it doesn't fall outside
+    	int[] bounds = boundsGridLevels[z];
+    	for(int i=0; i<4; i++) {
+    		if( retVal[i][0] < bounds[0] 
+    		 || retVal[i][1] < bounds[1]
+    		 || retVal[i][0] > bounds[2]
+    		 || retVal[i][1] > bounds[3] ) {
+    			retVal[i][2] = -1;
+    		}
+    	}
+    	
     	return retVal;
     }
     
+    /**
+     * Returns the the gridLocation where a single tile
+     * covers the entire bounding box
+     * 
+     * NB: For 4326 this will retun {0,0,0} for something
+     * that covers the world, but you still need {1,0,0}
+     * 
+     * @return
+     */
     public int[] getZoomedOutGridLoc() {
     	if(zoomedOutGridLoc != null) {
     		return zoomedOutGridLoc;
