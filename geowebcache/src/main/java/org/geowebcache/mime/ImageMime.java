@@ -55,4 +55,22 @@ public class ImageMime extends MimeType {
             return new ImageMime("image/png", "png", "png");
         }
     }
+    
+    public static ImageMime createFromExtension(String fileExtension) {
+        if (fileExtension.equalsIgnoreCase("png")) {
+            return new ImageMime("image/png", "png", "png");
+        } else if (fileExtension.equalsIgnoreCase("jpeg")) {
+            return new ImageMime("image/jpeg", "jpeg", "jpeg");
+        } else if (fileExtension.equalsIgnoreCase("gif")) {
+            return new ImageMime("image/gif", "gif", "gif");
+        } else if (fileExtension.equalsIgnoreCase("tiff")) {
+            return new ImageMime("image/tiff", "tiff", "tiff");
+        } else if (fileExtension.equalsIgnoreCase("png8")) {
+            return new ImageMime("image/png8", "png8", "png");
+        } else {
+            log.error("Unsupported MIME type: " + fileExtension + ", falling back to PNG.");
+            return new ImageMime("image/png", "png", "png");
+        }
+    }
+    
 }
