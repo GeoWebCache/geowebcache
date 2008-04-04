@@ -48,6 +48,8 @@ public class GridCalculator {
     // Used for unprojected profiles
     private int gridConstant;
 
+    private int[] zoomedOutGridLoc = null;
+    
     private int[][] boundsGridLevels = null;
 
     // TODO this code does not handle coordinate systems where the base
@@ -293,5 +295,54 @@ public class GridCalculator {
      */
     public int[][] coveredGridLevels(BBOX requestedBounds) {
         return calculateGridBounds(requestedBounds);
+    }
+    
+    /**
+     * Zooms in one level, returning 4 grid locations like
+     * 
+     * 0 1
+     * 2 3
+     * 
+     * @param gridLoc
+     * @return
+     */
+    public int[][] getZoomInGridLoc(int[] gridLoc) {
+    	int[][] retVal = new int[4][3];
+    	int x = gridLoc[0] * 2;
+    	int y = gridLoc[1] * 2;
+    	int z = gridLoc[2] + 1;
+    	
+    	// Now adjust where appropriate
+    	
+    	retVal[0][0] = retVal[2][0] = x;
+    	retVal[1][0] = retVal[3][0] = x + 1;
+    	
+    	retVal[0][1] = retVal[1][1] = y;
+    	retVal[2][1] = retVal[3][1] = y + 1;
+
+    	retVal[0][2] = retVal[1][2] = retVal[2][2] = retVal[3][2] = z;
+    	
+    	return retVal;
+    }
+    
+    public int[] getZoomedOutGridLoc() {
+    	if(zoomedOutGridLoc != null) {
+    		return zoomedOutGridLoc;
+    	}
+    		
+    	for(int i=0; i< boundsGridLevels.length; i++) {
+    		if( boundsGridLevels[i][0] == boundsGridLevels[i][2] 
+    		 && boundsGridLevels[i][1] == boundsGridLevels[i][3] ) {  			
+    			zoomedOutGridLoc = new int[3];
+    			zoomedOutGridLoc[0] = boundsGridLevels[i][0];
+    			zoomedOutGridLoc[1] = boundsGridLevels[i][1];
+    			zoomedOutGridLoc[2] = i;
+    			
+    			return zoomedOutGridLoc;
+    		}
+    	}
+    	
+    	log.error("Unable to find getZoomedOutGridLoc");
+    	return null;
     }
 }

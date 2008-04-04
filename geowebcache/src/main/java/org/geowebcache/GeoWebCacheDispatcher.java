@@ -19,8 +19,6 @@ package org.geowebcache;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.Writer;
-import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,8 +34,6 @@ import org.geowebcache.layer.TileRequest;
 import org.geowebcache.layer.TileResponse;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceRequest;
-import org.mortbay.jetty.EofException;
-import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;

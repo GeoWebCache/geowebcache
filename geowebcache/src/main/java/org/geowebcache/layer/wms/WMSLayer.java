@@ -640,4 +640,12 @@ public class WMSLayer implements TileLayer {
 	public BBOX getBboxForGridLoc(int srsIdx, int[] gridLoc) {
 		return profile.gridCalc[srsIdx].bboxFromGridLocation(gridLoc);
 	}
+
+	public int[][] getZoomInGridLoc(int srsIdx,int[] gridLoc) {
+		return profile.gridCalc[srsIdx].getZoomInGridLoc(gridLoc);
+	}
+
+	public int[] getZoomedOutGridLoc(int srsIdx) {
+		return profile.gridCalc[srsIdx].getZoomedOutGridLoc();
+	}
 }

@@ -39,7 +39,7 @@ public class GridCalculatorTest extends TestCase {
                 System.out.println(Arrays.toString(solution[i]) + "  "
                         + Arrays.toString(bounds));
             }
-            assert (Arrays.equals(solution[i], bounds));
+            assertTrue(Arrays.equals(solution[i], bounds));
         }
     }
 
@@ -70,7 +70,7 @@ public class GridCalculatorTest extends TestCase {
                 System.out.println(Arrays.toString(solution[i]) + "  "
                         + Arrays.toString(bounds));
             }
-            assert (Arrays.equals(solution[i], bounds));
+            assertTrue(Arrays.equals(solution[i], bounds));
         }
     }
 
@@ -101,7 +101,7 @@ public class GridCalculatorTest extends TestCase {
                 System.out.println(Arrays.toString(solution[i]) + "  "
                         + Arrays.toString(bounds));
             }
-            assert (Arrays.equals(solution[i], bounds));
+            assertTrue(Arrays.equals(solution[i], bounds));
         }
     }
 
@@ -131,7 +131,7 @@ public class GridCalculatorTest extends TestCase {
                 System.out.println(Arrays.toString(solution[i]) + "  "
                         + Arrays.toString(bounds));
             }
-            assert (Arrays.equals(solution[i], bounds));
+            assertTrue(Arrays.equals(solution[i], bounds));
         }
     }
 
@@ -164,7 +164,7 @@ public class GridCalculatorTest extends TestCase {
                 System.out.println(Arrays.toString(solution[i]) + "  "
                         + Arrays.toString(bounds));
             }
-            assert (Arrays.equals(solution[i], bounds));
+            assertTrue(Arrays.equals(solution[i], bounds));
         }
     }
 
@@ -198,7 +198,7 @@ public class GridCalculatorTest extends TestCase {
                 System.out.println(Arrays.toString(solution[i]) + "  "
                         + Arrays.toString(bounds));
             }
-            assert (Arrays.equals(solution[i], bounds));
+            assertTrue(Arrays.equals(solution[i], bounds));
         }
     }
 
@@ -232,8 +232,30 @@ public class GridCalculatorTest extends TestCase {
                 System.out.println(Arrays.toString(solution[i]) + "  "
                         + Arrays.toString(bounds));
             }
-            assert (Arrays.equals(solution[i], bounds));
+            assertTrue(Arrays.equals(solution[i], bounds));
         }
     }
 
+    // //<north>49.371735</north><south>24.955967</south><east>-66.969849</east><west>-124.731422</west>
+    public void test5gridBoundsLoc4326() throws Exception {
+        BBOX bbox = new BBOX(-124.73, 24.96, -66.97, 49.37);
+        BBOX gridBase = new BBOX(-180, -90, 180, 90);
+        int metaHeight = 3;
+        int metaWidth = 3;
+        double maxTileWidth = 180.0;
+        double maxTileHeight = 180.0;
+        int zoomStart = 0;
+        int zoomStop = 20;
+
+        GridCalculator gridCalc = new GridCalculator(
+                gridBase, bbox, 
+                zoomStart, zoomStop, 
+                metaWidth, metaHeight, 
+                maxTileWidth, maxTileHeight);
+        
+        int[] gridLoc = gridCalc.getZoomedOutGridLoc();
+        int[] solution = {0, 0, 0};
+        assertTrue(Arrays.equals(gridLoc, solution));
+    }
+    
 }

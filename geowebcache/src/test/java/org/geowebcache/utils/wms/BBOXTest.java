@@ -1,11 +1,9 @@
 package org.geowebcache.utils.wms;
 
 
-import java.util.Arrays;
+import junit.framework.TestCase;
 
 import org.geowebcache.util.wms.BBOX;
-
-import junit.framework.TestCase;
 
 public class BBOXTest extends TestCase {
 
@@ -28,9 +26,9 @@ public class BBOXTest extends TestCase {
     	
     	String bboxStr = bbox.toString();
     	if(bboxStr.equalsIgnoreCase("-180.0,-90.0,180.0,90.0")) {
-    		assert(true);
+    		assertTrue(true);
     	} else {
-    		assert(false);
+    		assertTrue(false);
     	}
     }
 }

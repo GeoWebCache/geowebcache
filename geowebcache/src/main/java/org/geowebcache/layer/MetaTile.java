@@ -16,8 +16,6 @@
  */
 package org.geowebcache.layer;
 
-import java.util.Arrays;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

@@ -137,7 +137,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
 		props.setProperty(WMSLayerProfile.WMS_URL, wmsurl);
 		props.setProperty(WMSLayerProfile.WMS_SRS, "EPSG:4326;EPSG:900913");
 		props.setProperty(WMSLayerProfile.WMS_BBOX, bboxStr);
-
+		props.setProperty(WMSLayerProfile.WMS_TRANSPARENT, "true");
+		
 		if (this.mimeTypes == null || this.mimeTypes.length() == 0) {
 			props.setProperty(WMSLayer.WMS_MIMETYPES, "image/png");
 		} else {

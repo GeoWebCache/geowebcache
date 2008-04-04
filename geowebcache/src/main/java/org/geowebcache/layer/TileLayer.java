@@ -42,5 +42,6 @@ public interface TileLayer {
     public void destroy();
     public int[] getGridLocForBounds(int srsIdx, BBOX bounds);
     public BBOX getBboxForGridLoc(int srsIdx, int[] gridLoc);
-    
+    public int[][] getZoomInGridLoc(int srsIdx, int[] gridLoc);
+    public int[] getZoomedOutGridLoc(int srsIdx);
 }

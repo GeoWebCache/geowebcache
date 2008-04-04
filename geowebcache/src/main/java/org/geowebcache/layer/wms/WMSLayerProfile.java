@@ -38,6 +38,8 @@ public class WMSLayerProfile {
 	public static final String WMS_BBOX = "bbox";
 
 	public static final String WMS_METATILING = "metatiling";
+	
+	public static final String WMS_TRANSPARENT = "transparent";
 
 	public static final int CACHE_NEVER = 0;
 
@@ -276,7 +278,7 @@ public class WMSLayerProfile {
 			tiled = propTiled;
 		}
 
-		String propTransparent = props.getProperty("transparent");
+		String propTransparent = props.getProperty(WMS_TRANSPARENT);
 		if (propTransparent != null) {
 			transparent = propTransparent;
 		}

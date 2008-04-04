@@ -43,7 +43,7 @@ public class MetaTileTest extends TestCase {
             System.out.println("test1MetaTile {" + Arrays.toString(solution)
                     + "} {" + Arrays.toString(mt.getMetaTileGridBounds()) + "}");
         }
-        assert (test);
+        assertTrue(test);
     }
 
     public void test2MetaTile() throws Exception {
@@ -74,7 +74,7 @@ public class MetaTileTest extends TestCase {
             System.out.println("test2MetaTile {" + Arrays.toString(solution)
                     + "} {" + Arrays.toString(mt.getMetaTileGridBounds()) + "}");
         }
-        assert (test);
+        assertTrue(test);
     }
 
     public void test3MetaTile() throws Exception {
@@ -107,7 +107,7 @@ public class MetaTileTest extends TestCase {
             System.out.println("test3MetaTile {" + Arrays.toString(solution)
                     + "} {" + Arrays.toString(mt.getMetaTileGridBounds()) + "}");
         }
-        assert (test);
+        assertTrue(test);
     }
 
     public void test4MetaTile() throws Exception {
@@ -142,6 +142,6 @@ public class MetaTileTest extends TestCase {
             System.out.println("test4MetaTile {" + Arrays.toString(solution)
                     + "} {" + Arrays.toString(mt.getMetaTileGridBounds()) + "}");
         }
-        assert (test);
+        assertTrue(test);
     }
 }
