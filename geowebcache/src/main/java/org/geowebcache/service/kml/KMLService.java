@@ -137,15 +137,16 @@ public class KMLService extends Service {
 		int srsIdx = layer.getSRSIndex(srs);
 
 		String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<kml xmlns=\"http://earth.google.com/kml/2.1\">"
-				+ "<NetworkLink>" + "<name>SuperOverlay:" + layer.getName()
-				+ "</name>" + "<Region>" + layer.getBounds(srsIdx).toKML()
+				+ "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
+				+ "<NetworkLink>\n" 
+				+ "<name>SuperOverlay:" + layer.getName() + "</name>\n" 
+				+ "<Region>" + layer.getBounds(srsIdx).toKML()
 				+ "<Lod>" + "<minLodPixels>128</minLodPixels>"
-				+ "<maxLodPixels>-1</maxLodPixels>" + "</Lod>" + "</Region>"
+				+ "<maxLodPixels>-1</maxLodPixels>" + "</Lod>" + "</Region>\n"
 				+ "<Link>" + "<href>" + urlStr + "/"
-				+ gridLocString(layer, srsIdx) + ".kml</href>"
-				+ "<viewRefreshMode>onRegion</viewRefreshMode>" + "</Link>"
-				+ "</NetworkLink>" + "</kml>";
+				+ gridLocString(layer, srsIdx) + ".kml</href>\n"
+				+ "<viewRefreshMode>onRegion</viewRefreshMode>" + "</Link>\n"
+				+ "</NetworkLink>" + "</kml>\n";
 
 		writeXml(xml, response);
 	}
@@ -230,27 +231,29 @@ public class KMLService extends Service {
 	private static String createNetworkLinkElement(TileLayer layer,
 			int[] gridLoc, BBOX bbox) {
 		String gridLocString = gridLocString(gridLoc);
-		String xml = "<NetworkLink>"
-				+ "<name>"
+		String xml = "\n<NetworkLink>"
+				+ "\n<name>"
 				+ layer.getName()
 				+ " - "
 				+ gridLocString
 				+ "</name>"
-				+ "<Region>"
+				+ "\n<Region>"
 				// Chould technically be 192 to 384, centered around 256, but this creates gaps
-				+ "<Lod><minLodPixels>150</minLodPixels><maxLodPixels>384</maxLodPixels></Lod>"
-				+ bbox.toKML() + "</Region>" + "<Link>" + "<href>"
-				+ gridLocString + ".kml</href>"
-				+ "<viewRefreshMode>onRegion</viewRefreshMode>" + "</Link>"
-				+ "</NetworkLink>";
+				+ "\n<Lod><minLodPixels>150</minLodPixels><maxLodPixels>384</maxLodPixels></Lod>\n"
+				+ bbox.toKML() 
+				+ "\n</Region>" 
+				+ "\n<Link>" + "<href>"+ gridLocString + ".kml</href>"
+				+ "\n<viewRefreshMode>onRegion</viewRefreshMode>" + "</Link>"
+				+ "\n</NetworkLink>\n";
 
 		return xml;
 	}
 
 	private static String createGroundOverLayElement(int[] gridLoc, BBOX bbox) {
-		String xml = "<GroundOverlay>" + "<drawOrder>5</drawOrder>" + "<Icon>"
-				+ "<href>" + gridLocString(gridLoc) + ".png</href>" + "</Icon>"
-				+ bbox.toKML() + "</GroundOverlay>";
+		String xml = "\n<GroundOverlay>" + "<drawOrder>5</drawOrder>" 
+				+ "\n<Icon>" + "<href>" + gridLocString(gridLoc) + ".png</href>" + "</Icon>\n"
+				+ bbox.toKML() 
+				+ "\n</GroundOverlay>\n";
 
 		return xml;
 	}
