@@ -236,7 +236,6 @@ public class GridCalculatorTest extends TestCase {
         }
     }
 
-    // //<north>49.371735</north><south>24.955967</south><east>-66.969849</east><west>-124.731422</west>
     public void test5gridBoundsLoc4326() throws Exception {
         BBOX bbox = new BBOX(-124.73, 24.96, -66.97, 49.37);
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
@@ -256,6 +255,41 @@ public class GridCalculatorTest extends TestCase {
         int[] gridLoc = gridCalc.getZoomedOutGridLoc();
         int[] solution = {0, 0, 0};
         assertTrue(Arrays.equals(gridLoc, solution));
+    }
+    
+    public void test6gridLoctoBounds4326() throws Exception {
+        BBOX bbox = new BBOX(-124.73, 24.96, -66.97, 49.37);
+        BBOX gridBase = new BBOX(-180, -90, 180, 90);
+        int metaHeight = 3;
+        int metaWidth = 3;
+        double maxTileWidth = 180.0;
+        double maxTileHeight = 180.0;
+        int zoomStart = 0;
+        int zoomStop = 20;
+
+        GridCalculator gridCalc = new GridCalculator(
+                gridBase, bbox, 
+                zoomStart, zoomStop, 
+                metaWidth, metaHeight, 
+                maxTileWidth, maxTileHeight);
+        
+        int[] gridLoc1 = {1, 1, 1};
+        BBOX box1 = gridCalc.bboxFromGridLocation(gridLoc1);
+        boolean box1_comparison = box1.equals(new BBOX(-90.0,0.0,0.0,90.0));
+        assertTrue(box1_comparison);
+        boolean box1_kml = box1.toKML().equals(
+        		"<LatLonAltBox><north>90.0</north><south>0.0</south>"
+        		+"<east>0.0</east><west>-90.0</west></LatLonAltBox>");
+        assertTrue(box1_kml);
+        
+        int[] gridLoc2 = {5, 1, 2};        
+        BBOX box2 = gridCalc.bboxFromGridLocation(gridLoc2);
+        boolean box2_comparison = box2.equals(new BBOX(45.0,-45.0,90.0,0.0));
+        assertTrue(box2_comparison);
+        boolean box2_kml = box2.toKML().equals(
+        		"<LatLonAltBox><north>0.0</north><south>-45.0</south>"
+        		+"<east>90.0</east><west>45.0</west></LatLonAltBox>");
+        assertTrue(box2_kml);
     }
     
 }

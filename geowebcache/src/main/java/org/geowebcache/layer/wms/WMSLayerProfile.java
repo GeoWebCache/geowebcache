@@ -110,7 +110,10 @@ public class WMSLayerProfile {
 			throws GeoWebCacheException {
 		log.info("Processing " + layerName);
 
-		setParametersFromProperties(props);
+		this.wmsLayers = layerName;
+		
+		// Can be overriden by the properties
+		this.setParametersFromProperties(props);
 
 		if (log.isTraceEnabled()) {
 			log.trace("Created a new layer: " + toString());

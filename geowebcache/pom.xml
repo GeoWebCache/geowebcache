@@ -136,7 +136,7 @@
 			<artifactId>gt2-wms</artifactId>
 			<version>${gt.version}</version>
 		</dependency>
-		<dependency>
+		<!-- dependency>
 			<groupId>jdom</groupId>
 			<artifactId>jdom</artifactId>
 			<version>1.0</version>
@@ -146,7 +146,7 @@
 			<artifactId>xerces</artifactId>
 			</exclusion>
 			</exclusions>
-			</dependency>
+			</dependency -->
 
 		<!-- Spring dependencies -->
 		<dependency>
@@ -235,7 +235,7 @@
 				</configuration>
 			</plugin>
 
-			<plugin>
+			<!-- plugin>
 				<artifactId>maven-war-plugin</artifactId>
 				<executions>
 					<execution>
@@ -245,7 +245,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin -->
 
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>

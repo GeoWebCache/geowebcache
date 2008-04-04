@@ -28,6 +28,7 @@ import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.service.Service;
+import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.ServiceRequest;
 import org.geowebcache.util.wms.BBOX;
 
@@ -48,8 +49,6 @@ public class KMLService extends Service {
 	/**
 	 * Parses the pathinfo part of an HttpServletRequest into the three
 	 * components it is (hopefully) made up of.
-	 * 
-	 * TODO deal better with malformed input
 	 * 
 	 * @param pathInfo
 	 * @return {layername, tilekey, extension}
@@ -79,9 +78,13 @@ public class KMLService extends Service {
 		return retStrs;
 	}
 
-	public ServiceRequest getServiceRequest(HttpServletRequest request) {
-		String[] parsed = parseRequest(request.getPathInfo());
-
+	public ServiceRequest getServiceRequest(HttpServletRequest request) throws ServiceException {
+		String[] parsed = null;
+		try {
+			parsed = parseRequest(request.getPathInfo());
+		} catch (Exception e) {
+			throw new ServiceException("Unable to parse KML request : " + e.getMessage());
+		}
 		// If it does not end in .kml it is a tile request
 		int type = ServiceRequest.SERVICE_REQUEST_TILE;
 
@@ -89,13 +92,13 @@ public class KMLService extends Service {
 			type = ServiceRequest.SERVICE_REQUEST_DIRECT;
 		}
 
-		// log.info(request.getRequestURL().toString());
+		log.info(request.getRequestURL().toString());
 		// log.info(parsed[1] + " - " + parsed[2]);
 		return new ServiceRequest(parsed[0], type);
 	}
 
 	public void handleRequest(TileLayer tileLayer, HttpServletRequest request,
-			HttpServletResponse response) {
+			HttpServletResponse response) throws ServiceException {
 
 		// Have to parse it again... that's a bit silly
 		// TODO extend ServiceRequest object
@@ -118,7 +121,7 @@ public class KMLService extends Service {
 	}
 
 	public TileRequest getTileRequest(TileLayer tileLayer,
-			HttpServletRequest request) {
+			HttpServletRequest request) throws ServiceException {
 		String[] parsed = parseRequest(request.getPathInfo());
 
 		int[] gridLoc = parseGridLocString(parsed[1]);
@@ -156,17 +159,20 @@ public class KMLService extends Service {
 		return "x" + gridLoc[0] + "y" + gridLoc[1] + "z" + gridLoc[2];
 	}
 
-	private static int[] parseGridLocString(String key) {
+	private static int[] parseGridLocString(String key) throws ServiceException{
 		// format should be x<x>y<y>z<z>
-		// TODO fail gracefully when it is not
+		
 		int[] ret = new int[3];
 		int yloc = key.indexOf("y");
 		int zloc = key.indexOf("z");
 
+		try {
 		ret[0] = Integer.parseInt(key.substring(1, yloc));
 		ret[1] = Integer.parseInt(key.substring(yloc + 1, zloc));
 		ret[2] = Integer.parseInt(key.substring(zloc + 1, key.length()));
-
+		} catch (NumberFormatException nfe) {
+			throw new ServiceException("Unable to parse " + key);
+		}
 		return ret;
 	}
 
@@ -179,7 +185,7 @@ public class KMLService extends Service {
 	 * @param response
 	 */
 	private static void handleOverlay(TileLayer tileLayer, String key,
-			HttpServletResponse response) {
+			HttpServletResponse response) throws ServiceException {
 		int[] gridLoc = parseGridLocString(key);
 
 		SRS srs = new SRS(4326);

@@ -99,9 +99,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
         if(requestType.equalsIgnoreCase(TYPE_SERVICE)) {
         	try {
         		handleServiceRequest(request, response);
-        	} catch (Exception e) {
-        		e.printStackTrace();
-        		writeError(response, 400, e.getMessage());
+        	} catch (GeoWebCacheException gwce) {
+        		//e.printStackTrace();
+        		writeError(response, 400, gwce.getMessage());
         	}
         } else if(requestType.equalsIgnoreCase(TYPE_SEED)) {
             //handleSeedRequest(request, response);

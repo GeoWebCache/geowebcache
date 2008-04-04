@@ -45,8 +45,8 @@ public class Service {
         return new String(pathName);
     }
     
-    public ServiceRequest getServiceRequest(HttpServletRequest request) {
-        throw new RuntimeException(
+    public ServiceRequest getServiceRequest(HttpServletRequest request) throws ServiceException {
+        throw new ServiceException (
                 "Service for " + pathName  + " needs to override "
                 +"getLayerIdentifier(HttpSerlvetRequest)" );
     }
@@ -59,14 +59,19 @@ public class Service {
     }
     
     public void handleRequest(TileLayer tileLayer, 
-    		HttpServletRequest request, HttpServletResponse response) {
+    		HttpServletRequest request, HttpServletResponse response) 
+    throws ServiceException {
         throw new RuntimeException(
                 "Service for " + pathName  + " needs to override "
                 +"getLayerIdentifier(HttpSerlvetRequest)" );
     }
     
-    protected String getLayersParameter(HttpServletRequest request) {
-        return ServletUtils.stringFromMap(request.getParameterMap(), "layers");
+    protected String getLayersParameter(HttpServletRequest request) throws ServiceException {
+    	String layers = ServletUtils.stringFromMap(request.getParameterMap(), "layers");
+    	if(layers == null) {
+    		throw new ServiceException("Unable to parse layers parameter from request.");
+    	} 
+    	return layers;
     }
     
     

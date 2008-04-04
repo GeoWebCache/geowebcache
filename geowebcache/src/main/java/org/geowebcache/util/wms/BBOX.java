@@ -137,13 +137,12 @@ public class BBOX {
      * @return whether the boxes are equal
      */
     public boolean equals(BBOX other) {
-        return (coords[0] - other.coords[0]) / (coords[0] + other.coords[0]) < equalityThreshold
-                && (coords[1] - other.coords[1])
-                        / (coords[1] + other.coords[1]) < equalityThreshold
-                && (coords[2] - other.coords[2])
-                        / (coords[2] + other.coords[2]) < equalityThreshold
-                && (coords[3] - other.coords[3])
-                        / (coords[3] + other.coords[3]) < equalityThreshold;
+    	boolean result = true;
+    	for(int i=0; i<4 && result; i++) {
+    		result = ( Math.abs(coords[i]) < equalityThreshold && Math.abs(other.coords[i]) < equalityThreshold)
+    			|| (coords[i] - other.coords[i]) / (coords[i] + other.coords[i]) < equalityThreshold;
+    	}
+    	return result;
     }
 
     /**
