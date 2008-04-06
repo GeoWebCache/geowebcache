@@ -17,7 +17,7 @@
 	
 	<bean id="geoserverConfig" class="org.geowebcache.util.GetCapabilitiesConfiguration">
 		<constructor-arg type="org.geowebcache.cache.CacheFactory" ref="cacheFactory"/>
-		<constructor-arg value="http://sigma.openplans.org/geoserver/wms?request=getCapabilities"/>
+		<constructor-arg value="http://localhost:8080/geoserver/wms?request=getCapabilities"/>
 		<constructor-arg value=""/>
 		<constructor-arg value="4x4"/>
 	</bean>
@@ -32,11 +32,12 @@
 	<!-- controller for handling all incoming requests -->
 	<bean id="geowebcacheDispatcher" class="org.geowebcache.GeoWebCacheDispatcher">
 		<property name="tileLayerDispatcher" ref="tLDispatcher"/>
+		<!-- property name="servletPrefix" value=""/ -->
 	</bean>
 	    
     <!-- Services, make sure you name the bean the same as the path -->
     <bean id="serviceWMS" 
-    	class="org.geowebcache.service.wms.WMSConverter"/>
+    	class="org.geowebcache.service.wms.WMSService"/>
 	<bean id="serviceGMaps"
 		class="org.geowebcache.service.gmaps.GMapsConverter"/>
 	<bean id="serviceVE"

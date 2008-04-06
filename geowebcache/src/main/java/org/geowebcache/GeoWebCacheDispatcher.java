@@ -44,10 +44,12 @@ import org.springframework.web.servlet.mvc.AbstractController;
 public class GeoWebCacheDispatcher extends AbstractController {
     private static Log log = LogFactory.getLog(org.geowebcache.GeoWebCacheDispatcher.class);
     
-    public static final String TYPE_SERVICE = "/service";
-    public static final String TYPE_SEED = "/seed";
+    public static final String TYPE_SERVICE = "service";
+    public static final String TYPE_SEED = "seed";
     
     WebApplicationContext context = null;
+    
+    private String servletPrefix = null;
     
     private TileLayerDispatcher tileLayerDispatcher = null;
     private HashMap services = null;
@@ -65,6 +67,17 @@ public class GeoWebCacheDispatcher extends AbstractController {
     public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {
     	this.tileLayerDispatcher = tileLayerDispatcher;
     }
+    
+    /**
+     * GeoServer and other solutions that embedd this
+     * dispatcher will prepend a path, this is used to remove it.
+     * 
+     * @param servletPrefix
+     */
+    public void setServletPrefix(String servletPrefix) {
+        this.servletPrefix = servletPrefix;
+    }
+    
     
     /**
      * Services convert HTTP requests into the internal grid representation
@@ -92,26 +105,67 @@ public class GeoWebCacheDispatcher extends AbstractController {
     protected ModelAndView handleRequestInternal(
             HttpServletRequest request, HttpServletResponse response
             ) throws Exception {
-        // Basics
-        context = (WebApplicationContext) getApplicationContext();
-        String requestType = new String(request.getServletPath());
         
-        if(requestType.equalsIgnoreCase(TYPE_SERVICE)) {
+        context = (WebApplicationContext) getApplicationContext();
+        
+        // Break the request into components, {type, service name}
+        String[] requestComps = null;
+        try {
+            requestComps = parseRequest(request.getRequestURI());
+        } catch (GeoWebCacheException gwce) {
+            writeError(response,400, gwce.getMessage());
+            return null;
+        }
+        
+        if(requestComps[0].equalsIgnoreCase(TYPE_SERVICE)) {
         	try {
-        		handleServiceRequest(request, response);
+        		handleServiceRequest(requestComps[1], request, response);
         	} catch (GeoWebCacheException gwce) {
         		//e.printStackTrace();
         		writeError(response, 400, gwce.getMessage());
         	}
-        } else if(requestType.equalsIgnoreCase(TYPE_SEED)) {
+        } else if(requestComps[0].equalsIgnoreCase(TYPE_SEED)) {
             //handleSeedRequest(request, response);
             writeError(response, 400, "Seeding is currently not supported");
         } else {
-            writeError(response, 404, "Unknow path: " + requestType);
+            writeError(response, 404, "Unknow path: " + requestComps[0]);
         }
         return null;
     }
     
+    /**
+     * Essentially this slices away the prefix, leaving type and request
+     * 
+     * @param servletPath
+     * @return {type, service}ervletPrefix
+     */
+    private String[] parseRequest(String servletPath) throws GeoWebCacheException {
+        String[] retStrs = new String[2];
+        String[] splitStr = servletPath.split("/");
+        // This string should start with / , so the first hit will be ""
+        
+        if(servletPrefix != null) {
+            if(log.isDebugEnabled()) {
+                if(splitStr[0].equals(servletPrefix)) {
+                    log.info("Matched servlet prefix " + servletPrefix + " to request");
+                } else {
+                    log.error("Servlet prefix " + servletPrefix + " does not match " + splitStr[0]);
+                }
+            }
+            if(splitStr.length < 4) {
+                throw new GeoWebCacheException("Unable to parse " + servletPath + " given prefix " + servletPrefix);
+            }
+            retStrs[0] = new String(splitStr[3]);
+            retStrs[1] = new String(splitStr[4]);
+        } else {
+            if(splitStr.length < 3) {
+                throw new GeoWebCacheException("Unable to parse " + servletPath);
+            }
+            retStrs[0] = new String(splitStr[2]);
+            retStrs[1] = new String(splitStr[3]);
+        }
+        return retStrs;
+    }
     
     /** 
      * This is the main method for handling service requests.
@@ -121,11 +175,11 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * @param response 
      * @throws Exception 
      */
-    private void handleServiceRequest(HttpServletRequest request, 
+    private void handleServiceRequest(String serviceStr, HttpServletRequest request, 
             HttpServletResponse response) throws Exception {
         
         // 1) Figure out what Service should handle this request
-        Service service = findService(request);
+        Service service = findService(serviceStr);
 
         // 2) Find out what layer will be used and how
         ServiceRequest servReq = service.getServiceRequest(request);
@@ -157,17 +211,16 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * @param request full HttpServletRequest
      * @return
      */
-    private Service findService(HttpServletRequest request) {
+    private Service findService(String serviceStr) throws GeoWebCacheException {
         if(this.services == null)
             loadServices();
         
         // E.g. /wms/test -> /wms
-        String pathInfo = request.getPathInfo();
-        int pathEnd = pathInfo.indexOf('/',1);  
-        if(pathEnd < 0) pathEnd = pathInfo.length();
-        String serviceType = new String(pathInfo.substring(0, pathEnd));
-        
-        return (Service) services.get(serviceType);
+        Service service = (Service) services.get(serviceStr);
+        if(service == null) {
+            throw new GeoWebCacheException("Unable to find handler for service " + serviceStr);
+        }
+        return service;
     }
     
     /**

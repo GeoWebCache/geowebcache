@@ -35,7 +35,7 @@ import org.geowebcache.util.ServletUtils;
  * of a tile.
  */
 public class VEConverter extends Service {
-    public static final String SERVICE_VE = "/ve";
+    public static final String SERVICE_VE = "ve";
 
     private static Log log = LogFactory
             .getLog(org.geowebcache.service.ve.VEConverter.class);

@@ -37,7 +37,7 @@ public class KMLService extends Service {
     private static Log log = LogFactory
             .getLog(org.geowebcache.service.kml.KMLService.class);
 
-    public static final String SERVICE_KML = "/kml";
+    public static final String SERVICE_KML = "kml";
 
     public static final String EXTENSION_KML = "kml";
 
@@ -57,25 +57,24 @@ public class KMLService extends Service {
     private String[] parseRequest(String pathInfo) {
         String[] retStrs = new String[3];
 
-        pathInfo = new String(pathInfo);
-        int startOffset = SERVICE_KML.length() + 1;
-        int endOffset = pathInfo.lastIndexOf(".");
-        retStrs[2] = new String(pathInfo.substring(endOffset + 1, pathInfo
-                .length()));
-        String midSection = new String(pathInfo.substring(startOffset,
-                endOffset));
-
-        // Midsection can either be "layername/quadkey" or "layername"
-        String[] midParts = midSection.split("/");
+        String[] splitStr = pathInfo.split("/");
         
-        // Gather the rest of the results
-        retStrs[0] = midParts[0];
-        if (midParts.length > 1) {
-            retStrs[1] = new String(midParts[1]);
-        } else {
-            retStrs[1] = "";
-        }
+        // Deal with the extension
+        String filename = splitStr[splitStr.length - 1];
+        int extOfst = filename.lastIndexOf(".");
+        retStrs[2] = filename.substring(extOfst + 1, filename.length());
 
+        // Two types of requests
+        if(splitStr[splitStr.length - 2].equals(this.SERVICE_KML)) {
+            // layername.kml
+            retStrs[0] = filename.substring(0,extOfst);
+            retStrs[1] = "";
+        } else {
+            // layername/key.extension
+            retStrs[0] = splitStr[splitStr.length - 2];
+            retStrs[1] = filename.substring(0,extOfst);
+        }
+        
         return retStrs;
     }
 

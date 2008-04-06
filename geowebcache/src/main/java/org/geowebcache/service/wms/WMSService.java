@@ -26,10 +26,10 @@ import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.ServiceRequest;
 
-public class WMSConverter extends Service {
-    public static final String SERVICE_WMS = "/wms";
+public class WMSService extends Service {
+    public static final String SERVICE_WMS = "wms";
 
-    public WMSConverter() {
+    public WMSService() {
         super(SERVICE_WMS);
     }
 

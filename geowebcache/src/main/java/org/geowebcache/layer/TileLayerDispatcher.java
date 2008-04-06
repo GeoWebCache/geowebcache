@@ -42,9 +42,9 @@ public class TileLayerDispatcher {
 		Map configLayers = null;
 		try {
 			configLayers = config.getTileLayers();
-		} catch (GeoWebCacheException gwcce) {
-			log.error("Failed to add layers from " + config.getIdentifier());
-			 gwcce.printStackTrace();
+		} catch (GeoWebCacheException gwce) {
+		    log.error(gwce.getMessage());
+                    log.error("Failed to add layers from " + config.getIdentifier());
 		}
 		
 		log.info("Adding layers from " + config.getIdentifier());

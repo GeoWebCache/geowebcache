@@ -60,6 +60,10 @@ public class GetCapabilitiesConfiguration implements Configuration {
 		HashMap layerMap = null;
 
 		WebMapServer wms = getWMS();
+                if(wms == null) {
+                    throw new ConfigurationException("Unable to connect to " + this.url);
+                }
+                
 		String wmsUrl = getWMSUrl(wms);
 		log.info("Using " + wmsUrl + " to generate URLs for WMS requests");
 
@@ -92,10 +96,14 @@ public class GetCapabilitiesConfiguration implements Configuration {
 	}
 
 	private HashMap getLayers(WebMapServer wms, String wmsUrl)
-			throws CacheException {
+			throws GeoWebCacheException {
 		HashMap layerMap = new HashMap();
 		WMSCapabilities capabilities = wms.getCapabilities();
-		List<Layer> layerList = capabilities.getLayerList();
+		if(capabilities == null) {
+		    throw new ConfigurationException("Unable to get capabitilies from " + wmsUrl);
+                }
+                
+                List<Layer> layerList = capabilities.getLayerList();
 
 		Iterator<Layer> layerIter = layerList.iterator();
 		while (layerIter.hasNext()) {

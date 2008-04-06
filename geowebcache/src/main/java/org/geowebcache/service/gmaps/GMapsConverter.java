@@ -35,7 +35,7 @@ import org.geowebcache.util.ServletUtils;
  * representation of a tile.
  */
 public class GMapsConverter extends Service {
-    public static final String SERVICE_GMAPS = "/gmaps";
+    public static final String SERVICE_GMAPS = "gmaps";
 
     private static Log log = LogFactory
             .getLog(org.geowebcache.service.gmaps.GMapsConverter.class);
