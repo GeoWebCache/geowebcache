@@ -193,8 +193,8 @@ public class WMSLayerProfile {
 			if (propGrid != null) {
 				gridBase[i] = new BBOX(propGrid);
 				if (!gridBase[i].isSane()) {
-					log.error("The grid " + propGrid + " intepreted as "
-							+ gridBase[i].toString() + " is not sane.");
+                                        throw new GeoWebCacheException("The grid " + propGrid + " intepreted as "
+                                                        + gridBase[i].toString() + " is not sane.");
 				}
 			} else {
 				if (srs[i].getNumber() == 900913) {
@@ -231,8 +231,8 @@ public class WMSLayerProfile {
 				log.info("Specified bbox " + layerBounds.toString() + ".");
 
 				if (!layerBounds.isSane()) {
-					log.error("The bbox " + propBbox + " intepreted as "
-							+ layerBounds.toString() + " is not sane.");
+                                    throw new GeoWebCacheException("The bounds " + propBbox + " intepreted as "
+                                            + layerBounds.toString() + " is not sane.");
 				} else if (!gridBase[i].contains(layerBounds)) {
 					log.error("The bbox " + propBbox + " intepreted as "
 							+ layerBounds.toString()

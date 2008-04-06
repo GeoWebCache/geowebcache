@@ -17,7 +17,7 @@
 	
 	<bean id="geoserverConfig" class="org.geowebcache.util.GetCapabilitiesConfiguration">
 		<constructor-arg type="org.geowebcache.cache.CacheFactory" ref="cacheFactory"/>
-		<constructor-arg value="http://localhost:8080/geoserver/wms?request=getCapabilities"/>
+		<constructor-arg value="http://sigma.openplans.org:8080/geoserver/wms?request=getCapabilities"/>
 		<constructor-arg value=""/>
 		<constructor-arg value="4x4"/>
 	</bean>
