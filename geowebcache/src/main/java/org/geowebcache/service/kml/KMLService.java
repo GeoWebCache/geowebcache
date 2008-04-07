@@ -177,6 +177,8 @@ public class KMLService extends Service {
             ret[2] = Integer.parseInt(key.substring(zloc + 1, key.length()));
         } catch (NumberFormatException nfe) {
             throw new ServiceException("Unable to parse " + key);
+        } catch (StringIndexOutOfBoundsException sobe) {
+        	throw new ServiceException("Unable to parse " + key);
         }
         return ret;
     }

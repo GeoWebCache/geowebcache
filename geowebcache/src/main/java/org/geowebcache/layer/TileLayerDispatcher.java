@@ -27,18 +27,30 @@ import org.geowebcache.util.Configuration;
 
 public class TileLayerDispatcher {
 	private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayerDispatcher.class);
-	private HashMap layers = new HashMap();
+	
+	private HashMap layers = null;
+	
+	private Configuration config = null;
 	
 	public TileLayerDispatcher() {
 		log.info("TileLayerFactor constructed");
 	}
 	
-	
 	public TileLayer getTileLayer(String layerIdent) {
+		if(this.layers == null) {
+			initLayers();
+		}
+		
 		return (TileLayer) layers.get(layerIdent);
 	}
 
 	public void setConfig(Configuration config) {
+		this.config = config;
+	}
+	
+	public void initLayers() {
+		this.layers = new HashMap();
+		
 		Map configLayers = null;
 		try {
 			configLayers = config.getTileLayers();
