@@ -51,11 +51,14 @@ public class KMLService extends Service {
      * Parses the pathinfo part of an HttpServletRequest into the three
      * components it is (hopefully) made up of.
      * 
+     * Example 1: /kml/layername.extension
+     * Example 2: /kml/layername/tilekey.extension
+     * 
      * @param pathInfo
      * @return {layername, tilekey, extension}
      */
-    private String[] parseRequest(String pathInfo) {
-        String[] retStrs = new String[3];
+    protected static String[] parseRequest(String pathInfo) {
+        String[] retStrs = new String[4];
 
         String[] splitStr = pathInfo.split("/");
         
@@ -63,16 +66,26 @@ public class KMLService extends Service {
         String filename = splitStr[splitStr.length - 1];
         int extOfst = filename.lastIndexOf(".");
         retStrs[2] = filename.substring(extOfst + 1, filename.length());
+        
+        // If it contains a hint about the format topp:states.png.kml
+        int typeExtOfst = filename.lastIndexOf(".", extOfst - 1);
+        
+        if(typeExtOfst > 0) {
+        	retStrs[3] = filename.substring(typeExtOfst + 1, extOfst);
+        } else {
+        	typeExtOfst = extOfst;
+        }
 
+        	
         // Two types of requests
-        if(splitStr[splitStr.length - 2].equals(this.SERVICE_KML)) {
+        if(splitStr[splitStr.length - 2].equals(KMLService.SERVICE_KML)) {
             // layername.kml
-            retStrs[0] = filename.substring(0,extOfst);
+            retStrs[0] = filename.substring(0,typeExtOfst);
             retStrs[1] = "";
         } else {
             // layername/key.extension
             retStrs[0] = splitStr[splitStr.length - 2];
-            retStrs[1] = filename.substring(0,extOfst);
+            retStrs[1] = filename.substring(0,typeExtOfst);
         }
         
         return retStrs;
@@ -117,11 +130,12 @@ public class KMLService extends Service {
             int endOffset = urlStr.length() - parsed[1].length()
                     - parsed[2].length();
             urlStr = new String(urlStr.substring(0, endOffset - 1));
-            handleSuperOverlay(tileLayer, urlStr, response);
+            
+            handleSuperOverlay(tileLayer, urlStr, parsed[3], response);
         } else {
             log.debug("Request for overlay for " + parsed[0]
-                    + " received, key " + parsed[1]);
-            handleOverlay(tileLayer, parsed[1], response);
+                    + " received, key " + parsed[1] + ", format hint " + parsed[3]);
+            handleOverlay(tileLayer, parsed[1], parsed[3], response);
         }
     }
 
@@ -137,10 +151,16 @@ public class KMLService extends Service {
     }
 
     private static void handleSuperOverlay(TileLayer layer, String urlStr,
-            HttpServletResponse response) {
+            String formatExtension, HttpServletResponse response) {
         SRS srs = new SRS(4326);
         int srsIdx = layer.getSRSIndex(srs);
 
+        if(formatExtension == null) {
+        	formatExtension = "";
+        } else {
+        	formatExtension = "." + formatExtension;
+        }
+        
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                 + "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
                 + "<NetworkLink>\n" + "<name>SuperOverlay:" + layer.getName()
@@ -148,7 +168,7 @@ public class KMLService extends Service {
                 + "<Lod>" + "<minLodPixels>128</minLodPixels>"
                 + "<maxLodPixels>-1</maxLodPixels>" + "</Lod>" + "</Region>\n"
                 + "<Link>" + "<href>" + urlStr + "/"
-                + gridLocString(layer, srsIdx) + ".kml</href>\n"
+                + gridLocString(layer, srsIdx) + formatExtension + ".kml</href>\n"
                 + "<viewRefreshMode>onRegion</viewRefreshMode>" + "</Link>\n"
                 + "</NetworkLink>" + "</kml>\n";
 
@@ -192,7 +212,7 @@ public class KMLService extends Service {
      * @param response
      */
     private static void handleOverlay(TileLayer tileLayer, String key,
-            HttpServletResponse response) throws ServiceException {
+            String formatExtension, HttpServletResponse response) throws ServiceException {
         int[] gridLoc = parseGridLocString(key);
 
         SRS srs = new SRS(4326);
@@ -204,6 +224,12 @@ public class KMLService extends Service {
 
         // 2) Network links
         int[][] linkGridLocs = tileLayer.getZoomInGridLoc(srsIdx, gridLoc);
+        
+        if(formatExtension == null) {
+        	formatExtension = "" + tileLayer.getDefaultMimeType().getFileExtension();
+        } else {
+        	formatExtension = "." + formatExtension;
+        }
 
         for (int i = 0; i < 4; i++) {
             // Only add this link if it is within the bounds
@@ -211,13 +237,12 @@ public class KMLService extends Service {
                 BBOX linkBbox = tileLayer.getBboxForGridLoc(srsIdx,
                         linkGridLocs[i]);
                 xml += createNetworkLinkElement(tileLayer, linkGridLocs[i],
-                        linkBbox);
+                        linkBbox, formatExtension);
             }
         }
 
         // 3) Overlay
-        xml += createGroundOverLayElement(gridLoc, bbox, tileLayer
-                .getDefaultMimeType().getFileExtension());
+        xml += createGroundOverLayElement(gridLoc, bbox, formatExtension);
 
         // 4) Footer
         xml += "</Document>\n</kml>";
@@ -236,7 +261,7 @@ public class KMLService extends Service {
     }
 
     private static String createNetworkLinkElement(TileLayer layer,
-            int[] gridLoc, BBOX bbox) {
+            int[] gridLoc, BBOX bbox, String formatExtension) {
         String gridLocString = gridLocString(gridLoc);
         String xml = "\n<NetworkLink>"
                 + "\n<name>"
@@ -248,7 +273,7 @@ public class KMLService extends Service {
                 // Chould technically be 192 to 384, centered around 256, but this creates gaps
                 + "\n<Lod><minLodPixels>150</minLodPixels><maxLodPixels>384</maxLodPixels></Lod>\n"
                 + bbox.toKML() + "\n</Region>" + "\n<Link>" + "<href>"
-                + gridLocString + ".kml</href>"
+                + gridLocString + formatExtension + ".kml</href>"
                 + "\n<viewRefreshMode>onRegion</viewRefreshMode>" + "</Link>"
                 + "\n</NetworkLink>\n";
 
@@ -256,10 +281,10 @@ public class KMLService extends Service {
     }
 
     private static String createGroundOverLayElement(int[] gridLoc, BBOX bbox,
-            String fileExtension) {
+            String formatExtension) {
         String xml = "\n<GroundOverlay>" + "<drawOrder>5</drawOrder>"
                 + "\n<Icon>" + "<href>" + gridLocString(gridLoc) + "."
-                + fileExtension + "</href>" + "</Icon>\n" + bbox.toKML()
+                + formatExtension + "</href>" + "</Icon>\n" + bbox.toKML()
                 + "\n</GroundOverlay>\n";
 
         return xml;
