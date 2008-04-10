@@ -39,9 +39,13 @@ public class WMSService extends Service {
 
     public TileRequest getTileRequest(TileLayer tileLayer,
             HttpServletRequest request) throws GeoWebCacheException {
-
+        
         WMSParameters wmsParams = new WMSParameters(request);
 
+        if(tileLayer == null) {
+            throw new ServiceException("Did not find layer, layers=" + wmsParams.getLayer());
+        }
+        
         SRS srs = new SRS(wmsParams.getSrs());
         int srsIdx = tileLayer.getSRSIndex(srs);
         return new TileRequest(
