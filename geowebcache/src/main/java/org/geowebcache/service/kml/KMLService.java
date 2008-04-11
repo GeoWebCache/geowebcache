@@ -27,7 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
-import org.geowebcache.mime.ImageMime;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.ServiceRequest;
@@ -146,8 +146,8 @@ public class KMLService extends Service {
         int[] gridLoc = parseGridLocString(parsed[1]);
         SRS srs = new SRS(4326);
 
-        ImageMime imageMime = ImageMime.createFromExtension(parsed[2]);
-        return new TileRequest(gridLoc, imageMime.getMimeType(), srs);
+        MimeType mime = MimeType.createFromExtension(parsed[2]);
+        return new TileRequest(gridLoc, mime, srs);
     }
 
     private static void handleSuperOverlay(TileLayer layer, String urlStr,

@@ -58,7 +58,7 @@ public class WMSLayer implements TileLayer {
 
 	String cachePrefix = null;
 
-	ImageMime[] mimes = null;
+	MimeType[] mimes = null;
 
 	HashMap procQueue = new HashMap();
 
@@ -159,13 +159,12 @@ public class WMSLayer implements TileLayer {
 	public TileResponse getResponse(TileRequest tileRequest, String requestURI,
 			HttpServletResponse response) throws IOException {
 		String debugHeadersStr = null;
-		ImageMime mime = null;
+		MimeType mime = tileRequest.mimeType;
 
-		if (tileRequest.mimeType == null) {
+		if (mime == null) {
 			mime = this.mimes[0];
-		} else {
-			mime = ImageMime.createFromMimeType(tileRequest.mimeType);
 		}
+                
 		int[] gridLoc = tileRequest.gridLoc;
 
 		int idx = getSRSIndex(tileRequest.SRS);
@@ -337,18 +336,18 @@ public class WMSLayer implements TileLayer {
 	 * @param imageFormat
 	 */
 	protected void saveTiles(int[][] gridPositions, WMSMetaTile metaTile,
-			ImageMime imageFormat) {
+			MimeType mimeType) {
 
 		for (int i = 0; i < gridPositions.length; i++) {
 			int[] gridPos = gridPositions[i];
 
 			Object ck = cacheKey.createKey(cachePrefix, gridPos[0], gridPos[1],
-					gridPos[2], metaTile.getSRS(), imageFormat
+					gridPos[2], metaTile.getSRS(), mimeType
 							.getFileExtension());
 
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			try {
-				if (!metaTile.writeTileToStream(i, imageFormat
+				if (!metaTile.writeTileToStream(i, mimeType
 						.getInternalName(), out)) {
 					log
 							.error("metaTile.writeTileToStream returned false, no tiles saved");
@@ -383,7 +382,7 @@ public class WMSLayer implements TileLayer {
 	 * @return
 	 */
 	private byte[] getTile(int[] gridPos, int[][] gridPositions,
-			WMSMetaTile metaTile, ImageMime imageFormat) {
+			WMSMetaTile metaTile, MimeType imageFormat) {
 		for (int i = 0; i < gridPositions.length; i++) {
 			int[] curPos = gridPositions[i];
 
@@ -569,11 +568,11 @@ public class WMSLayer implements TileLayer {
 	 * @param strFormat
 	 * @return ImageFormat equivalent, or default ImageFormat
 	 */
-	public ImageMime getImageFormat(String strFormat) {
+	public MimeType getImageFormat(String strFormat) {
 		if (strFormat == null) {
 			return this.mimes[0];
 		} else {
-			return ImageMime.createFromMimeType(strFormat);
+			return MimeType.createFromMimeType(strFormat);
 		}
 	}
 

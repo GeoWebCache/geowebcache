@@ -22,6 +22,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.ServiceRequest;
@@ -49,7 +50,7 @@ public class WMSService extends Service {
         SRS srs = new SRS(wmsParams.getSrs());
         int srsIdx = tileLayer.getSRSIndex(srs);
         return new TileRequest(
-        		tileLayer.getGridLocForBounds(srsIdx,wmsParams.getBBOX()),
-                wmsParams.getImageMime(), srs);
+                tileLayer.getGridLocForBounds(srsIdx,wmsParams.getBBOX()),
+                MimeType.createFromMimeType(wmsParams.getImageMime()), srs);
     }
 }

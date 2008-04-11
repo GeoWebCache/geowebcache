@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.ServiceRequest;
@@ -60,7 +61,7 @@ public class GMapsConverter extends Service {
                 .parseInt(strX), Integer.parseInt(strY));
         
         SRS srs = new SRS(900913);
-        return new TileRequest(gridLoc, mimeType,srs);
+        return new TileRequest(gridLoc, MimeType.createFromMimeType(mimeType),srs);
     }
 
     /**

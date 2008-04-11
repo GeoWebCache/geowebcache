@@ -17,10 +17,15 @@
  */
 package org.geowebcache.mime;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class MimeType { 
     protected String mimeType;
     protected String fileExtension;
     protected String internalName;
+    
+    private static Log log = LogFactory.getLog(org.geowebcache.mime.MimeType.class);
     
     public MimeType() {
     }
@@ -45,5 +50,50 @@ public class MimeType {
     // Used for internal purposes, like picking image renderer
     public String getInternalName() {
         return internalName;
+    }
+    
+    /**
+     * Get the MIME type object for a given MIME type string
+     * 
+     * @param mimeStr
+     * @return
+     */
+    public static MimeType createFromMimeType(String mimeStr) {
+        MimeType mimeType = null;
+        
+        if(mimeStr.substring(0, 6).equalsIgnoreCase("image/")) {
+            mimeType = ImageMime.checkForMimeType(mimeStr);
+        } else if(mimeStr.substring(0,12).equalsIgnoreCase("application/")) {
+            // TODO May have to deal with error MIMEs too
+            mimeType = XMLMime.checkForMimeType(mimeStr);
+        }
+        
+        if(mimeType == null) {
+            log.error("Unsupported MIME type: " + mimeStr + ", returning null");
+        }
+        return mimeType;
+    }
+    
+    /**
+     * Get the MIME type object for a given file extension
+     * 
+     * @param mimeStr
+     * @return
+     */
+    public static MimeType createFromExtension(String fileExtension) {
+        MimeType mimeType = null;
+
+        mimeType = ImageMime.checkForExtension(fileExtension);
+        if(mimeType != null) {
+            return mimeType;
+        }
+
+        mimeType = XMLMime.checkForExtension(fileExtension);
+        if(mimeType != null) {
+            return mimeType;
+        }
+       
+        log.error("Unsupported MIME type: " + fileExtension + ", returning null");
+        return null;
     }
 }

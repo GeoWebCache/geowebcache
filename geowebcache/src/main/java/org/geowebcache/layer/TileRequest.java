@@ -16,12 +16,14 @@
  */
 package org.geowebcache.layer;
 
+import org.geowebcache.mime.MimeType;
+
 public class TileRequest {
     public int[] gridLoc = null;
-    public String mimeType = null;
+    public MimeType mimeType = null;
     public SRS SRS = null;
     
-    public TileRequest(int[] gridLoc, String mimeType, SRS srs) {
+    public TileRequest(int[] gridLoc, MimeType mimeType, SRS srs) {
         this.gridLoc = gridLoc;
         this.mimeType = mimeType;
         this.SRS = srs;

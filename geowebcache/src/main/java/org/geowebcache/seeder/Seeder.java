@@ -28,6 +28,7 @@ import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.mime.ImageMime;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.wms.BBOX;
 
 /**
@@ -56,7 +57,7 @@ public class Seeder {
      * @return
      * @throws IOException
      */
-    private int doSeed(int zoomStart, int zoomStop, ImageMime imageFormat,
+    private int doSeed(int zoomStart, int zoomStop, MimeType mimeType,
             SRS srs, BBOX bounds, HttpServletResponse response) throws IOException {
         response.setContentType("text/html");
 
@@ -65,7 +66,7 @@ public class Seeder {
         int[][] coveredGridLevels = layer.getCoveredGridLevels(srsIdx, bounds);
         int[] metaTilingFactors = layer.getMetaTilingFactors();
         
-        infoStart(pw, zoomStart, zoomStop, imageFormat, bounds);
+        infoStart(pw, zoomStart, zoomStop, mimeType, bounds);
         
         for (int level = zoomStart; level <= zoomStop; level++) {
             int[] gridBounds = coveredGridLevels[level];
@@ -81,7 +82,7 @@ public class Seeder {
                     infoTile(pw, count++);
                     int[] gridLoc = { gridx , gridy , level };
                     
-                    TileRequest tileReq = new TileRequest(gridLoc, imageFormat.getMimeType(), srs);
+                    TileRequest tileReq = new TileRequest(gridLoc, mimeType, srs);
                     layer.getResponse(tileReq, "seeder", response);
                     
                     // Next column
@@ -101,13 +102,13 @@ public class Seeder {
     }
 
     private void infoStart(PrintWriter pw, int zoomStart, int zoomStop,
-            ImageMime imageFormat, BBOX bounds) throws IOException {
+            MimeType mimeType, BBOX bounds) throws IOException {
         if (pw == null) {
             return;
         }
         pw.print("<html><body><table><tr><td>Seeding " + layer.getName() 
         		+ " from level "+ zoomStart + " to level " + zoomStop 
-                + " for format " + imageFormat.getMimeType() 
+                + " for format " + mimeType.getMimeType() 
                 + " and bounds " + bounds.getReadableString() 
                 + "</td></tr>");
         pw.flush();
@@ -194,12 +195,12 @@ public class Seeder {
             }
         }
         
-        ImageMime mime = null;
+        MimeType mime = null;
         if (format == null) {
-            mime = (ImageMime) layer.getDefaultMimeType();
+            mime = layer.getDefaultMimeType();
             log.info("User did not specify format for seeding, assuming " + mime.getMimeType());
         } else {
-                mime = ImageMime.createFromMimeType(format);
+                mime = MimeType.createFromMimeType(format);
                 complaint = layer.supportsMime(mime.getMimeType());
                 
                 if(complaint != null) {

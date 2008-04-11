@@ -21,25 +21,28 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class ImageMime extends MimeType {
-    private static Log log = LogFactory.getLog(org.geowebcache.mime.ImageMime.class);
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.mime.ImageMime.class);
 
     public ImageMime(String mimeType, String fileExtension, String internalName) {
         super();
-        if(mimeType.substring(0,6).equalsIgnoreCase("image/")) {
+        if (mimeType.substring(0, 6).equalsIgnoreCase("image/")) {
             super.mimeType = mimeType;
             super.fileExtension = fileExtension;
             super.internalName = internalName;
         } else {
             log.error("MIME type " + mimeType + " does not start with image/");
         }
-        if(fileExtension == null || fileExtension.length() == 0) {
-            log.warn("Setting file extension based on mimeType for " + mimeType);
+        if (fileExtension == null || fileExtension.length() == 0) {
+            log
+                    .warn("Setting file extension based on mimeType for "
+                            + mimeType);
             super.fileExtension = mimeType.substring(6, mimeType.length());
         }
         // Don't try to guess an internal name
     }
 
-    public static ImageMime createFromMimeType(String mimeType) {
+    protected static ImageMime checkForMimeType(String mimeType) {
         if (mimeType.equalsIgnoreCase("image/png")) {
             return new ImageMime("image/png", "png", "png");
         } else if (mimeType.equalsIgnoreCase("image/jpeg")) {
@@ -50,13 +53,22 @@ public class ImageMime extends MimeType {
             return new ImageMime("image/tiff", "tiff", "tiff");
         } else if (mimeType.equalsIgnoreCase("image/png8")) {
             return new ImageMime("image/png8", "png8", "png");
-        } else {
-            log.error("Unsupported MIME type: " + mimeType + ", falling back to PNG.");
-            return new ImageMime("image/png", "png", "png");
         }
+        return null;
     }
-    
-    public static ImageMime createFromExtension(String fileExtension) {
+
+//    public static ImageMime createFromMimeType(String mimeType) {
+//        ImageMime imageMime = checkForMimeType(mimeType);
+//        if (imageMime == null) {
+//            log.error("Unsupported MIME type: " + mimeType
+//                    + ", falling back to PNG.");
+//            imageMime = new ImageMime("image/png", "png", "png");
+//        }
+//
+//        return imageMime;
+//    }
+
+    protected static ImageMime checkForExtension(String fileExtension) {
         if (fileExtension.equalsIgnoreCase("png")) {
             return new ImageMime("image/png", "png", "png");
         } else if (fileExtension.equalsIgnoreCase("jpeg")) {
@@ -67,10 +79,18 @@ public class ImageMime extends MimeType {
             return new ImageMime("image/tiff", "tiff", "tiff");
         } else if (fileExtension.equalsIgnoreCase("png8")) {
             return new ImageMime("image/png8", "png8", "png");
-        } else {
-            log.error("Unsupported MIME type: " + fileExtension + ", falling back to PNG.");
-            return new ImageMime("image/png", "png", "png");
         }
+        return null;
     }
-    
+
+//    public static ImageMime createFromExtension(String fileExtension) {
+//        ImageMime imageMime = checkForExtension(fileExtension);
+//        if (imageMime == null) {
+//            log.error("Unsupported MIME type: " + fileExtension
+//                    + ", falling back to PNG.");
+//            imageMime = new ImageMime("image/png", "png", "png");
+//        }
+//
+//        return imageMime;
+//    }
 }

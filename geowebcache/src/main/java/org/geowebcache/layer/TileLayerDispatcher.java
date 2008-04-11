@@ -57,12 +57,11 @@ public class TileLayerDispatcher {
     public void initLayers() {
         initLock.lock(); // block until condition holds
         try {
-            if (this.layers != null) {
-                System.out
-                        .println("BAH, layers have already been initialized.");
+            if(this.isInitialized) {
+                log.debug("Thread initLayers(), but isInitialized already");
                 return;
             } else {
-                System.out.println("WOOOT! I GET TO INITIALIZE. LUCKY ME.");
+                log.debug("Thread initLayers(), initializing");
             }
 
             this.layers = new HashMap();
