@@ -24,7 +24,8 @@ public class XMLMime extends MimeType {
     private static Log log = LogFactory.getLog(org.geowebcache.mime.XMLMime.class);
 
     public XMLMime(String mimeType, String fileExtension, String internalName) {
-        super();
+        super(false);
+        
         if(mimeType.substring(0,12).equalsIgnoreCase("application/")) {
             super.mimeType = mimeType;
             super.fileExtension = fileExtension;

@@ -24,7 +24,7 @@ public class ErrorMime extends MimeType {
     private static Log log = LogFactory.getLog(org.geowebcache.mime.ErrorMime.class);
     
     public ErrorMime(String mimeType, String extension, String internalName) {
-        super(mimeType, extension, internalName);
+        super(mimeType, extension, internalName, false);
     }
     
     public static ErrorMime createFromMimeType(String mimeType) {

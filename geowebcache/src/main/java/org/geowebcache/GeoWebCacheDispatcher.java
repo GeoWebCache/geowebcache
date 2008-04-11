@@ -273,7 +273,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
         log.trace("sendData() Sending data.");
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType(tileResponse.mimeType);
+        response.setContentType(tileResponse.mimeType.getMimeType());
         response.setContentLength(tileResponse.data.length);
         try {
         	OutputStream os = response.getOutputStream();

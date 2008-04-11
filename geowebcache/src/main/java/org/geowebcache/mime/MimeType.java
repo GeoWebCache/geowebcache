@@ -20,23 +20,29 @@ package org.geowebcache.mime;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class MimeType { 
+public class MimeType {
     protected String mimeType;
+
     protected String fileExtension;
+
     protected String internalName;
     
-    private static Log log = LogFactory.getLog(org.geowebcache.mime.MimeType.class);
-    
-    public MimeType() {
+    protected boolean supportsTiling;
+
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.mime.MimeType.class);
+
+    public MimeType(boolean supportsTiling) {
+        this.supportsTiling = supportsTiling;
     }
-    
-    public MimeType(
-            String mimeType, String fileExtension, String internalName) {
+
+    public MimeType(String mimeType, String fileExtension, String internalName, boolean supportsTiling) {
         this.mimeType = mimeType;
         this.fileExtension = fileExtension;
         this.internalName = internalName;
+        this.supportsTiling = supportsTiling;
     }
-    
+
     // The string representing the MIME type
     public String getMimeType() {
         return mimeType;
@@ -52,6 +58,11 @@ public class MimeType {
         return internalName;
     }
     
+    public boolean supportsTiling() {
+        return supportsTiling;
+    }
+    
+
     /**
      * Get the MIME type object for a given MIME type string
      * 
@@ -60,20 +71,20 @@ public class MimeType {
      */
     public static MimeType createFromMimeType(String mimeStr) {
         MimeType mimeType = null;
-        
-        if(mimeStr.substring(0, 6).equalsIgnoreCase("image/")) {
+
+        if (mimeStr.substring(0, 6).equalsIgnoreCase("image/")) {
             mimeType = ImageMime.checkForMimeType(mimeStr);
-        } else if(mimeStr.substring(0,12).equalsIgnoreCase("application/")) {
+        } else if (mimeStr.substring(0, 12).equalsIgnoreCase("application/")) {
             // TODO May have to deal with error MIMEs too
             mimeType = XMLMime.checkForMimeType(mimeStr);
         }
-        
-        if(mimeType == null) {
+
+        if (mimeType == null) {
             log.error("Unsupported MIME type: " + mimeStr + ", returning null");
         }
         return mimeType;
     }
-    
+
     /**
      * Get the MIME type object for a given file extension
      * 
@@ -84,16 +95,27 @@ public class MimeType {
         MimeType mimeType = null;
 
         mimeType = ImageMime.checkForExtension(fileExtension);
-        if(mimeType != null) {
+        if (mimeType != null) {
             return mimeType;
         }
 
         mimeType = XMLMime.checkForExtension(fileExtension);
-        if(mimeType != null) {
+        if (mimeType != null) {
             return mimeType;
         }
-       
-        log.error("Unsupported MIME type: " + fileExtension + ", returning null");
+
+        log.error("Unsupported MIME type: " + fileExtension
+                + ", returning null");
         return null;
+    }
+
+    public boolean equals(Object obj) {
+        if (obj.getClass() == this.getClass()) {
+            MimeType mimeObj = (MimeType) obj;
+            if (this.mimeType.equalsIgnoreCase(mimeObj.mimeType)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

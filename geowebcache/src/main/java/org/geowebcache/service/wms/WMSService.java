@@ -51,6 +51,6 @@ public class WMSService extends Service {
         int srsIdx = tileLayer.getSRSIndex(srs);
         return new TileRequest(
                 tileLayer.getGridLocForBounds(srsIdx,wmsParams.getBBOX()),
-                MimeType.createFromMimeType(wmsParams.getImageMime()), srs);
+                MimeType.createFromMimeType(wmsParams.getMime()), srs);
     }
 }

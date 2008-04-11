@@ -16,12 +16,14 @@
  */
 package org.geowebcache.layer;
 
+import org.geowebcache.mime.MimeType;
+
 public class TileResponse {
 
     public byte[] data = null;
-    public String mimeType = null;
+    public MimeType mimeType = null;
     
-    public TileResponse(byte[] data, String mimeType) {
+    public TileResponse(byte[] data, MimeType mimeType) {
         this.data = data;
         this.mimeType = mimeType;
     }

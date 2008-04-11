@@ -62,7 +62,7 @@ public class WMSLayer implements TileLayer {
 
 	HashMap procQueue = new HashMap();
 
-	boolean debugHeaders = false;
+	boolean debugHeaders = true;
 
 	Integer cacheLockWait = -1;
 
@@ -179,8 +179,6 @@ public class WMSLayer implements TileLayer {
 					+ " falls outside of the bounding box ("
 					+ profile.bbox.toString() + ")," + " error: "
 					+ profile.gridCalc[idx].isInRange(gridLoc));
-		} else if (mime == null) {
-			complaint = "Image format cannot be null in getData()";
 		}
 
 		if (complaint != null) {
@@ -193,10 +191,18 @@ public class WMSLayer implements TileLayer {
 		// "orig: "+wmsparams.getBBOX().getReadableString());
 		// System.out.println(
 		// "recreated: "+profile.recreateBbox(gridLoc).getReadableString());
-
-		WMSMetaTile metaTile = new WMSMetaTile(tileRequest.SRS,
-				profile.gridCalc[idx].getGridBounds(gridLoc[2]), gridLoc,
-				profile.metaWidth, profile.metaHeight);
+                
+                WMSMetaTile metaTile = null;
+                 
+                if(mime.supportsTiling()) {
+                    metaTile = new WMSMetaTile(tileRequest.SRS,
+                        profile.gridCalc[idx].getGridBounds(gridLoc[2]), gridLoc,
+                        profile.metaWidth, profile.metaHeight);
+                } else {
+                    metaTile = new WMSMetaTile(tileRequest.SRS,
+                        profile.gridCalc[idx].getGridBounds(gridLoc[2]), gridLoc,
+                        1, 1);
+                }
 
 		int[] metaGridLoc = metaTile.getMetaGridPos();
 
@@ -227,7 +233,7 @@ public class WMSLayer implements TileLayer {
 								+ "from-cache:true");
 					}
 					setExpirationHeader(response);
-					return new TileResponse(tile.getData(), mime.toString());
+					return new TileResponse(tile.getData(), mime);
 				}
 			} catch (CacheException ce) {
 				log.error("Failed to get " + requestURI + " from cache");
@@ -293,7 +299,7 @@ public class WMSLayer implements TileLayer {
 			response.addHeader("geowebcache-debug", debugHeadersStr
 					+ "from-cache:false;wmsUrl:" + requestURL);
 		}
-		return new TileResponse(data, mime.toString());
+		return new TileResponse(data, mime);
 	}
 
 	public int purge(OutputStream os) {
@@ -578,7 +584,7 @@ public class WMSLayer implements TileLayer {
 
 	public WMSParameters getWMSParamTemplate() {
 		WMSParameters ret = profile.getWMSParamTemplate();
-		ret.setImageMime(mimes[0].getMimeType());
+		ret.setMime(mimes[0].getMimeType());
 		return ret;
 	}
 

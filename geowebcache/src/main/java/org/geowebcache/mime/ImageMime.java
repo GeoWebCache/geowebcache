@@ -25,7 +25,7 @@ public class ImageMime extends MimeType {
             .getLog(org.geowebcache.mime.ImageMime.class);
 
     public ImageMime(String mimeType, String fileExtension, String internalName) {
-        super();
+        super(true);
         if (mimeType.substring(0, 6).equalsIgnoreCase("image/")) {
             super.mimeType = mimeType;
             super.fileExtension = fileExtension;

@@ -148,7 +148,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
         props.setProperty(WMSLayerProfile.WMS_TRANSPARENT, "true");
 
         if (this.mimeTypes == null || this.mimeTypes.length() == 0) {
-            props.setProperty(WMSLayer.WMS_MIMETYPES, "image/png");
+            props.setProperty(WMSLayer.WMS_MIMETYPES, "image/png,image/jpeg");
         } else {
             props.setProperty(WMSLayer.WMS_MIMETYPES, this.mimeTypes);
         }
