@@ -168,23 +168,17 @@ public class WMSLayer implements TileLayer {
 		int[] gridLoc = tileRequest.gridLoc;
 
 		int idx = getSRSIndex(tileRequest.SRS);
-		// Final preflight check
+		
+                // Final preflight check
 		// TODO move outside
-		String complaint = null;
-		if (log.isDebugEnabled()
-				&& profile.gridCalc[idx].isInRange(gridLoc) != null) {
-			log.debug("Adjusted request ("
-					+ profile.gridCalc[idx].bboxFromGridLocation(gridLoc)
-							.toString() + ")"
-					+ " falls outside of the bounding box ("
-					+ profile.bbox.toString() + ")," + " error: "
-					+ profile.gridCalc[idx].isInRange(gridLoc));
-		}
-
+                String complaint = profile.gridCalc[idx].isInRange(gridLoc);
+                
 		if (complaint != null) {
-			log.error(complaint);
-			response.sendError(400, complaint);
-			return null;
+			log.debug(complaint);
+			response.sendError(400, 
+                                "The requested tile falls outside the bounds of the layer "
+                                +"("+profile.bbox[idx].toString()+") \n" + complaint);
+                        return null;
 		}
 
 		// System.out.println(

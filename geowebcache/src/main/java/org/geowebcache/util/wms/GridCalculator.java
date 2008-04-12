@@ -90,10 +90,11 @@ public class GridCalculator {
 
         int metaLarger = (metaHeight > metaWidth) ? metaHeight : metaWidth;
 
-        // System.out.println("lb: " +layerBounds+ " base:" + base+
-        // " tileWidth: " + tileWidth);
+        //System.out.println("lb: " +layerBounds+ " base:" +
+        //  " tileWidth: " + tileWidth);
 
         for (int level = 0; level <= zoomStop; level++) {
+            //System.out.println("--- Level "+level+"----");
             // Min X
             gridLevels[level][0] = (int) Math
                     .floor((layerBounds.coords[0] - gridBounds.coords[0])
@@ -111,11 +112,11 @@ public class GridCalculator {
                     .ceil((layerBounds.coords[3] - gridBounds.coords[1])
                             / tileHeight) - 1;
 
-            // System.out.println("postOrig: " +
-            // Arrays.toString(gridLevels[level]));
+            //System.out.println("postOrig: " +
+            //        Arrays.toString(gridLevels[level]));
             //
-            // System.out.println("tileCountX "+tileCountX + " metaLarger: "
-            // + metaLarger + " baseWidth: "+baseWidth);
+            //System.out.println("tileCountX "+tileCountX + " metaLarger: "
+            // + metaLarger);
 
             // Adjust for metatiling if appropriate
             if (tileCountX > metaLarger || tileCountY > metaLarger) {
@@ -133,7 +134,7 @@ public class GridCalculator {
                         - (gridLevels[level][3] % metaHeight)
                         + (metaHeight - 1);
 
-                // System.out.println("postAdjust: " +
+                //System.out.println("postAdjust: " +
                 // Arrays.toString(gridLevels[level]));
 
                 // Fix for naive round ups, imagine applying a 3x3 metatile to a
@@ -144,7 +145,7 @@ public class GridCalculator {
                 if (gridLevels[level][3] >= tileCountY) {
                     gridLevels[level][3] = tileCountY - 1;
                 }
-                // System.out.println("postFix: " +
+                //System.out.println("postFix: " +
                 // Arrays.toString(gridLevels[level]));
             }
 
@@ -238,10 +239,10 @@ public class GridCalculator {
         }
 
         // Check Y
-        if (location[0] < bounds[0]) {
+        if (location[1] < bounds[1]) {
             return "gridY (" + location[1] + ") must be at least " + bounds[1]
                     + gridDebug;
-        } else if (location[0] > bounds[2]) {
+        } else if (location[1] > bounds[3]) {
             return "gridY (" + location[1] + ") can be at most " + bounds[3]
                     + gridDebug;
         }

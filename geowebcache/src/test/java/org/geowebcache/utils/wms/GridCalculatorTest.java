@@ -1,4 +1,4 @@
-package org.geowebcache.layer.wms;
+package org.geowebcache.utils.wms;
 
 import java.util.Arrays;
 
@@ -291,5 +291,37 @@ public class GridCalculatorTest extends TestCase {
         		+"<east>90.0</east><west>45.0</west></LatLonAltBox>");
         assertTrue(box2_kml);
     }
+    
+    public void test5gridLevels4326() throws Exception {
+        BBOX bbox = new BBOX(-124.731422, 24.955967, -66.969849, 49.371735);
+        BBOX gridBase = new BBOX(-180, -90, 180, 90);
+        int metaHeight = 1;
+        int metaWidth = 1;
+        double maxTileWidth = 180.0;
+        double maxTileHeight = 180.0;
+        int zoomStart = 0;
+        int zoomStop = 6;
+
+        GridCalculator gridCalc = new GridCalculator(
+                gridBase, bbox, 
+                zoomStart, zoomStop, 
+                metaWidth, metaHeight, 
+                maxTileWidth, maxTileHeight);
+                
+        int[][] solution = { { 0, 0, 0, 0 }, { 0, 1, 1, 1 }, { 1, 2, 2, 3 },
+                { 2, 5, 5, 6 } };
+
+        for (int i = 0; i < solution.length; i++) {
+            int[] bounds = gridCalc.getGridBounds(i);
+
+            if (!Arrays.equals(solution[i], bounds)) {
+                System.out.println(Arrays.toString(solution[i]) + "  "
+                        + Arrays.toString(bounds));
+            }
+            assertTrue(Arrays.equals(solution[i], bounds));
+        }
+    }
+    
+   
     
 }

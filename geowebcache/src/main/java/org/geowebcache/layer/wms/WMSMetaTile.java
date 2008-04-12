@@ -180,9 +180,10 @@ public class WMSMetaTile extends MetaTile {
      */
     protected void createTiles(int tileWidth, int tileHeight) {
         tiles = new RenderedImage[metaX * metaY];
-        final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
         
         if (tiles.length > 1) {
+            final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
+            
             for (int y = 0; y < metaY; y++) {
                 for (int x = 0; x < metaX; x++) {
                     int i = x * tileWidth;

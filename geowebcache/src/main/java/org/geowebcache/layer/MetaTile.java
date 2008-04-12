@@ -16,6 +16,8 @@
  */
 package org.geowebcache.layer;
 
+import java.util.Arrays;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -57,11 +59,9 @@ public abstract class MetaTile {
      */
     private int[] calculateMetaTileGridBounds(int[] gridBounds, int[] tileGridPosition) {
         // Sanity checks that are hopefully redundant
-        //if(  ! (tileGridPosition[0] >= gridBounds[0] && tileGridPosition[0] <= gridBounds[2])
-        //        &&(tileGridPosition[1] >= gridBounds[1] && tileGridPosition[1] <= gridBounds[3])
-        //        &&(tileGridPosition[2] >= gridBounds[0] && tileGridPosition[2] <= gridBounds[2])
-        //        &&(tileGridPosition[3] >= gridBounds[1] && tileGridPosition[3] <= gridBounds[3])) {
-        //    log.error("calculateMetaTileGridBounds(): " + Arrays.toString(gridBounds) +" "+ Arrays.toString(tileGridPosition) );
+        //if( tileGridPosition[0] < gridBounds[0] || tileGridPosition[0] > gridBounds[2] 
+        //    || tileGridPosition[1] < gridBounds[1] || tileGridPosition[1] > gridBounds[3]) {
+        //    log.error("calculateMetaTileGridBounds(): " + Arrays.toString(gridBounds) +" does not contain "+ Arrays.toString(tileGridPosition) );
         //    return null;
         //}
         
@@ -82,9 +82,13 @@ public abstract class MetaTile {
     /**
      * Creates an array with all the grid positions, used for cache keys
      */
-    private int[][] calculateTilesGridPositions() {        
+    private int[][] calculateTilesGridPositions() {
+        if(metaX < 0 || metaY < 0) {
+            return null;
+        }
         int[][] tilesGridPositions = new int[metaX * metaY][3];
 
+        try {
         for (int y = 0; y < metaY; y++) {
             for (int x = 0; x < metaX; x++) {
                 int tile = y * metaX + x;
@@ -93,7 +97,9 @@ public abstract class MetaTile {
                 tilesGridPositions[tile][2] = metaTileGridBounds[4];
             }
         }
-        
+        } catch (java.lang.NullPointerException npe) {
+            System.out.println("oops");
+        }
         return tilesGridPositions;
     }
 
