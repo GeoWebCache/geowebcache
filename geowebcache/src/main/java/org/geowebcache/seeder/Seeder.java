@@ -58,7 +58,7 @@ public class Seeder {
      * @return
      * @throws IOException
      */
-    private int doSeed(int zoomStart, int zoomStop, MimeType mimeType,
+    protected int doSeed(int zoomStart, int zoomStop, MimeType mimeType,
             SRS srs, BBOX bounds, HttpServletResponse response) throws IOException {
         response.setContentType("text/html");
 
@@ -163,95 +163,4 @@ public class Seeder {
         pw.print("" + count + ", ");
         pw.flush();
     }
-    
-    /**
-     * 
-     * @param layer
-     * @param zoomStart
-     * @param zoomStop
-     * @param format
-     * @param bounds
-     * @param response
-     * @return
-     * @throws IOException
-     */
-    public static int seed(TileLayer layer, int zoomStart, int zoomStop, 
-    		String format, SRS srs, BBOX bounds,
-            HttpServletResponse response) throws IOException, MimeException {
-
-        String complaint = null;
-
-        int srsIdx = layer.getSRSIndex(srs);
-        
-        // Check that we support this
-        if (bounds == null) {
-            bounds = layer.getBounds(srsIdx);
-        } else {
-            if (null == layer.supportsBbox(srs, bounds)) {
-                complaint = "Request to seed outside of bounds: "
-                        + bounds.toString();
-                log.error(complaint);
-                response.sendError(400, complaint);
-                return -1;
-            }
-        }
-        
-        MimeType mime = null;
-        if (format == null) {
-            mime = layer.getDefaultMimeType();
-            log.info("User did not specify format for seeding, assuming " + mime.getMimeType());
-        } else {
-                mime = MimeType.createFromMimeType(format);
-                complaint = layer.supportsMime(mime.getMimeType());
-                
-                if(complaint != null) {
-                        log.error(complaint);
-                        response.sendError(400, complaint);
-                        return -1;
-                }
-        }
-        
-       //if (profile.expireCache == LayerProfile.CACHE_NEVER) {
-       //     complaint = "Layers is configured to never cache!";
-       //     log.error(complaint);
-       //     response.sendError(400, complaint);
-       //     return -1;
-       // }
-
-        if (zoomStart < 0 || zoomStop < 0) {
-            complaint = "start(" + zoomStart + ") and stop(" + zoomStop
-                    + ") have to greater than zero";
-            log.error(complaint);
-            response.sendError(400, complaint);
-            return -1;
-        }
-//        if (zoomStart < profile.zoomStart) {
-//            complaint = "start(" + zoomStart
-//                    + ") should be greater than or equal to "
-//                    + profile.zoomStart;
-//            log.error(complaint);
-//            response.sendError(400, complaint);
-//            return -1;
-//        }
-//        if (zoomStop > profile.zoomStop) {
-//            complaint = "stop(" + zoomStop
-//                    + ") should be less than or equal to " + profile.zoomStop;
-//            log.error(complaint);
-//            response.sendError(400, complaint);
-//            return -1;
-//        }
-
-        log.info("seeder.doSeed(" + zoomStart + "," + zoomStop + ","
-                + mime.getMimeType() + "," + bounds.toString()
-                + ",stream)");
-
-        // Create a new seeder if we get here
-        Seeder aSeeder = new Seeder(layer);
-        
-        int retVal = aSeeder.doSeed(
-                zoomStart, zoomStop, mime, srs, bounds,response);
-
-        return retVal;
-    }
-
 }

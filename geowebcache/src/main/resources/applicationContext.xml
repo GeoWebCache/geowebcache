@@ -6,7 +6,7 @@
     <constructor-arg type="org.geowebcache.cache.CacheFactory" ref="cacheFactory"/>
     <!-- 
 	 By default GeoWebCache will look for .properties 
-	 files in the resources folder, below oare some examples.
+	 files in the resources folder, below are some examples.
       -->
     <!-- property name="absolutePath"><value>/etc/geowebcache/conf</value></property -->
     <!-- property name="absolutePath"><value>c:\geowebcache\conf</value></property -->
@@ -23,14 +23,28 @@
   
   <!-- For each configuration bean above, add them below to activate -->
   <bean id="tLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
-    <!-- property name="config" ref="defaultConfig"/ -->
-    <property name="config" ref="wmsConfig"/>
-    <!-- Add additional Configuration beans here -->
+    <property name="config">
+    <list>
+      <ref bean="wmsConfig"/>
+      <ref bean="defaultConfig"/>
+      <!-- Add additional Configuration beans here -->
+    </list>
+    </property>
+  </bean>
+
+  <!-- For each configuration bean above, add them below to activate -->
+  <bean id="seederDispatcher" class="org.geowebcache.seeder.SeederDispatcher">
+	<property name="allowedSeeders">
+    <list>
+      <value>127.0.0.1</value>
+    </list>
+    </property>
   </bean>
   
   <!-- controller for handling all incoming requests -->
   <bean id="geowebcacheDispatcher" class="org.geowebcache.GeoWebCacheDispatcher">
     <property name="tileLayerDispatcher" ref="tLDispatcher"/>
+    <property name="seederDispatcher" ref="seederDispatcher"/>
     <!-- property name="servletPrefix" value=""/ -->
   </bean>
   
@@ -59,10 +73,8 @@
     <property name="alwaysUseFullPath" value="true"/>
     <property name="mappings">
       <props>
-	<prop key="/service/**">geowebcacheDispatcher</prop>
-	<!-- prop key="/gwc/**">gwcDispatcher</prop -->
-        <!-- prop key="/service/**">gwcDispatcher</prop -->
-	<!-- prop key="/geowebcache/**">gwcDispatcher</prop -->
+        <prop key="/service/**">geowebcacheDispatcher</prop>
+        <prop key="/seed/**">geowebcacheDispatcher</prop>
       </props>
     </property>
   </bean>

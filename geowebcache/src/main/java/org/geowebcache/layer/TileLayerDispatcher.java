@@ -18,6 +18,7 @@ package org.geowebcache.layer;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -32,7 +33,7 @@ public class TileLayerDispatcher {
 
     private HashMap layers = null;
 
-    private Configuration config = null;
+    private List configs = null;
 
     private boolean isInitialized = false;
 
@@ -50,8 +51,8 @@ public class TileLayerDispatcher {
         return (TileLayer) layers.get(layerIdent);
     }
 
-    public void setConfig(Configuration config) {
-        this.config = config;
+    public void setConfig(List configs) {
+        this.configs = configs;
     }
 
     public void initLayers() {
@@ -66,26 +67,32 @@ public class TileLayerDispatcher {
 
             this.layers = new HashMap();
 
-            Map configLayers = null;
-            try {
-                configLayers = config.getTileLayers();
-            } catch (GeoWebCacheException gwce) {
-                log.error(gwce.getMessage());
-                log
-                        .error("Failed to add layers from "
-                                + config.getIdentifier());
-            }
-
-            log.info("Adding layers from " + config.getIdentifier());
-            if (configLayers != null && configLayers.size() > 0) {
-                Iterator iter = configLayers.keySet().iterator();
-                while (iter.hasNext()) {
-                    String layerIdent = (String) iter.next();
-                    layers.put(layerIdent, configLayers.get(layerIdent));
+            Iterator configIter = configs.iterator();
+            while(configIter.hasNext()) {
+                Map configLayers = null;
+                
+                Configuration config = (Configuration) configIter.next();
+                
+                try {
+                    configLayers = config.getTileLayers();
+                } catch (GeoWebCacheException gwce) {
+                    log.error(gwce.getMessage());
+                    log
+                            .error("Failed to add layers from "
+                                    + config.getIdentifier());
                 }
-            } else {
-                log.error("Configuration " + config.getIdentifier()
-                        + " contained no layers.");
+
+                log.info("Adding layers from " + config.getIdentifier());
+                if (configLayers != null && configLayers.size() > 0) {
+                    Iterator iter = configLayers.keySet().iterator();
+                    while (iter.hasNext()) {
+                        String layerIdent = (String) iter.next();
+                        layers.put(layerIdent, configLayers.get(layerIdent));
+                    }
+                } else {
+                    log.error("Configuration " + config.getIdentifier()
+                            + " contained no layers.");
+                }       
             }
 
             // This is a hack
