@@ -28,6 +28,7 @@ import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.mime.ImageMime;
+import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.wms.BBOX;
 
@@ -176,7 +177,7 @@ public class Seeder {
      */
     public static int seed(TileLayer layer, int zoomStart, int zoomStop, 
     		String format, SRS srs, BBOX bounds,
-            HttpServletResponse response) throws IOException {
+            HttpServletResponse response) throws IOException, MimeException {
 
         String complaint = null;
 

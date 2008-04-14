@@ -69,9 +69,12 @@ public class MimeType {
      * @param mimeStr
      * @return
      */
-    public static MimeType createFromMimeType(String mimeStr) {
+    public static MimeType createFromMimeType(String mimeStr) throws MimeException {
         MimeType mimeType = null;
-
+        if(mimeStr == null) {
+            throw new MimeException("MimeType was not set");
+        }
+        
         if (mimeStr.substring(0, 6).equalsIgnoreCase("image/")) {
             mimeType = ImageMime.checkForMimeType(mimeStr);
         } else if (mimeStr.substring(0, 12).equalsIgnoreCase("application/")) {

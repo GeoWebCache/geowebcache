@@ -22,10 +22,12 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
+import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.ServiceRequest;
+import org.geowebcache.util.wms.BBOX;
 
 public class WMSService extends Service {
     public static final String SERVICE_WMS = "wms";
@@ -47,10 +49,31 @@ public class WMSService extends Service {
             throw new ServiceException("Did not find layer, layers=" + wmsParams.getLayer());
         }
         
+        MimeType mime = null;
+        String mimeType = wmsParams.getMime();
+        try {
+            mime = MimeType.createFromMimeType(mimeType);
+        } catch (MimeException me) {
+            throw new ServiceException("Unable to determined requested format, " + mimeType);
+        }
+        
+        if(wmsParams.getSrs() == null) {
+            throw new ServiceException("No SRS specified");
+        }
+        
         SRS srs = new SRS(wmsParams.getSrs());
         int srsIdx = tileLayer.getSRSIndex(srs);
+        if(srsIdx < 0) {
+            throw new ServiceException("Unable to match requested SRS " + wmsParams.getSrs() + " to those supported by layer");
+        }
+        
+        BBOX bbox = wmsParams.getBBOX();
+        if(bbox == null || ! bbox.isSane()) {
+            throw new ServiceException("The bounding box parameter is missing or not sane");
+        }
+        
         return new TileRequest(
-                tileLayer.getGridLocForBounds(srsIdx,wmsParams.getBBOX()),
-                MimeType.createFromMimeType(wmsParams.getMime()), srs);
+                tileLayer.getGridLocForBounds(srsIdx,bbox),
+                mime, srs);
     }
 }

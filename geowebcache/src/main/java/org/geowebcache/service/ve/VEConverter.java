@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
+import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
@@ -50,7 +51,7 @@ public class VEConverter extends Service {
     }
     
     public TileRequest getTileRequest(TileLayer tileLayer,
-            HttpServletRequest request) {
+            HttpServletRequest request) throws ServiceException {
         Map params = request.getParameterMap();
         String strQuadKey = ServletUtils.stringFromMap(params, "quadkey");
         String mimeType = ServletUtils.stringFromMap(params, "format");
@@ -58,7 +59,14 @@ public class VEConverter extends Service {
         int[] gridLoc = VEConverter.convert(strQuadKey);
 
         SRS srs = new SRS(900913);
-        return new TileRequest(gridLoc, MimeType.createFromMimeType(mimeType), srs);
+        
+        MimeType mime = null; 
+        try {
+            mime = MimeType.createFromMimeType(mimeType);
+        } catch (MimeException me) {
+            throw new ServiceException("Unable to determined requested format, " + mimeType);
+        }
+        return new TileRequest(gridLoc,mime,srs);
     }
 
     /**

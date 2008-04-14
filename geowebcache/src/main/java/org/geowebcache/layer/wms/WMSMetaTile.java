@@ -45,12 +45,12 @@ import org.geowebcache.util.wms.BBOX;
 
 public class WMSMetaTile extends MetaTile {
     private static Log log = LogFactory
-    .getLog(org.geowebcache.layer.wms.WMSMetaTile.class);
+            .getLog(org.geowebcache.layer.wms.WMSMetaTile.class);
 
     private BufferedImage img = null; // buffer for storing the metatile
 
     private RenderedImage[] tiles = null; // array with tiles (after cropping)
-    
+
     private long expiration = WMSLayerProfile.CACHE_VALUE_UNSET;
 
     public boolean failed = false;
@@ -61,22 +61,24 @@ public class WMSMetaTile extends MetaTile {
      * @param profile
      * @param initGridPosition
      */
-    protected WMSMetaTile(SRS srs, int[] gridBounds, int[] tileGridPosition, int metaX, int metaY) {
+    protected WMSMetaTile(SRS srs, int[] gridBounds, int[] tileGridPosition,
+            int metaX, int metaY) {
         super(srs, gridBounds, tileGridPosition, metaX, metaY);
     }
 
-    
     /**
-     * Requests a metatile from the backend, or consults multiple backends
-     * if necessary, and saves the result in the internal buffer for
-     * future processing.
+     * Requests a metatile from the backend, or consults multiple backends if
+     * necessary, and saves the result in the internal buffer for future
+     * processing.
      * 
-     * @param profile the profile provides the general parameters for the request
-     * @param imageMime the desired image format
+     * @param profile
+     *            the profile provides the general parameters for the request
+     * @param imageMime
+     *            the desired image format
      * @return
      */
-    protected String doRequest(WMSLayerProfile profile, SRS srs, String mimeType) 
-    throws GeoWebCacheException {
+    protected String doRequest(WMSLayerProfile profile, SRS srs, String mimeType)
+            throws GeoWebCacheException {
         WMSParameters wmsparams = profile.getWMSParamTemplate();
 
         int srsIdx = profile.getSRSIndex(srs);
@@ -85,11 +87,11 @@ public class WMSMetaTile extends MetaTile {
         wmsparams.setSrs(srs.toString());
         wmsparams.setWidth(super.metaX * profile.width);
         wmsparams.setHeight(metaY * profile.height);
-        BBOX metaBbox = profile.gridCalc[srsIdx].bboxFromGridBounds(metaTileGridBounds);
+        BBOX metaBbox = profile.gridCalc[srsIdx]
+                .bboxFromGridBounds(metaTileGridBounds);
         metaBbox.adjustForGeoServer(srs);
         wmsparams.setBBOX(metaBbox);
 
-        
         // Ask the WMS server, saves returned image into metaTile
         // TODO add exception for configurations that do not use metatiling
         // TODO move this closer to the WMSLayer?
@@ -97,9 +99,8 @@ public class WMSMetaTile extends MetaTile {
         int backendTries = 0; // keep track of how many backends we have tried
         while (img == null && backendTries < profile.wmsURL.length) {
             backendURL = profile.nextWmsURL();
-            
-            boolean saveExpiration = (profile.expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE
-                    || profile.expireClients == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE);
+
+            boolean saveExpiration = (profile.expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE || profile.expireClients == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE);
 
             try {
                 forwardRequest(wmsparams, backendURL, saveExpiration);
@@ -117,29 +118,32 @@ public class WMSMetaTile extends MetaTile {
         if (img == null) {
             failed = true;
         }
-        
+
         return backendURL + wmsparams.toString();
     }
 
     /**
-     * Forwards the request to the actual WMS backend and saves the image
-     * that comes back.
+     * Forwards the request to the actual WMS backend and saves the image that
+     * comes back.
      * 
-     * @param wmsparams the parameters for the request
-     * @param backendURL the URL of the backend to use
-     * @param saveExpiration whether to extract and save expiration headers
+     * @param wmsparams
+     *            the parameters for the request
+     * @param backendURL
+     *            the URL of the backend to use
+     * @param saveExpiration
+     *            whether to extract and save expiration headers
      * @throws IOException
      * @throws ConnectException
      */
-    private void forwardRequest(WMSParameters wmsparams, String backendURL, boolean saveExpiration)
-            throws IOException, ConnectException {
+    private void forwardRequest(WMSParameters wmsparams, String backendURL,
+            boolean saveExpiration) throws IOException, ConnectException {
         // Create an outgoing WMS request to the server
         Request wmsrequest = new Request(backendURL, wmsparams);
         URL wmsBackendUrl = new URL(wmsrequest.toString());
         URLConnection wmsBackendCon = wmsBackendUrl.openConnection();
 
         // Do we need to keep track of expiration headers?
-        if(saveExpiration) {
+        if (saveExpiration) {
             String cacheControlHeader = wmsBackendCon
                     .getHeaderField("Cache-Control");
             Long wmsBackendMaxAge = extractHeaderMaxAge(cacheControlHeader);
@@ -149,8 +153,9 @@ public class WMSMetaTile extends MetaTile {
                         + wmsBackendMaxAge.toString());
                 expiration = wmsBackendMaxAge.longValue() * 1000;
             } else {
-                log.error("Layer profile wants MaxAge from backend,"
-                		+" but backend does not provide this. Setting to 7200 seconds.");
+                log
+                        .error("Layer profile wants MaxAge from backend,"
+                                + " but backend does not provide this. Setting to 7200 seconds.");
                 expiration = 7200 * 1000;
             }
         }
@@ -171,35 +176,54 @@ public class WMSMetaTile extends MetaTile {
     }
 
     /**
-     * Cuts the metaTile into the specified number of tiles,
-     * the actual number of tiles is determined by metaX and metaY,
-     * not the width and height provided here.
+     * Cuts the metaTile into the specified number of tiles, the actual number
+     * of tiles is determined by metaX and metaY, not the width and height
+     * provided here.
      * 
-     * @param tileWidth width of each tile
-     * @param tileHeight height of each tile
+     * @param tileWidth
+     *            width of each tile
+     * @param tileHeight
+     *            height of each tile
      */
     protected void createTiles(int tileWidth, int tileHeight) {
         tiles = new RenderedImage[metaX * metaY];
-        
+
         if (tiles.length > 1) {
-            final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
-            
+            final RenderingHints no_cache = new RenderingHints(
+                    JAI.KEY_TILE_CACHE, null);
+
             for (int y = 0; y < metaY; y++) {
                 for (int x = 0; x < metaX; x++) {
                     int i = x * tileWidth;
                     int j = (metaY - 1 - y) * tileHeight;
-                    
+
                     try {
-                    	RenderedImage tile = CropDescriptor.create(
-                    			img, 
-                    			new Float(i), new Float(j), 
-                    			new Float(tileWidth), new Float(tileHeight), 
-                    			no_cache);
-                    	
-                    	tiles[y * metaX + x] = tile;
-                    	
-                    } catch(RasterFormatException rfe) {
-                        log.error("Unable to get i: "+i+", j:"+ j);
+                        RenderedImage tile = CropDescriptor.create(img,
+                                new Float(i), new Float(j),
+                                new Float(tileWidth), new Float(tileHeight),
+                                null);
+
+                        tiles[y * metaX + x] = tile;
+
+                        if (log.isDebugEnabled()) {
+                            log.debug("Thread: "
+                                    + Thread.currentThread().getName()
+                                    + " rendering  index " + (y * metaX + x) + "\n"
+                                    + tile.toString() + ", "
+                                    + "Information from tile (width, height, minx, miny): "
+                                    + tile.getWidth() + ", "
+                                    + tile.getHeight() + ", "
+                                    + tile.getMinX() + ", "
+                                    + tile.getMinY() + "\n"
+                                    + "Information set (width, height, minx, miny): "
+                                    + new Float(tileWidth) + ", "
+                                    + new Float(tileHeight) + ", "
+                                    + new Float(i) + ", " 
+                                    + new Float(j));
+                        }
+
+                    } catch (RasterFormatException rfe) {
+                        log.error("Unable to get i: " + i + ", j:" + j);
                         rfe.printStackTrace();
                     }
                 }
@@ -210,12 +234,14 @@ public class WMSMetaTile extends MetaTile {
     }
 
     /**
-     * Outputs one tile from the internal array of tiles to a 
-     * provided stream
+     * Outputs one tile from the internal array of tiles to a provided stream
      * 
-     * @param tileIdx the index of the tile relative to the internal array
-     * @param format the Java name for the format
-     * @param os the outputstream
+     * @param tileIdx
+     *            the index of the tile relative to the internal array
+     * @param format
+     *            the Java name for the format
+     * @param os
+     *            the outputstream
      * @return true if no error was encountered
      * @throws IOException
      */
@@ -224,10 +250,15 @@ public class WMSMetaTile extends MetaTile {
         if (tiles == null) {
             return false;
         } else {
-            if(! javax.imageio.ImageIO.write(tiles[tileIdx], format, os)) {
-            	log.error("javax.imageio.ImageIO.write("
-            			+tiles[tileIdx].toString()+ ","
-            			+ format + "," + os.toString() + ")");
+            if (log.isDebugEnabled()) {
+                log.debug("Thread: " + Thread.currentThread().getName()
+                        + " writing: " + tileIdx);
+            }
+
+            if (!javax.imageio.ImageIO.write(tiles[tileIdx], format, os)) {
+                log.error("javax.imageio.ImageIO.write("
+                        + tiles[tileIdx].toString() + "," + format + ","
+                        + os.toString() + ")");
             }
             return true;
         }

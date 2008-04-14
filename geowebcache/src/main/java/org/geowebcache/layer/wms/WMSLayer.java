@@ -38,6 +38,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.layer.TileResponse;
 import org.geowebcache.mime.ImageMime;
+import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.wms.BBOX;
@@ -568,7 +569,7 @@ public class WMSLayer implements TileLayer {
 	 * @param strFormat
 	 * @return ImageFormat equivalent, or default ImageFormat
 	 */
-	public MimeType getImageFormat(String strFormat) {
+	public MimeType getImageFormat(String strFormat) throws MimeException {
 		if (strFormat == null) {
 			return this.mimes[0];
 		} else {
