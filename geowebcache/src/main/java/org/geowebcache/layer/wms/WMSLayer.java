@@ -517,17 +517,25 @@ public class WMSLayer implements TileLayer {
 
         String propCachePrefix = props.getProperty("cacheprefix");
         if (propCachePrefix == null) {
-            String sanitizedName = name.replace(':', '_');
-            cachePrefix = cache.getDefaultPrefix(sanitizedName);
+            String propFileCachePath = props.getProperty("filecachepath");
+            if(propFileCachePath == null) {
+                String sanitizedName = name.replace(':', '_');
+                cachePrefix = cache.getDefaultPrefix(sanitizedName);
 
-            log.warn("cachePrefix not defined for layer " + name
-                    + ", using default prefifx and name instead: "
-                    + cachePrefix);
+                log.warn("cachePrefix not defined for layer " + name
+                        + ", using default prefifx and name instead: "
+                        + cachePrefix);
+            } else {
+                cachePrefix = propFileCachePath;
+                
+                log.warn("Using deprecated filecachepath,"
+                        +" please rename to cacheprefix");
+            }
+
         } else {
             cachePrefix = propCachePrefix;
-            log
-                    .info("Using cache prefix " + cachePrefix + " for layer "
-                            + name);
+            log.info("Using cache prefix " + cachePrefix 
+                    + " for layer " + name);
         }
 
         // Initialize the cache
