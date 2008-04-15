@@ -84,10 +84,13 @@ public class PropertiesConfiguration implements Configuration,
             }
 
             String fileName = propFiles[i].getName();
-            String layerName = new String(props.getProperty("layername"));
+            String layerName = props.getProperty("layername");
+            
             if (layerName == null) {
-                String[] nameComps = layerName.split("\\.");
+                String[] nameComps = fileName.split("\\.");
                 layerName = new String(nameComps[0].substring(6));
+            } else {
+                layerName = new String(layerName);
             }
 
             log.info("Adding layer " + layerName + " from  "
@@ -109,23 +112,23 @@ public class PropertiesConfiguration implements Configuration,
             return;
         }
 
+        /* Only keep going for relative directory */
         if (relPath == null) {
             log.warn("No configuration directory was specified,"
                     +" reverting to default: ");
-            relPath = ".";
+            relPath = "";
         }
         
-        ServletContextResource servResource = new ServletContextResource(
-                context.getServletContext(), relPath);
+        String baseDir = context.getServletContext().getRealPath("");
         
-        try {
-            configDirH = servResource.getFile();
-        } catch (IOException ioe) {
-            log.error(ioe.getMessage());
-            ioe.printStackTrace();
-            return;
-        }
-        log.warn("Configuration directory set to: "
+        //try {
+            configDirH = new File(baseDir + relPath);
+        //} catch (IOException ioe) {
+        //    log.error(ioe.getMessage());
+        //    ioe.printStackTrace();
+        //    return;
+        //}
+        log.info("Configuration directory set to: "
                 + configDirH.getAbsolutePath());
 
         if (!configDirH.exists() || !configDirH.canRead()) {
