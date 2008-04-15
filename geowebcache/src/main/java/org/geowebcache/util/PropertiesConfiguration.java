@@ -22,8 +22,10 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -81,11 +83,15 @@ public class PropertiesConfiguration implements Configuration,
                 continue;
             }
 
-            String layerName = propFiles[i].getName();
-            String[] nameComps = layerName.split("\\.");
-            layerName = new String(nameComps[0].substring(6));
+            String fileName = propFiles[i].getName();
+            String layerName = new String(props.getProperty("layername"));
+            if (layerName == null) {
+                String[] nameComps = layerName.split("\\.");
+                layerName = new String(nameComps[0].substring(6));
+            }
 
-            log.trace("Adding layer " + layerName);
+            log.info("Adding layer " + layerName + " from  "
+                    + propFiles[i].getAbsolutePath());
 
             // TODO need support for other types of layers
             WMSLayer layer = new WMSLayer(layerName, props, cacheFactory);
@@ -104,14 +110,14 @@ public class PropertiesConfiguration implements Configuration,
         }
 
         if (relPath == null) {
-            log
-                    .warn("No configuration directory was specified, reverting to default: ");
+            log.warn("No configuration directory was specified,"
+                    +" reverting to default: ");
             relPath = ".";
         }
-
+        
         ServletContextResource servResource = new ServletContextResource(
                 context.getServletContext(), relPath);
-
+        
         try {
             configDirH = servResource.getFile();
         } catch (IOException ioe) {

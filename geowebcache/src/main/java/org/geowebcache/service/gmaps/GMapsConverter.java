@@ -66,9 +66,12 @@ public class GMapsConverter extends Service {
         
         MimeType mime = null; 
         try {
+            if(mimeType == null) {
+                mimeType = "image/png";
+            }
             mime = MimeType.createFromMimeType(mimeType);
         } catch (MimeException me) {
-            throw new ServiceException("Unable to determined requested format, " + mimeType);
+            throw new ServiceException("Unable to determine requested format, " + mimeType);
         }
         return new TileRequest(gridLoc,mime,srs);
     }

@@ -4,14 +4,15 @@
   <!-- Add configuration beans here -->
   <bean id="defaultConfig" class="org.geowebcache.util.PropertiesConfiguration">
     <constructor-arg type="org.geowebcache.cache.CacheFactory" ref="cacheFactory"/>
+    <property name="relativePath"><value>../resources</value></property>
     <!-- 
-	 By default GeoWebCache will look for .properties 
-	 files in the resources folder, below are some examples.
+	 By default GeoWebCache will look for .properties files in the resources folder. 
+	 Below are some examples, note that you can only have one path per bean, but you
+	 can create several beans like this one.
       -->
     <!-- property name="absolutePath"><value>/etc/geowebcache/conf</value></property -->
     <!-- property name="absolutePath"><value>c:\geowebcache\conf</value></property -->
     <!-- property name="relativePath"><value>resources</value></property -->
-    <!-- property name="relativePath"><value>resources</value></property -->	
   </bean>
   
   <bean id="wmsConfig" class="org.geowebcache.util.GetCapabilitiesConfiguration">
@@ -25,8 +26,8 @@
   <bean id="tLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
     <property name="config">
     <list>
-      <ref bean="wmsConfig"/>
       <ref bean="defaultConfig"/>
+      <!-- ref bean="wmsConfig"/ -->
       <!-- Add additional Configuration beans here -->
     </list>
     </property>
