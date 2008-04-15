@@ -185,8 +185,12 @@ public class GeoWebCacheDispatcher extends AbstractController {
             if (splitStr.length < 3) {
                 throw new GeoWebCacheException("Unable to parse " + servletPath);
             }
-            retStrs[0] = new String(splitStr[2]);
-            retStrs[1] = new String(splitStr[3]);
+            if (splitStr.length == 3) {
+                retStrs[0] = new String(splitStr[2]);
+            } else {
+                retStrs[0] = new String(splitStr[2]);
+                retStrs[1] = new String(splitStr[3]);
+            }
         }
         return retStrs;
     }
@@ -246,7 +250,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         TileLayer layer = tileLayerDispatcher.getTileLayer(layerIdent);
 
         if (layer == null) {
-            throw new GeoWebCacheException("Layer " + layerIdent);
+            throw new GeoWebCacheException("Layer " + layerIdent + " is not known.");
         }
 
         seederDispatcher.handleSeed(layer, request, response);
