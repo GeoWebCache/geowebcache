@@ -1,7 +1,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="imagetoolbar" content="no"> <!--ie image gizmo OFF!-->
-    
+    <title>topp:states EPSG:900913 PNG</tile>
     <style type="text/css">
     body { font-family: sans-serif; font-weight: bold; font-size: .8em; }
     body {
@@ -36,14 +36,11 @@
 
         function init(){
             map = new OpenLayers.Map('map', mapOptions );
-            var layerstates = new OpenLayers.Layer.WMS( "States",
+            var layerstates = new OpenLayers.Layer.WMS( 
+                "States EPSG:900913 PNG",
                 "service/wms",
-                {layers: 'states_epsg900913', format: 'image/png'});
+                {layers: 'topp:states', format: 'image/png'});
             map.addLayer(layerstates);
-            //map.addControl(new OpenLayers.Control.LayerSwitcher());
-            //map.addControl(new OpenLayers.Control.MousePosition());
-            //map.zoomToMaxExtent();
-            //map.setCenter(new OpenLayers.LonLat(-100,34).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject()), 4)
             map.zoomToExtent(bounds);
         }
     </script>

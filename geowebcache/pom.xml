@@ -132,7 +132,7 @@
     
     <dependency>
       <groupId>org.geotools</groupId>
-      <artifactId>gt2-wms</artifactId>
+      <artifactId>wms</artifactId>
       <version>${gt.version}</version>
     </dependency>
     <!-- dependency>
@@ -234,7 +234,7 @@
 	</configuration>
       </plugin>
       
-      <!-- plugin>
+      <plugin>
 	   <artifactId>maven-war-plugin</artifactId>
 	   <executions>
 	     <execution>
@@ -244,7 +244,7 @@
 	       </goals>
 	     </execution>
 	   </executions>
-      </plugin -->
+      </plugin>
       
       <plugin>
 	<artifactId>maven-source-plugin</artifactId>
