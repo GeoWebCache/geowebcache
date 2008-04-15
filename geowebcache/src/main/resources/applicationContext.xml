@@ -14,15 +14,14 @@
        Constructor arguments:
        1) Cache factory, bean defined below
        2) URL to get getCapabilities document from
-       3) Cache prefix, where to store the cache for these layers. 
-          Examples: "/var/lib/geowebcache" or "c:\temp"
+       3) Commaseparated list of supported MIME types
        4) Metatiling factors
     -->
   <!--
      <bean id="wmsConfig" class="org.geowebcache.util.GetCapabilitiesConfiguration">
        <constructor-arg type="org.geowebcache.cache.CacheFactory" ref="cacheFactory"/>
        <constructor-arg value="http://sigma.openplans.org:8080/geoserver/wms?request=getCapabilities"/>
-       <constructor-arg value=""/>
+       <constructor-arg value="image/png,image/jpeg"/>
        <constructor-arg value="3x3"/>
      </bean>
      -->
@@ -91,5 +90,4 @@
     <constructor-arg type="org.geowebcache.cache.CacheKeyFactory" ref="cacheKeyFactory"/>
     <property name="defaultCacheBeanId"><value>cacheFile</value></property>
   </bean>
-
 </beans>
