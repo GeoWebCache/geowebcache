@@ -303,7 +303,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             return;
         }
 
-        log.error(errorMsg);
+        log.debug(errorMsg);
 
         try {
             OutputStream os = response.getOutputStream();
