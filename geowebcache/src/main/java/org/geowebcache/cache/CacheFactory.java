@@ -30,83 +30,81 @@ import org.springframework.web.context.WebApplicationContext;
 
 public class CacheFactory implements ApplicationContextAware {
 
-	private static Log log = LogFactory
-			.getLog(org.geowebcache.cache.CacheFactory.class);
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.cache.CacheFactory.class);
 
-	private WebApplicationContext context = null;
+    private WebApplicationContext context = null;
 
-	private HashMap caches = null;
+    private HashMap caches = null;
 
-	private String defaultCacheBeanId = null;
+    private String defaultCacheBeanId = null;
 
-	private CacheKeyFactory cacheKeyFactory = null;
+    private CacheKeyFactory cacheKeyFactory = null;
 
+    public CacheFactory(CacheKeyFactory cacheKeyFactory) {
+        this.cacheKeyFactory = cacheKeyFactory;
+    }
 
+    /**
+     * Scans the classes for the specified bean and returns it, or null if it is
+     * not found.
+     * 
+     * @param cacheBeanId
+     *            the name, as defined in the Spring XML
+     * @return singleton of the appropriate cache type, null otherwise
+     */
+    public Cache getCache(String cacheBeanId) {
+        if (caches == null) {
+            loadCaches();
+        }
+        Cache cache = (Cache) caches.get(cacheBeanId);
+        if (cache == null) {
+            log.error("Did not find cache for bean id " + cacheBeanId);
+        } else {
+            log.debug("Returning cache for " + cacheBeanId);
+        }
+        return cache;
+    }
 
-	public CacheFactory(CacheKeyFactory cacheKeyFactory) {
-		this.cacheKeyFactory = cacheKeyFactory;
-	}
+    /**
+     * Get the default cache, based on the default bean set in Spring's XML
+     * configuration
+     * 
+     * @return default cache
+     */
+    public Cache getDefaultCache() {
+        log.warn("Received request for default cache, returning "
+                + defaultCacheBeanId);
+        return getCache(defaultCacheBeanId);
+    }
 
-	/**
-	 * Scans the classes for the specified bean and returns it, or null if it is
-	 * not found.
-	 * 
-	 * @param cacheBeanId
-	 *            the name, as defined in the Spring XML
-	 * @return singleton of the appropriate cache type, null otherwise
-	 */
-	public Cache getCache(String cacheBeanId) {
-		if (caches == null) {
-			loadCaches();
-		}
-		Cache cache = (Cache) caches.get(cacheBeanId);
-		if (cache == null) {
-			log.error("Did not find cache for bean id " + cacheBeanId);
-		} else {
-			log.debug("Returning cache for " + cacheBeanId);
-		}
-		return cache;
-	}
+    /**
+     * Uses Spring to scan classpath for classes that implement the interface
+     * Cache.
+     */
+    private void loadCaches() {
+        Map cacheBeans = context.getBeansOfType(Cache.class);
+        Iterator beanIter = cacheBeans.keySet().iterator();
 
-	/**
-	 * Get the default cache, based on the default bean set in
-	 * Spring's XML configuration 
-	 * 
-	 * @return default cache
-	 */
-	public Cache getDefaultCache() {
-		log.warn("Received request for default cache, returning "
-				+ defaultCacheBeanId);
-		return getCache(defaultCacheBeanId);
-	}
+        caches = new HashMap();
+        while (beanIter.hasNext()) {
+            String beanId = (String) beanIter.next();
+            Cache aCache = (Cache) cacheBeans.get(beanId);
+            caches.put(beanId, aCache);
+            log.debug("Added bean for " + beanId);
+        }
+    }
 
-	/**
-	 * Uses Spring to scan classpath for classes that
-	 * implement the interface Cache.
-	 */
-	private void loadCaches() {
-		Map cacheBeans = context.getBeansOfType(Cache.class);
-		Iterator beanIter = cacheBeans.keySet().iterator();
+    public void setDefaultCacheBeanId(String defaultCacheBeanId) {
+        this.defaultCacheBeanId = defaultCacheBeanId;
+    }
 
-		caches = new HashMap();
-		while (beanIter.hasNext()) {
-			String beanId = (String) beanIter.next();
-			Cache aCache = (Cache) cacheBeans.get(beanId);
-			caches.put(beanId, aCache);
-			log.debug("Added bean for " + beanId);
-		}
-	}
+    public CacheKeyFactory getCacheKeyFactory() {
+        return this.cacheKeyFactory;
+    }
 
-	public void setDefaultCacheBeanId(String defaultCacheBeanId) {
-		this.defaultCacheBeanId = defaultCacheBeanId;
-	}
-
-	public CacheKeyFactory getCacheKeyFactory() {
-		return this.cacheKeyFactory;
-	}
-
-	public void setApplicationContext(ApplicationContext arg0)
-			throws BeansException {
-		context = (WebApplicationContext) arg0;
-	}
+    public void setApplicationContext(ApplicationContext arg0)
+            throws BeansException {
+        context = (WebApplicationContext) arg0;
+    }
 }
