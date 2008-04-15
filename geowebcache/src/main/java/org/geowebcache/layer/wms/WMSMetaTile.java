@@ -52,7 +52,9 @@ public class WMSMetaTile extends MetaTile {
     private RenderedImage[] tiles = null; // array with tiles (after cropping)
 
     private long expiration = WMSLayerProfile.CACHE_VALUE_UNSET;
-
+    
+    private final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
+ 
     public boolean failed = false;
 
     /**
@@ -185,47 +187,18 @@ public class WMSMetaTile extends MetaTile {
      * @param tileHeight
      *            height of each tile
      */
-    protected void createTiles(int tileWidth, int tileHeight) {
+    protected void createTiles(int tileWidth, int tileHeight, boolean useJAI) {
         tiles = new RenderedImage[metaX * metaY];
 
         if (tiles.length > 1) {
-            final RenderingHints no_cache = new RenderingHints(
-                    JAI.KEY_TILE_CACHE, null);
 
             for (int y = 0; y < metaY; y++) {
                 for (int x = 0; x < metaX; x++) {
                     int i = x * tileWidth;
                     int j = (metaY - 1 - y) * tileHeight;
 
-                    try {
-                        RenderedImage tile = CropDescriptor.create(img,
-                                new Float(i), new Float(j),
-                                new Float(tileWidth), new Float(tileHeight),
-                                null);
-
-                        tiles[y * metaX + x] = tile;
-
-                        if (log.isDebugEnabled()) {
-                            log.debug("Thread: "
-                                    + Thread.currentThread().getName()
-                                    + " rendering  index " + (y * metaX + x) + "\n"
-                                    + tile.toString() + ", "
-                                    + "Information from tile (width, height, minx, miny): "
-                                    + tile.getWidth() + ", "
-                                    + tile.getHeight() + ", "
-                                    + tile.getMinX() + ", "
-                                    + tile.getMinY() + "\n"
-                                    + "Information set (width, height, minx, miny): "
-                                    + new Float(tileWidth) + ", "
-                                    + new Float(tileHeight) + ", "
-                                    + new Float(i) + ", " 
-                                    + new Float(j));
-                        }
-
-                    } catch (RasterFormatException rfe) {
-                        log.error("Unable to get i: " + i + ", j:" + j);
-                        rfe.printStackTrace();
-                    }
+                    tiles[y * metaX + x] = createTile(i, j, tileWidth,
+                            tileHeight, useJAI);
                 }
             }
         } else {
@@ -233,6 +206,47 @@ public class WMSMetaTile extends MetaTile {
         }
     }
 
+    /**
+     * Extracts a single tile from the metatile. Handles JPEG
+     * 
+     * @param minX
+     * @param minY
+     * @param tileWidth
+     * @param tileHeight
+     * @return
+     */
+    private RenderedImage createTile(int minX, int minY, 
+            int tileWidth, int tileHeight, boolean useJAI) {
+        RenderedImage tile = null;
+
+        // TODO JAI is messing up for JPEG, this is a hack, retest
+        if (useJAI) {
+            // Use JAI
+            tile = CropDescriptor.create(img, new Float(minX), new Float(minY),
+                    new Float(tileWidth), new Float(tileHeight), no_cache);
+        } else {
+            // Don't use JAI
+            try {
+                tile = img.getSubimage(minX, minY, tileWidth, tileHeight);
+            } catch (RasterFormatException rfe) {
+                rfe.printStackTrace();
+            }
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Thread: " + Thread.currentThread().getName() + "\n"
+                    + tile.toString() + ", "
+                    + "Information from tile (width, height, minx, miny): "
+                    + tile.getWidth() + ", " + tile.getHeight() + ", "
+                    + tile.getMinX() + ", " + tile.getMinY() + "\n"
+                    + "Information set (width, height, minx, miny): "
+                    + new Float(tileWidth) + ", " + new Float(tileHeight)
+                    + ", " + new Float(minX) + ", " + new Float(minY));
+        }
+
+        return tile;
+    }
+    
     /**
      * Outputs one tile from the internal array of tiles to a provided stream
      * 
@@ -280,9 +294,9 @@ public class WMSMetaTile extends MetaTile {
         }
     }
 
-    protected BufferedImage getRawImage() {
-        return img;
-    }
+    //protected BufferedImage getRawImage() {
+    //    return img;
+    //}
 
     protected long getExpiration() {
         return expiration;

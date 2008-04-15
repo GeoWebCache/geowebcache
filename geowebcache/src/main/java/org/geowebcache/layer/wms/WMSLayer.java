@@ -250,7 +250,13 @@ public class WMSLayer implements TileLayer {
 			return null;
 		}
 		saveExpirationInformation(metaTile);
-		metaTile.createTiles(profile.width, profile.height);
+                
+                boolean useJAI = true;
+                if(mime.getMimeType().equals("image/jpeg")) {
+                    useJAI = false;
+                }
+                metaTile.createTiles(profile.width, profile.height, useJAI);
+                
 		int[][] gridPositions = metaTile.getTilesGridPositions();
 
 		byte[] data = null;
