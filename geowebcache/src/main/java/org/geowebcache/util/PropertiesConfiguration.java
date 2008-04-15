@@ -117,17 +117,17 @@ public class PropertiesConfiguration implements Configuration,
             log.warn("No configuration directory was specified,"
                     +" reverting to default: ");
             relPath = "";
+        } else {
+            if(File.separator.equals("\\") && relPath.equals("/WEB-INF/classes")) {
+                log.warn("You seem to be running on windows, changing search path to \\WEB-INF\\classes");
+                relPath = "\\WEB-INF\\classes";
+            }
         }
         
         String baseDir = context.getServletContext().getRealPath("");
         
-        //try {
-            configDirH = new File(baseDir + relPath);
-        //} catch (IOException ioe) {
-        //    log.error(ioe.getMessage());
-        //    ioe.printStackTrace();
-        //    return;
-        //}
+        configDirH = new File(baseDir + relPath);
+
         log.info("Configuration directory set to: "
                 + configDirH.getAbsolutePath());
 
