@@ -234,17 +234,17 @@
 	</configuration>
       </plugin>
       
-      <plugin>
-	   <artifactId>maven-war-plugin</artifactId>
-	   <executions>
-	     <execution>
-	       <phase>install</phase>
-	       <goals>
-		 <goal>war</goal>
-	       </goals>
-	     </execution>
-	   </executions>
-      </plugin>
+      <!--  <plugin>
+	    <artifactId>maven-war-plugin</artifactId>
+	    <executions>
+	      <execution>
+		<phase>install</phase>
+		<goals>
+		  <goal>war</goal>
+		</goals>
+	      </execution>
+	    </executions>
+      </plugin> -->
       
       <plugin>
 	<artifactId>maven-source-plugin</artifactId>

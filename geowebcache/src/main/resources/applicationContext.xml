@@ -4,8 +4,9 @@
 
   <bean id="defaultConfig" class="org.geowebcache.util.PropertiesConfiguration">
     <constructor-arg type="org.geowebcache.cache.CacheFactory" ref="cacheFactory"/>
+    <property name="relativePath"><value>/WEB-INF/classes</value></property>
     <!-- By default GWC will look for .properties files in the resources folder. -->
-    <property name="relativePath"><value>../resources</value></property>
+    <!-- property name="relativePath"><value>../resources</value></property -->
     <!-- property name="absolutePath"><value>/etc/geowebcache/conf</value></property -->
     <!-- property name="absolutePath"><value>c:\geowebcache\conf</value></property -->
   </bean>
