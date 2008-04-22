@@ -53,6 +53,8 @@ public class ImageMime extends MimeType {
             return new ImageMime("image/tiff", "tiff", "tiff");
         } else if (mimeType.equalsIgnoreCase("image/png8")) {
             return new ImageMime("image/png8", "png8", "png");
+        } else if (mimeType.equalsIgnoreCase("image/png24")) {
+            return new ImageMime("image/png24", "png24", "png");
         }
         return null;
     }
@@ -79,6 +81,8 @@ public class ImageMime extends MimeType {
             return new ImageMime("image/tiff", "tiff", "tiff");
         } else if (fileExtension.equalsIgnoreCase("png8")) {
             return new ImageMime("image/png8", "png8", "png");
+        } else if (fileExtension.equalsIgnoreCase("png24")) {
+            return new ImageMime("image/png24", "png24", "png");
         }
         return null;
     }
