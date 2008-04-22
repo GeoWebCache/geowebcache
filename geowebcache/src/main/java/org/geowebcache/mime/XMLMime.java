@@ -23,62 +23,68 @@ import org.apache.commons.logging.LogFactory;
 public class XMLMime extends MimeType {
     private static Log log = LogFactory.getLog(org.geowebcache.mime.XMLMime.class);
 
-    public XMLMime(String mimeType, String fileExtension, String internalName) {
-        super(false);
+    public XMLMime(String mimeType, String fileExtension, String internalName, String format) throws MimeException {        
+        super(mimeType, fileExtension, internalName, format, false);
         
-        if(mimeType.substring(0,12).equalsIgnoreCase("application/")) {
-            super.mimeType = mimeType;
-            super.fileExtension = fileExtension;
-            super.internalName = internalName;
-        } else {
-            log.error("MIME type " + mimeType + " does not start with application/");
-        }
-        if(fileExtension == null || fileExtension.length() == 0) {
-            log.warn("Setting file extension based on mimeType for " + mimeType);
-            super.fileExtension = mimeType.substring(12, mimeType.length());
-        }
-        // Don't try to guess an internal name
+        // Check for trouble
+        //if(mimeType.length() < 12 || ! mimeType.substring(0,12).equalsIgnoreCase("application/")) {
+        //    throw new MimeException("MIME type " + mimeType + " does not start with application/");
+        //}
     }
 
-    protected static XMLMime checkForMimeType(String mimeType) {
-        if (mimeType.equalsIgnoreCase("application/vnd.google-earth.kml+xml")) {
-            return new XMLMime("application/vnd.google-earth.kml+xml", "kml", "kml");
-        } else if (mimeType.equalsIgnoreCase("application/vnd.google-earth.kmz")) {
-            return new XMLMime("application/vnd.google-earth.kmz", "kmz", "kmz");
-        } else if (mimeType.equalsIgnoreCase("application/vnd.ogc.gml")) {
-            return new XMLMime("application/vnd.ogc.gml", "gml", "gml");
+    protected static XMLMime checkForFormat(String formatStr) throws MimeException {
+        String tmpStr = formatStr.substring(12, formatStr.length());
+        
+        if (formatStr.equalsIgnoreCase("vnd.google-earth.kml+xml")) {
+            return new XMLMime("application/vnd.google-earth.kml+xml", "kml", "kml",
+                    "application/vnd.google-earth.kml+xml");
+        } else if (formatStr.equalsIgnoreCase("vnd.google-earth.kmz")) {
+            return new XMLMime("application/vnd.google-earth.kmz", "kmz", "kmz",
+                    "application/vnd.google-earth.kmz");
+        } else if (formatStr.equalsIgnoreCase("vnd.ogc.gml")) {
+            return new XMLMime("application/vnd.ogc.gml", "gml", "gml",
+                    "application/vnd.ogc.gml");
+        } else if (formatStr.equalsIgnoreCase("vnd.ogc.gml")) {
+            return new XMLMime("application/vnd.ogc.gml", "gml", "gml",
+            "application/vnd.ogc.gml");
+        } else if (formatStr.equalsIgnoreCase("geosearch-kml")) {
+            return new XMLMime("application/vnd.google-earth.kml+xml", "geosearch-kml", "geosearch-kml",
+            "geosearch-kml");
         }
         
         return null;
     }
     
-    public static XMLMime createFromMimeType(String mimeType) {
-        XMLMime xmlMime = checkForMimeType(mimeType);
-        if(xmlMime == null) {
-            log.error("Unsupported MIME type: " + mimeType + ", returning null.");
-        }
-        
-        return xmlMime;
-    }
+    //public static XMLMime createFromMimeType(String mimeType) throws MimeException {
+    //    XMLMime xmlMime = checkForMimeType(mimeType);
+    //    if(xmlMime == null) {
+    //        log.error("Unsupported MIME type: " + mimeType + ", returning null.");
+    //    }
+    //    
+    //    return xmlMime;
+    //}
     
-    protected static XMLMime checkForExtension(String fileExtension) {
+    protected static XMLMime checkForExtension(String fileExtension) throws MimeException {
         if (fileExtension.equalsIgnoreCase("kml")) {
-            return new XMLMime("application/vnd.google-earth.kml+xml", "kml", "kml");
+            return new XMLMime("application/vnd.google-earth.kml+xml", "kml", "kml",
+                    "application/vnd.google-earth.kml+xml");
         } else if (fileExtension.equalsIgnoreCase("kmz")) {
-            return new XMLMime("application/vnd.google-earth.kmz", "kmz", "kmz");
+            return new XMLMime("application/vnd.google-earth.kmz", "kmz", "kmz",
+                    "application/vnd.google-earth.kmz");
         } else if (fileExtension.equalsIgnoreCase("gml")) {
-            return new XMLMime("application/vnd.ogc.gml", "gml", "gml");
+            return new XMLMime("application/vnd.ogc.gml", "gml", "gml",
+                    "application/vnd.ogc.gml");
         }
         
         return null;
     }
     
-    public static XMLMime createFromExtension(String fileExtension) {
-        XMLMime xmlMime = checkForExtension(fileExtension);
-        if(xmlMime == null) {
-            log.error("Unsupported MIME type: " + fileExtension + ", returning null");
-        }
-        
-        return xmlMime;
-    }
+//    public static XMLMime createFromExtension(String fileExtension) throws MimeException {
+//        XMLMime xmlMime = checkForExtension(fileExtension);
+//        if(xmlMime == null) {
+//            log.error("Unsupported MIME type: " + fileExtension + ", returning null");
+//        }
+//        
+//        return xmlMime;
+//    }
 }

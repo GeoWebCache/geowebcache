@@ -50,11 +50,11 @@ public class WMSService extends Service {
         }
         
         MimeType mime = null;
-        String mimeType = wmsParams.getMime();
+        String strFormat = wmsParams.getFormat();
         try {
-            mime = MimeType.createFromMimeType(mimeType);
+            mime = MimeType.createFromFormat(strFormat);
         } catch (MimeException me) {
-            throw new ServiceException("Unable to determined requested format, " + mimeType);
+            throw new ServiceException("Unable to determined requested format, " + strFormat);
         }
         
         if(wmsParams.getSrs() == null) {

@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
+import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
@@ -140,7 +141,7 @@ public class KMLService extends Service {
     }
 
     public TileRequest getTileRequest(TileLayer tileLayer,
-            HttpServletRequest request) throws ServiceException {
+            HttpServletRequest request) throws MimeException,ServiceException {
         String[] parsed = parseRequest(request.getPathInfo());
 
         int[] gridLoc = parseGridLocString(parsed[1]);

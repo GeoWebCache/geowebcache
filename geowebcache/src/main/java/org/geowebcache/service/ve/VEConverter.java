@@ -54,7 +54,7 @@ public class VEConverter extends Service {
             HttpServletRequest request) throws ServiceException {
         Map params = request.getParameterMap();
         String strQuadKey = ServletUtils.stringFromMap(params, "quadkey");
-        String mimeType = ServletUtils.stringFromMap(params, "format");
+        String strFormat = ServletUtils.stringFromMap(params, "format");
 
         int[] gridLoc = VEConverter.convert(strQuadKey);
 
@@ -62,9 +62,9 @@ public class VEConverter extends Service {
         
         MimeType mime = null; 
         try {
-            mime = MimeType.createFromMimeType(mimeType);
+            mime = MimeType.createFromFormat(strFormat);
         } catch (MimeException me) {
-            throw new ServiceException("Unable to determined requested format, " + mimeType);
+            throw new ServiceException("Unable to determined requested format, " + strFormat);
         }
         return new TileRequest(gridLoc,mime,srs);
     }

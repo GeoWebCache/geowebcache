@@ -22,6 +22,8 @@ import org.apache.commons.logging.LogFactory;
 
 public class MimeType {
     protected String mimeType;
+    
+    protected String format;
 
     protected String fileExtension;
 
@@ -32,19 +34,40 @@ public class MimeType {
     private static Log log = LogFactory
             .getLog(org.geowebcache.mime.MimeType.class);
 
-    public MimeType(boolean supportsTiling) {
-        this.supportsTiling = supportsTiling;
-    }
+    //public MimeType(boolean supportsTiling) {
+    //    this.supportsTiling = supportsTiling;
+    //}
 
-    public MimeType(String mimeType, String fileExtension, String internalName, boolean supportsTiling) {
+    public MimeType(String mimeType, String fileExtension, String internalName, String format, boolean supportsTiling) {
         this.mimeType = mimeType;
         this.fileExtension = fileExtension;
         this.internalName = internalName;
+        this.format = format;
         this.supportsTiling = supportsTiling;
     }
+    
+    //public MimeType(String mimeType, String fileExtension, String internalName, boolean supportsTiling) {
+    //    this.mimeType = mimeType;
+    //    this.fileExtension = fileExtension;
+    //    this.internalName = internalName;
+    //    this.supportsTiling = supportsTiling;
+    //    this.format = null;
+    //}
 
     // The string representing the MIME type
     public String getMimeType() {
+        return mimeType;
+    }
+    
+    /**
+     * Returns the format string, which can be different from 
+     * 
+     * @return format or mimetype
+     */
+    public String getFormat() {
+        if(format != null) {
+            return format;
+        }
         return mimeType;
     }
 
@@ -62,31 +85,35 @@ public class MimeType {
         return supportsTiling;
     }
     
-
     /**
      * Get the MIME type object for a given MIME type string
      * 
      * @param mimeStr
      * @return
      */
-    public static MimeType createFromMimeType(String mimeStr) throws MimeException {
+    public static MimeType createFromFormat(String formatStr) throws MimeException {
         MimeType mimeType = null;
-        if(mimeStr == null) {
-            throw new MimeException("MimeType was not set");
+        if(formatStr == null) {
+            throw new MimeException("formatStr was not set");
         }
         
-        if (mimeStr.substring(0, 6).equalsIgnoreCase("image/")) {
-            mimeType = ImageMime.checkForMimeType(mimeStr);
-        } else if (mimeStr.substring(0, 12).equalsIgnoreCase("application/")) {
-            // TODO May have to deal with error MIMEs too
-            mimeType = XMLMime.checkForMimeType(mimeStr);
+        if (formatStr.length() > 6 
+                && formatStr.substring(0, 6).equalsIgnoreCase("image/")) {
+            mimeType = ImageMime.checkForFormat(formatStr);
+        }
+        
+        if(mimeType == null) {
+            mimeType = XMLMime.checkForFormat(formatStr);
         }
 
         if (mimeType == null) {
-            log.error("Unsupported MIME type: " + mimeStr + ", returning null");
+            log.error("Unsupported format request: " + formatStr + ", returning null");
         }
         return mimeType;
     }
+
+
+    
 
     /**
      * Get the MIME type object for a given file extension
@@ -94,7 +121,7 @@ public class MimeType {
      * @param mimeStr
      * @return
      */
-    public static MimeType createFromExtension(String fileExtension) {
+    public static MimeType createFromExtension(String fileExtension) throws MimeException {
         MimeType mimeType = null;
 
         mimeType = ImageMime.checkForExtension(fileExtension);

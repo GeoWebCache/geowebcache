@@ -24,37 +24,32 @@ public class ImageMime extends MimeType {
     private static Log log = LogFactory
             .getLog(org.geowebcache.mime.ImageMime.class);
 
-    public ImageMime(String mimeType, String fileExtension, String internalName) {
-        super(true);
-        if (mimeType.substring(0, 6).equalsIgnoreCase("image/")) {
-            super.mimeType = mimeType;
-            super.fileExtension = fileExtension;
-            super.internalName = internalName;
-        } else {
-            log.error("MIME type " + mimeType + " does not start with image/");
+    public ImageMime(String mimeType, String fileExtension, String internalName, String format) 
+    throws MimeException {
+        super(mimeType, fileExtension, internalName, format, true);
+        
+        // Check for trouble
+        if(mimeType.length() < 6 || ! mimeType.substring(0,6).equalsIgnoreCase("image/")) {
+            throw new MimeException("MIME type " + mimeType + " does not start with application/");
         }
-        if (fileExtension == null || fileExtension.length() == 0) {
-            log
-                    .warn("Setting file extension based on mimeType for "
-                            + mimeType);
-            super.fileExtension = mimeType.substring(6, mimeType.length());
-        }
-        // Don't try to guess an internal name
     }
 
-    protected static ImageMime checkForMimeType(String mimeType) {
-        if (mimeType.equalsIgnoreCase("image/png")) {
-            return new ImageMime("image/png", "png", "png");
-        } else if (mimeType.equalsIgnoreCase("image/jpeg")) {
-            return new ImageMime("image/jpeg", "jpeg", "jpeg");
-        } else if (mimeType.equalsIgnoreCase("image/gif")) {
-            return new ImageMime("image/gif", "gif", "gif");
-        } else if (mimeType.equalsIgnoreCase("image/tiff")) {
-            return new ImageMime("image/tiff", "tiff", "tiff");
-        } else if (mimeType.equalsIgnoreCase("image/png8")) {
-            return new ImageMime("image/png8", "png8", "png");
-        } else if (mimeType.equalsIgnoreCase("image/png24")) {
-            return new ImageMime("image/png24", "png24", "png");
+    protected static ImageMime checkForFormat(String formatStr)
+    throws MimeException {
+        String tmpStr = formatStr.substring(6,formatStr.length());
+        
+        if ( tmpStr.equalsIgnoreCase("png")) {
+            return new ImageMime("image/png", "png", "png", "image/png");
+        } else if ( tmpStr.equalsIgnoreCase("jpeg")) {
+            return new ImageMime("image/jpeg", "jpeg", "jpeg", "image/jpeg");
+        } else if ( tmpStr.equalsIgnoreCase("gif")) {
+            return new ImageMime("image/gif", "gif", "gif", "image/gif");
+        } else if ( tmpStr.equalsIgnoreCase("tiff")) {
+            return new ImageMime("image/tiff", "tiff", "tiff", "image/tiff");
+        } else if ( tmpStr.equalsIgnoreCase("png8")) {
+            return new ImageMime("image/png8", "png8", "png", "image/png8");
+        } else if ( tmpStr.equalsIgnoreCase("png24")) {
+            return new ImageMime("image/png24", "png24", "png", "image/png24");
         }
         return null;
     }
@@ -70,19 +65,20 @@ public class ImageMime extends MimeType {
 //        return imageMime;
 //    }
 
-    protected static ImageMime checkForExtension(String fileExtension) {
+    protected static ImageMime checkForExtension(String fileExtension) 
+    throws MimeException {
         if (fileExtension.equalsIgnoreCase("png")) {
-            return new ImageMime("image/png", "png", "png");
+            return new ImageMime("image/png", "png", "png", "image/png");
         } else if (fileExtension.equalsIgnoreCase("jpeg")) {
-            return new ImageMime("image/jpeg", "jpeg", "jpeg");
+            return new ImageMime("image/jpeg", "jpeg", "jpeg", "image/jpeg");
         } else if (fileExtension.equalsIgnoreCase("gif")) {
-            return new ImageMime("image/gif", "gif", "gif");
+            return new ImageMime("image/gif", "gif", "gif", "image/gif");
         } else if (fileExtension.equalsIgnoreCase("tiff")) {
-            return new ImageMime("image/tiff", "tiff", "tiff");
+            return new ImageMime("image/tiff", "tiff", "tiff", "image/tiff");
         } else if (fileExtension.equalsIgnoreCase("png8")) {
-            return new ImageMime("image/png8", "png8", "png");
+            return new ImageMime("image/png8", "png8", "png", "image/png8");
         } else if (fileExtension.equalsIgnoreCase("png24")) {
-            return new ImageMime("image/png24", "png24", "png");
+            return new ImageMime("image/png24", "png24", "png", "image/png24");
         }
         return null;
     }

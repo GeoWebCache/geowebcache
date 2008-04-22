@@ -26,7 +26,7 @@ import org.geowebcache.util.wms.BBOX;
 public interface TileLayer {
 
     public String supportsProjection(SRS srs);
-    public String supportsMime(String mimeType);
+    public String supportsFormat(String formatStr);
     public String supportsBbox(SRS srs, BBOX bounds);
     
     public TileResponse getResponse(TileRequest tileRequest, String requestURI, 

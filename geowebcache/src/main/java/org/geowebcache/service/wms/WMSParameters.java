@@ -61,7 +61,7 @@ public class WMSParameters extends Parameters {
 
     public static final String WIDTH_PARAM = "width";
 
-    public static final String MIME_TYPE_PARAM = "format";
+    public static final String FORMAT_PARAM = "format";
 
     public static final String ERROR_TYPE_PARAM = "exceptions";
     
@@ -214,8 +214,8 @@ public class WMSParameters extends Parameters {
     /**
      * @return the imagemime
      */
-    public String getMime() {
-        return convertToString(get(MIME_TYPE_PARAM));
+    public String getFormat() {
+        return convertToString(get(FORMAT_PARAM));
     }
 
     /**
@@ -223,8 +223,8 @@ public class WMSParameters extends Parameters {
      *            the errormime to set
      * @throws IOException
      */
-    public void setMime(String mime) {
-        set(MIME_TYPE_PARAM, mime);
+    public void setFormat(String mime) {
+        set(FORMAT_PARAM, mime);
     }
 
     /**

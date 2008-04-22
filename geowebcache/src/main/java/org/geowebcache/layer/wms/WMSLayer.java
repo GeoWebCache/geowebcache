@@ -59,7 +59,7 @@ public class WMSLayer implements TileLayer {
 
     String cachePrefix = null;
 
-    MimeType[] mimes = null;
+    MimeType[] formats = null;
 
     HashMap procQueue = new HashMap();
 
@@ -100,18 +100,18 @@ public class WMSLayer implements TileLayer {
      *            MIME type or null, example "image/png"
      * @return null if okay, error message otherwise.
      */
-    public String supportsMime(String mimeType) {
-        if (mimeType == null) {
-            log.trace("MIME type was null");
+    public String supportsFormat(String strFormat) {
+        if (strFormat == null) {
+            log.trace("Format was null");
             return null;
         }
 
-        for (int i = 0; i < mimes.length; i++) {
-            if (mimeType.equalsIgnoreCase(mimes[i].getMimeType())) {
+        for (int i = 0; i < formats.length; i++) {
+            if (strFormat.equalsIgnoreCase(formats[i].getFormat())) {
                 return null;
             }
         }
-        return "MIME type " + mimeType
+        return "Format " + strFormat
                 + " is not supported by layer configuration";
     }
 
@@ -166,7 +166,7 @@ public class WMSLayer implements TileLayer {
         MimeType mime = tileRequest.mimeType;
 
         if (mime == null) {
-            mime = this.mimes[0];
+            mime = this.formats[0];
         }
 
         int[] gridLoc = tileRequest.gridLoc;
@@ -241,8 +241,7 @@ public class WMSLayer implements TileLayer {
         /** ****************** Request metatile ******************* */
         String requestURL = null;
         try {
-            requestURL = metaTile.doRequest(profile, tileRequest.SRS, mime
-                    .getMimeType());
+            requestURL = metaTile.doRequest(profile, tileRequest.SRS, mime.getFormat());
         } catch (GeoWebCacheException gwce) {
             log.error(gwce.toString());
         }
@@ -545,10 +544,10 @@ public class WMSLayer implements TileLayer {
         String propImageMIME = props.getProperty("mimetypes");
         if (propImageMIME != null) {
             String[] mimeStrs = propImageMIME.split(",");
-            mimes = new ImageMime[mimeStrs.length];
-            for (int i = 0; i < mimes.length; i++) {
-                mimes[i] = ImageMime.createFromMimeType(mimeStrs[i]);
-                if (mimes[i] == null) {
+            formats = new ImageMime[mimeStrs.length];
+            for (int i = 0; i < formats.length; i++) {
+                formats[i] = ImageMime.createFromFormat(mimeStrs[i]);
+                if (formats[i] == null) {
                     log.error("Unable to match " + mimeStrs[i]
                             + " to a supported format.");
                 }
@@ -556,12 +555,11 @@ public class WMSLayer implements TileLayer {
         }
 
         // Set default to image/png, if none were specified or acceptable
-        if (mimes == null || mimes[0] == null) {
-            log
-                    .error("Unable not determine supported MIME types based on configuration,"
-                            + " falling back to image/png");
-            mimes = new ImageMime[0];
-            mimes[0] = ImageMime.createFromMimeType("image/png");
+        if (formats == null || formats[0] == null) {
+            log.error( "Unable not determine supported MIME types"
+                   + " based on configuration, falling back to image/png");
+            formats = new ImageMime[0];
+            formats[0] = ImageMime.createFromFormat("image/png");
         }
 
         // Whether to include debug headers with every returned tile
@@ -587,15 +585,15 @@ public class WMSLayer implements TileLayer {
      */
     public MimeType getImageFormat(String strFormat) throws MimeException {
         if (strFormat == null) {
-            return this.mimes[0];
+            return this.formats[0];
         } else {
-            return MimeType.createFromMimeType(strFormat);
+            return MimeType.createFromFormat(strFormat);
         }
     }
 
     public WMSParameters getWMSParamTemplate() {
         WMSParameters ret = profile.getWMSParamTemplate();
-        ret.setMime(mimes[0].getMimeType());
+        ret.setFormat(formats[0].getFormat());
         return ret;
     }
 
@@ -634,7 +632,7 @@ public class WMSLayer implements TileLayer {
     }
 
     public MimeType getDefaultMimeType() {
-        return mimes[0];
+        return formats[0];
     }
 
     public SRS[] getProjections() {

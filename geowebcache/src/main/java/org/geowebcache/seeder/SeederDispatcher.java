@@ -136,7 +136,7 @@ public class SeederDispatcher {
 
         String formatStr = (String) params.get("format");
         if (formatStr != null) {
-            mime = MimeType.createFromMimeType(formatStr);
+            mime = MimeType.createFromFormat(formatStr);
         }
         if (mime == null) {
             mime = layer.getDefaultMimeType();

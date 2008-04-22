@@ -79,13 +79,13 @@ public class WMSMetaTile extends MetaTile {
      *            the desired image format
      * @return
      */
-    protected String doRequest(WMSLayerProfile profile, SRS srs, String mimeType)
+    protected String doRequest(WMSLayerProfile profile, SRS srs, String formatStr)
             throws GeoWebCacheException {
         WMSParameters wmsparams = profile.getWMSParamTemplate();
 
         int srsIdx = profile.getSRSIndex(srs);
         // Fill in the blanks
-        wmsparams.setMime(mimeType);
+        wmsparams.setFormat(formatStr);
         wmsparams.setSrs(srs.toString());
         wmsparams.setWidth(super.metaX * profile.width);
         wmsparams.setHeight(metaY * profile.height);

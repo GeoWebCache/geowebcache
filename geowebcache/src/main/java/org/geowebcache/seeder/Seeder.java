@@ -109,7 +109,7 @@ public class Seeder {
         }
         pw.print("<html><body><table><tr><td>Seeding " + layer.getName() 
         		+ " from level "+ zoomStart + " to level " + zoomStop 
-                + " for format " + mimeType.getMimeType() 
+                + " for format " + mimeType.getFormat() 
                 + " and bounds " + bounds.getReadableString() 
                 + "</td></tr>");
         pw.flush();

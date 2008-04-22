@@ -54,7 +54,7 @@ public class GMapsConverter extends Service {
     throws ServiceException {
         Map params = request.getParameterMap();
         
-        String mimeType = ServletUtils.stringFromMap(params, "format");
+        String strFormat = ServletUtils.stringFromMap(params, "format");
         String strZoom = ServletUtils.stringFromMap(params, "zoom");
         String strX = ServletUtils.stringFromMap(params, "x");
         String strY = ServletUtils.stringFromMap(params, "y");
@@ -66,12 +66,12 @@ public class GMapsConverter extends Service {
         
         MimeType mime = null; 
         try {
-            if(mimeType == null) {
-                mimeType = "image/png";
+            if(strFormat == null) {
+                strFormat = "image/png";
             }
-            mime = MimeType.createFromMimeType(mimeType);
+            mime = MimeType.createFromFormat(strFormat);
         } catch (MimeException me) {
-            throw new ServiceException("Unable to determine requested format, " + mimeType);
+            throw new ServiceException("Unable to determine requested format, " + strFormat);
         }
         return new TileRequest(gridLoc,mime,srs);
     }
