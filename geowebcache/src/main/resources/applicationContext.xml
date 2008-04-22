@@ -58,6 +58,8 @@
     	class="org.geowebcache.service.wms.WMSService"/>
   <bean id="serviceGMaps"
 	class="org.geowebcache.service.gmaps.GMapsConverter"/>
+  <bean id="serviceMGMaps"
+	class="org.geowebcache.service.mgmaps.MGMapsConverter"/>
   <bean id="serviceVE"
 	class="org.geowebcache.service.ve.VEConverter"/>
   <bean id="serviceKML"
