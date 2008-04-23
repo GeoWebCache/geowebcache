@@ -21,7 +21,11 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
 import java.awt.image.RenderedImage;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.URL;
@@ -48,15 +52,22 @@ public class WMSMetaTile extends MetaTile {
     private static Log log = LogFactory
             .getLog(org.geowebcache.layer.wms.WMSMetaTile.class);
     
+    //TODO separate class for XML
+    
     private BufferedImage img = null; // buffer for storing the metatile, if it's an image
 
+    private byte[] buffer = null; // buffer if metatiling is disabled
+    
     private RenderedImage[] tiles = null; // array with tiles (after cropping)
 
     private long expiration = WMSLayerProfile.CACHE_VALUE_UNSET;
     
     private final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
  
+    public boolean imageio = false;
+    
     public boolean failed = false;
+    
 
     /**
      * Used for requests by clients
@@ -65,8 +76,9 @@ public class WMSMetaTile extends MetaTile {
      * @param initGridPosition
      */
     protected WMSMetaTile(SRS srs, int[] gridBounds, int[] tileGridPosition,
-            int metaX, int metaY) {
+            int metaX, int metaY, boolean imageio) {
         super(srs, gridBounds, tileGridPosition, metaX, metaY);
+        this.imageio = imageio;
     }
 
     /**
@@ -100,7 +112,7 @@ public class WMSMetaTile extends MetaTile {
         // TODO move this closer to the WMSLayer?
         String backendURL = "";
         int backendTries = 0; // keep track of how many backends we have tried
-        while (img == null && backendTries < profile.wmsURL.length) {
+        while (buffer == null && img == null && backendTries < profile.wmsURL.length) {
             backendURL = profile.nextWmsURL();
 
             boolean saveExpiration = (profile.expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE || profile.expireClients == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE);
@@ -118,7 +130,7 @@ public class WMSMetaTile extends MetaTile {
             backendTries++;
         }
 
-        if (img == null) {
+        if (buffer == null && img == null) {
             failed = true;
         }
 
@@ -163,19 +175,26 @@ public class WMSMetaTile extends MetaTile {
             }
         }
 
-        img = ImageIO.read(wmsBackendCon.getInputStream());
+        if (imageio) {
+            img = ImageIO.read(wmsBackendCon.getInputStream());
 
-        if (img == null) {
-            // System.out.println("Failed fetching "+ wmsrequest.toString());
-            //log.error();
-            throw new ServiceException("Failed fetching: " + wmsrequest.toString());
-        } else if (log.isDebugEnabled()) {
-            // System.out.println("Fetched "+ wmsrequest.toString());
-            log.debug("Requested and got: " + wmsrequest.toString());
-        }
+            if (img == null) {
+                throw new ServiceException("Failed fetching: "
+                        + wmsrequest.toString());
+            } else if (log.isDebugEnabled()) {
+                log.debug("Requested and got: " + wmsrequest.toString());
+            }
 
-        if (log.isTraceEnabled()) {
-            log.trace("Got image from backend, height: " + img.getHeight());
+            if (log.isTraceEnabled()) {
+                log.trace("Got image from backend, height: " + img.getHeight());
+            }
+        } else {
+            try {
+                buffer = readStream(wmsBackendCon.getInputStream());
+            } catch(IOException ioe) {
+                throw new ServiceException("Failed fetching: "
+                        + wmsrequest.toString());
+            }
         }
     }
 
@@ -189,22 +208,25 @@ public class WMSMetaTile extends MetaTile {
      * @param tileHeight
      *            height of each tile
      */
-    protected void createTiles(int tileWidth, int tileHeight, boolean useJAI) {
-        tiles = new RenderedImage[metaX * metaY];
+    protected void createTiles(int tileWidth, int tileHeight, boolean useJAI) {    
+        if (imageio) {
+            int tileCount = metaX * metaY;
+            tiles = new RenderedImage[tileCount];
+            if (tileCount > 1) {
+                for (int y = 0; y < metaY; y++) {
+                    for (int x = 0; x < metaX; x++) {
+                        int i = x * tileWidth;
+                        int j = (metaY - 1 - y) * tileHeight;
 
-        if (tiles.length > 1) {
-
-            for (int y = 0; y < metaY; y++) {
-                for (int x = 0; x < metaX; x++) {
-                    int i = x * tileWidth;
-                    int j = (metaY - 1 - y) * tileHeight;
-
-                    tiles[y * metaX + x] = createTile(i, j, tileWidth,
-                            tileHeight, useJAI);
+                        tiles[y * metaX + x] = createTile(i, j, tileWidth,
+                                tileHeight, useJAI);
+                    }
                 }
+            } else {
+                tiles[0] = img;
             }
         } else {
-            tiles[0] = img;
+            // Do nothing
         }
     }
 
@@ -219,6 +241,10 @@ public class WMSMetaTile extends MetaTile {
      */
     private RenderedImage createTile(int minX, int minY, 
             int tileWidth, int tileHeight, boolean useJAI) {
+        if(! imageio) {
+            return null;
+        }
+        
         RenderedImage tile = null;
 
         // TODO JAI is messing up for JPEG, this is a hack, retest
@@ -262,10 +288,8 @@ public class WMSMetaTile extends MetaTile {
      * @throws IOException
      */
     protected boolean writeTileToStream(int tileIdx, String format,
-            OutputStream os) throws IOException {
-        if (tiles == null) {
-            return false;
-        } else {
+            OutputStream os) throws IOException {        
+        if(imageio && tiles != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Thread: " + Thread.currentThread().getName()
                         + " writing: " + tileIdx);
@@ -278,6 +302,13 @@ public class WMSMetaTile extends MetaTile {
             }
             return true;
         }
+        
+        if(imageio && buffer != null) {
+            os.write(buffer);
+            return true;
+        }
+        
+        return false;
     }
 
     private static Long extractHeaderMaxAge(String cacheControlHeader) {
@@ -307,5 +338,33 @@ public class WMSMetaTile extends MetaTile {
     public String debugString() {
         return " metaX: " + metaX + " metaY: " + metaY + " metaGrid: "
                 + Arrays.toString(metaTileGridBounds);
+    }
+    
+    private static byte[] readStream(InputStream is) throws IOException {
+        byte[] buffer = new byte[10240];
+        byte[] tmpBuffer = new byte[1024];
+        int totalCount = 0;
+        
+        for(int c = 0; c != -1; c = is.read(tmpBuffer)) {
+                // Expand buffer if needed
+                if(totalCount + c >= buffer.length) {
+                        int newLength = buffer.length * 2;
+                        if(newLength < totalCount)
+                                newLength = totalCount;
+                        
+                        byte[] newBuffer = new byte[newLength];
+                        System.arraycopy(buffer, 0, newBuffer, 0, totalCount);
+                        buffer = newBuffer;
+                }
+                System.arraycopy(tmpBuffer, 0, buffer, totalCount, c);
+                totalCount += c;                
+        }
+        is.close();
+        
+        // Compact buffer
+        byte[] newBuffer = new byte[totalCount];
+        System.arraycopy(buffer, 0, newBuffer, 0, totalCount);
+        
+        return newBuffer;
     }
 }

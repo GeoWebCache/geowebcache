@@ -196,10 +196,10 @@ public class WMSLayer implements TileLayer {
         if (mime.supportsTiling()) {
             metaTile = new WMSMetaTile(tileRequest.SRS, profile.gridCalc[idx]
                     .getGridBounds(gridLoc[2]), gridLoc, profile.metaWidth,
-                    profile.metaHeight);
+                    profile.metaHeight, true);
         } else {
             metaTile = new WMSMetaTile(tileRequest.SRS, profile.gridCalc[idx]
-                    .getGridBounds(gridLoc[2]), gridLoc, 1, 1);
+                    .getGridBounds(gridLoc[2]), gridLoc, 1, 1, false);
         }
 
         int[] metaGridLoc = metaTile.getMetaGridPos();
