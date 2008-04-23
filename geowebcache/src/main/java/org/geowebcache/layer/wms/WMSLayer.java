@@ -544,9 +544,9 @@ public class WMSLayer implements TileLayer {
         String propImageMIME = props.getProperty("mimetypes");
         if (propImageMIME != null) {
             String[] mimeStrs = propImageMIME.split(",");
-            formats = new ImageMime[mimeStrs.length];
-            for (int i = 0; i < formats.length; i++) {
-                formats[i] = ImageMime.createFromFormat(mimeStrs[i]);
+            formats = new MimeType[mimeStrs.length];
+            for (int i = 0; i < mimeStrs.length; i++) {
+                formats[i] = MimeType.createFromFormat(mimeStrs[i]);
                 if (formats[i] == null) {
                     log.error("Unable to match " + mimeStrs[i]
                             + " to a supported format.");

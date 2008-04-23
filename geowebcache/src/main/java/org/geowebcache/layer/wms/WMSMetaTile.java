@@ -40,14 +40,15 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.MetaTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.service.Request;
+import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.wms.BBOX;
 
 public class WMSMetaTile extends MetaTile {
     private static Log log = LogFactory
             .getLog(org.geowebcache.layer.wms.WMSMetaTile.class);
-
-    private BufferedImage img = null; // buffer for storing the metatile
+    
+    private BufferedImage img = null; // buffer for storing the metatile, if it's an image
 
     private RenderedImage[] tiles = null; // array with tiles (after cropping)
 
@@ -138,7 +139,7 @@ public class WMSMetaTile extends MetaTile {
      * @throws ConnectException
      */
     private void forwardRequest(WMSParameters wmsparams, String backendURL,
-            boolean saveExpiration) throws IOException, ConnectException {
+            boolean saveExpiration) throws IOException, ConnectException, ServiceException {
         // Create an outgoing WMS request to the server
         Request wmsrequest = new Request(backendURL, wmsparams);
         URL wmsBackendUrl = new URL(wmsrequest.toString());
@@ -166,7 +167,8 @@ public class WMSMetaTile extends MetaTile {
 
         if (img == null) {
             // System.out.println("Failed fetching "+ wmsrequest.toString());
-            log.error("Failed fetching: " + wmsrequest.toString());
+            //log.error();
+            throw new ServiceException("Failed fetching: " + wmsrequest.toString());
         } else if (log.isDebugEnabled()) {
             // System.out.println("Fetched "+ wmsrequest.toString());
             log.debug("Requested and got: " + wmsrequest.toString());

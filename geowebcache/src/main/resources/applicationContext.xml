@@ -18,21 +18,19 @@
        3) Commaseparated list of supported MIME types
        4) Metatiling factors
     -->
-  <!--
      <bean id="wmsConfig" class="org.geowebcache.util.GetCapabilitiesConfiguration">
        <constructor-arg type="org.geowebcache.cache.CacheFactory" ref="cacheFactory"/>
        <constructor-arg value="http://sigma.openplans.org:8080/geoserver/wms?request=getCapabilities"/>
-       <constructor-arg value="image/png,image/jpeg"/>
+       <constructor-arg value="image/png,image/jpeg,geosearch-kml"/>
        <constructor-arg value="3x3"/>
      </bean>
-     -->
   
   <!-- For each configuration bean above, add them below to activate -->
   <bean id="tLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
     <property name="config">
       <list>
-      <ref bean="defaultConfig"/>
-      <!-- ref bean="wmsConfig"/ -->
+      <!-- ref bean="defaultConfig"/ -->
+      <ref bean="wmsConfig"/>
       </list>
     </property>
   </bean>

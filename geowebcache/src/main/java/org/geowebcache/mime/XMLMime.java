@@ -33,18 +33,17 @@ public class XMLMime extends MimeType {
     }
 
     protected static XMLMime checkForFormat(String formatStr) throws MimeException {
-        String tmpStr = formatStr.substring(12, formatStr.length());
         
-        if (formatStr.equalsIgnoreCase("vnd.google-earth.kml+xml")) {
+        if (formatStr.equalsIgnoreCase("application/vnd.google-earth.kml+xml")) {
             return new XMLMime("application/vnd.google-earth.kml+xml", "kml", "kml",
                     "application/vnd.google-earth.kml+xml");
-        } else if (formatStr.equalsIgnoreCase("vnd.google-earth.kmz")) {
+        } else if (formatStr.equalsIgnoreCase("application/vnd.google-earth.kmz")) {
             return new XMLMime("application/vnd.google-earth.kmz", "kmz", "kmz",
                     "application/vnd.google-earth.kmz");
-        } else if (formatStr.equalsIgnoreCase("vnd.ogc.gml")) {
+        } else if (formatStr.equalsIgnoreCase("application/vnd.ogc.gml")) {
             return new XMLMime("application/vnd.ogc.gml", "gml", "gml",
                     "application/vnd.ogc.gml");
-        } else if (formatStr.equalsIgnoreCase("vnd.ogc.gml")) {
+        } else if (formatStr.equalsIgnoreCase("application/vnd.ogc.gml")) {
             return new XMLMime("application/vnd.ogc.gml", "gml", "gml",
             "application/vnd.ogc.gml");
         } else if (formatStr.equalsIgnoreCase("geosearch-kml")) {
@@ -74,6 +73,9 @@ public class XMLMime extends MimeType {
         } else if (fileExtension.equalsIgnoreCase("gml")) {
             return new XMLMime("application/vnd.ogc.gml", "gml", "gml",
                     "application/vnd.ogc.gml");
+        } else if (fileExtension.equalsIgnoreCase("geosearch-kml")) {
+            return new XMLMime("application/vnd.google-earth.kml+xml", "geosearch-kml", "geosearch-kml",
+            "geosearch-kml");
         }
         
         return null;

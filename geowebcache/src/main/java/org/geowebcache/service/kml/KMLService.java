@@ -127,9 +127,15 @@ public class KMLService extends Service {
             // There's no room for an quadkey -> super overlay
             log.debug("Request for super overlay for " + parsed[0]
                     + " received");
+            
             String urlStr = request.getRequestURL().toString();
             int endOffset = urlStr.length() - parsed[1].length()
                     - parsed[2].length();
+            
+            // Also remove the second extension and the dot
+            if(parsed.length > 3 && parsed[3] != null) {
+                endOffset -= parsed[3].length() + 1;
+            }
             urlStr = new String(urlStr.substring(0, endOffset - 1));
             
             handleSuperOverlay(tileLayer, urlStr, parsed[3], response);
@@ -228,8 +234,6 @@ public class KMLService extends Service {
         
         if(formatExtension == null) {
         	formatExtension = "" + tileLayer.getDefaultMimeType().getFileExtension();
-        } else {
-        	formatExtension = "." + formatExtension;
         }
 
         for (int i = 0; i < 4; i++) {
@@ -274,7 +278,7 @@ public class KMLService extends Service {
                 // Chould technically be 192 to 384, centered around 256, but this creates gaps
                 + "\n<Lod><minLodPixels>150</minLodPixels><maxLodPixels>384</maxLodPixels></Lod>\n"
                 + bbox.toKML() + "\n</Region>" + "\n<Link>" + "<href>"
-                + gridLocString + formatExtension + ".kml</href>"
+                + gridLocString + "." + formatExtension + ".kml</href>"
                 + "\n<viewRefreshMode>onRegion</viewRefreshMode>" + "</Link>"
                 + "\n</NetworkLink>\n";
 
