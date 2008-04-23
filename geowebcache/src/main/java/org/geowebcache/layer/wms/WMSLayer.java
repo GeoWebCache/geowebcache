@@ -357,8 +357,7 @@ public class WMSLayer implements TileLayer {
             try {
                 if (!metaTile.writeTileToStream(i, mimeType.getInternalName(),
                         out)) {
-                    log
-                            .error("metaTile.writeTileToStream returned false, no tiles saved");
+                    log.error( "metaTile.writeTileToStream returned false, no tiles saved");
                 }
             } catch (IOException ioe) {
                 log

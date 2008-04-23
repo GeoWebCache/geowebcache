@@ -303,7 +303,7 @@ public class WMSMetaTile extends MetaTile {
             return true;
         }
         
-        if(imageio && buffer != null) {
+        if(! imageio && buffer != null) {
             os.write(buffer);
             return true;
         }
