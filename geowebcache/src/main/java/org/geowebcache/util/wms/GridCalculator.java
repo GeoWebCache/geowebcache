@@ -119,35 +119,35 @@ public class GridCalculator {
             // + metaLarger);
 
             // Adjust for metatiling if appropriate
-            if (tileCountX > metaLarger || tileCountY > metaLarger) {
-                // Round down
-                gridLevels[level][0] = gridLevels[level][0]
-                        - (gridLevels[level][0] % metaWidth);
-                // Round down
-                gridLevels[level][1] = gridLevels[level][1]
-                        - (gridLevels[level][1] % metaHeight);
-                // Naive round up
-                gridLevels[level][2] = gridLevels[level][2]
-                        - (gridLevels[level][2] % metaWidth) + (metaWidth - 1);
-                // Naive round up
-                gridLevels[level][3] = gridLevels[level][3]
-                        - (gridLevels[level][3] % metaHeight)
-                        + (metaHeight - 1);
-
-                //System.out.println("postAdjust: " +
-                // Arrays.toString(gridLevels[level]));
-
-                // Fix for naive round ups, imagine applying a 3x3 metatile to a
-                // 4x4 grid
-                if (gridLevels[level][2] >= tileCountX) {
-                    gridLevels[level][2] = tileCountX - 1;
-                }
-                if (gridLevels[level][3] >= tileCountY) {
-                    gridLevels[level][3] = tileCountY - 1;
-                }
-                //System.out.println("postFix: " +
-                // Arrays.toString(gridLevels[level]));
-            }
+//            if (tileCountX > metaLarger || tileCountY > metaLarger) {
+//                // Round down
+//                gridLevels[level][0] = gridLevels[level][0]
+//                        - (gridLevels[level][0] % metaWidth);
+//                // Round down
+//                gridLevels[level][1] = gridLevels[level][1]
+//                        - (gridLevels[level][1] % metaHeight);
+//                // Naive round up
+//                gridLevels[level][2] = gridLevels[level][2]
+//                        - (gridLevels[level][2] % metaWidth) + (metaWidth - 1);
+//                // Naive round up
+//                gridLevels[level][3] = gridLevels[level][3]
+//                        - (gridLevels[level][3] % metaHeight)
+//                        + (metaHeight - 1);
+//
+//                //System.out.println("postAdjust: " +
+//                // Arrays.toString(gridLevels[level]));
+//
+//                // Fix for naive round ups, imagine applying a 3x3 metatile to a
+//                // 4x4 grid
+//                if (gridLevels[level][2] >= tileCountX) {
+//                    gridLevels[level][2] = tileCountX - 1;
+//                }
+//                if (gridLevels[level][3] >= tileCountY) {
+//                    gridLevels[level][3] = tileCountY - 1;
+//                }
+//                //System.out.println("postFix: " +
+//                // Arrays.toString(gridLevels[level]));
+//            }
 
             // For the next round
             tileWidth = tileWidth / 2;
@@ -350,23 +350,23 @@ public class GridCalculator {
      * @return
      */
     public int[] getZoomedOutGridLoc() {
-    	if(zoomedOutGridLoc != null) {
-    		return zoomedOutGridLoc;
-    	}
-    		
-    	for(int i=0; i< boundsGridLevels.length; i++) {
-    		if( boundsGridLevels[i][0] == boundsGridLevels[i][2] 
-    		 && boundsGridLevels[i][1] == boundsGridLevels[i][3] ) {  			
-    			zoomedOutGridLoc = new int[3];
-    			zoomedOutGridLoc[0] = boundsGridLevels[i][0];
-    			zoomedOutGridLoc[1] = boundsGridLevels[i][1];
-    			zoomedOutGridLoc[2] = i;
-    			
-    			return zoomedOutGridLoc;
-    		}
-    	}
-    	
-    	log.error("Unable to find getZoomedOutGridLoc");
-    	return null;
+    	if (zoomedOutGridLoc != null) {
+            return zoomedOutGridLoc;
+        }
+
+        int i = boundsGridLevels.length - 1;
+        for (; i > 0; i--) {
+            if (boundsGridLevels[i][0] == boundsGridLevels[i][2]
+                    && boundsGridLevels[i][1] == boundsGridLevels[i][3]) {
+                break;
+            }
+        }
+
+        zoomedOutGridLoc = new int[3];
+        zoomedOutGridLoc[0] = boundsGridLevels[i][0];
+        zoomedOutGridLoc[1] = boundsGridLevels[i][1];
+        zoomedOutGridLoc[2] = i;
+
+        return zoomedOutGridLoc;
     }
 }

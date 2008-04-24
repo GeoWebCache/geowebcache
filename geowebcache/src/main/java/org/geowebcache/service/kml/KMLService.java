@@ -123,26 +123,36 @@ public class KMLService extends Service {
             throw new ServiceException("No layer provided, request parsed to: " + parsed[0]);
         }
         
+        String urlStr = request.getRequestURL().toString();
+        int endOffset = urlStr.length() - parsed[1].length()
+                - parsed[2].length();
+        
+        // Also remove the second extension and the dot
+        if(parsed.length > 3 && parsed[3] != null) {
+            endOffset -= parsed[3].length() + 1;
+        }
+        urlStr = new String(urlStr.substring(0, endOffset - 1));
+        
         if (parsed[1].length() == 0) {
             // There's no room for an quadkey -> super overlay
-            log.debug("Request for super overlay for " + parsed[0]
+            if(log.isDebugEnabled()) { 
+                log.debug("Request for super overlay for " + parsed[0]
                     + " received");
-            
-            String urlStr = request.getRequestURL().toString();
-            int endOffset = urlStr.length() - parsed[1].length()
-                    - parsed[2].length();
-            
-            // Also remove the second extension and the dot
-            if(parsed.length > 3 && parsed[3] != null) {
-                endOffset -= parsed[3].length() + 1;
             }
-            urlStr = new String(urlStr.substring(0, endOffset - 1));
-            
             handleSuperOverlay(tileLayer, urlStr, parsed[3], response);
         } else {
-            log.debug("Request for overlay for " + parsed[0]
-                    + " received, key " + parsed[1] + ", format hint " + parsed[3]);
-            handleOverlay(tileLayer, parsed[1], parsed[3], response);
+            if(log.isDebugEnabled()) { 
+                log.debug("Request for overlay for " + parsed[0] 
+                  + " received, key " + parsed[1] + ", format hint " + parsed[3]);
+            }
+            
+            //TODO this needs to be done more nicely
+            boolean createGroundOverlay = true;
+            if(parsed[3] != null && parsed[3].equalsIgnoreCase("geosearch-kml")) {
+                createGroundOverlay = false;
+            }
+                
+            handleOverlay(tileLayer, urlStr, parsed[1], parsed[3], createGroundOverlay, response);
         }
     }
 
@@ -161,7 +171,7 @@ public class KMLService extends Service {
             String formatExtension, HttpServletResponse response) {
         SRS srs = new SRS(4326);
         int srsIdx = layer.getSRSIndex(srs);
-
+        BBOX bbox = layer.getBounds(srsIdx);
         if(formatExtension == null) {
         	formatExtension = "";
         } else {
@@ -169,18 +179,26 @@ public class KMLService extends Service {
         }
         
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                + "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
-                + "<NetworkLink>\n" + "<name>SuperOverlay:" + layer.getName()
-                + "</name>\n" + "<Region>" + layer.getBounds(srsIdx).toKML()
-                + "<Lod>" + "<minLodPixels>128</minLodPixels>"
-                + "<maxLodPixels>-1</maxLodPixels>" + "</Lod>" + "</Region>\n"
-                + "<Link>" + "<href>" + urlStr + "/"
-                + gridLocString(layer, srsIdx) + formatExtension + ".kml</href>\n"
-                + "<viewRefreshMode>onRegion</viewRefreshMode>" + "</Link>\n"
-                + "</NetworkLink>" + "</kml>\n";
+                + "\n<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
+                + "\n<Folder>"
+                + "\n<NetworkLink><name>SuperOverlay:" + layer.getName()+"</name>" 
+                + "\n<Region>\n" 
+                + bbox.toKML()
+                + "\n<Lod><minLodPixels>128</minLodPixels>"
+                + "\n<maxLodPixels>-1</maxLodPixels></Lod>"
+                + "\n</Region>"
+                + "\n<Link>" + "<href>" + urlStr + "/"
+                + gridLocString(layer, srsIdx) + formatExtension + ".kml</href>"
+                + "\n<viewRefreshMode>onRegion</viewRefreshMode>" 
+                + "\n</Link>"
+                + "\n</NetworkLink>"
+                +  getLookAt(bbox)
+                + "\n</Folder>"
+                + "\n</kml>\n";
 
         writeXml(xml, response);
     }
+
 
     private static String gridLocString(TileLayer tileLayer, int srsIdx) {
         int[] gridLoc = tileLayer.getZoomedOutGridLoc(srsIdx);
@@ -218,8 +236,9 @@ public class KMLService extends Service {
      * @param urlStr
      * @param response
      */
-    private static void handleOverlay(TileLayer tileLayer, String key,
-            String formatExtension, HttpServletResponse response) throws ServiceException {
+    private static void handleOverlay(TileLayer tileLayer, String urlStr, String key,
+            String formatExtension, boolean createGroundOverlay, 
+            HttpServletResponse response) throws ServiceException {
         int[] gridLoc = parseGridLocString(key);
 
         SRS srs = new SRS(4326);
@@ -241,13 +260,18 @@ public class KMLService extends Service {
             if (linkGridLocs[i][2] > 0) {
                 BBOX linkBbox = tileLayer.getBboxForGridLoc(srsIdx,
                         linkGridLocs[i]);
-                xml += createNetworkLinkElement(tileLayer, linkGridLocs[i],
-                        linkBbox, formatExtension);
+                xml += createNetworkLinkElement(tileLayer, urlStr, linkGridLocs[i],
+                        linkBbox, formatExtension+".kml");
             }
         }
 
         // 3) Overlay
-        xml += createGroundOverLayElement(gridLoc, bbox, formatExtension);
+        if(createGroundOverlay) {
+            xml += createGroundOverLayElement(gridLoc, urlStr, bbox, formatExtension);
+        } else {
+            xml += createNetworkLinkElement(tileLayer, urlStr, gridLoc,
+                    bbox, formatExtension);
+        }
 
         // 4) Footer
         xml += "</Document>\n</kml>";
@@ -261,12 +285,12 @@ public class KMLService extends Service {
                 + "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
                 + "<Document>\n"
                 + "<Region>\n"
-                + "<Lod><minLodPixels>128</minLodPixels><maxLodPixels>384</maxLodPixels></Lod>\n"
+                + "<Lod><minLodPixels>192</minLodPixels><maxLodPixels>512</maxLodPixels></Lod>\n"
                 + bbox.toKML() + "</Region>\n";
     }
 
-    private static String createNetworkLinkElement(TileLayer layer,
-            int[] gridLoc, BBOX bbox, String formatExtension) {
+    private static String createNetworkLinkElement(TileLayer layer, String urlStr,
+            int[] gridLoc, BBOX bbox, String extension) {
         String gridLocString = gridLocString(gridLoc);
         String xml = "\n<NetworkLink>"
                 + "\n<name>"
@@ -276,23 +300,102 @@ public class KMLService extends Service {
                 + "</name>"
                 + "\n<Region>"
                 // Chould technically be 192 to 384, centered around 256, but this creates gaps
-                + "\n<Lod><minLodPixels>150</minLodPixels><maxLodPixels>384</maxLodPixels></Lod>\n"
-                + bbox.toKML() + "\n</Region>" + "\n<Link>" + "<href>"
-                + gridLocString + "." + formatExtension + ".kml</href>"
+                + "\n<Lod><minLodPixels>128</minLodPixels><maxLodPixels>512</maxLodPixels></Lod>\n"
+                + "\n<minFadeExtent>128</minFadeExtent>" 
+                + "\n<maxFadeExtent>256</maxFadeExtent>"
+                + bbox.toKML() + "\n</Region>" + "\n<Link>" 
+                + "\n<href>"
+                + gridLocString + "." + extension
+                +"</href>"
                 + "\n<viewRefreshMode>onRegion</viewRefreshMode>" + "</Link>"
                 + "\n</NetworkLink>\n";
 
         return xml;
     }
 
-    private static String createGroundOverLayElement(int[] gridLoc, BBOX bbox,
-            String formatExtension) {
-        String xml = "\n<GroundOverlay>" + "<drawOrder>5</drawOrder>"
-                + "\n<Icon>" + "<href>" + gridLocString(gridLoc) + "."
-                + formatExtension + "</href>" + "</Icon>\n" + bbox.toKML()
+    private static String createGroundOverLayElement(int[] gridLoc, String urlStr,
+            BBOX bbox, String formatExtension) {
+        String xml = "\n<GroundOverlay>"
+                + "\n<drawOrder>"+gridLoc[2]+"</drawOrder>"
+                + "\n<altitudeMode>clampToGround</altitudeMode>"
+                + "\n<Icon>" 
+                + "\n<href>" 
+                +  gridLocString(gridLoc) + "." + formatExtension 
+                + "</href>" + "</Icon>\n" + bbox.toKML()
                 + "\n</GroundOverlay>\n";
 
         return xml;
+    }
+    
+    //private static String lookAtPlaceMark(BBOX bbox) {
+    //    getLookAt(bbox)
+    //}
+    
+    private static String getLookAt(BBOX bbox) {
+        double lon1 = bbox.coords[0];
+        double lat1 = bbox.coords[1];
+        double lon2 = bbox.coords[2];
+        double lat2 = bbox.coords[3];
+
+        double R_EARTH = 6.371 * 1000000; // meters
+        //double VIEWER_WIDTH = 22 * Math.PI / 180; // The field of view of the
+        //                                            // google maps camera, in
+        //                                            // radians
+        double[] p1 = getRect(lon1, lat1, R_EARTH);
+        double[] p2 = getRect(lon2, lat2, R_EARTH);
+        double[] midpoint = new double[] { (p1[0] + p2[0]) / 2,
+                (p1[1] + p2[1]) / 2, (p1[2] + p2[2]) / 2 };
+
+        midpoint = getGeographic(midpoint[0], midpoint[1], midpoint[2]);
+
+        // averaging the longitudes; using the rectangular coordinates makes the
+        // calculated center tend toward the corner that's closer to the
+        // equator.
+        midpoint[0] = ((lon1 + lon2) / 2);
+
+        double distance = distance(p1, p2);
+
+        //double height = distance / (2 * Math.tan(VIEWER_WIDTH));
+
+        return "<LookAt id=\"superoverlay\">"
+                + "\n<longitude>"+ ((lon1 + lon2) / 2)+ "</longitude>"
+                + "\n<latitude>"+midpoint[1]+"</latitude>"
+                + "\n<altitude>0</altitude>"
+                + "\n<range>"+distance+"</range>"
+                + "\n<tilt>0</tilt>"
+                + "\n<heading>0</heading>"
+                + "\n<altitudeMode>clampToGround</altitudeMode>"
+                //+ "\n<!--kml:altitudeModeEnum:clampToGround, relativeToGround, absolute -->"
+                + "\n</LookAt>\n";
+    }
+
+    private static double[] getRect(double lat, double lon, double radius) {
+        double theta = (90 - lat) * Math.PI / 180;
+        double phi = (90 - lon) * Math.PI / 180;
+
+        double x = radius * Math.sin(phi) * Math.cos(theta);
+        double y = radius * Math.sin(phi) * Math.sin(theta);
+        double z = radius * Math.cos(phi);
+        return new double[] { x, y, z };
+    }
+
+    private static double[] getGeographic(double x, double y, double z) {
+        double theta, phi, radius;
+        radius = distance(new double[] { x, y, z }, new double[] { 0, 0, 0 });
+        theta = Math.atan2(Math.sqrt(x * x + y * y), z);
+        phi = Math.atan2(y, x);
+
+        double lat = 90 - (theta * 180 / Math.PI);
+        double lon = 90 - (phi * 180 / Math.PI);
+
+        return new double[] { (lon > 180 ? lon - 360 : lon), lat, radius };
+    }
+
+    private static double distance(double[] p1, double[] p2) {
+        double dx = p1[0] - p2[0];
+        double dy = p1[1] - p2[1];
+        double dz = p1[2] - p2[2];
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
     private static void writeXml(String xml, HttpServletResponse response) {
