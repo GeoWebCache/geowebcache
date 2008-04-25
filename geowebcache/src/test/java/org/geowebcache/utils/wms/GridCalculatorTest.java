@@ -29,8 +29,11 @@ public class GridCalculatorTest extends TestCase {
                 metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
 
+        //int[][] solution = { { 1, 0, 1, 0 }, { 2, 1, 3, 1 }, { 4, 2, 7, 3 },
+        //        { 8, 4, 15, 7 }, { 16, 8, 31, 15 } };
+
         int[][] solution = { { 1, 0, 1, 0 }, { 2, 1, 3, 1 }, { 4, 2, 7, 3 },
-                { 8, 4, 15, 7 }, { 16, 8, 31, 15 } };
+                { 8, 4, 15, 7 } };
 
         for (int i = 0; i < solution.length; i++) {
             int[] bounds = gridCalc.getGridBounds(i);
@@ -59,9 +62,13 @@ public class GridCalculatorTest extends TestCase {
                 metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
 
-        int[][] solution = { { 1, 0, 1, 0 }, { 0, 0, 3, 1 }, { 3, 0, 7, 3 },
-                { 6, 3, 15, 7 }, { 15, 6, 31, 15 }, { 30, 15, 63, 31 },
-                { 63, 30, 127, 63 } };
+        //int[][] solution = { { 1, 0, 1, 0 }, { 0, 0, 3, 1 }, { 3, 0, 7, 3 },
+        //        { 6, 3, 15, 7 }, { 15, 6, 31, 15 }, { 30, 15, 63, 31 },
+        //        { 63, 30, 127, 63 } };
+        
+        int[][] solution = { { 1, 0, 1, 0 }, { 2, 1, 3, 1 }, { 4, 2, 7, 3 },
+                { 8, 4, 15, 7 }, { 16, 8, 31, 15 }, { 32, 16, 63, 31 },
+                { 64, 32, 127, 63 } };
 
         for (int i = 0; i < solution.length; i++) {
             int[] bounds = gridCalc.getGridBounds(i);
@@ -89,10 +96,14 @@ public class GridCalculatorTest extends TestCase {
                 zoomStart, zoomStop, 
                 metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
+
+        int[][] solution = { { 0, 0, 1, 0 }, { 1, 0, 2, 1 }, { 3, 1, 4, 2 },
+                { 7, 3, 8, 4 }, { 15, 7, 16, 8 }, { 30, 14, 33, 17 },
+                { 60, 28, 67, 35 }, { 120, 56, 135, 71 } };
         
-        int[][] solution = { { 0, 0, 1, 0 }, { 0, 0, 2, 1 }, { 3, 0, 5, 2 },
-                { 6, 3, 8, 5 }, { 15, 6, 17, 8 }, { 30, 12, 35, 17 },
-                { 60, 27, 68, 35 }, { 120, 54, 137, 71 } };
+        //int[][] solution = { { 0, 0, 1, 0 }, { 0, 0, 2, 1 }, { 3, 0, 5, 2 },
+        //        { 6, 3, 8, 5 }, { 15, 6, 17, 8 }, { 30, 12, 35, 17 },
+        //        { 60, 27, 68, 35 }, { 120, 54, 137, 71 } };
 
         for (int i = 0; i < solution.length; i++) {
             int[] bounds = gridCalc.getGridBounds(i);
@@ -121,9 +132,13 @@ public class GridCalculatorTest extends TestCase {
                 metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
                 
-        int[][] solution = { { 1, 0, 1, 0 }, { 3, 1, 3, 1 }, { 4, 0, 7, 3 },
-                { 12, 4, 15, 7 }, { 28, 12, 31, 15 } };
+        //int[][] solution = { { 1, 0, 1, 0 }, { 3, 1, 3, 1 }, { 4, 0, 7, 3 },
+        //        { 12, 4, 15, 7 }, { 28, 12, 31, 15 } };
 
+        int[][] solution = { { 1, 0, 1, 0 }, { 3, 1, 3, 1 }, { 7, 3, 7, 3 },
+                { 15, 7, 15, 7 }, { 31, 15, 31, 15 }, {63, 31, 63, 31}, {126, 62, 127, 63},
+                { 252, 125, 255, 127}, {504, 251, 511, 255} };
+        
         for (int i = 0; i < solution.length; i++) {
             int[] bounds = gridCalc.getGridBounds(i);
 
@@ -153,6 +168,9 @@ public class GridCalculatorTest extends TestCase {
                 metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
                 
+        //int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 2, 2, 3, 3 },
+        //        { 4, 4, 7, 7 }, { 8, 8, 15, 15 } };
+        
         int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 2, 2, 3, 3 },
                 { 4, 4, 7, 7 }, { 8, 8, 15, 15 } };
 
@@ -185,10 +203,14 @@ public class GridCalculatorTest extends TestCase {
                 zoomStart, zoomStop, 
                 metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
-                
-        int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 0, 0, 3, 3 },
-                { 3, 3, 7, 7 }, { 6, 6, 15, 15 }, { 15, 15, 31, 31 },
-                { 30, 30, 63, 63 } };
+
+        //int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 0, 0, 3, 3 },
+        //        { 3, 3, 7, 7 }, { 6, 6, 15, 15 }, { 15, 15, 31, 31 },
+        //        { 30, 30, 63, 63 } };
+        
+        int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 2, 2, 3, 3 },
+                { 4, 4, 7, 7 }, { 8, 8, 15, 15 }, { 16, 16, 31, 31 },
+                { 32, 32, 63, 63 } };
 
         for (int i = 0; i < solution.length; i++) {
             int[] bounds = gridCalc.getGridBounds(i);
@@ -220,9 +242,13 @@ public class GridCalculatorTest extends TestCase {
                 metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
                 
-        int[][] solution = { { 0, 0, 0, 0 }, { 0, 0, 1, 1 }, { 0, 0, 2, 2 },
-                { 3, 3, 5, 5 }, { 6, 6, 8, 8 }, { 15, 15, 17, 17 },
-                { 30, 30, 32, 32 }, { 60, 60, 65, 65 } };
+        //int[][] solution = { { 0, 0, 0, 0 }, { 0, 0, 1, 1 }, { 0, 0, 2, 2 },
+        //        { 3, 3, 5, 5 }, { 6, 6, 8, 8 }, { 15, 15, 17, 17 },
+        //        { 30, 30, 32, 32 }, { 60, 60, 65, 65 } };
+        
+        int[][] solution = { { 0, 0, 0, 0 }, { 0, 0, 1, 1 }, { 1, 1, 2, 2 },
+                { 3, 3, 4, 4 }, { 7, 7, 8, 8 }, { 15, 15, 16, 16 },
+                { 31, 31, 32, 32 }, { 62, 62, 65, 65 } };
 
         for (int i = 0; i < solution.length; i++) {
             int[] bounds = gridCalc.getGridBounds(i);
@@ -308,6 +334,9 @@ public class GridCalculatorTest extends TestCase {
                 metaWidth, metaHeight, 
                 maxTileWidth, maxTileHeight);
                 
+        //int[][] solution = { { 0, 0, 0, 0 }, { 0, 1, 1, 1 }, { 1, 2, 2, 3 },
+        //        { 2, 5, 5, 6 } };
+        
         int[][] solution = { { 0, 0, 0, 0 }, { 0, 1, 1, 1 }, { 1, 2, 2, 3 },
                 { 2, 5, 5, 6 } };
 

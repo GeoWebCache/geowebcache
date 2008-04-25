@@ -22,6 +22,7 @@ public class TileRequest {
     public int[] gridLoc = null;
     public MimeType mimeType = null;
     public SRS SRS = null;
+    public String requestURI = null;
     
     public TileRequest(int[] gridLoc, MimeType mimeType, SRS srs) {
         this.gridLoc = gridLoc;

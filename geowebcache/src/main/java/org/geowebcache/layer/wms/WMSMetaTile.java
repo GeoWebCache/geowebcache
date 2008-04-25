@@ -46,6 +46,7 @@ import org.geowebcache.layer.SRS;
 import org.geowebcache.service.Request;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.wms.WMSParameters;
+import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
 
 public class WMSMetaTile extends MetaTile {
@@ -59,16 +60,9 @@ public class WMSMetaTile extends MetaTile {
     private byte[] buffer = null; // buffer if metatiling is disabled
     
     private RenderedImage[] tiles = null; // array with tiles (after cropping)
-
-    private long expiration = WMSLayerProfile.CACHE_VALUE_UNSET;
     
     private final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
- 
-    public boolean imageio = false;
     
-    public boolean failed = false;
-    
-
     /**
      * Used for requests by clients
      * 
@@ -76,9 +70,8 @@ public class WMSMetaTile extends MetaTile {
      * @param initGridPosition
      */
     protected WMSMetaTile(SRS srs, int[] gridBounds, int[] tileGridPosition,
-            int metaX, int metaY, boolean imageio) {
+            int metaX, int metaY) {
         super(srs, gridBounds, tileGridPosition, metaX, metaY);
-        this.imageio = imageio;
     }
 
     /**
@@ -115,10 +108,8 @@ public class WMSMetaTile extends MetaTile {
         while (buffer == null && img == null && backendTries < profile.wmsURL.length) {
             backendURL = profile.nextWmsURL();
 
-            boolean saveExpiration = (profile.expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE || profile.expireClients == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE);
-
             try {
-                forwardRequest(wmsparams, backendURL, saveExpiration);
+                forwardRequest(wmsparams, backendURL, profile);
             } catch (ConnectException ce) {
                 log.error("Error forwarding request, " + backendURL
                         + wmsparams.toString() + " " + ce.getMessage());
@@ -130,8 +121,9 @@ public class WMSMetaTile extends MetaTile {
             backendTries++;
         }
 
-        if (buffer == null && img == null) {
-            failed = true;
+        if (img == null) {
+            throw new GeoWebCacheException("Received no image for " 
+                    +wmsparams.toString()+ " form any of the backens");
         }
 
         return backendURL + wmsparams.toString();
@@ -151,51 +143,31 @@ public class WMSMetaTile extends MetaTile {
      * @throws ConnectException
      */
     private void forwardRequest(WMSParameters wmsparams, String backendURL,
-            boolean saveExpiration) throws IOException, ConnectException, ServiceException {
+            WMSLayerProfile profile) throws IOException, ConnectException,
+            ServiceException {
         // Create an outgoing WMS request to the server
         Request wmsrequest = new Request(backendURL, wmsparams);
         URL wmsBackendUrl = new URL(wmsrequest.toString());
         URLConnection wmsBackendCon = wmsBackendUrl.openConnection();
 
         // Do we need to keep track of expiration headers?
-        if (saveExpiration) {
-            String cacheControlHeader = wmsBackendCon
-                    .getHeaderField("Cache-Control");
-            Long wmsBackendMaxAge = extractHeaderMaxAge(cacheControlHeader);
-
-            if (wmsBackendMaxAge != null) {
-                log.info("Saved Cache-Control MaxAge from backend: "
-                        + wmsBackendMaxAge.toString());
-                expiration = wmsBackendMaxAge.longValue() * 1000;
-            } else {
-                log
-                        .error("Layer profile wants MaxAge from backend,"
-                                + " but backend does not provide this. Setting to 7200 seconds.");
-                expiration = 7200 * 1000;
-            }
+        if (profile.saveExpirationHeaders) {
+            profile.saveExpirationInformation(wmsBackendCon);
         }
 
-        if (imageio) {
-            img = ImageIO.read(wmsBackendCon.getInputStream());
+        img = ImageIO.read(wmsBackendCon.getInputStream());
 
-            if (img == null) {
-                throw new ServiceException("Failed fetching: "
-                        + wmsrequest.toString());
-            } else if (log.isDebugEnabled()) {
-                log.debug("Requested and got: " + wmsrequest.toString());
-            }
-
-            if (log.isTraceEnabled()) {
-                log.trace("Got image from backend, height: " + img.getHeight());
-            }
-        } else {
-            try {
-                buffer = readStream(wmsBackendCon.getInputStream());
-            } catch(IOException ioe) {
-                throw new ServiceException("Failed fetching: "
-                        + wmsrequest.toString());
-            }
+        if (img == null) {
+            throw new ServiceException("Failed fetching: "
+                    + wmsrequest.toString());
+        } else if (log.isDebugEnabled()) {
+            log.debug("Requested and got: " + wmsrequest.toString());
         }
+
+        if (log.isTraceEnabled()) {
+            log.trace("Got image from backend, height: " + img.getHeight());
+        }
+
     }
 
     /**
@@ -208,25 +180,21 @@ public class WMSMetaTile extends MetaTile {
      * @param tileHeight
      *            height of each tile
      */
-    protected void createTiles(int tileWidth, int tileHeight, boolean useJAI) {    
-        if (imageio) {
-            int tileCount = metaX * metaY;
-            tiles = new RenderedImage[tileCount];
-            if (tileCount > 1) {
-                for (int y = 0; y < metaY; y++) {
-                    for (int x = 0; x < metaX; x++) {
-                        int i = x * tileWidth;
-                        int j = (metaY - 1 - y) * tileHeight;
+    protected void createTiles(int tileWidth, int tileHeight, boolean useJAI) {
+        int tileCount = metaX * metaY;
+        tiles = new RenderedImage[tileCount];
+        if (tileCount > 1) {
+            for (int y = 0; y < metaY; y++) {
+                for (int x = 0; x < metaX; x++) {
+                    int i = x * tileWidth;
+                    int j = (metaY - 1 - y) * tileHeight;
 
-                        tiles[y * metaX + x] = createTile(i, j, tileWidth,
-                                tileHeight, useJAI);
-                    }
+                    tiles[y * metaX + x] = createTile(i, j, tileWidth,
+                            tileHeight, useJAI);
                 }
-            } else {
-                tiles[0] = img;
             }
         } else {
-            // Do nothing
+            tiles[0] = img;
         }
     }
 
@@ -241,9 +209,6 @@ public class WMSMetaTile extends MetaTile {
      */
     private RenderedImage createTile(int minX, int minY, 
             int tileWidth, int tileHeight, boolean useJAI) {
-        if(! imageio) {
-            return null;
-        }
         
         RenderedImage tile = null;
 
@@ -289,7 +254,7 @@ public class WMSMetaTile extends MetaTile {
      */
     protected boolean writeTileToStream(int tileIdx, String format,
             OutputStream os) throws IOException {        
-        if(imageio && tiles != null) {
+        if(tiles != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Thread: " + Thread.currentThread().getName()
                         + " writing: " + tileIdx);
@@ -303,68 +268,11 @@ public class WMSMetaTile extends MetaTile {
             return true;
         }
         
-        if(! imageio && buffer != null) {
-            os.write(buffer);
-            return true;
-        }
-        
         return false;
-    }
-
-    private static Long extractHeaderMaxAge(String cacheControlHeader) {
-        if (cacheControlHeader == null) {
-            return null;
-        }
-
-        String expression = "max-age=([0-9]*)[ ,]";
-        Pattern p = Pattern.compile(expression);
-        Matcher m = p.matcher(cacheControlHeader.toLowerCase());
-
-        if (m.find()) {
-            return new Long(Long.parseLong(m.group(1)));
-        } else {
-            return null;
-        }
-    }
-
-    //protected BufferedImage getRawImage() {
-    //    return img;
-    //}
-
-    protected long getExpiration() {
-        return expiration;
     }
 
     public String debugString() {
         return " metaX: " + metaX + " metaY: " + metaY + " metaGrid: "
                 + Arrays.toString(metaTileGridBounds);
-    }
-    
-    private static byte[] readStream(InputStream is) throws IOException {
-        byte[] buffer = new byte[10240];
-        byte[] tmpBuffer = new byte[1024];
-        int totalCount = 0;
-        
-        for(int c = 0; c != -1; c = is.read(tmpBuffer)) {
-                // Expand buffer if needed
-                if(totalCount + c >= buffer.length) {
-                        int newLength = buffer.length * 2;
-                        if(newLength < totalCount)
-                                newLength = totalCount;
-                        
-                        byte[] newBuffer = new byte[newLength];
-                        System.arraycopy(buffer, 0, newBuffer, 0, totalCount);
-                        buffer = newBuffer;
-                }
-                System.arraycopy(tmpBuffer, 0, buffer, totalCount, c);
-                totalCount += c;                
-        }
-        is.close();
-        
-        // Compact buffer
-        byte[] newBuffer = new byte[totalCount];
-        System.arraycopy(buffer, 0, newBuffer, 0, totalCount);
-        
-        return newBuffer;
     }
 }

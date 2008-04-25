@@ -17,28 +17,24 @@
 package org.geowebcache.service;
 
 public class ServiceRequest {
-    public final static int SERVICE_REQUEST_TILE = 0;
+    public final static int SERVICE_REQUEST_DIRECT = 0x0001;
+    
+    public final static int SERVICE_REQUEST_METATILE = 0x0002;
 
-    public final static int SERVICE_REQUEST_DIRECT = 1;
+    public final static int SERVICE_REQUEST_USE_JAI = 0x0004;
 
     String layerIdent = null;
 
     String[] data = null;
 
-    int requestType = SERVICE_REQUEST_TILE;
+    int requestType = 0x0000 | SERVICE_REQUEST_METATILE;
 
     public ServiceRequest(String layerIdent) {
         this.layerIdent = layerIdent;
     }
 
-    public ServiceRequest(String layerIdent, int requestType) {
+    public ServiceRequest(String layerIdent, String[] data) {
         this.layerIdent = layerIdent;
-        this.requestType = requestType;
-    }
-
-    public ServiceRequest(String layerIdent, int requestType, String[] data) {
-        this.layerIdent = layerIdent;
-        this.requestType = requestType;
         this.data = data;
     }
 
@@ -52,5 +48,17 @@ public class ServiceRequest {
 
     public String[] getData() {
         return data;
+    }
+
+    public void setFlag(boolean enable, int flag) {
+        if(enable) {
+            requestType = requestType | flag;
+        } else {
+            requestType = requestType & (~ flag); 
+        }
+    }
+    
+    public boolean getFlag(int flag) {
+        return (requestType & flag) != 0x0000;
     }
 }

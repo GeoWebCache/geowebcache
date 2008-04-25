@@ -52,7 +52,7 @@ public class MGMapsConverter extends Service {
     }
 
     public TileRequest getTileRequest(TileLayer tileLayer,
-            HttpServletRequest request) throws ServiceException {
+            ServiceRequest servReq, HttpServletRequest request) throws ServiceException {
         Map params = request.getParameterMap();
 
         String strFormat = ServletUtils.stringFromMap(params, "format");

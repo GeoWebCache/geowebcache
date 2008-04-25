@@ -17,6 +17,7 @@
  */
 package org.geowebcache.layer.wms;
 
+import java.net.URLConnection;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -24,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.service.wms.WMSParameters;
+import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
 import org.geowebcache.util.wms.GridCalculator;
 
@@ -94,6 +96,8 @@ public class WMSLayerProfile {
     protected String wmsStyles = null;
 
     protected WMSParameters wmsparams = null;
+    
+    protected boolean saveExpirationHeaders = false;
 
     protected long expireClients = CACHE_USE_WMS_BACKEND_VALUE;
 
@@ -115,6 +119,11 @@ public class WMSLayerProfile {
         // Can be overriden by the properties
         this.setParametersFromProperties(props);
 
+        if (expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE
+                || expireClients == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
+            this.saveExpirationHeaders = true;
+        }
+        
         if (log.isTraceEnabled()) {
             log.trace("Created a new layer: " + toString());
         }
@@ -386,6 +395,31 @@ public class WMSLayerProfile {
         }
 
         return -1;
+    }
+    
+    protected void saveExpirationInformation(URLConnection backendCon) {
+        this.saveExpirationHeaders = false;
+        
+        if (expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {                
+            Long expire = ServletUtils.extractHeaderMaxAge(backendCon) * 1000;
+            if(expire == null) {
+                expire = new Long(7200*1000);
+            }
+            log.error("Layer profile wants MaxAge from backend,"
+                    + " but backend does not provide this. Setting to 7200 seconds.");
+            expireCache = expire.longValue();
+            log.trace("Setting expireCache to: "+ expireCache);
+        }
+        if (expireClients == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
+            Long expire = ServletUtils.extractHeaderMaxAge(backendCon) * 1000; 
+            if(expire == null) {
+                expire = new Long(7200*1000);
+            }
+            log.error("Layer profile wants MaxAge from backend,"
+                    + " but backend does not provide this. Setting to 7200 seconds.");
+            expireClients = expire.longValue();
+            log.trace("Setting expireClients to: "+ expireClients);
+        }
     }
 
 }

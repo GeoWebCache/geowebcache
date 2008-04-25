@@ -51,19 +51,20 @@ public class Service {
                 +"getLayerIdentifier(HttpSerlvetRequest)" );
     }
     
-    public TileRequest getTileRequest(TileLayer tileLayer, HttpServletRequest request) 
-    throws GeoWebCacheException {
+    public TileRequest getTileRequest(TileLayer tileLayer, ServiceRequest servReq,
+            HttpServletRequest request) throws GeoWebCacheException {
         throw new GeoWebCacheException(
                 "Service for " + pathName  + " needs to override "
-                +"getTileRequest(TileLayer, HttpSerlvetRequest)" );
+                +"getTileRequest(TileLayer,  ServiceRequest, HttpSerlvetRequest)" );
     }
     
-    public void handleRequest(TileLayer tileLayer, 
-    		HttpServletRequest request, HttpServletResponse response) 
+    public void handleRequest(TileLayer tileLayer, HttpServletRequest request, 
+            ServiceRequest servReq, HttpServletResponse response) 
     throws ServiceException {
         throw new RuntimeException(
                 "Service for " + pathName  + " needs to override "
-                +"getLayerIdentifier(HttpSerlvetRequest)" );
+                +"handleRequest(TileLayer, HttpServletRequest, ServiceRequest, "
+                +"HttpServletResponse)" );
     }
     
     protected String getLayersParameter(HttpServletRequest request) throws ServiceException {
@@ -73,7 +74,6 @@ public class Service {
     	} 
     	return layers;
     }
-    
     
     public boolean equals(Object obj) {
         if (obj instanceof Service) {

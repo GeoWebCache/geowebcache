@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
 
 public class GridCalculator {
     private static Log log = LogFactory
@@ -205,49 +206,40 @@ public class GridCalculator {
         retVals[1] = (int) Math.round(ydiff / tileWidth);
 
         if (log.isTraceEnabled()) {
-            log.trace("x: " + retVals[0] + " y:" + retVals[1] + " z:"
-                    + retVals[2]);
+            log.trace("x: " + retVals[0] 
+                   + "  y: " + retVals[1] 
+                   + "  z: " + retVals[2]);
         }
 
         return retVals;
     }
 
-    public String isInRange(int[] location) {
+    public void locationWithinBounds(int[] location) throws GeoWebCacheException {
         // Check Z
         if (location[2] < zoomStart) {
-            return "zoomlevel (" + location[2] + ")must be at least "
-                    + zoomStart;
+            throw new GeoWebCacheException("zoomlevel (" + location[2] + ") can be at least "
+                    + zoomStart);
         }
         if (location[2] >= boundsGridLevels.length) {
-            return "zoomlevel (" + location[2] + ") must be at most "
-                    + boundsGridLevels.length;
+            throw new GeoWebCacheException("zoomlevel ("+ location[2] + ") can be at most "
+                    + boundsGridLevels.length);
         }
 
         int[] bounds = boundsGridLevels[location[2]];
 
-        String gridDebug = " Extra debug information bounds: "
-                + Arrays.toString(bounds) + " gridLoc: "
-                + Arrays.toString(location);
-
         // Check X
         if (location[0] < bounds[0]) {
-            return "gridX (" + location[0] + ") must be at least " + bounds[0]
-                    + gridDebug;
+            throw new GeoWebCacheException("gridX (" + location[0] + ") must be at least " + bounds[0]);
         } else if (location[0] > bounds[2]) {
-            return "gridX (" + location[0] + ") can be at most " + bounds[2]
-                    + gridDebug;
+            throw new GeoWebCacheException("gridX (" + location[0] + ") can be at most " + bounds[2]);
         }
 
         // Check Y
         if (location[1] < bounds[1]) {
-            return "gridY (" + location[1] + ") must be at least " + bounds[1]
-                    + gridDebug;
+            throw new GeoWebCacheException("gridY (" + location[1] + ") must be at least " + bounds[1]);
         } else if (location[1] > bounds[3]) {
-            return "gridY (" + location[1] + ") can be at most " + bounds[3]
-                    + gridDebug;
+            throw new GeoWebCacheException("gridY (" + location[1] + ") can be at most " + bounds[3]);
         }
-
-        return null;
     }
 
     /**

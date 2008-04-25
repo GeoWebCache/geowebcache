@@ -101,23 +101,20 @@ public class KMLService extends Service {
             throw new ServiceException("Unable to parse KML request : "
                     + e.getMessage());
         }
+
+        ServiceRequest servReq = new ServiceRequest(parsed[0], parsed);
+       
         // If it does not end in .kml it is a tile request
-        int type = ServiceRequest.SERVICE_REQUEST_TILE;
-
         if (parsed[2].equalsIgnoreCase(EXTENSION_KML)) {
-            type = ServiceRequest.SERVICE_REQUEST_DIRECT;
+            servReq.setFlag(true, ServiceRequest.SERVICE_REQUEST_DIRECT);
         }
-
-        //log.info(request.getRequestURL().toString());
-        //log.info(parsed[1] + " - " + parsed[2]);
-        return new ServiceRequest(parsed[0], type);
+        return servReq;
     }
 
     public void handleRequest(TileLayer tileLayer, HttpServletRequest request,
-            HttpServletResponse response) throws ServiceException {
-        // Have to parse it again... that's a bit silly
-        // TODO extend ServiceRequest object
-        String[] parsed = parseRequest(request.getPathInfo());
+            ServiceRequest servReq, HttpServletResponse response) throws ServiceException {
+
+        String[] parsed = servReq.getData();
 
         if(tileLayer == null) {
             throw new ServiceException("No layer provided, request parsed to: " + parsed[0]);
@@ -156,7 +153,7 @@ public class KMLService extends Service {
         }
     }
 
-    public TileRequest getTileRequest(TileLayer tileLayer,
+    public TileRequest getTileRequest(TileLayer tileLayer, ServiceRequest servReq,
             HttpServletRequest request) throws MimeException,ServiceException {
         String[] parsed = parseRequest(request.getPathInfo());
 

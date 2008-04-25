@@ -24,12 +24,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.service.ServiceRequest;
 import org.geowebcache.util.wms.BBOX;
 
 /**
@@ -59,7 +61,7 @@ public class Seeder {
      * @throws IOException
      */
     protected int doSeed(int zoomStart, int zoomStop, MimeType mimeType,
-            SRS srs, BBOX bounds, HttpServletResponse response) throws IOException {
+            SRS srs, BBOX bounds, HttpServletResponse response) throws GeoWebCacheException, IOException {
         response.setContentType("text/html");
 
         PrintWriter pw = response.getWriter();
@@ -84,7 +86,7 @@ public class Seeder {
                     int[] gridLoc = { gridx , gridy , level };
                     
                     TileRequest tileReq = new TileRequest(gridLoc, mimeType, srs);
-                    layer.getResponse(tileReq, "seeder", response);
+                    layer.getResponse(tileReq, new ServiceRequest(null) , response);
                     
                     // Next column
                     gridx += metaTilingFactors[0];
@@ -108,7 +110,7 @@ public class Seeder {
             return;
         }
         pw.print("<html><body><table><tr><td>Seeding " + layer.getName() 
-        		+ " from level "+ zoomStart + " to level " + zoomStop 
+        	+ " from level "+ zoomStart + " to level " + zoomStop 
                 + " for format " + mimeType.getFormat() 
                 + " and bounds " + bounds.getReadableString() 
                 + "</td></tr>");

@@ -222,20 +222,22 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
 
         // Check where this should be dispatched
-        if (servReq.getType() == ServiceRequest.SERVICE_REQUEST_TILE) {
+        if (servReq.getFlag(ServiceRequest.SERVICE_REQUEST_DIRECT)) {
+            // B4 The service object takes it from here
+            service.handleRequest(layer, request, servReq, response);
+        } else {
             // A4) Convert to internal representation, using info from request
             // and layer
-            TileRequest tileRequest = service.getTileRequest(layer, request);
+            TileRequest tileRequest = service.getTileRequest(layer, servReq, request);
 
+            // Kepp the URI 
+            tileRequest.requestURI = request.getRequestURI();
+            
             // A5) Ask the layer to provide the tile
-            TileResponse tileResponse = layer.getResponse(tileRequest, request
-                    .getRequestURI(), response);
+            TileResponse tileResponse = layer.getResponse(tileRequest, servReq, response);
 
             // A6) Write response
             writeData(response, tileResponse);
-        } else {
-            // B4 The service object takes it from here
-            service.handleRequest(layer, request, response);
         }
     }
 

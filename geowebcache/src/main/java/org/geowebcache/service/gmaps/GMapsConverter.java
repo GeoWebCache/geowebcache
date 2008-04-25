@@ -50,7 +50,8 @@ public class GMapsConverter extends Service {
         return new ServiceRequest(super.getLayersParameter(request));
     }
 
-    public TileRequest getTileRequest(TileLayer tileLayer, HttpServletRequest request)
+    public TileRequest getTileRequest(TileLayer tileLayer, ServiceRequest servReq, 
+            HttpServletRequest request)
     throws ServiceException {
         Map params = request.getParameterMap();
         

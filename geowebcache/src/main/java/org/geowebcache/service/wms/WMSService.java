@@ -40,8 +40,8 @@ public class WMSService extends Service {
         return new ServiceRequest(super.getLayersParameter(request));
     }
 
-    public TileRequest getTileRequest(TileLayer tileLayer,
-            HttpServletRequest request) throws GeoWebCacheException {
+    public TileRequest getTileRequest(TileLayer tileLayer, 
+            ServiceRequest servReq, HttpServletRequest request) throws GeoWebCacheException {
         
         WMSParameters wmsParams = new WMSParameters(request);
 

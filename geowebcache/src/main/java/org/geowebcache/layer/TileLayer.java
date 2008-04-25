@@ -20,7 +20,9 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.service.ServiceRequest;
 import org.geowebcache.util.wms.BBOX;
 
 public interface TileLayer {
@@ -29,8 +31,9 @@ public interface TileLayer {
     public String supportsFormat(String formatStr);
     public String supportsBbox(SRS srs, BBOX bounds);
     
-    public TileResponse getResponse(TileRequest tileRequest, String requestURI, 
-            HttpServletResponse response) throws IOException;
+    public TileResponse getResponse(TileRequest tileRequest, 
+           ServiceRequest servReq, HttpServletResponse response) 
+    throws GeoWebCacheException, IOException;
     
     public SRS[] getProjections();
     public int getSRSIndex(SRS reqSRS);

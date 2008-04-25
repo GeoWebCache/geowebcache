@@ -16,9 +16,14 @@
  */
 package org.geowebcache.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ServletUtils {
     
@@ -66,5 +71,81 @@ public class ServletUtils {
         }
         
         return retMap;
+    }
+    
+    /**
+     * Extracts the cache control header
+     * 
+     * @param cacheControlHeader
+     * @return Long representing expiration time in milliseconds
+     */
+    public static Long extractHeaderMaxAge(URLConnection backendCon) {
+        
+        String cacheControlHeader = backendCon.getHeaderField("Cache-Control");
+        
+        if (cacheControlHeader == null) {
+            return null;
+        }
+
+        String expression = "max-age=([0-9]*)[ ,]";
+        Pattern p = Pattern.compile(expression);
+        Matcher m = p.matcher(cacheControlHeader.toLowerCase());
+
+        if (m.find()) {
+            return new Long(Long.parseLong(m.group(1)));
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Reads an inputstream and stores all the information in a buffer.
+     * 
+     * @param is the inputstream
+     * @param bufferHint hint for the total buffer, -1 = 10240
+     * @param tmpBufferSize how many bytes to read at a time, -1 = 1024
+     * 
+     * @return a compacted buffer with all the data
+     * @throws IOException
+     */
+    public static byte[] readStream(InputStream is, int bufferHint, int tmpBufferSize) throws IOException {
+        
+        byte[] buffer = null;
+        if(bufferHint > 0) {
+            buffer = new byte[bufferHint];
+        } else {
+            buffer = new byte[10240];
+        }
+        
+        byte[] tmpBuffer = null;
+        if(tmpBufferSize > 0) {
+            tmpBuffer = new byte[tmpBufferSize];
+        } else {
+            tmpBuffer = new byte[1024];
+        }
+        
+        
+        int totalCount = 0;
+        for(int c = 0; c != -1; c = is.read(tmpBuffer)) {
+                // Expand buffer if needed
+                if(totalCount + c >= buffer.length) {
+                        int newLength = buffer.length * 2;
+                        if(newLength < totalCount)
+                                newLength = totalCount;
+                        
+                        byte[] newBuffer = new byte[newLength];
+                        System.arraycopy(buffer, 0, newBuffer, 0, totalCount);
+                        buffer = newBuffer;
+                }
+                System.arraycopy(tmpBuffer, 0, buffer, totalCount, c);
+                totalCount += c;                
+        }
+        is.close();
+        
+        // Compact buffer
+        byte[] newBuffer = new byte[totalCount];
+        System.arraycopy(buffer, 0, newBuffer, 0, totalCount);
+        
+        return newBuffer;
     }
 }
