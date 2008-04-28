@@ -72,6 +72,29 @@ public class WMSService extends Service {
             throw new ServiceException("The bounding box parameter is missing or not sane");
         }
         
+        String strOrigin = wmsParams.getOrigin();
+        if(strOrigin != null) {
+            String[] split = strOrigin.split(",");
+            if(split.length != 2) {
+                throw new ServiceException("Unable to parse tilesOrigin,"
+                        +"should not be set anyway: " + strOrigin);
+            }
+            double x = Double.valueOf(split[0]);
+            double y = Double.valueOf(split[1]);
+            
+            if(Math.abs(x + 180.0) < 0.5 
+                    && x + Math.abs(y + 90.0) < 0.5) {
+                // ok, fine for EPSG:4326
+            } else if(Math.abs(x + 20037508.34) < 1.0 
+                    && x + Math.abs(y + 20037508.34) < 1.0) {
+                // ok, fine for EPSG:9000913
+            } else{
+                throw new ServiceException("The tilesOrigin parameter " + strOrigin 
+                        + " is not accepted by GeoWebCache, please omit"
+                        + " or use lower left corner of world bounds.");
+            }
+        }
+            
         return new TileRequest(
                 tileLayer.getGridLocForBounds(srsIdx,bbox),
                 mime, srs);
