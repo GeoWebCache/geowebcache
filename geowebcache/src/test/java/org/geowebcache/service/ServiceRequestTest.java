@@ -20,7 +20,7 @@ public class ServiceRequestTest extends TestCase {
         
         // Test the default type
     	assertFalse(servReq.getFlag(ServiceRequest.SERVICE_REQUEST_DIRECT));
-    	assertFalse(servReq.getFlag(ServiceRequest.SERVICE_REQUEST_METATILE));
+    	assertTrue(servReq.getFlag(ServiceRequest.SERVICE_REQUEST_METATILE));
         
         // Set the flag for later testing
         servReq.setFlag(true, ServiceRequest.SERVICE_REQUEST_DIRECT);
@@ -40,6 +40,6 @@ public class ServiceRequestTest extends TestCase {
         
         // Make sure we didn't break anything during that
         assertTrue(servReq.getFlag(ServiceRequest.SERVICE_REQUEST_DIRECT));
-        assertFalse(servReq.getFlag(ServiceRequest.SERVICE_REQUEST_METATILE));
+        assertTrue(servReq.getFlag(ServiceRequest.SERVICE_REQUEST_METATILE));
     }
 }
