@@ -17,16 +17,8 @@
  */
 package org.geowebcache.util;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geotools.data.wms.WebMapServer;
-import org.geotools.ows.ServiceException;
-import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.CacheFactory;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -67,10 +59,11 @@ public class GeoServerConfiguration extends GetCapabilitiesConfiguration {
             log.info("Using System environment variable to configure "+GEOSERVER_WMS_URL+" to "+tmpUrl);
             return tmpUrl;
         }
-                
-        log.info("No context parameter, system or Java environment variables found for " + GEOSERVER_WMS_URL);
-        log.info("Reverting to http://localhost:8080/geoserver");
         
-        return "http://localhost:8080/geoserver";
+        tmpUrl = "http://localhost:8080/geoserver/wms?request=GetCapabilities";
+        log.info("No context parameter, system or Java environment variables found for " + GEOSERVER_WMS_URL);
+        log.info("Reverting to " + tmpUrl );
+        
+        return tmpUrl;
     }
 }
