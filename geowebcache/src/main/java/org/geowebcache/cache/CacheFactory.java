@@ -107,4 +107,8 @@ public class CacheFactory implements ApplicationContextAware {
             throws BeansException {
         context = (WebApplicationContext) arg0;
     }
+    
+    public WebApplicationContext getWebAppContext() {
+        return context;
+    }
 }
