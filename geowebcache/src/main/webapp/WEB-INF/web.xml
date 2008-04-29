@@ -30,8 +30,17 @@
     <url-pattern>/seed/*</url-pattern>
   </servlet-mapping>
 
+<!-- 
   <context-param>
     <param-name>GEOWEBCACHE_CACHE_DIR</param-name>
     <param-value>/tmp</param-value>
   </context-param>
+-->
+
+<!--
+  <context-param>
+    <param-name>GEOSERVER_WMS_URL</param-name>
+    <param-value>http://sigma.openplans.org:8080/geosearch/wms?request=GetCapabilities</param-value>
+  </context-param>
+-->
 </web-app>
