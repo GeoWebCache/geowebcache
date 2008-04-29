@@ -180,7 +180,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
                         + " given prefix " + servletPrefix);
             }
             retStrs[0] = new String(splitStr[3]);
-            retStrs[1] = new String(splitStr[4]);
+            if(splitStr.length > 4) {
+                retStrs[1] = new String(splitStr[4]);
+            }
         } else {
             if (splitStr.length < 3) {
                 throw new GeoWebCacheException("Unable to parse " + servletPath);
