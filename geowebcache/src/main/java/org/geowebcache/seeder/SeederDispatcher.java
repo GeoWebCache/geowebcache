@@ -207,17 +207,17 @@ public class SeederDispatcher implements ApplicationContextAware {
             log.info("Using System environment variable to configure "+GEOWEBCACHE_ALLOWED_SEEDERS+" to "+tmpStr);
             return tmpStr;
         }
-        
-        tmpStr = "http://localhost:8080/geoserver/wms?request=GetCapabilities";
+
         log.info("No context parameter, system or Java environment variables found for " + GEOWEBCACHE_ALLOWED_SEEDERS);
-        log.info("Reverting to " + tmpStr );
-        
-        return tmpStr;
+        return null;
     }
 
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         // Add list from environment variable
         String seedersStr = getAllowedSeeders((WebApplicationContext) context);
+        if(seedersStr == null) {
+            return;
+        }
         String[] seedersStrs = seedersStr.split(",");
         for(int i=0; i<seedersStrs.length; i++) {
             try {
