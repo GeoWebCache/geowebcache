@@ -262,6 +262,12 @@ public class FileCache implements Cache {
         if (this.defaultCachePrefix == null) {
             log.error("Found no usable default cache prefixes !!! "
                     + "Please set " + GWC_CACHE_DIR);
+            
+            String tmpDir = System.getProperty("java.io.tmpdir");
+            if(tmpDir != null) {
+                this.defaultCachePrefix = tmpDir + File.separator + "geowebcache";
+                log.warn("Reverting to java.io.tmpdir: " + this.defaultCachePrefix);  
+            }
         } else {
             switch (iVar) {
             case 0: // GEOWEBCACHE_CACHE_DIR, do nothing
