@@ -17,7 +17,7 @@ public class KMLServiceTest extends TestCase {
     	String[] retVals = KMLService.parseRequest("/kml/topp:states.kml");
     	
     	assertTrue(retVals[0].equals("topp:states"));
-    	assertTrue(retVals[1].isEmpty());
+    	assertTrue(retVals[1].length() == 0);
     	assertTrue(retVals[2].equals("kml"));
     	assertTrue(retVals[3] == null);
     }
@@ -26,7 +26,7 @@ public class KMLServiceTest extends TestCase {
     	String[] retVals = KMLService.parseRequest("/kml/topp:states.jpeg.kml");
     	
     	assertTrue(retVals[0].equals("topp:states"));
-    	assertTrue(retVals[1].isEmpty());
+    	assertTrue(retVals[1].length() == 0);
     	assertTrue(retVals[2].equals("kml"));
     	assertTrue(retVals[3].equals("jpeg"));
     }
