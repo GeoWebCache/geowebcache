@@ -60,11 +60,15 @@ public class VEConverter extends Service {
 
         SRS srs = new SRS(900913);
         
-        MimeType mime = null; 
-        try {
-            mime = MimeType.createFromFormat(strFormat);
-        } catch (MimeException me) {
-            throw new ServiceException("Unable to determined requested format, " + strFormat);
+        MimeType mime = null;
+        if(strFormat != null) {
+            try {
+                mime = MimeType.createFromFormat(strFormat);
+            } catch (MimeException me) {
+                throw new ServiceException("Unable to determined requested format, " + strFormat);
+            }
+        } else {
+            mime = tileLayer.getDefaultMimeType();
         }
         return new TileRequest(gridLoc,mime,srs);
     }
