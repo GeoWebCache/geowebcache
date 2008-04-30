@@ -102,7 +102,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
      */
     private String getWMSUrl(WebMapServer wms) {
         // // http://sigma.openplans.org:8080/geoserver/wms?SERVICE=WMS&
-        String wmsUrl = wms.getInfo().getSource().toString();
+        String wmsUrl = wms.getCapabilities().getRequest().getGetCapabilities().getGet().toString();
         int queryStart = wmsUrl.lastIndexOf("?");
         String preQuery = wmsUrl.substring(queryStart);
         if (preQuery.equalsIgnoreCase("?service=wms&")) {
