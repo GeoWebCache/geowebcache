@@ -169,38 +169,74 @@ public class KMLService extends Service {
         SRS srs = new SRS(4326);
         int srsIdx = layer.getSRSIndex(srs);
         BBOX bbox = layer.getBounds(srsIdx);
+        
         if(formatExtension == null) {
         	formatExtension = "";
         } else {
         	formatExtension = "." + formatExtension;
         }
         
+        int[] gridLoc = layer.getZoomedOutGridLoc(srsIdx);
+        
+        String networkLinks = null;
+        
+        // Check whether we need two tiles for world bounds or not
+        if(gridLoc[2] < 0) {
+            int[] gridLocWest = {0,0,0};
+            int[] gridLocEast = {1,0,0};
+            
+            BBOX bboxWest = new BBOX(
+                    bbox.coords[0], bbox.coords[1], 0.0, bbox.coords[3] );
+            BBOX bboxEast = new BBOX(
+                    0.0, bbox.coords[1], bbox.coords[2], bbox.coords[3] );
+            
+            networkLinks = 
+                superOverlayNetworLink(
+                    layer.getName() + " West", 
+                    bboxWest, 
+                    urlStr + "/" + gridLocString(gridLocWest) + formatExtension + ".kml")
+                    +
+                superOverlayNetworLink(
+                    layer.getName() + " East", 
+                    bboxEast, 
+                    urlStr + "/" + gridLocString(gridLocEast) + formatExtension + ".kml");
+            
+        } else {
+            networkLinks = superOverlayNetworLink(
+                    layer.getName(), 
+                    bbox, 
+                    urlStr + "/" + gridLocString(gridLoc) + formatExtension + ".kml");
+        }
+        
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                 + "\n<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
                 + "\n<Folder>"
-                + "\n<NetworkLink><name>SuperOverlay:" + layer.getName()+"</name>" 
-                + "\n<Region>\n" 
-                + bbox.toKML()
-                + "\n<Lod><minLodPixels>128</minLodPixels>"
-                + "\n<maxLodPixels>-1</maxLodPixels></Lod>"
-                + "\n</Region>"
-                + "\n<Link>" + "<href>" + urlStr + "/"
-                + gridLocString(layer, srsIdx) + formatExtension + ".kml</href>"
-                + "\n<viewRefreshMode>onRegion</viewRefreshMode>" 
-                + "\n</Link>"
-                + "\n</NetworkLink>"
-                +  getLookAt(bbox)
+                + networkLinks
+                + getLookAt(bbox)
                 + "\n</Folder>"
                 + "\n</kml>\n";
 
         writeXml(xml, response);
     }
 
-
-    private static String gridLocString(TileLayer tileLayer, int srsIdx) {
-        int[] gridLoc = tileLayer.getZoomedOutGridLoc(srsIdx);
-        return gridLocString(gridLoc);
+    private static String superOverlayNetworLink(String superString, BBOX bbox, String url) {
+        String xml = "\n<NetworkLink><name>SuperOverlay:"+superString+"</name>" 
+        + "\n<Region>\n" 
+        + bbox.toKML()
+        + "\n<Lod><minLodPixels>128</minLodPixels>"
+        + "\n<maxLodPixels>-1</maxLodPixels></Lod>"
+        + "\n</Region>"
+        + "\n<Link><href>"+url+"</href>"
+        + "\n<viewRefreshMode>onRegion</viewRefreshMode>" 
+        + "\n</Link>"
+        + "\n</NetworkLink>";
+        
+        return xml;
     }
+    //private static String gridLocString(TileLayer tileLayer, int srsIdx) {
+    //    int[] gridLoc = tileLayer.getZoomedOutGridLoc(srsIdx);
+    //    return gridLocString(gridLoc);
+    //}
 
     private static String gridLocString(int[] gridLoc) {
         return "x" + gridLoc[0] + "y" + gridLoc[1] + "z" + gridLoc[2];

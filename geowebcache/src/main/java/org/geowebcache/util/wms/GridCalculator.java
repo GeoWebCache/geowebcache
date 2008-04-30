@@ -48,6 +48,9 @@ public class GridCalculator {
 
     // Used for unprojected profiles
     private int gridConstant;
+    
+    // Special treatment of "zoomed out tile" for EPSG 4326
+    private boolean worldBoundsCoverTwoTiles = false;
 
     private int[] zoomedOutGridLoc = null;
     
@@ -77,6 +80,12 @@ public class GridCalculator {
         this.gridConstant = (int) Math.round(gridWidth / gridHeight - 1.0);
 
         boundsGridLevels = calculateGridBounds(layerBounds);
+        
+        if(     this.gridConstant > 0 
+                && layerBounds.coords[0] < 0.0 
+                && layerBounds.coords[2] > 0.0) {
+            worldBoundsCoverTwoTiles = true;
+        }
     }
 
     private int[][] calculateGridBounds(BBOX layerBounds) {
@@ -336,16 +345,25 @@ public class GridCalculator {
      * Returns the the gridLocation where a single tile
      * covers the entire bounding box
      * 
-     * NB: For 4326 this will retun {0,0,0} for something
-     * that covers the world, but you still need {1,0,0}
-     * 
-     * @return
+     * @return the appropriate tile, or {-1,-1,-1} if you need 
+     *  world bounds
      */
     public int[] getZoomedOutGridLoc() {
     	if (zoomedOutGridLoc != null) {
             return zoomedOutGridLoc;
         }
 
+        // Exception for EPSG:4326, which can zoom out to two tiles
+        if (worldBoundsCoverTwoTiles) {
+            zoomedOutGridLoc = new int[3];
+            zoomedOutGridLoc[0] = -1;
+            zoomedOutGridLoc[1] = -1;
+            zoomedOutGridLoc[2] = -1;
+
+            return zoomedOutGridLoc;
+        }
+        
+        // Otherwise
         int i = boundsGridLevels.length - 1;
         for (; i > 0; i--) {
             if (boundsGridLevels[i][0] == boundsGridLevels[i][2]
