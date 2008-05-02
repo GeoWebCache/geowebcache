@@ -47,4 +47,7 @@ public interface TileLayer {
     public BBOX getBboxForGridLoc(int srsIdx, int[] gridLoc);
     public int[][] getZoomInGridLoc(int srsIdx, int[] gridLoc);
     public int[] getZoomedOutGridLoc(int srsIdx);
+    public String getCachePrefix();
+    public void acquireLayerLock();
+    public void releaseLayerLock();
 }
