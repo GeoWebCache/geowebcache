@@ -152,7 +152,6 @@ public class FileCache implements Cache {
         }
 
         String filePath = (String) key;
-        log.trace("Attempting write to " + filePath);
         File fh = new File(filePath);
         File pfh = new File(fh.getParent());
 

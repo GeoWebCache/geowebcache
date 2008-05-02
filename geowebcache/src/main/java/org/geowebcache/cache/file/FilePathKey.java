@@ -27,7 +27,7 @@ public class FilePathKey implements CacheKey {
     }
 
     public String createKey(String prefix, int x, int y, int z, SRS srs, String format) {
-    	String srsStr = srs.toString().replace(':', '_');
+    	String srsStr = srs.filePath();
         String filename = prefix + File.separator + srsStr + File.separator
         		+ zeroPadder(z, 2) + File.separator 
         		+ zeroPadder(x / 1000000, 3) + File.separator

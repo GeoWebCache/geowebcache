@@ -36,5 +36,9 @@ public class SRS {
 	public String toString() {
 		return "EPSG:"+Integer.toString(number);
 	}
+        
+        public String filePath() {
+                return "EPSG_"+Integer.toString(number);
+        }
 		
 }
