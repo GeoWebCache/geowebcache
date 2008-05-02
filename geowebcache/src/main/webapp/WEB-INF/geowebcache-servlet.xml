@@ -47,7 +47,7 @@
     </property>
   </bean>
   
-  <!-- For each configuration bean above, add them below to activate -->
+  <!-- The following list contains the ip that are allowed to seed the cache -->
   <bean id="gwcSeederDispatcher" class="org.geowebcache.seeder.SeederDispatcher">
     <property name="allowedSeeders">
       <list>
