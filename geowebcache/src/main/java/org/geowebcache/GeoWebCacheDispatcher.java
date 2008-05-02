@@ -50,6 +50,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
     public static final String TYPE_SEED = "seed";
 
+    public static final String TYPE_TRUNCATE = "truncate";
+    
     WebApplicationContext context = null;
 
     private String servletPrefix = null;
@@ -141,8 +143,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
             } else if (requestComps[0].equalsIgnoreCase(TYPE_SEED)) {
                 handleSeedRequest(request, response);
-                // writeError(response, 400, "Seeding is currently not
-                // supported");
+            } else if (requestComps[0].equalsIgnoreCase(TYPE_TRUNCATE)) {
+                handleTruncateRequest(request, response);
             } else {
                 writeError(response, 404, "Unknow path: " + requestComps[0]);
             }
@@ -258,11 +260,32 @@ public class GeoWebCacheDispatcher extends AbstractController {
         TileLayer layer = tileLayerDispatcher.getTileLayer(layerIdent);
 
         if (layer == null) {
+            throw new GeoWebCacheException("Layer "+layerIdent+" is not known");
+        }
+
+        seederDispatcher.handleSeed(layer, request, response);
+    }
+    
+    /**
+     * This is the main method for handling truncate requests.
+     * 
+     * @param request
+     * @param response
+     * @throws Exception
+     */
+    private void handleTruncateRequest(HttpServletRequest request,
+            HttpServletResponse response) throws Exception {
+
+        String layerIdent = seederDispatcher.getLayerIdent(request);
+
+        TileLayer layer = tileLayerDispatcher.getTileLayer(layerIdent);
+
+        if (layer == null) {
             throw new GeoWebCacheException("Layer " + layerIdent
                     + " is not known.");
         }
 
-        seederDispatcher.handleSeed(layer, request, response);
+        //seederDispatcher.handleTruncate(layer, request, response);
     }
 
     /**
