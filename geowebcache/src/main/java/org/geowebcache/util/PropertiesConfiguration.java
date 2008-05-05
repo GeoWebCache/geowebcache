@@ -143,8 +143,7 @@ public class PropertiesConfiguration implements Configuration,
      * @param configDirH
      */
     private File[] findPropFiles(File configDirH) {
-        FilenameFilter select = new ExtensionFileListFilter("layer_",
-                "properties");
+        FilenameFilter select = new ExtensionFileLister("layer_","properties");
         return configDirH.listFiles(select);
     }
 
@@ -181,25 +180,3 @@ public class PropertiesConfiguration implements Configuration,
     }
 }
 
-class ExtensionFileListFilter implements FilenameFilter {
-    private String prefix;
-
-    private String extension;
-
-    public ExtensionFileListFilter(String prefix, String extension) {
-        this.prefix = prefix;
-        this.extension = extension;
-    }
-
-    public boolean accept(File directory, String filename) {
-        if (prefix != null && extension != null) {
-            System.out.println(" properties: " + directory.getAbsolutePath()
-                    + " " + filename);
-            boolean ret = filename.endsWith('.' + extension)
-                    && filename.startsWith(prefix);
-            return ret;
-        } else {
-            return false;
-        }
-    }
-}

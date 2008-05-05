@@ -30,6 +30,12 @@
     <url-pattern>/seed/*</url-pattern>
   </servlet-mapping>
 
+  <servlet-mapping>
+    <servlet-name>geowebcache</servlet-name>
+    <url-pattern>/truncate/*</url-pattern>
+  </servlet-mapping>
+
+
 <!-- 
   <context-param>
     <param-name>GEOWEBCACHE_CACHE_DIR</param-name>

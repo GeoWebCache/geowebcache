@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.cache.CacheKey;
+import org.geowebcache.cache.file.FilePathKey;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
@@ -34,12 +36,14 @@ import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.ServiceRequest;
 import org.geowebcache.util.wms.BBOX;
+import org.geowebcache.util.FileUtils;
 
 /**
- * Temporary code for truncating
+ * Temporary code for truncating...
  * 
  * @author ak
  */
+//TODO this stuff needs to be moved to the cache
 public class Truncater {
     private static Log log = LogFactory.getLog(org.geowebcache.seeder.Truncater.class);
 
@@ -60,61 +64,143 @@ public class Truncater {
      * @return
      * @throws IOException
      */
-    protected int doTruncate(int zoomStart, int zoomStop, MimeType mimeType,
+    protected void doTruncate(int zoomStart, int zoomStop, MimeType mimeType,
             SRS srs, BBOX bounds, HttpServletResponse response) throws GeoWebCacheException, IOException {
+
+        if(bounds == null && mimeType == null) {
+            doTruncateWorld(zoomStart, zoomStop, srs, response);
+        } else {
+            doTruncateTiles(zoomStart, zoomStop, mimeType, srs, bounds, response);
+        }
+    }
+    
+    protected int doTruncateTiles(int zoomStart, int zoomStop, MimeType mimeType,
+            SRS srs, BBOX bounds, HttpServletResponse response) throws GeoWebCacheException, IOException {
+
         response.setContentType("text/html");
 
         PrintWriter pw = response.getWriter();
         int srsIdx = layer.getSRSIndex(srs);
-        int[][] coveredGridLevels = layer.getCoveredGridLevels(srsIdx, bounds);
-        int[] metaTilingFactors = layer.getMetaTilingFactors();
         
-        for (int level = zoomStart; level <= zoomStop; level++) {
-            int[] gridBounds = coveredGridLevels[level];
-            
-            int count = 0;
-            
-            for (int gridy = gridBounds[1]; gridy <= gridBounds[3];  ) {
-                
-                for (int gridx = gridBounds[0]; gridx <= gridBounds[2]; ) {
-                    
-                    int[] gridLoc = { gridx , gridy , level };
-                    
-                    TileRequest tileReq = new TileRequest(gridLoc, mimeType, srs);
-                    layer.getResponse(tileReq, new ServiceRequest(null) , response);
-                    
-                    // Next column
-                    gridx++;
+        String cachePfx = this.layer.getCachePrefix();
+        
+        int[][] coveredGridLevels = layer.getCoveredGridLevels(srsIdx, bounds);
+        
+        // Acquire lock
+        layer.acquireLayerLock();
+        
+        try {
+            for (int level = zoomStart; level <= zoomStop; level++) {
+                int[] gridBounds = coveredGridLevels[level];
+
+                for (int gridy = gridBounds[1]; gridy <= gridBounds[3];) {
+
+                    for (int gridx = gridBounds[0]; gridx <= gridBounds[2];) {
+
+                        int[] gridLoc = { gridx, gridy, level };
+
+                        CacheKey ck = (CacheKey) layer.getCacheKey();
+
+                        // TODO need to revisit case where this is not a string
+                        String strCK = (String) ck.createKey(cachePfx, gridLoc[0], gridLoc[1],gridLoc[2], srs, mimeType.getFileExtension());
+                        System.out.println(strCK);
+                        
+                        // Next column
+                        gridx++;
+                    }
+                    // Next row
+                    gridy++;
                 }
-                // Next row
-                gridy++;
             }
+        } finally {
+            layer.releaseLayerLock();
         }
 
         pw.close();
         return 0;
     }
     
-    protected int doTruncateWorld(MimeType mimeType, SRS srs, 
+    // TODO move to cache
+    
+    private int doTruncateWorld(int zoomStart, int zoomStop, SRS srs, 
             HttpServletResponse response) 
-    throws IOException {
-        if(mimeType == null) {
-            // Err.. we'll just clear everything
-        }
-        
+    throws IOException, SeederException {        
         // Just unlink the directory for the layer
         String cachePfx = this.layer.getCachePrefix();
-
-        if (srs != null) {
-            cachePfx = cachePfx + File.separator + srs.filePath();
+        
+        if (srs == null && zoomStart < 0) {
+            // Acquire lock
+            layer.acquireLayerLock();
+            try {
+                File dir = new File(cachePfx);
+                if (dir.exists()) {
+                    System.out.println("Deleting " + dir.getAbsolutePath() + " " + FileUtils.rmFileCacheDir(dir,null));
+                }
+            } finally {
+                layer.releaseLayerLock();
+            }
+            
+            return 0;
         }
-        File dir = new File(cachePfx);
-
+        
+        String[] srsList = null;
+        if (srs != null) {
+            srsList = new String[1];
+            srsList[0] = srs.filePath();
+        } else {
+            SRS[] srss = layer.getProjections();
+            srsList = new String[srss.length];
+            
+            for(int i=0; i<srss.length; i++) {
+                srsList[i] = srss[i].filePath();
+            }
+        }
+        
+        String[] zoomList = null;
+        
+        if(zoomStart >= 0) {
+            if(zoomStop < 0) {
+                zoomStop = layer.getZoomStop();
+            }
+            if(zoomStart <= zoomStop) {
+                zoomList = new String[zoomStop - zoomStart + 1];
+            } else {
+                throw new SeederException("zoomStart ("
+                        +zoomStart+") and zoomStop ("
+                        +zoomStop+") do not make sense");
+            }
+            
+            for(int i=0; i<zoomList.length; i++) {
+                zoomList[i] =  FilePathKey.zeroPadder(zoomStart + i, 2);
+            }
+        } else {
+            // do nothing
+        }
+        
         // Acquire lock
         layer.acquireLayerLock();
         try {
-            if (dir.exists()) {
-                dir.delete();
+            // Now merge the lists for SRSs and ZoomStart / zoomStop
+            for (int i = 0; i < srsList.length; i++) {
+                if (zoomList == null) {
+                    File dir = new File(cachePfx + File.separator + srsList[i]);
+                    if (dir.exists()) {
+                        System.out.println("Deleting " + dir.getAbsolutePath());
+                        FileUtils.rmFileCacheDir(dir,null);
+                    }
+                } else {
+                    for (int j = 0; j < zoomList.length; j++) {
+                        File dir = new File(cachePfx + File.separator
+                                + srsList[i] + File.separator + zoomList[j]);
+                        if (dir.exists()) {
+                            System.out.println("Deleting "
+                                    + dir.getAbsolutePath());
+                            FileUtils.rmFileCacheDir(dir,null);
+                        } else {
+                            System.out.println(dir.getAbsolutePath());
+                        }
+                    }
+                }
             }
         } finally {
             layer.releaseLayerLock();

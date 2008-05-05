@@ -40,8 +40,6 @@ public class SeederDispatcher implements ApplicationContextAware {
     /**
      * List of addresses that are allowed to seed the cache.
      * 
-     * TODO Move into separate class
-     * 
      * @param addressList
      *            list of addresses from applicationContext.xml
      */
@@ -185,6 +183,101 @@ public class SeederDispatcher implements ApplicationContextAware {
         /* Start the seeding */
         aSeeder.doSeed(start, stop, mime, srs, bbox, response);
     }
+    
+    
+    /**
+     * Parses the request to dermine bounds, start, stop and format, then calls
+     * startSeeder()
+     * 
+     * @param layer
+     *            predetermined layer
+     * @param request
+     * @param response
+     */
+    public void handleTruncate(TileLayer layer, HttpServletRequest request,
+            HttpServletResponse response) throws GeoWebCacheException,
+            IOException {
+        InetAddress adr = null;
+        try {
+            adr = InetAddress.getByName(request.getRemoteAddr());
+        } catch (UnknownHostException uhe) {
+            throw new SeederException("Unable to lookup "
+                    + request.getRemoteAddr());
+        }
+
+        if (!this.allowedSeeders.containsKey(adr.hashCode())) {
+            throw new SeederException(
+                    adr.toString()
+                            + " is not in the list of allowed truncaters"
+                            + " or addjust in applicationContex.xml or set "
+                            + SeederDispatcher.GEOWEBCACHE_ALLOWED_SEEDERS );
+        }
+
+        String adrStr = adr.toString();
+        String layerStr = layer.getName();
+
+        String[] relevantParams = { "bbox", "start", "stop", "srs", "format" };
+        Map params = ServletUtils.selectedStringsFromMap(request
+                .getParameterMap(), relevantParams);
+
+        /* Projection */
+        SRS srs = null;
+        int srsIdx = -1;
+
+        String srsStr = (String) params.get("srs");
+        if (srsStr != null) {
+            srs = new SRS(srsStr);
+            srsIdx = layer.getSRSIndex(srs);
+        }
+
+        /* Bounding box */
+        BBOX bbox = null;
+
+        String bboxStr = (String) params.get("bbox");
+        if (bboxStr != null) {
+            bbox = new BBOX(bboxStr);
+        }
+        if (bbox != null && (bbox.isSane() || null != layer.supportsBbox(srs, bbox))) {
+            log.info(adrStr + " reverting to bounding box for " + layerStr);
+            bbox = null;
+        }
+
+        /* Format */
+        MimeType mime = null;
+
+        String formatStr = (String) params.get("format");
+        if (formatStr != null) {
+            mime = MimeType.createFromFormat(formatStr);
+        }
+        
+        /* Stop */
+        int stop = -1;
+
+        String stopStr = (String) params.get("stop");
+        if (stopStr != null) {
+            stop = Integer.parseInt(stopStr);
+        }
+
+        /* Start */
+        int start = -1;
+
+        String startStr = (String) params.get("start");
+        if (startStr != null) {
+            start = Integer.parseInt(startStr);
+        }
+
+        if (start > 0 && stop > 0 && start > stop) {
+            throw new SeederException("start (" + start
+                    + ") cannot be greater than stop (" + stop + ")");
+        }
+
+        /* Create a new truncater */
+        Truncater aTruncater = new Truncater(layer);
+
+        /* Start truncating */
+        aTruncater.doTruncate(start, stop, mime, srs, bbox, response);
+    }
+    
 
     private static String getAllowedSeeders(WebApplicationContext ctx) {
         String tmpStr = null;

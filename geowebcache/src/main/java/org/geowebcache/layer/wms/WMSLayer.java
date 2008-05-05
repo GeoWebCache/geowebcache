@@ -180,10 +180,13 @@ public class WMSLayer implements TileLayer {
     /**
      * The main function
      * 
-     * 1) Lock metatile 2) Check whether tile is in cache -> If so, unlock
-     * metatile, set Cache-Control and return tile 3) Create metatile 4) Use
-     * metatile to forward request 5) Get tiles (save them to cache) 6) Unlock
-     * metatile 6) Set Cache-Control, return tile
+     * 1) Create cache key, test whether we can retrieve without locking
+     * 2) Get lock for metatile, monitor condition variable if not
+     * (Recheck cache after signal)
+     * 3) Create metatile request, execute
+     * 4) Get tiles and save them to cache 
+     * 5) Unlock metatile, signal other threads
+     * 6) Set Cache-Control, return tile
      * 
      * @param wmsparams
      * @return
@@ -806,5 +809,13 @@ public class WMSLayer implements TileLayer {
     private int calcLocCondIdx(int[] gridLoc) {
         return (gridLoc[0]*7 + gridLoc[1]*13 + gridLoc[2]*5) 
             % gridLocConds.length;
+    }
+
+    public int getZoomStart() {
+        return this.profile.zoomStart;
+    }
+
+    public int getZoomStop() {
+        return this.profile.zoomStop;
     }
 }

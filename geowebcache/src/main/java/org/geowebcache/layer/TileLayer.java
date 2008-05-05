@@ -21,6 +21,8 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.cache.Cache;
+import org.geowebcache.cache.CacheKey;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.ServiceRequest;
 import org.geowebcache.util.wms.BBOX;
@@ -45,9 +47,13 @@ public interface TileLayer {
     public void destroy();
     public int[] getGridLocForBounds(int srsIdx, BBOX bounds);
     public BBOX getBboxForGridLoc(int srsIdx, int[] gridLoc);
+    public int getZoomStart();
+    public int getZoomStop();
     public int[][] getZoomInGridLoc(int srsIdx, int[] gridLoc);
     public int[] getZoomedOutGridLoc(int srsIdx);
     public String getCachePrefix();
+    public CacheKey getCacheKey();
+    public Cache getCache();
     public void acquireLayerLock();
     public void releaseLayerLock();
 }

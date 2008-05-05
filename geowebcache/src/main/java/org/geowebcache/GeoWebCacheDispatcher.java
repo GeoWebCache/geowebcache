@@ -285,7 +285,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
                     + " is not known.");
         }
 
-        //seederDispatcher.handleTruncate(layer, request, response);
+        seederDispatcher.handleTruncate(layer, request, response);
     }
 
     /**

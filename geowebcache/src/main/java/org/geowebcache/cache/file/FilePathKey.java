@@ -53,7 +53,7 @@ public class FilePathKey implements CacheKey {
      * @param order
      * @return
      */
-    private static String zeroPadder(int number, int order) {
+    public static String zeroPadder(int number, int order) {
         if (order == 3) {
             if (number < 100) {
                 if (number < 10) {
