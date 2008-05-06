@@ -33,6 +33,8 @@ public class SeederDispatcher implements ApplicationContextAware {
 
     private HashMap allowedSeeders = new HashMap();
     
+    private boolean disableCheck = false;
+    
     public SeederDispatcher() {
         // Do nothing, I guess
     }
@@ -47,6 +49,10 @@ public class SeederDispatcher implements ApplicationContextAware {
         Iterator iter = addressList.iterator();
         while (iter.hasNext()) {
             String curAdr = (String) iter.next();
+            if(curAdr.equalsIgnoreCase("*")) {
+                this.disableCheck = true;
+                return;
+            }
             try {
                 InetAddress allowedSeeder = InetAddress.getByName(curAdr);
                 log.info("Adding " + allowedSeeder.getHostAddress()
@@ -58,12 +64,15 @@ public class SeederDispatcher implements ApplicationContextAware {
         }        
     }
 
-    /*
+    /**
      * 
+     * @param request
+     * @return all "layers" parameters present in request
+     * @throws SeederException
      */
-    public String getLayerIdent(HttpServletRequest request)
+    public String[] getLayerIdents(HttpServletRequest request)
             throws SeederException {
-        String layers = ServletUtils.stringFromMap(request.getParameterMap(),
+        String[] layers = ServletUtils.stringsFromMap(request.getParameterMap(),
                 "layers");
 
         if (layers == null) {
@@ -85,19 +94,21 @@ public class SeederDispatcher implements ApplicationContextAware {
             HttpServletResponse response) throws GeoWebCacheException,
             IOException {
         InetAddress adr = null;
-        try {
-            adr = InetAddress.getByName(request.getRemoteAddr());
-        } catch (UnknownHostException uhe) {
-            throw new SeederException("Unable to lookup "
-                    + request.getRemoteAddr());
-        }
+        
+        if (!disableCheck) {
+            try {
+                adr = InetAddress.getByName(request.getRemoteAddr());
+            } catch (UnknownHostException uhe) {
+                throw new SeederException("Unable to lookup "
+                        + request.getRemoteAddr());
+            }
 
-        if (!this.allowedSeeders.containsKey(adr.hashCode())) {
-            throw new SeederException(
-                    adr.toString()
-                            + " is not in the list of allowed seeders"
-                            + " or addjust in applicationContex.xml or set "
-                            + SeederDispatcher.GEOWEBCACHE_ALLOWED_SEEDERS );
+            if (!this.allowedSeeders.containsKey(adr.hashCode())) {
+                throw new SeederException(adr.toString()
+                        + " is not in the list of allowed seeders"
+                        + " or addjust in applicationContex.xml or set "
+                        + SeederDispatcher.GEOWEBCACHE_ALLOWED_SEEDERS);
+            }
         }
 
         String adrStr = adr.toString();
@@ -309,6 +320,10 @@ public class SeederDispatcher implements ApplicationContextAware {
         // Add list from environment variable
         String seedersStr = getAllowedSeeders((WebApplicationContext) context);
         if(seedersStr == null) {
+            return;
+        }
+        if(seedersStr.equalsIgnoreCase("*")) {
+            this.disableCheck = true;
             return;
         }
         String[] seedersStrs = seedersStr.split(",");

@@ -399,7 +399,7 @@ public class WMSLayerProfile {
     
     protected void saveExpirationInformation(URLConnection backendCon) {
         this.saveExpirationHeaders = false;
-        
+        try {
         if (expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {                
             Long expire = ServletUtils.extractHeaderMaxAge(backendCon) * 1000;
             if(expire == null) {
@@ -420,6 +420,10 @@ public class WMSLayerProfile {
             expireClients = expire.longValue();
             log.trace("Setting expireClients to: "+ expireClients);
         }
+        } catch(Exception e) {
+            // Sometimes this doesn't work (network conditions?), 
+            // and it's really not worth getting caught up on it.
+            e.printStackTrace();
+        }
     }
-
 }

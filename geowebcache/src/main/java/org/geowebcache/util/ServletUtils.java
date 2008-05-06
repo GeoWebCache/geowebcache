@@ -32,13 +32,13 @@ public class ServletUtils {
      * 
      * @param map
      * @param key
-     * @return
+     * @return all matchings string
      */
-    public static String stringFromMap(Map map, String key) {
+    public static String[] stringsFromMap(Map map, String key) {
         String[] strArray = (String[]) map.get(key);
 
         if (strArray != null) {
-            return strArray[0];
+            return strArray;
         } else {
             // In case there is a case mismatch
             Iterator iter = map.keySet().iterator();
@@ -48,12 +48,28 @@ public class ServletUtils {
                     String strKey = (String) objKey;
                     if (strKey.compareToIgnoreCase(key) == 0) {
                         strArray = (String[]) map.get(strKey);
-                        return strArray[0];
+                        return strArray;
                     }
                 }
             }
         }
         return null;
+    }
+    
+    /**
+     * Case insensitive lookup
+     * 
+     * @param map
+     * @param key
+     * @return
+     */
+    public static String stringFromMap(Map map, String key) {
+        String[] strArray = stringsFromMap(map, key);
+        if(strArray != null) {
+            return strArray[0];
+        }
+        return null;
+      
     }
     
     /**

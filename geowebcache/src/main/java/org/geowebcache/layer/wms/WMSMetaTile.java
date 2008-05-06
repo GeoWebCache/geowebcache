@@ -154,9 +154,13 @@ public class WMSMetaTile extends MetaTile {
         if (profile.saveExpirationHeaders) {
             profile.saveExpirationInformation(wmsBackendCon);
         }
-
-        img = ImageIO.read(wmsBackendCon.getInputStream());
-
+        
+        try {
+            img = ImageIO.read(wmsBackendCon.getInputStream());
+        } catch(IOException ioe) {
+            log.error(ioe.getMessage());
+        }
+        
         if (img == null) {
             throw new ServiceException("Failed fetching: "
                     + wmsrequest.toString());

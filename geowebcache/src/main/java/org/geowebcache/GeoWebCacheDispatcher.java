@@ -255,15 +255,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private void handleSeedRequest(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
 
-        String layerIdent = seederDispatcher.getLayerIdent(request);
-
-        TileLayer layer = tileLayerDispatcher.getTileLayer(layerIdent);
-
-        if (layer == null) {
-            throw new GeoWebCacheException("Layer "+layerIdent+" is not known");
-        }
-
-        seederDispatcher.handleSeed(layer, request, response);
+        handleSeedTruncateRequest(request, response, true, false);
     }
     
     /**
@@ -275,17 +267,46 @@ public class GeoWebCacheDispatcher extends AbstractController {
      */
     private void handleTruncateRequest(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
+        
+        handleSeedTruncateRequest(request, response, false, true);
+    }
+    
+    private void handleSeedTruncateRequest(HttpServletRequest request,
+            HttpServletResponse response, boolean seed, boolean truncate) throws Exception {
+        String[] layerIdents = seederDispatcher.getLayerIdents(request);
 
-        String layerIdent = seederDispatcher.getLayerIdent(request);
+        String exceptions = null;
+       
+        for(int i=0; i<layerIdents.length; i++) {
+            String layerIdent = layerIdents[i];
+            
+            try {
+            TileLayer layer = tileLayerDispatcher.getTileLayer(layerIdent);
 
-        TileLayer layer = tileLayerDispatcher.getTileLayer(layerIdent);
-
-        if (layer == null) {
-            throw new GeoWebCacheException("Layer " + layerIdent
-                    + " is not known.");
+            if (layer == null) {
+                throw new GeoWebCacheException("Layer "+layerIdent+" is not known");
+            }
+            
+            if(seed) {
+                seederDispatcher.handleSeed(layer, request, response);
+            }
+            
+            if(truncate) {
+                seederDispatcher.handleTruncate(layer, request, response);
+            }
+            
+            } catch (GeoWebCacheException gwce) {
+                if(exceptions == null) {
+                    exceptions = gwce.getMessage();
+                } else {
+                    exceptions += "\n" + gwce.getMessage();
+                }
+            }
         }
-
-        seederDispatcher.handleTruncate(layer, request, response);
+  
+        if(exceptions != null) {
+            throw new GeoWebCacheException("The following exceptions were encountered: \n" + exceptions);
+        }
     }
 
     /**
