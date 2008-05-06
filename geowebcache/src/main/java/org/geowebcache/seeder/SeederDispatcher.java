@@ -111,7 +111,7 @@ public class SeederDispatcher implements ApplicationContextAware {
             }
         }
 
-        String adrStr = adr.toString();
+        //String adrStr = adr.toString();
         String layerStr = layer.getName();
 
         String[] relevantParams = { "bbox", "start", "stop", "srs", "format" };
@@ -128,7 +128,7 @@ public class SeederDispatcher implements ApplicationContextAware {
             srsIdx = layer.getSRSIndex(srs);
         }
         if (srsIdx < 0) {
-            log.info(adrStr + " reverting to default SRS for " + layerStr);
+            log.info("Reverting to default SRS for " + layerStr);
             srsIdx = 0;
             srs = layer.getProjections()[0];
         }
@@ -142,7 +142,7 @@ public class SeederDispatcher implements ApplicationContextAware {
         }
         if (bbox == null || !bbox.isSane()
                 || null != layer.supportsBbox(srs, bbox)) {
-            log.info(adrStr + " reverting to bounding box for " + layerStr);
+            log.info("Reverting to bounding box for " + layerStr);
             bbox = layer.getBounds(srsIdx);
         }
 
@@ -155,7 +155,7 @@ public class SeederDispatcher implements ApplicationContextAware {
         }
         if (mime == null) {
             mime = layer.getDefaultMimeType();
-            log.info(adrStr + " reverting to default MIME type: "
+            log.info("Reverting to default MIME type: "
                     + mime.toString());
         }
 
@@ -168,7 +168,7 @@ public class SeederDispatcher implements ApplicationContextAware {
         }
         if (stop < 0) {
             stop = 20;
-            log.info(adrStr + " reverting to default stop value: " + stop);
+            log.info("Reverting to default stop value: " + stop);
         }
 
         /* Start */
@@ -180,7 +180,7 @@ public class SeederDispatcher implements ApplicationContextAware {
         }
         if (start < 0) {
             start = 0;
-            log.info(adrStr + " reverting to default start value: " + start);
+            log.info("Reverting to default start value: " + start);
         }
 
         if (start > stop) {
@@ -209,22 +209,24 @@ public class SeederDispatcher implements ApplicationContextAware {
             HttpServletResponse response) throws GeoWebCacheException,
             IOException {
         InetAddress adr = null;
-        try {
-            adr = InetAddress.getByName(request.getRemoteAddr());
-        } catch (UnknownHostException uhe) {
-            throw new SeederException("Unable to lookup "
-                    + request.getRemoteAddr());
+        
+        if (!disableCheck) {
+            try {
+                adr = InetAddress.getByName(request.getRemoteAddr());
+            } catch (UnknownHostException uhe) {
+                throw new SeederException("Unable to lookup "
+                        + request.getRemoteAddr());
+            }
+
+            if (!this.allowedSeeders.containsKey(adr.hashCode())) {
+                throw new SeederException(adr.toString()
+                        + " is not in the list of allowed seeders"
+                        + " or addjust in applicationContex.xml or set "
+                        + SeederDispatcher.GEOWEBCACHE_ALLOWED_SEEDERS);
+            }
         }
 
-        if (!this.allowedSeeders.containsKey(adr.hashCode())) {
-            throw new SeederException(
-                    adr.toString()
-                            + " is not in the list of allowed truncaters"
-                            + " or addjust in applicationContex.xml or set "
-                            + SeederDispatcher.GEOWEBCACHE_ALLOWED_SEEDERS );
-        }
-
-        String adrStr = adr.toString();
+        //String adrStr = adr.toString();
         String layerStr = layer.getName();
 
         String[] relevantParams = { "bbox", "start", "stop", "srs", "format" };
@@ -249,7 +251,7 @@ public class SeederDispatcher implements ApplicationContextAware {
             bbox = new BBOX(bboxStr);
         }
         if (bbox != null && (bbox.isSane() || null != layer.supportsBbox(srs, bbox))) {
-            log.info(adrStr + " reverting to bounding box for " + layerStr);
+            log.info("Reverting to bounding box for " + layerStr);
             bbox = null;
         }
 
@@ -295,7 +297,7 @@ public class SeederDispatcher implements ApplicationContextAware {
         if(ctx != null) {
             tmpStr = ctx.getServletContext().getInitParameter(GEOWEBCACHE_ALLOWED_SEEDERS);
         }
-        if(tmpStr != null && tmpStr.length() > 7) {
+        if(tmpStr != null) {
             log.info("Using servlet init context parameter to configure "+GEOWEBCACHE_ALLOWED_SEEDERS+" to "+tmpStr);
             return tmpStr;
         }

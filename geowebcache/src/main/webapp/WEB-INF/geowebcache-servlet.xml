@@ -86,6 +86,7 @@
       <props>
         <prop key="/service/**">geowebcacheDispatcher</prop>
         <prop key="/seed/**">geowebcacheDispatcher</prop>
+        <prop key="/truncate/**">geowebcacheDispatcher</prop>
       </props>
     </property>
   </bean>

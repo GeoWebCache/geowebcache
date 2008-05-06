@@ -49,4 +49,11 @@
     <param-value>http://sigma.openplans.org:8080/geosearch/wms?request=GetCapabilities</param-value>
   </context-param>
 -->
+
+<!-- 
+  <context-param>
+    <param-name>GEOWEBCACHE_ALLOWED_SEEDERS</param-name>
+    <param-value>*</param-value>
+  </context-param>
+-->
 </web-app>
