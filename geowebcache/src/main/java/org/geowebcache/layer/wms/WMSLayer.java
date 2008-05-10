@@ -70,7 +70,6 @@ public class WMSLayer implements TileLayer {
 
     CacheKey cacheKey;
     
-    
     final Lock layerLock = new ReentrantLock();
     
     boolean layerLocked = false;
@@ -88,17 +87,39 @@ public class WMSLayer implements TileLayer {
     boolean debugHeaders = true;
 
     Integer cacheLockWait = -1;
+    
+    public volatile boolean isInitialized = false;
+    
+    Properties initProps = null;
+    
+    CacheFactory initCacheFactory = null;
 
     public WMSLayer(String layerName, Properties props,
             CacheFactory cacheFactory) throws GeoWebCacheException {
         name = layerName;
-        setParametersFromProperties(props, cacheFactory);
+        initProps = props;   
+        initCacheFactory = cacheFactory;
+
+    }
+    
+    public boolean isInitialized() {
+        return this.isInitialized;
+    }
+    
+    public void initialize() throws GeoWebCacheException {
+        setParametersFromProperties(initProps, initCacheFactory);
         
         // Create conditions for tile locking
         this.gridLocConds = new Condition[17];
         for(int i=0; i<gridLocConds.length; i++) {
             gridLocConds[i] = layerLock.newCondition();
         }
+        
+        // Unset variables for garbage collection
+        initProps = null;
+        initCacheFactory = null;
+        
+        isInitialized = true;
     }
 
     /**
@@ -193,8 +214,7 @@ public class WMSLayer implements TileLayer {
      */
     public TileResponse getResponse(TileRequest tileRequest, 
             ServiceRequest servReq, HttpServletResponse response) 
-    throws GeoWebCacheException, IOException {
-        
+    throws GeoWebCacheException, IOException {        
         MimeType mime = tileRequest.mimeType;
 
         if (mime == null) {
@@ -595,7 +615,7 @@ public class WMSLayer implements TileLayer {
         if (formats == null || formats[0] == null) {
             log.error( "Unable not determine supported MIME types"
                    + " based on configuration, falling back to image/png");
-            formats = new ImageMime[0];
+            formats = new ImageMime[1];
             formats[0] = ImageMime.createFromFormat("image/png");
         }
 
@@ -664,7 +684,7 @@ public class WMSLayer implements TileLayer {
         return this.name;
     }
 
-    public int[] getGridLocForBounds(int srsIdx, BBOX tileBounds) {
+    public int[] getGridLocForBounds(int srsIdx, BBOX tileBounds) throws ServiceException {
         return profile.gridCalc[srsIdx].gridLocation(tileBounds);
     }
 

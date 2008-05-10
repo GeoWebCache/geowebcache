@@ -140,7 +140,7 @@ public class MimeType {
     }
 
     public boolean equals(Object obj) {
-        if (obj.getClass() == this.getClass()) {
+        if (obj != null && obj.getClass() == this.getClass()) {
             MimeType mimeObj = (MimeType) obj;
             if (this.mimeType.equalsIgnoreCase(mimeObj.mimeType)) {
                 return true;

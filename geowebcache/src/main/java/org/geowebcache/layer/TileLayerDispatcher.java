@@ -31,11 +31,11 @@ public class TileLayerDispatcher {
     private static Log log = LogFactory
             .getLog(org.geowebcache.layer.TileLayerDispatcher.class);
 
-    private HashMap layers = null;
+    private HashMap<String,TileLayer> layers = null;
 
     private List configs = null;
 
-    private boolean isInitialized = false;
+    private volatile boolean isInitialized = false;
 
     private final ReentrantLock initLock = new ReentrantLock();
 
@@ -43,12 +43,18 @@ public class TileLayerDispatcher {
         log.info("TileLayerFactor constructed");
     }
 
-    public TileLayer getTileLayer(String layerIdent) {
+    public TileLayer getTileLayer(String layerIdent) throws GeoWebCacheException {
         if (!this.isInitialized) {
             initLayers();
         }
 
-        return (TileLayer) layers.get(layerIdent);
+        TileLayer layer = layers.get(layerIdent);
+        
+        if(! layer.isInitialized()) {
+            layer.initialize();
+        }
+        
+        return layer;
     }
 
     public void setConfig(List configs) {
@@ -69,7 +75,7 @@ public class TileLayerDispatcher {
 
             Iterator configIter = configs.iterator();
             while(configIter.hasNext()) {
-                Map configLayers = null;
+                Map<String,TileLayer> configLayers = null;
                 
                 Configuration config = (Configuration) configIter.next();
                 
@@ -77,8 +83,7 @@ public class TileLayerDispatcher {
                     configLayers = config.getTileLayers();
                 } catch (GeoWebCacheException gwce) {
                     log.error(gwce.getMessage());
-                    log
-                            .error("Failed to add layers from "
+                    log.error("Failed to add layers from "
                                     + config.getIdentifier());
                 }
 

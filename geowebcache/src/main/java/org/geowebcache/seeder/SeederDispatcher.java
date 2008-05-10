@@ -29,7 +29,7 @@ public class SeederDispatcher implements ApplicationContextAware {
     private static Log log = LogFactory
             .getLog(org.geowebcache.seeder.SeederDispatcher.class);
     
-    public static String GEOWEBCACHE_ALLOWED_SEEDERS = "GEOWEBCACHE_ALLOWED_SEEDERS";
+    public final static String GEOWEBCACHE_ALLOWED_SEEDERS = "GEOWEBCACHE_ALLOWED_SEEDERS";
 
     private HashMap allowedSeeders = new HashMap();
     

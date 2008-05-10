@@ -44,10 +44,6 @@ public class WMSService extends Service {
             ServiceRequest servReq, HttpServletRequest request) throws GeoWebCacheException {
         
         WMSParameters wmsParams = new WMSParameters(request);
-
-        if(tileLayer == null) {
-            throw new ServiceException("Did not find layer, layers=" + wmsParams.getLayer());
-        }
         
         MimeType mime = null;
         String strFormat = wmsParams.getFormat();

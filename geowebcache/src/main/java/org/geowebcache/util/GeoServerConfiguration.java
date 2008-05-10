@@ -28,7 +28,7 @@ import org.springframework.web.context.WebApplicationContext;
  */
 public class GeoServerConfiguration extends GetCapabilitiesConfiguration {
 
-    public static String GEOSERVER_WMS_URL = "GEOSERVER_WMS_URL";
+    public final static String GEOSERVER_WMS_URL = "GEOSERVER_WMS_URL";
 
     private static Log log = LogFactory.getLog(org.geowebcache.util.GeoServerConfiguration.class);
     

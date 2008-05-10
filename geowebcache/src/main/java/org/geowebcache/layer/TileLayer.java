@@ -24,14 +24,17 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheKey;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.ServiceRequest;
 import org.geowebcache.util.wms.BBOX;
 
 public interface TileLayer {
 
+    public boolean isInitialized();
+    public void initialize() throws GeoWebCacheException;
     public String supportsProjection(SRS srs);
     public String supportsFormat(String formatStr);
-    public String supportsBbox(SRS srs, BBOX bounds);
+    public String supportsBbox(SRS srs, BBOX bounds) throws GeoWebCacheException;
     
     public TileResponse getResponse(TileRequest tileRequest, 
            ServiceRequest servReq, HttpServletResponse response) 
@@ -45,7 +48,7 @@ public interface TileLayer {
     public MimeType getDefaultMimeType();
     public String getName();
     public void destroy();
-    public int[] getGridLocForBounds(int srsIdx, BBOX bounds);
+    public int[] getGridLocForBounds(int srsIdx, BBOX bounds) throws GeoWebCacheException;
     public BBOX getBboxForGridLoc(int srsIdx, int[] gridLoc);
     public int getZoomStart();
     public int getZoomStop();

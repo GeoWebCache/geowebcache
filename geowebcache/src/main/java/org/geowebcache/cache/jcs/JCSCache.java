@@ -72,7 +72,7 @@ public class JCSCache implements Cache {
         jcscache.dispose();
         jcscache = null;
         // Force a garbage collection
-        System.gc();
+        //System.gc();
     }
 
     public void setUp() throws org.geowebcache.cache.CacheException {

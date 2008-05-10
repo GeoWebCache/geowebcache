@@ -21,6 +21,7 @@ import java.util.Arrays;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.service.ServiceException;
 
 public class GridCalculator {
     private static Log log = LogFactory
@@ -194,15 +195,21 @@ public class GridCalculator {
      *            the bounds of the requested tile
      * @return [0] = x coordinate , [1] y coordinate, [2] = zoomLevel
      */
-    public int[] gridLocation(BBOX tileBounds) {
+    public int[] gridLocation(BBOX tileBounds) throws ServiceException {
         int[] retVals = new int[3];
 
         double reqTileWidth = tileBounds.coords[2] - tileBounds.coords[0];
 
+        double zoomLevel = Math.log(gridWidth / reqTileWidth) / Math.log(2);
+        
+        long roundedZoomLevel = Math.round(zoomLevel);
+        if(Math.abs(zoomLevel - (double) roundedZoomLevel) > 0.025) {
+            throw new ServiceException("The bounds result in a zoom level of "+zoomLevel+", should be close to integer.");
+        }
+        
         // (Z) Zoom level
         // For EPSG 4326, reqTileWidth = 0.087 log(4096) / log(2) - 1; -> 11
-        retVals[2] = (int) Math.round(Math.log(gridWidth / reqTileWidth)
-                / (Math.log(2)))
+        retVals[2] = (int) roundedZoomLevel
                 - gridConstant;
 
         double tileWidth = gridWidth / (Math.pow(2, retVals[2] + gridConstant));

@@ -20,9 +20,10 @@ package org.geowebcache.util;
 import java.util.Map;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.layer.TileLayer;
 
 public interface Configuration {
 
-	public Map getTileLayers() throws GeoWebCacheException;
+	public Map<String,TileLayer> getTileLayers() throws GeoWebCacheException;
 	public String getIdentifier();
 }

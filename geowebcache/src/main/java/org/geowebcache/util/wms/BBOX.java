@@ -20,6 +20,7 @@ package org.geowebcache.util.wms;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.SRS;
+import org.geowebcache.mime.MimeType;
 
 public class BBOX {
     private static Log log = LogFactory
@@ -136,13 +137,19 @@ public class BBOX {
      * @param other
      * @return whether the boxes are equal
      */
-    public boolean equals(BBOX other) {
-    	boolean result = true;
-    	for(int i=0; i<4 && result; i++) {
-    		result = ( Math.abs(coords[i]) < equalityThreshold && Math.abs(other.coords[i]) < equalityThreshold)
-    			|| (coords[i] - other.coords[i]) / (coords[i] + other.coords[i]) < equalityThreshold;
-    	}
-    	return result;
+    public boolean equals(Object obj) {
+        if (obj != null && obj.getClass() == this.getClass()) {
+            BBOX other = (BBOX) obj;
+            boolean result = true;
+            for (int i = 0; i < 4 && result; i++) {
+                result = (Math.abs(coords[i]) < equalityThreshold 
+                        && Math.abs(other.coords[i]) < equalityThreshold)
+                        || (coords[i] - other.coords[i])
+                                / (coords[i] + other.coords[i]) < equalityThreshold;
+            }
+            return result;
+        }
+        return false;
     }
 
     /**

@@ -401,7 +401,7 @@ public class WMSLayerProfile {
         this.saveExpirationHeaders = false;
         try {
         if (expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {                
-            Long expire = ServletUtils.extractHeaderMaxAge(backendCon) * 1000;
+            Long expire = ServletUtils.extractHeaderMaxAge(backendCon);
             if(expire == null) {
                 expire = new Long(7200*1000);
             }
@@ -411,7 +411,7 @@ public class WMSLayerProfile {
             log.trace("Setting expireCache to: "+ expireCache);
         }
         if (expireClients == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
-            Long expire = ServletUtils.extractHeaderMaxAge(backendCon) * 1000; 
+            Long expire = ServletUtils.extractHeaderMaxAge(backendCon);
             if(expire == null) {
                 expire = new Long(7200*1000);
             }
