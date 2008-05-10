@@ -80,7 +80,7 @@ public class BBOX {
             for (int i = 0; i < BBOX.length; i++) {
                 tmp += "[" + BBOX[i] + "] ";
             }
-            log.error("Doesnt understand " + BBOX);
+            log.error("Doesnt understand " + BBOX.toString());
         }
     }
 

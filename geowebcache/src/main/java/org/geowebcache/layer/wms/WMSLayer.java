@@ -558,6 +558,9 @@ public class WMSLayer implements TileLayer {
             }
         } else {
             cache = cacheFactory.getDefaultCache();
+            if(cache == null) {
+                log.error("Unable to get default cache.");
+            }
         }
 
         String propCacheKeyBeanId = props.getProperty("cachebeanid");

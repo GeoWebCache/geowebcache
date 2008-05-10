@@ -18,13 +18,14 @@ public class SRS {
 	}
 	
 	public boolean equals(Object other) {
-		if(other.getClass() != SRS.class){
-			return false;
-		} else {
-			SRS otherSRS = (SRS) other;
-			return (otherSRS.number == this.number);
-		}
+            if(other == null || other.getClass() != this.getClass()){
+                return false;
+            } else {
+                SRS otherSRS = (SRS) other;
+                return (otherSRS.number == this.number);
+            }
 	}
+        
 	public int getNumber() {
 		return number;
 	}

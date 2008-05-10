@@ -84,11 +84,11 @@ public class CacheFactory implements ApplicationContextAware {
      */
     private void loadCaches() {
         Map cacheBeans = context.getBeansOfType(Cache.class);
-        Iterator beanIter = cacheBeans.keySet().iterator();
+        Iterator<String> beanIter = cacheBeans.keySet().iterator();
 
         caches = new HashMap<String,Cache>();
-        while (beanIter.hasNext()) {
-            String beanId = (String) beanIter.next();
+        while(beanIter.hasNext()) {
+            String beanId = beanIter.next();
             Cache aCache = (Cache) cacheBeans.get(beanId);
             caches.put(beanId, aCache);
             log.debug("Added bean for " + beanId);

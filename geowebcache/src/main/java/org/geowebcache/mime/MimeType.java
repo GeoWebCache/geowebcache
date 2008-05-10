@@ -113,8 +113,6 @@ public class MimeType {
     }
 
 
-    
-
     /**
      * Get the MIME type object for a given file extension
      * 
@@ -147,5 +145,9 @@ public class MimeType {
             }
         }
         return false;
+    }
+    
+    public int hashCode() {
+        return format.hashCode();
     }
 }

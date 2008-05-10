@@ -136,10 +136,10 @@ public class WMSParameters extends Parameters {
         set(VERSION_PARAM, version);
     }
 
-    public Boolean getIsTiled() {
+    public boolean getIsTiled() {
         Object obj = get(TILED_PARAM);
         if (obj == null) {
-            return null;
+            return false;
         }
         if (obj.getClass().equals(Boolean.class)) {
             return (Boolean) obj;
@@ -157,10 +157,10 @@ public class WMSParameters extends Parameters {
         set(TILED_PARAM, Boolean.valueOf(tiled));
     }
 
-    public Boolean getIsTransparent() {
+    public boolean getIsTransparent() {
         Object obj = get(TRANSPARENT_PARAM);
         if (obj == null) {
-            return null;
+            return false;
         }
         if (obj.getClass().equals(Boolean.class)) {
             return (Boolean) obj;
@@ -274,7 +274,7 @@ public class WMSParameters extends Parameters {
      *            the height to set
      */
     public void setHeight(int height) {
-        setHeight(new Integer(height));
+        setHeight(Integer.valueOf(height));
     }
 
     /**
@@ -282,7 +282,7 @@ public class WMSParameters extends Parameters {
      *            the height to set
      */
     public void setHeight(String height) {
-        setHeight(Integer.parseInt(height));
+        setHeight(Integer.valueOf(height));
     }
 
     /**
@@ -346,7 +346,7 @@ public class WMSParameters extends Parameters {
      *            the width to set
      */
     public void setWidth(int width) {
-        setWidth(new Integer(width));
+        setWidth(Integer.valueOf(width));
     }
 
     /**
@@ -354,7 +354,7 @@ public class WMSParameters extends Parameters {
      *            the width to set
      */
     public void setWidth(String width) {
-        setWidth(Integer.parseInt(width));
+        setWidth(Integer.valueOf(width));
     }
     
     public String getVendorParams() {

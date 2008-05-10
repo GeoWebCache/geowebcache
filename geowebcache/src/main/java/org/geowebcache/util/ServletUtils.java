@@ -108,7 +108,7 @@ public class ServletUtils {
         Matcher m = p.matcher(cacheControlHeader.toLowerCase());
 
         if (m.find()) {
-            return new Long(Long.parseLong(m.group(1)));
+            return Long.valueOf(m.group(1));
         } else {
             return null;
         }

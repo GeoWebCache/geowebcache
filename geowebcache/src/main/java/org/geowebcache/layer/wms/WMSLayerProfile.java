@@ -403,7 +403,7 @@ public class WMSLayerProfile {
         if (expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {                
             Long expire = ServletUtils.extractHeaderMaxAge(backendCon);
             if(expire == null) {
-                expire = new Long(7200*1000);
+                expire = Long.valueOf(7200*1000);
             }
             log.error("Layer profile wants MaxAge from backend,"
                     + " but backend does not provide this. Setting to 7200 seconds.");
@@ -413,7 +413,7 @@ public class WMSLayerProfile {
         if (expireClients == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
             Long expire = ServletUtils.extractHeaderMaxAge(backendCon);
             if(expire == null) {
-                expire = new Long(7200*1000);
+                expire = Long.valueOf(7200*1000);
             }
             log.error("Layer profile wants MaxAge from backend,"
                     + " but backend does not provide this. Setting to 7200 seconds.");
