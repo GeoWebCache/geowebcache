@@ -24,7 +24,6 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheKey;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.ServiceRequest;
 import org.geowebcache.util.wms.BBOX;
 

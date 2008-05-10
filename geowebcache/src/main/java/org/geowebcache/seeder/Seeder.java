@@ -28,8 +28,6 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
-import org.geowebcache.mime.ImageMime;
-import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.ServiceRequest;
 import org.geowebcache.util.wms.BBOX;

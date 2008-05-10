@@ -20,7 +20,6 @@ package org.geowebcache.util.wms;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.SRS;
-import org.geowebcache.mime.MimeType;
 
 public class BBOX {
     private static Log log = LogFactory

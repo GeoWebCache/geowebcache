@@ -30,13 +30,9 @@ import org.geowebcache.cache.CacheKey;
 import org.geowebcache.cache.file.FilePathKey;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.TileRequest;
-import org.geowebcache.mime.ImageMime;
-import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.service.ServiceRequest;
-import org.geowebcache.util.wms.BBOX;
 import org.geowebcache.util.FileUtils;
+import org.geowebcache.util.wms.BBOX;
 
 /**
  * Temporary code for truncating...
