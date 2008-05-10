@@ -41,9 +41,9 @@ public class GridCalculator {
 
     private int zoomStop;
 
-    private int metaWidth;
+    //private int metaWidth;
 
-    private int metaHeight;
+    //private int metaHeight;
 
     // Used for unprojected profiles
     private int gridConstant;
@@ -67,8 +67,8 @@ public class GridCalculator {
         this.gridBounds = gridBounds;
         this.zoomStart = zoomStart;
         this.zoomStop = zoomStop;
-        this.metaWidth = metaWidth;
-        this.metaHeight = metaHeight;
+        //this.metaWidth = metaWidth;
+        //this.metaHeight = metaHeight;
 
         // Calculate
         gridWidth = gridBounds.coords[2] - gridBounds.coords[0];
@@ -97,7 +97,7 @@ public class GridCalculator {
         int tileCountX = (int) Math.round(gridWidth / maxTileWidth);
         int tileCountY = (int) Math.round(gridHeight / maxTileHeight);
 
-        int metaLarger = (metaHeight > metaWidth) ? metaHeight : metaWidth;
+        //int metaLarger = (metaHeight > metaWidth) ? metaHeight : metaWidth;
 
         //System.out.println("lb: " +layerBounds+ " base:" +
         //  " tileWidth: " + tileWidth);

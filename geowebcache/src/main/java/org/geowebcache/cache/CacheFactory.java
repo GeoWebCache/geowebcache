@@ -35,7 +35,7 @@ public class CacheFactory implements ApplicationContextAware {
 
     private WebApplicationContext context = null;
 
-    private HashMap caches = null;
+    private HashMap<String,Cache> caches = null;
 
     private String defaultCacheBeanId = null;
 
@@ -86,7 +86,7 @@ public class CacheFactory implements ApplicationContextAware {
         Map cacheBeans = context.getBeansOfType(Cache.class);
         Iterator beanIter = cacheBeans.keySet().iterator();
 
-        caches = new HashMap();
+        caches = new HashMap<String,Cache>();
         while (beanIter.hasNext()) {
             String beanId = (String) beanIter.next();
             Cache aCache = (Cache) cacheBeans.get(beanId);

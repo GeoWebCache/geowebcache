@@ -29,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.CacheFactory;
+import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -54,7 +55,7 @@ public class PropertiesConfiguration implements Configuration,
         this.cacheFactory = cacheFactory;
     }
 
-    public Map getTileLayers() throws GeoWebCacheException {
+    public Map<String,TileLayer> getTileLayers() throws GeoWebCacheException {
         if (configDirH == null) {
             determineConfigDirH();
         }
@@ -71,7 +72,7 @@ public class PropertiesConfiguration implements Configuration,
             return null;
         }
 
-        HashMap layers = new HashMap();
+        HashMap<String,TileLayer> layers = new HashMap<String,TileLayer>();
 
         // Loop over the property files, create TileLayers
         for (int i = 0; i < propFiles.length; i++) {

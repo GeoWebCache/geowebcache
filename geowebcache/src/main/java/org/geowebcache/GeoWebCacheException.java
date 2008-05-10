@@ -18,7 +18,12 @@
 package org.geowebcache;
 
 public class GeoWebCacheException extends Exception {
-	public GeoWebCacheException(String msg) {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 5837933971679774371L;
+
+    public GeoWebCacheException(String msg) {
 		super(msg);
 	}
 

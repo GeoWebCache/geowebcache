@@ -23,6 +23,11 @@ import org.geowebcache.cache.CacheKey;
 import org.geowebcache.layer.SRS;
 
 public class JCSKey implements Serializable, CacheKey {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -5039623493083827969L;
+
     private String prefix;
 
     private int x;

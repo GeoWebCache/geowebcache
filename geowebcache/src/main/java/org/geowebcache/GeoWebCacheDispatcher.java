@@ -60,7 +60,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
     private SeederDispatcher seederDispatcher = null;
 
-    private HashMap services = null;
+    private HashMap<String,Service> services = null;
 
     public GeoWebCacheDispatcher() {
         super();
@@ -108,7 +108,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private void loadServices() {
         Map serviceBeans = context.getBeansOfType(Service.class);
         Iterator beanIter = serviceBeans.keySet().iterator();
-        services = new HashMap();
+        services = new HashMap<String,Service>();
         while (beanIter.hasNext()) {
             Service aService = (Service) serviceBeans.get(beanIter.next());
             services.put(aService.getPathName(), aService);

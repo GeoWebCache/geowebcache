@@ -280,8 +280,8 @@ public class WMSLayer implements TileLayer {
         }
         
         /** ****************** No luck, Request metatile ****** */
-        String requestURL = metaTile.doRequest(profile, tileRequest.SRS, 
-                mime.getFormat());
+        //String requestURL = metaTile.doRequest(profile, tileRequest.SRS, 
+        //        mime.getFormat());
 
         boolean useJAI = true;
         if (mime.getMimeType().equals("image/jpeg")) {
@@ -320,7 +320,7 @@ public class WMSLayer implements TileLayer {
             MimeType mime, int idx, HttpServletResponse response) 
     throws GeoWebCacheException {
 
-        String debugHeadersStr = null;
+        //String debugHeadersStr = null;
         int condIdx = this.calcLocCondIdx(gridLoc);
         GridLocObj glo = new GridLocObj(gridLoc);
         
@@ -336,7 +336,7 @@ public class WMSLayer implements TileLayer {
         }
         
         /** ****************** Tile ******************* */
-        String requestURL = null;
+        //String requestURL = null;
         byte[] data = doNonMetatilingRequest(gridLoc, idx, mime.getFormat());
        
         tile = new RawTile(data);
@@ -505,9 +505,9 @@ public class WMSLayer implements TileLayer {
         while (buffer == null && backendTries < profile.wmsURL.length) {
             backendURL = profile.nextWmsURL();
 
-            boolean saveExpiration = (
-                    profile.expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE 
-                    || profile.expireClients == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE);
+            //boolean saveExpiration = (
+            //        profile.expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE 
+            //        || profile.expireClients == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE);
 
             try {
                 // Create an outgoing WMS request to the server

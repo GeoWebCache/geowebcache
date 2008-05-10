@@ -33,6 +33,7 @@ import org.geotools.data.wms.WebMapServer;
 import org.geotools.ows.ServiceException;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.CacheFactory;
+import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.layer.wms.WMSLayerProfile;
 
@@ -72,8 +73,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
      * 
      * @return the layers described at the given URL
      */
-    public Map getTileLayers() throws GeoWebCacheException {
-        HashMap layerMap = null;
+    public Map<String,TileLayer> getTileLayers() throws GeoWebCacheException {
+        HashMap<String,TileLayer> layerMap = null;
 
         WebMapServer wms = getWMS();
         if (wms == null) {
@@ -111,9 +112,9 @@ public class GetCapabilitiesConfiguration implements Configuration {
         return wmsUrl;
     }
 
-    private HashMap getLayers(WebMapServer wms, String wmsUrl)
+    private HashMap<String,TileLayer> getLayers(WebMapServer wms, String wmsUrl)
             throws GeoWebCacheException {
-        HashMap layerMap = new HashMap();
+        HashMap<String,TileLayer> layerMap = new HashMap<String,TileLayer>();
         WMSCapabilities capabilities = wms.getCapabilities();
         if (capabilities == null) {
             throw new ConfigurationException("Unable to get capabitilies from "

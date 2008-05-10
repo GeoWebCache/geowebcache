@@ -81,7 +81,7 @@ public class ServletUtils {
      * @return
      */
     public static Map selectedStringsFromMap(Map map, String[] keys) {
-        HashMap retMap = new HashMap();
+        HashMap<String,String> retMap = new HashMap<String,String>();
         for(int i=0; i<keys.length; i++) {
             retMap.put(keys[i], stringFromMap(map,keys[i]));
         }

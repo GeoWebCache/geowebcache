@@ -71,7 +71,7 @@ public class TileLayerDispatcher {
                 log.debug("Thread initLayers(), initializing");
             }
 
-            this.layers = new HashMap();
+            this.layers = new HashMap<String,TileLayer>();
 
             Iterator configIter = configs.iterator();
             while(configIter.hasNext()) {

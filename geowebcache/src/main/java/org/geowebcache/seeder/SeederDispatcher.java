@@ -31,7 +31,7 @@ public class SeederDispatcher implements ApplicationContextAware {
     
     public final static String GEOWEBCACHE_ALLOWED_SEEDERS = "GEOWEBCACHE_ALLOWED_SEEDERS";
 
-    private HashMap allowedSeeders = new HashMap();
+    private HashMap<Integer,InetAddress> allowedSeeders = new HashMap<Integer,InetAddress>();
     
     private boolean disableCheck = false;
     
@@ -235,12 +235,12 @@ public class SeederDispatcher implements ApplicationContextAware {
 
         /* Projection */
         SRS srs = null;
-        int srsIdx = -1;
+        //int srsIdx = -1;
 
         String srsStr = (String) params.get("srs");
         if (srsStr != null) {
             srs = new SRS(srsStr);
-            srsIdx = layer.getSRSIndex(srs);
+            //srsIdx = layer.getSRSIndex(srs);
         }
 
         /* Bounding box */
