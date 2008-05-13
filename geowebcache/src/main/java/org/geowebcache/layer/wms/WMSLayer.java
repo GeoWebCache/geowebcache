@@ -280,8 +280,7 @@ public class WMSLayer implements TileLayer {
         }
         
         /** ****************** No luck, Request metatile ****** */
-        //String requestURL = metaTile.doRequest(profile, tileRequest.SRS, 
-        //        mime.getFormat());
+        metaTile.doRequest(profile, tileRequest.SRS, mime.getFormat());
 
         boolean useJAI = true;
         if (mime.getMimeType().equals("image/jpeg")) {

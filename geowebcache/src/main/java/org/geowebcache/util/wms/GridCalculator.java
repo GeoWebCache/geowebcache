@@ -201,8 +201,9 @@ public class GridCalculator {
         double zoomLevel = Math.log(gridWidth / reqTileWidth) / Math.log(2);
         
         long roundedZoomLevel = Math.round(zoomLevel);
-        if(Math.abs(zoomLevel - (double) roundedZoomLevel) > 0.025) {
-            throw new ServiceException("The bounds result in a zoom level of "+zoomLevel+", should be close to integer.");
+        if(Math.abs(zoomLevel - (double) roundedZoomLevel) > 0.05) {
+            throw new ServiceException("The bounds result in a zoom level of "+zoomLevel+
+                        ", expected something within 0.05 of an integer, check " + tileBounds.toString());
         }
         
         // (Z) Zoom level
@@ -214,10 +215,21 @@ public class GridCalculator {
 
         // X
         double xdiff = tileBounds.coords[0] - gridBounds.coords[0];
-        retVals[0] = (int) Math.round(xdiff / tileWidth);
+        double xLoc = xdiff / tileWidth;
+        retVals[0] = (int) Math.round(xLoc);
+        if(Math.abs(retVals[0] - xLoc) > 0.05) {
+            throw new ServiceException("Your bounds in the x direction are offset"
+                    + " by more than 5% compared to the underlying grid.");
+        }
+        
         // Y
         double ydiff = tileBounds.coords[1] - gridBounds.coords[1];
-        retVals[1] = (int) Math.round(ydiff / tileWidth);
+        double yLoc = ydiff / tileWidth;
+        retVals[1] = (int) Math.round(yLoc);
+        if(Math.abs(retVals[1] - yLoc) > 0.05) {
+            throw new ServiceException("Your bounds in the y direction are offset"
+                    + " by more than 5% compared to the underlying grid.");
+        }
 
         if (log.isTraceEnabled()) {
             log.trace("x: " + retVals[0] 
