@@ -130,26 +130,27 @@ public class KMLService extends Service {
         }
         urlStr = new String(urlStr.substring(0, endOffset - 1));
         
+        //TODO this needs to be done more nicely
+        boolean isRaster = true;
+        if(parsed[3] != null && parsed[3].equalsIgnoreCase("geosearch-kml")) {
+            isRaster = false;
+        }
+        
+        
         if (parsed[1].length() == 0) {
             // There's no room for an quadkey -> super overlay
             if(log.isDebugEnabled()) { 
                 log.debug("Request for super overlay for " + parsed[0]
                     + " received");
             }
-            handleSuperOverlay(tileLayer, urlStr, parsed[3], response);
+            handleSuperOverlay(tileLayer, urlStr, parsed[3], isRaster, response);
         } else {
             if(log.isDebugEnabled()) { 
                 log.debug("Request for overlay for " + parsed[0] 
                   + " received, key " + parsed[1] + ", format hint " + parsed[3]);
             }
-            
-            //TODO this needs to be done more nicely
-            boolean createGroundOverlay = true;
-            if(parsed[3] != null && parsed[3].equalsIgnoreCase("geosearch-kml")) {
-                createGroundOverlay = false;
-            }
                 
-            handleOverlay(tileLayer, urlStr, parsed[1], parsed[3], createGroundOverlay, response);
+            handleOverlay(tileLayer, urlStr, parsed[1], parsed[3], isRaster, response);
         }
     }
 
@@ -165,7 +166,7 @@ public class KMLService extends Service {
     }
 
     private static void handleSuperOverlay(TileLayer layer, String urlStr,
-            String formatExtension, HttpServletResponse response) {
+            String formatExtension, boolean isRaster, HttpServletResponse response) {
         SRS srs = new SRS(4326);
         int srsIdx = layer.getSRSIndex(srs);
         BBOX bbox = layer.getBounds(srsIdx);
@@ -223,7 +224,7 @@ public class KMLService extends Service {
         String xml = "\n<NetworkLink><name>SuperOverlay:"+superString+"</name>" 
         + "\n<Region>\n" 
         + bbox.toKML()
-        + "\n<Lod><minLodPixels>128</minLodPixels>"
+        + "\n<Lod><minLodPixels>64</minLodPixels>"
         + "\n<maxLodPixels>-1</maxLodPixels></Lod>"
         + "\n</Region>"
         + "\n<Link><href>"+url+"</href>"
@@ -270,7 +271,7 @@ public class KMLService extends Service {
      * @param response
      */
     private static void handleOverlay(TileLayer tileLayer, String urlStr, String key,
-            String formatExtension, boolean createGroundOverlay, 
+            String formatExtension, boolean isRaster, 
             HttpServletResponse response) throws ServiceException {
         int[] gridLoc = parseGridLocString(key);
 
@@ -299,7 +300,7 @@ public class KMLService extends Service {
         }
 
         // 3) Overlay
-        if(createGroundOverlay) {
+        if(isRaster) {
             xml += createGroundOverLayElement(gridLoc, urlStr, bbox, formatExtension);
         } else {
             xml += createNetworkLinkElement(tileLayer, urlStr, gridLoc,
@@ -333,9 +334,9 @@ public class KMLService extends Service {
                 + "</name>"
                 + "\n<Region>"
                 // Chould technically be 192 to 384, centered around 256, but this creates gaps
-                + "\n<Lod><minLodPixels>128</minLodPixels><maxLodPixels>512</maxLodPixels></Lod>\n"
-                + "\n<minFadeExtent>128</minFadeExtent>" 
-                + "\n<maxFadeExtent>256</maxFadeExtent>"
+                + "\n<Lod><minLodPixels>64</minLodPixels><maxLodPixels>-1</maxLodPixels></Lod>\n"
+                //+ "\n<minFadeExtent>128</minFadeExtent>" 
+                //+ "\n<maxFadeExtent>256</maxFadeExtent>"
                 + bbox.toKML() + "\n</Region>" + "\n<Link>" 
                 + "\n<href>"
                 + gridLocString + "." + extension
