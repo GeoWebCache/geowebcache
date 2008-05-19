@@ -218,12 +218,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         ServiceRequest servReq = service.getServiceRequest(request);
 
         // 3) Get the configuration that has to respond to this request
-        TileLayer layer = tileLayerDispatcher.getTileLayer(servReq
-                .getLayerIdent());
-        
-        if(layer == null) {
-            throw new GeoWebCacheException("Unknown layer "+servReq.getLayerIdent());
-        }
+        TileLayer layer = tileLayerDispatcher.getTileLayer(servReq.getLayerIdent());
 
         // Check where this should be dispatched
         if (servReq.getFlag(ServiceRequest.SERVICE_REQUEST_DIRECT)) {

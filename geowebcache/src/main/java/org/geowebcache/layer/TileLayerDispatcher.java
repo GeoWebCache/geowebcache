@@ -25,6 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.seeder.SeederException;
 import org.geowebcache.util.Configuration;
 
 public class TileLayerDispatcher {
@@ -49,6 +50,10 @@ public class TileLayerDispatcher {
         }
 
         TileLayer layer = layers.get(layerIdent);
+        if(layer == null) {
+            throw new GeoWebCacheException("Unknown layer "+layerIdent+". Check the logfiles, it may not "
+                    +" have loaded properly.");
+        }
         
         if(! layer.isInitialized()) {
             layer.initialize();
