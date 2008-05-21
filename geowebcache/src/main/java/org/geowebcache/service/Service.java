@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.util.ServletUtils;
 
@@ -58,9 +59,9 @@ public class Service {
                 +"getTileRequest(TileLayer,  ServiceRequest, HttpSerlvetRequest)" );
     }
     
-    public void handleRequest(TileLayer tileLayer, HttpServletRequest request, 
+    public void handleRequest(TileLayerDispatcher tLD, HttpServletRequest request, 
             ServiceRequest servReq, HttpServletResponse response) 
-    throws ServiceException {
+    throws GeoWebCacheException {
         throw new RuntimeException(
                 "Service for " + pathName  + " needs to override "
                 +"handleRequest(TileLayer, HttpServletRequest, ServiceRequest, "

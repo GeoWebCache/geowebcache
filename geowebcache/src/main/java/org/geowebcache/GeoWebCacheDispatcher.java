@@ -138,9 +138,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
         try {
             if (requestComps[0].equalsIgnoreCase(TYPE_SERVICE)) {
-
                 handleServiceRequest(requestComps[1], request, response);
-
+                
             } else if (requestComps[0].equalsIgnoreCase(TYPE_SEED)) {
                 handleSeedRequest(request, response);
             } else if (requestComps[0].equalsIgnoreCase(TYPE_TRUNCATE)) {
@@ -217,14 +216,21 @@ public class GeoWebCacheDispatcher extends AbstractController {
         // 2) Find out what layer will be used and how
         ServiceRequest servReq = service.getServiceRequest(request);
 
-        // 3) Get the configuration that has to respond to this request
-        TileLayer layer = tileLayerDispatcher.getTileLayer(servReq.getLayerIdent());
-
         // Check where this should be dispatched
         if (servReq.getFlag(ServiceRequest.SERVICE_REQUEST_DIRECT)) {
+            // 3) Get the configuration that has to respond to this request
+            TileLayer layer = null;
+            if(servReq.getLayerIdent() != null) {
+                
+            }
+            
             // B4 The service object takes it from here
-            service.handleRequest(layer, request, servReq, response);
+            service.handleRequest(tileLayerDispatcher, request, servReq, response);
+            
         } else {
+            // 3) Get the configuration that has to respond to this request
+            TileLayer layer = tileLayerDispatcher.getTileLayer(servReq.getLayerIdent());
+            
             // A4) Convert to internal representation, using info from request
             // and layer
             TileRequest tileRequest = service.getTileRequest(layer, servReq, request);

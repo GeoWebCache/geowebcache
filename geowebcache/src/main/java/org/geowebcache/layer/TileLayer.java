@@ -42,8 +42,10 @@ public interface TileLayer {
     public SRS[] getProjections();
     public int getSRSIndex(SRS reqSRS);
     public BBOX getBounds(int srsIdx);
+    public double[] getResolutions(int srsIdx);
     public int[] getMetaTilingFactors();
     public int[][] getCoveredGridLevels(int srsIdx, BBOX bounds);
+    public MimeType[] getMimeTypes();
     public MimeType getDefaultMimeType();
     public String getName();
     public void destroy();

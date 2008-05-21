@@ -396,4 +396,16 @@ public class GridCalculator {
 
         return zoomedOutGridLoc;
     }
+    
+    public double[] getResolutions() {
+        double[] ret = new double[zoomStop - zoomStart + 1];
+        double tileWidth = maxTileWidth;
+        
+        for(int i=0; i<ret.length; i++) {
+            ret[i] = tileWidth;
+            tileWidth = tileWidth / 2;
+        }
+        
+        return ret;
+    }
 }

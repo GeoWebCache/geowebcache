@@ -838,4 +838,12 @@ public class WMSLayer implements TileLayer {
     public int getZoomStop() {
         return this.profile.zoomStop;
     }
+
+    public MimeType[] getMimeTypes() {
+        return formats;
+    }
+
+    public double[] getResolutions(int srsIdx) {
+        return profile.gridCalc[srsIdx].getResolutions();
+    }
 }

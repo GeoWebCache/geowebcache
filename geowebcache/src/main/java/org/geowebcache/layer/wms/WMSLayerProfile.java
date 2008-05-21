@@ -69,7 +69,7 @@ public class WMSLayerProfile {
 
     protected int zoomStart = 0;
 
-    protected int zoomStop = 25;
+    protected int zoomStop = 20;
 
     protected String request = "GetMap";
 

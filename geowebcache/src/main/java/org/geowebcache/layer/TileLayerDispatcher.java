@@ -66,6 +66,20 @@ public class TileLayerDispatcher {
         this.configs = configs;
     }
 
+    /**
+     * Returns a list of all the layers. The consumer may still have to
+     * initialize each layer!
+     * 
+     * @return
+     */
+    public Map<String,TileLayer> getLayers() {
+        if (!this.isInitialized) {
+            initLayers();
+        }
+        
+        return layers;
+    }
+    
     public void initLayers() {
         initLock.lock(); // block until condition holds
         try {

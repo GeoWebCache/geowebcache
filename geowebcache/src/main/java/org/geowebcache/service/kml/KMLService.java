@@ -24,8 +24,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
@@ -111,13 +113,18 @@ public class KMLService extends Service {
         return servReq;
     }
 
-    public void handleRequest(TileLayer tileLayer, HttpServletRequest request,
-            ServiceRequest servReq, HttpServletResponse response) throws ServiceException {
+    public void handleRequest(TileLayerDispatcher tLD, HttpServletRequest request,
+            ServiceRequest servReq, HttpServletResponse response) 
+    throws GeoWebCacheException {
 
         String[] parsed = servReq.getData();
 
-        if(tileLayer == null) {
+        TileLayer layer = tLD.getTileLayer(parsed[0]);
+        
+        if(layer == null) {
             throw new ServiceException("No layer provided, request parsed to: " + parsed[0]);
+        } else if(! layer.isInitialized()){
+            layer.initialize();
         }
         
         String urlStr = request.getRequestURL().toString();
@@ -143,14 +150,14 @@ public class KMLService extends Service {
                 log.debug("Request for super overlay for " + parsed[0]
                     + " received");
             }
-            handleSuperOverlay(tileLayer, urlStr, parsed[3], isRaster, response);
+            handleSuperOverlay(layer, urlStr, parsed[3], isRaster, response);
         } else {
             if(log.isDebugEnabled()) { 
                 log.debug("Request for overlay for " + parsed[0] 
                   + " received, key " + parsed[1] + ", format hint " + parsed[3]);
             }
                 
-            handleOverlay(tileLayer, urlStr, parsed[1], parsed[3], isRaster, response);
+            handleOverlay(layer, urlStr, parsed[1], parsed[3], isRaster, response);
         }
     }
 

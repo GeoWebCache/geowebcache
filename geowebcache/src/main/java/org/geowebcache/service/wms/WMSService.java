@@ -13,33 +13,67 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
+ * 
  */
 package org.geowebcache.service.wms;
 
-import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Iterator;
+import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.TileRequest;
+import org.geowebcache.layer.TileResponse;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.ServiceRequest;
+import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
 
 public class WMSService extends Service {
     public static final String SERVICE_WMS = "wms";
 
+    private static Log log = LogFactory.getLog(
+            org.geowebcache.service.wms.WMSService.class);
+    
     public WMSService() {
         super(SERVICE_WMS);
     }
 
     public ServiceRequest getServiceRequest(HttpServletRequest request) throws ServiceException {
-        return new ServiceRequest(super.getLayersParameter(request));
+        String[] keys = {"layers","request"};
+        Map<String,String> values = ServletUtils.selectedStringsFromMap(request.getParameterMap(), keys);
+        
+        // Look for getCapabilities
+        String req = values.get(keys[1]);
+        if(req != null && req.equalsIgnoreCase("getcapabilities")) {
+            String[] data = {"getcapabilities"};
+            ServiceRequest servReq = new ServiceRequest(null, data);
+            servReq.setFlag(true, ServiceRequest.SERVICE_REQUEST_DIRECT);
+            return servReq;
+        }
+        
+        // Look for layer
+        String layers = values.get(keys[0]);
+        if(layers == null) {
+                throw new ServiceException("Unable to parse layers parameter from request.");
+        }
+        
+        return new ServiceRequest(layers);
     }
 
+    
     public TileRequest getTileRequest(TileLayer tileLayer, 
             ServiceRequest servReq, HttpServletRequest request) throws GeoWebCacheException {
         
@@ -94,5 +128,146 @@ public class WMSService extends Service {
         return new TileRequest(
                 tileLayer.getGridLocForBounds(srsIdx,bbox),
                 mime, srs);
+    }
+    
+    public void handleRequest(TileLayerDispatcher tLD,
+            HttpServletRequest request, ServiceRequest servReq,
+            HttpServletResponse response) throws GeoWebCacheException {
+
+        String[] data = servReq.getData();
+        if(data != null && data[0].equalsIgnoreCase("getcapabilities")) {
+            handleGetCapabilities(tLD,response);
+        } else {
+            throw new GeoWebCacheException(
+                    "The WMS Service would love to help,"
+                    +" but has no idea what you're trying to do?" +
+                                "Please include request URL in your ");
+        }
+    }
+    
+    /**
+     * Creates getCapabilities response by looping over tilelayers
+     * 
+     * @param tLD
+     * @param response
+     * @throws GeoWebCacheException
+     */
+    private void handleGetCapabilities(TileLayerDispatcher tLD, 
+            HttpServletResponse response)
+    throws GeoWebCacheException {
+        Map<String, TileLayer> layerMap = tLD.getLayers();
+        Iterator<TileLayer> iter = layerMap.values().iterator();
+        
+        String xml = getCapabilitiesHeader();
+
+        while (iter.hasNext()) {
+            TileLayer tl = iter.next();
+            if(! tl.isInitialized()) {
+                tl.initialize();
+            }
+            xml += getTileSets(tl);
+        }
+        
+        xml += getCapabilitiesFooter();
+        
+        try {
+            writeData(response,xml.getBytes());
+        } catch(IOException ioe) {
+            throw new GeoWebCacheException("Error doing getCapabilities: " 
+                    + ioe.getMessage());
+        }
+        
+    }
+    
+    private static String getCapabilitiesHeader() {
+        return "<WMT_MS_Capabilities version=\"1.1.1\" updateSequence=\"0\">\n"
+            +"<VendorSpecificCapabilities>";
+    }
+    
+    private static String getCapabilitiesFooter() {
+        return "\n</WMT_MS_Capabilities>\n"
+            +"</VendorSpecificCapabilities>";
+    }
+    
+    /**
+     * 
+     * @param tl
+     * @return
+     */
+    private String getTileSets(TileLayer tl) {
+        String ret = "";
+        SRS[] srsList = tl.getProjections();
+        MimeType[] mimeList = tl.getMimeTypes();
+        
+        for(int srsIdx=0; srsIdx < srsList.length; srsIdx++) {
+            String strSRS = srsList[srsIdx].toString();
+            // These should be adjusted bounds!
+            String[] strBounds = doublesToStrings(tl.getBounds(srsIdx).coords);
+            String strResolutions = getResolutionString(tl.getResolutions(srsIdx));
+            String strName = tl.getName();
+            
+            for(int mimeIdx=0; mimeIdx < mimeList.length; mimeIdx++) {
+                String strFormat = mimeList[mimeIdx].getFormat();
+                ret += getTileSet(strName, strSRS, strBounds, strResolutions, strFormat);
+            }
+        }
+        
+        return ret;
+    }
+    
+    private String getTileSet(String strName, String strSRS, 
+            String[] strBounds, String strResolutions, String strFormat) {
+        return "\n<TileSet>"
+            + "<SRS>"+strSRS+"</SRS>"
+            + "<BoundingBox srs=\"" + strSRS + "\""
+            + " minx=\"" + strBounds[0] + "\""
+            + " miny=\"" + strBounds[1] + "\""
+            + " maxx=\"" + strBounds[2] + "\""
+            + " maxy=\"" + strBounds[3] + "\" />"
+            + "<Resolutions>"+strResolutions+"</Resolutions>"
+            + "<Width>256</Width>"
+            + "<Height>256</Height>"
+            + "<Format>"+strFormat+"</Format>"
+            + "<Layers>"+strName+"</Layers>"
+            + "<Styles></Styles>"
+            + "</TileSet>";
+    }
+    
+    private String[] doublesToStrings(double[] doubles) {
+        String[] ret = new String[doubles.length];
+        for(int i=0; i< doubles.length; i++) {
+            ret[i] = Double.toString(doubles[i]);
+        }
+        return ret;
+    }
+    
+    private String getResolutionString(double[] resolutions) {
+        String ret = "";
+        for(int i=0; i<resolutions.length; i++) {
+            ret += Double.toString(resolutions[i]) + " ";
+        }
+        return ret;
+    }
+    
+    private void writeData(HttpServletResponse response, byte[] data) throws IOException {
+
+        // Did we get anything?
+        if (data == null || data.length == 0) {
+            log.trace("sendData() had nothing to return");
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            return;
+        }
+
+        log.trace("sendData() Sending data.");
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/vnd.ogc.wms_xml");
+        response.setContentLength(data.length);
+        try {
+            OutputStream os = response.getOutputStream();
+            os.write(data);
+            os.flush();
+        } catch (IOException ioe) {
+            log.debug("Caught IOException" + ioe.getMessage());
+        }
     }
 }
