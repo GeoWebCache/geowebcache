@@ -330,9 +330,9 @@ public class KMLService extends Service {
      */
     private static String createOverlayHeader(BBOX bbox, boolean isRaster) {
         int maxLodPixels = -1;
-        if(isRaster) {
-            maxLodPixels = 385;
-        }
+        //if(isRaster) {
+        //    maxLodPixels = 385;
+        //}
         return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
                 + "<Document>\n"
@@ -356,9 +356,9 @@ public class KMLService extends Service {
             int[] gridLoc, BBOX bbox, String extension, boolean isRaster) {
         
         int maxLodPixels = -1;
-        if(isRaster) {
-            maxLodPixels = 385;
-        }
+        //if(isRaster) {
+        //    maxLodPixels = 385;
+        //}
         
         String gridLocString = gridLocString(gridLoc);
         String xml = "\n<NetworkLink>"
