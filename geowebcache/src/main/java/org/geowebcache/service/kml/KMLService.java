@@ -220,11 +220,19 @@ public class KMLService extends Service {
         writeXml(xml, response);
     }
 
+    /**
+     * Creates a network link to the first tile in the pyramid
+     * 
+     * @param superString
+     * @param bbox
+     * @param url
+     * @return
+     */
     private static String superOverlayNetworLink(String superString, BBOX bbox, String url) {
         String xml = "\n<NetworkLink><name>SuperOverlay:"+superString+"</name>" 
         + "\n<Region>\n" 
         + bbox.toKML()
-        + "\n<Lod><minLodPixels>64</minLodPixels>"
+        + "\n<Lod><minLodPixels>128</minLodPixels>"
         + "\n<maxLodPixels>-1</maxLodPixels></Lod>"
         + "\n</Region>"
         + "\n<Link><href>"+url+"</href>"
@@ -280,7 +288,7 @@ public class KMLService extends Service {
         BBOX bbox = tileLayer.getBboxForGridLoc(srsIdx, gridLoc);
 
         // 1) Header
-        String xml = createOverlayHeader(bbox);
+        String xml = createOverlayHeader(bbox,isRaster);
 
         // 2) Network links
         int[][] linkGridLocs = tileLayer.getZoomInGridLoc(srsIdx, gridLoc);
@@ -295,7 +303,7 @@ public class KMLService extends Service {
                 BBOX linkBbox = tileLayer.getBboxForGridLoc(srsIdx,
                         linkGridLocs[i]);
                 xml += createNetworkLinkElement(tileLayer, urlStr, linkGridLocs[i],
-                        linkBbox, formatExtension+".kml");
+                        linkBbox, formatExtension+".kml", isRaster);
             }
         }
 
@@ -304,7 +312,7 @@ public class KMLService extends Service {
             xml += createGroundOverLayElement(gridLoc, urlStr, bbox, formatExtension);
         } else {
             xml += createNetworkLinkElement(tileLayer, urlStr, gridLoc,
-                    bbox, formatExtension);
+                    bbox, formatExtension, isRaster);
         }
 
         // 4) Footer
@@ -314,17 +322,44 @@ public class KMLService extends Service {
         writeXml(xml, response);
     }
 
-    private static String createOverlayHeader(BBOX bbox) {
+    /**
+     * This creates the header for the overlay
+     * 
+     * @param bbox
+     * @return
+     */
+    private static String createOverlayHeader(BBOX bbox, boolean isRaster) {
+        int maxLodPixels = -1;
+        if(isRaster) {
+            maxLodPixels = 385;
+        }
         return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
                 + "<Document>\n"
                 + "<Region>\n"
-                + "<Lod><minLodPixels>192</minLodPixels><maxLodPixels>512</maxLodPixels></Lod>\n"
+                + "<Lod><minLodPixels>128</minLodPixels>"
+                + "<maxLodPixels>"+Integer.toString(maxLodPixels)+"</maxLodPixels></Lod>\n"
                 + bbox.toKML() + "</Region>\n";
     }
 
+    /**
+     * For KML features  / vector data OR for the next level
+     * 
+     * @param layer
+     * @param urlStr
+     * @param gridLoc
+     * @param bbox
+     * @param extension
+     * @return
+     */
     private static String createNetworkLinkElement(TileLayer layer, String urlStr,
-            int[] gridLoc, BBOX bbox, String extension) {
+            int[] gridLoc, BBOX bbox, String extension, boolean isRaster) {
+        
+        int maxLodPixels = -1;
+        if(isRaster) {
+            maxLodPixels = 385;
+        }
+        
         String gridLocString = gridLocString(gridLoc);
         String xml = "\n<NetworkLink>"
                 + "\n<name>"
@@ -333,10 +368,8 @@ public class KMLService extends Service {
                 + gridLocString
                 + "</name>"
                 + "\n<Region>"
-                // Chould technically be 192 to 384, centered around 256, but this creates gaps
-                + "\n<Lod><minLodPixels>64</minLodPixels><maxLodPixels>-1</maxLodPixels></Lod>\n"
-                //+ "\n<minFadeExtent>128</minFadeExtent>" 
-                //+ "\n<maxFadeExtent>256</maxFadeExtent>"
+                + "\n<Lod><minLodPixels>128</minLodPixels>"
+                + "<maxLodPixels>"+Integer.toString(maxLodPixels)+"</maxLodPixels></Lod>\n"
                 + bbox.toKML() + "\n</Region>" + "\n<Link>" 
                 + "\n<href>"
                 + gridLocString + "." + extension
@@ -347,6 +380,15 @@ public class KMLService extends Service {
         return xml;
     }
 
+    /**
+     * Used for linking to a raster image 
+     * 
+     * @param gridLoc
+     * @param urlStr
+     * @param bbox
+     * @param formatExtension
+     * @return
+     */
     private static String createGroundOverLayElement(int[] gridLoc, String urlStr,
             BBOX bbox, String formatExtension) {
         String xml = "\n<GroundOverlay>"
