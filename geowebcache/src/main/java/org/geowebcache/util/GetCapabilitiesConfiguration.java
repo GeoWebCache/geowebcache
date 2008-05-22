@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geotools.data.ows.Layer;
+import org.geotools.data.ows.StyleImpl;
 import org.geotools.data.ows.WMSCapabilities;
 import org.geotools.data.wms.WebMapServer;
 import org.geotools.ows.ServiceException;
@@ -127,22 +128,46 @@ public class GetCapabilitiesConfiguration implements Configuration {
         while (layerIter.hasNext()) {
             Layer layer = layerIter.next();
             String name = layer.getName();
+            
             if (name != null) {
+                List styles = layer.getStyles();
+                String stylesStr = "";
+                if(styles != null) {
+                    Iterator<StyleImpl> iter = styles.iterator();
+                    
+                    boolean hasOne = false;
+                    while(iter.hasNext()) {
+                        if(hasOne) {
+                            stylesStr += ",";
+                        }
+                        stylesStr += iter.next().getName(); 
+                    }
+                }
+                
+                
                 double minX = layer.getLatLonBoundingBox().getMinX();
                 double minY = layer.getLatLonBoundingBox().getMinY();
                 double maxX = layer.getLatLonBoundingBox().getMaxX();
                 double maxY = layer.getLatLonBoundingBox().getMaxY();
 
-                String bboxStr = Double.toString(minX) + ","
+                String bbox4326Str = Double.toString(minX) + ","
                         + Double.toString(minY) + "," + Double.toString(maxX)
                         + "," + Double.toString(maxY);
 
+                
                 log.info("Found layer: " + layer.getName()
-                        + " with LatLon bbox " + bboxStr);
+                        + " with LatLon bbox " + bbox4326Str);
+                
+                String bbox900913Str = 
+                    Double.toString(longToSphericalMercatorX(minX)) + ","
+                    + Double.toString(latToSphericalMercatorY(minY)) + "," 
+                    + Double.toString(longToSphericalMercatorX(maxX)) + ","
+                    + Double.toString(latToSphericalMercatorY(maxY));
 
                 WMSLayer wmsLayer = null;
                 try {
-                    wmsLayer = getLayer(name, wmsUrl, bboxStr);
+                    wmsLayer = getLayer(name, wmsUrl, bbox4326Str, 
+                            bbox900913Str, stylesStr);
                 } catch (GeoWebCacheException gwc) {
                     log.error("Error creating " + layer.getName() + ": "
                             + gwc.getMessage());
@@ -157,12 +182,15 @@ public class GetCapabilitiesConfiguration implements Configuration {
         return layerMap;
     }
 
-    private WMSLayer getLayer(String name, String wmsurl, String bboxStr)
+    private WMSLayer getLayer(String name, String wmsurl, 
+            String bbox4326Str, String bbox900913Str, String stylesStr)
             throws GeoWebCacheException {
         Properties props = new Properties();
         props.setProperty(WMSLayerProfile.WMS_URL, wmsurl);
         props.setProperty(WMSLayerProfile.WMS_SRS, "EPSG:4326;EPSG:900913");
-        props.setProperty(WMSLayerProfile.WMS_BBOX, bboxStr);
+        props.setProperty(WMSLayerProfile.WMS_BBOX, 
+                bbox4326Str +";"+ bbox900913Str);
+        props.setProperty(WMSLayerProfile.WMS_STYLES, stylesStr);
         props.setProperty(WMSLayerProfile.WMS_TRANSPARENT, "true");
 
         if (this.mimeTypes == null || this.mimeTypes.length() == 0) {
@@ -193,5 +221,18 @@ public class GetCapabilitiesConfiguration implements Configuration {
         }
         return null;
     }
-
+    
+    private double longToSphericalMercatorX(double x) {
+        return (x/180.0)*20037508.34;
+    }
+    
+    private double latToSphericalMercatorY(double y) {        
+        if(y > 85.05112) {
+            y = 85.05112;
+        }
+        y = (Math.PI/180.0)*y;
+        double tmp = Math.PI/4.0 + y/2.0; 
+        return 20037508.34 * Math.log(Math.tan(tmp)) / Math.PI;
+    }
+    
 }

@@ -38,6 +38,8 @@ public class WMSLayerProfile {
     public static final String WMS_SRS = "srs";
 
     public static final String WMS_BBOX = "bbox";
+    
+    public static final String WMS_STYLES = "wmsstyles";
 
     public static final String WMS_METATILING = "metatiling";
 
@@ -323,7 +325,7 @@ public class WMSLayerProfile {
             wmsLayers = propLayers;
         }
 
-        String propStyles = props.getProperty("wmsstyles");
+        String propStyles = props.getProperty(WMS_STYLES);
         if (propStyles != null) {
             wmsStyles = propStyles;
         }
