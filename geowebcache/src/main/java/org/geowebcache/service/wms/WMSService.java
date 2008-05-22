@@ -200,6 +200,11 @@ public class WMSService extends Service {
         String ret = "";
         SRS[] srsList = tl.getProjections();
         MimeType[] mimeList = tl.getMimeTypes();
+        String strStyles = tl.getStyles();
+        if(strStyles == null) {
+            strStyles = "";
+        }
+            
 
         for (int srsIdx = 0; srsIdx < srsList.length; srsIdx++) {
             String strSRS = srsList[srsIdx].toString();
@@ -211,8 +216,8 @@ public class WMSService extends Service {
 
             for (int mimeIdx = 0; mimeIdx < mimeList.length; mimeIdx++) {
                 String strFormat = mimeList[mimeIdx].getFormat();
-                ret += getTileSet(
-                        strName, strSRS, strBounds, strResolutions, strFormat);
+                ret += getTileSet(strName, strSRS, strBounds, 
+                        strStyles, strResolutions, strFormat);
             }
         }
 
@@ -220,16 +225,20 @@ public class WMSService extends Service {
     }
 
     private String getTileSet(String strName, String strSRS,
-            String[] strBounds, String strResolutions, String strFormat) {
+            String[] strBounds, String strStyles, 
+            String strResolutions, String strFormat) {
         return "\n<TileSet>" 
             + "<SRS>" + strSRS + "</SRS>"
             + "<BoundingBox srs=\"" + strSRS + "\"" + " minx=\""
             + strBounds[0] + "\"" + " miny=\"" + strBounds[1] + "\""
             + " maxx=\"" + strBounds[2] + "\"" + " maxy=\"" + strBounds[3] + "\" />" 
             + "<Resolutions>" + strResolutions + "</Resolutions>"
-            + "<Width>256</Width>" + "<Height>256</Height>" + "<Format>"
-            + strFormat + "</Format>" + "<Layers>" + strName + "</Layers>"
-            + "<Styles></Styles>" + "</TileSet>";
+            + "<Width>256</Width>" 
+            + "<Height>256</Height>" 
+            + "<Format>" + strFormat + "</Format>" 
+            + "<Layers>" + strName + "</Layers>"
+            + "<Styles>" + strStyles + "</Styles>" 
+            + "</TileSet>";
     }
 
     private String[] doublesToStrings(double[] doubles) {

@@ -846,4 +846,8 @@ public class WMSLayer implements TileLayer {
     public double[] getResolutions(int srsIdx) {
         return profile.gridCalc[srsIdx].getResolutions();
     }
+
+    public String getStyles() {
+        return profile.wmsStyles;
+    }
 }

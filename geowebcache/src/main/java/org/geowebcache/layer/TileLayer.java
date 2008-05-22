@@ -34,7 +34,6 @@ public interface TileLayer {
     public String supportsProjection(SRS srs);
     public String supportsFormat(String formatStr);
     public String supportsBbox(SRS srs, BBOX bounds) throws GeoWebCacheException;
-    
     public TileResponse getResponse(TileRequest tileRequest, 
            ServiceRequest servReq, HttpServletResponse response) 
     throws GeoWebCacheException, IOException;
@@ -43,6 +42,7 @@ public interface TileLayer {
     public int getSRSIndex(SRS reqSRS);
     public BBOX getBounds(int srsIdx);
     public double[] getResolutions(int srsIdx);
+    public String getStyles();
     public int[] getMetaTilingFactors();
     public int[][] getCoveredGridLevels(int srsIdx, BBOX bounds);
     public MimeType[] getMimeTypes();
