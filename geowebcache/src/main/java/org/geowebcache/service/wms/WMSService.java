@@ -185,8 +185,8 @@ public class WMSService extends Service {
     }
     
     private static String getCapabilitiesFooter() {
-        return "\n</WMT_MS_Capabilities>\n"
-            +"</VendorSpecificCapabilities>";
+        return "\n</VendorSpecificCapabilities>" + 
+        "\n</WMT_MS_Capabilities>";
     }
     
     /**
