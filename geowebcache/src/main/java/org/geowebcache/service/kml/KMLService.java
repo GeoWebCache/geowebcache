@@ -325,7 +325,7 @@ public class KMLService extends Service {
             } catch (MimeException me) {
                 throw new ServiceException(me.getMessage());
             }
-            linkGridLocs = KMZHelper.filterGridLocs(tileLayer, 0, mime.getFormat(), linkGridLocs);
+            linkGridLocs = KMZHelper.filterGridLocs(tileLayer, srsIdx, mime, linkGridLocs);
         }
         
         if(formatExtension == null) {

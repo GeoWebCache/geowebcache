@@ -16,11 +16,18 @@
  */
 package org.geowebcache.service.kml;
 
+import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileRequest;
+
 import org.geowebcache.layer.TileResponse;
+import org.geowebcache.mime.MimeType;
+import org.geowebcache.service.ServiceRequest;
 
 /**
  * Just a helper class for KMZ experimentation stuff
@@ -46,17 +53,31 @@ public class KMZHelper {
      * @return
      */
     public static int[][] filterGridLocs(TileLayer tileLayer, int srsIdx,
-            String formatStr, int[][] linkGridLocs) {
+            MimeType mime, int[][] linkGridLocs) {
+        
+        SRS srs = tileLayer.getProjections()[srsIdx];
         
         for(int i=0;i<linkGridLocs.length; i++) {
             if(linkGridLocs[i][2] > 0) {
                 
                 TileResponse tr = null;
                 try {
-                    tr = 
-                    tileLayer.doNonMetatilingRequest(
-                            linkGridLocs[i], srsIdx, formatStr);
+                    //tr = 
+                    //tileLayer.doNonMetatilingRequest(
+                    //        linkGridLocs[i], srsIdx, formatStr);
                     
+                    // TODO that's too many small objects
+                    TileRequest tileRequest = new TileRequest(
+                            linkGridLocs[i], mime, srs);
+                    
+                    ServiceRequest servRequest 
+                        = new ServiceRequest(tileLayer.getName());
+                    
+                    tr = tileLayer.getResponse(tileRequest, servRequest, null);
+                    
+                } catch (IOException ioe) {
+                    log.error(ioe.getMessage());
+                    linkGridLocs[i][2] = -1;
                 } catch (GeoWebCacheException gwce) {
                     log.error(gwce.getMessage());
                     linkGridLocs[i][2] = -1;
