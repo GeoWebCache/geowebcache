@@ -86,18 +86,17 @@ public class GMapsConverter extends Service {
      * @param quadKey
      * @return
      */
-    public static int[] convert(int zoomLevel, int x, int y) {
+    public static int[] convert(int zoomLevel, int x, int y) 
+    throws ServiceException {
         // Extent is the total number of tiles in y direction
         int extent = (int) Math.pow(2, zoomLevel);
 
         if (x < 0 || x > extent - 1) {
-            log.error("The X coordinate is not sane: " + x);
-            return null;
+            throw new ServiceException("The X coordinate is not sane: " + x);
         }
 
         if (y < 0 || y > extent - 1) {
-            log.error("The Y coordinate is not sane: " + y);
-            return null;
+            throw new ServiceException("The Y coordinate is not sane: " + y);
         }
 
         // xPos and yPos correspond to the top left hand corner
