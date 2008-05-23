@@ -230,8 +230,9 @@ public class FileCache implements Cache {
                     break;
                 }
 
-                if (value == null || value.equalsIgnoreCase("")) {
-                    log.info("Found " + typeStr + varStr + " to be unset");
+                if (log.isDebugEnabled() 
+                        && (value == null || value.equalsIgnoreCase(""))) {
+                    log.debug("Found " + typeStr + varStr + " to be unset");
                     continue;
                 }
 
