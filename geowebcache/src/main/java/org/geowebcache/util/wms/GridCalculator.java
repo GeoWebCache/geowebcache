@@ -330,12 +330,17 @@ public class GridCalculator {
      */
     public int[][] getZoomInGridLoc(int[] gridLoc) {
     	int[][] retVal = new int[4][3];
+        
     	int x = gridLoc[0] * 2;
     	int y = gridLoc[1] * 2;
     	int z = gridLoc[2] + 1;
     	
+        // Don't link to tiles past the last zoomLevel
+        if(z > this.zoomStop) {
+            z = -1;
+        }
+        
     	// Now adjust where appropriate
-    	
     	retVal[0][0] = retVal[2][0] = x;
     	retVal[1][0] = retVal[3][0] = x + 1;
     	
@@ -397,9 +402,9 @@ public class GridCalculator {
         return zoomedOutGridLoc;
     }
     
-    public double[] getResolutions() {
+    public double[] getResolutions(int widthPixels) {
         double[] ret = new double[zoomStop - zoomStart + 1];
-        double tileWidth = maxTileWidth;
+        double tileWidth = maxTileWidth / widthPixels;
         
         for(int i=0; i<ret.length; i++) {
             ret[i] = tileWidth;
