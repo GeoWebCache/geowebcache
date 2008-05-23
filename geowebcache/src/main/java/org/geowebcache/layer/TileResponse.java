@@ -23,11 +23,16 @@ public class TileResponse {
     public byte[] data = null;
     public MimeType mimeType = null;
     public int status = -1;
+    //public String cacheControl = null;
     
     public TileResponse(byte[] data, MimeType mimeType, int status) {
         this.data = data;
         this.mimeType = mimeType;
         this.status = status;
     }
+    
+    //public void setCacheControl(String cacheControl) {
+    //    this.cacheControl = cacheControl; 
+    //}
 }
 

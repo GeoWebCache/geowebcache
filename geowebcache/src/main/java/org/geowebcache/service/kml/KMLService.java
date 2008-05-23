@@ -313,23 +313,25 @@ public class KMLService extends Service {
         // 1) Header
         String xml = createOverlayHeader(bbox,isRaster);
 
-        // 2) Network links
+        // 2) Find format
+        if(formatExtension == null) {
+            formatExtension = tileLayer.getDefaultMimeType().getFileExtension();
+        }
+        
+        // 2) Network links, only to tiles within bounds
         int[][] linkGridLocs = tileLayer.getZoomInGridLoc(srsIdx, gridLoc);
         
-        // 3) For KMZ we try to be a bit smarter
-        if(extension.equalsIgnoreCase(KMLService.EXTENSION_KMZ)
-                || extension.equalsIgnoreCase(KMLService.EXTENSION_KML)) {
+
+        // 3) Apply secondary filter against linking to empty tiles
+        if (formatExtension.equalsIgnoreCase("geosearch-kml")) {
             MimeType mime = null;
             try {
                 mime = MimeType.createFromExtension(formatExtension);
             } catch (MimeException me) {
                 throw new ServiceException(me.getMessage());
             }
-            linkGridLocs = KMZHelper.filterGridLocs(tileLayer, srsIdx, mime, linkGridLocs);
-        }
-        
-        if(formatExtension == null) {
-            formatExtension = tileLayer.getDefaultMimeType().getFileExtension();
+            linkGridLocs = KMZHelper.filterGridLocs(tileLayer, srsIdx, mime,
+                    linkGridLocs);
         }
         
         for (int i = 0; i < 4; i++) {

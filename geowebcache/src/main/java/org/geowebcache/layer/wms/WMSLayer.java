@@ -375,9 +375,12 @@ public class WMSLayer implements TileLayer {
     }
     
     private TileResponse createTileResponse(byte[] data, MimeType mime, 
-            HttpServletResponse response) { 
+            HttpServletResponse response) {
+        if(response != null) {
             setExpirationHeader(response);
-            return new TileResponse(data, mime, 200);
+        }
+        
+        return new TileResponse(data, mime, 200);
     }
     
     public int purge(OutputStream os) throws GeoWebCacheException {
