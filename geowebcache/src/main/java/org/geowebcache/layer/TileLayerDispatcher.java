@@ -20,45 +20,47 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.seeder.SeederException;
 import org.geowebcache.util.Configuration;
 
 public class TileLayerDispatcher {
     private static Log log = LogFactory
             .getLog(org.geowebcache.layer.TileLayerDispatcher.class);
 
-    private HashMap<String,TileLayer> layers = null;
+    private HashMap<String, TileLayer> layers = null;
 
     private List configs = null;
 
-    private volatile boolean isInitialized = false;
+    private volatile Boolean isInitialized = null;
 
-    private final ReentrantLock initLock = new ReentrantLock();
+    //private final ReentrantLock initLock = new ReentrantLock();
 
     public TileLayerDispatcher() {
         log.info("TileLayerFactor constructed");
     }
 
-    public TileLayer getTileLayer(String layerIdent) throws GeoWebCacheException {
-        if (!this.isInitialized) {
-            initLayers();
-        }
+    public TileLayer getTileLayer(String layerIdent)
+            throws GeoWebCacheException {
+        isInitialized();
 
         TileLayer layer = layers.get(layerIdent);
-        if(layer == null) {
-            throw new GeoWebCacheException("Unknown layer "+layerIdent+". Check the logfiles, it may not "
-                    +" have loaded properly.");
+        if (layer == null) {
+            throw new GeoWebCacheException("Unknown layer " + layerIdent
+                    + ". Check the logfiles, it may not "
+                    + " have loaded properly.");
         }
-        
-        if(! layer.isInitialized()) {
-            layer.initialize();
+
+        if (!layer.isInitialized()) {
+            layer.acquireLayerLock();
+            if (!layer.isInitialized()) {
+                layer.initialize();
+            }
+            layer.releaseLayerLock();
         }
-        
+
         return layer;
     }
 
@@ -72,59 +74,57 @@ public class TileLayerDispatcher {
      * 
      * @return
      */
-    public Map<String,TileLayer> getLayers() {
-        if (!this.isInitialized) {
-            initLayers();
-        }
-        
+    public Map<String, TileLayer> getLayers() {
+        isInitialized();
         return layers;
     }
-    
-    public void initLayers() {
-        initLock.lock(); // block until condition holds
-        try {
-            if(this.isInitialized) {
-                log.debug("Thread initLayers(), but isInitialized already");
-                return;
-            } else {
-                log.debug("Thread initLayers(), initializing");
-            }
 
-            this.layers = new HashMap<String,TileLayer>();
-
-            Iterator configIter = configs.iterator();
-            while(configIter.hasNext()) {
-                Map<String,TileLayer> configLayers = null;
-                
-                Configuration config = (Configuration) configIter.next();
-                
-                try {
-                    configLayers = config.getTileLayers();
-                } catch (GeoWebCacheException gwce) {
-                    log.error(gwce.getMessage());
-                    log.error("Failed to add layers from "
-                                    + config.getIdentifier());
+    public Boolean isInitialized() {
+        Boolean result = isInitialized;
+        if (result == null) {
+            synchronized (this) {
+                result = isInitialized;
+                if (result == null) {
+                    isInitialized = result = initialize();
                 }
-
-                log.info("Adding layers from " + config.getIdentifier());
-                if (configLayers != null && configLayers.size() > 0) {
-                    Iterator iter = configLayers.keySet().iterator();
-                    while (iter.hasNext()) {
-                        String layerIdent = (String) iter.next();
-                        layers.put(layerIdent, configLayers.get(layerIdent));
-                    }
-                } else {
-                    log.error("Configuration " + config.getIdentifier()
-                            + " contained no layers.");
-                }       
             }
-
-            // This is a hack
-            if (layers != null) {
-                this.isInitialized = true;
-            }
-        } finally {
-            initLock.unlock();
         }
+        return result;
+    }
+
+    public Boolean initialize() {
+
+        log.debug("Thread initLayers(), initializing");
+
+        this.layers = new HashMap<String, TileLayer>();
+
+        Iterator configIter = configs.iterator();
+        while (configIter.hasNext()) {
+            Map<String, TileLayer> configLayers = null;
+
+            Configuration config = (Configuration) configIter.next();
+
+            try {
+                configLayers = config.getTileLayers();
+            } catch (GeoWebCacheException gwce) {
+                log.error(gwce.getMessage());
+                log
+                        .error("Failed to add layers from "
+                                + config.getIdentifier());
+            }
+
+            log.info("Adding layers from " + config.getIdentifier());
+            if (configLayers != null && configLayers.size() > 0) {
+                Iterator iter = configLayers.keySet().iterator();
+                while (iter.hasNext()) {
+                    String layerIdent = (String) iter.next();
+                    layers.put(layerIdent, configLayers.get(layerIdent));
+                }
+            } else {
+                log.error("Configuration " + config.getIdentifier()
+                        + " contained no layers.");
+            }
+        }
+        return new Boolean(true);
     }
 }
