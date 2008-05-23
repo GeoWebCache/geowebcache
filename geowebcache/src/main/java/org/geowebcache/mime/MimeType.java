@@ -97,6 +97,14 @@ public class MimeType {
             throw new MimeException("formatStr was not set");
         }
         
+        if(formatStr.contains(";")) {
+            if(log.isDebugEnabled()) {
+                log.debug("Slicing off "+ formatStr.split(";")[1]);
+            }
+            formatStr = formatStr.split(";")[0];
+
+        }
+        
         if (formatStr.length() > 6 
                 && formatStr.substring(0, 6).equalsIgnoreCase("image/")) {
             mimeType = ImageMime.checkForFormat(formatStr);

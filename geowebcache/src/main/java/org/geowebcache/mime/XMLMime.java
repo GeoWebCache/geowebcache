@@ -33,7 +33,10 @@ public class XMLMime extends MimeType {
     }
 
     protected static XMLMime checkForFormat(String formatStr) throws MimeException {
-        
+        if(formatStr.equalsIgnoreCase("application/vnd.ogc.se_xml")) {
+            return new XMLMime("application/vnd.ogc.se_xml", "ogc-xml", "ogc-xml",
+            "application/vnd.ogc.se_xml");
+        }
         if (formatStr.equalsIgnoreCase("application/vnd.google-earth.kml+xml")) {
             return new XMLMime("application/vnd.google-earth.kml+xml", "kml", "kml",
                     "application/vnd.google-earth.kml+xml");

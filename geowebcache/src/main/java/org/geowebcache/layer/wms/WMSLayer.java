@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -86,7 +87,7 @@ public class WMSLayer implements TileLayer {
 
     Integer cacheLockWait = -1;
     
-    public volatile boolean isInitialized = false;
+    public volatile Boolean isInitialized = null;
     
     Properties initProps = null;
     
@@ -100,13 +101,26 @@ public class WMSLayer implements TileLayer {
 
     }
     
-    public boolean isInitialized() {
-        return this.isInitialized;
+    public Boolean isInitialized() {
+        Boolean result = isInitialized;
+        if (result == null) {
+            synchronized (this) {
+                result = isInitialized;
+                if (result == null) {
+                    isInitialized = result = initialize();
+                }
+            }
+        }
+        return result;
     }
     
-    public void initialize() throws GeoWebCacheException {
-        setParametersFromProperties(initProps, initCacheFactory);
-        
+    public Boolean initialize() {
+        try {
+            setParametersFromProperties(initProps, initCacheFactory);
+        } catch(GeoWebCacheException gwce) {
+            log.error(gwce.getMessage());
+            gwce.printStackTrace();
+        }
         // Create conditions for tile locking
         this.gridLocConds = new Condition[17];
         for(int i=0; i<gridLocConds.length; i++) {
@@ -117,7 +131,7 @@ public class WMSLayer implements TileLayer {
         initProps = null;
         initCacheFactory = null;
         
-        isInitialized = true;
+        return new Boolean(true);
     }
 
     /**
@@ -128,13 +142,14 @@ public class WMSLayer implements TileLayer {
      *            Name of projection, for example "EPSG:4326"
      * @return null if okay, error message otherwise.
      */
-    public String supportsProjection(SRS srs) {
+    public boolean supportsProjection(SRS srs) throws GeoWebCacheException {
         for (int i = 0; i < profile.srs.length; i++) {
             if (srs.equals(profile.srs[i])) {
-                return null;
+                return true;
             }
         }
-        return "Unexpected SRS: " + srs.toString();
+        throw new GeoWebCacheException("SRS " + srs.toString() 
+                + " is not supported by " + this.getName());
     }
 
     /**
@@ -147,19 +162,20 @@ public class WMSLayer implements TileLayer {
      *            MIME type or null, example "image/png"
      * @return null if okay, error message otherwise.
      */
-    public String supportsFormat(String strFormat) {
+    public boolean supportsFormat(String strFormat) throws GeoWebCacheException {
         if (strFormat == null) {
             log.trace("Format was null");
-            return null;
+            return true;
         }
 
         for (int i = 0; i < formats.length; i++) {
             if (strFormat.equalsIgnoreCase(formats[i].getFormat())) {
-                return null;
+                return true;
             }
         }
-        return "Format " + strFormat
-                + " is not supported by layer configuration";
+        
+        throw new GeoWebCacheException("Format " + strFormat 
+                + " is not supported by " + this.getName());
     }
 
     /**
@@ -174,11 +190,8 @@ public class WMSLayer implements TileLayer {
      *            the requested bounds
      * @return null if okay, error message otherwise.
      */
-    public String supportsBbox(SRS srs, BBOX reqBounds) {
-        String errorMsg = this.supportsProjection(srs);
-        if (errorMsg != null) {
-            return errorMsg;
-        }
+    public String supportsBbox(SRS srs, BBOX reqBounds) throws GeoWebCacheException {
+        this.supportsProjection(srs);
 
         if (!reqBounds.isSane()) {
             return "The requested bounding box "
@@ -222,7 +235,7 @@ public class WMSLayer implements TileLayer {
         int[] gridLoc = tileRequest.gridLoc;
         int idx = getSRSIndex(tileRequest.SRS);
 
-        // Final preflight check
+        // Final preflight check, throws exception if necessary
         profile.gridCalc[idx].locationWithinBounds(gridLoc);
         
         // Quick and dirty... cache should take care of any locking issues
@@ -336,9 +349,9 @@ public class WMSLayer implements TileLayer {
         
         /** ****************** Tile ******************* */
         //String requestURL = null;
-        byte[] data = doNonMetatilingRequest(gridLoc, idx, mime.getFormat());
+        TileResponse tr = doNonMetatilingRequest(gridLoc, idx, mime.getFormat());
        
-        tile = new RawTile(data);
+        tile = new RawTile(tr.data);
         
         if (profile.expireCache != WMSLayerProfile.CACHE_NEVER) {
             cache.set(ck, tile, profile.expireCache); 
@@ -346,7 +359,7 @@ public class WMSLayer implements TileLayer {
 
         /** ****************** Return lock and response ****** */
         removeFromQueue(glo, condIdx);
-        return this.createTileResponse(data, mime, response);
+        return this.createTileResponse(tr.data, mime, response);
     }
     
     private RawTile tryCacheFetch(Object cacheKey) {
@@ -364,7 +377,7 @@ public class WMSLayer implements TileLayer {
     private TileResponse createTileResponse(byte[] data, MimeType mime, 
             HttpServletResponse response) { 
             setExpirationHeader(response);
-            return new TileResponse(data, mime);
+            return new TileResponse(data, mime, 200);
     }
     
     public int purge(OutputStream os) throws GeoWebCacheException {
@@ -482,7 +495,7 @@ public class WMSLayer implements TileLayer {
     }
 
     
-    protected byte[] doNonMetatilingRequest(int[] gridLoc, 
+    public TileResponse doNonMetatilingRequest(int[] gridLoc, 
             int idx, String formatStr) 
     throws GeoWebCacheException {
         WMSParameters wmsparams = profile.getWMSParamTemplate();
@@ -497,6 +510,8 @@ public class WMSLayer implements TileLayer {
         wmsparams.setBBOX(bbox);
 
         byte[] buffer = null;
+        String contentType = null;
+        int responseCode = -99;
         
         // Ask the WMS server, saves returned information into buffer
         String backendURL = "";
@@ -512,10 +527,14 @@ public class WMSLayer implements TileLayer {
                 // Create an outgoing WMS request to the server
                 Request wmsrequest = new Request(backendURL, wmsparams);
                 URL wmsBackendUrl = new URL(wmsrequest.toString());
-                URLConnection wmsBackendCon = wmsBackendUrl.openConnection();
+                HttpURLConnection wmsBackendCon = 
+                    (HttpURLConnection) wmsBackendUrl.openConnection();
 
                 buffer = ServletUtils.readStream(
                         wmsBackendCon.getInputStream(),-1,-1);
+                
+                contentType = wmsBackendCon.getContentType();
+                responseCode = wmsBackendCon.getResponseCode();
 
             } catch (ConnectException ce) {
                 throw new GeoWebCacheException(
@@ -530,12 +549,20 @@ public class WMSLayer implements TileLayer {
             backendTries++;
         }
 
-        if (buffer == null) {
+        if (responseCode == -99) {
             throw new GeoWebCacheException(
-                    "Error forwarding request, " + backendURL);
+                   "Error forwarding request, " + backendURL);
         }
         
-        return buffer;
+        MimeType mt = MimeType.createFromFormat(contentType);
+        if(mt == null) {
+            throw new GeoWebCacheException(
+                    "Unknown content type " + contentType 
+                    +" for response for request, " + backendURL);
+        }
+        
+        TileResponse tr = new TileResponse(buffer, mt, responseCode);
+        return tr;
     }
 
     /**
@@ -604,7 +631,7 @@ public class WMSLayer implements TileLayer {
             formats = new MimeType[mimeStrs.length];
             for (int i = 0; i < mimeStrs.length; i++) {
                 formats[i] = MimeType.createFromFormat(mimeStrs[i]);
-                if (formats[i] == null) {
+                if(formats[i] == null) {
                     log.error("Unable to match " + mimeStrs[i]
                             + " to a supported format.");
                 }
@@ -743,7 +770,7 @@ public class WMSLayer implements TileLayer {
             layerLock.lock();
             try {
                 this.layerLocked = true;
-                if(this.procQueue.size() == 0) {
+                if(this.procQueue == null || this.procQueue.size() == 0) {
                     wait = false;
                 }
             } finally {
@@ -844,7 +871,7 @@ public class WMSLayer implements TileLayer {
     }
 
     public double[] getResolutions(int srsIdx) {
-        return profile.gridCalc[srsIdx].getResolutions();
+        return profile.gridCalc[srsIdx].getResolutions(this.profile.width);
     }
 
     public String getStyles() {

@@ -230,6 +230,11 @@ public class GetCapabilitiesConfiguration implements Configuration {
         if(y > 85.05112) {
             y = 85.05112;
         }
+        
+        if(y < -85.05112) {
+            y = -85.05112;
+        }
+        
         y = (Math.PI/180.0)*y;
         double tmp = Math.PI/4.0 + y/2.0; 
         return 20037508.34 * Math.log(Math.tan(tmp)) / Math.PI;

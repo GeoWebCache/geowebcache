@@ -52,15 +52,9 @@ public class TileLayerDispatcher {
                     + ". Check the logfiles, it may not "
                     + " have loaded properly.");
         }
-
-        if (!layer.isInitialized()) {
-            layer.acquireLayerLock();
-            if (!layer.isInitialized()) {
-                layer.initialize();
-            }
-            layer.releaseLayerLock();
-        }
-
+        
+        layer.isInitialized();
+        
         return layer;
     }
 
