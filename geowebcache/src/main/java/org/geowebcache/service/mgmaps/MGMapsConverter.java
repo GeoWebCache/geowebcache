@@ -63,8 +63,6 @@ public class MGMapsConverter extends Service {
         int[] gridLoc = MGMapsConverter.convert(Integer.parseInt(strZoom),
                 Integer.parseInt(strX), Integer.parseInt(strY));
 
-        SRS srs = new SRS(900913);
-
         MimeType mime = null;
         try {
             if (strFormat == null) {
@@ -75,7 +73,7 @@ public class MGMapsConverter extends Service {
             throw new ServiceException("Unable to determine requested format, "
                     + strFormat);
         }
-        return new TileRequest(gridLoc, mime, srs);
+        return new TileRequest(gridLoc, mime, SRS.getEPSG900913());
     }
 
     /**

@@ -57,8 +57,6 @@ public class VEConverter extends Service {
         String strFormat = ServletUtils.stringFromMap(params, "format");
 
         int[] gridLoc = VEConverter.convert(strQuadKey);
-
-        SRS srs = new SRS(900913);
         
         MimeType mime = null;
         if(strFormat != null) {
@@ -70,7 +68,7 @@ public class VEConverter extends Service {
         } else {
             mime = tileLayer.getDefaultMimeType();
         }
-        return new TileRequest(gridLoc,mime,srs);
+        return new TileRequest(gridLoc,mime,SRS.getEPSG900913());
     }
 
     /**
