@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
+import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheKey;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.ServiceRequest;
@@ -233,6 +234,14 @@ public interface TileLayer {
      */
     public int[] getZoomedOutGridLoc(int srsIdx);
     
+    
+    /**
+     * Quick, non-synchronized way of trying the cache
+     * @param cacheKey
+     * @return
+     */
+    public RawTile tryCacheFetch(Object cacheKey);
+    
     /**
      * Get the prefix for the cache
      * 
@@ -265,4 +274,16 @@ public interface TileLayer {
      *
      */
     public void releaseLayerLock();
+    
+    /**
+     * Backdoor to put stuff into the cache from services
+     * 
+     * @param tile
+     * @param gridLoc
+     * @param srs
+     * @param mime
+     * @throws CacheException
+     */
+    public void putTile(RawTile tile, Object ck, int[] gridLoc) 
+    throws CacheException;
 }

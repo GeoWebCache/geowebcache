@@ -33,6 +33,8 @@ public abstract class MetaTile {
 
     protected SRS srs;
     
+    protected int status = -1;
+    
     
     protected MetaTile(SRS srs, int[] gridBounds, int[] tileGridPosition,
     		int metaX, int metaY) {
@@ -127,5 +129,13 @@ public abstract class MetaTile {
     
     public SRS getSRS() {
     	return this.srs;
+    }
+    
+    /**
+     * 
+     * @return the status code set by the backend, -1 if not known
+     */
+    public int getStatus() {
+      return status;  
     }
 }

@@ -244,9 +244,13 @@ public class WMSLayer implements TileLayer {
         
         RawTile tile = this.tryCacheFetch(ck);
         if(tile != null) {
-            return this.createTileResponse(tile.getData(), mime, response);
+            return this.createTileResponse(tile.getData(), -1, mime, response);
         }
         
+        if(! tileRequest.askBackend) {
+            return null;
+        }
+            
         // Okay, so we need to go to the backend
         if(mime.supportsTiling() 
                 && servReq.getFlag(ServiceRequest.SERVICE_REQUEST_METATILE)) {
@@ -289,7 +293,7 @@ public class WMSLayer implements TileLayer {
         if(tile != null) {
             // Someone got it already, return lock and we're done
             removeFromQueue(metaGlo, condIdx);
-            return this.createTileResponse(tile.getData(), mime, response);
+            return this.createTileResponse(tile.getData(), -1, mime, response);
         }
         
         /** ****************** No luck, Request metatile ****** */
@@ -314,7 +318,7 @@ public class WMSLayer implements TileLayer {
 
         /** ****************** Return lock and response ****** */
         removeFromQueue(metaGlo, condIdx);
-        return this.createTileResponse(data, mime, response);
+        return this.createTileResponse(data, metaTile.getStatus(), mime, response);
     }
 
     /**
@@ -344,7 +348,8 @@ public class WMSLayer implements TileLayer {
         if(tile != null) {
             // Someone got it already, return lock and we're done
             removeFromQueue(glo, condIdx);
-            return this.createTileResponse(tile.getData(), mime, response);
+                   
+            return this.createTileResponse(tile.getData(), -1, mime, response);
         }
         
         /** ****************** Tile ******************* */
@@ -359,10 +364,10 @@ public class WMSLayer implements TileLayer {
 
         /** ****************** Return lock and response ****** */
         removeFromQueue(glo, condIdx);
-        return this.createTileResponse(tr.data, mime, response);
+        return this.createTileResponse(tr.data, tr.status, mime, response);
     }
     
-    private RawTile tryCacheFetch(Object cacheKey) {
+    public RawTile tryCacheFetch(Object cacheKey) {
         RawTile tile = null;
         if (profile.expireCache != WMSLayerProfile.CACHE_NEVER) {
             try {
@@ -374,13 +379,21 @@ public class WMSLayer implements TileLayer {
         return tile;
     }
     
-    private TileResponse createTileResponse(byte[] data, MimeType mime, 
+    private TileResponse createTileResponse(byte[] data, int status, MimeType mime, 
             HttpServletResponse response) {
         if(response != null) {
             setExpirationHeader(response);
         }
         
-        return new TileResponse(data, mime, 200);
+        if(status == -1) {
+            if(data.length == 0) {
+                status = 204;
+            } else {
+                status = 200;
+            }
+        }
+        
+        return new TileResponse(data, mime, status);
     }
     
     public int purge(OutputStream os) throws GeoWebCacheException {
@@ -557,11 +570,9 @@ public class WMSLayer implements TileLayer {
                    "Error forwarding request, " + backendURL);
         }
         
-        MimeType mt = MimeType.createFromFormat(contentType);
-        if(mt == null) {
-            throw new GeoWebCacheException(
-                    "Unknown content type " + contentType 
-                    +" for response for request, " + backendURL);
+        MimeType mt = null;
+        if(contentType != null) {
+            mt = MimeType.createFromFormat(contentType);
         }
         
         TileResponse tr = new TileResponse(buffer, mt, responseCode);
@@ -879,5 +890,30 @@ public class WMSLayer implements TileLayer {
 
     public String getStyles() {
         return profile.wmsStyles;
+    }
+    
+    /**
+     * 
+     * @param tile
+     * @param ck
+     * @param gridLoc
+     * @throws CacheException
+     */
+    public void putTile(RawTile tile, Object ck, int[] gridLoc) 
+    throws CacheException {
+        
+        int condIdx = this.calcLocCondIdx(gridLoc);
+        GridLocObj glo = new GridLocObj(gridLoc);
+        
+        /** ****************** Acquire lock ******************* */
+        waitForQueue(glo, condIdx);
+        
+        /** ****************** Tile ******************* */        
+        if (profile.expireCache != WMSLayerProfile.CACHE_NEVER) {
+            cache.set(ck, tile, profile.expireCache);
+        }
+
+        /** ****************** Return lock and response ****** */
+        removeFromQueue(glo, condIdx);
     }
 }

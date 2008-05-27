@@ -16,7 +16,13 @@
  */
 package org.geowebcache.service.kml;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,6 +33,7 @@ import org.geowebcache.layer.TileRequest;
 
 import org.geowebcache.layer.TileResponse;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.ServiceRequest;
 
 /**
@@ -61,11 +68,7 @@ public class KMZHelper {
             if(linkGridLocs[i][2] > 0) {
                 
                 TileResponse tr = null;
-                try {
-                    //tr = 
-                    //tileLayer.doNonMetatilingRequest(
-                    //        linkGridLocs[i], srsIdx, formatStr);
-                    
+                try {                    
                     // TODO that's too many small objects
                     TileRequest tileRequest = new TileRequest(
                             linkGridLocs[i], mime, srs);
@@ -80,20 +83,79 @@ public class KMZHelper {
                     linkGridLocs[i][2] = -1;
                 } catch (GeoWebCacheException gwce) {
                     log.error(gwce.getMessage());
+                    gwce.printStackTrace();
                     linkGridLocs[i][2] = -1;
                 }
                 
-                // TODO remove length check
-                if(tr == null || tr.status == 204 || tr.data.length < 200 ) {
-                    //System.out.println("Jeeeeeez.. I'm sorry. That just wont cut it.");
+                // If it's a 204 it means no content -> don't link to it
+                if(tr == null || tr.status == 204 ) {
                     linkGridLocs[i][2] = -1;
-                } else {
-                    //System.out.println("Good enough for government work..." + new String(tr.data));
                 }
             }
         }
         
         return linkGridLocs;
     }
+    
+    /**
+     * 
+     * 
+     * @param namePfx
+     * @param overlayXml
+     * @param dataXml
+     * @param response
+     * @return
+     * @throws ServiceException
+     */
+    protected static byte[] createZippedKML(
+            String namePfx , String formatExtension,
+            byte[] overlayXml, byte[] dataXml) 
+    throws ServiceException {
         
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        
+        try {
+            writeZippedKML(namePfx, formatExtension, overlayXml, dataXml, out);
+        } catch (IOException ioe) {
+            throw new ServiceException(
+                    "Encountered problem writing zip: " + ioe.getMessage());
+        }
+        
+        return out.toByteArray();
+    }
+
+    /**
+     * Writes two byte[] into a zip
+     * -> like a zipfile with two files
+     * 
+     * @param namePfx prefix for files inside file
+     * @param overlay
+     * @param data
+     * @param out
+     * @throws IOException
+     */
+    private static void writeZippedKML(
+            String namePfx, String formatExtension,
+            byte[] overlay, byte[] data, OutputStream out) 
+    throws IOException {
+
+        ZipOutputStream zipos = new ZipOutputStream(out);
+        // High compression
+        //zipos.setLevel(9);
+
+        // Add the overlay, links to the next content
+        ZipEntry zeOl = new ZipEntry(namePfx + ".kml");
+        zipos.putNextEntry(zeOl);
+        zipos.write(overlay);
+        //zipos.closeEntry();
+
+        // Add the actual data, if applicable
+        if(data != null) {
+            ZipEntry zeData = new ZipEntry(namePfx+"."+formatExtension);
+            zipos.putNextEntry(zeData);
+            zipos.write(data);
+            //zipos.closeEntry();
+        }
+        zipos.finish();
+    }
 }

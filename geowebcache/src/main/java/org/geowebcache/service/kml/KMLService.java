@@ -25,10 +25,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.cache.CacheException;
+import org.geowebcache.cache.CacheKey;
+import org.geowebcache.layer.RawTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.TileRequest;
+import org.geowebcache.layer.TileResponse;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
@@ -162,7 +166,7 @@ public class KMLService extends Service {
                 log.debug("Request for overlay for " + parsed[0] 
                   + " received, key " + parsed[1] + ", format hint " + parsed[3]);
             }
-                
+            
             handleOverlay(layer, urlStr, parsed[1], parsed[2], parsed[3], isRaster, response);
         }
     }
@@ -177,7 +181,7 @@ public class KMLService extends Service {
     public void handleKMZRequest(TileLayerDispatcher tLD, HttpServletRequest request,
             ServiceRequest servReq, HttpServletResponse response) 
     throws GeoWebCacheException {
-        
+
         
     }
 
@@ -223,8 +227,8 @@ public class KMLService extends Service {
                 superOverlayNetworLink(
                     layer.getName() + " West", 
                     bboxWest, 
-                    urlStr + "/" + gridLocString(gridLocWest) +formatExtension);
-                superOverlayNetworLink(
+                    urlStr + "/" + gridLocString(gridLocWest) +formatExtension)
+              + superOverlayNetworLink(
                     layer.getName() + " East", 
                     bboxEast, 
                     urlStr + "/" + gridLocString(gridLocEast) +formatExtension);
@@ -244,7 +248,7 @@ public class KMLService extends Service {
                 + "\n</Folder>"
                 + "\n</kml>\n";
 
-        writeXml(xml, response);
+        writeData(xml.getBytes(), "application/vnd.google-earth.kml+xml", response);
     }
 
     /**
@@ -294,33 +298,127 @@ public class KMLService extends Service {
     }
 
     /**
-     * 1) Header 2) Network links 3) Overlay 4) Footer
-     * 
-     * @param tileLayer
-     * @param key
-     * @param urlStr
-     * @param response
+     * 1) KMZ:
+     *    The cache will contain a zip with overlay and data
+     *    
+     * 2) KML:
+     *    The cache will only contain the overlay itself, 
+     *    the overlay will cause a separate tile request to get the data
      */
     private static void handleOverlay(TileLayer tileLayer, String urlStr, String key,
             String extension, String formatExtension, boolean isRaster, 
-            HttpServletResponse response) throws ServiceException {
+            HttpServletResponse response) throws GeoWebCacheException {
+        
         int[] gridLoc = parseGridLocString(key);
-
-        SRS srs = new SRS(4326);
-        int srsIdx = tileLayer.getSRSIndex(srs);
-        BBOX bbox = tileLayer.getBboxForGridLoc(srsIdx, gridLoc);
-
-        // 1) Header
-        String xml = createOverlayHeader(bbox,isRaster);
-
-        // 2) Find format
-        if(formatExtension == null) {
+      
+        boolean packageData = false;
+        if(extension.equalsIgnoreCase(EXTENSION_KMZ) && ! isRaster){
+            packageData = true;
+        }
+        
+        // Find format
+        if (formatExtension == null) {
             formatExtension = tileLayer.getDefaultMimeType().getFileExtension();
         }
         
+        MimeType dataMime = null;
+        MimeType overlayMime = null;
+        try {
+            dataMime = MimeType.createFromExtension(formatExtension);
+            overlayMime = MimeType.createFromExtension(extension);
+        } catch (MimeException me) {
+            throw new ServiceException(me.getMessage());
+        }
+        
+        // Check the cache
+        Object ck = (Object) tileLayer.getCacheKey().createKey(
+                tileLayer.getCachePrefix(), 
+                gridLoc[0], gridLoc[1], gridLoc[2], 
+                SRS.getEPSG4326(), formatExtension + "." + extension);
+        
+        RawTile tile = tileLayer.tryCacheFetch(ck);
+        
+        // Did we get lucky?
+        if(tile != null) {
+            writeData(tile.getData(),overlayMime.getMimeType(),response);
+            return;
+        }
+        
+        // Sigh.... 
+        if(packageData) {
+            String overlayXml = createOverlay(tileLayer, urlStr, gridLoc, extension, 
+                    formatExtension, isRaster, true);
+            
+            TileRequest tileRequest = 
+                new TileRequest(gridLoc, dataMime, SRS.getEPSG4326());
+            
+            ServiceRequest servRequest = new ServiceRequest(tileLayer.getName());
+            
+            // This automatically caches the result
+            TileResponse tr = null;
+            try {
+                tr = tileLayer.getResponse(tileRequest, servRequest, null);
+            } catch(IOException ioe) {
+                throw new ServiceException(ioe.getMessage());
+            }
+            
+            byte[] zip = KMZHelper.createZippedKML(
+                    key, formatExtension, overlayXml.getBytes(), tr.data);
+            
+            try {
+                tileLayer.putTile(new RawTile(zip), ck, gridLoc);
+            } catch (CacheException ce) {
+                throw new ServiceException(ce.getMessage());
+            }
+            
+            writeData(overlayXml.getBytes(), overlayMime.getMimeType(), response);
+            
+        } else {
+            
+            String overlayXml = createOverlay(tileLayer, urlStr, gridLoc, extension, 
+                    formatExtension, isRaster, false);
+            
+            try {
+                tileLayer.putTile(new RawTile(overlayXml.getBytes()), ck, gridLoc);
+            } catch (CacheException ce) {
+                throw new ServiceException(ce.getMessage());
+            }
+            
+            writeData(overlayXml.getBytes(), overlayMime.getMimeType(), response);
+        }
+           
+    }
+    
+    /**
+     * Creates an overlay element:
+     * 1) Header 
+     * 2) Network links to regions where we have more data 
+     * 3) Overlay (link to data) 
+     * 4) Footer
+     * 
+     * @param tileLayer
+     * @param urlStr
+     * @param key
+     * @param extension
+     * @param formatExtension
+     * @param isRaster
+     * @param response
+     * @return
+     * @throws ServiceException
+     */
+    private static String createOverlay(TileLayer tileLayer, String urlStr,
+            int[] gridLoc, String extension, String formatExtension,
+            boolean isRaster, boolean absoluteUrl)
+    throws ServiceException {
+
+        int srsIdx = tileLayer.getSRSIndex(SRS.getEPSG4326());
+        BBOX bbox = tileLayer.getBboxForGridLoc(srsIdx, gridLoc);
+
+        // 1) Header
+        String xml = createOverlayHeader(bbox, isRaster);
+
         // 2) Network links, only to tiles within bounds
         int[][] linkGridLocs = tileLayer.getZoomInGridLoc(srsIdx, gridLoc);
-        
 
         // 3) Apply secondary filter against linking to empty tiles
         if (formatExtension.equalsIgnoreCase("geosearch-kml")) {
@@ -333,30 +431,32 @@ public class KMLService extends Service {
             linkGridLocs = KMZHelper.filterGridLocs(tileLayer, srsIdx, mime,
                     linkGridLocs);
         }
-        
+
         for (int i = 0; i < 4; i++) {
             // Only add this link if it is within the bounds
             if (linkGridLocs[i][2] > 0) {
                 BBOX linkBbox = tileLayer.getBboxForGridLoc(srsIdx,
                         linkGridLocs[i]);
-                xml += createNetworkLinkElement(tileLayer, urlStr, linkGridLocs[i],
-                        linkBbox, formatExtension + "." + extension, isRaster);
+                xml += createNetworkLinkElement(tileLayer, urlStr,
+                        linkGridLocs[i], linkBbox, formatExtension + "."
+                        + extension, isRaster, absoluteUrl);
             }
         }
 
         // 3) Overlay
-        if(isRaster) {
-            xml += createGroundOverLayElement(gridLoc, urlStr, bbox, formatExtension);
+        if (isRaster) {
+            xml += createGroundOverLayElement(gridLoc, urlStr, bbox,
+                    formatExtension);
         } else {
-            xml += createNetworkLinkElement(tileLayer, urlStr, gridLoc,
-                    bbox, formatExtension, isRaster);
+            xml += createNetworkLinkElement(tileLayer, urlStr, gridLoc, bbox,
+                    formatExtension, isRaster, absoluteUrl);
         }
 
         // 4) Footer
         xml += "</Document>\n</kml>";
 
         // log.info("handle overlay");
-        writeXml(xml, response);
+        return xml;
     }
 
     /**
@@ -390,7 +490,7 @@ public class KMLService extends Service {
      * @return
      */
     private static String createNetworkLinkElement(TileLayer layer, String urlStr,
-            int[] gridLoc, BBOX bbox, String extension, boolean isRaster) {
+            int[] gridLoc, BBOX bbox, String extension, boolean isRaster, boolean useAbsolute) {
         
         int maxLodPixels = -1;
         //if(isRaster) {
@@ -398,6 +498,10 @@ public class KMLService extends Service {
         //}
         
         String gridLocString = gridLocString(gridLoc);
+        
+        if(useAbsolute) {
+            gridLocString = urlStr + "/" + gridLocString;
+        }
         String xml = "\n<NetworkLink>"
                 + "\n<name>"
                 + layer.getName()
@@ -409,7 +513,7 @@ public class KMLService extends Service {
                 + "<maxLodPixels>"+Integer.toString(maxLodPixels)+"</maxLodPixels></Lod>\n"
                 + bbox.toKML() + "\n</Region>" + "\n<Link>" 
                 + "\n<href>"
-                + gridLocString + "." + extension
+                +  gridLocString + "." + extension
                 +"</href>"
                 + "\n<viewRefreshMode>onRegion</viewRefreshMode>" + "</Link>"
                 + "\n</NetworkLink>\n";
@@ -510,14 +614,16 @@ public class KMLService extends Service {
         double dz = p1[2] - p2[2];
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
-
-    private static void writeXml(String xml, HttpServletResponse response) {
-        byte[] xmlData = xml.getBytes();
-        response.setContentType("application/vnd.google-earth.kml+xml");
-        response.setContentLength(xmlData.length);
+    
+    
+    
+    private static void writeData(
+            byte[] data, String mimeType, HttpServletResponse response) {
+        response.setContentType(mimeType);
+        response.setContentLength(data.length);
         try {
             OutputStream os = response.getOutputStream();
-            os.write(xmlData);
+            os.write(data);
         } catch (IOException ioe) {
             // Do nothing...
         }
