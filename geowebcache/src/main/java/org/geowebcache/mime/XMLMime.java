@@ -23,7 +23,33 @@ import org.apache.commons.logging.LogFactory;
 public class XMLMime extends MimeType {
     private static Log log = LogFactory.getLog(org.geowebcache.mime.XMLMime.class);
 
-    public XMLMime(String mimeType, String fileExtension, String internalName, String format) throws MimeException {        
+    private static final XMLMime ogcxml = new XMLMime(
+       "application/vnd.ogc.se_xml", "ogc-xml", "ogc-xml",
+       "application/vnd.ogc.se_xml", true);
+
+    private static final XMLMime kml = new XMLMime(
+            "application/vnd.google-earth.kml+xml", "kml", "kml",
+            "application/vnd.google-earth.kml+xml", true);
+    
+    private static final XMLMime kmz = new XMLMime(
+            "application/vnd.google-earth.kmz", "kmz", "kmz",
+            "application/vnd.google-earth.kmz", true);
+    
+    private static final XMLMime gml = new XMLMime(
+            "application/vnd.ogc.gml", "gml", "gml",
+            "application/vnd.ogc.gml", true);
+
+    private static final XMLMime geosearch = new XMLMime(
+            "application/vnd.google-earth.kml+xml", "geosearch-kml", "geosearch-kml",
+            "geosearch-kml", true);
+    
+    private XMLMime(String mimeType, String fileExtension, 
+                String internalName, String format, boolean noop) {
+        super(mimeType, fileExtension, internalName, format, false);
+    }
+        
+    public XMLMime(String mimeType, String fileExtension, 
+            String internalName, String format) throws MimeException {        
         super(mimeType, fileExtension, internalName, format, false);
         
         // Check for trouble
@@ -33,25 +59,16 @@ public class XMLMime extends MimeType {
     }
 
     protected static XMLMime checkForFormat(String formatStr) throws MimeException {
-        if(formatStr.equalsIgnoreCase("application/vnd.ogc.se_xml")) {
-            return new XMLMime("application/vnd.ogc.se_xml", "ogc-xml", "ogc-xml",
-            "application/vnd.ogc.se_xml");
-        }
-        if (formatStr.equalsIgnoreCase("application/vnd.google-earth.kml+xml")) {
-            return new XMLMime("application/vnd.google-earth.kml+xml", "kml", "kml",
-                    "application/vnd.google-earth.kml+xml");
+        if(formatStr.equalsIgnoreCase("application/vnd.google-earth.kml+xml")) {
+            return kml;
         } else if (formatStr.equalsIgnoreCase("application/vnd.google-earth.kmz")) {
-            return new XMLMime("application/vnd.google-earth.kmz", "kmz", "kmz",
-                    "application/vnd.google-earth.kmz");
+            return kmz;
+        } else if(formatStr.equalsIgnoreCase("application/vnd.ogc.se_xml")) {
+            return ogcxml;
         } else if (formatStr.equalsIgnoreCase("application/vnd.ogc.gml")) {
-            return new XMLMime("application/vnd.ogc.gml", "gml", "gml",
-                    "application/vnd.ogc.gml");
-        } else if (formatStr.equalsIgnoreCase("application/vnd.ogc.gml")) {
-            return new XMLMime("application/vnd.ogc.gml", "gml", "gml",
-            "application/vnd.ogc.gml");
+            return gml;
         } else if (formatStr.equalsIgnoreCase("geosearch-kml")) {
-            return new XMLMime("application/vnd.google-earth.kml+xml", "geosearch-kml", "geosearch-kml",
-            "geosearch-kml");
+            return geosearch;
         }
         
         return null;
@@ -68,17 +85,13 @@ public class XMLMime extends MimeType {
     
     protected static XMLMime checkForExtension(String fileExtension) throws MimeException {
         if (fileExtension.equalsIgnoreCase("kml")) {
-            return new XMLMime("application/vnd.google-earth.kml+xml", "kml", "kml",
-                    "application/vnd.google-earth.kml+xml");
+            return kml;
         } else if (fileExtension.equalsIgnoreCase("kmz")) {
-            return new XMLMime("application/vnd.google-earth.kmz", "kmz", "kmz",
-                    "application/vnd.google-earth.kmz");
+            return kmz;
         } else if (fileExtension.equalsIgnoreCase("gml")) {
-            return new XMLMime("application/vnd.ogc.gml", "gml", "gml",
-                    "application/vnd.ogc.gml");
+            return gml;
         } else if (fileExtension.equalsIgnoreCase("geosearch-kml")) {
-            return new XMLMime("application/vnd.google-earth.kml+xml", "geosearch-kml", "geosearch-kml",
-            "geosearch-kml");
+            return geosearch;
         }
         
         return null;

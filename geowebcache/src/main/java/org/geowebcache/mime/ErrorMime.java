@@ -23,6 +23,13 @@ import org.apache.commons.logging.LogFactory;
 public class ErrorMime extends MimeType {
     private static Log log = LogFactory.getLog(org.geowebcache.mime.ErrorMime.class);
     
+    private static final ErrorMime vnd_ogc_se_inimage  = new ErrorMime(
+            "application/vnd.ogc.se_inimage");
+    
+    private ErrorMime(String mimeType) {
+        super(mimeType,null,null,null,false);
+    }
+    
     public ErrorMime(String mimeType, String fileExtension, String internalName, String format)
     throws MimeException {
         super(mimeType, fileExtension, internalName, format, false);
@@ -35,10 +42,10 @@ public class ErrorMime extends MimeType {
     
     public static ErrorMime createFromMimeType(String mimeType) throws MimeException {
         if (mimeType.equalsIgnoreCase("application/vnd.ogc.se_inimage")) {
-            return new ErrorMime("application/vnd.ogc.se_inimage",null,null,null);
+            return vnd_ogc_se_inimage;
         } else {
             log.error("Unsupported MIME type: " + mimeType + ", falling back to application/vnd.ogc.se_inimage.");
-            return new ErrorMime("application/vnd.ogc.se_inimage",null,null,null);
+            return vnd_ogc_se_inimage;
         }
     }
 }
