@@ -229,6 +229,7 @@
 	</configuration>
       </plugin>
 
+<!--
       <plugin>
 	    <artifactId>maven-war-plugin</artifactId>
 	    <executions>
@@ -240,7 +241,7 @@
 	      </execution>
 	    </executions>
       </plugin>
-
+-->
       <plugin>
 	<artifactId>maven-source-plugin</artifactId>
 	<configuration>
