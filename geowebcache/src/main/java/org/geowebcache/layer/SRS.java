@@ -4,7 +4,11 @@ import org.geowebcache.GeoWebCacheException;
 
 public class SRS {
 	private int number = -1;
+        
+        private static final SRS epsg4326 = new SRS(4326); 
 	
+        private static final SRS epsg900913 = new SRS(900913);
+        
 	public SRS(String srs) throws GeoWebCacheException {
 		if(srs.substring(0, 5).equalsIgnoreCase("EPSG:")) {
 			number = Integer.parseInt(srs.substring(5, srs.length()));
@@ -40,6 +44,14 @@ public class SRS {
         
         public String filePath() {
                 return "EPSG_"+Integer.toString(number);
+        }
+        
+        public static SRS getEPSG4326() {
+            return epsg4326;   
+        }
+        
+        public static SRS getEPSG900913() {
+            return epsg900913;
         }
 		
 }
