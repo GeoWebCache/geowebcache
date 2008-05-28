@@ -105,8 +105,8 @@ public class SeederDispatcher implements ApplicationContextAware {
 
             if (!this.allowedSeeders.containsKey(adr.hashCode())) {
                 throw new SeederException(adr.toString()
-                        + " is not in the list of allowed seeders"
-                        + " or addjust in applicationContex.xml or set "
+                        + " is not in the list of allowed seeders."
+                        + " Adjust in applicationContex.xml or set "
                         + SeederDispatcher.GEOWEBCACHE_ALLOWED_SEEDERS);
             }
         }
