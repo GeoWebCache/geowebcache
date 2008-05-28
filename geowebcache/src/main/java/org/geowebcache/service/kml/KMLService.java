@@ -500,9 +500,12 @@ public class KMLService extends Service {
         //}
         
         String gridLocString = gridLocString(gridLoc);
+        String gridLocUrl;
         
         if(useAbsolute) {
-            gridLocString = urlStr + gridLocString;
+            gridLocUrl = urlStr + gridLocString;
+        } else {
+            gridLocUrl = gridLocString;
         }
         String xml = "\n<NetworkLink>"
                 + "\n<name>"
@@ -515,7 +518,7 @@ public class KMLService extends Service {
                 + "<maxLodPixels>"+Integer.toString(maxLodPixels)+"</maxLodPixels></Lod>\n"
                 + bbox.toKML() + "\n</Region>" + "\n<Link>" 
                 + "\n<href>"
-                +  gridLocString + "." + extension
+                +  gridLocUrl + "." + extension
                 +"</href>"
                 + "\n<viewRefreshMode>onRegion</viewRefreshMode>" + "</Link>"
                 + "\n</NetworkLink>\n";
