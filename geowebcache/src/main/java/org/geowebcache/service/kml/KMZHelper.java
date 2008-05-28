@@ -88,7 +88,7 @@ public class KMZHelper {
                 }
                 
                 // If it's a 204 it means no content -> don't link to it
-                if(tr == null || tr.status == 204 ) {
+                if(tr == null || tr.status == 204) {
                     linkGridLocs[i][2] = -1;
                 }
             }

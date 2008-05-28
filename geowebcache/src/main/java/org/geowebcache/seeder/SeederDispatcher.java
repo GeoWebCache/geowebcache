@@ -106,7 +106,7 @@ public class SeederDispatcher implements ApplicationContextAware {
             if (!this.allowedSeeders.containsKey(adr.hashCode())) {
                 throw new SeederException(adr.toString()
                         + " is not in the list of allowed seeders."
-                        + " Adjust in applicationContex.xml or set "
+                        + " Adjust in geowebcache-servlet.xml or set "
                         + SeederDispatcher.GEOWEBCACHE_ALLOWED_SEEDERS);
             }
         }
@@ -295,26 +295,31 @@ public class SeederDispatcher implements ApplicationContextAware {
     private static String getAllowedSeeders(WebApplicationContext ctx) {
         String tmpStr = null;
         if(ctx != null) {
-            tmpStr = ctx.getServletContext().getInitParameter(GEOWEBCACHE_ALLOWED_SEEDERS);
+            tmpStr = ctx.getServletContext().getInitParameter(
+                    GEOWEBCACHE_ALLOWED_SEEDERS);
         }
         if(tmpStr != null) {
-            log.info("Using servlet init context parameter to configure "+GEOWEBCACHE_ALLOWED_SEEDERS+" to "+tmpStr);
+            log.info("Using servlet init context parameter to configure "
+                    +GEOWEBCACHE_ALLOWED_SEEDERS+" to "+tmpStr);
             return tmpStr;
         }
         
         tmpStr = System.getProperty(GEOWEBCACHE_ALLOWED_SEEDERS);
         if(tmpStr != null && tmpStr.length() > 7) {
-            log.info("Using Java environment variable to configure "+GEOWEBCACHE_ALLOWED_SEEDERS+" to "+tmpStr);
+            log.info("Using Java environment variable to configure "
+                    +GEOWEBCACHE_ALLOWED_SEEDERS+" to "+tmpStr);
             return tmpStr;
         }
         
         tmpStr = System.getenv(GEOWEBCACHE_ALLOWED_SEEDERS);
         if(tmpStr != null && tmpStr.length() > 7) {
-            log.info("Using System environment variable to configure "+GEOWEBCACHE_ALLOWED_SEEDERS+" to "+tmpStr);
+            log.info("Using System environment variable to configure "
+                    +GEOWEBCACHE_ALLOWED_SEEDERS+" to "+tmpStr);
             return tmpStr;
         }
 
-        log.info("No context parameter, system or Java environment variables found for " + GEOWEBCACHE_ALLOWED_SEEDERS);
+        log.info("No context parameter, system or Java environment variables"
+                +" found for " + GEOWEBCACHE_ALLOWED_SEEDERS);
         return null;
     }
 

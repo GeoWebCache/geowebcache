@@ -384,15 +384,7 @@ public class WMSLayer implements TileLayer {
         if(response != null) {
             setExpirationHeader(response);
         }
-        
-        if(status == -1) {
-            if(data.length == 0) {
-                status = 204;
-            } else {
-                status = 200;
-            }
-        }
-        
+                
         return new TileResponse(data, mime, status);
     }
     

@@ -170,20 +170,6 @@ public class KMLService extends Service {
             handleOverlay(layer, urlStr, parsed[1], parsed[2], parsed[3], isRaster, response);
         }
     }
-    
-    public void handleKMLRequest(TileLayerDispatcher tLD, HttpServletRequest request,
-            ServiceRequest servReq, HttpServletResponse response) 
-    throws GeoWebCacheException {
-        
-        
-    }
-    
-    public void handleKMZRequest(TileLayerDispatcher tLD, HttpServletRequest request,
-            ServiceRequest servReq, HttpServletResponse response) 
-    throws GeoWebCacheException {
-
-        
-    }
 
     public TileRequest getTileRequest(TileLayer tileLayer, ServiceRequest servReq,
             HttpServletRequest request) throws MimeException,ServiceException {
