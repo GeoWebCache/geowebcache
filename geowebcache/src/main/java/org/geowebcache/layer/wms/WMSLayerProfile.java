@@ -406,6 +406,9 @@ public class WMSLayerProfile {
             Long expire = ServletUtils.extractHeaderMaxAge(backendCon);
             if(expire == null) {
                 expire = Long.valueOf(7200*1000);
+            } else {
+                // Go from seconds to milliseconds
+                expire = expire * 1000; 
             }
             log.error("Layer profile wants MaxAge from backend,"
                     + " but backend does not provide this. Setting to 7200 seconds.");
@@ -416,6 +419,9 @@ public class WMSLayerProfile {
             Long expire = ServletUtils.extractHeaderMaxAge(backendCon);
             if(expire == null) {
                 expire = Long.valueOf(7200*1000);
+            } else {
+                // Go from seconds to milliseconds
+                expire = expire * 1000;
             }
             log.error("Layer profile wants MaxAge from backend,"
                     + " but backend does not provide this. Setting to 7200 seconds.");
