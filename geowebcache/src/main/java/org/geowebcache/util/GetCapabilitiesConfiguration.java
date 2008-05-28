@@ -49,6 +49,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
     private String mimeTypes = null;
 
     private String metaTiling = null;
+    
+    private String vendorParameters = null;
 
     public GetCapabilitiesConfiguration(CacheFactory cacheFactory, String url,
             String mimeTypes, String metaTiling) {
@@ -56,7 +58,17 @@ public class GetCapabilitiesConfiguration implements Configuration {
         this.url = url;
         this.mimeTypes = mimeTypes;
         this.metaTiling = metaTiling;
-
+        log.info("Constructing from url " + url);
+    }
+    
+    public GetCapabilitiesConfiguration(CacheFactory cacheFactory, String url,
+            String mimeTypes, String metaTiling, String vendorParameters) {
+        this.cacheFactory = cacheFactory;
+        this.url = url;
+        this.mimeTypes = mimeTypes;
+        this.metaTiling = metaTiling;
+        this.vendorParameters = vendorParameters;
+        
         log.info("Constructing from url " + url);
     }
 
@@ -142,8 +154,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
                         }
                         stylesStr += iter.next().getName(); 
                     }
-                }
-                
+                }    
                 
                 double minX = layer.getLatLonBoundingBox().getMinX();
                 double minY = layer.getLatLonBoundingBox().getMinY();
@@ -205,6 +216,10 @@ public class GetCapabilitiesConfiguration implements Configuration {
             props.setProperty(WMSLayerProfile.WMS_METATILING, "3x3");
         } else {
             props.setProperty(WMSLayerProfile.WMS_METATILING, metaTiling);
+        }
+        
+        if (this.vendorParameters != null) {
+            props.setProperty(WMSLayerProfile.WMS_VENDOR_PARAMS, vendorParameters);
         }
         WMSLayer layer = new WMSLayer(name, props, this.cacheFactory);
 

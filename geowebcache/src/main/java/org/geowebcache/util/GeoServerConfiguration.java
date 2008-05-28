@@ -30,40 +30,46 @@ public class GeoServerConfiguration extends GetCapabilitiesConfiguration {
 
     public final static String GEOSERVER_WMS_URL = "GEOSERVER_WMS_URL";
 
+    public final static String GEOWEBCACHE_VENDOR_PARAMS = "GEOWEBCACHE_VENDOR_PARAMS";
+    
     private static Log log = LogFactory.getLog(org.geowebcache.util.GeoServerConfiguration.class);
     
     public GeoServerConfiguration(CacheFactory cacheFactory,
             String mimeTypes, String metaTiling) {
         
         super(  cacheFactory, 
-                GeoServerConfiguration.getWMSUrl(cacheFactory.getWebAppContext()),
+                GeoServerConfiguration.getSystemVar(
+                        cacheFactory.getWebAppContext(), GEOSERVER_WMS_URL),
                 mimeTypes, 
-                metaTiling);
-    }
+                metaTiling,
+                GeoServerConfiguration.getSystemVar(
+                        cacheFactory.getWebAppContext(), GEOWEBCACHE_VENDOR_PARAMS)
+            );
+    }    
     
-    private static String getWMSUrl(WebApplicationContext ctx) {
-        String tmpUrl = ctx.getServletContext().getInitParameter(GEOSERVER_WMS_URL);
-        if(tmpUrl != null && tmpUrl.length() > 7) {
-            log.info("Using servlet init context parameter to configure "+GEOSERVER_WMS_URL+" to "+tmpUrl);
-            return tmpUrl;
+    private static String getSystemVar(WebApplicationContext ctx, String varName) {
+        String tmpVar = ctx.getServletContext().getInitParameter(varName);
+        if(tmpVar != null && tmpVar.length() > 7) {
+            log.info("Using servlet init context parameter to configure "+varName+" to "+tmpVar);
+            return tmpVar;
         }
         
-        tmpUrl = System.getProperty(GEOSERVER_WMS_URL);
-        if(tmpUrl != null && tmpUrl.length() > 7) {
-            log.info("Using Java environment variable to configure "+GEOSERVER_WMS_URL+" to "+tmpUrl);
-            return tmpUrl;
+        tmpVar = System.getProperty(varName);
+        if(tmpVar != null && tmpVar.length() > 7) {
+            log.info("Using Java environment variable to configure "+varName+" to "+tmpVar);
+            return tmpVar;
         }
         
-        tmpUrl = System.getenv(GEOSERVER_WMS_URL);
-        if(tmpUrl != null && tmpUrl.length() > 7) {
-            log.info("Using System environment variable to configure "+GEOSERVER_WMS_URL+" to "+tmpUrl);
-            return tmpUrl;
+        tmpVar = System.getenv(varName);
+        if(tmpVar != null && tmpVar.length() > 7) {
+            log.info("Using System environment variable to configure "+varName+" to "+tmpVar);
+            return tmpVar;
         }
         
-        tmpUrl = "http://localhost:8080/geoserver/wms?request=GetCapabilities";
-        log.info("No context parameter, system or Java environment variables found for " + GEOSERVER_WMS_URL);
-        log.info("Reverting to " + tmpUrl );
+        tmpVar = "http://localhost:8080/geoserver/wms?request=GetCapabilities";
+        log.info("No context parameter, system or Java environment variables found for " + varName);
+        log.info("Reverting to " + tmpVar );
         
-        return tmpUrl;
-    }
+        return tmpVar;
+    }    
 }

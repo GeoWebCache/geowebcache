@@ -44,6 +44,8 @@ public class WMSLayerProfile {
     public static final String WMS_METATILING = "metatiling";
 
     public static final String WMS_TRANSPARENT = "transparent";
+    
+    public static final String WMS_VENDOR_PARAMS = "vendorparameters";
 
     public static final int CACHE_NEVER = 0;
 
@@ -310,7 +312,7 @@ public class WMSLayerProfile {
             palette = propPalette;
         }
 
-        String propVendorParameters = props.getProperty("vendorparameters");
+        String propVendorParameters = props.getProperty(WMS_VENDOR_PARAMS);
         if (propVendorParameters != null) {
             vendorParameters = propVendorParameters;
         }
