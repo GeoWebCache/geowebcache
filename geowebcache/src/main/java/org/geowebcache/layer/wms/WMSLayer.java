@@ -409,7 +409,7 @@ public class WMSLayer implements TileLayer {
      * 
      * @param response
      */
-    private void setExpirationHeader(HttpServletResponse response) {
+    public void setExpirationHeader(HttpServletResponse response) {
         if (profile.expireClients == WMSLayerProfile.CACHE_VALUE_UNSET) {
             return;
         }

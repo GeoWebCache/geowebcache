@@ -286,4 +286,6 @@ public interface TileLayer {
      */
     public void putTile(RawTile tile, Object ck, int[] gridLoc) 
     throws CacheException;
+    
+    public void setExpirationHeader(HttpServletResponse response);
 }

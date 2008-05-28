@@ -371,7 +371,8 @@ public class KMLService extends Service {
                 throw new ServiceException(ce.getMessage());
             }
             
-            writeData(overlayXml.getBytes(), overlayMime.getMimeType(), response);
+            tileLayer.setExpirationHeader(response);
+            writeData(zip, overlayMime.getMimeType(), response);
             
         } else {
             
@@ -384,6 +385,7 @@ public class KMLService extends Service {
                 throw new ServiceException(ce.getMessage());
             }
             
+            tileLayer.setExpirationHeader(response);
             writeData(overlayXml.getBytes(), overlayMime.getMimeType(), response);
         }
            
@@ -443,13 +445,13 @@ public class KMLService extends Service {
             }
         }
 
-        // 3) Overlay
+        // 3) Overlay, should be relative 
         if (isRaster) {
             xml += createGroundOverLayElement(gridLoc, urlStr, bbox,
                     formatExtension);
         } else {
             xml += createNetworkLinkElement(tileLayer, urlStr, gridLoc, bbox,
-                    formatExtension, isRaster, absoluteUrl);
+                    formatExtension, isRaster, false);
         }
 
         // 4) Footer
@@ -500,7 +502,7 @@ public class KMLService extends Service {
         String gridLocString = gridLocString(gridLoc);
         
         if(useAbsolute) {
-            gridLocString = urlStr + "/" + gridLocString;
+            gridLocString = urlStr + gridLocString;
         }
         String xml = "\n<NetworkLink>"
                 + "\n<name>"
@@ -614,8 +616,6 @@ public class KMLService extends Service {
         double dz = p1[2] - p2[2];
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
-    
-    
     
     private static void writeData(
             byte[] data, String mimeType, HttpServletResponse response) {
