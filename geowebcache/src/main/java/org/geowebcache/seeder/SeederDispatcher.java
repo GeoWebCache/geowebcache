@@ -115,14 +115,14 @@ public class SeederDispatcher implements ApplicationContextAware {
         String layerStr = layer.getName();
 
         String[] relevantParams = { "bbox", "start", "stop", "srs", "format" };
-        Map params = ServletUtils.selectedStringsFromMap(request
+        String[] paramValues= ServletUtils.selectedStringsFromMap(request
                 .getParameterMap(), relevantParams);
 
         /* Projection */
         SRS srs = null;
         int srsIdx = -1;
 
-        String srsStr = (String) params.get("srs");
+        String srsStr = paramValues[3];
         if (srsStr != null) {
             srs = new SRS(srsStr);
             srsIdx = layer.getSRSIndex(srs);
@@ -136,7 +136,7 @@ public class SeederDispatcher implements ApplicationContextAware {
         /* Bounding box */
         BBOX bbox = null;
 
-        String bboxStr = (String) params.get("bbox");
+        String bboxStr = paramValues[0];
         if (bboxStr != null) {
             bbox = new BBOX(bboxStr);
         }
@@ -149,7 +149,7 @@ public class SeederDispatcher implements ApplicationContextAware {
         /* Format */
         MimeType mime = null;
 
-        String formatStr = (String) params.get("format");
+        String formatStr = paramValues[4];
         if (formatStr != null) {
             mime = MimeType.createFromFormat(formatStr);
         }
@@ -162,7 +162,7 @@ public class SeederDispatcher implements ApplicationContextAware {
         /* Stop */
         int stop = -1;
 
-        String stopStr = (String) params.get("stop");
+        String stopStr = paramValues[2];
         if (stopStr != null) {
             stop = Integer.parseInt(stopStr);
         }
@@ -174,7 +174,7 @@ public class SeederDispatcher implements ApplicationContextAware {
         /* Start */
         int start = -1;
 
-        String startStr = (String) params.get("start");
+        String startStr = paramValues[1];
         if (startStr != null) {
             start = Integer.parseInt(startStr);
         }
@@ -230,14 +230,14 @@ public class SeederDispatcher implements ApplicationContextAware {
         String layerStr = layer.getName();
 
         String[] relevantParams = { "bbox", "start", "stop", "srs", "format" };
-        Map params = ServletUtils.selectedStringsFromMap(request
+        String[] paramValues= ServletUtils.selectedStringsFromMap(request
                 .getParameterMap(), relevantParams);
 
         /* Projection */
         SRS srs = null;
         //int srsIdx = -1;
 
-        String srsStr = (String) params.get("srs");
+        String srsStr = paramValues[3];
         if (srsStr != null) {
             srs = new SRS(srsStr);
             //srsIdx = layer.getSRSIndex(srs);
@@ -246,7 +246,7 @@ public class SeederDispatcher implements ApplicationContextAware {
         /* Bounding box */
         BBOX bbox = null;
 
-        String bboxStr = (String) params.get("bbox");
+        String bboxStr = paramValues[0];
         if (bboxStr != null) {
             bbox = new BBOX(bboxStr);
         }
@@ -258,7 +258,7 @@ public class SeederDispatcher implements ApplicationContextAware {
         /* Format */
         MimeType mime = null;
 
-        String formatStr = (String) params.get("format");
+        String formatStr = paramValues[4];
         if (formatStr != null) {
             mime = MimeType.createFromFormat(formatStr);
         }
@@ -266,7 +266,7 @@ public class SeederDispatcher implements ApplicationContextAware {
         /* Stop */
         int stop = -1;
 
-        String stopStr = (String) params.get("stop");
+        String stopStr = paramValues[2];
         if (stopStr != null) {
             stop = Integer.parseInt(stopStr);
         }
@@ -274,7 +274,7 @@ public class SeederDispatcher implements ApplicationContextAware {
         /* Start */
         int start = -1;
 
-        String startStr = (String) params.get("start");
+        String startStr = (String) paramValues[1];
         if (startStr != null) {
             start = Integer.parseInt(startStr);
         }

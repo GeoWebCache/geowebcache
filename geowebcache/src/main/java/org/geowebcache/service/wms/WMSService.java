@@ -53,11 +53,11 @@ public class WMSService extends Service {
     public ServiceRequest getServiceRequest(HttpServletRequest request)
             throws ServiceException {
         String[] keys = { "layers", "request" };
-        Map<String, String> values = ServletUtils.selectedStringsFromMap(
+        String[] values = ServletUtils.selectedStringsFromMap(
                 request.getParameterMap(), keys);
 
         // Look for getCapabilities
-        String req = values.get(keys[1]);
+        String req = values[1];
         if (req != null && req.equalsIgnoreCase("getcapabilities")) {
             String[] data = { "getcapabilities" };
             ServiceRequest servReq = new ServiceRequest(null, data);
@@ -66,7 +66,7 @@ public class WMSService extends Service {
         }
 
         // Look for layer
-        String layers = values.get(keys[0]);
+        String layers = values[0];
         if (layers == null) {
             throw new ServiceException(
                     "Unable to parse layers parameter from request.");
@@ -87,7 +87,7 @@ public class WMSService extends Service {
             mime = MimeType.createFromFormat(strFormat);
         } catch (MimeException me) {
             throw new ServiceException(
-                    "Unable to determined requested format, " + strFormat);
+                    "Unable to determine requested format, " + strFormat);
         }
 
         if (wmsParams.getSrs() == null) {

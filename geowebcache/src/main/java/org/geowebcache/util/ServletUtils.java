@@ -22,6 +22,7 @@ import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,20 +37,16 @@ public class ServletUtils {
      */
     public static String[] stringsFromMap(Map map, String key) {
         String[] strArray = (String[]) map.get(key);
-
+        
         if (strArray != null) {
             return strArray;
-        } else {
+        } else {            
             // In case there is a case mismatch
-            Iterator iter = map.keySet().iterator();
+            Iterator<Entry> iter = map.entrySet().iterator();
             while (iter.hasNext()) {
-                Object objKey = iter.next();
-                if (objKey.getClass() == String.class) {
-                    String strKey = (String) objKey;
-                    if (strKey.compareToIgnoreCase(key) == 0) {
-                        strArray = (String[]) map.get(strKey);
-                        return strArray;
-                    }
+                Entry<String,String[]> entry = iter.next();
+                if(entry.getKey().equalsIgnoreCase(key)) {
+                    return entry.getValue();
                 }
             }
         }
@@ -80,13 +77,51 @@ public class ServletUtils {
      * @param keys
      * @return
      */
-    public static Map<String,String> selectedStringsFromMap(Map map, String[] keys) {
-        HashMap<String,String> retMap = new HashMap<String,String>();
-        for(int i=0; i<keys.length; i++) {
-            retMap.put(keys[i], stringFromMap(map,keys[i]));
+    public static String[][] selectedStringArraysFromMap(Map map, String[] keys) {
+        String[][] retAr = new String[keys.length][];
+        
+        Iterator<Entry> iter = map.entrySet().iterator();
+        while(iter.hasNext()) {
+            Entry<String,String[]> entry = iter.next();
+            String key = entry.getKey();
+            
+            for(int i=0;i<keys.length;i++) {
+                if(key.equalsIgnoreCase(keys[i])) {
+                    retAr[i] = entry.getValue();
+                    continue;
+                }
+            }
         }
         
-        return retMap;
+        return retAr;
+    }
+    
+    
+    /**
+     * Case insensitive lookup for a couple of strings,
+     * drops everything else
+     * 
+     * @param map
+     * @param keys
+     * @return
+     */
+    public static String[] selectedStringsFromMap(Map map, String[] keys) {
+        String[] retAr = new String[keys.length];
+        
+        Iterator<Entry> iter = map.entrySet().iterator();
+        while(iter.hasNext()) {
+            Entry<String,String[]> entry = iter.next();
+            String key = entry.getKey();
+            
+            for(int i=0;i<keys.length;i++) {
+                if(key.equalsIgnoreCase(keys[i])) {
+                    retAr[i] = entry.getValue()[0];
+                    continue;
+                }
+            }
+        }
+        
+        return retAr;
     }
     
     /**
