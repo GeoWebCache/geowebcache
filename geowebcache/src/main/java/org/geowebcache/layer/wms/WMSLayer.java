@@ -358,7 +358,7 @@ public class WMSLayer implements TileLayer {
        
         tile = new RawTile(tr.data);
         
-        if (profile.expireCache != WMSLayerProfile.CACHE_NEVER) {
+        if (tr.status > 299 || profile.expireCache != WMSLayerProfile.CACHE_NEVER) {
             cache.set(ck, tile, profile.expireCache); 
         }
 

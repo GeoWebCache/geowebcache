@@ -397,7 +397,7 @@ public class KMLService extends Service {
     private static String createOverlay(TileLayer tileLayer, String urlStr,
             int[] gridLoc, String extension, String formatExtension,
             boolean isRaster, boolean absoluteUrl)
-    throws ServiceException {
+    throws ServiceException,GeoWebCacheException {
 
         int srsIdx = tileLayer.getSRSIndex(SRS.getEPSG4326());
         BBOX bbox = tileLayer.getBboxForGridLoc(srsIdx, gridLoc);

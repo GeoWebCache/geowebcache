@@ -60,7 +60,8 @@ public class KMZHelper {
      * @return
      */
     public static int[][] filterGridLocs(TileLayer tileLayer, int srsIdx,
-            MimeType mime, int[][] linkGridLocs) {
+            MimeType mime, int[][] linkGridLocs) 
+    throws GeoWebCacheException {
         
         SRS srs = tileLayer.getProjections()[srsIdx];
         
@@ -90,6 +91,9 @@ public class KMZHelper {
                 // If it's a 204 it means no content -> don't link to it
                 if(tr == null || tr.status == 204) {
                     linkGridLocs[i][2] = -1;
+                } else if(tr.status != 200) {
+                    throw new GeoWebCacheException(
+                            "Unexpected response code from server " + tr.status);
                 }
             }
         }

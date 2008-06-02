@@ -24,6 +24,7 @@ import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
@@ -141,7 +142,8 @@ public class WMSMetaTile extends MetaTile {
         // Create an outgoing WMS request to the server
         Request wmsrequest = new Request(backendURL, wmsparams);
         URL wmsBackendUrl = new URL(wmsrequest.toString());
-        URLConnection wmsBackendCon = wmsBackendUrl.openConnection();
+        HttpURLConnection wmsBackendCon = 
+            (HttpURLConnection) wmsBackendUrl.openConnection();
 
         // Do we need to keep track of expiration headers?
         if (profile.saveExpirationHeaders) {
@@ -154,7 +156,7 @@ public class WMSMetaTile extends MetaTile {
             log.error(ioe.getMessage());
         }
         
-        if (img == null) {
+        if (img == null || wmsBackendCon.getResponseCode() > 299) {
             throw new ServiceException("Failed fetching: "
                     + wmsrequest.toString());
         } else if (log.isDebugEnabled()) {
