@@ -93,23 +93,9 @@ public class SeederDispatcher implements ApplicationContextAware {
     public void handleSeed(TileLayer layer, HttpServletRequest request,
             HttpServletResponse response) throws GeoWebCacheException,
             IOException {
-        InetAddress adr = null;
-        
-        if (!disableCheck) {
-            try {
-                adr = InetAddress.getByName(request.getRemoteAddr());
-            } catch (UnknownHostException uhe) {
-                throw new SeederException("Unable to lookup "
-                        + request.getRemoteAddr());
-            }
 
-            if (!this.allowedSeeders.containsKey(adr.hashCode())) {
-                throw new SeederException(adr.toString()
-                        + " is not in the list of allowed seeders."
-                        + " Adjust in geowebcache-servlet.xml or set "
-                        + SeederDispatcher.GEOWEBCACHE_ALLOWED_SEEDERS);
-            }
-        }
+        // Throws exception if necessary
+        checkSeeder(request);
 
         //String adrStr = adr.toString();
         String layerStr = layer.getName();
@@ -208,23 +194,9 @@ public class SeederDispatcher implements ApplicationContextAware {
     public void handleTruncate(TileLayer layer, HttpServletRequest request,
             HttpServletResponse response) throws GeoWebCacheException,
             IOException {
-        InetAddress adr = null;
         
-        if (!disableCheck) {
-            try {
-                adr = InetAddress.getByName(request.getRemoteAddr());
-            } catch (UnknownHostException uhe) {
-                throw new SeederException("Unable to lookup "
-                        + request.getRemoteAddr());
-            }
-
-            if (!this.allowedSeeders.containsKey(adr.hashCode())) {
-                throw new SeederException(adr.toString()
-                        + " is not in the list of allowed seeders"
-                        + " or addjust in applicationContex.xml or set "
-                        + SeederDispatcher.GEOWEBCACHE_ALLOWED_SEEDERS);
-            }
-        }
+        // Throws exception if necessary
+        checkSeeder(request);
 
         //String adrStr = adr.toString();
         String layerStr = layer.getName();
@@ -321,6 +293,33 @@ public class SeederDispatcher implements ApplicationContextAware {
         log.info("No context parameter, system or Java environment variables"
                 +" found for " + GEOWEBCACHE_ALLOWED_SEEDERS);
         return null;
+    }
+    
+    /**
+     * Throws exception if client is not allowed to seed
+     * 
+     * @param request
+     * @throws SeederException
+     */
+    public void checkSeeder(HttpServletRequest request) 
+    throws SeederException {
+        InetAddress adr = null;
+        
+        if (!disableCheck) {
+            try {
+                adr = InetAddress.getByName(request.getRemoteAddr());
+            } catch (UnknownHostException uhe) {
+                throw new SeederException("Unable to lookup "
+                        + request.getRemoteAddr());
+            }
+
+            if (!this.allowedSeeders.containsKey(adr.hashCode())) {
+                throw new SeederException(adr.toString()
+                        + " is not in the list of allowed seeders."
+                        + " Adjust in geowebcache-servlet.xml or set "
+                        + SeederDispatcher.GEOWEBCACHE_ALLOWED_SEEDERS);
+            }
+        }
     }
 
     public void setApplicationContext(ApplicationContext context) throws BeansException {

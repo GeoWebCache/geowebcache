@@ -35,6 +35,10 @@
     <url-pattern>/truncate/*</url-pattern>
   </servlet-mapping>
 
+  <servlet-mapping>
+    <servlet-name>geowebcache</servlet-name>
+    <url-pattern>/rpc/*</url-pattern>
+  </servlet-mapping>
 
 <!-- 
   <context-param>

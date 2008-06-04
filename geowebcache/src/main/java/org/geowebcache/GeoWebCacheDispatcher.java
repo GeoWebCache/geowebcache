@@ -33,6 +33,7 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.TileRequest;
 import org.geowebcache.layer.TileResponse;
 import org.geowebcache.seeder.SeederDispatcher;
+import org.geowebcache.seeder.SeederException;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceRequest;
 import org.springframework.web.context.WebApplicationContext;
@@ -51,6 +52,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
     public static final String TYPE_SEED = "seed";
 
     public static final String TYPE_TRUNCATE = "truncate";
+    
+    public static final String TYPE_RPC = "rpc";
     
     WebApplicationContext context = null;
 
@@ -139,11 +142,12 @@ public class GeoWebCacheDispatcher extends AbstractController {
         try {
             if (requestComps[0].equalsIgnoreCase(TYPE_SERVICE)) {
                 handleServiceRequest(requestComps[1], request, response);
-                
             } else if (requestComps[0].equalsIgnoreCase(TYPE_SEED)) {
                 handleSeedRequest(request, response);
             } else if (requestComps[0].equalsIgnoreCase(TYPE_TRUNCATE)) {
                 handleTruncateRequest(request, response);
+            } else if (requestComps[0].equalsIgnoreCase(TYPE_RPC)) {
+                handleRPCRequest(requestComps[1],request, response);
             } else {
                 writeError(response, 404, "Unknow path: " + requestComps[0]);
             }
@@ -220,9 +224,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
         if (servReq.getFlag(ServiceRequest.SERVICE_REQUEST_DIRECT)) {
             // 3) Get the configuration that has to respond to this request
             TileLayer layer = null;
-            if(servReq.getLayerIdent() != null) {
-                
-            }
             
             // B4 The service object takes it from here
             service.handleRequest(tileLayerDispatcher, request, servReq, response);
@@ -310,6 +311,28 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
     }
 
+    private void handleRPCRequest(String action, HttpServletRequest request, 
+            HttpServletResponse response) {
+        if(action.equalsIgnoreCase("reinit")) {
+            
+            try {
+                // Throws exception if necessary
+                seederDispatcher.checkSeeder(request);
+                tileLayerDispatcher.reInit();
+                response.setStatus(204);
+                
+            } catch (GeoWebCacheException gwce) {
+                try {
+                    log.error(gwce.getMessage());
+                    response.setStatus(500);
+                    response.getOutputStream().write(gwce.getMessage().getBytes());
+                } catch (IOException ioe) {
+                    // Do nothing..
+                }
+            }            
+        }
+    }
+    
     /**
      * Helper function for looking up the service that should handle the
      * request.

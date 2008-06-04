@@ -61,6 +61,24 @@ public class TileLayerDispatcher {
     public void setConfig(List configs) {
         this.configs = configs;
     }
+    
+    /***
+     * Reinitialization is tricky, because we can't really just lock all the
+     * layers, because this would cause people to queue on something that we
+     * may not want to exist post reinit.
+     * 
+     * So we'll just set the current layer set free, ready for garbage collection,
+     * and generate a new one.
+     * 
+     * @throws GeoWebCacheException
+     */
+    public void reInit() throws GeoWebCacheException {
+        synchronized (this) {
+            Boolean result = isInitialized =  null;
+            this.layers = null;
+            isInitialized = result = initialize();
+        }
+    }
 
     /**
      * Returns a list of all the layers. The consumer may still have to
@@ -102,9 +120,7 @@ public class TileLayerDispatcher {
                 configLayers = config.getTileLayers();
             } catch (GeoWebCacheException gwce) {
                 log.error(gwce.getMessage());
-                log
-                        .error("Failed to add layers from "
-                                + config.getIdentifier());
+                log.error("Failed to add layers from " + config.getIdentifier());
             }
 
             log.info("Adding layers from " + config.getIdentifier());
