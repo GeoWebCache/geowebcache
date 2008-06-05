@@ -23,23 +23,23 @@ import org.apache.commons.logging.LogFactory;
 public class XMLMime extends MimeType {
     private static Log log = LogFactory.getLog(org.geowebcache.mime.XMLMime.class);
 
-    private static final XMLMime ogcxml = new XMLMime(
+    public static final XMLMime ogcxml = new XMLMime(
        "application/vnd.ogc.se_xml", "ogc-xml", "ogc-xml",
        "application/vnd.ogc.se_xml", true);
 
-    private static final XMLMime kml = new XMLMime(
+    public static final XMLMime kml = new XMLMime(
             "application/vnd.google-earth.kml+xml", "kml", "kml",
             "application/vnd.google-earth.kml+xml", true);
     
-    private static final XMLMime kmz = new XMLMime(
+    public static final XMLMime kmz = new XMLMime(
             "application/vnd.google-earth.kmz", "kmz", "kmz",
             "application/vnd.google-earth.kmz", true);
     
-    private static final XMLMime gml = new XMLMime(
+    public static final XMLMime gml = new XMLMime(
             "application/vnd.ogc.gml", "gml", "gml",
             "application/vnd.ogc.gml", true);
 
-    private static final XMLMime geosearch = new XMLMime(
+    public static final XMLMime geosearch = new XMLMime(
             "application/vnd.google-earth.kml+xml", "geosearch-kml", "geosearch-kml",
             "geosearch-kml", true);
     

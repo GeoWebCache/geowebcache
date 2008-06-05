@@ -24,22 +24,22 @@ public class ImageMime extends MimeType {
     private static Log log = LogFactory
             .getLog(org.geowebcache.mime.ImageMime.class);
 
-    private static final ImageMime png = 
+    public static final ImageMime png = 
         new ImageMime("image/png", "png", "png", "image/png", true);
 
-    private static final ImageMime jpeg = 
+    public static final ImageMime jpeg = 
         new ImageMime("image/jpeg", "jpeg", "jpeg", "image/jpeg", true);
     
-    private static final ImageMime gif = 
+    public static final ImageMime gif = 
         new ImageMime("image/gif", "gif", "gif", "image/gif", true);    
     
-    private static final ImageMime tiff = 
+    public static final ImageMime tiff = 
             new ImageMime("image/tiff", "tiff", "tiff", "image/tiff", true);
     
-    private static final ImageMime png8 = 
+    public static final ImageMime png8 = 
         new ImageMime("image/png8", "png8", "png", "image/png8", true);
     
-    private static final ImageMime png24 = 
+    public static final ImageMime png24 = 
         new ImageMime("image/png24", "png24", "png", "image/png24", true);
     
     

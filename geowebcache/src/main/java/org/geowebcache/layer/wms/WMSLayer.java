@@ -300,7 +300,7 @@ public class WMSLayer implements TileLayer {
         metaTile.doRequest(profile, tileRequest.SRS, mime.getFormat());
 
         boolean useJAI = true;
-        if (mime.getMimeType().equals("image/jpeg")) {
+        if (mime == ImageMime.jpeg) {
             useJAI = false;
         }
         
