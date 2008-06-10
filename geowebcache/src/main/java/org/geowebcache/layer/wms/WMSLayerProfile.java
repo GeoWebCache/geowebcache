@@ -162,8 +162,7 @@ public class WMSLayerProfile {
                 // for now
                 maxTileWidth[i] = 20037508.34 * 2;
                 maxTileHeight[i] = 20037508.34 * 2;
-                log
-                        .error("GeoWebCache only handles EPSG:4326 and EPSG:900913!");
+                log.error("GeoWebCache only handles EPSG:4326 and EPSG:900913!");
                 throw new GeoWebCacheException(
                         "GeoWebCache only handles EPSG:4326 and EPSG:900913!");
             }
