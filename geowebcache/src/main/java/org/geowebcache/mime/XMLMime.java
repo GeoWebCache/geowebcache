@@ -38,10 +38,6 @@ public class XMLMime extends MimeType {
     public static final XMLMime gml = new XMLMime(
             "application/vnd.ogc.gml", "gml", "gml",
             "application/vnd.ogc.gml", true);
-
-    public static final XMLMime geosearch = new XMLMime(
-            "application/vnd.google-earth.kml+xml", "geosearch-kml", "geosearch-kml",
-            "geosearch-kml", true);
     
     private XMLMime(String mimeType, String fileExtension, 
                 String internalName, String format, boolean noop) {
@@ -67,8 +63,6 @@ public class XMLMime extends MimeType {
             return ogcxml;
         } else if (formatStr.equalsIgnoreCase("application/vnd.ogc.gml")) {
             return gml;
-        } else if (formatStr.equalsIgnoreCase("geosearch-kml")) {
-            return geosearch;
         }
         
         return null;
@@ -90,8 +84,6 @@ public class XMLMime extends MimeType {
             return kmz;
         } else if (fileExtension.equalsIgnoreCase("gml")) {
             return gml;
-        } else if (fileExtension.equalsIgnoreCase("geosearch-kml")) {
-            return geosearch;
         }
         
         return null;

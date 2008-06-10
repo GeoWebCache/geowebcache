@@ -149,7 +149,7 @@ public class KMLService extends Service {
         
         //TODO this needs to be done more nicely
         boolean isRaster = true;
-        if(parsed[3] != null && parsed[3].equalsIgnoreCase("geosearch-kml")) {
+        if(parsed[3] != null && parsed[3].equalsIgnoreCase("kml")) {
             isRaster = false;
         }
         
@@ -409,7 +409,7 @@ public class KMLService extends Service {
         int[][] linkGridLocs = tileLayer.getZoomInGridLoc(srsIdx, gridLoc);
 
         // 3) Apply secondary filter against linking to empty tiles
-        if (formatExtension.equalsIgnoreCase("geosearch-kml")) {
+        if (formatExtension.equalsIgnoreCase("kml")) {
             MimeType mime = null;
             try {
                 mime = MimeType.createFromExtension(formatExtension);
@@ -420,6 +420,7 @@ public class KMLService extends Service {
                     linkGridLocs);
         }
 
+        int moreData = 0;
         for (int i = 0; i < 4; i++) {
             // Only add this link if it is within the bounds
             if (linkGridLocs[i][2] > 0) {
@@ -428,6 +429,7 @@ public class KMLService extends Service {
                 xml += createNetworkLinkElement(tileLayer, urlStr,
                         linkGridLocs[i], linkBbox, formatExtension + "."
                         + extension, isRaster, absoluteUrl);
+                moreData++;
             }
         }
 
@@ -440,8 +442,14 @@ public class KMLService extends Service {
                     formatExtension, isRaster, false);
         }
 
+        //if(moreData > 0) {
+        //    xml += "</Document>\n<Document>"+moreDataIcon(bbox)+"</Document>\n";
+        //} else {
+            xml += "</Document>\n";
+        //}
+        
         // 4) Footer
-        xml += "</Document>\n</kml>";
+        xml += "</kml>";
 
         // log.info("handle overlay");
         return xml;
@@ -577,6 +585,26 @@ public class KMLService extends Service {
                 + "\n</LookAt>\n";
     }
 
+    private static String moreDataIcon(BBOX bbox){
+        
+        return "<Region>\n" +
+             "<Lod><minLodPixels>128</minLodPixels>" +
+             "<maxLodPixels>512</maxLodPixels></Lod>\n" +
+             bbox.toKML() + "</Region>\n" +
+             "<ScreenOverlay><name>More data</name>" +
+                "<visibility>1</visibility>" +
+                "<open>1</open>" +
+                "<Icon><href>http://bbc.blueghost.co.uk/images/bbc_v2.png</href></Icon>" +
+                "<color>ffffffff</color>" + 
+                "<drawOrder>0</drawOrder>" +
+                "<overlayXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>" +
+                "<screenXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>" +
+                "<rotationXY x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/>" +
+                "<size x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/>" +
+                "<rotation>0</rotation>" +
+                "</ScreenOverlay>";
+    }
+    
     private static double[] getRect(double lat, double lon, double radius) {
         double theta = (90 - lat) * Math.PI / 180;
         double phi = (90 - lon) * Math.PI / 180;
