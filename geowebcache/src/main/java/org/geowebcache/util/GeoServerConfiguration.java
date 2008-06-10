@@ -36,7 +36,6 @@ public class GeoServerConfiguration extends GetCapabilitiesConfiguration {
     
     public GeoServerConfiguration(CacheFactory cacheFactory,
             String mimeTypes, String metaTiling) {
-        
         super(  cacheFactory, 
                 GeoServerConfiguration.getSystemVar(
                         cacheFactory.getWebAppContext(), GEOSERVER_WMS_URL),
@@ -46,6 +45,17 @@ public class GeoServerConfiguration extends GetCapabilitiesConfiguration {
                         cacheFactory.getWebAppContext(), GEOWEBCACHE_VENDOR_PARAMS)
             );
     }    
+    
+    public GeoServerConfiguration(CacheFactory cacheFactory,
+            String mimeTypes, String metaTiling, String vendorParams) {
+        super(  cacheFactory, 
+                GeoServerConfiguration.getSystemVar(
+                        cacheFactory.getWebAppContext(), GEOSERVER_WMS_URL),
+                mimeTypes, 
+                metaTiling,
+                vendorParams
+            );
+    }  
     
     private static String getSystemVar(WebApplicationContext ctx, String varName) {
         String tmpVar = ctx.getServletContext().getInitParameter(varName);
