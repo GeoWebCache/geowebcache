@@ -148,7 +148,7 @@ public class KMZHelper {
         //zipos.setLevel(9);
 
         // Add the overlay, links to the next content
-        ZipEntry zeOl = new ZipEntry(namePfx + ".kml");
+        ZipEntry zeOl = new ZipEntry("netlinks_"+namePfx + ".kml");
         zipos.putNextEntry(zeOl);
         zipos.write(overlay);
         //zipos.closeEntry();
