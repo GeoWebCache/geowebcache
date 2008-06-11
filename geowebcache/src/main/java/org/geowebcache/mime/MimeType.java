@@ -34,9 +34,6 @@ public class MimeType {
     private static Log log = LogFactory
             .getLog(org.geowebcache.mime.MimeType.class);
 
-    //public MimeType(boolean supportsTiling) {
-    //    this.supportsTiling = supportsTiling;
-    //}
 
     public MimeType(String mimeType, String fileExtension, String internalName, String format, boolean supportsTiling) {
         this.mimeType = mimeType;
@@ -46,14 +43,6 @@ public class MimeType {
         this.supportsTiling = supportsTiling;
     }
     
-    //public MimeType(String mimeType, String fileExtension, String internalName, boolean supportsTiling) {
-    //    this.mimeType = mimeType;
-    //    this.fileExtension = fileExtension;
-    //    this.internalName = internalName;
-    //    this.supportsTiling = supportsTiling;
-    //    this.format = null;
-    //}
-
     // The string representing the MIME type
     public String getMimeType() {
         return mimeType;
@@ -108,16 +97,24 @@ public class MimeType {
         if (formatStr.length() > 6 
                 && formatStr.substring(0, 6).equalsIgnoreCase("image/")) {
             mimeType = ImageMime.checkForFormat(formatStr);
+            
+            if(mimeType != null) {
+                return mimeType;
+            }
+        }
+ 
+        mimeType = XMLMime.checkForFormat(formatStr);
+        if(mimeType != null) {
+            return mimeType;
         }
         
-        if(mimeType == null) {
-            mimeType = XMLMime.checkForFormat(formatStr);
+        mimeType = TextMime.checkForFormat(formatStr);
+        if (mimeType != null) {
+            return mimeType;
         }
 
-        if (mimeType == null) {
-            log.error("Unsupported format request: " + formatStr + ", returning null");
-        }
-        return mimeType;
+        log.debug("Unsupported format request: " + formatStr + ", returning null");
+        return null;
     }
 
 
@@ -139,8 +136,13 @@ public class MimeType {
         if (mimeType != null) {
             return mimeType;
         }
+        
+        mimeType = TextMime.checkForExtension(fileExtension);
+        if (mimeType != null) {
+            return mimeType;
+        }
 
-        log.error("Unsupported MIME type: " + fileExtension
+        log.debug("Unsupported MIME type: " + fileExtension
                 + ", returning null");
         return null;
     }
