@@ -396,7 +396,7 @@ public class KMLService extends Service {
      */
     private static String createOverlay(TileLayer tileLayer, String urlStr,
             int[] gridLoc, String extension, String formatExtension,
-            boolean isRaster, boolean absoluteUrl)
+            boolean isRaster, boolean isPackaged)
     throws ServiceException,GeoWebCacheException {
 
         int srsIdx = tileLayer.getSRSIndex(SRS.getEPSG4326());
@@ -426,9 +426,12 @@ public class KMLService extends Service {
             if (linkGridLocs[i][2] > 0) {
                 BBOX linkBbox = tileLayer.getBboxForGridLoc(srsIdx,
                         linkGridLocs[i]);
-                xml += createNetworkLinkElement(tileLayer, urlStr,
-                        linkGridLocs[i], linkBbox, formatExtension + "."
-                        + extension, isRaster, absoluteUrl);
+                
+                // Always use absolute URLs for these
+                String gridLocUrl = urlStr + gridLocString(linkGridLocs[i]) 
+                +"." +formatExtension+ "." + extension;
+
+                xml += createNetworkLinkElement(tileLayer, linkBbox, gridLocUrl);
                 moreData++;
             }
         }
@@ -438,8 +441,12 @@ public class KMLService extends Service {
             xml += createGroundOverLayElement(gridLoc, urlStr, bbox,
                     formatExtension);
         } else {
-            xml += createNetworkLinkElement(tileLayer, urlStr, gridLoc, bbox,
-                    formatExtension, isRaster, false);
+            // KML
+            String gridLocUrl = gridLocString(gridLoc) + "." + formatExtension;
+            if(isPackaged) {
+                gridLocUrl = "data_" + gridLocUrl;
+            }
+            xml += createNetworkLinkElement(tileLayer, bbox, gridLocUrl);
         }
 
         //if(moreData > 0) {
@@ -485,34 +492,24 @@ public class KMLService extends Service {
      * @param extension
      * @return
      */
-    private static String createNetworkLinkElement(TileLayer layer, String urlStr,
-            int[] gridLoc, BBOX bbox, String extension, boolean isRaster, boolean useAbsolute) {
+    private static String createNetworkLinkElement(
+            TileLayer layer, BBOX bbox, String gridLocUrl) {
         
         int maxLodPixels = -1;
         //if(isRaster) {
         //    maxLodPixels = 385;
         //}
         
-        String gridLocString = gridLocString(gridLoc);
-        String gridLocUrl;
-        
-        if(useAbsolute) {
-            gridLocUrl = urlStr + gridLocString;
-        } else {
-            gridLocUrl = gridLocString;
-        }
         String xml = "\n<NetworkLink>"
                 + "\n<name>"
                 + layer.getName()
-                + " - "
-                + gridLocString
                 + "</name>"
                 + "\n<Region>"
                 + "\n<Lod><minLodPixels>128</minLodPixels>"
                 + "<maxLodPixels>"+Integer.toString(maxLodPixels)+"</maxLodPixels></Lod>\n"
                 + bbox.toKML() + "\n</Region>" + "\n<Link>" 
                 + "\n<href>"
-                +  gridLocUrl + "." + extension
+                +  gridLocUrl
                 +"</href>"
                 + "\n<viewRefreshMode>onRegion</viewRefreshMode>" + "</Link>"
                 + "\n</NetworkLink>\n";

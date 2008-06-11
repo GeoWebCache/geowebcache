@@ -155,7 +155,7 @@ public class KMZHelper {
 
         // Add the actual data, if applicable
         if(data != null) {
-            ZipEntry zeData = new ZipEntry(namePfx+"."+formatExtension);
+            ZipEntry zeData = new ZipEntry("data_" + namePfx+"."+formatExtension);
             zipos.putNextEntry(zeData);
             zipos.write(data);
             //zipos.closeEntry();
