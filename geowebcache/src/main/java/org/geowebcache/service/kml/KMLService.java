@@ -90,11 +90,11 @@ public class KMLService extends Service {
         String ext = splitStr[splitStr.length - 2];
         if(ext.equals(KMLService.EXTENSION_KML) || 
                 ext.equals(KMLService.EXTENSION_KMZ)) {
-            // layername.kml or layername.kmz
+            // layername.km[z|l] or layername.format.km[z|l]
             retStrs[0] = filename.substring(0,typeExtOfst);
             retStrs[1] = "";
         } else {
-            // layername/key.extension
+            // layername/key.format.km[z|l]
             retStrs[0] = splitStr[splitStr.length - 2];
             retStrs[1] = filename.substring(0,typeExtOfst);
         }
@@ -114,8 +114,8 @@ public class KMLService extends Service {
 
         ServiceRequest servReq = new ServiceRequest(parsed[0], parsed);
        
-        // If it does not end in .kml it is a tile request
-        if (parsed[2].equalsIgnoreCase(EXTENSION_KML)
+        // If it does not end in .format.kml or .kmz it is a tile request
+        if ((parsed[2].equalsIgnoreCase(EXTENSION_KML) && parsed[3] != null)
                 || parsed[2].equalsIgnoreCase(EXTENSION_KMZ)) {
             servReq.setFlag(true, ServiceRequest.SERVICE_REQUEST_DIRECT);
         }
