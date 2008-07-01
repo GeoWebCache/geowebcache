@@ -22,6 +22,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
@@ -149,12 +150,20 @@ public class WMSMetaTile extends MetaTile {
         if (profile.saveExpirationHeaders) {
             profile.saveExpirationInformation(wmsBackendCon);
         }
+
+        InputStream is = wmsBackendCon.getInputStream();
         
         try {
-            img = ImageIO.read(wmsBackendCon.getInputStream());
+            img = ImageIO.read(is);
         } catch(IOException ioe) {
             log.error(ioe.getMessage());
+        } finally {
+        	if(is != null) {
+        		is.close();
+        	}
+        	wmsBackendCon.disconnect();
         }
+        
         
         if (img == null || wmsBackendCon.getResponseCode() > 299) {
             throw new ServiceException("Failed fetching: "

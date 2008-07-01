@@ -531,12 +531,12 @@ public class WMSLayer implements TileLayer {
             //        profile.expireCache == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE 
             //        || profile.expireClients == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE);
 
+            HttpURLConnection wmsBackendCon = null;
             try {
                 // Create an outgoing WMS request to the server
                 Request wmsrequest = new Request(backendURL, wmsparams);
                 URL wmsBackendUrl = new URL(wmsrequest.toString());
-                HttpURLConnection wmsBackendCon = 
-                    (HttpURLConnection) wmsBackendUrl.openConnection();
+                wmsBackendCon = (HttpURLConnection) wmsBackendUrl.openConnection();
 
                 buffer = ServletUtils.readStream(
                         wmsBackendCon.getInputStream(),-1,-1);
@@ -552,6 +552,8 @@ public class WMSLayer implements TileLayer {
                 throw new GeoWebCacheException(
                         "Error forwarding request, " + backendURL
                         + wmsparams.toString() + " " + ioe.getMessage());
+            } finally {
+            	wmsBackendCon.disconnect();
             }
 
             backendTries++;
