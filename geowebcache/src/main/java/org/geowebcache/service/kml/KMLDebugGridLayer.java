@@ -188,14 +188,15 @@ public class KMLDebugGridLayer implements TileLayer, Cache, CacheKey {
                 + "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
                 + "<Document>\n"
                 //+"<!-- Name>DocumentName</Name --->"
+                +"<Placemark id=\"PlaceMarkId\">\n"
+                //+"<styleUrl>#square</styleUrl>\n"
+                +"<name>"+gridLoc[0]+ ","+gridLoc[1]+","+gridLoc[2]+"</name>"
                 +"<Style id=\"square\">\n"
                 +"<PolyStyle><color>7fffffff</color><colorMode>random</colorMode>\n"  
                 +"</PolyStyle>\n"
+                +"<IconStyle><Icon><href>http://icons.opengeo.org/dynamic/circle/aaffaa_aaffaa_2.png</href></Icon></IconStyle>\n"
                 +"<LabelStyle id=\"name\"><color>ffffffff</color><colorMode>normal</colorMode><scale>1.0</scale></LabelStyle>\n"
                 +"</Style>\n"
-                +"<Placemark id=\"PlaceMarkId\">\n"
-                +"<styleUrl>#square</styleUrl>\n"
-                +"<name>x:"+gridLoc[0]+ " y:"+gridLoc[1]+" z:"+gridLoc[2]+"</name>"
                 +"<MultiGeometry>\n"
                 +"<Point><coordinates>"+((bbox.coords[0]+bbox.coords[2])/2) 
                 +","+ ((bbox.coords[1]+bbox.coords[3])/2) 
