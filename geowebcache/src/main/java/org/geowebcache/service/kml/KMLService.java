@@ -51,7 +51,7 @@ public class KMLService extends Service {
     public static final String EXTENSION_KMZ = "kmz";
     
     // public static final int EXTENSION_IMAGE_LENGTH = 4;
-
+        
     public KMLService() {
         super(SERVICE_KML);
     }
@@ -102,6 +102,13 @@ public class KMLService extends Service {
         return retStrs;
     }
 
+    /**
+     * This is the entry point, this is where we tell the 
+     * dispatcher whether we want to handle the request or
+     * forward it to the tile layer. 
+     * 
+     * The latter happens if we just want an image tile
+     */
     public ServiceRequest getServiceRequest(HttpServletRequest request)
             throws ServiceException {
         String[] parsed = null;
@@ -116,26 +123,36 @@ public class KMLService extends Service {
        
         // If it does not end in .format.kml or .kmz it is a tile request
         if ((parsed[2].equalsIgnoreCase(EXTENSION_KML) && parsed[3] != null)
-                || parsed[2].equalsIgnoreCase(EXTENSION_KMZ)) {
+                || parsed[2].equalsIgnoreCase(EXTENSION_KMZ)
+                || parsed[0].equalsIgnoreCase(KMLDebugGridLayer.LAYERNAME)) {
             servReq.setFlag(true, ServiceRequest.SERVICE_REQUEST_DIRECT);
         }
         return servReq;
     }
 
+    /**
+     * This is 
+     * 
+     */
     public void handleRequest(TileLayerDispatcher tLD, HttpServletRequest request,
             ServiceRequest servReq, HttpServletResponse response) 
     throws GeoWebCacheException {
 
         String[] parsed = servReq.getData();
 
-        TileLayer layer = tLD.getTileLayer(parsed[0]);
+        TileLayer layer;
         
-        if(layer == null) {
-            throw new ServiceException("No layer provided, request parsed to: " + parsed[0]);
-        } else if(! layer.isInitialized()){
-            layer.initialize();
+        if(! parsed[0].equalsIgnoreCase(KMLDebugGridLayer.LAYERNAME)) {
+            layer = tLD.getTileLayer(parsed[0]);
+            
+            if(layer == null) {
+                throw new ServiceException("No layer provided, request parsed to: " + parsed[0]);
+            } else if(! layer.isInitialized()){
+                layer.initialize();
+            }
+        } else {
+            layer = KMLDebugGridLayer.getInstance();
         }
-        
         
         String urlStr = request.getRequestURL().toString();
         int endOffset = urlStr.length() - parsed[1].length()
@@ -317,7 +334,8 @@ public class KMLService extends Service {
         }
         
         // Check the cache
-        Object ck = (Object) tileLayer.getCacheKey().createKey(
+        CacheKey cacheKey = tileLayer.getCacheKey();
+        Object ck = (Object) cacheKey.createKey(
                 tileLayer.getCachePrefix(), 
                 gridLoc[0], gridLoc[1], gridLoc[2], 
                 SRS.getEPSG4326(), formatExtension + "." + extension);
@@ -496,10 +514,13 @@ public class KMLService extends Service {
             TileLayer layer, BBOX bbox, String gridLocUrl) {
         
         int maxLodPixels = -1;
-        //if(isRaster) {
-        //    maxLodPixels = 385;
-        //}
         
+        
+        // Hack
+        if(layer instanceof KMLDebugGridLayer && gridLocUrl.startsWith("data_")) {
+            maxLodPixels = 385;
+        }
+      
         String xml = "\n<NetworkLink>"
                 + "\n<name>"
                 + layer.getName()
@@ -642,5 +663,4 @@ public class KMLService extends Service {
             // Do nothing...
         }
     }
-
 }

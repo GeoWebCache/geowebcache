@@ -142,7 +142,9 @@ public class WMSMetaTile extends MetaTile {
             ServiceException {
         // Create an outgoing WMS request to the server
         Request wmsrequest = new Request(backendURL, wmsparams);
-        URL wmsBackendUrl = new URL(wmsrequest.toString());
+        String urlStr = wmsrequest.toString();
+        System.out.println(urlStr);
+        URL wmsBackendUrl = new URL(urlStr);
         HttpURLConnection wmsBackendCon = 
             (HttpURLConnection) wmsBackendUrl.openConnection();
 
@@ -230,6 +232,8 @@ public class WMSMetaTile extends MetaTile {
             try {
                 tile = img.getSubimage(minX, minY, tileWidth, tileHeight);
             } catch (RasterFormatException rfe) {
+                log.error("RendereedImage.getSubimage("+minX+","+minY+","
+                        +tileWidth+","+tileHeight+") threw exception:");
                 rfe.printStackTrace();
             }
         }
