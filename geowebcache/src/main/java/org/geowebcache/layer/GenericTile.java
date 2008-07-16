@@ -26,7 +26,7 @@ import java.io.Serializable;
  * 
  * @author Arne Kepp, The Open Planning Project
  */
-public class RawTile implements Serializable {
+public class GenericTile implements Serializable {
     /**
      * @serial
      */
@@ -35,7 +35,7 @@ public class RawTile implements Serializable {
     // Store the image in memory
     private byte[] data = null;
 
-    public RawTile(byte[] data) {
+    public GenericTile(byte[] data) {
         this.data = data;
     }
 

@@ -27,7 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheKey;
-import org.geowebcache.layer.RawTile;
+import org.geowebcache.layer.GenericTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -340,7 +340,7 @@ public class KMLService extends Service {
                 gridLoc[0], gridLoc[1], gridLoc[2], 
                 SRS.getEPSG4326(), formatExtension + "." + extension);
         
-        RawTile tile = tileLayer.tryCacheFetch(ck);
+        GenericTile tile = tileLayer.tryCacheFetch(ck);
         
         // Did we get lucky?
         if(tile != null) {
@@ -370,7 +370,7 @@ public class KMLService extends Service {
                     key, formatExtension, overlayXml.getBytes(), tr.data);
             
             try {
-                tileLayer.putTile(new RawTile(zip), ck, gridLoc);
+                tileLayer.putTile(new GenericTile(zip), ck, gridLoc);
             } catch (CacheException ce) {
                 throw new ServiceException(ce.getMessage());
             }
@@ -384,7 +384,7 @@ public class KMLService extends Service {
                     formatExtension, isRaster, false);
             
             try {
-                tileLayer.putTile(new RawTile(overlayXml.getBytes()), ck, gridLoc);
+                tileLayer.putTile(new GenericTile(overlayXml.getBytes()), ck, gridLoc);
             } catch (CacheException ce) {
                 throw new ServiceException(ce.getMessage());
             }

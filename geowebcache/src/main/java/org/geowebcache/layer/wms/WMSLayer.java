@@ -40,7 +40,7 @@ import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.cache.CacheKey;
 import org.geowebcache.layer.GridLocObj;
-import org.geowebcache.layer.RawTile;
+import org.geowebcache.layer.GenericTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
@@ -242,7 +242,7 @@ public class WMSLayer implements TileLayer {
         Object ck = cacheKey.createKey(cachePrefix, gridLoc[0], gridLoc[1],
                 gridLoc[2], tileRequest.SRS, mime.getFileExtension());
         
-        RawTile tile = this.tryCacheFetch(ck);
+        GenericTile tile = this.tryCacheFetch(ck);
         if(tile != null) {
             return this.createTileResponse(tile.getData(), -1, mime, response);
         }
@@ -289,7 +289,7 @@ public class WMSLayer implements TileLayer {
         waitForQueue(metaGlo, condIdx);
 
         /** ****************** Check cache again ************** */
-        RawTile tile = this.tryCacheFetch(ck);
+        GenericTile tile = this.tryCacheFetch(ck);
         if(tile != null) {
             // Someone got it already, return lock and we're done
             removeFromQueue(metaGlo, condIdx);
@@ -344,7 +344,7 @@ public class WMSLayer implements TileLayer {
         waitForQueue(glo, condIdx);
 
         /** ****************** Check cache again ************** */
-        RawTile tile = this.tryCacheFetch(ck);
+        GenericTile tile = this.tryCacheFetch(ck);
         if(tile != null) {
             // Someone got it already, return lock and we're done
             removeFromQueue(glo, condIdx);
@@ -356,7 +356,7 @@ public class WMSLayer implements TileLayer {
         //String requestURL = null;
         TileResponse tr = doNonMetatilingRequest(gridLoc, idx, mime.getFormat());
        
-        tile = new RawTile(tr.data);
+        tile = new GenericTile(tr.data);
         
         if (tr.status > 299 || profile.expireCache != WMSLayerProfile.CACHE_NEVER) {
             cache.set(ck, tile, profile.expireCache); 
@@ -367,11 +367,11 @@ public class WMSLayer implements TileLayer {
         return this.createTileResponse(tr.data, tr.status, mime, response);
     }
     
-    public RawTile tryCacheFetch(Object cacheKey) {
-        RawTile tile = null;
+    public GenericTile tryCacheFetch(Object cacheKey) {
+        GenericTile tile = null;
         if (profile.expireCache != WMSLayerProfile.CACHE_NEVER) {
             try {
-                tile = (RawTile) cache.get(cacheKey, profile.expireCache);
+                tile = (GenericTile) cache.get(cacheKey, profile.expireCache);
             } catch (CacheException ce) {
                 ce.printStackTrace();
             }
@@ -452,7 +452,7 @@ public class WMSLayer implements TileLayer {
                 ioe.printStackTrace();
             }
 
-            RawTile tile = new RawTile(out.toByteArray());
+            GenericTile tile = new GenericTile(out.toByteArray());
 
             try {
                 cache.set(ck, tile, profile.expireCache);
@@ -893,7 +893,7 @@ public class WMSLayer implements TileLayer {
      * @param gridLoc
      * @throws CacheException
      */
-    public void putTile(RawTile tile, Object ck, int[] gridLoc) 
+    public void putTile(GenericTile tile, Object ck, int[] gridLoc) 
     throws CacheException {
         
         int condIdx = this.calcLocCondIdx(gridLoc);

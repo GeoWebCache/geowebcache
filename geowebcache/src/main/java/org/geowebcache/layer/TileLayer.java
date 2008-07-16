@@ -240,7 +240,7 @@ public interface TileLayer {
      * @param cacheKey
      * @return
      */
-    public RawTile tryCacheFetch(Object cacheKey);
+    public GenericTile tryCacheFetch(Object cacheKey);
     
     /**
      * Get the prefix for the cache
@@ -284,7 +284,7 @@ public interface TileLayer {
      * @param mime
      * @throws CacheException
      */
-    public void putTile(RawTile tile, Object ck, int[] gridLoc) 
+    public void putTile(GenericTile tile, Object ck, int[] gridLoc) 
     throws CacheException;
     
     public void setExpirationHeader(HttpServletResponse response);

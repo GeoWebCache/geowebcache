@@ -32,7 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
-import org.geowebcache.layer.RawTile;
+import org.geowebcache.layer.GenericTile;
 import org.geowebcache.layer.wms.WMSLayerProfile;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -131,7 +131,7 @@ public class FileCache implements Cache {
             throw new CacheException(ioe);
         }
 
-        return new RawTile(data);
+        return new GenericTile(data);
     }
 
     public boolean remove(Object key)
@@ -155,7 +155,7 @@ public class FileCache implements Cache {
         File fh = new File(filePath);
         File pfh = new File(fh.getParent());
 
-        RawTile tile = (RawTile) obj;
+        GenericTile tile = (GenericTile) obj;
 
         if (pfh.mkdirs()
                 || (pfh.exists() && pfh.isDirectory() && pfh.canWrite())) {

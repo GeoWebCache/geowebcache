@@ -3,9 +3,9 @@
 <beans>
   <bean id="gwcDefaultConfig" class="org.geowebcache.util.PropertiesConfiguration">
     <constructor-arg type="org.geowebcache.cache.CacheFactory" ref="gwcCacheFactory"/>
-    <property name="relativePath"><value>/WEB-INF/classes</value></property>
+    <!-- property name="relativePath"><value>/WEB-INF/classes</value></property -->
     <!-- By default GWC will look for .properties files in the resources folder. -->
-    <!-- property name="relativePath"><value>../resources</value></property -->
+    <property name="relativePath"><value>../resources</value></property>
     <!-- property name="absolutePath"><value>/etc/geowebcache/conf</value></property -->
     <!-- property name="absolutePath"><value>c:\geowebcache\conf</value></property -->
   </bean>
@@ -80,7 +80,7 @@
   <bean id="gwcCacheFile" class="org.geowebcache.cache.file.FileCache">
     <property name="defaultKeyBeanId"><value>gwcCacheKeyFile</value></property>
   </bean>
-  <bean id="gwcCacheKeyFile" class="org.geowebcache.cache.file.FilePathKey"/>
+  <bean id="gwcCacheKeyFile" class="org.geowebcache.cache.file.FilePathKey2"/>
   
   <bean id="gwcUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
     <property name="alwaysUseFullPath" value="true"/>

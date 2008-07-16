@@ -29,7 +29,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheKey;
-import org.geowebcache.layer.RawTile;
+import org.geowebcache.layer.GenericTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileRequest;
@@ -291,7 +291,7 @@ public class KMLDebugGridLayer implements TileLayer, Cache, CacheKey {
         return true;
     }
 
-    public void putTile(RawTile tile, Object ck, int[] gridLoc)
+    public void putTile(GenericTile tile, Object ck, int[] gridLoc)
             throws CacheException {
         // TODO Auto-generated method stub
         //log.warn("putTile");
@@ -327,7 +327,7 @@ public class KMLDebugGridLayer implements TileLayer, Cache, CacheKey {
     }
 
     // Returns the KML for the tile, but not a cached KMZ overlay
-    public RawTile tryCacheFetch(Object cacheKey) {
+    public GenericTile tryCacheFetch(Object cacheKey) {
         // TODO Auto-generated method stub
         //log.warn("done - tryCacheFetch");
         
