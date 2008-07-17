@@ -1,5 +1,7 @@
 package org.geowebcache.cache.file;
 
+import java.io.File;
+
 import org.geowebcache.layer.SRS;
 
 import junit.framework.TestCase;
@@ -34,13 +36,19 @@ public class FilePathKey2Test extends TestCase {
     public void testFilePath() throws Exception {
         FilePathKey2 fpk = new FilePathKey2();
         
+        String expected = "/tmp/gwc"+ File.separator +"EPSG_4326_00"+ File.separator 
+            +"0_0" + File.separator +"00_00.png";
         String actual = fpk.createKey("/tmp/gwc", 0, 0, 0, SRS.getEPSG4326(), "png");
-        this.assertEquals("/tmp/gwc/EPSG_4326_00/0_0/00_00.png", actual);
+        this.assertEquals(expected, actual);
 
+        expected = "/tmp/gwc"+ File.separator +"EPSG_4326_04"+ File.separator 
+            +"1_1" + File.separator +"15_15.png";
         actual = fpk.createKey("/tmp/gwc", 15, 15, 4, SRS.getEPSG4326(), "png");
-        this.assertEquals("/tmp/gwc/EPSG_4326_04/1_1/15_15.png", actual);
+        this.assertEquals(expected, actual);
         
+        expected = "/tmp/gwc"+ File.separator +"EPSG_4326_04"+ File.separator 
+        +"0_0" + File.separator +"03_03.png";
         actual = fpk.createKey("/tmp/gwc", 03, 03, 4, SRS.getEPSG4326(), "png");
-        this.assertEquals("/tmp/gwc/EPSG_4326_04/0_0/03_03.png", actual);
+        this.assertEquals(expected, actual);
     }
 }
