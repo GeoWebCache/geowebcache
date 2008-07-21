@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
@@ -29,12 +30,10 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.TileRequest;
 
-import org.geowebcache.layer.TileResponse;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.ServiceException;
-import org.geowebcache.service.ServiceRequest;
+import org.geowebcache.tile.Tile;
 
 /**
  * Just a helper class for KMZ experimentation stuff
@@ -68,16 +67,12 @@ public class KMZHelper {
         for(int i=0;i<linkGridLocs.length; i++) {
             if(linkGridLocs[i][2] > 0) {
                 
-                TileResponse tr = null;
-                try {                    
-                    // TODO that's too many small objects
-                    TileRequest tileRequest = new TileRequest(
-                            linkGridLocs[i], mime, srs);
-                    
-                    ServiceRequest servRequest 
-                        = new ServiceRequest(tileLayer.getName());
-                    
-                    tr = tileLayer.getResponse(tileRequest, servRequest, null);
+                Tile tile = new Tile(
+                        tileLayer.getName(), SRS.getEPSG4326(), 
+                        linkGridLocs[i], mime, null, null);
+
+                try {                                        
+                    tileLayer.getResponse(tile);
                     
                 } catch (IOException ioe) {
                     log.error(ioe.getMessage());
@@ -89,11 +84,11 @@ public class KMZHelper {
                 }
                 
                 // If it's a 204 it means no content -> don't link to it
-                if(tr == null || tr.status == 204) {
+                if(tile.getStatus() == 204) {
                     linkGridLocs[i][2] = -1;
-                } else if(tr.status != 200) {
+                } else if(tile.getStatus() != 200) {
                     throw new GeoWebCacheException(
-                            "Unexpected response code from server " + tr.status);
+                            "Unexpected response code from server " + tile.getStatus());
                 }
             }
         }

@@ -22,15 +22,21 @@ import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.layer.TileRequest;
+import org.geowebcache.tile.Tile;
 import org.geowebcache.util.ServletUtils;
 
-public class Service {
+public abstract class Service {
     
     private String pathName = null;
-
+    
+    protected static TileLayerDispatcher tlDispatcher = null;
+    
     public Service(String pathName){
         this.pathName = pathName;
+    }
+    
+    public static void setTileLayerDispatcher(TileLayerDispatcher tlDispatcher) {
+        Service.tlDispatcher = tlDispatcher;
     }
     
     /**
@@ -46,21 +52,14 @@ public class Service {
         return new String(pathName);
     }
     
-    public ServiceRequest getServiceRequest(HttpServletRequest request) throws ServiceException {
+    public Tile getTile(HttpServletRequest request, HttpServletResponse response) 
+    throws GeoWebCacheException {
         throw new ServiceException (
                 "Service for " + pathName  + " needs to override "
-                +"getLayerIdentifier(HttpSerlvetRequest)" );
+                +"getTile(HttpSerlvetRequest)" );
     }
     
-    public TileRequest getTileRequest(TileLayer tileLayer, ServiceRequest servReq,
-            HttpServletRequest request) throws GeoWebCacheException {
-        throw new GeoWebCacheException(
-                "Service for " + pathName  + " needs to override "
-                +"getTileRequest(TileLayer,  ServiceRequest, HttpSerlvetRequest)" );
-    }
-    
-    public void handleRequest(TileLayerDispatcher tLD, HttpServletRequest request, 
-            ServiceRequest servReq, HttpServletResponse response) 
+    public void handleRequest(TileLayerDispatcher tLD, Tile tile) 
     throws GeoWebCacheException {
         throw new RuntimeException(
                 "Service for " + pathName  + " needs to override "

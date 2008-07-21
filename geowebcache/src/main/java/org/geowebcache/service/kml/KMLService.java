@@ -27,17 +27,16 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheKey;
-import org.geowebcache.layer.GenericTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.layer.TileRequest;
-import org.geowebcache.layer.TileResponse;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.mime.XMLMime;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
-import org.geowebcache.service.ServiceRequest;
+import org.geowebcache.tile.Tile;
+import org.geowebcache.tile.Tile.RequestHandler;
 import org.geowebcache.util.wms.BBOX;
 
 public class KMLService extends Service {
@@ -60,11 +59,12 @@ public class KMLService extends Service {
      * Parses the pathinfo part of an HttpServletRequest into the three
      * components it is (hopefully) made up of.
      * 
-     * Example 1: /kml/layername.extension
-     * Example 2: /kml/layername/tilekey.extension
+     * Example 1: /kml/layername.format.extension (superoverlay)
+     * Example 2: /kml/layername/tilekey.format.extension (kml or kmz, overlay)
+     * Example 3: /kml/layername/tilekey.format (data)
      * 
      * @param pathInfo
-     * @return {layername, tilekey, extension}
+     * @return {layername, tilekey, format, [wrapper extension]}
      */
     protected static String[] parseRequest(String pathInfo) {
         String[] retStrs = new String[4];
@@ -85,7 +85,6 @@ public class KMLService extends Service {
         	typeExtOfst = extOfst;
         }
 
-        	
         // Three types of requests
         String ext = splitStr[splitStr.length - 2];
         if(ext.equals(KMLService.EXTENSION_KML) || 
@@ -109,8 +108,8 @@ public class KMLService extends Service {
      * 
      * The latter happens if we just want an image tile
      */
-    public ServiceRequest getServiceRequest(HttpServletRequest request)
-            throws ServiceException {
+    public Tile getTile(HttpServletRequest request, HttpServletResponse response) 
+    throws GeoWebCacheException  {
         String[] parsed = null;
         try {
             parsed = parseRequest(request.getPathInfo());
@@ -118,35 +117,38 @@ public class KMLService extends Service {
             throw new ServiceException("Unable to parse KML request : "
                     + e.getMessage());
         }
-
-        ServiceRequest servReq = new ServiceRequest(parsed[0], parsed);
-       
+        
         // If it does not end in .format.kml or .kmz it is a tile request
         if ((parsed[2].equalsIgnoreCase(EXTENSION_KML) && parsed[3] != null)
                 || parsed[2].equalsIgnoreCase(EXTENSION_KMZ)
                 || parsed[0].equalsIgnoreCase(KMLDebugGridLayer.LAYERNAME)) {
-            servReq.setFlag(true, ServiceRequest.SERVICE_REQUEST_DIRECT);
+            
+            return new Tile(Tile.RequestHandler.SERVICE, null, parsed[0], request, response);
+            
+        } else {
+            int[] gridLoc = parseGridLocString(parsed[1]);
+            MimeType mimeType = MimeType.createFromExtension(parsed[2]);
+
+            return new Tile(parsed[0], SRS.getEPSG4326(), gridLoc, mimeType, request, response);
         }
-        return servReq;
     }
 
     /**
      * This is 
      * 
      */
-    public void handleRequest(TileLayerDispatcher tLD, HttpServletRequest request,
-            ServiceRequest servReq, HttpServletResponse response) 
+    public void handleRequest(TileLayerDispatcher tLD, Tile tile) 
     throws GeoWebCacheException {
-
-        String[] parsed = servReq.getData();
-
         TileLayer layer;
         
-        if(! parsed[0].equalsIgnoreCase(KMLDebugGridLayer.LAYERNAME)) {
+        String[] parsed = parseRequest(tile.servletReq.getPathInfo());
+        
+        if(! tile.getLayerId().equalsIgnoreCase(KMLDebugGridLayer.LAYERNAME)) {
             layer = tLD.getTileLayer(parsed[0]);
             
             if(layer == null) {
-                throw new ServiceException("No layer provided, request parsed to: " + parsed[0]);
+                throw new ServiceException(
+                        "No layer provided, request parsed to: " + parsed[0]);
             } else if(! layer.isInitialized()){
                 layer.initialize();
             }
@@ -154,7 +156,9 @@ public class KMLService extends Service {
             layer = KMLDebugGridLayer.getInstance();
         }
         
-        String urlStr = request.getRequestURL().toString();
+        tile.setTileLayer(layer);
+        
+        String urlStr = tile.servletReq.getRequestURL().toString();
         int endOffset = urlStr.length() - parsed[1].length()
                 - parsed[2].length();
         
@@ -169,40 +173,30 @@ public class KMLService extends Service {
         if(parsed[3] != null && parsed[3].equalsIgnoreCase("kml")) {
             isRaster = false;
         }
-        
-        
+
         if (parsed[1].length() == 0) {
             // There's no room for an quadkey -> super overlay
             if(log.isDebugEnabled()) { 
                 log.debug("Request for super overlay for " + parsed[0]
                     + " received");
             }
-            handleSuperOverlay(layer, urlStr, parsed[2], parsed[3], isRaster, response);
+            handleSuperOverlay(tile, urlStr,  parsed[2], parsed[3], isRaster);
         } else {
             if(log.isDebugEnabled()) { 
                 log.debug("Request for overlay for " + parsed[0] 
                   + " received, key " + parsed[1] + ", format hint " + parsed[3]);
             }
             
-            handleOverlay(layer, urlStr, parsed[1], parsed[2], parsed[3], isRaster, response);
+            tile.setTileIndex(parseGridLocString(parsed[1]));
+            handleOverlay(tile, urlStr, parsed[2], parsed[3], isRaster);
         }
     }
 
-    public TileRequest getTileRequest(TileLayer tileLayer, ServiceRequest servReq,
-            HttpServletRequest request) throws MimeException,ServiceException {
-        String[] parsed = parseRequest(request.getPathInfo());
-
-        int[] gridLoc = parseGridLocString(parsed[1]);
-        SRS srs = new SRS(4326);
-
-        MimeType mime = MimeType.createFromExtension(parsed[2]);
-        return new TileRequest(gridLoc, mime, srs);
-    }
-
-    private static void handleSuperOverlay(TileLayer layer, String urlStr,
-            String extension, String formatExtension, 
-            boolean isRaster, HttpServletResponse response) {
-        SRS srs = new SRS(4326);
+    private static void handleSuperOverlay(Tile tile, String urlStr,
+            String formatExtension, String extension, boolean isRaster) {
+        SRS srs = SRS.getEPSG4326();
+        TileLayer layer = tile.getLayer();
+        
         int srsIdx = layer.getSRSIndex(srs);
         BBOX bbox = layer.getBounds(srsIdx);
         
@@ -251,7 +245,9 @@ public class KMLService extends Service {
                 + "\n</Folder>"
                 + "\n</kml>\n";
 
-        writeData(xml.getBytes(), "application/vnd.google-earth.kml+xml", response);
+        tile.setContent(xml.getBytes());
+        tile.setMimeType(XMLMime.kml);
+        writeResponse(tile);
     }
 
     /**
@@ -308,11 +304,11 @@ public class KMLService extends Service {
      *    The cache will only contain the overlay itself, 
      *    the overlay will cause a separate tile request to get the data
      */
-    private static void handleOverlay(TileLayer tileLayer, String urlStr, String key,
-            String extension, String formatExtension, boolean isRaster, 
-            HttpServletResponse response) throws GeoWebCacheException {
+    private static void handleOverlay(Tile tile, String urlStr,
+            String extension, String formatExtension, boolean isRaster) 
+    throws GeoWebCacheException {
         
-        int[] gridLoc = parseGridLocString(key);
+        TileLayer tileLayer = tile.getLayer();
       
         boolean packageData = false;
         if(extension.equalsIgnoreCase(EXTENSION_KMZ) && ! isRaster){
@@ -326,73 +322,61 @@ public class KMLService extends Service {
         
         MimeType dataMime = null;
         MimeType overlayMime = null;
+        
         try {
             dataMime = MimeType.createFromExtension(formatExtension);
             overlayMime = MimeType.createFromExtension(extension);
+        
         } catch (MimeException me) {
             throw new ServiceException(me.getMessage());
         }
         
+        tile.setMimeType(dataMime);
+        
         // Check the cache
         CacheKey cacheKey = tileLayer.getCacheKey();
-        Object ck = (Object) cacheKey.createKey(
-                tileLayer.getCachePrefix(), 
-                gridLoc[0], gridLoc[1], gridLoc[2], 
-                SRS.getEPSG4326(), formatExtension + "." + extension);
-        
-        GenericTile tile = tileLayer.tryCacheFetch(ck);
-        
+
         // Did we get lucky?
-        if(tile != null) {
-            writeData(tile.getData(),overlayMime.getMimeType(),response);
+        if(tileLayer.tryCacheFetch(tile)) {
+            writeResponse(tile);
             return;
         }
         
         // Sigh.... 
         if(packageData) {
-            String overlayXml = createOverlay(tileLayer, urlStr, gridLoc, extension, 
+            // Get the overlay
+            String overlayXml = createOverlay(tile, urlStr, extension, 
                     formatExtension, isRaster, true);
             
-            TileRequest tileRequest = 
-                new TileRequest(gridLoc, dataMime, SRS.getEPSG4326());
-            
-            ServiceRequest servRequest = new ServiceRequest(tileLayer.getName());
-            
-            // This automatically caches the result
-            TileResponse tr = null;
+            // Get the data
             try {
-                tr = tileLayer.getResponse(tileRequest, servRequest, null);
-            } catch(IOException ioe) {
+                tileLayer.getResponse(tile);
+            } catch (IOException ioe) {
+                log.error(ioe.getMessage());
+                ioe.printStackTrace();
                 throw new ServiceException(ioe.getMessage());
             }
             
             byte[] zip = KMZHelper.createZippedKML(
-                    key, formatExtension, overlayXml.getBytes(), tr.data);
+                    gridLocString(tile.getTileIndex()), formatExtension, 
+                    overlayXml.getBytes(), tile.getContent());
             
-            try {
-                tileLayer.putTile(new GenericTile(zip), ck, gridLoc);
-            } catch (CacheException ce) {
-                throw new ServiceException(ce.getMessage());
-            }
-            
-            tileLayer.setExpirationHeader(response);
-            writeData(zip, overlayMime.getMimeType(), response);
-            
+            tile.setMimeType(overlayMime);
+            tile.setContent(zip);
+            tileLayer.putTile(tile);
+
         } else {
             
-            String overlayXml = createOverlay(tileLayer, urlStr, gridLoc, extension, 
+            String overlayXml = createOverlay(tile, urlStr, extension, 
                     formatExtension, isRaster, false);
             
-            try {
-                tileLayer.putTile(new GenericTile(overlayXml.getBytes()), ck, gridLoc);
-            } catch (CacheException ce) {
-                throw new ServiceException(ce.getMessage());
-            }
+            tile.setMimeType(dataMime);
+            tile.setContent(overlayXml.getBytes());
+            tileLayer.putTile(tile);
             
-            tileLayer.setExpirationHeader(response);
-            writeData(overlayXml.getBytes(), overlayMime.getMimeType(), response);
         }
-           
+        
+        writeResponse(tile);
     }
     
     /**
@@ -412,11 +396,14 @@ public class KMLService extends Service {
      * @return
      * @throws ServiceException
      */
-    private static String createOverlay(TileLayer tileLayer, String urlStr,
-            int[] gridLoc, String extension, String formatExtension,
+    private static String createOverlay(Tile tile, String urlStr,
+            String extension, String formatExtension,
             boolean isRaster, boolean isPackaged)
     throws ServiceException,GeoWebCacheException {
 
+        TileLayer tileLayer = tile.getLayer();
+        int[] gridLoc = tile.getTileIndex();
+        
         int srsIdx = tileLayer.getSRSIndex(SRS.getEPSG4326());
         BBOX bbox = tileLayer.getBboxForGridLoc(srsIdx, gridLoc);
 
@@ -652,10 +639,15 @@ public class KMLService extends Service {
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
     
-    private static void writeData(
-            byte[] data, String mimeType, HttpServletResponse response) {
-        response.setContentType(mimeType);
+    private static void writeResponse(Tile tile) {
+        HttpServletResponse response = tile.servletResp;
+        byte[] data = tile.getContent();
+        
+        response.setStatus((int) tile.getStatus());
+        response.setContentType(tile.getMimeType().getMimeType());
         response.setContentLength(data.length);
+        tile.getLayer().setExpirationHeader(response);
+        
         try {
             OutputStream os = response.getOutputStream();
             os.write(data);

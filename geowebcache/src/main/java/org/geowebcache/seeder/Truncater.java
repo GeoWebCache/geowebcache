@@ -95,11 +95,14 @@ public class Truncater {
 
                         int[] gridLoc = { gridx, gridy, level };
 
-                        CacheKey ck = (CacheKey) layer.getCacheKey();
+                        //CacheKey ck = (CacheKey) layer.getCacheKey();
 
+                        if(true) {
+                            throw new GeoWebCacheException("Seeding disabled!");
+                        }
                         // TODO need to revisit case where this is not a string
-                        String strCK = (String) ck.createKey(cachePfx, gridLoc[0], gridLoc[1],gridLoc[2], srs, mimeType.getFileExtension());
-                        System.out.println(strCK);
+                        //String strCK = (String) ck.createKey(cachePfx, gridLoc[0], gridLoc[1],gridLoc[2], srs, mimeType.getFileExtension());
+                        //System.out.println(strCK);
                         
                         // Next column
                         gridx++;

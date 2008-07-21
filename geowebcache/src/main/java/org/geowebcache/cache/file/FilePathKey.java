@@ -21,29 +21,38 @@ import java.io.File;
 
 import org.geowebcache.cache.CacheKey;
 import org.geowebcache.layer.SRS;
+import org.geowebcache.mime.MimeType;
+import org.geowebcache.tile.Tile;
 
 public class FilePathKey implements CacheKey {
     public void init() {
     }
-
-    public String createKey(String prefix, int x, int y, int z, SRS srs, String format) {
+    public Object createKey(Tile tile) {
+        return (Object) this.createKey(tile.getLayer().getCachePrefix(), tile.getTileIndex(), tile.getSRS(), tile.getMimeType());
+    }
+    
+    protected String createKey(String prefix, int[] tileIndex, SRS srs, MimeType mimeType) {
+        int x = tileIndex[0];
+        int y = tileIndex[1];
+        int z = tileIndex[2];
+        
     	String srsStr = srs.filePath();
         String filename = prefix + File.separator + srsStr + File.separator
-        		+ zeroPadder(z, 2) + File.separator 
-        		+ zeroPadder(x / 1000000, 3) + File.separator
+        	+ zeroPadder(z, 2) + File.separator 
+        	+ zeroPadder(x / 1000000, 3) + File.separator
                 + zeroPadder((x / 1000) % 1000, 3) + File.separator
                 + zeroPadder(x % 1000, 3) + File.separator
                 + zeroPadder(y / 1000000, 3) + File.separator
                 + zeroPadder((y / 1000) % 1000, 3) + File.separator
-                + zeroPadder(y % 1000, 3) + "." + format;
+                + zeroPadder(y % 1000, 3) + "." + mimeType.getFileExtension();
         // String fileName = Integer.toString(z) +"-"+ Integer.toString(x) +"-"+
         // Integer.toString(y) + format + "";
         return filename;
     }
 
-    public int getType() {
-        return KEY_FILE_PATH;
-    }
+   // public int getType() {
+   //     return KEY_FILE_PATH;
+   // }
 
     /**
      * Silly way to pad numbers with leading zeros, since I don't know a fast
@@ -72,4 +81,5 @@ public class FilePathKey implements CacheKey {
             }
         }
     }
+
 }

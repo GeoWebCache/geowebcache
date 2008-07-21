@@ -21,13 +21,22 @@ import java.io.File;
 
 import org.geowebcache.cache.CacheKey;
 import org.geowebcache.layer.SRS;
+import org.geowebcache.mime.MimeType;
+import org.geowebcache.tile.Tile;
 
 public class FilePathKey2 implements CacheKey {
     public void init() {
     }
+    
+    public Object createKey(Tile tile) {
+        return (Object) this.createKey(tile.getLayer().getCachePrefix(), tile.getTileIndex(), tile.getSRS(), tile.getMimeType());
+    }
 
-    public String createKey(String prefix, int x, int y, int z, SRS srs,
-            String format) {
+    protected String createKey(String prefix, int[] tileIndex, SRS srs, MimeType mimeType) {
+        int x = tileIndex[0];
+        int y = tileIndex[1];
+        int z = tileIndex[2];
+        
         String srsStr = srs.filePath();
 
         int shift = z / 2;
@@ -46,14 +55,14 @@ public class FilePathKey2 implements CacheKey {
                 + zeroPadder(halfx, digits) + "_" 
                 + zeroPadder(halfy, digits) + File.separator
                 + zeroPadder(x, 2 * digits) + "_" 
-                + zeroPadder(y, 2 * digits) + "." + format;
+                + zeroPadder(y, 2 * digits) + "." + mimeType.getFileExtension();
         // System.out.println(""+x+","+y+","+z+ " " + filename);
         return filename;
     }
 
-    public int getType() {
-        return KEY_FILE_PATH;
-    }
+    //public int getType() {
+    //    return KEY_FILE_PATH;
+    //}
 
     /**
      * Silly way to pad numbers with leading zeros, since I don't know a fast

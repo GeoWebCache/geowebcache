@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.layer.SRS;
 import org.geowebcache.service.Parameters;
 import org.geowebcache.util.wms.BBOX;
 
@@ -302,17 +304,17 @@ public class WMSParameters extends Parameters {
 
     /**
      * @return the srs
+     * @throws GeoWebCacheException 
      */
-    public String getSrs() {
-        return convertToString(get(SRS_PARAM));
+    public SRS getSrs() throws GeoWebCacheException {
+        return new SRS(((String[]) get(SRS_PARAM))[0]);
     }
 
     /**
      * @param srs
-     *            the srs to set
      */
-    public void setSrs(String srs) {
-        set(SRS_PARAM, srs);
+    public void setSrs(SRS srs) {
+        set(SRS_PARAM, srs.toString());
     }
 
     /**

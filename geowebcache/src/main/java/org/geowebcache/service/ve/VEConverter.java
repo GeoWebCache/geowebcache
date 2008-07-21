@@ -19,17 +19,16 @@ package org.geowebcache.service.ve;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.SRS;
-import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.TileRequest;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
-import org.geowebcache.service.ServiceRequest;
+import org.geowebcache.tile.Tile;
 import org.geowebcache.util.ServletUtils;
 
 /**
@@ -46,29 +45,27 @@ public class VEConverter extends Service {
         super(SERVICE_VE);
     }
 
-    public ServiceRequest getServiceRequest(HttpServletRequest request) throws ServiceException  {
-        return new ServiceRequest(super.getLayersParameter(request));
-    }
-    
-    public TileRequest getTileRequest(TileLayer tileLayer,
-            ServiceRequest servReq, HttpServletRequest request) throws ServiceException {
+    public Tile getTile(HttpServletRequest request, HttpServletResponse response) 
+    throws ServiceException  {
         Map params = request.getParameterMap();
+        
+        String layerId = super.getLayersParameter(request);
+        
         String strQuadKey = ServletUtils.stringFromMap(params, "quadkey");
         String strFormat = ServletUtils.stringFromMap(params, "format");
 
         int[] gridLoc = VEConverter.convert(strQuadKey);
         
-        MimeType mime = null;
+        MimeType mimeType = null;
         if(strFormat != null) {
             try {
-                mime = MimeType.createFromFormat(strFormat);
+                mimeType = MimeType.createFromFormat(strFormat);
             } catch (MimeException me) {
                 throw new ServiceException("Unable to determined requested format, " + strFormat);
             }
-        } else {
-            mime = tileLayer.getDefaultMimeType();
         }
-        return new TileRequest(gridLoc,mime,SRS.getEPSG900913());
+        
+        return new Tile(layerId, SRS.getEPSG900913(), gridLoc, mimeType, request, response);
     }
 
     /**

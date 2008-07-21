@@ -19,17 +19,18 @@ package org.geowebcache.service.gmaps;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.TileRequest;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
-import org.geowebcache.service.ServiceRequest;
+import org.geowebcache.service.mgmaps.MGMapsConverter;
+import org.geowebcache.tile.Tile;
 import org.geowebcache.util.ServletUtils;
 
 /**
@@ -45,34 +46,31 @@ public class GMapsConverter extends Service {
     public GMapsConverter() {
         super(SERVICE_GMAPS);
     }
+    
+    public Tile getTile(HttpServletRequest request, HttpServletResponse response) throws ServiceException {
+        String layerId = super.getLayersParameter(request);
 
-    public ServiceRequest getServiceRequest(HttpServletRequest request)  throws ServiceException {
-        return new ServiceRequest(super.getLayersParameter(request));
-    }
-
-    public TileRequest getTileRequest(TileLayer tileLayer, ServiceRequest servReq, 
-            HttpServletRequest request)
-    throws ServiceException {
         Map params = request.getParameterMap();
-        
         String strFormat = ServletUtils.stringFromMap(params, "format");
         String strZoom = ServletUtils.stringFromMap(params, "zoom");
         String strX = ServletUtils.stringFromMap(params, "x");
         String strY = ServletUtils.stringFromMap(params, "y");
 
-        int[] gridLoc = GMapsConverter.convert(Integer.parseInt(strZoom), Integer
-                .parseInt(strX), Integer.parseInt(strY));
-        
-        MimeType mime = null; 
+        int[] gridLoc = GMapsConverter.convert(Integer.parseInt(strZoom), 
+                Integer.parseInt(strX), Integer.parseInt(strY));
+
+        MimeType mimeType = null;
         try {
-            if(strFormat == null) {
+            if (strFormat == null) {
                 strFormat = "image/png";
             }
-            mime = MimeType.createFromFormat(strFormat);
+            mimeType = MimeType.createFromFormat(strFormat);
         } catch (MimeException me) {
-            throw new ServiceException("Unable to determine requested format, " + strFormat);
+            throw new ServiceException("Unable to determine requested format, "
+                    + strFormat);
         }
-        return new TileRequest(gridLoc,mime,SRS.getEPSG900913());
+
+        return new Tile(layerId, SRS.getEPSG900913(), gridLoc, mimeType, request, response);
     }
 
     /**

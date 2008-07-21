@@ -31,12 +31,12 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.layer.TileRequest;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
-import org.geowebcache.service.ServiceRequest;
+import org.geowebcache.tile.Tile;
+import org.geowebcache.tile.Tile.RequestHandler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
 
@@ -50,8 +50,8 @@ public class WMSService extends Service {
         super(SERVICE_WMS);
     }
 
-    public ServiceRequest getServiceRequest(HttpServletRequest request)
-            throws ServiceException {
+    public Tile getTile(HttpServletRequest request, HttpServletResponse response)
+            throws GeoWebCacheException {
         String[] keys = { "layers", "request" };
         String[] values = ServletUtils.selectedStringsFromMap(
                 request.getParameterMap(), keys);
@@ -59,10 +59,8 @@ public class WMSService extends Service {
         // Look for getCapabilities
         String req = values[1];
         if (req != null && req.equalsIgnoreCase("getcapabilities")) {
-            String[] data = { "getcapabilities" };
-            ServiceRequest servReq = new ServiceRequest(null, data);
-            servReq.setFlag(true, ServiceRequest.SERVICE_REQUEST_DIRECT);
-            return servReq;
+            return new Tile(Tile.RequestHandler.SERVICE, "getcapabilities",
+                    values[0], request, response);
         }
 
         // Look for layer
@@ -71,20 +69,15 @@ public class WMSService extends Service {
             throw new ServiceException(
                     "Unable to parse layers parameter from request.");
         }
-
-        return new ServiceRequest(layers);
-    }
-
-    public TileRequest getTileRequest(TileLayer tileLayer,
-            ServiceRequest servReq, HttpServletRequest request)
-            throws GeoWebCacheException {
-
+        
+        TileLayer tileLayer = Service.tlDispatcher.getTileLayer(layers);
+        
         WMSParameters wmsParams = new WMSParameters(request);
-
-        MimeType mime = null;
+        MimeType mimeType = null;
         String strFormat = wmsParams.getFormat();
+        
         try {
-            mime = MimeType.createFromFormat(strFormat);
+            mimeType = MimeType.createFromFormat(strFormat);
         } catch (MimeException me) {
             throw new ServiceException(
                     "Unable to determine requested format, " + strFormat);
@@ -94,8 +87,9 @@ public class WMSService extends Service {
             throw new ServiceException("No SRS specified");
         }
 
-        SRS srs = new SRS(wmsParams.getSrs());
+        SRS srs = wmsParams.getSrs();
         int srsIdx = tileLayer.getSRSIndex(srs);
+        
         if (srsIdx < 0) {
             throw new ServiceException("Unable to match requested SRS "
                     + wmsParams.getSrs() + " to those supported by layer");
@@ -107,45 +101,43 @@ public class WMSService extends Service {
                     "The bounding box parameter is missing or not sane");
         }
 
-        String strOrigin = wmsParams.getOrigin();
-        if (strOrigin != null) {
-            String[] split = strOrigin.split(",");
-            if (split.length != 2) {
-                throw new ServiceException("Unable to parse tilesOrigin,"
-                        + "should not be set anyway: " + strOrigin);
-            }
-            double x = Double.valueOf(split[0]);
-            double y = Double.valueOf(split[1]);
+        int[] tileIndex = tileLayer.getGridLocForBounds(srsIdx, bbox);
+        
+//        String strOrigin = wmsParams.getOrigin();
+//        if (strOrigin != null) {
+//            String[] split = strOrigin.split(",");
+//            if (split.length != 2) {
+//                throw new ServiceException("Unable to parse tilesOrigin,"
+//                        + "should not be set anyway: " + strOrigin);
+//            }
+//            double x = Double.valueOf(split[0]);
+//            double y = Double.valueOf(split[1]);
+//
+//            if (Math.abs(x + 180.0) < 0.5 && x + Math.abs(y + 90.0) < 0.5) {
+//                // ok, fine for EPSG:4326
+//            } else if (Math.abs(x + 20037508.34) < 1.0
+//                    && x + Math.abs(y + 20037508.34) < 1.0) {
+//                // ok, fine for EPSG:9000913
+//            } else {
+//                throw new ServiceException("The tilesOrigin parameter "
+//                        + strOrigin
+//                        + " is not accepted by GeoWebCache, please omit"
+//                        + " or use lower left corner of world bounds.");
+//            }
+//        }
 
-            if (Math.abs(x + 180.0) < 0.5 && x + Math.abs(y + 90.0) < 0.5) {
-                // ok, fine for EPSG:4326
-            } else if (Math.abs(x + 20037508.34) < 1.0
-                    && x + Math.abs(y + 20037508.34) < 1.0) {
-                // ok, fine for EPSG:9000913
-            } else {
-                throw new ServiceException("The tilesOrigin parameter "
-                        + strOrigin
-                        + " is not accepted by GeoWebCache, please omit"
-                        + " or use lower left corner of world bounds.");
-            }
-        }
-
-        return new TileRequest(tileLayer.getGridLocForBounds(srsIdx, bbox),
-                mime, srs);
+        return new Tile(layers, srs, tileIndex, mimeType, request, response);
     }
 
-    public void handleRequest(TileLayerDispatcher tLD,
-            HttpServletRequest request, ServiceRequest servReq,
-            HttpServletResponse response) throws GeoWebCacheException {
+    public void handleRequest(TileLayerDispatcher tLD, Tile tile) throws GeoWebCacheException {
 
-        String[] data = servReq.getData();
-        if (data != null && data[0].equalsIgnoreCase("getcapabilities")) {
-            handleGetCapabilities(tLD, response);
+        if (tile.hint != null && tile.hint.equalsIgnoreCase("getcapabilities")) {
+            handleGetCapabilities(tLD, tile.servletResp);
         } else {
             throw new GeoWebCacheException(
                     "The WMS Service would love to help,"
-                            + " but has no idea what you're trying to do?"
-                            + "Please include request URL in your ");
+                   + " but has no idea what you're trying to do?"
+                   + "Please include request URL in your ");
         }
     }
 
@@ -257,6 +249,13 @@ public class WMSService extends Service {
         return ret;
     }
 
+    /**
+     * Should only be used for getCapabilities
+     * 
+     * @param response
+     * @param data
+     * @throws IOException
+     */
     private void writeData(HttpServletResponse response, byte[] data)
             throws IOException {
 

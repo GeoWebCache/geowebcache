@@ -39,6 +39,9 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.MetaTile;
 import org.geowebcache.layer.SRS;
+import org.geowebcache.mime.ErrorMime;
+import org.geowebcache.mime.MimeType;
+import org.geowebcache.mime.XMLMime;
 import org.geowebcache.service.Request;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.wms.WMSParameters;
@@ -46,9 +49,7 @@ import org.geowebcache.util.wms.BBOX;
 
 public class WMSMetaTile extends MetaTile {
     private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.wms.WMSMetaTile.class);
-    
-    //TODO separate class for XML
+            .getLog(org.geowebcache.layer.wms.WMSMetaTile.class); 
     
     private BufferedImage img = null; // buffer for storing the metatile, if it's an image
 
@@ -64,9 +65,9 @@ public class WMSMetaTile extends MetaTile {
      * @param profile
      * @param initGridPosition
      */
-    protected WMSMetaTile(SRS srs, int[] gridBounds, int[] tileGridPosition,
+    protected WMSMetaTile(SRS srs, MimeType mimeType, int[] gridBounds, int[] tileGridPosition,
             int metaX, int metaY) {
-        super(srs, gridBounds, tileGridPosition, metaX, metaY);
+        super(srs, mimeType, gridBounds, tileGridPosition, metaX, metaY);
     }
 
     /**
@@ -80,14 +81,14 @@ public class WMSMetaTile extends MetaTile {
      *            the desired image format
      * @return
      */
-    protected String doRequest(WMSLayerProfile profile, SRS srs, String formatStr)
+    protected String doRequest(WMSLayerProfile profile)
             throws GeoWebCacheException {
         WMSParameters wmsparams = profile.getWMSParamTemplate();
 
         int srsIdx = profile.getSRSIndex(srs);
         // Fill in the blanks
-        wmsparams.setFormat(formatStr);
-        wmsparams.setSrs(srs.toString());
+        wmsparams.setFormat(super.mimeType.getFormat());
+        wmsparams.setSrs(super.srs);
         wmsparams.setWidth(super.metaX * profile.width);
         wmsparams.setHeight(metaY * profile.height);
         BBOX metaBbox = profile.gridCalc[srsIdx]
@@ -143,7 +144,7 @@ public class WMSMetaTile extends MetaTile {
         // Create an outgoing WMS request to the server
         Request wmsrequest = new Request(backendURL, wmsparams);
         String urlStr = wmsrequest.toString();
-        System.out.println(urlStr);
+        //System.out.println(urlStr);
         URL wmsBackendUrl = new URL(urlStr);
         HttpURLConnection wmsBackendCon = 
             (HttpURLConnection) wmsBackendUrl.openConnection();
@@ -151,6 +152,34 @@ public class WMSMetaTile extends MetaTile {
         // Do we need to keep track of expiration headers?
         if (profile.saveExpirationHeaders) {
             profile.saveExpirationInformation(wmsBackendCon);
+        }
+        
+        // Check that the response code is okay
+        int responseCode = wmsBackendCon.getResponseCode();
+        this.status = responseCode;
+        if (responseCode != 200 && responseCode != 204) {
+            throw new ServiceException(
+                    "Unexpected reponse code from backend: " 
+                    + responseCode + " for " + urlStr);
+        }
+        
+        // Check that we're not getting an error mime back.
+        String responseMime = wmsBackendCon.getContentType();
+        String requestMime = wmsparams.getFormat();
+        if(responseMime != null && ! responseMime.equalsIgnoreCase(requestMime)) {
+            String message = null;
+            if(responseMime.equalsIgnoreCase(ErrorMime.vnd_ogc_se_inimage.getFormat())) {
+                byte[] error = new byte[2048];
+                try {
+                    wmsBackendCon.getInputStream().read(error);
+                } catch(IOException ioe) {
+                    // Do nothing
+                }
+                message = new String(error);
+            }
+            throw new ServiceException(
+                    "MimeType mismatch, expected " + requestMime + " but got " 
+                    + responseMime + " from " + urlStr + "\n\n " + message);
         }
 
         InputStream is = wmsBackendCon.getInputStream();
@@ -166,13 +195,8 @@ public class WMSMetaTile extends MetaTile {
         	wmsBackendCon.disconnect();
         }
         
-        
-        if (img == null || wmsBackendCon.getResponseCode() > 299) {
-            throw new ServiceException("Failed fetching: "
-                    + wmsrequest.toString());
-        } else if (log.isDebugEnabled()) {
-            log.debug("Requested and got: " + wmsrequest.toString());
-        }
+
+
 
         if (log.isTraceEnabled()) {
             log.trace("Got image from backend, height: " + img.getHeight());
@@ -264,9 +288,10 @@ public class WMSMetaTile extends MetaTile {
      * @return true if no error was encountered
      * @throws IOException
      */
-    protected boolean writeTileToStream(int tileIdx, String format,
-            OutputStream os) throws IOException {        
+    protected boolean writeTileToStream(int tileIdx, OutputStream os) throws IOException {        
         if(tiles != null) {
+            String format = super.mimeType.getInternalName();
+            
             if (log.isDebugEnabled()) {
                 log.debug("Thread: " + Thread.currentThread().getName()
                         + " writing: " + tileIdx);

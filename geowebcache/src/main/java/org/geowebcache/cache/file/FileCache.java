@@ -30,10 +30,12 @@ import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
-import org.geowebcache.layer.GenericTile;
+import org.geowebcache.cache.CacheKey;
 import org.geowebcache.layer.wms.WMSLayerProfile;
+import org.geowebcache.tile.Tile;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
@@ -43,8 +45,7 @@ public class FileCache implements Cache {
 
     public final static String GS_DATA_DIR = "GEOSERVER_DATA_DIR";
 
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.cache.file.FileCache.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.cache.file.FileCache.class);
 
     private String defaultKeyBeanId = null;
 
@@ -91,52 +92,33 @@ public class FileCache implements Cache {
     /**
      * See if file exists, read file
      */
-    public Object get(Object key, long ttl)
-            throws org.geowebcache.cache.CacheException {
+    public boolean get(CacheKey keyProto, Tile tile, long ttl)
+            throws CacheException, GeoWebCacheException {
 
-        String filePath = (String) key;
+        String filePath = (String) keyProto.createKey(tile);
         log.trace("Attempting to read" + filePath);
 
         File fh = new File(filePath);
 
-        if (ttl > 0 && fh.lastModified() > System.currentTimeMillis() - ttl) {
-            log.debug(filePath + " had expired, last modified "
-                    + fh.lastModified());
-            return null;
-        }
-
-        if (!fh.canRead()) {
-            log.debug("Unable to read " + filePath);
-            return null;
-        }
-
-        long length = fh.length();
-
-        if (length < 1) {
-            return null;
-        }
-
-        byte[] data = new byte[(int) length];
-
         try {
             InputStream is = new FileInputStream(fh);
-            is.read(data);
+            tile.read(is);
             is.close();
         } catch (FileNotFoundException fnfe) {
             log.trace("Did not find " + filePath);
-            return null;
+            return false;
         } catch (IOException ioe) {
-            log.error("IOException reading from " + filePath + ": "
-                    + ioe.getMessage());
+            log.error("IOException reading from " + filePath + ": "+ ioe.getMessage());
             throw new CacheException(ioe);
         }
-
-        return new GenericTile(data);
+        
+        return true;
     }
 
-    public boolean remove(Object key)
+    public boolean remove(CacheKey keyProto, Tile tile)
             throws org.geowebcache.cache.CacheException {
-        String filePath = (String) key;
+        String filePath = (String) keyProto.createKey(tile);
+        
         File fh = new File(filePath);
         return fh.delete();
     }
@@ -145,23 +127,21 @@ public class FileCache implements Cache {
         // Do nothing for now
     }
 
-    public void set(Object key, Object obj, long ttl)
+    public void set(CacheKey keyProto, Tile tile, long ttl)
             throws org.geowebcache.cache.CacheException {
         if (ttl == WMSLayerProfile.CACHE_NEVER) {
             return;
         }
 
-        String filePath = (String) key;
+        String filePath = (String) keyProto.createKey(tile);
         File fh = new File(filePath);
         File pfh = new File(fh.getParent());
-
-        GenericTile tile = (GenericTile) obj;
 
         if (pfh.mkdirs()
                 || (pfh.exists() && pfh.isDirectory() && pfh.canWrite())) {
             try {
                 FileOutputStream os = new FileOutputStream(fh);
-                os.write(tile.getData());
+                tile.write(os);
                 os.flush();
                 os.close();
             } catch (FileNotFoundException fnfe) {

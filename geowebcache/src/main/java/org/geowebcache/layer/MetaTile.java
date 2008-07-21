@@ -18,6 +18,7 @@ package org.geowebcache.layer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.mime.MimeType;
 
 public abstract class MetaTile {
     private static Log log = LogFactory
@@ -33,12 +34,14 @@ public abstract class MetaTile {
 
     protected SRS srs;
     
-    protected int status = -1;
+    protected long status = -1;
     
+    protected MimeType mimeType;
     
-    protected MetaTile(SRS srs, int[] gridBounds, int[] tileGridPosition,
+    protected MetaTile(SRS srs, MimeType mimeType, int[] gridBounds, int[] tileGridPosition,
     		int metaX, int metaY) {
     	this.srs = srs;
+    	this.mimeType = mimeType;
         this.metaX = metaX;
         this.metaY = metaY;
         
@@ -98,7 +101,7 @@ public abstract class MetaTile {
             }
         }
         } catch (java.lang.NullPointerException npe) {
-            System.out.println("oops");
+            log.error("Null pointer exception in calculateTilesGridositions()");
         }
         return tilesGridPositions;
     }
@@ -135,7 +138,7 @@ public abstract class MetaTile {
      * 
      * @return the status code set by the backend, -1 if not known
      */
-    public int getStatus() {
+    public long getStatus() {
       return status;  
     }
 }

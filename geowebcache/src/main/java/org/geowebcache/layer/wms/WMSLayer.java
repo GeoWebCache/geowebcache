@@ -40,18 +40,16 @@ import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.cache.CacheKey;
 import org.geowebcache.layer.GridLocObj;
-import org.geowebcache.layer.GenericTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.TileRequest;
-import org.geowebcache.layer.TileResponse;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.mime.XMLMime;
 import org.geowebcache.service.Request;
 import org.geowebcache.service.ServiceException;
-import org.geowebcache.service.ServiceRequest;
 import org.geowebcache.service.wms.WMSParameters;
+import org.geowebcache.tile.Tile;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
 
@@ -223,42 +221,36 @@ public class WMSLayer implements TileLayer {
      * @param wmsparams
      * @return
      */
-    public TileResponse getResponse(TileRequest tileRequest, 
-            ServiceRequest servReq, HttpServletResponse response) 
-    throws GeoWebCacheException, IOException {        
-        MimeType mime = tileRequest.mimeType;
+    public Tile getResponse(Tile tile)
+    throws GeoWebCacheException, IOException {
+        HttpServletResponse response = tile.servletResp;
+        MimeType mime = tile.getMimeType();
 
         if (mime == null) {
             mime = this.formats[0];
         }
+        
+        SRS tileSrs = tile.getSRS();
 
-        int[] gridLoc = tileRequest.gridLoc;
-        int idx = getSRSIndex(tileRequest.SRS);
+        int[] gridLoc = tile.getTileIndex();
+        int idx = getSRSIndex(tileSrs);
 
         // Final preflight check, throws exception if necessary
         profile.gridCalc[idx].locationWithinBounds(gridLoc);
         
-        // Quick and dirty... cache should take care of any locking issues
-        Object ck = cacheKey.createKey(cachePrefix, gridLoc[0], gridLoc[1],
-                gridLoc[2], tileRequest.SRS, mime.getFileExtension());
-        
-        GenericTile tile = this.tryCacheFetch(ck);
-        if(tile != null) {
-            return this.createTileResponse(tile.getData(), -1, mime, response);
+        if(tryCacheFetch(tile)) {
+            return finalizeTile(tile);
         }
         
-        if(! tileRequest.askBackend) {
-            return null;
-        }
+        //if(! tileRequest.askBackend) {
+        //    return null;
+        //}
             
         // Okay, so we need to go to the backend
-        if(mime.supportsTiling() 
-                && servReq.getFlag(ServiceRequest.SERVICE_REQUEST_METATILE)) {
-            return getMetatilingReponse(
-                    tileRequest, gridLoc, ck, mime, idx, response);  
+        if(mime.supportsTiling()) {
+            return getMetatilingReponse(tile);  
         } else {
-            return getNonMetatilingReponse(
-                    tileRequest, gridLoc, ck, mime, idx, response);
+            return getNonMetatilingReponse(tile);
         }
     }
     
@@ -273,14 +265,17 @@ public class WMSLayer implements TileLayer {
      * @return
      * @throws GeoWebCacheException
      */
-    private TileResponse getMetatilingReponse(TileRequest tileRequest,
-            int[] gridLoc, Object ck, MimeType mime, int idx, 
-            HttpServletResponse response)
+    private Tile getMetatilingReponse(Tile tile)
     throws GeoWebCacheException {
         
-        WMSMetaTile metaTile = new WMSMetaTile(tileRequest.SRS,
-                profile.gridCalc[idx].getGridBounds(gridLoc[2]), gridLoc,
-                profile.metaWidth, profile.metaHeight);
+        int idx = this.getSRSIndex(tile.getSRS());
+        int[] gridLoc = tile.getTileIndex();
+
+        WMSMetaTile metaTile = new WMSMetaTile(
+                tile.getSRS(), tile.getMimeType(),
+                profile.gridCalc[idx].getGridBounds(gridLoc[2]), 
+                gridLoc, profile.metaWidth, profile.metaHeight);
+        
         int[] metaGridLoc = metaTile.getMetaGridPos();
         GridLocObj metaGlo = new GridLocObj(metaGridLoc);
         int condIdx = this.calcLocCondIdx(metaGridLoc);
@@ -289,18 +284,17 @@ public class WMSLayer implements TileLayer {
         waitForQueue(metaGlo, condIdx);
 
         /** ****************** Check cache again ************** */
-        GenericTile tile = this.tryCacheFetch(ck);
-        if(tile != null) {
+        if(tryCacheFetch(tile)) {
             // Someone got it already, return lock and we're done
             removeFromQueue(metaGlo, condIdx);
-            return this.createTileResponse(tile.getData(), -1, mime, response);
+            return finalizeTile(tile);
         }
         
         /** ****************** No luck, Request metatile ****** */
-        metaTile.doRequest(profile, tileRequest.SRS, mime.getFormat());
+        metaTile.doRequest(profile);
 
         boolean useJAI = true;
-        if (mime == ImageMime.jpeg) {
+        if (tile.getMimeType() == ImageMime.jpeg) {
             useJAI = false;
         }
         
@@ -308,17 +302,16 @@ public class WMSLayer implements TileLayer {
 
         int[][] gridPositions = metaTile.getTilesGridPositions();
         
-        byte[] data = getTile(gridLoc, gridPositions, metaTile, mime);
+        tile.setContent(getTile(gridLoc, gridPositions, metaTile));
         
+        // TODO separate thread
         if (profile.expireCache != WMSLayerProfile.CACHE_NEVER) {
-            saveTiles(gridPositions, metaTile, mime);
+            saveTiles(gridPositions, metaTile, tile);
         }
         
-        //TODO Should save the tiles, and unlock, in separate thread
-
         /** ****************** Return lock and response ****** */
         removeFromQueue(metaGlo, condIdx);
-        return this.createTileResponse(data, metaTile.getStatus(), mime, response);
+        return finalizeTile(tile);
     }
 
     /**
@@ -331,12 +324,10 @@ public class WMSLayer implements TileLayer {
      * @param response
      * @return
      */
-    private TileResponse getNonMetatilingReponse(TileRequest tileRequest,
-            int[] gridLoc, Object ck,
-            MimeType mime, int idx, HttpServletResponse response) 
+    private Tile getNonMetatilingReponse(Tile tile) 
     throws GeoWebCacheException {
-
         //String debugHeadersStr = null;
+        int[] gridLoc = tile.getTileIndex(); 
         int condIdx = this.calcLocCondIdx(gridLoc);
         GridLocObj glo = new GridLocObj(gridLoc);
         
@@ -344,50 +335,43 @@ public class WMSLayer implements TileLayer {
         waitForQueue(glo, condIdx);
 
         /** ****************** Check cache again ************** */
-        GenericTile tile = this.tryCacheFetch(ck);
-        if(tile != null) {
+        if(tryCacheFetch(tile)) {
             // Someone got it already, return lock and we're done
             removeFromQueue(glo, condIdx);
-                   
-            return this.createTileResponse(tile.getData(), -1, mime, response);
+            return tile; 
+            //return this.createTileResponse(tile.getData(), -1, mime, response);
         }
         
         /** ****************** Tile ******************* */
         //String requestURL = null;
-        TileResponse tr = doNonMetatilingRequest(gridLoc, idx, mime.getFormat());
-       
-        tile = new GenericTile(tr.data);
+        tile = doNonMetatilingRequest(tile);
         
-        if (tr.status > 299 || profile.expireCache != WMSLayerProfile.CACHE_NEVER) {
-            cache.set(ck, tile, profile.expireCache); 
+        if (tile.getStatus() > 299 || profile.expireCache != WMSLayerProfile.CACHE_NEVER) {
+            cache.set(cacheKey, tile, profile.expireCache); 
         }
 
         /** ****************** Return lock and response ****** */
         removeFromQueue(glo, condIdx);
-        return this.createTileResponse(tr.data, tr.status, mime, response);
+        return finalizeTile(tile);
     }
     
-    public GenericTile tryCacheFetch(Object cacheKey) {
-        GenericTile tile = null;
+    public boolean tryCacheFetch(Tile tile) {
         if (profile.expireCache != WMSLayerProfile.CACHE_NEVER) {
             try {
-                tile = (GenericTile) cache.get(cacheKey, profile.expireCache);
+                return cache.get(this.cacheKey, tile, profile.expireCache);
             } catch (CacheException ce) {
-                ce.printStackTrace();
+                log.error(ce.getMessage());
+                tile.setError(ce.getMessage());
+                return false;
+            } catch (GeoWebCacheException gwce) {
+                log.error(gwce.getMessage());
+                tile.setError(gwce.getMessage());
+                return false;
             }
         }
-        return tile;
+        return false;
     }
-    
-    private TileResponse createTileResponse(byte[] data, int status, MimeType mime, 
-            HttpServletResponse response) {
-        if(response != null) {
-            setExpirationHeader(response);
-        }
-                
-        return new TileResponse(data, mime, status);
-    }
-    
+      
     public int purge(OutputStream os) throws GeoWebCacheException {
         // Loop over directories
         // Not implemented
@@ -428,20 +412,17 @@ public class WMSLayer implements TileLayer {
      * @param metaTile
      * @param imageFormat
      */
-    protected void saveTiles(int[][] gridPositions, WMSMetaTile metaTile,
-            MimeType mimeType) {
+    protected void saveTiles(int[][] gridPositions, WMSMetaTile metaTile, Tile tileProto)
+    throws GeoWebCacheException {
 
         for (int i = 0; i < gridPositions.length; i++) {
             int[] gridPos = gridPositions[i];
-
-            Object ck = cacheKey.createKey(cachePrefix, gridPos[0], gridPos[1],
-                    gridPos[2], metaTile.getSRS(), mimeType.getFileExtension());
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             
             try {
                 boolean completed = 
-                    metaTile.writeTileToStream(i, mimeType.getInternalName(),out);
+                    metaTile.writeTileToStream(i, out);
                 if (!completed) {
                     log.error("metaTile.writeTileToStream returned false,"
                             +" no tiles saved");
@@ -452,15 +433,11 @@ public class WMSLayer implements TileLayer {
                 ioe.printStackTrace();
             }
 
-            GenericTile tile = new GenericTile(out.toByteArray());
-
-            try {
-                cache.set(ck, tile, profile.expireCache);
-            } catch (CacheException ce) {
-                log.error("Unable to save data to cache, stack trace follows: "
-                        + ce.getMessage());
-                ce.printStackTrace();
-            }
+            Tile tile = new Tile(this, tileProto.getSRS(), 
+                    gridPos, tileProto.getMimeType(), 
+                    metaTile.getStatus(), out.toByteArray());
+            tile.setTileLayer(this);
+            cache.set(this.cacheKey, tile, profile.expireCache);
         }
     }
 
@@ -475,7 +452,7 @@ public class WMSLayer implements TileLayer {
      * @return
      */
     private byte[] getTile(int[] gridPos, int[][] gridPositions,
-            WMSMetaTile metaTile, MimeType imageFormat) 
+            WMSMetaTile metaTile) 
         throws GeoWebCacheException {
         for (int i = 0; i < gridPositions.length; i++) {
             int[] curPos = gridPositions[i];
@@ -486,8 +463,7 @@ public class WMSLayer implements TileLayer {
                 
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 try {
-                    metaTile.writeTileToStream(i,
-                            imageFormat.getInternalName(), out);
+                    metaTile.writeTileToStream(i, out);
                 } catch (IOException ioe) {
                     log.error("Unable to write image tile "
                             +"to ByteArrayOutputStream: "+ioe.getMessage());
@@ -503,17 +479,18 @@ public class WMSLayer implements TileLayer {
     }
 
     
-    public TileResponse doNonMetatilingRequest(int[] gridLoc, 
-            int idx, String formatStr) 
+    public Tile doNonMetatilingRequest(Tile tile) 
     throws GeoWebCacheException {
         WMSParameters wmsparams = profile.getWMSParamTemplate();
         
+        int idx = this.getSRSIndex(tile.getSRS());
+        
         // Fill in the blanks
-        wmsparams.setFormat(formatStr);
-        wmsparams.setSrs(profile.srs[idx].toString());
+        wmsparams.setFormat(tile.getMimeType().getFormat());
+        wmsparams.setSrs(tile.getSRS());
         wmsparams.setWidth(profile.width);
         wmsparams.setHeight(profile.height);
-        BBOX bbox = profile.gridCalc[idx].bboxFromGridLocation(gridLoc);
+        BBOX bbox = profile.gridCalc[idx].bboxFromGridLocation(tile.getTileIndex());
         bbox.adjustForGeoServer(profile.srs[idx]);
         wmsparams.setBBOX(bbox);
 
@@ -569,10 +546,17 @@ public class WMSLayer implements TileLayer {
             mt = MimeType.createFromFormat(contentType);
         }
         
-        TileResponse tr = new TileResponse(buffer, mt, responseCode);
-        return tr;
+        return tile;
     }
-
+   
+    private Tile finalizeTile(Tile tile) {
+        if(tile.getStatus() == 0 && tile.error == false) {
+            tile.setStatus(200);
+        }
+        return tile;
+    }
+    
+    
     /**
      * 
      * @param props
@@ -775,8 +759,8 @@ public class WMSLayer implements TileLayer {
         boolean wait = true;
         // Wait until the queue is free
         while(wait) {
-            layerLock.lock();
             try {
+                layerLock.lock();
                 this.layerLocked = true;
                 if(this.procQueue == null || this.procQueue.size() == 0) {
                     wait = false;
@@ -893,18 +877,17 @@ public class WMSLayer implements TileLayer {
      * @param gridLoc
      * @throws CacheException
      */
-    public void putTile(GenericTile tile, Object ck, int[] gridLoc) 
-    throws CacheException {
+    public void putTile(Tile tile) throws GeoWebCacheException {
         
-        int condIdx = this.calcLocCondIdx(gridLoc);
-        GridLocObj glo = new GridLocObj(gridLoc);
+        int condIdx = this.calcLocCondIdx(tile.getTileIndex());
+        GridLocObj glo = new GridLocObj(tile.getTileIndex());
         
         /** ****************** Acquire lock ******************* */
         waitForQueue(glo, condIdx);
         
         /** ****************** Tile ******************* */        
         if (profile.expireCache != WMSLayerProfile.CACHE_NEVER) {
-            cache.set(ck, tile, profile.expireCache);
+            cache.set(this.cacheKey, tile, profile.expireCache);
         }
 
         /** ****************** Return lock and response ****** */

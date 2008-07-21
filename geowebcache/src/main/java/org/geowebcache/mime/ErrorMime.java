@@ -23,11 +23,11 @@ import org.apache.commons.logging.LogFactory;
 public class ErrorMime extends MimeType {
     private static Log log = LogFactory.getLog(org.geowebcache.mime.ErrorMime.class);
     
-    private static final ErrorMime vnd_ogc_se_inimage  = new ErrorMime(
+   public static final ErrorMime vnd_ogc_se_inimage  = new ErrorMime(
             "application/vnd.ogc.se_inimage");
     
     private ErrorMime(String mimeType) {
-        super(mimeType,null,null,null,false);
+        super(mimeType,null,null,mimeType,false);
     }
     
     public ErrorMime(String mimeType, String fileExtension, String internalName, String format)

@@ -27,9 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.TileRequest;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.service.ServiceRequest;
 import org.geowebcache.util.wms.BBOX;
 
 /**
@@ -83,8 +81,11 @@ public class Seeder {
                     infoTile(pw, count++);
                     int[] gridLoc = { gridx , gridy , level };
                     
-                    TileRequest tileReq = new TileRequest(gridLoc, mimeType, srs);
-                    layer.getResponse(tileReq, new ServiceRequest(null) , response);
+                    if(true) {
+                        throw new GeoWebCacheException("Seeding disabled!");
+                    }
+                    //TileRequest tileReq = new TileRequest(gridLoc, mimeType, srs);
+                    //layer.getResponse(tileReq, new ServiceRequest(null) , response);
                     
                     // Next column
                     gridx += metaTilingFactors[0];

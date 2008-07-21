@@ -19,6 +19,8 @@ package org.geowebcache.cache;
 
 import java.util.Properties;
 
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.tile.Tile;
 import org.springframework.context.ApplicationContextAware;
 
 public interface Cache extends ApplicationContextAware {
@@ -46,7 +48,8 @@ public interface Cache extends ApplicationContextAware {
      * @return
      * @throws CacheException
      */
-    public Object get(Object key, long ttl) throws CacheException;
+    public boolean get(CacheKey keyProto, Tile tile, long ttl) 
+    throws CacheException, GeoWebCacheException;
 
     /**
      * 
@@ -60,9 +63,10 @@ public interface Cache extends ApplicationContextAware {
      *            milliseconds
      * @throws CacheException
      */
-    public void set(Object key, Object obj, long ttl) throws CacheException;
+    public void set(CacheKey keyProto, Tile tile, long ttl) 
+    throws CacheException, GeoWebCacheException;
 
-    public boolean remove(Object key) throws CacheException;
+    public boolean remove(CacheKey keyProto, Tile tile) throws CacheException;
 
     public void removeAll() throws CacheException;
 

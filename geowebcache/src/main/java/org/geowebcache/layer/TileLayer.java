@@ -25,7 +25,7 @@ import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheKey;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.service.ServiceRequest;
+import org.geowebcache.tile.Tile;
 import org.geowebcache.util.wms.BBOX;
 
 public interface TileLayer {
@@ -83,9 +83,7 @@ public interface TileLayer {
      * @throws GeoWebCacheException
      * @throws IOException
      */
-    public TileResponse getResponse(TileRequest tileRequest, 
-           ServiceRequest servReq, HttpServletResponse response) 
-    throws GeoWebCacheException, IOException;
+    public Tile getResponse(Tile tile) throws GeoWebCacheException, IOException;
     
     /**
      * This is a more direct way of requesting a tile without invoking metatiling,
@@ -99,8 +97,7 @@ public interface TileLayer {
      * @return
      * @throws GeoWebCacheException
      */
-    public TileResponse doNonMetatilingRequest(int[] gridLoc, int idx, String formatStr)
-    throws GeoWebCacheException;
+    public Tile doNonMetatilingRequest(Tile tile) throws GeoWebCacheException;
     
     /**
      * 
@@ -219,6 +216,7 @@ public interface TileLayer {
      * @param gridLoc
      * @return
      */
+    // TODO this is generic
     public int[][] getZoomInGridLoc(int srsIdx, int[] gridLoc);
     
     /**
@@ -240,7 +238,7 @@ public interface TileLayer {
      * @param cacheKey
      * @return
      */
-    public GenericTile tryCacheFetch(Object cacheKey);
+    public boolean tryCacheFetch(Tile tile);
     
     /**
      * Get the prefix for the cache
@@ -284,8 +282,8 @@ public interface TileLayer {
      * @param mime
      * @throws CacheException
      */
-    public void putTile(GenericTile tile, Object ck, int[] gridLoc) 
-    throws CacheException;
+    public void putTile(Tile tile) 
+    throws GeoWebCacheException;
     
     public void setExpirationHeader(HttpServletResponse response);
 }

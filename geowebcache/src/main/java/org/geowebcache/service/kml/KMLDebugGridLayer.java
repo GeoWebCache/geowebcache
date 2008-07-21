@@ -29,14 +29,11 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheKey;
-import org.geowebcache.layer.GenericTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.TileRequest;
-import org.geowebcache.layer.TileResponse;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
-import org.geowebcache.service.ServiceRequest;
+import org.geowebcache.tile.Tile;
 import org.geowebcache.util.wms.BBOX;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -77,8 +74,7 @@ public class KMLDebugGridLayer implements TileLayer, Cache, CacheKey {
         //log.warn("destroy()");
     }
 
-    public TileResponse doNonMetatilingRequest(int[] gridLoc, int idx,
-            String formatStr) throws GeoWebCacheException {
+    public Tile doNonMetatilingRequest(Tile tile) throws GeoWebCacheException {
         // TODO Auto-generated method stub
         //log.warn("doNonMetatilingRequest(int[] gridLoc, int idx,String formatStr)");
         return null;
@@ -174,13 +170,12 @@ public class KMLDebugGridLayer implements TileLayer, Cache, CacheKey {
         return null;
     }
 
-    public TileResponse getResponse(TileRequest tileRequest,
-            ServiceRequest servReq, HttpServletResponse response)
+    public Tile getResponse(Tile tile)
             throws GeoWebCacheException, IOException {
         // TODO Auto-generated method stub
         //log.warn("getResponse(TileRequest tileRequest,ServiceRequest servReq, HttpServletResponse response)");
         
-        int[] gridLoc = tileRequest.gridLoc;
+        int[] gridLoc = tile.getTileIndex();
 
         BBOX bbox = this.getBboxForGridLoc(0, gridLoc);
        
@@ -214,8 +209,9 @@ public class KMLDebugGridLayer implements TileLayer, Cache, CacheKey {
                 + "</Document>\n"
                 + "</kml>";
         
-        TileResponse tr = new TileResponse(data.getBytes(),XMLMime.kml,200);
-        return tr;
+        tile.setContent(data.getBytes());
+        
+        return tile;
     }
 
     public int getSRSIndex(SRS reqSRS) {
@@ -291,7 +287,7 @@ public class KMLDebugGridLayer implements TileLayer, Cache, CacheKey {
         return true;
     }
 
-    public void putTile(GenericTile tile, Object ck, int[] gridLoc)
+    public void putTile(Tile tile, Object ck, int[] gridLoc)
             throws CacheException {
         // TODO Auto-generated method stub
         //log.warn("putTile");
@@ -327,26 +323,26 @@ public class KMLDebugGridLayer implements TileLayer, Cache, CacheKey {
     }
 
     // Returns the KML for the tile, but not a cached KMZ overlay
-    public GenericTile tryCacheFetch(Object cacheKey) {
-        // TODO Auto-generated method stub
-        //log.warn("done - tryCacheFetch");
-        
-        Vector<Integer> lst = (Vector<Integer>) cacheKey;
-        
-        int kmz = lst.get(0);
-        
-        if(kmz != KMLDebugGridLayer.IS_KMZ) {
-            return null;
-        } else {
-            System.out.println("OOPS");
-        }
-        
-        return null;
-    }
+//    public boolean tryCacheFetch(Tile tile) {
+//        // TODO Auto-generated method stub
+//        //log.warn("done - tryCacheFetch");
+//        
+//        Vector<Integer> lst = (Vector<Integer>) tile;
+//        
+//        int kmz = lst.get(0);
+//        
+//        if(kmz != KMLDebugGridLayer.IS_KMZ) {
+//            return true;
+//        } else {
+//            System.out.println("OOPS");
+//        }
+//        
+//        return false;
+//    }
 
-    public Object get(Object key, long ttl) throws CacheException {
+    public boolean get(Tile tile, long ttl) throws CacheException {
         // TODO Auto-generated method stub
-        return null;
+        return true;
     }
 
     public String getDefaultKeyBeanId() {
@@ -365,7 +361,7 @@ public class KMLDebugGridLayer implements TileLayer, Cache, CacheKey {
         
     }
 
-    public boolean remove(Object key) throws CacheException {
+    public boolean remove(Tile tile) throws CacheException {
         // TODO Auto-generated method stub
         return false;
     }
@@ -396,20 +392,21 @@ public class KMLDebugGridLayer implements TileLayer, Cache, CacheKey {
         // TODO Auto-generated method stub
         
     }
-
-    public Object createKey(String prefix, int x, int y, int z, SRS srs, String format) {
-        Vector<Integer> lst = new Vector<Integer>();
-        if(format.equalsIgnoreCase("kmz")) {
-            lst.add(KMLDebugGridLayer.IS_KMZ);
-        } else {
-            lst.add(0);
-        }
-        lst.add(x);
-        lst.add(y);
-        lst.add(z);  
-        
-        return (Object) lst;
-    }
+//
+//    public Object createKey(Tile tile) {
+//        Vector<Integer> lst = new Vector<Integer>();
+//        if(tile.getMimeType() == XMLMime.kmz) {
+//            lst.add(KMLDebugGridLayer.IS_KMZ);
+//        } else {
+//            lst.add(0);
+//        }
+//        int[] tileIndex = tile.getTileIndex();
+//        lst.add(tileIndex[0]);
+//        lst.add(tileIndex[1]);
+//        lst.add(tileIndex[2]);  
+//        
+//        return (Object) lst;
+//    }
 
     public int getType() {
         // TODO Auto-generated method stub
@@ -419,6 +416,43 @@ public class KMLDebugGridLayer implements TileLayer, Cache, CacheKey {
     public void init() {
         // TODO Auto-generated method stub
         
+    }
+
+    public void putTile(Tile tile) throws CacheException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void set(Tile tile, long ttl) throws CacheException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public boolean tryCacheFetch(Tile tile) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    public boolean get(CacheKey keyProto, Tile tile, long ttl)
+            throws CacheException, GeoWebCacheException {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    public boolean remove(CacheKey keyProto, Tile tile) throws CacheException {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    public void set(CacheKey keyProto, Tile tile, long ttl)
+            throws CacheException, GeoWebCacheException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public Object createKey(Tile tile) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

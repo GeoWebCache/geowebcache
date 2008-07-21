@@ -30,12 +30,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.layer.TileRequest;
-import org.geowebcache.layer.TileResponse;
 import org.geowebcache.seeder.SeederDispatcher;
 import org.geowebcache.seeder.SeederException;
 import org.geowebcache.service.Service;
-import org.geowebcache.service.ServiceRequest;
+import org.geowebcache.tile.Tile;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
@@ -109,6 +107,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * easy to add new services.
      */
     private void loadServices() {
+        // Give all service objects direct access to the tileLayerDispatcher
+        Service.setTileLayerDispatcher(tileLayerDispatcher);
+        
         Map serviceBeans = context.getBeansOfType(Service.class);
         Iterator beanIter = serviceBeans.keySet().iterator();
         services = new HashMap<String,Service>();
@@ -218,33 +219,31 @@ public class GeoWebCacheDispatcher extends AbstractController {
         Service service = findService(serviceStr);
 
         // 2) Find out what layer will be used and how
-        ServiceRequest servReq = service.getServiceRequest(request);
+        Tile tile = service.getTile(request, response);
 
         // Check where this should be dispatched
-        if (servReq.getFlag(ServiceRequest.SERVICE_REQUEST_DIRECT)) {
-            // 3) Get the configuration that has to respond to this request
-            TileLayer layer = null;
-            
-            // B4 The service object takes it from here
-            service.handleRequest(tileLayerDispatcher, request, servReq, response);
+        if (tile.reqHandler == Tile.RequestHandler.SERVICE) {            
+            // A3 The service object takes it from here
+            service.handleRequest(tileLayerDispatcher, tile);
             
         } else {
-            // 3) Get the configuration that has to respond to this request
-            TileLayer layer = tileLayerDispatcher.getTileLayer(servReq.getLayerIdent());
+            // B3) Get the configuration that has to respond to this request
+            TileLayer layer = tileLayerDispatcher.getTileLayer(tile.getLayerId());
             
-            // A4) Convert to internal representation, using info from request
-            // and layer
-            TileRequest tileRequest = service.getTileRequest(layer, servReq, request);
-
-            // Kepp the URI 
-            tileRequest.requestURI = request.getRequestURI();
+            // Save it for later
+            tile.setTileLayer(layer);
+            
+            // Keep the URI 
+            //tile.requestURI = request.getRequestURI();
             
             // A5) Ask the layer to provide the tile
-            TileResponse tileResponse = layer.getResponse(tileRequest, servReq, response);
+            layer.getResponse(tile);
 
             // A6) Write response
-            writeData(response, tileResponse);
+            writeData(tile);
         }
+        
+        // Log statistic
     }
 
     /**
@@ -395,29 +394,31 @@ public class GeoWebCacheDispatcher extends AbstractController {
      *            the response with the data and MIME type
      * @throws IOException
      */
-    private void writeData(HttpServletResponse response,
-            TileResponse tileResponse) throws IOException {
-
+    private void writeData(Tile tile) throws IOException {
+        byte[] data = tile.getContent();
+        
+        HttpServletResponse response = tile.servletResp;
+        
         // Did we get anything?
-        if (tileResponse == null || tileResponse.data == null
-                || tileResponse.data.length == 0) {
-            log.trace("sendData() had nothing to return");
-
-            // Response: 500 , should not have gotten here
-            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            return;
-        }
-
-        log.trace("sendData() Sending data.");
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType(tileResponse.mimeType.getMimeType());
-        response.setContentLength(tileResponse.data.length);
-        try {
-            OutputStream os = response.getOutputStream();
-            os.write(tileResponse.data);
-            os.flush();
-        } catch (IOException ioe) {
-            log.debug("Caught IOException" + ioe.getMessage());
+        if (tile.error && data != null) {
+            // TODO something nice
+            log.error("writeData() oops");
+        } else {
+            response.setStatus(tile.getStatus());
+            response.setContentType(tile.getMimeType().getMimeType());
+            
+            if(data != null) {
+                response.setContentLength(data.length);
+                
+                try {
+                    OutputStream os = response.getOutputStream();
+                    os.write(data);
+                    //os.flush();
+                    //os.close();
+                } catch (IOException ioe) {
+                    log.debug("Caught IOException: " + ioe.getMessage() + "\n\n" + ioe.toString());
+                }
+            }
         }
     }
 }
