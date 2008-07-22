@@ -28,13 +28,23 @@ public class FilePathKey implements CacheKey {
     public void init() {
     }
     public Object createKey(Tile tile) {
-        return (Object) this.createKey(tile.getLayer().getCachePrefix(), tile.getTileIndex(), tile.getSRS(), tile.getMimeType());
+        return (Object) this.createKey(tile.getLayer().getCachePrefix(),
+                tile.getTileIndex(), 
+                tile.getSRS(), 
+                tile.getMimeType(),
+                tile.getWrapperMimeType());
     }
-    
-    protected String createKey(String prefix, int[] tileIndex, SRS srs, MimeType mimeType) {
+
+    protected String createKey(String prefix, int[] tileIndex, SRS srs, 
+            MimeType mimeType, MimeType wrapperMimeType) {
         int x = tileIndex[0];
         int y = tileIndex[1];
         int z = tileIndex[2];
+        
+        String fileExtension = mimeType.getFileExtension();
+        if(wrapperMimeType != null) {
+            fileExtension += "." + wrapperMimeType.getFileExtension();
+        }
         
     	String srsStr = srs.filePath();
         String filename = prefix + File.separator + srsStr + File.separator
@@ -44,7 +54,7 @@ public class FilePathKey implements CacheKey {
                 + zeroPadder(x % 1000, 3) + File.separator
                 + zeroPadder(y / 1000000, 3) + File.separator
                 + zeroPadder((y / 1000) % 1000, 3) + File.separator
-                + zeroPadder(y % 1000, 3) + "." + mimeType.getFileExtension();
+                + zeroPadder(y % 1000, 3) + "." + fileExtension;
         // String fileName = Integer.toString(z) +"-"+ Integer.toString(x) +"-"+
         // Integer.toString(y) + format + "";
         return filename;

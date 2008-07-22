@@ -5,6 +5,7 @@ import java.io.File;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.mime.XMLMime;
 
 import junit.framework.TestCase;
 
@@ -41,19 +42,25 @@ public class FilePathKey2Test extends TestCase {
         String expected = "/tmp/gwc"+ File.separator +"EPSG_4326_00"+ File.separator 
             +"0_0" + File.separator +"00_00.png";
         int[] idx0 = {0,0,0};
-        String actual = fpk.createKey("/tmp/gwc", idx0, SRS.getEPSG4326(), ImageMime.png);
+        String actual = fpk.createKey("/tmp/gwc", idx0, SRS.getEPSG4326(), ImageMime.png, null);
         this.assertEquals(expected, actual);
 
         expected = "/tmp/gwc"+ File.separator +"EPSG_4326_04"+ File.separator 
             +"1_1" + File.separator +"15_15.png";
         int[] idx1 = {15,15,4};
-        actual = fpk.createKey("/tmp/gwc", idx1, SRS.getEPSG4326(), ImageMime.png);
+        actual = fpk.createKey("/tmp/gwc", idx1, SRS.getEPSG4326(), ImageMime.png, null);
         this.assertEquals(expected, actual);
         
         expected = "/tmp/gwc"+ File.separator +"EPSG_4326_04"+ File.separator 
             +"0_0" + File.separator +"03_03.png";
         int[] idx2 = {3,3,4};
-        actual = fpk.createKey("/tmp/gwc", idx2, SRS.getEPSG4326(), ImageMime.png);
+        actual = fpk.createKey("/tmp/gwc", idx2, SRS.getEPSG4326(), ImageMime.png, null);
+        this.assertEquals(expected, actual);
+        
+        expected = "/tmp/gwc"+ File.separator +"EPSG_4326_04"+ File.separator 
+        +"0_0" + File.separator +"03_03.png.kml";
+        int[] idx3 = {3,3,4};
+        actual = fpk.createKey("/tmp/gwc", idx3, SRS.getEPSG4326(), ImageMime.png, XMLMime.kml);
         this.assertEquals(expected, actual);
     }
 }

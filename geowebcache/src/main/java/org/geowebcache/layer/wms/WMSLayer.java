@@ -23,7 +23,6 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.locks.Condition;
@@ -42,10 +41,10 @@ import org.geowebcache.cache.CacheKey;
 import org.geowebcache.layer.GridLocObj;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.mime.XMLMime;
 import org.geowebcache.service.Request;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.wms.WMSParameters;
@@ -515,11 +514,36 @@ public class WMSLayer implements TileLayer {
                 URL wmsBackendUrl = new URL(wmsrequest.toString());
                 wmsBackendCon = (HttpURLConnection) wmsBackendUrl.openConnection();
 
+                responseCode = wmsBackendCon.getResponseCode();
+                // Check that the response code is okay
+                if (responseCode != 200 && responseCode != 204) {
+                    throw new ServiceException(
+                            "Unexpected reponse code from backend: " 
+                            + responseCode + " for " + wmsrequest.toString());
+                }
+                
+                // Check that we're not getting an error mime back.
+                String responseMime = wmsBackendCon.getContentType();
+                String requestMime = wmsparams.getFormat();
+                if(responseMime != null && ! responseMime.equalsIgnoreCase(requestMime)) {
+                    String message = null;
+                    if(responseMime.equalsIgnoreCase(ErrorMime.vnd_ogc_se_inimage.getFormat())) {
+                        byte[] error = new byte[2048];
+                        try {
+                            wmsBackendCon.getInputStream().read(error);
+                        } catch(IOException ioe) {
+                            // Do nothing
+                        }
+                        message = new String(error);
+                    }
+                    throw new ServiceException(
+                            "MimeType mismatch, expected " + requestMime + " but got " 
+                            + responseMime + " from " + wmsrequest.toString() + "\n\n " + message);
+                }
+                
                 buffer = ServletUtils.readStream(
                         wmsBackendCon.getInputStream(),-1,-1);
                 
-                contentType = wmsBackendCon.getContentType();
-                responseCode = wmsBackendCon.getResponseCode();
 
             } catch (ConnectException ce) {
                 throw new GeoWebCacheException(
@@ -545,6 +569,9 @@ public class WMSLayer implements TileLayer {
         if(contentType != null) {
             mt = MimeType.createFromFormat(contentType);
         }
+        
+        tile.setContent(buffer);
+        tile.setStatus(responseCode);
         
         return tile;
     }

@@ -28,9 +28,4 @@ public interface CacheKey {
 	public void init();
 
 	public Object createKey(Tile tile);
-	
-        //Object createKey(String prefix, int x, int y, int z, SRS srs,
-	//		String format);
-
-	//int getType();
 }

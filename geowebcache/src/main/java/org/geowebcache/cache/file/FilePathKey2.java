@@ -29,10 +29,15 @@ public class FilePathKey2 implements CacheKey {
     }
     
     public Object createKey(Tile tile) {
-        return (Object) this.createKey(tile.getLayer().getCachePrefix(), tile.getTileIndex(), tile.getSRS(), tile.getMimeType());
+        return (Object) this.createKey(tile.getLayer().getCachePrefix(),
+                tile.getTileIndex(), 
+                tile.getSRS(), 
+                tile.getMimeType(),
+                tile.getWrapperMimeType());
     }
 
-    protected String createKey(String prefix, int[] tileIndex, SRS srs, MimeType mimeType) {
+    protected String createKey(String prefix, int[] tileIndex, SRS srs, 
+            MimeType mimeType, MimeType wrapperMimeType) {
         int x = tileIndex[0];
         int y = tileIndex[1];
         int z = tileIndex[2];
@@ -49,14 +54,18 @@ public class FilePathKey2 implements CacheKey {
         int halfy = y / half;
         // System.out.println("preFileName, shift:" + shift + ", half:" + half +
         // ", digits:"+digits);
+        String fileExtension = mimeType.getFileExtension();
+        if(wrapperMimeType != null) {
+            fileExtension += "." + wrapperMimeType.getFileExtension();
+        }
         String filename = 
                 prefix + File.separator 
                 + srsStr + "_" + zeroPadder(z, 2) + File.separator 
                 + zeroPadder(halfx, digits) + "_" 
                 + zeroPadder(halfy, digits) + File.separator
                 + zeroPadder(x, 2 * digits) + "_" 
-                + zeroPadder(y, 2 * digits) + "." + mimeType.getFileExtension();
-        // System.out.println(""+x+","+y+","+z+ " " + filename);
+                + zeroPadder(y, 2 * digits) + "." + fileExtension;
+        //System.out.println(""+x+","+y+","+z+ " " + filename);
         return filename;
     }
 

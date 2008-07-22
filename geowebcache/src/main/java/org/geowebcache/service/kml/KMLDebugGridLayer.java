@@ -210,7 +210,7 @@ public class KMLDebugGridLayer implements TileLayer, Cache, CacheKey {
                 + "</kml>";
         
         tile.setContent(data.getBytes());
-        
+        tile.setStatus(200);
         return tile;
     }
 

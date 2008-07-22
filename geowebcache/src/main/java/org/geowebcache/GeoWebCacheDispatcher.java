@@ -152,9 +152,11 @@ public class GeoWebCacheDispatcher extends AbstractController {
             } else {
                 writeError(response, 404, "Unknow path: " + requestComps[0]);
             }
-        } catch (GeoWebCacheException gwce) {
+        } catch (Exception e) {
             // e.printStackTrace();
-            writeError(response, 400, gwce.getMessage());
+            log.error(e.getMessage()+ " " + request.getRequestURL().toString());
+            writeError(response, 400, e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }

@@ -32,27 +32,20 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.mime.XMLMime;
 import org.geowebcache.util.ByteUtils;
 import org.geowebcache.util.ServletUtils;
-
-import sun.util.logging.resources.logging;
 
 /**
  * Facilitates use with JCS and other backends that only deal with objects.
  * 
  * @author Arne Kepp, The Open Planning Project
  */
-
-
-
 public class Tile implements Serializable {
     public static enum RequestHandler {LAYER, SERVICE};
     
     private static final long serialVersionUID = -5171595780192211809L;
     
     private static Log log = LogFactory.getLog(org.geowebcache.tile.Tile.class);
-
     
     // Internal routing
     public RequestHandler reqHandler = RequestHandler.LAYER;
@@ -74,6 +67,7 @@ public class Tile implements Serializable {
     
     // Shared request information, this is stored by the cache key
     protected MimeType mimeType = null;
+    protected MimeType wrapperMimeType = null;
     protected int[] tileIndex = null;
     protected String layerId = null;
     protected SRS srs = null;
@@ -91,10 +85,7 @@ public class Tile implements Serializable {
     // The actual data
     protected byte[] data = null;
     
-    public Tile(RequestHandler handler, String hint, String layerId,
-            HttpServletRequest servletReq, HttpServletResponse servletResp) {
-        this.reqHandler = handler;
-        this.hint = hint;
+    public Tile(String layerId, HttpServletRequest servletReq, HttpServletResponse servletResp) {
         this.layerId = layerId;
         this.servletReq = servletReq;
         this.servletResp = servletResp;
@@ -157,12 +148,24 @@ public class Tile implements Serializable {
         this.tileLayer = layer;
     }
     
-    public void setContent(byte[] payload) {
-        this.data = payload;
+    public TileLayer getTileLayer() {
+        return tileLayer;
+    }
+    
+    public RequestHandler getRequestHandler() {
+        return reqHandler;
+    }
+
+    public void setRequestHandler(RequestHandler reqHandler) {
+        this.reqHandler = reqHandler;
     }
 
     public byte[] getContent() {
         return data;
+    }
+    
+    public void setContent(byte[] payload) {
+        this.data = payload;
     }
     
     public long getTSCreated() {
@@ -201,6 +204,10 @@ public class Tile implements Serializable {
         return srs;
     }
     
+    public void setSRS(SRS srs) {
+        this.srs = srs;
+    }
+    
     public MimeType getMimeType() {
         return mimeType;
     }
@@ -209,9 +216,25 @@ public class Tile implements Serializable {
         this.mimeType = mimeType;
     }
     
+    public MimeType getWrapperMimeType() {
+        return wrapperMimeType;
+    }
+    
+    public void setWrapperMimeType(MimeType mimeType) {
+        this.wrapperMimeType = mimeType;
+    }
+    
     public void setError(String message) {
         this.error = true;
         this.errorMsg = message;
+    }
+    
+    public String getHint() {
+        return hint;
+    }
+    
+    public void setHint(String hint) {
+        this.hint = hint;
     }
     
     //public void setStatus(byte status) {
@@ -345,6 +368,7 @@ public class Tile implements Serializable {
     public byte[] getBytes() {
         byte[] headers = writeHeaders(null);
         byte[] ret = new byte[headers.length + data.length];
+        
         System.arraycopy(headers, 0, ret, 0, headers.length);
         System.arraycopy(data,0,ret,headers.length, data.length);
         

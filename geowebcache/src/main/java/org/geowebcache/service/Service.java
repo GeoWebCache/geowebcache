@@ -63,8 +63,7 @@ public abstract class Service {
     throws GeoWebCacheException {
         throw new RuntimeException(
                 "Service for " + pathName  + " needs to override "
-                +"handleRequest(TileLayer, HttpServletRequest, ServiceRequest, "
-                +"HttpServletResponse)" );
+                +"handleRequest(TileLayerDispatcher, Tile)" );
     }
     
     protected String getLayersParameter(HttpServletRequest request) throws ServiceException {

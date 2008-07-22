@@ -59,8 +59,10 @@ public class WMSService extends Service {
         // Look for getCapabilities
         String req = values[1];
         if (req != null && req.equalsIgnoreCase("getcapabilities")) {
-            return new Tile(Tile.RequestHandler.SERVICE, "getcapabilities",
-                    values[0], request, response);
+            Tile tile = new Tile(values[0],request, response);
+            tile.setHint("getcapabilities");
+            tile.setRequestHandler(Tile.RequestHandler.SERVICE);
+            return tile;
         }
 
         // Look for layer

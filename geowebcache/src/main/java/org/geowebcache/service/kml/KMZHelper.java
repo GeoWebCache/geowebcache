@@ -70,7 +70,8 @@ public class KMZHelper {
                 Tile tile = new Tile(
                         tileLayer.getName(), SRS.getEPSG4326(), 
                         linkGridLocs[i], mime, null, null);
-
+                tile.setTileLayer(tileLayer);
+                
                 try {                                        
                     tileLayer.getResponse(tile);
                     
@@ -82,7 +83,7 @@ public class KMZHelper {
                     gwce.printStackTrace();
                     linkGridLocs[i][2] = -1;
                 }
-                
+                             
                 // If it's a 204 it means no content -> don't link to it
                 if(tile.getStatus() == 204) {
                     linkGridLocs[i][2] = -1;
