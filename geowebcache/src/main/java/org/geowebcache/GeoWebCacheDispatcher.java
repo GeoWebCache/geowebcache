@@ -31,7 +31,6 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.seeder.SeederDispatcher;
-import org.geowebcache.seeder.SeederException;
 import org.geowebcache.service.Service;
 import org.geowebcache.tile.Tile;
 import org.springframework.web.context.WebApplicationContext;
@@ -156,7 +155,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
             // e.printStackTrace();
             log.error(e.getMessage()+ " " + request.getRequestURL().toString());
             writeError(response, 400, e.getMessage());
-            e.printStackTrace();
+            if(! (e instanceof GeoWebCacheException) 
+                    || log.isDebugEnabled()) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
@@ -402,9 +404,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
         HttpServletResponse response = tile.servletResp;
         
         // Did we get anything?
-        if (tile.error && data != null) {
+        if (tile.getError() && data != null) {
             // TODO something nice
-            log.error("writeData() oops");
+            log.error("writeData() oops.. no data or tile was null");
         } else {
             response.setStatus(tile.getStatus());
             response.setContentType(tile.getMimeType().getMimeType());

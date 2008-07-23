@@ -21,13 +21,10 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
 import java.awt.image.RenderedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.ConnectException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Arrays;
 
 import javax.imageio.ImageIO;
@@ -39,11 +36,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.MetaTile;
 import org.geowebcache.layer.SRS;
-import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.mime.XMLMime;
-import org.geowebcache.service.Request;
-import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.wms.BBOX;
 
@@ -52,12 +45,12 @@ public class WMSMetaTile extends MetaTile {
             .getLog(org.geowebcache.layer.wms.WMSMetaTile.class); 
     
     private BufferedImage img = null; // buffer for storing the metatile, if it's an image
-
-    private byte[] buffer = null; // buffer if metatiling is disabled
     
     private RenderedImage[] tiles = null; // array with tiles (after cropping)
     
     private final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
+    
+    protected WMSLayerProfile profile = null;
     
     /**
      * Used for requests by clients
@@ -65,145 +58,48 @@ public class WMSMetaTile extends MetaTile {
      * @param profile
      * @param initGridPosition
      */
-    protected WMSMetaTile(SRS srs, MimeType mimeType, int[] gridBounds, int[] tileGridPosition,
+    protected WMSMetaTile(WMSLayerProfile profile, SRS srs, MimeType mimeType, int[] gridBounds, int[] tileGridPosition,
             int metaX, int metaY) {
         super(srs, mimeType, gridBounds, tileGridPosition, metaX, metaY);
+        this.profile = profile;
     }
 
-    /**
-     * Requests a metatile from the backend, or consults multiple backends if
-     * necessary, and saves the result in the internal buffer for future
-     * processing.
-     * 
-     * @param profile
-     *            the profile provides the general parameters for the request
-     * @param imageMime
-     *            the desired image format
-     * @return
-     */
-    protected String doRequest(WMSLayerProfile profile)
-            throws GeoWebCacheException {
+    protected WMSParameters getWMSParams() throws GeoWebCacheException {
         WMSParameters wmsparams = profile.getWMSParamTemplate();
-
         int srsIdx = profile.getSRSIndex(srs);
+        
         // Fill in the blanks
-        wmsparams.setFormat(super.mimeType.getFormat());
-        wmsparams.setSrs(super.srs);
-        wmsparams.setWidth(super.metaX * profile.width);
+        wmsparams.setFormat(mimeType.getFormat());
+        wmsparams.setSrs(srs);
+        wmsparams.setWidth(metaX * profile.width);
         wmsparams.setHeight(metaY * profile.height);
         BBOX metaBbox = profile.gridCalc[srsIdx]
                 .bboxFromGridBounds(metaTileGridBounds);
         metaBbox.adjustForGeoServer(srs);
         wmsparams.setBBOX(metaBbox);
-
-        // Ask the WMS server, saves returned image into metaTile
-        // TODO add exception for configurations that do not use metatiling
-        // TODO move this closer to the WMSLayer?
-        String backendURL = "";
-        int backendTries = 0; // keep track of how many backends we have tried
-        while (buffer == null && img == null && backendTries < profile.wmsURL.length) {
-            backendURL = profile.nextWmsURL();
-
-            try {
-                forwardRequest(wmsparams, backendURL, profile);
-            } catch (ConnectException ce) {
-                log.error("Error forwarding request, " + backendURL
-                        + wmsparams.toString() + " " + ce.getMessage());
-            } catch (IOException ioe) {
-                log.error("Error forwarding request, " + backendURL
-                        + wmsparams.toString() + " " + ioe.getMessage());
-                ioe.printStackTrace();
-            }
-            backendTries++;
-        }
-
-        if (img == null) {
-            throw new GeoWebCacheException("Received no image for " 
-                    +wmsparams.toString()+ " form any of the backens");
-        }
-
-        return backendURL + wmsparams.toString();
+        
+        return wmsparams;
+    }
+    
+    protected WMSLayerProfile getProfile() {
+        return profile;
     }
 
-    /**
-     * Forwards the request to the actual WMS backend and saves the image that
-     * comes back.
-     * 
-     * @param wmsparams
-     *            the parameters for the request
-     * @param backendURL
-     *            the URL of the backend to use
-     * @param saveExpiration
-     *            whether to extract and save expiration headers
-     * @throws IOException
-     * @throws ConnectException
-     */
-    private void forwardRequest(WMSParameters wmsparams, String backendURL,
-            WMSLayerProfile profile) throws IOException, ConnectException,
-            ServiceException {
-        // Create an outgoing WMS request to the server
-        Request wmsrequest = new Request(backendURL, wmsparams);
-        String urlStr = wmsrequest.toString();
-        //System.out.println(urlStr);
-        URL wmsBackendUrl = new URL(urlStr);
-        HttpURLConnection wmsBackendCon = 
-            (HttpURLConnection) wmsBackendUrl.openConnection();
-
-        // Do we need to keep track of expiration headers?
-        if (profile.saveExpirationHeaders) {
-            profile.saveExpirationInformation(wmsBackendCon);
+    protected void setImageBytes(byte[] image) throws GeoWebCacheException {
+        if(image == null) {
+            throw new GeoWebCacheException("WMSMetaTile.setImageBytes() "
+                    +" received null instead of byte[]");
         }
         
-        // Check that the response code is okay
-        int responseCode = wmsBackendCon.getResponseCode();
-        this.status = responseCode;
-        if (responseCode != 200 && responseCode != 204) {
-            throw new ServiceException(
-                    "Unexpected reponse code from backend: " 
-                    + responseCode + " for " + urlStr);
-        }
-        
-        // Check that we're not getting an error mime back.
-        String responseMime = wmsBackendCon.getContentType();
-        String requestMime = wmsparams.getFormat();
-        if(responseMime != null && ! responseMime.equalsIgnoreCase(requestMime)) {
-            String message = null;
-            if(responseMime.equalsIgnoreCase(ErrorMime.vnd_ogc_se_inimage.getFormat())) {
-                byte[] error = new byte[2048];
-                try {
-                    wmsBackendCon.getInputStream().read(error);
-                } catch(IOException ioe) {
-                    // Do nothing
-                }
-                message = new String(error);
-            }
-            throw new ServiceException(
-                    "MimeType mismatch, expected " + requestMime + " but got " 
-                    + responseMime + " from " + urlStr + "\n\n " + message);
-        }
-
-        InputStream is = wmsBackendCon.getInputStream();
-        
+        InputStream is = new ByteArrayInputStream(image);
         try {
-            img = ImageIO.read(is);
+            this.img = ImageIO.read(is);
         } catch(IOException ioe) {
-            log.error(ioe.getMessage());
-        } finally {
-        	if(is != null) {
-        		is.close();
-        	}
-        	wmsBackendCon.disconnect();
+            throw new GeoWebCacheException("WMSMetaTile.setImageBytes() "
+                    +"failed on ImageIO.read(byte["+image.length+"])");
         }
-        
-
-
-
-        if (log.isTraceEnabled()) {
-            log.trace("Got image from backend, height: " + img.getHeight());
-        }
-
     }
-
+    
     /**
      * Cuts the metaTile into the specified number of tiles, the actual number
      * of tiles is determined by metaX and metaY, not the width and height
@@ -217,6 +113,7 @@ public class WMSMetaTile extends MetaTile {
     protected void createTiles(int tileWidth, int tileHeight, boolean useJAI) {
         int tileCount = metaX * metaY;
         tiles = new RenderedImage[tileCount];
+        
         if (tileCount > 1) {
             for (int y = 0; y < metaY; y++) {
                 for (int x = 0; x < metaX; x++) {
@@ -293,8 +190,7 @@ public class WMSMetaTile extends MetaTile {
             String format = super.mimeType.getInternalName();
             
             if (log.isDebugEnabled()) {
-                log.debug("Thread: " + Thread.currentThread().getName()
-                        + " writing: " + tileIdx);
+                log.debug("Thread: " + Thread.currentThread().getName() + " writing: " + tileIdx);
             }
 
             if (!javax.imageio.ImageIO.write(tiles[tileIdx], format, os)) {

@@ -20,7 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.mime.MimeType;
 
-public abstract class MetaTile {
+public abstract class MetaTile implements TileResponseReceiver {
     private static Log log = LogFactory
     .getLog(org.geowebcache.layer.MetaTile.class);
     
@@ -36,6 +36,10 @@ public abstract class MetaTile {
     
     protected long status = -1;
     
+    protected boolean error = false;
+    
+    protected String errorMessage;
+    
     protected MimeType mimeType;
     
     protected MetaTile(SRS srs, MimeType mimeType, int[] gridBounds, int[] tileGridPosition,
@@ -47,6 +51,30 @@ public abstract class MetaTile {
         
         metaTileGridBounds = calculateMetaTileGridBounds(gridBounds, tileGridPosition);
         tilesGridPositions = calculateTilesGridPositions();   
+    }
+    
+    public int getStatus() {
+        return (int) status;
+    }
+       
+    public void setStatus(int status) {
+        this.status = (long) status ;
+    }
+    
+    public boolean getError() {
+        return this.error;
+    }
+    
+    public void setError() {
+        this.error = true;
+    }
+    
+    public String getErrorMessage() {
+        return this.errorMessage;
+    }
+    
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
     
     /**
@@ -132,13 +160,5 @@ public abstract class MetaTile {
     
     public SRS getSRS() {
     	return this.srs;
-    }
-    
-    /**
-     * 
-     * @return the status code set by the backend, -1 if not known
-     */
-    public long getStatus() {
-      return status;  
-    }
+    }   
 }

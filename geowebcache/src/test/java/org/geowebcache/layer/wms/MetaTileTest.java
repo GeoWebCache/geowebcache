@@ -36,7 +36,7 @@ public class MetaTileTest extends TestCase {
         int[] gridPos = { 0, 0, 0 };
         //int[] gridBounds, int[] tileGridPosition, int metaX, int metaY
         WMSMetaTile mt = new WMSMetaTile(
-                srs, ImageMime.png, 
+                null, srs, ImageMime.png, 
                 gridCalc.getGridBounds(gridPos[2]),
                 gridPos, metaWidth, metaHeight);
 
@@ -68,9 +68,10 @@ public class MetaTileTest extends TestCase {
                 maxTileWidth, maxTileHeight);
         
         int[] gridPos = { 127, 63, 6 };
-        WMSMetaTile mt = new WMSMetaTile(srs, ImageMime.png,
-        		gridCalc.getGridBounds(gridPos[2]), 
-        		gridPos, metaWidth, metaHeight);
+        WMSMetaTile mt = new WMSMetaTile(
+                    null, srs, ImageMime.png,
+                    gridCalc.getGridBounds(gridPos[2]), 
+                    gridPos, metaWidth, metaHeight);
 
         int[] solution = { 126, 63, 127, 63, 6 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
@@ -103,7 +104,7 @@ public class MetaTileTest extends TestCase {
               
         int[] gridPos = { 0, 0, 0 };
         WMSMetaTile mt = new WMSMetaTile(
-                srs, ImageMime.png, 
+                null, srs, ImageMime.png, 
                 gridCalc.getGridBounds(gridPos[2]), 
                 gridPos, metaWidth, metaHeight);
         
@@ -138,7 +139,7 @@ public class MetaTileTest extends TestCase {
         
         int[] gridPos = { 70, 70, 6 };
         WMSMetaTile mt = new WMSMetaTile(
-                srs, ImageMime.png,
+                null, srs, ImageMime.png,
         	gridCalc.getGridBounds(gridPos[2]), 
         	gridPos, metaWidth, metaHeight);
         

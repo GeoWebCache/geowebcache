@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.ByteUtils;
 import org.geowebcache.util.ServletUtils;
@@ -40,10 +41,10 @@ import org.geowebcache.util.ServletUtils;
  * 
  * @author Arne Kepp, The Open Planning Project
  */
-public class Tile implements Serializable {
+public class Tile implements TileResponseReceiver {
     public static enum RequestHandler {LAYER, SERVICE};
     
-    private static final long serialVersionUID = -5171595780192211809L;
+    //private static final long serialVersionUID = -5171595780192211809L;
     
     private static Log log = LogFactory.getLog(org.geowebcache.tile.Tile.class);
     
@@ -54,7 +55,7 @@ public class Tile implements Serializable {
     public boolean complete = false;
     
     // Set this flag to true if an error has been encountered
-    public boolean error = false;
+    protected boolean error = false;
     
     // Store an error message 
     public String errorMsg = null;
@@ -188,8 +189,24 @@ public class Tile implements Serializable {
         return (int) status;
     }
     
-    public void setStatus(long status) {
-        this.status = status ;
+    public void setStatus(int status) {
+        this.status = (long) status ;
+    }
+    
+    public boolean getError() {
+        return this.error;
+    }
+    
+    public void setError() {
+        this.error = true;
+    }
+    
+    public String getErrorMessage() {
+        return this.errorMsg;
+    }
+    
+    public void setErrorMessage(String errorMessage) {
+        this.errorMsg = errorMessage;
     }
     
     public int[] getTileIndex() {

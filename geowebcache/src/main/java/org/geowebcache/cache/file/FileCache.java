@@ -132,6 +132,11 @@ public class FileCache implements Cache {
         if (ttl == WMSLayerProfile.CACHE_NEVER) {
             return;
         }
+        
+        if(tile.getError()) {
+            Thread.dumpStack();
+            throw new CacheException("Cache cannot store tile with error!");
+        }
 
         String filePath = (String) keyProto.createKey(tile);
         File fh = new File(filePath);
