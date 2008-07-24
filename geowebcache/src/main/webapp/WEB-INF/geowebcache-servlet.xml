@@ -22,21 +22,12 @@
   <!--
   <bean id="gwcWMSConfig" class="org.geowebcache.util.GetCapabilitiesConfiguration">
        <constructor-arg type="org.geowebcache.cache.CacheFactory" ref="gwcCacheFactory"/>
-       <constructor-arg value="http://sigma.openplans.org:8080/geoserver/wms?request=getCapabilities"/>
+       <constructor-arg value="http://geo.openplans.org/geoserver/wms?request=getCapabilities"/>
        <constructor-arg value="image/png,image/jpeg,application/vnd.google-earth.kml+xml"/>
        <constructor-arg value="3x3"/>
        <constructor-arg value="format_options=regionateby:auto"/>
      </bean>
   -->
-  <!-- Subclass of the getCapabilities configuration object above, 
-       mainly used with GeoServer integration, also looks for GEOSERVER_WMS_URL -->
-  <!-- 
-     <bean id="gwcGSConfig" class="org.geowebcache.util.GeoServerConfiguration">
-       <constructor-arg type="org.geowebcache.cache.CacheFactory" ref="gwcCacheFactory"/>
-       <constructor-arg value="image/png,image/jpeg,application/vnd.google-earth.kml+xml"/>
-       <constructor-arg value="3x3"/>
-     </bean>
-     -->
   
   <!-- For each configuration bean above, add them below to activate -->
   <bean id="gwcTLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
@@ -90,6 +81,7 @@
         <prop key="/seed/**">geowebcacheDispatcher</prop>
         <prop key="/truncate/**">geowebcacheDispatcher</prop>
         <prop key="/rpc/**">geowebcacheDispatcher</prop>
+        <prop key="/demo/**">geowebcacheDispatcher</prop>
       </props>
     </property>
   </bean>

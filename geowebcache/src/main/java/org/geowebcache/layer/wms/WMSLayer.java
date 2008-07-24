@@ -112,6 +112,7 @@ public class WMSLayer implements TileLayer {
             log.error(gwce.getMessage());
             gwce.printStackTrace();
         }
+        
         // Create conditions for tile locking
         this.gridLocConds = new Condition[17];
         for(int i=0; i<gridLocConds.length; i++) {

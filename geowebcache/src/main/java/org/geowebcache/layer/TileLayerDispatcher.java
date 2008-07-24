@@ -30,13 +30,9 @@ public class TileLayerDispatcher {
     private static Log log = LogFactory
             .getLog(org.geowebcache.layer.TileLayerDispatcher.class);
 
-    private HashMap<String, TileLayer> layers = null;
+    private volatile HashMap<String, TileLayer> layers = null;
 
     private List configs = null;
-
-    private volatile Boolean isInitialized = null;
-
-    //private final ReentrantLock initLock = new ReentrantLock();
 
     public TileLayerDispatcher() {
         log.info("TileLayerFactor constructed");
@@ -44,13 +40,14 @@ public class TileLayerDispatcher {
 
     public TileLayer getTileLayer(String layerIdent)
             throws GeoWebCacheException {
-        isInitialized();
+        
+        HashMap<String,TileLayer> tmpLayers = this.getLayers();
 
-        TileLayer layer = layers.get(layerIdent);
+        TileLayer layer = tmpLayers.get(layerIdent);
         if (layer == null) {
-            throw new GeoWebCacheException("Unknown layer " + layerIdent
-                    + ". Check the logfiles, it may not "
-                    + " have loaded properly.");
+            throw new GeoWebCacheException(
+                    "Unknown layer " + layerIdent + ". Check the logfiles,"
+                    +" it may not have loaded properly.");
         }
         
         layer.isInitialized();
@@ -73,11 +70,12 @@ public class TileLayerDispatcher {
      * @throws GeoWebCacheException
      */
     public void reInit() throws GeoWebCacheException {
+        // Clear
         synchronized (this) {
-            Boolean result = isInitialized =  null;
             this.layers = null;
-            isInitialized = result = initialize();
         }
+        // And then we do it again
+        getLayers();
     }
 
     /**
@@ -86,29 +84,23 @@ public class TileLayerDispatcher {
      * 
      * @return
      */
-    public Map<String, TileLayer> getLayers() {
-        isInitialized();
-        return layers;
-    }
-
-    public Boolean isInitialized() {
-        Boolean result = isInitialized;
+    public HashMap<String,TileLayer> getLayers() {
+        HashMap<String,TileLayer> result = this.layers;
         if (result == null) {
             synchronized (this) {
-                result = isInitialized;
+                result = this.layers;
                 if (result == null) {
-                    isInitialized = result = initialize();
+                    this.layers = result = initialize();
                 }
             }
         }
         return result;
     }
 
-    public Boolean initialize() {
-
+    private HashMap<String,TileLayer> initialize() {
         log.debug("Thread initLayers(), initializing");
 
-        this.layers = new HashMap<String, TileLayer>();
+        HashMap<String, TileLayer> layers = new HashMap<String, TileLayer>();
 
         Iterator configIter = configs.iterator();
         while (configIter.hasNext()) {
@@ -135,6 +127,7 @@ public class TileLayerDispatcher {
                         + " contained no layers.");
             }
         }
-        return new Boolean(true);
+        
+        return layers;
     }
 }

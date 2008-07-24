@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.demo.OpenLayersDemo;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.seeder.SeederDispatcher;
@@ -51,6 +52,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
     public static final String TYPE_TRUNCATE = "truncate";
     
     public static final String TYPE_RPC = "rpc";
+    
+    public static final String TYPE_DEMO = "demo";
     
     WebApplicationContext context = null;
 
@@ -148,6 +151,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 handleTruncateRequest(request, response);
             } else if (requestComps[0].equalsIgnoreCase(TYPE_RPC)) {
                 handleRPCRequest(requestComps[1],request, response);
+            } else if (requestComps[0].equalsIgnoreCase(TYPE_DEMO)) {
+                handleDemoRequest(requestComps[1],request, response);   
             } else {
                 writeError(response, 404, "Unknow path: " + requestComps[0]);
             }
@@ -336,6 +341,11 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
     }
     
+    private void handleDemoRequest(String action, HttpServletRequest request, 
+            HttpServletResponse response) throws GeoWebCacheException {
+        OpenLayersDemo.makeMap(this.tileLayerDispatcher, action, request, response);        
+    }
+    
     /**
      * Helper function for looking up the service that should handle the
      * request.
@@ -417,8 +427,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 try {
                     OutputStream os = response.getOutputStream();
                     os.write(data);
-                    //os.flush();
-                    //os.close();
                 } catch (IOException ioe) {
                     log.debug("Caught IOException: " + ioe.getMessage() + "\n\n" + ioe.toString());
                 }
