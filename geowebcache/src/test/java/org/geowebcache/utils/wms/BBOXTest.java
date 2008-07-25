@@ -38,7 +38,6 @@ public class BBOXTest extends TestCase {
         BBOX copy = new BBOX(bbox);
         bbox.scale(1.0);
         bbox.scale(0.5);
-        assert(! bbox.equals(copy));
         bbox.scale(2.0);
         
         assert(bbox.isSane());
