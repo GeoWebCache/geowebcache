@@ -20,6 +20,7 @@ package org.geowebcache.seeder;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
@@ -28,6 +29,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.tile.Tile;
 import org.geowebcache.util.wms.BBOX;
 
 /**
@@ -81,11 +83,9 @@ public class Seeder {
                     infoTile(pw, count++);
                     int[] gridLoc = { gridx , gridy , level };
                     
-                    if(true) {
-                        throw new GeoWebCacheException("Seeding disabled!");
-                    }
-                    //TileRequest tileReq = new TileRequest(gridLoc, mimeType, srs);
-                    //layer.getResponse(tileReq, new ServiceRequest(null) , response);
+                    Tile tile = new Tile(layer.getName(), srs, gridLoc, mimeType, null, null);
+                   
+                    layer.getResponse(tile);
                     
                     // Next column
                     gridx += metaTilingFactors[0];

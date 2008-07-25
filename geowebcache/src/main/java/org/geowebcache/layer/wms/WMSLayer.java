@@ -528,7 +528,9 @@ public class WMSLayer implements TileLayer {
         if(tile.getStatus() == 0 && ! tile.getError()) {
             tile.setStatus(200);
         }
-        this.setExpirationHeader(tile.servletResp);
+        if(tile.servletResp != null) {
+            this.setExpirationHeader(tile.servletResp);
+        }
         return tile;
     }
     

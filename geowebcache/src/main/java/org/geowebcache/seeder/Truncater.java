@@ -31,6 +31,7 @@ import org.geowebcache.cache.file.FilePathKey;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.tile.Tile;
 import org.geowebcache.util.FileUtils;
 import org.geowebcache.util.wms.BBOX;
 
@@ -95,14 +96,9 @@ public class Truncater {
 
                         int[] gridLoc = { gridx, gridy, level };
 
-                        //CacheKey ck = (CacheKey) layer.getCacheKey();
+                        Tile tile = new Tile(layer.getName(), srs, gridLoc, mimeType, null, null);
 
-                        if(true) {
-                            throw new GeoWebCacheException("Seeding disabled!");
-                        }
-                        // TODO need to revisit case where this is not a string
-                        //String strCK = (String) ck.createKey(cachePfx, gridLoc[0], gridLoc[1],gridLoc[2], srs, mimeType.getFileExtension());
-                        //System.out.println(strCK);
+                        layer.getCache().remove(layer.getCacheKey(), tile);
                         
                         // Next column
                         gridx++;

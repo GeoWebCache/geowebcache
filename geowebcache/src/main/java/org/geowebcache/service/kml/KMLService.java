@@ -289,7 +289,7 @@ public class KMLService extends Service {
         return "x" + gridLoc[0] + "y" + gridLoc[1] + "z" + gridLoc[2];
     }
 
-    private static int[] parseGridLocString(String key) throws ServiceException {
+    protected static int[] parseGridLocString(String key) throws ServiceException {
         // format should be x<x>y<y>z<z>
 
         int[] ret = new int[3];
