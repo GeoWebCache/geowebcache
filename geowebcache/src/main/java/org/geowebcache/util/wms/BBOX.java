@@ -32,6 +32,13 @@ public class BBOX {
     // minx, miny, maxx, maxy
     public double[] coords = new double[4];
 
+    public BBOX(BBOX bbox) {
+        coords[0] = bbox.coords[0];
+        coords[1] = bbox.coords[1];
+        coords[2] = bbox.coords[2];
+        coords[3] = bbox.coords[3];
+    }
+    
     public BBOX(String BBOX) {
         setFromBBOXString(BBOX, 0);
         if (log.isTraceEnabled()) {
@@ -200,6 +207,18 @@ public class BBOX {
         }
         
         return retBbox;
+    }
+    
+    public void scale(double factor) {
+       double x = coords[2] - coords[0];
+       double xdiff = (x*factor - x)/2;
+       double y = coords[3] - coords[1];
+       double ydiff = (y*factor - y)/2;
+       
+       coords[0] = coords[0] - xdiff;
+       coords[1] = coords[1] - ydiff;
+       coords[2] = coords[2] + xdiff;
+       coords[3] = coords[3] + ydiff;
     }
     
     

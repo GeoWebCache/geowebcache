@@ -67,9 +67,13 @@ public class OpenLayersDemo {
             +"height=\"63\" width=\"306\" border=\"0\"/>"
             +"</a>"
             +"<h3>Known layers:</h3><table>"
-            +"This is just a quick demo, the bounds are likely to be less than perfect."
-            +"You can append &format=image/jpeg to the URLs in the "
-            +"table to change the output format.<hr>"
+            +"<ul><li>This is just a quick demo, the bounds are likely to be less than perfect.</li>"
+            +"<li>You can append &format=image/jpeg to the URLs in the "
+            +"table to change the output format.</li>"
+            +"<li>If the layers are loaded from a WMS getcapabilities"
+            +" document you will probably see duplicates without the namespace prefix.</li>"
+            +"<li>OpenLayers does not support bounds per zoomlevel, and GWC tightens the bounds as you zoom in. Some tile requests will therefore be rejected. </li>"
+            +"<hr>"
             +"<tr><td><strong>Layer name</strong></td><td></td><td></tr>";
         
         String rows = tableRows(tileLayerDispatcher);
@@ -103,6 +107,7 @@ public class OpenLayersDemo {
         int srsIdx = layer.getSRSIndex(new SRS(srsStr));
         
         BBOX bbox = null;
+        BBOX zoomBounds = null;
         String res = "";
         if(srsStr.equalsIgnoreCase("EPSG:900913")) {
             //res = "resolutions: [156543.03,78271.52,39135.76,19567.88,9783.94,4891.97],\n";
@@ -112,13 +117,17 @@ public class OpenLayersDemo {
             res = "resolutions: " + getEPSG4326Resolutions() + ",\n";
             bbox = new BBOX(-180.0,-90.0,180.0,90.0);
         }
-        
-        BBOX layerBounds = layer.getBounds(srsIdx);
-        int[] gridBounds = layer.getGridLocForBounds(srsIdx,layerBounds);
+               
         int[] gridLoc = layer.getZoomedOutGridLoc(srsIdx);
         if(gridLoc[2] > -1) {
             bbox = layer.getBboxForGridLoc(srsIdx, gridLoc);
+            zoomBounds = new BBOX(bbox);
+            zoomBounds.scale(0.50);
+        } else {
+            zoomBounds = bbox;
         }
+        
+        
         
         String page =
             "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n"
@@ -145,7 +154,7 @@ public class OpenLayersDemo {
             +"\""+layerName+"\",\"../service/wms\",\n"
             +"{layers: '"+layerName+"', format: '"+mime+"'} );\n"
             +"map.addLayer(layerstates);\n"
-            +"map.zoomToMaxExtent();\n"
+            +"map.zoomToExtent(new OpenLayers.Bounds("+zoomBounds.toString()+"));\n"
             +"}\n"
             +"</script>\n"
             +"</head>\n"

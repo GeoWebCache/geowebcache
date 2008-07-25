@@ -31,4 +31,17 @@ public class BBOXTest extends TestCase {
     		assertTrue(false);
     	}
     }
+    
+    public void testBBOXScale() throws Exception {
+        BBOX bbox = new BBOX(-180.0,-90.0,180.0,90.0);
+        
+        BBOX copy = new BBOX(bbox);
+        bbox.scale(1.0);
+        bbox.scale(0.5);
+        assert(! bbox.equals(copy));
+        bbox.scale(2.0);
+        
+        assert(bbox.isSane());
+        assert(bbox.equals(copy));
+    }
 }
