@@ -628,6 +628,11 @@ public class KMLService extends Service {
         
         response.setStatus((int) tile.getStatus());
         
+        TileLayer layer = tile.getLayer();
+        if(layer != null) {
+            layer.setExpirationHeader(tile.servletResp);
+        }
+        
         if(tile.getWrapperMimeType() != null) {
             response.setContentType(tile.getWrapperMimeType().getMimeType());
         } else {
