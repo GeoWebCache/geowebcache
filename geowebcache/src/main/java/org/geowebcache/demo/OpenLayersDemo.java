@@ -61,14 +61,20 @@ public class OpenLayersDemo {
     private static String generateHTML(TileLayerDispatcher tileLayerDispatcher) 
     throws GeoWebCacheException {
         String header = 
-            "<html><body><h2>Known layers:</h2><table>";
+            "<html><body>"
+            +"<a id=\"logo\" href=\"http://geowebcache.org\">" 
+            +"<img src=\"http://geowebcache.org/trac/chrome/site/geowebcache_text.png?page=demos\""
+            +"height=\"63\" width=\"306\" border=\"0\"/>"
+            +"</a>"
+            +"<h3>Known layers:</h3><table>"
+            +"This is just a quick demo, the bounds are likely to be less than perfect."
+            +"You can append &format=image/jpeg to the URLs in the "
+            +"table to change the output format.<hr>"
+            +"<tr><td><strong>Layer name</strong></td><td></td><td></tr>";
         
         String rows = tableRows(tileLayerDispatcher);
         
         String footer = "</table>"
-            +"<br>ps. this is just a quick and dirty demo. "
-            +"You can append &format=image/jpeg to the URLs in the "
-            +"table to change the output format."
             +"</body></html>";
         
         return header + rows + footer;

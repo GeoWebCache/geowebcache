@@ -32,6 +32,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileResponseReceiver;
+import org.geowebcache.layer.wms.WMSLayerProfile;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.ByteUtils;
 import org.geowebcache.util.ServletUtils;
@@ -56,6 +57,9 @@ public class Tile implements TileResponseReceiver {
     
     // Set this flag to true if an error has been encountered
     protected boolean error = false;
+    
+    // Store an Expires header
+    private long expiresHeader = -1;
     
     // Store an error message 
     public String errorMsg = null;
@@ -183,6 +187,14 @@ public class Tile implements TileResponseReceiver {
     
     public void setTSExpire(long ts){
         this.tsExpire = ts;
+    }
+    
+    public long getExpiresHeader() {
+        return this.expiresHeader;
+    }
+
+    public void setExpiresHeader(long seconds) {
+        this.expiresHeader = seconds;      
     }
     
     public int getStatus() {

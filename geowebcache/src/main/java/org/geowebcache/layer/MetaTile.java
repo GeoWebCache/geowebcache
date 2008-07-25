@@ -18,6 +18,7 @@ package org.geowebcache.layer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.layer.wms.WMSLayerProfile;
 import org.geowebcache.mime.MimeType;
 
 public abstract class MetaTile implements TileResponseReceiver {
@@ -39,6 +40,8 @@ public abstract class MetaTile implements TileResponseReceiver {
     protected boolean error = false;
     
     protected String errorMessage;
+    
+    protected long expiresHeader = -1;
     
     protected MimeType mimeType;
     
@@ -77,6 +80,13 @@ public abstract class MetaTile implements TileResponseReceiver {
         this.errorMessage = errorMessage;
     }
     
+    public long getExpiresHeader() {
+        return this.expiresHeader;
+    }
+
+    public void setExpiresHeader(long seconds) {
+        this.expiresHeader = seconds;     
+    }
     /**
      * Figures out the bounds of the metatile, in terms of the gridposition
      * of all contained tiles. To get the BBOX you need to add one tilewidth

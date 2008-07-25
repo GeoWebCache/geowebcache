@@ -19,14 +19,24 @@ package org.geowebcache.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import java.text.SimpleDateFormat;
+
 public class ServletUtils {
+    // Cached objects, recycle
+    private static SimpleDateFormat format = 
+        new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+    private static TimeZone timeZone = TimeZone.getTimeZone("GMT");
     
     /**
      * Case insensitive lookup
@@ -128,26 +138,26 @@ public class ServletUtils {
      * Extracts the cache control header
      * 
      * @param cacheControlHeader
-     * @return Long representing expiration time in milliseconds
+     * @return Long representing expiration time in seconds
      */
-    public static Long extractHeaderMaxAge(URLConnection backendCon) {
-        
-        String cacheControlHeader = backendCon.getHeaderField("Cache-Control");
-        
-        if (cacheControlHeader == null) {
-            return null;
-        }
-
-        String expression = "max-age=([0-9]*)[ ,]";
-        Pattern p = Pattern.compile(expression);
-        Matcher m = p.matcher(cacheControlHeader.toLowerCase());
-
-        if (m.find()) {
-            return Long.valueOf(m.group(1));
-        } else {
-            return null;
-        }
-    }
+//    public static Long extractHeaderMaxAge(URLConnection backendCon) {
+//        
+//        String cacheControlHeader = backendCon.getHeaderField("Cache-Control");
+//        
+//        if (cacheControlHeader == null) {
+//            return null;
+//        }
+//
+//        String expression = "max-age=([0-9]*)[ ,]";
+//        Pattern p = Pattern.compile(expression);
+//        Matcher m = p.matcher(cacheControlHeader.toLowerCase());
+//
+//        if (m.find()) {
+//            return Long.valueOf(m.group(1));
+//        } else {
+//            return null;
+//        }
+//    }
     
     /**
      * Reads an inputstream and stores all the information in a buffer.
@@ -198,5 +208,19 @@ public class ServletUtils {
         System.arraycopy(buffer, 0, newBuffer, 0, totalCount);
         
         return newBuffer;
+    }
+
+    /**
+     * Makes HTTP Expire header vaulue
+     *  
+     * @param seconds
+     * @return
+     */
+    public static String makeExpiresHeader(int seconds) {
+        format.setTimeZone(timeZone);
+        Calendar calendar = new GregorianCalendar(); 
+        
+        calendar.setTimeInMillis(System.currentTimeMillis() + seconds*1000);
+        return format.format(calendar.getTime());
     }
 }
