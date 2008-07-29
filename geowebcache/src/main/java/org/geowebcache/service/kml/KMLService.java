@@ -463,7 +463,10 @@ public class KMLService extends Service {
         //    maxLodPixels = 385;
         //}
         return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
+                + "<kml xmlns=\"http://earth.google.com/kml/2.2\" "
+                +"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+                +"xsi:schemaLocation=\"http://earth.google.com/kml/2.2 "
+                +"http://code.google.com/apis/kml/schema/kml22beta.xsd\">\n"
                 + "<Document>\n"
                 + "<Region>\n"
                 + "<Lod><minLodPixels>128</minLodPixels>"
@@ -566,32 +569,32 @@ public class KMLService extends Service {
                 + "\n<longitude>"+ ((lon1 + lon2) / 2)+ "</longitude>"
                 + "\n<latitude>"+midpoint[1]+"</latitude>"
                 + "\n<altitude>0</altitude>"
-                + "\n<range>"+distance+"</range>"
-                + "\n<tilt>0</tilt>"
                 + "\n<heading>0</heading>"
+                + "\n<tilt>0</tilt>"
+                + "\n<range>"+distance+"</range>"
                 + "\n<altitudeMode>clampToGround</altitudeMode>"
                 //+ "\n<!--kml:altitudeModeEnum:clampToGround, relativeToGround, absolute -->"
                 + "\n</LookAt>\n";
     }
 
-    private static String moreDataIcon(BBOX bbox){ 
-        return "<Region>\n" +
-             "<Lod><minLodPixels>128</minLodPixels>" +
-             "<maxLodPixels>512</maxLodPixels></Lod>\n" +
-             bbox.toKML() + "</Region>\n" +
-             "<ScreenOverlay><name>More data</name>" +
-                "<visibility>1</visibility>" +
-                "<open>1</open>" +
-                "<Icon><href>http://bbc.blueghost.co.uk/images/bbc_v2.png</href></Icon>" +
-                "<color>ffffffff</color>" + 
-                "<drawOrder>0</drawOrder>" +
-                "<overlayXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>" +
-                "<screenXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>" +
-                "<rotationXY x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/>" +
-                "<size x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/>" +
-                "<rotation>0</rotation>" +
-                "</ScreenOverlay>";
-    }
+//    private static String moreDataIcon(BBOX bbox){ 
+//        return "<Region>\n" +
+//             "<Lod><minLodPixels>128</minLodPixels>" +
+//             "<maxLodPixels>512</maxLodPixels></Lod>\n" +
+//             bbox.toKML() + "</Region>\n" +
+//             "<ScreenOverlay><name>More data</name>" +
+//                "<visibility>1</visibility>" +
+//                "<open>1</open>" +
+//                "<Icon><href>http://bbc.blueghost.co.uk/images/bbc_v2.png</href></Icon>" +
+//                "<color>ffffffff</color>" + 
+//                "<drawOrder>0</drawOrder>" +
+//                "<overlayXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>" +
+//                "<screenXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>" +
+//                "<rotationXY x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/>" +
+//                "<size x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/>" +
+//                "<rotation>0</rotation>" +
+//                "</ScreenOverlay>";
+//    }
     
     private static double[] getRect(double lat, double lon, double radius) {
         double theta = (90 - lat) * Math.PI / 180;
