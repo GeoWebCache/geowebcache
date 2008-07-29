@@ -248,8 +248,11 @@ public class KMLService extends Service {
                     tile.getUrlPrefix() + "/" + gridLocString(gridLoc) + formatExtension);
         }
         
-        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                + "\n<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<kml xmlns=\"http://earth.google.com/kml/2.2\" "
+                +"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+                +"xsi:schemaLocation=\"http://earth.google.com/kml/2.2 "
+                +"http://code.google.com/apis/kml/schema/kml22beta.xsd\">\n"
                 + "\n<Folder>"
                 + networkLinks
                 //+ getLookAt(bbox)
