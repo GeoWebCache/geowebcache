@@ -472,9 +472,10 @@ public class KMLService extends Service {
                 +"http://code.google.com/apis/kml/schema/kml22beta.xsd\">\n"
                 + "<Document>\n"
                 + "<Region>\n"
+                + bbox.toKML()
                 + "<Lod><minLodPixels>128</minLodPixels>"
                 + "<maxLodPixels>"+Integer.toString(maxLodPixels)+"</maxLodPixels></Lod>\n"
-                + bbox.toKML() + "</Region>\n";
+                + "</Region>\n";
     }
 
     /**
@@ -503,9 +504,10 @@ public class KMLService extends Service {
                 + layer.getName()
                 + "</name>"
                 + "\n<Region>"
+                + bbox.toKML()
                 + "\n<Lod><minLodPixels>128</minLodPixels>"
                 + "<maxLodPixels>"+Integer.toString(maxLodPixels)+"</maxLodPixels></Lod>\n"
-                + bbox.toKML() + "\n</Region>" + "\n<Link>" 
+                + "</Region>" + "\n<Link>" 
                 + "\n<href>"
                 +  gridLocUrl
                 +"</href>"
