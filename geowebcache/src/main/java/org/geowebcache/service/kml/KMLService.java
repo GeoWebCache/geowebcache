@@ -252,7 +252,7 @@ public class KMLService extends Service {
                 + "\n<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
                 + "\n<Folder>"
                 + networkLinks
-                + getLookAt(bbox)
+                //+ getLookAt(bbox)
                 + "\n</Folder>"
                 + "\n</kml>\n";
 
