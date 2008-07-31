@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
@@ -72,7 +74,7 @@ public class WMSService extends Service {
                     "Unable to parse layers parameter from request.");
         }
         
-        TileLayer tileLayer = Service.tlDispatcher.getTileLayer(layers);
+        WMSLayer tileLayer = (WMSLayer) Service.tlDispatcher.getTileLayer(layers);
         
         WMSParameters wmsParams = new WMSParameters(request);
         MimeType mimeType = null;
@@ -158,7 +160,7 @@ public class WMSService extends Service {
         String xml = getCapabilitiesHeader();
 
         while (iter.hasNext()) {
-            TileLayer tl = iter.next();
+            WMSLayer tl = (WMSLayer)iter.next();
             if (!tl.isInitialized()) {
                 tl.initialize();
             }
@@ -190,10 +192,10 @@ public class WMSService extends Service {
      * @param tl
      * @return
      */
-    private String getTileSets(TileLayer tl) {
+    private String getTileSets(WMSLayer tl) {
         String ret = "";
         SRS[] srsList = tl.getProjections();
-        MimeType[] mimeList = tl.getMimeTypes();
+        List<MimeType> mimeList = tl.getMimeTypes();
         String strStyles = tl.getStyles();
         if(strStyles == null) {
             strStyles = "";
@@ -208,8 +210,8 @@ public class WMSService extends Service {
                     tl.getResolutions(srsIdx));
             String strName = tl.getName();
 
-            for (int mimeIdx = 0; mimeIdx < mimeList.length; mimeIdx++) {
-                String strFormat = mimeList[mimeIdx].getFormat();
+            for (MimeType mime : mimeList) {
+                String strFormat = mime.getFormat();
                 ret += getTileSet(strName, strSRS, strBounds, 
                         strStyles, strResolutions, strFormat);
             }

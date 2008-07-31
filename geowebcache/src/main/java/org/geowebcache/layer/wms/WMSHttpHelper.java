@@ -51,9 +51,9 @@ public class WMSHttpHelper {
      */
     protected static byte[] makeRequest(WMSMetaTile metaTile) throws GeoWebCacheException {
         WMSParameters wmsparams = metaTile.getWMSParams();
-        WMSLayerProfile profile = metaTile.getProfile();
+        WMSLayer layer = metaTile.getLayer();
         
-        return makeRequest(metaTile, profile,  wmsparams);
+        return makeRequest(metaTile, layer,  wmsparams);
     }
     
     /**
@@ -65,18 +65,18 @@ public class WMSHttpHelper {
      */
     protected static byte[] makeRequest(Tile tile) throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
-        WMSParameters wmsparams = layer.profile.getWMSParamTemplate();
+        WMSParameters wmsparams = layer.getWMSParamTemplate();
         int idx = layer.getSRSIndex(tile.getSRS());        
         // Fill in the blanks
         wmsparams.setFormat(tile.getMimeType().getFormat());
         wmsparams.setSrs(tile.getSRS());
-        wmsparams.setWidth(layer.profile.width);
-        wmsparams.setHeight(layer.profile.height);
-        BBOX bbox = layer.profile.gridCalc[idx].bboxFromGridLocation(tile.getTileIndex());
-        bbox.adjustForGeoServer(layer.profile.srs[idx]);
+        wmsparams.setWidth(layer.getWidth());
+        wmsparams.setHeight(layer.getHeight());
+        BBOX bbox = layer.gridCalc[idx].bboxFromGridLocation(tile.getTileIndex());
+        bbox.adjustForGeoServer(layer.getGrids().get(idx).getProjection());
         wmsparams.setBBOX(bbox);
         
-        return makeRequest(tile, layer.profile,  wmsparams);
+        return makeRequest(tile, layer,  wmsparams);
     }
 
     /**
@@ -89,14 +89,14 @@ public class WMSHttpHelper {
      * @throws GeoWebCacheException
      */
     private static byte[] makeRequest(TileResponseReceiver tileRespRecv, 
-            WMSLayerProfile profile,  WMSParameters wmsparams)
+            WMSLayer layer,  WMSParameters wmsparams)
     throws GeoWebCacheException {
         byte[] data = null;
         URL wmsBackendUrl = null;
         
         int backendTries = 0; // keep track of how many backends we have tried
-        while (data == null && backendTries < profile.wmsURL.length) {
-            Request wmsrequest = new Request(profile.nextWmsURL(), wmsparams);
+        while (data == null && backendTries < layer.wmsURL.length) {
+            Request wmsrequest = new Request(layer.nextWmsURL(), wmsparams);
             try { 
                 wmsBackendUrl = new URL(wmsrequest.toString());
             } catch(MalformedURLException maue) {

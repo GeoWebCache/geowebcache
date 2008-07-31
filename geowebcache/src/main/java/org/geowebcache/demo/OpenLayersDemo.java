@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.util.wms.BBOX;
 
@@ -23,7 +24,7 @@ public class OpenLayersDemo {
 
         // Do we have a layer, or should we make a list?
         if (action != null) {
-            TileLayer layer = tileLayerDispatcher.getTileLayer(action);
+            WMSLayer layer = (WMSLayer) tileLayerDispatcher.getTileLayer(action);
 
             String srsStr = request.getParameter("srs");
             String formatStr = request.getParameter("format");
@@ -100,7 +101,7 @@ public class OpenLayersDemo {
         return rows;
     }
     
-    private static String generateHTML(TileLayer layer, String srsStr, String formatStr) 
+    private static String generateHTML(WMSLayer layer, String srsStr, String formatStr) 
     throws GeoWebCacheException {
         String layerName = layer.getName();
         String mime = layer.getDefaultMimeType().getFormat();
