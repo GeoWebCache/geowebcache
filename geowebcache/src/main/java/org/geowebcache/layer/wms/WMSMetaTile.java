@@ -50,7 +50,7 @@ public class WMSMetaTile extends MetaTile {
     
     private final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
     
-    private WMSLayer wmsl = null;
+    protected WMSLayerProfile profile = null;
     
     /**
      * Used for requests by clients
@@ -58,33 +58,33 @@ public class WMSMetaTile extends MetaTile {
      * @param profile
      * @param initGridPosition
      */
-    protected WMSMetaTile(WMSLayer wsl, SRS srs, MimeType mimeType, int[] gridBounds, int[] tileGridPosition,
+    protected WMSMetaTile(WMSLayerProfile profile, SRS srs, MimeType mimeType, int[] gridBounds, int[] tileGridPosition,
             int metaX, int metaY) {
         super(srs, mimeType, gridBounds, tileGridPosition, metaX, metaY);
-        this.wmsl = wsl;
+        this.profile = profile;
     }
 
     protected WMSParameters getWMSParams() throws GeoWebCacheException {
-        WMSParameters wmsparams = wmsl.getWMSParamTemplate();
-        int srsIdx = wmsl.getSRSIndex(srs);
+        WMSParameters wmsparams = profile.getWMSParamTemplate();
+        int srsIdx = profile.getSRSIndex(srs);
         
         // Fill in the blanks
         wmsparams.setFormat(mimeType.getFormat());
         wmsparams.setSrs(srs);
-        wmsparams.setWidth(metaX * wmsl.getWidth());
-        wmsparams.setHeight(metaY * wmsl.getHeight());
-        BBOX metaBbox = wmsl.gridCalc[srsIdx]
+        wmsparams.setWidth(metaX * profile.width);
+        wmsparams.setHeight(metaY * profile.height);
+        BBOX metaBbox = profile.gridCalc[srsIdx]
                 .bboxFromGridBounds(metaTileGridBounds);
         metaBbox.adjustForGeoServer(srs);
         wmsparams.setBBOX(metaBbox);
         
         return wmsparams;
     }
-
-    protected WMSLayer getLayer() {
-    	return this.wmsl;
-    }
     
+    protected WMSLayerProfile getProfile() {
+        return profile;
+    }
+
     protected void setImageBytes(byte[] image) throws GeoWebCacheException {
         if(image == null) {
             throw new GeoWebCacheException("WMSMetaTile.setImageBytes() "

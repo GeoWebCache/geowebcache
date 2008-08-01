@@ -10,15 +10,6 @@
     <!-- property name="absolutePath"><value>c:\geowebcache\conf</value></property -->
   </bean>
   
-  <bean id="gwcXmlConfig" class="org.geowebcache.util.XMLConfiguration">
-    <constructor-arg type="org.geowebcache.cache.CacheFactory" ref="gwcCacheFactory"/>
-    <!-- By default GWC will look for layer_properties.xml in the resources folder. -->
-    <property name="relativePath"><value>../resources</value></property>
-    <!-- property name="relativePath"><value>/WEB-INF/classes</value></property -->
-    <!-- property name="absolutePath"><value>/etc/geowebcache/conf</value></property -->
-    <!-- property name="absolutePath"><value>/home/ak/masuta/geowebcache/src/main/resources</value></property -->
-  </bean> 
-  
   <!-- Example for automatically configuring GWC from a WMS getCapabilities document
        Constructor arguments:
        1) Cache factory, bean defined below
@@ -42,7 +33,7 @@
   <bean id="gwcTLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
     <property name="config">
       <list>
-	<ref bean="gwcXmlConfig"/>
+	<ref bean="gwcDefaultConfig"/>
 	<!-- ref bean="gwcWMSConfig"/ -->
 	<!-- ref bean="gwcGSConfig"/ -->
       </list>
@@ -65,12 +56,6 @@
     <!-- property name="servletPrefix" value=""/ -->
   </bean>
   
-  <bean id="gwcRESTDispatcher" class="org.geowebcache.RESTDispatcher">
-	<constructor-arg type="org.geowebcache.util.XMLConfiguration" ref="gwcXmlConfig"/>
-  </bean>
-  
-  
-  
   <!-- Services, make sure you name the bean the same as the path -->
   <bean id="gwcServiceWMS" 
     	class="org.geowebcache.service.wms.WMSService"/>
@@ -80,7 +65,8 @@
 	class="org.geowebcache.service.mgmaps.MGMapsConverter"/>
   <bean id="gwcServiceVE"
 	class="org.geowebcache.service.ve.VEConverter"/>
-  <!--bean id="gwcServiceKML" class="org.geowebcache.service.kml.KMLService"/-->
+  <bean id="gwcServiceKML"
+	class="org.geowebcache.service.kml.KMLService"/>
   
   <bean id="gwcCacheFile" class="org.geowebcache.cache.file.FileCache">
     <property name="defaultKeyBeanId"><value>gwcCacheKeyFile</value></property>
@@ -96,7 +82,6 @@
         <prop key="/truncate/**">geowebcacheDispatcher</prop>
         <prop key="/rpc/**">geowebcacheDispatcher</prop>
         <prop key="/demo/**">geowebcacheDispatcher</prop>
-		<prop key="/rest/**">gwcRESTDispatcher</prop>
       </props>
     </property>
   </bean>

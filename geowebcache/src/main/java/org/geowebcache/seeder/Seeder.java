@@ -28,7 +28,6 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.tile.Tile;
 import org.geowebcache.util.wms.BBOX;
@@ -42,10 +41,10 @@ import org.geowebcache.util.wms.BBOX;
 public class Seeder {
     private static Log log = LogFactory.getLog(org.geowebcache.seeder.Seeder.class);
 
-    WMSLayer layer = null;
+    TileLayer layer = null;
 
     public Seeder(TileLayer layer) {
-        this.layer = (WMSLayer) layer;
+        this.layer = layer;
     }
 
     /**

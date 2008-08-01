@@ -95,7 +95,7 @@ public class PropertiesConfiguration implements Configuration,
                     + propFiles[i].getAbsolutePath());
 
             // TODO need support for other types of layers
-            WMSLayer layer =null;//new WMSLayer(layerName, props, cacheFactory);
+            WMSLayer layer = new WMSLayer(layerName, props, cacheFactory);
 
             if (layer != null) {
                 layers.put(layerName, layer);

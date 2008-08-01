@@ -16,287 +16,274 @@
  */
 package org.geowebcache.layer;
 
+import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import javax.servlet.http.HttpServletResponse;
+
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
-import org.geowebcache.cache.CacheFactory;
+import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheKey;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.mime.ImageMime;
+import org.geowebcache.tile.Tile;
 import org.geowebcache.util.wms.BBOX;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+public interface TileLayer {
 
-public class TileLayer {
-	private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayer.class);
-	
-	public volatile Boolean isInitialized = null;
-	
-	protected Condition[] gridLocConds = null;
-	
-	protected Lock layerLock;
-	
-	CacheFactory initCacheFactory = null;
-	
-	protected Cache cache;
+    /**
+     * Checks whether the layer has been initialized, otherwise initilizes it.
+     * 
+     * @return
+     */
+    public Boolean isInitialized();
     
-	protected CacheKey cacheKey;
+    /**
+     * Initializes the layer, creating internal structures for
+     * calculating grid location and so forth.
+     */
+    public Boolean initialize();
     
-	protected String cachePrefix = null;
-	
-	protected String name;
-
-	protected List<String> mimeFormats;
-	
-	protected List<MimeType> formats;
-
-	protected List<Grid> grids;
-
-	
-	
-	public TileLayer(String name, CacheFactory cacheFactory) {
-		this.name = name;
-		this.initCacheFactory = cacheFactory;
-		this.grids = new ArrayList<Grid>();
-		
-	}
-
-	public void setInitCacheFactory(CacheFactory cacheFactory) {
-		this.initCacheFactory = cacheFactory;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public void addGrid(Grid grid) {
-		this.grids.add(grid);
-	}
-
-	public List<Grid> getGrids() {
-		return this.grids;
-	}
-
-	public void addFormat(String format) {
-		this.mimeFormats.add(format);
-	}
-
-	public Boolean isInitialized() {
-		Boolean result = isInitialized;
-		if (result == null) {
-			synchronized (this) {
-				result = isInitialized;
-				if (result == null) {
-					isInitialized = result = this.initialize();
-				}
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * Initializes the layer, creating internal structures for calculating grid
-	 * location and so forth.
-	 */
-	public Boolean initialize() {
-		try {
-			this.setupParameters(initCacheFactory);
-		} catch (GeoWebCacheException gwce) {
-			log.error(gwce.getMessage());
-			gwce.printStackTrace();
-		}
-
-		// Create conditions for tile locking
-		this.gridLocConds = new Condition[17];
-		for (int i = 0; i < gridLocConds.length; i++) {
-			if(layerLock== null){
-				layerLock = new ReentrantLock();
-			}	
-			gridLocConds[i] = layerLock.newCondition();
-		}
-
-		// Unset variables for garbage collection
-		initCacheFactory = null;
-
-		return new Boolean(true);
-	}
-	
-	public void setupParameters(CacheFactory cacheFactory)throws GeoWebCacheException{
-		this.formats = new ArrayList<MimeType>();
-		for(String fmt : mimeFormats){
-			formats.add(MimeType.createFromFormat(fmt));
-		}
-		if(formats.get(0) == null)
-			formats.add(0,ImageMime.createFromFormat("image/png"));
-		
-		cache = cacheFactory.getDefaultCache();
-        if(cache == null) {
-              log.error("Unable to get default cache.");
-         }
-
-      cacheKey = cacheFactory.getCacheKeyFactory().getCacheKey(
-                  cache.getDefaultKeyBeanId());
-      String sanitizedName = name.replace(':', '_');
-      cachePrefix = cache.getDefaultPrefix(sanitizedName);
-      log.warn("cachePrefix not defined for layer " + name
-              + ", using default prefifx and name instead: "
-              + cachePrefix);
-
-      // Initialize the cache
-      cache.setUp(cachePrefix);
-
-	}
-
-	/**
-	 * Rough checks to see whether the layers supports the requested projection,
-	 * returns error message otherwise
-	 * 
-	 * @param srs
-	 *            Name of projection, for example "EPSG:4326"
-	 * @return null if okay, error message otherwise.
-	 */
-	public boolean supportsProjection(SRS srs) throws GeoWebCacheException {
-		for (Grid g : grids)
-			if (srs.equals(g.getProjection()))
-				return true;
-		throw new GeoWebCacheException("SRS " + srs.toString()
-				+ " is not supported by " + this.getName());
-	}
-
-	/**
-	 * Rough checks to see whether the layers supports the requested mimeType.
-	 * Null assumes the default format and is supported.
-	 * 
-	 * Returns error message otherwise
-	 * 
-	 * @param mimeType
-	 *            MIME type or null, example "image/png"
-	 * @return null if okay, error message otherwise.
-	 */
-	public boolean supportsFormat(String strFormat) throws GeoWebCacheException {
-		if (strFormat == null) {
-			log.trace("Format was null");
-			return true;
-		}
-
-		for (MimeType mime : formats) {
-			if (strFormat.equalsIgnoreCase(mime.getFormat())) {
-				return true;
-			}
-		}
-
-		throw new GeoWebCacheException("Format " + strFormat
-				+ " is not supported by " + this.getName());
-	}
-
-	/**
-	 * Rough checks to see whether the specified bounding box is supported by
-	 * the current layer.
-	 * 
-	 * Returns error message if not.
-	 * 
-	 * @param srs
-	 *            the string representation
-	 * @param reqBounds
-	 *            the requested bounds
-	 * @return null if okay, error message otherwise.
-	 */
-	public String supportsBbox(SRS srs, BBOX reqBounds)
-			throws GeoWebCacheException {
-		this.supportsProjection(srs);
-
-		if (!reqBounds.isSane()) {
-			return "The requested bounding box "
-					+ reqBounds.getReadableString() + " is not sane";
-		}
-
-		if (!(grids.get(getSRSIndex(srs)).getGridBounds()).contains(reqBounds)) {
-			return "The layers grid box "
-					+ (grids.get(getSRSIndex(srs)).getGridBounds()).getReadableString()
-					+ " does not cover the requested bounding box "
-					+ reqBounds.getReadableString();
-		}
-
-		// All ok
-		return null;
-	}
-
-	/**
-	 * 
-	 * @return the array of supported projections
-	 */
-	public SRS[] getProjections(){
-		SRS[] projections = new SRS[grids.size()];
-		for(Grid g : grids)
-			projections[grids.indexOf(g)] = g.getProjection();
-		return projections;
-	}
-
-	/**
-	 * 
-	 * @param reqSRS
-	 * @return the internal index of the provided spatial reference system
-	 */
-	public int getSRSIndex(SRS reqSRS){
-		for(Grid g : grids){
-			if (reqSRS.equals(g.getProjection()))
-				return grids.indexOf(g);
-		}
-		return -1;
-	}
-
-	/**
-	 * 
-	 * @param srsIdx
-	 * @return the bounds of the layer for the given spatial reference system
-	 */
-	public BBOX getBounds(int srsIdx){
-		return grids.get(srsIdx).getBounds();
-	}
-
-
-	/**
-	 * 
-	 * @return list with supported MIME types
-	 */
-	public List<MimeType> getMimeTypes(){
-		return this.formats;
-	}
-
-	/**
-	 * The default MIME type is the first one in the configuration
-	 * 
-	 * @return
-	 */
-	public MimeType getDefaultMimeType() {
-		return formats.get(0);
-	}
-
-	/**
-	 * The name of the layer.
-	 * 
-	 * @return
-	 */
-	public String getName() {
-		return this.name;
-	}
-	
-    public Cache getCache() {
-        return this.cache;
-    }
+    /**
+     * Whether the layer supports the given projection 
+     * 
+     * @param srs
+     * @return
+     * @throws GeoWebCacheException
+     */
+    public boolean supportsProjection(SRS srs) throws GeoWebCacheException;
     
-    public CacheKey getCacheKey() {
-        return this.cacheKey;
-    }
-
-    public String getCachePrefix() {
-        return new String(this.cachePrefix);
-    }
-
+    /**
+     * Whether the layer supports the given format string
+     * 
+     * @param formatStr
+     * @return 
+     * @throws GeoWebCacheException
+     */
+    public boolean supportsFormat(String formatStr) throws GeoWebCacheException;
+    
+    /**
+     * Whether the layer supports the given projection and bounding box combination
+     * 
+     * @param srs
+     * @param bounds
+     * @return
+     * @throws GeoWebCacheException
+     */
+    public String supportsBbox(SRS srs, BBOX bounds) throws GeoWebCacheException;
+    
+    /**
+     * The normal way of getting a single tile from the layer. Under the hood,
+     * this may result in several tiles being requested and stored before 
+     * returning.
+     *  
+     * @param tileRequest
+     * @param servReq
+     * @param response
+     * @return
+     * @throws GeoWebCacheException
+     * @throws IOException
+     */
+    public Tile getResponse(Tile tile) throws GeoWebCacheException, IOException;
+    
+    /**
+     * This is a more direct way of requesting a tile without invoking metatiling,
+     * and should not be used in general. The method was exposed to let the 
+     * KML service traverse the tree ahead of the client, to avoid linking to
+     * empty tiles.
+     * 
+     * @param gridLoc
+     * @param idx
+     * @param formatStr
+     * @return
+     * @throws GeoWebCacheException
+     */
+    public Tile doNonMetatilingRequest(Tile tile) throws GeoWebCacheException;
+    
+    /**
+     * 
+     * @return the array of supported projections
+     */
+    public SRS[] getProjections();
+    
+    /**
+     * 
+     * @param reqSRS
+     * @return the internal index of the provided spatial reference system
+     */
+    public int getSRSIndex(SRS reqSRS);
+    
+    /**
+     * 
+     * @param srsIdx
+     * @return the bounds of the layer for the given spatial reference system
+     */
+    public BBOX getBounds(int srsIdx);
+    
+    /**
+     * 
+     * @param srsIdx
+     * @return the resolutions (units/pixel) for the layer
+     */
+    public double[] getResolutions(int srsIdx);
+    
+    /**
+     * 
+     * @return the styles configured for the layer, may be null
+     */
+    public String getStyles();
+    
+    /**
+     * 
+     * @return the {x,y} metatiling factors
+     */
+    public int[] getMetaTilingFactors();
+    
+    /**
+     * Provides a 2-dim array with the bounds
+     * 
+     * {z , {minx,miny,maxx,maxy}}
+     * @param srsIdx
+     * @param bounds
+     * @return 
+     */
+    public int[][] getCoveredGridLevels(int srsIdx, BBOX bounds);
+    
+    /**
+     * 
+     * @return array with supported MIME types
+     */
+    public MimeType[] getMimeTypes();
+    
+    /**
+     * The default MIME type is the first one in the configuration
+     * 
+     * @return
+     */
+    public MimeType getDefaultMimeType();
+    
+    /**
+     * The name of the layer. 
+     * 
+     * @return
+     */
+    public String getName();
+    
+    /**
+     * Used for reloading servlet
+     */
+    public void destroy();
+    
+    /**
+     * 
+     * Converts the given bounding box into the closest location on the grid
+     * supported by the reference system.
+     * 
+     * @param srsIdx
+     * @param bounds
+     * @return
+     * @throws GeoWebCacheException
+     */
+    public int[] getGridLocForBounds(int srsIdx, BBOX bounds) throws GeoWebCacheException;
+    
+    /**
+     * 
+     * @param srsIdx
+     * @param gridLoc
+     * @return
+     */
+    public BBOX getBboxForGridLoc(int srsIdx, int[] gridLoc);
+    
+    /**
+     * The starting zoomlevel (inclusive)
+     * @return
+     */
+    public int getZoomStart();
+    
+    /**
+     * The stopping zoomlevel (inclusive)
+     * @return
+     */
+    public int getZoomStop();
+    
+    /**
+     * Returns an array with four grid locations,
+     * the result of zooming in one level on the provided grid location. 
+     * [4][x,y,z]
+     * 
+     * If the location is not within the bounds, the z value will be negative
+     * 
+     * @param srsIdx
+     * @param gridLoc
+     * @return
+     */
+    // TODO this is generic
+    public int[][] getZoomInGridLoc(int srsIdx, int[] gridLoc);
+    
+    /**
+     * The furthest zoomed in grid location that returns the entire layer
+     * on a single tile.
+     * 
+     * If there is no single tile, say your layer is in EPSG:4326 and covers
+     * both the western and eastern hemissphere, then zoomlevel will be set
+     * to -1.
+     * 
+     * @param srsIdx
+     * @return {x,y,z}
+     */
+    public int[] getZoomedOutGridLoc(int srsIdx);
+    
+    
+    /**
+     * Quick, non-synchronized way of trying the cache
+     * @param cacheKey
+     * @return
+     */
+    public boolean tryCacheFetch(Tile tile);
+    
+    /**
+     * Get the prefix for the cache
+     * 
+     * @return
+     */
+    public String getCachePrefix();
+    
+    /**
+     * Get an example of a cachekey object
+     * 
+     * @return
+     */
+    public CacheKey getCacheKey();
+    
+    /**
+     * Get the cache for the layer
+     * 
+     * @return
+     */
+    public Cache getCache();
+    
+    /**
+     * Acquire the global lock for the layer, primarily used for truncating
+     *
+     */
+    public void acquireLayerLock();
+    
+    /**
+     * Release the global lock for the layer
+     *
+     */
+    public void releaseLayerLock();
+    
+    /**
+     * Backdoor to put stuff into the cache from services
+     * 
+     * @param tile
+     * @param gridLoc
+     * @param srs
+     * @param mime
+     * @throws CacheException
+     */
+    public void putTile(Tile tile) 
+    throws GeoWebCacheException;
+    
+    public void setExpirationHeader(HttpServletResponse response);
 }

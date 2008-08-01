@@ -30,7 +30,6 @@ import org.geowebcache.cache.CacheKey;
 import org.geowebcache.cache.file.FilePathKey;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.tile.Tile;
 import org.geowebcache.util.FileUtils;
@@ -45,10 +44,10 @@ import org.geowebcache.util.wms.BBOX;
 public class Truncater {
     private static Log log = LogFactory.getLog(org.geowebcache.seeder.Truncater.class);
 
-    WMSLayer layer = null;
+    TileLayer layer = null;
 
     public Truncater(TileLayer layer) {
-        this.layer = (WMSLayer) layer;
+        this.layer = layer;
     }
 
     /**

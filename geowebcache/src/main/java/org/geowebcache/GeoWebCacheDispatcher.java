@@ -30,7 +30,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.demo.OpenLayersDemo;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.seeder.SeederDispatcher;
 import org.geowebcache.service.Service;
@@ -238,7 +237,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             
         } else {
             // B3) Get the configuration that has to respond to this request
-            WMSLayer layer = (WMSLayer)tileLayerDispatcher.getTileLayer(tile.getLayerId());
+            TileLayer layer = tileLayerDispatcher.getTileLayer(tile.getLayerId());
             
             // Save it for later
             tile.setTileLayer(layer);
