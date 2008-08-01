@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
+import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheKey;
 import org.geowebcache.layer.SRS;
@@ -43,7 +44,7 @@ import org.springframework.context.ApplicationContext;
  * Creates a grid of tiles and puts the grid index on each of them
  * 
  */
-public class KMLDebugGridLayer implements TileLayer, Cache, CacheKey {
+public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
 
     public static String LAYERNAME = "debugGrid";
     
@@ -52,6 +53,15 @@ public class KMLDebugGridLayer implements TileLayer, Cache, CacheKey {
     private static Log log = LogFactory.getLog(org.geowebcache.service.kml.KMLDebugGridLayer.class);
     
     private static KMLDebugGridLayer instance;
+    
+    
+    
+    //temporary hack
+    public void lazyLayerInitialization(CacheFactory c){
+        //blah
+    }
+    
+    
     
     private KMLDebugGridLayer() {
         
@@ -144,7 +154,7 @@ public class KMLDebugGridLayer implements TileLayer, Cache, CacheKey {
         return null;
     }
 
-    public MimeType[] getMimeTypes() {
+    public List <MimeType> getMimeTypes() {
         // TODO Auto-generated method stub
         //log.warn("getMimeTypes()");
         return null;

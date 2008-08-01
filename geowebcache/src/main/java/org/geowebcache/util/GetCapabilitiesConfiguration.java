@@ -197,12 +197,12 @@ public class GetCapabilitiesConfiguration implements Configuration {
             String bbox4326Str, String bbox900913Str, String stylesStr)
             throws GeoWebCacheException {
         Properties props = new Properties();
-        props.setProperty(WMSLayerProfile.WMS_URL, wmsurl);
-        props.setProperty(WMSLayerProfile.WMS_SRS, "EPSG:4326;EPSG:900913");
-        props.setProperty(WMSLayerProfile.WMS_BBOX, 
+        props.setProperty(WMSLayer.WMS_URL, wmsurl);
+        props.setProperty(WMSLayer.WMS_SRS, "EPSG:4326;EPSG:900913");
+        props.setProperty(WMSLayer.WMS_BBOX, 
                 bbox4326Str +";"+ bbox900913Str);
-        props.setProperty(WMSLayerProfile.WMS_STYLES, stylesStr);
-        props.setProperty(WMSLayerProfile.WMS_TRANSPARENT, "true");
+        props.setProperty(WMSLayer.WMS_STYLES, stylesStr);
+        props.setProperty(WMSLayer.WMS_TRANSPARENT, "true");
 
         if (this.mimeTypes == null || this.mimeTypes.length() == 0) {
             props.setProperty(WMSLayer.WMS_MIMETYPES, "image/png,image/jpeg");
@@ -213,15 +213,18 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 + props.toString());
 
         if (this.metaTiling == null || this.metaTiling.length() == 0) {
-            props.setProperty(WMSLayerProfile.WMS_METATILING, "3x3");
+            props.setProperty(WMSLayer.WMS_METATILING, "3x3");
         } else {
-            props.setProperty(WMSLayerProfile.WMS_METATILING, metaTiling);
+            props.setProperty(WMSLayer.WMS_METATILING, metaTiling);
         }
         
         if (this.vendorParameters != null) {
-            props.setProperty(WMSLayerProfile.WMS_VENDOR_PARAMS, vendorParameters);
+            props.setProperty(WMSLayer.WMS_VENDOR_PARAMS, vendorParameters);
         }
-        WMSLayer layer = new WMSLayer(name, props, this.cacheFactory);
+        
+        //temporary hack
+        
+        WMSLayer layer = null; //new WMSLayer(name, props, this.cacheFactory);
 
         return layer;
     }

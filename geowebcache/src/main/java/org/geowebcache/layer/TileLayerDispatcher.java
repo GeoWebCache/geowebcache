@@ -40,32 +40,32 @@ public class TileLayerDispatcher {
 
     public TileLayer getTileLayer(String layerIdent)
             throws GeoWebCacheException {
-        
-        HashMap<String,TileLayer> tmpLayers = this.getLayers();
+
+        HashMap<String, TileLayer> tmpLayers = this.getLayers();
 
         TileLayer layer = tmpLayers.get(layerIdent);
         if (layer == null) {
-            throw new GeoWebCacheException(
-                    "Unknown layer " + layerIdent + ". Check the logfiles,"
-                    +" it may not have loaded properly.");
+            throw new GeoWebCacheException("Unknown layer " + layerIdent
+                    + ". Check the logfiles,"
+                    + " it may not have loaded properly.");
         }
-        
+
         layer.isInitialized();
-        
+
         return layer;
     }
 
     public void setConfig(List configs) {
         this.configs = configs;
     }
-    
+
     /***
      * Reinitialization is tricky, because we can't really just lock all the
-     * layers, because this would cause people to queue on something that we
-     * may not want to exist post reinit.
+     * layers, because this would cause people to queue on something that we may
+     * not want to exist post reinit.
      * 
-     * So we'll just set the current layer set free, ready for garbage collection,
-     * and generate a new one.
+     * So we'll just set the current layer set free, ready for garbage
+     * collection, and generate a new one.
      * 
      * @throws GeoWebCacheException
      */
@@ -84,8 +84,8 @@ public class TileLayerDispatcher {
      * 
      * @return
      */
-    public HashMap<String,TileLayer> getLayers() {
-        HashMap<String,TileLayer> result = this.layers;
+    public HashMap<String, TileLayer> getLayers() {
+        HashMap<String, TileLayer> result = this.layers;
         if (result == null) {
             synchronized (this) {
                 result = this.layers;
@@ -97,7 +97,7 @@ public class TileLayerDispatcher {
         return result;
     }
 
-    private HashMap<String,TileLayer> initialize() {
+    private HashMap<String, TileLayer> initialize() {
         log.debug("Thread initLayers(), initializing");
 
         HashMap<String, TileLayer> layers = new HashMap<String, TileLayer>();
@@ -112,7 +112,9 @@ public class TileLayerDispatcher {
                 configLayers = config.getTileLayers();
             } catch (GeoWebCacheException gwce) {
                 log.error(gwce.getMessage());
-                log.error("Failed to add layers from " + config.getIdentifier());
+                log
+                        .error("Failed to add layers from "
+                                + config.getIdentifier());
             }
 
             log.info("Adding layers from " + config.getIdentifier());
@@ -127,7 +129,7 @@ public class TileLayerDispatcher {
                         + " contained no layers.");
             }
         }
-        
+
         return layers;
     }
 }

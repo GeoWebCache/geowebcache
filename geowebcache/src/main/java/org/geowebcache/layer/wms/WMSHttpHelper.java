@@ -40,8 +40,9 @@ import org.geowebcache.util.wms.BBOX;
  * This class is a wrapper for HTTP interaction with WMS backend
  */
 public class WMSHttpHelper {
-    private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSHttpHelper.class); 
-    
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.layer.wms.WMSHttpHelper.class);
+
     /**
      * Used for metatiling requests
      * 
@@ -49,13 +50,14 @@ public class WMSHttpHelper {
      * @return
      * @throws GeoWebCacheException
      */
-    protected static byte[] makeRequest(WMSMetaTile metaTile) throws GeoWebCacheException {
+    protected static byte[] makeRequest(WMSMetaTile metaTile)
+            throws GeoWebCacheException {
         WMSParameters wmsparams = metaTile.getWMSParams();
-        WMSLayerProfile profile = metaTile.getProfile();
-        
-        return makeRequest(metaTile, profile,  wmsparams);
+        WMSLayer layer = metaTile.getLayer();
+
+        return makeRequest(metaTile, layer, wmsparams);
     }
-    
+
     /**
      * Used for a non-metatiling requests
      * 
@@ -65,18 +67,19 @@ public class WMSHttpHelper {
      */
     protected static byte[] makeRequest(Tile tile) throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
-        WMSParameters wmsparams = layer.profile.getWMSParamTemplate();
-        int idx = layer.getSRSIndex(tile.getSRS());        
+        WMSParameters wmsparams = layer.getWMSParamTemplate();
+        int idx = layer.getSRSIndex(tile.getSRS());
         // Fill in the blanks
         wmsparams.setFormat(tile.getMimeType().getFormat());
         wmsparams.setSrs(tile.getSRS());
-        wmsparams.setWidth(layer.profile.width);
-        wmsparams.setHeight(layer.profile.height);
-        BBOX bbox = layer.profile.gridCalc[idx].bboxFromGridLocation(tile.getTileIndex());
-        bbox.adjustForGeoServer(layer.profile.srs[idx]);
+        wmsparams.setWidth(layer.getWidth());
+        wmsparams.setHeight(layer.getHeight());
+        BBOX bbox = layer.gridCalc[idx].bboxFromGridLocation(tile
+                .getTileIndex());
+        bbox.adjustForGeoServer(layer.getGrids().get(idx).getProjection());
         wmsparams.setBBOX(bbox);
-        
-        return makeRequest(tile, layer.profile,  wmsparams);
+
+        return makeRequest(tile, layer, wmsparams);
     }
 
     /**
@@ -88,41 +91,42 @@ public class WMSHttpHelper {
      * @return
      * @throws GeoWebCacheException
      */
-    private static byte[] makeRequest(TileResponseReceiver tileRespRecv, 
-            WMSLayerProfile profile,  WMSParameters wmsparams)
-    throws GeoWebCacheException {
+    private static byte[] makeRequest(TileResponseReceiver tileRespRecv,
+            WMSLayer layer, WMSParameters wmsparams)
+            throws GeoWebCacheException {
         byte[] data = null;
         URL wmsBackendUrl = null;
-        
+
         int backendTries = 0; // keep track of how many backends we have tried
-        while (data == null && backendTries < profile.wmsURL.length) {
-            Request wmsrequest = new Request(profile.nextWmsURL(), wmsparams);
-            try { 
+        while (data == null && backendTries < layer.wmsURL.length) {
+            Request wmsrequest = new Request(layer.nextWmsURL(), wmsparams);
+            try {
                 wmsBackendUrl = new URL(wmsrequest.toString());
-            } catch(MalformedURLException maue) {
+            } catch (MalformedURLException maue) {
                 throw new GeoWebCacheException("Malformed URL: "
-                        +wmsrequest.toString()+" "+maue.getMessage());   
+                        + wmsrequest.toString() + " " + maue.getMessage());
             }
-            data = connectAndCheckHeaders(tileRespRecv,wmsBackendUrl,wmsparams);
-            
+            data = connectAndCheckHeaders(tileRespRecv, wmsBackendUrl,
+                    wmsparams);
+
             backendTries++;
         }
-    
-        if(data == null) {
-            String msg = "All backends ("+backendTries+") failed, "
-                + "last one: " +wmsBackendUrl.toString() + "\n\n" 
-                + tileRespRecv.getErrorMessage();
-            
+
+        if (data == null) {
+            String msg = "All backends (" + backendTries + ") failed, "
+                    + "last one: " + wmsBackendUrl.toString() + "\n\n"
+                    + tileRespRecv.getErrorMessage();
+
             tileRespRecv.setError();
             tileRespRecv.setErrorMessage(msg);
             throw new GeoWebCacheException(msg);
         }
         return data;
-    }    
+    }
 
     /**
-     * Executes the actual HTTP request, checks the response headers
-     * (status and MIME) and 
+     * Executes the actual HTTP request, checks the response headers (status and
+     * MIME) and
      * 
      * @param tileRespRecv
      * @param wmsBackendUrl
@@ -130,86 +134,96 @@ public class WMSHttpHelper {
      * @return
      * @throws GeoWebCacheException
      */
-    private static byte[] connectAndCheckHeaders(TileResponseReceiver tileRespRecv,
-            URL wmsBackendUrl, WMSParameters wmsparams) 
-    throws GeoWebCacheException {
+    private static byte[] connectAndCheckHeaders(
+            TileResponseReceiver tileRespRecv, URL wmsBackendUrl,
+            WMSParameters wmsparams) throws GeoWebCacheException {
         byte[] ret = null;
         HttpURLConnection wmsBackendCon = null;
         int responseCode = -1;
         int responseLength = -1;
-        
+
         try { // finally
-            try { 
-                wmsBackendCon = (HttpURLConnection) wmsBackendUrl.openConnection();
+            try {
+                wmsBackendCon = (HttpURLConnection) wmsBackendUrl
+                        .openConnection();
                 responseCode = wmsBackendCon.getResponseCode();
                 responseLength = wmsBackendCon.getContentLength();
-                
-             // Do not set error at this stage
+
+                // Do not set error at this stage
             } catch (ConnectException ce) {
                 log.error("Error forwarding request "
-                        +wmsBackendUrl.toString()+" "+ce.getMessage());
+                        + wmsBackendUrl.toString() + " " + ce.getMessage());
                 return null;
             } catch (IOException ioe) {
                 log.error("Error forwarding request "
-                        +wmsBackendUrl.toString()+" "+ioe.getMessage());
+                        + wmsBackendUrl.toString() + " " + ioe.getMessage());
                 return null;
-            } 
-            
+            }
+
             // Check that the response code is okay
             tileRespRecv.setStatus(responseCode);
             if (responseCode != 200 && responseCode != 204) {
                 tileRespRecv.setError();
                 throw new ServiceException(
-                        "Unexpected reponse code from backend: " 
-                        + responseCode + " for " + wmsBackendUrl.toString());
+                        "Unexpected reponse code from backend: " + responseCode
+                                + " for " + wmsBackendUrl.toString());
             }
 
             // Check that we're not getting an error MIME back.
             String responseMime = wmsBackendCon.getContentType();
             String requestMime = wmsparams.getFormat();
-            if(responseMime != null && ! responseMime.equalsIgnoreCase(requestMime)) {
+            if (responseMime != null
+                    && !responseMime.equalsIgnoreCase(requestMime)) {
                 String message = null;
-                if(responseMime.equalsIgnoreCase(ErrorMime.vnd_ogc_se_inimage.getFormat())) {
+                if (responseMime.equalsIgnoreCase(ErrorMime.vnd_ogc_se_inimage
+                        .getFormat())) {
                     byte[] error = new byte[2048];
                     try {
                         wmsBackendCon.getInputStream().read(error);
-                    } catch(IOException ioe) {
+                    } catch (IOException ioe) {
                         // Do nothing
                     }
                     message = new String(error);
                 }
-                String msg = "MimeType mismatch, expected " 
-                    + requestMime + " but got " + responseMime + " from " 
-                    + wmsBackendUrl.toString() + "\n\n" + message;
+                String msg = "MimeType mismatch, expected " + requestMime
+                        + " but got " + responseMime + " from "
+                        + wmsBackendUrl.toString() + "\n\n" + message;
                 tileRespRecv.setError();
                 tileRespRecv.setErrorMessage(msg);
                 log.error(msg);
             }
 
             // Everything looks okay, try to save expiration
-            if(tileRespRecv.getExpiresHeader() == WMSLayerProfile.CACHE_USE_WMS_BACKEND_VALUE) {
+            if (tileRespRecv.getExpiresHeader() == WMSLayer.CACHE_USE_WMS_BACKEND_VALUE) {
                 tileRespRecv.setExpiresHeader(wmsBackendCon.getExpiration());
             }
-            
+
             // Read the actual data
-            if(responseCode != 204) {
+            if (responseCode != 204) {
                 try {
-                    if(responseLength < 1) {
-                        ret = ServletUtils.readStream(wmsBackendCon.getInputStream(), 16384, 1024);
+                    if (responseLength < 1) {
+                        ret = ServletUtils.readStream(wmsBackendCon
+                                .getInputStream(), 16384, 1024);
                     } else {
                         ret = new byte[responseLength];
-                        int readLength = wmsBackendCon.getInputStream().read(ret);
-                        if(readLength != responseLength) {
+                        int readLength = wmsBackendCon.getInputStream().read(
+                                ret);
+                        if (readLength != responseLength) {
                             tileRespRecv.setError();
-                            throw new GeoWebCacheException("Responseheader advertised "
-                                    + responseLength + " bytes, but only received " + readLength
-                                    + " from " + wmsBackendUrl.toString());
+                            throw new GeoWebCacheException(
+                                    "Responseheader advertised "
+                                            + responseLength
+                                            + " bytes, but only received "
+                                            + readLength + " from "
+                                            + wmsBackendUrl.toString());
                         }
                     }
                 } catch (IOException ioe) {
                     tileRespRecv.setError();
-                    log.error("Caught IO exception, "
-                            + wmsBackendUrl.toString() + " " + ioe.getMessage());
+                    log
+                            .error("Caught IO exception, "
+                                    + wmsBackendUrl.toString() + " "
+                                    + ioe.getMessage());
                 }
             } else {
                 ret = new byte[0];
@@ -218,7 +232,7 @@ public class WMSHttpHelper {
         } finally {
             wmsBackendCon.disconnect();
         }
-        
+
         return ret;
     }
 }

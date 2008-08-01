@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -53,13 +54,13 @@ public class WMSService extends Service {
     public Tile getTile(HttpServletRequest request, HttpServletResponse response)
             throws GeoWebCacheException {
         String[] keys = { "layers", "request" };
-        String[] values = ServletUtils.selectedStringsFromMap(
-                request.getParameterMap(), keys);
+        String[] values = ServletUtils.selectedStringsFromMap(request
+                .getParameterMap(), keys);
 
         // Look for getCapabilities
         String req = values[1];
         if (req != null && req.equalsIgnoreCase("getcapabilities")) {
-            Tile tile = new Tile(values[0],request, response);
+            Tile tile = new Tile(values[0], request, response);
             tile.setHint("getcapabilities");
             tile.setRequestHandler(Tile.RequestHandler.SERVICE);
             return tile;
@@ -71,18 +72,18 @@ public class WMSService extends Service {
             throw new ServiceException(
                     "Unable to parse layers parameter from request.");
         }
-        
+
         TileLayer tileLayer = Service.tlDispatcher.getTileLayer(layers);
-        
+
         WMSParameters wmsParams = new WMSParameters(request);
         MimeType mimeType = null;
         String strFormat = wmsParams.getFormat();
-        
+
         try {
             mimeType = MimeType.createFromFormat(strFormat);
         } catch (MimeException me) {
-            throw new ServiceException(
-                    "Unable to determine requested format, " + strFormat);
+            throw new ServiceException("Unable to determine requested format, "
+                    + strFormat);
         }
 
         if (wmsParams.getSrs() == null) {
@@ -91,7 +92,7 @@ public class WMSService extends Service {
 
         SRS srs = wmsParams.getSrs();
         int srsIdx = tileLayer.getSRSIndex(srs);
-        
+
         if (srsIdx < 0) {
             throw new ServiceException("Unable to match requested SRS "
                     + wmsParams.getSrs() + " to those supported by layer");
@@ -104,42 +105,43 @@ public class WMSService extends Service {
         }
 
         int[] tileIndex = tileLayer.getGridLocForBounds(srsIdx, bbox);
-        
-//        String strOrigin = wmsParams.getOrigin();
-//        if (strOrigin != null) {
-//            String[] split = strOrigin.split(",");
-//            if (split.length != 2) {
-//                throw new ServiceException("Unable to parse tilesOrigin,"
-//                        + "should not be set anyway: " + strOrigin);
-//            }
-//            double x = Double.valueOf(split[0]);
-//            double y = Double.valueOf(split[1]);
-//
-//            if (Math.abs(x + 180.0) < 0.5 && x + Math.abs(y + 90.0) < 0.5) {
-//                // ok, fine for EPSG:4326
-//            } else if (Math.abs(x + 20037508.34) < 1.0
-//                    && x + Math.abs(y + 20037508.34) < 1.0) {
-//                // ok, fine for EPSG:9000913
-//            } else {
-//                throw new ServiceException("The tilesOrigin parameter "
-//                        + strOrigin
-//                        + " is not accepted by GeoWebCache, please omit"
-//                        + " or use lower left corner of world bounds.");
-//            }
-//        }
+
+        // String strOrigin = wmsParams.getOrigin();
+        // if (strOrigin != null) {
+        // String[] split = strOrigin.split(",");
+        // if (split.length != 2) {
+        // throw new ServiceException("Unable to parse tilesOrigin,"
+        // + "should not be set anyway: " + strOrigin);
+        // }
+        // double x = Double.valueOf(split[0]);
+        // double y = Double.valueOf(split[1]);
+        //
+        // if (Math.abs(x + 180.0) < 0.5 && x + Math.abs(y + 90.0) < 0.5) {
+        // // ok, fine for EPSG:4326
+        // } else if (Math.abs(x + 20037508.34) < 1.0
+        // && x + Math.abs(y + 20037508.34) < 1.0) {
+        // // ok, fine for EPSG:9000913
+        // } else {
+        // throw new ServiceException("The tilesOrigin parameter "
+        // + strOrigin
+        // + " is not accepted by GeoWebCache, please omit"
+        // + " or use lower left corner of world bounds.");
+        // }
+        // }
 
         return new Tile(layers, srs, tileIndex, mimeType, request, response);
     }
 
-    public void handleRequest(TileLayerDispatcher tLD, Tile tile) throws GeoWebCacheException {
+    public void handleRequest(TileLayerDispatcher tLD, Tile tile)
+            throws GeoWebCacheException {
 
         if (tile.hint != null && tile.hint.equalsIgnoreCase("getcapabilities")) {
             handleGetCapabilities(tLD, tile.servletResp);
         } else {
             throw new GeoWebCacheException(
                     "The WMS Service would love to help,"
-                   + " but has no idea what you're trying to do?"
-                   + "Please include request URL in your ");
+                            + " but has no idea what you're trying to do?"
+                            + "Please include request URL in your ");
         }
     }
 
@@ -193,25 +195,24 @@ public class WMSService extends Service {
     private String getTileSets(TileLayer tl) {
         String ret = "";
         SRS[] srsList = tl.getProjections();
-        MimeType[] mimeList = tl.getMimeTypes();
+        List<MimeType> mimeList = tl.getMimeTypes();
         String strStyles = tl.getStyles();
-        if(strStyles == null) {
+        if (strStyles == null) {
             strStyles = "";
         }
-            
 
         for (int srsIdx = 0; srsIdx < srsList.length; srsIdx++) {
             String strSRS = srsList[srsIdx].toString();
             // These should be adjusted bounds!
             String[] strBounds = doublesToStrings(tl.getBounds(srsIdx).coords);
-            String strResolutions = getResolutionString(
-                    tl.getResolutions(srsIdx));
+            String strResolutions = getResolutionString(tl
+                    .getResolutions(srsIdx));
             String strName = tl.getName();
 
-            for (int mimeIdx = 0; mimeIdx < mimeList.length; mimeIdx++) {
-                String strFormat = mimeList[mimeIdx].getFormat();
-                ret += getTileSet(strName, strSRS, strBounds, 
-                        strStyles, strResolutions, strFormat);
+            for (MimeType mime : mimeList) {
+                String strFormat = mime.getFormat();
+                ret += getTileSet(strName, strSRS, strBounds, strStyles,
+                        strResolutions, strFormat);
             }
         }
 
@@ -219,20 +220,16 @@ public class WMSService extends Service {
     }
 
     private String getTileSet(String strName, String strSRS,
-            String[] strBounds, String strStyles, 
-            String strResolutions, String strFormat) {
-        return "\n<TileSet>" 
-            + "<SRS>" + strSRS + "</SRS>"
-            + "<BoundingBox srs=\"" + strSRS + "\"" + " minx=\""
-            + strBounds[0] + "\"" + " miny=\"" + strBounds[1] + "\""
-            + " maxx=\"" + strBounds[2] + "\"" + " maxy=\"" + strBounds[3] + "\" />" 
-            + "<Resolutions>" + strResolutions + "</Resolutions>"
-            + "<Width>256</Width>" 
-            + "<Height>256</Height>" 
-            + "<Format>" + strFormat + "</Format>" 
-            + "<Layers>" + strName + "</Layers>"
-            + "<Styles>" + strStyles + "</Styles>" 
-            + "</TileSet>";
+            String[] strBounds, String strStyles, String strResolutions,
+            String strFormat) {
+        return "\n<TileSet>" + "<SRS>" + strSRS + "</SRS>"
+                + "<BoundingBox srs=\"" + strSRS + "\"" + " minx=\""
+                + strBounds[0] + "\"" + " miny=\"" + strBounds[1] + "\""
+                + " maxx=\"" + strBounds[2] + "\"" + " maxy=\"" + strBounds[3]
+                + "\" />" + "<Resolutions>" + strResolutions + "</Resolutions>"
+                + "<Width>256</Width>" + "<Height>256</Height>" + "<Format>"
+                + strFormat + "</Format>" + "<Layers>" + strName + "</Layers>"
+                + "<Styles>" + strStyles + "</Styles>" + "</TileSet>";
     }
 
     private String[] doublesToStrings(double[] doubles) {

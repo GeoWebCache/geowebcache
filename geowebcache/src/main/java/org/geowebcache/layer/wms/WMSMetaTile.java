@@ -42,64 +42,67 @@ import org.geowebcache.util.wms.BBOX;
 
 public class WMSMetaTile extends MetaTile {
     private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.wms.WMSMetaTile.class); 
-    
-    private BufferedImage img = null; // buffer for storing the metatile, if it's an image
-    
+            .getLog(org.geowebcache.layer.wms.WMSMetaTile.class);
+
+    private BufferedImage img = null; // buffer for storing the metatile, if
+
+    // it's an image
+
     private RenderedImage[] tiles = null; // array with tiles (after cropping)
-    
-    private final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
-    
-    protected WMSLayerProfile profile = null;
-    
+
+    private final RenderingHints no_cache = new RenderingHints(
+            JAI.KEY_TILE_CACHE, null);
+
+    protected WMSLayer wmsLayer = null;
+
     /**
      * Used for requests by clients
      * 
      * @param profile
      * @param initGridPosition
      */
-    protected WMSMetaTile(WMSLayerProfile profile, SRS srs, MimeType mimeType, int[] gridBounds, int[] tileGridPosition,
-            int metaX, int metaY) {
+    protected WMSMetaTile(WMSLayer layer, SRS srs, MimeType mimeType,
+            int[] gridBounds, int[] tileGridPosition, int metaX, int metaY) {
         super(srs, mimeType, gridBounds, tileGridPosition, metaX, metaY);
-        this.profile = profile;
+        this.wmsLayer = layer;
     }
 
     protected WMSParameters getWMSParams() throws GeoWebCacheException {
-        WMSParameters wmsparams = profile.getWMSParamTemplate();
-        int srsIdx = profile.getSRSIndex(srs);
-        
+        WMSParameters wmsparams = wmsLayer.getWMSParamTemplate();
+        int srsIdx = wmsLayer.getSRSIndex(srs);
+
         // Fill in the blanks
         wmsparams.setFormat(mimeType.getFormat());
         wmsparams.setSrs(srs);
-        wmsparams.setWidth(metaX * profile.width);
-        wmsparams.setHeight(metaY * profile.height);
-        BBOX metaBbox = profile.gridCalc[srsIdx]
+        wmsparams.setWidth(metaX * wmsLayer.getWidth());
+        wmsparams.setHeight(metaY * wmsLayer.getHeight());
+        BBOX metaBbox = wmsLayer.gridCalc[srsIdx]
                 .bboxFromGridBounds(metaTileGridBounds);
         metaBbox.adjustForGeoServer(srs);
         wmsparams.setBBOX(metaBbox);
-        
+
         return wmsparams;
     }
-    
-    protected WMSLayerProfile getProfile() {
-        return profile;
+
+    protected WMSLayer getLayer() {
+        return wmsLayer;
     }
 
     protected void setImageBytes(byte[] image) throws GeoWebCacheException {
-        if(image == null) {
+        if (image == null) {
             throw new GeoWebCacheException("WMSMetaTile.setImageBytes() "
-                    +" received null instead of byte[]");
+                    + " received null instead of byte[]");
         }
-        
+
         InputStream is = new ByteArrayInputStream(image);
         try {
             this.img = ImageIO.read(is);
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             throw new GeoWebCacheException("WMSMetaTile.setImageBytes() "
-                    +"failed on ImageIO.read(byte["+image.length+"])");
+                    + "failed on ImageIO.read(byte[" + image.length + "])");
         }
     }
-    
+
     /**
      * Cuts the metaTile into the specified number of tiles, the actual number
      * of tiles is determined by metaX and metaY, not the width and height
@@ -113,7 +116,7 @@ public class WMSMetaTile extends MetaTile {
     protected void createTiles(int tileWidth, int tileHeight, boolean useJAI) {
         int tileCount = metaX * metaY;
         tiles = new RenderedImage[tileCount];
-        
+
         if (tileCount > 1) {
             for (int y = 0; y < metaY; y++) {
                 for (int x = 0; x < metaX; x++) {
@@ -138,9 +141,9 @@ public class WMSMetaTile extends MetaTile {
      * @param tileHeight
      * @return
      */
-    private RenderedImage createTile(int minX, int minY, 
-            int tileWidth, int tileHeight, boolean useJAI) {
-        
+    private RenderedImage createTile(int minX, int minY, int tileWidth,
+            int tileHeight, boolean useJAI) {
+
         RenderedImage tile = null;
 
         // TODO JAI is messing up for JPEG, this is a hack, retest
@@ -153,8 +156,9 @@ public class WMSMetaTile extends MetaTile {
             try {
                 tile = img.getSubimage(minX, minY, tileWidth, tileHeight);
             } catch (RasterFormatException rfe) {
-                log.error("RendereedImage.getSubimage("+minX+","+minY+","
-                        +tileWidth+","+tileHeight+") threw exception:");
+                log.error("RendereedImage.getSubimage(" + minX + "," + minY
+                        + "," + tileWidth + "," + tileHeight
+                        + ") threw exception:");
                 rfe.printStackTrace();
             }
         }
@@ -172,7 +176,7 @@ public class WMSMetaTile extends MetaTile {
 
         return tile;
     }
-    
+
     /**
      * Outputs one tile from the internal array of tiles to a provided stream
      * 
@@ -185,12 +189,14 @@ public class WMSMetaTile extends MetaTile {
      * @return true if no error was encountered
      * @throws IOException
      */
-    protected boolean writeTileToStream(int tileIdx, OutputStream os) throws IOException {        
-        if(tiles != null) {
+    protected boolean writeTileToStream(int tileIdx, OutputStream os)
+            throws IOException {
+        if (tiles != null) {
             String format = super.mimeType.getInternalName();
-            
+
             if (log.isDebugEnabled()) {
-                log.debug("Thread: " + Thread.currentThread().getName() + " writing: " + tileIdx);
+                log.debug("Thread: " + Thread.currentThread().getName()
+                        + " writing: " + tileIdx);
             }
 
             if (!javax.imageio.ImageIO.write(tiles[tileIdx], format, os)) {
@@ -200,7 +206,7 @@ public class WMSMetaTile extends MetaTile {
             }
             return true;
         }
-        
+
         return false;
     }
 

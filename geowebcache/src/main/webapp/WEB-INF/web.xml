@@ -5,8 +5,29 @@
   <!-- pick up all spring application contexts -->
   <context-param>
     <param-name>contextConfigLocation</param-name>
-    <param-value>classpath*:/applicationContext.xml classpath*:/applicationSecurityContext.xml</param-value>
+    <!--param-value>classpath*:/applicationContext.xml classpath*:/applicationSecurityContext.xml</param-value -->
+	<param-value>/WEB-INF/acegi-config.xml</param-value>
   </context-param>
+  
+  <!-- acegi security filter -->
+  <filter>
+		<filter-name>Acegi Filter Chain Proxy</filter-name>
+		<filter-class>
+			org.acegisecurity.util.FilterToBeanProxy
+		</filter-class>
+		<init-param>
+			<param-name>targetClass</param-name>
+			<param-value>
+				org.acegisecurity.util.FilterChainProxy
+			</param-value>
+		</init-param>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>Acegi Filter Chain Proxy</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
   
   <!--  spring context loader -->
   <listener>
@@ -43,6 +64,11 @@
   <servlet-mapping>
     <servlet-name>geowebcache</servlet-name>
     <url-pattern>/demo/*</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+    <servlet-name>geowebcache</servlet-name>
+    <url-pattern>/rest/*</url-pattern>
   </servlet-mapping>
   
 <!-- 

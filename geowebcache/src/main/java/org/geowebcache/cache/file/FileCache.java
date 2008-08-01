@@ -34,7 +34,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheKey;
-import org.geowebcache.layer.wms.WMSLayerProfile;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.tile.Tile;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -45,7 +45,8 @@ public class FileCache implements Cache {
 
     public final static String GS_DATA_DIR = "GEOSERVER_DATA_DIR";
 
-    private static Log log = LogFactory.getLog(org.geowebcache.cache.file.FileCache.class);
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.cache.file.FileCache.class);
 
     private String defaultKeyBeanId = null;
 
@@ -108,17 +109,18 @@ public class FileCache implements Cache {
             log.trace("Did not find " + filePath);
             return false;
         } catch (IOException ioe) {
-            log.error("IOException reading from " + filePath + ": "+ ioe.getMessage());
+            log.error("IOException reading from " + filePath + ": "
+                    + ioe.getMessage());
             throw new CacheException(ioe);
         }
-        
+
         return true;
     }
 
     public boolean remove(CacheKey keyProto, Tile tile)
             throws org.geowebcache.cache.CacheException {
         String filePath = (String) keyProto.createKey(tile);
-        
+
         File fh = new File(filePath);
         return fh.delete();
     }
@@ -129,11 +131,11 @@ public class FileCache implements Cache {
 
     public void set(CacheKey keyProto, Tile tile, long ttl)
             throws org.geowebcache.cache.CacheException {
-        if (ttl == WMSLayerProfile.CACHE_NEVER) {
+        if (ttl == WMSLayer.CACHE_NEVER) {
             return;
         }
-        
-        if(tile.getError()) {
+
+        if (tile.getError()) {
             Thread.dumpStack();
             throw new CacheException("Cache cannot store tile with error!");
         }
@@ -216,7 +218,7 @@ public class FileCache implements Cache {
                 }
 
                 if (value == null || value.equalsIgnoreCase("")) {
-                    if(log.isDebugEnabled()) {
+                    if (log.isDebugEnabled()) {
                         log.debug("Found " + typeStr + varStr + " to be unset");
                     }
                     continue;
@@ -248,11 +250,13 @@ public class FileCache implements Cache {
         if (this.defaultCachePrefix == null) {
             log.error("Found no usable default cache prefixes !!! "
                     + "Please set " + GWC_CACHE_DIR);
-            
+
             String tmpDir = System.getProperty("java.io.tmpdir");
-            if(tmpDir != null) {
-                this.defaultCachePrefix = tmpDir + File.separator + "geowebcache";
-                log.warn("Reverting to java.io.tmpdir: " + this.defaultCachePrefix);  
+            if (tmpDir != null) {
+                this.defaultCachePrefix = tmpDir + File.separator
+                        + "geowebcache";
+                log.warn("Reverting to java.io.tmpdir: "
+                        + this.defaultCachePrefix);
             }
         } else {
             switch (iVar) {

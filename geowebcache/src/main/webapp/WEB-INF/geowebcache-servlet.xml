@@ -1,15 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
-  <bean id="gwcDefaultConfig" class="org.geowebcache.util.PropertiesConfiguration">
-    <constructor-arg type="org.geowebcache.cache.CacheFactory" ref="gwcCacheFactory"/>
-    <!-- property name="relativePath"><value>/WEB-INF/classes</value></property -->
-    <!-- By default GWC will look for .properties files in the resources folder. -->
-    <property name="relativePath"><value>../resources</value></property>
-    <!-- property name="absolutePath"><value>/etc/geowebcache/conf</value></property -->
-    <!-- property name="absolutePath"><value>c:\geowebcache\conf</value></property -->
+  <!--bean id="gwcDefaultConfig"class="org.geowebcache.util.PropertiesConfiguration"-->
+	<!--constructor-arg type="org.geowebcache.cache.CacheFactory"ref="gwcCacheFactory"/-->
+	<!--property name="relativePath"><value>/WEB-INF/classes</value></property-->
+	<!--By default GWC will look for .properties files in the resourcesfolder.-->
+	<!--property name="relativePath"><value>../resources</value></property-->
+	<!--property name="absolutePath"><value>/etc/geowebcache/conf</value></property-->
+	<!--propertyname="absolutePath"><value>c:\geowebcache\conf</value></property-->
+    <!--/bean -->
+  <bean id="gwcXmlConfig" class="org.geowebcache.util.XMLConfiguration">
+		<constructor-arg type="org.geowebcache.cache.CacheFactory"
+			ref="gwcCacheFactory" />
+		<!--By default GWC will look for layer_properties.xml in the resources folder.-->
+		<property name="relativePath"><value>../resources</value></property>
+		<!--propertyname="relativePath"><value>/WEB-INF/classes</value></property-->
+		<!--property name="absolutePath"><value>/etc/geowebcache/conf</value></property-->
+		<!--property name="absolutePath"><value>/home/ak/masuta/geowebcache/src/main/resources</value></property-->
   </bean>
-  
   <!-- Example for automatically configuring GWC from a WMS getCapabilities document
        Constructor arguments:
        1) Cache factory, bean defined below
@@ -33,7 +41,7 @@
   <bean id="gwcTLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
     <property name="config">
       <list>
-	<ref bean="gwcDefaultConfig"/>
+	<ref bean="gwcXmlConfig" />
 	<!-- ref bean="gwcWMSConfig"/ -->
 	<!-- ref bean="gwcGSConfig"/ -->
       </list>
