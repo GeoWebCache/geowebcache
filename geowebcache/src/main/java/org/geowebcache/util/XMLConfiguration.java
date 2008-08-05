@@ -132,45 +132,6 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         xs.alias("grid", Grid.class);
         xs.alias("format", String.class);
 
-        // omits for the TileLayer.class
-        xs.omitField(log.getClass(), "log");
-        xs.omitField(Boolean.class, "isInitialized");
-        xs.omitField((new Condition[1]).getClass(), "gridLocConds");
-        xs.omitField(Lock.class, "layerLock");
-        xs.omitField(CacheFactory.class, "initCacheFactory");
-        xs.omitField(Cache.class, "cache");
-        xs.omitField(CacheKey.class, "cacheKey");
-        xs.omitField(String.class, "cachePrefix");
-        xs.omitField(ArrayList.class, "formats");
-
-        // omits for the WMSLayer.class
-        xs.omitField(int.class, "zoomStart");
-        xs.omitField(int.class, "zoomStop");
-        xs.omitField((new org.geowebcache.util.wms.GridCalculator[1])
-                .getClass(), "gridCalc");
-        xs.omitField(int.class, "CACHE_NEVER");
-        xs.omitField(int.class, "CACHE_VALUE_UNSET");
-        xs.omitField(int.class, "CACHE_NEVER_EXPIRE");
-        xs.omitField(int.class, "CACHE_USE_WMS_BACKEND_VALUE");
-        xs.omitField(boolean.class, "saveExpirationHeaders");
-        xs.omitField(long.class, "expireClients");
-        xs.omitField(long.class, "expireCache");
-        xs.omitField(org.geowebcache.service.wms.WMSParameters.class,
-                "wmsparams");
-        xs.omitField(String.class, "request");
-        xs.omitField(String.class, "bgcolor");
-        xs.omitField(String.class, "palette");
-        xs.omitField(String.class, "vendorParameters");
-        xs.omitField(String.class, "wmsStyles");
-        xs.omitField((new String[1]).getClass(), "wmsURL");
-        xs.omitField(int.class, "curWmsURL");
-        xs.omitField(Lock.class, "layerLock");
-        xs.omitField(boolean.class, "layerLocked");
-        xs.omitField(Condition.class, "layerLockedCond");
-        xs.omitField((new HashMap<org.geowebcache.layer.GridLocObj, Boolean>())
-                .getClass(), "procQueue");
-        xs.omitField(Integer.class, "cacheLockWait");
-
         return xs;
     }
 
@@ -206,12 +167,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         Element root = docc.getDocumentElement();
 
         // create the XStream for serializing tileLayers to XML
-        XStream xs = new XStream();
-        xs.alias("layer", TileLayer.class);
-        xs.alias("wmslayer", WMSLayer.class);
-        xs.aliasField("layer-name", TileLayer.class, "name");
-        // xs.alias("grid", Grid.class);
-        xs.alias("format", MimeType.class);
+        XStream xs = getConfiguredXStream( new XStream());
         // sent to XML
         xs.marshal(tl, new DomWriter((Element) root));
 

@@ -71,85 +71,85 @@ public class WMSLayer extends TileLayer {
     private boolean debugheaders;
 
     // everything here requires initialization
-    public static String WMS_URL;
+    public static transient String WMS_URL;
 
-    public static String WMS_SRS;
+    public static transient String WMS_SRS;
 
-    public static String WMS_BBOX;
+    public static transient String WMS_BBOX;
 
-    public static String WMS_STYLES;
+    public static transient String WMS_STYLES;
 
-    public static String WMS_METATILING;
+    public static transient String WMS_METATILING;
 
-    public static String WMS_TRANSPARENT;
+    public static transient String WMS_TRANSPARENT;
 
-    public static String WMS_VENDOR_PARAMS;
+    public static transient String WMS_VENDOR_PARAMS;
 
-    public static int CACHE_NEVER;
+    public static transient int CACHE_NEVER;
 
-    public static int CACHE_VALUE_UNSET;
+    public static transient int CACHE_VALUE_UNSET;
 
-    public static int CACHE_NEVER_EXPIRE;
+    public static transient int CACHE_NEVER_EXPIRE;
 
-    public static int CACHE_USE_WMS_BACKEND_VALUE;
+    public static transient int CACHE_USE_WMS_BACKEND_VALUE;
 
-    public static String WMS_MIMETYPES;
+    public static transient String WMS_MIMETYPES;
 
-    protected GridCalculator[] gridCalc;
+    protected transient GridCalculator[] gridCalc;
 
-    private int zoomStart;
+    private transient int zoomStart;
 
-    private int zoomStop;
+    private transient int zoomStop;
 
-    private String request;
+    private transient String request;
 
-    private String bgcolor;
+    private transient String bgcolor;
 
-    private String palette;
+    private transient String palette;
 
-    private String vendorParameters;
+    private transient String vendorParameters;
 
-    protected String[] wmsURL;
+    protected transient String[] wmsURL;
 
-    private int curWmsURL;
+    private transient int curWmsURL;
 
-    private String wmsLayers;
+    private transient String wmsLayers;
 
-    private String wmsStyles;
+    private transient String wmsStyles;
 
-    private WMSParameters wmsparams;
+    private transient WMSParameters wmsparams;
 
-    private boolean saveExpirationHeaders;
+    private transient boolean saveExpirationHeaders;
 
-    private long expireClients;
+    private transient long expireClients;
 
-    private long expireCache;
+    private transient long expireCache;
 
-    Cache cache;
+    transient Cache cache;
 
-    CacheKey cacheKey;
+    transient CacheKey cacheKey;
 
-    Lock layerLock;
+    transient Lock layerLock;
 
-    boolean layerLocked;
+    transient boolean layerLocked;
 
-    Condition layerLockedCond;
+    transient Condition layerLockedCond;
 
-    Condition[] gridLocConds;
+    transient Condition[] gridLocConds;
 
-    String cachePrefix;
+    transient String cachePrefix;
 
-    private List<MimeType> formats;
+    private transient List<MimeType> formats;
 
-    HashMap<GridLocObj, Boolean> procQueue;
+    transient HashMap<GridLocObj, Boolean> procQueue;
 
-    Integer cacheLockWait;
+    transient Integer cacheLockWait;
 
-    public volatile Boolean isInitialized;
+    public transient volatile Boolean isInitialized;
 
-    CacheFactory initCacheFactory;
+    transient CacheFactory initCacheFactory;
 
-    private static Log log;
+    private static transient Log log;
 
     public WMSLayer(String layerName, CacheFactory cacheFactory)
             throws GeoWebCacheException {
