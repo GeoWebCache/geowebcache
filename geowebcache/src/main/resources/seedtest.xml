@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<seedRequest>
+	<name>topp:states</name>
+	<bounds>
+	    <coords>
+	        <double>-124.0</double>
+	        <double>22.0</double>
+	        <double>66.0</double>
+	        <double>72.0</double>
+	    </coords>
+	</bounds>
+	<projection>
+	    <number>4326</number>
+	</projection>
+	<zoomstart>8</zoomstart>
+	<zoomstop>9</zoomstop>
+	<format>image/png</format>
+</seedRequest>
+		

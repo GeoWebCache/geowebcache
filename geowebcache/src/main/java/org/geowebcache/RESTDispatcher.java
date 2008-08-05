@@ -14,7 +14,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerResource;
 import org.geowebcache.util.XMLConfiguration;
-//import org.geowebcache.seeder.SeedResource;
+import org.geowebcache.seeder.SeedResource;
 
 import org.restlet.Restlet;
 import org.restlet.Router;
@@ -66,7 +66,7 @@ public class RESTDispatcher extends AbstractController {
         config = c;
         // cnstructor arguments(in order) int corePoolSize, int maximumPoolSize,
         // long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue
-        tpe = new ThreadPoolExecutor(3, 7, 50000L, TimeUnit.SECONDS,
+        tpe = new ThreadPoolExecutor(3, 7, 50000000L, TimeUnit.SECONDS,
                     new LinkedBlockingQueue<Runnable>());
         log.info("created thread pool executor");
         log.info("created RESTDispatcher.");
@@ -113,7 +113,7 @@ public class RESTDispatcher extends AbstractController {
             myRouter = new Router();
             myRouter.attach("/layers/", TileLayerResource.class);
             myRouter.attach("/layers", TileLayerResource.class);
-           // myRouter.attach("/seed/", SeedResource.class);
+            myRouter.attach("/seed/", SeedResource.class);
         }
 
         return myRouter;
