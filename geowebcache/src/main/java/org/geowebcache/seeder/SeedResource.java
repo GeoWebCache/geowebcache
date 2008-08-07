@@ -37,7 +37,12 @@ public class SeedResource extends Resource {
             SeedRequest rq = (SeedRequest) xs.fromXML(xmltext);
             
             Future<SeedTask> futureObject = getExecutor().submit(
-                    new MTSeeder(new SeedTask(rq, this.getResponse())));
+                    new MTSeeder(new SeedTask(rq)));
+            
+            Object[] array = getExecutor().getQueue().toArray();
+            System.out.println(array.length);
+            for(int i=0; i< array.length; i++)
+                System.out.println(array[i].toString());
             
             
             //this is just a simple test: asks the future object if it is done right after it was
@@ -45,11 +50,12 @@ public class SeedResource extends Resource {
             //then the current thread sleeps for 1.5 seconds - enough time for the executor to complete
             //the task, which right now is just a printout of the seed request.
             //then future object is then asked again if it has completed, and indeed the return is TRUE
-            /*
+            
             System.out.println(futureObject.isDone());
+            
             Thread.currentThread().sleep(1500L);
             System.out.println(futureObject.isDone());
-            */
+            
             
             
             //this is another simple test. the future object can be sent a cancel message. if this message
@@ -62,7 +68,7 @@ public class SeedResource extends Resource {
             System.out.println(futureObject.isCancelled());
             */
         } catch (IOException ioex) {
-        }/* catch (InterruptedException iex) {
+        } catch (InterruptedException iex) {
             iex.printStackTrace();
         } /*catch (ExecutionException execEx) {
             execEx.printStackTrace();

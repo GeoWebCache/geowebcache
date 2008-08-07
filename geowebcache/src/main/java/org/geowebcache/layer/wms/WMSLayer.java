@@ -185,6 +185,9 @@ public class WMSLayer extends TileLayer {
         cacheLockWait = -1;
         log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
         initCacheFactory = cf;
+        
+        isInitialized();
+            
     }
 
     public Boolean isInitialized() {

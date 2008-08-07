@@ -66,7 +66,7 @@ public class RESTDispatcher extends AbstractController {
         config = c;
         // cnstructor arguments(in order) int corePoolSize, int maximumPoolSize,
         // long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue
-        tpe = new ThreadPoolExecutor(3, 7, 50000000L, TimeUnit.SECONDS,
+        tpe = new ThreadPoolExecutor(15, 20, 50000000L, TimeUnit.SECONDS,
                     new LinkedBlockingQueue<Runnable>());
         log.info("created thread pool executor");
         log.info("created RESTDispatcher.");

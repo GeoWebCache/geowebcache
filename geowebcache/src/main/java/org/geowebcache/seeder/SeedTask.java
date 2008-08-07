@@ -20,14 +20,13 @@ import org.geowebcache.util.wms.BBOX;
 public class SeedTask {
     private static Log log = LogFactory.getLog(org.geowebcache.seeder.SeedTask.class);
     private SeedRequest req = null;
-    private Response response = null;
     
-    public SeedTask(SeedRequest req, Response response){
+    public SeedTask(SeedRequest req){
         this.req = req;
-        this.response = response;
     }
     
-    protected int doSeed(){
+    public void doSeed(){
+       try{
         log.info("begun seeding");
         TileLayer layer = RESTDispatcher.getAllLayers().get(req.getName()); 
         int zoomStart = req.getZoomStart(); 
@@ -36,7 +35,6 @@ public class SeedTask {
         try {
             mimeType = MimeType.createFromFormat(req.getMimeFormat());
         } catch (MimeException e4) {
-            // TODO Auto-generated catch block
             e4.printStackTrace();
         }
         SRS srs  = req.getProjection(); 
@@ -53,7 +51,6 @@ public class SeedTask {
         try {
             infoStart(sb, layer, zoomStart, zoomStop, mimeType, bounds);
         } catch (IOException e3) {
-            // TODO Auto-generated catch block
             e3.printStackTrace();
         }
         
@@ -63,7 +60,6 @@ public class SeedTask {
             try {
                 infoLevelStart(sb, layer, level, gridBounds);
             } catch (IOException e2) {
-                // TODO Auto-generated catch block
                 e2.printStackTrace();
             }
             
@@ -76,7 +72,6 @@ public class SeedTask {
                     try {
                         infoTile(sb, count++);
                     } catch (IOException e1) {
-                        // TODO Auto-generated catch block
                         e1.printStackTrace();
                     }
                     int[] gridLoc = { gridx , gridy , level };
@@ -86,10 +81,8 @@ public class SeedTask {
                     try {
                         layer.getResponse(tile);
                     } catch (GeoWebCacheException e) {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
                     } catch (IOException e) {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
                     
@@ -104,7 +97,6 @@ public class SeedTask {
             try {
                 infoLevelStop(sb);
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -112,18 +104,19 @@ public class SeedTask {
         try {
             infoEnd(sb);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         
         entity = new StringRepresentation(sb);
         entity.setMediaType(MediaType.TEXT_HTML);
-        response.setEntity(entity);
+       // response.setEntity(entity);
         
         System.out.println(sb); 
-        
-        return 0;
-
+      }
+       catch(Exception e){
+           e.printStackTrace();
+           
+       }
     }
     private void infoStart(StringBuilder sb, TileLayer layer, int zoomStart, int zoomStop,
             MimeType mimeType, BBOX bounds) throws IOException {
