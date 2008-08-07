@@ -109,6 +109,20 @@ public class Tile implements TileResponseReceiver {
         this.servletReq = servletReq;
         this.servletResp = servletResp;
     }
+    /**
+     * This constructor is used for a seeding, the data is
+     * then added by the cache
+     */
+    public Tile(TileLayer layer, SRS srs, int[] tileIndex, MimeType mimeType, 
+            HttpServletRequest servletReq, HttpServletResponse servletResp) {
+        this.tileLayer = layer;
+        this.layerId = layer.getName();
+        this.srs = srs;
+        this.tileIndex = tileIndex;
+        this.mimeType = mimeType;
+        this.servletReq = servletReq;
+        this.servletResp = servletResp;
+    }
     
     /**
      * This constructor is used by metatile code to create a data tile

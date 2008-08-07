@@ -1,10 +1,7 @@
 package org.geowebcache.seeder;
 
 import java.io.IOException;
-
-import org.restlet.data.MediaType;
-import org.restlet.data.Response;
-import org.restlet.resource.StringRepresentation;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,131 +15,90 @@ import org.geowebcache.tile.Tile;
 import org.geowebcache.util.wms.BBOX;
 
 public class SeedTask {
-    private static Log log = LogFactory.getLog(org.geowebcache.seeder.SeedTask.class);
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.seeder.SeedTask.class);
+
     private SeedRequest req = null;
-    
-    public SeedTask(SeedRequest req){
+
+    public SeedTask(SeedRequest req) {
         this.req = req;
     }
-    
-    public void doSeed(){
-       try{
-        log.info("begun seeding");
-        TileLayer layer = RESTDispatcher.getAllLayers().get(req.getName()); 
-        int zoomStart = req.getZoomStart(); 
-        int zoomStop = req.getZoomStop();  
-        MimeType mimeType =  null; 
+
+    public void doSeed() {
         try {
-            mimeType = MimeType.createFromFormat(req.getMimeFormat());
-        } catch (MimeException e4) {
-            e4.printStackTrace();
-        }
-        SRS srs  = req.getProjection(); 
-        BBOX bounds = req. getBounds();
-        
-        
-        StringBuilder sb = new StringBuilder();
-        StringRepresentation entity = null; 
-        
-        int srsIdx = layer.getSRSIndex(srs);
-        int[][] coveredGridLevels = layer.getCoveredGridLevels(srsIdx, bounds);
-        int[] metaTilingFactors = layer.getMetaTilingFactors();
-        
-        try {
-            infoStart(sb, layer, zoomStart, zoomStop, mimeType, bounds);
-        } catch (IOException e3) {
-            e3.printStackTrace();
-        }
-        
-        for (int level = zoomStart; level <= zoomStop; level++) {
-            int[] gridBounds = coveredGridLevels[level];
-            
+            TileLayer layer = RESTDispatcher.getAllLayers().get(req.getName());
+            log.info("Begin seeding layer : " + layer.getName());
+            int zoomStart = req.getZoomStart();
+            int zoomStop = req.getZoomStop();
+            MimeType mimeType = null;
             try {
-                infoLevelStart(sb, layer, level, gridBounds);
-            } catch (IOException e2) {
-                e2.printStackTrace();
+                mimeType = MimeType.createFromFormat(req.getMimeFormat());
+            } catch (MimeException e4) {
+                e4.printStackTrace();
             }
+            SRS srs = req.getProjection();
+            BBOX bounds = req.getBounds();
+
+            int srsIdx = layer.getSRSIndex(srs);
+            int[][] coveredGridLevels = layer.getCoveredGridLevels(srsIdx,
+                    bounds);
+            int[] metaTilingFactors = layer.getMetaTilingFactors();
             
-            int count = 0;
-            
-            for (int gridy = gridBounds[1]; gridy <= gridBounds[3];  ) {
-                
-                for (int gridx = gridBounds[0]; gridx <= gridBounds[2]; ) {
-                    
-                    try {
-                        infoTile(sb, count++);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
+            String tn = Thread.currentThread().getName();
+            int indexOfnumber = tn.indexOf('d')+2;
+            String tmp = tn.substring(indexOfnumber);
+            int arrayIndex = Integer.parseInt(tmp);        
+            arrayIndex--;
+            for (int level = zoomStart; level <= zoomStop; level++) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("Thread " + arrayIndex +" : \n");
+                sb.append("\tseeding tile layer " + layer.getName() + " ");
+                sb.append("from zoom level : " + zoomStart + " ");
+                sb.append(" to zoom level : " + zoomStop + " ");
+                int[] gridBounds = coveredGridLevels[level];            
+                sb.append("\n\t working on level : " + infoLevelStart(layer, level, gridBounds) );
+                for (int gridy = gridBounds[1]; gridy <= gridBounds[3];) {
+
+                    for (int gridx = gridBounds[0]; gridx <= gridBounds[2];) {
+                        int[] gridLoc = { gridx, gridy, level };
+
+                        Tile tile = new Tile(layer, srs, gridLoc, mimeType,
+                                null, null);
+
+                        try {
+                            layer.getResponse(tile);
+                        } catch (GeoWebCacheException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        // Next column
+                        gridx += metaTilingFactors[0];
+                        
+                        List list = SeedResource.getStatusList();
+                        synchronized(list) { 
+                            if(!list.isEmpty() && list.get(arrayIndex) != null)
+                                list.remove(arrayIndex);
+                            list.add(arrayIndex, sb.toString());
+                        }
                     }
-                    int[] gridLoc = { gridx , gridy , level };
-                    
-                    Tile tile = new Tile(layer.getName(), srs, gridLoc, mimeType, null, null);
-                   
-                    try {
-                        layer.getResponse(tile);
-                    } catch (GeoWebCacheException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    
-                    // Next column
-                    gridx += metaTilingFactors[0];
+                    // Next row
+                    gridy += metaTilingFactors[1];
                 }
-                // Next row
-                gridy += metaTilingFactors[1];
-            }
 
-            log.info("Completed seeding level " + level + " for layer " + layer.getName());
-            try {
-                infoLevelStop(sb);
-            } catch (IOException e) {
-                e.printStackTrace();
+                log.info("Completed seeding level " + level + " for layer "
+                        + layer.getName());
             }
-        }
-
-        try {
-            infoEnd(sb);
-        } catch (IOException e) {
+            log.info("Completed seeding layer " + layer.getName());
+        } catch (Exception e) {
+            log.error(e.getMessage());
             e.printStackTrace();
+
         }
-        
-        entity = new StringRepresentation(sb);
-        entity.setMediaType(MediaType.TEXT_HTML);
-       // response.setEntity(entity);
-        
-        System.out.println(sb); 
-      }
-       catch(Exception e){
-           e.printStackTrace();
-           
-       }
-    }
-    private void infoStart(StringBuilder sb, TileLayer layer, int zoomStart, int zoomStop,
-            MimeType mimeType, BBOX bounds) throws IOException {
-        if (sb == null) {
-            return;
-        }
-        sb.append("<html><body><table><tr><td>Seeding " + layer.getName() 
-                + " from level "+ zoomStart + " to level " + zoomStop 
-                + " for format " + mimeType.getFormat() 
-                + " and bounds " + bounds.getReadableString() 
-                + "</td></tr>");
-        
     }
 
-    private void infoEnd(StringBuilder sb) throws IOException {
-        if (sb == null) {
-            return;
-        }
-
-        sb.append("</table></body></html>");
-    }
-
-    private void infoLevelStart(StringBuilder sb, TileLayer layer, int level, int[] gridBounds) throws IOException {
-        if (sb == null) {
-            return;
-        }
+    private String infoLevelStart( TileLayer layer, int level, int[] gridBounds) {
 
         int tileCountX = (gridBounds[2] - gridBounds[0] + 1);
         int tileCountY = (gridBounds[3] - gridBounds[1] + 1);
@@ -151,30 +107,9 @@ public class SeedTask {
         int metaTileCountX = (int) Math.ceil(metaCountX);
         int metaTileCountY = (int) Math.ceil(metaCountY);
         
-        //tileCount / (layer.profile.metaHeight * layer.profile.metaWidth)
-        sb.append("<tr><td>Level "
-                + level
-                + ", ~"
-                + metaTileCountX*metaTileCountY
-                + " metatile(s) [" + tileCountX*tileCountY
-                + " tile(s)]</td></tr><tr><td>");
+        return level + " with a total of " + tileCountX*tileCountY + " tiles ";
+
+
     }
 
-    private void infoLevelStop(StringBuilder sb) throws IOException {
-        if (sb == null) {
-            return;
-        }
-
-        sb.append("</td></tr>");
-    }
-
-    private void infoTile(StringBuilder sb, int count) throws IOException {
-        if (sb == null) {
-            return;
-        }
-
-        // System.out.println("Count: " + count);
-        sb.append("" + count + ", ");
-    }
-    
 }

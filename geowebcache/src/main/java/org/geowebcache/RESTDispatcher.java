@@ -45,6 +45,8 @@ public class RESTDispatcher extends AbstractController {
     private static ThreadPoolExecutor tpe;
 
     private static Map<String, TileLayer> layers = null;
+    
+    private static final int THREAD_NUMBER = 10;
 
     ServletConverter myConverter;
 
@@ -66,10 +68,14 @@ public class RESTDispatcher extends AbstractController {
         config = c;
         // cnstructor arguments(in order) int corePoolSize, int maximumPoolSize,
         // long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue
-        tpe = new ThreadPoolExecutor(15, 20, 50000000L, TimeUnit.SECONDS,
+        tpe = new ThreadPoolExecutor(THREAD_NUMBER, 20, 50000000L, TimeUnit.SECONDS,
                     new LinkedBlockingQueue<Runnable>());
         log.info("created thread pool executor");
         log.info("created RESTDispatcher.");
+    }
+    
+    public static int getNumThreads(){
+        return THREAD_NUMBER; 
     }
 
     protected void initApplicationContext() throws BeansException {
