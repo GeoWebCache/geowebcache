@@ -1,3 +1,19 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Marius Suta / The Open Planning Project 2008 
+ */
 package org.geowebcache;
 
 import java.io.IOException;
@@ -29,12 +45,7 @@ import java.util.concurrent.*;
 /**
  * The RESTDispatcher is responsible for routing all incoming requests made
  * through the rest interface
- * 
- * 
- * @author Marius Suta
- * 
  */
-
 public class RESTDispatcher extends AbstractController {
     public static String METHOD_PUT = "PUT";
 
@@ -63,10 +74,12 @@ public class RESTDispatcher extends AbstractController {
      */
     public RESTDispatcher(XMLConfiguration c) {
         super();
-        setSupportedMethods(new String[] { METHOD_GET, METHOD_POST,
-                METHOD_DELETE });
+        setSupportedMethods(new String[] { 
+                METHOD_GET, METHOD_POST, METHOD_DELETE });
+        
         config = c;
-        // cnstructor arguments(in order) int corePoolSize, int maximumPoolSize,
+        
+        // constructor arguments(in order) int corePoolSize, int maximumPoolSize,
         // long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue
         tpe = new ThreadPoolExecutor(THREAD_NUMBER, 20, 50000000L, TimeUnit.SECONDS,
                     new LinkedBlockingQueue<Runnable>());
