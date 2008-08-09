@@ -48,15 +48,6 @@
     </property>
   </bean>
   
-  <!-- The following list contains the ip that are allowed to seed the cache -->
-  <bean id="gwcSeederDispatcher" class="org.geowebcache.seeder.SeederDispatcher">
-    <property name="allowedSeeders">
-      <list>
-	    <value>127.0.0.1</value>
-      </list>
-    </property>
-  </bean>
-  
   <!-- controller for handling incoming requests made through the REST interface -->
   <bean id="gwcRESTDispatcher" class="org.geowebcache.RESTDispatcher">
 	<constructor-arg type="org.geowebcache.util.XMLConfiguration" ref="gwcXmlConfig"/>
@@ -66,7 +57,6 @@
   <!-- controller for handling all incoming requests -->
   <bean id="geowebcacheDispatcher" class="org.geowebcache.GeoWebCacheDispatcher">
     <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
-    <property name="seederDispatcher" ref="gwcSeederDispatcher"/>
     <!-- property name="servletPrefix" value=""/ -->
   </bean>
   
@@ -79,8 +69,8 @@
 	class="org.geowebcache.service.mgmaps.MGMapsConverter"/>
   <bean id="gwcServiceVE"
 	class="org.geowebcache.service.ve.VEConverter"/>
-  <bean id="gwcServiceKML"
-	class="org.geowebcache.service.kml.KMLService"/>
+  <!-- bean id="gwcServiceKML"
+	class="org.geowebcache.service.kml.KMLService"/ -->
   
   <bean id="gwcCacheFile" class="org.geowebcache.cache.file.FileCache">
     <property name="defaultKeyBeanId"><value>gwcCacheKeyFile</value></property>

@@ -31,7 +31,6 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.demo.OpenLayersDemo;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.seeder.SeederDispatcher;
 import org.geowebcache.service.Service;
 import org.geowebcache.tile.Tile;
 import org.springframework.web.context.WebApplicationContext;
@@ -61,8 +60,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
     private TileLayerDispatcher tileLayerDispatcher = null;
 
-    private SeederDispatcher seederDispatcher = null;
-
     private HashMap<String,Service> services = null;
 
     public GeoWebCacheDispatcher() {
@@ -79,16 +76,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
     public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {
         this.tileLayerDispatcher = tileLayerDispatcher;
         log.info("set TileLayerDispatcher");
-    }
-
-    /**
-     * Setter method for Spring. SeederDispatcher sets up seeding etc.
-     * 
-     * @param seederDispatcher
-     */
-    public void setSeederDispatcher(SeederDispatcher seederDispatcher) {
-        this.seederDispatcher = seederDispatcher;
-        log.info("set SeederDispatcher");
     }
 
     /**
@@ -145,10 +132,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
         try {
             if (requestComps[0].equalsIgnoreCase(TYPE_SERVICE)) {
                 handleServiceRequest(requestComps[1], request, response);
-            } else if (requestComps[0].equalsIgnoreCase(TYPE_SEED)) {
-                handleSeedRequest(request, response);
-            } else if (requestComps[0].equalsIgnoreCase(TYPE_TRUNCATE)) {
-                handleTruncateRequest(request, response);
             } else if (requestComps[0].equalsIgnoreCase(TYPE_RPC)) {
                 handleRPCRequest(requestComps[1],request, response);
             } else if (requestComps[0].equalsIgnoreCase(TYPE_DEMO)) {
@@ -254,78 +237,13 @@ public class GeoWebCacheDispatcher extends AbstractController {
         
         // Log statistic
     }
-
-    /**
-     * This is the main method for handling seeding requests.
-     * 
-     * @param request
-     * @param response
-     * @throws Exception
-     */
-    private void handleSeedRequest(HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
-
-        handleSeedTruncateRequest(request, response, true, false);
-    }
     
-    /**
-     * This is the main method for handling truncate requests.
-     * 
-     * @param request
-     * @param response
-     * @throws Exception
-     */
-    private void handleTruncateRequest(HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
-        
-        handleSeedTruncateRequest(request, response, false, true);
-    }
-    
-    private void handleSeedTruncateRequest(HttpServletRequest request,
-            HttpServletResponse response, boolean seed, boolean truncate) throws Exception {
-        String[] layerIdents = seederDispatcher.getLayerIdents(request);
-
-        String exceptions = null;
-       
-        for(int i=0; i<layerIdents.length; i++) {
-            String layerIdent = layerIdents[i];
-            
-            try {
-            TileLayer layer = tileLayerDispatcher.getTileLayer(layerIdent);
-
-            if (layer == null) {
-                throw new GeoWebCacheException("Layer "+layerIdent+" is not known");
-            }
-            
-            if(seed) {
-                seederDispatcher.handleSeed(layer, request, response);
-            }
-            
-            if(truncate) {
-                seederDispatcher.handleTruncate(layer, request, response);
-            }
-            
-            } catch (GeoWebCacheException gwce) {
-                if(exceptions == null) {
-                    exceptions = gwce.getMessage();
-                } else {
-                    exceptions += "\n" + gwce.getMessage();
-                }
-            }
-        }
-  
-        if(exceptions != null) {
-            throw new GeoWebCacheException("The following exceptions were encountered: \n" + exceptions);
-        }
-    }
-
     private void handleRPCRequest(String action, HttpServletRequest request, 
             HttpServletResponse response) {
         if(action.equalsIgnoreCase("reinit")) {
             
             try {
                 // Throws exception if necessary
-                seederDispatcher.checkSeeder(request);
                 tileLayerDispatcher.reInit();
                 response.setStatus(204);
                 
