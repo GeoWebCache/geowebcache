@@ -1,49 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
-  <!--bean id="gwcDefaultConfig"class="org.geowebcache.util.PropertiesConfiguration"-->
-	<!--constructor-arg type="org.geowebcache.cache.CacheFactory"ref="gwcCacheFactory"/-->
-	<!--property name="relativePath"><value>/WEB-INF/classes</value></property-->
-	<!--By default GWC will look for .properties files in the resourcesfolder.-->
-	<!--property name="relativePath"><value>../resources</value></property-->
-	<!--property name="absolutePath"><value>/etc/geowebcache/conf</value></property-->
-	<!--propertyname="absolutePath"><value>c:\geowebcache\conf</value></property-->
-    <!--/bean -->
   <bean id="gwcXmlConfig" class="org.geowebcache.util.XMLConfiguration">
-		<constructor-arg type="org.geowebcache.cache.CacheFactory"
-			ref="gwcCacheFactory" />
-		<!--By default GWC will look for layer_properties.xml in the resources folder.-->
-		<property name="relativePath"><value>../resources</value></property>
-		<!--propertyname="relativePath"><value>/WEB-INF/classes</value></property-->
-		<!--property name="absolutePath"><value>/etc/geowebcache/conf</value></property-->
-		<!--property name="absolutePath"><value>/home/ak/masuta/geowebcache/src/main/resources</value></property-->
+    <constructor-arg type="org.geowebcache.cache.CacheFactory" ref="gwcCacheFactory" />
+    <!--By default GWC will look for layer_properties.xml in the resources folder.-->
+    <property name="relativePath"><value>../resources</value></property>
+    <!--propertyname="relativePath"><value>/WEB-INF/classes</value></property-->
+    <!--property name="absolutePath"><value>/etc/geowebcache/conf</value></property-->
+    <!--property name="absolutePath"><value>/home/ak/masuta/geowebcache/src/main/resources</value></property-->
   </bean>
-  <!-- Example for automatically configuring GWC from a WMS getCapabilities document
-       Constructor arguments:
-       1) Cache factory, bean defined below
-       2) URL to get getCapabilities document from
-       3) Commaseparated list of supported MIME types
-       4) Metatiling factors
-       5) Vendor parameters
-       Note that these values are applied to ALL layers
-    -->
-  <!--
-  <bean id="gwcWMSConfig" class="org.geowebcache.util.GetCapabilitiesConfiguration">
-       <constructor-arg type="org.geowebcache.cache.CacheFactory" ref="gwcCacheFactory"/>
-       <constructor-arg value="http://geo.openplans.org/geoserver/wms?request=getCapabilities"/>
-       <constructor-arg value="image/png,image/jpeg,application/vnd.google-earth.kml+xml"/>
-       <constructor-arg value="3x3"/>
-       <constructor-arg value="format_options=regionateby:auto"/>
-     </bean>
-  -->
   
   <!-- For each configuration bean above, add them below to activate -->
   <bean id="gwcTLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
     <property name="config">
       <list>
 	<ref bean="gwcXmlConfig" />
-	<!-- ref bean="gwcWMSConfig"/ -->
-	<!-- ref bean="gwcGSConfig"/ -->
       </list>
     </property>
   </bean>
@@ -52,7 +23,6 @@
   <bean id="gwcRESTDispatcher" class="org.geowebcache.RESTDispatcher">
 	<constructor-arg type="org.geowebcache.util.XMLConfiguration" ref="gwcXmlConfig"/>
   </bean>
-  
   
   <!-- controller for handling all incoming requests -->
   <bean id="geowebcacheDispatcher" class="org.geowebcache.GeoWebCacheDispatcher">

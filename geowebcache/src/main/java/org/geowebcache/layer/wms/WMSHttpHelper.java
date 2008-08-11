@@ -173,7 +173,7 @@ public class WMSHttpHelper {
             String responseMime = wmsBackendCon.getContentType();
             String requestMime = wmsparams.getFormat();
             if (responseMime != null
-                    && !responseMime.equalsIgnoreCase(requestMime)) {
+	            && ! mimeStringCheck(requestMime,responseMime)) {
                 String message = null;
                 if (responseMime.equalsIgnoreCase(ErrorMime.vnd_ogc_se_inimage
                         .getFormat())) {
@@ -234,5 +234,17 @@ public class WMSHttpHelper {
         }
 
         return ret;
+    }
+    
+    private static boolean mimeStringCheck(String requestMime, String responseMime) {
+        if(responseMime.equalsIgnoreCase(requestMime)) {
+            return true;
+        } else {
+            if(requestMime.startsWith("image/png") 
+                    && responseMime.equalsIgnoreCase("image/png")) {
+                return true;
+            }
+        }
+        return false;
     }
 }

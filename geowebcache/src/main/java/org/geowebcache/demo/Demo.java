@@ -13,7 +13,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.util.wms.BBOX;
 
-public class OpenLayersDemo {
+public class Demo {
 
     public static void makeMap(TileLayerDispatcher tileLayerDispatcher,
             String action, HttpServletRequest request,
@@ -74,7 +74,9 @@ public class OpenLayersDemo {
             +" document you will probably see duplicates without the namespace prefix.</li>"
             +"<li>OpenLayers does not support bounds per zoomlevel, and GWC tightens the bounds as you zoom in. Some tile requests will therefore be rejected. </li>"
             +"<hr>"
-            +"<tr><td><strong>Layer name</strong></td><td></td><td></tr>";
+            +"<tr><td><strong>Layer name:</strong></td>" 
+            +"<td colspan=\"2\"><strong>OpenLayers:</strong></td>"
+            +"<td colspan=\"2\"><strong>Google Earth:</strong></td></tr>";
         
         String rows = tableRows(tileLayerDispatcher);
         
@@ -95,7 +97,10 @@ public class OpenLayersDemo {
             
             rows += "<tr><td>"+layer.getName()+"</td>"
                 + "<td><a href=\"demo/"+layer.getName()+"?srs=EPSG:4326\">EPSG:4326</a></td>"
-                + "<td><a href=\"demo/"+layer.getName()+"?srs=EPSG:900913\">EPSG:900913</a></td></tr>";
+                + "<td><a href=\"demo/"+layer.getName()+"?srs=EPSG:900913\">EPSG:900913</a></td>" 
+                + "<td><a href=\"service/kml/"+layer.getName()+".png.kmz\">KML (PNG)</a></td>"
+                + "<td><a href=\"service/kml/"+layer.getName()+".kml.kmz\">KML (vector)</a></td>"
+                + "</tr>";
         }
         return rows;
     }

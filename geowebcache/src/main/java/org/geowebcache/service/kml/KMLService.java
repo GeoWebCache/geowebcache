@@ -72,7 +72,7 @@ public class KMLService extends Service {
      * Example 3: /kml/layername/tilekey.format (data)
      * 
      * @param pathInfo
-     * @return {layername, [tilekey], [format], [wrapper]}
+     * @return {layername, tilekey, format, wrapperformat}
      */
     protected static String[] parseRequest(String pathInfo) {
         String[] retStrs = new String[4];
@@ -82,14 +82,20 @@ public class KMLService extends Service {
         // Deal with the extension
         String filename = splitStr[splitStr.length - 1];
         int extOfst = filename.lastIndexOf(".");
-        retStrs[3] = filename.substring(extOfst + 1, filename.length());
+        // This finds the last extension (wrapper)
+        String lastExtension = filename.substring(extOfst + 1, filename.length());
         
-        // If it contains a hint about the format topp:states.png.kml
+        // Looks for a payload format
         int typeExtOfst = filename.lastIndexOf(".", extOfst - 1);
         
         if(typeExtOfst > 0) {
+            // Wrapper with two extensions
         	retStrs[2] = filename.substring(typeExtOfst + 1, extOfst);
+        	retStrs[3] = lastExtension;
         } else {
+            // Regular tile
+                retStrs[2] = lastExtension;
+                retStrs[3] = null;
         	typeExtOfst = extOfst;
         }
 
@@ -274,8 +280,8 @@ public class KMLService extends Service {
      * @return
      */
     private static String superOverlayNetworLink(String superString, BBOX bbox, String url) {
-        String xml = "\n<NetworkLink><name>SuperOverlay:"+superString+"</name>" 
-        + "\n<Region>\n" 
+        String xml = "\n<NetworkLink><name>Super-overlay: "+superString+"</name>"
+        + "\n<Region>\n"
         + bbox.toKML()
         + "\n<Lod><minLodPixels>128</minLodPixels>"
         + "\n<maxLodPixels>-1</maxLodPixels></Lod>"
@@ -422,7 +428,9 @@ public class KMLService extends Service {
                 String gridLocUrl = tile.getUrlPrefix() + gridLocString(linkGridLocs[i]) 
                 +"." +tile.getMimeType().getFileExtension()+ "." + tile.getWrapperMimeType().getFileExtension();
 
-                xml += createNetworkLinkElement(tileLayer, linkBbox, gridLocUrl);
+                String gridLocStr = gridLocString(linkGridLocs[i]);
+                
+                xml += createNetworkLinkElement(tileLayer, linkBbox, gridLocUrl, gridLocStr);
                 moreData++;
             }
         }
@@ -434,11 +442,12 @@ public class KMLService extends Service {
                     bbox, tile.getMimeType().getFileExtension());
         } else {
             // KML
-            String gridLocUrl = gridLocString(gridLoc) + "." + tile.getMimeType().getFileExtension();
+            String gridLocStr = gridLocString(gridLoc);
+            String gridLocUrl = gridLocStr + "." + tile.getMimeType().getFileExtension();
             if(isPackaged) {
                 gridLocUrl = "data_" + gridLocUrl;
             }
-            xml += createNetworkLinkElement(tileLayer, bbox, gridLocUrl);
+            xml += createNetworkLinkElement(tileLayer, bbox, gridLocUrl, gridLocStr);
         }
 
         //if(moreData > 0) {
@@ -489,7 +498,7 @@ public class KMLService extends Service {
      * @return
      */
     private static String createNetworkLinkElement(
-            TileLayer layer, BBOX bbox, String gridLocUrl) {
+            TileLayer layer, BBOX bbox, String gridLocUrl, String tileIdx) {
         
         int maxLodPixels = -1;
         

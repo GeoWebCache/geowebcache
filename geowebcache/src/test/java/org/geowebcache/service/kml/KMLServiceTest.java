@@ -18,8 +18,8 @@ public class KMLServiceTest extends TestCase {
     	
     	assertTrue(retVals[0].equals("topp:states"));
     	assertTrue(retVals[1].length() == 0);
-    	assertTrue(retVals[2] == null);
-    	assertTrue(retVals[3].equals("kml"));
+    	assertTrue(retVals[2].equals("kml"));
+    	assertTrue(retVals[3] == null);
     }
     
     public void test2ParseRequest() throws Exception {

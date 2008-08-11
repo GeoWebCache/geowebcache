@@ -39,7 +39,7 @@
             var layerstates = new OpenLayers.Layer.WMS( 
                 "States EPSG:900913 PNG",
                 "service/wms",
-                {layers: 'topp:states', format: 'image/png'});
+                {layers: 'topp:states', format: 'image/png8'});
             map.addLayer(layerstates);
             map.zoomToExtent(bounds);
         }

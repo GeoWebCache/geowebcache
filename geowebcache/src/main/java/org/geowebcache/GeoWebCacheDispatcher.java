@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.demo.OpenLayersDemo;
+import org.geowebcache.demo.Demo;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.service.Service;
@@ -261,7 +261,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     
     private void handleDemoRequest(String action, HttpServletRequest request, 
             HttpServletResponse response) throws GeoWebCacheException {
-        OpenLayersDemo.makeMap(this.tileLayerDispatcher, action, request, response);        
+        Demo.makeMap(this.tileLayerDispatcher, action, request, response);        
     }
     
     /**
