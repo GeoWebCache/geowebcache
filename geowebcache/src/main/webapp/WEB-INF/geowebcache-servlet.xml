@@ -39,8 +39,8 @@
 	class="org.geowebcache.service.mgmaps.MGMapsConverter"/>
   <bean id="gwcServiceVE"
 	class="org.geowebcache.service.ve.VEConverter"/>
-  <!-- bean id="gwcServiceKML"
-	class="org.geowebcache.service.kml.KMLService"/ -->
+  <bean id="gwcServiceKML"
+	class="org.geowebcache.service.kml.KMLService"/>
   
   <bean id="gwcCacheFile" class="org.geowebcache.cache.file.FileCache">
     <property name="defaultKeyBeanId"><value>gwcCacheKeyFile</value></property>
