@@ -37,10 +37,10 @@ public class ImageMime extends MimeType {
             new ImageMime("image/tiff", "tiff", "tiff", "image/tiff", true);
     
     public static final ImageMime png8 = 
-        new ImageMime("image/png8", "png8", "png", "image/png8", true);
+        new ImageMime("image/png", "png8", "png", "image/png8", true);
     
     public static final ImageMime png24 = 
-        new ImageMime("image/png24", "png24", "png", "image/png24", true);
+        new ImageMime("image/png", "png24", "png", "image/png24", true);
     
     
     public ImageMime(String mimeType, String fileExtension, 
