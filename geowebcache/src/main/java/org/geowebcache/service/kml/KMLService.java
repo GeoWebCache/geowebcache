@@ -254,11 +254,7 @@ public class KMLService extends Service {
                     tile.getUrlPrefix() + "/" + gridLocString(gridLoc) + formatExtension);
         }
         
-        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<kml xmlns=\"http://earth.google.com/kml/2.2\" "
-                +"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
-                +"xsi:schemaLocation=\"http://earth.google.com/kml/2.2 "
-                +"http://code.google.com/apis/kml/schema/kml22beta.xsd\">\n"
+        String xml = KMLHeader()
                 + "\n<Folder>"
                 + networkLinks
                 //+ getLookAt(bbox)
@@ -474,11 +470,7 @@ public class KMLService extends Service {
         //if(isRaster) {
         //    maxLodPixels = 385;
         //}
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<kml xmlns=\"http://earth.google.com/kml/2.2\" "
-                +"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
-                +"xsi:schemaLocation=\"http://earth.google.com/kml/2.2 "
-                +"http://code.google.com/apis/kml/schema/kml22beta.xsd\">\n"
+        return  KMLHeader()
                 + "<Document>\n"
                 + "<Region>\n"
                 + bbox.toKML()
@@ -589,6 +581,14 @@ public class KMLService extends Service {
                 + "\n<altitudeMode>clampToGround</altitudeMode>"
                 //+ "\n<!--kml:altitudeModeEnum:clampToGround, relativeToGround, absolute -->"
                 + "\n</LookAt>\n";
+    }
+    
+    private static String KMLHeader() {
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        + "<kml xmlns=\"http://www.opengis.net/kml/2.2\" "
+        +"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+        +"xsi:schemaLocation=\"http://www.opengis.net/kml/2.2 "
+        +"http://schemas.opengis.net/kml/2.2.0/ogckml22.xsd\">\n";
     }
 
 //    private static String moreDataIcon(BBOX bbox){ 
