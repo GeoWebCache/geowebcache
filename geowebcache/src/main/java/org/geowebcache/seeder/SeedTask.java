@@ -48,6 +48,10 @@ public class SeedTask {
      */
     public void doSeed() {
         try {
+            //approximate thread creation time
+            long START_TIME = System.currentTimeMillis();
+            
+            
             TileLayer layer = RESTDispatcher.getAllLayers().get(req.getName());
             log.info("Begin seeding layer : " + layer.getName());
             int zoomStart = req.getZoomStart();
@@ -66,15 +70,10 @@ public class SeedTask {
                     bounds);
             int[] metaTilingFactors = layer.getMetaTilingFactors();
             int arrayIndex = getCurrentThreadArrayIndex();
-            
-            int count = 1; 
-            
-            ////total number of tiles is 555
-            int TOTAL_TILES = 555; 
-            
+            int TOTAL_TILES = tileCount(coveredGridLevels, zoomStart, zoomStop); 
+            int count = 1;
             for (int level = zoomStart; level <= zoomStop; level++) {
                 int[] gridBounds = coveredGridLevels[level];
-                StringBuilder sb = getStatusInfo(arrayIndex, layer, count, TOTAL_TILES);
                 for (int gridy = gridBounds[1]; gridy <= gridBounds[3];) {
 
                     for (int gridx = gridBounds[0]; gridx <= gridBounds[2];) {
@@ -82,7 +81,6 @@ public class SeedTask {
 
                         Tile tile = new Tile(layer, srs, gridLoc, mimeType,
                                 null, null);
-                        count++;
                         try {
                             layer.getResponse(tile);
                         } catch (GeoWebCacheException e) {
@@ -94,12 +92,11 @@ public class SeedTask {
                         // Next column
                         gridx += metaTilingFactors[0];
                         
-                        List list = SeedResource.getStatusList();
+                        int[][] list = SeedResource.getStatusList();
                         synchronized(list) { 
-                            if(!list.isEmpty() && list.get(arrayIndex) != null)
-                                list.remove(arrayIndex);
-                            list.add(arrayIndex, sb.toString());
+                            list[arrayIndex]= getStatusInfo(arrayIndex, layer, count, TOTAL_TILES, START_TIME);
                         }
+                        count++;
                     }
                     // Next row
                     gridy += metaTilingFactors[1];
@@ -109,6 +106,10 @@ public class SeedTask {
                         + layer.getName());
             }
             log.info("Completed seeding layer " + layer.getName());
+            int[][] list = SeedResource.getStatusList();
+            synchronized(list) {                
+                    list[arrayIndex] = null;
+            }
         } catch (Exception e) {
             log.error(e.getMessage());
             e.printStackTrace();
@@ -117,27 +118,21 @@ public class SeedTask {
     }
 
     /**
-     * helper for reporting progress of seed task
+     * helper for counting the number of tiles
      * @param layer
      * @param level
      * @param gridBounds
      * @return
      */
-    private String infoLevelStart( int start, int stop, int[] gridBounds) {
+    private int tileCount(int[][] coveredGridLevels, int startZoom, int stopZoom) {
+        int count = 0;
         
-        int tileCountX = (gridBounds[2] - gridBounds[0] + 1);
-        int tileCountY = (gridBounds[3] - gridBounds[1] + 1);
-        int levels = stop - start + 1; 
-    
-        /*
-        double metaCountX = ((double) tileCountX )/ layer.getMetaTilingFactors()[0];
-        double metaCountY = ((double) tileCountY ) / layer.getMetaTilingFactors()[1];
-        int metaTileCountX = (int) Math.ceil(metaCountX);
-        int metaTileCountY = (int) Math.ceil(metaCountY);
-        */
-        return levels * tileCountX*tileCountY + " tiles ";
-
-
+        for(int i=startZoom; i<=stopZoom; i++) {
+            int[] gridBounds = coveredGridLevels[i];
+            count += (gridBounds[2] - gridBounds[0] + 1) * (gridBounds[3] - gridBounds[1] + 1);
+        }
+        
+        return count;
     }
     /**
      * Helper method to get an index into the status array for the current thread.
@@ -152,6 +147,7 @@ public class SeedTask {
         String tmp = tn.substring(indexOfnumber);
         int arrayIndex = Integer.parseInt(tmp);        
         arrayIndex--;
+        
         return arrayIndex;
         
     }
@@ -165,13 +161,17 @@ public class SeedTask {
      * @param gridBounds
      * @return
      */
-    private StringBuilder getStatusInfo(int arrayIndex, TileLayer layer,
-            int tilecount, int total_tiles) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Thread " + arrayIndex + " : \n");
-        sb.append("\tseeding tile layer " + layer.getName() + " ");
-        sb.append("\n working on tile " + tilecount);
-        sb.append(" of " + total_tiles);
-        return sb; 
+    private int[] getStatusInfo(int arrayIndex, TileLayer layer,
+            int tilecount, int total_tiles, long start_time) {
+        int[] temp = new int[3];
+        //working on tile
+        temp[0] = tilecount;
+        //out of
+        temp[1] = total_tiles;
+        //estimated time of completion in seconds
+        int etc = (int) ((System.currentTimeMillis() - start_time)/tilecount)*(total_tiles - tilecount +1)/1000;
+        temp[2] = etc;
+        
+        return temp; 
     }
 }

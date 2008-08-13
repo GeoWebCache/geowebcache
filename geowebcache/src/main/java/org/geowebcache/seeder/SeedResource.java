@@ -19,16 +19,21 @@ package org.geowebcache.seeder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.RESTDispatcher;
+import org.geowebcache.layer.TileLayer;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.restlet.Context;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
+import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.resource.Representation;
 import org.restlet.resource.StringRepresentation;
 import org.restlet.resource.Resource;
 import org.restlet.resource.Variant;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import java.io.IOException;
 import java.util.concurrent.*;
@@ -38,8 +43,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class SeedResource extends Resource {
-    private static List statusList = Collections
-            .synchronizedList(new ArrayList<String>());
+    private static int[][] statusArray = new int[getExecutor().getCorePoolSize()][3]; 
 
     private static Log log = LogFactory
             .getLog(org.geowebcache.seeder.SeedResource.class);
@@ -51,7 +55,7 @@ public class SeedResource extends Resource {
      */
     public SeedResource(Context context, Request request, Response response) {
         super(context, request, response);
-        getVariants().add(new Variant(MediaType.TEXT_PLAIN));
+        getVariants().add(new Variant(MediaType.APPLICATION_JSON));
     }
     /**
      * Method returns a StringRepresentation with the status of the running threads
@@ -59,16 +63,20 @@ public class SeedResource extends Resource {
      */
     public Representation getRepresentation(Variant variant) {
         Representation rep = null;
-        if (variant.getMediaType().equals(MediaType.TEXT_PLAIN)) {
-            StringBuilder sb = new StringBuilder();
-            List list = getStatusList();
-            synchronized (list) {
-                Iterator i = list.iterator();
-                while (i.hasNext())
-                    sb.append(i.next() + "\n");
-            }
-            rep = new StringRepresentation(sb);
+        
+        try {            
+           XStream xs = new XStream(new JsonHierarchicalStreamDriver());
+           JSONObject obj = null;
+           int[][] list = getStatusList();
+           synchronized (list) {
+               obj = new JSONObject(xs.toXML(list));
+           }     
+           
+           rep = new JsonRepresentation(obj);
+        } catch (JSONException jse) {
+                jse.printStackTrace();
         }
+
         return rep;
     }
 
@@ -100,7 +108,7 @@ public class SeedResource extends Resource {
      * Method returns the thread pool executor that handles seeds
      * @return
      */
-    public ThreadPoolExecutor getExecutor() {
+    public static ThreadPoolExecutor getExecutor() {
         return RESTDispatcher.getExecutor();
     }
     
@@ -108,8 +116,8 @@ public class SeedResource extends Resource {
      * Method returns List of Strings representing the status of the currently running threads
      * @return
      */
-    public static List getStatusList() {
-        return statusList;
+    public static int[][] getStatusList() {
+        return statusArray;
     }
 
     public boolean allowPost() {
