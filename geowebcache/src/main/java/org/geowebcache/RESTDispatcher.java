@@ -69,8 +69,7 @@ public class RESTDispatcher extends AbstractController {
     /**
      * RESTDispatcher constructor
      * 
-     * @param c
-     *            an XMLConfiguration
+     * @param c - an XMLConfiguration
      */
     public RESTDispatcher(XMLConfiguration c) {
         super();
@@ -81,12 +80,15 @@ public class RESTDispatcher extends AbstractController {
         
         // constructor arguments(in order) int corePoolSize, int maximumPoolSize,
         // long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue
-        tpe = new ThreadPoolExecutor(THREAD_NUMBER, 20, 50000000L, TimeUnit.SECONDS,
+        tpe = new ThreadPoolExecutor(THREAD_NUMBER, 20, 500000L, TimeUnit.SECONDS,
                     new LinkedBlockingQueue<Runnable>());
         log.info("created thread pool executor");
         log.info("created RESTDispatcher.");
     }
-    
+    /**
+     * Method returns the core thread pool size
+     * @return
+     */
     public static int getNumThreads(){
         return THREAD_NUMBER; 
     }
@@ -137,15 +139,28 @@ public class RESTDispatcher extends AbstractController {
 
         return myRouter;
     }
-
+    
+    /**
+     * Method returns a Map of (name,tileLayer) pairs 
+     * @return
+     */
     public static Map<String, TileLayer> getAllLayers() {
         return layers;
     }
-
+    
+    /**
+     * Method returns the current XML configuration
+     * @return
+     */
     public static XMLConfiguration getConfig() {
         return config;
     }
     
+    /**
+     * Method returns the thread pool executor responsible for handling
+     * layer seeds
+     * @return
+     */
     public static ThreadPoolExecutor getExecutor(){
         return tpe;
     }

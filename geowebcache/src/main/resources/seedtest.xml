@@ -12,8 +12,8 @@
 	<projection>
 	    <number>4326</number>
 	</projection>
-	<zoomstart>0</zoomstart>
-	<zoomstop>2</zoomstop>
+	<zoomstart>1</zoomstart>
+	<zoomstop>12</zoomstop>
 	<format>image/png</format>
 </seedRequest>
 		

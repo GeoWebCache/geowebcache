@@ -35,11 +35,17 @@ public class SeedTask {
             .getLog(org.geowebcache.seeder.SeedTask.class);
 
     private SeedRequest req = null;
-
+    /**
+     * Constructs a SeedTask from a SeedRequest
+     * @param req - the SeedRequest
+     */
     public SeedTask(SeedRequest req) {
         this.req = req;
     }
-
+    /**
+     * Method doSeed().
+     * this is where all the actual work is being done to seed a tile layer. 
+     */
     public void doSeed() {
         try {
             TileLayer layer = RESTDispatcher.getAllLayers().get(req.getName());
@@ -59,20 +65,16 @@ public class SeedTask {
             int[][] coveredGridLevels = layer.getCoveredGridLevels(srsIdx,
                     bounds);
             int[] metaTilingFactors = layer.getMetaTilingFactors();
+            int arrayIndex = getCurrentThreadArrayIndex();
             
-            String tn = Thread.currentThread().getName();
-            int indexOfnumber = tn.indexOf('d')+2;
-            String tmp = tn.substring(indexOfnumber);
-            int arrayIndex = Integer.parseInt(tmp);        
-            arrayIndex--;
+            int count = 1; 
+            
+            ////total number of tiles is 555
+            int TOTAL_TILES = 555; 
+            
             for (int level = zoomStart; level <= zoomStop; level++) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("Thread " + arrayIndex +" : \n");
-                sb.append("\tseeding tile layer " + layer.getName() + " ");
-                sb.append("from zoom level : " + zoomStart + " ");
-                sb.append(" to zoom level : " + zoomStop + " ");
-                int[] gridBounds = coveredGridLevels[level];            
-                sb.append("\n\t working on level : " + infoLevelStart(layer, level, gridBounds) );
+                int[] gridBounds = coveredGridLevels[level];
+                StringBuilder sb = getStatusInfo(arrayIndex, layer, count, TOTAL_TILES);
                 for (int gridy = gridBounds[1]; gridy <= gridBounds[3];) {
 
                     for (int gridx = gridBounds[0]; gridx <= gridBounds[2];) {
@@ -80,7 +82,7 @@ public class SeedTask {
 
                         Tile tile = new Tile(layer, srs, gridLoc, mimeType,
                                 null, null);
-
+                        count++;
                         try {
                             layer.getResponse(tile);
                         } catch (GeoWebCacheException e) {
@@ -114,18 +116,62 @@ public class SeedTask {
         }
     }
 
-    private String infoLevelStart( TileLayer layer, int level, int[] gridBounds) {
-
+    /**
+     * helper for reporting progress of seed task
+     * @param layer
+     * @param level
+     * @param gridBounds
+     * @return
+     */
+    private String infoLevelStart( int start, int stop, int[] gridBounds) {
+        
         int tileCountX = (gridBounds[2] - gridBounds[0] + 1);
         int tileCountY = (gridBounds[3] - gridBounds[1] + 1);
+        int levels = stop - start + 1; 
+    
+        /*
         double metaCountX = ((double) tileCountX )/ layer.getMetaTilingFactors()[0];
         double metaCountY = ((double) tileCountY ) / layer.getMetaTilingFactors()[1];
         int metaTileCountX = (int) Math.ceil(metaCountX);
         int metaTileCountY = (int) Math.ceil(metaCountY);
-        
-        return level + " with a total of " + tileCountX*tileCountY + " tiles ";
+        */
+        return levels * tileCountX*tileCountY + " tiles ";
 
 
     }
-
+    /**
+     * Helper method to get an index into the status array for the current thread.
+     * Assumes the default name for the threads in the threadpool, i.e. "pool-#-thread-#"
+     * where # is an integer. The index in the array will be the number of the thread, 
+     * i.e. # in thread-# minus 1, since arrays are zero indexed an thread counting begins at 1.
+     * @return
+     */
+    private int getCurrentThreadArrayIndex() {
+        String tn = Thread.currentThread().getName();
+        int indexOfnumber = tn.indexOf('d')+2;
+        String tmp = tn.substring(indexOfnumber);
+        int arrayIndex = Integer.parseInt(tmp);        
+        arrayIndex--;
+        return arrayIndex;
+        
+    }
+    /**
+     * Helper method to report status of thread progress.
+     * @param arrayIndex
+     * @param layer
+     * @param zoomStart
+     * @param zoomStop
+     * @param level
+     * @param gridBounds
+     * @return
+     */
+    private StringBuilder getStatusInfo(int arrayIndex, TileLayer layer,
+            int tilecount, int total_tiles) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Thread " + arrayIndex + " : \n");
+        sb.append("\tseeding tile layer " + layer.getName() + " ");
+        sb.append("\n working on tile " + tilecount);
+        sb.append(" of " + total_tiles);
+        return sb; 
+    }
 }

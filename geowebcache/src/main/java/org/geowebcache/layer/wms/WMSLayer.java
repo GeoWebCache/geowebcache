@@ -156,7 +156,7 @@ public class WMSLayer extends TileLayer {
         name = layerName;
         initCacheFactory = cacheFactory;
     }
-
+    
     public void lazyLayerInitialization(CacheFactory cf) {
         WMS_URL = "wmsurl";
         WMS_SRS = "srs";

@@ -26,7 +26,7 @@ import org.restlet.data.Response;
 import org.restlet.resource.Representation;
 import org.restlet.resource.StringRepresentation;
 import org.restlet.resource.Resource;
-import org.restlet.resource.Variant; 
+import org.restlet.resource.Variant;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
@@ -35,33 +35,48 @@ import java.util.concurrent.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator; 
+import java.util.Iterator;
 
 public class SeedResource extends Resource {
-    private static List statusList = Collections.synchronizedList(new ArrayList<String>());
+    private static List statusList = Collections
+            .synchronizedList(new ArrayList<String>());
+
     private static Log log = LogFactory
             .getLog(org.geowebcache.seeder.SeedResource.class);
-
+    /**
+     * Constructor
+     * @param context
+     * @param request
+     * @param response
+     */
     public SeedResource(Context context, Request request, Response response) {
         super(context, request, response);
         getVariants().add(new Variant(MediaType.TEXT_PLAIN));
     }
-   
-    public Representation getRepresentation(Variant variant){
-        Representation rep = null; 
-        if (variant.getMediaType().equals(MediaType.TEXT_PLAIN)){ 
+    /**
+     * Method returns a StringRepresentation with the status of the running threads
+     * in the thread pool. 
+     */
+    public Representation getRepresentation(Variant variant) {
+        Representation rep = null;
+        if (variant.getMediaType().equals(MediaType.TEXT_PLAIN)) {
             StringBuilder sb = new StringBuilder();
             List list = getStatusList();
-            synchronized(list) {
+            synchronized (list) {
                 Iterator i = list.iterator();
                 while (i.hasNext())
-                   sb.append( i.next() + "\n"); 
+                    sb.append(i.next() + "\n");
             }
             rep = new StringRepresentation(sb);
         }
-        return rep; 
+        return rep;
     }
 
+    /**
+     * Method responsible for handling incoming POSTs. It will parse the xml document and
+     * deserialize it into a SeedRequest, then create a SeedTask and forward it to the 
+     * thread pool executor. 
+     */
     @Override
     public void post(Representation entity) {
         log.info("Received seed request from  "
@@ -74,54 +89,29 @@ public class SeedResource extends Resource {
             xs.alias("format", String.class);
 
             SeedRequest rq = (SeedRequest) xs.fromXML(xmltext);
-            
-            Future<SeedTask> futureObject = getExecutor().submit(
-                    new MTSeeder(new SeedTask(rq)));
-            
-            Object[] array = getExecutor().getQueue().toArray();
-            System.out.println(array.length);
-            for(int i=0; i< array.length; i++)
-                System.out.println(array[i].toString());
-            
-            
-            //this is just a simple test: asks the future object if it is done right after it was
-            //submitted to the thread pool. Naturally it will return FALSE.
-            //then the current thread sleeps for 1.5 seconds - enough time for the executor to complete
-            //the task, which right now is just a printout of the seed request.
-            //then future object is then asked again if it has completed, and indeed the return is TRUE
-            
-           // System.out.println(futureObject.isDone());
-            
-           // Thread.currentThread().sleep(1500L);
-           // System.out.println(futureObject.isDone());
-            
-            
-            
-            //this is another simple test. the future object can be sent a cancel message. if this message
-            //reaches the object before the executor begins execution, it will never execute.
-            //else t will try to exit "gracefully" from execution
-            
-            /*
-            futureObject.cancel(true);
-            System.out.println(futureObject.isDone());
-            System.out.println(futureObject.isCancelled());
-            */
+            getExecutor().submit(new MTSeeder(new SeedTask(rq)));
+
         } catch (IOException ioex) {
-        } /*catch (InterruptedException iex) {
-            iex.printStackTrace();
-        } /*catch (ExecutionException execEx) {
-            execEx.printStackTrace();
-        }*/
+            log.error("Exception occured while unmarshalling SeedRequest from XML");
+        }
     }
 
+    /**
+     * Method returns the thread pool executor that handles seeds
+     * @return
+     */
     public ThreadPoolExecutor getExecutor() {
         return RESTDispatcher.getExecutor();
     }
     
+    /**
+     * Method returns List of Strings representing the status of the currently running threads
+     * @return
+     */
     public static List getStatusList() {
         return statusList;
     }
-    
+
     public boolean allowPost() {
         return true;
     }
