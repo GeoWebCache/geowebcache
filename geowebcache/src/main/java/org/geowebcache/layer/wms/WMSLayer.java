@@ -46,6 +46,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.tile.Tile;
+import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
 import org.geowebcache.util.wms.GridCalculator;
@@ -69,31 +70,6 @@ public class WMSLayer extends TileLayer {
     private boolean transparent;
 
     private boolean debugheaders;
-
-    // everything here requires initialization
-    public static transient String WMS_URL;
-
-    public static transient String WMS_SRS;
-
-    public static transient String WMS_BBOX;
-
-    public static transient String WMS_STYLES;
-
-    public static transient String WMS_METATILING;
-
-    public static transient String WMS_TRANSPARENT;
-
-    public static transient String WMS_VENDOR_PARAMS;
-
-    public static transient int CACHE_NEVER;
-
-    public static transient int CACHE_VALUE_UNSET;
-
-    public static transient int CACHE_NEVER_EXPIRE;
-
-    public static transient int CACHE_USE_WMS_BACKEND_VALUE;
-
-    public static transient String WMS_MIMETYPES;
 
     protected transient GridCalculator[] gridCalc;
 
@@ -158,26 +134,14 @@ public class WMSLayer extends TileLayer {
     }
     
     public void lazyLayerInitialization(CacheFactory cf) {
-        WMS_URL = "wmsurl";
-        WMS_SRS = "srs";
-        WMS_BBOX = "bbox";
-        WMS_STYLES = "wmsstyles";
-        WMS_METATILING = "metatiling";
-        WMS_TRANSPARENT = "transparent";
-        WMS_VENDOR_PARAMS = "vendorparameters";
-        CACHE_NEVER = 0;
-        CACHE_VALUE_UNSET = -1;
-        CACHE_NEVER_EXPIRE = -2;
-        CACHE_USE_WMS_BACKEND_VALUE = -4;
-        WMS_MIMETYPES = "mimetypes";
         zoomStart = 0;
         zoomStop = 20;
         request = "GetMap";
         curWmsURL = 0;
         wmsLayers = "topp:states";
         saveExpirationHeaders = false;
-        expireClients = CACHE_USE_WMS_BACKEND_VALUE;
-        expireCache = CACHE_NEVER_EXPIRE;
+        expireClients = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
+        expireCache = GWCVars.CACHE_NEVER_EXPIRE;
         layerLock = new ReentrantLock();
         layerLocked = false;
         layerLockedCond = layerLock.newCondition();
@@ -284,7 +248,7 @@ public class WMSLayer extends TileLayer {
 
         // Leave a hint to save expiration, if necessary
         if (saveExpirationHeaders) {
-            metaTile.setExpiresHeader(CACHE_USE_WMS_BACKEND_VALUE);
+            metaTile.setExpiresHeader(GWCVars.CACHE_USE_WMS_BACKEND_VALUE);
         }
 
         int[] metaGridLoc = metaTile.getMetaGridPos();
@@ -304,7 +268,7 @@ public class WMSLayer extends TileLayer {
             /** ****************** No luck, Request metatile ****** */
             // Leave a hint to save expiration, if necessary
             if (saveExpirationHeaders) {
-                metaTile.setExpiresHeader(CACHE_USE_WMS_BACKEND_VALUE);
+                metaTile.setExpiresHeader(GWCVars.CACHE_USE_WMS_BACKEND_VALUE);
             }
 
             byte[] response = WMSHttpHelper.makeRequest(metaTile);
@@ -333,7 +297,7 @@ public class WMSLayer extends TileLayer {
             tile.setContent(getTile(gridLoc, gridPositions, metaTile));
 
             // TODO separate thread
-            if (expireCache != CACHE_NEVER) {
+            if (expireCache != GWCVars.CACHE_NEVER) {
                 saveTiles(gridPositions, metaTile, tile);
             }
 
@@ -376,12 +340,12 @@ public class WMSLayer extends TileLayer {
             // String requestURL = null;
             // Leave a hint to save expiration, if necessary
             if (saveExpirationHeaders) {
-                tile.setExpiresHeader(CACHE_USE_WMS_BACKEND_VALUE);
+                tile.setExpiresHeader(GWCVars.CACHE_USE_WMS_BACKEND_VALUE);
             }
 
             tile = doNonMetatilingRequest(tile);
 
-            if (tile.getStatus() > 299 || expireCache != CACHE_NEVER) {
+            if (tile.getStatus() > 299 || expireCache != GWCVars.CACHE_NEVER) {
                 cache.set(cacheKey, tile, expireCache);
             }
 
@@ -397,7 +361,7 @@ public class WMSLayer extends TileLayer {
     }
 
     public boolean tryCacheFetch(Tile tile) {
-        if (expireCache != CACHE_NEVER) {
+        if (expireCache != GWCVars.CACHE_NEVER) {
             try {
                 return cache.get(this.cacheKey, tile, expireCache);
             } catch (CacheException ce) {
@@ -427,7 +391,7 @@ public class WMSLayer extends TileLayer {
      * @param response
      */
     public void setExpirationHeader(HttpServletResponse response) {
-        if (expireClients == CACHE_VALUE_UNSET) {
+        if (expireClients == GWCVars.CACHE_VALUE_UNSET) {
             return;
         }
 
@@ -438,14 +402,14 @@ public class WMSLayer extends TileLayer {
                     + ", must-revalidate");
             response.setHeader("Expires", ServletUtils
                     .makeExpiresHeader(seconds));
-        } else if (expireClients == CACHE_NEVER_EXPIRE) {
+        } else if (expireClients == GWCVars.CACHE_NEVER_EXPIRE) {
             long oneYear = 3600 * 24 * 365;
             response.setHeader("Cache-Control", "max-age=" + oneYear);
             response.setHeader("Expires", ServletUtils
                     .makeExpiresHeader((int) oneYear));
-        } else if (expireClients == CACHE_NEVER) {
+        } else if (expireClients == GWCVars.CACHE_NEVER) {
             response.setHeader("Cache-Control", "no-cache");
-        } else if (expireClients == CACHE_USE_WMS_BACKEND_VALUE) {
+        } else if (expireClients == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
             int seconds = 36000;
             response.setHeader("geowebcache-error",
                     "No real CacheControl information available");
@@ -555,8 +519,8 @@ public class WMSLayer extends TileLayer {
             throws GeoWebCacheException {
         // everything that happens in profile construction should happen here
 
-        if (expireCache == CACHE_USE_WMS_BACKEND_VALUE
-                || expireClients == CACHE_USE_WMS_BACKEND_VALUE) {
+        if (expireCache == GWCVars.CACHE_USE_WMS_BACKEND_VALUE
+                || expireClients == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
             this.saveExpirationHeaders = true;
         }
         // wms urls
@@ -608,11 +572,10 @@ public class WMSLayer extends TileLayer {
 
         cache = cacheFactory.getDefaultCache();
         if (cache == null) {
-            log.error("Unable to get default cache.");
+            throw new GeoWebCacheException("Unable to get default cache from cacheFactory in WMSLayer.");
         }
 
-        cacheKey = cacheFactory.getCacheKeyFactory().getCacheKey(
-                cache.getDefaultKeyBeanId());
+        cacheKey = cacheFactory.getCacheKeyFactory().getCacheKey(cache.getDefaultKeyBeanId());
         String sanitizedName = name.replace(':', '_');
         cachePrefix = cache.getDefaultPrefix(sanitizedName);
         log.warn("cachePrefix not defined for layer " + name
@@ -626,7 +589,7 @@ public class WMSLayer extends TileLayer {
     protected void saveExpirationInformation(long backendExpire) {
         this.saveExpirationHeaders = false;
         try {
-            if (expireCache == CACHE_USE_WMS_BACKEND_VALUE) {
+            if (expireCache == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
                 Long expire = backendExpire;
                 if (expire == null || expire == -1) {
                     expire = Long.valueOf(7200 * 1000);
@@ -640,7 +603,7 @@ public class WMSLayer extends TileLayer {
                 expireCache = expire.longValue();
                 log.trace("Setting expireCache to: " + expireCache);
             }
-            if (expireClients == CACHE_USE_WMS_BACKEND_VALUE) {
+            if (expireClients == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
                 Long expire = backendExpire;
                 if (expire == null || expire == -1) {
                     expire = Long.valueOf(7200 * 1000);
@@ -900,7 +863,7 @@ public class WMSLayer extends TileLayer {
         waitForQueue(glo, condIdx);
 
         /** ****************** Tile ******************* */
-        if (expireCache != CACHE_NEVER) {
+        if (expireCache != GWCVars.CACHE_NEVER) {
             cache.set(this.cacheKey, tile, expireCache);
         }
 

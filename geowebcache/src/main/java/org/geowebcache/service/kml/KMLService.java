@@ -467,9 +467,10 @@ public class KMLService extends Service {
      */
     private static String createOverlayHeader(BBOX bbox, boolean isRaster) {
         int maxLodPixels = -1;
-        //if(isRaster) {
-        //    maxLodPixels = 385;
-        //}
+        if(isRaster) {
+            maxLodPixels = 385;
+        }
+        
         return  KMLHeader()
                 + "<Document>\n"
                 + "<Region>\n"

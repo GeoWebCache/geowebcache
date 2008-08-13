@@ -48,6 +48,7 @@ public abstract class Parameters {
         setFromHttpServletRequest(httprequest);
     }
 
+    // TODO What does this really achieve? I know there was something...
     public void setFromHttpServletRequest(HttpServletRequest httprequest) {
         if (log.isTraceEnabled()) {
             log.trace("Setting from HttpServletRequest.");

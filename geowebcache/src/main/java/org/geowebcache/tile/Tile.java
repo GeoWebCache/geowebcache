@@ -330,7 +330,11 @@ public class Tile implements TileResponseReceiver {
     
     private byte[] readHeaders(BufferedInputStream bis) throws IOException {
         byte[] line = new byte[16];
-        bis.read(line);
+        int read = bis.read(line);
+        
+        if(read != 16) {
+            throw new IOException("Expected to read 16 bytes, but got " + read);
+        }
         
         readCommonHeaders(line);
         

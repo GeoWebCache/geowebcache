@@ -83,26 +83,23 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
             determineConfigDirH();
         }
 
-        File propFile = null;
+        File xmlFile = null;
         if (configDirH != null) {
             // Find the property file
-            propFile = findPropFile(configDirH);
+            xmlFile = findPropFile(configDirH);
         }
 
-        if (propFile != null) {
-            log
-                    .trace("Found  property file in "
-                            + configDirH.getAbsolutePath());
+        if (xmlFile != null) {
+            log.trace("Found XML file in " + configDirH.getAbsolutePath());
         } else {
-            log.error("Found no property file in "
-                    + configDirH.getAbsolutePath());
+            log.error("Found no XML file in "+ configDirH.getAbsolutePath());
             return null;
         }
 
         HashMap<String, TileLayer> layers = new HashMap<String, TileLayer>();
 
         // load configurations into Document
-        Document docc = loadIntoDocument(propFile);
+        Document docc = loadIntoDocument(xmlFile);
         Element root = docc.getDocumentElement();
         NodeList allLayerNodes = root.getChildNodes();
 
@@ -246,24 +243,30 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
                 if (tmp.getNodeValue().equals(layerName)) {
                     toDelete = (Element) nl.item(i);
                     break;
-                } else
+                } else {
                     continue;
+                }
             }
 
-            root.removeChild(toDelete.getParentNode());
+            if (toDelete != null) {
+                root.removeChild(toDelete.getParentNode());
 
-            try {
-                DOMSource source = new DOMSource(docc);
-                StreamResult result = new StreamResult(propFile);
+                try {
+                    DOMSource source = new DOMSource(docc);
+                    StreamResult result = new StreamResult(propFile);
 
-                // write the DOM to the file
-                Transformer xformer = TransformerFactory.newInstance()
-                        .newTransformer();
-                xformer.transform(source, result);
-            } catch (TransformerConfigurationException e) {
-            } catch (TransformerException e) {
+                    // write the DOM to the file
+                    Transformer xformer = TransformerFactory.newInstance().newTransformer();
+                    xformer.transform(source, result);
+                } catch (TransformerConfigurationException e) {
+                    log.error("XMLConfiguration encountered "+e.getMessage());
+                } catch (TransformerException e) {
+                    log.error("XMLConfiguration encountered "+e.getMessage());
+                }
+                return true;
             }
-            return true;
+            
+            return false;
         }
     }
 
@@ -311,9 +314,10 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         if (f == null) {
             log.error("Unable to find configuration file in "
                     + this.configDirH.getAbsolutePath() + " !! ");
+            return null;
+        } else {
+            return f[0];
         }
-
-        return f[0];
     }
 
     public void determineConfigDirH() {

@@ -47,17 +47,19 @@ import java.util.concurrent.*;
  * through the rest interface
  */
 public class RESTDispatcher extends AbstractController {
-    public static String METHOD_PUT = "PUT";
+    public static final String METHOD_PUT = "PUT";
 
-    public static String METHOD_DELETE = "DELETE";
+    public static final String METHOD_DELETE = "DELETE";
 
+    private static final int THREAD_NUMBER = 10;
+    
     private static XMLConfiguration config;
     
-    private static ThreadPoolExecutor tpe;
+    private static ThreadPoolExecutor tpe = 
+        new ThreadPoolExecutor(THREAD_NUMBER, 20, 500000L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 
     private static Map<String, TileLayer> layers = null;
     
-    private static final int THREAD_NUMBER = 10;
 
     ServletConverter myConverter;
 
@@ -80,10 +82,9 @@ public class RESTDispatcher extends AbstractController {
         
         // constructor arguments(in order) int corePoolSize, int maximumPoolSize,
         // long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue
-        tpe = new ThreadPoolExecutor(THREAD_NUMBER, 20, 500000L, TimeUnit.SECONDS,
-                    new LinkedBlockingQueue<Runnable>());
-        log.info("created thread pool executor");
-        log.info("created RESTDispatcher.");
+        // MOVED tpe init up
+        //log.info("created thread pool executor");
+        //log.info("created RESTDispatcher.");
     }
     /**
      * Method returns the core thread pool size

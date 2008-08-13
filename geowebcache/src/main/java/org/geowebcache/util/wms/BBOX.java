@@ -17,6 +17,8 @@
  */
 package org.geowebcache.util.wms;
 
+import java.util.Arrays;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.SRS;
@@ -87,7 +89,7 @@ public class BBOX {
             for (int i = 0; i < BBOX.length; i++) {
                 tmp += "[" + BBOX[i] + "] ";
             }
-            log.error("Doesnt understand " + BBOX.toString());
+            log.error("Doesnt understand " + Arrays.toString(BBOX));
         }
     }
 

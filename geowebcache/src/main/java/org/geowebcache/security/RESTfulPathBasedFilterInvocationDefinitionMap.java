@@ -1,5 +1,6 @@
 package org.geowebcache.security;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -52,7 +53,7 @@ public class RESTfulPathBasedFilterInvocationDefinitionMap extends
 
         if (log.isDebugEnabled()) {
             log.debug("Added Ant path: " + antPath + "; attributes: " + attr
-                    + ", httpMethods: " + httpMethods);
+                    + ", httpMethods: " + Arrays.toString(httpMethods));
             if (httpMethods != null) {
                 for (int ii = 0; ii < httpMethods.length; ii++)
                     log.debug("httpMethods[" + ii + "]: " + httpMethods[ii]);
@@ -140,7 +141,7 @@ public class RESTfulPathBasedFilterInvocationDefinitionMap extends
             String[] methodList = entryHolder.getHttpMethodList();
             if (log.isDebugEnabled()) {
                 log.debug("~~~~~~~~~~ antPath= " + antPath + " methodList= "
-                        + methodList);
+                        + Arrays.toString(methodList));
                 if (methodList != null) {
                     for (int ii = 0; ii < methodList.length; ii++)
                         log.debug("method[" + ii + "]: " + methodList[ii]);
@@ -174,7 +175,7 @@ public class RESTfulPathBasedFilterInvocationDefinitionMap extends
     // ==========================================================
     // ========================================
 
-    protected class EntryHolder {
+    protected static class EntryHolder {
         private ConfigAttributeDefinition configAttributeDefinition;
 
         private String antPath;

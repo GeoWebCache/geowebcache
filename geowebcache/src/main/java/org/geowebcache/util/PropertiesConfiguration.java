@@ -91,16 +91,15 @@ public class PropertiesConfiguration implements Configuration,
                 layerName = new String(layerName);
             }
 
-            log.info("Adding layer " + layerName + " from  "
-                    + propFiles[i].getAbsolutePath());
+            log.info("Adding layer " + layerName + " from  " + propFiles[i].getAbsolutePath());
 
             // TODO need support for other types of layers
             //temporary hack
-            WMSLayer layer = null;//new WMSLayer(layerName, props, cacheFactory);
+            //WMSLayer layer = null;//new WMSLayer(layerName, props, cacheFactory);
 
-            if (layer != null) {
-                layers.put(layerName, layer);
-            }
+            // if (layer != null) {
+            //     layers.put(layerName, layer);
+            //}
         }
         return layers;
     }

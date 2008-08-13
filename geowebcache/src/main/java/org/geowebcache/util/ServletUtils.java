@@ -33,11 +33,6 @@ import java.util.regex.Pattern;
 import java.text.SimpleDateFormat;
 
 public class ServletUtils {
-    // Cached objects, recycle
-    private static SimpleDateFormat format = 
-        new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-    private static TimeZone timeZone = TimeZone.getTimeZone("GMT");
-    
     /**
      * Case insensitive lookup
      * 
@@ -217,6 +212,8 @@ public class ServletUtils {
      * @return
      */
     public static String makeExpiresHeader(int seconds) {
+        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+        TimeZone timeZone = TimeZone.getTimeZone("GMT");
         format.setTimeZone(timeZone);
         Calendar calendar = new GregorianCalendar(); 
         

@@ -33,6 +33,7 @@ import org.geowebcache.service.Request;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.tile.Tile;
+import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
 
@@ -194,7 +195,7 @@ public class WMSHttpHelper {
             }
 
             // Everything looks okay, try to save expiration
-            if (tileRespRecv.getExpiresHeader() == WMSLayer.CACHE_USE_WMS_BACKEND_VALUE) {
+            if (tileRespRecv.getExpiresHeader() == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
                 tileRespRecv.setExpiresHeader(wmsBackendCon.getExpiration());
             }
 

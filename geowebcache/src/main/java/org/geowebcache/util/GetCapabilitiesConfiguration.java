@@ -196,31 +196,31 @@ public class GetCapabilitiesConfiguration implements Configuration {
     private WMSLayer getLayer(String name, String wmsurl, 
             String bbox4326Str, String bbox900913Str, String stylesStr)
             throws GeoWebCacheException {
-        Properties props = new Properties();
-        props.setProperty(WMSLayer.WMS_URL, wmsurl);
-        props.setProperty(WMSLayer.WMS_SRS, "EPSG:4326;EPSG:900913");
-        props.setProperty(WMSLayer.WMS_BBOX, 
-                bbox4326Str +";"+ bbox900913Str);
-        props.setProperty(WMSLayer.WMS_STYLES, stylesStr);
-        props.setProperty(WMSLayer.WMS_TRANSPARENT, "true");
-
-        if (this.mimeTypes == null || this.mimeTypes.length() == 0) {
-            props.setProperty(WMSLayer.WMS_MIMETYPES, "image/png,image/jpeg");
-        } else {
-            props.setProperty(WMSLayer.WMS_MIMETYPES, this.mimeTypes);
-        }
-        log.debug("Creating new layer " + name + " with properties: "
-                + props.toString());
-
-        if (this.metaTiling == null || this.metaTiling.length() == 0) {
-            props.setProperty(WMSLayer.WMS_METATILING, "3x3");
-        } else {
-            props.setProperty(WMSLayer.WMS_METATILING, metaTiling);
-        }
-        
-        if (this.vendorParameters != null) {
-            props.setProperty(WMSLayer.WMS_VENDOR_PARAMS, vendorParameters);
-        }
+//        Properties props = new Properties();
+//        props.setProperty(WMSLayer.WMS_URL, wmsurl);
+//        props.setProperty(WMSLayer.WMS_SRS, "EPSG:4326;EPSG:900913");
+//        props.setProperty(WMSLayer.WMS_BBOX, 
+//                bbox4326Str +";"+ bbox900913Str);
+//        props.setProperty(WMSLayer.WMS_STYLES, stylesStr);
+//        props.setProperty(WMSLayer.WMS_TRANSPARENT, "true");
+//
+//        if (this.mimeTypes == null || this.mimeTypes.length() == 0) {
+//            props.setProperty(WMSLayer.WMS_MIMETYPES, "image/png,image/jpeg");
+//        } else {
+//            props.setProperty(WMSLayer.WMS_MIMETYPES, this.mimeTypes);
+//        }
+//        log.debug("Creating new layer " + name + " with properties: "
+//                + props.toString());
+//
+//        if (this.metaTiling == null || this.metaTiling.length() == 0) {
+//            props.setProperty(WMSLayer.WMS_METATILING, "3x3");
+//        } else {
+//            props.setProperty(WMSLayer.WMS_METATILING, metaTiling);
+//        }
+//        
+//        if (this.vendorParameters != null) {
+//            props.setProperty(WMSLayer.WMS_VENDOR_PARAMS, vendorParameters);
+//        }
         
         //temporary hack
         

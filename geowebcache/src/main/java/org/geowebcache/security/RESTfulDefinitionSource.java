@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Iterator;
 
@@ -174,7 +175,7 @@ public class RESTfulDefinitionSource implements
                 }
             }
             if (log.isDebugEnabled()) {
-                log.debug("methodList = " + methodList);
+                log.debug("methodList = " + Arrays.toString(methodList));
                 if (methodList != null) {
                     for (int ii = 0; ii < methodList.length; ii++)
                         log.debug("method[" + ii + "]: " + methodList[ii]);

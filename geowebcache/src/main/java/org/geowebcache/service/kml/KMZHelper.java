@@ -62,8 +62,6 @@ public class KMZHelper {
             MimeType mime, int[][] linkGridLocs) 
     throws GeoWebCacheException {
         
-        SRS srs = tileLayer.getProjections()[srsIdx];
-        
         for(int i=0;i<linkGridLocs.length; i++) {
             if(linkGridLocs[i][2] > 0) {
                 

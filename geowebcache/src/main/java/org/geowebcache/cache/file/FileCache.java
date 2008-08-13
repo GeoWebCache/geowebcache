@@ -36,6 +36,7 @@ import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheKey;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.tile.Tile;
+import org.geowebcache.util.GWCVars;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
@@ -131,7 +132,7 @@ public class FileCache implements Cache {
 
     public void set(CacheKey keyProto, Tile tile, long ttl)
             throws org.geowebcache.cache.CacheException {
-        if (ttl == WMSLayer.CACHE_NEVER) {
+        if (ttl == GWCVars.CACHE_NEVER) {
             return;
         }
 

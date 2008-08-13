@@ -46,7 +46,7 @@ import org.springframework.context.ApplicationContext;
  */
 public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
 
-    public static String LAYERNAME = "debugGrid";
+    public static final String LAYERNAME = "debugGrid";
     
     public static final int IS_KMZ = 100;
     
