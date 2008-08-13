@@ -32,7 +32,6 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileResponseReceiver;
-import org.geowebcache.layer.wms.WMSLayerProfile;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.ByteUtils;
 import org.geowebcache.util.ServletUtils;

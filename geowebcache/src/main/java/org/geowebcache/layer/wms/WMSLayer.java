@@ -437,8 +437,7 @@ public class WMSLayer extends TileLayer {
             try {
                 boolean completed = metaTile.writeTileToStream(i, out);
                 if (!completed) {
-                    log.error("metaTile.writeTileToStream returned false,"
-                            + " no tiles saved");
+                    log.error("metaTile.writeTileToStream returned false, no tiles saved");
                 }
             } catch (IOException ioe) {
                 log.error("Unable to write image tile to "
@@ -468,6 +467,7 @@ public class WMSLayer extends TileLayer {
         for (int i = 0; i < gridPositions.length; i++) {
             int[] curPos = gridPositions[i];
 
+            // Skip all but the tile we're interested in
             if (curPos[0] == gridPos[0] && curPos[1] == gridPos[1]
                     && curPos[2] == gridPos[2]) {
 

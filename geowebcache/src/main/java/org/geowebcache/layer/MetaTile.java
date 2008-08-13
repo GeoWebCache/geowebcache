@@ -18,7 +18,6 @@ package org.geowebcache.layer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.layer.wms.WMSLayerProfile;
 import org.geowebcache.mime.MimeType;
 
 public abstract class MetaTile implements TileResponseReceiver {

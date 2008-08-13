@@ -36,7 +36,6 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
-import org.geowebcache.layer.wms.WMSLayerProfile;
 
 public class GetCapabilitiesConfiguration implements Configuration {
     private static Log log = LogFactory

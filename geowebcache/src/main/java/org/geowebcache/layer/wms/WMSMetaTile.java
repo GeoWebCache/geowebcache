@@ -41,8 +41,7 @@ import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.wms.BBOX;
 
 public class WMSMetaTile extends MetaTile {
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.wms.WMSMetaTile.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSMetaTile.class);
 
     private BufferedImage img = null; // buffer for storing the metatile, if
 
@@ -50,8 +49,7 @@ public class WMSMetaTile extends MetaTile {
 
     private RenderedImage[] tiles = null; // array with tiles (after cropping)
 
-    private final RenderingHints no_cache = new RenderingHints(
-            JAI.KEY_TILE_CACHE, null);
+    private final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
 
     protected WMSLayer wmsLayer = null;
 
@@ -149,8 +147,17 @@ public class WMSMetaTile extends MetaTile {
         // TODO JAI is messing up for JPEG, this is a hack, retest
         if (useJAI) {
             // Use JAI
+            try { 
             tile = CropDescriptor.create(img, new Float(minX), new Float(minY),
                     new Float(tileWidth), new Float(tileHeight), no_cache);
+            } catch (IllegalArgumentException iae) {
+                log.error("Error cropping, image is " 
+                        + img.getWidth() + "x" + img.getHeight()
+                        + ", requesting a "+tileWidth+"x"+tileHeight
+                        +" tile starting at "+minX+","+minY+".");
+                log.error("Message from JAI: " + iae.getMessage());
+                iae.printStackTrace();
+            }
         } else {
             // Don't use JAI
             try {
