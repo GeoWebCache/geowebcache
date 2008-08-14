@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wmslayer>
+	     <layer-name>my:newTest</layer-name>
+	     <mimeFormats>
+	         <format>image/jpeg</format>
+	      </mimeFormats>
+	      <grids>
+	         <grid>
+	            <bounds>
+	                <coords>
+	                    <double>-180.0</double>
+	                    <double>-90.0</double>
+	                    <double>0.0</double>
+	                    <double>90.0</double>
+	                </coords>
+	            </bounds>
+	            <gridbounds>
+	                <coords>
+	                    <double>-180.0</double>
+	                    <double>-90.0</double>
+                        <double>180.0</double>
+	                    <double>90.0</double>
+					</coords>                    
+	             </gridbounds>
+	             <projection>
+	                 <number>4326</number>
+	             </projection>
+			</grid>
+	      </grids>
+	      <WMSurl>http://sigma.openplans.org/geoserver/wms</WMSurl>
+	      <metaWidthHeight>
+	            <int>3</int>
+	            <int>3</int>
+	      </metaWidthHeight>
+	      <errormime>application/vnd.ogc.se_inimage</errormime>
+	      <width>256</width>
+	      <height>256</height>
+	      <version>1.1.0</version>
+	      <tiled>false</tiled>
+	      <transparent>true</transparent>
+	      <debugheaders>true</debugheaders>
+</wmslayer>
+		

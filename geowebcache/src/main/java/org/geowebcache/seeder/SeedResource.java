@@ -19,7 +19,6 @@ package org.geowebcache.seeder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.RESTDispatcher;
-import org.geowebcache.layer.TileLayer;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.restlet.Context;
@@ -28,7 +27,6 @@ import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.resource.Representation;
-import org.restlet.resource.StringRepresentation;
 import org.restlet.resource.Resource;
 import org.restlet.resource.Variant;
 
@@ -37,10 +35,7 @@ import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import java.io.IOException;
 import java.util.concurrent.*;
-import java.util.Collections;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
+
 
 public class SeedResource extends Resource {
     private static int[][] statusArray = new int[getExecutor().getCorePoolSize()][3]; 
@@ -89,7 +84,7 @@ public class SeedResource extends Resource {
     public void post(Representation entity) {
         log.info("Received seed request from  "
                 + getRequest().getHostRef().getHostIdentifier());
-
+              
         try {
             String xmltext = entity.getText();
             XStream xs = new XStream(new DomDriver());

@@ -17,7 +17,6 @@
 package org.geowebcache.seeder;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -108,7 +107,7 @@ public class SeedTask {
             log.info("Completed seeding layer " + layer.getName());
             int[][] list = SeedResource.getStatusList();
             synchronized(list) {                
-                    list[arrayIndex] = null;
+                    list[arrayIndex] = new int[3];
             }
         } catch (Exception e) {
             log.error(e.getMessage());
