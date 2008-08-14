@@ -30,6 +30,7 @@ import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheKey;
+import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
@@ -142,7 +143,7 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
     }
 
     public int[] getGridLocForBounds(int srsIdx, BBOX bounds)
-            throws GeoWebCacheException {
+            throws BadTileException {
         // TODO Auto-generated method stub
         //log.warn("getGridLocForBounds(int srsIdx, BBOX bounds)");
         return null;
@@ -463,6 +464,14 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
     public Object createKey(Tile tile) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+
+
+    @Override
+    public void setCacheFactory(CacheFactory cacheFactory) {
+        // TODO Auto-generated method stub
+        
     }
 
 }

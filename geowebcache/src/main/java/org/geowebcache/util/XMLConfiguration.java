@@ -112,7 +112,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
                 if (e.getTagName().equalsIgnoreCase("wmslayer"))
                     result = (WMSLayer) xs.unmarshal(new DomReader(
                             (Element) allLayerNodes.item(i)));
-                result.lazyLayerInitialization(this.getCacheFactory());
+                result.setCacheFactory(this.cacheFactory);
                 layers.put(result.getName(), result);
             }
         }

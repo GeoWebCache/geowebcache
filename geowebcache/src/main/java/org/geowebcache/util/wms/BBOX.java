@@ -31,6 +31,12 @@ public class BBOX {
 
     private static double equalityThreshold = 0.03;
 
+    public static final BBOX world4326 = 
+        new BBOX(-180.0,-90.0,180.0,90.0);
+    
+    public static final BBOX world900913 = 
+        new BBOX(-20037508.34,-20037508.34,20037508.34,20037508.34);
+    
     // minx, miny, maxx, maxy
     public double[] coords = new double[4];
 

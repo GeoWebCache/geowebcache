@@ -19,6 +19,7 @@ package org.geowebcache.util;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -34,8 +35,11 @@ import org.geotools.data.wms.WebMapServer;
 import org.geotools.ows.ServiceException;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.CacheFactory;
+import org.geowebcache.layer.Grid;
+import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.util.wms.BBOX;
 
 public class GetCapabilitiesConfiguration implements Configuration {
     private static Log log = LogFactory
@@ -160,24 +164,21 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 double maxX = layer.getLatLonBoundingBox().getMaxX();
                 double maxY = layer.getLatLonBoundingBox().getMaxY();
 
-                String bbox4326Str = Double.toString(minX) + ","
-                        + Double.toString(minY) + "," + Double.toString(maxX)
-                        + "," + Double.toString(maxY);
-
+                BBOX bounds4326 = new BBOX(minX,minY,maxX,maxX);
                 
                 log.info("Found layer: " + layer.getName()
-                        + " with LatLon bbox " + bbox4326Str);
+                        + " with LatLon bbox " + bounds4326.toString());
                 
-                String bbox900913Str = 
-                    Double.toString(longToSphericalMercatorX(minX)) + ","
-                    + Double.toString(latToSphericalMercatorY(minY)) + "," 
-                    + Double.toString(longToSphericalMercatorX(maxX)) + ","
-                    + Double.toString(latToSphericalMercatorY(maxY));
-
+                BBOX bounds900913 = new BBOX(
+                        longToSphericalMercatorX(minX),
+                        latToSphericalMercatorY(minY),
+                        longToSphericalMercatorX(maxX),
+                        latToSphericalMercatorY(maxY));
+               
                 WMSLayer wmsLayer = null;
                 try {
-                    wmsLayer = getLayer(name, wmsUrl, bbox4326Str, 
-                            bbox900913Str, stylesStr);
+                    wmsLayer = getLayer(name, wmsUrl, bounds4326, 
+                            bounds900913, stylesStr);
                 } catch (GeoWebCacheException gwc) {
                     log.error("Error creating " + layer.getName() + ": "
                             + gwc.getMessage());
@@ -193,39 +194,22 @@ public class GetCapabilitiesConfiguration implements Configuration {
     }
 
     private WMSLayer getLayer(String name, String wmsurl, 
-            String bbox4326Str, String bbox900913Str, String stylesStr)
+            BBOX bounds4326, BBOX bounds900913, String stylesStr)
             throws GeoWebCacheException {
-//        Properties props = new Properties();
-//        props.setProperty(WMSLayer.WMS_URL, wmsurl);
-//        props.setProperty(WMSLayer.WMS_SRS, "EPSG:4326;EPSG:900913");
-//        props.setProperty(WMSLayer.WMS_BBOX, 
-//                bbox4326Str +";"+ bbox900913Str);
-//        props.setProperty(WMSLayer.WMS_STYLES, stylesStr);
-//        props.setProperty(WMSLayer.WMS_TRANSPARENT, "true");
-//
-//        if (this.mimeTypes == null || this.mimeTypes.length() == 0) {
-//            props.setProperty(WMSLayer.WMS_MIMETYPES, "image/png,image/jpeg");
-//        } else {
-//            props.setProperty(WMSLayer.WMS_MIMETYPES, this.mimeTypes);
-//        }
-//        log.debug("Creating new layer " + name + " with properties: "
-//                + props.toString());
-//
-//        if (this.metaTiling == null || this.metaTiling.length() == 0) {
-//            props.setProperty(WMSLayer.WMS_METATILING, "3x3");
-//        } else {
-//            props.setProperty(WMSLayer.WMS_METATILING, metaTiling);
-//        }
-//        
-//        if (this.vendorParameters != null) {
-//            props.setProperty(WMSLayer.WMS_VENDOR_PARAMS, vendorParameters);
-//        }
         
-        //temporary hack
+        List<Grid> grids = new ArrayList<Grid>(2);
+        grids.add(new Grid(SRS.getEPSG4326(), bounds4326, BBOX.world4326));
+        grids.add(new Grid(SRS.getEPSG900913(), bounds900913, BBOX.world900913));
         
-        WMSLayer layer = null; //new WMSLayer(name, props, this.cacheFactory);
-
-        return layer;
+        List<String> mimeFormats = new ArrayList<String>(3);
+        mimeFormats.add("image/png");
+        mimeFormats.add("image/png8");
+        mimeFormats.add("image/jpeg");
+        
+        int[] metaWidthHeight = {4,4};
+        // TODO We're dropping the styles now...
+        return new WMSLayer(name, this.cacheFactory,
+                wmsurl, mimeFormats, grids, metaWidthHeight);
     }
 
     private WebMapServer getWMS() {

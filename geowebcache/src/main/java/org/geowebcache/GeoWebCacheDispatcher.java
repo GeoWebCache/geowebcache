@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.demo.Demo;
+import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.service.Service;
@@ -141,7 +142,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
             }
         } catch (Exception e) {
             // e.printStackTrace();
-            log.error(e.getMessage()+ " " + request.getRequestURL().toString());
+            if(! (e instanceof BadTileException) || log.isDebugEnabled()) {
+                log.error(e.getMessage()+ " " + request.getRequestURL().toString());
+            }
+            
             writeError(response, 400, e.getMessage());
             if(! (e instanceof GeoWebCacheException) 
                     || log.isDebugEnabled()) {

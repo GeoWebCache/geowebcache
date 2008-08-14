@@ -16,9 +16,12 @@
  */
 package org.geowebcache.util.wms;
 
+import java.util.Arrays;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.layer.BadTileException;
 import org.geowebcache.service.ServiceException;
 
 public class GridCalculator {
@@ -102,27 +105,34 @@ public class GridCalculator {
         //System.out.println("lb: " +layerBounds+ " base:" +
         //  " tileWidth: " + tileWidth);
 
+        double[] rawNumber = new double[4];
+        
         for (int level = 0; level <= zoomStop; level++) {
             //System.out.println("--- Level "+level+"----");
+            
+            
             // Min X
-            gridLevels[level][0] = (int) Math
-                    .floor((layerBounds.coords[0] - gridBounds.coords[0])
-                            / tileWidth);
+            rawNumber[0] = (layerBounds.coords[0] - gridBounds.coords[0]) / tileWidth;
+            gridLevels[level][0] = (int) Math.floor(rawNumber[0]);
+            
             // Min Y
-            gridLevels[level][1] = (int) Math
-                    .floor((layerBounds.coords[1] - gridBounds.coords[1])
-                            / tileHeight);
+            rawNumber[1] = (layerBounds.coords[1] - gridBounds.coords[1]) / tileHeight;
+            gridLevels[level][1] = (int) Math.floor(rawNumber[1]);
+            
+            // The gridbounds are defined as inclusive, so they actually cover + 1 
+            // compared to the bottom left coordinate -> use floor()
+            
             // Max X
-            gridLevels[level][2] = (int) Math
-                    .ceil((layerBounds.coords[2] - gridBounds.coords[0])
-                            / tileWidth) - 1;
+            rawNumber[2] = (layerBounds.coords[2] - gridBounds.coords[0]) / tileWidth;
+            gridLevels[level][2] = (int) Math.floor(rawNumber[2]);
+            
             // Max Y
-            gridLevels[level][3] = (int) Math
-                    .ceil((layerBounds.coords[3] - gridBounds.coords[1])
-                            / tileHeight) - 1;
+            rawNumber[3] = (layerBounds.coords[3] - gridBounds.coords[1]) / tileHeight;
+            gridLevels[level][3] = (int) Math.floor(rawNumber[3]);
 
+            //System.out.println(Arrays.toString(rawNumber) + " "+ Arrays.toString(gridLevels[level]));
             //System.out.println("postOrig: " +
-            //        Arrays.toString(gridLevels[level]));
+            //        );
             //
             //System.out.println("tileCountX "+tileCountX + " metaLarger: "
             // + metaLarger);
@@ -193,7 +203,7 @@ public class GridCalculator {
      *            the bounds of the requested tile
      * @return [0] = x coordinate , [1] y coordinate, [2] = zoomLevel
      */
-    public int[] gridLocation(BBOX tileBounds) throws ServiceException {
+    public int[] gridLocation(BBOX tileBounds) throws BadTileException {
         int[] retVals = new int[3];
 
         double reqTileWidth = tileBounds.coords[2] - tileBounds.coords[0];
@@ -202,7 +212,7 @@ public class GridCalculator {
         
         long roundedZoomLevel = Math.round(zoomLevel);
         if(Math.abs(zoomLevel - (double) roundedZoomLevel) > 0.05) {
-            throw new ServiceException("The bounds result in a zoom level of "+zoomLevel+
+            throw new BadTileException("The bounds result in a zoom level of "+zoomLevel+
                         ", expected something within 0.05 of an integer, check " + tileBounds.toString());
         }
         
@@ -217,8 +227,9 @@ public class GridCalculator {
         double xdiff = tileBounds.coords[0] - gridBounds.coords[0];
         double xLoc = xdiff / tileWidth;
         retVals[0] = (int) Math.round(xLoc);
-        if(Math.abs(retVals[0] - xLoc) > 0.05) {
-            throw new ServiceException("Your bounds in the x direction are offset"
+        double absdiff = Math.abs(retVals[0] - xLoc);
+        if(absdiff/xLoc > 0.05 && absdiff > 0.05) {
+            throw new BadTileException("Your bounds in the x direction are offset"
                     + " by more than 5% compared to the underlying grid.");
         }
         
@@ -226,8 +237,9 @@ public class GridCalculator {
         double ydiff = tileBounds.coords[1] - gridBounds.coords[1];
         double yLoc = ydiff / tileWidth;
         retVals[1] = (int) Math.round(yLoc);
-        if(Math.abs(retVals[1] - yLoc) > 0.05) {
-            throw new ServiceException("Your bounds in the y direction are offset"
+        absdiff = Math.abs(retVals[1] - yLoc);
+        if(absdiff/yLoc > 0.05 && absdiff > 0.05) {
+            throw new BadTileException("Your bounds in the y direction are offset"
                     + " by more than 5% compared to the underlying grid.");
         }
 
@@ -240,14 +252,14 @@ public class GridCalculator {
         return retVals;
     }
 
-    public void locationWithinBounds(int[] location) throws GeoWebCacheException {
+    public void locationWithinBounds(int[] location) throws BadTileException {
         // Check Z
         if (location[2] < zoomStart) {
-            throw new GeoWebCacheException("zoomlevel (" + location[2] + ") can be at least "
+            throw new BadTileException("zoomlevel (" + location[2] + ") can be at least "
                     + zoomStart);
         }
         if (location[2] >= boundsGridLevels.length) {
-            throw new GeoWebCacheException("zoomlevel ("+ location[2] + ") can be at most "
+            throw new BadTileException("zoomlevel ("+ location[2] + ") can be at most "
                     + boundsGridLevels.length);
         }
 
@@ -255,16 +267,16 @@ public class GridCalculator {
 
         // Check X
         if (location[0] < bounds[0]) {
-            throw new GeoWebCacheException("gridX (" + location[0] + ") must be at least " + bounds[0]);
+            throw new BadTileException("gridX (" + location[0] + ") must be at least " + bounds[0]);
         } else if (location[0] > bounds[2]) {
-            throw new GeoWebCacheException("gridX (" + location[0] + ") can be at most " + bounds[2]);
+            throw new BadTileException("gridX (" + location[0] + ") can be at most " + bounds[2]);
         }
 
         // Check Y
         if (location[1] < bounds[1]) {
-            throw new GeoWebCacheException("gridY (" + location[1] + ") must be at least " + bounds[1]);
+            throw new BadTileException("gridY (" + location[1] + ") must be at least " + bounds[1]);
         } else if (location[1] > bounds[3]) {
-            throw new GeoWebCacheException("gridY (" + location[1] + ") can be at most " + bounds[3]);
+            throw new BadTileException("gridY (" + location[1] + ") can be at most " + bounds[3]);
         }
     }
 

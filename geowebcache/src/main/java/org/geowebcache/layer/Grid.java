@@ -31,6 +31,12 @@ public class Grid {
 
     private SRS projection = null;
 
+    public Grid(SRS projection, BBOX bounds, BBOX gridBounds) {
+        this.projection = projection;
+        this.bounds = bounds;
+        this.gridbounds = gridBounds;
+    }
+    
     /**
      * method will set the bounds of the layer for this grid from a BBOX 
      * @param bounds - BBOX with bounds
@@ -43,7 +49,6 @@ public class Grid {
      * @param bounds - String containing bounds
      */
     public void setBounds(String bounds) {
-
         this.bounds = new BBOX(bounds);
     }
     /**

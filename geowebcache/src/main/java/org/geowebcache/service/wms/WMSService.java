@@ -105,7 +105,7 @@ public class WMSService extends Service {
         }
 
         int[] tileIndex = tileLayer.getGridLocForBounds(srsIdx, bbox);
-
+        
         // String strOrigin = wmsParams.getOrigin();
         // if (strOrigin != null) {
         // String[] split = strOrigin.split(",");
@@ -162,7 +162,7 @@ public class WMSService extends Service {
         while (iter.hasNext()) {
             TileLayer tl = iter.next();
             if (!tl.isInitialized()) {
-                tl.initialize();
+                // ooops ? (Always returns true :) )
             }
             xml += getTileSets(tl);
         }

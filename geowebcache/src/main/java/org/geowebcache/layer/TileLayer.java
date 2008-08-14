@@ -38,6 +38,10 @@ public abstract class TileLayer {
     protected List<String> mimeFormats;
 
     protected List<Grid> grids;
+    
+    // Styles?
+    
+    // Metatiling?
 
     /**
      * Sets the layer name
@@ -97,7 +101,7 @@ public abstract class TileLayer {
      * Initializes the layer, creating internal structures for calculating grid
      * location and so forth.
      */
-    public abstract Boolean initialize();
+    protected abstract Boolean initialize();
 
     /**
      * Whether the layer supports the given projection
@@ -287,7 +291,7 @@ public abstract class TileLayer {
      * @throws GeoWebCacheException
      */
     public abstract int[] getGridLocForBounds(int srsIdx, BBOX bounds)
-            throws GeoWebCacheException;
+            throws BadTileException;
 
     /**
      * 
@@ -391,5 +395,7 @@ public abstract class TileLayer {
 
     public abstract void setExpirationHeader(HttpServletResponse response);
 
-    public abstract void lazyLayerInitialization(CacheFactory cf);
+    //public abstract void lazyLayerInitialization(CacheFactory cf);
+    
+    public abstract void setCacheFactory(CacheFactory cacheFactory);
 }

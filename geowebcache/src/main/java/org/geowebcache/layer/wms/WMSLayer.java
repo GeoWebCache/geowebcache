@@ -20,6 +20,7 @@ package org.geowebcache.layer.wms;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -36,10 +37,12 @@ import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.cache.CacheKey;
+import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.GridLocObj;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.Grid;
+import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
@@ -89,11 +92,11 @@ public class WMSLayer extends TileLayer {
 
     private transient int curWmsURL;
 
-    private transient String wmsLayers;
+    //private transient String wmsLayers;
 
     private transient String wmsStyles;
 
-    private transient WMSParameters wmsparams;
+    //private transient WMSParameters wmsparams;
 
     private transient boolean saveExpirationHeaders;
 
@@ -127,32 +130,53 @@ public class WMSLayer extends TileLayer {
 
     private static transient Log log;
 
-    public WMSLayer(String layerName, CacheFactory cacheFactory)
-            throws GeoWebCacheException {
+    //public WMSLayer(String layerName, CacheFactory cacheFactory)
+    //        throws GeoWebCacheException {
+    //    name = layerName;
+    //    initCacheFactory = cacheFactory;
+    //    log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
+    //}
+    
+    public WMSLayer(String layerName, CacheFactory cacheFactory,
+            String wmsURL, List<String> mimeFormats,
+            List<Grid> grids, int[] metaWidthHeight) {
+     
         name = layerName;
         initCacheFactory = cacheFactory;
-    }
-    
-    public void lazyLayerInitialization(CacheFactory cf) {
-        zoomStart = 0;
-        zoomStop = 20;
-        request = "GetMap";
-        curWmsURL = 0;
-        wmsLayers = "topp:states";
-        saveExpirationHeaders = false;
+        this.WMSurl = wmsURL;
+        super.mimeFormats = mimeFormats;
+        super.grids = grids;
+        this.metaWidthHeight = metaWidthHeight;
         expireClients = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
         expireCache = GWCVars.CACHE_NEVER_EXPIRE;
-        layerLock = new ReentrantLock();
-        layerLocked = false;
-        layerLockedCond = layerLock.newCondition();
-        procQueue = new HashMap<GridLocObj, Boolean>();
-        cacheLockWait = -1;
-        log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
-        initCacheFactory = cf;
-        
-        isInitialized();
-            
     }
+    
+    public void setCacheFactory(CacheFactory cacheFactory) {
+        initCacheFactory = cacheFactory;
+        //log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
+    }
+    
+//    private void lazyLayerInitialization() {
+//        width = 256;
+//        height = 256;
+//        version = "1.1.0";
+//        transparent = true;
+//        zoomStart = 0;
+//        zoomStop = 20;
+//        request = "GetMap";
+//        errormime = ErrorMime.vnd_ogc_se_inimage.getMimeType();
+//        curWmsURL = 0;
+//        wmsLayers = "topp:states";
+//        saveExpirationHeaders = false;
+//        expireClients = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
+//        expireCache = GWCVars.CACHE_NEVER_EXPIRE;
+//        layerLock = new ReentrantLock();
+//        layerLocked = false;
+//        layerLockedCond = layerLock.newCondition();
+//        procQueue = new HashMap<GridLocObj, Boolean>();
+//        cacheLockWait = -1;
+//        //initCacheFactory = cf;            
+//    }
 
     public Boolean isInitialized() {
         Boolean result = isInitialized;
@@ -167,9 +191,27 @@ public class WMSLayer extends TileLayer {
         return result;
     }
 
-    public Boolean initialize() {
+    protected Boolean initialize() {
+        
+        //lazyLayerInitialization();
+        log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
+        curWmsURL = 0;
+        zoomStart = 0;
+        zoomStop = 20;
+        request = "GetMap";
+        errormime = ErrorMime.vnd_ogc_se_inimage.getMimeType();
+        width = 256;
+        height = 256;
+        version = "1.1.0";
+        transparent = true;
+        saveExpirationHeaders = false;
+        layerLock = new ReentrantLock();
+        layerLockedCond = layerLock.newCondition();
+        procQueue = new HashMap<GridLocObj, Boolean>();
+        
+        
         try {
-            setParametersFromProperties(initCacheFactory);
+            initParameters();
         } catch (GeoWebCacheException gwce) {
             log.error(gwce.getMessage());
             gwce.printStackTrace();
@@ -418,6 +460,10 @@ public class WMSLayer extends TileLayer {
                     .makeExpiresHeader(seconds));
         }
     }
+    
+    public void setTileIndexHeader(Tile tile) {
+        tile.servletResp.addHeader("geowebcache-tile-index", Arrays.toString(tile.getTileIndex()));
+    }
 
     /**
      * Loops over the gridPositions, generates cache keys and saves to cache
@@ -445,8 +491,8 @@ public class WMSLayer extends TileLayer {
                 ioe.printStackTrace();
             }
 
-            Tile tile = new Tile(this, tileProto.getSRS(), gridPos, tileProto
-                    .getMimeType(), metaTile.getStatus(), out.toByteArray());
+            Tile tile = new Tile(this, tileProto.getSRS(), gridPos,
+                    tileProto.getMimeType(), metaTile.getStatus(), out.toByteArray());
             tile.setTileLayer(this);
             cache.set(this.cacheKey, tile, expireCache);
         }
@@ -507,6 +553,9 @@ public class WMSLayer extends TileLayer {
         if (tile.servletResp != null) {
             this.setExpirationHeader(tile.servletResp);
         }
+        
+        setTileIndexHeader(tile);
+        
         return tile;
     }
 
@@ -515,8 +564,7 @@ public class WMSLayer extends TileLayer {
      * @param props
      * @throws CacheException
      */
-    private void setParametersFromProperties(CacheFactory cacheFactory)
-            throws GeoWebCacheException {
+    private void initParameters() throws GeoWebCacheException {
         // everything that happens in profile construction should happen here
 
         if (expireCache == GWCVars.CACHE_USE_WMS_BACKEND_VALUE
@@ -552,8 +600,7 @@ public class WMSLayer extends TileLayer {
                 // for now
                 maxTileWidth[index] = 20037508.34 * 2;
                 maxTileHeight[index] = 20037508.34 * 2;
-                log
-                        .error("GeoWebCache only handles EPSG:4326 and EPSG:900913!");
+                log.error("GeoWebCache only handles EPSG:4326 and EPSG:900913!");
                 throw new GeoWebCacheException(
                         "GeoWebCache only handles EPSG:4326 and EPSG:900913!");
             }
@@ -570,20 +617,23 @@ public class WMSLayer extends TileLayer {
 
         // Cache and CacheKey
 
-        cache = cacheFactory.getDefaultCache();
+        cache = initCacheFactory.getDefaultCache();
+        
         if (cache == null) {
             throw new GeoWebCacheException("Unable to get default cache from cacheFactory in WMSLayer.");
         }
 
-        cacheKey = cacheFactory.getCacheKeyFactory().getCacheKey(cache.getDefaultKeyBeanId());
+        cacheKey = initCacheFactory.getCacheKeyFactory().getCacheKey(cache.getDefaultKeyBeanId());
+        
         String sanitizedName = name.replace(':', '_');
+        
         cachePrefix = cache.getDefaultPrefix(sanitizedName);
+        
         log.warn("cachePrefix not defined for layer " + name
-                + ", using default prefifx and name instead: " + cachePrefix);
+                + ", using default prefix and name instead: " + cachePrefix);
 
         // Initialize the cache
         cache.setUp(cachePrefix);
-
     }
 
     protected void saveExpirationInformation(long backendExpire) {
@@ -639,7 +689,7 @@ public class WMSLayer extends TileLayer {
     }
 
     public WMSParameters getWMSParamTemplate() {
-        wmsparams = new WMSParameters();
+        WMSParameters wmsparams = new WMSParameters();
         wmsparams.setRequest(request);
         wmsparams.setVersion(version);
         wmsparams.setLayer(this.name);
@@ -697,7 +747,7 @@ public class WMSLayer extends TileLayer {
     }
 
     public int[] getGridLocForBounds(int srsIdx, BBOX tileBounds)
-            throws ServiceException {
+            throws BadTileException {
         return gridCalc[srsIdx].gridLocation(tileBounds);
     }
 
