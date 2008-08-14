@@ -204,7 +204,9 @@ public class WMSLayer extends TileLayer {
         height = 256;
         version = "1.1.0";
         transparent = true;
-        saveExpirationHeaders = false;
+        saveExpirationHeaders = true;
+        expireClients = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
+        expireCache = GWCVars.CACHE_NEVER_EXPIRE;
         layerLock = new ReentrantLock();
         layerLockedCond = layerLock.newCondition();
         procQueue = new HashMap<GridLocObj, Boolean>();

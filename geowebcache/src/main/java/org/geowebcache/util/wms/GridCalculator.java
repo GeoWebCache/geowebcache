@@ -123,11 +123,11 @@ public class GridCalculator {
             // compared to the bottom left coordinate -> use floor()
             
             // Max X
-            rawNumber[2] = (layerBounds.coords[2] - gridBounds.coords[0]) / tileWidth;
+            rawNumber[2] = (layerBounds.coords[2] - gridBounds.coords[0] - 0.0001) / tileWidth;
             gridLevels[level][2] = (int) Math.floor(rawNumber[2]);
             
             // Max Y
-            rawNumber[3] = (layerBounds.coords[3] - gridBounds.coords[1]) / tileHeight;
+            rawNumber[3] = (layerBounds.coords[3] - gridBounds.coords[1] - 0.0001) / tileHeight;
             gridLevels[level][3] = (int) Math.floor(rawNumber[3]);
 
             //System.out.println(Arrays.toString(rawNumber) + " "+ Arrays.toString(gridLevels[level]));
