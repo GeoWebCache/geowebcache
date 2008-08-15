@@ -164,7 +164,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 double maxX = layer.getLatLonBoundingBox().getMaxX();
                 double maxY = layer.getLatLonBoundingBox().getMaxY();
 
-                BBOX bounds4326 = new BBOX(minX,minY,maxX,maxX);
+                BBOX bounds4326 = new BBOX(minX,minY,maxX,maxY);
                 
                 log.info("Found layer: " + layer.getName()
                         + " with LatLon bbox " + bounds4326.toString());
