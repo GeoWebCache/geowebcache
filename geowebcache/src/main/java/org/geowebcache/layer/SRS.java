@@ -5,9 +5,9 @@ import org.geowebcache.GeoWebCacheException;
 public class SRS {
     private int number = -1;
 
-    private static final SRS epsg4326 = new SRS(4326);
+    private static transient final SRS epsg4326 = new SRS(4326);
 
-    private static final SRS epsg900913 = new SRS(900913);
+    private static transient final SRS epsg900913 = new SRS(900913);
 
     public SRS(String srs) throws GeoWebCacheException {
         if (srs.substring(0, 5).equalsIgnoreCase("EPSG:")) {

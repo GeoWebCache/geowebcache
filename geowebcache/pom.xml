@@ -255,10 +255,25 @@
 	  <classifier>jdk13</classifier>
 	</dependency>
 	
+	<!-- xstream dependencies including jettison and stax are needed for de/serializing -->
+	<!-- objects with xstream -->
+	 
 	<dependency>
 		<groupId>com.thoughtworks.xstream</groupId>
 		<artifactId>xstream</artifactId>
 		<version>1.3</version>
+	</dependency>
+	
+	 <dependency>
+         <groupId>org.codehaus.jettison</groupId>
+         <artifactId>jettison</artifactId>
+         <version>1.0-RC2</version>
+     </dependency>
+	 
+	 <dependency>
+		<groupId>stax</groupId>
+		<artifactId>stax-api</artifactId>
+		<version>1.0.1</version>
 	</dependency>
 
 	<!-- acegi dependencies -->

@@ -26,11 +26,15 @@ public class SeedRequest {
 
     private SRS projection = null;
 
-    private int zoomstart = -1;
+    private Integer zoomstart = null;
 
-    private int zoomstop = -1;
+    private Integer zoomstop = null;
 
     private String format = null;
+    
+    public SeedRequest() {
+        //do nothing, i guess
+    }
 
     /**
      * Method returns the name of the tileLayer that was requested
@@ -64,14 +68,14 @@ public class SeedRequest {
      * Method returns the zoom start level for this seed request
      * @return integer representing zoom start level
      */
-    public int getZoomStart() {
+    public Integer getZoomStart() {
         return this.zoomstart;
     }
     /**
      * Method returns the zoom stop level for this seed request
      * @return integer representing zoom stop level
      */
-    public int getZoomStop() {
+    public Integer getZoomStop() {
         return this.zoomstop;
     }
 

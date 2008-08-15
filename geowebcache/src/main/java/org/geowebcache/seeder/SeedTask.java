@@ -53,8 +53,8 @@ public class SeedTask {
             
             TileLayer layer = RESTDispatcher.getAllLayers().get(req.getName());
             log.info("Begin seeding layer : " + layer.getName());
-            int zoomStart = req.getZoomStart();
-            int zoomStop = req.getZoomStop();
+            int zoomStart = req.getZoomStart().intValue();
+            int zoomStop = req.getZoomStop().intValue();
             MimeType mimeType = null;
             try {
                 mimeType = MimeType.createFromFormat(req.getMimeFormat());
