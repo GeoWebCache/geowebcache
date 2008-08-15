@@ -123,15 +123,15 @@ public class Demo {
             bbox = new BBOX(-180.0,-90.0,180.0,90.0);
         }
                
-        int[] gridLoc = layer.getZoomedOutGridLoc(srsIdx);
-        if(gridLoc[2] > -1) {
-            bbox = layer.getBboxForGridLoc(srsIdx, gridLoc);
-            zoomBounds = new BBOX(bbox);
-            zoomBounds.scale(0.50);
-        } else {
-            zoomBounds = bbox;
-        }
-        
+        //int[] gridLoc = layer.getZoomedOutGridLoc(srsIdx);
+        //if(gridLoc[2] > -1) {
+        //    bbox = layer.getBboxForGridLoc(srsIdx, gridLoc);
+        //    zoomBounds = new BBOX(bbox);
+        //    zoomBounds.scale(0.50);
+        //} else {
+        //    zoomBounds = bbox;
+        //}
+        zoomBounds = layer.getBounds(srsIdx);
         
         
         String page =
@@ -155,10 +155,10 @@ public class Demo {
             +"projection: new OpenLayers.Projection('"+srsStr+"'),\n"
             +"maxExtent: new OpenLayers.Bounds("+bbox.toString()+") \n};\n"
             +"map = new OpenLayers.Map('map', mapOptions );\n"
-            +"var layerstates = new OpenLayers.Layer.WMS(\n"
+            +"var demolayer = new OpenLayers.Layer.WMS(\n"
             +"\""+layerName+"\",\"../service/wms\",\n"
             +"{layers: '"+layerName+"', format: '"+mime+"'} );\n"
-            +"map.addLayer(layerstates);\n"
+            +"map.addLayer(demolayer);\n"
             +"map.zoomToExtent(new OpenLayers.Bounds("+zoomBounds.toString()+"));\n"
             +"}\n"
             +"</script>\n"
