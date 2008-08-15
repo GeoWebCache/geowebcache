@@ -555,10 +555,9 @@ public class WMSLayer extends TileLayer {
             tile.setStatus(200);
         }
         if (tile.servletResp != null) {
-            this.setExpirationHeader(tile.servletResp);
+            setExpirationHeader(tile.servletResp);
+            setTileIndexHeader(tile);
         }
-        
-        setTileIndexHeader(tile);
         
         return tile;
     }

@@ -52,6 +52,8 @@ public class SeedTask {
             
             
             TileLayer layer = RESTDispatcher.getAllLayers().get(req.getName());
+            layer.isInitialized();
+            
             log.info("Begin seeding layer : " + layer.getName());
             int zoomStart = req.getZoomStart().intValue();
             int zoomStop = req.getZoomStop().intValue();
