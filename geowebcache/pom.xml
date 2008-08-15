@@ -12,7 +12,10 @@
   <properties>
     <gs.version>1.7.0-SNAPSHOT</gs.version>
     <gt.version>2.5-SNAPSHOT</gt.version>
-    <spring.version>2.5.2</spring.version>
+    <spring.version>2.5.5</spring.version>
+    <restlet.version>1.0.8</restlet.version>
+    <xstream.version>1.3</xstream.version>
+    <acegi.version>1.0.3</acegi.version>
     <java.awt.headless>true</java.awt.headless>
     <jalopy.phase>disabled</jalopy.phase>
     <jalopy.srcExcludesPattern>disabled</jalopy.srcExcludesPattern>
@@ -62,11 +65,11 @@
 	<enabled>false</enabled>
       </snapshots>
     </repository>
-	<repository>
-	  <id>maven-restlet</id>
-	  <name>Public online Restlet repository</name>
-	  <url>http://maven.restlet.org</url>
-	</repository>
+    <repository>
+      <id>maven-restlet</id>
+      <name>Public online Restlet repository</name>
+      <url>http://maven.restlet.org</url>
+    </repository>
   </repositories>
   
   <distributionManagement>
@@ -81,7 +84,7 @@
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-wms</artifactId>
-      <version>2.5-SNAPSHOT</version>
+      <version>${gt.version}</version>
     </dependency>
     
     <dependency>
@@ -205,84 +208,81 @@
 	</exclusion>
       </exclusions>
     </dependency>
-		<!-- restlet.org dependencies -->
-	<dependency>
-	   <groupId>org.restlet</groupId>
-	   <artifactId>org.restlet</artifactId>
-       <version>1.0.1</version>
+
+    <!-- restlet.org dependencies -->
+    <dependency>
+      <groupId>org.restlet</groupId>
+      <artifactId>org.restlet</artifactId>
+      <version>${restlet.version}</version>
     </dependency>
-	
-	<dependency>
-	   <groupId>com.noelios.restlet</groupId>
-       <artifactId>com.noelios.restlet</artifactId>
-       <version>1.0.1</version>
-	</dependency>
-	
-	<dependency>
-	   <groupId>com.noelios.restlet</groupId>
-       <artifactId>com.noelios.restlet.ext.simple</artifactId>
-       <version>1.0.1</version>
-	</dependency>
     
-	<dependency>
+    <dependency>
+      <groupId>com.noelios.restlet</groupId>
+      <artifactId>com.noelios.restlet</artifactId>
+      <version>${restlet.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.noelios.restlet</groupId>
+      <artifactId>com.noelios.restlet.ext.simple</artifactId>
+      <version>${restlet.version}</version>
+    </dependency>
+    
+    <!-- dependency>
       <groupId>org.restlet</groupId>
       <artifactId>org.restlet.ext.freemarker</artifactId>
-	  <version>1.0.1</version>
-    </dependency>
+      <version>${restlet.version}</version>
+    </dependency -->
     
-	<dependency>
+    <dependency>
       <groupId>org.restlet</groupId>
       <artifactId>org.restlet.ext.spring</artifactId>
-	  <version>1.0.1</version>
-	</dependency>
+      <version>${restlet.version}</version>
+    </dependency>
     
-	<dependency>
+    <dependency>
       <groupId>org.restlet</groupId>
       <artifactId>org.restlet.ext.json</artifactId>
-	  <version>1.0.1</version>
-	</dependency>
-	
-	<dependency>
+      <version>1.0.1</version>
+    </dependency>
+    
+    <dependency>
       <groupId>com.noelios.restlet</groupId>
       <artifactId>com.noelios.restlet.ext.servlet</artifactId>
+      <version>${restlet.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>net.sf.json-lib</groupId>
+      <artifactId>json-lib</artifactId>
+      <version>2.1</version>
+      <classifier>jdk13</classifier>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.thoughtworks.xstream</groupId>
+      <artifactId>xstream</artifactId>
+      <version>${xstream.version}</version>
+    </dependency>
+    
+    <!-- acegi dependencies -->
+    <dependency>
+      <groupId>org.acegisecurity</groupId>
+      <artifactId>acegi-security</artifactId>
+      <version>${acegi.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.jettison</groupId>
+      <artifactId>jettison</artifactId>
+      <version>1.0-RC2</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>stax</groupId>
+      <artifactId>stax-api</artifactId>
       <version>1.0.1</version>
-	</dependency>
-	
-	<dependency>
-	  <groupId>net.sf.json-lib</groupId>
-	  <artifactId>json-lib</artifactId>
-	  <version>2.1</version>
-	  <classifier>jdk13</classifier>
-	</dependency>
-	
-	<!-- xstream dependencies including jettison and stax are needed for de/serializing -->
-	<!-- objects with xstream -->
-	 
-	<dependency>
-		<groupId>com.thoughtworks.xstream</groupId>
-		<artifactId>xstream</artifactId>
-		<version>1.3</version>
-	</dependency>
-	
-	 <dependency>
-         <groupId>org.codehaus.jettison</groupId>
-         <artifactId>jettison</artifactId>
-         <version>1.0-RC2</version>
-     </dependency>
-	 
-	 <dependency>
-		<groupId>stax</groupId>
-		<artifactId>stax-api</artifactId>
-		<version>1.0.1</version>
-	</dependency>
-
-	<!-- acegi dependencies -->
-	<dependency>
-		<groupId>org.acegisecurity</groupId>
-		<artifactId>acegi-security</artifactId>
-		<version>1.0.7</version>
-	</dependency>
-
+    </dependency>
   </dependencies>
   
   <build>
@@ -322,17 +322,17 @@
 
 
       <!-- plugin>
-	    <artifactId>maven-war-plugin</artifactId>
-	    <executions>
-	      <execution>
-		<phase>install</phase>
-		<goals>
-		  <goal>war</goal>
-		</goals>
-	      </execution>
-	    </executions>
+	   <artifactId>maven-war-plugin</artifactId>
+	   <executions>
+	     <execution>
+	       <phase>install</phase>
+	       <goals>
+		 <goal>war</goal>
+	       </goals>
+	     </execution>
+	   </executions>
       </plugin -->
-
+      
       <plugin>
 	<artifactId>maven-source-plugin</artifactId>
 	<configuration>
