@@ -743,7 +743,8 @@ public class WMSLayer extends TileLayer {
             log.warn("Adjusting bounds from " + bounds.toString() + " to "
                     + adjustedBounds.toString());
         }
-        return this.gridCalc[srsIdx].coveredGridLevels(adjustedBounds);
+        int[][]temp = this.gridCalc[srsIdx].coveredGridLevels(adjustedBounds);
+        return temp; 
     }
 
     public int[] getMetaTilingFactors() {

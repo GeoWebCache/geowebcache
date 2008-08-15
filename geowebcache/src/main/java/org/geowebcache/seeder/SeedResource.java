@@ -33,10 +33,17 @@ import org.restlet.resource.Resource;
 import org.restlet.resource.Variant;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.copy.HierarchicalStreamCopier;
 import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import com.thoughtworks.xstream.io.xml.DomDriver;
+import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
+
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.concurrent.*;
 
 
@@ -91,32 +98,29 @@ public class SeedResource extends Resource {
 
         try {
             String text = entity.getText();
-            XStream xs = null;
-            if(entity.getMediaType().equals(MediaType.APPLICATION_XML))
-                xs = new XStream(new DomDriver());
-            else if(entity.getMediaType().equals(MediaType.APPLICATION_JSON)){
-                xs = new XStream(new JettisonMappedXmlDriver());
-            }
-            xs.alias("seedRequest", SeedRequest.class);
+            XStream xs = new XStream(new DomDriver());
+        	xs.alias("seedRequest", SeedRequest.class);
             xs.alias("format", String.class);
-            xs.alias("projection", SRS.class);
             xs.alias("bounds", BBOX.class);
+            xs.alias("projection", SRS.class);
             xs.alias("zoomstart", Integer.class);
             xs.alias("zoomstop", Integer.class);
-            SeedRequest rq = (SeedRequest) xs.fromXML(text);
-
-            XStream xst = new XStream(new JettisonMappedXmlDriver());
-            xst.alias("seedRequest", SeedRequest.class);
-            xst.alias("format", String.class);
-            xst.alias("projection", SRS.class);
-            xst.alias("bounds", BBOX.class);
-            xst.alias("zoomstart", Integer.class);
-            xst.alias("zoomstop", Integer.class);
-            
-            String json = xst.toXML(rq);
-            SeedRequest rq1 = (SeedRequest) xst.fromXML(json);
-            System.out.println("json for is " + json);
-            
+            SeedRequest rq = null; 
+            if(entity.getMediaType().equals(MediaType.APPLICATION_XML)){
+            	rq = (SeedRequest) xs.fromXML(text);
+            }
+            else if(entity.getMediaType().equals(MediaType.APPLICATION_JSON)){
+            	HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();
+                StringReader reader = new StringReader(text);
+                HierarchicalStreamReader hsr = driver.createReader(reader);
+                StringWriter writer = new StringWriter();
+                new HierarchicalStreamCopier().copy(hsr, new PrettyPrintWriter(writer));
+                writer.close();
+                String test = writer.toString();
+            	
+                rq = (SeedRequest) xs.fromXML(test);
+            }
+                   
             getExecutor().submit(new MTSeeder(new SeedTask(rq)));
 
         } catch (IOException ioex) {

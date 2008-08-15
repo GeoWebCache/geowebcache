@@ -290,6 +290,27 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         return document;
     }
 
+    /**
+     * 
+     * Method finds the layer configuration XML file
+     * 
+     * @param configDirH
+     * @return
+     */
+    private File findPropFile(File configDirH) {
+        FilenameFilter select = new ExtensionFileLister("geowebcache", "xml");
+        File[] f = configDirH.listFiles(select);
+
+        if (f == null) {
+            log.error("Unable to find configuration file in "
+                    + this.configDirH.getAbsolutePath() + " !! ");
+            return null;
+        } else {
+            return f[0];
+        }
+    }
+
+
     public void determineConfigDirH() {
         if (absPath != null) {
             configDirH = new File(absPath);
