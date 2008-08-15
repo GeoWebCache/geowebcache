@@ -51,6 +51,8 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     private static Log log = LogFactory
             .getLog(org.geowebcache.util.XMLConfiguration.class);
 
+    private static final String CONFIGURATION_FILE_NAME = "geowebcache.xml";
+    
     private WebApplicationContext context;
 
     private CacheFactory cacheFactory = null;
@@ -73,12 +75,8 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
     public XMLConfiguration() {
     }
-
-    /**
-     * Method responsible for loading XML configuration file
-     * 
-     */
-    public Map<String, TileLayer> getTileLayers() throws GeoWebCacheException {
+    
+    private File findConfFile() throws GeoWebCacheException {
         if (configDirH == null) {
             determineConfigDirH();
         }
@@ -86,16 +84,28 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         File xmlFile = null;
         if (configDirH != null) {
             // Find the property file
-            xmlFile = findPropFile(configDirH);
+            xmlFile = new File(configDirH.getAbsolutePath() + File.separator + CONFIGURATION_FILE_NAME);
+        } else {
+            throw new GeoWebCacheException("Unable to determine configuration directory.");
         }
 
         if (xmlFile != null) {
-            log.trace("Found XML file in " + configDirH.getAbsolutePath());
+            log.trace("Found configuration file in "
+                    + configDirH.getAbsolutePath());
         } else {
-            log.error("Found no XML file in "+ configDirH.getAbsolutePath());
-            return null;
+            throw new GeoWebCacheException("Found no configuration file in "+ configDirH.getAbsolutePath());
         }
+        
+        return xmlFile;
+    }
 
+    /**
+     * Method responsible for loading XML configuration file
+     * 
+     */
+    public Map<String, TileLayer> getTileLayers() throws GeoWebCacheException {
+        File xmlFile = findConfFile();
+        
         HashMap<String, TileLayer> layers = new HashMap<String, TileLayer>();
 
         // load configurations into Document
@@ -140,27 +150,11 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
      * @return true if operation succeeded, false otherwise
      */
 
-    public boolean createLayer(TileLayer tl) {
-        if (configDirH == null) {
-            determineConfigDirH();
-        }
-
-        File propFile = null;
-        if (configDirH != null) {
-            propFile = findPropFile(configDirH);
-        }
-
-        if (propFile != null) {
-            log.trace("Found configuration file in "
-                    + configDirH.getAbsolutePath());
-        } else {
-            log.error("Found no configuration file in "
-                    + configDirH.getAbsolutePath());
-            return false;
-        }
+    public boolean createLayer(TileLayer tl) throws GeoWebCacheException {
+        File xmlFile = findConfFile();
 
         // load configurations into Document
-        Document docc = loadIntoDocument(propFile);
+        Document docc = loadIntoDocument(xmlFile);
         Element root = docc.getDocumentElement();
 
         // create the XStream for serializing tileLayers to XML
@@ -170,7 +164,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
         try {
             DOMSource source = new DOMSource(docc);
-            StreamResult result = new StreamResult(propFile);
+            StreamResult result = new StreamResult(xmlFile);
 
             // write the DOM to the file
             Transformer xformer = TransformerFactory.newInstance()
@@ -194,7 +188,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
      * @return true if operation succeeded, false otherwise
      */
 
-    public boolean modifyLayer(String currentLayer, TileLayer tl) {
+    public boolean modifyLayer(String currentLayer, TileLayer tl) throws GeoWebCacheException {
 
         return deleteLayer(currentLayer) && createLayer(tl);
 
@@ -203,32 +197,29 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     /**
      * Method responsible for deleting existing layers
      * 
-     * @param layerName
-     *            the name of the layer to be deleted
-     * @returntrue if operation succeeded, false otherwise
+     * @param layerName the name of the layer to be deleted
+     * @return true if operation succeeded, false otherwise
      */
     public boolean deleteLayer(String layerName) {
         if (configDirH == null) {
             determineConfigDirH();
         }
 
-        File propFile = null;
+        File xmlFile = null;
         if (configDirH != null) {
             // Find the property file and process each one into a TileLayer
-            propFile = findPropFile(configDirH);
+            xmlFile = new File(configDirH.getAbsolutePath() + File.separator + "geowebcache.xml");
         }
 
-        if (propFile != null) {
-            log.trace("Found configuration file in "
-                    + configDirH.getAbsolutePath());
+        if (xmlFile != null) {
+            log.trace("Found configuration file in "+ configDirH.getAbsolutePath());
         } else {
-            log.error("Found no configuration file in "
-                    + configDirH.getAbsolutePath());
+            log.error("Found no configuration file in "+ configDirH.getAbsolutePath());
             return false;
         }
 
         // load configurations into Document
-        Document docc = loadIntoDocument(propFile);
+        Document docc = loadIntoDocument(xmlFile);
         Element root = docc.getDocumentElement();
         // find the layer to delete This assumes that ALL layer names are
         // distinct
@@ -253,7 +244,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
                 try {
                     DOMSource source = new DOMSource(docc);
-                    StreamResult result = new StreamResult(propFile);
+                    StreamResult result = new StreamResult(xmlFile);
 
                     // write the DOM to the file
                     Transformer xformer = TransformerFactory.newInstance().newTransformer();
@@ -281,43 +272,22 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     private org.w3c.dom.Document loadIntoDocument(File file) {
         org.w3c.dom.Document document = null;
         try {
-            DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory
-                    .newInstance();
+            DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             docBuilderFactory.setNamespaceAware(true);
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
             document = docBuilder.parse(file);
         } catch (ParserConfigurationException pce) {
+            log.error(pce.getMessage());
             System.err.println(pce.getMessage());
             pce.printStackTrace();
         } catch (IOException ei) {
-            System.err
-                    .println("Exception occured while creating documet from file");
+            log.error("Exception occured while creating documet from file " + file.getAbsolutePath());
             ei.printStackTrace(System.err);
         } catch (SAXException saxe) {
-            System.err.println(saxe.getMessage());
+            log.error(saxe.getMessage());
             saxe.printStackTrace();
         }
         return document;
-    }
-
-    /**
-     * 
-     * Method finds the layer configuration XML file
-     * 
-     * @param configDirH
-     * @return
-     */
-    private File findPropFile(File configDirH) {
-        FilenameFilter select = new ExtensionFileLister("layer", "xml");
-        File[] f = configDirH.listFiles(select);
-
-        if (f == null) {
-            log.error("Unable to find configuration file in "
-                    + this.configDirH.getAbsolutePath() + " !! ");
-            return null;
-        } else {
-            return f[0];
-        }
     }
 
     public void determineConfigDirH() {
@@ -334,8 +304,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         } else {
             if (File.separator.equals("\\")
                     && relPath.equals("/WEB-INF/classes")) {
-                log
-                        .warn("You seem to be running on windows, changing search path to \\WEB-INF\\classes");
+                log.warn("You seem to be running on windows, changing search path to \\WEB-INF\\classes");
                 relPath = "\\WEB-INF\\classes";
             }
         }

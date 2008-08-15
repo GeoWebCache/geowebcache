@@ -29,6 +29,7 @@ import org.json.JSONException;
 import org.restlet.ext.json.JsonRepresentation;
 
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.RESTDispatcher;
 
 import org.w3c.dom.Document;
@@ -229,21 +230,35 @@ public class TileLayerResource extends Resource {
             TileLayer tileLayer = (WMSLayer) xs.fromXML(xmlText);
             //the layer we are posting to is null, so we need to create a new one
             if(currentLayer == null){
-                if (RESTDispatcher.getConfig().createLayer(tileLayer)) {
+                boolean tryCreate = false;
+                try {
+                    tryCreate = RESTDispatcher.getConfig().createLayer(tileLayer);
+                } catch (GeoWebCacheException gwce) {
+                    // Not much we can do
+                    log.error(gwce.getMessage());
+                }
+                if (tryCreate) {
                     log.info("Added layer : " + tileLayer.getName());
                     getResponse().setStatus(Status.SUCCESS_OK);
                 } else
                     getResponse().setStatus(
-                            Status.CLIENT_ERROR_FAILED_DEPENDENCY);             
+                            Status.CLIENT_ERROR_FAILED_DEPENDENCY);
+                
             } else {
                 //the layer we are posting to is not null, so we are trying to modify it
-                if (RESTDispatcher.getConfig().modifyLayer(
-                        currentLayer.getName(), tileLayer)) {
+                boolean trySave = false;
+                try {
+                    trySave = RESTDispatcher.getConfig().modifyLayer(currentLayer.getName(), tileLayer);
+                } catch (GeoWebCacheException gwce) {
+                    // Not much we can do
+                    log.error(gwce.getMessage());
+                }
+                if (trySave) {
                     log.info("Overwrote layer : " + currentLayer.getName() + " with new layer : " + tileLayer.getName());
                     getResponse().setStatus(Status.SUCCESS_OK);
-                } else
-                    getResponse().setStatus(
-                            Status.CLIENT_ERROR_FAILED_DEPENDENCY);
+                } else {
+                    getResponse().setStatus(Status.CLIENT_ERROR_FAILED_DEPENDENCY);
+                }
             }
             
         } catch(IOException ioex){
