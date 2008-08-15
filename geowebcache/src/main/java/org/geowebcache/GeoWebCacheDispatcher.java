@@ -391,6 +391,14 @@ public class GeoWebCacheDispatcher extends AbstractController {
         tile.servletResp.setHeader("geowebcache-message", message);
         tile.servletResp.setStatus(200);
         tile.servletResp.setContentType(ImageMime.png.getMimeType());
-        tile.setContent(blankPNG8);
+        TileLayer layer = tile.getLayer();
+        if(layer != null) {
+            layer.setExpirationHeader(tile.servletResp);
+        }
+        try { 
+            tile.servletResp.getOutputStream().write(this.blankPNG8);
+        } catch (IOException ioe) {
+            log.debug("Caught IOException: " + ioe.getMessage() + "\n\n" + ioe.toString());
+        }
     }
 }
