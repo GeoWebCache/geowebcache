@@ -122,7 +122,7 @@ public class WMSLayer extends TileLayer {
 
     transient HashMap<GridLocObj, Boolean> procQueue;
 
-    transient Integer cacheLockWait;
+    //transient Integer cacheLockWait;
 
     public transient volatile Boolean isInitialized;
 
@@ -968,6 +968,6 @@ public class WMSLayer extends TileLayer {
     }
 
     public void setDebugHeaders(boolean debugheaders) {
-        this.debugheaders = debugheaders;
+        //this.debugheaders = debugheaders;
     }
 }

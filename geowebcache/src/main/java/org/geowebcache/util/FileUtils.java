@@ -20,7 +20,12 @@ package org.geowebcache.util;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class FileUtils {
+    private static Log log = LogFactory.getLog(org.geowebcache.util.FileUtils.class);
+    
     static public boolean rmFileCacheDir(File path, ExtensionFileLister extfl) {
         if (path.exists()) {
             File[] files = null;
@@ -35,7 +40,9 @@ public class FileUtils {
                 if (files[i].isDirectory()) {
                     rmFileCacheDir(files[i], extfl);
                 } else {
-                    files[i].delete();
+                    if(! files[i].delete()) {
+                        log.error("Unable to delete " + files[i].getAbsolutePath());
+                    }
                 }
             }
         }

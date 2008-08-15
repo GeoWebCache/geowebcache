@@ -147,17 +147,19 @@ public class GetCapabilitiesConfiguration implements Configuration {
             if (name != null) {
                 List styles = layer.getStyles();
                 String stylesStr = "";
+                StringBuffer buf = new StringBuffer();
                 if(styles != null) {
                     Iterator<StyleImpl> iter = styles.iterator();
-                    
                     boolean hasOne = false;
                     while(iter.hasNext()) {
                         if(hasOne) {
-                            stylesStr += ",";
+                            buf.append(",");
                         }
-                        stylesStr += iter.next().getName(); 
+                        buf.append(iter.next().getName());
+                        hasOne = true;
                     }
                 }    
+                //TODO styles are not currently forwarded
                 
                 double minX = layer.getLatLonBoundingBox().getMinX();
                 double minY = layer.getLatLonBoundingBox().getMinY();
@@ -201,10 +203,21 @@ public class GetCapabilitiesConfiguration implements Configuration {
         grids.add(new Grid(SRS.getEPSG4326(), bounds4326, BBOX.world4326));
         grids.add(new Grid(SRS.getEPSG900913(), bounds900913, BBOX.world900913));
         
-        List<String> mimeFormats = new ArrayList<String>(3);
-        mimeFormats.add("image/png");
-        mimeFormats.add("image/png8");
-        mimeFormats.add("image/jpeg");
+        List<String> mimeFormats = null;
+        if(this.mimeTypes != null) {
+            String[] mimeFormatArray = this.mimeTypes.split(",");
+            mimeFormats = new ArrayList<String>(mimeFormatArray.length);
+            
+            // This is stupid... but oh well, we're only doing it once
+            for(int i=0;i<mimeFormatArray.length;i++) {
+                mimeFormats.add(mimeFormatArray[i]);
+            }
+        } else {
+            mimeFormats = new ArrayList<String>(3);
+            mimeFormats.add("image/png");
+            mimeFormats.add("image/png8");
+            mimeFormats.add("image/jpeg");  
+        }
         
         String[] metaStrings = this.metaTiling.split("x");
         

@@ -90,19 +90,18 @@ public class Demo {
         Iterator<Entry<String,TileLayer>> it = 
             tileLayerDispatcher.getLayers().entrySet().iterator();
         
-        String rows = "";
+        StringBuffer buf = new StringBuffer();
         
         while(it.hasNext()) {
-            TileLayer layer = it.next().getValue();
-            
-            rows += "<tr><td>"+layer.getName()+"</td>"
+            TileLayer layer = it.next().getValue();     
+            buf.append("<tr><td>"+layer.getName()+"</td>"
                 + "<td><a href=\"demo/"+layer.getName()+"?srs=EPSG:4326\">EPSG:4326</a></td>"
                 + "<td><a href=\"demo/"+layer.getName()+"?srs=EPSG:900913\">EPSG:900913</a></td>" 
                 + "<td><a href=\"service/kml/"+layer.getName()+".png.kmz\">KML (PNG)</a></td>"
                 + "<td><a href=\"service/kml/"+layer.getName()+".kml.kmz\">KML (vector)</a></td>"
-                + "</tr>";
+                + "</tr>");
         }
-        return rows;
+        return buf.toString();
     }
     
     private static String generateHTML(TileLayer layer, String srsStr, String formatStr) 

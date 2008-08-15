@@ -182,7 +182,7 @@ public abstract class Parameters {
      */
     public String getReadableString() {
         String key;
-        String rtrn = "";
+        StringBuffer buf = new StringBuffer();
 
         Iterator itr = params.keySet().iterator();
         while (itr.hasNext()) {
@@ -190,13 +190,13 @@ public abstract class Parameters {
             if (key != null && key.length() > 0) {
                 Object value = params.get(key);
                 if (value != null) {
-                    rtrn += key + '=' + convertToString(value) + ' ';
+                    buf.append(key + '=' + convertToString(value) + ' ');
                 } else {
-                    rtrn += key + "=null ";
+                    buf.append(key + "=null ");
                 }
             }
         }
-        return rtrn;
+        return buf.toString();
     }
 
     /**

@@ -401,9 +401,10 @@ public class KMLService extends Service {
         int srsIdx = tileLayer.getSRSIndex(SRS.getEPSG4326());
         BBOX bbox = tileLayer.getBboxForGridLoc(srsIdx, gridLoc);
 
+        StringBuffer buf = new StringBuffer();
         // 1) Header
-        String xml = createOverlayHeader(bbox, 
-                tile.getMimeType() instanceof ImageMime);
+        buf.append(createOverlayHeader(bbox, 
+                tile.getMimeType() instanceof ImageMime));
 
         // 2) Network links, only to tiles within bounds
         int[][] linkGridLocs = tileLayer.getZoomInGridLoc(srsIdx, gridLoc);
@@ -413,7 +414,7 @@ public class KMLService extends Service {
             linkGridLocs = KMZHelper.filterGridLocs(tileLayer, srsIdx, tile.getMimeType(),linkGridLocs);
         }
 
-        int moreData = 0;
+        //int moreData = 0;
         for (int i = 0; i < 4; i++) {
             // Only add this link if it is within the bounds
             if (linkGridLocs[i][2] > 0) {
@@ -426,16 +427,17 @@ public class KMLService extends Service {
 
                 String gridLocStr = gridLocString(linkGridLocs[i]);
                 
-                xml += createNetworkLinkElement(tileLayer, linkBbox, gridLocUrl, gridLocStr);
-                moreData++;
+                buf.append(createNetworkLinkElement(tileLayer, linkBbox, gridLocUrl, gridLocStr));
+                //moreData++;
             }
         }
 
         // 3) Overlay, should be relative 
         if (tile.getMimeType() instanceof ImageMime) {
-            xml += createGroundOverLayElement(
+            buf.append(
+                    createGroundOverLayElement(
                     gridLoc, tile.getUrlPrefix(), 
-                    bbox, tile.getMimeType().getFileExtension());
+                    bbox, tile.getMimeType().getFileExtension()));
         } else {
             // KML
             String gridLocStr = gridLocString(gridLoc);
@@ -443,20 +445,16 @@ public class KMLService extends Service {
             if(isPackaged) {
                 gridLocUrl = "data_" + gridLocUrl;
             }
-            xml += createNetworkLinkElement(tileLayer, bbox, gridLocUrl, gridLocStr);
+            buf.append(createNetworkLinkElement(tileLayer, bbox, gridLocUrl, gridLocStr));
         }
 
         //if(moreData > 0) {
         //    xml += "</Document>\n<Document>"+moreDataIcon(bbox)+"</Document>\n";
         //} else {
-            xml += "</Document>\n";
+            buf.append("</Document>\n</kml>");
         //}
         
-        // 4) Footer
-        xml += "</kml>";
-
-        // log.info("handle overlay");
-        return xml;
+        return buf.toString();
     }
 
     /**

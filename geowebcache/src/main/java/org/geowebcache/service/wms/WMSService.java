@@ -157,20 +157,21 @@ public class WMSService extends Service {
         Map<String, TileLayer> layerMap = tLD.getLayers();
         Iterator<TileLayer> iter = layerMap.values().iterator();
 
-        String xml = getCapabilitiesHeader();
+        StringBuffer buf = new StringBuffer();
+        buf.append(getCapabilitiesHeader());
 
         while (iter.hasNext()) {
             TileLayer tl = iter.next();
             if (!tl.isInitialized()) {
                 // ooops ? (Always returns true :) )
             }
-            xml += getTileSets(tl);
+            buf.append(getTileSets(tl));
         }
 
-        xml += getCapabilitiesFooter();
+        buf.append(getCapabilitiesFooter());
 
         try {
-            writeData(response, xml.getBytes());
+            writeData(response, buf.toString().getBytes());
         } catch (IOException ioe) {
             throw new GeoWebCacheException("Error doing getCapabilities: "
                     + ioe.getMessage());

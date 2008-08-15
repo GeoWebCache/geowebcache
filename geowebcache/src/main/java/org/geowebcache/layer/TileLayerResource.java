@@ -126,32 +126,32 @@ public class TileLayerResource extends Resource {
      */
     public DomRepresentation getDomRepresentationAsListOfLayers() {
         XStream xs = RESTDispatcher.getConfig().getConfiguredXStream(new XStream());
-        String xmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-        xmlText +="<layers>";
+        
+        StringBuffer buf = new StringBuffer();
+        buf.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        buf.append("<layers>");
         for (Iterator iter = RESTDispatcher.getAllLayers().entrySet()
                 .iterator(); iter.hasNext();) {
             Map.Entry entry = (Map.Entry) iter.next();
             TileLayer layer = (TileLayer) entry.getValue();
-            xmlText += xs.toXML(layer);
+            buf.append(xs.toXML(layer));
         }
-        xmlText += "</layers>";
+        buf.append("</layers>");
         Document doc = null;
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory
-                    .newInstance();
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Reader reader = new CharArrayReader(xmlText.toCharArray());
+            Reader reader = new CharArrayReader(buf.toString().toCharArray());
             doc = builder.parse(new InputSource(reader));
 
         } catch (ParserConfigurationException pce) {
-            System.err.println(pce.getMessage());
+            log.error(pce.getMessage());
             pce.printStackTrace();
         } catch (IOException ei) {
-            System.err
-                    .println("Exception occured while creating documet from file");
+            log.error("Exception occured while creating documet from file");
             ei.printStackTrace(System.err);
         } catch (SAXException saxe) {
-            System.err.println(saxe.getMessage());
+            log.error(saxe.getMessage());
             saxe.printStackTrace();
         }
         return new DomRepresentation(MediaType.TEXT_XML, doc);
@@ -179,28 +179,26 @@ public class TileLayerResource extends Resource {
      */
     public DomRepresentation getXMLRepresentation(TileLayer layer) {
         XStream xs = RESTDispatcher.getConfig().getConfiguredXStream(new XStream());
-        String xmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-        xmlText += xs.toXML(layer);
-        System.out.println(xmlText);
+        String xmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + xs.toXML(layer);
+        
         Document doc = null;
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory
-                    .newInstance();
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Reader reader = new CharArrayReader(xmlText.toCharArray());
             doc = builder.parse(new InputSource(reader));
 
         } catch (ParserConfigurationException pce) {
-            System.err.println(pce.getMessage());
+            log.error(pce.getMessage());
             pce.printStackTrace();
         } catch (IOException ei) {
-            System.err
-                    .println("Exception occured while creating documet from file");
+            log.error("Exception occured while creating documet from file");
             ei.printStackTrace(System.err);
         } catch (SAXException saxe) {
-            System.err.println(saxe.getMessage());
+            log.error(saxe.getMessage());
             saxe.printStackTrace();
         }
+        
         return new DomRepresentation(MediaType.TEXT_XML, doc);
     }
 

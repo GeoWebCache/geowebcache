@@ -289,7 +289,7 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
     public Boolean initialize() {
         // TODO Auto-generated method stub
         //log.warn("initialize()");
-        return null;
+        return true;
     }
 
     public Boolean isInitialized() {

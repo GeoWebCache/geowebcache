@@ -91,10 +91,6 @@ public class BBOX {
         } else if (recWatch < 4) {
             setFromBBOXString(BBOX[0], recWatch);
         } else {
-            String tmp = "";
-            for (int i = 0; i < BBOX.length; i++) {
-                tmp += "[" + BBOX[i] + "] ";
-            }
             log.error("Doesnt understand " + Arrays.toString(BBOX));
         }
     }

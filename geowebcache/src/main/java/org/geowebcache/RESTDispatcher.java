@@ -78,7 +78,7 @@ public class RESTDispatcher extends AbstractController {
         setSupportedMethods(new String[] { 
                 METHOD_GET, METHOD_POST, METHOD_DELETE });
         
-        config = c;
+        RESTDispatcher.config = c;
         
         // constructor arguments(in order) int corePoolSize, int maximumPoolSize,
         // long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue

@@ -46,7 +46,7 @@ public class SeedTask {
      * this is where all the actual work is being done to seed a tile layer. 
      */
     public void doSeed() {
-        try {
+        //try {
             //approximate thread creation time
             long START_TIME = System.currentTimeMillis();
             
@@ -111,11 +111,11 @@ public class SeedTask {
             synchronized(list) {                
                     list[arrayIndex] = new int[3];
             }
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            e.printStackTrace();
-
-        }
+        //} catch (Exception e) {
+        //    log.error(e.getMessage());
+        //    e.printStackTrace();
+        //
+        //}
     }
 
     /**
