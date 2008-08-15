@@ -139,16 +139,18 @@ public class WMSLayer extends TileLayer {
     
     public WMSLayer(String layerName, CacheFactory cacheFactory,
             String wmsURL, List<String> mimeFormats,
-            List<Grid> grids, int[] metaWidthHeight) {
+            List<Grid> grids, int[] metaWidthHeight,
+            String vendorParams) {
      
         name = layerName;
         initCacheFactory = cacheFactory;
         this.WMSurl = wmsURL;
-        super.mimeFormats = mimeFormats;
-        super.grids = grids;
+        this.mimeFormats = mimeFormats;
+        this.grids = grids;
         this.metaWidthHeight = metaWidthHeight;
-        expireClients = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
-        expireCache = GWCVars.CACHE_NEVER_EXPIRE;
+        this.expireClients = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
+        this.expireCache = GWCVars.CACHE_NEVER_EXPIRE;
+        this.vendorParameters = vendorParams;
     }
     
     public void setCacheFactory(CacheFactory cacheFactory) {

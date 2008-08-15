@@ -206,10 +206,13 @@ public class GetCapabilitiesConfiguration implements Configuration {
         mimeFormats.add("image/png8");
         mimeFormats.add("image/jpeg");
         
-        int[] metaWidthHeight = {4,4};
+        String[] metaStrings = this.metaTiling.split("x");
+        
+        int[] metaWidthHeight = { Integer.parseInt(metaStrings[0]), Integer.parseInt(metaStrings[1])};
+        
         // TODO We're dropping the styles now...
         return new WMSLayer(name, this.cacheFactory,
-                wmsurl, mimeFormats, grids, metaWidthHeight);
+                wmsurl, mimeFormats, grids, metaWidthHeight, this.vendorParameters);
     }
 
     private WebMapServer getWMS() {
