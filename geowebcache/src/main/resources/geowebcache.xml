@@ -2,8 +2,8 @@
 	<wmslayer>
 	     <layer-name>topp:states</layer-name>
 	     <mimeFormats>
-	         <format>image/png</format>
-	         <format>image/jpeg</format>
+	         <string>image/png</string>
+	         <string>image/jpeg</string>
 	      </mimeFormats>
 	      <grids>
 	         <grid>

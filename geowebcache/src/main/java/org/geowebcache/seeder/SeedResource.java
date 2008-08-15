@@ -98,6 +98,7 @@ public class SeedResource extends Resource {
 
         try {
             String text = entity.getText();
+            
             XStream xs = new XStream(new DomDriver());
         	xs.alias("seedRequest", SeedRequest.class);
             xs.alias("format", String.class);
@@ -105,10 +106,27 @@ public class SeedResource extends Resource {
             xs.alias("projection", SRS.class);
             xs.alias("zoomstart", Integer.class);
             xs.alias("zoomstop", Integer.class);
+            
             SeedRequest rq = null; 
+            
             if(entity.getMediaType().equals(MediaType.APPLICATION_XML)){
             	rq = (SeedRequest) xs.fromXML(text);
             }
+            
+            /**
+             * deserializing a json string is more complicated. XStream does not natively
+             * support it. Rather it uses a JettisonMappedXmlDriver to convert to intermediate xml
+             * and then deserializes that into the desired object. At this time, there is a known issue 
+             * with the Jettison driver involving elements that come after an array in the json string. 
+             * 
+             * http://jira.codehaus.org/browse/JETTISON-48
+             * 
+             * The code below is a hack: it treats the json string as text, then converts it to the intermediate
+             * xml and then deserializes that into the SeedRequest object. 
+             * 
+             * 
+             */
+          
             else if(entity.getMediaType().equals(MediaType.APPLICATION_JSON)){
             	HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();
                 StringReader reader = new StringReader(text);

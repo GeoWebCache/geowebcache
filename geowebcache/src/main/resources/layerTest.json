@@ -1,0 +1,26 @@
+{"wmslayer":
+	{
+	"layer-name": "my:newTest",
+	"mimeFormats":{"string":["image\/jpeg","image\/png"]},
+	"grids":{
+		"grid":{"bounds":{"coords":{"double":["-180.0","-90.0","0.0","90.0"]}},
+			     "gridbounds":{"coords":{"double":["-180.0","-90.0","180.0","90.0"]}},
+				  "projection":{"number":"4326"}
+		        }
+	 },
+		
+		
+	"WMSurl":"http:\/\/sigma.openplans.org\/geoserver\/wms",
+	"metaWidthHeight":{"int":["3","3"]},
+	"errormime":"application\/vnd.ogc.se_inimage",
+	"width":"256",
+	"height":"256",
+	"version":"1.1.0",
+	"tiled":"false",
+	"transparent":"true",
+	"debugheaders":"true"
+		
+ }
+}
+
+{"org.geowebcache.layer.wms.WMSLayer":{"name":"my:newTest","mimeFormats":{"string":"image\/jpeg"},"width":"0","height":"0","tiled":"false","transparent":"false","debugheaders":"false"}}

@@ -34,7 +34,6 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.cache.*;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.mime.MimeType;
@@ -132,13 +131,26 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
     public XStream getConfiguredXStream(XStream xstream) {
         XStream xs = xstream;
-
+        xs.setMode(XStream.NO_REFERENCES);
+        
         xs.alias("layer", TileLayer.class);
         xs.alias("wmslayer", WMSLayer.class);
         xs.aliasField("layer-name", TileLayer.class, "name");
+        xs.alias("grids", new ArrayList<Grid>().getClass());
         xs.alias("grid", Grid.class);
-        xs.alias("format", String.class);
-
+        xs.aliasType("format", String.class);
+        xs.alias("mimeFormats", new ArrayList<String>().getClass());
+        xs.aliasType("WMSurl", String.class);
+        xs.aliasType("errormime", String.class);
+        xs.alias("metaWidthHeight", new int[1].getClass());
+        xs.alias("width", Integer.class);
+        xs.alias("height", Integer.class);
+        xs.aliasType("version", String.class);
+        xs.alias("tiled", boolean.class);
+        xs.alias("transparent", boolean.class);
+        xs.alias("debugheaders", boolean.class);
+        
+        
         return xs;
     }
 

@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.CharArrayReader;
+import java.io.StringReader;
+import java.io.StringWriter;
 
 import org.restlet.Context;
 import org.restlet.data.MediaType;
@@ -21,7 +23,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.thoughtworks.xstream.*;
+import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.xml.DomDriver;
+import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
+import com.thoughtworks.xstream.io.copy.HierarchicalStreamCopier;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 
 import org.json.JSONObject;
@@ -225,9 +232,43 @@ public class TileLayerResource extends Resource {
         log.info("Received POST request from  "
                 + getRequest().getHostRef().getHostIdentifier());
         try{
-            String xmlText = entity.getText();
+            String xmlText = entity.getText();      
             XStream xs = RESTDispatcher.getConfig().getConfiguredXStream(new XStream(new DomDriver()));
-            TileLayer tileLayer = (WMSLayer) xs.fromXML(xmlText);
+            TileLayer tileLayer = null;
+            if(entity.getMediaType().equals(MediaType.APPLICATION_XML)){
+            	tileLayer = (WMSLayer) xs.fromXML(xmlText);
+            }
+            
+            /**
+             * deserializing a json string is more complicated. XStream does not natively
+             * support it. Rather it uses a JettisonMappedXmlDriver to convert to intermediate xml
+             * and then deserializes that into the desired object. At this time, there is a known issue 
+             * with the Jettison driver involving elements that come after an array in the json string. 
+             * 
+             * http://jira.codehaus.org/browse/JETTISON-48
+             * 
+             * The code below is a hack: it treats the json string as text, then converts it to the intermediate
+             * xml and then deserializes that into the tileLayer object. 
+             * 
+             * 
+             */
+            else if(entity.getMediaType().equals(MediaType.APPLICATION_JSON)){
+            	HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();
+                StringReader reader = new StringReader(xmlText);
+                HierarchicalStreamReader hsr = driver.createReader(reader);
+                StringWriter writer = new StringWriter();
+                new HierarchicalStreamCopier().copy(hsr, new PrettyPrintWriter(writer));
+                writer.close(); 
+                
+                XStream x = new XStream(new DomDriver());
+                x.alias("wmslayer", WMSLayer.class);
+                x.aliasField("layer-name", TileLayer.class, "name");
+                x.alias("grid", Grid.class);
+                
+                
+                tileLayer = (WMSLayer) x.fromXML(writer.toString());
+            }
+            
             //the layer we are posting to is null, so we need to create a new one
             if(currentLayer == null){
                 boolean tryCreate = false;

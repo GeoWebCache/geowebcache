@@ -2,7 +2,7 @@
 <wmslayer>
 	     <layer-name>my:newTest</layer-name>
 	     <mimeFormats>
-	         <format>image/jpeg</format>
+	         <string>image/jpeg</string>
 	      </mimeFormats>
 	      <grids>
 	         <grid>
