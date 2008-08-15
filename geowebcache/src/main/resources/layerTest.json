@@ -22,5 +22,3 @@
 		
  }
 }
-
-{"org.geowebcache.layer.wms.WMSLayer":{"name":"my:newTest","mimeFormats":{"string":"image\/jpeg"},"width":"0","height":"0","tiled":"false","transparent":"false","debugheaders":"false"}}
