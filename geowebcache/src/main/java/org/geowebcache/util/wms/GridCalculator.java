@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.BadTileException;
+import org.geowebcache.layer.OutOfBoundsException;
 import org.geowebcache.service.ServiceException;
 
 public class GridCalculator {
@@ -252,14 +253,14 @@ public class GridCalculator {
         return retVals;
     }
 
-    public void locationWithinBounds(int[] location) throws BadTileException {
+    public void locationWithinBounds(int[] location) throws OutOfBoundsException {
         // Check Z
         if (location[2] < zoomStart) {
-            throw new BadTileException("zoomlevel (" + location[2] + ") can be at least "
+            throw new OutOfBoundsException("zoomlevel (" + location[2] + ") can be at least "
                     + zoomStart);
         }
         if (location[2] >= boundsGridLevels.length) {
-            throw new BadTileException("zoomlevel ("+ location[2] + ") can be at most "
+            throw new OutOfBoundsException("zoomlevel ("+ location[2] + ") can be at most "
                     + boundsGridLevels.length);
         }
 
@@ -267,16 +268,16 @@ public class GridCalculator {
 
         // Check X
         if (location[0] < bounds[0]) {
-            throw new BadTileException("gridX (" + location[0] + ") must be at least " + bounds[0]);
+            throw new OutOfBoundsException("gridX (" + location[0] + ") must be at least " + bounds[0]);
         } else if (location[0] > bounds[2]) {
-            throw new BadTileException("gridX (" + location[0] + ") can be at most " + bounds[2]);
+            throw new OutOfBoundsException("gridX (" + location[0] + ") can be at most " + bounds[2]);
         }
 
         // Check Y
         if (location[1] < bounds[1]) {
-            throw new BadTileException("gridY (" + location[1] + ") must be at least " + bounds[1]);
+            throw new OutOfBoundsException("gridY (" + location[1] + ") must be at least " + bounds[1]);
         } else if (location[1] > bounds[3]) {
-            throw new BadTileException("gridY (" + location[1] + ") can be at most " + bounds[3]);
+            throw new OutOfBoundsException("gridY (" + location[1] + ") can be at most " + bounds[3]);
         }
     }
 

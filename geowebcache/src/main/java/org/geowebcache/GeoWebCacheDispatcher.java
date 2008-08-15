@@ -18,7 +18,9 @@
 package org.geowebcache;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -30,10 +32,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.demo.Demo;
 import org.geowebcache.layer.BadTileException;
+import org.geowebcache.layer.OutOfBoundsException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.mime.ImageMime;
 import org.geowebcache.service.Service;
 import org.geowebcache.tile.Tile;
+import org.springframework.core.io.Resource;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
@@ -42,8 +47,7 @@ import org.springframework.web.servlet.mvc.AbstractController;
  * This is the main router for requests of all types.
  */
 public class GeoWebCacheDispatcher extends AbstractController {
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.GeoWebCacheDispatcher.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.GeoWebCacheDispatcher.class);
 
     public static final String TYPE_SERVICE = "service";
 
@@ -55,13 +59,15 @@ public class GeoWebCacheDispatcher extends AbstractController {
     
     public static final String TYPE_DEMO = "demo";
     
-    WebApplicationContext context = null;
+    //WebApplicationContext context = null;
 
     private String servletPrefix = null;
 
     private TileLayerDispatcher tileLayerDispatcher = null;
 
     private HashMap<String,Service> services = null;
+    
+    private byte[] blankPNG8 = null; 
 
     public GeoWebCacheDispatcher() {
         super();
@@ -99,6 +105,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private void loadServices() {
         // Give all service objects direct access to the tileLayerDispatcher
         Service.setTileLayerDispatcher(tileLayerDispatcher);
+        WebApplicationContext context = (WebApplicationContext) getApplicationContext();
         
         Map serviceBeans = context.getBeansOfType(Service.class);
         Iterator beanIter = serviceBeans.keySet().iterator();
@@ -109,6 +116,22 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
     }
 
+    private void loadBlankPNG8() {
+        //WebApplicationContext context = (WebApplicationContext) getApplicationContext();
+        
+        InputStream is = GeoWebCacheDispatcher.class.getResourceAsStream("blank.png");
+        //URL test = GeoWebCacheDispatcher.class.getResource("blank.png");
+        blankPNG8 = new byte[129];
+        
+        try {
+            int ret = is.read(blankPNG8);
+            log.info("Read " + ret + " from blank PNG8 file (expected 129).");
+        } catch (IOException ioe) {
+            log.error(ioe.getMessage());
+        }
+        
+    }
+    
     /**
      * Spring function for MVC, this is the entry point for the application.
      * 
@@ -119,7 +142,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     protected ModelAndView handleRequestInternal(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
 
-        context = (WebApplicationContext) getApplicationContext();
+        //context = (WebApplicationContext) getApplicationContext();
 
         // Break the request into components, {type, service name}
         String[] requestComps = null;
@@ -211,11 +234,14 @@ public class GeoWebCacheDispatcher extends AbstractController {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
+        Tile tile = null;
+        
+        try {
         // 1) Figure out what Service should handle this request
         Service service = findService(serviceStr);
 
         // 2) Find out what layer will be used and how
-        Tile tile = service.getTile(request, response);
+        tile = service.getTile(request, response);
 
         // Check where this should be dispatched
         if (tile.reqHandler == Tile.RequestHandler.SERVICE) {            
@@ -239,6 +265,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
             writeData(tile);
         }
         
+        } catch (OutOfBoundsException e) {
+            writeEmpty(tile, e.getMessage());
+        }
         // Log statistic
     }
     
@@ -277,8 +306,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * @return
      */
     private Service findService(String serviceStr) throws GeoWebCacheException {
-        if (this.services == null)
+        if (this.services == null) {
             loadServices();
+            loadBlankPNG8();
+        }
 
         // E.g. /wms/test -> /wms
         Service service = (Service) services.get(serviceStr);
@@ -354,5 +385,12 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 }
             }
         }
+    }
+    
+    private void writeEmpty(Tile tile, String message) {
+        tile.servletResp.setHeader("geowebcache-message", message);
+        tile.servletResp.setStatus(200);
+        tile.servletResp.setContentType(ImageMime.png.getMimeType());
+        tile.setContent(blankPNG8);
     }
 }
