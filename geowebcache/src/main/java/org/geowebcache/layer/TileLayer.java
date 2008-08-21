@@ -18,6 +18,7 @@ package org.geowebcache.layer;
 
 import java.io.IOException;
 
+import java.util.Hashtable;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -37,7 +38,7 @@ public abstract class TileLayer {
 
     protected List<String> mimeFormats;
 
-    protected List<Grid> grids;
+    protected Hashtable<SRS,Grid> grids;
     
     // Styles?
     
@@ -68,8 +69,8 @@ public abstract class TileLayer {
      * @param grid
      */
 
-    public void addGrid(Grid grid) {
-        this.grids.add(grid);
+    public void addGrid(SRS srs,Grid grid) {
+        this.grids.put(srs,grid);
     }
 
     /**
@@ -77,7 +78,7 @@ public abstract class TileLayer {
      * 
      * @return
      */
-    public List<Grid> getGrids() {
+    public Hashtable<SRS,Grid> getGrids() {
         return this.grids;
     }
 
@@ -112,11 +113,10 @@ public abstract class TileLayer {
      * @throws GeoWebCacheException
      */
     public boolean supportsProjection(SRS srs) throws GeoWebCacheException {
-        for (Grid g : grids)
-            if (srs.equals(g.getProjection()))
-                return true;
-        throw new GeoWebCacheException("SRS " + srs.toString()
-                + " is not supported by " + this.getName());
+        if(this.grids.contains(srs)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -157,12 +157,11 @@ public abstract class TileLayer {
                     + reqBounds.getReadableString() + " is not sane";
         }
 
-        if (!(grids.get(getSRSIndex(srs)).getGridBounds()).contains(reqBounds)) {
-            return "The layers grid box "
-                    + (grids.get(getSRSIndex(srs)).getGridBounds())
-                            .getReadableString()
-                    + " does not cover the requested bounding box "
-                    + reqBounds.getReadableString();
+        if(! grids.get(srs).bounds.contains(reqBounds)) {
+            return "The layers grid box " 
+                + grids.get(srs).bounds.getReadableString()
+                + " does not cover the requested bounding box "
+                + reqBounds.getReadableString();
         }
 
         // All ok
@@ -204,40 +203,25 @@ public abstract class TileLayer {
      * @return the array of supported projections
      */
     public SRS[] getProjections() {
-        SRS[] projections = new SRS[grids.size()];
-        for (Grid g : grids)
-            projections[grids.indexOf(g)] = g.getProjection();
-        return projections;
+        return (SRS[]) this.grids.keySet().toArray();
     }
 
-    /**
-     * 
-     * @param reqSRS
-     * @return the internal index of the provided spatial reference system
-     */
-    public int getSRSIndex(SRS reqSRS) {
-        for (Grid g : grids) {
-            if (reqSRS.equals(g.getProjection()))
-                return grids.indexOf(g);
-        }
-        return -1;
+    
+    public Grid getGrid(SRS srs) {
+        return grids.get(srs);
     }
-
-    /**
-     * 
-     * @param srsIdx
-     * @return the bounds of the layer for the given spatial reference system
-     */
-    public BBOX getBounds(int srsIdx) {
-        return this.grids.get(srsIdx).getBounds();
-    }
+    //public BBOX getBounds(int srsIdx) {
+    //    return this.grids.get(srsIdx).getBounds();
+    //}
 
     /**
      * 
      * @param srsIdx
      * @return the resolutions (units/pixel) for the layer
      */
-    public abstract double[] getResolutions(int srsIdx);
+    public double[] getResolutions(SRS srs) throws GeoWebCacheException {
+        return grids.get(srs).getGridCalculator().getResolutions();
+    }
 
     /**
      * 
@@ -259,8 +243,9 @@ public abstract class TileLayer {
      * @param srsIdx
      * @param bounds
      * @return
+     * @throws GeoWebCacheException 
      */
-    public abstract int[][] getCoveredGridLevels(int srsIdx, BBOX bounds);
+    public abstract int[][] getCoveredGridLevels(SRS srs, BBOX bounds) throws GeoWebCacheException;
 
     /**
      * 
@@ -288,32 +273,38 @@ public abstract class TileLayer {
      * @param srsIdx
      * @param bounds
      * @return
+     * @throws GeoWebCacheException 
      * @throws GeoWebCacheException
      */
-    public abstract int[] getGridLocForBounds(int srsIdx, BBOX bounds)
-            throws BadTileException;
+    public abstract int[] getGridLocForBounds(SRS srs, BBOX bounds)
+            throws BadTileException, GeoWebCacheException;
 
     /**
      * 
      * @param srsIdx
      * @param gridLoc
      * @return
+     * @throws GeoWebCacheException 
      */
-    public abstract BBOX getBboxForGridLoc(int srsIdx, int[] gridLoc);
+    public abstract BBOX getBboxForGridLoc(SRS srs, int[] gridLoc) throws GeoWebCacheException;
 
     /**
      * The starting zoomlevel (inclusive)
      * 
      * @return
      */
-    public abstract int getZoomStart();
+    public int getZoomStart(SRS srs) {
+        return grids.get(srs).getZoomStart();
+    }
 
     /**
      * The stopping zoomlevel (inclusive)
      * 
      * @return
      */
-    public abstract int getZoomStop();
+    public int getZoomStop(SRS srs) {
+        return grids.get(srs).getZoomStop();
+    }
 
     /**
      * Returns an array with four grid locations, the result of zooming in one
@@ -324,9 +315,10 @@ public abstract class TileLayer {
      * @param srsIdx
      * @param gridLoc
      * @return
+     * @throws GeoWebCacheException 
      */
     // TODO this is generic
-    public abstract int[][] getZoomInGridLoc(int srsIdx, int[] gridLoc);
+    public abstract int[][] getZoomInGridLoc(SRS srs, int[] gridLoc) throws GeoWebCacheException;
 
     /**
      * The furthest zoomed in grid location that returns the entire layer on a
@@ -338,8 +330,9 @@ public abstract class TileLayer {
      * 
      * @param srsIdx
      * @return x,y,z}
+     * @throws GeoWebCacheException 
      */
-    public abstract int[] getZoomedOutGridLoc(int srsIdx);
+    public abstract int[] getZoomedOutGridLoc(SRS srs) throws GeoWebCacheException;
 
     /**
      * Quick, non-synchronized way of trying the cache

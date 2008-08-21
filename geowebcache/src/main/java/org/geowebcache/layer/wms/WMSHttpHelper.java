@@ -27,6 +27,7 @@ import java.net.URLConnection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.service.Request;
@@ -69,15 +70,17 @@ public class WMSHttpHelper {
     protected static byte[] makeRequest(Tile tile) throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
         WMSParameters wmsparams = layer.getWMSParamTemplate();
-        int idx = layer.getSRSIndex(tile.getSRS());
+        //int idx = layer.getSRSIndex();
         // Fill in the blanks
         wmsparams.setFormat(tile.getMimeType().getFormat());
         wmsparams.setSrs(tile.getSRS());
         wmsparams.setWidth(layer.getWidth());
         wmsparams.setHeight(layer.getHeight());
-        BBOX bbox = layer.gridCalc[idx].bboxFromGridLocation(tile
-                .getTileIndex());
-        bbox.adjustForGeoServer(layer.getGrids().get(idx).getProjection());
+        Grid grid = layer.getGrid(tile.getSRS());
+        
+        BBOX bbox = grid.getGridCalculator().bboxFromGridLocation(tile.getTileIndex());
+        
+        //bbox.adjustForGeoServer(layer.getGrids().get(idx).getProjection());
         wmsparams.setBBOX(bbox);
 
         return makeRequest(tile, layer, wmsparams);
@@ -145,8 +148,7 @@ public class WMSHttpHelper {
 
         try { // finally
             try {
-                wmsBackendCon = (HttpURLConnection) wmsBackendUrl
-                        .openConnection();
+                wmsBackendCon = (HttpURLConnection) wmsBackendUrl.openConnection();
                 responseCode = wmsBackendCon.getResponseCode();
                 responseLength = wmsBackendCon.getContentLength();
 
@@ -203,13 +205,18 @@ public class WMSHttpHelper {
             if (responseCode != 204) {
                 try {
                     if (responseLength < 1) {
-                        ret = ServletUtils.readStream(wmsBackendCon
-                                .getInputStream(), 16384, 1024);
+                        ret = ServletUtils.readStream(wmsBackendCon.getInputStream(), 16384, 1024);
                     } else {
                         ret = new byte[responseLength];
-                        int readLength = wmsBackendCon.getInputStream().read(
-                                ret);
-                        if (readLength != responseLength) {
+                        int readLength = 0;
+                        int readAccu = 0;
+                        int left = responseLength;
+                        while(readLength > -1 && left > 0) {
+                            readLength = wmsBackendCon.getInputStream().read(ret,readAccu,left);
+                            readAccu += readLength;
+                            left -= readLength;
+                        }
+                        if (readAccu != responseLength) {
                             tileRespRecv.setError();
                             throw new GeoWebCacheException(
                                     "Responseheader advertised "

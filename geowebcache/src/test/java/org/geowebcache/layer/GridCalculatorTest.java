@@ -1,11 +1,13 @@
-package org.geowebcache.utils.wms;
+package org.geowebcache.layer;
 
 import java.util.Arrays;
 
 import junit.framework.TestCase;
 
 import org.geowebcache.util.wms.BBOX;
-import org.geowebcache.util.wms.GridCalculator;
+import org.geowebcache.layer.Grid;
+import org.geowebcache.layer.GridCalculator;
+import org.geowebcache.layer.SRS;
 
 public class GridCalculatorTest extends TestCase {
     @Override
@@ -18,16 +20,9 @@ public class GridCalculatorTest extends TestCase {
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
         int metaHeight = 1;
         int metaWidth = 1;
-        double maxTileWidth = 180.0;
-        double maxTileHeight = 180.0;
-        int zoomStart = 0;
-        int zoomStop = 20;
-
-        GridCalculator gridCalc = new GridCalculator(
-                gridBase, bbox, 
-                zoomStart, zoomStop, 
-                metaWidth, metaHeight, 
-                maxTileWidth, maxTileHeight);
+        
+        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridCalculator gridCalc = grid.getGridCalculator();
 
         //int[][] solution = { { 1, 0, 1, 0 }, { 2, 1, 3, 1 }, { 4, 2, 7, 3 },
         //        { 8, 4, 15, 7 }, { 16, 8, 31, 15 } };
@@ -51,16 +46,9 @@ public class GridCalculatorTest extends TestCase {
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
         int metaHeight = 3;
         int metaWidth = 3;
-        double maxTileWidth = 180.0;
-        double maxTileHeight = 180.0;
-        int zoomStart = 0;
-        int zoomStop = 20;
-
-        GridCalculator gridCalc = new GridCalculator(
-                gridBase, bbox, 
-                zoomStart, zoomStop, 
-                metaWidth, metaHeight, 
-                maxTileWidth, maxTileHeight);
+        
+        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridCalculator gridCalc = grid.getGridCalculator();
 
         //int[][] solution = { { 1, 0, 1, 0 }, { 0, 0, 3, 1 }, { 3, 0, 7, 3 },
         //        { 6, 3, 15, 7 }, { 15, 6, 31, 15 }, { 30, 15, 63, 31 },
@@ -86,16 +74,9 @@ public class GridCalculatorTest extends TestCase {
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
         int metaHeight = 3;
         int metaWidth = 3;
-        double maxTileWidth = 180.0;
-        double maxTileHeight = 180.0;
-        int zoomStart = 0;
-        int zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(
-                gridBase, bbox, 
-                zoomStart, zoomStop, 
-                metaWidth, metaHeight, 
-                maxTileWidth, maxTileHeight);
+        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridCalculator gridCalc = grid.getGridCalculator();
 
         int[][] solution = { { 0, 0, 1, 0 }, { 1, 0, 2, 1 }, { 3, 1, 4, 2 },
                 { 7, 3, 8, 4 }, { 15, 7, 16, 8 }, { 30, 14, 33, 17 },
@@ -121,17 +102,9 @@ public class GridCalculatorTest extends TestCase {
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
         int metaHeight = 4;
         int metaWidth = 4;
-        double maxTileWidth = 180.0;
-        double maxTileHeight = 180.0;
-        int zoomStart = 0;
-        int zoomStop = 20;
-
-        GridCalculator gridCalc = new GridCalculator(
-                gridBase, bbox, 
-                zoomStart, zoomStop, 
-                metaWidth, metaHeight, 
-                maxTileWidth, maxTileHeight);
-                
+        
+        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridCalculator gridCalc = grid.getGridCalculator();
         //int[][] solution = { { 1, 0, 1, 0 }, { 3, 1, 3, 1 }, { 4, 0, 7, 3 },
         //        { 12, 4, 15, 7 }, { 28, 12, 31, 15 } };
 
@@ -157,17 +130,10 @@ public class GridCalculatorTest extends TestCase {
         		20037508.34, 20037508.34);
         int metaHeight = 1;
         int metaWidth = 1;
-        double maxTileWidth = 20037508.34 * 2;
-        double maxTileHeight = 20037508.34 * 2;
-        int zoomStart = 0;
-        int zoomStop = 20;
-
-        GridCalculator gridCalc = new GridCalculator(
-                gridBase, bbox, 
-                zoomStart, zoomStop, 
-                metaWidth, metaHeight, 
-                maxTileWidth, maxTileHeight);
-                
+        
+        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridCalculator gridCalc = grid.getGridCalculator();
+        
         //int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 2, 2, 3, 3 },
         //        { 4, 4, 7, 7 }, { 8, 8, 15, 15 } };
         
@@ -193,16 +159,9 @@ public class GridCalculatorTest extends TestCase {
         		20037508.34, 20037508.34);
         int metaHeight = 3;
         int metaWidth = 3;
-        double maxTileWidth = 20037508.34 * 2;
-        double maxTileHeight = 20037508.34 * 2;
-        int zoomStart = 0;
-        int zoomStop = 20;
-
-        GridCalculator gridCalc = new GridCalculator(
-                gridBase, bbox, 
-                zoomStart, zoomStop, 
-                metaWidth, metaHeight, 
-                maxTileWidth, maxTileHeight);
+        
+        Grid grid = new Grid(SRS.getEPSG900913(), bbox, gridBase, null);
+        GridCalculator gridCalc = grid.getGridCalculator();
 
         //int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 0, 0, 3, 3 },
         //        { 3, 3, 7, 7 }, { 6, 6, 15, 15 }, { 15, 15, 31, 31 },
@@ -231,16 +190,9 @@ public class GridCalculatorTest extends TestCase {
         		20037508.34, 20037508.34);
         int metaHeight = 3;
         int metaWidth = 3;
-        double maxTileWidth = 20037508.34 * 2;
-        double maxTileHeight = 20037508.34 * 2;
-        int zoomStart = 0;
-        int zoomStop = 20;
-
-        GridCalculator gridCalc = new GridCalculator(
-                gridBase, bbox, 
-                zoomStart, zoomStop, 
-                metaWidth, metaHeight, 
-                maxTileWidth, maxTileHeight);
+        
+        Grid grid = new Grid(SRS.getEPSG900913(), bbox, gridBase, null);
+        GridCalculator gridCalc = grid.getGridCalculator();
                 
         //int[][] solution = { { 0, 0, 0, 0 }, { 0, 0, 1, 1 }, { 0, 0, 2, 2 },
         //        { 3, 3, 5, 5 }, { 6, 6, 8, 8 }, { 15, 15, 17, 17 },
@@ -267,19 +219,12 @@ public class GridCalculatorTest extends TestCase {
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
         int metaHeight = 3;
         int metaWidth = 3;
-        double maxTileWidth = 180.0;
-        double maxTileHeight = 180.0;
-        int zoomStart = 0;
-        int zoomStop = 20;
 
-        GridCalculator gridCalc = new GridCalculator(
-                gridBase, bbox, 
-                zoomStart, zoomStop, 
-                metaWidth, metaHeight, 
-                maxTileWidth, maxTileHeight);
+        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridCalculator gridCalc = grid.getGridCalculator();
         
         int[] gridLoc = gridCalc.getZoomedOutGridLoc();
-        int[] solution = {0, 0, 0};
+        int[] solution = {-1, -1, -1};
         assertTrue(Arrays.equals(gridLoc, solution));
     }
     
@@ -288,16 +233,9 @@ public class GridCalculatorTest extends TestCase {
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
         int metaHeight = 3;
         int metaWidth = 3;
-        double maxTileWidth = 180.0;
-        double maxTileHeight = 180.0;
-        int zoomStart = 0;
-        int zoomStop = 20;
-
-        GridCalculator gridCalc = new GridCalculator(
-                gridBase, bbox, 
-                zoomStart, zoomStop, 
-                metaWidth, metaHeight, 
-                maxTileWidth, maxTileHeight);
+        
+        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridCalculator gridCalc = grid.getGridCalculator();
         
         int[] gridLoc1 = {1, 1, 1};
         BBOX box1 = gridCalc.bboxFromGridLocation(gridLoc1);
@@ -323,16 +261,9 @@ public class GridCalculatorTest extends TestCase {
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
         int metaHeight = 1;
         int metaWidth = 1;
-        double maxTileWidth = 180.0;
-        double maxTileHeight = 180.0;
-        int zoomStart = 0;
-        int zoomStop = 6;
-
-        GridCalculator gridCalc = new GridCalculator(
-                gridBase, bbox, 
-                zoomStart, zoomStop, 
-                metaWidth, metaHeight, 
-                maxTileWidth, maxTileHeight);
+        
+        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridCalculator gridCalc = grid.getGridCalculator();
                 
         //int[][] solution = { { 0, 0, 0, 0 }, { 0, 1, 1, 1 }, { 1, 2, 2, 3 },
         //        { 2, 5, 5, 6 } };
@@ -349,6 +280,40 @@ public class GridCalculatorTest extends TestCase {
             }
             assertTrue(Arrays.equals(solution[i], bounds));
         }
+    }
+    
+    public void test0binarySearch() throws Exception {
+        double[] resolutions = {8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
+        int result = GridCalculator.binarySearchForResolution(resolutions, 5.04);
+        assertEquals(3, result);
+        
+        result = GridCalculator.binarySearchForResolution(resolutions, 8.03);
+        assertEquals(0, result);
+        
+        result = GridCalculator.binarySearchForResolution(resolutions, 0.98);
+        assertEquals(7, result);
+        
+        result = GridCalculator.binarySearchForResolution(resolutions, 1.005);
+        assertEquals(7, result);
+
+        result = GridCalculator.binarySearchForResolution(resolutions, 6.025);
+        assertEquals(2, result);
+    }
+    
+    public void test1binarySearch() throws Exception {
+        double[] resolutions = {12.0, 10.0, 6.0, 5.0, 4.0, 3.0, 1.0};
+        int result = GridCalculator.binarySearchForResolution(resolutions, 5.04);
+        assertEquals(3, result);
+        
+        result = GridCalculator.binarySearchForResolution(resolutions, 0.98);
+        assertEquals(6, result);
+        
+        result = GridCalculator.binarySearchForResolution(resolutions, 12.05);
+        assertEquals(0, result);
+        
+        result = GridCalculator.binarySearchForResolution(resolutions, 4.002);
+        assertEquals(4, result);
+        
     }
     
    

@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
+import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
@@ -37,7 +38,6 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.tile.Tile;
-import org.geowebcache.tile.Tile.RequestHandler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
 
@@ -91,9 +91,9 @@ public class WMSService extends Service {
         }
 
         SRS srs = wmsParams.getSrs();
-        int srsIdx = tileLayer.getSRSIndex(srs);
+        //int srsIdx = tileLayer.getSRSIndex(srs);
 
-        if (srsIdx < 0) {
+        if (tileLayer.supportsProjection(srs)) {
             throw new ServiceException("Unable to match requested SRS "
                     + wmsParams.getSrs() + " to those supported by layer");
         }
@@ -104,7 +104,7 @@ public class WMSService extends Service {
                     "The bounding box parameter is missing or not sane");
         }
 
-        int[] tileIndex = tileLayer.getGridLocForBounds(srsIdx, bbox);
+        int[] tileIndex = tileLayer.getGridLocForBounds(srs, bbox);
         
         // String strOrigin = wmsParams.getOrigin();
         // if (strOrigin != null) {
@@ -193,26 +193,27 @@ public class WMSService extends Service {
      * @param tl
      * @return
      */
-    private String getTileSets(TileLayer tl) {
+    private String getTileSets(TileLayer tl) throws GeoWebCacheException {
         String ret = "";
-        SRS[] srsList = tl.getProjections();
+        
         List<MimeType> mimeList = tl.getMimeTypes();
         String strStyles = tl.getStyles();
         if (strStyles == null) {
             strStyles = "";
         }
 
-        for (int srsIdx = 0; srsIdx < srsList.length; srsIdx++) {
-            String strSRS = srsList[srsIdx].toString();
+        Iterator<Grid> iter = tl.getGrids().values().iterator();
+        while(iter.hasNext()) {
+            Grid grid = iter.next();
+            
             // These should be adjusted bounds!
-            String[] strBounds = doublesToStrings(tl.getBounds(srsIdx).coords);
-            String strResolutions = getResolutionString(tl
-                    .getResolutions(srsIdx));
+            String[] strBounds = doublesToStrings(grid.getBounds().coords);
+            String strResolutions = getResolutionString(grid.getResolutions());
             String strName = tl.getName();
 
             for (MimeType mime : mimeList) {
                 String strFormat = mime.getFormat();
-                ret += getTileSet(strName, strSRS, strBounds, strStyles,
+                ret += getTileSet(strName, grid.getSRS().toString(), strBounds, strStyles,
                         strResolutions, strFormat);
             }
         }

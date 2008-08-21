@@ -29,12 +29,12 @@ public class BBOX {
 
     private static String DELIMITER = ",";
 
-    private static double equalityThreshold = 0.03;
+    private static double EQUALITYTHRESHOLD = 0.03;
 
-    public static final BBOX world4326 = 
+    public static final BBOX WORLD4326 = 
         new BBOX(-180.0,-90.0,180.0,90.0);
     
-    public static final BBOX world900913 = 
+    public static final BBOX WORLD900913 = 
         new BBOX(-20037508.34,-20037508.34,20037508.34,20037508.34);
     
     // minx, miny, maxx, maxy
@@ -152,10 +152,10 @@ public class BBOX {
             BBOX other = (BBOX) obj;
             boolean result = true;
             for (int i = 0; i < 4 && result; i++) {
-                result = (Math.abs(coords[i]) < equalityThreshold 
-                        && Math.abs(other.coords[i]) < equalityThreshold)
+                result = (Math.abs(coords[i]) < EQUALITYTHRESHOLD) 
+                        && Math.abs(other.coords[i]) < EQUALITYTHRESHOLD
                         || (coords[i] - other.coords[i])
-                                / (coords[i] + other.coords[i]) < equalityThreshold;
+                                / (coords[i] + other.coords[i]) < EQUALITYTHRESHOLD;
             }
             return result;
         }
@@ -169,10 +169,10 @@ public class BBOX {
      * @return whether other is contained by this
      */
     public boolean contains(BBOX other) {
-        return (coords[0] - equalityThreshold <= other.coords[0]
-                && coords[1] - equalityThreshold <= other.coords[1]
-                && coords[2] + equalityThreshold >= other.coords[2] && coords[3]
-                + equalityThreshold >= other.coords[3]);
+        return (coords[0] - EQUALITYTHRESHOLD <= other.coords[0]
+                && coords[1] - EQUALITYTHRESHOLD <= other.coords[1]
+                && coords[2] + EQUALITYTHRESHOLD >= other.coords[2] && coords[3]
+                + EQUALITYTHRESHOLD >= other.coords[3]);
     }
 
     /**

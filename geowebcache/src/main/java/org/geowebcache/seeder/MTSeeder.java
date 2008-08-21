@@ -18,14 +18,24 @@ package org.geowebcache.seeder;
 
 import java.util.concurrent.Callable;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
+
 public class MTSeeder implements Callable<SeedTask> {
+    private static Log log = LogFactory.getLog(org.geowebcache.seeder.MTSeeder.class);
+    
     private SeedTask seedTask= null;
     
     public MTSeeder(SeedTask st){
         this.seedTask = st;
     }
-    public SeedTask call(){
-        this.seedTask.doSeed();
+    public SeedTask call() {
+        try {
+            this.seedTask.doSeed();
+        } catch(GeoWebCacheException gwce) {
+            log.error(gwce.getMessage());
+        }
         return this.seedTask;
     }
 }

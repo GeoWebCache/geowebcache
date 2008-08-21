@@ -1,26 +1,49 @@
 package org.geowebcache.layer;
 
+import java.util.Hashtable;
+
 import org.geowebcache.GeoWebCacheException;
 
 public class SRS {
-    private int number = -1;
+    private final int number;
 
     private static transient final SRS epsg4326 = new SRS(4326);
 
     private static transient final SRS epsg900913 = new SRS(900913);
+    
+    private static Hashtable<Integer,SRS> list = new Hashtable<Integer,SRS>();
 
-    public SRS(String srs) throws GeoWebCacheException {
-        if (srs.substring(0, 5).equalsIgnoreCase("EPSG:")) {
-            number = Integer.parseInt(srs.substring(5, srs.length()));
-        } else {
-            throw new GeoWebCacheException("Can't parse " + srs);
-        }
-    }
-
-    public SRS(int epsgNumber) {
+    private SRS(int epsgNumber) {
         number = epsgNumber;
     }
+    
+    public static SRS getSRS(int epsgNumber) {
+        SRS ret = list.get(epsgNumber);
+        
+        if(ret == null) {
+            // We'll use these a lot, so leave some shortcuts that avoid all the hashing
+            if(epsgNumber == 4326) {
+                list.put(4326, SRS.getEPSG4326());
+            } else if(epsgNumber == 900913) {
+                list.put(900913, SRS.getEPSG900913());
+            }
+            
+            ret = new SRS(epsgNumber);
+            list.put(epsgNumber, ret);
+        }
 
+        return ret;
+    }
+    
+    public static SRS getSRS(String epsgStr) throws GeoWebCacheException {
+        if (epsgStr.substring(0, 5).equalsIgnoreCase("EPSG:")) {
+            int epsgNumber = Integer.parseInt(epsgStr.substring(5, epsgStr.length()));
+            return getSRS(epsgNumber);
+        } else {
+            throw new GeoWebCacheException("Can't parse " + epsgStr + " as SRS string.");
+        }
+    }
+    
     public boolean equals(Object other) {
         if (other == null || other.getClass() != this.getClass()) {
             return false;

@@ -179,8 +179,8 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
             StreamResult result = new StreamResult(xmlFile);
 
             // write the DOM to the file
-            Transformer xformer = TransformerFactory.newInstance()
-                    .newTransformer();
+            Transformer xformer = 
+                TransformerFactory.newInstance().newTransformer();
             xformer.transform(source, result);
         } catch (TransformerConfigurationException e) {
         } catch (TransformerException e) {

@@ -45,7 +45,7 @@ public class SeedTask {
      * Method doSeed().
      * this is where all the actual work is being done to seed a tile layer. 
      */
-    public void doSeed() {
+    public void doSeed() throws GeoWebCacheException {
         //try {
             //approximate thread creation time
             long START_TIME = System.currentTimeMillis();
@@ -66,9 +66,7 @@ public class SeedTask {
             SRS srs = req.getProjection();
             BBOX bounds = req.getBounds();
 
-            int srsIdx = layer.getSRSIndex(srs);
-            int[][] coveredGridLevels = layer.getCoveredGridLevels(srsIdx,
-                    bounds);
+            int[][] coveredGridLevels = layer.getCoveredGridLevels(srs,bounds);
             int[] metaTilingFactors = layer.getMetaTilingFactors();
             int arrayIndex = getCurrentThreadArrayIndex();
             int TOTAL_TILES = tileCount(coveredGridLevels, zoomStart, zoomStop); 

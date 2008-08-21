@@ -77,7 +77,13 @@ public class Request {
     public URL getURL() {
         URL address = null;
         try {
-            address = new URL(server.toExternalForm() + params.getURLString());
+            String serverAdr = server.toExternalForm();
+            if(serverAdr.charAt(serverAdr.length() - 1) != '?') { 
+                address = new URL( serverAdr +'?'+ params.getURLString(false));
+            } else {
+                address = new URL( serverAdr + params.getURLString(false));
+            }
+            
             log.debug("url: " + address);
         } catch (MalformedURLException mue) {
             log.error("Invalid URL from server and parameters: ", mue);

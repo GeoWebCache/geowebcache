@@ -14,92 +14,152 @@
  * 
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
-package org.geowebcache.util.wms;
-
-import java.util.Arrays;
+package org.geowebcache.layer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.layer.BadTileException;
-import org.geowebcache.layer.OutOfBoundsException;
-import org.geowebcache.service.ServiceException;
+import org.geowebcache.util.wms.BBOX;
 
 public class GridCalculator {
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.util.wms.GridCalculator.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.layer.GridCalculator.class);
 
-    private BBOX gridBounds = null;
-
+    // We may want to change this later
+    private static final int TILEPIXELS = 256;
+    
+    //private BBOX gridBounds = null;
+    private Grid grid;
+    
+    public final static double[] RESOLUTIONS4326 = 
+        GridCalculator.getResolutionArray(180.0, TILEPIXELS, 26);
+    
+    public final static double[] RESOLUTIONS900913 = 
+        GridCalculator.getResolutionArray(20037508.34*2,TILEPIXELS, 26);
+    
     // The following are the width of the actual layer
     private double gridWidth;
 
     private double gridHeight;
-
+    
+    // This is what the grid looks like at zoomlevel 0
+    private int gridX = -1;
+    
+    private int gridY = -1;
+    
+    private double[] resolutions;
+    
     // The following are for a tile, zoomed out all the way
-    private double maxTileWidth;
+    //private double maxTileWidth;
 
-    private double maxTileHeight;
+    //private double maxTileHeight;
 
     private int zoomStart;
 
     private int zoomStop;
-
-    //private int metaWidth;
-
-    //private int metaHeight;
-
-    // Used for unprojected profiles
-    private int gridConstant;
     
     // Special treatment of "zoomed out tile" for EPSG 4326
-    private boolean worldBoundsCoverTwoTiles = false;
+    //private boolean worldBoundsCoverTwoTiles = false;
 
     private int[] zoomedOutGridLoc = null;
     
     private int[][] boundsGridLevels = null;
 
-    // TODO this code does not handle coordinate systems where the base
-    // height
-    // is bigger than the width
-    // private double layerHeight;
+    public GridCalculator(Grid grid) throws GeoWebCacheException {
 
-    public GridCalculator(BBOX gridBounds, BBOX layerBounds, int zoomStart,
-            int zoomStop, int metaWidth, int metaHeight, double maxTileWidth,
-            double maxTileHeight) {
-
-        this.gridBounds = gridBounds;
-        this.zoomStart = zoomStart;
-        this.zoomStop = zoomStop;
+        this.grid = grid;
+        this.zoomStart = 0;
+        this.zoomStop = 25;
         //this.metaWidth = metaWidth;
         //this.metaHeight = metaHeight;
 
+        this.resolutions = grid.resolutions;
+        
+        //BBOX layerBounds = grid.bounds;
+        BBOX gridBounds = grid.gridBounds;
+        
         // Calculate
         gridWidth = gridBounds.coords[2] - gridBounds.coords[0];
         gridHeight = gridBounds.coords[3] - gridBounds.coords[1];
 
-        this.maxTileWidth = maxTileWidth;
-        this.maxTileHeight = maxTileHeight;
-        this.gridConstant = (int) Math.round(gridWidth / gridHeight - 1.0);
-
-        boundsGridLevels = calculateGridBounds(layerBounds);
+        // Figure out the rest
+        determineGrid();
         
-        if(     this.gridConstant > 0 
-                && layerBounds.coords[0] < 0.0 
-                && layerBounds.coords[2] > 0.0) {
-            worldBoundsCoverTwoTiles = true;
+        boundsGridLevels = calculateGridBounds(grid.bounds);
+    }
+    
+    private void determineGrid() throws GeoWebCacheException {
+        if(grid.resolutions == null) {
+            // Figure out the approriate resolutions
+            
+            double ratio = gridWidth / gridHeight;
+            
+            // Allow 2.5% slack
+            if(Math.abs(ratio - 1.0) < 0.025) {
+                gridX = 1;
+                gridY = 1;
+            }
+            
+            // Otherwise we'll try to expand it to an integer grid,
+            // failing that we'll just increase the smaller bounds
+            // to make the box square
+            if(ratio > 1.0) {
+                // Wider than tall
+                if(Math.abs(ratio - Math.round(ratio)) < 0.025) {
+                    gridY = 1;
+                    gridX = (int) Math.round(ratio);
+                } else {
+                    // I give up, expanding Y bounds
+                    gridX = gridY = 1;
+                    gridHeight = gridWidth;
+                }
+                determineResolutions();
+            } else {
+                // Taller than wide
+                ratio = gridHeight / gridWidth;
+                if(Math.abs(ratio - Math.round(ratio)) < 0.025) {
+                    gridY = (int) Math.round(ratio);
+                    gridX = 1;
+                } else {
+                    // I give up, expanding X bounds
+                    gridX = gridY = 1;
+                    gridWidth = gridHeight;
+                }
+                determineResolutions();
+            }
+        } else {
+            double denominator = grid.resolutions[0]* GridCalculator.TILEPIXELS;
+            this.gridX = (int) Math.round(gridWidth / denominator);
+            this.gridY = (int) Math.round(gridHeight / denominator);
+        }
+    }
+    
+    private void determineResolutions() throws GeoWebCacheException {
+        double baseResolution;
+        
+        // We use the smaller one 
+        if(gridY == 1) {
+            baseResolution = gridHeight / GridCalculator.TILEPIXELS;
+        } else if (gridX == 1) {
+            baseResolution = gridWidth / GridCalculator.TILEPIXELS;
+        } else {
+            throw new GeoWebCacheException("Unable to find height or width to calculate resolution array.");
+        }
+        
+        this.resolutions = new double[this.zoomStop - this.zoomStart + 1];
+        for(int i=this.zoomStart; i<= this.zoomStop; i++) {
+            this.resolutions[i] = baseResolution;
+            baseResolution = baseResolution / 2;
         }
     }
 
     private int[][] calculateGridBounds(BBOX layerBounds) {
+        BBOX gridBounds = grid.gridBounds;
+        
         // We'll just waste a few bytes, for cheap lookups
         int[][] gridLevels = new int[zoomStop + 1][4];
 
-        double tileWidth = maxTileWidth;
-        double tileHeight = maxTileHeight;
-
-        int tileCountX = (int) Math.round(gridWidth / maxTileWidth);
-        int tileCountY = (int) Math.round(gridHeight / maxTileHeight);
+        //int tileCountX = (int) Math.round(gridWidth / resolutions[0]);
+        //int tileCountY = (int) Math.round(gridHeight / resolutions[0]);
 
         //int metaLarger = (metaHeight > metaWidth) ? metaHeight : metaWidth;
 
@@ -110,25 +170,25 @@ public class GridCalculator {
         
         for (int level = 0; level <= zoomStop; level++) {
             //System.out.println("--- Level "+level+"----");
-            
+            double tileDelta = resolutions[level] * GridCalculator.TILEPIXELS;
             
             // Min X
-            rawNumber[0] = (layerBounds.coords[0] - gridBounds.coords[0]) / tileWidth;
+            rawNumber[0] = (layerBounds.coords[0] - gridBounds.coords[0]) / tileDelta;
             gridLevels[level][0] = (int) Math.floor(rawNumber[0]);
             
             // Min Y
-            rawNumber[1] = (layerBounds.coords[1] - gridBounds.coords[1]) / tileHeight;
+            rawNumber[1] = (layerBounds.coords[1] - gridBounds.coords[1]) / tileDelta;
             gridLevels[level][1] = (int) Math.floor(rawNumber[1]);
             
             // The gridbounds are defined as inclusive, so they actually cover + 1 
             // compared to the bottom left coordinate -> use floor()
             
             // Max X
-            rawNumber[2] = (layerBounds.coords[2] - gridBounds.coords[0] - 0.0001) / tileWidth;
+            rawNumber[2] = (layerBounds.coords[2] - gridBounds.coords[0] - 0.00001) / tileDelta;
             gridLevels[level][2] = (int) Math.floor(rawNumber[2]);
             
             // Max Y
-            rawNumber[3] = (layerBounds.coords[3] - gridBounds.coords[1] - 0.0001) / tileHeight;
+            rawNumber[3] = (layerBounds.coords[3] - gridBounds.coords[1] - 0.00001) / tileDelta;
             gridLevels[level][3] = (int) Math.floor(rawNumber[3]);
 
             //System.out.println(Arrays.toString(rawNumber) + " "+ Arrays.toString(gridLevels[level]));
@@ -138,43 +198,8 @@ public class GridCalculator {
             //System.out.println("tileCountX "+tileCountX + " metaLarger: "
             // + metaLarger);
 
-            // Adjust for metatiling if appropriate
-//            if (tileCountX > metaLarger || tileCountY > metaLarger) {
-//                // Round down
-//                gridLevels[level][0] = gridLevels[level][0]
-//                        - (gridLevels[level][0] % metaWidth);
-//                // Round down
-//                gridLevels[level][1] = gridLevels[level][1]
-//                        - (gridLevels[level][1] % metaHeight);
-//                // Naive round up
-//                gridLevels[level][2] = gridLevels[level][2]
-//                        - (gridLevels[level][2] % metaWidth) + (metaWidth - 1);
-//                // Naive round up
-//                gridLevels[level][3] = gridLevels[level][3]
-//                        - (gridLevels[level][3] % metaHeight)
-//                        + (metaHeight - 1);
-//
-//                //System.out.println("postAdjust: " +
-//                // Arrays.toString(gridLevels[level]));
-//
-//                // Fix for naive round ups, imagine applying a 3x3 metatile to a
-//                // 4x4 grid
-//                if (gridLevels[level][2] >= tileCountX) {
-//                    gridLevels[level][2] = tileCountX - 1;
-//                }
-//                if (gridLevels[level][3] >= tileCountY) {
-//                    gridLevels[level][3] = tileCountY - 1;
-//                }
-//                //System.out.println("postFix: " +
-//                // Arrays.toString(gridLevels[level]));
-//            }
-
-            // For the next round
-            tileWidth = tileWidth / 2;
-            tileHeight = tileHeight / 2;
-
-            tileCountX = tileCountX * 2;
-            tileCountY = tileCountY * 2;
+            //tileCountX = tileCountX * 2;
+            //tileCountY = tileCountY * 2;
         }
         return gridLevels;
     }
@@ -209,21 +234,22 @@ public class GridCalculator {
 
         double reqTileWidth = tileBounds.coords[2] - tileBounds.coords[0];
 
-        double zoomLevel = Math.log(gridWidth / reqTileWidth) / Math.log(2);
+        //Arrays.binarySearch(a, key)
+        //double zoomLevel = Math.log(gridWidth / reqTileWidth) / Math.log(2);
         
-        long roundedZoomLevel = Math.round(zoomLevel);
-        if(Math.abs(zoomLevel - (double) roundedZoomLevel) > 0.05) {
-            throw new BadTileException("The bounds result in a zoom level of "+zoomLevel+
-                        ", expected something within 0.05 of an integer, check " + tileBounds.toString());
-        }
+        //long roundedZoomLevel = Math.round(zoomLevel);
+
         
         // (Z) Zoom level
         // For EPSG 4326, reqTileWidth = 0.087 log(4096) / log(2) - 1; -> 11
-        retVals[2] = (int) roundedZoomLevel
-                - gridConstant;
+        retVals[2] = this.binarySearchForResolution(reqTileWidth / GridCalculator.TILEPIXELS);
 
-        double tileWidth = gridWidth / (Math.pow(2, retVals[2] + gridConstant));
+        double tileWidth = resolutions[retVals[2]] * GridCalculator.TILEPIXELS;
 
+        // Get the bounds
+        BBOX layerBounds = grid.bounds;
+        BBOX gridBounds = grid.gridBounds;
+        
         // X
         double xdiff = tileBounds.coords[0] - gridBounds.coords[0];
         double xLoc = xdiff / tileWidth;
@@ -289,8 +315,11 @@ public class GridCalculator {
      * @return
      */
     public BBOX bboxFromGridLocation(int[] gridLoc) {
-        double tileWidth = gridWidth / Math.pow(2, gridLoc[2] + gridConstant);
-
+        //double tileWidth = gridWidth / Math.pow(2, gridLoc[2] + gridConstant);
+        double tileWidth = resolutions[gridLoc[2]] * GridCalculator.TILEPIXELS;
+        
+        BBOX gridBounds = grid.gridBounds;
+        
         return new BBOX(gridBounds.coords[0] + tileWidth * gridLoc[0],
                 gridBounds.coords[1] + tileWidth * gridLoc[1],
                 gridBounds.coords[0] + tileWidth * (gridLoc[0] + 1),
@@ -308,9 +337,13 @@ public class GridCalculator {
      */
 
     public BBOX bboxFromGridBounds(int[] gridLocBounds) {
-        double tileWidth = gridWidth
-                / Math.pow(2, gridLocBounds[4] + gridConstant);
-
+        //double tileWidth = gridWidth
+        //        / Math.pow(2, gridLocBounds[4] + gridConstant);
+        
+        double tileWidth = GridCalculator.TILEPIXELS * resolutions[gridLocBounds[4]];
+        
+        BBOX gridBounds = grid.gridBounds;
+        
         return new BBOX(gridBounds.coords[0] + tileWidth * gridLocBounds[0],
                 gridBounds.coords[1] + tileWidth * gridLocBounds[1],
                 gridBounds.coords[0] + tileWidth * (gridLocBounds[2] + 1),
@@ -387,9 +420,11 @@ public class GridCalculator {
     	if (zoomedOutGridLoc != null) {
             return zoomedOutGridLoc;
         }
-
+    	
+    	//TODO fix negative number to return more than one top tile
+    	
         // Exception for EPSG:4326, which can zoom out to two tiles
-        if (worldBoundsCoverTwoTiles) {
+        if (gridX == 2 && gridY == 1) {
             zoomedOutGridLoc = new int[3];
             zoomedOutGridLoc[0] = -1;
             zoomedOutGridLoc[1] = -1;
@@ -415,15 +450,81 @@ public class GridCalculator {
         return zoomedOutGridLoc;
     }
     
-    public double[] getResolutions(int widthPixels) {
-        double[] ret = new double[zoomStop - zoomStart + 1];
-        double tileWidth = maxTileWidth / widthPixels;
+    public double[] getResolutions() {
+        return resolutions;
+        //double[] ret = new double[zoomStop - zoomStart + 1];
+        //double tileWidth = maxTileWidth / widthPixels;
         
-        for(int i=0; i<ret.length; i++) {
-            ret[i] = tileWidth;
-            tileWidth = tileWidth / 2;
+        //for(int i=0; i<ret.length; i++) {
+        //    ret[i] = tileWidth;
+        //    tileWidth = tileWidth / 2;
+       // }
+        
+        //return ret;
+    }
+    
+    private int binarySearchForResolution(double reqResolution) 
+    throws BadTileException {
+        return binarySearchForResolution(this.resolutions, reqResolution);
+    }
+    
+    protected static int binarySearchForResolution(double[] resolutions, double reqResolution) 
+    throws BadTileException {
+        int low = 0;
+        int high = resolutions.length - 1;
+        
+        double reqUpper = reqResolution * 1.10;
+        
+        double reqLower = reqResolution * 0.90;
+        
+        // Deal with the edge cases first
+        if(reqLower > resolutions[1]) {
+            if(resolutions[0] < reqLower) {
+                throw new BadTileException("Resolution "+reqResolution+" is too big for grid,"
+                        +" biggest supported is " + resolutions[0]);
+            }
+            return 0;
         }
         
-        return ret;
+        if(reqUpper < resolutions[high - 1]) {
+            if(resolutions[high] / 1.5 > reqUpper) {
+                throw new BadTileException("Resolution "+reqResolution+" is too small for grid,"
+                        + " smallest supported is " + resolutions[high]);
+            }
+            return high;
+        }
+        
+        low = 1;
+        high = resolutions.length - 2;
+        
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            
+            if(resolutions[mid] > reqUpper) {
+                low = mid;
+            } else if(resolutions[mid] < reqLower) {
+                high = mid;
+            } else {
+                if(Math.abs(reqResolution - resolutions[mid]) / reqResolution > 1.10) {
+                    throw new BadTileException(
+                            "The bounds result in a resolution of " + reqResolution 
+                            + " but the closes resolution is " + resolutions[mid]);
+                }
+                return mid;
+            }
+        }
+        throw new BadTileException("Oops. Should never get here.");
     }
+    
+    public static double[] getResolutionArray(double width, double pixelWidth, int levels) {
+        double[] resolutionArray = new double[levels];
+        double resolution = width / pixelWidth;
+        for(int i=0; i < levels; i++) {
+            resolutionArray[i] = resolution;
+            resolution = resolution / 2;
+        }
+        
+        return resolutionArray;
+    }
+    
 }

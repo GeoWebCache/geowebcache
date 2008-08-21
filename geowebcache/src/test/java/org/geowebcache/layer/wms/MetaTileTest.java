@@ -5,9 +5,10 @@ import java.util.Arrays;
 import junit.framework.TestCase;
 
 import org.geowebcache.layer.SRS;
+import org.geowebcache.layer.Grid;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.util.wms.BBOX;
-import org.geowebcache.util.wms.GridCalculator;
+import org.geowebcache.layer.GridCalculator;
 
 public class MetaTileTest extends TestCase {
 
@@ -21,22 +22,14 @@ public class MetaTileTest extends TestCase {
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
         int metaHeight = 1;
         int metaWidth = 1;
-        double maxTileWidth = 180.0;
-        double maxTileHeight = 180.0;
-        int zoomStart = 0;
-        int zoomStop = 20;
-        SRS srs = new SRS(4326);
-        
-        GridCalculator gridCalc = new GridCalculator(
-                gridBase, bbox, 
-                zoomStart, zoomStop, 
-                metaWidth, metaHeight, 
-                maxTileWidth, maxTileHeight);
+
+        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, GridCalculator.RESOLUTIONS4326);
+        GridCalculator gridCalc = grid.getGridCalculator();
         
         int[] gridPos = { 0, 0, 0 };
         //int[] gridBounds, int[] tileGridPosition, int metaX, int metaY
         WMSMetaTile mt = new WMSMetaTile(
-                null, srs, ImageMime.png, 
+                null, grid.getSRS(), ImageMime.png, 
                 gridCalc.getGridBounds(gridPos[2]),
                 gridPos, metaWidth, metaHeight);
 
@@ -55,21 +48,13 @@ public class MetaTileTest extends TestCase {
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
         int metaHeight = 3;
         int metaWidth = 3;
-        double maxTileWidth = 180.0;
-        double maxTileHeight = 180.0;
-        int zoomStart = 0;
-        int zoomStop = 20;
-        SRS srs = new SRS(4326);
-        
-        GridCalculator gridCalc = new GridCalculator(
-                gridBase, bbox, 
-                zoomStart, zoomStop, 
-                metaWidth, metaHeight, 
-                maxTileWidth, maxTileHeight);
+
+        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridCalculator gridCalc = grid.getGridCalculator();
         
         int[] gridPos = { 127, 63, 6 };
         WMSMetaTile mt = new WMSMetaTile(
-                    null, srs, ImageMime.png,
+                    null, grid.getSRS(), ImageMime.png, 
                     gridCalc.getGridBounds(gridPos[2]), 
                     gridPos, metaWidth, metaHeight);
 
@@ -90,21 +75,13 @@ public class MetaTileTest extends TestCase {
         		20037508.34, 20037508.34);
         int metaHeight = 1;
         int metaWidth = 1;
-        double maxTileWidth = 20037508.34 * 2;
-        double maxTileHeight = 20037508.34 * 2;
-        int zoomStart = 0;
-        int zoomStop = 20;
-        SRS srs = new SRS(900913);
         
-        GridCalculator gridCalc = new GridCalculator(
-                gridBase, bbox, 
-                zoomStart, zoomStop, 
-                metaWidth, metaHeight, 
-                maxTileWidth, maxTileHeight);
+        Grid grid = new Grid(SRS.getEPSG900913(), bbox, gridBase, GridCalculator.RESOLUTIONS900913);
+        GridCalculator gridCalc = grid.getGridCalculator();
               
         int[] gridPos = { 0, 0, 0 };
         WMSMetaTile mt = new WMSMetaTile(
-                null, srs, ImageMime.png, 
+                null, grid.getSRS(), ImageMime.png,
                 gridCalc.getGridBounds(gridPos[2]), 
                 gridPos, metaWidth, metaHeight);
         
@@ -123,23 +100,16 @@ public class MetaTileTest extends TestCase {
         BBOX gridBase = new BBOX(
         		-20037508.34, -20037508.34, 
         		20037508.34, 20037508.34);
+        
         int metaHeight = 3;
         int metaWidth = 3;
-        double maxTileWidth = 20037508.34 * 2;
-        double maxTileHeight = 20037508.34 * 2;
-        int zoomStart = 0;
-        int zoomStop = 20;
-        SRS srs = new SRS(900913);
         
-        GridCalculator gridCalc = new GridCalculator(
-                gridBase, bbox, 
-                zoomStart, zoomStop, 
-                metaWidth, metaHeight, 
-                maxTileWidth, maxTileHeight);
+        Grid grid = new Grid(SRS.getEPSG900913(), bbox, gridBase, null);
+        GridCalculator gridCalc = grid.getGridCalculator();
         
         int[] gridPos = { 70, 70, 6 };
         WMSMetaTile mt = new WMSMetaTile(
-                null, srs, ImageMime.png,
+                null, grid.getSRS(), ImageMime.png,
         	gridCalc.getGridBounds(gridPos[2]), 
         	gridPos, metaWidth, metaHeight);
         

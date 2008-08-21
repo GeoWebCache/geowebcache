@@ -474,4 +474,45 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
         
     }
 
+
+
+    @Override
+    public BBOX getBboxForGridLoc(SRS srs, int[] gridLoc) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+
+    @Override
+    public int[][] getCoveredGridLevels(SRS srs, BBOX bounds) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+
+    @Override
+    public int[] getGridLocForBounds(SRS srs, BBOX bounds)
+            throws BadTileException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+
+    @Override
+    public int[][] getZoomInGridLoc(SRS srs, int[] gridLoc) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+
+    @Override
+    public int[] getZoomedOutGridLoc(SRS srs) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

@@ -212,19 +212,19 @@ public class KMLService extends Service {
      * 
      * @param tile
      */
-    private static void handleSuperOverlay(KMLTile tile) {
+    private static void handleSuperOverlay(KMLTile tile) throws GeoWebCacheException {
         SRS srs = SRS.getEPSG4326();
         TileLayer layer = tile.getLayer();
         
-        int srsIdx = layer.getSRSIndex(srs);
-        BBOX bbox = layer.getBounds(srsIdx);
+        //int srsIdx = layer.getSRSIndex(srs);
+        BBOX bbox = layer.getGrid(srs).getBounds();
         
         String formatExtension = "."+tile.getMimeType().getFileExtension();
         if(tile.getWrapperMimeType() != null) {
             formatExtension = formatExtension + "." + tile.getWrapperMimeType().getFileExtension();
         }
         
-        int[] gridLoc = layer.getZoomedOutGridLoc(srsIdx);        
+        int[] gridLoc = layer.getZoomedOutGridLoc(srs);
         String networkLinks = null;
         
         // Check whether we need two tiles for world bounds or not
@@ -398,8 +398,9 @@ public class KMLService extends Service {
         TileLayer tileLayer = tile.getLayer();
         int[] gridLoc = tile.getTileIndex();
         
-        int srsIdx = tileLayer.getSRSIndex(SRS.getEPSG4326());
-        BBOX bbox = tileLayer.getBboxForGridLoc(srsIdx, gridLoc);
+        SRS srs = SRS.getEPSG4326();
+        //int srsIdx = tileLayer.getSRSIndex();
+        BBOX bbox = tileLayer.getBboxForGridLoc(srs, gridLoc);
 
         StringBuffer buf = new StringBuffer();
         // 1) Header
@@ -407,18 +408,18 @@ public class KMLService extends Service {
                 tile.getMimeType() instanceof ImageMime));
 
         // 2) Network links, only to tiles within bounds
-        int[][] linkGridLocs = tileLayer.getZoomInGridLoc(srsIdx, gridLoc);
+        int[][] linkGridLocs = tileLayer.getZoomInGridLoc(srs, gridLoc);
 
         // 3) Apply secondary filter against linking to empty tiles
         if (tile.getMimeType() == XMLMime.kml) {
-            linkGridLocs = KMZHelper.filterGridLocs(tileLayer, srsIdx, tile.getMimeType(),linkGridLocs);
+            linkGridLocs = KMZHelper.filterGridLocs(tileLayer, tile.getMimeType(),linkGridLocs);
         }
 
         //int moreData = 0;
         for (int i = 0; i < 4; i++) {
             // Only add this link if it is within the bounds
             if (linkGridLocs[i][2] > 0) {
-                BBOX linkBbox = tileLayer.getBboxForGridLoc(srsIdx,
+                BBOX linkBbox = tileLayer.getBboxForGridLoc(srs,
                         linkGridLocs[i]);
                 
                 // Always use absolute URLs for these

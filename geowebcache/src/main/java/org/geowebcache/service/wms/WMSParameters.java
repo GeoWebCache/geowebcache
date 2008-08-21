@@ -307,7 +307,7 @@ public class WMSParameters extends Parameters {
      * @throws GeoWebCacheException 
      */
     public SRS getSrs() throws GeoWebCacheException {
-        return new SRS(((String[]) get(SRS_PARAM))[0]);
+        return SRS.getSRS(((String[]) get(SRS_PARAM))[0]);
     }
 
     /**
@@ -377,7 +377,7 @@ public class WMSParameters extends Parameters {
     public StringBuffer getURLString() {
         StringBuffer arg_str = new StringBuffer(256);
         String param_name;
- 
+
         Iterator itr = super.params.keySet().iterator();
         while (itr.hasNext()) {
             param_name = (String) itr.next();
@@ -389,14 +389,14 @@ public class WMSParameters extends Parameters {
                 }
 
                 try {
-                	if(param_name.equalsIgnoreCase(VENDOR_PARAMS)) {
-                		arg_str.append(get(VENDOR_PARAMS));
-                	} else {
-                		arg_str.append(URLEncoder.encode(param_name, CHARSET));
-                		arg_str.append('=');
-                		arg_str.append(URLEncoder.encode(
-                				convertToString(get(param_name)), CHARSET));
-                	}
+                    if (param_name.equalsIgnoreCase(VENDOR_PARAMS)) {
+                        arg_str.append(get(VENDOR_PARAMS));
+                    } else {
+                        arg_str.append(URLEncoder.encode(param_name, CHARSET));
+                        arg_str.append('=');
+                        arg_str.append(URLEncoder.encode(
+                                convertToString(get(param_name)), CHARSET));
+                    }
 
                 } catch (UnsupportedEncodingException uee) {
                     log.fatal("Unsupported URL Encoding: ", uee);

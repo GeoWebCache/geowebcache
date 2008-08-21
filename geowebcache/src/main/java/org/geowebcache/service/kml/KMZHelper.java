@@ -53,12 +53,12 @@ public class KMZHelper {
      *  throws the result way. Some may consider this a bit wasteful ;)
      *
      * @param tileLayer
-     * @param srsIdx
+     * @param srs
      * @param formatStr
      * @param linkGridLocs
      * @return
      */
-    public static int[][] filterGridLocs(TileLayer tileLayer, int srsIdx,
+    public static int[][] filterGridLocs(TileLayer tileLayer,
             MimeType mime, int[][] linkGridLocs) 
     throws GeoWebCacheException {
         

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ import org.geotools.ows.ServiceException;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.layer.Grid;
+import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -199,9 +201,11 @@ public class GetCapabilitiesConfiguration implements Configuration {
             BBOX bounds4326, BBOX bounds900913, String stylesStr)
             throws GeoWebCacheException {
         
-        List<Grid> grids = new ArrayList<Grid>(2);
-        grids.add(new Grid(SRS.getEPSG4326(), bounds4326, BBOX.world4326));
-        grids.add(new Grid(SRS.getEPSG900913(), bounds900913, BBOX.world900913));
+        Hashtable<SRS,Grid> grids = new Hashtable<SRS,Grid>(2);
+        grids.put(SRS.getEPSG4326(), new Grid(SRS.getEPSG4326(), bounds4326, 
+                BBOX.WORLD4326, GridCalculator.RESOLUTIONS4326));
+        grids.put(SRS.getEPSG900913(), new Grid(SRS.getEPSG900913(), bounds900913,
+                BBOX.WORLD900913, GridCalculator.RESOLUTIONS900913));
         
         List<String> mimeFormats = null;
         if(this.mimeTypes != null) {

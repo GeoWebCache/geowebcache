@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.locks.Condition;
@@ -52,7 +53,7 @@ import org.geowebcache.tile.Tile;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
-import org.geowebcache.util.wms.GridCalculator;
+import org.geowebcache.layer.GridCalculator;
 
 public class WMSLayer extends TileLayer {
     // needed in configuration object written to xml
@@ -74,11 +75,11 @@ public class WMSLayer extends TileLayer {
 
     private boolean debugheaders;
 
-    protected transient GridCalculator[] gridCalc;
+    //protected transient GridCalculator[] gridCalc;
 
-    private transient int zoomStart;
+    //private transient int zoomStart;
 
-    private transient int zoomStop;
+    //private transient int zoomStop;
 
     private transient String request;
 
@@ -104,29 +105,29 @@ public class WMSLayer extends TileLayer {
 
     private transient long expireCache;
 
-    transient Cache cache;
+    private transient Cache cache;
 
-    transient CacheKey cacheKey;
+    private transient CacheKey cacheKey;
 
-    transient Lock layerLock;
+    private transient Lock layerLock;
 
-    transient boolean layerLocked;
+    private transient boolean layerLocked;
 
-    transient Condition layerLockedCond;
+    private transient Condition layerLockedCond;
 
-    transient Condition[] gridLocConds;
+    private transient Condition[] gridLocConds;
 
-    transient String cachePrefix;
+    private transient String cachePrefix;
 
     private transient List<MimeType> formats;
 
-    transient HashMap<GridLocObj, Boolean> procQueue;
+    private transient HashMap<GridLocObj, Boolean> procQueue;
 
     //transient Integer cacheLockWait;
 
-    public transient volatile Boolean isInitialized;
+    private transient volatile Boolean isInitialized;
 
-    transient CacheFactory initCacheFactory;
+    private transient CacheFactory initCacheFactory;
 
     private static transient Log log;
 
@@ -139,7 +140,7 @@ public class WMSLayer extends TileLayer {
     
     public WMSLayer(String layerName, CacheFactory cacheFactory,
             String wmsURL, List<String> mimeFormats,
-            List<Grid> grids, int[] metaWidthHeight,
+            Hashtable<SRS,Grid> grids, int[] metaWidthHeight,
             String vendorParams) {
      
         name = layerName;
@@ -198,8 +199,8 @@ public class WMSLayer extends TileLayer {
         //lazyLayerInitialization();
         log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
         curWmsURL = 0;
-        zoomStart = 0;
-        zoomStop = 20;
+        //zoomStart = 0;
+        //zoomStop = 20;
         request = "GetMap";
         errormime = ErrorMime.vnd_ogc_se_inimage.getMimeType();
         width = 256;
@@ -255,10 +256,9 @@ public class WMSLayer extends TileLayer {
         SRS tileSrs = tile.getSRS();
 
         int[] gridLoc = tile.getTileIndex();
-        int idx = getSRSIndex(tileSrs);
 
         // Final preflight check, throws exception if necessary
-        gridCalc[idx].locationWithinBounds(gridLoc);
+        this.getGrid(tileSrs).getGridCalculator().locationWithinBounds(gridLoc);
 
         if (tryCacheFetch(tile)) {
             return finalizeTile(tile);
@@ -285,11 +285,12 @@ public class WMSLayer extends TileLayer {
      */
     private Tile getMetatilingReponse(Tile tile) throws GeoWebCacheException {
 
-        int idx = this.getSRSIndex(tile.getSRS());
+        //int idx = this.getSRSIndex(tile.getSRS());
         int[] gridLoc = tile.getTileIndex();
+        GridCalculator gridCalc = getGrid(tile.getSRS()).getGridCalculator();
 
-        WMSMetaTile metaTile = new WMSMetaTile(this, tile.getSRS(), tile
-                .getMimeType(), gridCalc[idx].getGridBounds(gridLoc[2]),
+        WMSMetaTile metaTile = new WMSMetaTile(this, tile.getSRS(), 
+                tile.getMimeType(), gridCalc.getGridBounds(gridLoc[2]),
                 gridLoc, metaWidthHeight[0], metaWidthHeight[1]);
 
         // Leave a hint to save expiration, if necessary
@@ -585,41 +586,11 @@ public class WMSLayer extends TileLayer {
         if (formats.get(0) == null)
             formats.add(0, ImageMime.createFromFormat("image/png"));
 
-        double[] maxTileWidth = new double[this.grids.size()];
-        double[] maxTileHeight = new double[this.grids.size()];
+        //double[] maxTileWidth = new double[this.grids.size()];
+        //double[] maxTileHeight = new double[this.grids.size()];
 
-        for (Grid g : this.grids) {
-            SRS curSrs = g.getProjection();
-            int index = this.grids.indexOf(g);
-
-            if (curSrs.getNumber() == 4326) {
-                maxTileWidth[index] = 180.0;
-                maxTileHeight[index] = 180.0;
-            } else if (curSrs.getNumber() == 900913) {
-                maxTileWidth[index] = 20037508.34 * 2;
-                maxTileHeight[index] = 20037508.34 * 2;
-            } else {
-                // TODO some fancy code to guess other SRSes, throw exception
-                // for now
-                maxTileWidth[index] = 20037508.34 * 2;
-                maxTileHeight[index] = 20037508.34 * 2;
-                log.error("GeoWebCache only handles EPSG:4326 and EPSG:900913!");
-                throw new GeoWebCacheException(
-                        "GeoWebCache only handles EPSG:4326 and EPSG:900913!");
-            }
-        }
-
-        // Create a grid calculator based on this information
-        gridCalc = new GridCalculator[this.grids.size()];
-        for (Grid g : this.grids) {
-            int i = this.grids.indexOf(g);
-            gridCalc[i] = new GridCalculator(g.getGridBounds(), g.getBounds(),
-                    zoomStart, zoomStop, metaWidthHeight[0],
-                    metaWidthHeight[1], maxTileWidth[i], maxTileHeight[i]);
-        }
 
         // Cache and CacheKey
-
         cache = initCacheFactory.getDefaultCache();
         
         if (cache == null) {
@@ -734,41 +705,45 @@ public class WMSLayer extends TileLayer {
         procQueue.clear();
     }
 
-    public int[][] getCoveredGridLevels(int srsIdx, BBOX bounds) {
+    public int[][] getCoveredGridLevels(SRS srs, BBOX bounds)
+    throws GeoWebCacheException {
         BBOX adjustedBounds = bounds;
-        if (!this.grids.get(srsIdx).getBounds().contains(bounds)) {
-            adjustedBounds = BBOX.intersection(this.grids.get(srsIdx)
-                    .getBounds(), bounds);
+        Grid grid = grids.get(srs);
+        
+        if (! grid.getBounds().contains(bounds) ) {
+            adjustedBounds = BBOX.intersection(grid.getBounds(), bounds);
             log.warn("Adjusting bounds from " + bounds.toString() + " to "
                     + adjustedBounds.toString());
         }
-        int[][]temp = this.gridCalc[srsIdx].coveredGridLevels(adjustedBounds);
-        return temp; 
+        return grid.getGridCalculator().coveredGridLevels(adjustedBounds);
     }
 
     public int[] getMetaTilingFactors() {
         return metaWidthHeight;
     }
 
-    public int[] getGridLocForBounds(int srsIdx, BBOX tileBounds)
-            throws BadTileException {
-        return gridCalc[srsIdx].gridLocation(tileBounds);
+    public int[] getGridLocForBounds(SRS srs, BBOX tileBounds)
+    throws GeoWebCacheException {
+        return grids.get(srs).getGridCalculator().gridLocation(tileBounds);
     }
 
     public MimeType getDefaultMimeType() {
         return formats.get(0);
     }
 
-    public BBOX getBboxForGridLoc(int srsIdx, int[] gridLoc) {
-        return gridCalc[srsIdx].bboxFromGridLocation(gridLoc);
+    public BBOX getBboxForGridLoc(SRS srs, int[] gridLoc) 
+    throws GeoWebCacheException {
+        return grids.get(srs).getGridCalculator().bboxFromGridLocation(gridLoc);
     }
 
-    public int[][] getZoomInGridLoc(int srsIdx, int[] gridLoc) {
-        return gridCalc[srsIdx].getZoomInGridLoc(gridLoc);
+    public int[][] getZoomInGridLoc(SRS srs, int[] gridLoc)
+    throws GeoWebCacheException {
+        return grids.get(srs).getGridCalculator().getZoomInGridLoc(gridLoc);
     }
 
-    public int[] getZoomedOutGridLoc(int srsIdx) {
-        return gridCalc[srsIdx].getZoomedOutGridLoc();
+    public int[] getZoomedOutGridLoc(SRS srs)
+    throws GeoWebCacheException {
+        return grids.get(srs).getGridCalculator().getZoomedOutGridLoc();
     }
 
     public Cache getCache() {
@@ -882,21 +857,21 @@ public class WMSLayer extends TileLayer {
                 % gridLocConds.length;
     }
 
-    public int getZoomStart() {
-        return this.zoomStart;
-    }
+    //public int getZoomStart() {
+    //    return this.zoomStart;
+    //}
 
-    public int getZoomStop() {
-        return this.zoomStop;
-    }
+    //public int getZoomStop() {
+    //    return this.zoomStop;
+    //}
 
     public List<MimeType> getMimeTypes() {
         return formats;
     }
 
-    public double[] getResolutions(int srsIdx) {
-        return gridCalc[srsIdx].getResolutions(this.width);
-    }
+    //public double[] getResolutions(int srsIdx) {
+    //    return gridCalc[srsIdx].getResolutions(this.width);
+    //}
 
     public String getStyles() {
         return wmsStyles;

@@ -16,25 +16,35 @@
  */
 package org.geowebcache.layer;
 
+import java.util.List;
+
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.util.wms.BBOX;
 
 /**
  * Grid Class - Each TileLayer keeps a list of Grid Objects
- * 
- * 
  */
 
 public class Grid {
-    private BBOX bounds = null;
-
-    private BBOX gridbounds = null;
-
-    private SRS projection = null;
-
-    public Grid(SRS projection, BBOX bounds, BBOX gridBounds) {
-        this.projection = projection;
+    private SRS gridSRS = null;
+    
+    protected BBOX bounds = null;
+    
+    protected BBOX gridBounds = null;
+    
+    protected double[] resolutions = null;
+    
+    private volatile transient GridCalculator gridCalculator;
+    
+    private volatile int zoomStart = 0;
+    
+    private volatile int zoomStop = 25;
+    
+    public Grid(SRS srs, BBOX bounds, BBOX gridBounds, double[] resolutions) {
+        this.gridSRS = srs;
         this.bounds = bounds;
-        this.gridbounds = gridBounds;
+        this.gridBounds = gridBounds;
+        this.resolutions = resolutions;
     }
     
     /**
@@ -56,7 +66,7 @@ public class Grid {
      * @param bounds - BBOX with bounds
      */
     public void setGridBounds(BBOX gridbounds) {
-        this.gridbounds = gridbounds;
+        this.gridBounds = gridbounds;
     }
     /**
      * method will set the grid bounds (world) of the layer for this grid from a String 
@@ -64,21 +74,21 @@ public class Grid {
      */
     public void setGridBounds(String gridbounds) {
 
-        this.gridbounds = new BBOX(gridbounds);
+        this.gridBounds = new BBOX(gridbounds);
     }
     /**
      * method set the projection supported by the layer for this grid
      * @param projection - SRS
      */
-    public void setProjection(SRS projection) {
-        this.projection = projection;
+    public void setSRS(SRS srs) {
+        this.gridSRS = srs;
     }
     /**
      * method returns the projection supported by the layer for this grid
      * @return
      */
-    public SRS getProjection() {
-        return this.projection;
+    public SRS getSRS() {
+        return this.gridSRS;
     }
     /**
      * method returns the bounds of the layer for this grid
@@ -92,7 +102,39 @@ public class Grid {
      * @return
      */
     public BBOX getGridBounds() {
-        return this.gridbounds;
+        return this.gridBounds;
+    }
+    
+    public int getZoomStart() {
+        return this.zoomStart;
+    }
+    
+    public int getZoomStop() {
+        return this.zoomStop;
+    }
+    
+    public void setResolutions(double[] resolutions) {
+        this.resolutions = resolutions;
+    }
+    
+    public double[] getResolutions() throws GeoWebCacheException {
+        return getGridCalculator().getResolutions();
+    }
+    
+    public GridCalculator getGridCalculator() throws GeoWebCacheException {
+        GridCalculator ret = gridCalculator;
+        if (ret == null) {
+            synchronized (this) {
+                ret = gridCalculator;
+                if (gridCalculator == null) {
+                    gridCalculator = ret = initGridCalculator();
+                }
+            }
+        }
+        return ret;
     }
 
+    private GridCalculator initGridCalculator() throws GeoWebCacheException {
+        return new GridCalculator(this);
+    }
 }

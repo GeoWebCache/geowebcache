@@ -54,8 +54,7 @@ public abstract class Parameters {
             log.trace("Setting from HttpServletRequest.");
         }
 
-        // this.params.putAll() won't work since we want all keys to be in
-        // lowercase
+        // this.params.putAll() won't work since we want all keys to be in lowercase
         Map param_map = httprequest.getParameterMap();
         Iterator itr = param_map.keySet().iterator();
         String mixedstr;
@@ -65,10 +64,9 @@ public abstract class Parameters {
             set(mixedstr, param_map.get(mixedstr));
         }
 
-        if (log.isTraceEnabled()) {
-            log.trace("Results from setting from HttpServletRequest: "
-                    + getReadableString());
-        }
+        //if (log.isTraceEnabled()) {
+        //    log.trace("Results from setting from HttpServletRequest: " + getReadableString());
+        //}
     }
 
     /**
@@ -97,9 +95,12 @@ public abstract class Parameters {
      */
     protected String convertToString(Object obj) {
         if (obj != null) {
-            if (obj.getClass() == (String.class)) {
+            if (obj instanceof String) {
                 return (String) obj;
-            } else if (obj.getClass() == (String[].class)) {
+            } else if (obj instanceof Boolean) {
+                // Tweak for Ionic
+                return ((Boolean) obj).toString().toUpperCase();
+            } else if (obj instanceof String[]) {
                 // Make a comma separated list out of the array
                 String[] array = (String[]) obj;
                 StringBuffer str = new StringBuffer(100);
@@ -135,7 +136,7 @@ public abstract class Parameters {
     /**
      * Outputs an HTTP parameter string
      */
-    public StringBuffer getURLString() {
+    public StringBuffer getURLString(boolean prefixAmpersand) {
         StringBuffer arg_str = new StringBuffer(256);
         String param_name;
 
@@ -143,10 +144,12 @@ public abstract class Parameters {
         while (itr.hasNext()) {
             param_name = (String) itr.next();
             if (param_name != null && param_name.length() > 0) {
-                if (arg_str == null || arg_str.length() == 0) {
-                    arg_str.append('?');
-                } else {
+                if (arg_str.length() > 0) {
                     arg_str.append('&');
+                } else {
+                    if (prefixAmpersand) {
+                        arg_str.append('&');
+                    }
                 }
 
                 try {
@@ -172,32 +175,32 @@ public abstract class Parameters {
      * Returns a URL string. If a StringBuffer is desired instead, use
      * getURLString()
      */
-    @Override
-    public String toString() {
-        return getURLString().toString();
-    }
+    //@Override
+    //public String toString() {
+    //    return getURLString(true).toString();
+    //}
 
     /**
      * Outputs an easily readable parameter / value listing
      */
-    public String getReadableString() {
-        String key;
-        StringBuffer buf = new StringBuffer();
-
-        Iterator itr = params.keySet().iterator();
-        while (itr.hasNext()) {
-            key = (String) itr.next();
-            if (key != null && key.length() > 0) {
-                Object value = params.get(key);
-                if (value != null) {
-                    buf.append(key + '=' + convertToString(value) + ' ');
-                } else {
-                    buf.append(key + "=null ");
-                }
-            }
-        }
-        return buf.toString();
-    }
+//    public String getReadableString() {
+//        String key;
+//        StringBuffer buf = new StringBuffer();
+//
+//        Iterator itr = params.keySet().iterator();
+//        while (itr.hasNext()) {
+//            key = (String) itr.next();
+//            if (key != null && key.length() > 0) {
+//                Object value = params.get(key);
+//                if (value != null) {
+//                    buf.append(key + '=' + convertToString(value) + ' ');
+//                } else {
+//                    buf.append(key + "=null ");
+//                }
+//            }
+//        }
+//        return buf.toString();
+//    }
 
     /**
      * Service parameter classes will define how to get the layer name from the
@@ -213,7 +216,7 @@ public abstract class Parameters {
      * 
      * @return
      */
-    // public abstract ImageFormat getImageFormat();
+    //public abstract ImageFormat getImageFormat();
     /**
      * Service parameter classes will define how to get the BBOX from the map
      * 
@@ -227,5 +230,5 @@ public abstract class Parameters {
      * @param params
      * @return
      */
-    // public abstract boolean sameLayerAs(Parameters params);
+     //public abstract boolean sameLayerAs(Parameters params);
 }

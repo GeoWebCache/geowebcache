@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -37,14 +38,13 @@ public class Demo {
                 formatStr = layer.getDefaultMimeType().getFormat();
             }
 
+            SRS srs = null;
             if (srsStr != null) {
-                if (!layer.supportsProjection(new SRS(srsStr))) {
-                    throw new GeoWebCacheException("Unsupported SRS " + srsStr);
-                }
+                srs = SRS.getSRS(srsStr);
             } else {
-                srsStr = SRS.getEPSG900913().toString();
+                srs = SRS.getEPSG900913();
             }
-            page = generateHTML(layer, srsStr, formatStr);
+            page = generateHTML(layer, srs, formatStr);
 
         } else {
             page = generateHTML(tileLayerDispatcher);
@@ -104,20 +104,22 @@ public class Demo {
         return buf.toString();
     }
     
-    private static String generateHTML(TileLayer layer, String srsStr, String formatStr) 
+    private static String generateHTML(TileLayer layer, SRS srs, String formatStr) 
     throws GeoWebCacheException {
         String layerName = layer.getName();
         String mime = layer.getDefaultMimeType().getFormat();
-        int srsIdx = layer.getSRSIndex(new SRS(srsStr));
+        //int srsIdx = layer.getSRSIndex(SRS.getSRS(srsStr));
         
         BBOX bbox = null;
         BBOX zoomBounds = null;
         String res = "";
-        if(srsStr.equalsIgnoreCase("EPSG:900913")) {
+        Grid grid = layer.getGrid(srs);
+        
+        if(srs.getNumber() == 900913) {
             //res = "resolutions: [156543.03,78271.52,39135.76,19567.88,9783.94,4891.97],\n";
             res = "resolutions: " + getEPSG900913Resolutions() + ",\n";
             bbox = new BBOX(-20037508.34,-20037508.34,20037508.34,20037508.34);
-        } else if(srsStr.equalsIgnoreCase("EPSG:4326")) {
+        } else if(srs.getNumber() == 4326) {
             res = "resolutions: " + getEPSG4326Resolutions() + ",\n";
             bbox = new BBOX(-180.0,-90.0,180.0,90.0);
         }
@@ -130,13 +132,13 @@ public class Demo {
         //} else {
         //    zoomBounds = bbox;
         //}
-        zoomBounds = layer.getBounds(srsIdx);
+        zoomBounds = grid.getBounds();
         
         
         String page =
             "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n"
             +"<meta http-equiv=\"imagetoolbar\" content=\"no\">\n"
-            +"<title>"+layerName+" "+srsStr+" "+mime+"</tile>\n"
+            +"<title>"+layerName+" "+srs.toString()+" "+mime+"</tile>\n"
             +"<style type=\"text/css\">\n"
             +"body { font-family: sans-serif; font-weight: bold; font-size: .8em; }\n"
             +"body { border: 0px; margin: 0px; padding: 0px; }\n"
@@ -151,7 +153,7 @@ public class Demo {
             +"function init(){\n"
             +"var mapOptions = { \n"
             + res
-            +"projection: new OpenLayers.Projection('"+srsStr+"'),\n"
+            +"projection: new OpenLayers.Projection('"+srs.toString()+"'),\n"
             +"maxExtent: new OpenLayers.Bounds("+bbox.toString()+") \n};\n"
             +"map = new OpenLayers.Map('map', mapOptions );\n"
             +"var demolayer = new OpenLayers.Layer.WMS(\n"

@@ -34,6 +34,7 @@ import javax.media.jai.operator.CropDescriptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.MetaTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.mime.MimeType;
@@ -67,15 +68,15 @@ public class WMSMetaTile extends MetaTile {
 
     protected WMSParameters getWMSParams() throws GeoWebCacheException {
         WMSParameters wmsparams = wmsLayer.getWMSParamTemplate();
-        int srsIdx = wmsLayer.getSRSIndex(srs);
+        //int srsIdx = wmsLayer.getSRSIndex(srs);
 
         // Fill in the blanks
         wmsparams.setFormat(mimeType.getFormat());
         wmsparams.setSrs(srs);
         wmsparams.setWidth(metaX * wmsLayer.getWidth());
         wmsparams.setHeight(metaY * wmsLayer.getHeight());
-        BBOX metaBbox = wmsLayer.gridCalc[srsIdx]
-                .bboxFromGridBounds(metaTileGridBounds);
+        GridCalculator gridCalc = wmsLayer.getGrid(srs).getGridCalculator();
+        BBOX metaBbox = gridCalc.bboxFromGridBounds(metaTileGridBounds);
         metaBbox.adjustForGeoServer(srs);
         wmsparams.setBBOX(metaBbox);
 
