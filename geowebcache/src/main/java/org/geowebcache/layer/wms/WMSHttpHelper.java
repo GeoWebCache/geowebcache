@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.Grid;
+import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.service.Request;
@@ -74,8 +75,8 @@ public class WMSHttpHelper {
         // Fill in the blanks
         wmsparams.setFormat(tile.getMimeType().getFormat());
         wmsparams.setSrs(tile.getSRS());
-        wmsparams.setWidth(layer.getWidth());
-        wmsparams.setHeight(layer.getHeight());
+        wmsparams.setWidth(GridCalculator.TILEPIXELS);
+        wmsparams.setHeight(GridCalculator.TILEPIXELS);
         Grid grid = layer.getGrid(tile.getSRS());
         
         BBOX bbox = grid.getGridCalculator().bboxFromGridLocation(tile.getTileIndex());
@@ -182,7 +183,13 @@ public class WMSHttpHelper {
                         .getFormat())) {
                     byte[] error = new byte[2048];
                     try {
-                        wmsBackendCon.getInputStream().read(error);
+                        int readLength = 0;
+                        int readAccu = 0;
+                        while(readLength > -1 && readAccu < error.length) {
+                            int left = error.length - readAccu;
+                            readLength = wmsBackendCon.getInputStream().read(error,readAccu, left);
+                            readAccu += readLength;
+                        }
                     } catch (IOException ioe) {
                         // Do nothing
                     }
@@ -210,20 +217,17 @@ public class WMSHttpHelper {
                         ret = new byte[responseLength];
                         int readLength = 0;
                         int readAccu = 0;
-                        int left = responseLength;
-                        while(readLength > -1 && left > 0) {
+                        while(readLength > -1 && readAccu < responseLength) {
+                            int left = responseLength - readAccu;
                             readLength = wmsBackendCon.getInputStream().read(ret,readAccu,left);
                             readAccu += readLength;
-                            left -= readLength;
                         }
                         if (readAccu != responseLength) {
                             tileRespRecv.setError();
                             throw new GeoWebCacheException(
-                                    "Responseheader advertised "
-                                            + responseLength
-                                            + " bytes, but only received "
-                                            + readLength + " from "
-                                            + wmsBackendUrl.toString());
+                                    "Responseheader advertised "+ responseLength
+                                    + " bytes, but only received " + readLength 
+                                    + " from " + wmsBackendUrl.toString());
                         }
                     }
                 } catch (IOException ioe) {

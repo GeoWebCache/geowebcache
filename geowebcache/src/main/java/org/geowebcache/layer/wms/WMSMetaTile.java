@@ -73,8 +73,8 @@ public class WMSMetaTile extends MetaTile {
         // Fill in the blanks
         wmsparams.setFormat(mimeType.getFormat());
         wmsparams.setSrs(srs);
-        wmsparams.setWidth(metaX * wmsLayer.getWidth());
-        wmsparams.setHeight(metaY * wmsLayer.getHeight());
+        wmsparams.setWidth(metaX * GridCalculator.TILEPIXELS);
+        wmsparams.setHeight(metaY * GridCalculator.TILEPIXELS);
         GridCalculator gridCalc = wmsLayer.getGrid(srs).getGridCalculator();
         BBOX metaBbox = gridCalc.bboxFromGridBounds(metaTileGridBounds);
         metaBbox.adjustForGeoServer(srs);

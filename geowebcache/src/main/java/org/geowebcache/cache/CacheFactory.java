@@ -20,6 +20,7 @@ package org.geowebcache.cache;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -83,15 +84,15 @@ public class CacheFactory implements ApplicationContextAware {
      * Cache.
      */
     private void loadCaches() {
-        Map cacheBeans = context.getBeansOfType(Cache.class);
-        Iterator<String> beanIter = cacheBeans.keySet().iterator();
-
+        Map<String,Cache> cacheBeans = context.getBeansOfType(Cache.class);
+        Iterator<Entry<String,Cache>> beanIter = cacheBeans.entrySet().iterator();
+        
         caches = new HashMap<String,Cache>();
+        
         while(beanIter.hasNext()) {
-            String beanId = beanIter.next();
-            Cache aCache = (Cache) cacheBeans.get(beanId);
-            caches.put(beanId, aCache);
-            log.debug("Added bean for " + beanId);
+            Entry<String,Cache> entry = beanIter.next();
+            caches.put(entry.getKey(), entry.getValue());
+            log.debug("Added cache bean for " + entry.getValue().getClass().toString());
         }
     }
 

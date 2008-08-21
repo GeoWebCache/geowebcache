@@ -338,8 +338,19 @@ public class Tile implements TileResponseReceiver {
         readCommonHeaders(line);
         
         if(length > 0) {
-            byte[] ret = new byte[length*16];
-            bis.read(ret);
+            int total = length*16;
+            int bytesRead = 0;
+            int accu = 0;
+            byte[] ret = new byte[total];
+            
+            while( bytesRead > -1 && accu < total) { 
+                bytesRead = bis.read(ret);
+                accu += bytesRead;
+            }
+            if(accu < total) {
+                throw new IOException("Excected " + total + " bytes, but got " + accu);
+            }
+            
             return ret;
         } else {
             return null;

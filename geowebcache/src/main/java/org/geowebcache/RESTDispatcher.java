@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.TileLayerResource;
 import org.geowebcache.util.XMLConfiguration;
 import org.geowebcache.seeder.SeedResource;
@@ -53,32 +54,33 @@ public class RESTDispatcher extends AbstractController {
 
     private static final int THREAD_NUMBER = 10;
     
-    private static XMLConfiguration config;
+    private static XMLConfiguration xmlConfig;
+    
+    private static TileLayerDispatcher tlDispatcher;
     
     private static ThreadPoolExecutor tpe = 
         new ThreadPoolExecutor(THREAD_NUMBER, 20, 500000L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 
     private static Map<String, TileLayer> layers = null;
     
-
     ServletConverter myConverter;
 
     private Router myRouter;
 
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.RESTDispatcher.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.RESTDispatcher.class);
 
     /**
      * RESTDispatcher constructor
      * 
      * @param c - an XMLConfiguration
      */
-    public RESTDispatcher(XMLConfiguration c) {
+    public RESTDispatcher(TileLayerDispatcher tlDispatcher, XMLConfiguration xmlConfig) {
         super();
         setSupportedMethods(new String[] { 
                 METHOD_GET, METHOD_POST, METHOD_DELETE });
         
-        RESTDispatcher.config = c;
+        RESTDispatcher.xmlConfig = xmlConfig;
+        RESTDispatcher.tlDispatcher = tlDispatcher;
         
         // constructor arguments(in order) int corePoolSize, int maximumPoolSize,
         // long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue
@@ -110,12 +112,12 @@ public class RESTDispatcher extends AbstractController {
             HttpServletResponse response) {
 
         try {
-            layers = (HashMap<String, TileLayer>) config.getTileLayers();
+            //layers = (HashMap<String, TileLayer>) xmlConfig.getTileLayers();
+            layers = (HashMap<String, TileLayer>) tlDispatcher.getLayers();
             myConverter.service(request, response);
-        }
-
-        catch (GeoWebCacheException gwce) {
-            System.out.println(gwce.getMessage());
+        //}
+        //catch (GeoWebCacheException gwce) {
+        //    System.out.println(gwce.getMessage());
         } catch (ServletException se) {
             System.out.println(se.getMessage());
         } catch (IOException ioe) {
@@ -154,7 +156,7 @@ public class RESTDispatcher extends AbstractController {
      * @return
      */
     public static XMLConfiguration getConfig() {
-        return config;
+        return xmlConfig;
     }
     
     /**

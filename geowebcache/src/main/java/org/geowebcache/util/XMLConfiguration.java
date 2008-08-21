@@ -129,7 +129,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         return layers;
     }
 
-    public XStream getConfiguredXStream(XStream xstream) {
+    public static XStream getConfiguredXStream(XStream xstream) {
         XStream xs = xstream;
         xs.setMode(XStream.NO_REFERENCES);
         
@@ -143,13 +143,12 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         xs.aliasType("WMSurl", String.class);
         xs.aliasType("errormime", String.class);
         xs.alias("metaWidthHeight", new int[1].getClass());
-        xs.alias("width", Integer.class);
-        xs.alias("height", Integer.class);
+        //xs.alias("width", Integer.class);
+        //xs.alias("height", Integer.class);
         xs.aliasType("version", String.class);
         xs.alias("tiled", boolean.class);
         xs.alias("transparent", boolean.class);
-        xs.alias("debugheaders", boolean.class);
-        
+        //xs.alias("debugheaders", boolean.class);
         
         return xs;
     }
@@ -170,7 +169,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         Element root = docc.getDocumentElement();
 
         // create the XStream for serializing tileLayers to XML
-        XStream xs = getConfiguredXStream( new XStream());
+        XStream xs = getConfiguredXStream(new XStream());
         // sent to XML
         xs.marshal(tl, new DomWriter((Element) root));
 

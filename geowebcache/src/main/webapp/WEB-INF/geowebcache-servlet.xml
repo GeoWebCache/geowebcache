@@ -9,15 +9,17 @@
     <!--property name="absolutePath"><value>/etc/geowebcache/conf</value></property-->
     <!--property name="absolutePath"><value>/home/ak/masuta/geowebcache/src/main/resources</value></property-->
   </bean>
-
+  
+ <!--
   <bean id="gwcWMSConfig" class="org.geowebcache.util.GetCapabilitiesConfiguration">
     <constructor-arg type="org.geowebcache.cache.CacheFactory" ref="gwcCacheFactory"/>
-    <constructor-arg value="http://sigma.openplans.org/geoserver/service/wms?request=getcapabilities"/>
+    <constructor-arg value="http://sigma.openplans.org/geoserver/wms?request=GetCapabilities"/>
     <constructor-arg value="image/png,image/jpeg,application/vnd.google-earth.kml+xml"/>
     <constructor-arg value="3x3"/>
     <constructor-arg value="format_options=regionateby:auto"/>
   </bean>
-
+  -->
+  
   <!--
   <bean id="gwcGSConfig" class="org.geowebcache.util.GeoServerConfiguration">
     <constructor-arg type="org.geowebcache.cache.CacheFactory" ref="gwcCacheFactory"/>
@@ -26,18 +28,20 @@
     <constructor-arg value="format_options=regionateby:auto"/>
   </bean>
   -->
+  
   <!-- For each configuration bean above, add them below to activate -->
   <bean id="gwcTLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
     <property name="config">
       <list>
-	    <!-- ref bean="gwcXmlConfig" / -->
-	    <ref bean="gwcWMSConfig" />
+	    <ref bean="gwcXmlConfig" />
+	    <!-- ref bean="gwcWMSConfig" / -->
       </list>
     </property>
   </bean>
   
   <!-- controller for handling incoming requests made through the REST interface -->
   <bean id="gwcRESTDispatcher" class="org.geowebcache.RESTDispatcher">
+    <constructor-arg type="org.geowebcache.layer.TileLayerDispatcher" ref="gwcTLDispatcher"/>
 	<constructor-arg type="org.geowebcache.util.XMLConfiguration" ref="gwcXmlConfig"/>
   </bean>
   

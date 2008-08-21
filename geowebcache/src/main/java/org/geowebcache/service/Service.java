@@ -29,7 +29,7 @@ public abstract class Service {
     
     private String pathName = null;
     
-    protected static TileLayerDispatcher tlDispatcher = null;
+    protected static TileLayerDispatcher tlDispatcher;
     
     public Service(String pathName){
         this.pathName = pathName;
@@ -49,7 +49,7 @@ public abstract class Service {
     }
     
     public String getPathName(){
-        return new String(pathName);
+        return pathName;
     }
     
     public Tile getTile(HttpServletRequest request, HttpServletResponse response) 

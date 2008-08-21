@@ -38,7 +38,6 @@ import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.cache.CacheKey;
-import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.GridLocObj;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
@@ -47,7 +46,6 @@ import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.tile.Tile;
 import org.geowebcache.util.GWCVars;
@@ -63,9 +61,9 @@ public class WMSLayer extends TileLayer {
 
     private String errormime;
 
-    private int width;
+    //private int width;
 
-    private int height;
+    //private int height;
 
     private String version;
 
@@ -73,7 +71,7 @@ public class WMSLayer extends TileLayer {
 
     private boolean transparent;
 
-    private boolean debugheaders;
+    //private boolean debugheaders;
 
     //protected transient GridCalculator[] gridCalc;
 
@@ -199,12 +197,15 @@ public class WMSLayer extends TileLayer {
         //lazyLayerInitialization();
         log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
         curWmsURL = 0;
+        
+        // The following is currently hardcoded in the grid objects
         //zoomStart = 0;
         //zoomStop = 20;
+        //width = 256;
+        //height = 256;
+        
         request = "GetMap";
         errormime = ErrorMime.vnd_ogc_se_inimage.getMimeType();
-        width = 256;
-        height = 256;
         version = "1.1.0";
         transparent = true;
         saveExpirationHeaders = true;
@@ -337,7 +338,7 @@ public class WMSLayer extends TileLayer {
                 useJAI = false;
             }
 
-            metaTile.createTiles(width, height, useJAI);
+            metaTile.createTiles(GridCalculator.TILEPIXELS, GridCalculator.TILEPIXELS, useJAI);
 
             int[][] gridPositions = metaTile.getTilesGridPositions();
 
@@ -900,13 +901,13 @@ public class WMSLayer extends TileLayer {
         removeFromQueue(glo, condIdx);
     }
 
-    public int getWidth() {
-        return this.width;
-    }
+    //public int getWidth() {
+    //    return this.width;
+    //}
 
-    public int getHeight() {
-        return this.height;
-    }
+    //public int getHeight() {
+    //    return this.height;
+    //}
 
     public void setErrorMime(String errormime) {
         this.errormime = errormime;
@@ -925,10 +926,10 @@ public class WMSLayer extends TileLayer {
         return this.WMSurl;
     }
 
-    public void setWidthHeight(int w, int h) {
-        this.width = h;
-        this.height = h;
-    }
+    //public void setWidthHeight(int w, int h) {
+    //    this.width = h;
+    //    this.height = h;
+    //}
 
     public void setVersion(String version) {
         this.version = version;

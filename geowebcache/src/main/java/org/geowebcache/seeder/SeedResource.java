@@ -50,8 +50,8 @@ import java.util.concurrent.*;
 public class SeedResource extends Resource {
     private static int[][] statusArray = new int[getExecutor().getCorePoolSize()][3]; 
     public JSONObject myrequest; 
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.seeder.SeedResource.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.seeder.SeedResource.class);
+    
     /**
      * Constructor
      * @param context
@@ -100,7 +100,7 @@ public class SeedResource extends Resource {
             String text = entity.getText();
             
             XStream xs = new XStream(new DomDriver());
-        	xs.alias("seedRequest", SeedRequest.class);
+            xs.alias("seedRequest", SeedRequest.class);
             xs.alias("format", String.class);
             xs.alias("bounds", BBOX.class);
             xs.alias("projection", SRS.class);

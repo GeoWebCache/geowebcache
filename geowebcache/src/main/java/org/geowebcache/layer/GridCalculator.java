@@ -25,15 +25,17 @@ public class GridCalculator {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.GridCalculator.class);
 
     // We may want to change this later
-    private static final int TILEPIXELS = 256;
+    public static final int TILEPIXELS = 256;
     
     //private BBOX gridBounds = null;
     private Grid grid;
     
-    public final static double[] RESOLUTIONS4326 = 
+    // The following are created to save memory. 
+    // Note that they can be modified by external code -> not 100% safe!
+    protected final static double[] RESOLUTIONS4326 = 
         GridCalculator.getResolutionArray(180.0, TILEPIXELS, 26);
     
-    public final static double[] RESOLUTIONS900913 = 
+    protected final static double[] RESOLUTIONS900913 = 
         GridCalculator.getResolutionArray(20037508.34*2,TILEPIXELS, 26);
     
     // The following are the width of the actual layer
@@ -247,7 +249,7 @@ public class GridCalculator {
         double tileWidth = resolutions[retVals[2]] * GridCalculator.TILEPIXELS;
 
         // Get the bounds
-        BBOX layerBounds = grid.bounds;
+        //BBOX layerBounds = grid.bounds;
         BBOX gridBounds = grid.gridBounds;
         
         // X
@@ -498,7 +500,7 @@ public class GridCalculator {
         high = resolutions.length - 2;
         
         while (low <= high) {
-            int mid = (low + high) / 2;
+            int mid = (low + high) >>> 1;
             
             if(resolutions[mid] > reqUpper) {
                 low = mid;
@@ -525,6 +527,14 @@ public class GridCalculator {
         }
         
         return resolutionArray;
+    }
+    
+    public static double[] get900913Resolutions() {
+        return GridCalculator.RESOLUTIONS900913;
+    }
+    
+    public static double[] get4326Resolutions() {
+        return GridCalculator.RESOLUTIONS4326;
     }
     
 }

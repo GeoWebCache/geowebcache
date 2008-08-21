@@ -203,9 +203,9 @@ public class GetCapabilitiesConfiguration implements Configuration {
         
         Hashtable<SRS,Grid> grids = new Hashtable<SRS,Grid>(2);
         grids.put(SRS.getEPSG4326(), new Grid(SRS.getEPSG4326(), bounds4326, 
-                BBOX.WORLD4326, GridCalculator.RESOLUTIONS4326));
+                BBOX.WORLD4326, GridCalculator.get4326Resolutions()));
         grids.put(SRS.getEPSG900913(), new Grid(SRS.getEPSG900913(), bounds900913,
-                BBOX.WORLD900913, GridCalculator.RESOLUTIONS900913));
+                BBOX.WORLD900913, GridCalculator.get900913Resolutions()));
         
         List<String> mimeFormats = null;
         if(this.mimeTypes != null) {

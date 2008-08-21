@@ -203,7 +203,7 @@ public class FileCache implements Cache {
         for (int i = 0; i < varStrs.length && defaultCachePrefix == null; i++) {
             for (int j = 0; j < typeStrs.length && defaultCachePrefix == null; j++) {
                 String value = null;
-                String varStr = new String(varStrs[i]);
+                String varStr = varStrs[i];
                 String typeStr = typeStrs[j];
 
                 switch (j) {

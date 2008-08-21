@@ -23,7 +23,7 @@ public class MetaTileTest extends TestCase {
         int metaHeight = 1;
         int metaWidth = 1;
 
-        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, GridCalculator.RESOLUTIONS4326);
+        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, GridCalculator.get4326Resolutions());
         GridCalculator gridCalc = grid.getGridCalculator();
         
         int[] gridPos = { 0, 0, 0 };
@@ -76,7 +76,7 @@ public class MetaTileTest extends TestCase {
         int metaHeight = 1;
         int metaWidth = 1;
         
-        Grid grid = new Grid(SRS.getEPSG900913(), bbox, gridBase, GridCalculator.RESOLUTIONS900913);
+        Grid grid = new Grid(SRS.getEPSG900913(), bbox, gridBase, GridCalculator.get900913Resolutions());
         GridCalculator gridCalc = grid.getGridCalculator();
               
         int[] gridPos = { 0, 0, 0 };

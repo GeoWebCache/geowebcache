@@ -41,8 +41,6 @@ public abstract class TileLayer {
     protected Hashtable<SRS,Grid> grids;
     
     // Styles?
-    
-    // Metatiling?
 
     /**
      * Sets the layer name
@@ -202,9 +200,9 @@ public abstract class TileLayer {
      * 
      * @return the array of supported projections
      */
-    public SRS[] getProjections() {
-        return (SRS[]) this.grids.keySet().toArray();
-    }
+    //public SRS[] getProjections() {
+    //    return (SRS[]) this.grids.keySet().toArray();
+    //}
 
     
     public Grid getGrid(SRS srs) {

@@ -167,8 +167,6 @@ public class KMLService extends Service {
             if(layer == null) {
                 throw new ServiceException(
                         "No layer provided, request parsed to: " + tile.getLayerId());
-            } else if(! layer.isInitialized()){
-                // ?
             }
         }
         tile.setTileLayer(layer);

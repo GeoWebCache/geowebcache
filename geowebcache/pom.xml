@@ -179,6 +179,15 @@
       <artifactId>spring-webmvc</artifactId>
       <version>${spring.version}</version>
     </dependency>
+    <!-- This is for Acegi -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jdbc</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+
+
+
     
     <!--  Jetty starter dependencies -->
     <dependency>
@@ -270,8 +279,22 @@
       <groupId>org.acegisecurity</groupId>
       <artifactId>acegi-security</artifactId>
       <version>${acegi.version}</version>
+      <exclusions>
+	<exclusion>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-remoting</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-jdbc</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-support</artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>
-
+    
     <dependency>
       <groupId>org.codehaus.jettison</groupId>
       <artifactId>jettison</artifactId>
@@ -320,8 +343,8 @@
 	</configuration>
       </plugin>
 
-
-      <!-- plugin>
+      <!--
+      <plugin>
 	   <artifactId>maven-war-plugin</artifactId>
 	   <executions>
 	     <execution>
@@ -331,8 +354,8 @@
 	       </goals>
 	     </execution>
 	   </executions>
-      </plugin -->
-      
+      </plugin>
+      -->
       <plugin>
 	<artifactId>maven-source-plugin</artifactId>
 	<configuration>

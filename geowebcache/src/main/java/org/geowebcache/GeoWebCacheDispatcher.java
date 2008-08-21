@@ -202,19 +202,19 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 throw new GeoWebCacheException("Unable to parse " + servletPath
                         + " given prefix " + servletPrefix);
             }
-            retStrs[0] = new String(splitStr[3]);
+            retStrs[0] = splitStr[3];
             if(splitStr.length > 4) {
-                retStrs[1] = new String(splitStr[4]);
+                retStrs[1] = splitStr[4];
             }
         } else {
             if (splitStr.length < 3) {
                 throw new GeoWebCacheException("Unable to parse " + servletPath);
             }
             if (splitStr.length == 3) {
-                retStrs[0] = new String(splitStr[2]);
+                retStrs[0] = splitStr[2];
             } else {
-                retStrs[0] = new String(splitStr[2]);
-                retStrs[1] = new String(splitStr[3]);
+                retStrs[0] = splitStr[2];
+                retStrs[1] = splitStr[3];
             }
         }
         return retStrs;

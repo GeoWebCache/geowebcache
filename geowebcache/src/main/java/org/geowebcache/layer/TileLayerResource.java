@@ -22,7 +22,8 @@ import org.restlet.resource.Variant;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thoughtworks.xstream.*;
+//import com.thoughtworks.xstream.*;
+import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.xml.DomDriver;
@@ -34,8 +35,13 @@ import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 import org.json.JSONObject;
 import org.json.JSONException;
 import org.restlet.ext.json.JsonRepresentation;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.web.context.WebApplicationContext;
 
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.util.XMLConfiguration;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.RESTDispatcher;
 
@@ -52,9 +58,8 @@ import javax.xml.parsers.ParserConfigurationException;
  */
 public class TileLayerResource extends Resource {
     private TileLayer currentLayer = null;
-
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.TileLayerResource.class);
+    
+    private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayerResource.class);
 
     /**
      * Construct a TileLayer Resource set the return representation of the
@@ -125,7 +130,7 @@ public class TileLayerResource extends Resource {
      * @return DomRepresentation
      */
     public DomRepresentation getDomRepresentationAsListOfLayers() {
-        XStream xs = RESTDispatcher.getConfig().getConfiguredXStream(new XStream());
+        XStream xs = XMLConfiguration.getConfiguredXStream(new XStream());
         
         StringBuffer buf = new StringBuffer();
         buf.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
@@ -178,7 +183,7 @@ public class TileLayerResource extends Resource {
      * @return
      */
     public DomRepresentation getXMLRepresentation(TileLayer layer) {
-        XStream xs = RESTDispatcher.getConfig().getConfiguredXStream(new XStream());
+        XStream xs = XMLConfiguration.getConfiguredXStream(new XStream());
         String xmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + xs.toXML(layer);
         
         Document doc = null;
@@ -210,8 +215,9 @@ public class TileLayerResource extends Resource {
      */
     public JsonRepresentation getJsonRepresentation(TileLayer layer) {
         JsonRepresentation rep = null;
-        try {            
-            XStream xs = RESTDispatcher.getConfig().getConfiguredXStream(new XStream(new JsonHierarchicalStreamDriver()));
+        try {
+            XStream xs = XMLConfiguration.getConfiguredXStream(
+                    new XStream(new JsonHierarchicalStreamDriver()));
             JSONObject obj = new JSONObject(xs.toXML(layer));
             rep = new JsonRepresentation(obj);
         } catch (JSONException jse) {
@@ -230,25 +236,24 @@ public class TileLayerResource extends Resource {
         log.info("Received POST request from  "
                 + getRequest().getHostRef().getHostIdentifier());
         try{
-            String xmlText = entity.getText();      
-            XStream xs = RESTDispatcher.getConfig().getConfiguredXStream(new XStream(new DomDriver()));
+            String xmlText = entity.getText();
+            XStream xs = XMLConfiguration.getConfiguredXStream(new XStream(new DomDriver()));
+            //XStream xs = RESTDispatcher.getConfig().getConfiguredXStream();
             TileLayer tileLayer = null;
             if(entity.getMediaType().equals(MediaType.APPLICATION_XML)){
             	tileLayer = (WMSLayer) xs.fromXML(xmlText);
             }
             
             /**
-             * deserializing a json string is more complicated. XStream does not natively
-             * support it. Rather it uses a JettisonMappedXmlDriver to convert to intermediate xml
+             * Deserializing a JSON string is more complicated. XStream does not natively
+             * support it. Rather it uses a JettisonMappedXmlDriver to convert to intermediate XML
              * and then deserializes that into the desired object. At this time, there is a known issue 
-             * with the Jettison driver involving elements that come after an array in the json string. 
+             * with the Jettison driver involving elements that come after an array in the JSON string. 
              * 
              * http://jira.codehaus.org/browse/JETTISON-48
              * 
-             * The code below is a hack: it treats the json string as text, then converts it to the intermediate
-             * xml and then deserializes that into the tileLayer object. 
-             * 
-             * 
+             * The code below is a hack: it treats the json string as text, then converts it to the 
+             * intermediate XML and then deserializes that into the tileLayer object. 
              */
             else if(entity.getMediaType().equals(MediaType.APPLICATION_JSON)){
             	HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();
@@ -293,7 +298,8 @@ public class TileLayerResource extends Resource {
                     log.error(gwce.getMessage());
                 }
                 if (trySave) {
-                    log.info("Overwrote layer : " + currentLayer.getName() + " with new layer : " + tileLayer.getName());
+                    log.info("Overwrote layer : " + currentLayer.getName() 
+                            + " with new layer : " + tileLayer.getName());
                     getResponse().setStatus(Status.SUCCESS_OK);
                 } else {
                     getResponse().setStatus(Status.CLIENT_ERROR_FAILED_DEPENDENCY);
