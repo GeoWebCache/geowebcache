@@ -93,7 +93,7 @@ public class WMSService extends Service {
         SRS srs = wmsParams.getSrs();
         //int srsIdx = tileLayer.getSRSIndex(srs);
 
-        if (tileLayer.supportsSRS(srs)) {
+        if (! tileLayer.supportsSRS(srs)) {
             throw new ServiceException("Unable to match requested SRS "
                     + wmsParams.getSrs() + " to those supported by layer");
         }

@@ -111,7 +111,7 @@ public abstract class TileLayer {
      * @throws GeoWebCacheException
      */
     public boolean supportsSRS(SRS srs) throws GeoWebCacheException {
-        if(this.grids.contains(srs)) {
+        if(this.grids.containsKey(srs)) {
             return true;
         }
         return false;
