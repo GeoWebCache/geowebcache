@@ -327,7 +327,7 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
         return false;
     }
 
-    public boolean supportsProjection(SRS srs) throws GeoWebCacheException {
+    public boolean supportsSRS(SRS srs) throws GeoWebCacheException {
         // TODO Auto-generated method stub
         //log.warn("supportsProjection");
         return false;

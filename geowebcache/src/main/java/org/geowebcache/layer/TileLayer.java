@@ -110,7 +110,7 @@ public abstract class TileLayer {
      * @return
      * @throws GeoWebCacheException
      */
-    public boolean supportsProjection(SRS srs) throws GeoWebCacheException {
+    public boolean supportsSRS(SRS srs) throws GeoWebCacheException {
         if(this.grids.contains(srs)) {
             return true;
         }
@@ -148,7 +148,7 @@ public abstract class TileLayer {
      */
     public String supportsBbox(SRS srs, BBOX reqBounds)
             throws GeoWebCacheException {
-        this.supportsProjection(srs);
+        this.supportsSRS(srs);
 
         if (!reqBounds.isSane()) {
             return "The requested bounding box "

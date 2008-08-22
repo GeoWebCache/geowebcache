@@ -1,6 +1,7 @@
 package org.geowebcache.demo;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -61,32 +62,37 @@ public class Demo {
     private static String generateHTML(TileLayerDispatcher tileLayerDispatcher) 
     throws GeoWebCacheException {
         String header = 
-            "<html><body>"
+            "<html><body>\n"
             +"<a id=\"logo\" href=\"http://geowebcache.org\">" 
             +"<img src=\"http://geowebcache.org/trac/chrome/site/geowebcache_text.png?page=demos\""
             +"height=\"63\" width=\"306\" border=\"0\"/>"
-            +"</a>"
-            +"<h3>Known layers:</h3><table>"
-            +"<ul><li>This is just a quick demo, the bounds are likely to be less than perfect.</li>"
+            +"</a>\n"
+            +"<h3>Known layers:</h3><table>\n"
+            +"<ul><li>This is just a quick demo, the bounds are likely to be less than perfect.</li>\n"
             +"<li>You can append &format=image/jpeg to the URLs in the "
-            +"table to change the output format.</li>"
+            +"table to change the output format.</li>\n"
             +"<li>If the layers are loaded from a WMS getcapabilities"
-            +" document you will probably see duplicates without the namespace prefix.</li>"
-            +"<li>OpenLayers does not support bounds per zoomlevel, and GWC tightens the bounds as you zoom in. Some tile requests will therefore be rejected. </li>"
-            +"<hr>"
+            +" document you will probably see duplicates without the namespace prefix.</li>\n"
+            +"<li>OpenLayers does not support bounds per zoomlevel, and GWC tightens the bounds as you zoom in."
+            +" Some tile requests will therefore be rejected. </li>\n"
+            +"</ul>\n"
+            +"<hr>\n"
+            +"<table cellspacing=\"10\" border=\"0\">\n"
             +"<tr><td><strong>Layer name:</strong></td>" 
             +"<td colspan=\"2\"><strong>OpenLayers:</strong></td>"
-            +"<td colspan=\"2\"><strong>Google Earth:</strong></td></tr>";
+            +"<td colspan=\"2\"><strong>Google Earth:</strong></td>" 
+            +"<td><strong>Custom:</strong></td>" 
+            +"</tr>\n";
         
         String rows = tableRows(tileLayerDispatcher);
         
-        String footer = "</table>"
-            +"</body></html>";
+        String footer = "</table>\n</body></html>";
         
         return header + rows + footer;
     }
     
-    private static String tableRows(TileLayerDispatcher tileLayerDispatcher)  {
+    private static String tableRows(TileLayerDispatcher tileLayerDispatcher)
+    throws GeoWebCacheException {
         Iterator<Entry<String,TileLayer>> it = 
             tileLayerDispatcher.getLayers().entrySet().iterator();
         
@@ -94,12 +100,43 @@ public class Demo {
         
         while(it.hasNext()) {
             TileLayer layer = it.next().getValue();     
-            buf.append("<tr><td>"+layer.getName()+"</td>"
-                + "<td><a href=\"demo/"+layer.getName()+"?srs=EPSG:4326\">EPSG:4326</a></td>"
-                + "<td><a href=\"demo/"+layer.getName()+"?srs=EPSG:900913\">EPSG:900913</a></td>" 
-                + "<td><a href=\"service/kml/"+layer.getName()+".png.kmz\">KML (PNG)</a></td>"
-                + "<td><a href=\"service/kml/"+layer.getName()+".kml.kmz\">KML (vector)</a></td>"
-                + "</tr>");
+            buf.append("<tr><td>"+layer.getName()+"</td>");
+            if(layer.supportsSRS(SRS.getEPSG4326())) {
+                buf.append("<td><a href=\"demo/"+layer.getName()+"?srs=EPSG:4326\">EPSG:4326</a></td>");
+            } else {
+                buf.append("<td>EPSG:4326 not supported</td>");
+            }
+            
+            if(layer.supportsSRS(SRS.getEPSG900913())) {
+                buf.append("<td><a href=\"demo/"+layer.getName()+"?srs=EPSG:900913\">EPSG:900913</a></td>");
+            } else {
+                buf.append("<td>EPSG:900913 not supported</td>");
+            }
+            
+            if(layer.supportsSRS(SRS.getEPSG4326())) {
+                buf.append("<td><a href=\"service/kml/"+layer.getName()+".png.kmz\">KML (PNG)</a></td>"
+                + "<td><a href=\"service/kml/"+layer.getName()+".kml.kmz\">KML (vector)</a></td>");
+            } else {
+                buf.append("<td colspan=\"2\"> Google Earth requires EPSG:4326 support</td>");
+            }
+            
+            // Any custom projections?
+            buf.append("<td>");
+            int count = 0;
+            Iterator<SRS> iter = layer.getGrids().keySet().iterator();
+            while(iter.hasNext()) {
+                SRS curSRS = iter.next();
+                if(curSRS != SRS.getEPSG4326() && curSRS != SRS.getEPSG900913()) { 
+                    buf.append("<a href=\"demo/"+layer.getName()+"?srs="+curSRS.toString()+"\">"
+                        + curSRS.toString()+"</a><br />");
+                    count++;
+                }
+            }
+            
+            if(count == 0){
+                buf.append("<i>none</i>");
+            }
+            buf.append("</td></tr>\n");
         }
         return buf.toString();
     }
@@ -110,31 +147,11 @@ public class Demo {
         String mime = layer.getDefaultMimeType().getFormat();
         //int srsIdx = layer.getSRSIndex(SRS.getSRS(srsStr));
         
-        BBOX bbox = null;
-        BBOX zoomBounds = null;
-        String res = "";
         Grid grid = layer.getGrid(srs);
-        
-        if(srs.getNumber() == 900913) {
-            //res = "resolutions: [156543.03,78271.52,39135.76,19567.88,9783.94,4891.97],\n";
-            res = "resolutions: " + getEPSG900913Resolutions() + ",\n";
-            bbox = new BBOX(-20037508.34,-20037508.34,20037508.34,20037508.34);
-        } else if(srs.getNumber() == 4326) {
-            res = "resolutions: " + getEPSG4326Resolutions() + ",\n";
-            bbox = new BBOX(-180.0,-90.0,180.0,90.0);
-        }
-               
-        //int[] gridLoc = layer.getZoomedOutGridLoc(srsIdx);
-        //if(gridLoc[2] > -1) {
-        //    bbox = layer.getBboxForGridLoc(srsIdx, gridLoc);
-        //    zoomBounds = new BBOX(bbox);
-        //    zoomBounds.scale(0.50);
-        //} else {
-        //    zoomBounds = bbox;
-        //}
-        zoomBounds = grid.getBounds();
-        
-        
+        BBOX bbox = grid.getGridBounds();
+        BBOX zoomBounds = grid.getBounds();
+        //String res = "resolutions: "+ Arrays.toString(grid.getResolutions()) + ",\n";
+        String res = "maxResolution: " + Double.toString(grid.getResolutions()[0]) +",\n"; 
         String page =
             "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n"
             +"<meta http-equiv=\"imagetoolbar\" content=\"no\">\n"
@@ -169,28 +186,5 @@ public class Demo {
             +"</body>\n"
             +"</html>";
         return page;
-    }
-    
-    private static String getEPSG4326Resolutions() {
-        String resolutions = "["
-            + "0.3515625,0.17578125,0.087890625,0.0439453125,\n"
-            + "0.0219726563,0.0109863281,0.0054931641,0.0027465820,\n"
-            + "0.0013732910,0.0006866455,0.0003433228,0.0001716614,\n"
-            + "0.0000858307,0.0000429153,0.0000214577,0.0000107288,\n"
-            + "0.0000053644,0.0000026822"
-            + "]";
-        
-        return resolutions;
-    }
-    
-    private static String getEPSG900913Resolutions() {
-        String resolutions = "["
-            +"156543.03, 78271.52, 39135.76, 19567.88, 9783.94,\n"
-            +"4891.97,   2445.98,  1222.99,  611.50,\n"
-            +"305.75,    152.87,   76.44,    38.22,\n"
-            +"19.11,     9.55,     4.78,     2.39,\n"
-            +"1.19]";
-        
-        return resolutions;
     }
 }
