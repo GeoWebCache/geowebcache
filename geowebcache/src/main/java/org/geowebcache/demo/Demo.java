@@ -126,7 +126,7 @@ public class Demo {
             Iterator<SRS> iter = layer.getGrids().keySet().iterator();
             while(iter.hasNext()) {
                 SRS curSRS = iter.next();
-                if(curSRS != SRS.getEPSG4326() && curSRS != SRS.getEPSG900913()) { 
+                if(curSRS.getNumber() != 4326 && curSRS.getNumber() != 900913) { 
                     buf.append("<a href=\"demo/"+layer.getName()+"?srs="+curSRS.toString()+"\">"
                         + curSRS.toString()+"</a><br />");
                     count++;
