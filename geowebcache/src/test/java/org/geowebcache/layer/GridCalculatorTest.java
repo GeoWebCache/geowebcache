@@ -18,14 +18,9 @@ public class GridCalculatorTest extends TestCase {
     public void test1gridLevels4326() throws Exception {
         BBOX bbox = new BBOX(0, 0, 180, 90);
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
-        int metaHeight = 1;
-        int metaWidth = 1;
         
         Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
-
-        //int[][] solution = { { 1, 0, 1, 0 }, { 2, 1, 3, 1 }, { 4, 2, 7, 3 },
-        //        { 8, 4, 15, 7 }, { 16, 8, 31, 15 } };
 
         int[][] solution = { { 1, 0, 1, 0 }, { 2, 1, 3, 1 }, { 4, 2, 7, 3 },
                 { 8, 4, 15, 7 } };
@@ -44,15 +39,9 @@ public class GridCalculatorTest extends TestCase {
     public void test2gridLevels4326() throws Exception {
         BBOX bbox = new BBOX(0, 0, 180, 90);
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
-        int metaHeight = 3;
-        int metaWidth = 3;
         
         Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
-
-        //int[][] solution = { { 1, 0, 1, 0 }, { 0, 0, 3, 1 }, { 3, 0, 7, 3 },
-        //        { 6, 3, 15, 7 }, { 15, 6, 31, 15 }, { 30, 15, 63, 31 },
-        //        { 63, 30, 127, 63 } };
         
         int[][] solution = { { 1, 0, 1, 0 }, { 2, 1, 3, 1 }, { 4, 2, 7, 3 },
                 { 8, 4, 15, 7 }, { 16, 8, 31, 15 }, { 32, 16, 63, 31 },
@@ -72,8 +61,6 @@ public class GridCalculatorTest extends TestCase {
     public void test3gridLevels4326() throws Exception {
         BBOX bbox = new BBOX(-10.0, -10.0, 10.0, 10.0);
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
-        int metaHeight = 3;
-        int metaWidth = 3;
 
         Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
@@ -81,10 +68,6 @@ public class GridCalculatorTest extends TestCase {
         int[][] solution = { { 0, 0, 1, 0 }, { 1, 0, 2, 1 }, { 3, 1, 4, 2 },
                 { 7, 3, 8, 4 }, { 15, 7, 16, 8 }, { 30, 14, 33, 17 },
                 { 60, 28, 67, 35 }, { 120, 56, 135, 71 } };
-        
-        //int[][] solution = { { 0, 0, 1, 0 }, { 0, 0, 2, 1 }, { 3, 0, 5, 2 },
-        //        { 6, 3, 8, 5 }, { 15, 6, 17, 8 }, { 30, 12, 35, 17 },
-        //        { 60, 27, 68, 35 }, { 120, 54, 137, 71 } };
 
         for (int i = 0; i < solution.length; i++) {
             int[] bounds = gridCalc.getGridBounds(i);
@@ -100,13 +83,9 @@ public class GridCalculatorTest extends TestCase {
     public void test4gridLevels4326() throws Exception {
         BBOX bbox = new BBOX(175.0, 87.0, 180.0, 90.0);
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
-        int metaHeight = 4;
-        int metaWidth = 4;
         
         Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
-        //int[][] solution = { { 1, 0, 1, 0 }, { 3, 1, 3, 1 }, { 4, 0, 7, 3 },
-        //        { 12, 4, 15, 7 }, { 28, 12, 31, 15 } };
 
         int[][] solution = { { 1, 0, 1, 0 }, { 3, 1, 3, 1 }, { 7, 3, 7, 3 },
                 { 15, 7, 15, 7 }, { 31, 15, 31, 15 }, {63, 31, 63, 31}, {126, 62, 127, 63},
@@ -128,14 +107,9 @@ public class GridCalculatorTest extends TestCase {
         BBOX gridBase = new BBOX(
         		-20037508.34, -20037508.34, 
         		20037508.34, 20037508.34);
-        int metaHeight = 1;
-        int metaWidth = 1;
         
         Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
-        
-        //int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 2, 2, 3, 3 },
-        //        { 4, 4, 7, 7 }, { 8, 8, 15, 15 } };
         
         int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 2, 2, 3, 3 },
                 { 4, 4, 7, 7 }, { 8, 8, 15, 15 } };
@@ -157,15 +131,9 @@ public class GridCalculatorTest extends TestCase {
         BBOX gridBase = new BBOX(
         		-20037508.34, -20037508.34, 
         		20037508.34, 20037508.34);
-        int metaHeight = 3;
-        int metaWidth = 3;
         
         Grid grid = new Grid(SRS.getEPSG900913(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
-
-        //int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 0, 0, 3, 3 },
-        //        { 3, 3, 7, 7 }, { 6, 6, 15, 15 }, { 15, 15, 31, 31 },
-        //        { 30, 30, 63, 63 } };
         
         int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 2, 2, 3, 3 },
                 { 4, 4, 7, 7 }, { 8, 8, 15, 15 }, { 16, 16, 31, 31 },
@@ -188,15 +156,9 @@ public class GridCalculatorTest extends TestCase {
         BBOX gridBase = new BBOX(
         		-20037508.34, -20037508.34, 
         		20037508.34, 20037508.34);
-        int metaHeight = 3;
-        int metaWidth = 3;
         
         Grid grid = new Grid(SRS.getEPSG900913(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
-                
-        //int[][] solution = { { 0, 0, 0, 0 }, { 0, 0, 1, 1 }, { 0, 0, 2, 2 },
-        //        { 3, 3, 5, 5 }, { 6, 6, 8, 8 }, { 15, 15, 17, 17 },
-        //        { 30, 30, 32, 32 }, { 60, 60, 65, 65 } };
         
         int[][] solution = { { 0, 0, 0, 0 }, { 0, 0, 1, 1 }, { 1, 1, 2, 2 },
                 { 3, 3, 4, 4 }, { 7, 7, 8, 8 }, { 15, 15, 16, 16 },
@@ -217,8 +179,6 @@ public class GridCalculatorTest extends TestCase {
     public void test5gridBoundsLoc4326() throws Exception {
         BBOX bbox = new BBOX(-124.73, 24.96, -66.97, 49.37);
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
-        int metaHeight = 3;
-        int metaWidth = 3;
 
         Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
@@ -231,8 +191,6 @@ public class GridCalculatorTest extends TestCase {
     public void test6gridLoctoBounds4326() throws Exception {
         BBOX bbox = new BBOX(-124.73, 24.96, -66.97, 49.37);
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
-        int metaHeight = 3;
-        int metaWidth = 3;
         
         Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
@@ -259,14 +217,9 @@ public class GridCalculatorTest extends TestCase {
     public void test5gridLevels4326() throws Exception {
         BBOX bbox = new BBOX(-124.731422, 24.955967, -66.969849, 49.371735);
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
-        int metaHeight = 1;
-        int metaWidth = 1;
         
         Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
-                
-        //int[][] solution = { { 0, 0, 0, 0 }, { 0, 1, 1, 1 }, { 1, 2, 2, 3 },
-        //        { 2, 5, 5, 6 } };
         
         int[][] solution = { { 0, 0, 0, 0 }, { 0, 1, 1, 1 }, { 1, 2, 2, 3 },
                 { 2, 5, 5, 6 } };
@@ -314,6 +267,33 @@ public class GridCalculatorTest extends TestCase {
         result = GridCalculator.binarySearchForResolution(resolutions, 4.002);
         assertEquals(4, result);
         
+    }
+    
+    public void testCustomSRSGrid() throws Exception {
+        // This mimics the Spearfish layer
+        BBOX bbox = new BBOX(587334.20625,4912451.9275, 611635.54375,4936753.265000001);
+        BBOX gridBase = new BBOX(587334.20625,4912451.9275, 611635.54375,4936753.265000001);
+        
+        // Test the basic algorithm for calculating appropriate resolutions
+        Grid grid = new Grid(SRS.getSRS(26713), bbox, gridBase, null);
+        GridCalculator gridCalc = grid.getGridCalculator();
+        assertTrue(Math.abs(gridCalc.getResolutions()[0] - 94.9270 ) / 94.9270 < 0.01);
+        
+        // Check the actual max bounds
+        int[] solution = {0,0,0};
+        assertTrue(Arrays.equals(solution,gridCalc.gridLocation(bbox)));
+        
+        // Test a grid location
+        int[] gridLoc =  {1, 0, 1};
+        BBOX bboxSolution = new BBOX(599484.8750000002,4912451.9275,611635.5437500004,4924602.59625);
+        assertTrue(bboxSolution.equals(gridCalc.bboxFromGridLocation(gridLoc)));
+        
+        // Now lets go the other way
+        assertTrue(Arrays.equals(gridCalc.gridLocation(bboxSolution),gridLoc));
+        
+        // This is a bit easy, but whatever
+        int[] zoomedOut = gridCalc.getZoomedOutGridLoc();
+        assertTrue(Arrays.equals(solution,zoomedOut));
     }
     
    
