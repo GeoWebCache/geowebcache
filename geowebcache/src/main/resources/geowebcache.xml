@@ -67,7 +67,7 @@
     </entry>
   </grids>
   
-  <WMSurl>http://sigma.openplans.org:80/geowebcache/wms</WMSurl>
+  <WMSurl>http://sigma.openplans.org/geoserver/wms</WMSurl>
   <metaWidthHeight>
     <int>3</int>
     <int>3</int>
