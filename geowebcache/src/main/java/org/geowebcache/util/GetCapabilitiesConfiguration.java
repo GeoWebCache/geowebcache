@@ -145,10 +145,11 @@ public class GetCapabilitiesConfiguration implements Configuration {
         while (layerIter.hasNext()) {
             Layer layer = layerIter.next();
             String name = layer.getName();
+            String stylesStr = "";
             
             if (name != null) {
                 List styles = layer.getStyles();
-                String stylesStr = "";
+                
                 StringBuffer buf = new StringBuffer();
                 if(styles != null) {
                     Iterator<StyleImpl> iter = styles.iterator();
@@ -160,8 +161,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
                         buf.append(iter.next().getName());
                         hasOne = true;
                     }
-                }    
-                //TODO styles are not currently forwarded
+                    stylesStr = buf.toString();
+                }
                 
                 double minX = layer.getLatLonBoundingBox().getMinX();
                 double minY = layer.getLatLonBoundingBox().getMinY();
@@ -179,9 +180,11 @@ public class GetCapabilitiesConfiguration implements Configuration {
                         longToSphericalMercatorX(maxX),
                         latToSphericalMercatorY(maxY));
                
+                String[] wmsUrls = {wmsUrl};
+                
                 WMSLayer wmsLayer = null;
                 try {
-                    wmsLayer = getLayer(name, wmsUrl, bounds4326, 
+                    wmsLayer = getLayer(name, wmsUrls, bounds4326, 
                             bounds900913, stylesStr);
                 } catch (GeoWebCacheException gwc) {
                     log.error("Error creating " + layer.getName() + ": "
@@ -197,7 +200,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
         return layerMap;
     }
 
-    private WMSLayer getLayer(String name, String wmsurl, 
+    private WMSLayer getLayer(String name, String[] wmsurl, 
             BBOX bounds4326, BBOX bounds900913, String stylesStr)
             throws GeoWebCacheException {
         
@@ -229,7 +232,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
         
         // TODO We're dropping the styles now...
         return new WMSLayer(name, this.cacheFactory,
-                wmsurl, mimeFormats, grids, metaWidthHeight, this.vendorParameters);
+                wmsurl, stylesStr, name, mimeFormats, grids, 
+                metaWidthHeight, this.vendorParameters);
     }
 
     private WebMapServer getWMS() {

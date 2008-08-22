@@ -55,8 +55,13 @@ import org.geowebcache.layer.GridCalculator;
 
 public class WMSLayer extends TileLayer {
     // needed in configuration object written to xml
-    private String WMSurl = null;
+    
+    private String[] wmsUrl = null;
 
+    private String wmsLayers = null;
+    
+    private String wmsStyles = null;
+    
     private int[] metaWidthHeight = null;
 
     private String errormime;
@@ -87,13 +92,13 @@ public class WMSLayer extends TileLayer {
 
     private transient String vendorParameters;
 
-    protected transient String[] wmsURL;
+    //protected transient String[] wmsURL;
 
     private transient int curWmsURL;
 
     //private transient String wmsLayers;
 
-    private transient String wmsStyles;
+    //private transient String wmsStyles;
 
     //private transient WMSParameters wmsparams;
 
@@ -137,13 +142,15 @@ public class WMSLayer extends TileLayer {
     //}
     
     public WMSLayer(String layerName, CacheFactory cacheFactory,
-            String wmsURL, List<String> mimeFormats,
-            Hashtable<SRS,Grid> grids, int[] metaWidthHeight,
-            String vendorParams) {
+            String[] wmsURL, String wmsLayers, String wmsStyles,
+            List<String> mimeFormats, Hashtable<SRS,Grid> grids, 
+            int[] metaWidthHeight, String vendorParams) {
      
         name = layerName;
         initCacheFactory = cacheFactory;
-        this.WMSurl = wmsURL;
+        this.wmsUrl = wmsURL;
+        this.wmsLayers = wmsLayers;
+        this.wmsStyles = wmsStyles;
         this.mimeFormats = mimeFormats;
         this.grids = grids;
         this.metaWidthHeight = metaWidthHeight;
@@ -577,7 +584,7 @@ public class WMSLayer extends TileLayer {
             this.saveExpirationHeaders = true;
         }
         // wms urls
-        wmsURL = WMSurl.split(",");
+        //wmsUrl = wmsUrl.split(",");
 
         // mimetypes
         this.formats = new ArrayList<MimeType>();
@@ -667,7 +674,12 @@ public class WMSLayer extends TileLayer {
         WMSParameters wmsparams = new WMSParameters();
         wmsparams.setRequest(request);
         wmsparams.setVersion(version);
-        wmsparams.setLayer(this.name);
+        if(this.wmsLayers != null && this.wmsLayers.length() > 0) {
+            wmsparams.setLayer(this.wmsLayers);
+        } else {
+            wmsparams.setLayer(this.name);
+        }
+        
         wmsparams.setErrorMime(errormime);
 
         wmsparams.setIsTransparent(transparent);
@@ -696,8 +708,8 @@ public class WMSLayer extends TileLayer {
      * @return the next URL
      */
     protected String nextWmsURL() {
-        curWmsURL = (curWmsURL + 1) % wmsURL.length;
-        return wmsURL[curWmsURL];
+        curWmsURL = (curWmsURL + 1) % wmsUrl.length;
+        return wmsUrl[curWmsURL];
     }
 
     public void destroy() {
@@ -918,12 +930,12 @@ public class WMSLayer extends TileLayer {
         this.metaWidthHeight[1] = h;
     }
 
-    public void setWMSurl(String wmsurl) {
-        this.WMSurl = wmsurl;
+    public void setWMSurl(String[] wmsurl) {
+        this.wmsUrl = wmsurl;
     }
 
-    public String getWMSurl() {
-        return this.WMSurl;
+    public String[] getWMSurl() {
+        return this.wmsUrl;
     }
 
     //public void setWidthHeight(int w, int h) {

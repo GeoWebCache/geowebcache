@@ -49,7 +49,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
     public static final String TYPE_SERVICE = "service";
 
-    public static final String TYPE_SEED = "seed";
+    //public static final String TYPE_SEED = "seed";
 
     public static final String TYPE_TRUNCATE = "truncate";
     
@@ -84,7 +84,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     }
 
     /**
-     * GeoServer and other solutions that embedd this dispatcher will prepend a
+     * GeoServer and other solutions that embedded this dispatcher will prepend a
      * path, this is used to remove it.
      * 
      * @param servletPrefix

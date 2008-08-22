@@ -103,7 +103,7 @@ public class WMSHttpHelper {
         URL wmsBackendUrl = null;
 
         int backendTries = 0; // keep track of how many backends we have tried
-        while (data == null && backendTries < layer.wmsURL.length) {
+        while (data == null && backendTries < layer.getWMSurl().length) {
             Request wmsrequest = new Request(layer.nextWmsURL(), wmsparams);
             try {
                 wmsBackendUrl = new URL(wmsrequest.toString());
