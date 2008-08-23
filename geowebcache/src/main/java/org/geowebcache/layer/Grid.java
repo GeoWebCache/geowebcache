@@ -26,9 +26,9 @@ import org.geowebcache.util.wms.BBOX;
  */
 
 public class Grid {
-    private SRS gridSRS = null;
+    private SRS srs = null;
     
-    protected BBOX bounds = null;
+    protected BBOX dataBounds = null;
     
     protected BBOX gridBounds = null;
     
@@ -41,8 +41,8 @@ public class Grid {
     private volatile int zoomStop = 25;
     
     public Grid(SRS srs, BBOX bounds, BBOX gridBounds, double[] resolutions) {
-        this.gridSRS = srs;
-        this.bounds = bounds;
+        this.srs = srs;
+        this.dataBounds = bounds;
         this.gridBounds = gridBounds;
         this.resolutions = resolutions;
     }
@@ -52,25 +52,25 @@ public class Grid {
      * @param bounds - BBOX with bounds
      */
     public void setBounds(BBOX bounds) {
-        this.bounds = bounds;
+        this.dataBounds = bounds;
     }
     /**
      * method will set the bounds of the layer for this grid from a String
      * @param bounds - String containing bounds
      */
     public void setBounds(String bounds) {
-        this.bounds = new BBOX(bounds);
+        this.dataBounds = new BBOX(bounds);
     }
     /**
      * method will set the grid bounds (world) of the layer for this grid from a BBOX 
-     * @param bounds - BBOX with bounds
+     * @param dataBounds - BBOX with bounds
      */
     public void setGridBounds(BBOX gridbounds) {
         this.gridBounds = gridbounds;
     }
     /**
      * method will set the grid bounds (world) of the layer for this grid from a String 
-     * @param bounds - String containing bounds
+     * @param dataBounds - String containing bounds
      */
     public void setGridBounds(String gridbounds) {
 
@@ -81,21 +81,21 @@ public class Grid {
      * @param projection - SRS
      */
     public void setSRS(SRS srs) {
-        this.gridSRS = srs;
+        this.srs = srs;
     }
     /**
      * method returns the projection supported by the layer for this grid
      * @return
      */
     public SRS getSRS() {
-        return this.gridSRS;
+        return this.srs;
     }
     /**
      * method returns the bounds of the layer for this grid
      * @return
      */
     public BBOX getBounds() {
-        return this.bounds;
+        return this.dataBounds;
     }
     /**
      * method returns the grid bounds of the layer for this grid

@@ -75,6 +75,14 @@ public class WMSLayer extends TileLayer {
     private boolean tiled;
 
     private boolean transparent;
+    
+    private String bgColor;
+
+    private String palette;
+    
+    private String cachePrefix;
+    
+    private String vendorParameters;
 
     //private boolean debugheaders;
 
@@ -84,13 +92,7 @@ public class WMSLayer extends TileLayer {
 
     //private transient int zoomStop;
 
-    private transient String request;
-
-    private transient String bgcolor;
-
-    private transient String palette;
-
-    private transient String vendorParameters;
+    //private transient String request;
 
     //protected transient String[] wmsURL;
 
@@ -120,8 +122,6 @@ public class WMSLayer extends TileLayer {
 
     private transient Condition[] gridLocConds;
 
-    private transient String cachePrefix;
-
     private transient List<MimeType> formats;
 
     private transient HashMap<GridLocObj, Boolean> procQueue;
@@ -142,7 +142,7 @@ public class WMSLayer extends TileLayer {
     //}
     
     public WMSLayer(String layerName, CacheFactory cacheFactory,
-            String[] wmsURL, String wmsLayers, String wmsStyles,
+            String[] wmsURL, String wmsStyles, String wmsLayers, 
             List<String> mimeFormats, Hashtable<SRS,Grid> grids, 
             int[] metaWidthHeight, String vendorParams) {
      
@@ -157,6 +157,9 @@ public class WMSLayer extends TileLayer {
         this.expireClients = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
         this.expireCache = GWCVars.CACHE_NEVER_EXPIRE;
         this.vendorParameters = vendorParams;
+        this.transparent = true;
+        //this.bgColor = "0x000000";
+        //this.palette = "test.png";
     }
     
     public void setCacheFactory(CacheFactory cacheFactory) {
@@ -211,7 +214,7 @@ public class WMSLayer extends TileLayer {
         //width = 256;
         //height = 256;
         
-        request = "GetMap";
+        //request = "GetMap";
         errormime = ErrorMime.vnd_ogc_se_inimage.getMimeType();
         version = "1.1.0";
         transparent = true;
@@ -583,9 +586,7 @@ public class WMSLayer extends TileLayer {
                 || expireClients == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
             this.saveExpirationHeaders = true;
         }
-        // wms urls
-        //wmsUrl = wmsUrl.split(",");
-
+        
         // mimetypes
         this.formats = new ArrayList<MimeType>();
         for (String fmt : mimeFormats) {
@@ -593,10 +594,6 @@ public class WMSLayer extends TileLayer {
         }
         if (formats.get(0) == null)
             formats.add(0, ImageMime.createFromFormat("image/png"));
-
-        //double[] maxTileWidth = new double[this.grids.size()];
-        //double[] maxTileHeight = new double[this.grids.size()];
-
 
         // Cache and CacheKey
         cache = initCacheFactory.getDefaultCache();
@@ -609,11 +606,12 @@ public class WMSLayer extends TileLayer {
         
         String sanitizedName = name.replace(':', '_');
         
-        cachePrefix = cache.getDefaultPrefix(sanitizedName);
+        if(cachePrefix == null || cachePrefix.length() == 0) {
+            cachePrefix = cache.getDefaultPrefix(sanitizedName);
+            log.warn("cachePrefix not defined for layer " + name
+                    + ", using default prefix and name instead: " + cachePrefix);
+        }
         
-        log.warn("cachePrefix not defined for layer " + name
-                + ", using default prefix and name instead: " + cachePrefix);
-
         // Initialize the cache
         cache.setUp(cachePrefix);
     }
@@ -672,9 +670,11 @@ public class WMSLayer extends TileLayer {
 
     public WMSParameters getWMSParamTemplate() {
         WMSParameters wmsparams = new WMSParameters();
-        wmsparams.setRequest(request);
+        wmsparams.setRequest("GetMap");
+        wmsparams.setService("WMS");
         wmsparams.setVersion(version);
-        if(this.wmsLayers != null && this.wmsLayers.length() > 0) {
+        
+        if(this.wmsLayers != null && this.wmsLayers.length() != 0) {
             wmsparams.setLayer(this.wmsLayers);
         } else {
             wmsparams.setLayer(this.name);
@@ -685,16 +685,16 @@ public class WMSLayer extends TileLayer {
         wmsparams.setIsTransparent(transparent);
         wmsparams.setIsTiled(tiled);
 
-        if (bgcolor != null) {
-            wmsparams.setBgColor(bgcolor);
+        if (bgColor != null && bgColor.length() != 0) {
+            wmsparams.setBgColor(bgColor);
         }
-        if (palette != null) {
+        if (palette != null && palette.length() != 0) {
             wmsparams.setPalette(palette);
         }
-        if (vendorParameters != null) {
+        if (vendorParameters != null && vendorParameters.length() != 0) {
             wmsparams.setVendorParams(vendorParameters);
         }
-        if (wmsStyles != null) {
+        if (wmsStyles != null && wmsStyles.length() != 0) {
             wmsparams.setStyles(wmsStyles);
         }
         wmsparams.setFormat(formats.get(0).getFormat());

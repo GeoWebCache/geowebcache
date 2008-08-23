@@ -148,6 +148,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         xs.aliasType("version", String.class);
         xs.alias("tiled", boolean.class);
         xs.alias("transparent", boolean.class);
+        xs.alias("SRS", org.geowebcache.layer.SRS.class);
         //xs.alias("debugheaders", boolean.class);
         
         return xs;

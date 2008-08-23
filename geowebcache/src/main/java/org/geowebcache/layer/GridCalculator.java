@@ -86,7 +86,7 @@ public class GridCalculator {
         // Figure out the rest
         determineGrid();
         
-        boundsGridLevels = calculateGridBounds(grid.bounds);
+        boundsGridLevels = calculateGridBounds(grid.dataBounds);
     }
     
     private void determineGrid() throws GeoWebCacheException {

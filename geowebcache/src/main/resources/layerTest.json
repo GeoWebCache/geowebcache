@@ -1,24 +1,29 @@
-{"wmslayer":
-	{
-	"layer-name": "my:newTest",
-	"mimeFormats":{"string":["image\/jpeg","image\/png"]},
-	"grids":{
-		"grid":{"bounds":{"coords":{"double":["-180.0","-90.0","0.0","90.0"]}},
-			     "gridbounds":{"coords":{"double":["-180.0","-90.0","180.0","90.0"]}},
-				  "projection":{"number":"4326"}
-		        }
-	 },
-		
-		
-	"WMSurl":"http:\/\/sigma.openplans.org\/geoserver\/wms",
-	"metaWidthHeight":{"int":["3","3"]},
-	"errormime":"application\/vnd.ogc.se_inimage",
-	"width":"256",
-	"height":"256",
-	"version":"1.1.0",
-	"tiled":"false",
-	"transparent":"true",
-	"debugheaders":"true"
-		
- }
-}
+{"wmslayer": {
+	"palette":"",
+	"wmsLayers":"topp:states",
+	"wmsStyles":"population",
+	"wmsUrl":["http://sigma.openplans.org:80/geoserver/wms"],
+	"grids":[
+			[{"number":4326},{
+				"gridBounds":{"coords":[-180,-90,180,90]},
+				"srs":{"number":4326},
+				"dataBounds":{"coords":[-124.731422,24.955967,-66.969849,49.371735]},
+				"zoomStop":0,
+				"zoomStart":0
+				}],
+			[{"number":900913},{
+				"gridBounds":{"coords":[-2.003750834E7,-2.003750834E7,2.003750834E7,2.003750834E7]},
+				"srs":{"number":900913},
+				"dataBounds":{"coords":[-1.3885038381028108E7,2870337.130394128,-7455049.488144671,6338174.0548753375]},
+				"zoomStop":0,
+				"zoomStart":0
+				}]
+			],
+	"mimeFormats":["image/png","image/jpeg","application/vnd.google-earth.kml+xml"],
+	"metaWidthHeight":[3,3],
+	"transparent":true,
+	"layer-name":"topp:states",
+	"vendorParameters":"format_options=regionateby:auto",
+	"tiled":false,
+	"bgColor":""
+	}}

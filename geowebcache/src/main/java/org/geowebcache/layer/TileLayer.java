@@ -142,7 +142,7 @@ public abstract class TileLayer {
      * combination
      * 
      * @param srs
-     * @param bounds
+     * @param dataBounds
      * @return null if ok, error message otherwise
      * @throws GeoWebCacheException
      */
@@ -155,9 +155,9 @@ public abstract class TileLayer {
                     + reqBounds.getReadableString() + " is not sane";
         }
 
-        if(! grids.get(srs).bounds.contains(reqBounds)) {
+        if(! grids.get(srs).dataBounds.contains(reqBounds)) {
             return "The layers grid box " 
-                + grids.get(srs).bounds.getReadableString()
+                + grids.get(srs).dataBounds.getReadableString()
                 + " does not cover the requested bounding box "
                 + reqBounds.getReadableString();
         }

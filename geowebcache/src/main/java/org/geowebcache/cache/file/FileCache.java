@@ -79,8 +79,7 @@ public class FileCache implements Cache {
         } else {
             if (!path.exists()) {
                 if (path.mkdirs()) {
-                    log.info(cachePrefix
-                            + " did not exist, has been created recursively.");
+                    log.info(cachePrefix + " did not exist, has been created recursively.");
                     return;
                 }
             }

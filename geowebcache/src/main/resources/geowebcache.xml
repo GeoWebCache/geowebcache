@@ -1,30 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <layers>
-<wmslayer>
+ <wmslayer>
   <layer-name>topp:states</layer-name>
   <mimeFormats>
     <string>image/png</string>
     <string>image/jpeg</string>
     <string>application/vnd.google-earth.kml+xml</string>
   </mimeFormats>
-
   <grids>
     <entry>
-      <org.geowebcache.layer.SRS>
+      <SRS>
         <number>900913</number>
-      </org.geowebcache.layer.SRS>
+      </SRS>
       <grid>
-        <gridSRS>
+        <srs>
           <number>900913</number>
-        </gridSRS>
-        <bounds>
+        </srs>
+        <dataBounds>
           <coords>
             <double>-1.3885038381028108E7</double>
             <double>2870337.130394128</double>
             <double>-7455049.488144671</double>
             <double>6338174.0548753375</double>
           </coords>
-        </bounds>
+        </dataBounds>
         <gridBounds>
           <coords>
             <double>-2.003750834E7</double>
@@ -33,26 +32,24 @@
             <double>2.003750834E7</double>
           </coords>
         </gridBounds>
-        <zoomStart>0</zoomStart>
-        <zoomStop>25</zoomStop>
       </grid>
     </entry>
     <entry>
-      <org.geowebcache.layer.SRS>
+      <SRS>
         <number>4326</number>
-      </org.geowebcache.layer.SRS>
+      </SRS>
       <grid>
-        <gridSRS>
+        <srs>
           <number>4326</number>
-        </gridSRS>
-        <bounds>
+        </srs>
+        <dataBounds>
           <coords>
             <double>-124.731422</double>
             <double>24.955967</double>
             <double>-66.969849</double>
             <double>49.371735</double>
           </coords>
-        </bounds>
+        </dataBounds>
         <gridBounds>
           <coords>
             <double>-180.0</double>
@@ -61,18 +58,24 @@
             <double>90.0</double>
           </coords>
         </gridBounds>
-        <zoomStart>0</zoomStart>
-        <zoomStop>25</zoomStop>
       </grid>
     </entry>
+
   </grids>
-  
-  <WMSurl>http://sigma.openplans.org/geoserver/wms</WMSurl>
+  <wmsUrl>
+    <string>http://sigma.openplans.org:80/geoserver/wms</string>
+  </wmsUrl>
+  <wmsLayers>topp:states</wmsLayers>
+  <wmsStyles>population</wmsStyles>
   <metaWidthHeight>
     <int>3</int>
     <int>3</int>
   </metaWidthHeight>
   <tiled>false</tiled>
-  <transparent>false</transparent>
+  <transparent>true</transparent>
+  <bgColor></bgColor>
+  <palette></palette>
+  <vendorParameters>format_options=regionateby:auto</vendorParameters>
+  <!-- cachePrefix>/var/lib/geowebcache/topp_states</cachePrefix -->
 </wmslayer>
 </layers>

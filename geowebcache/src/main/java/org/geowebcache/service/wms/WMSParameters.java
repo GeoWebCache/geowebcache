@@ -37,9 +37,9 @@ public class WMSParameters extends Parameters {
             .getLog(org.geowebcache.service.wms.WMSParameters.class);
 
     // These constants should be in lower case
-    public static final String REQUEST_PARAM = "request";
+    public static final String REQUEST_PARAM = "REQUEST";
 
-    public static final String VERSION_PARAM = "version";
+    public static final String VERSION_PARAM = "VERSION";
 
     public static final String TILED_PARAM = "tiled";
 
@@ -68,6 +68,8 @@ public class WMSParameters extends Parameters {
     public static final String ERROR_TYPE_PARAM = "exceptions";
     
     public static final String VENDOR_PARAMS = "vendorparameters";
+    
+    public static final String SERVICE_PARAM = "SERVICE";
 
     public WMSParameters() {
     }
@@ -120,6 +122,14 @@ public class WMSParameters extends Parameters {
 
     public void setStyles(String styles) {
         set(STYLES_PARAM, styles);
+    }
+
+    public String getService() {
+        return convertToString(get(SERVICE_PARAM));
+    }
+    
+    public void  setService(String service) {
+        set(SERVICE_PARAM, service);
     }
 
     public String getRequest() {
