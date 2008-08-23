@@ -85,7 +85,11 @@ public class FilePathKey2 implements CacheKey {
         int numberOrder = 1;
 
         if (number > 9) {
-            numberOrder = (int) Math.ceil(Math.log10(number) - 0.1);
+            if(number > 11) {
+                numberOrder = (int) Math.ceil(Math.log10(number) - 0.01);
+            } else {
+                numberOrder = 2;
+            }
         }
 
         int diffOrder = order - numberOrder;
