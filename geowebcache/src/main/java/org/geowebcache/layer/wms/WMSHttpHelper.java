@@ -212,7 +212,7 @@ public class WMSHttpHelper {
             if (responseCode != 204) {
                 try {
                     if (responseLength < 1) {
-                        ret = ServletUtils.readStream(wmsBackendCon.getInputStream(), 16384, 1024);
+                        ret = ServletUtils.readStream(wmsBackendCon.getInputStream(), 16384, 2048);
                     } else {
                         ret = new byte[responseLength];
                         int readLength = 0;

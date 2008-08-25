@@ -1,3 +1,12 @@
+/**
+ * This code is taken from Spring and therefore presumably licensed under Apache 2.0
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0.html
+ * 
+ * @author Chris Berry
+ *         http://opensource.atlassian.com/projects/spring/browse/SEC-531
+ */
+
 package org.geowebcache.security;
 
 import java.util.Arrays;
@@ -19,12 +28,6 @@ import org.acegisecurity.intercept.web.AbstractFilterInvocationDefinitionSource;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
 
-/**
- * 
- * @author Chris Berry
- *         http://opensource.atlassian.com/projects/spring/browse/SEC-531
- * 
- */
 
 public class RESTfulPathBasedFilterInvocationDefinitionMap extends
         AbstractFilterInvocationDefinitionSource implements

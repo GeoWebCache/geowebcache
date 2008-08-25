@@ -1,3 +1,12 @@
+/**
+ * This code is taken from Spring and therefore presumably licensed under Apache 2.0
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0.html
+ * 
+ * @author Chris Berry
+ *         http://opensource.atlassian.com/projects/spring/browse/SEC-531
+ */
+
 package org.geowebcache.security;
 
 import java.io.BufferedReader;
@@ -19,12 +28,7 @@ import org.acegisecurity.intercept.web.FilterInvocationDefinitionSource;
 import org.acegisecurity.util.StringSplitUtils;
 import org.springframework.util.StringUtils;
 
-/**
- * 
- * @author Chris Berry
- *         http://opensource.atlassian.com/projects/spring/browse/SEC-531
- * 
- */
+
 public class RESTfulDefinitionSource implements
         FilterInvocationDefinitionSource {
 
@@ -220,8 +224,7 @@ public class RESTfulDefinitionSource implements
                     .next();
             ConfigAttributeDefinition configDefinition = new ConfigAttributeDefinition();
 
-            Iterator configAttributesIt = mapping.getConfigAttributes()
-                    .iterator();
+            Iterator configAttributesIt = mapping.getConfigAttributes().iterator();
             while (configAttributesIt.hasNext()) {
                 String s = (String) configAttributesIt.next();
                 configDefinition.addConfigAttribute(new SecurityConfig(s));

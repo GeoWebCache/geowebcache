@@ -63,13 +63,15 @@
   <bean id="gwcServiceKML"
 	class="org.geowebcache.service.kml.KMLService"/>
 
-
+  <bean id="gwcProxyDispatcher"
+	class="org.geowebcache.proxy.ProxyDispatcher"/>
+  
   <bean id="gwcCacheKeyFile" class="org.geowebcache.cache.file.FilePathKey2"/>
-    
+  
   <bean id="gwcCacheFile" class="org.geowebcache.cache.file.FileCache">
     <property name="defaultKeyBeanId"><value>gwcCacheKeyFile</value></property>
   </bean>
-
+  
   
   <bean id="gwcUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
     <property name="alwaysUseFullPath" value="true"/>
@@ -80,7 +82,8 @@
         <prop key="/truncate/**">geowebcacheDispatcher</prop>
         <prop key="/rpc/**">geowebcacheDispatcher</prop>
         <prop key="/demo/**">geowebcacheDispatcher</prop>
-		<prop key="/rest/**">gwcRESTDispatcher</prop>
+	<prop key="/rest/**">gwcRESTDispatcher</prop>
+	<prop key="/proxy/**">gwcProxyDispatcher</prop>
       </props>
     </property>
   </bean>
