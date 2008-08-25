@@ -33,6 +33,13 @@ import java.util.regex.Pattern;
 import java.text.SimpleDateFormat;
 
 public class ServletUtils {
+    // Calendar objects are unfortunately expensive and not
+    // thread safe :(
+    static private Calendar calendar = new GregorianCalendar();
+    static private TimeZone timeZone = TimeZone.getTimeZone("GMT");
+    static private SimpleDateFormat format = null;
+     
+    
     /**
      * Case insensitive lookup
      * 
@@ -206,16 +213,18 @@ public class ServletUtils {
     }
 
     /**
-     * Makes HTTP Expire header vaulue
-     *  
+     * Makes HTTP Expire header value
+     * 
+     * Has to be synchronized due to the shared Calendar objects
+     * 
      * @param seconds
      * @return
      */
-    public static String makeExpiresHeader(int seconds) {
-        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-        TimeZone timeZone = TimeZone.getTimeZone("GMT");
-        format.setTimeZone(timeZone);
-        Calendar calendar = new GregorianCalendar(); 
+    public static synchronized String makeExpiresHeader(int seconds) {
+        if(ServletUtils.format == null) {
+            ServletUtils.format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+            ServletUtils.format.setTimeZone(ServletUtils.timeZone);
+        }
         
         calendar.setTimeInMillis(System.currentTimeMillis() + seconds*1000);
         return format.format(calendar.getTime());
