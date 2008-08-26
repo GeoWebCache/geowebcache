@@ -48,7 +48,12 @@ public class Demo {
             page = generateHTML(layer, srs, formatStr);
 
         } else {
-            page = generateHTML(tileLayerDispatcher);
+            if(request.getRequestURI().endsWith("demo/")) {
+                page = generateHTML(tileLayerDispatcher, true);
+            } else {
+                page = generateHTML(tileLayerDispatcher, false);
+            }
+            
         }
         response.setContentType("text/html");
 
@@ -59,7 +64,7 @@ public class Demo {
         }
     }
     
-    private static String generateHTML(TileLayerDispatcher tileLayerDispatcher) 
+    private static String generateHTML(TileLayerDispatcher tileLayerDispatcher, boolean trailingSlash) 
     throws GeoWebCacheException {
         String header = 
             "<html><body>\n"
@@ -84,14 +89,14 @@ public class Demo {
             +"<td><strong>Custom:</strong></td>" 
             +"</tr>\n";
         
-        String rows = tableRows(tileLayerDispatcher);
+        String rows = tableRows(tileLayerDispatcher, trailingSlash);
         
         String footer = "</table>\n</body></html>";
         
         return header + rows + footer;
     }
     
-    private static String tableRows(TileLayerDispatcher tileLayerDispatcher)
+    private static String tableRows(TileLayerDispatcher tileLayerDispatcher, boolean trailingSlash)
     throws GeoWebCacheException {
         Iterator<Entry<String,TileLayer>> it = 
             tileLayerDispatcher.getLayers().entrySet().iterator();
@@ -102,20 +107,24 @@ public class Demo {
             TileLayer layer = it.next().getValue();     
             buf.append("<tr><td>"+layer.getName()+"</td>");
             if(layer.supportsSRS(SRS.getEPSG4326())) {
-                buf.append("<td><a href=\"demo/"+layer.getName()+"?srs=EPSG:4326\">EPSG:4326</a></td>");
+                buf.append("<td>"+generateDemoUrl(layer.getName(), 4326,"EPSG:4326", trailingSlash)+"</td>");
             } else {
                 buf.append("<td>EPSG:4326 not supported</td>");
             }
             
             if(layer.supportsSRS(SRS.getEPSG900913())) {
-                buf.append("<td><a href=\"demo/"+layer.getName()+"?srs=EPSG:900913\">EPSG:900913</a></td>");
+                buf.append("<td>"+generateDemoUrl(layer.getName(), 900913,"EPSG:900913", trailingSlash)+"</td>");
             } else {
                 buf.append("<td>EPSG:900913 not supported</td>");
             }
             
             if(layer.supportsSRS(SRS.getEPSG4326())) {
-                buf.append("<td><a href=\"service/kml/"+layer.getName()+".png.kmz\">KML (PNG)</a></td>"
-                + "<td><a href=\"service/kml/"+layer.getName()+".kml.kmz\">KML (vector)</a></td>");
+                String prefix = "";
+                if(trailingSlash) {
+                    prefix = "../";
+                }
+                buf.append("<td><a href=\""+prefix+"service/kml/"+layer.getName()+".png.kmz\">KML (PNG)</a></td>"
+                + "<td><a href=\""+prefix+"service/kml/"+layer.getName()+".kml.kmz\">KML (vector)</a></td>");
             } else {
                 buf.append("<td colspan=\"2\"> Google Earth requires EPSG:4326 support</td>");
             }
@@ -127,8 +136,7 @@ public class Demo {
             while(iter.hasNext()) {
                 SRS curSRS = iter.next();
                 if(curSRS.getNumber() != 4326 && curSRS.getNumber() != 900913) { 
-                    buf.append("<a href=\"demo/"+layer.getName()+"?srs="+curSRS.toString()+"\">"
-                        + curSRS.toString()+"</a><br />");
+                    buf.append(generateDemoUrl(layer.getName(), curSRS.getNumber(),curSRS.toString(), trailingSlash)+"<br />");
                     count++;
                 }
             }
@@ -139,6 +147,14 @@ public class Demo {
             buf.append("</td></tr>\n");
         }
         return buf.toString();
+    }
+    
+    private static String generateDemoUrl(String layerName, int epsgNumber, String text, boolean trailingSlash) {
+        if(trailingSlash) {
+            return "<a href=\"./"+layerName+"?srs=EPSG:"+epsgNumber+"\">"+text+"</a>";
+        } else {
+            return "<a href=\"demo/"+layerName+"?srs=EPSG:"+epsgNumber+"\">"+text+"</a>";
+        }
     }
     
     private static String generateHTML(TileLayer layer, SRS srs, String formatStr) 
