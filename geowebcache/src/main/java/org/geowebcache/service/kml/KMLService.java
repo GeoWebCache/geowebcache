@@ -254,8 +254,8 @@ public class KMLService extends Service {
         
         String xml = KMLHeader()
                 + "\n<Folder>"
+                + getLookAt(bbox)
                 + networkLinks
-                //+ getLookAt(bbox)
                 + "\n</Folder>"
                 + "\n</kml>\n";
 
