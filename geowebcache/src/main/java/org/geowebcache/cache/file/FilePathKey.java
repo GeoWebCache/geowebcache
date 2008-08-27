@@ -24,6 +24,9 @@ import org.geowebcache.layer.SRS;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.tile.Tile;
 
+/** 
+ * This is how TileCache does things, I recommend you use FilePathKey2 instead.
+ */
 public class FilePathKey implements CacheKey {
     public void init() {
     }
