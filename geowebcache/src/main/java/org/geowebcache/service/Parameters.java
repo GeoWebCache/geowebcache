@@ -133,43 +133,41 @@ public abstract class Parameters {
         this.params.putAll(params.params);
     }
 
-    /**
-     * Outputs an HTTP parameter string
-     */
-    public StringBuffer getURLString(boolean prefixAmpersand) {
-        StringBuffer arg_str = new StringBuffer(256);
-        String param_name;
-
-        Iterator itr = params.keySet().iterator();
-        while (itr.hasNext()) {
-            param_name = (String) itr.next();
-            if (param_name != null && param_name.length() > 0) {
-                if (arg_str.length() > 0) {
-                    arg_str.append('&');
-                } else {
-                    if (prefixAmpersand) {
-                        arg_str.append('&');
-                    }
-                }
-
-                try {
-                    arg_str.append(URLEncoder.encode(param_name, CHARSET));
-                    arg_str.append('=');
-                    arg_str.append(URLEncoder.encode(
-                            convertToString(get(param_name)), CHARSET));
-
-                } catch (UnsupportedEncodingException uee) {
-                    log.fatal("Unsupported URL Encoding: ", uee);
-                    return null;
-                } catch (NullPointerException npe) {
-                    System.out.println("Missing value for parameter: "
-                            + param_name);
-                    log.error("Missing value for parameter: " + param_name);
-                }
-            }
-        }
-        return arg_str;
-    }
+//    /**
+//     * Outputs an HTTP parameter string
+//     */
+//    public StringBuffer getURLString(boolean prefixAmpersand) {
+//        StringBuffer arg_str = new StringBuffer(256);
+//        String param_name;
+//
+//        Iterator itr = params.keySet().iterator();
+//        while (itr.hasNext()) {
+//            param_name = (String) itr.next();
+//            if (param_name != null && param_name.length() > 0) {
+//                if (arg_str.length() > 0) {
+//                    arg_str.append('&');
+//                } else {
+//                    if (prefixAmpersand) {
+//                        arg_str.append('&');
+//                    }
+//                }
+//
+//                try {
+//                    arg_str.append(URLEncoder.encode(param_name, CHARSET));
+//                    arg_str.append('=');
+//                    arg_str.append(URLEncoder.encode(convertToString(get(param_name)), CHARSET));
+//
+//                } catch (UnsupportedEncodingException uee) {
+//                    log.fatal("Unsupported URL Encoding: ", uee);
+//                    return null;
+//                } catch (NullPointerException npe) {
+//                    System.out.println("Missing value for parameter: "+ param_name);
+//                    log.error("Missing value for parameter: " + param_name);
+//                }
+//            }
+//        }
+//        return arg_str;
+//    }
 
     /**
      * Returns a URL string. If a StringBuffer is desired instead, use

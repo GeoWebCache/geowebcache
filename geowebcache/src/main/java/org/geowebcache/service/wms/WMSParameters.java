@@ -388,24 +388,27 @@ public class WMSParameters extends Parameters {
         StringBuffer arg_str = new StringBuffer(256);
         String param_name;
 
+        boolean prev = false;
+        
         Iterator itr = super.params.keySet().iterator();
         while (itr.hasNext()) {
             param_name = (String) itr.next();
             if (param_name != null && param_name.length() > 0) {
-                if (arg_str == null || arg_str.length() == 0) {
-                    arg_str.append('?');
-                } else {
+                if (prev) {
                     arg_str.append('&');
+                    prev = false;
                 }
 
                 try {
                     if (param_name.equalsIgnoreCase(VENDOR_PARAMS)) {
                         arg_str.append(get(VENDOR_PARAMS));
+                        prev = true;
                     } else {
                         arg_str.append(URLEncoder.encode(param_name, CHARSET));
                         arg_str.append('=');
                         arg_str.append(URLEncoder.encode(
                                 convertToString(get(param_name)), CHARSET));
+                        prev = true;
                     }
 
                 } catch (UnsupportedEncodingException uee) {

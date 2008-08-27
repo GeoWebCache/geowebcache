@@ -22,6 +22,7 @@ import java.net.URL;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.service.wms.WMSParameters;
 
 public class Request {
 
@@ -30,9 +31,9 @@ public class Request {
 
     private URL server = null;
 
-    private Parameters params = null;
+    private WMSParameters params = null;
 
-    public Request(String server, Parameters params) {
+    public Request(String server, WMSParameters params) {
         this.setServer(server);
         // this.setParametersFromConfiguration();
         if (this.params != null) {
@@ -70,7 +71,7 @@ public class Request {
         return params;
     }
 
-    public void setParameters(Parameters params) {
+    public void setParameters(WMSParameters params) {
         this.params = params;
     }
 
@@ -79,9 +80,9 @@ public class Request {
         try {
             String serverAdr = server.toExternalForm();
             if(serverAdr.charAt(serverAdr.length() - 1) != '?') { 
-                address = new URL( serverAdr +'?'+ params.getURLString(false));
+                address = new URL( serverAdr +'?'+ params.getURLString());
             } else {
-                address = new URL( serverAdr + params.getURLString(false));
+                address = new URL( serverAdr + params.getURLString());
             }
             
             log.debug("url: " + address);
