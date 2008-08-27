@@ -267,6 +267,9 @@ public class TileLayerResource extends Resource {
             	HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();
                 StringReader reader = new StringReader(xmlText);
                 HierarchicalStreamReader hsr = driver.createReader(reader);
+                
+                // We're losing a lot of info in this step... 
+                // Maybe it's reading in reverse and rejecting out of order elements ?
                 StringWriter writer = new StringWriter();
                 new HierarchicalStreamCopier().copy(hsr, new PrettyPrintWriter(writer));
                 writer.close(); 
