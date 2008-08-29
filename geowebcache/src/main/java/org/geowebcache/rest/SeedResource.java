@@ -98,7 +98,7 @@ public class SeedResource extends Resource {
     @Override
     public void post(Representation entity) {
         log.info("Received seed request from  "
-                + getRequest().getHostRef().getHostIdentifier());
+                + getRequest().getClientInfo().getAddress());
 
         try {
             String text = entity.getText();
