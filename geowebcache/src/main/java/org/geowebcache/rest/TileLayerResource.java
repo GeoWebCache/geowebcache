@@ -75,38 +75,36 @@ public class TileLayerResource extends Resource {
     public TileLayerResource(Context context, Request request, Response response) {
         super(context, request, response);
         
+        System.out.println(this);
+        
         // Prep
         RESTDispatcher restDispatch = RESTDispatcher.getInstance();
         xmlConfig = restDispatch.getXMLConfiguration();
         tlDispatcher = restDispatch.getTileLayerDispatcher();
 
+        // TODO this is really the kind of stuff RESTlet.org could do for us
+        //String remainingString = (String) request.getResourceRef().getRemainingPart();
         
-        String remainingString = (String) request.getResourceRef().getRemainingPart();
-        String myReqLayerName = null;
-        if (remainingString == null) {
-            // request was made to ...rest/layers/
-            getVariants().add(new Variant(MediaType.TEXT_XML));
-            currentLayer = null;
-        } else if (remainingString.indexOf('.') == -1) {
-            // no extension provided, default to xml
-            getVariants().add(new Variant(MediaType.TEXT_XML));
-            myReqLayerName = remainingString;
-            currentLayer = tlDispatcher.getLayers().get(myReqLayerName);
-        } else if (remainingString.indexOf('.') != -1) {
-            myReqLayerName = remainingString.substring(0, remainingString
-                    .indexOf('.'));
-            String format = remainingString.substring(remainingString
-                    .indexOf('.') + 1);
-            if (format.equals("xml")) {
-                getVariants().add(new Variant(MediaType.TEXT_XML));
-            } else if (format.equals("json")) {
-                getVariants().add(new Variant(MediaType.APPLICATION_JSON));
-            } else if (format.equals("text")) {
-                getVariants().add(new Variant(MediaType.TEXT_PLAIN));
-            }
-            currentLayer = tlDispatcher.getLayers().get(myReqLayerName);
+        String lastSegment = request.getResourceRef().getLastSegment();
+        String layerName = null;
+        String format = null;
+        if(0 < lastSegment.lastIndexOf(".")) {
+            String[] splitStr = lastSegment.split("\\.");
+            layerName = splitStr[0];
+            format = splitStr[1];
+        } else {
+            layerName = lastSegment;
         }
 
+        if(format != null && format.equalsIgnoreCase("json")) {
+            getVariants().add(new Variant(MediaType.APPLICATION_JSON));
+        } else {
+            getVariants().add(new Variant(MediaType.TEXT_XML));
+        }
+        
+        if(layerName != null && ! layerName.equalsIgnoreCase("layers")) {
+            currentLayer = tlDispatcher.getLayers().get(layerName);
+        }
     }
 
     /**
@@ -115,24 +113,25 @@ public class TileLayerResource extends Resource {
      */
     public Representation getRepresentation(Variant variant) {
         Representation result = null;
-        TileLayer tl = currentLayer;
-        if (variant.getMediaType().equals(MediaType.TEXT_PLAIN)) {
-            // create a text representation of the current layer
-            result = getStringRepresentation(currentLayer);
-        } else if (tl == null
-                && variant.getMediaType().equals(MediaType.TEXT_XML)) {
-            // create a dom representation that will list of all available layers
-            result = getDomRepresentationAsListOfLayers();
-        } else if (tl != null && variant.getMediaType().equals(MediaType.TEXT_XML)) {
-            // create xml representation of the currentLayer
-            result = getXMLRepresentation(currentLayer);
-        } else if (variant.getMediaType().equals(MediaType.APPLICATION_JSON)) {
-            // create JSONRepresentation of the currentLayer
-            result = getJsonRepresentation(currentLayer);
+        
+        if(currentLayer == null) {
+            //if(variant.getMediaType() == MediaType.APPLICATION_JSON) {
+            //    result = getJSONRepresentationAsListOfLayers();
+            //} else {
+                result = getDomRepresentationAsListOfLayers();
+            //}
+        } else {
+            if(variant.getMediaType() == MediaType.APPLICATION_JSON) {
+                result = getXMLRepresentation(currentLayer);
+            } else {
+                result = getJsonRepresentation(currentLayer);
+            }
         }
 
         return result;
     }
+    
+    
     /**
      * Returns a DomRepresentation of all available layers
      * @return DomRepresentation
@@ -168,20 +167,6 @@ public class TileLayerResource extends Resource {
             saxe.printStackTrace();
         }
         return new DomRepresentation(MediaType.TEXT_XML, doc);
-    }
-
-    /**
-     * Returns a StringRepresentation of the layer ONLY FOR TESTING PURPOSES
-     * 
-     * @param layer
-     * @return
-     */
-    public StringRepresentation getStringRepresentation(TileLayer layer) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Layer details\n");
-        sb.append("_____________\n");
-        sb.append("Name: ").append(layer.getName()).append('\n');
-        return new StringRepresentation(sb);
     }
 
     /**
@@ -377,13 +362,4 @@ public class TileLayerResource extends Resource {
             e.printStackTrace();
         }
     }
-    
-//    public void setXMLConfiguration(TileLayerDispatcher tlDispatcher) {
-//        this.tlDispatcher = tlDispatcher;
-//        
-//    }
-//
-//    public void setXMLConfiguration(XMLConfiguration xmlConfig) {
-//        this.xmlConfig = xmlConfig;
-//    }
 }

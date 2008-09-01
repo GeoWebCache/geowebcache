@@ -132,11 +132,9 @@ public class RESTDispatcher extends AbstractController {
     public Restlet createRoot() {
         if (myRouter == null) {
             myRouter = new Router();
-            myRouter.attach("/layers/", TileLayerResource.class);
+            //myRouter.attach("/layers/", TileLayerResource.class);
             myRouter.attach("/layers", TileLayerResource.class);
             myRouter.attach("/seed/", SeedResource.class);
-            myRouter.attach("/rest/layers/", TileLayerResource.class);
-            myRouter.attach("/rest/layers", TileLayerResource.class);
             myRouter.attach("/rest/seed/", SeedResource.class);
         }
 
