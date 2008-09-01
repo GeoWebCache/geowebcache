@@ -75,8 +75,6 @@ public class TileLayerResource extends Resource {
     public TileLayerResource(Context context, Request request, Response response) {
         super(context, request, response);
         
-        System.out.println(this);
-        
         // Prep
         RESTDispatcher restDispatch = RESTDispatcher.getInstance();
         xmlConfig = restDispatch.getXMLConfiguration();
@@ -115,11 +113,11 @@ public class TileLayerResource extends Resource {
         Representation result = null;
         
         if(currentLayer == null) {
-            //if(variant.getMediaType() == MediaType.APPLICATION_JSON) {
-            //    result = getJSONRepresentationAsListOfLayers();
-            //} else {
+            if(variant.getMediaType() == MediaType.APPLICATION_JSON) {
+                result = getJSONRepresentationAsListOfLayers();
+            } else {
                 result = getDomRepresentationAsListOfLayers();
-            //}
+            }
         } else {
             if(variant.getMediaType() == MediaType.APPLICATION_JSON) {
                 result = getXMLRepresentation(currentLayer);
@@ -168,6 +166,46 @@ public class TileLayerResource extends Resource {
         }
         return new DomRepresentation(MediaType.TEXT_XML, doc);
     }
+    
+    /**
+     * Returns a JsonRepresentation of all available layers
+     *
+     * @return
+     */
+    private JsonRepresentation getJSONRepresentationAsListOfLayers() {
+        JsonRepresentation rep = null;
+        StringBuffer buf = new StringBuffer();
+
+        buf.append("[");
+        //try {
+            XStream xs = XMLConfiguration.getConfiguredXStream(
+                    new XStream(new JsonHierarchicalStreamDriver()));
+            //JSONObject obj = new JSONObject();
+            
+            boolean first = true;
+            Iterator<Entry<String,TileLayer>> iter = tlDispatcher.getLayers().entrySet().iterator();
+            while(iter.hasNext()) {
+                Entry<String,TileLayer> entry = iter.next();
+                TileLayer layer = entry.getValue();
+                
+                if(first) {
+                    first = false;
+                } else {
+                    buf.append(",\n");
+                }
+                
+                buf.append(xs.toXML(layer));
+            }
+            
+            buf.append("]");
+            
+            rep = new JsonRepresentation(buf.toString());
+        //} catch (JSONException jse) {
+        //    jse.printStackTrace();
+        //}
+        return rep;
+    }
+    
 
     /**
      * Returns a XMLRepresentation of the layer
