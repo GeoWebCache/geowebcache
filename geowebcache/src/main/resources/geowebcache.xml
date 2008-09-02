@@ -93,6 +93,10 @@
   tiles work in OpenLayers you need to provide the correct bounds and
   resolution(s). Please use the source of the demo page for reference,
   as GeoWebCache will calculate them automatically for you there.
+  
+  Note that the grid bounds and the layer bounds are the same, they could be
+  different if the SRS has "natural" bounds that cover all the area that 
+  could be relevant, in case the dataset grows.
  -->
  
  <wmslayer>
