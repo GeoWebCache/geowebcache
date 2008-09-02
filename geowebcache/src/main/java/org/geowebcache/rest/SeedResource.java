@@ -29,6 +29,7 @@ import org.restlet.Context;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
+import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.resource.Representation;
 import org.restlet.resource.Resource;
@@ -97,9 +98,19 @@ public class SeedResource extends Resource {
      */
     @Override
     public void post(Representation entity) {
-        log.info("Received seed request from  "
-                + getRequest().getClientInfo().getAddress());
-
+        
+        String remoteAdr = getRequest().getClientInfo().getAddress();
+        
+        if(entity == null) {
+            String message = "Request from " + remoteAdr + " did not specify MIME type"
+                    + " of the document posted. Please specify application/xml "
+                    + " or application/json";
+            writeError(Status.CLIENT_ERROR_BAD_REQUEST, message);
+        } else {
+            log.info("Received seed request from  "
+                    + getRequest().getClientInfo().getAddress());
+        }
+        
         try {
             String text = entity.getText();
 
@@ -149,15 +160,17 @@ public class SeedResource extends Resource {
             
             TileLayerDispatcher tlDispatch = RESTDispatcher.getInstance().getTileLayerDispatcher();
             TileLayer tl = tlDispatch.getTileLayer(rq.getLayerName());
+            
             if(tl != null) {
                 RESTDispatcher.getInstance().getExecutor().submit(new MTSeeder(new SeedTask(rq,tl)));
             } else {
-                throw new GeoWebCacheException("Unknown layer " + rq.getLayerName());
+                writeError(Status.CLIENT_ERROR_BAD_REQUEST, "Unknown layer " + rq.getLayerName());
             }
+            
         } catch (IOException ioex) {
-            log.error("Exception occured while unmarshalling SeedRequest from XML");
+            writeError(Status.SERVER_ERROR_INTERNAL, ioex.getMessage());
         } catch (GeoWebCacheException gwce) {
-            log.error(gwce.getMessage());
+            writeError(Status.SERVER_ERROR_INTERNAL, gwce.getMessage());
         }
     }
 
@@ -181,4 +194,8 @@ public class SeedResource extends Resource {
         return true;
     }
 
+    private void writeError(Status status, String message) {
+        log.error(message);
+        this.getResponse().setStatus(status, message);
+    }
 }
