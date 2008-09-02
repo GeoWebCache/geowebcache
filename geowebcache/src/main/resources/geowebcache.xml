@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <layers>
+ <!-- 
+  This is a pretty standard example, suitable for use with 
+   * Google Earth (EPSG:4326 , KML support)
+   * Google Maps and Microsoft Virtual Earth (EPSG:900913, PNG support)
+ -->
  <wmslayer>
   <layer-name>topp:states</layer-name>
   <mimeFormats>
@@ -67,6 +72,68 @@
   </wmsUrl>
   <wmsLayers>topp:states</wmsLayers>
   <wmsStyles>population</wmsStyles>
+  <metaWidthHeight>
+    <int>3</int>
+    <int>3</int>
+  </metaWidthHeight>
+  <tiled>false</tiled>
+  <transparent>true</transparent>
+  <bgColor></bgColor>
+  <palette></palette>
+  <vendorParameters>format_options=regionateby:auto</vendorParameters>
+  <!-- cachePrefix>/var/lib/geowebcache/topp_states</cachePrefix -->
+</wmslayer>
+
+ <!-- 
+  This example shows that you can reuse WMS-layers and give them
+  new names or styles, as shown here.
+   
+  EPSG:2163 is an equal area (Azimuthal Lambert) projection and demonstrates
+  that GeoWebCache is now SRS agnostic. Note that in order to make the
+  tiles work in OpenLayers you need to provide the correct bounds and
+  resolution(s). Please use the source of the demo page for reference,
+  as GeoWebCache will calculate them automatically for you there.
+ -->
+ 
+ <wmslayer>
+  <layer-name>topp:states2</layer-name>
+  <mimeFormats>
+    <string>image/png</string>
+    <string>image/jpeg</string>
+  </mimeFormats>
+  <grids>
+    <entry>
+      <SRS>
+        <number>2163</number>
+      </SRS>
+      <grid>
+        <srs>
+          <number>2163</number>
+        </srs>
+        <dataBounds>
+          <coords>          
+            <double>-2495667.977678598</double>
+            <double>-2223677.196231552</double>
+            <double>3291070.6104286816</double>
+            <double>959189.3312465074</double>
+          </coords>
+        </dataBounds>
+        <gridBounds>
+          <coords>
+            <double>-2495667.977678598</double>
+            <double>-2223677.196231552</double>
+            <double>3291070.6104286816</double>
+            <double>959189.3312465074</double>
+          </coords>
+        </gridBounds>
+      </grid>
+    </entry>
+  </grids>
+  <wmsUrl>
+    <string>http://sigma.openplans.org:80/geoserver/wms</string>
+  </wmsUrl>
+  <wmsLayers>topp:states</wmsLayers>
+  <wmsStyles>polygon</wmsStyles>
   <metaWidthHeight>
     <int>3</int>
     <int>3</int>
