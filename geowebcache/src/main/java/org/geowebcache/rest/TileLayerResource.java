@@ -120,9 +120,9 @@ public class TileLayerResource extends Resource {
             }
         } else {
             if(variant.getMediaType() == MediaType.APPLICATION_JSON) {
-                result = getXMLRepresentation(currentLayer);
-            } else {
                 result = getJsonRepresentation(currentLayer);
+            } else {
+                result = getXMLRepresentation(currentLayer);
             }
         }
 
