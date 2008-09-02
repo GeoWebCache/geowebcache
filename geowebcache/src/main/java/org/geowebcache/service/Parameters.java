@@ -22,6 +22,7 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -53,26 +54,19 @@ public abstract class Parameters {
         if (log.isTraceEnabled()) {
             log.trace("Setting from HttpServletRequest.");
         }
+        
+        Iterator<Entry<String,String>> itr = httprequest.getParameterMap().entrySet().iterator();
 
-        // this.params.putAll() won't work since we want all keys to be in lowercase
-        Map param_map = httprequest.getParameterMap();
-        Iterator itr = param_map.keySet().iterator();
-        String mixedstr;
-
-        while (itr.hasNext()) {
-            mixedstr = (String) itr.next();
-            set(mixedstr, param_map.get(mixedstr));
+        while(itr.hasNext()) {
+            Entry<String,String> ent = itr.next();
+            params.put(ent.getKey().toLowerCase(),ent.getValue());   
         }
-
-        //if (log.isTraceEnabled()) {
-        //    log.trace("Results from setting from HttpServletRequest: " + getReadableString());
-        //}
     }
 
     /**
      * Allows arbitary key / values to be set
      */
-    @SuppressWarnings("unchecked")
+   @SuppressWarnings("unchecked")
     public void set(String key, Object value) {
         params.put(key.toLowerCase(), value);
     }
@@ -133,72 +127,6 @@ public abstract class Parameters {
         this.params.putAll(params.params);
     }
 
-//    /**
-//     * Outputs an HTTP parameter string
-//     */
-//    public StringBuffer getURLString(boolean prefixAmpersand) {
-//        StringBuffer arg_str = new StringBuffer(256);
-//        String param_name;
-//
-//        Iterator itr = params.keySet().iterator();
-//        while (itr.hasNext()) {
-//            param_name = (String) itr.next();
-//            if (param_name != null && param_name.length() > 0) {
-//                if (arg_str.length() > 0) {
-//                    arg_str.append('&');
-//                } else {
-//                    if (prefixAmpersand) {
-//                        arg_str.append('&');
-//                    }
-//                }
-//
-//                try {
-//                    arg_str.append(URLEncoder.encode(param_name, CHARSET));
-//                    arg_str.append('=');
-//                    arg_str.append(URLEncoder.encode(convertToString(get(param_name)), CHARSET));
-//
-//                } catch (UnsupportedEncodingException uee) {
-//                    log.fatal("Unsupported URL Encoding: ", uee);
-//                    return null;
-//                } catch (NullPointerException npe) {
-//                    System.out.println("Missing value for parameter: "+ param_name);
-//                    log.error("Missing value for parameter: " + param_name);
-//                }
-//            }
-//        }
-//        return arg_str;
-//    }
-
-    /**
-     * Returns a URL string. If a StringBuffer is desired instead, use
-     * getURLString()
-     */
-    //@Override
-    //public String toString() {
-    //    return getURLString(true).toString();
-    //}
-
-    /**
-     * Outputs an easily readable parameter / value listing
-     */
-//    public String getReadableString() {
-//        String key;
-//        StringBuffer buf = new StringBuffer();
-//
-//        Iterator itr = params.keySet().iterator();
-//        while (itr.hasNext()) {
-//            key = (String) itr.next();
-//            if (key != null && key.length() > 0) {
-//                Object value = params.get(key);
-//                if (value != null) {
-//                    buf.append(key + '=' + convertToString(value) + ' ');
-//                } else {
-//                    buf.append(key + "=null ");
-//                }
-//            }
-//        }
-//        return buf.toString();
-//    }
 
     /**
      * Service parameter classes will define how to get the layer name from the
