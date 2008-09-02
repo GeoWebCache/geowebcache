@@ -32,10 +32,10 @@ public class GridCalculator {
     
     // The following are created to save memory. 
     // Note that they can be modified by external code -> not 100% safe!
-    protected final static double[] RESOLUTIONS4326 = 
+    private final static double[] RESOLUTIONS4326 = 
         GridCalculator.getResolutionArray(180.0, TILEPIXELS, 26);
     
-    protected final static double[] RESOLUTIONS900913 = 
+    private final static double[] RESOLUTIONS900913 = 
         GridCalculator.getResolutionArray(20037508.34*2,TILEPIXELS, 26);
     
     // The following are the width of the actual layer
