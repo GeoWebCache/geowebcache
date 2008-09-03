@@ -18,6 +18,7 @@ package org.geowebcache.service.kml;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -146,8 +147,10 @@ public class KMLService extends Service {
         // Debug layer?
         if(tile.getLayerId().equalsIgnoreCase(KMLDebugGridLayer.LAYERNAME)) {
             tile.setHint(HINT_DEBUGGRID);
+            tile.setRequestHandler(Tile.RequestHandler.SERVICE);
         }
         
+        //System.out.println(Arrays.toString(tile.getTileIndex()) + " " + tile.servletReq.getHeader("referer"));
         return tile;
     }
 
@@ -170,7 +173,6 @@ public class KMLService extends Service {
             }
         }
         tile.setTileLayer(layer);
-        
         
         //TODO this needs to be done more nicely
         //TODO debuggrid should not have skipped this one [debuggrid, x1y0z0, kml, kmz]
@@ -405,6 +407,7 @@ public class KMLService extends Service {
         buf.append(createOverlayHeader(bbox, 
                 tile.getMimeType() instanceof ImageMime));
 
+        buf.append("\n<!-- Network links to subtiles -->\n");
         // 2) Network links, only to tiles within bounds
         int[][] linkGridLocs = tileLayer.getZoomInGridLoc(srs, gridLoc);
 
@@ -420,18 +423,59 @@ public class KMLService extends Service {
                 BBOX linkBbox = tileLayer.getBboxForGridLoc(srs,
                         linkGridLocs[i]);
                 
-                // Always use absolute URLs for these
-                String gridLocUrl = tile.getUrlPrefix() + gridLocString(linkGridLocs[i]) 
-                +"." +tile.getMimeType().getFileExtension()+ "." + tile.getWrapperMimeType().getFileExtension();
-
                 String gridLocStr = gridLocString(linkGridLocs[i]);
                 
-                buf.append(createNetworkLinkElement(tileLayer, linkBbox, gridLocUrl, gridLocStr));
+                // Always use absolute URLs for these
+                String gridLocUrl = tile.getUrlPrefix() 
+                    + gridLocStr +"." +tile.getMimeType().getFileExtension()
+                    + "." + tile.getWrapperMimeType().getFileExtension();
+
+                buf.append(createNetworkLinkElement(tileLayer, linkBbox, gridLocUrl, gridLocStr,-1));
                 //moreData++;
             }
         }
-
-        // 3) Overlay, should be relative 
+        
+// The following was a nice try, unfortunately Google Earth appears to go to 100% CPU etc...
+// and the pane on the left hand side with the tile tree doesn't really know what to do
+// with new parents....
+//
+//        buf.append("\n<!-- Network link to parent or sibling tile -->\n");
+//        // 4) Add link to parent or sibling tile
+//        //    Just in case someone comes in via a search result
+//        //    Sibling = other hemisphere, when at zoom level 0
+//        if(gridLoc[2] >= 0) {
+//            int z = gridLoc[2] - 1;
+//            int x = Math.min((int) Math.round((gridLoc[0] -0.01) / 2.0), 2*(1 << z) - 1);
+//            int y = Math.min((int) Math.round((gridLoc[1] -0.01) / 2.0), (1 << z) - 1);
+//            
+//            
+//            // Override if we're linking to the sibling top tile
+//            if(gridLoc[2] == 0 && tile.getLayer().getZoomedOutGridLoc(srs)[2] == -1) {
+//                if(gridLoc[0] == 0) {
+//                    x = 1;
+//                } else {
+//                    x = 0;
+//                }
+//                y = 0;
+//                z = 0;
+//            }
+//            
+//            int[] parentGridLoc = {x,y,z};
+//            
+//            BBOX linkBbox = tileLayer.getBboxForGridLoc(srs,parentGridLoc);
+//            
+//            // Absolute URLs for these
+//            String gridLocStr = gridLocString(parentGridLoc);
+//            
+//            String gridLocUrl = tile.getUrlPrefix() 
+//                + gridLocStr +"." +tile.getMimeType().getFileExtension()
+//                + "." + tile.getWrapperMimeType().getFileExtension();
+//            
+//            buf.append(createNetworkLinkElement(tileLayer, linkBbox, gridLocUrl, gridLocStr, 385));
+//        }
+        
+        buf.append("\n<!-- Network link to actual content -->\n");
+        // 5) Overlay, should be relative 
         if (tile.getMimeType() instanceof ImageMime) {
             buf.append(
                     createGroundOverLayElement(
@@ -441,10 +485,17 @@ public class KMLService extends Service {
             // KML
             String gridLocStr = gridLocString(gridLoc);
             String gridLocUrl = gridLocStr + "." + tile.getMimeType().getFileExtension();
+            
             if(isPackaged) {
                 gridLocUrl = "data_" + gridLocUrl;
             }
-            buf.append(createNetworkLinkElement(tileLayer, bbox, gridLocUrl, gridLocStr));
+            
+            int maxLodPixels = -1;
+            if(tile.getLayer() instanceof KMLDebugGridLayer) {
+                maxLodPixels = 385;
+            }
+            
+            buf.append(createNetworkLinkElement(tileLayer, bbox, gridLocUrl, gridLocStr, maxLodPixels));
         }
 
         //if(moreData > 0) {
@@ -488,15 +539,7 @@ public class KMLService extends Service {
      * @return
      */
     private static String createNetworkLinkElement(
-            TileLayer layer, BBOX bbox, String gridLocUrl, String tileIdx) {
-        
-        int maxLodPixels = -1;
-        
-        
-        // Hack
-        if(layer instanceof KMLDebugGridLayer && gridLocUrl.startsWith("data_")) {
-            maxLodPixels = 385;
-        }
+            TileLayer layer, BBOX bbox, String gridLocUrl, String tileIdx, int maxLodPixels) {
       
         String xml = "\n<NetworkLink>"
                 + "\n<name>"

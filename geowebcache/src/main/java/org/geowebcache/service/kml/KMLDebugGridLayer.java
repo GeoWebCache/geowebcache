@@ -17,24 +17,22 @@
 package org.geowebcache.service.kml;
 
 import java.io.IOException;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheKey;
 import org.geowebcache.layer.BadTileException;
+import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.mime.XMLMime;
 import org.geowebcache.tile.Tile;
 import org.geowebcache.util.wms.BBOX;
 import org.springframework.beans.BeansException;
@@ -51,7 +49,7 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
     
     public static final int IS_KMZ = 100;
     
-    private static Log log = LogFactory.getLog(org.geowebcache.service.kml.KMLDebugGridLayer.class);
+    //private static Log log = LogFactory.getLog(org.geowebcache.service.kml.KMLDebugGridLayer.class);
     
     private static KMLDebugGridLayer instance;
     
@@ -60,12 +58,14 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
     //temporary hack
     public void lazyLayerInitialization(CacheFactory c){
         //blah
+
     }
     
     
     
     private KMLDebugGridLayer() {
-        
+        super.grids = new Hashtable<SRS,Grid>();
+        grids.put(SRS.getEPSG4326(), new Grid(SRS.getEPSG4326(),BBOX.WORLD4326, BBOX.WORLD4326, null));
     }
     
     synchronized static public KMLDebugGridLayer getInstance() {
@@ -76,119 +76,61 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
     }
     
     public void acquireLayerLock() {
-        // TODO Auto-generated method stub
-        //log.warn("acquireLayerLock()");
     }
 
     public void destroy() {
-        // TODO Auto-generated method stub
-        //log.warn("destroy()");
     }
 
     public Tile doNonMetatilingRequest(Tile tile) throws GeoWebCacheException {
-        // TODO Auto-generated method stub
-        //log.warn("doNonMetatilingRequest(int[] gridLoc, int idx,String formatStr)");
         return null;
     }
 
-    public BBOX getBboxForGridLoc(int srsIdx, int[] gridLoc) {
-        // TODO Auto-generated method stub
-        //log.warn("done - getBboxForGridLoc(int srsIdx, int[] gridLoc)");
-        
-        double tileWidth = 180.0 / Math.pow(2, gridLoc[2]);
-
-        BBOX bbox = new BBOX(
-                     -180.0 + tileWidth * gridLoc[0],
-                     -90.0 + tileWidth * gridLoc[1],
-                     -180.0 + tileWidth * (gridLoc[0] + 1),
-                     -90.0 + tileWidth * (gridLoc[1] + 1));
-        
-        return bbox;
-    }
-
-    public BBOX getBounds(int srsIdx) {
-        // TODO Auto-generated method stub
-        //log.warn("done - getBounds");
+    public BBOX getBounds(SRS srs) {
         return new BBOX(-180.0, -90.0, 180.0, 90.0);
     }
 
     public Cache getCache() {
-        // TODO Auto-generated method stub
-        //log.warn("getCache");
         return null;
     }
 
     public CacheKey getCacheKey() {
-        // TODO Auto-generated method stub
-        //log.warn("done - getCacheKey");
         return this;
     }
 
     public String getCachePrefix() {
-        // TODO Auto-generated method stub
-        //log.warn("done - getCachePrefix");
-        return null;
-    }
-
-    public int[][] getCoveredGridLevels(int srsIdx, BBOX bounds) {
-        // TODO Auto-generated method stub
-        //log.warn("getCoveredGridLevels(int srsIdx, BBOX bounds)");
         return null;
     }
 
     public MimeType getDefaultMimeType() {
-        // TODO Auto-generated method stub
-        //log.warn("getDefaultMimeType()");
-        return null;
-    }
-
-    public int[] getGridLocForBounds(int srsIdx, BBOX bounds)
-            throws BadTileException {
-        // TODO Auto-generated method stub
-        //log.warn("getGridLocForBounds(int srsIdx, BBOX bounds)");
         return null;
     }
 
     public int[] getMetaTilingFactors() {
-        // TODO Auto-generated method stub
-        //log.warn("getMetaTilingFactors()");
         return null;
     }
 
     public List <MimeType> getMimeTypes() {
-        // TODO Auto-generated method stub
-        //log.warn("getMimeTypes()");
         return null;
     }
 
     public String getName() {
-        // TODO Auto-generated method stub
-        //log.warn("done - getName()");
         return "Debug grid";
     }
 
     public SRS[] getProjections() {
-        // TODO Auto-generated method stub
-        //log.warn("done - getProjections()");
-        
         SRS[] srsList = { SRS.getEPSG4326() };
         return srsList;
     }
 
     public double[] getResolutions(int srsIdx) {
-        // TODO Auto-generated method stub
-        //log.warn("getResolutions()");
         return null;
     }
 
     public Tile getTile(Tile tile)
-            throws GeoWebCacheException, IOException {
-        // TODO Auto-generated method stub
-        //log.warn("getResponse(TileRequest tileRequest,ServiceRequest servReq, HttpServletResponse response)");
-        
+            throws GeoWebCacheException, IOException {        
         int[] gridLoc = tile.getTileIndex();
 
-        BBOX bbox = this.getBboxForGridLoc(0, gridLoc);
+        BBOX bbox = this.getBboxForGridLoc(SRS.getEPSG4326(), gridLoc);
        
         String data  = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
@@ -225,19 +167,11 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
         return tile;
     }
 
-    public int getSRSIndex(SRS reqSRS) {
-        // TODO Auto-generated method stub
-        //log.warn("done - getSRSIndex");
-        return 0;
-    }
-
     public String getStyles() {
-        // TODO Auto-generated method stub
-        //log.warn("getStyles()");
         return null;
     }
 
-    public int[][] getZoomInGridLoc(int srsIdx, int[] gridLoc) {
+    public int[][] getZoomInGridLoc(SRS srs, int[] gridLoc) {
         //log.warn("done - getZoomInGridLoc(srsIdx, gridLoc)");
         
         int[][] retVal = new int[4][3];
@@ -264,143 +198,94 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
     }
 
     public int getZoomStart() {
-        // TODO Auto-generated method stub
-        //log.warn("getZoomStart()");
         return 0;
     }
 
     public int getZoomStop() {
-        // TODO Auto-generated method stub
-        //log.warn("getZoomStop()");
         return 25;
     }
 
-    public int[] getZoomedOutGridLoc(int srsIdx) {
-        // TODO Auto-generated method stub
-        //log.warn("done - getZoomedOutGridLoc");
-        int[] zoomedOutGridLoc = new int[3];
-        zoomedOutGridLoc[0] = -1;
-        zoomedOutGridLoc[1] = -1;
-        zoomedOutGridLoc[2] = -1;
-        
-        return zoomedOutGridLoc;
-    }
-
     public Boolean initialize() {
-        // TODO Auto-generated method stub
-        //log.warn("initialize()");
         return true;
     }
 
     public Boolean isInitialized() {
-        // TODO Auto-generated method stub
-        //log.warn("isInitialized()");
         return true;
     }
 
     public void putTile(Tile tile, Object ck, int[] gridLoc)
             throws CacheException {
-        // TODO Auto-generated method stub
-        //log.warn("putTile");
     }
 
     public void releaseLayerLock() {
-        // TODO Auto-generated method stub
-        //log.warn("releaseLayerLock()");
     }
 
     public void setExpirationHeader(HttpServletResponse response) {
-        // TODO Auto-generated method stub
-        //log.warn("setExpirationHeader");
     }
 
     public String supportsBbox(SRS srs, BBOX bounds)
             throws GeoWebCacheException {
-        // TODO Auto-generated method stub
-        //log.warn("supportsBbox");
         return null;
     }
 
     public boolean supportsFormat(String formatStr) throws GeoWebCacheException {
-        // TODO Auto-generated method stub
-        //log.warn("supportsFormat");
         return false;
     }
 
     public boolean supportsSRS(SRS srs) throws GeoWebCacheException {
-        // TODO Auto-generated method stub
-        //log.warn("supportsProjection");
         return false;
     }
 
-    // Returns the KML for the tile, but not a cached KMZ overlay
-//    public boolean tryCacheFetch(Tile tile) {
-//        // TODO Auto-generated method stub
-//        //log.warn("done - tryCacheFetch");
-//        
-//        Vector<Integer> lst = (Vector<Integer>) tile;
-//        
-//        int kmz = lst.get(0);
-//        
-//        if(kmz != KMLDebugGridLayer.IS_KMZ) {
-//            return true;
-//        } else {
-//            System.out.println("OOPS");
-//        }
-//        
-//        return false;
-//    }
-
     public boolean get(Tile tile, long ttl) throws CacheException {
-        // TODO Auto-generated method stub
+
         return true;
     }
 
     public String getDefaultKeyBeanId() {
-        // TODO Auto-generated method stub
+
         return null;
     }
 
     public String getDefaultPrefix(String param) throws CacheException {
-        // TODO Auto-generated method stub
+
         return null;
     }
 
     
     public void init(Properties props) throws CacheException {
-        // TODO Auto-generated method stub
+
         
     }
 
     public boolean remove(Tile tile) throws CacheException {
-        // TODO Auto-generated method stub
+
         return false;
     }
 
     public void removeAll() throws CacheException {
-        // TODO Auto-generated method stub
+
         
     }
 
     /** Cache interface **/
     public void set(Object key, Object obj, long ttl) throws CacheException {
-        // TODO Auto-generated method stub
+
         
     }
 
     public void setDefaultKeyBeanId(String defaultKeyBeanId) {
-        // TODO Auto-generated method stub
+
         
     }
 
     public void setUp(String cachePrefix) throws CacheException {
-        // TODO Auto-generated method stub
+
         
     }
 
     public void setApplicationContext(ApplicationContext arg0)
             throws BeansException {
-        // TODO Auto-generated method stub
+
         
     }
 //
@@ -420,105 +305,85 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
 //    }
 
     public int getType() {
-        // TODO Auto-generated method stub
+
         return 0;
     }
 
     public void init() {
-        // TODO Auto-generated method stub
+
         
     }
 
     public void putTile(Tile tile) throws CacheException {
-        // TODO Auto-generated method stub
+
         
     }
 
     public void set(Tile tile, long ttl) throws CacheException {
-        // TODO Auto-generated method stub
+
         
     }
 
     public boolean tryCacheFetch(Tile tile) {
-        // TODO Auto-generated method stub
+
         return false;
     }
 
     public boolean get(CacheKey keyProto, Tile tile, long ttl)
             throws CacheException, GeoWebCacheException {
-        // TODO Auto-generated method stub
+
         return false;
     }
 
     public boolean remove(CacheKey keyProto, Tile tile) throws CacheException {
-        // TODO Auto-generated method stub
         return false;
     }
 
     public void set(CacheKey keyProto, Tile tile, long ttl)
             throws CacheException, GeoWebCacheException {
-        // TODO Auto-generated method stub
-        
     }
 
     public Object createKey(Tile tile) {
-        // TODO Auto-generated method stub
         return null;
     }
 
-
-
-    @Override
     public void setCacheFactory(CacheFactory cacheFactory) {
-        // TODO Auto-generated method stub
-        
     }
 
-
-
-    @Override
     public BBOX getBboxForGridLoc(SRS srs, int[] gridLoc) {
-        // TODO Auto-generated method stub
-        return null;
+        double tileWidth = 180.0 / Math.pow(2, gridLoc[2]);
+
+        BBOX bbox = new BBOX(
+                     -180.0 + tileWidth * gridLoc[0],
+                     -90.0 + tileWidth * gridLoc[1],
+                     -180.0 + tileWidth * (gridLoc[0] + 1),
+                     -90.0 + tileWidth * (gridLoc[1] + 1));
+        
+        return bbox;
     }
 
-
-
-    @Override
     public int[][] getCoveredGridLevels(SRS srs, BBOX bounds) {
-        // TODO Auto-generated method stub
         return null;
     }
 
-
-
-    @Override
     public int[] getGridLocForBounds(SRS srs, BBOX bounds)
             throws BadTileException {
-        // TODO Auto-generated method stub
         return null;
     }
 
-
-
-    @Override
-    public int[][] getZoomInGridLoc(SRS srs, int[] gridLoc) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-
-
-    @Override
     public int[] getZoomedOutGridLoc(SRS srs) {
-        // TODO Auto-generated method stub
-        return null;
+        // log.warn("done - getZoomedOutGridLoc");
+        int[] zoomedOutGridLoc = new int[3];
+        zoomedOutGridLoc[0] = -1;
+        zoomedOutGridLoc[1] = -1;
+        zoomedOutGridLoc[2] = -1;
+
+        return zoomedOutGridLoc;
+
     }
 
-    @Override
     public void seedTile(Tile tile, boolean tryCache)
             throws GeoWebCacheException, IOException {
-        // TODO Auto-generated method stub
         
     }
 
