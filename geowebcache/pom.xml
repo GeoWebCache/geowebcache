@@ -11,7 +11,7 @@
   
   <properties>
     <!-- gs.version>1.6.4</gs.version -->
-    <gt.version>2.4.4</gt.version>
+    <gt.version>2.5-RC1</gt.version>
     <spring.version>2.5.5</spring.version>
     <restlet.version>1.0.8</restlet.version>
     <xstream.version>1.3</xstream.version>
@@ -83,8 +83,9 @@
   <dependencies>
     <dependency>
       <groupId>org.geotools</groupId>
-      <artifactId>gt2-wms</artifactId>
+      <artifactId>gt-wms</artifactId>
       <version>${gt.version}</version>
+      <optional>true</optional>
     </dependency>
     
     <dependency>
