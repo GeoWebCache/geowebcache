@@ -10,8 +10,8 @@
   <url>http://geowebcache.org</url>
   
   <properties>
-    <gs.version>1.7.0-SNAPSHOT</gs.version>
-    <gt.version>2.5-SNAPSHOT</gt.version>
+    <gs.version>1.6.4</gs.version>
+    <gt.version>2.4.4</gt.version>
     <spring.version>2.5.5</spring.version>
     <restlet.version>1.0.8</restlet.version>
     <xstream.version>1.3</xstream.version>
@@ -343,7 +343,6 @@
 	</configuration>
       </plugin>
 
-      <!--
       <plugin>
 	   <artifactId>maven-war-plugin</artifactId>
 	   <executions>
@@ -355,7 +354,7 @@
 	     </execution>
 	   </executions>
       </plugin>
-      -->
+
       <plugin>
 	<artifactId>maven-source-plugin</artifactId>
 	<configuration>
