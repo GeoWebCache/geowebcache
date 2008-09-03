@@ -25,12 +25,16 @@ public class SeedRequest {
     private BBOX bounds = null;
 
     private SRS srs = null;
+    
+    private Integer threadCount = null;
 
     private Integer zoomStart = null;
 
     private Integer zoomStop = null;
 
     private String format = null;
+    
+    private String type = null;
     
     public SeedRequest() {
         //do nothing, i guess
@@ -77,6 +81,29 @@ public class SeedRequest {
      */
     public Integer getZoomStop() {
         return this.zoomStop;
+    }
+
+    /**
+     * Method returns the number of threads that should be used 
+     * for this seed request
+     * @return integer representing number of threads
+     */
+    public Integer getThreadCount() {
+        return threadCount;
+    }
+    
+    /**
+     * Method returns the type of seed, namely one of
+     * <ul>
+     * <li>seed - (default) seeds new tiles</li>
+     * <li>reseed - seeds new tiles and replaces old ones</li>
+     * <li>truncate - removes tiles</li>
+     * </ul>
+     * 
+     * @return String representing the type of seed
+     */
+    public String getType() {
+        return type;
     }
 
 }

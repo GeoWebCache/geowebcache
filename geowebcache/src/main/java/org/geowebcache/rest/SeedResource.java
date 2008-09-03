@@ -50,9 +50,8 @@ import java.io.StringWriter;
 import java.util.concurrent.*;
 
 
-public class SeedResource extends Resource {
-    private static int[][] statusArray = 
-        new int[RESTDispatcher.getInstance().getExecutor().getCorePoolSize()][3]; 
+public class SeedResource extends GWCResource {
+    private static int[][] statusArray = new int[RESTDispatcher.getInstance().getExecutor().getCorePoolSize()][3]; 
     public JSONObject myrequest; 
     private static Log log = LogFactory.getLog(org.geowebcache.rest.SeedResource.class);
     
@@ -98,20 +97,9 @@ public class SeedResource extends Resource {
      */
     @Override
     public void post(Representation entity) {
-        
-        String remoteAdr = getRequest().getClientInfo().getAddress();
-        
-        if(entity == null) {
-            String message = "Request from " + remoteAdr + " did not specify MIME type"
-                    + " of the document posted. Please specify application/xml "
-                    + " or application/json";
-            writeError(Status.CLIENT_ERROR_BAD_REQUEST, message);
-        } else {
-            log.info("Received seed request from  "
-                    + getRequest().getClientInfo().getAddress());
-        }
-        
         try {
+            checkPosMediaType(entity);
+            
             String text = entity.getText();
 
             XStream xs = new XStream(new DomDriver());
@@ -162,16 +150,75 @@ public class SeedResource extends Resource {
             TileLayer tl = tlDispatch.getTileLayer(rq.getLayerName());
             
             if(tl != null) {
-                RESTDispatcher.getInstance().getExecutor().submit(new MTSeeder(new SeedTask(rq,tl)));
+                
+                ThreadPoolExecutor threadPoolExec = RESTDispatcher.getInstance().getExecutor();
+                
+
+                
             } else {
                 writeError(Status.CLIENT_ERROR_BAD_REQUEST, "Unknown layer " + rq.getLayerName());
             }
             
         } catch (IOException ioex) {
             writeError(Status.SERVER_ERROR_INTERNAL, ioex.getMessage());
-        } catch (GeoWebCacheException gwce) {
-            writeError(Status.SERVER_ERROR_INTERNAL, gwce.getMessage());
+        } catch(GeoWebCacheException gwce) {
+            writeError(Status.CLIENT_ERROR_BAD_REQUEST, gwce.getMessage());
         }
+    }
+    
+    private static void dispatchTasks(SeedRequest rq, TileLayer tl, 
+            ThreadPoolExecutor threadPoolExec) throws GeoWebCacheException {
+        String type;
+        if(rq.getType() == null || rq.getType().length() == 0) {
+           type = "seed";
+        } else {
+            type = rq.getType();
+            if( type.equalsIgnoreCase("ssed")
+                    || type.equalsIgnoreCase("reseed") 
+                    || type.equalsIgnoreCase("truncate")) {
+                // ok
+            } else {
+                throw new GeoWebCacheException("Unknown request type " + rq.getType());
+            }
+        }
+        
+        int threadCount;
+        if(null == rq.getThreadCount() 
+                || rq.getThreadCount() < 1 
+                || type.equalsIgnoreCase("seed")) {
+            threadCount = 1;
+        } else {
+            threadCount = rq.getThreadCount();
+            if(threadCount > threadPoolExec.getMaximumPoolSize()) {
+                throw new GeoWebCacheException("Asked to use " + threadCount + " threads," 
+                        +" but maximum is " + threadPoolExec.getMaximumPoolSize());
+            }
+        }
+        
+        if(threadCount > 1) {
+            for(int i=0; i<threadCount; i++) {
+                GWCTask task = createTask(type,rq,tl);
+                task.setThreadInfo(threadCount, i);
+                threadPoolExec.submit(new MTSeeder(task));
+            }
+        } else {
+            GWCTask task = createTask(type,rq,tl);
+            threadPoolExec.submit(new MTSeeder(task));
+        }
+    }
+    
+    private static GWCTask createTask(String type, SeedRequest rq, TileLayer tl) {
+        if(type.equalsIgnoreCase("seed")) {
+            return new SeedTask(rq,tl,false);
+        }
+        if(type.equalsIgnoreCase("reseed")) {
+            return new SeedTask(rq,tl,true);
+        }
+        if(type.equalsIgnoreCase("truncate")) {
+            return new TruncateTask();
+        }
+        
+        return null;
     }
 
     /**
@@ -186,16 +233,11 @@ public class SeedResource extends Resource {
      * Method returns List of Strings representing the status of the currently running threads
      * @return
      */
-    protected static int[][] getStatusList() {
+    static int[][] getStatusList() {
         return statusArray;
     }
 
     public boolean allowPost() {
         return true;
-    }
-
-    private void writeError(Status status, String message) {
-        log.error(message);
-        this.getResponse().setStatus(status, message);
     }
 }

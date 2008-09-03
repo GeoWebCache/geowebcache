@@ -28,24 +28,30 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.tile.Tile;
 import org.geowebcache.util.wms.BBOX;
 
-public class SeedTask {
+public class SeedTask extends GWCTask {
     private static Log log = LogFactory.getLog(org.geowebcache.rest.SeedTask.class);
 
     private final SeedRequest req; 
+    
     private final TileLayer tl;
+    
+    private boolean reseed = false; 
+    
     /**
      * Constructs a SeedTask from a SeedRequest
      * @param req - the SeedRequest
      */
-    public SeedTask(SeedRequest req, TileLayer tl) {
+    public SeedTask(SeedRequest req, TileLayer tl, boolean reseed) {
         this.req = req;
         this.tl = tl;
+        this.reseed = reseed;
     }
+
     /**
-     * Method doSeed().
+     * Method doAction().
      * this is where all the actual work is being done to seed a tile layer. 
      */
-    public void doSeed() throws GeoWebCacheException {
+    void doAction() throws GeoWebCacheException {
         //try {
             //approximate thread creation time
             long START_TIME = System.currentTimeMillis();
@@ -66,14 +72,18 @@ public class SeedTask {
 
             int[][] coveredGridLevels = tl.getCoveredGridLevels(srs,bounds);
             int[] metaTilingFactors = tl.getMetaTilingFactors();
+            int tilesPerMetaTile = metaTilingFactors[0] * metaTilingFactors[1];
+            
             int arrayIndex = getCurrentThreadArrayIndex();
             int TOTAL_TILES = tileCount(coveredGridLevels, zoomStart, zoomStop); 
-            int count = 1;
+            int count = 0;
+            
             for (int level = zoomStart; level <= zoomStop; level++) {
                 int[] gridBounds = coveredGridLevels[level];
                 for (int gridy = gridBounds[1]; gridy <= gridBounds[3];) {
 
                     for (int gridx = gridBounds[0]; gridx <= gridBounds[2];) {
+                        
                         int[] gridLoc = { gridx, gridy, level };
 
                         Tile tile = new Tile(tl, srs, gridLoc, mimeType,
@@ -87,14 +97,17 @@ public class SeedTask {
                         }
 
                         // Next column
-                        gridx += metaTilingFactors[0];
+                        gridx += metaTilingFactors[0] * (1 + threadOffset);
+                        
+                        count += tilesPerMetaTile;
                         
                         int[][] list = SeedResource.getStatusList();
                         synchronized(list) { 
-                            list[arrayIndex]= getStatusInfo(arrayIndex, tl, count, TOTAL_TILES, START_TIME);
+                            list[arrayIndex]= getStatusInfo(arrayIndex, tl, count, (TOTAL_TILES / threadCount), START_TIME);
                         }
-                        count++;
                     }
+                    
+                    System.out.println("Thread with offset " + threadOffset + " completed row.");
                     // Next row
                     gridy += metaTilingFactors[1];
                 }
@@ -146,8 +159,8 @@ public class SeedTask {
         arrayIndex--;
         
         return arrayIndex;
-        
     }
+    
     /**
      * Helper method to report status of thread progress.
      * @param arrayIndex
@@ -159,15 +172,21 @@ public class SeedTask {
      * @return
      */
     private int[] getStatusInfo(int arrayIndex, TileLayer layer,
-            int tilecount, int total_tiles, long start_time) {
+            int tilesCount, int tilesTotal, long start_time) {
         int[] temp = new int[3];
         //working on tile
-        temp[0] = tilecount;
+        temp[0] = tilesCount;
         //out of
-        temp[1] = total_tiles;
-        //estimated time of completion in seconds
-        int etc = (int) ((System.currentTimeMillis() - start_time)/tilecount)*(total_tiles - tilecount +1)/1000;
-        temp[2] = etc;
+        temp[1] = tilesTotal;
+        
+        //estimated time of completion in seconds, use a moving average over the last 
+        long timeSpent = (System.currentTimeMillis() - start_time) / 1000;
+        
+        long timeTotal = Math.round(timeSpent * ((double) tilesTotal / (double) tilesCount));
+        
+        int timeRemaining = (int) (timeTotal - timeSpent);
+        
+        temp[2] = timeRemaining;
         
         return temp; 
     }

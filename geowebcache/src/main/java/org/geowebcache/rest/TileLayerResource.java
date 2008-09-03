@@ -55,7 +55,7 @@ import javax.xml.parsers.ParserConfigurationException;
 /**
  * This is the TileLayer resource class required by the REST interface
  */
-public class TileLayerResource extends Resource {
+public class TileLayerResource extends GWCResource {
     private XMLConfiguration xmlConfig;
     
     private TileLayerDispatcher tlDispatcher;
@@ -264,30 +264,31 @@ public class TileLayerResource extends Resource {
 
     @Override
     public void post(Representation entity) {
-        log.info("Received POST request from  "
-                + getRequest().getHostRef().getHostIdentifier());
         try{
+            checkPosMediaType(entity);
+            
             String xmlText = entity.getText();
             XStream xs = XMLConfiguration.getConfiguredXStream(new XStream(new DomDriver()));
-            //XStream xs = RESTDispatcher.getConfig().getConfiguredXStream();
             TileLayer tileLayer = null;
+            
             if(entity.getMediaType().equals(MediaType.APPLICATION_XML)){
                 tileLayer = (WMSLayer) xs.fromXML(xmlText);
-            }
             
-            /**
-             * Deserializing a JSON string is more complicated. XStream does not natively
-             * support it. Rather it uses a JettisonMappedXmlDriver to convert to intermediate XML
-             * and then deserializes that into the desired object. At this time, there is a known issue 
-             * with the Jettison driver involving elements that come after an array in the JSON string. 
-             * 
-             * http://jira.codehaus.org/browse/JETTISON-48
-             * 
-             * The code below is a hack: it treats the json string as text, then converts it to the 
-             * intermediate XML and then deserializes that into the tileLayer object. 
-             */
-            else if(entity.getMediaType().equals(MediaType.APPLICATION_JSON)){
-            	HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();
+            
+            } else if(entity.getMediaType().equals(MediaType.APPLICATION_JSON)){
+                /**
+                 * Deserializing a JSON string is more complicated. XStream does not natively
+                 * support it. Rather it uses a JettisonMappedXmlDriver to convert to intermediate XML
+                 * and then deserializes that into the desired object. At this time, there is a known issue 
+                 * with the Jettison driver involving elements that come after an array in the JSON string. 
+                 * 
+                 * http://jira.codehaus.org/browse/JETTISON-48
+                 * 
+                 * The code below is a hack: it treats the json string as text, then converts it to the 
+                 * intermediate XML and then deserializes that into the tileLayer object. 
+                 */
+                
+                HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();
                 StringReader reader = new StringReader(xmlText);
                 HierarchicalStreamReader hsr = driver.createReader(reader);
                 
@@ -306,7 +307,7 @@ public class TileLayerResource extends Resource {
                 tileLayer = (WMSLayer) x.fromXML(writer.toString());
             }
             
-            //the layer we are posting to is null, so we need to create a new one
+            // The layer we are posting to is null, so we need to create a new one
             if(currentLayer == null){
                 boolean tryCreate = false;
                 try {
@@ -315,13 +316,13 @@ public class TileLayerResource extends Resource {
                     // Not much we can do
                     log.error(gwce.getMessage());
                 }
+                
                 if (tryCreate) {
                     log.info("Added layer : " + tileLayer.getName());
                     getResponse().setStatus(Status.SUCCESS_OK);
-                } else
-                    getResponse().setStatus(
-                            Status.CLIENT_ERROR_FAILED_DEPENDENCY);
-                
+                } else {
+                    getResponse().setStatus(Status.CLIENT_ERROR_FAILED_DEPENDENCY);
+                }
             } else {
                 //the layer we are posting to is not null, so we are trying to modify it
                 boolean trySave = false;
@@ -343,7 +344,9 @@ public class TileLayerResource extends Resource {
             reinitTileLayerDispatcher();
             
         } catch(IOException ioex){
-            ioex.printStackTrace();
+            writeError(Status.SERVER_ERROR_INTERNAL, ioex.getMessage());
+        } catch(GeoWebCacheException gwce) {
+            writeError(Status.CLIENT_ERROR_BAD_REQUEST, gwce.getMessage());
         }
     }
     
