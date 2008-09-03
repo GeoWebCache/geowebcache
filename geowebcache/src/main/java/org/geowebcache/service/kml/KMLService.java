@@ -347,7 +347,7 @@ public class KMLService extends Service {
             // Get the data (cheat)
             try {
                 tile.setWrapperMimeType(null);
-                tileLayer.getResponse(tile);
+                tileLayer.getTile(tile);
                 tile.setWrapperMimeType(XMLMime.kmz);
             } catch (IOException ioe) {
                 log.error(ioe.getMessage());

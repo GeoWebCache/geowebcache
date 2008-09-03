@@ -181,7 +181,7 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
         return null;
     }
 
-    public Tile getResponse(Tile tile)
+    public Tile getTile(Tile tile)
             throws GeoWebCacheException, IOException {
         // TODO Auto-generated method stub
         //log.warn("getResponse(TileRequest tileRequest,ServiceRequest servReq, HttpServletResponse response)");
@@ -513,6 +513,13 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
     public int[] getZoomedOutGridLoc(SRS srs) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public void seedTile(Tile tile, boolean tryCache)
+            throws GeoWebCacheException, IOException {
+        // TODO Auto-generated method stub
+        
     }
 
 }

@@ -178,9 +178,12 @@ public abstract class TileLayer {
      * @throws GeoWebCacheException
      * @throws IOException
      */
-    public abstract Tile getResponse(Tile tile) throws GeoWebCacheException,
-            IOException;
+    public abstract Tile getTile(Tile tile) 
+    throws GeoWebCacheException, IOException;
 
+    public abstract void seedTile(Tile tile, boolean tryCache) 
+    throws GeoWebCacheException, IOException;
+    
     /**
      * This is a more direct way of requesting a tile without invoking
      * metatiling, and should not be used in general. The method was exposed to

@@ -77,6 +77,7 @@ public class SeedTask extends GWCTask {
             int arrayIndex = getCurrentThreadArrayIndex();
             int TOTAL_TILES = tileCount(coveredGridLevels, zoomStart, zoomStop); 
             int count = 0;
+            boolean tryCache = !reseed;
             
             for (int level = zoomStart; level <= zoomStop; level++) {
                 int[] gridBounds = coveredGridLevels[level];
@@ -89,7 +90,7 @@ public class SeedTask extends GWCTask {
                         Tile tile = new Tile(tl, srs, gridLoc, mimeType,
                                 null, null);
                         try {
-                            tl.getResponse(tile);
+                            tl.seedTile(tile, tryCache);
                         } catch (GeoWebCacheException e) {
                             e.printStackTrace();
                         } catch (IOException e) {

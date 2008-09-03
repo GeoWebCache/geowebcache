@@ -71,7 +71,7 @@ public class KMZHelper {
                 tile.setTileLayer(tileLayer);
                 
                 try {                                        
-                    tileLayer.getResponse(tile);
+                    tileLayer.getTile(tile);
                     
                 } catch (IOException ioe) {
                     log.error(ioe.getMessage());

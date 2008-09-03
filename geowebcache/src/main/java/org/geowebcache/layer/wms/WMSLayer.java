@@ -66,10 +66,6 @@ public class WMSLayer extends TileLayer {
 
     private String errormime;
 
-    //private int width;
-
-    //private int height;
-
     private String version;
 
     private boolean tiled;
@@ -84,25 +80,7 @@ public class WMSLayer extends TileLayer {
     
     private String vendorParameters;
 
-    //private boolean debugheaders;
-
-    //protected transient GridCalculator[] gridCalc;
-
-    //private transient int zoomStart;
-
-    //private transient int zoomStop;
-
-    //private transient String request;
-
-    //protected transient String[] wmsURL;
-
     private transient int curWmsURL;
-
-    //private transient String wmsLayers;
-
-    //private transient String wmsStyles;
-
-    //private transient WMSParameters wmsparams;
 
     private transient boolean saveExpirationHeaders;
 
@@ -133,13 +111,6 @@ public class WMSLayer extends TileLayer {
     private transient CacheFactory initCacheFactory;
 
     private static transient Log log;
-
-    //public WMSLayer(String layerName, CacheFactory cacheFactory)
-    //        throws GeoWebCacheException {
-    //    name = layerName;
-    //    initCacheFactory = cacheFactory;
-    //    log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
-    //}
     
     public WMSLayer(String layerName, CacheFactory cacheFactory,
             String[] wmsURL, String wmsStyles, String wmsLayers, 
@@ -166,28 +137,6 @@ public class WMSLayer extends TileLayer {
         initCacheFactory = cacheFactory;
         //log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
     }
-    
-//    private void lazyLayerInitialization() {
-//        width = 256;
-//        height = 256;
-//        version = "1.1.0";
-//        transparent = true;
-//        zoomStart = 0;
-//        zoomStop = 20;
-//        request = "GetMap";
-//        errormime = ErrorMime.vnd_ogc_se_inimage.getMimeType();
-//        curWmsURL = 0;
-//        wmsLayers = "topp:states";
-//        saveExpirationHeaders = false;
-//        expireClients = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
-//        expireCache = GWCVars.CACHE_NEVER_EXPIRE;
-//        layerLock = new ReentrantLock();
-//        layerLocked = false;
-//        layerLockedCond = layerLock.newCondition();
-//        procQueue = new HashMap<GridLocObj, Boolean>();
-//        cacheLockWait = -1;
-//        //initCacheFactory = cf;            
-//    }
 
     public Boolean isInitialized() {
         Boolean result = isInitialized;
@@ -203,8 +152,6 @@ public class WMSLayer extends TileLayer {
     }
 
     protected Boolean initialize() {
-        
-        //lazyLayerInitialization();
         log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
         curWmsURL = 0;
         
@@ -213,8 +160,8 @@ public class WMSLayer extends TileLayer {
         //zoomStop = 20;
         //width = 256;
         //height = 256;
-        
         //request = "GetMap";
+        
         errormime = ErrorMime.vnd_ogc_se_inimage.getMimeType();
         version = "1.1.0";
         transparent = true;
@@ -224,7 +171,6 @@ public class WMSLayer extends TileLayer {
         layerLock = new ReentrantLock();
         layerLockedCond = layerLock.newCondition();
         procQueue = new HashMap<GridLocObj, Boolean>();
-        
         
         try {
             initParameters();
@@ -257,7 +203,7 @@ public class WMSLayer extends TileLayer {
      * @param wmsparams
      * @return
      */
-    public Tile getResponse(Tile tile) throws GeoWebCacheException, IOException {
+    public Tile getTile(Tile tile) throws GeoWebCacheException, IOException {
         MimeType mime = tile.getMimeType();
 
         if (mime == null) {
@@ -277,25 +223,34 @@ public class WMSLayer extends TileLayer {
 
         // Okay, so we need to go to the backend
         if (mime.supportsTiling()) {
-            return getMetatilingReponse(tile);
+            return getMetatilingReponse(tile, true);
         } else {
-            return getNonMetatilingReponse(tile);
+            return getNonMetatilingReponse(tile, true);
         }
     }
+    
+    
+    /**
+     * Used for seeding
+     */
+    public void seedTile(Tile tile, boolean tryCache) throws GeoWebCacheException, IOException {     
+        if (tile.getMimeType().supportsTiling()) {
+            getMetatilingReponse(tile, tryCache);
+        } else {
+            getNonMetatilingReponse(tile, tryCache);
+        }
+    }
+    
 
     /**
      * Metatiling request forwarding
      * 
-     * @param tileRequest
-     * @param gridLoc
-     * @param mime
-     * @param idx
-     * @param response
-     * @return
+     * @param tile the Tile with all the information
+     * @param tryCache whether to try the cache, or seed
      * @throws GeoWebCacheException
      */
-    private Tile getMetatilingReponse(Tile tile) throws GeoWebCacheException {
-
+    private Tile getMetatilingReponse(Tile tile, boolean tryCache) 
+    throws GeoWebCacheException {
         //int idx = this.getSRSIndex(tile.getSRS());
         int[] gridLoc = tile.getTileIndex();
         GridCalculator gridCalc = getGrid(tile.getSRS()).getGridCalculator();
@@ -317,7 +272,7 @@ public class WMSLayer extends TileLayer {
         waitForQueue(metaGlo, condIdx);
         try {
             /** ****************** Check cache again ************** */
-            if (tryCacheFetch(tile)) {
+            if (tryCache && tryCacheFetch(tile)) {
                 // Someone got it already, return lock and we're done
                 removeFromQueue(metaGlo, condIdx);
                 return finalizeTile(tile);
@@ -369,14 +324,12 @@ public class WMSLayer extends TileLayer {
     /**
      * Non-metatiling forward to backend
      * 
-     * @param tileRequest
-     * @param gridLoc
-     * @param mime
-     * @param idx
-     * @param response
-     * @return
+     * @param tile the Tile with all the information
+     * @param tryCache whether to try the cache, or seed
+     * @throws GeoWebCacheException
      */
-    private Tile getNonMetatilingReponse(Tile tile) throws GeoWebCacheException {
+    private Tile getNonMetatilingReponse(Tile tile, boolean tryCache) 
+    throws GeoWebCacheException {
         // String debugHeadersStr = null;
         int[] gridLoc = tile.getTileIndex();
         int condIdx = this.calcLocCondIdx(gridLoc);
@@ -386,7 +339,7 @@ public class WMSLayer extends TileLayer {
         waitForQueue(glo, condIdx);
         try {
             /** ****************** Check cache again ************** */
-            if (tryCacheFetch(tile)) {
+            if (tryCache && tryCacheFetch(tile)) {
                 // Someone got it already, return lock and we're done
                 removeFromQueue(glo, condIdx);
                 return tile;

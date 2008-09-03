@@ -256,8 +256,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
             // Keep the URI 
             //tile.requestURI = request.getRequestURI();
             
-            // A5) Ask the layer to provide the tile
-            layer.getResponse(tile);
+            // A5) Ask the layer to provide the content for the tile
+            layer.getTile(tile);
 
             // A6) Write response
             writeData(tile);
