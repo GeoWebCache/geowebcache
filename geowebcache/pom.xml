@@ -10,7 +10,7 @@
   <url>http://geowebcache.org</url>
   
   <properties>
-    <gs.version>1.6.4</gs.version>
+    <!-- gs.version>1.6.4</gs.version -->
     <gt.version>2.4.4</gt.version>
     <spring.version>2.5.5</spring.version>
     <restlet.version>1.0.8</restlet.version>
@@ -83,7 +83,7 @@
   <dependencies>
     <dependency>
       <groupId>org.geotools</groupId>
-      <artifactId>gt-wms</artifactId>
+      <artifactId>gt2-wms</artifactId>
       <version>${gt.version}</version>
     </dependency>
     
@@ -343,7 +343,7 @@
 	</configuration>
       </plugin>
 
-      <plugin>
+      <!-- plugin>
 	   <artifactId>maven-war-plugin</artifactId>
 	   <executions>
 	     <execution>
@@ -353,7 +353,7 @@
 	       </goals>
 	     </execution>
 	   </executions>
-      </plugin>
+      </plugin -->
 
       <plugin>
 	<artifactId>maven-source-plugin</artifactId>
