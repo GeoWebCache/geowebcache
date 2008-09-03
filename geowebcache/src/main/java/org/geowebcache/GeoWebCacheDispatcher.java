@@ -48,18 +48,12 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private static Log log = LogFactory.getLog(org.geowebcache.GeoWebCacheDispatcher.class);
 
     public static final String TYPE_SERVICE = "service";
-
-    //public static final String TYPE_SEED = "seed";
-
+    
     public static final String TYPE_TRUNCATE = "truncate";
     
     public static final String TYPE_RPC = "rpc";
     
     public static final String TYPE_DEMO = "demo";
-    
-    //WebApplicationContext context = null;
-
-    private String servletPrefix = null;
 
     private TileLayerDispatcher tileLayerDispatcher = null;
 
@@ -90,7 +84,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * @param servletPrefix
      */
     public void setServletPrefix(String servletPrefix) {
-        this.servletPrefix = servletPrefix;
+        //this.servletPrefix = servletPrefix;
+        log.warn("Ignored setServletPrefix("+servletPrefix+")");
     }
 
     /**
@@ -140,12 +135,12 @@ public class GeoWebCacheDispatcher extends AbstractController {
     protected ModelAndView handleRequestInternal(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
 
-        //context = (WebApplicationContext) getApplicationContext();
-
         // Break the request into components, {type, service name}
         String[] requestComps = null;
         try {
-            requestComps = parseRequest(request.getRequestURI());
+            String normalizedURI = request.getRequestURI().replaceFirst(request.getContextPath(), "");
+            requestComps = parseRequest(normalizedURI);
+            //requestComps = parseRequest(request.getRequestURI());
         } catch (GeoWebCacheException gwce) {
             writeError(response, 400, gwce.getMessage());
             return null;
@@ -159,7 +154,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             } else if (requestComps[0].equalsIgnoreCase(TYPE_DEMO)) {
                 handleDemoRequest(requestComps[1],request, response);   
             } else {
-                writeError(response, 404, "Unknow path: " + requestComps[0]);
+                writeError(response, 404, "Unknown path: " + requestComps[0]);
             }
         } catch (Exception e) {
             // e.printStackTrace();
@@ -186,36 +181,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
             throws GeoWebCacheException {
         String[] retStrs = new String[2];
         String[] splitStr = servletPath.split("/");
-        // This string should start with / , so the first hit will be ""
-
-        if (servletPrefix != null) {
-            if (log.isDebugEnabled()) {
-                if (splitStr[0].equals(servletPrefix)) {
-                    log.info("Matched servlet prefix " + servletPrefix
-                            + " to request");
-                } else {
-                    log.error("Servlet prefix " + servletPrefix
-                            + " does not match " + splitStr[0]);
-                }
-            }
-            if (splitStr.length < 4) {
-                throw new GeoWebCacheException("Unable to parse " + servletPath
-                        + " given prefix " + servletPrefix);
-            }
-            retStrs[0] = splitStr[3];
-            if(splitStr.length > 4) {
-                retStrs[1] = splitStr[4];
-            }
-        } else {
-            if (splitStr.length < 3) {
-                throw new GeoWebCacheException("Unable to parse " + servletPath);
-            }
-            if (splitStr.length == 3) {
-                retStrs[0] = splitStr[2];
-            } else {
-                retStrs[0] = splitStr[2];
-                retStrs[1] = splitStr[3];
-            }
+        
+        retStrs[0] = splitStr[1];
+        if(splitStr.length > 2) {
+            retStrs[1] = splitStr[2];
         }
         return retStrs;
     }
@@ -312,8 +281,13 @@ public class GeoWebCacheDispatcher extends AbstractController {
         // E.g. /wms/test -> /wms
         Service service = (Service) services.get(serviceStr);
         if (service == null) {
+            if(serviceStr == null || serviceStr.length() == 0) {
+                serviceStr = ", try service/<name of service>";
+            } else {
+                serviceStr = " \""+ serviceStr + "\"";
+            }
             throw new GeoWebCacheException(
-                    "Unable to find handler for service " + serviceStr);
+                    "Unable to find handler for service" + serviceStr);
         }
         return service;
     }
@@ -329,10 +303,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * @param errorMsg
      *            the actual error message, human readable
      */
-    private void writeError(HttpServletResponse response, int httpCode,
+    private static void writeError(HttpServletResponse response, int httpCode,
             String errorMsg) {
 
-        response.setContentType("text/plain");
+        response.setContentType("text/html");
         response.setStatus(httpCode);
 
         if (errorMsg == null) {
@@ -341,6 +315,15 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
         log.debug(errorMsg);
 
+        errorMsg = 
+                "<html><body>\n"
+                +"<a id=\"logo\" href=\"http://geowebcache.org\">" 
+                +"<img src=\"http://geowebcache.org/trac/chrome/site/geowebcache_logo.png\""
+                +"height=\"100\" width=\"353\" border=\"0\"/>"
+                +"</a>\n"
+                +"<h4>"+httpCode+": "+errorMsg+"</h4>"
+                +"</body></html>\n";
+        
         try {
             OutputStream os = response.getOutputStream();
             os.write(errorMsg.getBytes());
