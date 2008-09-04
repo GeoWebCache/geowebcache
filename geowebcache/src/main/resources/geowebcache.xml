@@ -133,8 +133,14 @@
       </grid>
     </entry>
   </grids>
+  <!-- 
+  Note that you can have multiple backend servers for the same layer.
+  They will be used in round-robin fashion. If one fails to respond
+  properly, the next one will be used automatically.
+  -->
   <wmsUrl>
     <string>http://sigma.openplans.org:80/geoserver/wms</string>
+    <string>http://atlas.openplans.org:8080/geoserver/wms</string>
   </wmsUrl>
   <wmsLayers>topp:states</wmsLayers>
   <wmsStyles>polygon</wmsStyles>
