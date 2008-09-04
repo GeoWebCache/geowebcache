@@ -300,7 +300,7 @@ public class TileLayerResource extends GWCResource {
                 
                 XStream x = new XStream(new DomDriver());
                 x.alias("wmslayer", WMSLayer.class);
-                x.aliasField("layer-name", TileLayer.class, "name");
+                //x.aliasField("name", TileLayer.class, "name");
                 x.alias("grid", Grid.class);
                 
                 
