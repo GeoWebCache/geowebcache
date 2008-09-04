@@ -60,6 +60,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private HashMap<String,Service> services = null;
     
     private byte[] blankPNG8 = null; 
+    
+    private String servletPrefix = null;
 
     public GeoWebCacheDispatcher() {
         super();
@@ -84,8 +86,13 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * @param servletPrefix
      */
     public void setServletPrefix(String servletPrefix) {
-        //this.servletPrefix = servletPrefix;
-        log.warn("Ignored setServletPrefix("+servletPrefix+")");
+        if(! servletPrefix.startsWith("/")) {
+            this.servletPrefix = "/" + servletPrefix; 
+        } else {
+            this.servletPrefix = servletPrefix;
+        }
+        
+        log.info("Invoked setServletPrefix("+servletPrefix+")");
     }
 
     /**
@@ -139,7 +146,11 @@ public class GeoWebCacheDispatcher extends AbstractController {
         String[] requestComps = null;
         try {
             String normalizedURI = request.getRequestURI().replaceFirst(request.getContextPath(), "");
-            requestComps = parseRequest(normalizedURI);
+            
+            if(servletPrefix != null) {
+                normalizedURI =  normalizedURI.replaceFirst(servletPrefix, ""); //getRequestURI().replaceFirst(request.getContextPath()+, "");
+            }
+             requestComps = parseRequest(normalizedURI);
             //requestComps = parseRequest(request.getRequestURI());
         } catch (GeoWebCacheException gwce) {
             writeError(response, 400, gwce.getMessage());
@@ -282,7 +293,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         Service service = (Service) services.get(serviceStr);
         if (service == null) {
             if(serviceStr == null || serviceStr.length() == 0) {
-                serviceStr = ", try service/<name of service>";
+                serviceStr = ", try service/&lt;name of service&gt;";
             } else {
                 serviceStr = " \""+ serviceStr + "\"";
             }
