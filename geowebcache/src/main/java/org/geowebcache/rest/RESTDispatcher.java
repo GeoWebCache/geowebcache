@@ -49,7 +49,9 @@ public class RESTDispatcher extends AbstractController {
 
     public static final String METHOD_DELETE = "DELETE";
 
-    private static final int THREAD_NUMBER = 32;
+    private static final int THREAD_NUMBER = 4;
+    
+    private static final int THREAD_MAX_NUMBER = 32;
     
     private final XMLConfiguration xmlConfig;
     
@@ -81,7 +83,7 @@ public class RESTDispatcher extends AbstractController {
         this.xmlConfig = xmlConfig;
         this.tlDispatcher = tlDispatcher;
         this.tpe = new ThreadPoolExecutor( 
-                THREAD_NUMBER, 20, 500000L, TimeUnit.SECONDS, 
+                THREAD_NUMBER, THREAD_MAX_NUMBER, Long.MAX_VALUE, TimeUnit.SECONDS, 
                 new LinkedBlockingQueue<Runnable>());
         this.instance = this;
     }

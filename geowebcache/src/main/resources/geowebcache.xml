@@ -6,7 +6,7 @@
    * Google Maps and Microsoft Virtual Earth (EPSG:900913, PNG support)
  -->
  <wmslayer>
-  <layer-name>topp:states</layer-name>
+  <name>topp:states</name>
   <mimeFormats>
     <string>image/png</string>
     <string>image/jpeg</string>
@@ -100,7 +100,7 @@
  -->
  
  <wmslayer>
-  <layer-name>topp:states2</layer-name>
+  <name>topp:states2</name>
   <mimeFormats>
     <string>image/png</string>
     <string>image/jpeg</string>

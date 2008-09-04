@@ -1,50 +1,58 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Arne Kepp, Marius Suta,  The Open Planning Project, Copyright 2008
+ */
 package org.geowebcache.util;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ArrayList;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.cache.CacheFactory;
+import org.geowebcache.layer.Grid;
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.context.WebApplicationContext;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.wms.WMSLayer;
-import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.cache.*;
-import org.geowebcache.layer.Grid;
-import org.geowebcache.mime.MimeType;
-
-import com.thoughtworks.xstream.*;
+import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomReader;
 import com.thoughtworks.xstream.io.xml.DomWriter;
-
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class XMLConfiguration implements Configuration, ApplicationContextAware {
     private static Log log = LogFactory
@@ -135,7 +143,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         
         xs.alias("layer", TileLayer.class);
         xs.alias("wmslayer", WMSLayer.class);
-        xs.aliasField("layer-name", TileLayer.class, "name");
+        //xs.aliasField("layer-name", TileLayer.class, "name");
         xs.alias("grids", new ArrayList<Grid>().getClass());
         xs.alias("grid", Grid.class);
         xs.aliasType("format", String.class);
@@ -290,38 +298,17 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
             document = docBuilder.parse(file);
         } catch (ParserConfigurationException pce) {
             log.error(pce.getMessage());
-            System.err.println(pce.getMessage());
+            //System.err.println(pce.getMessage());
             pce.printStackTrace();
         } catch (IOException ei) {
             log.error("Exception occured while creating documet from file " + file.getAbsolutePath());
-            ei.printStackTrace(System.err);
+            //ei.printStackTrace(System.err);
         } catch (SAXException saxe) {
             log.error(saxe.getMessage());
-            saxe.printStackTrace();
+            //saxe.printStackTrace();
         }
         return document;
     }
-
-    /**
-     * 
-     * Method finds the layer configuration XML file
-     * 
-     * @param configDirH
-     * @return
-     */
-    private File findPropFile(File configDirH) {
-        FilenameFilter select = new ExtensionFileLister("geowebcache", "xml");
-        File[] f = configDirH.listFiles(select);
-
-        if (f == null) {
-            log.error("Unable to find configuration file in "
-                    + this.configDirH.getAbsolutePath() + " !! ");
-            return null;
-        } else {
-            return f[0];
-        }
-    }
-
 
     public void determineConfigDirH() {
         if (absPath != null) {
@@ -331,16 +318,17 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
         /* Only keep going for relative directory */
         if (relPath == null) {
-            log.warn("No configuration directory was specified,"
-                    + " reverting to default: ");
-            relPath = "";
-        } else {
-            if (File.separator.equals("\\")
-                    && relPath.equals("/WEB-INF/classes")) {
-                log.warn("You seem to be running on windows, changing search path to \\WEB-INF\\classes");
-                relPath = "\\WEB-INF\\classes";
-            }
-        }
+            log.warn("No configuration directory was specified, trying /WEB-INF/classes");
+            //String classpath = System.getProperty("java.class.path");
+            //System.out.println(classpath);
+            relPath = "/WEB-INF/classes";
+        } //else {
+          //  if (File.separator.equals("\\")
+          //          && relPath.equals("/WEB-INF/classes")) {
+          //      log.warn("You seem to be running on windows, changing search path to \\WEB-INF\\classes");
+          //      relPath = "\\WEB-INF\\classes";
+          //  }
+        //}
 
         String baseDir = context.getServletContext().getRealPath("");
 

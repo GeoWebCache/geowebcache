@@ -15,5 +15,17 @@
 	<zoomStart>1</zoomStart>
 	<zoomStop>12</zoomStop>
 	<format>image/png</format>
+	
+	<!-- type can be 
+		* seed (add tiles) 
+		* reseed (replace tiles)
+		* truncate (remove tiles)
+		
+		truncate is as of beta0 not implemented!
+	-->
+	<type>seed</type>
+	
+	<!-- Number of seeding threads to run in parallel -->
+	<threadCount>4</threadCount>
 </seedRequest>
 		

@@ -16,13 +16,16 @@
  */
 package org.geowebcache.rest;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.concurrent.ThreadPoolExecutor;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.util.wms.BBOX;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.restlet.Context;
@@ -32,22 +35,16 @@ import org.restlet.data.Response;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.resource.Representation;
-import org.restlet.resource.Resource;
 import org.restlet.resource.Variant;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.copy.HierarchicalStreamCopier;
-import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
+import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
-
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.concurrent.*;
 
 
 public class SeedResource extends GWCResource {
@@ -104,11 +101,12 @@ public class SeedResource extends GWCResource {
 
             XStream xs = new XStream(new DomDriver());
             xs.alias("seedRequest", SeedRequest.class);
-            xs.alias("format", String.class);
-            xs.alias("bounds", BBOX.class);
-            xs.alias("projection", SRS.class);
-            xs.alias("zoomstart", Integer.class);
-            xs.alias("zoomstop", Integer.class);
+            //xs.alias("format", String.class);
+            //xs.alias("threadCount", Integer.class);
+            //xs.alias("bounds", BBOX.class);
+            //xs.alias("projection", SRS.class);
+            //xs.alias("zoomstart", Integer.class);
+            //xs.alias("zoomstop", Integer.class);
 
             SeedRequest rq = null;
 
@@ -150,10 +148,8 @@ public class SeedResource extends GWCResource {
             TileLayer tl = tlDispatch.getTileLayer(rq.getLayerName());
             
             if(tl != null) {
-                
                 ThreadPoolExecutor threadPoolExec = RESTDispatcher.getInstance().getExecutor();
-                
-
+                dispatchTasks(rq, tl, threadPoolExec);
                 
             } else {
                 writeError(Status.CLIENT_ERROR_BAD_REQUEST, "Unknown layer " + rq.getLayerName());
@@ -173,7 +169,7 @@ public class SeedResource extends GWCResource {
            type = "seed";
         } else {
             type = rq.getType();
-            if( type.equalsIgnoreCase("ssed")
+            if( type.equalsIgnoreCase("seed")
                     || type.equalsIgnoreCase("reseed") 
                     || type.equalsIgnoreCase("truncate")) {
                 // ok
