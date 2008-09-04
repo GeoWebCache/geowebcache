@@ -17,8 +17,13 @@
  */
 package org.geowebcache.service.wms;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.List;
@@ -28,24 +33,31 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geotools.data.ows.WMSCapabilities;
+import org.geotools.data.wms.WebMapServer;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.tile.Tile;
+import org.geowebcache.util.Configuration;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
 
 public class WMSService extends Service {
     public static final String SERVICE_WMS = "wms";
 
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.service.wms.WMSService.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.service.wms.WMSService.class);
+
+	private List configs;
+
+	private String caps;
 
     public WMSService() {
         super(SERVICE_WMS);
@@ -179,15 +191,130 @@ public class WMSService extends Service {
 
     }
 
-    private static String getCapabilitiesHeader() {
-        return "<WMT_MS_Capabilities version=\"1.1.1\" updateSequence=\"0\">\n"
-                + "<VendorSpecificCapabilities>";
+    private String getCapabilitiesHeader() {
+    	String wms = fetchOrigionalWMSCapabilitiesDocument();
+    	int split = wms.indexOf("<VendorSpecificCapabilities/>");
+    	if( split != -1 ){
+    		// we have an empty VendorSpecificCapabilities to fill in...
+    		String header = wms.substring(0,split);
+    		return header+"\n<VendorSpecificCapabilities>";
+    	}
+    	split = wms.indexOf("</VendorSpecificCapabilities>");
+    	if( split != -1 ){
+    		// we have an existing VendorSpecificCapabilities to add to
+    		String header = wms.substring(0,split);    		
+    	}
+    	// look for <UserDefinedSymbolization .. VendorSpecificCapabilities goes before this element
+    	split = wms.indexOf("<UserDefinedSymbolization");
+    	if( split ==-1 ){
+    		// look for <Layer> ... VendorSpecificParameters goes before this element
+    		split = wms.indexOf("<Layer");
+    	}
+    	String header = wms.substring(0,split);
+    	
+    	return header +"\n<VendorSpecificCapabilities>";
     }
 
-    private static String getCapabilitiesFooter() {
-        return "\n</VendorSpecificCapabilities>" + "\n</WMT_MS_Capabilities>";
+    private String getCapabilitiesFooter() {
+        //return "\n</VendorSpecificCapabilities>" + "\n</WMT_MS_Capabilities>";
+    	String wms = fetchOrigionalWMSCapabilitiesDocument();
+    	int split = wms.indexOf("<VendorSpecificCapabilities/>");
+    	if( split != -1 ){
+    		// we have an empty VendorSpecificCapabilities to fill in...
+    		String footer = wms.substring(split+29);
+    		return "\n</VendorSpecificCapabilities>" + footer;
+    	}
+    	split = wms.indexOf("<VendorSpecificCapabilities/>");
+    	if( split != -1 ){
+    		// we have an existing VendorSpecificCapabilities to add to
+    		String footer = wms.substring(split+28);
+    		return "\n</VendorSpecificCapabilities>" + footer;
+    	}
+    	// look for <UserDefinedSymbolization .. VendorSpecificCapabilities goes before this element
+    	split = wms.indexOf("<UserDefinedSymbolization");
+    	if( split ==-1 ){
+    		// look for <Layer> ... VendorSpecificParameters goes before this element
+    		split = wms.indexOf("<Layer");
+    	}
+    	String footer = wms.substring(split);    	
+    	return "\n</VendorSpecificCapabilities>" + footer;
     }
 
+    /**
+     * Fetch the original WMS capabilities document (we will add our vendor specific
+     * parameters here).
+     * <p>
+     * Currently this is returned as a String; in the future we can make use of
+     * the GeoTools WMSCapabilities data structure (and strip out any
+     * layers that are not mentioned explicitly).
+     * 
+     * @return The origional WMS capabilities document prior to processing
+     */
+    synchronized String fetchOrigionalWMSCapabilitiesDocument(){
+    	if( caps != null ){
+    		return caps;
+    	}
+    	StringBuffer buf = new StringBuffer();
+    	if (configs == null ){
+    		return "sad";
+    	}
+    	 Iterator configIter = configs.iterator();
+         CONFIG: while (configIter.hasNext()) {
+             Map<String, TileLayer> configLayers = null;
+             Configuration config = (Configuration) configIter.next();
+             try {
+                 configLayers = config.getTileLayers();
+             } catch (GeoWebCacheException gwce) {
+                 log.error(gwce.getMessage());
+                 log.error("Failed to add layers from "+ config.getIdentifier());
+             }
+             if (configLayers != null && configLayers.size() > 0) {
+            	 LAYER: for( TileLayer layer : configLayers.values() ){
+            		 if( !(layer instanceof WMSLayer)){
+            			 continue; // skip!
+            		 }
+            		 WMSLayer wmsLayer = (WMSLayer) layer;
+            		 WMSURL: for( String url : wmsLayer.getWMSurl() ){
+            			 try {
+            				 URL capabilitiesURL = new URL( url+"?REQUEST=GetCapabilities&SERVICE=WMS&VESION=1.1.0");
+		        			 URLConnection connection = capabilitiesURL.openConnection();
+		        			 InputStream input = connection.getInputStream();
+		        			 InputStreamReader reader = new InputStreamReader( input );
+		        			 BufferedReader process = new BufferedReader( reader );
+		        			 
+		        			 buf = new StringBuffer();
+		        			 String line;
+		        			 while( (line = process.readLine()) != null ){
+		        				 buf.append( line );
+		        				 buf.append("\n");
+		        			 }
+		        			 if( buf.length() != 0 ){
+		        				 break CONFIG; // we managed to read a capabilities into buf
+		        			 }
+		        			 /*  
+		        			     // TODO only use the parts of the capabilities file that
+		        				 // are mentioned in our configuration!
+		        				  
+		        				 WebMapServer wms = new WebMapServer(capabilitiesURL);
+		        				 WMSCapabilities capabilities = wms.getCapabilities();		        				             				
+		        			 */
+            			 }
+            			 catch( Throwable notConnected ){
+            				 // continue WMSURL
+            			 }            			 
+            		 }
+            	 }
+             } else {
+                 log.error("Configuration " + config.getIdentifier()+ " contained no layers.");
+             }
+         }
+    	 caps = buf.toString();
+    	 return caps;
+    }
+
+    public void setConfig(List configs) {
+        this.configs = configs;
+    }
     /**
      * 
      * @param tl
