@@ -1,6 +1,5 @@
 <wmslayer>
- <wmslayer>
-  <layer-name>topp:states</layer-name>
+  <name>topp:states</name>
   <mimeFormats>
     <string>image/png</string>
     <string>image/jpeg</string>
@@ -62,8 +61,7 @@
 
   </grids>
   <wmsUrl>
-    <string>http://sigma.openplans.org:80/geoserver/wms</string>
-    <string>http://atlas.openplans.org:8080/geoserver/wms</string>
+    <string>http://sigma.openplans.org/geoserver/wms</string>
   </wmsUrl>
   <wmsLayers>topp:states</wmsLayers>
   <wmsStyles>population</wmsStyles>

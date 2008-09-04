@@ -22,7 +22,7 @@
 	"mimeFormats":["image/png","image/jpeg","application/vnd.google-earth.kml+xml"],
 	"metaWidthHeight":[3,3],
 	"transparent":true,
-	"layer-name":"topp:states",
+	"name":"topp:states",
 	"vendorParameters":"format_options=regionateby:auto",
 	"tiled":false,
 	"bgColor":""
