@@ -68,13 +68,17 @@ public class GridCalculator {
 
     public GridCalculator(Grid grid) throws GeoWebCacheException {
 
+        //TODO this is messed up, ignoring Grid object
         this.grid = grid;
         this.zoomStart = 0;
-        this.zoomStop = 25;
+        this.zoomStop = 30;
         //this.metaWidth = metaWidth;
         //this.metaHeight = metaHeight;
 
-        this.resolutions = grid.resolutions;
+        if(grid.resolutions != null) {
+            this.resolutions = grid.resolutions;
+            this.zoomStop = resolutions.length + 1;
+        }
         
         //BBOX layerBounds = grid.bounds;
         BBOX gridBounds = grid.gridBounds;

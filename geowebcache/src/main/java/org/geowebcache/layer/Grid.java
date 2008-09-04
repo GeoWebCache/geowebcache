@@ -38,7 +38,7 @@ public class Grid {
     
     private volatile int zoomStart = 0;
     
-    private volatile int zoomStop = 25;
+    private volatile int zoomStop = 30;
     
     public Grid(SRS srs, BBOX bounds, BBOX gridBounds, double[] resolutions) {
         this.srs = srs;
