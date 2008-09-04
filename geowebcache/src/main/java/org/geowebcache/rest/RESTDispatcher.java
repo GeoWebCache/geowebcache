@@ -49,7 +49,7 @@ public class RESTDispatcher extends AbstractController {
 
     public static final String METHOD_DELETE = "DELETE";
 
-    private static final int THREAD_NUMBER = 10;
+    private static final int THREAD_NUMBER = 32;
     
     private final XMLConfiguration xmlConfig;
     
