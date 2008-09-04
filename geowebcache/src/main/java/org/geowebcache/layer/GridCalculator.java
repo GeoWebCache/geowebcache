@@ -33,10 +33,10 @@ public class GridCalculator {
     // The following are created to save memory. 
     // Note that they can be modified by external code -> not 100% safe!
     private final static double[] RESOLUTIONS4326 = 
-        GridCalculator.getResolutionArray(180.0, TILEPIXELS, 26);
+        GridCalculator.getResolutionArray(180.0, TILEPIXELS, 31);
     
     private final static double[] RESOLUTIONS900913 = 
-        GridCalculator.getResolutionArray(20037508.34*2,TILEPIXELS, 26);
+        GridCalculator.getResolutionArray(20037508.34*2,TILEPIXELS, 31);
     
     // The following are the width of the actual layer
     private double gridWidth;
@@ -77,7 +77,7 @@ public class GridCalculator {
 
         if(grid.resolutions != null) {
             this.resolutions = grid.resolutions;
-            this.zoomStop = resolutions.length + 1;
+            this.zoomStop = resolutions.length - 1;
         }
         
         //BBOX layerBounds = grid.bounds;
