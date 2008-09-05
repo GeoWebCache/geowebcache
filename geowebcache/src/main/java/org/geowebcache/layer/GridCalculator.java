@@ -68,16 +68,14 @@ public class GridCalculator {
 
     public GridCalculator(Grid grid) throws GeoWebCacheException {
 
-        //TODO this is messed up, ignoring Grid object
         this.grid = grid;
-        this.zoomStart = 0;
-        this.zoomStop = 30;
-        //this.metaWidth = metaWidth;
-        //this.metaHeight = metaHeight;
-
+        
         if(grid.resolutions != null) {
             this.resolutions = grid.resolutions;
             this.zoomStop = resolutions.length - 1;
+        } else {
+            this.zoomStart = grid.getZoomStart();
+            this.zoomStop = grid.getZoomStop();
         }
         
         //BBOX layerBounds = grid.bounds;
@@ -95,7 +93,7 @@ public class GridCalculator {
     
     private void determineGrid() throws GeoWebCacheException {
         if(grid.resolutions == null) {
-            // Figure out the approriate resolutions
+            // Figure out the appropriate resolutions
             
             double ratio = gridWidth / gridHeight;
             
@@ -151,7 +149,8 @@ public class GridCalculator {
             throw new GeoWebCacheException("Unable to find height or width to calculate resolution array.");
         }
         
-        this.resolutions = new double[this.zoomStop - this.zoomStart + 1];
+        // We still need the full array, even though we only care about a part of it
+        this.resolutions = new double[this.zoomStop + 1];
         for(int i=this.zoomStart; i<= this.zoomStop; i++) {
             this.resolutions[i] = baseResolution;
             baseResolution = baseResolution / 2;
@@ -471,12 +470,12 @@ public class GridCalculator {
     
     private int binarySearchForResolution(double reqResolution) 
     throws BadTileException {
-        return binarySearchForResolution(this.resolutions, reqResolution);
+        return binarySearchForResolution(this.resolutions, reqResolution, this.zoomStart);
     }
     
-    protected static int binarySearchForResolution(double[] resolutions, double reqResolution) 
+    protected static int binarySearchForResolution(double[] resolutions, double reqResolution, int zoomStart) 
     throws BadTileException {
-        int low = 0;
+        int low = zoomStart;
         int high = resolutions.length - 1;
         
         double reqUpper = reqResolution * 1.10;
@@ -484,7 +483,7 @@ public class GridCalculator {
         double reqLower = reqResolution * 0.90;
         
         // Deal with the edge cases first
-        if(reqLower > resolutions[1]) {
+        if(reqLower > resolutions[low]) {
             if(resolutions[0] < reqLower) {
                 throw new BadTileException("Resolution "+reqResolution+" is too big for grid,"
                         +" biggest supported is " + resolutions[0]);

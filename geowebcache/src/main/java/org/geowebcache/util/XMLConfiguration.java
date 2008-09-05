@@ -157,6 +157,9 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         xs.alias("tiled", boolean.class);
         xs.alias("transparent", boolean.class);
         xs.alias("SRS", org.geowebcache.layer.SRS.class);
+        
+        xs.alias("zoomStart", int.class);
+        xs.alias("zoomStop", int.class);
         //xs.alias("debugheaders", boolean.class);
         
         return xs;
@@ -311,17 +314,25 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     }
 
     public void determineConfigDirH() {
+        String baseDir = context.getServletContext().getRealPath("");
+        
         if (absPath != null) {
             configDirH = new File(absPath);
             return;
         }
 
+        
         /* Only keep going for relative directory */
         if (relPath == null) {
             log.warn("No configuration directory was specified, trying /WEB-INF/classes");
             //String classpath = System.getProperty("java.class.path");
             //System.out.println(classpath);
-            relPath = "/WEB-INF/classes";
+            
+            if(new File(baseDir + "/WEB-INF/classes/" + CONFIGURATION_FILE_NAME).exists()) {
+                relPath = "/WEB-INF/classes";
+            } else if( new File(baseDir + "/../resources/" + CONFIGURATION_FILE_NAME).exists()) {
+                relPath = "/../resources";
+            }
         } //else {
           //  if (File.separator.equals("\\")
           //          && relPath.equals("/WEB-INF/classes")) {
@@ -329,8 +340,6 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
           //      relPath = "\\WEB-INF\\classes";
           //  }
         //}
-
-        String baseDir = context.getServletContext().getRealPath("");
 
         configDirH = new File(baseDir + relPath);
 

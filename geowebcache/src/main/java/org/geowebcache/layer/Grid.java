@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.util.wms.BBOX;
+import org.mortbay.log.Log;
 
 /**
  * Grid Class - Each TileLayer keeps a list of Grid Objects
@@ -36,9 +37,9 @@ public class Grid {
     
     private volatile transient GridCalculator gridCalculator;
     
-    private volatile int zoomStart = 0;
+    private int zoomStart = 0;
     
-    private volatile int zoomStop = 30;
+    private int zoomStop = 30;
     
     public Grid(SRS srs, BBOX bounds, BBOX gridBounds, double[] resolutions) {
         this.srs = srs;
@@ -121,6 +122,12 @@ public class Grid {
         return getGridCalculator().getResolutions();
     }
     
+    /** 
+     * Use double locking to get the calculator to avoid performance hit.
+     * 
+     * @return
+     * @throws GeoWebCacheException
+     */
     public GridCalculator getGridCalculator() throws GeoWebCacheException {
         GridCalculator ret = gridCalculator;
         if (ret == null) {
@@ -135,6 +142,11 @@ public class Grid {
     }
 
     private GridCalculator initGridCalculator() throws GeoWebCacheException {
+        if(zoomStart < 0 || zoomStop < zoomStart || zoomStop == 0) {
+            Log.debug("Missing values, setting zoomStart,zoomStop to 0,30");
+            zoomStart = 0;
+            zoomStop = 30;
+        }
         return new GridCalculator(this);
     }
 }

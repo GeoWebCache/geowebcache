@@ -165,7 +165,7 @@ public class Demo {
         BBOX bbox = grid.getGridBounds();
         BBOX zoomBounds = grid.getBounds();
         //String res = "resolutions: "+ Arrays.toString(grid.getResolutions()) + ",\n";
-        String res = "maxResolution: " + Double.toString(grid.getResolutions()[0]) +",\n"; 
+        String res = "maxResolution: " + Double.toString(grid.getResolutions()[grid.getZoomStart()]) +",\n"; 
         String page =
             "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n"
             +"<meta http-equiv=\"imagetoolbar\" content=\"no\">\n"

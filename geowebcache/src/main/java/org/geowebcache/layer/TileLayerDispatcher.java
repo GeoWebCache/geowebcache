@@ -102,18 +102,17 @@ public class TileLayerDispatcher {
 
         HashMap<String, TileLayer> layers = new HashMap<String, TileLayer>();
 
-        Iterator configIter = configs.iterator();
+        Iterator<Configuration> configIter = configs.iterator();
         while (configIter.hasNext()) {
             Map<String, TileLayer> configLayers = null;
 
-            Configuration config = (Configuration) configIter.next();
+            Configuration config = configIter.next();
 
             try {
                 configLayers = config.getTileLayers();
             } catch (GeoWebCacheException gwce) {
                 log.error(gwce.getMessage());
-                log
-                        .error("Failed to add layers from "
+                log.error("Failed to add layers from "
                                 + config.getIdentifier());
             }
 

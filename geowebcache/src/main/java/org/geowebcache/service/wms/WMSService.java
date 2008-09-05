@@ -66,8 +66,8 @@ public class WMSService extends Service {
     public Tile getTile(HttpServletRequest request, HttpServletResponse response)
             throws GeoWebCacheException {
         String[] keys = { "layers", "request" };
-        String[] values = ServletUtils.selectedStringsFromMap(request
-                .getParameterMap(), keys);
+        String[] values = ServletUtils.selectedStringsFromMap(
+                request.getParameterMap(), keys);
 
         // Look for getCapabilities
         String req = values[1];

@@ -11,7 +11,7 @@
   
   <properties>
     <!-- gs.version>1.6.4</gs.version -->
-    <gt.version>2.5-RC1</gt.version>
+    <gt.version>2.5-SNAPSHOT</gt.version>
     <spring.version>2.5.5</spring.version>
     <restlet.version>1.0.8</restlet.version>
     <xstream.version>1.3</xstream.version>
