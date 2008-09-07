@@ -184,6 +184,7 @@ public class Demo {
             +"function init(){\n"
             +"var mapOptions = { \n"
             + res
+            +"numZoomLevels: "+(grid.getZoomStop() - grid.getZoomStart() + 1)+",\n"
             +"projection: new OpenLayers.Projection('"+srs.toString()+"'),\n"
             +"maxExtent: new OpenLayers.Bounds("+bbox.toString()+") \n};\n"
             +"map = new OpenLayers.Map('map', mapOptions );\n"
