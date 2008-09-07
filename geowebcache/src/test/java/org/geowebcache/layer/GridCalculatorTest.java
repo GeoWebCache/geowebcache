@@ -237,34 +237,35 @@ public class GridCalculatorTest extends TestCase {
     
     public void test0binarySearch() throws Exception {
         double[] resolutions = {8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
-        int result = GridCalculator.binarySearchForResolution(resolutions, 5.04, 0);
+        int result = GridCalculator.binarySearchForResolution(resolutions, 5.04);
         assertEquals(3, result);
         
-        result = GridCalculator.binarySearchForResolution(resolutions, 8.03, 0);
+        //Culprit
+        result = GridCalculator.binarySearchForResolution(resolutions, 8.03);
         assertEquals(0, result);
         
-        result = GridCalculator.binarySearchForResolution(resolutions, 0.98, 0);
+        result = GridCalculator.binarySearchForResolution(resolutions, 0.98);
         assertEquals(7, result);
         
-        result = GridCalculator.binarySearchForResolution(resolutions, 1.005, 0);
+        result = GridCalculator.binarySearchForResolution(resolutions, 1.005);
         assertEquals(7, result);
 
-        result = GridCalculator.binarySearchForResolution(resolutions, 6.025, 0);
+        result = GridCalculator.binarySearchForResolution(resolutions, 6.025);
         assertEquals(2, result);
     }
     
     public void test1binarySearch() throws Exception {
         double[] resolutions = {12.0, 10.0, 6.0, 5.0, 4.0, 3.0, 1.0};
-        int result = GridCalculator.binarySearchForResolution(resolutions, 5.04, 0);
+        int result = GridCalculator.binarySearchForResolution(resolutions, 5.04);
         assertEquals(3, result);
         
-        result = GridCalculator.binarySearchForResolution(resolutions, 0.98, 0);
+        result = GridCalculator.binarySearchForResolution(resolutions, 0.98);
         assertEquals(6, result);
         
-        result = GridCalculator.binarySearchForResolution(resolutions, 12.05, 0);
+        result = GridCalculator.binarySearchForResolution(resolutions, 12.05);
         assertEquals(0, result);
         
-        result = GridCalculator.binarySearchForResolution(resolutions, 4.002, 0);
+        result = GridCalculator.binarySearchForResolution(resolutions, 4.002);
         assertEquals(4, result);
         
     }
