@@ -115,7 +115,7 @@ public class SeedTask extends GWCTask {
                         }
                     }
                     
-                    System.out.println("Thread with offset " + threadOffset + " completed row.");
+                    // System.out.println("Thread with offset " + threadOffset + " completed row.");
                     // Next row
                     gridy += metaTilingFactors[1];
                 }

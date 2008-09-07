@@ -463,11 +463,11 @@ public class GridCalculator {
             return high;
         }
         
-        low = 1;
-        high = resolutions.length - 2;
+        //low = 0;
+        //high = resolutions.length - 1;
         
         while (low <= high) {
-            int mid = (low + high) >>> 1;
+            int mid = (low + high) / 2;
             
             if(resolutions[mid] > reqUpper) {
                 low = mid;

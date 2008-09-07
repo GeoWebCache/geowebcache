@@ -164,7 +164,7 @@ public class WMSLayer extends TileLayer {
         
         errormime = ErrorMime.vnd_ogc_se_inimage.getMimeType();
         version = "1.1.0";
-        transparent = true;
+        //transparent = true;
         saveExpirationHeaders = true;
         expireClients = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
         expireCache = GWCVars.CACHE_NEVER_EXPIRE;
