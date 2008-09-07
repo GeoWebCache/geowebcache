@@ -49,18 +49,10 @@ public class GridCalculator {
     private int gridY = -1;
     
     private double[] resolutions;
-    
-    // The following are for a tile, zoomed out all the way
-    //private double maxTileWidth;
-
-    //private double maxTileHeight;
 
     private int zoomStart;
 
     private int zoomStop;
-    
-    // Special treatment of "zoomed out tile" for EPSG 4326
-    //private boolean worldBoundsCoverTwoTiles = false;
 
     private int[] zoomedOutGridLoc = null;
     
@@ -150,9 +142,9 @@ public class GridCalculator {
         }
         
         // We still need the full array, even though we only care about a part of it
-        this.resolutions = new double[this.zoomStop + 1];
-        for(int i=this.zoomStart; i<= this.zoomStop; i++) {
-            this.resolutions[i] = baseResolution;
+        resolutions = new double[this.zoomStop + 1];
+        for(int i=0; i<= this.zoomStop; i++) {
+            resolutions[i] = baseResolution;
             baseResolution = baseResolution / 2;
         }
     }
@@ -162,14 +154,6 @@ public class GridCalculator {
         
         // We'll just waste a few bytes, for cheap lookups
         int[][] gridLevels = new int[zoomStop + 1][4];
-
-        //int tileCountX = (int) Math.round(gridWidth / resolutions[0]);
-        //int tileCountY = (int) Math.round(gridHeight / resolutions[0]);
-
-        //int metaLarger = (metaHeight > metaWidth) ? metaHeight : metaWidth;
-
-        //System.out.println("lb: " +layerBounds+ " base:" +
-        //  " tileWidth: " + tileWidth);
 
         double[] rawNumber = new double[4];
         
@@ -195,16 +179,6 @@ public class GridCalculator {
             // Max Y
             rawNumber[3] = (layerBounds.coords[3] - gridBounds.coords[1] - 0.00001) / tileDelta;
             gridLevels[level][3] = (int) Math.floor(rawNumber[3]);
-
-            //System.out.println(Arrays.toString(rawNumber) + " "+ Arrays.toString(gridLevels[level]));
-            //System.out.println("postOrig: " +
-            //        );
-            //
-            //System.out.println("tileCountX "+tileCountX + " metaLarger: "
-            // + metaLarger);
-
-            //tileCountX = tileCountX * 2;
-            //tileCountY = tileCountY * 2;
         }
         return gridLevels;
     }
@@ -238,16 +212,15 @@ public class GridCalculator {
         int[] retVals = new int[3];
 
         double reqTileWidth = tileBounds.coords[2] - tileBounds.coords[0];
-
-        //Arrays.binarySearch(a, key)
-        //double zoomLevel = Math.log(gridWidth / reqTileWidth) / Math.log(2);
-        
-        //long roundedZoomLevel = Math.round(zoomLevel);
-
         
         // (Z) Zoom level
         // For EPSG 4326, reqTileWidth = 0.087 log(4096) / log(2) - 1; -> 11
         retVals[2] = this.binarySearchForResolution(reqTileWidth / GridCalculator.TILEPIXELS);
+        
+        if(retVals[2] < zoomStart) {
+            throw new BadTileException("zoomStart is " + zoomStart 
+                    + " but tile would be " + retVals[2]);
+        }
 
         double tileWidth = resolutions[retVals[2]] * GridCalculator.TILEPIXELS;
 
@@ -457,25 +430,16 @@ public class GridCalculator {
     
     public double[] getResolutions() {
         return resolutions;
-        //double[] ret = new double[zoomStop - zoomStart + 1];
-        //double tileWidth = maxTileWidth / widthPixels;
-        
-        //for(int i=0; i<ret.length; i++) {
-        //    ret[i] = tileWidth;
-        //    tileWidth = tileWidth / 2;
-       // }
-        
-        //return ret;
     }
     
     private int binarySearchForResolution(double reqResolution) 
     throws BadTileException {
-        return binarySearchForResolution(this.resolutions, reqResolution, this.zoomStart);
+        return binarySearchForResolution(this.resolutions, reqResolution);
     }
     
-    protected static int binarySearchForResolution(double[] resolutions, double reqResolution, int zoomStart) 
+    protected static int binarySearchForResolution(double[] resolutions, double reqResolution) 
     throws BadTileException {
-        int low = zoomStart;
+        int low = 0;
         int high = resolutions.length - 1;
         
         double reqUpper = reqResolution * 1.10;
@@ -483,15 +447,15 @@ public class GridCalculator {
         double reqLower = reqResolution * 0.90;
         
         // Deal with the edge cases first
-        if(reqLower > resolutions[low]) {
+        if(resolutions[low] < reqUpper) {
             if(resolutions[0] < reqLower) {
                 throw new BadTileException("Resolution "+reqResolution+" is too big for grid,"
                         +" biggest supported is " + resolutions[0]);
             }
-            return 0;
+            return low;
         }
         
-        if(reqUpper < resolutions[high - 1]) {
+        if(resolutions[high] > reqLower) {
             if(resolutions[high] / 1.5 > reqUpper) {
                 throw new BadTileException("Resolution "+reqResolution+" is too small for grid,"
                         + " smallest supported is " + resolutions[high]);

@@ -181,7 +181,7 @@ public class SeedResource extends GWCResource {
         int threadCount;
         if(null == rq.getThreadCount() 
                 || rq.getThreadCount() < 1 
-                || type.equalsIgnoreCase("seed")) {
+                || type.equalsIgnoreCase("truncate")) {
             threadCount = 1;
         } else {
             threadCount = rq.getThreadCount();

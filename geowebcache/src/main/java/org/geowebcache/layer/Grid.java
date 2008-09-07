@@ -16,17 +16,18 @@
  */
 package org.geowebcache.layer;
 
-import java.util.List;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.util.wms.BBOX;
-import org.mortbay.log.Log;
 
 /**
  * Grid Class - Each TileLayer keeps a list of Grid Objects
  */
 
 public class Grid {
+    private static Log log = LogFactory.getLog(org.geowebcache.layer.Grid.class);
+
     private SRS srs = null;
     
     protected BBOX dataBounds = null;
@@ -143,7 +144,7 @@ public class Grid {
 
     private GridCalculator initGridCalculator() throws GeoWebCacheException {
         if(zoomStart < 0 || zoomStop < zoomStart || zoomStop == 0) {
-            Log.debug("Missing values, setting zoomStart,zoomStop to 0,30");
+            log.debug("Missing values, setting zoomStart,zoomStop to 0,30");
             zoomStart = 0;
             zoomStop = 30;
         }

@@ -68,7 +68,14 @@ public class SeedTask extends GWCTask {
                 e4.printStackTrace();
             }
             SRS srs = req.getSRS();
+            if(srs == null) {
+                srs = tl.getGrids().entrySet().iterator().next().getKey();
+            }
+            
             BBOX bounds = req.getBounds();
+            if(bounds == null) {
+                bounds = tl.getGrid(srs).getBounds();
+            }
 
             int[][] coveredGridLevels = tl.getCoveredGridLevels(srs,bounds);
             int[] metaTilingFactors = tl.getMetaTilingFactors();
