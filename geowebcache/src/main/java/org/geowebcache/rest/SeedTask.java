@@ -110,9 +110,12 @@ public class SeedTask extends GWCTask {
                         count += tilesPerMetaTile;
                         
                         int[][] list = SeedResource.getStatusList();
-                        synchronized(list) { 
+                        
+                        // Threads don't really collide
+                        //synchronized(list) {
+                            // This is not quite right...
                             list[arrayIndex]= getStatusInfo(arrayIndex, tl, count, (TOTAL_TILES / threadCount), START_TIME);
-                        }
+                        //}
                     }
                     
                     // System.out.println("Thread with offset " + threadOffset + " completed row.");
