@@ -399,10 +399,11 @@ public class GridCalculator {
             return zoomedOutGridLoc;
         }
     	
-    	//TODO fix negative number to return more than one top tile
+    	//TODO fix negative number to return more than one top tile, 
+    	// give -1 for z, but then -{x} , -{y}
     	
         // Exception for EPSG:4326, which can zoom out to two tiles
-        if (gridX == 2 && gridY == 1) {
+        if (gridX == 2 && gridY == 1 && boundsGridLevels[0][0] != boundsGridLevels[0][2] ) {
             zoomedOutGridLoc = new int[3];
             zoomedOutGridLoc[0] = -1;
             zoomedOutGridLoc[1] = -1;

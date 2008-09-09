@@ -176,7 +176,8 @@ public class WMSHttpHelper {
             // Check that we're not getting an error MIME back.
             String responseMime = wmsBackendCon.getContentType();
             String requestMime = wmsparams.getFormat();
-            if (responseMime != null
+            if (responseCode != 204
+                    && responseMime != null
 	            && ! mimeStringCheck(requestMime,responseMime)) {
                 String message = null;
                 if (responseMime.equalsIgnoreCase(ErrorMime.vnd_ogc_se_inimage

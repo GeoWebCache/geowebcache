@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.layer.OutOfBoundsException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -349,7 +350,13 @@ public class KMLService extends Service {
             // Get the data (cheat)
             try {
                 tile.setWrapperMimeType(null);
-                tileLayer.getTile(tile);
+                try { 
+                    tileLayer.getTile(tile);
+                } catch (OutOfBoundsException oobe) {
+                    log.error("Out of bounds: " + Arrays.toString(tile.getTileIndex()) 
+                            + " should never habe been linked to.");
+                    throw oobe;
+                }
                 tile.setWrapperMimeType(XMLMime.kmz);
             } catch (IOException ioe) {
                 log.error(ioe.getMessage());
