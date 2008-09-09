@@ -184,7 +184,7 @@ public class GridCalculatorTest extends TestCase {
         GridCalculator gridCalc = grid.getGridCalculator();
         
         int[] gridLoc = gridCalc.getZoomedOutGridLoc();
-        int[] solution = {-1, -1, -1};
+        int[] solution = {0, 0, 0};
         assertTrue(Arrays.equals(gridLoc, solution));
     }
     
