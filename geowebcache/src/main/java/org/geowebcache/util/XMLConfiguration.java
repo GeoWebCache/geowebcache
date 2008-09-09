@@ -17,7 +17,6 @@
 package org.geowebcache.util;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,10 +54,12 @@ import com.thoughtworks.xstream.io.xml.DomReader;
 import com.thoughtworks.xstream.io.xml.DomWriter;
 
 public class XMLConfiguration implements Configuration, ApplicationContextAware {
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.util.XMLConfiguration.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.util.XMLConfiguration.class);
 
     private static final String CONFIGURATION_FILE_NAME = "geowebcache.xml";
+    
+    private static final String[] CONFIGURATION_REL_PATHS = 
+        { "/WEB-INF/classes", "/../resources" };
     
     private WebApplicationContext context;
 
@@ -68,7 +69,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
     private String relPath = null;
 
-    private File configDirH = null;
+    private File configH = null;
 
     /**
      * XMLConfiguration class responsible for reading/writing layer
@@ -84,23 +85,22 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     }
     
     private File findConfFile() throws GeoWebCacheException {
-        if (configDirH == null) {
+        if (configH == null) {
             determineConfigDirH();
         }
 
         File xmlFile = null;
-        if (configDirH != null) {
+        if (configH != null) {
             // Find the property file
-            xmlFile = new File(configDirH.getAbsolutePath() + File.separator + CONFIGURATION_FILE_NAME);
+            xmlFile = new File(configH.getAbsolutePath() + File.separator + CONFIGURATION_FILE_NAME);
         } else {
             throw new GeoWebCacheException("Unable to determine configuration directory.");
         }
 
         if (xmlFile != null) {
-            log.trace("Found configuration file in "
-                    + configDirH.getAbsolutePath());
+            log.trace("Found configuration file in "+ configH.getAbsolutePath());
         } else {
-            throw new GeoWebCacheException("Found no configuration file in "+ configDirH.getAbsolutePath());
+            throw new GeoWebCacheException("Found no configuration file in "+ configH.getAbsolutePath());
         }
         
         return xmlFile;
@@ -224,28 +224,27 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
      * @return true if operation succeeded, false otherwise
      */
     public boolean deleteLayer(String layerName) {
-        if (configDirH == null) {
+        if (configH == null) {
             determineConfigDirH();
         }
 
         File xmlFile = null;
-        if (configDirH != null) {
+        if (configH != null) {
             // Find the property file and process each one into a TileLayer
-            xmlFile = new File(configDirH.getAbsolutePath() + File.separator + "geowebcache.xml");
+            xmlFile = new File(configH.getAbsolutePath() + File.separator + "geowebcache.xml");
         }
 
         if (xmlFile != null) {
-            log.trace("Found configuration file in "+ configDirH.getAbsolutePath());
+            log.trace("Found configuration file in "+ configH.getAbsolutePath());
         } else {
-            log.error("Found no configuration file in "+ configDirH.getAbsolutePath());
+            log.error("Found no configuration file in "+ configH.getAbsolutePath());
             return false;
         }
 
         // load configurations into Document
         Document docc = loadIntoDocument(xmlFile);
         Element root = docc.getDocumentElement();
-        // find the layer to delete This assumes that ALL layer names are
-        // distinct
+
         NodeList nl = docc.getElementsByTagName("layer-name");
 
         if (nl.getLength() == 0)
@@ -301,14 +300,11 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
             document = docBuilder.parse(file);
         } catch (ParserConfigurationException pce) {
             log.error(pce.getMessage());
-            //System.err.println(pce.getMessage());
             pce.printStackTrace();
         } catch (IOException ei) {
             log.error("Exception occured while creating documet from file " + file.getAbsolutePath());
-            //ei.printStackTrace(System.err);
         } catch (SAXException saxe) {
             log.error(saxe.getMessage());
-            //saxe.printStackTrace();
         }
         return document;
     }
@@ -317,43 +313,41 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         String baseDir = context.getServletContext().getRealPath("");
         
         if (absPath != null) {
-            configDirH = new File(absPath);
+            configH = new File(absPath);
             return;
         }
 
-        
         /* Only keep going for relative directory */
         if (relPath == null) {
-            log.warn("No configuration directory was specified, trying /WEB-INF/classes");
-            //String classpath = System.getProperty("java.class.path");
-            //System.out.println(classpath);
             
-            if(new File(baseDir + "/WEB-INF/classes/" + CONFIGURATION_FILE_NAME).exists()) {
-                relPath = "/WEB-INF/classes";
-            } else if( new File(baseDir + "/../resources/" + CONFIGURATION_FILE_NAME).exists()) {
-                relPath = "/../resources";
+            for(int i=0; i<CONFIGURATION_REL_PATHS.length; i++) {
+                relPath = CONFIGURATION_REL_PATHS[i];
+                if(File.separator.equals("\\")) {
+                    relPath = relPath.replace("/","\\");
+                }
+                
+                File tmpPath = new File(baseDir + relPath + File.separator + CONFIGURATION_FILE_NAME);
+                
+                if(tmpPath.exists()) {
+                    log.info("No configuration directory was specified, using "+tmpPath.getAbsolutePath());
+                    configH = new File(baseDir + relPath);
+                    return;
+                }
             }
-        } //else {
-          //  if (File.separator.equals("\\")
-          //          && relPath.equals("/WEB-INF/classes")) {
-          //      log.warn("You seem to be running on windows, changing search path to \\WEB-INF\\classes");
-          //      relPath = "\\WEB-INF\\classes";
-          //  }
-        //}
+            
+            log.error("Failed to find geowebcache.xml, please specify an absolute path in geowebcache-servlet.xml!");
+        }
+        configH = new File(baseDir + relPath);
 
-        configDirH = new File(baseDir + relPath);
+        log.info("Configuration directory set to: "+ configH.getAbsolutePath());
 
-        log.info("Configuration directory set to: "
-                + configDirH.getAbsolutePath());
-
-        if (!configDirH.exists() || !configDirH.canRead()) {
-            log.error(configDirH.getAbsoluteFile()
-                    + " cannot be read or does not exist!");
+        if (!configH.exists() || !configH.canRead()) {
+            log.error(configH.getAbsoluteFile()+ " cannot be read or does not exist!");
         }
     }
 
     public String getIdentifier() {
-        return configDirH.getAbsolutePath();
+        return configH.getAbsolutePath();
     }
 
     public void setRelativePath(String relPath) {
