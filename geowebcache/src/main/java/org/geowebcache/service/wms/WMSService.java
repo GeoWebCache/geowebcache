@@ -17,15 +17,6 @@
  */
 package org.geowebcache.service.wms;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,10 +26,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
-import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
@@ -53,27 +42,41 @@ public class WMSService extends Service {
 
     private static Log log = LogFactory.getLog(org.geowebcache.service.wms.WMSService.class);
 
-    // The following two are only needed for the 
-    // temporary getcapabilities code
-    private List<Configuration> getCapConfigs;
-
-    private String getCapsStr;
-
+    // Proxy requests that are not getmap ?
+    private boolean proxyRequests = false;
+    
+    // Proxy requests that are not tiled=true?
+    private boolean proxyNonTiledRequests = false;
+    
     public WMSService() {
         super(SERVICE_WMS);
     }
 
     public Tile getTile(HttpServletRequest request, HttpServletResponse response)
             throws GeoWebCacheException {
-        String[] keys = { "layers", "request" };
+        String[] keys = { "layers", "request", "tiled" };
         String[] values = ServletUtils.selectedStringsFromMap(
                 request.getParameterMap(), keys);
 
-        // Look for getCapabilities
+        // Look for requests that are not getmap
         String req = values[1];
-        if (req != null && req.equalsIgnoreCase("getcapabilities")) {
+        if (req != null && !req.equalsIgnoreCase("getmap")) {
+            // One more chance
+            if(values[0] == null || values[0].length() == 0) {    
+                values[0] = ServletUtils.stringFromMap(request.getParameterMap(), "layer");
+            }
+            
             Tile tile = new Tile(values[0], request, response);
-            tile.setHint("getcapabilities");
+            tile.setHint(req.toLowerCase());
+            tile.setRequestHandler(Tile.RequestHandler.SERVICE);
+            return tile;
+        }
+
+        // Check whether this request is missing tiled=true
+        if (proxyNonTiledRequests
+                && (values[2] == null || !values[2].equalsIgnoreCase("true"))) {
+            Tile tile = new Tile(values[0], request, response);
+            tile.setHint(req);
             tile.setRequestHandler(Tile.RequestHandler.SERVICE);
             return tile;
         }
@@ -147,289 +150,40 @@ public class WMSService extends Service {
     public void handleRequest(TileLayerDispatcher tLD, Tile tile)
             throws GeoWebCacheException {
 
-        if (tile.hint != null && tile.hint.equalsIgnoreCase("getcapabilities")) {
-            handleGetCapabilities(tLD, tile.servletResp);
+        if (tile.hint != null) {
+            if(tile.hint.equalsIgnoreCase("getcapabilities")) {
+                WMSRequests.handleGetCapabilities(tLD, tile.servletResp);
+            } else {
+                WMSRequests.handleProxy(tLD, tile);
+            }
         } else {
             throw new GeoWebCacheException(
-                    "The WMS Service would love to help,"
-                            + " but has no idea what you're trying to do?"
-                            + "Please include request URL in your ");
+                    "The WMS Service would love to help, "
+                  + "but has no idea what you're trying to do?"
+                  + "Please include request URL if you file a bug report.");
         }
     }
-
-    /**
-     * Creates getCapabilities response by looping over tilelayers
-     * 
-     * @param tLD
-     * @param response
-     * @throws GeoWebCacheException
-     */
-    private void handleGetCapabilities(TileLayerDispatcher tLD,
-            HttpServletResponse response) throws GeoWebCacheException {
-        Map<String, TileLayer> layerMap = tLD.getLayers();
-        Iterator<TileLayer> iter = layerMap.values().iterator();
-
-        StringBuffer buf = new StringBuffer();
-        buf.append(getCapabilitiesHeader());
-
-        while (iter.hasNext()) {
-            TileLayer tl = iter.next();
-            if (!tl.isInitialized()) {
-                // ooops ? (Always returns true :) )
-            }
-            buf.append(getTileSets(tl));
-        }
-
-        buf.append(getCapabilitiesFooter());
-
-        try {
-            writeData(response, buf.toString().getBytes());
-        } catch (IOException ioe) {
-            throw new GeoWebCacheException("Error doing getCapabilities: "
-                    + ioe.getMessage());
-        }
-
+    
+    public void setConfig(List<Configuration> getCapConfigs) {
+        WMSRequests.getCapConfigs = getCapConfigs;
+        log.info("Got passed " + getCapConfigs.size() + " configuration objects for getCapabilities.");
     }
-
-    private String getCapabilitiesHeader() throws GeoWebCacheException {
-        String wms = fetchOrigionalWMSCapabilitiesDocument();
-
-        if (wms == null) {
-            throw new GeoWebCacheException(
-                    "Unable to retrieve original WMS Capabilities document");
+    
+    public void setProxyRequests(String trueFalse) {
+        this.proxyRequests = Boolean.parseBoolean(trueFalse);
+        if(this.proxyRequests) {
+            log.info("Will proxy requests to backend that are not getmap or getcapabilities.");
+        } else {
+            log.info("Will NOT proxy non-getMap requests to backend.");
         }
-
-        int split = wms.indexOf("<VendorSpecificCapabilities/>");
-        if (split != -1) {
-            // we have an empty VendorSpecificCapabilities to fill in...
-            String header = wms.substring(0, split);
-            return header + "\n<VendorSpecificCapabilities>";
-        }
-        split = wms.indexOf("</VendorSpecificCapabilities>");
-        
-        // Was never read anyway
-        //if (split != -1) {
-            // we have an existing VendorSpecificCapabilities to add to
-        //    String header = wms.substring(0, split);
-        //}
-        
-        // look for <UserDefinedSymbolization .. VendorSpecificCapabilities goes
-        // before this element
-        split = wms.indexOf("<UserDefinedSymbolization");
-        if (split == -1) {
-            // look for <Layer> ... VendorSpecificParameters goes before this
-            // element
-            split = wms.indexOf("<Layer");
-        }
-        String header = wms.substring(0, split);
-
-        return header + "\n<VendorSpecificCapabilities>";
     }
-
-    private String getCapabilitiesFooter() throws GeoWebCacheException {
-        // return "\n</VendorSpecificCapabilities>" +
-        // "\n</WMT_MS_Capabilities>";
-        String wms = fetchOrigionalWMSCapabilitiesDocument();
-        int split = wms.indexOf("<VendorSpecificCapabilities/>");
-        if (split != -1) {
-            // we have an empty VendorSpecificCapabilities to fill in...
-            String footer = wms.substring(split + 29);
-            return "\n</VendorSpecificCapabilities>" + footer;
-        }
-        split = wms.indexOf("<VendorSpecificCapabilities/>");
-        if (split != -1) {
-            // we have an existing VendorSpecificCapabilities to add to
-            String footer = wms.substring(split + 28);
-            return "\n</VendorSpecificCapabilities>" + footer;
-        }
-        // look for <UserDefinedSymbolization .. VendorSpecificCapabilities goes
-        // before this element
-        split = wms.indexOf("<UserDefinedSymbolization");
-        if (split == -1) {
-            // look for <Layer> ... VendorSpecificParameters goes before this
-            // element
-            split = wms.indexOf("<Layer");
-        }
-        String footer = wms.substring(split);
-        return "\n</VendorSpecificCapabilities>" + footer;
-    }
-
-    /**
-     * Fetch the original WMS capabilities document (we will add our vendor
-     * specific parameters here).
-     * <p>
-     * Currently this is returned as a String; in the future we can make use of
-     * the GeoTools WMSCapabilities data structure (and strip out any layers
-     * that are not mentioned explicitly).
-     * 
-     * @return The original WMS capabilities document prior to processing
-     * @throws GeoWebCacheException 
-     */
-    synchronized String fetchOrigionalWMSCapabilitiesDocument() throws GeoWebCacheException {
-        if (getCapsStr != null) {
-            return getCapsStr;
-        }
-        StringBuffer buf = new StringBuffer();
-        
-        if (getCapConfigs == null) {
-            throw new GeoWebCacheException("No configuration object available" +
-            		" to use for WMS Capabilities");
-        }
-        Iterator<Configuration> configIter = getCapConfigs.iterator();
-        CONFIG: while (configIter.hasNext()) {
-            Map<String, TileLayer> configLayers = null;
-            Configuration config = configIter.next();
-            try {
-                configLayers = config.getTileLayers();
-            } catch (GeoWebCacheException gwce) {
-                log.error(gwce.getMessage());
-                log.error("Failed to add layers from "+ config.getIdentifier());
-            }
-            if (configLayers != null && configLayers.size() > 0) {
-                for (TileLayer layer : configLayers.values()) {
-                    if (!(layer instanceof WMSLayer)) {
-                        continue; // skip!
-                    }
-                    WMSLayer wmsLayer = (WMSLayer) layer;
-                    for (String url : wmsLayer.getWMSurl()) {
-                        try {
-                            URL capabilitiesURL = new URL(
-                                    url+ "?REQUEST=GetCapabilities&SERVICE=WMS&VESION=1.1.0");
-                            URLConnection connection = capabilitiesURL.openConnection();
-                            InputStream input = connection.getInputStream();
-                            InputStreamReader reader = new InputStreamReader(input);
-                            BufferedReader process = new BufferedReader(reader);
-
-                            buf = new StringBuffer();
-                            String line;
-                            while ((line = process.readLine()) != null) {
-                                buf.append(line);
-                                buf.append("\n");
-                            }
-                            if (buf.length() != 0) {
-                                break CONFIG; // we managed to read a
-                                              // capabilities into buf
-                            }
-                            /*
-                             * // TODO only use the parts of the capabilities
-                             * file that // are mentioned in our configuration!
-                             * 
-                             * WebMapServer wms = new
-                             * WebMapServer(capabilitiesURL); WMSCapabilities
-                             * capabilities = wms.getCapabilities();
-                             */
-                        } catch (Throwable notConnected) {
-                            // continue WMSURL
-                        }
-                    }
-                }
-            } else {
-                log.error("Configuration " + config.getIdentifier()
-                        + " contained no layers.");
-            }
-        }
-        getCapsStr = buf.toString();
-        return getCapsStr;
-    }
-
-    public void setConfig(List<Configuration> configs) {
-        this.getCapConfigs = configs;
-    }
-
-    /**
-     * 
-     * @param tl
-     * @return
-     */
-    private String getTileSets(TileLayer tl) throws GeoWebCacheException {
-        String ret = "";
-
-        List<MimeType> mimeList = tl.getMimeTypes();
-        String strStyles = tl.getStyles();
-        if (strStyles == null) {
-            strStyles = "";
-        }
-
-        Iterator<Grid> iter = tl.getGrids().values().iterator();
-        while (iter.hasNext()) {
-            Grid grid = iter.next();
-
-            // These should be adjusted bounds!
-            String[] strBounds = doublesToStrings(grid.getBounds().coords);
-            String strResolutions = getResolutionString(grid.getResolutions());
-            String strName = tl.getName();
-
-            for (MimeType mime : mimeList) {
-                String strFormat = mime.getFormat();
-                ret += getTileSet(strName, grid.getSRS().toString(), strBounds,
-                        strStyles, strResolutions, strFormat);
-            }
-        }
-
-        return ret;
-    }
-
-    private String getTileSet(String strName, String strSRS,
-            String[] strBounds, String strStyles, String strResolutions,
-            String strFormat) {
-        return "\n<TileSet>" 
-            + "<SRS>" + strSRS + "</SRS>"
-            + "<BoundingBox srs=\"" + strSRS + "\"" + " minx=\""
-            + strBounds[0] + "\"" + " miny=\"" + strBounds[1] + "\""
-            + " maxx=\"" + strBounds[2] + "\"" + " maxy=\"" + strBounds[3]
-            + "\" />" 
-            + "<Resolutions>" + strResolutions + "</Resolutions>"
-            + "<Width>256</Width>" 
-            + "<Height>256</Height>" 
-            + "<Format>" + strFormat + "</Format>" 
-            + "<Layers>" + strName + "</Layers>"
-            + "<Styles>" + strStyles + "</Styles>" 
-            + "</TileSet>";
-    }
-
-    private String[] doublesToStrings(double[] doubles) {
-        String[] ret = new String[doubles.length];
-        for (int i = 0; i < doubles.length; i++) {
-            ret[i] = Double.toString(doubles[i]);
-        }
-        return ret;
-    }
-
-    private String getResolutionString(double[] resolutions) {
-        String ret = "";
-        for (int i = 0; i < resolutions.length; i++) {
-            ret += Double.toString(resolutions[i]) + " ";
-        }
-        return ret;
-    }
-
-    /**
-     * Should only be used for getCapabilities
-     * 
-     * @param response
-     * @param data
-     * @throws IOException
-     */
-    private void writeData(HttpServletResponse response, byte[] data)
-            throws IOException {
-
-        // Did we get anything?
-        if (data == null || data.length == 0) {
-            log.trace("sendData() had nothing to return");
-            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            return;
-        }
-
-        log.trace("sendData() Sending data.");
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("application/vnd.ogc.wms_xml");
-        response.setContentLength(data.length);
-        try {
-            OutputStream os = response.getOutputStream();
-            os.write(data);
-            os.flush();
-        } catch (IOException ioe) {
-            log.debug("Caught IOException" + ioe.getMessage());
+    
+    public void setProxyNonTiledRequests(String trueFalse) {
+        this.proxyNonTiledRequests = Boolean.parseBoolean(trueFalse);
+        if(this.proxyNonTiledRequests) {
+            log.info("Will proxy requests that miss tiled=true to backend.");
+        } else {
+            log.info("Will NOT proxy requests that miss tiled=true to backend.");
         }
     }
 }

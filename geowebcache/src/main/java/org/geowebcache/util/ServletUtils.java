@@ -128,7 +128,7 @@ public class ServletUtils {
             for(int i=0;i<keys.length;i++) {
                 if(key.equalsIgnoreCase(keys[i])) {
                     retAr[i] = entry.getValue()[0];
-                    continue;
+                    break;
                 }
             }
         }

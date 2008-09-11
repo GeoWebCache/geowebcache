@@ -53,7 +53,9 @@
   
   <!-- Services, make sure you name the bean the same as the path -->
   <bean id="gwcServiceWMS" 
-    	class="org.geowebcache.service.wms.WMSService"/>
+    	class="org.geowebcache.service.wms.WMSService">
+    	<property name="proxyRequests"><value>TRUE</value></property>
+  </bean>
   <bean id="gwcServiceGMaps"
 	class="org.geowebcache.service.gmaps.GMapsConverter"/>
   <bean id="gwcServiceMGMaps"
