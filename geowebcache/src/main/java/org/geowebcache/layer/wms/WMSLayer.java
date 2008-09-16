@@ -580,9 +580,8 @@ public class WMSLayer extends TileLayer {
                     // Go from seconds to milliseconds
                     expire = expire * 1000;
                 }
-                log
-                        .error("Layer profile wants MaxAge from backend,"
-                                + " but backend does not provide this. Setting to 7200 seconds.");
+                log.error("Layer profile wants MaxAge from backend,"
+                        + " but backend does not provide this. Setting to 7200 seconds.");
                 expireCache = expire.longValue();
                 log.trace("Setting expireCache to: " + expireCache);
             }
@@ -594,9 +593,8 @@ public class WMSLayer extends TileLayer {
                     // Go from seconds to milliseconds
                     expire = expire * 1000;
                 }
-                log
-                        .error("Layer profile wants MaxAge from backend,"
-                                + " but backend does not provide this. Setting to 7200 seconds.");
+                log.error("Layer profile wants MaxAge from backend,"
+                        + " but backend does not provide this. Setting to 7200 seconds.");
                 expireClients = expire.longValue();
                 log.trace("Setting expireClients to: " + expireClients);
             }
