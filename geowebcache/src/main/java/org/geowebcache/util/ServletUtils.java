@@ -236,7 +236,12 @@ public class ServletUtils {
     }
     
     public static long parseExpiresHeader(String expiresHeader) {
+        if(expiresHeader == null) {
+            return -1;
+        }
+        
         long ret;
+        
         synchronized (calendar) {
             if (ServletUtils.format == null) {
                 ServletUtils.format = new SimpleDateFormat(
