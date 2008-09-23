@@ -22,7 +22,6 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -206,7 +205,11 @@ public class WMSHttpHelper {
 
             // Everything looks okay, try to save expiration
             if (tileRespRecv.getExpiresHeader() == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
-                tileRespRecv.setExpiresHeader(wmsBackendCon.getExpiration());
+                String expireValue = wmsBackendCon.getHeaderField("Expires");
+                long expire = ServletUtils.parseExpiresHeader(expireValue);
+                if(expire != -1) {
+                    tileRespRecv.setExpiresHeader(expire / 1000);
+                }
             }
 
             // Read the actual data

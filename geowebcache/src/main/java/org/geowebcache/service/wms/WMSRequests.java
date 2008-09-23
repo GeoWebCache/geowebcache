@@ -183,11 +183,12 @@ public class WMSRequests {
                     }
                     WMSLayer wmsLayer = (WMSLayer) layer;
                     for (String url : wmsLayer.getWMSurl()) {
+                        InputStream input = null;
                         try {
                             URL capabilitiesURL = new URL(
                                     url+ "?REQUEST=GetCapabilities&SERVICE=WMS&VESION=1.1.0");
                             URLConnection connection = capabilitiesURL.openConnection();
-                            InputStream input = connection.getInputStream();
+                            input = connection.getInputStream();
                             InputStreamReader reader = new InputStreamReader(input);
                             BufferedReader process = new BufferedReader(reader);
 
@@ -211,6 +212,14 @@ public class WMSRequests {
                              */
                         } catch (Throwable notConnected) {
                             // continue WMSURL
+                        } finally {
+                            if(input != null) {
+                                try {
+                                    input.close();
+                                } catch (IOException ioe) {
+                                    // Do nothing.
+                                }
+                            }
                         }
                     }
                 }

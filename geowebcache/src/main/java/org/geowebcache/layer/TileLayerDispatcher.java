@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -118,10 +119,10 @@ public class TileLayerDispatcher {
 
             log.info("Adding layers from " + config.getIdentifier());
             if (configLayers != null && configLayers.size() > 0) {
-                Iterator iter = configLayers.keySet().iterator();
+                Iterator<Entry<String,TileLayer>> iter = configLayers.entrySet().iterator();
                 while (iter.hasNext()) {
-                    String layerIdent = (String) iter.next();
-                    layers.put(layerIdent, configLayers.get(layerIdent));
+                    Entry<String,TileLayer> one = iter.next();
+                    layers.put(one.getKey(), one.getValue());
                 }
             } else {
                 log.error("Configuration " + config.getIdentifier()

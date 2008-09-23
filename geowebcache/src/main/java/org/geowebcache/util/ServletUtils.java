@@ -18,27 +18,27 @@ package org.geowebcache.util;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLConnection;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import java.text.SimpleDateFormat;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class ServletUtils {
-    // Calendar objects are unfortunately expensive and not
-    // thread safe :(
+    private static Log log = LogFactory.getLog(org.geowebcache.util.ServletUtils.class);
+    
+    // Calendar objects are unfortunately expensive and not thread safe :(
     static private Calendar calendar = new GregorianCalendar();
     static private TimeZone timeZone = TimeZone.getTimeZone("GMT");
     static private SimpleDateFormat format = null;
-     
+    static private long localOffset = TimeZone.getDefault().getRawOffset();
     
     /**
      * Case insensitive lookup
@@ -47,14 +47,14 @@ public class ServletUtils {
      * @param key
      * @return all matchings string
      */
-    public static String[] stringsFromMap(Map map, String key) {
+    public static String[] stringsFromMap(Map<String, String[]> map, String key) {
         String[] strArray = (String[]) map.get(key);
         
         if (strArray != null) {
             return strArray;
         } else {            
             // In case there is a case mismatch
-            Iterator<Entry> iter = map.entrySet().iterator();
+            Iterator<Entry<String,String[]>> iter = map.entrySet().iterator();
             while (iter.hasNext()) {
                 Entry<String,String[]> entry = iter.next();
                 if(entry.getKey().equalsIgnoreCase(key)) {
@@ -72,7 +72,7 @@ public class ServletUtils {
      * @param key
      * @return
      */
-    public static String stringFromMap(Map map, String key) {
+    public static String stringFromMap(Map<String,String[]> map, String key) {
         String[] strArray = stringsFromMap(map, key);
         if(strArray != null) {
             return strArray[0];
@@ -89,10 +89,10 @@ public class ServletUtils {
      * @param keys
      * @return
      */
-    public static String[][] selectedStringArraysFromMap(Map map, String[] keys) {
+    public static String[][] selectedStringArraysFromMap(Map<String,String[]> map, String[] keys) {
         String[][] retAr = new String[keys.length][];
         
-        Iterator<Entry> iter = map.entrySet().iterator();
+        Iterator<Entry<String,String[]>> iter = map.entrySet().iterator();
         while(iter.hasNext()) {
             Entry<String,String[]> entry = iter.next();
             String key = entry.getKey();
@@ -117,10 +117,10 @@ public class ServletUtils {
      * @param keys
      * @return
      */
-    public static String[] selectedStringsFromMap(Map map, String[] keys) {
+    public static String[] selectedStringsFromMap(Map<String,String[]> map, String[] keys) {
         String[] retAr = new String[keys.length];
         
-        Iterator<Entry> iter = map.entrySet().iterator();
+        Iterator<Entry<String,String[]>> iter = map.entrySet().iterator();
         while(iter.hasNext()) {
             Entry<String,String[]> entry = iter.next();
             String key = entry.getKey();
@@ -220,13 +220,40 @@ public class ServletUtils {
      * @param seconds
      * @return
      */
-    public static synchronized String makeExpiresHeader(int seconds) {
-        if(ServletUtils.format == null) {
-            ServletUtils.format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-            ServletUtils.format.setTimeZone(ServletUtils.timeZone);
+    public static String makeExpiresHeader(int seconds) {
+        String ret;
+        synchronized (calendar) {
+            if (ServletUtils.format == null) {
+                ServletUtils.format = new SimpleDateFormat(
+                        "EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+                ServletUtils.format.setTimeZone(ServletUtils.timeZone);
+            }
+
+            calendar.setTimeInMillis(System.currentTimeMillis() + seconds * 1000);
+            ret = format.format(calendar.getTime());
         }
-        
-        calendar.setTimeInMillis(System.currentTimeMillis() + seconds*1000);
-        return format.format(calendar.getTime());
+        return ret;
+    }
+    
+    public static long parseExpiresHeader(String expiresHeader) {
+        long ret;
+        synchronized (calendar) {
+            if (ServletUtils.format == null) {
+                ServletUtils.format = new SimpleDateFormat(
+                        "EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+                ServletUtils.format.setTimeZone(ServletUtils.timeZone);
+                
+            }
+            
+            try { 
+                format.parse(expiresHeader);
+            } catch (ParseException pe) {
+                log.debug("Cannot parse " + expiresHeader + ", " + pe.getMessage());
+                return -1;
+            }
+            
+            ret = calendar.getTimeInMillis() - System.currentTimeMillis() - localOffset;
+        }
+        return ret;
     }
 }

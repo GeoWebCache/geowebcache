@@ -125,7 +125,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
         int queryStart = wmsUrl.lastIndexOf("?");
         String preQuery = wmsUrl.substring(queryStart);
         if (preQuery.equalsIgnoreCase("?service=wms&")) {
-            wmsUrl = new String(wmsUrl.substring(0, wmsUrl.lastIndexOf("?")));
+            wmsUrl = wmsUrl.substring(0, wmsUrl.lastIndexOf("?"));
         }
         return wmsUrl;
     }
@@ -148,7 +148,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
             String stylesStr = "";
             
             if (name != null) {
-                List styles = layer.getStyles();
+                List<StyleImpl> styles = layer.getStyles();
                 
                 StringBuffer buf = new StringBuffer();
                 if(styles != null) {

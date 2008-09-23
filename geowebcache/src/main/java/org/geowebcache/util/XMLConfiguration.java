@@ -194,7 +194,9 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
                 TransformerFactory.newInstance().newTransformer();
             xformer.transform(source, result);
         } catch (TransformerConfigurationException e) {
+            log.error(e.getMessage());
         } catch (TransformerException e) {
+            log.error(e.getMessage());
         }
 
         return true;
@@ -230,7 +232,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
         File xmlFile = null;
         if (configH != null) {
-            // Find the property file and process each one into a TileLayer
+            // Find the configuration file
             xmlFile = new File(configH.getAbsolutePath() + File.separator + "geowebcache.xml");
         }
 
