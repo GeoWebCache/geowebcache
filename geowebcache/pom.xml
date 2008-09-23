@@ -99,6 +99,12 @@
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
       <version>1.1</version>
+      <exclusions>
+	<exclusion>
+	  <groupId>avalon-framework</groupId>
+	  <artifactId>avalon-framework</artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>
     
     <!-- dependency>
@@ -185,11 +191,9 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-jdbc</artifactId>
       <version>${spring.version}</version>
+      <optional>true</optional>
     </dependency>
-
-
-
-    
+   
     <!--  Jetty starter dependencies -->
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
