@@ -13,6 +13,7 @@ import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.wms.BBOX;
 
 public class Demo {
@@ -158,7 +159,7 @@ public class Demo {
     private static String generateHTML(TileLayer layer, SRS srs, String formatStr) 
     throws GeoWebCacheException {
         String layerName = layer.getName();
-        String mime = layer.getDefaultMimeType().getFormat();
+        //String mime = MimeType.createFromFormat(formatStr).g;
         //int srsIdx = layer.getSRSIndex(SRS.getSRS(srsStr));
         
         Grid grid = layer.getGrid(srs);
@@ -169,7 +170,7 @@ public class Demo {
         String page =
             "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n"
             +"<meta http-equiv=\"imagetoolbar\" content=\"no\">\n"
-            +"<title>"+layerName+" "+srs.toString()+" "+mime+"</tile>\n"
+            +"<title>"+layerName+" "+srs.toString()+" "+formatStr+"</tile>\n"
             +"<style type=\"text/css\">\n"
             +"body { font-family: sans-serif; font-weight: bold; font-size: .8em; }\n"
             +"body { border: 0px; margin: 0px; padding: 0px; }\n"
@@ -190,7 +191,7 @@ public class Demo {
             +"map = new OpenLayers.Map('map', mapOptions );\n"
             +"var demolayer = new OpenLayers.Layer.WMS(\n"
             +"\""+layerName+"\",\"../service/wms\",\n"
-            +"{layers: '"+layerName+"', format: '"+mime+"'} );\n"
+            +"{layers: '"+layerName+"', format: '"+formatStr+"'} );\n"
             +"map.addLayer(demolayer);\n"
             +"map.zoomToExtent(new OpenLayers.Bounds("+zoomBounds.toString()+"));\n"
             +"}\n"
