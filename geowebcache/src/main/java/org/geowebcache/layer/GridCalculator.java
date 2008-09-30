@@ -16,6 +16,8 @@
  */
 package org.geowebcache.layer;
 
+import java.util.Arrays;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -466,8 +468,12 @@ public class GridCalculator {
         
         //low = 0;
         //high = resolutions.length - 1;
+
+        // Lets be generous and not calculate log
+        int maxCount = resolutions.length / 2;
         
-        while (low <= high) {
+        while (low <= high && maxCount > 0) {
+        	maxCount--;
             int mid = (low + high) >>> 1;
             
             if(resolutions[mid] > reqUpper) {
@@ -483,7 +489,9 @@ public class GridCalculator {
                 return mid;
             }
         }
-        throw new BadTileException("Oops. Should never get here.");
+        throw new BadTileException("The bounds resulted in a resolution of " 
+        		+ reqResolution + " which does not match any of the available ones "
+        		+ Arrays.toString(resolutions));
     }
     
     public static double[] getResolutionArray(double width, double pixelWidth, int levels) {

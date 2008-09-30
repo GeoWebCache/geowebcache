@@ -113,8 +113,7 @@ public class MimeType {
             return mimeType;
         }
 
-        log.debug("Unsupported format request: " + formatStr + ", returning null");
-        return null;
+        throw new MimeException("Unsupported format request: " + formatStr);
     }
 
 
