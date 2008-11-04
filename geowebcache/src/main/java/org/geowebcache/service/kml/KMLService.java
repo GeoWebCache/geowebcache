@@ -18,6 +18,8 @@ package org.geowebcache.service.kml;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Arrays;
 
 import javax.servlet.http.HttpServletRequest;
@@ -60,7 +62,11 @@ public class KMLService extends Service {
     public static final String SERVICE_KML = "kml";
     
     public static final String HINT_DEBUGGRID = "debuggrid";
-        
+
+    public static final String HINT_SITEMAP_LAYER = "sitemap";
+    
+    public static final String HINT_SITEMAP_GLOBAL = "sitemap_global";
+    
     public KMLService() {
         super(SERVICE_KML);
     }
@@ -124,7 +130,9 @@ public class KMLService extends Service {
     throws GeoWebCacheException  {
         String[] parsed = null;
         try {
-            parsed = parseRequest(request.getPathInfo());
+            // TODO The container is supposed to handle the decoding prior
+            // to returning but in Eclipse / Jetty this does not hold true
+            parsed = parseRequest(URLDecoder.decode(request.getPathInfo(),"UTF-8"));
         } catch (Exception e) {
             throw new ServiceException("Unable to parse KML request : "+ e.getMessage());
         }
@@ -132,6 +140,23 @@ public class KMLService extends Service {
         KMLTile tile =  new KMLTile(parsed[0], request, response);
         tile.setMimeType(MimeType.createFromExtension(parsed[2]));
         tile.setSRS(SRS.getEPSG4326());
+        
+        // Sitemap index ? kml/sitemap.xml 
+        if(parsed[0].equalsIgnoreCase("sitemap") && parsed[2].equalsIgnoreCase("xml")) {
+            tile.setHint(HINT_SITEMAP_GLOBAL);
+            String tmpUrl = urlPrefix(request.getRequestURL().toString(),parsed);
+            tile.setUrlPrefix(tmpUrl.substring(0, tmpUrl.length() - "sitemap".length()));
+            tile.setRequestHandler(Tile.RequestHandler.SERVICE);
+            return tile;
+        }
+        
+        // Sitemap ?  kml/prefix:layername/sitemap.xml
+        if(parsed[1].equalsIgnoreCase(HINT_SITEMAP_LAYER)) {
+            tile.setHint(HINT_SITEMAP_LAYER);
+            tile.setUrlPrefix(urlPrefix(request.getRequestURL().toString(),parsed));
+            tile.setRequestHandler(Tile.RequestHandler.SERVICE);
+            return tile;
+        }
         
         // Do we have a key for the grid location?
         if(parsed[1].length() > 0) {
@@ -165,6 +190,8 @@ public class KMLService extends Service {
         TileLayer layer; 
         if(tile.getHint() == HINT_DEBUGGRID) {
             layer = KMLDebugGridLayer.getInstance();
+        } else if (tile.getHint() == HINT_SITEMAP_GLOBAL) {
+            layer = null;  
         } else {
             layer = tLD.getTileLayer(tile.getLayerId());
             
@@ -182,6 +209,16 @@ public class KMLService extends Service {
         //    isRaster = false;
         //}
 
+        if(tile.getHint() == HINT_SITEMAP_LAYER || tile.getHint() == HINT_SITEMAP_GLOBAL) {
+            KMLSiteMap sm = new KMLSiteMap(tile,tLD);
+            try {
+                sm.write();
+            } catch (IOException ioe) {
+                throw new GeoWebCacheException("Unable to write sitemap: " + ioe.getMessage());
+            }
+            return;
+        }
+        
         if(tile.getTileIndex() == null) {
             // No tile index -> super overlay
             if(log.isDebugEnabled()) { 
@@ -291,7 +328,7 @@ public class KMLService extends Service {
         return xml;
     }
 
-    private static String gridLocString(int[] gridLoc) {
+    protected static String gridLocString(int[] gridLoc) {
         return "x" + gridLoc[0] + "y" + gridLoc[1] + "z" + gridLoc[2];
     }
 
