@@ -18,14 +18,17 @@ package org.geowebcache.service.kml;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.tile.KMLTile;
 
@@ -71,8 +74,14 @@ public class KMLSiteMap {
         while(iter.hasNext()) {
             TileLayer tl = iter.next();
             
-            if(tl.getGrid(SRS.getEPSG4326()) != null 
-                    && tl.getMimeTypes().contains(XMLMime.kml)) {
+            // May have to initialize
+            tl.isInitialized();
+            
+            Hashtable<SRS,Grid> grids = tl.getGrids();
+            List<MimeType> mimeTypes = tl.getMimeTypes();
+            
+            if( grids != null && grids.containsKey(SRS.getEPSG4326())
+                    && mimeTypes != null && mimeTypes.contains(XMLMime.kml) ) {
                 String smStr = "<sitemap><loc>"+urlPrefix+tl.getName()+"/sitemap.xml</loc></sitemap>";
                 os.write(smStr.getBytes());
             }
