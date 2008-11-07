@@ -234,20 +234,29 @@ public class GridCalculator {
         double xdiff = tileBounds.coords[0] - gridBounds.coords[0];
         double xLoc = xdiff / tileWidth;
         retVals[0] = (int) Math.round(xLoc);
-        double absdiff = Math.abs(retVals[0] - xLoc);
-        if(absdiff/xLoc > 0.05 && absdiff > 0.05) {
+        double absdiff = Math.abs(retVals[0]*tileWidth - xdiff);
+        
+        // This doesn't work too great
+        // http://localhost:8080/geowebcache/service/wms?LAYERS=topp%3Aopen_space&FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&EXCEPTIONS=application%2Fvnd.ogc.se_inimage&SRS=EPSG%3A900913&BBOX=-8238077.159316406,4955673.447285157,-8218509.280078124,4965241.326523438&WIDTH=256&HEIGHT=256
+        if(absdiff > 0.00005 && (absdiff / tileWidth)  > 0.05) {
             throw new BadTileException("Your bounds in the x direction are offset"
-                    + " by more than 5% compared to the underlying grid.");
+                    + " by more than 5% compared to the underlying grid.\n"
+                    + " Given " + tileBounds.coords[0] + " the closest match is index " + retVals[0]
+                    + ", which corresponds to " + (retVals[0]*tileWidth + gridBounds.coords[0])
+                    );
         }
         
         // Y
         double ydiff = tileBounds.coords[1] - gridBounds.coords[1];
         double yLoc = ydiff / tileWidth;
         retVals[1] = (int) Math.round(yLoc);
-        absdiff = Math.abs(retVals[1] - yLoc);
-        if(absdiff/yLoc > 0.05 && absdiff > 0.05) {
+        absdiff = Math.abs(retVals[1]*tileWidth - ydiff);
+        if(absdiff > 0.00005 && (absdiff / tileWidth)  > 0.05 ) {
             throw new BadTileException("Your bounds in the y direction are offset"
-                    + " by more than 5% compared to the underlying grid.");
+                    + " by more than 5% compared to the underlying grid.\n"
+                    + " Given " + tileBounds.coords[1] + " the closest match is index " + retVals[1]
+                    + ", which corresponds to " + (retVals[1]*tileWidth + gridBounds.coords[1])
+            );
         }
 
         if (log.isTraceEnabled()) {
