@@ -42,6 +42,7 @@ public class KMLSiteMap {
     }
     
     public void write() throws GeoWebCacheException, IOException {
+        tile.servletResp.setCharacterEncoding("utf-8");
         tile.servletResp.setContentType("application/xml");
         tile.servletResp.setStatus(200);
         
@@ -125,6 +126,13 @@ public class KMLSiteMap {
         SRS srs = SRS.getEPSG4326();
         TileLayer tileLayer = tile.getLayer();
         String urlPrefix = tile.getUrlPrefix();
+        
+        // Add a link to the super overlay first
+        String  superOverlayLoc = 
+            "<url><loc>" + urlPrefix.substring(0, urlPrefix.length() - 1) 
+            + ".kml.kml</loc><geo:geo><geo:format>kml</geo:format></geo:geo></url>\n";
+        os.write(superOverlayLoc.getBytes());
+        
         
         LinkedList<int[]> subTileList = new LinkedList<int[]>();
             

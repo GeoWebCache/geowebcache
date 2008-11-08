@@ -730,6 +730,8 @@ public class KMLService extends Service {
         
         response.setStatus((int) tile.getStatus());
         
+        response.setCharacterEncoding("utf-8");
+        
         TileLayer layer = tile.getLayer();
         if(layer != null) {
             layer.setExpirationHeader(tile.servletResp);
