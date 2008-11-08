@@ -58,7 +58,7 @@ public class SeedTask extends GWCTask {
             
             tl.isInitialized();
             
-            log.info("Begin seeding layer : " + tl.getName());
+            log.info("Thread "+threadOffset+" begins seeding layer : " + tl.getName());
             int zoomStart = req.getZoomStart().intValue();
             int zoomStop = req.getZoomStop().intValue();
             MimeType mimeType = null;
@@ -82,7 +82,10 @@ public class SeedTask extends GWCTask {
             int tilesPerMetaTile = metaTilingFactors[0] * metaTilingFactors[1];
             
             int arrayIndex = getCurrentThreadArrayIndex();
-            int TOTAL_TILES = tileCount(coveredGridLevels, zoomStart, zoomStop); 
+            int TOTAL_TILES = tileCount(coveredGridLevels, zoomStart, zoomStop);
+            int tilesPerThread = TOTAL_TILES / threadCount;
+            int[][] list = SeedResource.getStatusList();
+            
             int count = 0;
             boolean tryCache = !reseed;
             
@@ -90,7 +93,7 @@ public class SeedTask extends GWCTask {
                 int[] gridBounds = coveredGridLevels[level];
                 for (int gridy = gridBounds[1]; gridy <= gridBounds[3];) {
 
-                    for (int gridx = gridBounds[0]; gridx <= gridBounds[2];) {
+                    for (int gridx = gridBounds[0] + threadOffset; gridx <= gridBounds[2];) {
                         
                         int[] gridLoc = { gridx, gridy, level };
 
@@ -105,16 +108,14 @@ public class SeedTask extends GWCTask {
                         }
 
                         // Next column
-                        gridx += metaTilingFactors[0] * (1 + threadOffset);
+                        gridx += metaTilingFactors[0];
                         
                         count += tilesPerMetaTile;
-                        
-                        int[][] list = SeedResource.getStatusList();
                         
                         // Threads don't really collide
                         //synchronized(list) {
                             // This is not quite right...
-                            list[arrayIndex]= getStatusInfo(arrayIndex, tl, count, (TOTAL_TILES / threadCount), START_TIME);
+                            list[arrayIndex]= getStatusInfo(arrayIndex, tl, count, tilesPerThread, START_TIME);
                         //}
                     }
                     
@@ -123,14 +124,19 @@ public class SeedTask extends GWCTask {
                     gridy += metaTilingFactors[1];
                 }
 
-                log.info("Completed seeding level " + level + " for layer "
-                        + tl.getName());
+                double percCompl = (100.0 * count)/ (double) (tilesPerThread * tilesPerMetaTile);
+                int intPercCompl = (int) Math.floor(percCompl);
+                int decPercCompl = (int) Math.round((percCompl - intPercCompl) * 100);
+                
+                log.info("Thread "+threadOffset+" completed seeding level " + level + " for layer "
+                        + tl.getName() +" (ca. "+intPercCompl+"."+decPercCompl+"%)");
             }
-            log.info("Completed seeding layer " + tl.getName());
-            int[][] list = SeedResource.getStatusList();
-            synchronized(list) {                
+            log.info("Thread "+threadOffset+" completed seeding layer " + tl.getName());
+            
+            //int[][] list = SeedResource.getStatusList();
+            //synchronized(list) {                
                     list[arrayIndex] = new int[3];
-            }
+            //}
         //} catch (Exception e) {
         //    log.error(e.getMessage());
         //    e.printStackTrace();
@@ -166,10 +172,7 @@ public class SeedTask extends GWCTask {
         String tn = Thread.currentThread().getName();
         int indexOfnumber = tn.indexOf('d')+2;
         String tmp = tn.substring(indexOfnumber);
-        int arrayIndex = Integer.parseInt(tmp);        
-        arrayIndex--;
-        
-        return arrayIndex;
+        return Integer.parseInt(tmp) - 1;
     }
     
     /**
@@ -187,17 +190,16 @@ public class SeedTask extends GWCTask {
         int[] temp = new int[3];
         //working on tile
         temp[0] = tilesCount;
+        
         //out of
         temp[1] = tilesTotal;
         
         //estimated time of completion in seconds, use a moving average over the last 
-        long timeSpent = (System.currentTimeMillis() - start_time) / 1000;
+        long timeSpent = (System.currentTimeMillis() - start_time);
         
-        long timeTotal = Math.round(timeSpent * ((double) tilesTotal / (double) tilesCount));
+        long timeTotal = Math.round((double) timeSpent * ((double) tilesTotal / (double) tilesCount));
         
-        int timeRemaining = (int) (timeTotal - timeSpent);
-        
-        temp[2] = timeRemaining;
+        temp[2] = (int) (timeTotal - timeSpent) / 1000;
         
         return temp; 
     }

@@ -48,7 +48,7 @@ import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 
 
 public class SeedResource extends GWCResource {
-    private static int[][] statusArray = new int[RESTDispatcher.getInstance().getExecutor().getCorePoolSize()][3]; 
+    private static int[][] statusArray = new int[RESTDispatcher.THREAD_MAX_NUMBER][3]; 
     public JSONObject myrequest; 
     private static Log log = LogFactory.getLog(org.geowebcache.rest.SeedResource.class);
     

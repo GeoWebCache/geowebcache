@@ -18,6 +18,9 @@ package org.geowebcache.rest;
 
 import org.geowebcache.GeoWebCacheException;
 
+/**
+ * 
+ */
 public abstract class GWCTask {
     
     int threadCount = 1;

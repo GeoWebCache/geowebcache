@@ -51,7 +51,7 @@ public class RESTDispatcher extends AbstractController {
 
     private static final int THREAD_NUMBER = 4;
     
-    private static final int THREAD_MAX_NUMBER = 32;
+    static final int THREAD_MAX_NUMBER = 32;
     
     private final XMLConfiguration xmlConfig;
     
