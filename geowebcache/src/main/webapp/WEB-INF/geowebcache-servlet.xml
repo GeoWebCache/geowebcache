@@ -16,7 +16,7 @@
     <constructor-arg value="http://sigma.openplans.org/geoserver/wms?request=GetCapabilities"/>
     <constructor-arg value="image/png,image/jpeg,application/vnd.google-earth.kml+xml"/>
     <constructor-arg value="3x3"/>
-    <constructor-arg value="format_options=regionateby:auto"/>
+    <constructor-arg value=""/>
   </bean>
   -->
   
@@ -25,7 +25,7 @@
     <constructor-arg type="org.geowebcache.cache.CacheFactory" ref="gwcCacheFactory"/>
     <constructor-arg value="image/png,image/png8,image/jpeg,image/gif,application/vnd.google-earth.kml+xml"/>
     <constructor-arg value="4x4"/>
-    <constructor-arg value="format_options=regionateby:auto"/>
+    <constructor-arg value=""/>
   </bean>
   -->
   
