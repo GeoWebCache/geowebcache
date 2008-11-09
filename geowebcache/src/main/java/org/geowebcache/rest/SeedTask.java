@@ -53,6 +53,10 @@ public class SeedTask extends GWCTask {
      */
     void doAction() throws GeoWebCacheException {
         //try {
+        
+        // Lower the priority of the thread
+        Thread.currentThread().setPriority((java.lang.Thread.NORM_PRIORITY + java.lang.Thread.MIN_PRIORITY)/2);
+        
             //approximate thread creation time
             long START_TIME = System.currentTimeMillis();
             
