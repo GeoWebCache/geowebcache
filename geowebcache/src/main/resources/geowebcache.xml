@@ -80,7 +80,7 @@
   <transparent>true</transparent>
   <bgColor></bgColor>
   <palette></palette>
-  <vendorParameters>format_options=regionateby:auto</vendorParameters>
+  <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
   <!-- cachePrefix>/var/lib/geowebcache/topp_states</cachePrefix -->
 </wmslayer>
 
@@ -152,7 +152,7 @@
   <transparent>true</transparent>
   <bgColor></bgColor>
   <palette></palette>
-  <vendorParameters>format_options=regionateby:auto</vendorParameters>
+  <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
   <!-- cachePrefix>/var/lib/geowebcache/topp_states</cachePrefix -->
 </wmslayer>
 </layers>
