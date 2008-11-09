@@ -40,13 +40,13 @@
   </bean>
   
   <!-- controller for handling incoming requests made through the REST interface -->
-  <bean id="gwcRESTDispatcher" class="org.geowebcache.rest.RESTDispatcher">
+  <bean id="gwcRESTDispatcher" class="org.geowebcache.rest.RESTDispatcher" destroy-method="destroy">
     <constructor-arg type="org.geowebcache.layer.TileLayerDispatcher" ref="gwcTLDispatcher"/>
-	<constructor-arg type="org.geowebcache.util.XMLConfiguration" ref="gwcXmlConfig"/>
+    <constructor-arg type="org.geowebcache.util.XMLConfiguration" ref="gwcXmlConfig"/>
   </bean>
   
   <!-- controller for handling all incoming requests -->
-  <bean id="geowebcacheDispatcher" class="org.geowebcache.GeoWebCacheDispatcher">
+  <bean id="geowebcacheDispatcher" class="org.geowebcache.GeoWebCacheDispatcher" destroy-method="destroy">
     <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
     <!-- property name="servletPrefix" value=""/ -->
   </bean>

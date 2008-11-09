@@ -106,11 +106,20 @@ public class RESTDispatcher extends AbstractController {
     }
 
     /**
-     * Method is responsible for handling HTTP requests
-     * 
-     * 
+     * Destroy function, has to be referenced in bean declaration:
+     * <bean ... destroy="destroy">...</bean>
      */
-
+    public void destroy() {
+        log.info("RESTDispatcher.destroy() was invoked, shutting down.");
+        
+        // Shut down all the waiting and running tasks... brutally
+        tpe.shutdownNow();
+    }
+    
+    /**
+     * Method is responsible for handling HTTP requests
+     *  
+     */
     protected ModelAndView handleRequestInternal(HttpServletRequest request,
             HttpServletResponse response) {
         try {
@@ -124,7 +133,8 @@ public class RESTDispatcher extends AbstractController {
         //TODO WRITE ERROR OR SOMETHING
         return null;
     }
-
+    
+    
     /**
      * Method instantiates the restlet router
      * 

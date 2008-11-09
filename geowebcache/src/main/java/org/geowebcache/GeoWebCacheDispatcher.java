@@ -183,6 +183,14 @@ public class GeoWebCacheDispatcher extends AbstractController {
     }
 
     /**
+     * Destroy function, has to be referenced in bean declaration:
+     * <bean ... destroy="destroy">...</bean>
+     */
+    public void destroy() {
+        log.info("GeoWebCacheDispatcher.destroy() was invoked, shutting down.");
+    }
+    
+    /**
      * Essentially this slices away the prefix, leaving type and request
      * 
      * @param servletPath
