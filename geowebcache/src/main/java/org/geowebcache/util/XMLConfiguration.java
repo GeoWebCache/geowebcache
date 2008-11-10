@@ -231,7 +231,10 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         }
 
         File xmlFile = null;
-        if (configH != null) {
+        if (configH == null) {
+            log.error("deleteLayer() - Missing XML configuration file?");
+            return false;
+        } else {
             // Find the configuration file
             xmlFile = new File(configH.getAbsolutePath() + File.separator + "geowebcache.xml");
         }
@@ -314,37 +317,45 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     public void determineConfigDirH() {
         String baseDir = context.getServletContext().getRealPath("");
         
+        /*
+         * Try 
+         * 1) absolute path 
+         * 2) relative path 
+         * 3) standard paths
+         */
         if (absPath != null) {
             configH = new File(absPath);
-            return;
-        }
-
-        /* Only keep going for relative directory */
-        if (relPath == null) {
-            
-            for(int i=0; i<CONFIGURATION_REL_PATHS.length; i++) {
+        } else if (relPath != null) {
+            configH = new File(baseDir + relPath);
+            log.info("Configuration directory set to: "
+                    + configH.getAbsolutePath());
+        } else if (relPath == null) {
+            for (int i = 0; i < CONFIGURATION_REL_PATHS.length; i++) {
                 relPath = CONFIGURATION_REL_PATHS[i];
-                if(File.separator.equals("\\")) {
-                    relPath = relPath.replace("/","\\");
+                if (File.separator.equals("\\")) {
+                    relPath = relPath.replace("/", "\\");
                 }
-                
-                File tmpPath = new File(baseDir + relPath + File.separator + CONFIGURATION_FILE_NAME);
-                
-                if(tmpPath.exists()) {
-                    log.info("No configuration directory was specified, using "+tmpPath.getAbsolutePath());
+
+                File tmpPath = new File(baseDir + relPath + File.separator
+                        + CONFIGURATION_FILE_NAME);
+
+                if (tmpPath.exists()) {
+                    log.info("No configuration directory was specified, using "
+                            + tmpPath.getAbsolutePath());
                     configH = new File(baseDir + relPath);
-                    return;
                 }
             }
-            
-            log.error("Failed to find geowebcache.xml, please specify an absolute path in geowebcache-servlet.xml!");
         }
-        configH = new File(baseDir + relPath);
-
-        log.info("Configuration directory set to: "+ configH.getAbsolutePath());
-
-        if (!configH.exists() || !configH.canRead()) {
-            log.error(configH.getAbsoluteFile()+ " cannot be read or does not exist!");
+       
+        if(configH == null) {
+            log.error("Failed to find geowebcache.xml, please specify an absolute path "
+                    +"in geowebcache-servlet.xml!");
+        } else {
+            log.info("Configuration directory set to: "+ configH.getAbsolutePath());
+        
+            if (!configH.exists() || !configH.canRead()) {
+                log.error(configH.getAbsoluteFile()+ " cannot be read or does not exist!");
+            }
         }
     }
 
