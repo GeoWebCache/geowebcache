@@ -35,7 +35,10 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheFactory;
+import org.geowebcache.cache.file.FileCache;
+import org.geowebcache.cache.file.FilePathKey2;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -71,6 +74,8 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
     private File configH = null;
 
+    private FileCache fileCache = null;
+    
     /**
      * XMLConfiguration class responsible for reading/writing layer
      * configurations to and from XML file
@@ -319,9 +324,10 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         
         /*
          * Try 
-         * 1) absolute path 
-         * 2) relative path 
-         * 3) standard paths
+         * 1) absolute path (specified in bean defn)
+         * 2) relative path (specified in bean defn)
+         * 3) environment variables
+         * 4) standard paths
          */
         if (absPath != null) {
             configH = new File(absPath);
@@ -330,26 +336,47 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
             log.info("Configuration directory set to: "
                     + configH.getAbsolutePath());
         } else if (relPath == null) {
-            for (int i = 0; i < CONFIGURATION_REL_PATHS.length; i++) {
-                relPath = CONFIGURATION_REL_PATHS[i];
-                if (File.separator.equals("\\")) {
-                    relPath = relPath.replace("/", "\\");
+            // Try env variables
+            File tmpPath = null;
+
+            if (fileCache != null) {
+                try {
+                    // Careful, this appends a separator
+                    tmpPath = new File(fileCache.getDefaultPrefix(CONFIGURATION_FILE_NAME));
+
+                    if (tmpPath.exists() && tmpPath.canRead()) {
+                        String filePath = tmpPath.getAbsolutePath();
+                        configH = new File(filePath.substring(0, 
+                                filePath.length()
+                                - CONFIGURATION_FILE_NAME.length() - 1));
+                    }
+                } catch (CacheException ce) {
+                    // Ignore
                 }
+            }
 
-                File tmpPath = new File(baseDir + relPath + File.separator
-                        + CONFIGURATION_FILE_NAME);
+            // Finally, try "standard" paths if we have to.
+            if (configH == null) {
+                for (int i = 0; i < CONFIGURATION_REL_PATHS.length; i++) {
+                    relPath = CONFIGURATION_REL_PATHS[i];
+                    if (File.separator.equals("\\")) {
+                        relPath = relPath.replace("/", "\\");
+                    }
 
-                if (tmpPath.exists()) {
-                    log.info("No configuration directory was specified, using "
-                            + tmpPath.getAbsolutePath());
-                    configH = new File(baseDir + relPath);
+                    tmpPath = new File(baseDir + relPath + File.separator
+                            + CONFIGURATION_FILE_NAME);
+
+                    if (tmpPath.exists() && tmpPath.canRead()) {
+                        log.info("No configuration directory was specified, using "
+                                        + tmpPath.getAbsolutePath());
+                        configH = new File(baseDir + relPath);
+                    }
                 }
             }
         }
        
         if(configH == null) {
-            log.error("Failed to find geowebcache.xml, please specify an absolute path "
-                    +"in geowebcache-servlet.xml!");
+            log.error("Failed to find geowebcache.xml");
         } else {
             log.info("Configuration directory set to: "+ configH.getAbsolutePath());
         
@@ -369,6 +396,10 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
     public void setAbsolutePath(String absPath) {
         this.absPath = absPath;
+    }
+    
+    public void setFileCache(FileCache fileCache) {
+        this.fileCache = fileCache;
     }
 
     public void setApplicationContext(ApplicationContext arg0)
