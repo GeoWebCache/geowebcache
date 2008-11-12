@@ -52,9 +52,7 @@ public class FilePathKey2Filter implements FilenameFilter {
      *  *EPSG_2163_01/    0_0
      *  *                 EPSG_2163_01
      */
-    public boolean accept(File dir, String name) {
-        System.out.println(dir.getAbsolutePath() + " " + name);
-        
+    public boolean accept(File dir, String name) {  
         if(name.startsWith("EPSG_")) {
             // srs and zoomlevel level
             return acceptZoomLevelDir(name);
@@ -79,7 +77,7 @@ public class FilePathKey2Filter implements FilenameFilter {
             // All zoomlevels
         } else {
             int tmp = findZoomLevel(name);
-            if(tmp < zoomStart || tmp > zoomStop) {
+            if(tmp <= zoomStart || tmp >= zoomStop) {
                 return false;
             }
         }
@@ -120,14 +118,16 @@ public class FilePathKey2Filter implements FilenameFilter {
             int[] box = bounds[zoomLevel];
 
             // [2, 5, 5, 6] , why that when we've got 00_05 ?
-            if (x <= box[0] || x >= box[2]) {
+            if (x < box[0] || x > box[2]) {
                 return false;
             }
 
-            if (y <= box[1] || y >= box[3]) {
+            if (y < box[1] || y > box[3]) {
                 return false;
             }
         }
+        
+        System.out.println(dir.getAbsolutePath() + " " + name);
         
         return true;
     }

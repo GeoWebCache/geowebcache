@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
+import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.wms.BBOX;
@@ -49,9 +50,25 @@ public class TruncateTask extends GWCTask {
             bounds = tl.getCoveredGridLevels(req.getSRS(), bbox);
         }
         
+        // Check if MimeType supports metatiling, in which case 
+        // we may have to throw a wider net
+        MimeType mimeType = null;
+        if(req.getMimeFormat() != null && req.getMimeFormat().length() > 0) {
+            mimeType = MimeType.createFromFormat(req.getMimeFormat());
+            
+            int[] metaFactors = tl.getMetaTilingFactors();
+            
+            int gridBounds[][] = tl.getGrid(req.getSRS()).getGridCalculator().getGridBounds();
+            
+            if(metaFactors[0] > 1 || metaFactors[1] > 1
+                    && mimeType.supportsTiling()) {
+                bounds = GridCalculator.expandBoundsToMetaTiles(gridBounds, bounds, metaFactors);
+            }
+        }
+        
         cache.truncate(tl, req.getSRS(), 
                 req.getZoomStart(), req.getZoomStop(), 
-                bounds, MimeType.createFromFormat(req.getMimeFormat()));
+                bounds, mimeType);
     }
 
 }

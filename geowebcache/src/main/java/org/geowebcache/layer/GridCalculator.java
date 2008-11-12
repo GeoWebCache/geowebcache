@@ -189,6 +189,16 @@ public class GridCalculator {
         return boundsGridLevels[zoomLevel].clone();
     }
 
+    public int[][] getGridBounds() {
+        int[][] ret = new int[boundsGridLevels.length][boundsGridLevels[0].length];
+        
+        for(int i=0; i<boundsGridLevels.length; i++) {
+            ret[i] = boundsGridLevels[i].clone();
+        }
+        
+        return ret;
+    }
+    
     /**
      * Determines the location in a three dimensional grid based on WMS
      * recommendations.
@@ -235,9 +245,6 @@ public class GridCalculator {
         double xLoc = xdiff / tileWidth;
         retVals[0] = (int) Math.round(xLoc);
         double absdiff = Math.abs(retVals[0]*tileWidth - xdiff);
-        
-        // This doesn't work too great
-        // http://localhost:8080/geowebcache/service/wms?LAYERS=topp%3Aopen_space&FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&EXCEPTIONS=application%2Fvnd.ogc.se_inimage&SRS=EPSG%3A900913&BBOX=-8238077.159316406,4955673.447285157,-8218509.280078124,4965241.326523438&WIDTH=256&HEIGHT=256
         if(absdiff > 0.00005 && (absdiff / tileWidth)  > 0.05) {
             throw new BadTileException("Your bounds in the x direction are offset"
                     + " by more than 5% compared to the underlying grid.\n"
@@ -512,6 +519,46 @@ public class GridCalculator {
         }
         
         return resolutionArray;
+    }
+    
+    /**
+     * Expands the 2-dim array with bounds to cover complete metatiles
+     * 
+     * Note that these may exceed the bounds of the layer.
+     * 
+     * @param gridBounds
+     * @param reqBounds
+     * @param meta
+     * @return
+     */
+    public static int[][] expandBoundsToMetaTiles(int[][] gridBounds, int[][] reqBounds, int[] meta) {
+        int[][] ret = new int[reqBounds.length][reqBounds[0].length];
+        
+        for (int i = 0; i < reqBounds.length; i++) {
+            // Go down
+            ret[i][0] = (reqBounds[i][0] - (reqBounds[i][0] % meta[0]));
+            ret[i][1] = (reqBounds[i][1] - (reqBounds[i][1] % meta[1]));
+
+            // Go up
+            ret[i][2] = (reqBounds[i][2] - (reqBounds[i][2] % meta[0]) + meta[0] - 1);
+            ret[i][3] = (reqBounds[i][3] - (reqBounds[i][3] % meta[1]) + meta[1] - 1);
+            
+            // Then check against grid
+            //if(ret[i][0] < gridBounds[i][0]) {
+            //    ret[i][0] = 0;
+            //}
+            //if(ret[i][1] < gridBounds[i][1]) {
+            //    ret[i][1] = 0;
+            //}
+            //if(ret[i][2] > gridBounds[i][2]) {
+            //    ret[i][2] = gridBounds[i][2];
+            //}
+            //if(ret[i][3] > gridBounds[i][3]) {
+            //    ret[i][3] = gridBounds[i][3];
+            //}
+        }
+        
+        return ret;
     }
     
     public static double[] get900913Resolutions() {
