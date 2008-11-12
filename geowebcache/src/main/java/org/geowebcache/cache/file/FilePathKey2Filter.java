@@ -21,11 +21,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 import org.geowebcache.cache.CacheException;
-import org.geowebcache.cache.CacheFilter;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.mime.MimeType;
 
-public class FilePathKey2Filter extends CacheFilter implements FilenameFilter {
+public class FilePathKey2Filter implements FilenameFilter {
     final String srsPrefix;
     final int zoomStart;
     final int zoomStop;

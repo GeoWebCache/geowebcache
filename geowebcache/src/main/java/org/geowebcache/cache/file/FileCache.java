@@ -33,7 +33,6 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
-import org.geowebcache.cache.CacheFilter;
 import org.geowebcache.cache.CacheKey;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
