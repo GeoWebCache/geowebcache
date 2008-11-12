@@ -20,6 +20,9 @@ package org.geowebcache.cache;
 import java.util.Properties;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.layer.SRS;
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.tile.Tile;
 import org.springframework.context.ApplicationContextAware;
 
@@ -66,6 +69,9 @@ public interface Cache extends ApplicationContextAware {
     public void set(CacheKey keyProto, Tile tile, long ttl) 
     throws CacheException, GeoWebCacheException;
 
+    public void truncate(TileLayer tl, SRS srs, int zoomStart, int zoomStop, 
+            int[][] bounds, MimeType mimeType) throws CacheException;
+    
     public boolean remove(CacheKey keyProto, Tile tile) throws CacheException;
 
     public void removeAll() throws CacheException;

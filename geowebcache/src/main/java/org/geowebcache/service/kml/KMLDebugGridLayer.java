@@ -60,9 +60,7 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
         //blah
 
     }
-    
-    
-    
+
     private KMLDebugGridLayer() {
         super.grids = new Hashtable<SRS,Grid>();
         grids.put(SRS.getEPSG4326(), new Grid(SRS.getEPSG4326(),BBOX.WORLD4326, BBOX.WORLD4326, null));
@@ -384,6 +382,13 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
 
     public void seedTile(Tile tile, boolean tryCache)
             throws GeoWebCacheException, IOException {
+        
+    }
+
+
+    public void truncate(TileLayer tl, SRS srs, int zoomStart, int zoomStop,
+            int[][] bounds, MimeType mimeType) throws CacheException {
+        // TODO Auto-generated method stub
         
     }
 

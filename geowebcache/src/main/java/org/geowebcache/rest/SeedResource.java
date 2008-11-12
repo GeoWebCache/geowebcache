@@ -211,7 +211,7 @@ public class SeedResource extends GWCResource {
             return new SeedTask(rq,tl,true);
         }
         if(type.equalsIgnoreCase("truncate")) {
-            return new TruncateTask();
+            return new TruncateTask(rq, tl);
         }
         
         return null;

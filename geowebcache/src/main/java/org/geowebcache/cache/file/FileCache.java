@@ -33,7 +33,11 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
+import org.geowebcache.cache.CacheFilter;
 import org.geowebcache.cache.CacheKey;
+import org.geowebcache.layer.SRS;
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.tile.Tile;
 import org.geowebcache.util.GWCVars;
 import org.springframework.beans.BeansException;
@@ -287,5 +291,48 @@ public class FileCache implements Cache {
     public void setApplicationContext(ApplicationContext arg0)
             throws BeansException {
         context = (WebApplicationContext) arg0;
+    }
+
+    public void truncate(TileLayer tl, SRS srs, int zoomStart, int zoomStop,
+            int[][] bounds, MimeType mimeType) throws CacheException {
+
+        String prefix = tl.getCachePrefix();
+
+        File layerPath = new File(prefix);
+
+        if (layerPath.exists() && layerPath.canWrite()) {
+            FilePathKey2Filter fpk2f = new FilePathKey2Filter(srs, zoomStart,
+                    zoomStop, bounds, mimeType);
+
+            File[] srsZoomDirs = layerPath.listFiles(fpk2f);
+
+            for (File srsZoom : srsZoomDirs) {
+                File[] intermediates = srsZoom.listFiles(fpk2f);
+
+                for (File imd : intermediates) {
+                    File[] tiles = imd.listFiles(fpk2f);
+
+                    for (File tile : tiles) {
+                        tile.delete();
+                    }
+
+                    String[] chk = imd.list();
+                    if (chk == null || chk.length == 0) {
+                        imd.delete();
+                    }
+                }
+
+                String[] chk = srsZoom.list();
+                if (chk == null || chk.length == 0) {
+                    srsZoom.delete();
+                }
+
+            }
+
+        } else {
+            throw new CacheException(prefix
+                    + " does not exist or is not writable.");
+        }
+
     }
 }

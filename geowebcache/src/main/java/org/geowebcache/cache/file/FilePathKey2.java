@@ -12,7 +12,7 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Arne Kepp, The Open Planning Project, Copyright 2007
+ * @author Arne Kepp, The Open Planning Project, Copyright 2008
  *  
  */
 package org.geowebcache.cache.file;

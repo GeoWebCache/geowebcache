@@ -16,13 +16,42 @@
  */
 package org.geowebcache.rest;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.cache.Cache;
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.mime.MimeType;
+import org.geowebcache.util.wms.BBOX;
 
 public class TruncateTask extends GWCTask {
-
-    @Override
+    private static Log log = LogFactory.getLog(org.geowebcache.rest.TruncateTask.class);
+    
+    private final SeedRequest req;
+    
+    private final TileLayer tl;
+    
+    public TruncateTask(SeedRequest req, TileLayer tl) {
+        this.req = req;
+        this.tl = tl;
+    }
+    
     void doAction() throws GeoWebCacheException {
-        throw new GeoWebCacheException("Truncate isn't implemented yet! Sorry :( ");
+        
+        tl.isInitialized();
+        
+        Cache cache = tl.getCache();
+        
+        BBOX bbox = req.getBounds();
+        int[][] bounds = null;
+        
+        if(bbox != null) {
+            bounds = tl.getCoveredGridLevels(req.getSRS(), bbox);
+        }
+        
+        cache.truncate(tl, req.getSRS(), 
+                req.getZoomStart(), req.getZoomStop(), 
+                bounds, MimeType.createFromFormat(req.getMimeFormat()));
     }
 
 }
