@@ -103,16 +103,6 @@ public abstract class MetaTile implements TileResponseReceiver {
      */
     private int[] calculateMetaTileGridBounds(int[] gridBounds,
             int[] tileGridPosition) {
-        // Sanity checks that are hopefully redundant
-        // if( tileGridPosition[0] < gridBounds[0] || tileGridPosition[0] >
-        // gridBounds[2]
-        // || tileGridPosition[1] < gridBounds[1] || tileGridPosition[1] >
-        // gridBounds[3]) {
-        // log.error("calculateMetaTileGridBounds(): " +
-        // Arrays.toString(gridBounds) +" does not contain "+
-        // Arrays.toString(tileGridPosition) );
-        // return null;
-        // }
 
         int[] metaTileGridBounds = new int[5];
         metaTileGridBounds[0] = tileGridPosition[0]
