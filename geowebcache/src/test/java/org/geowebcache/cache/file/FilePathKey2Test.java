@@ -37,6 +37,15 @@ public class FilePathKey2Test extends TestCase {
         
         actual = FilePathKey2.zeroPadder(100, 2);
         this.assertEquals("100", actual);
+
+        actual = FilePathKey2.zeroPadder(101, 3);
+        this.assertEquals("101", actual);
+        
+        actual = FilePathKey2.zeroPadder(102, 3);
+        this.assertEquals("102", actual);
+        
+        actual = FilePathKey2.zeroPadder(103, 3);
+        this.assertEquals("103", actual);
         
         actual = FilePathKey2.zeroPadder(99, 2);
         this.assertEquals("99", actual);
