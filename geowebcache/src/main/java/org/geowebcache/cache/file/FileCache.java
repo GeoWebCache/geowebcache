@@ -292,9 +292,11 @@ public class FileCache implements Cache {
         context = (WebApplicationContext) arg0;
     }
 
-    public void truncate(TileLayer tl, SRS srs, int zoomStart, int zoomStop,
+    public int truncate(TileLayer tl, SRS srs, int zoomStart, int zoomStop,
             int[][] bounds, MimeType mimeType) throws CacheException {
 
+        int count = 0;
+        
         String prefix = tl.getCachePrefix();
 
         File layerPath = new File(prefix);
@@ -313,21 +315,26 @@ public class FileCache implements Cache {
 
                     for (File tile : tiles) {
                         tile.delete();
+                        count++;
                     }
 
                     String[] chk = imd.list();
                     if (chk == null || chk.length == 0) {
                         imd.delete();
+                        count++;
                     }
                 }
 
                 String[] chk = srsZoom.list();
                 if (chk == null || chk.length == 0) {
                     srsZoom.delete();
+                    count++;
                 }
 
             }
-
+            
+            return count;
+            
         } else {
             throw new CacheException(prefix
                     + " does not exist or is not writable.");

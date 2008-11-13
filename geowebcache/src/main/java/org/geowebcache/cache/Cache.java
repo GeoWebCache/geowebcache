@@ -69,7 +69,7 @@ public interface Cache extends ApplicationContextAware {
     public void set(CacheKey keyProto, Tile tile, long ttl) 
     throws CacheException, GeoWebCacheException;
 
-    public void truncate(TileLayer tl, SRS srs, int zoomStart, int zoomStop, 
+    public int truncate(TileLayer tl, SRS srs, int zoomStart, int zoomStop, 
             int[][] bounds, MimeType mimeType) throws CacheException;
     
     public boolean remove(CacheKey keyProto, Tile tile) throws CacheException;

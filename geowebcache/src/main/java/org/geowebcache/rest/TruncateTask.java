@@ -16,6 +16,8 @@
  */
 package org.geowebcache.rest;
 
+import java.util.Arrays;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -32,6 +34,8 @@ public class TruncateTask extends GWCTask {
     
     private final TileLayer tl;
     
+    private final static double[] nullBbox = {0.0,0.0,0.0,0.0};
+    
     public TruncateTask(SeedRequest req, TileLayer tl) {
         this.req = req;
         this.tl = tl;
@@ -42,33 +46,37 @@ public class TruncateTask extends GWCTask {
         tl.isInitialized();
         
         Cache cache = tl.getCache();
-        
-        BBOX bbox = req.getBounds();
+
         int[][] bounds = null;
         
-        if(bbox != null) {
-            bounds = tl.getCoveredGridLevels(req.getSRS(), bbox);
+        if(! Arrays.equals(req.getBounds().coords, nullBbox)) {
+            bounds = tl.getCoveredGridLevels(req.getSRS(), req.getBounds());
         }
         
         // Check if MimeType supports metatiling, in which case 
         // we may have to throw a wider net
         MimeType mimeType = null;
-        if(req.getMimeFormat() != null && req.getMimeFormat().length() > 0) {
+        if (req.getMimeFormat() != null && req.getMimeFormat().length() > 0) {
             mimeType = MimeType.createFromFormat(req.getMimeFormat());
-            
-            int[] metaFactors = tl.getMetaTilingFactors();
-            
-            int gridBounds[][] = tl.getGrid(req.getSRS()).getGridCalculator().getGridBounds();
-            
-            if(metaFactors[0] > 1 || metaFactors[1] > 1
-                    && mimeType.supportsTiling()) {
-                bounds = GridCalculator.expandBoundsToMetaTiles(gridBounds, bounds, metaFactors);
+
+            if (bounds != null) {
+                int[] metaFactors = tl.getMetaTilingFactors();
+
+                int gridBounds[][] = tl.getGrid(req.getSRS())
+                        .getGridCalculator().getGridBounds();
+
+                if (metaFactors[0] > 1 || metaFactors[1] > 1
+                        && mimeType.supportsTiling()) {
+                    bounds = GridCalculator.expandBoundsToMetaTiles(gridBounds,
+                            bounds, metaFactors);
+                }
             }
         }
         
-        cache.truncate(tl, req.getSRS(), 
+        int count = cache.truncate(tl, req.getSRS(), 
                 req.getZoomStart(), req.getZoomStop(), 
                 bounds, mimeType);
+        log.info("Completed truncating " + count + " tiles");
     }
 
 }

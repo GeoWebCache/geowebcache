@@ -77,7 +77,7 @@ public class FilePathKey2Filter implements FilenameFilter {
             // All zoomlevels
         } else {
             int tmp = findZoomLevel(name);
-            if(tmp <= zoomStart || tmp >= zoomStop) {
+            if(tmp < zoomStart || tmp > zoomStop) {
                 return false;
             }
         }
@@ -117,7 +117,7 @@ public class FilePathKey2Filter implements FilenameFilter {
 
             int[] box = bounds[zoomLevel];
 
-            // [2, 5, 5, 6] , why that when we've got 00_05 ?
+            
             if (x < box[0] || x > box[2]) {
                 return false;
             }
@@ -127,7 +127,7 @@ public class FilePathKey2Filter implements FilenameFilter {
             }
         }
         
-        System.out.println(dir.getAbsolutePath() + " " + name);
+        //System.out.println(dir.getAbsolutePath() + " " + name);
         
         return true;
     }
