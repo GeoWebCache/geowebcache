@@ -109,24 +109,28 @@ public class TileLayerDispatcher {
 
             Configuration config = configIter.next();
 
-            try {
-                configLayers = config.getTileLayers();
-            } catch (GeoWebCacheException gwce) {
-                log.error(gwce.getMessage());
-                log.error("Failed to add layers from "
-                                + config.getIdentifier());
-            }
+            String configIdent = config.getIdentifier();
 
-            log.info("Adding layers from " + config.getIdentifier());
-            if (configLayers != null && configLayers.size() > 0) {
-                Iterator<Entry<String,TileLayer>> iter = configLayers.entrySet().iterator();
-                while (iter.hasNext()) {
-                    Entry<String,TileLayer> one = iter.next();
-                    layers.put(one.getKey(), one.getValue());
+            if (configIdent != null) {
+                try {
+                    configLayers = config.getTileLayers();
+                } catch (GeoWebCacheException gwce) {
+                    log.error(gwce.getMessage());
+                    log.error("Failed to add layers from " + configIdent);
                 }
-            } else {
-                log.error("Configuration " + config.getIdentifier()
-                        + " contained no layers.");
+
+                log.info("Adding layers from " + configIdent);
+                if (configLayers != null && configLayers.size() > 0) {
+                    Iterator<Entry<String, TileLayer>> iter = configLayers
+                            .entrySet().iterator();
+                    while (iter.hasNext()) {
+                        Entry<String, TileLayer> one = iter.next();
+                        layers.put(one.getKey(), one.getValue());
+                    }
+                } else {
+                    log.error("Configuration " + configIdent
+                            + " contained no layers.");
+                }
             }
         }
 

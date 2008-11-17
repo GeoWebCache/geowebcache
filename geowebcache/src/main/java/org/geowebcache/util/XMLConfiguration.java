@@ -96,7 +96,6 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
         File xmlFile = null;
         if (configH != null) {
-            // Find the property file
             xmlFile = new File(configH.getAbsolutePath() + File.separator + CONFIGURATION_FILE_NAME);
         } else {
             throw new GeoWebCacheException("Unable to determine configuration directory.");
@@ -119,24 +118,28 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         File xmlFile = findConfFile();
         
         HashMap<String, TileLayer> layers = new HashMap<String, TileLayer>();
-
+        
         // load configurations into Document
         Document docc = loadIntoDocument(xmlFile);
-        Element root = docc.getDocumentElement();
-        NodeList allLayerNodes = root.getChildNodes();
+        if(docc != null) {
+            Element root = docc.getDocumentElement();
+            NodeList allLayerNodes = root.getChildNodes();
 
-        XStream xs = getConfiguredXStream(new XStream());
+            XStream xs = getConfiguredXStream(new XStream());
 
-        TileLayer result = null;
-        for (int i = 0; i < allLayerNodes.getLength(); i++) {
-            if (allLayerNodes.item(i) instanceof Element) {
-                Element e = (Element) allLayerNodes.item(i);
-                if (e.getTagName().equalsIgnoreCase("wmslayer"))
-                    result = (WMSLayer) xs.unmarshal(new DomReader(
-                            (Element) allLayerNodes.item(i)));
-                result.setCacheFactory(this.cacheFactory);
-                layers.put(result.getName(), result);
+            TileLayer result = null;
+            for (int i = 0; i < allLayerNodes.getLength(); i++) {
+                if (allLayerNodes.item(i) instanceof Element) {
+                    Element e = (Element) allLayerNodes.item(i);
+                    if (e.getTagName().equalsIgnoreCase("wmslayer"))
+                        result = (WMSLayer) xs.unmarshal(new DomReader(
+                                (Element) allLayerNodes.item(i)));
+                    result.setCacheFactory(this.cacheFactory);
+                    layers.put(result.getName(), result);
+                }
             }
+        } else {
+            
         }
 
         return layers;
@@ -381,13 +384,17 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
             log.info("Configuration directory set to: "+ configH.getAbsolutePath());
         
             if (!configH.exists() || !configH.canRead()) {
-                log.error(configH.getAbsoluteFile()+ " cannot be read or does not exist!");
+                log.error("Configuration file cannot be read or does not exist!");
             }
         }
     }
 
     public String getIdentifier() {
-        return configH.getAbsolutePath();
+        if(configH != null) {
+          return configH.getAbsolutePath();
+        } else {
+            return null;
+        }
     }
 
     public void setRelativePath(String relPath) {

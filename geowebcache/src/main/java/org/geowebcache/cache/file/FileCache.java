@@ -48,8 +48,7 @@ public class FileCache implements Cache {
 
     public final static String GS_DATA_DIR = "GEOSERVER_DATA_DIR";
 
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.cache.file.FileCache.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.cache.file.FileCache.class);
 
     private String defaultKeyBeanId = null;
 
