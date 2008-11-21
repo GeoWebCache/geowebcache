@@ -26,15 +26,6 @@
     <repository>
       <id>geotools</id>
       <name>geotools</name>
-      <url>http://maven.geotools.fr/repository</url>
-      <snapshots>
-	<enabled>false</enabled>
-      </snapshots>
-      <layout>legacy</layout>
-    </repository>
-    <repository>
-      <id>geotools</id>
-      <name>geotools</name>
       <url>http://maven.geotools.fr/repository/</url>
       <snapshots>
 	<enabled>false</enabled>
@@ -85,7 +76,7 @@
       <groupId>org.geotools</groupId>
       <artifactId>gt-wms</artifactId>
       <version>${gt.version}</version>
-      <optional>true</optional>
+      <!-- optional>true</optional -->
     </dependency>
     
     <dependency>
@@ -191,7 +182,7 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-jdbc</artifactId>
       <version>${spring.version}</version>
-      <optional>true</optional>
+      <!-- optional>true</optional -->
     </dependency>
    
     <!--  Jetty starter dependencies -->
