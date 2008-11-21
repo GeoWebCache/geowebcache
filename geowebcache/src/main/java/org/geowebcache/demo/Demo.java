@@ -170,7 +170,7 @@ public class Demo {
         String page =
             "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n"
             +"<meta http-equiv=\"imagetoolbar\" content=\"no\">\n"
-            +"<title>"+layerName+" "+srs.toString()+" "+formatStr+"</tile>\n"
+            +"<title>"+layerName+" "+srs.toString()+" "+formatStr+"</title>\n"
             +"<style type=\"text/css\">\n"
             +"body { font-family: sans-serif; font-weight: bold; font-size: .8em; }\n"
             +"body { border: 0px; margin: 0px; padding: 0px; }\n"
