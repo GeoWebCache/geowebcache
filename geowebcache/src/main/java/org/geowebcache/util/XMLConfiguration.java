@@ -389,12 +389,17 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         }
     }
 
-    public String getIdentifier() {
-        if(configH != null) {
-          return configH.getAbsolutePath();
-        } else {
-            return null;
+    public String getIdentifier() throws GeoWebCacheException {
+        if(configH == null) {
+            this.findConfFile();           
         }
+        
+        // Try again
+        if(configH != null) {
+            return configH.getAbsolutePath();
+        }
+        
+        return null;
     }
 
     public void setRelativePath(String relPath) {

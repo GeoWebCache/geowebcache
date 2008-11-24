@@ -109,8 +109,13 @@ public class TileLayerDispatcher {
 
             Configuration config = configIter.next();
 
-            String configIdent = config.getIdentifier();
-
+            String configIdent = null;
+            try { 
+                configIdent = config.getIdentifier();
+            } catch (GeoWebCacheException gwce) {
+                log.error(gwce.getMessage());
+            }
+            
             if (configIdent != null) {
                 try {
                     configLayers = config.getTileLayers();

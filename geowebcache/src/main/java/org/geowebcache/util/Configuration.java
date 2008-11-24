@@ -25,5 +25,5 @@ import org.geowebcache.layer.TileLayer;
 public interface Configuration {
 
 	public Map<String,TileLayer> getTileLayers() throws GeoWebCacheException;
-	public String getIdentifier();
+	public String getIdentifier() throws GeoWebCacheException;
 }
