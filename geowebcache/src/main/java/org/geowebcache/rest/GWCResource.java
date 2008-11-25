@@ -38,8 +38,8 @@ public class GWCResource extends Resource {
         String remoteAdr = getRequest().getClientInfo().getAddress();
 
         if (entity == null
-                || ((!entity.getMediaType().equals(MediaType.APPLICATION_XML)) 
-                &&  (!entity.getMediaType().equals(MediaType.APPLICATION_JSON)))) {
+                || ((!entity.getMediaType().includes(MediaType.APPLICATION_XML)) 
+                &&  (!entity.getMediaType().includes(MediaType.APPLICATION_JSON)))) {
 
             String message = "Request from "+ remoteAdr + " did not specify MIME type"
                     + " of the document posted. Please specify application/xml "

@@ -146,6 +146,8 @@ public class RESTDispatcher extends AbstractController {
             myRouter = new Router();
             myRouter.attach("/", RESTIndexResource.class);
             myRouter.attach("/layers", TileLayerResource.class);
+            myRouter.attach("/seed/{layer}", SeedPageResource.class);
+            myRouter.attach("/rest/seed/{layer}", SeedPageResource.class);
             myRouter.attach("/seed/", SeedResource.class);
             myRouter.attach("/rest/seed/", SeedResource.class);
         }

@@ -148,6 +148,8 @@ public class Grid {
             zoomStart = 0;
             zoomStop = 30;
         }
-        return new GridCalculator(this);
+        
+        GridCalculator gridCalc = new GridCalculator(this);
+        return gridCalc;
     }
 }

@@ -110,7 +110,7 @@ public class SeedResource extends GWCResource {
 
             SeedRequest rq = null;
 
-            if (entity.getMediaType().equals(MediaType.APPLICATION_XML)) {
+            if (entity.getMediaType().includes(MediaType.APPLICATION_XML)) {
                 rq = (SeedRequest) xs.fromXML(text);
             }
 
@@ -131,7 +131,7 @@ public class SeedResource extends GWCResource {
              * 
              */
 
-            else if (entity.getMediaType().equals(MediaType.APPLICATION_JSON)) {
+            else if (entity.getMediaType().includes(MediaType.APPLICATION_JSON)) {
                 HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();
                 StringReader reader = new StringReader(text);
                 HierarchicalStreamReader hsr = driver.createReader(reader);
