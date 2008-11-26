@@ -45,6 +45,13 @@ public class SeedTask extends GWCTask {
         this.req = req;
         this.tl = tl;
         this.reseed = reseed;
+        
+        if(reseed) {
+            super.type = GWCTask.TYPE_RESEED;
+        } else {
+            super.type = GWCTask.TYPE_SEED;
+        }
+        super.layerName = tl.getName();
     }
 
     /**
@@ -86,9 +93,9 @@ public class SeedTask extends GWCTask {
             int tilesPerMetaTile = metaTilingFactors[0] * metaTilingFactors[1];
             
             int arrayIndex = getCurrentThreadArrayIndex();
-            int TOTAL_TILES = tileCount(coveredGridLevels, zoomStart, zoomStop);
-            int tilesPerThread = TOTAL_TILES / threadCount;
-            int[][] list = SeedResource.getStatusList();
+            long TOTAL_TILES = tileCount(coveredGridLevels, zoomStart, zoomStop);
+            this.tilesTotal = TOTAL_TILES / (long) threadCount;
+            //int[][] list = SeedResource.getStatusList();
             
             int count = 0;
             boolean tryCache = !reseed;
@@ -119,7 +126,7 @@ public class SeedTask extends GWCTask {
                         // Threads don't really collide
                         //synchronized(list) {
                             // This is not quite right...
-                            list[arrayIndex]= getStatusInfo(arrayIndex, tl, count, tilesPerThread, START_TIME);
+                            updateStatusInfo(arrayIndex, tl, count, START_TIME);
                         //}
                     }
                     
@@ -128,18 +135,23 @@ public class SeedTask extends GWCTask {
                     gridy += metaTilingFactors[1];
                 }
 
-                double percCompl = (100.0 * count)/ (double) (tilesPerThread * tilesPerMetaTile);
+                double percCompl = (100.0 * count)/ (double) (tilesTotal * tilesPerMetaTile);
                 int intPercCompl = (int) Math.floor(percCompl);
                 int decPercCompl = (int) Math.round((percCompl - intPercCompl) * 100);
                 
-                log.info("Thread "+threadOffset+" completed seeding level " + level + " for layer "
+                if(intPercCompl < 0) {
+                    intPercCompl = 0;
+                    decPercCompl = 0;
+                }
+                
+                log.info("Thread "+threadOffset+" completed (re)seeding level " + level + " for layer "
                         + tl.getName() +" (ca. "+intPercCompl+"."+decPercCompl+"%)");
             }
-            log.info("Thread "+threadOffset+" completed seeding layer " + tl.getName());
+            log.info("Thread "+threadOffset+" completed (re)seeding layer " + tl.getName());
             
             //int[][] list = SeedResource.getStatusList();
             //synchronized(list) {                
-                    list[arrayIndex] = new int[3];
+                    //list[arrayIndex] = new int[3];
             //}
         //} catch (Exception e) {
         //    log.error(e.getMessage());
@@ -155,8 +167,8 @@ public class SeedTask extends GWCTask {
      * @param gridBounds
      * @return
      */
-    private int tileCount(int[][] coveredGridLevels, int startZoom, int stopZoom) {
-        int count = 0;
+    private long tileCount(int[][] coveredGridLevels, int startZoom, int stopZoom) {
+        long count = 0;
         
         for(int i=startZoom; i<=stopZoom; i++) {
             int[] gridBounds = coveredGridLevels[i];
@@ -189,22 +201,17 @@ public class SeedTask extends GWCTask {
      * @param gridBounds
      * @return
      */
-    private int[] getStatusInfo(int arrayIndex, TileLayer layer,
-            int tilesCount, int tilesTotal, long start_time) {
-        int[] temp = new int[3];
-        //working on tile
-        temp[0] = tilesCount;
+    private void updateStatusInfo(int arrayIndex, TileLayer layer,
+            int tilesCount, long start_time) {
         
-        //out of
-        temp[1] = tilesTotal;
+        //working on tile
+        this.tilesDone = tilesCount;
         
         //estimated time of completion in seconds, use a moving average over the last 
-        long timeSpent = (System.currentTimeMillis() - start_time);
+        timeSpent = (int) (System.currentTimeMillis() - start_time) / 1000;
         
         long timeTotal = Math.round((double) timeSpent * ((double) tilesTotal / (double) tilesCount));
         
-        temp[2] = (int) (timeTotal - timeSpent) / 1000;
-        
-        return temp; 
+        timeRemaining = (int) (timeTotal - timeSpent);
     }
 }

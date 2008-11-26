@@ -39,6 +39,13 @@ public class TruncateTask extends GWCTask {
     public TruncateTask(SeedRequest req, TileLayer tl) {
         this.req = req;
         this.tl = tl;
+        
+        super.type = GWCTask.TYPE_TRUNCATE;
+        super.layerName = tl.getName();
+        super.tilesTotal = 0;
+        super.timeRemaining = 0;
+        super.timeSpent = 0;
+        super.tilesDone = 0;
     }
     
     void doAction() throws GeoWebCacheException {
@@ -49,7 +56,10 @@ public class TruncateTask extends GWCTask {
 
         int[][] bounds = null;
         
-        if(! Arrays.equals(req.getBounds().coords, nullBbox)) {
+        if(req.getBounds() == null) {
+            //TODO need nicer interface, just send null
+            bounds = tl.getCoveredGridLevels(req.getSRS(), tl.getGrid(req.getSRS()).getBounds());
+        } else if(! Arrays.equals(req.getBounds().coords, nullBbox)) {
             bounds = tl.getCoveredGridLevels(req.getSRS(), req.getBounds());
         }
         

@@ -40,6 +40,31 @@ public class SeedRequest {
         //do nothing, i guess
     }
 
+    /** 
+     * Used by SeedPageResource
+     * 
+     * @param name
+     * @param bounds
+     * @param srs
+     * @param threadCount
+     * @param zoomStart
+     * @param zoomStop
+     * @param format
+     * @param type
+     */
+    protected SeedRequest(String name, BBOX bounds, 
+            SRS srs, int threadCount, int zoomStart, 
+            int zoomStop, String format, String type) {
+        this.name = name;
+        this.bounds = bounds;
+        this.srs = srs;
+        this.threadCount = threadCount;
+        this.zoomStart = zoomStart;
+        this.zoomStop = zoomStop;
+        this.format = format;
+        this.type = type;
+    }
+    
     /**
      * Method returns the name of the tileLayer that was requested
      * @return name of the requested tile layer

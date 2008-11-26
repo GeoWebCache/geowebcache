@@ -23,14 +23,51 @@ import org.geowebcache.GeoWebCacheException;
  */
 public abstract class GWCTask {
     
+    public final static int TYPE_SEED = 0;
+    
+    public final static int TYPE_RESEED = 1;
+    
+    public final static int TYPE_TRUNCATE = 2;
+    
     int threadCount = 1;
     
     int threadOffset = 0;
+    
+    long taskId = -1;
+    
+    int type = -1;
+    
+    String layerName = null;
+    
+    int timeSpent = -1;
+    
+    int timeRemaining  = -1;
+    
+    long tilesDone = -1;
+    
+    long tilesTotal = -1;
     
     abstract void doAction() throws GeoWebCacheException;
 
     void setThreadInfo(int threadCount, int threadOffset) {
         this.threadCount = threadCount;
         this.threadOffset = threadOffset;
+    }
+    
+    void setTaskId(long taskId) {
+        this.taskId = taskId;
+    }
+    
+    protected String getType() {
+        switch(type) {
+        case TYPE_SEED:
+            return "Seed";
+        case TYPE_RESEED:
+            return "Reseed";
+        case TYPE_TRUNCATE:
+            return "Truncate";
+        default:
+            return "Not set";
+        }
     }
 }

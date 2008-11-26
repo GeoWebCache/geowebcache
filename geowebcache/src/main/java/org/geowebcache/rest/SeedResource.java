@@ -162,7 +162,7 @@ public class SeedResource extends GWCResource {
         }
     }
     
-    private static void dispatchTasks(SeedRequest rq, TileLayer tl, 
+    static void dispatchTasks(SeedRequest rq, TileLayer tl, 
             ThreadPoolExecutor threadPoolExec) throws GeoWebCacheException {
         String type;
         if(rq.getType() == null || rq.getType().length() == 0) {

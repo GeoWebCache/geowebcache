@@ -57,7 +57,7 @@ public class RESTDispatcher extends AbstractController {
     
     private final TileLayerDispatcher tlDispatcher;
     
-    private final ThreadPoolExecutor tpe;
+    private final SeederThreadPoolExecutor stpe;
 
     //private static Map<String, TileLayer> layers = null;
     
@@ -82,7 +82,7 @@ public class RESTDispatcher extends AbstractController {
         
         this.xmlConfig = xmlConfig;
         this.tlDispatcher = tlDispatcher;
-        this.tpe = new ThreadPoolExecutor( 
+        this.stpe = new SeederThreadPoolExecutor( 
                 THREAD_NUMBER, THREAD_MAX_NUMBER, Long.MAX_VALUE, TimeUnit.SECONDS, 
                 new LinkedBlockingQueue<Runnable>());
         this.instance = this;
@@ -113,7 +113,7 @@ public class RESTDispatcher extends AbstractController {
         log.info("RESTDispatcher.destroy() was invoked, shutting down.");
         
         // Shut down all the waiting and running tasks... brutally
-        tpe.shutdownNow();
+        stpe.shutdownNow();
     }
     
     /**
@@ -177,8 +177,8 @@ public class RESTDispatcher extends AbstractController {
      * layer seeds
      * @return
      */
-    protected ThreadPoolExecutor getExecutor(){
-        return tpe;
+    protected SeederThreadPoolExecutor getExecutor(){
+        return stpe;
     }
     
 }

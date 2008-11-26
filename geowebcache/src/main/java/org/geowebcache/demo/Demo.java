@@ -18,6 +18,11 @@ import org.geowebcache.util.wms.BBOX;
 
 public class Demo {
 
+    public static String GWC_HEADER = "<a id=\"logo\" href=\"http://geowebcache.org\">" 
+        +"<img src=\"http://geowebcache.org/trac/chrome/site/geowebcache_logo.png\""
+        +"height=\"100\" width=\"353\" border=\"0\"/>"
+        +"</a>\n";
+    
     public static void makeMap(TileLayerDispatcher tileLayerDispatcher,
             String action, HttpServletRequest request,
             HttpServletResponse response) throws GeoWebCacheException {
@@ -69,10 +74,7 @@ public class Demo {
     throws GeoWebCacheException {
         String header = 
             "<html><body>\n"
-            +"<a id=\"logo\" href=\"http://geowebcache.org\">" 
-            +"<img src=\"http://geowebcache.org/trac/chrome/site/geowebcache_logo.png\""
-            +"height=\"100\" width=\"353\" border=\"0\"/>"
-            +"</a>\n"
+            + GWC_HEADER
             +"<h3>Known layers:</h3><table>\n"
             +"<ul><li>This is just a quick demo, the bounds are likely to be less than perfect.</li>\n"
             +"<li>You can append &format=image/jpeg to the URLs in the "
@@ -143,7 +145,9 @@ public class Demo {
             if(count == 0){
                 buf.append("<i>none</i>");
             }
-            buf.append("</td></tr>\n");
+            buf.append("</td>\n");
+            buf.append("<td><a href=\"rest/seed/"+layer.getName()+"\">Seed this layer</a></td>\n");
+            buf.append("</tr>\n");
         }
         return buf.toString();
     }

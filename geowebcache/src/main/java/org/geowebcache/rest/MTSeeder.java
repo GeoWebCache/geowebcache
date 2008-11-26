@@ -25,11 +25,12 @@ import org.geowebcache.GeoWebCacheException;
 public class MTSeeder implements Callable<GWCTask> {
     private static Log log = LogFactory.getLog(org.geowebcache.rest.MTSeeder.class);
     
-    private GWCTask task= null;
+    protected GWCTask task= null;
     
     public MTSeeder(GWCTask task){
         this.task = task;
     }
+    
     public GWCTask call() {
         try {
             task.doAction();
