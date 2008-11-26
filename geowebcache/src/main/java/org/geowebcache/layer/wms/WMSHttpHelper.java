@@ -45,6 +45,8 @@ public class WMSHttpHelper {
     private static Log log = LogFactory
             .getLog(org.geowebcache.layer.wms.WMSHttpHelper.class);
 
+    private static int HTTP_READ_TIMEOUT = 120000; // 120s, in ms 
+    
     /**
      * Used for metatiling requests
      * 
@@ -149,6 +151,7 @@ public class WMSHttpHelper {
         try { // finally
             try {
                 wmsBackendCon = (HttpURLConnection) wmsBackendUrl.openConnection();
+                wmsBackendCon.setReadTimeout(HTTP_READ_TIMEOUT);
                 responseCode = wmsBackendCon.getResponseCode();
                 responseLength = wmsBackendCon.getContentLength();
 
