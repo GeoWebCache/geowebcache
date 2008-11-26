@@ -158,7 +158,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
 
         try {
-            if (requestComps[0].equalsIgnoreCase(TYPE_SERVICE)) {
+            if(requestComps == null) {
+                handleFrontPage(request, response);
+            } else if (requestComps[0].equalsIgnoreCase(TYPE_SERVICE)) {
                 handleServiceRequest(requestComps[1], request, response);
             } else if (requestComps[0].equalsIgnoreCase(TYPE_RPC)) {
                 handleRPCRequest(requestComps[1],request, response);
@@ -200,6 +202,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
             throws GeoWebCacheException {
         String[] retStrs = new String[2];
         String[] splitStr = servletPath.split("/");
+        
+        if(splitStr == null || splitStr.length < 2) {
+            return null;
+        }
         
         retStrs[0] = splitStr[1];
         if(splitStr.length > 2) {
@@ -310,6 +316,33 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
         return service;
     }
+    
+    /**
+     * Create a minimalistic frontpage, in case a GeoServer user
+     * hit /geoserver/gwc or /geoserver/gwc/
+     * 
+     * @param request
+     * @param response
+     */
+    private static void handleFrontPage(HttpServletRequest request,
+            HttpServletResponse response) {
+
+        String url;
+        
+        if(request.getRequestURL().toString().endsWith("/")) {
+            url = "./demo";
+        } else {
+            String[] strs = request.getRequestURL().toString().split("/");
+            url = strs[strs.length - 1]+ "/demo";
+        }
+        
+        String message = "<html><body>\n" + Demo.GWC_HEADER
+                + "<h4>Welcome to GeoWebCache</h4>"
+                + "<a href=\""+url+"\">Dynamic list of layers</a>"
+                + "</body></html>\n";
+
+        writePage(response, 200, message);
+    }
 
     /**
      * Wrapper method for writing an error back to the client, and logging it at
@@ -324,31 +357,35 @@ public class GeoWebCacheDispatcher extends AbstractController {
      */
     private static void writeError(HttpServletResponse response, int httpCode,
             String errorMsg) {
-
-        response.setContentType("text/html");
-        response.setStatus(httpCode);
-
-        if (errorMsg == null) {
-            return;
-        }
-
+        
         log.debug(errorMsg);
 
         errorMsg = 
                 "<html><body>\n"
-                +"<a id=\"logo\" href=\"http://geowebcache.org\">" 
-                +"<img src=\"http://geowebcache.org/trac/chrome/site/geowebcache_logo.png\""
-                +"height=\"100\" width=\"353\" border=\"0\"/>"
-                +"</a>\n"
+                + Demo.GWC_HEADER
                 +"<h4>"+httpCode+": "+errorMsg+"</h4>"
                 +"</body></html>\n";
-        
+
+        writePage(response, httpCode, errorMsg);
+    }
+    
+    
+    private static void writePage(HttpServletResponse response, int httpCode,
+            String message) {
+        response.setContentType("text/html");
+        response.setStatus(httpCode);
+
+        if (message == null) {
+            return;
+        }
+
         try {
             OutputStream os = response.getOutputStream();
-            os.write(errorMsg.getBytes());
+            os.write(message.getBytes());
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
+        
     }
 
     /**
