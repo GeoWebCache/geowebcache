@@ -29,6 +29,9 @@ public class GridCalculator {
     // We may want to change this later
     public static final int TILEPIXELS = 256;
     
+    // Resolution tolerance, 5%
+    public static final double RESOLUTION_TOLERANCE = 0.05;
+    
     //private BBOX gridBounds = null;
     private Grid grid;
     
@@ -227,7 +230,7 @@ public class GridCalculator {
         
         // (Z) Zoom level
         // For EPSG 4326, reqTileWidth = 0.087 log(4096) / log(2) - 1; -> 11
-        retVals[2] = this.binarySearchForResolution(reqTileWidth / GridCalculator.TILEPIXELS);
+        retVals[2] = this.linearSearchForResolution(reqTileWidth / GridCalculator.TILEPIXELS);
         
         if(retVals[2] < zoomStart) {
             throw new BadTileException("zoomStart is " + zoomStart 
@@ -451,63 +454,100 @@ public class GridCalculator {
         return resolutions;
     }
     
-    private int binarySearchForResolution(double reqResolution) 
+    private int linearSearchForResolution(double reqResolution) 
     throws BadTileException {
-        return binarySearchForResolution(this.resolutions, reqResolution);
+        return linearSearchForResolution(this.resolutions, reqResolution);
     }
     
-    protected static int binarySearchForResolution(double[] resolutions, double reqResolution) 
-    throws BadTileException {
-        int low = 0;
-        int high = resolutions.length - 1;
-        
-        double reqUpper = reqResolution * 1.10;
-        
-        double reqLower = reqResolution * 0.90;
-        
-        // Deal with the edge cases first
-        if(resolutions[low] < reqUpper) {
-            if(resolutions[0] < reqLower) {
-                throw new BadTileException("Resolution "+reqResolution+" is too big for grid,"
-                        +" biggest supported is " + resolutions[0]);
-            }
-            return low;
-        }
-        
-        if(resolutions[high] > reqLower) {
-            if(resolutions[high] / 1.5 > reqUpper) {
-                throw new BadTileException("Resolution "+reqResolution+" is too small for grid,"
-                        + " smallest supported is " + resolutions[high]);
-            }
-            return high;
-        }
-        
-        //low = 0;
-        //high = resolutions.length - 1;
+    /**
+     * Find the index within the resolutions array that is the closest to the
+     * requested resolution. The requested resolution must be within +-10% to be
+     * considered a valid resolution.
+     * 
+     * @param resolutions
+     *            List of grid resolutions to search over. Must be in descending
+     *            order, have 2 or more values and not contain duplicates.
+     * @param reqResolution
+     *            Resolution to look for.
+     * @return the index into the resolutions array corresponding to the closest
+     * @throws org.geowebcache.layer.BadTileException
+     *             if the requested resolution is not within +/- 5% of any of the
+     *             resolutions in the resolutions array
+     */
+    protected static int linearSearchForResolution(double[] resolutions,
+            double reqResolution) throws BadTileException {
+        // Fraction. The requested resolution must be with plus minus
+        // RESOLUTION_TOLERANCE (0.05 = 5%), of the closest grid resolution.
 
-        // Lets be generous and not calculate log
-        int maxCount = resolutions.length / 2;
-        
-        while (low <= high && maxCount > 0) {
-        	maxCount--;
-            int mid = (low + high) >>> 1;
-            
-            if(resolutions[mid] > reqUpper) {
-                low = mid;
-            } else if(resolutions[mid] < reqLower) {
-                high = mid;
-            } else {
-                if(Math.abs(reqResolution - resolutions[mid]) / reqResolution > 1.10) {
-                    throw new BadTileException(
-                            "The bounds result in a resolution of " + reqResolution 
-                            + " but the closes resolution is " + resolutions[mid]);
-                }
-                return mid;
+        int maxIndex = resolutions.length - 1;
+
+        // Check if the requested resolution is within the bounds of the
+        // resolution array considering the allowed tolerance.
+        // Remember resolutions are in descending order.
+        double minResolution = resolutions[maxIndex] * (1 - RESOLUTION_TOLERANCE);
+        if (reqResolution < minResolution) {
+            throw new BadTileException("Resolution (" + reqResolution 
+                    + ") is too small for the grid. "
+                    + "Minimum allowed value is " + minResolution);
+        }
+
+        double maxResolution = resolutions[0] * (1 + RESOLUTION_TOLERANCE);
+        if (reqResolution > maxResolution) {
+            throw new BadTileException("Resolution (" + reqResolution
+                    + ") is too big for the grid. "
+                    + "Maximum allowed value is " + maxResolution);
+        }
+
+        // At this point we know that we are within bounds of the resolutions
+        // array including the tolerance.
+
+        // Check for edge cases, where requested resolution is just above or
+        // below the bounds of the resolutions array
+        if (reqResolution <= resolutions[maxIndex]) {
+            return maxIndex; 
+        }
+        if (reqResolution >= resolutions[0]) {
+            return 0;
+        }
+
+        // At this point we know the reqResolution is inside the bounds of the
+        // resolutions array, and there are no more edge cases.
+
+        // Find the index of the first resolution that is smaller than the
+        // requested resolution. This is a linear search, but should be quick 
+        // for typical resolutions arrays (Google Maps has 22 resolutions). 
+        int iBelow;
+        for (iBelow = 1; iBelow < resolutions.length; iBelow++) {
+            if (resolutions[iBelow] < reqResolution) {
+                break;
             }
         }
-        throw new BadTileException("The bounds resulted in a resolution of " 
-        		+ reqResolution + " which does not match any of the available ones "
-        		+ Arrays.toString(resolutions));
+
+        // Find the closest grid resolution. Our reqResolution should between 
+        // gridBelow and gridAbove
+        double gridBelow = resolutions[iBelow];
+        double gridAbove = resolutions[iBelow - 1];
+        int closestIndex; // Index of closest grid resolution
+        // Is reqResolution closer to the gridBelow
+        if ((reqResolution - gridBelow) < (gridAbove - reqResolution)) {
+            closestIndex = iBelow;
+        } else {
+            closestIndex = iBelow - 1;
+        }
+
+        // Check that the closest resolution is within the allowed tolerance.
+        double gridResolution = resolutions[closestIndex];
+        double tol = gridResolution * RESOLUTION_TOLERANCE;
+        
+        if ((reqResolution >= gridResolution - tol)
+                && (reqResolution <= gridResolution + tol)) {
+            return closestIndex;
+        } else {
+            throw new BadTileException("Resolution (" + reqResolution
+                    + ") is not with " + RESOLUTION_TOLERANCE * 100
+                    + "% of the closest grid resolution (" + gridResolution
+                    + ")");
+        }
     }
     
     public static double[] getResolutionArray(double width, double pixelWidth, int levels) {

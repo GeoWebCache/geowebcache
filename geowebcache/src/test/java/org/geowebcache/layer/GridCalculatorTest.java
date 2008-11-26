@@ -235,66 +235,113 @@ public class GridCalculatorTest extends TestCase {
         }
     }
     
-    public void test0binarySearch() throws Exception {
+    public void test0linearSearch() throws Exception {
         double[] resolutions = {8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
-        int result = GridCalculator.binarySearchForResolution(resolutions, 5.04);
+        int result = GridCalculator.linearSearchForResolution(resolutions, 5.04);
         assertEquals(3, result);
         
         //Culprit
-        result = GridCalculator.binarySearchForResolution(resolutions, 8.03);
+        result = GridCalculator.linearSearchForResolution(resolutions, 8.03);
         assertEquals(0, result);
         
-        result = GridCalculator.binarySearchForResolution(resolutions, 0.98);
+        result = GridCalculator.linearSearchForResolution(resolutions, 0.98);
         assertEquals(7, result);
         
-        result = GridCalculator.binarySearchForResolution(resolutions, 1.005);
+        result = GridCalculator.linearSearchForResolution(resolutions, 1.005);
         assertEquals(7, result);
 
-        result = GridCalculator.binarySearchForResolution(resolutions, 6.025);
+        result = GridCalculator.linearSearchForResolution(resolutions, 6.025);
         assertEquals(2, result);
     }
     
-    public void test1binarySearch() throws Exception {
+    public void test1linearSearch() throws Exception {
         double[] resolutions = {12.0, 10.0, 6.0, 5.0, 4.0, 3.0, 1.0};
-        int result = GridCalculator.binarySearchForResolution(resolutions, 5.04);
+        int result = GridCalculator.linearSearchForResolution(resolutions, 5.04);
         assertEquals(3, result);
         
-        result = GridCalculator.binarySearchForResolution(resolutions, 0.98);
+        result = GridCalculator.linearSearchForResolution(resolutions, 0.98);
         assertEquals(6, result);
         
-        result = GridCalculator.binarySearchForResolution(resolutions, 12.05);
+        result = GridCalculator.linearSearchForResolution(resolutions, 12.05);
         assertEquals(0, result);
         
-        result = GridCalculator.binarySearchForResolution(resolutions, 4.002);
+        result = GridCalculator.linearSearchForResolution(resolutions, 4.002);
         assertEquals(4, result);
         
     }
     
     public void testCustomSRSGrid() throws Exception {
         // This mimics the Spearfish layer
-        BBOX bbox = new BBOX(587334.20625,4912451.9275, 611635.54375,4936753.265000001);
-        BBOX gridBase = new BBOX(587334.20625,4912451.9275, 611635.54375,4936753.265000001);
-        
+        BBOX bbox = new BBOX(587334.20625, 4912451.9275, 611635.54375,
+                4936753.265000001);
+        BBOX gridBase = new BBOX(587334.20625, 4912451.9275, 611635.54375,
+                4936753.265000001);
+
         // Test the basic algorithm for calculating appropriate resolutions
         Grid grid = new Grid(SRS.getSRS(26713), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
-        assertTrue(Math.abs(gridCalc.getResolutions()[0] - 94.9270 ) / 94.9270 < 0.01);
-        
+        assertTrue(Math.abs(gridCalc.getResolutions()[0] - 94.9270) / 94.9270 < 0.01);
+
         // Check the actual max bounds
-        int[] solution = {0,0,0};
-        assertTrue(Arrays.equals(solution,gridCalc.gridLocation(bbox)));
-        
+        int[] solution = { 0, 0, 0 };
+        assertTrue(Arrays.equals(solution, gridCalc.gridLocation(bbox)));
+
         // Test a grid location
-        int[] gridLoc =  {1, 0, 1};
-        BBOX bboxSolution = new BBOX(599484.8750000002,4912451.9275,611635.5437500004,4924602.59625);
+        int[] gridLoc = { 1, 0, 1 };
+        BBOX bboxSolution = new BBOX(599484.8750000002, 4912451.9275,
+                611635.5437500004, 4924602.59625);
         assertTrue(bboxSolution.equals(gridCalc.bboxFromGridLocation(gridLoc)));
-        
+
         // Now lets go the other way
-        assertTrue(Arrays.equals(gridCalc.gridLocation(bboxSolution),gridLoc));
-        
+        assertTrue(Arrays.equals(gridCalc.gridLocation(bboxSolution), gridLoc));
+
         // This is a bit easy, but whatever
         int[] zoomedOut = gridCalc.getZoomedOutGridLoc();
-        assertTrue(Arrays.equals(solution,zoomedOut));
+        assertTrue(Arrays.equals(solution, zoomedOut));
+    }
+
+    // The correct behaviour for these tests is that the linearSearchForResolution
+    // should fail as the requested resolution is not within 5% of any of the values 
+    // in the search.
+    public void test1BadResolutionLinearSearch() throws Exception {
+        // Even number of resolutions
+        runLinearTest(new double[] { 12.0, 10.0, 6.0, 5.0, 4.0, 3.0, 1.0 },
+                new double[] { -1.0, 2.0, 8.0, 15.0 });
+    }
+
+    public void test2BadResolutionLinearSearch() throws Exception {
+        // Odd number of resolutions
+        runLinearTest(new double[] { 10.0, 6.0, 5.0, 4.0, 3.0, 1.0 },
+                new double[] { -1.0, 2.0, 8.0, 15.0 });
+    }
+
+    /**
+     * This is designed for testing resolutions that do not match the resolution
+     * grid. Any requested resolution that is more than +-5% out from the grid
+     * should fail. If it does not then the test fails.
+     * 
+     * @param resolutions
+     *            resolution grid
+     * @param testReqResolutions
+     *            required resolutions to test. Values must be not on the grid
+     *            by at least 5%.
+     */
+    private void runLinearTest(double[] resolutions, double[] testReqResolutions) {
+        for (double reqResolution : testReqResolutions) {
+            try {
+                int result = GridCalculator.linearSearchForResolution(
+                        resolutions, reqResolution);
+
+                fail("Should have thrown a BadTileException but didn't\n"
+                        + "result:" + result + " reqResolution: "
+                        + reqResolution);
+            } catch (BadTileException e) {
+                // Correct behavior is a BadTileException
+            } catch (Exception e) {
+                fail("No exception expected for reqResolution: "
+                        + reqResolution + " \n" + e);
+            }
+        }
     }
     
    
