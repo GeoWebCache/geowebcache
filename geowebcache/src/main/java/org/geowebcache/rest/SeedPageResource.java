@@ -95,9 +95,9 @@ public class SeedPageResource extends Resource {
         
         makeHeader(doc);
         
-        makeWarningsAndHints(doc);
-        
         makeTaskList(doc);
+        
+        makeWarningsAndHints(doc);
         
         makeFormHeader(doc);
         
@@ -400,15 +400,21 @@ public class SeedPageResource extends Resource {
         Request req = super.getRequest();
         Form form = req.getEntityAsForm();
         
-        form.getFirst("name");
+        if(form == null || form.getFirst("minX") == null) {
+            log.error("Form object or minX field was null, request was for " + req.getResourceRef().getPath());
+            return;
+        }
         
-        BBOX bounds = null;
-        
-        if(
-                form.getFirst("minX").getValue() != null && form.getFirst("minX").getValue().length() > 0 &&
-                form.getFirst("minY").getValue() != null && form.getFirst("minY").getValue().length() > 0 &&
-                form.getFirst("maxX").getValue() != null && form.getFirst("maxX").getValue().length() > 0 &&
-                form.getFirst("maxY").getValue() != null && form.getFirst("maxY").getValue().length() > 0 ) {
+        BBOX bounds = null;        
+        if( form.getFirst("minX").getValue() != null 
+                && form.getFirst("minX").getValue().length() > 0
+                && form.getFirst("minY").getValue() != null 
+                && form.getFirst("minY").getValue().length() > 0 
+                && form.getFirst("maxX").getValue() != null 
+                && form.getFirst("maxX").getValue().length() > 0 
+                && form.getFirst("maxY").getValue() != null 
+                && form.getFirst("maxY").getValue().length() > 0 ) {
+            
             bounds = new BBOX(
                     Double.parseDouble(form.getFirst("minX").getValue()), 
                     Double.parseDouble(form.getFirst("minY").getValue()), 
