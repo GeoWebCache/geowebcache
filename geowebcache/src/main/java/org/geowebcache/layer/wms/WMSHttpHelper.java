@@ -45,7 +45,9 @@ public class WMSHttpHelper {
     private static Log log = LogFactory
             .getLog(org.geowebcache.layer.wms.WMSHttpHelper.class);
 
-    private static int HTTP_READ_TIMEOUT = 120000; // 120s, in ms 
+    private static int HTTP_CONNECT_TIMEOUT = 10000; // 10s, in ms 
+    
+    private static int HTTP_READ_TIMEOUT = 60000; // 60s, in ms 
     
     /**
      * Used for metatiling requests
@@ -72,7 +74,7 @@ public class WMSHttpHelper {
     protected static byte[] makeRequest(Tile tile) throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
         WMSParameters wmsparams = layer.getWMSParamTemplate();
-        //int idx = layer.getSRSIndex();
+
         // Fill in the blanks
         wmsparams.setFormat(tile.getMimeType().getFormat());
         wmsparams.setSrs(tile.getSRS());
@@ -81,8 +83,6 @@ public class WMSHttpHelper {
         Grid grid = layer.getGrid(tile.getSRS());
         
         BBOX bbox = grid.getGridCalculator().bboxFromGridLocation(tile.getTileIndex());
-        
-        //bbox.adjustForGeoServer(layer.getGrids().get(idx).getProjection());
         wmsparams.setBBOX(bbox);
 
         return makeRequest(tile, layer, wmsparams);
@@ -151,7 +151,9 @@ public class WMSHttpHelper {
         try { // finally
             try {
                 wmsBackendCon = (HttpURLConnection) wmsBackendUrl.openConnection();
+                wmsBackendCon.setConnectTimeout(HTTP_CONNECT_TIMEOUT);
                 wmsBackendCon.setReadTimeout(HTTP_READ_TIMEOUT);
+                
                 responseCode = wmsBackendCon.getResponseCode();
                 responseLength = wmsBackendCon.getContentLength();
 
