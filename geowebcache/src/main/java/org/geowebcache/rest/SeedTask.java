@@ -118,19 +118,27 @@ public class SeedTask extends GWCTask {
                             e.printStackTrace();
                         }
 
+                        int countX;
+                        if(gridx + metaTilingFactors[0] -1  > gridBounds[2]) {
+                            countX = (gridx + metaTilingFactors[0] - 1) - gridBounds[2]; 
+                        } else {
+                            countX = metaTilingFactors[0];
+                        }
+                        
+                        int countY;
+                        if(gridy + metaTilingFactors[1] -1  > gridBounds[3]) {
+                            countY = (gridy + metaTilingFactors[1] - 1) - gridBounds[3]; 
+                        } else {
+                            countY = metaTilingFactors[1];
+                        }
+                        
+                        count += countX * countY;
+                        
+                        updateStatusInfo(arrayIndex, tl, count, START_TIME);
+                        
                         // Next column
                         gridx += metaTilingFactors[0];
-                        
-                        count += tilesPerMetaTile;
-                        
-                        // Threads don't really collide
-                        //synchronized(list) {
-                            // This is not quite right...
-                            updateStatusInfo(arrayIndex, tl, count, START_TIME);
-                        //}
                     }
-                    
-                    // System.out.println("Thread with offset " + threadOffset + " completed row.");
                     // Next row
                     gridy += metaTilingFactors[1];
                 }
@@ -147,7 +155,8 @@ public class SeedTask extends GWCTask {
                 log.info("Thread "+threadOffset+" completed (re)seeding level " + level + " for layer "
                         + tl.getName() +" (ca. "+intPercCompl+"."+decPercCompl+"%)");
             }
-            log.info("Thread "+threadOffset+" completed (re)seeding layer " + tl.getName());
+            log.info("Thread "+threadOffset+" completed (re)seeding layer " + tl.getName() 
+                    + " after " + this.tilesDone + " tiles, of an estimated "+this.tilesTotal);
             
             //int[][] list = SeedResource.getStatusList();
             //synchronized(list) {                
@@ -172,7 +181,7 @@ public class SeedTask extends GWCTask {
         
         for(int i=startZoom; i<=stopZoom; i++) {
             int[] gridBounds = coveredGridLevels[i];
-            count += (gridBounds[2] - gridBounds[0] + 1) * (gridBounds[3] - gridBounds[1] + 1);
+            count += (1 + gridBounds[2] - gridBounds[0]) * (1 + gridBounds[3] - gridBounds[1]);
         }
         
         return count;
