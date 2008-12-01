@@ -380,7 +380,7 @@ public class SeedPageResource extends Resource {
                     + ", Tiles total: " + task.tilesTotal
                     + ", Tiles completed: " + task.tilesDone
                     + ", Time remaining: " + timeRemaining
-                    + ", (Thread "+task.threadOffset+" of "+task.threadCount+") </li>\n");
+                    + ", (Thread "+(task.threadOffset+1)+" of "+task.threadCount+") </li>\n");
         }
         
         doc.append("</ul>");
