@@ -72,12 +72,19 @@ public class SeedTask extends GWCTask {
         log.info("Thread " + threadOffset + " begins seeding layer : " + tl.getName());
         int zoomStart = req.getZoomStart().intValue();
         int zoomStop = req.getZoomStop().intValue();
+        
         MimeType mimeType = null;
-        try {
-            mimeType = MimeType.createFromFormat(req.getMimeFormat());
-        } catch (MimeException e4) {
-            e4.printStackTrace();
+        String format = req.getMimeFormat();
+        if (format == null) {
+            mimeType = tl.getMimeTypes().get(0);
+        } else {
+            try {
+                mimeType = MimeType.createFromFormat(format);
+            } catch (MimeException e4) {
+                e4.printStackTrace();
+            }
         }
+        
         SRS srs = req.getSRS();
         if (srs == null) {
             srs = tl.getGrids().entrySet().iterator().next().getKey();
