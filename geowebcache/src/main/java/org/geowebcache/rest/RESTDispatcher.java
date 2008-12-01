@@ -49,7 +49,7 @@ public class RESTDispatcher extends AbstractController {
 
     public static final String METHOD_DELETE = "DELETE";
 
-    private static final int THREAD_NUMBER = 4;
+    private static final int THREAD_NUMBER = 16;
     
     static final int THREAD_MAX_NUMBER = 32;
     
