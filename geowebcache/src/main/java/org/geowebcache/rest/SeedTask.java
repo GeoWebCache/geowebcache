@@ -59,114 +59,108 @@ public class SeedTask extends GWCTask {
      * this is where all the actual work is being done to seed a tile layer. 
      */
     void doAction() throws GeoWebCacheException {
-        //try {
         
         // Lower the priority of the thread
-        Thread.currentThread().setPriority((java.lang.Thread.NORM_PRIORITY + java.lang.Thread.MIN_PRIORITY)/2);
-        
-            //approximate thread creation time
-            long START_TIME = System.currentTimeMillis();
-            
-            tl.isInitialized();
-            
-            log.info("Thread "+threadOffset+" begins seeding layer : " + tl.getName());
-            int zoomStart = req.getZoomStart().intValue();
-            int zoomStop = req.getZoomStop().intValue();
-            MimeType mimeType = null;
-            try {
-                mimeType = MimeType.createFromFormat(req.getMimeFormat());
-            } catch (MimeException e4) {
-                e4.printStackTrace();
-            }
-            SRS srs = req.getSRS();
-            if(srs == null) {
-                srs = tl.getGrids().entrySet().iterator().next().getKey();
-            }
-            
-            BBOX bounds = req.getBounds();
-            if(bounds == null) {
-                bounds = tl.getGrid(srs).getBounds();
-            }
+        Thread.currentThread().setPriority(
+                (java.lang.Thread.NORM_PRIORITY + java.lang.Thread.MIN_PRIORITY) / 2);
 
-            int[][] coveredGridLevels = tl.getCoveredGridLevels(srs,bounds);
-            int[] metaTilingFactors = tl.getMetaTilingFactors();
-            int tilesPerMetaTile = metaTilingFactors[0] * metaTilingFactors[1];
-            
-            int arrayIndex = getCurrentThreadArrayIndex();
-            long TOTAL_TILES = tileCount(coveredGridLevels, zoomStart, zoomStop);
-            this.tilesTotal = TOTAL_TILES / (long) threadCount;
-            //int[][] list = SeedResource.getStatusList();
-            
-            int count = 0;
-            boolean tryCache = !reseed;
-            
-            for (int level = zoomStart; level <= zoomStop; level++) {
-                int[] gridBounds = coveredGridLevels[level];
-                for (int gridy = gridBounds[1]; gridy <= gridBounds[3];) {
+        // approximate thread creation time
+        long START_TIME = System.currentTimeMillis();
 
-                    for (int gridx = gridBounds[0] + threadOffset; gridx <= gridBounds[2];) {
-                        
-                        int[] gridLoc = { gridx, gridy, level };
+        tl.isInitialized();
 
-                        Tile tile = new Tile(tl, srs, gridLoc, mimeType,
-                                null, null);
-                        try {
-                            tl.seedTile(tile, tryCache);
-                        } catch (GeoWebCacheException e) {
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+        log.info("Thread " + threadOffset + " begins seeding layer : " + tl.getName());
+        int zoomStart = req.getZoomStart().intValue();
+        int zoomStop = req.getZoomStop().intValue();
+        MimeType mimeType = null;
+        try {
+            mimeType = MimeType.createFromFormat(req.getMimeFormat());
+        } catch (MimeException e4) {
+            e4.printStackTrace();
+        }
+        SRS srs = req.getSRS();
+        if (srs == null) {
+            srs = tl.getGrids().entrySet().iterator().next().getKey();
+        }
 
-                        int countX;
-                        if(gridx + metaTilingFactors[0] -1  > gridBounds[2]) {
-                            countX = (gridx + metaTilingFactors[0] - 1) - gridBounds[2]; 
-                        } else {
-                            countX = metaTilingFactors[0];
-                        }
-                        
-                        int countY;
-                        if(gridy + metaTilingFactors[1] -1  > gridBounds[3]) {
-                            countY = (gridy + metaTilingFactors[1] - 1) - gridBounds[3]; 
-                        } else {
-                            countY = metaTilingFactors[1];
-                        }
-                        
-                        count += countX * countY;
-                        
-                        updateStatusInfo(arrayIndex, tl, count, START_TIME);
-                        
-                        // Next column
-                        gridx += metaTilingFactors[0];
+        BBOX bounds = req.getBounds();
+        if (bounds == null) {
+            bounds = tl.getGrid(srs).getBounds();
+        }
+
+        int[][] coveredGridLevels = tl.getCoveredGridLevels(srs, bounds);
+        int[] metaTilingFactors = tl.getMetaTilingFactors();
+        int tilesPerMetaTile = metaTilingFactors[0] * metaTilingFactors[1];
+
+        int arrayIndex = getCurrentThreadArrayIndex();
+        long TOTAL_TILES = tileCount(coveredGridLevels, zoomStart, zoomStop);
+        this.tilesTotal = TOTAL_TILES / (long) threadCount;
+
+        int count = 0;
+        boolean tryCache = !reseed;
+
+        for (int level = zoomStart; level <= zoomStop; level++) {
+            int[] gridBounds = coveredGridLevels[level];
+            for (int gridy = gridBounds[1]; gridy <= gridBounds[3];) {
+
+                for (int gridx = gridBounds[0] + threadOffset; gridx <= gridBounds[2];) {
+
+                    int[] gridLoc = { gridx, gridy, level };
+
+                    Tile tile = new Tile(tl, srs, gridLoc, mimeType, null, null);
+                    try {
+                        tl.seedTile(tile, tryCache);
+                    } catch (GeoWebCacheException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                    // Next row
-                    gridy += metaTilingFactors[1];
-                }
 
-                double percCompl = (100.0 * count)/ (double) (tilesTotal * tilesPerMetaTile);
-                int intPercCompl = (int) Math.floor(percCompl);
-                int decPercCompl = (int) Math.round((percCompl - intPercCompl) * 100);
-                
-                if(intPercCompl < 0) {
-                    intPercCompl = 0;
-                    decPercCompl = 0;
+                    int countX;
+                    if (gridx + metaTilingFactors[0] - 1 > gridBounds[2]) {
+                        countX = (gridx + metaTilingFactors[0] - 1)
+                                - gridBounds[2];
+                    } else {
+                        countX = metaTilingFactors[0];
+                    }
+
+                    int countY;
+                    if (gridy + metaTilingFactors[1] - 1 > gridBounds[3]) {
+                        countY = (gridy + metaTilingFactors[1] - 1)
+                                - gridBounds[3];
+                    } else {
+                        countY = metaTilingFactors[1];
+                    }
+
+                    count += countX * countY;
+
+                    updateStatusInfo(arrayIndex, tl, count, START_TIME);
+
+                    // Next column
+                    gridx += metaTilingFactors[0];
                 }
-                
-                log.info("Thread "+threadOffset+" completed (re)seeding level " + level + " for layer "
-                        + tl.getName() +" (ca. "+intPercCompl+"."+decPercCompl+"%)");
+                // Next row
+                gridy += metaTilingFactors[1];
             }
-            log.info("Thread "+threadOffset+" completed (re)seeding layer " + tl.getName() 
-                    + " after " + this.tilesDone + " tiles, of an estimated "+this.tilesTotal);
-            
-            //int[][] list = SeedResource.getStatusList();
-            //synchronized(list) {                
-                    //list[arrayIndex] = new int[3];
-            //}
-        //} catch (Exception e) {
-        //    log.error(e.getMessage());
-        //    e.printStackTrace();
-        //
-        //}
+
+            double percCompl = (100.0 * count)
+                    / (double) (tilesTotal * tilesPerMetaTile);
+            int intPercCompl = (int) Math.floor(percCompl);
+            int decPercCompl = (int) Math
+                    .round((percCompl - intPercCompl) * 100);
+
+            if (intPercCompl < 0) {
+                intPercCompl = 0;
+                decPercCompl = 0;
+            }
+
+            log.info("Thread " + threadOffset + " completed (re)seeding level "
+                    + level + " for layer " + tl.getName() + " (ca. "
+                    + intPercCompl + "." + decPercCompl + "%)");
+        }
+        log.info("Thread " + threadOffset + " completed (re)seeding layer "
+                + tl.getName() + " after " + this.tilesDone
+                + " tiles, of an estimated " + this.tilesTotal);
     }
 
     /**
