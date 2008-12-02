@@ -19,6 +19,8 @@ package org.geowebcache.rest;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.commons.logging.Log;
@@ -230,7 +232,25 @@ public class SeedResource extends GWCResource {
      * @return
      */
     static int[][] getStatusList() {
-        return statusArray;
+        
+        SeederThreadPoolExecutor exec = RESTDispatcher.getInstance().getExecutor();
+        Iterator<Entry<Long, GWCTask>> iter = exec.getRunningTasksIterator();
+        
+        int[][] ret = new int[RESTDispatcher.THREAD_MAX_NUMBER][3];
+        int idx = 0;
+        
+        while(iter.hasNext()) {
+            Entry<Long, GWCTask> entry = iter.next();
+            GWCTask task = entry.getValue();
+        
+            ret[idx][0] = (int) task.tilesDone;
+            
+            ret[idx][1] = (int) task.tilesTotal;
+            
+            ret[idx][2] = task.timeRemaining;
+        }
+        
+        return ret;
     }
 
     public boolean allowPost() {
