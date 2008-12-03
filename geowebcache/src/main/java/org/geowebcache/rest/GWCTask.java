@@ -47,6 +47,9 @@ public abstract class GWCTask {
     
     long tilesTotal = -1;
     
+    boolean terminate = false;
+    
+    
     abstract void doAction() throws GeoWebCacheException;
 
     void setThreadInfo(int threadCount, int threadOffset) {
@@ -56,6 +59,10 @@ public abstract class GWCTask {
     
     void setTaskId(long taskId) {
         this.taskId = taskId;
+    }
+    
+    void terminateNicely() {
+        this.terminate = true;
     }
     
     protected String getType() {

@@ -89,6 +89,17 @@ public class SeederThreadPoolExecutor extends ThreadPoolExecutor {
         return task;
     }
     
+    protected boolean terminateGWCTask(long id) {
+        GWCTask task = this.currentPool.get(id);
+        
+        if(task != null && task.type != task.TYPE_TRUNCATE) {
+            task.terminateNicely();
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     protected Iterator<Entry<Long,GWCTask>> getRunningTasksIterator() {
         return this.currentPool.entrySet().iterator();
     }

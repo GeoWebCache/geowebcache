@@ -16,13 +16,10 @@
  */
 package org.geowebcache.rest;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,6 +37,7 @@ import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
+import org.restlet.data.Status;
 import org.restlet.resource.Representation;
 import org.restlet.resource.Resource;
 import org.restlet.resource.StringRepresentation;
@@ -134,7 +132,6 @@ public class SeedPageResource extends Resource {
         
         doc.append("<p>Below you can find a list of currently executing threads, take the numbers with a grain of salt");
         doc.append(" until the thread has had a chance to run for a few minutes. ");
-        doc.append("Please note that that you must currently stop or reload the servlet to terminate them prematurely.");
         
         makeTaskList(doc);
         
@@ -334,7 +331,6 @@ public class SeedPageResource extends Resource {
     private void makeWarningsAndHints(StringBuilder doc) {
         doc.append("<h4>Please note:</h4><ul>\n"
                 + "<li>This minimalistic interface does not check for correctness.</li>\n"
-        	+ "<li>The only way to currently stop seeding threads is to stop the servlet.</li>\n"
                 + "<li>Seeding past zoomlevel 20 is usually not recommended.</li>\n"
         	+ "<li>Please check the logs of the container to look for error messages and progress indicators.</li>\n"
         	+ "</ul>\n");
@@ -346,14 +342,20 @@ public class SeedPageResource extends Resource {
     }
         
     private void makeTaskList(StringBuilder doc) {
-        doc.append("<h4>List of currently executing tasks:</h4>\n <ul>\n");
+        doc.append("<h4>List of currently executing tasks:</h4>\n");
         
         SeederThreadPoolExecutor exec = RESTDispatcher.getInstance().getExecutor();
         
         Iterator<Entry<Long, GWCTask>> iter = exec.getRunningTasksIterator();
         
+        boolean tasks = false;
         if(! iter.hasNext()) {
-            doc.append("<li><i>none</i></li>\n");
+            doc.append("<ul><li><i>none</i></li></ul>\n");
+        } else {
+            doc.append("<table border=\"0\" cellspacing=\"10\">");
+            doc.append("<tr style=\"font-weight: bold;\"><td>Id</td><td>Layer</td><td>Type</td><td>Tiles total</td>"
+                    +"<td>Tiles completed</td><td>Time remaining</td><td>Threads</td><td>&nbsp;</td><tr>");
+            tasks = true;
         }
         
         while(iter.hasNext()) {
@@ -375,19 +377,34 @@ public class SeedPageResource extends Resource {
                 timeRemaining = "" +(time) + " second(s)";
             }
             
-            doc.append("<li>Id: "+ entry.getKey()+", Layer: "+task.layerName
-                    + ", Type: " + task.getType() 
-                    + ", Tiles total: " + task.tilesTotal
-                    + ", Tiles completed: " + task.tilesDone
-                    + ", Time remaining: " + timeRemaining
-                    + ", (Thread "+(task.threadOffset+1)+" of "+task.threadCount+") </li>\n");
+            
+            doc.append("<tr>"
+                    + "<td>" + entry.getKey() + "</td>"
+                    + "<td>" + task.layerName + "</td>"
+                    + "<td>" + task.getType() + "</td>"
+                    + "<td>" + task.tilesTotal + "</td>"
+                    + "<td>" + task.tilesDone + "</td>"
+                    + "<td>" + timeRemaining + "</td>"
+                    + "<td>(Thread " + (task.threadOffset+1) + " of " + task.threadCount + ") </td>"
+                    + "<td>" + makeThreadKillForm(entry.getKey()) + "</td><tr>");
         }
         
-        doc.append("</ul>");
-        
+        if(tasks) {
+            doc.append("</table>");
+        }
         doc.append("<p><a href=\"./"+this.layerName+"\">Refresh list</a></p>\n");
     }
     
+    private String makeThreadKillForm(Long key) {
+        String ret =  "<form form id=\"kill\" action=\"./"+this.layerName+"\" method=\"post\">"
+            	+ "<input type=\"hidden\" name=\"kill_thread\"  value=\"1\" />"
+                + "<input type=\"hidden\" name=\"thread_id\"  value=\""+key+"\" />"
+                + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Kill Thread\"></span>"
+            	+ "</form>";
+            		
+        return ret;
+    }
+
     private void makeFooter(StringBuilder doc) {
         doc.append("</body></html>\n");
     }
@@ -399,11 +416,46 @@ public class SeedPageResource extends Resource {
     public void handlePost() {
         Request req = super.getRequest();
         Form form = req.getEntityAsForm();
-        
-        if(form == null || form.getFirst("minX") == null) {
-            log.error("Form object or minX field was null, request was for " + req.getResourceRef().getPath());
-            return;
+
+        if (form != null && form.getFirst("kill_thread") != null) {
+            handleKillThreadPost(form);
+        } else if (form != null && form.getFirst("minX") != null) {
+            handleDoSeedPost(form);
+        } else {
+            String error = "Unknown or malformed request, POST was to "
+                    + req.getResourceRef().getPath();
+
+            this.getResponse().setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+            this.getResponse().setEntity(error, MediaType.TEXT_HTML);
+            log.error(error);
         }
+    }
+    
+    private void handleKillThreadPost(Form form) {
+        String id = form.getFirstValue("thread_id");
+
+        SeederThreadPoolExecutor exec = RESTDispatcher.getInstance().getExecutor();
+        
+        StringBuilder doc = new StringBuilder();
+        
+        makeHeader(doc);
+        
+        
+        
+        if(exec.terminateGWCTask(Long.parseLong(id))) {
+            doc.append("<ul><li>Requested to terminate task " + id + ".</li></ul>");
+        } else {
+            doc.append("<ul><li>Sorry, either task " + id 
+                    + " has not started yet, or it is a truncate task that cannot be interrutped.</li></ul>");;
+        }
+        
+        doc.append("<p><a href=\"./"+this.layerName+"\">Go back</a></p>\n");
+        
+        this.getResponse().setEntity(doc.toString(), MediaType.TEXT_HTML);
+    }
+    
+
+    private void handleDoSeedPost(Form form ) {
         
         BBOX bounds = null;        
         if( form.getFirst("minX").getValue() != null 

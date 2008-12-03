@@ -58,8 +58,7 @@ public class SeedTask extends GWCTask {
      * Method doAction().
      * this is where all the actual work is being done to seed a tile layer. 
      */
-    void doAction() throws GeoWebCacheException {
-        
+    void doAction() throws GeoWebCacheException {        
         // Lower the priority of the thread
         Thread.currentThread().setPriority(
                 (java.lang.Thread.NORM_PRIORITY + java.lang.Thread.MIN_PRIORITY) / 2);
@@ -106,11 +105,11 @@ public class SeedTask extends GWCTask {
         int count = 0;
         boolean tryCache = !reseed;
 
-        for (int level = zoomStart; level <= zoomStop; level++) {
+        for (int level = zoomStart; level <= zoomStop && this.terminate == false; level++) {
             int[] gridBounds = coveredGridLevels[level];
             for (int gridy = gridBounds[1]; gridy <= gridBounds[3];) {
 
-                for (int gridx = gridBounds[0] + threadOffset; gridx <= gridBounds[2];) {
+                for (int gridx = gridBounds[0] + threadOffset; gridx <= gridBounds[2] && this.terminate == false; ) {
 
                     int[] gridLoc = { gridx, gridy, level };
 
@@ -165,9 +164,14 @@ public class SeedTask extends GWCTask {
                     + level + " for layer " + tl.getName() + " (ca. "
                     + intPercCompl + "." + decPercCompl + "%)");
         }
-        log.info("Thread " + threadOffset + " completed (re)seeding layer "
-                + tl.getName() + " after " + this.tilesDone
-                + " tiles, of an estimated " + this.tilesTotal);
+        
+        if(this.terminate) {
+            log.info("Thread " + threadOffset + " was terminated after " + this.tilesDone + " tiles");
+        } else {
+            log.info("Thread " + threadOffset + " completed (re)seeding layer "
+                    + tl.getName() + " after " + this.tilesDone
+                    + " tiles, of an estimated " + this.tilesTotal);
+        }
     }
 
     /**
