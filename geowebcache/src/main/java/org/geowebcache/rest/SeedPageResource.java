@@ -332,6 +332,7 @@ public class SeedPageResource extends Resource {
         doc.append("<h4>Please note:</h4><ul>\n"
                 + "<li>This minimalistic interface does not check for correctness.</li>\n"
                 + "<li>Seeding past zoomlevel 20 is usually not recommended.</li>\n"
+                + "<li>Truncating KML will also truncate all KMZ archives.</li>\n"
         	+ "<li>Please check the logs of the container to look for error messages and progress indicators.</li>\n"
         	+ "</ul>\n");
         

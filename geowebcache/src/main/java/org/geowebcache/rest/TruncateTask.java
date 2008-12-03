@@ -25,6 +25,7 @@ import org.geowebcache.cache.Cache;
 import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.mime.XMLMime;
 import org.geowebcache.util.wms.BBOX;
 
 public class TruncateTask extends GWCTask {
@@ -65,9 +66,19 @@ public class TruncateTask extends GWCTask {
         
         // Check if MimeType supports metatiling, in which case 
         // we may have to throw a wider net
-        MimeType mimeType = null;
+        MimeType[] mimeTypes = null;
         if (req.getMimeFormat() != null && req.getMimeFormat().length() > 0) {
-            mimeType = MimeType.createFromFormat(req.getMimeFormat());
+            MimeType mimeType = MimeType.createFromFormat(req.getMimeFormat());
+            if(mimeType == XMLMime.kml) {
+                mimeTypes = new MimeType[2];
+                mimeTypes[0] = mimeType;
+                mimeTypes[1] = XMLMime.kmz;
+                log.info("Truncate request was for KML. This will also truncate all KMZ archives.");
+            } else {
+                mimeTypes = new MimeType[1];
+                mimeTypes[0] = mimeType;
+            }
+            
 
             if (bounds != null) {
                 int[] metaFactors = tl.getMetaTilingFactors();
@@ -85,7 +96,7 @@ public class TruncateTask extends GWCTask {
         
         int count = cache.truncate(tl, req.getSRS(), 
                 req.getZoomStart(), req.getZoomStop(), 
-                bounds, mimeType);
+                bounds, mimeTypes);
         log.info("Completed truncating " + count + " tiles");
     }
 

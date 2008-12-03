@@ -292,7 +292,7 @@ public class FileCache implements Cache {
     }
 
     public int truncate(TileLayer tl, SRS srs, int zoomStart, int zoomStop,
-            int[][] bounds, MimeType mimeType) throws CacheException {
+            int[][] bounds, MimeType[] mimeTypes) throws CacheException {
 
         int count = 0;
         
@@ -302,7 +302,7 @@ public class FileCache implements Cache {
 
         if (layerPath.exists() && layerPath.canWrite()) {
             FilePathKey2Filter fpk2f = new FilePathKey2Filter(srs, zoomStart,
-                    zoomStop, bounds, mimeType);
+                    zoomStop, bounds, mimeTypes);
 
             File[] srsZoomDirs = layerPath.listFiles(fpk2f);
 

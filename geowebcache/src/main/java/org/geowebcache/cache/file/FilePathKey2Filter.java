@@ -29,10 +29,10 @@ public class FilePathKey2Filter implements FilenameFilter {
     final int zoomStart;
     final int zoomStop;
     final int[][] bounds;
-    final MimeType mimeType;
+    final String[] mimeExtensions;
     
     public FilePathKey2Filter(SRS srs, int zoomStart, int zoomStop, 
-            int[][] bounds, MimeType mimeType) throws CacheException {
+            int[][] bounds, MimeType[] mimeTypes) throws CacheException {
         
         if(srs == null) {
             throw new CacheException("Specifying the SRS is currently mandatory.");
@@ -42,7 +42,10 @@ public class FilePathKey2Filter implements FilenameFilter {
         this.zoomStart = zoomStart;
         this.zoomStop = zoomStop;
         this.bounds = bounds;
-        this.mimeType = mimeType;
+        this.mimeExtensions = new String[mimeTypes.length];
+        for(int i=0; i< mimeExtensions.length; i++) {
+            mimeExtensions[i] = mimeTypes[i].getFileExtension();
+        }
     }
 
     /**
@@ -99,11 +102,19 @@ public class FilePathKey2Filter implements FilenameFilter {
         String[] parts = name.split("\\.");
 
         // Check mime type
-        if (mimeType != null) {
-            if (!parts[parts.length - 1].equalsIgnoreCase(mimeType
-                    .getFileExtension())) {
+        if (mimeExtensions != null) {
+            boolean foundOne = false;
+            
+            for(String ext : mimeExtensions) {
+                if(parts[parts.length - 1].equalsIgnoreCase(ext)) {
+                    foundOne = true;
+                }
+            }
+            
+            if(! foundOne) {
                 return false;
             }
+            
         }
         
         // Check coordinates
