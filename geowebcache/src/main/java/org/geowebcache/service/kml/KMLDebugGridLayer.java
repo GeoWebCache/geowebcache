@@ -387,7 +387,7 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
 
 
     public int truncate(TileLayer tl, SRS srs, int zoomStart, int zoomStop,
-            int[][] bounds, MimeType mimeType) throws CacheException {
+            int[][] bounds, MimeType[] mimeTypes) throws CacheException {
         // TODO Auto-generated method stub
         return 0;
     }
