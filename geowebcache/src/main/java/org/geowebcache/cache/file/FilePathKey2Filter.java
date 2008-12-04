@@ -42,9 +42,13 @@ public class FilePathKey2Filter implements FilenameFilter {
         this.zoomStart = zoomStart;
         this.zoomStop = zoomStop;
         this.bounds = bounds;
+        if(mimeTypes != null) {
         this.mimeExtensions = new String[mimeTypes.length];
         for(int i=0; i< mimeExtensions.length; i++) {
             mimeExtensions[i] = mimeTypes[i].getFileExtension();
+        }
+        } else {
+            mimeExtensions = null;
         }
     }
 
