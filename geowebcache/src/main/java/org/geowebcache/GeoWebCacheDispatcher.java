@@ -162,8 +162,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 handleFrontPage(request, response);
             } else if (requestComps[0].equalsIgnoreCase(TYPE_SERVICE)) {
                 handleServiceRequest(requestComps[1], request, response);
-            } else if (requestComps[0].equalsIgnoreCase(TYPE_RPC)) {
-                handleRPCRequest(requestComps[1],request, response);
             } else if (requestComps[0].equalsIgnoreCase(TYPE_DEMO)) {
                 handleDemoRequest(requestComps[1],request, response);   
             } else {
@@ -261,27 +259,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
             writeEmpty(tile, e.getMessage());
         }
         // Log statistic
-    }
-    
-    private void handleRPCRequest(String action, HttpServletRequest request, 
-            HttpServletResponse response) {
-        if(action.equalsIgnoreCase("reinit")) {
-            
-            try {
-                // Throws exception if necessary
-                tileLayerDispatcher.reInit();
-                response.setStatus(204);
-                
-            } catch (GeoWebCacheException gwce) {
-                try {
-                    log.error(gwce.getMessage());
-                    response.setStatus(500);
-                    response.getOutputStream().write(gwce.getMessage().getBytes());
-                } catch (IOException ioe) {
-                    // Do nothing..
-                }
-            }            
-        }
     }
     
     private void handleDemoRequest(String action, HttpServletRequest request, 

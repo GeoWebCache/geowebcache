@@ -72,15 +72,26 @@ public class Demo {
     
     private static String generateHTML(TileLayerDispatcher tileLayerDispatcher, boolean trailingSlash) 
     throws GeoWebCacheException {
+        String reloadPath = "rest/reload";
+        if(trailingSlash) {
+            reloadPath = "../rest/reload";
+        }
         String header = 
             "<html><body>\n"
             + GWC_HEADER
-            +"<h3>Known layers:</h3><table>\n"
+            +"<h3>Reload Configuration:</h3>\n"
+            +"<p>You can reload the configuration by pressing the following button. " 
+            +"The username / password is configured in WEB-INF/user.properties, or the admin " 
+            +" user in GeoServer if you are using the plugin.</p>\n"
+            +"<form form id=\"kill\" action=\""+reloadPath+"\" method=\"post\">"
+            +"<input type=\"hidden\" name=\"reload_configuration\"  value=\"1\" />"
+            +"<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Reload Configuration\"></span>"
+            +"</form>"
+            +"<hr>\n"
+            +"<h3>Known Layers:</h3><table>\n"
             +"<ul><li>This is just a quick demo, the bounds are likely to be less than perfect.</li>\n"
             +"<li>You can append &format=image/jpeg to the URLs in the "
             +"table to change the output format.</li>\n"
-            +"<li>If the layers are loaded from a WMS getcapabilities"
-            +" document you will probably see duplicates without the namespace prefix. You should ignore them.</li>\n"
             +"</ul>\n"
             +"<hr>\n"
             +"<table cellspacing=\"10\" border=\"0\">\n"

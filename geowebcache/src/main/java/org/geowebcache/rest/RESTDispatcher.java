@@ -150,6 +150,8 @@ public class RESTDispatcher extends AbstractController {
             myRouter.attach("/rest/seed", SeedResource.class);
             myRouter.attach("/seed/{layer}", SeedPageResource.class);
             myRouter.attach("/rest/seed/{layer}", SeedPageResource.class);
+            myRouter.attach("/reload", ReloadPageResource.class);
+            myRouter.attach("/rest/reload", ReloadPageResource.class);
         }
 
         return myRouter;
