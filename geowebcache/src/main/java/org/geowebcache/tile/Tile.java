@@ -103,7 +103,7 @@ public class Tile implements TileResponseReceiver {
             HttpServletRequest servletReq, HttpServletResponse servletResp) {
         this.layerId = layerId;
         this.srs = srs;
-        this.tileIndex = tileIndex;
+        this.tileIndex = tileIndex.clone();
         this.mimeType = mimeType;
         this.servletReq = servletReq;
         this.servletResp = servletResp;
@@ -117,7 +117,7 @@ public class Tile implements TileResponseReceiver {
         this.tileLayer = layer;
         this.layerId = layer.getName();
         this.srs = srs;
-        this.tileIndex = tileIndex;
+        this.tileIndex = tileIndex.clone();
         this.mimeType = mimeType;
         this.servletReq = servletReq;
         this.servletResp = servletResp;
@@ -131,7 +131,7 @@ public class Tile implements TileResponseReceiver {
         this.layerId = layer.getName();
         this.tileLayer = layer;
         this.srs = srs;
-        this.tileIndex = tileIndex;
+        this.tileIndex = tileIndex.clone();
         this.mimeType = mimeType;
         this.status = status;
         this.data = payload;
@@ -239,7 +239,7 @@ public class Tile implements TileResponseReceiver {
     }
     
     public void setTileIndex(int[] tileIndex) {
-        this.tileIndex = tileIndex;
+        this.tileIndex = tileIndex.clone();
     }
     
     public SRS getSRS() {
