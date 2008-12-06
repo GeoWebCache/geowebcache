@@ -369,6 +369,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * Happy ending, sets the headers and writes the response back to the
      * client.
      * 
+     * Note that the expiration header should already have been set by
+     * the layer that retrieved the data.
+     * 
      * @param response
      *            where to write to
      * @param tileResponse
