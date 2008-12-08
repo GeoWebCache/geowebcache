@@ -77,16 +77,16 @@ public class WMSLayer extends TileLayer {
     private String palette;
     
     private String cachePrefix;
+
+    private int expireCache;
+    
+    private int expireClients;
     
     private String vendorParameters;
 
     private transient int curWmsURL;
 
     private transient boolean saveExpirationHeaders;
-
-    private transient long expireClients;
-
-    private transient long expireCache;
 
     private transient Cache cache;
 
@@ -293,7 +293,8 @@ public class WMSLayer extends TileLayer {
             }
 
             if (saveExpirationHeaders) {
-                saveExpirationInformation(tile.getExpiresHeader());
+                // Converting to seconds
+                saveExpirationInformation((int) (tile.getExpiresHeader() / 1000));
             }
 
             metaTile.setImageBytes(response);
@@ -361,7 +362,8 @@ public class WMSLayer extends TileLayer {
             }
 
             if (saveExpirationHeaders) {
-                saveExpirationInformation(tile.getExpiresHeader());
+                // Converting to seconds in the process
+                saveExpirationInformation((int) (tile.getExpiresHeader() / 1000));
             }
 
             /** ****************** Return lock and response ****** */
@@ -408,11 +410,10 @@ public class WMSLayer extends TileLayer {
 
         // TODO move to TileResponse
         if (expireClients > 0) {
-            int seconds = (int) (expireClients / 1000);
-            response.setHeader("Cache-Control", "max-age=" + seconds
+            response.setHeader("Cache-Control", "max-age=" + expireClients
                     + ", must-revalidate");
             response.setHeader("Expires", ServletUtils
-                    .makeExpiresHeader(seconds));
+                    .makeExpiresHeader(expireClients));
         } else if (expireClients == GWCVars.CACHE_NEVER_EXPIRE) {
             long oneYear = 3600 * 24 * 365;
             response.setHeader("Cache-Control", "max-age=" + oneYear);
@@ -569,33 +570,27 @@ public class WMSLayer extends TileLayer {
         cache.setUp(cachePrefix);
     }
 
-    protected void saveExpirationInformation(long backendExpire) {
+    protected void saveExpirationInformation(int backendExpire) {
         this.saveExpirationHeaders = false;
         try {
             if (expireCache == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
-                Long expire = backendExpire;
-                if (expire == null || expire == -1) {
-                    expire = Long.valueOf(7200 * 1000);
-                } else {
-                    // Go from seconds to milliseconds
-                    expire = expire * 1000;
-                }
-                log.error("Layer profile wants MaxAge from backend,"
+                if(backendExpire == -1) {
+                    expireCache = 7200;
+                    log.error("Layer profile wants MaxAge from backend,"
                         + " but backend does not provide this. Setting to 7200 seconds.");
-                expireCache = expire.longValue();
+                } else {
+                    expireCache = backendExpire;
+                }
                 log.trace("Setting expireCache to: " + expireCache);
             }
             if (expireClients == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
-                Long expire = backendExpire;
-                if (expire == null || expire == -1) {
-                    expire = Long.valueOf(7200 * 1000);
+                if(backendExpire == -1) {
+                    expireClients = 7200;
+                    log.error("Layer profile wants MaxAge from backend,"
+                            + " but backend does not provide this. Setting to 7200 seconds.");
                 } else {
-                    // Go from seconds to milliseconds
-                    expire = expire * 1000;
+                    expireClients = backendExpire;
                 }
-                log.error("Layer profile wants MaxAge from backend,"
-                        + " but backend does not provide this. Setting to 7200 seconds.");
-                expireClients = expire.longValue();
                 log.trace("Setting expireClients to: " + expireClients);
             }
         } catch (Exception e) {
