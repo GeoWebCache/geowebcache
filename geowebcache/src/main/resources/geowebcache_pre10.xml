@@ -1,15 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-                  xsi:noNamespaceSchemaLocation="http://geowebcache.org/schema/1.0/geowebcache.xsd" 
-                  xmlns="http://geowebcache.org/schema/1.0">
-<version>1.0.0</version>
+<?xml version="1.0" encoding="UTF-8"?>
 <layers>
  <!-- 
   This is a pretty standard example, suitable for use with 
    * Google Earth (EPSG:4326 , KML support)
    * Google Maps and Microsoft Virtual Earth (EPSG:900913, PNG support)
  -->
- <wmsLayer>
+ <wmslayer>
   <name>topp:states</name>
   <mimeFormats>
     <string>image/png</string>
@@ -18,9 +14,9 @@
   </mimeFormats>
   <grids>
     <entry>
-      <srs>
+      <SRS>
         <number>900913</number>
-      </srs>
+      </SRS>
       <grid>
         <srs>
           <number>900913</number>
@@ -44,9 +40,9 @@
       </grid>
     </entry>
     <entry>
-      <srs>
+      <SRS>
         <number>4326</number>
-      </srs>
+      </SRS>
       <grid>
         <srs>
           <number>4326</number>
@@ -86,24 +82,24 @@
   <palette></palette>
   <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
   <!-- cachePrefix>/var/lib/geowebcache/topp_states</cachePrefix -->
-</wmsLayer>
+</wmslayer>
 
  <!-- 
   This example shows that you can reuse WMS-layers and give them
   new names or styles, as shown here.
    
   EPSG:2163 is an equal area (Azimuthal Lambert) projection and demonstrates
-  that GeoWebCache is now srs agnostic. Note that in order to make the
+  that GeoWebCache is now SRS agnostic. Note that in order to make the
   tiles work in OpenLayers you need to provide the correct bounds and
   resolution(s). Please use the source of the demo page for reference,
   as GeoWebCache will calculate them automatically for you there.
   
   Note that the grid bounds and the layer bounds are the same, they could be
-  different if the srs has "natural" bounds that cover all the area that 
+  different if the SRS has "natural" bounds that cover all the area that 
   could be relevant, in case the dataset grows.
  -->
  
- <wmsLayer>
+ <wmslayer>
   <name>topp:states2</name>
   <mimeFormats>
     <string>image/png</string>
@@ -111,9 +107,9 @@
   </mimeFormats>
   <grids>
     <entry>
-      <srs>
+      <SRS>
         <number>2163</number>
-      </srs>
+      </SRS>
       <grid>
         <srs>
           <number>2163</number>
@@ -158,6 +154,5 @@
   <palette></palette>
   <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
   <!-- cachePrefix>/var/lib/geowebcache/topp_states</cachePrefix -->
-</wmsLayer>
+</wmslayer>
 </layers>
-</gwcConfiguration>

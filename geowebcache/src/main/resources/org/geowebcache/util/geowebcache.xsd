@@ -11,7 +11,7 @@
       <xs:element name="layers">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="wmslayer" type="gwc:wmslayer" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="wmsLayer" type="gwc:wmsLayer" minOccurs="1" maxOccurs="unbounded"/>
           </xs:sequence>
         </xs:complexType>
      </xs:element>
@@ -19,10 +19,11 @@
   </xs:complexType>
 </xs:element>
 
-<xs:complexType name="wmslayer">
+<xs:complexType name="wmsLayer">
   <xs:sequence>
      <xs:element name="name" type="xs:string"/>
      <xs:element name="mimeFormats" type="gwc:mimeFormats" minOccurs="0"/>
+     <xs:element name="errorMime" type="xs:string" minOccurs="0"/>
      <xs:element name="grids" type="gwc:grids"/>
      <xs:element name="wmsUrl" type="gwc:wmsUrl"/>
      <xs:element name="wmsLayers" type="xs:string"/>
@@ -34,6 +35,8 @@
      <xs:element name="palette" type="xs:string" minOccurs="0"/>
      <xs:element name="vendorParameters" type="xs:string" minOccurs="0"/>
      <xs:element name="cachePrefix" type="xs:string" minOccurs="0"/>
+     <xs:element name="expireCache" type="xs:integer" minOccurs="0"/>
+     <xs:element name="expireClients" type="xs:integer" minOccurs="0"/>
   </xs:sequence>
 </xs:complexType>
 
@@ -51,12 +54,12 @@
 
 <xs:complexType name="entry">
   <xs:sequence>
-     <xs:element name="SRS" type="gwc:SRS"/>
+     <xs:element name="srs" type="gwc:srs"/>
      <xs:element name="grid" type="gwc:grid"/>
   </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="SRS">
+<xs:complexType name="srs">
   <xs:sequence>
      <xs:element name="number" type="xs:integer"/>
   </xs:sequence>
@@ -64,7 +67,7 @@
 
 <xs:complexType name="grid">
   <xs:sequence>
-     <xs:element name="srs" type="gwc:SRS"/>
+     <xs:element name="srs" type="gwc:srs"/>
      <xs:element name="dataBounds" type="gwc:Bounds"/>
      <xs:element name="gridBounds" type="gwc:Bounds"/>
   </xs:sequence>
