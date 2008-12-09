@@ -5,13 +5,13 @@
   <groupId>org.opengeo</groupId>
   <artifactId>geowebcache</artifactId>
   <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <name>geowebcache</name>
   <url>http://geowebcache.org</url>
   
   <properties>
     <!-- gs.version>1.6.4</gs.version -->
-    <gt.version>2.5-SNAPSHOT</gt.version>
+    <gt.version>2.5.2</gt.version>
     <spring.version>2.5.5</spring.version>
     <restlet.version>1.0.8</restlet.version>
     <xstream.version>1.3</xstream.version>
