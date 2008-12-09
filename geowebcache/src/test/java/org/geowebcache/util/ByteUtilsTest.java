@@ -1,4 +1,4 @@
-package org.geowebcache.utils;
+package org.geowebcache.util;
 
 import org.geowebcache.util.ByteUtils;
 

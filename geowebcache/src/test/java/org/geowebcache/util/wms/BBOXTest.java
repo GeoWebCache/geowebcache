@@ -1,4 +1,4 @@
-package org.geowebcache.utils.wms;
+package org.geowebcache.util.wms;
 
 
 import junit.framework.TestCase;

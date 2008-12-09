@@ -17,11 +17,10 @@
 package org.geowebcache.util;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,8 +29,6 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -47,12 +44,10 @@ import javax.xml.validation.Validator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.cache.file.FileCache;
-import org.geowebcache.cache.file.FilePathKey2;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -60,7 +55,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.context.WebApplicationContext;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -131,20 +125,27 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     public Map<String, TileLayer> getTileLayers() throws GeoWebCacheException {
         File xmlFile = findConfFile();
         
+        FileInputStream confFile = null;
+        try {
+            confFile = new FileInputStream(xmlFile);
+        } catch (FileNotFoundException e1) {
+            log.error("The file " + xmlFile.getAbsolutePath() + " could not be found.");
+        }
+        
+        return getTileLayers(confFile);
+    }
+    
+    protected Map<String, TileLayer> getTileLayers(InputStream confFile) 
+    throws GeoWebCacheException {
+        
         HashMap<String, TileLayer> layers = new HashMap<String, TileLayer>();
 
-        //javax.xml.transform.Source xmlSource =
-        //        new javax.xml.transform.stream.StreamSource(xmlFile);
-        //javax.xml.transform.Source xsltSource =
-        //        new javax.xml.transform.stream.StreamSource(xsltFile);
+        Node layersRoot = loadIntoDocument(confFile);
 
-        
-        // load configurations into Document
-        Node layersNode = loadIntoDocument(xmlFile);
-        if(layersNode != null) {
+        if(layersRoot != null) {
             XStream xs = getConfiguredXStream(new XStream());
 
-            NodeList allLayerNodes = layersNode.getChildNodes();
+            NodeList allLayerNodes = layersRoot.getChildNodes();
            
             TileLayer result = null;
             for (int i = 0; i < allLayerNodes.getLength(); i++) {
@@ -158,7 +159,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
                 }
             }
         } else {
-            // TODO ERROR
+            throw new ConfigurationException("Root element was null");
         }
 
         return layers;
@@ -205,7 +206,12 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         File xmlFile = findConfFile();
 
         // load configurations into Document
-        Node layersRoot = loadIntoDocument(xmlFile);
+        Node layersRoot = null;
+        try {
+            layersRoot = loadIntoDocument(new FileInputStream(xmlFile));
+        } catch (FileNotFoundException e1) {
+            log.error("The file " + xmlFile.getAbsolutePath() + " could not be found.");
+        }
         
         // create the XStream for serializing tileLayers to XML
         XStream xs = getConfiguredXStream(new XStream());
@@ -307,10 +313,11 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         // load configurations into Document
         Node layersNode = null;
         try {
-            layersNode = loadIntoDocument(xmlFile);
+            layersNode = loadIntoDocument(new FileInputStream(xmlFile));
         } catch (ConfigurationException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+            log.error("Exception occured while creating documet from file " + xmlFile.getAbsolutePath());;
+        } catch (FileNotFoundException e) {
+            log.error("The file " + xmlFile.getAbsolutePath() + " could not be found.");
         }
 
         NodeList wmsLayerNodes = layersNode.getChildNodes();
@@ -358,7 +365,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
      *            the file contaning the layer configurations
      * @return W3C DOM Document
      */
-    private org.w3c.dom.Node loadIntoDocument(File file) throws ConfigurationException {
+    private org.w3c.dom.Node loadIntoDocument(InputStream xmlFile) throws ConfigurationException {
         org.w3c.dom.Node layersNode = null;
         try {
             //http://www.javaworld.com/javaworld/jw-08-2005/jw-0808-xml.html?page=3
@@ -372,13 +379,13 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
 
-            layersNode = checkAndTransform(docBuilder.parse(file));
+            layersNode = checkAndTransform(docBuilder.parse(xmlFile));
             
         } catch (ParserConfigurationException pce) {
             log.error(pce.getMessage());
             pce.printStackTrace();
         } catch (IOException ei) {
-            log.error("Exception occured while creating documet from file " + file.getAbsolutePath());
+            throw new ConfigurationException("Error parsing file");
         } catch (SAXException saxe) {
             log.error(saxe.getMessage());
         }
