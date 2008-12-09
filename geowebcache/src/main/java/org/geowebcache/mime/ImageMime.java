@@ -41,7 +41,9 @@ public class ImageMime extends MimeType {
     
     public static final ImageMime png24 = 
         new ImageMime("image/png", "png24", "png", "image/png24", true);
-    
+
+    public static final ImageMime png_24 = 
+        new ImageMime("image/png; mode=24bit", "png_24", "png", "image/png; mode=24bit", true);
     
     public ImageMime(String mimeType, String fileExtension, 
             String internalName, String format, boolean noop) {
@@ -54,7 +56,7 @@ public class ImageMime extends MimeType {
         
         // Check for trouble
         if(mimeType.length() < 6 || ! mimeType.substring(0,6).equalsIgnoreCase("image/")) {
-            throw new MimeException("MIME type " + mimeType + " does not start with application/");
+            throw new MimeException("MIME type " + mimeType + " does not start with image/");
         }
     }
 
@@ -74,6 +76,8 @@ public class ImageMime extends MimeType {
             return png8;
         } else if ( tmpStr.equalsIgnoreCase("png24")) {
             return png24;
+        } else if ( tmpStr.equalsIgnoreCase("png; mode=24bit")) {
+            return png_24;
         }
         return null;
     }
@@ -103,6 +107,8 @@ public class ImageMime extends MimeType {
             return png8;
         } else if (fileExtension.equalsIgnoreCase("png24")) {
             return png24;
+        } else if (fileExtension.equalsIgnoreCase("png_24")) {
+            return png_24;
         }
         return null;
     }

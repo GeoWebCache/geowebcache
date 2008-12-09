@@ -86,12 +86,12 @@ public class MimeType {
             throw new MimeException("formatStr was not set");
         }
         
-        if(formatStr.contains(";")) {
+        // TODO Making a special exception, generalize later
+        if(! formatStr.equals("image/png; mode=24bit") && formatStr.contains(";")) {
             if(log.isDebugEnabled()) {
                 log.debug("Slicing off "+ formatStr.split(";")[1]);
             }
             formatStr = formatStr.split(";")[0];
-
         }
         
         if (formatStr.length() > 6 

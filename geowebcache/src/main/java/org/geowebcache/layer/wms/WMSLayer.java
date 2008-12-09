@@ -112,6 +112,20 @@ public class WMSLayer extends TileLayer {
 
     private static transient Log log;
     
+    /** 
+     * Note XStream uses reflection, this is only used for testing
+     * and loading from getCapabilities
+     * 
+     * @param layerName
+     * @param cacheFactory
+     * @param wmsURL
+     * @param wmsStyles
+     * @param wmsLayers
+     * @param mimeFormats
+     * @param grids
+     * @param metaWidthHeight
+     * @param vendorParams
+     */
     public WMSLayer(String layerName, CacheFactory cacheFactory,
             String[] wmsURL, String wmsStyles, String wmsLayers, 
             List<String> mimeFormats, Hashtable<SRS,Grid> grids, 
