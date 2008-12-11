@@ -69,7 +69,9 @@
   <xs:sequence>
      <xs:element name="srs" type="gwc:srs"/>
      <xs:element name="dataBounds" type="gwc:Bounds"/>
-     <xs:element name="gridBounds" type="gwc:Bounds"/>
+     <xs:element name="gridBounds" type="gwc:Bounds"/
+     <xs:element name="zoomStart" type="xs:integer"/>
+     <xs:element name="zoomStop" type="xs:integer"/>
   </xs:sequence>
 </xs:complexType>
 
