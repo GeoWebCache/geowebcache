@@ -93,6 +93,8 @@ public class FileCache implements Cache {
 
     /**
      * See if file exists, read file
+     * 
+     * ttl is given in microseconds
      */
     public boolean get(CacheKey keyProto, Tile tile, long ttl)
             throws CacheException, GeoWebCacheException {
@@ -101,8 +103,15 @@ public class FileCache implements Cache {
         log.trace("Attempting to read" + filePath);
 
         File fh = new File(filePath);
-
+        
         try {
+            if(ttl > 0 && fh.lastModified() < (System.currentTimeMillis() - ttl)) {
+                log.trace("File is too old, last modified:" + fh.lastModified() 
+                        + " now:" + System.currentTimeMillis() 
+                        + " ttl:" + ttl);
+                return false;
+            }
+            
             InputStream is = new FileInputStream(fh);
             tile.read(is);
             is.close();
@@ -132,7 +141,7 @@ public class FileCache implements Cache {
 
     public void set(CacheKey keyProto, Tile tile, long ttl)
             throws org.geowebcache.cache.CacheException {
-        if (ttl == GWCVars.CACHE_NEVER) {
+        if (ttl == GWCVars.CACHE_DISABLE_CACHE) {
             return;
         }
 
