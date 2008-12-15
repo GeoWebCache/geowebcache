@@ -34,13 +34,13 @@ public class Grid {
     
     protected BBOX gridBounds = null;
     
+    protected int zoomStart;
+    
+    protected int zoomStop;
+    
     protected double[] resolutions = null;
     
     private volatile transient GridCalculator gridCalculator;
-    
-    private int zoomStart = 0;
-    
-    private int zoomStop = 30;
     
     public Grid(SRS srs, BBOX bounds, BBOX gridBounds, double[] resolutions) {
         this.srs = srs;
