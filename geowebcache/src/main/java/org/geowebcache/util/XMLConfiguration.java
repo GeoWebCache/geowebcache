@@ -189,6 +189,9 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         
         xs.alias("zoomStart", int.class);
         xs.alias("zoomStop", int.class);
+        
+        xs.alias("expireCache", int.class);
+        xs.alias("expireClients", int.class);
         //xs.alias("debugheaders", boolean.class);
         
         return xs;
