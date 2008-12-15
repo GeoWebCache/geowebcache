@@ -134,6 +134,11 @@
             <double>959189.3312465074</double>
           </coords>
         </gridBounds>
+        <!-- 
+        This grid only allows zoom levels 0 through 20
+        -->
+        <zoomStart>0</zoomStart>
+        <zoomStop>20</zoomStop>
       </grid>
     </entry>
   </grids>
@@ -158,6 +163,13 @@
   <palette></palette>
   <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
   <!-- cachePrefix>/var/lib/geowebcache/topp_states</cachePrefix -->
+  <!-- 
+  You can specify expiration times in seconds. In the example below
+  - disk cached is refreshed every 2 hours
+  - clients are told to refresh from here every 4 minutes
+  -->
+  <expireCache>7200</expireCache>
+  <expireClients>240</expireClients>
 </wmsLayer>
 </layers>
 </gwcConfiguration>
