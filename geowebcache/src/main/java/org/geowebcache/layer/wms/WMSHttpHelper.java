@@ -45,9 +45,9 @@ public class WMSHttpHelper {
     private static Log log = LogFactory
             .getLog(org.geowebcache.layer.wms.WMSHttpHelper.class);
 
-    private static int HTTP_CONNECT_TIMEOUT = 10000; // 10s, in ms 
+    private static int HTTP_CONNECT_TIMEOUT = 120000; // 120s, in ms 
     
-    private static int HTTP_READ_TIMEOUT = 60000; // 60s, in ms 
+    private static int HTTP_READ_TIMEOUT = 120000; // 120s, in ms 
     
     /**
      * Used for metatiling requests
@@ -241,10 +241,8 @@ public class WMSHttpHelper {
                     }
                 } catch (IOException ioe) {
                     tileRespRecv.setError();
-                    log
-                            .error("Caught IO exception, "
-                                    + wmsBackendUrl.toString() + " "
-                                    + ioe.getMessage());
+                    log.error("Caught IO exception, " 
+                            + wmsBackendUrl.toString() + " " + ioe.getMessage());
                 }
             } else {
                 ret = new byte[0];
