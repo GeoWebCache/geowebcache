@@ -76,13 +76,13 @@ public class WMSLayer extends TileLayer {
 
     private String palette;
     
+    private String vendorParameters;
+    
     private String cachePrefix;
 
-    private int expireCache;
+    private int expireCache = -1;
     
-    private int expireClients;
-    
-    private String vendorParameters;
+    private int expireClients = -1;
 
     private transient int curWmsURL;
 
@@ -169,19 +169,18 @@ public class WMSLayer extends TileLayer {
         log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
         curWmsURL = 0;
         
-        // The following is currently hardcoded in the grid objects
-        //zoomStart = 0;
-        //zoomStop = 20;
-        //width = 256;
-        //height = 256;
-        //request = "GetMap";
-        
         errormime = ErrorMime.vnd_ogc_se_inimage.getMimeType();
         version = "1.1.0";
-        //transparent = true;
-        saveExpirationHeaders = true;
-        expireClients = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
-        expireCache = GWCVars.CACHE_NEVER_EXPIRE;
+
+        if(expireClients == GWCVars.CACHE_VALUE_UNSET) {
+            saveExpirationHeaders = true;
+            expireClients = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;   
+        }
+        
+        if(expireCache == GWCVars.CACHE_VALUE_UNSET) {
+            expireCache = GWCVars.CACHE_NEVER_EXPIRE;
+        }
+                
         layerLock = new ReentrantLock();
         layerLockedCond = layerLock.newCondition();
         procQueue = new HashMap<GridLocObj, Boolean>();
@@ -325,7 +324,7 @@ public class WMSLayer extends TileLayer {
             tile.setContent(getTile(gridLoc, gridPositions, metaTile));
 
             // TODO separate thread
-            if (expireCache != GWCVars.CACHE_NEVER) {
+            if (expireCache != GWCVars.CACHE_DISABLE_CACHE) {
                 saveTiles(gridPositions, metaTile, tile);
             }
 
@@ -371,7 +370,7 @@ public class WMSLayer extends TileLayer {
 
             tile = doNonMetatilingRequest(tile);
 
-            if (tile.getStatus() > 299 || expireCache != GWCVars.CACHE_NEVER) {
+            if (tile.getStatus() > 299 || expireCache != GWCVars.CACHE_DISABLE_CACHE) {
                 cache.set(cacheKey, tile, expireCache);
             }
 
@@ -388,9 +387,9 @@ public class WMSLayer extends TileLayer {
     }
 
     public boolean tryCacheFetch(Tile tile) {
-        if (expireCache != GWCVars.CACHE_NEVER) {
+        if (expireCache != GWCVars.CACHE_DISABLE_CACHE) {
             try {
-                return cache.get(this.cacheKey, tile, expireCache);
+                return cache.get(this.cacheKey, tile, expireCache * 1000);
             } catch (CacheException ce) {
                 log.error(ce.getMessage());
                 tile.setError(ce.getMessage());
@@ -433,7 +432,7 @@ public class WMSLayer extends TileLayer {
             response.setHeader("Cache-Control", "max-age=" + oneYear);
             response.setHeader("Expires", ServletUtils
                     .makeExpiresHeader((int) oneYear));
-        } else if (expireClients == GWCVars.CACHE_NEVER) {
+        } else if (expireClients == GWCVars.CACHE_DISABLE_CACHE) {
             response.setHeader("Cache-Control", "no-cache");
         } else if (expireClients == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
             int seconds = 36000;
@@ -865,7 +864,7 @@ public class WMSLayer extends TileLayer {
         waitForQueue(glo, condIdx);
 
         /** ****************** Tile ******************* */
-        if (expireCache != GWCVars.CACHE_NEVER) {
+        if (expireCache != GWCVars.CACHE_DISABLE_CACHE) {
             cache.set(this.cacheKey, tile, expireCache);
         }
 

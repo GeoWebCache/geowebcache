@@ -235,6 +235,12 @@ public class ServletUtils {
         return ret;
     }
     
+    /**
+     * Returns the expiration time in milliseconds from now
+     * 
+     * @param expiresHeader
+     * @return
+     */
     public static long parseExpiresHeader(String expiresHeader) {
         if(expiresHeader == null) {
             return -1;
