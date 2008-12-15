@@ -70,8 +70,8 @@
      <xs:element name="srs" type="gwc:srs"/>
      <xs:element name="dataBounds" type="gwc:Bounds"/>
      <xs:element name="gridBounds" type="gwc:Bounds"/
-     <xs:element name="zoomStart" type="xs:integer"/>
-     <xs:element name="zoomStop" type="xs:integer"/>
+     <xs:element name="zoomStart" type="xs:integer" minOccurs="0" />
+     <xs:element name="zoomStop" type="xs:integer" minOccurs="0" />
   </xs:sequence>
 </xs:complexType>
 
