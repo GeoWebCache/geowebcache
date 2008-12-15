@@ -111,7 +111,7 @@ public abstract class TileLayer {
      * @throws GeoWebCacheException
      */
     public boolean supportsSRS(SRS srs) throws GeoWebCacheException {
-        if(this.grids.containsKey(srs)) {
+        if(this.isInitialized() && this.grids.containsKey(srs)) {
             return true;
         }
         return false;
@@ -388,8 +388,6 @@ public abstract class TileLayer {
     public abstract void putTile(Tile tile) throws GeoWebCacheException;
 
     public abstract void setExpirationHeader(HttpServletResponse response);
-
-    //public abstract void lazyLayerInitialization(CacheFactory cf);
     
     public abstract void setCacheFactory(CacheFactory cacheFactory);
 }

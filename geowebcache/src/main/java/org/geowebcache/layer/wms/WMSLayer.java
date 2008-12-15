@@ -191,6 +191,24 @@ public class WMSLayer extends TileLayer {
             log.error(gwce.getMessage());
             gwce.printStackTrace();
         }
+        
+        if(this.metaWidthHeight == null || this.metaWidthHeight.length != 2) {
+            this.metaWidthHeight = new int[2];
+            this.metaWidthHeight[0] = 3;
+            this.metaWidthHeight[1] = 3;
+        }
+        
+        if(this.grids == null) {
+            grids = new Hashtable<SRS,Grid>();
+            
+        }
+        
+        if(this.grids.size() == 0) {
+            Grid epsg4326Grid = new Grid(SRS.getEPSG4326(), BBOX.WORLD4326, BBOX.WORLD4326, null);
+            Grid epsg900913Grid = new Grid(SRS.getEPSG900913(), BBOX.WORLD900913, BBOX.WORLD900913, null);
+            grids.put(SRS.getEPSG4326(), epsg4326Grid);
+            grids.put(SRS.getEPSG900913(), epsg900913Grid);
+        }
 
         // Create conditions for tile locking
         this.gridLocConds = new Condition[17];
@@ -556,12 +574,16 @@ public class WMSLayer extends TileLayer {
         
         // mimetypes
         this.formats = new ArrayList<MimeType>();
-        for (String fmt : mimeFormats) {
-            formats.add(MimeType.createFromFormat(fmt));
+        if(mimeFormats != null) {
+            for (String fmt : mimeFormats) {
+                formats.add(MimeType.createFromFormat(fmt));
+            }
         }
-        if (formats.get(0) == null)
+        if(formats.size() == 0) {
             formats.add(0, ImageMime.createFromFormat("image/png"));
-
+            formats.add(1, ImageMime.createFromFormat("image/jpeg"));
+        }
+        
         // Cache and CacheKey
         cache = initCacheFactory.getDefaultCache();
         
