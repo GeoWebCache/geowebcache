@@ -112,7 +112,8 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         if (xmlFile != null) {
             log.trace("Found configuration file in "+ configH.getAbsolutePath());
         } else {
-            throw new GeoWebCacheException("Found no configuration file in "+ configH.getAbsolutePath());
+            throw new GeoWebCacheException("Found no configuration file in "+ configH.getAbsolutePath()+
+            		" If you are running GWC in GeoServer this is probably not a problem.");
         }
         
         return xmlFile;
@@ -129,7 +130,9 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         try {
             confFile = new FileInputStream(xmlFile);
         } catch (FileNotFoundException e1) {
-            log.error("The file " + xmlFile.getAbsolutePath() + " could not be found.");
+            log.error("The file " + xmlFile.getAbsolutePath() + " could not be found. " +
+            		"If you are running GWC in GeoServer this is probably not a problem.");
+            return null;
         }
         
         return getTileLayers(confFile);
