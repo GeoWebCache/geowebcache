@@ -392,4 +392,11 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
         return 0;
     }
 
+    @Override
+    public Tile getNoncachedTile(Tile tile, boolean requestTiled)
+            throws GeoWebCacheException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }
