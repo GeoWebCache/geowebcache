@@ -53,6 +53,8 @@ public class WMSMetaTile extends MetaTile {
     private final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
 
     protected WMSLayer wmsLayer = null;
+    
+    protected boolean requestTiled = false;
 
     /**
      * Used for requests by clients
@@ -75,6 +77,7 @@ public class WMSMetaTile extends MetaTile {
         wmsparams.setSrs(srs);
         wmsparams.setWidth(metaX * GridCalculator.TILEPIXELS);
         wmsparams.setHeight(metaY * GridCalculator.TILEPIXELS);
+        wmsparams.setIsTiled(requestTiled);
         GridCalculator gridCalc = wmsLayer.getGrid(srs).getGridCalculator();
         BBOX metaBbox = gridCalc.bboxFromGridBounds(metaTileGridBounds);
         wmsparams.setBBOX(metaBbox);

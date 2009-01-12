@@ -16,6 +16,9 @@
  */
 package org.geowebcache.service;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -88,6 +91,40 @@ public abstract class Service {
     
     public int hashCode() {
         return pathName.hashCode();
+    }
+    
+    
+    protected static void writeResponse(Tile tile, boolean writeExpiration) {
+        HttpServletResponse response = tile.servletResp;
+        byte[] data = tile.getContent();
+        
+        response.setStatus((int) tile.getStatus());
+        
+        response.setCharacterEncoding("utf-8");
+        
+        TileLayer layer = tile.getLayer();
+        if(layer != null) {
+            layer.setExpirationHeader(tile.servletResp);
+        }
+        
+        if(tile.getWrapperMimeType() != null) {
+            response.setContentType(tile.getWrapperMimeType().getMimeType());
+        } else {
+            response.setContentType(tile.getMimeType().getMimeType());
+        }
+        
+        response.setContentLength(data.length);
+        
+        if(writeExpiration) {
+            tile.getLayer().setExpirationHeader(response);
+        }
+        
+        try {
+            OutputStream os = response.getOutputStream();
+            os.write(data);
+        } catch (IOException ioe) {
+            // Do nothing...
+        }
     }
     
 }

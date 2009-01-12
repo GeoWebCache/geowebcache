@@ -302,7 +302,7 @@ public class KMLService extends Service {
         tile.setContent(xml.getBytes());
         tile.setMimeType(XMLMime.kml);
         tile.setStatus(200);
-        writeResponse(tile);
+        writeResponse(tile,true);
     }
 
     /**
@@ -375,7 +375,7 @@ public class KMLService extends Service {
 
         // Did we get lucky?
         if(tileLayer.tryCacheFetch(tile)) {
-            writeResponse(tile);
+            writeResponse(tile,true);
             return;
         }
         
@@ -416,7 +416,7 @@ public class KMLService extends Service {
             tileLayer.putTile(tile);
         }
 
-        writeResponse(tile);
+        writeResponse(tile, true);
     }
     
     /**
@@ -722,35 +722,5 @@ public class KMLService extends Service {
         double dy = p1[1] - p2[1];
         double dz = p1[2] - p2[2];
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
-    }
-    
-    private static void writeResponse(Tile tile) {
-        HttpServletResponse response = tile.servletResp;
-        byte[] data = tile.getContent();
-        
-        response.setStatus((int) tile.getStatus());
-        
-        response.setCharacterEncoding("utf-8");
-        
-        TileLayer layer = tile.getLayer();
-        if(layer != null) {
-            layer.setExpirationHeader(tile.servletResp);
-        }
-        
-        if(tile.getWrapperMimeType() != null) {
-            response.setContentType(tile.getWrapperMimeType().getMimeType());
-        } else {
-            response.setContentType(tile.getMimeType().getMimeType());
-        }
-        
-        response.setContentLength(data.length);
-        tile.getLayer().setExpirationHeader(response);
-        
-        try {
-            OutputStream os = response.getOutputStream();
-            os.write(data);
-        } catch (IOException ioe) {
-            // Do nothing...
-        }
     }
 }

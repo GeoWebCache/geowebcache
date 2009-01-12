@@ -72,6 +72,10 @@ public class WMSHttpHelper {
      * @throws GeoWebCacheException
      */
     protected static byte[] makeRequest(Tile tile) throws GeoWebCacheException {
+        return makeRequest(tile, false);
+    }
+
+    protected static byte[] makeRequest(Tile tile, boolean requestTiled) throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
         WMSParameters wmsparams = layer.getWMSParamTemplate();
 
@@ -80,6 +84,7 @@ public class WMSHttpHelper {
         wmsparams.setSrs(tile.getSRS());
         wmsparams.setWidth(GridCalculator.TILEPIXELS);
         wmsparams.setHeight(GridCalculator.TILEPIXELS);
+        wmsparams.setIsTiled(requestTiled);
         Grid grid = layer.getGrid(tile.getSRS());
         
         BBOX bbox = grid.getGridCalculator().bboxFromGridLocation(tile.getTileIndex());
@@ -112,8 +117,7 @@ public class WMSHttpHelper {
                 throw new GeoWebCacheException("Malformed URL: "
                         + wmsrequest.toString() + " " + maue.getMessage());
             }
-            data = connectAndCheckHeaders(tileRespRecv, wmsBackendUrl,
-                    wmsparams);
+            data = connectAndCheckHeaders(tileRespRecv, wmsBackendUrl,wmsparams);
 
             backendTries++;
         }

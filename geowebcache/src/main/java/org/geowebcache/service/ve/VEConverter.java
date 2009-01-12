@@ -16,6 +16,7 @@
  */
 package org.geowebcache.service.ve;
 
+import java.io.IOException;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,7 +24,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
@@ -47,13 +51,15 @@ public class VEConverter extends Service {
 
     public Tile getTile(HttpServletRequest request, HttpServletResponse response) 
     throws ServiceException  {
-        Map params = request.getParameterMap();
+        Map<String,String[]> params = request.getParameterMap();
         
         String layerId = super.getLayersParameter(request);
         
         String strQuadKey = ServletUtils.stringFromMap(params, "quadkey");
         String strFormat = ServletUtils.stringFromMap(params, "format");
-
+        String strCached = ServletUtils.stringFromMap(params, "cached");
+        String strMetaTiled = ServletUtils.stringFromMap(params, "metatiled");
+        
         int[] gridLoc = VEConverter.convert(strQuadKey);
         
         MimeType mimeType = null;
@@ -65,7 +71,44 @@ public class VEConverter extends Service {
             }
         }
         
-        return new Tile(layerId, SRS.getEPSG900913(), gridLoc, mimeType, request, response);
+        Tile ret = new Tile(layerId, SRS.getEPSG900913(), gridLoc, mimeType, request, response);
+        
+        if(strCached != null && ! Boolean.parseBoolean(strCached)) {
+            ret.setRequestHandler(Tile.RequestHandler.SERVICE);
+            if(strMetaTiled != null && ! Boolean.parseBoolean(strMetaTiled)) {
+                ret.setHint("not_cached,not_metatiled");
+            } else {
+                ret.setHint("not_cached");
+            }
+        }
+        
+        return ret;
+    }
+    
+    /** 
+     * NB The following code is shared across Google Maps, Mobile Google Maps and Virtual Earth
+     */
+    public void handleRequest(TileLayerDispatcher tLD, Tile tile)
+            throws GeoWebCacheException {
+        if (tile.hint != null) {
+            boolean requestTiled = true;
+            if (tile.hint.equals("not_cached,not_metatiled")) {
+                requestTiled = false;
+            } else if (!tile.hint.equals("not_cached")) {
+                throw new GeoWebCacheException("Hint " + tile.hint + " is not known.");
+            }
+
+            TileLayer tl = tLD.getTileLayer(tile.getLayerId());
+
+            if (tl == null) {
+                throw new GeoWebCacheException("Unknown layer " + tile.getLayerId());
+            }
+
+            tile.setTileLayer(tl);
+            tl.getNoncachedTile(tile, requestTiled);
+            
+            Service.writeResponse(tile, false);
+        }
     }
 
     /**

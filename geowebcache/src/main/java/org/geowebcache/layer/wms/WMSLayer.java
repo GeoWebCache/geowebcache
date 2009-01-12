@@ -939,4 +939,13 @@ public class WMSLayer extends TileLayer {
     public void setDebugHeaders(boolean debugheaders) {
         //this.debugheaders = debugheaders;
     }
+
+    public Tile getNoncachedTile(Tile tile, boolean requestTiled)
+            throws GeoWebCacheException {
+
+        byte[] data = WMSHttpHelper.makeRequest(tile,requestTiled);        
+        tile.setContent(data);
+
+        return tile;
+    }
 }

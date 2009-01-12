@@ -181,6 +181,27 @@ public abstract class TileLayer {
     public abstract Tile getTile(Tile tile) 
     throws GeoWebCacheException, IOException;
 
+    
+    /**
+     * Makes a non-metatiled request to backend, bypassing
+     * the cache before and after
+     * 
+     * @param tile
+     * @param requestTiled whether to use tiled=true or not
+     * @return
+     * @throws GeoWebCacheException
+     * @throws IOException
+     */
+    public abstract Tile getNoncachedTile(Tile tile, boolean requestTiled) 
+    throws GeoWebCacheException;
+    
+    /**
+     * 
+     * @param tile
+     * @param tryCache
+     * @throws GeoWebCacheException
+     * @throws IOException
+     */
     public abstract void seedTile(Tile tile, boolean tryCache) 
     throws GeoWebCacheException, IOException;
     
