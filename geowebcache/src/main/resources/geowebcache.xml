@@ -161,7 +161,8 @@
   <transparent>true</transparent>
   <bgColor></bgColor>
   <palette></palette>
-  <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
+  <!-- Vendor parameters are appended to every request to the backend -->
+  <vendorParameters>foobar1=TRUE&amp;foobar2=FALSE</vendorParameters>
   <!-- cachePrefix>/var/lib/geowebcache/topp_states</cachePrefix -->
   <!-- 
   You can specify expiration times in seconds. In the example below
