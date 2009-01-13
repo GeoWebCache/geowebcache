@@ -107,6 +107,11 @@ public class MGMapsConverter extends Service {
                 throw new GeoWebCacheException("Unknown layer " + tile.getLayerId());
             }
 
+            if(! tl.isCacheBypassAllowed().booleanValue()) {
+                throw new GeoWebCacheException("Layer " + tile.getLayerId() 
+                        + " is not configured to allow bypassing the cache.");
+            }
+            
             tile.setTileLayer(tl);
             tl.getNoncachedTile(tile, requestTiled);
             

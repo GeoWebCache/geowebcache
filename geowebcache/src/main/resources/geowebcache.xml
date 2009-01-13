@@ -3,6 +3,8 @@
                   xsi:noNamespaceSchemaLocation="http://geowebcache.org/schema/1.0/geowebcache.xsd" 
                   xmlns="http://geowebcache.org/schema/1.0">
 <version>1.0.0</version>
+<backendTimeout>120</backendTimeout>
+<cacheBypassAllowed>true</cacheBypassAllowed>
 <layers>
  <!-- 
   This is a pretty standard example, suitable for use with 
