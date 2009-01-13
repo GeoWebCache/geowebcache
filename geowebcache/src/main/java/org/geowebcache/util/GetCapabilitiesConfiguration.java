@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -91,8 +92,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
      * 
      * @return the layers described at the given URL
      */
-    public Map<String,TileLayer> getTileLayers() throws GeoWebCacheException {
-        HashMap<String,TileLayer> layerMap = null;
+    public List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
+        List<TileLayer> layers = null;
 
         WebMapServer wms = getWMS();
         if (wms == null) {
@@ -102,14 +103,14 @@ public class GetCapabilitiesConfiguration implements Configuration {
         String wmsUrl = getWMSUrl(wms);
         log.info("Using " + wmsUrl + " to generate URLs for WMS requests");
 
-        layerMap = getLayers(wms, wmsUrl);
-        if (layerMap == null || layerMap.size() < 1) {
+        layers = getLayers(wms, wmsUrl);
+        if (layers == null || layers.size() < 1) {
             log.error("Unable to find any layers based on " + url);
         } else {
-            log.info("Loaded " + layerMap.size() + " layers from " + url);
+            log.info("Loaded " + layers.size() + " layers from " + url);
         }
 
-        return layerMap;
+        return layers;
     }
 
     /**
@@ -130,18 +131,18 @@ public class GetCapabilitiesConfiguration implements Configuration {
         return wmsUrl;
     }
 
-    private HashMap<String,TileLayer> getLayers(WebMapServer wms, String wmsUrl)
+    private List<TileLayer> getLayers(WebMapServer wms, String wmsUrl)
             throws GeoWebCacheException {
-        HashMap<String,TileLayer> layerMap = new HashMap<String,TileLayer>();
+        List<TileLayer> layers = new LinkedList<TileLayer>();
+        
         WMSCapabilities capabilities = wms.getCapabilities();
         if (capabilities == null) {
-            throw new ConfigurationException("Unable to get capabitilies from "
-                    + wmsUrl);
+            throw new ConfigurationException("Unable to get capabitilies from " + wmsUrl);
         }
 
         List<Layer> layerList = capabilities.getLayerList();
-
         Iterator<Layer> layerIter = layerList.iterator();
+        
         while (layerIter.hasNext()) {
             Layer layer = layerIter.next();
             String name = layer.getName();
@@ -192,12 +193,15 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 }
 
                 if (wmsLayer != null) {
-                    layerMap.put(name, wmsLayer);
+                    // Finalize with some defaults
+                    wmsLayer.isCacheBypassAllowed(true);
+                    wmsLayer.setBackendTimeout(120);
+                    layers.add(wmsLayer);
                 }
             }
         }
 
-        return layerMap;
+        return layers;
     }
 
     private WMSLayer getLayer(String name, String[] wmsurl, 

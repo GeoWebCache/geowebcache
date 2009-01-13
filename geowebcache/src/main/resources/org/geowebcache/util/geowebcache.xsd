@@ -8,6 +8,8 @@
   <xs:complexType>
     <xs:sequence>
       <xs:element name="version" type="xs:string" minOccurs="0"/>
+      <xs:element name="backendTimeout" type="xs:integer" minOccurs="0"/>
+      <xs:element name="cacheBypassAllowed" type="xs:boolean" minOccurs="0"/>
       <xs:element name="layers">
         <xs:complexType>
           <xs:sequence>
@@ -37,6 +39,8 @@
      <xs:element name="cachePrefix" type="xs:string" minOccurs="0"/>
      <xs:element name="expireCache" type="xs:integer" minOccurs="0"/>
      <xs:element name="expireClients" type="xs:integer" minOccurs="0"/>
+     <xs:element name="backendTimeout" type="xs:integer" minOccurs="0"/>
+     <xs:element name="cacheBypassAllowed" type="xs:boolean" minOccurs="0"/>
   </xs:sequence>
 </xs:complexType>
 
@@ -69,7 +73,7 @@
   <xs:sequence>
      <xs:element name="srs" type="gwc:srs"/>
      <xs:element name="dataBounds" type="gwc:Bounds"/>
-     <xs:element name="gridBounds" type="gwc:Bounds"/
+     <xs:element name="gridBounds" type="gwc:Bounds"/>
      <xs:element name="zoomStart" type="xs:integer" minOccurs="0" />
      <xs:element name="zoomStop" type="xs:integer" minOccurs="0" />
   </xs:sequence>

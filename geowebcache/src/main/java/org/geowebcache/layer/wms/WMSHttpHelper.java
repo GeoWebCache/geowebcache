@@ -42,12 +42,7 @@ import org.geowebcache.util.wms.BBOX;
  * This class is a wrapper for HTTP interaction with WMS backend
  */
 public class WMSHttpHelper {
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.wms.WMSHttpHelper.class);
-
-    private static int HTTP_CONNECT_TIMEOUT = 120000; // 120s, in ms 
-    
-    private static int HTTP_READ_TIMEOUT = 120000; // 120s, in ms 
+    private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSHttpHelper.class);
     
     /**
      * Used for metatiling requests
@@ -117,7 +112,7 @@ public class WMSHttpHelper {
                 throw new GeoWebCacheException("Malformed URL: "
                         + wmsrequest.toString() + " " + maue.getMessage());
             }
-            data = connectAndCheckHeaders(tileRespRecv, wmsBackendUrl,wmsparams);
+            data = connectAndCheckHeaders(tileRespRecv, wmsBackendUrl, wmsparams, layer.backendTimeout);
 
             backendTries++;
         }
@@ -146,7 +141,9 @@ public class WMSHttpHelper {
      */
     private static byte[] connectAndCheckHeaders(
             TileResponseReceiver tileRespRecv, URL wmsBackendUrl,
-            WMSParameters wmsparams) throws GeoWebCacheException {
+            WMSParameters wmsparams, int backendTimeout) 
+    throws GeoWebCacheException {
+        
         byte[] ret = null;
         HttpURLConnection wmsBackendCon = null;
         int responseCode = -1;
@@ -155,8 +152,8 @@ public class WMSHttpHelper {
         try { // finally
             try {
                 wmsBackendCon = (HttpURLConnection) wmsBackendUrl.openConnection();
-                wmsBackendCon.setConnectTimeout(HTTP_CONNECT_TIMEOUT);
-                wmsBackendCon.setReadTimeout(HTTP_READ_TIMEOUT);
+                wmsBackendCon.setConnectTimeout(backendTimeout * 1000);
+                wmsBackendCon.setReadTimeout(backendTimeout * 1000);
                 
                 responseCode = wmsBackendCon.getResponseCode();
                 responseLength = wmsBackendCon.getContentLength();

@@ -257,6 +257,21 @@ public abstract class TileLayer {
      */
     public abstract int[] getMetaTilingFactors();
 
+    
+    /**
+     * Whether clients may specify cache=false and go straight to source
+     */
+    public abstract Boolean isCacheBypassAllowed();
+    public abstract void isCacheBypassAllowed(boolean allowed);
+    
+    /**
+     * The timeout used when querying the backend server. The same value is used
+     * for both the connection and the data timeout, so in theory the timeout
+     * could be twice this value.
+     */
+    public abstract Integer getBackendTimeout();
+    public abstract void setBackendTimeout(int seconds);
+    
     /**
      * Provides a 2-dim array with the bounds
      * 

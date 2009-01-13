@@ -156,76 +156,83 @@ public class WMSRequests {
      * @return The original WMS capabilities document prior to processing
      * @throws GeoWebCacheException 
      */
-     static synchronized String fetchOriginalWMSCapabilitiesDocument() throws GeoWebCacheException {
+     static synchronized String fetchOriginalWMSCapabilitiesDocument()
+            throws GeoWebCacheException {
         if (getCapsStr != null) {
             return getCapsStr;
         }
         StringBuffer buf = new StringBuffer();
-        
+
         if (getCapConfigs == null) {
-            throw new GeoWebCacheException("No configuration object available" +
-                        " to use for WMS Capabilities");
+            throw new GeoWebCacheException("No configuration object available"
+                    + " to use for WMS Capabilities");
         }
+
         Iterator<Configuration> configIter = getCapConfigs.iterator();
+
         CONFIG: while (configIter.hasNext()) {
-            Map<String, TileLayer> configLayers = null;
+            List<TileLayer> configLayers = null;
             Configuration config = configIter.next();
             try {
-                configLayers = config.getTileLayers();
+                configLayers = config.getTileLayers(false);
             } catch (GeoWebCacheException gwce) {
                 log.error(gwce.getMessage());
-                log.error("Failed to add layers from "+ config.getIdentifier());
+                log.error("Failed to add layers from " + config.getIdentifier());
             }
-            if (configLayers != null && configLayers.size() > 0) {
-                for (TileLayer layer : configLayers.values()) {
-                    if (!(layer instanceof WMSLayer)) {
-                        continue; // skip!
-                    }
-                    WMSLayer wmsLayer = (WMSLayer) layer;
-                    for (String url : wmsLayer.getWMSurl()) {
-                        InputStream input = null;
-                        try {
-                            URL capabilitiesURL = new URL(
-                                    url+ "?REQUEST=GetCapabilities&SERVICE=WMS&VESION=1.1.0");
-                            URLConnection connection = capabilitiesURL.openConnection();
-                            input = connection.getInputStream();
-                            InputStreamReader reader = new InputStreamReader(input);
-                            BufferedReader process = new BufferedReader(reader);
 
-                            buf = new StringBuffer();
-                            String line;
-                            while ((line = process.readLine()) != null) {
-                                buf.append(line);
-                                buf.append("\n");
-                            }
-                            if (buf.length() != 0) {
-                                break CONFIG; // we managed to read a
-                                              // capabilities into buf
-                            }
-                            /*
-                             * // TODO only use the parts of the capabilities
-                             * file that // are mentioned in our configuration!
-                             * 
-                             * WebMapServer wms = new
-                             * WebMapServer(capabilitiesURL); WMSCapabilities
-                             * capabilities = wms.getCapabilities();
-                             */
-                        } catch (Throwable notConnected) {
-                            // continue WMSURL
-                        } finally {
-                            if(input != null) {
-                                try {
-                                    input.close();
-                                } catch (IOException ioe) {
-                                    // Do nothing.
-                                }
-                            }
+            Iterator<TileLayer> iter = null;
+
+            if (configLayers != null) {
+                iter = configLayers.iterator();
+            }
+
+            while (iter != null && iter.hasNext()) {
+                TileLayer layer = iter.next();
+                WMSLayer wmsLayer;
+
+                if (!(layer instanceof WMSLayer)) {
+                    continue;
+                } else {
+                    wmsLayer = (WMSLayer) layer;
+                }
+
+                String url = wmsLayer.getWMSurl()[0];
+                InputStream input = null;
+                try {
+                    URL capabilitiesURL = new URL(
+                            url + "?REQUEST=GetCapabilities&SERVICE=WMS&VESION=1.1.0");
+                    URLConnection connection = capabilitiesURL.openConnection();
+                    input = connection.getInputStream();
+                    InputStreamReader reader = new InputStreamReader(input);
+                    BufferedReader process = new BufferedReader(reader);
+
+                    buf = new StringBuffer();
+                    String line;
+                    while ((line = process.readLine()) != null) {
+                        buf.append(line);
+                        buf.append("\n");
+                    }
+                    if (buf.length() != 0) {
+                        break CONFIG; // we managed to read a capabilities into buf
+                    }
+                    /*
+                     * // TODO only use the parts of the capabilities file that
+                     * // are mentioned in our configuration!
+                     * 
+                     * WebMapServer wms = new WebMapServer(capabilitiesURL);
+                     * WMSCapabilities capabilities = wms.getCapabilities();
+                     */
+                } catch (Throwable notConnected) {
+                    // continue WMSURL
+                } finally {
+                    if (input != null) {
+                        try {
+                            input.close();
+                        } catch (IOException ioe) {
+                            // Do nothing.
                         }
                     }
                 }
-            } else {
-                log.error("Configuration " + config.getIdentifier()
-                        + " contained no layers.");
             }
         }
         getCapsStr = buf.toString();
