@@ -2,6 +2,7 @@ package org.geowebcache.util;
 
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -20,7 +21,7 @@ public class XMLConfigurationTest extends TestCase {
     }
 
     public void testLoadPre10() throws Exception {
-        Map<String, TileLayer> layers = loadResource("geowebcache_pre10.xml");
+        List<TileLayer> layers = loadResource("geowebcache_pre10.xml");
         TileLayer layer = findLayer(layers, "topp:states");
         assertTrue(layer != null);
         TileLayer layer2 = findLayer(layers, "topp:states2");
@@ -30,7 +31,7 @@ public class XMLConfigurationTest extends TestCase {
     }
         
     public void testLoad10() throws Exception {
-        Map<String, TileLayer> layers = loadResource("geowebcache_10.xml");
+        List<TileLayer> layers = loadResource("geowebcache_10.xml");
         TileLayer layer = findLayer(layers, "topp:states");
         assertTrue(layer != null);
         assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
@@ -40,14 +41,31 @@ public class XMLConfigurationTest extends TestCase {
         assertTrue(grid != null);
     }
     
-    private TileLayer findLayer(Map<String, TileLayer> layers, String layerName) 
+    public void testLoad101() throws Exception {
+        List<TileLayer> layers = loadResource("geowebcache_101.xml");
+        TileLayer layer = findLayer(layers, "topp:states");
+        assertTrue(layer != null);
+        assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
+        TileLayer layer2 = findLayer(layers, "topp:states2");
+        Grid grid = layer2.getGrid(SRS.getSRS(2163));
+        assertTrue(layer2 != null);
+        assertTrue(grid != null);
+        
+        // The additions in 1.0.1 are allowCacheBypass and backendTimeout
+        assertEquals(layer.getBackendTimeout().intValue(), 60);
+        assertEquals(layer2.getBackendTimeout().intValue(), 235);
+        assertEquals(layer.isCacheBypassAllowed().booleanValue(), true);
+        assertEquals(layer2.isCacheBypassAllowed().booleanValue(), false);
+    }
+    
+    private TileLayer findLayer(List<TileLayer> layers, String layerName) 
     throws GeoWebCacheException {
-        Iterator<Entry<String, TileLayer>> iter = layers.entrySet().iterator();
+        Iterator<TileLayer> iter = layers.iterator();
         
         while(iter.hasNext()) {
-            Entry<String, TileLayer> entry = iter.next();
-            if(entry.getValue().getName().equals(layerName)) {
-                return entry.getValue();
+            TileLayer layer = iter.next();
+            if(layer.getName().equals(layerName)) {
+                return layer;
             }
         }
         
@@ -55,11 +73,11 @@ public class XMLConfigurationTest extends TestCase {
                 " not found, set has " + layers.size() + " layers.");
     }
     
-    private Map<String, TileLayer> loadResource(String fileName) throws Exception {
+    private List<TileLayer> loadResource(String fileName) throws Exception {
         InputStream is = XMLConfiguration.class.getResourceAsStream(fileName);
         
-        XMLConfiguration xmlConfig = new XMLConfiguration();
+        XMLConfiguration xmlConfig = new XMLConfiguration(is);
         
-        return xmlConfig.getTileLayers(is);
+        return xmlConfig.getTileLayers(false);
     }
 }

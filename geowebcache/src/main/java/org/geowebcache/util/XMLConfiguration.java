@@ -17,13 +17,11 @@
 package org.geowebcache.util;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -55,9 +53,9 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.context.WebApplicationContext;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.thoughtworks.xstream.XStream;
@@ -84,6 +82,8 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
     private FileCache fileCache = null;
     
+    private GeoWebCacheConfiguration gwcConfig = null;
+    
     /**
      * XMLConfiguration class responsible for reading/writing layer
      * configurations to and from XML file
@@ -95,6 +95,33 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     }
 
     public XMLConfiguration() {
+    }
+    
+    /**
+     * Used for unit testing, since the file handle is difficult to get there
+     * 
+     * @param is
+     */
+    public XMLConfiguration(InputStream is) throws Exception {
+        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+        docBuilderFactory.setNamespaceAware(true);
+        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+        
+        XStream xs = getConfiguredXStream(new XStream());
+
+        gwcConfig = (GeoWebCacheConfiguration) 
+            xs.unmarshal(new DomReader((Element) checkAndTransform(docBuilder.parse(is))));
+        
+        List<TileLayer> layers = gwcConfig.layers;
+        
+        // Add the cache factor to each layer object
+        if(layers != null) {
+            Iterator<TileLayer> iter = layers.iterator();
+            while(iter.hasNext()) {
+                TileLayer layer = iter.next();
+                setDefaultValues(layer);
+            }
+        }
     }
     
     private File findConfFile() throws GeoWebCacheException {
@@ -123,58 +150,69 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
      * Method responsible for loading XML configuration file
      * 
      */
-    public Map<String, TileLayer> getTileLayers() throws GeoWebCacheException {
-        File xmlFile = findConfFile();
-        
-        FileInputStream confFile = null;
-        try {
-            confFile = new FileInputStream(xmlFile);
-        } catch (FileNotFoundException e1) {
-            log.error("The file " + xmlFile.getAbsolutePath() + " could not be found. " +
-            		"If you are running GWC in GeoServer this is probably not a problem.");
-            return null;
+    public List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
+        if(this.gwcConfig == null || reload) {
+            File xmlFile = findConfFile();
+            loadConfiguration(xmlFile);
         }
         
-        return getTileLayers(confFile);
+        List<TileLayer> layers = gwcConfig.layers;
+        
+        // Add the cache factor to each layer object
+        if(layers != null) {
+            Iterator<TileLayer> iter = layers.iterator();
+            while(iter.hasNext()) {
+                TileLayer layer = iter.next();
+                setDefaultValues(layer);
+            }
+        }
+        return layers;
     }
     
-    protected Map<String, TileLayer> getTileLayers(InputStream confFile) 
+    private void setDefaultValues(TileLayer layer) {
+        layer.setCacheFactory(this.cacheFactory);
+        
+        //Additional values that can have defaults set
+        if(layer.isCacheBypassAllowed() == null) {
+            if(gwcConfig.cacheBypassAllowed !=  null) {
+                layer.isCacheBypassAllowed(gwcConfig.cacheBypassAllowed);
+            } else {
+                layer.isCacheBypassAllowed(false);
+            }
+        }
+        
+        if(layer.getBackendTimeout() == null) {
+            if(gwcConfig.backendTimeout != null) {
+                layer.setBackendTimeout(gwcConfig.backendTimeout);
+            } else {
+                layer.setBackendTimeout(120);
+            }
+        }
+    }
+    
+    private void loadConfiguration(File xmlFile) 
     throws GeoWebCacheException {
         
-        HashMap<String, TileLayer> layers = new HashMap<String, TileLayer>();
+        Node rootNode = loadDocument(xmlFile);
+        XStream xs = getConfiguredXStream(new XStream());
 
-        Node layersRoot = loadIntoDocument(confFile);
-
-        if(layersRoot != null) {
-            XStream xs = getConfiguredXStream(new XStream());
-
-            NodeList allLayerNodes = layersRoot.getChildNodes();
-           
-            TileLayer result = null;
-            for (int i = 0; i < allLayerNodes.getLength(); i++) {
-                if (allLayerNodes.item(i) instanceof Element) {
-                    Element e = (Element) allLayerNodes.item(i);
-                    if (e.getTagName().equalsIgnoreCase("wmsLayer"))
-                        result = (WMSLayer) xs.unmarshal(new DomReader(
-                                (Element) allLayerNodes.item(i)));
-                    result.setCacheFactory(this.cacheFactory);
-                    layers.put(result.getName(), result);
-                }
-            }
-        } else {
-            throw new ConfigurationException("Root element was null");
-        }
-
-        return layers;
+        gwcConfig = (GeoWebCacheConfiguration) 
+            xs.unmarshal(new DomReader((Element) rootNode));
     }
 
     public static XStream getConfiguredXStream(XStream xstream) {
         XStream xs = xstream;
         xs.setMode(XStream.NO_REFERENCES);
         
-        xs.alias("layer", TileLayer.class);
+        xs.alias("gwcConfiguration", GeoWebCacheConfiguration.class);
+        xs.aliasType("version", String.class);
+        xs.aliasType("backendTimeout", Integer.class);
+        xs.aliasType("cacheBypassAllowed", Boolean.class);
+        
+        xs.alias("layers", List.class);
+        //xs.alias("layer", TileLayer.class);
         xs.alias("wmsLayer", WMSLayer.class);
-        //xs.aliasField("layer-name", TileLayer.class, "name");
+        xs.aliasType("name", String.class);
         xs.alias("grids", new ArrayList<Grid>().getClass());
         xs.alias("grid", Grid.class);
         xs.aliasType("format", String.class);
@@ -183,9 +221,6 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         xs.aliasType("errorMime", String.class);
         xs.aliasType("cachePrefix", String.class);
         xs.alias("metaWidthHeight", new int[1].getClass());
-        //xs.alias("width", Integer.class);
-        //xs.alias("height", Integer.class);
-        xs.aliasType("version", String.class);
         xs.alias("tiled", boolean.class);
         xs.alias("transparent", boolean.class);
         xs.alias("srs", org.geowebcache.layer.SRS.class);
@@ -195,36 +230,25 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         
         xs.alias("expireCache", int.class);
         xs.alias("expireClients", int.class);
-        //xs.alias("debugheaders", boolean.class);
-        
+
         return xs;
     }
 
     /**
-     * Method responsible for writing out TileLayer objects
+     * Method responsible for writing out the entire 
+     * GeoWebCacheConfiguration object
      * 
-     * @param tl
-     *            a new TileLayer object to be serialized to XML
      * @return true if operation succeeded, false otherwise
      */
 
-    public boolean createLayer(TileLayer tl) throws GeoWebCacheException {
+    public boolean persist() throws GeoWebCacheException {
         File xmlFile = findConfFile();
-
-        // load configurations into Document
-        Node layersRoot = null;
-        try {
-            layersRoot = loadIntoDocument(new FileInputStream(xmlFile));
-        } catch (FileNotFoundException e1) {
-            log.error("The file " + xmlFile.getAbsolutePath() + " could not be found.");
-        }
-        
         // create the XStream for serializing tileLayers to XML
         XStream xs = getConfiguredXStream(new XStream());
         // sent to XML
-        xs.marshal(tl, new DomWriter((Element) layersRoot));
+        xs.marshal(gwcConfig, new DomWriter((Element) gwcConfig));
 
-        org.w3c.dom.Document doc = createDocument();
+        Document doc = createDocument();
         
         try {
             DOMSource source = new DOMSource(doc);
@@ -243,26 +267,15 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         return true;
 
     }
-
     
-    private org.w3c.dom.Document createDocument() {
+    private Document createDocument() {
         DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
         docBuilderFactory.setNamespaceAware(true);
-
-        // Added to do XSD validation
-        // docBuilderFactory.setAttribute(
-        // "http://java.sun.com/xml/jaxp/properties/schemaSource",
-        // "file:./test.xsd");
-        // docBuilderFactory.setValidating(true);
-        // docBuilderFactory.setAttribute(
-        // "http://java.sun.com/xml/jaxp/properties/schemaLanguage",
-        // "http://www.w3.org/2001/XMLSchema");
 
         DocumentBuilder docBuilder = null;
         try {
             docBuilder = docBuilderFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e1) {
-            // TODO Auto-generated catch block
             e1.printStackTrace();
         }
 
@@ -279,12 +292,26 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
      * @return true if operation succeeded, false otherwise
      */
 
-    public boolean modifyLayer(String currentLayer, TileLayer tl) throws GeoWebCacheException {
-
-        return deleteLayer(currentLayer) && createLayer(tl);
-
+    public boolean modifyLayer(TileLayer tl) {        
+        tl.setCacheFactory(cacheFactory);
+        boolean response = gwcConfig.replaceLayer(tl);
+        
+        if(response) {
+            //TODO save
+        }
+        return response;
     }
 
+    public boolean addLayer(TileLayer tl) {
+        tl.setCacheFactory(cacheFactory);
+        
+        boolean response = gwcConfig.addLayer(tl);
+        
+        if(response) {
+            //TODO save
+        }
+        return response;
+    }
     /**
      * Method responsible for deleting existing layers
      * 
@@ -292,75 +319,13 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
      *            the name of the layer to be deleted
      * @return true if operation succeeded, false otherwise
      */
-    public boolean deleteLayer(String layerName) {
-        if (configH == null) {
-            determineConfigDirH();
-        }
-
-        File xmlFile = null;
-        if (configH == null) {
-            log.error("deleteLayer() - Missing XML configuration file?");
-            return false;
-        } else {
-            // Find the configuration file
-            xmlFile = new File(configH.getAbsolutePath() + File.separator
-                    + "geowebcache.xml");
-        }
-
-        if (xmlFile != null) {
-            log.trace("Found configuration file in "
-                    + configH.getAbsolutePath());
-        } else {
-            log.error("Found no configuration file in "
-                    + configH.getAbsolutePath());
-            return false;
-        }
-
-        // load configurations into Document
-        Node layersNode = null;
-        try {
-            layersNode = loadIntoDocument(new FileInputStream(xmlFile));
-        } catch (ConfigurationException e1) {
-            log.error("Exception occured while creating documet from file " + xmlFile.getAbsolutePath());;
-        } catch (FileNotFoundException e) {
-            log.error("The file " + xmlFile.getAbsolutePath() + " could not be found.");
-        }
-
-        NodeList wmsLayerNodes = layersNode.getChildNodes();
-
-        // Lets go looking for the node, XPath anyone?
-        DONE: if (wmsLayerNodes.getLength() == 0)
-            return false;
-        else {
-            for (int i = 0; i < wmsLayerNodes.getLength(); i++) {
-                Node layerNode = wmsLayerNodes.item(i);
-                NodeList layerFields = layerNode.getChildNodes();
-                for (int j = 0; j < layerFields.getLength(); j++) {
-                    layerFields.item(j).getNodeName().equals("name");
-                    if (layerFields.item(j).getNodeValue().equals(layerName)) {
-                        layersNode.removeChild(layerNode);
-                        break DONE;
-                    }
-                }
-            }
-        }
+    public boolean deleteLayer(TileLayer layer) {
+        boolean response = gwcConfig.removeLayer(layer);
         
-        org.w3c.dom.Document doc = createDocument();
-
-        try {
-            DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(xmlFile);
-
-            // write the DOM to the file
-            Transformer xformer = TransformerFactory.newInstance()
-                    .newTransformer();
-            xformer.transform(source, result);
-        } catch (TransformerConfigurationException e) {
-            log.error("XMLConfiguration encountered " + e.getMessage());
-        } catch (TransformerException e) {
-            log.error("XMLConfiguration encountered " + e.getMessage());
+        if(response) {
+            //TODO save
         }
-        return true;
+        return response;
     }
 
     /**
@@ -371,65 +336,57 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
      *            the file contaning the layer configurations
      * @return W3C DOM Document
      */
-    private org.w3c.dom.Node loadIntoDocument(InputStream xmlFile) throws ConfigurationException {
-        org.w3c.dom.Node layersNode = null;
+    private Node loadDocument(File xmlFile) throws ConfigurationException {
+        Node topNode = null;
         try {
-            //http://www.javaworld.com/javaworld/jw-08-2005/jw-0808-xml.html?page=3
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             docBuilderFactory.setNamespaceAware(true);
-            
-            // Added to do XSD validation
-            //docBuilderFactory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", "file:./test.xsd");
-            //docBuilderFactory.setValidating(true);
-            //docBuilderFactory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
-
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-
-            layersNode = checkAndTransform(docBuilder.parse(xmlFile));
-            
+            topNode = checkAndTransform(docBuilder.parse(xmlFile));
         } catch (ParserConfigurationException pce) {
             log.error(pce.getMessage());
             pce.printStackTrace();
         } catch (IOException ei) {
-            throw new ConfigurationException("Error parsing file");
+            throw new ConfigurationException("Error parsing file " + xmlFile.getAbsolutePath());
         } catch (SAXException saxe) {
             log.error(saxe.getMessage());
         }
-        return layersNode;
+        
+        if(topNode == null) {
+            throw new ConfigurationException("Error parsing file " + xmlFile.getAbsolutePath() 
+                    + ", top node came out as null");
+        }
+        
+        return topNode;
     }
     
-    private org.w3c.dom.Node checkAndTransform(org.w3c.dom.Document doc)
+    private Node checkAndTransform(Document doc)
             throws ConfigurationException {
         Node rootNode = doc.getDocumentElement();
 
-        if (rootNode.getNodeName().equals("gwcConfiguration")) {
-            // This file should be okay
-            rootNode = doc.getDocumentElement();
-        } else {
+        if (!rootNode.getNodeName().equals("gwcConfiguration")) {
             log.info("The configuration file is of the old type, trying to convert.");
 
             DOMResult result = new DOMResult();
             Transformer transformer;
-            
+
             InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache_pre10.xsl");
-            
+
             try {
                 transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(is));
                 transformer.transform(new DOMSource(rootNode), result);
             } catch (TransformerConfigurationException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (TransformerFactoryConfigurationError e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (TransformerException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            
+
             rootNode = result.getNode().getFirstChild();
         }
 
+        // Check again after transform
         if (!rootNode.getNodeName().equals("gwcConfiguration")) {
             log.error("Unable to parse file, expected gwcConfiguration at root after transform.");
             throw new ConfigurationException("Unable to parse after transform.");
@@ -438,32 +395,21 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
             SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd");
 
-            // parsing the schema file
+            // Parsing the schema file
             try {
                 Schema schema = factory.newSchema(new StreamSource(is));
                 Validator validator = schema.newValidator();
                 validator.validate(new DOMSource(rootNode));
                 log.info("Configuration file validated fine.");
             } catch (SAXException e) {
-                log.error(e.getMessage());
+                log.info(e.getMessage());
                 log.info("Will try to use configuration anyway.");
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
- 
-            Node levelOne = rootNode.getFirstChild();
-            while (levelOne != null) {
-                if (levelOne.getNodeName().equals("layers")) {
-                    return levelOne;
-                }
-
-                levelOne = levelOne.getNextSibling();
-            }
         }
-
-        return null;
-
+        
+        return rootNode;
     }
     
     public void determineConfigDirH() {
@@ -494,8 +440,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
                     if (tmpPath.exists() && tmpPath.canRead()) {
                         String filePath = tmpPath.getAbsolutePath();
                         configH = new File(filePath.substring(0, 
-                                filePath.length()
-                                - CONFIGURATION_FILE_NAME.length() - 1));
+                                filePath.length()- CONFIGURATION_FILE_NAME.length() - 1));
                     }
                 } catch (CacheException ce) {
                     // Ignore

@@ -105,7 +105,7 @@ public class TileLayerDispatcher {
 
         Iterator<Configuration> configIter = configs.iterator();
         while (configIter.hasNext()) {
-            Map<String, TileLayer> configLayers = null;
+            List<TileLayer> configLayers = null;
 
             Configuration config = configIter.next();
 
@@ -118,7 +118,8 @@ public class TileLayerDispatcher {
             
             if (configIdent != null) {
                 try {
-                    configLayers = config.getTileLayers();
+                    // This is used by reload as well
+                    configLayers = config.getTileLayers(true);
                 } catch (GeoWebCacheException gwce) {
                     log.error(gwce.getMessage());
                     log.error("Failed to add layers from " + configIdent);
@@ -126,11 +127,11 @@ public class TileLayerDispatcher {
 
                 log.info("Adding layers from " + configIdent);
                 if (configLayers != null && configLayers.size() > 0) {
-                    Iterator<Entry<String, TileLayer>> iter = configLayers
-                            .entrySet().iterator();
+                    Iterator<TileLayer> iter = configLayers.iterator();
+                    
                     while (iter.hasNext()) {
-                        Entry<String, TileLayer> one = iter.next();
-                        layers.put(one.getKey(), one.getValue());
+                        TileLayer layer = iter.next();
+                        layers.put(layer.getName(), layer);
                     }
                 } else {
                     log.error("Configuration " + configIdent

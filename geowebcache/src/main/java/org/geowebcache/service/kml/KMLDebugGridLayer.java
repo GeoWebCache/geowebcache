@@ -399,4 +399,22 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
         return null;
     }
 
+    @Override
+    public Boolean isCacheBypassAllowed() {
+        return false;
+    }
+
+    @Override
+    public void isCacheBypassAllowed(boolean allowed) {
+    }
+
+    @Override
+    public Integer getBackendTimeout() {
+        return null;
+    }
+
+    @Override
+    public void setBackendTimeout(int seconds) {
+    }
+
 }

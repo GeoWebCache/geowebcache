@@ -83,6 +83,10 @@ public class WMSLayer extends TileLayer {
     private int expireCache = -1;
     
     private int expireClients = -1;
+    
+    protected Integer backendTimeout;
+    
+    protected Boolean cacheBypassAllowed;
 
     private transient int curWmsURL;
 
@@ -924,6 +928,22 @@ public class WMSLayer extends TileLayer {
     //    this.height = h;
     //}
 
+    public Boolean isCacheBypassAllowed() {
+        return cacheBypassAllowed;
+    }
+
+    public void isCacheBypassAllowed(boolean allowed) {
+        cacheBypassAllowed = Boolean.valueOf(allowed);
+    }
+    
+    public Integer getBackendTimeout() {
+        return backendTimeout;
+    }
+
+    public void setBackendTimeout(int seconds) {
+        backendTimeout = seconds;
+    }
+    
     public void setVersion(String version) {
         this.version = version;
     }
@@ -948,4 +968,5 @@ public class WMSLayer extends TileLayer {
 
         return tile;
     }
+
 }

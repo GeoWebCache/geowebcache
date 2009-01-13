@@ -325,15 +325,7 @@ public class TileLayerResource extends GWCResource {
             
             // The layer we are posting to is null, so we need to create a new one
             if(currentLayer == null){
-                boolean tryCreate = false;
-                try {
-                    tryCreate = xmlConfig.createLayer(tileLayer);
-                } catch (GeoWebCacheException gwce) {
-                    // Not much we can do
-                    log.error(gwce.getMessage());
-                }
-                
-                if (tryCreate) {
+                if (xmlConfig.addLayer(tileLayer)) {
                     log.info("Added layer : " + tileLayer.getName());
                     getResponse().setStatus(Status.SUCCESS_OK);
                 } else {
@@ -342,12 +334,9 @@ public class TileLayerResource extends GWCResource {
             } else {
                 //the layer we are posting to is not null, so we are trying to modify it
                 boolean trySave = false;
-                try {
-                    trySave = xmlConfig.modifyLayer(currentLayer.getName(), tileLayer);
-                } catch (GeoWebCacheException gwce) {
-                    // Not much we can do
-                    log.error(gwce.getMessage());
-                }
+                
+                trySave = xmlConfig.modifyLayer(tileLayer);
+
                 if (trySave) {
                     log.info("Overwrote layer : " + currentLayer.getName() 
                             + " with new layer : " + tileLayer.getName());
@@ -384,10 +373,11 @@ public class TileLayerResource extends GWCResource {
             return;
         }
 
-        log.info("Received DELETE request for resource "
-                + currentLayer.getName());
+        log.info("Received DELETE request for resource " + currentLayer.getName());
+        
         tlDispatcher.getLayers().remove(currentLayer.getName());
-        if (xmlConfig.deleteLayer(currentLayer.getName())) {
+        
+        if (xmlConfig.deleteLayer(currentLayer)) {
             log.info("Deleted layer : " + currentLayer.getName());
             getResponse().setStatus(Status.SUCCESS_OK);
         } else {
