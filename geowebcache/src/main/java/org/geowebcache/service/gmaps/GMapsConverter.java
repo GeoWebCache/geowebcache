@@ -97,6 +97,7 @@ public class GMapsConverter extends Service {
             throws GeoWebCacheException {
         if (tile.hint != null) {
             boolean requestTiled = true;
+            
             if (tile.hint.equals("not_cached,not_metatiled")) {
                 requestTiled = false;
             } else if (!tile.hint.equals("not_cached")) {
@@ -105,8 +106,13 @@ public class GMapsConverter extends Service {
 
             TileLayer tl = tLD.getTileLayer(tile.getLayerId());
 
-            if (tl == null) {
+            if(tl == null) {
                 throw new GeoWebCacheException("Unknown layer " + tile.getLayerId());
+            }
+            
+            if(! tl.isCacheBypassAllowed().booleanValue()) {
+                throw new GeoWebCacheException("Layer " + tile.getLayerId() 
+                        + " is not configured to allow bypassing the cache.");
             }
 
             tile.setTileLayer(tl);
