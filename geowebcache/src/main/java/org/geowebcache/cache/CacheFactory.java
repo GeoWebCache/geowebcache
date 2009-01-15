@@ -74,7 +74,7 @@ public class CacheFactory implements ApplicationContextAware {
      * @return default cache
      */
     public Cache getDefaultCache() {
-        if(caches.size() > 1) {
+        if(caches == null || caches.size() > 1) {
             log.warn("Received request for default cache, returning " + defaultCacheBeanId);
             return getCache(defaultCacheBeanId);
         } else {
