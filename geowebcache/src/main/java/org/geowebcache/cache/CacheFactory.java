@@ -74,9 +74,13 @@ public class CacheFactory implements ApplicationContextAware {
      * @return default cache
      */
     public Cache getDefaultCache() {
-        log.warn("Received request for default cache, returning "
-                + defaultCacheBeanId);
-        return getCache(defaultCacheBeanId);
+        if(caches.size() > 1) {
+            log.warn("Received request for default cache, returning " + defaultCacheBeanId);
+            return getCache(defaultCacheBeanId);
+        } else {
+            // Oh so ugly...
+            return caches.entrySet().iterator().next().getValue();
+        }
     }
 
     /**
@@ -94,6 +98,13 @@ public class CacheFactory implements ApplicationContextAware {
             caches.put(entry.getKey(), entry.getValue());
             log.debug("Added cache bean for " + entry.getValue().getClass().toString());
         }
+    }
+    
+    /** 
+     * This should only be used during testing
+     */
+    public void setCaches(HashMap<String, Cache> cacheMap) {
+        caches = cacheMap;
     }
 
     public void setDefaultCacheBeanId(String defaultCacheBeanId) {

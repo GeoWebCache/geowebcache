@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -43,12 +44,15 @@ import javax.xml.validation.Validator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheFactory;
+import org.geowebcache.cache.CacheKeyFactory;
 import org.geowebcache.cache.file.FileCache;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.rest.seed.SeedRequest;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -77,6 +81,8 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     private String absPath = null;
 
     private String relPath = null;
+    
+    private boolean mockConfiguration = false;
 
     private File configH = null;
 
@@ -114,7 +120,14 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         
         List<TileLayer> layers = gwcConfig.layers;
         
-        // Add the cache factor to each layer object
+        mockConfiguration = true;
+        
+        cacheFactory = new CacheFactory( new CacheKeyFactory() );
+        HashMap<String,Cache> cacheMap = new HashMap<String,Cache>();
+        cacheMap.put("test", (Cache) new FileCache());
+        cacheFactory.setCaches(cacheMap);
+        
+        // Add the cache factory to each layer object
         if(layers != null) {
             Iterator<TileLayer> iter = layers.iterator();
             while(iter.hasNext()) {
@@ -151,7 +164,8 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
      * 
      */
     public List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
-        if(this.gwcConfig == null || reload) {
+        if( ! mockConfiguration && 
+                (this.gwcConfig == null || reload)) {
             File xmlFile = findConfFile();
             loadConfiguration(xmlFile);
         }
@@ -230,6 +244,8 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         
         xs.alias("expireCache", int.class);
         xs.alias("expireClients", int.class);
+        
+        xs.alias("seedRequest", SeedRequest.class);
 
         return xs;
     }
@@ -479,6 +495,10 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     }
 
     public String getIdentifier() throws GeoWebCacheException {
+        if(mockConfiguration) {
+            return "Mock configuration";
+        }
+        
         if(configH == null) {
             this.findConfFile();           
         }

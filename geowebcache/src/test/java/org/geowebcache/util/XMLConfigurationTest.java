@@ -14,7 +14,8 @@ import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 
 public class XMLConfigurationTest extends TestCase {
-
+    public static String LATEST_FILENAME = "geowebcache_101.xml";
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -42,7 +43,7 @@ public class XMLConfigurationTest extends TestCase {
     }
     
     public void testLoad101() throws Exception {
-        List<TileLayer> layers = loadResource("geowebcache_101.xml");
+        List<TileLayer> layers = loadResource(LATEST_FILENAME);
         TileLayer layer = findLayer(layers, "topp:states");
         assertTrue(layer != null);
         assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");

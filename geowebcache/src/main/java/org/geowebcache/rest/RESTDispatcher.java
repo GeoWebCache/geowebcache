@@ -12,175 +12,102 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Marius Suta / The Open Planning Project 2008 
+ *  @author David Winslow / The Open Planning Project 2008 
  */
 package org.geowebcache.rest;
 
-import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.util.XMLConfiguration;
 
 import org.restlet.Restlet;
 import org.restlet.Router;
-import com.noelios.restlet.ext.servlet.ServletConverter;
-
+import org.restlet.resource.StringRepresentation;
 import org.springframework.beans.BeansException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
 
-import java.util.concurrent.*;
+import com.noelios.restlet.ext.servlet.ServletConverter;
 
 /**
- * The RESTDispatcher is responsible for routing all incoming requests made
- * through the rest interface
+ * Simple AbstractController implementation that does the translation between
+ * Spring requests and Restlet requests.
  */
 public class RESTDispatcher extends AbstractController {
-    private static Log log = LogFactory.getLog(org.geowebcache.rest.RESTDispatcher.class);
-    
-    public static final String METHOD_PUT = "PUT";
-
-    public static final String METHOD_DELETE = "DELETE";
-
-    private static final int THREAD_NUMBER = 16;
-    
-    static final int THREAD_MAX_NUMBER = 32;
-    
-    private final XMLConfiguration xmlConfig;
-    
-    private final TileLayerDispatcher tlDispatcher;
-    
-    private final SeederThreadPoolExecutor stpe;
-
-    //private static Map<String, TileLayer> layers = null;
+    public static String METHOD_PUT = "PUT";
+    public static String METHOD_DELETE = "DELETE";
     
     ServletConverter myConverter;
-
-    private Router myRouter;
-
-    private static RESTDispatcher instance;
     
-    
+    private Router myRouter = new Router();
 
-    /**
-     * RESTDispatcher constructor
-     * 
-     * @param c - an XMLConfiguration
-     */
-    public RESTDispatcher(TileLayerDispatcher tlDispatcher, XMLConfiguration xmlConfig) {
+    public RESTDispatcher(Map map) {
         super();
-        setSupportedMethods(
-                new String[] { METHOD_GET, METHOD_POST, METHOD_DELETE }
-                );
+        setSupportedMethods(new String[] {
+                METHOD_GET, METHOD_POST, METHOD_PUT, METHOD_DELETE, METHOD_HEAD
+            });
+        addRoutes(map);
         
-        this.xmlConfig = xmlConfig;
-        this.tlDispatcher = tlDispatcher;
-        this.stpe = new SeederThreadPoolExecutor( 
-                THREAD_NUMBER, THREAD_MAX_NUMBER, Long.MAX_VALUE, TimeUnit.SECONDS, 
-                new LinkedBlockingQueue<Runnable>());
-        this.instance = this;
-    }
-    
-    protected static RESTDispatcher getInstance(){
-        return instance;
-    }
-    /**
-     * Method returns the core thread pool size
-     * @return
-     */
-    public static int getNumThreads(){
-        return THREAD_NUMBER; 
+        myRouter.attach("", new IndexRestlet(myRouter));
     }
 
     protected void initApplicationContext() throws BeansException {
         super.initApplicationContext();
-        myConverter = new ServletConverter(getServletContext());
-        myConverter.setTarget(createRoot());
-    }
 
-    /**
-     * Destroy function, has to be referenced in bean declaration:
-     * <bean ... destroy="destroy">...</bean>
-     */
-    public void destroy() {
-        log.info("RESTDispatcher.destroy() was invoked, shutting down.");
-        
-        // Shut down all the waiting and running tasks... brutally
-        stpe.shutdownNow();
+        myConverter = new ServletConverter(getServletContext());
+        myConverter.setTarget(myRouter);
     }
     
-    /**
-     * Method is responsible for handling HTTP requests
-     *  
-     */
-    protected ModelAndView handleRequestInternal(HttpServletRequest request,
-            HttpServletResponse response) {
+    protected ModelAndView handleRequestInternal(HttpServletRequest req, HttpServletResponse resp)
+        throws Exception {
+        
         try {
-            //layers = (HashMap<String, TileLayer>) tlDispatcher.getLayers();
-            myConverter.service(request, response);
-        } catch (ServletException se) {
-            log.error(se.getMessage());
-        } catch (IOException ioe) {
-            log.error(ioe.getMessage());
+            myConverter.service(req, resp);
         }
-        //TODO WRITE ERROR OR SOMETHING
+        catch( Exception e ) {
+            RestletException re = null;
+            if ( e instanceof RestletException ) {
+                re = (RestletException) e;
+            }
+            if ( re == null && e.getCause() instanceof RestletException ) {
+                re = (RestletException) e.getCause();
+            }
+            
+            if ( re != null ) {
+                resp.setStatus( re.getStatus().getCode() );
+                // This does not actually write anything?
+                //re.getRepresentation().write(resp.getOutputStream());
+                
+                String reStr = re.getRepresentation().getText();
+                resp.getOutputStream().write(reStr.getBytes());
+                
+                resp.getOutputStream().flush();
+            }
+            else {
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                new StringRepresentation( e.getMessage() ).write( resp.getOutputStream() );
+                resp.getOutputStream().flush();
+            }
+        }
+            
         return null;
     }
-    
-    
-    /**
-     * Method instantiates the restlet router
-     * 
-     * @return router
-     */
 
-    public Restlet createRoot() {
-        if (myRouter == null) {
-            myRouter = new Router();
-            myRouter.attach("/", RESTIndexResource.class);
-            myRouter.attach("/layers", TileLayerResource.class);
-            myRouter.attach("/seed", SeedResource.class);
-            myRouter.attach("/rest/seed", SeedResource.class);
-            myRouter.attach("/seed/{layer}", SeedPageResource.class);
-            myRouter.attach("/rest/seed/{layer}", SeedPageResource.class);
-            myRouter.attach("/reload", ReloadPageResource.class);
-            myRouter.attach("/rest/reload", ReloadPageResource.class);
+    private void addRoutes(Map m){
+        Iterator it = m.entrySet().iterator();
+
+        while (it.hasNext()){
+            Map.Entry entry = (Map.Entry) it.next();
+
+            if (entry.getValue() instanceof GWCResource){
+                myRouter.attach(entry.getKey().toString(), ((GWCResource) entry.getValue()).getClass());
+            } else if (entry.getValue() instanceof Restlet){
+                myRouter.attach(entry.getKey().toString(), (Restlet) entry.getValue());
+            } else {
+                
+            }
         }
-
-        return myRouter;
     }
-    
-    /**
-     * Method returns the current XML configuration
-     * Not at all happy about this
-     * @return
-     */
-    public XMLConfiguration getXMLConfiguration() {
-        return xmlConfig;
-    }
-    
-    /**
-     * Method returns the tileLayerDispatcher
-     * Not at all happy about this
-     */
-    protected TileLayerDispatcher getTileLayerDispatcher() {
-        return tlDispatcher;
-    }
-    
-    /**
-     * Method returns the thread pool executor responsible for handling
-     * layer seeds
-     * @return
-     */
-    protected SeederThreadPoolExecutor getExecutor(){
-        return stpe;
-    }
-    
 }

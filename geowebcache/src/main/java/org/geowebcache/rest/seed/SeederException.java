@@ -14,7 +14,7 @@
  * 
  * @author Arne Kepp / The Open Planning Project 2008 
  */
-package org.geowebcache.rest;
+package org.geowebcache.rest.seed;
 
 import org.geowebcache.GeoWebCacheException;
 

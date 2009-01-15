@@ -29,43 +29,74 @@ public abstract class GWCTask {
     
     public final static int TYPE_TRUNCATE = 2;
     
-    int threadCount = 1;
+    protected int threadCount = 1;
     
-    int threadOffset = 0;
+    protected int threadOffset = 0;
     
     long taskId = -1;
     
-    int type = -1;
+    protected int type = -1;
     
-    String layerName = null;
+    protected String layerName = null;
     
-    int timeSpent = -1;
+    protected int timeSpent = -1;
     
-    int timeRemaining  = -1;
+    protected int timeRemaining  = -1;
     
-    long tilesDone = -1;
+    protected long tilesDone = -1;
     
-    long tilesTotal = -1;
+    protected long tilesTotal = -1;
     
-    boolean terminate = false;
-    
-    
-    abstract void doAction() throws GeoWebCacheException;
+    protected boolean terminate = false;
+        
+    public abstract void doAction() throws GeoWebCacheException;
 
-    void setThreadInfo(int threadCount, int threadOffset) {
+    public void setThreadInfo(int threadCount, int threadOffset) {
         this.threadCount = threadCount;
         this.threadOffset = threadOffset;
     }
     
-    void setTaskId(long taskId) {
+    public void setTaskId(long taskId) {
         this.taskId = taskId;
     }
     
-    void terminateNicely() {
+    public long getTaskId() {
+        return taskId;
+    }
+    
+    public int getThreadCount() {
+        return threadCount;
+    }
+    
+    public int getThreadOffset() {
+        return threadOffset;
+    }
+    
+    public String getLayerName() {
+        return layerName;
+    }
+    
+    public long getTilesTotal() {
+        return tilesTotal;
+    }
+    
+    public long getTilesDone() {
+        return tilesDone;
+    }
+    
+    public int getTimeRemaining() {
+        return timeRemaining;
+    }
+    
+    public void terminateNicely() {
         this.terminate = true;
     }
     
-    protected String getType() {
+    public boolean isType(int otherType) {
+        return (this.type == otherType);
+    }
+    
+    public String getType() {
         switch(type) {
         case TYPE_SEED:
             return "Seed";

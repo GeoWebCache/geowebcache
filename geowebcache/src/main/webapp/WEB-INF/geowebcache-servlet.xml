@@ -44,10 +44,10 @@
   </bean>
   
   <!-- controller for handling incoming requests made through the REST interface -->
-  <bean id="gwcRESTDispatcher" class="org.geowebcache.rest.RESTDispatcher" destroy-method="destroy">
+  <!-- bean id="gwcRESTDispatcher" class="org.geowebcache.rest.RESTDispatcher" destroy-method="destroy">
     <constructor-arg type="org.geowebcache.layer.TileLayerDispatcher" ref="gwcTLDispatcher"/>
     <constructor-arg type="org.geowebcache.util.XMLConfiguration" ref="gwcXmlConfig"/>
-  </bean>
+  </bean -->
   
   <!-- controller for handling all incoming requests -->
   <bean id="geowebcacheDispatcher" class="org.geowebcache.GeoWebCacheDispatcher" destroy-method="destroy">
@@ -69,30 +69,75 @@
   <bean id="gwcServiceKML"
 	class="org.geowebcache.service.kml.KMLService"/>
 
-  <bean id="gwcProxyDispatcher"
-	class="org.geowebcache.proxy.ProxyDispatcher"/>
-  
-  <bean id="gwcCacheKeyFile" class="org.geowebcache.cache.file.FilePathKey2"/>
-  
-  <bean id="gwcCacheFile" class="org.geowebcache.cache.file.FileCache">
-    <property name="defaultKeyBeanId"><value>gwcCacheKeyFile</value></property>
+  <!-- Thread pool for seeding -->
+  <bean id="gwcSeederThreadPoolExec" 
+    class="org.geowebcache.rest.seed.SeederThreadPoolExecutor">
+    <constructor-arg value="16"/><!-- Size of core pool -->
+    <constructor-arg value="32"/><!-- Maximum size of pool -->
+  </bean>
+
+  <!-- Restlets -->
+  <bean id="gwcSeedRestlet" class="org.geowebcache.rest.seed.SeedRestlet">
+    <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
+    <property name="threadPoolExecutor" ref="gwcSeederThreadPoolExec"/>
+  </bean>  
+  <bean id="gwcSeedFormRestlet" class="org.geowebcache.rest.seed.SeedFormRestlet">
+    <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
+    <property name="threadPoolExecutor" ref="gwcSeederThreadPoolExec"/>
+  </bean>
+  <bean id="gwcReloadRestlet" class="org.geowebcache.rest.reload.ReloadRestlet">
+    <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
+  </bean>
+  <bean id="gwcTileLayerRestlet" class="org.geowebcache.rest.layers.TileLayerRestlet">
+    <property name="XMLConfiguration" ref="gwcXmlConfig"/>
+    <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
   </bean>
   
+  <!-- REST Dispatcher -->
+  <bean id="gwcRestDispatcher" class="org.geowebcache.rest.RESTDispatcher">
+    <constructor-arg type="java.util.Map">
+      <map>
+        <entry>
+          <key><value>/seed/{layer}.{extension}</value></key>
+          <ref bean="gwcSeedRestlet" />
+        </entry>
+        <entry>
+          <key><value>/seed/{layer}</value></key>
+          <ref bean="gwcSeedFormRestlet" />
+        </entry>
+        <entry>
+          <key><value>/reload</value></key>
+          <ref bean="gwcReloadRestlet" />
+        </entry>
+        <entry>
+          <key><value>/layers/{layer}.{extension}</value></key>
+          <ref bean="gwcTileLayerRestlet" />
+        </entry>
+      </map>
+    </constructor-arg>
+  </bean>
+
+  <bean id="gwcProxyDispatcher"
+	class="org.geowebcache.proxy.ProxyDispatcher"/>
   
   <bean id="gwcUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
     <property name="alwaysUseFullPath" value="true"/>
     <property name="mappings">
       <props>
         <prop key="/service/**">geowebcacheDispatcher</prop>
-        <prop key="/seed/**">geowebcacheDispatcher</prop>
-        <prop key="/truncate/**">geowebcacheDispatcher</prop>
-        <prop key="/rpc/**">geowebcacheDispatcher</prop>
         <prop key="/demo/**">geowebcacheDispatcher</prop>
-	<prop key="/rest/**">gwcRESTDispatcher</prop>
-	<prop key="/proxy/**">gwcProxyDispatcher</prop>
+	    <prop key="/rest/**">gwcRestDispatcher</prop>
+	    <prop key="/proxy/**">gwcProxyDispatcher</prop>
       </props>
     </property>
   </bean>
+  
+  
+  <bean id="gwcCacheKeyFile" class="org.geowebcache.cache.file.FilePathKey2"/>
+  <bean id="gwcCacheFile" class="org.geowebcache.cache.file.FileCache">
+    <property name="defaultKeyBeanId"><value>gwcCacheKeyFile</value></property>
+  </bean>
+  
   
   <!-- Cache and CacheKey factories -->
   <bean id="gwcCacheKeyFactory" class="org.geowebcache.cache.CacheKeyFactory"/>

@@ -12,9 +12,10 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Marius Suta / The Open Planning Project 2008 
+ * @author Marius Suta / The Open Planning Project 2008
+ * @author Arne Kepp / The Open Planning Project 2009 
  */
-package org.geowebcache.rest;
+package org.geowebcache.rest.seed;
 
 import java.io.IOException;
 
@@ -25,11 +26,12 @@ import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.rest.GWCTask;
 import org.geowebcache.tile.Tile;
 import org.geowebcache.util.wms.BBOX;
 
 public class SeedTask extends GWCTask {
-    private static Log log = LogFactory.getLog(org.geowebcache.rest.SeedTask.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.SeedTask.class);
 
     private final SeedRequest req; 
     
@@ -58,7 +60,7 @@ public class SeedTask extends GWCTask {
      * Method doAction().
      * this is where all the actual work is being done to seed a tile layer. 
      */
-    void doAction() throws GeoWebCacheException {        
+    public void doAction() throws GeoWebCacheException {        
         // Lower the priority of the thread
         Thread.currentThread().setPriority(
                 (java.lang.Thread.NORM_PRIORITY + java.lang.Thread.MIN_PRIORITY) / 2);
@@ -114,12 +116,15 @@ public class SeedTask extends GWCTask {
                     int[] gridLoc = { gridx, gridy, level };
 
                     Tile tile = new Tile(tl, srs, gridLoc, mimeType, null, null);
+                    
+                    // Question is, how resilient should we be ?
                     try {
                         tl.seedTile(tile, tryCache);
-                    } catch (GeoWebCacheException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    //} catch (GeoWebCacheException e) {
+                    //    e.printStackTrace();
+                    } catch (IOException ioe) {
+                        //e.printStackTrace();
+                        throw new GeoWebCacheException(ioe.getMessage());
                     }
 
                     int countX;
