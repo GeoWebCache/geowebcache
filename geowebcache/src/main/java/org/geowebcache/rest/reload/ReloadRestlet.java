@@ -59,9 +59,10 @@ public class ReloadRestlet extends GWCRestlet {
 
         if (form == null || form.getFirst("reload_configuration") == null) {
             throw new RestletException(
-                    "Unknown or malformed request, POST was to "
-                            + req.getResourceRef().getPath(),
-                    Status.CLIENT_ERROR_BAD_REQUEST);
+                    "Unknown or malformed request. Please try again, somtimes the form "
+                    +"is not properly received. This frequently happens on the first POST "
+                    +"after a restart. The POST was to " + req.getResourceRef().getPath(), 
+                    Status.CLIENT_ERROR_BAD_REQUEST );
         }
 
         StringBuilder doc = new StringBuilder();

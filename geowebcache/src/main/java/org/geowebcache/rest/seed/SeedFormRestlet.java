@@ -96,8 +96,9 @@ public class SeedFormRestlet extends GWCRestlet {
             handleDoSeedPost(form, tl, resp);
         } else {
             throw new RestletException(
-                    "Unknown or malformed request, POST was to "
-                    + req.getResourceRef().getPath(), 
+                    "Unknown or malformed request. Please try again, somtimes the form "
+                    +"is not properly received. This frequently happens on the first POST "
+                    +"after a restart. The POST was to " + req.getResourceRef().getPath(), 
                     Status.CLIENT_ERROR_BAD_REQUEST );
         }
     }
