@@ -107,7 +107,7 @@ public class SeederThreadPoolExecutor extends ThreadPoolExecutor {
     protected boolean terminateGWCTask(long id) {
         GWCTask task = this.currentPool.get(id);
         
-        if(task != null && task.isType(GWCTask.TYPE_TRUNCATE)) {
+        if(task != null && ! task.isType(GWCTask.TYPE_TRUNCATE)) {
             task.terminateNicely();
             return true;
         } else {
