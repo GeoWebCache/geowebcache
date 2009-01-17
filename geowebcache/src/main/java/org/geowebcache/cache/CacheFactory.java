@@ -33,10 +33,12 @@ public class CacheFactory implements ApplicationContextAware {
 
     private static Log log = LogFactory
             .getLog(org.geowebcache.cache.CacheFactory.class);
-
+    
     private WebApplicationContext context = null;
 
     private HashMap<String,Cache> caches = null;
+    
+    private boolean isForTesting = false;
 
     private String defaultCacheBeanId = null;
 
@@ -104,7 +106,12 @@ public class CacheFactory implements ApplicationContextAware {
      * This should only be used during testing
      */
     public void setCaches(HashMap<String, Cache> cacheMap) {
+        isForTesting = true;
         caches = cacheMap;
+    }
+    
+    public boolean isForTesting() {
+        return isForTesting;
     }
 
     public void setDefaultCacheBeanId(String defaultCacheBeanId) {

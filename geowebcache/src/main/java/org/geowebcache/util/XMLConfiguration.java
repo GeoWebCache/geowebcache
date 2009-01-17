@@ -47,8 +47,10 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheFactory;
+import org.geowebcache.cache.CacheKey;
 import org.geowebcache.cache.CacheKeyFactory;
 import org.geowebcache.cache.file.FileCache;
+import org.geowebcache.cache.file.FilePathKey2;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -122,10 +124,18 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         
         mockConfiguration = true;
         
-        cacheFactory = new CacheFactory( new CacheKeyFactory() );
+        CacheKeyFactory ckf = new CacheKeyFactory();
+        HashMap<String,CacheKey> cacheKeyMap = new HashMap<String,CacheKey>();
+        cacheKeyMap.put("test key", (CacheKey) new FilePathKey2());
+        ckf.setCacheKeys(cacheKeyMap);
+        
+        cacheFactory = new CacheFactory(ckf);
         HashMap<String,Cache> cacheMap = new HashMap<String,Cache>();
         cacheMap.put("test", (Cache) new FileCache());
         cacheFactory.setCaches(cacheMap);
+        
+        
+        
         
         // Add the cache factory to each layer object
         if(layers != null) {

@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.util.LinkedList;
 
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.rest.RestletException;
 import org.geowebcache.util.Configuration;
 import org.geowebcache.util.XMLConfiguration;
 import org.geowebcache.util.XMLConfigurationTest;
@@ -38,20 +39,43 @@ public class TileLayerRestletTest extends TestCase {
         super.setUp();
     }
     
-    public void testBogus() throws Exception {
-	assertTrue(true);
-    }
-    //public void testGetXml() throws Exception {
-    //    Representation rep = tlr.doGetInternal("topp:states", "xml");
-    //}
-
-    //public void testGetJson() throws Exception {
-    //   Representation rep = tlr.doGetInternal("topp:states2", "json");
+    //public void testBogus() throws Exception {
+	//assertTrue(true);
     //}
     
-    //public void testGetInvalid() throws Exception {
-    //    Representation rep = tlr.doGetInternal("topp:states", "jpeg");
-    //}
+    public void testGetXml() throws Exception {
+        Representation rep = tlr.doGetInternal("topp:states", "xml");
+        
+        String str = rep.getText();
+        
+        assertTrue(str.indexOf("<name>topp:states</name>") > 0);
+        assertTrue(str.indexOf("<double>49.371735</double>") > 0);
+        assertTrue(str.indexOf("<wmsStyles>population</wmsStyles>") > 0);
+        assertTrue(str.indexOf("</wmsLayer>") > 0);
+        assertTrue(str.indexOf("states2") == -1);
+    }
+
+    public void testGetJson() throws Exception {
+       Representation rep = tlr.doGetInternal("topp:states2", "json");
+       
+       String str = rep.getText();
+      
+       assertTrue(str.indexOf(",\"name\":\"topp:states2\",") > 0);
+       assertTrue(str.indexOf("959189.3312465074]},") > 0);
+       assertTrue(str.indexOf("[\"image/png\",\"image/jpeg\"]") > 0);
+       assertTrue(str.indexOf("}}") > 0);      
+    }
+    
+    public void testGetInvalid() throws Exception {
+        Representation rep = null;
+        try {
+         rep = tlr.doGetInternal("topp:states", "jpeg");
+        } catch (RestletException re) {
+            // Format should be invalid
+            assertTrue(re.getRepresentation().getText().indexOf("format") > 0);
+        }
+        assertTrue(rep == null);
+    }
     
     private XMLConfiguration loadXMLConfig() {
         InputStream is = XMLConfiguration.class.getResourceAsStream(XMLConfigurationTest.LATEST_FILENAME);

@@ -35,7 +35,7 @@ public class CacheKeyFactory implements ApplicationContextAware {
     
     private ApplicationContext context = null;
     
-    private HashMap<String,CacheKey> cacheKeys = null;
+    private Map<String,CacheKey> cacheKeys = null;
     
     public CacheKeyFactory() {
     	
@@ -59,6 +59,10 @@ public class CacheKeyFactory implements ApplicationContextAware {
             cacheKeys.put(entry.getKey(), entry.getValue());
             log.debug("Added cache key bean for " + entry.getValue().getClass().toString());
         }
+    }
+    
+    public void setCacheKeys(Map<String,CacheKey> cacheKeys) {
+        this.cacheKeys = cacheKeys;
     }
     
 	public void setApplicationContext(ApplicationContext arg0) throws BeansException {

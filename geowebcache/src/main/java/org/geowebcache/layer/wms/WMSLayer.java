@@ -588,6 +588,11 @@ public class WMSLayer extends TileLayer {
             formats.add(1, ImageMime.createFromFormat("image/jpeg"));
         }
         
+        if(initCacheFactory.isForTesting()) {
+            // Stop here if this is for unit testing
+            return;
+        }
+        
         // Cache and CacheKey
         cache = initCacheFactory.getDefaultCache();
         
