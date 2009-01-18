@@ -42,7 +42,8 @@ public class GeoServerConfiguration extends GetCapabilitiesConfiguration {
                         mimeTypes, 
                         metaTiling,
                         GeoServerConfiguration.getSystemVar(
-                        cacheFactory.getWebAppContext(), GEOWEBCACHE_VENDOR_PARAMS)
+                        cacheFactory.getWebAppContext(), GEOWEBCACHE_VENDOR_PARAMS),
+                        "true"
             );
     }    
     
@@ -53,7 +54,8 @@ public class GeoServerConfiguration extends GetCapabilitiesConfiguration {
                         cacheFactory.getWebAppContext(), GEOSERVER_WMS_URL),
                         mimeTypes, 
                         metaTiling,
-                        vendorParams
+                        vendorParams,
+                        "true"
             );
     }  
     
