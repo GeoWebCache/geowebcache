@@ -73,10 +73,6 @@ public class SeedFormRestlet extends GWCRestlet {
         response.setEntity(makeFormPage(tl), MediaType.TEXT_HTML);
     }
     
-    public boolean allowPost() {
-        return true;
-    }
-    
     public void doPost(Request req, Response resp) throws RestletException {
         String layerName = (String) req.getAttributes().get("layer");
         

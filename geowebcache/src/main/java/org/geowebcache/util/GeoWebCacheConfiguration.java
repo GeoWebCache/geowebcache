@@ -28,7 +28,14 @@ import org.geowebcache.layer.TileLayer;
  * so that the XML configuration file(s) can be loaded directly.
  */
 public class GeoWebCacheConfiguration {
+    
+    /* Attributes for parser */
+    String xmlns_xsi;
 
+    String xsi_noNamespaceSchemaLocation; 
+
+    String xmlns;
+    
     /* Meta information */
     String version = "";
     
@@ -41,7 +48,16 @@ public class GeoWebCacheConfiguration {
     LinkedList<TileLayer> layers;
 
     public GeoWebCacheConfiguration() {
-        
+
+    }
+
+    /** 
+     * Initialize these variables because XStream for some reason doesnt do it. 
+     */
+    public void init() {
+        xmlns_xsi = "http://www.w3.org/2001/XMLSchema-instance";
+        xsi_noNamespaceSchemaLocation = "http://geowebcache.org/schema/1.0.1/geowebcache.xsd";
+        xmlns = "http://geowebcache.org/schema/1.0.1";
     }
     
     protected boolean replaceLayer(TileLayer layer) {

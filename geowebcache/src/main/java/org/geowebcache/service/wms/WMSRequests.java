@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.Buffer;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -198,13 +199,14 @@ public class WMSRequests {
 
                 String url = wmsLayer.getWMSurl()[0];
                 InputStream input = null;
+                BufferedReader process = null;
                 try {
                     URL capabilitiesURL = new URL(
                             url + "?REQUEST=GetCapabilities&SERVICE=WMS&VESION=1.1.0");
                     URLConnection connection = capabilitiesURL.openConnection();
                     input = connection.getInputStream();
                     InputStreamReader reader = new InputStreamReader(input);
-                    BufferedReader process = new BufferedReader(reader);
+                    process = new BufferedReader(reader);
 
                     buf = new StringBuffer();
                     String line;
@@ -225,6 +227,13 @@ public class WMSRequests {
                 } catch (Throwable notConnected) {
                     // continue WMSURL
                 } finally {
+                    if (process != null) {
+                        try {
+                            process.close();
+                        } catch (IOException e) {
+                            // Do nothing
+                        }
+                    }
                     if (input != null) {
                         try {
                             input.close();
@@ -239,8 +248,8 @@ public class WMSRequests {
         return getCapsStr;
     }
 
-    public void setConfig(List<Configuration> configs) {
-        this.getCapConfigs = configs;
+    public static void setConfig(List<Configuration> configs) {
+        getCapConfigs = configs;
     }
 
     /**

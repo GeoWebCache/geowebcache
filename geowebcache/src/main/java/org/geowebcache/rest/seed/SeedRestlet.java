@@ -57,7 +57,7 @@ public class SeedRestlet extends GWCRestlet {
     
     TileLayerDispatcher layerDispatcher;
     
-    private static int[][] statusArray;
+    //private static int[][] statusArray;
     
     public JSONObject myrequest; 
     
@@ -104,10 +104,6 @@ public class SeedRestlet extends GWCRestlet {
         }
 
         resp.setEntity(rep);
-    }
-    
-    public boolean allowPost() {
-        return true;
     }
     
     /**
@@ -253,6 +249,6 @@ public class SeedRestlet extends GWCRestlet {
     
     public void setThreadPoolExecutor(SeederThreadPoolExecutor stpe) {
         threadPool = stpe;
-        statusArray = new int[threadPool.getMaximumPoolSize()][3];
+        //statusArray = new int[threadPool.getMaximumPoolSize()][3];
     }
 }

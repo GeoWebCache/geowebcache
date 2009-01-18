@@ -14,7 +14,7 @@ import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 
 public class XMLConfigurationTest extends TestCase {
-    public static String LATEST_FILENAME = "geowebcache_101.xml";
+    public static final String LATEST_FILENAME = "geowebcache_101.xml";
     
     @Override
     protected void setUp() throws Exception {

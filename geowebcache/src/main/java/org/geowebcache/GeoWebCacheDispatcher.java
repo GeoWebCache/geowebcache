@@ -404,6 +404,13 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
     }
     
+    /**
+     * Writes a transparent, 8 bit PNG to avoid having clients like OpenLayers
+     * showing lots of pink tiles
+     * 
+     * @param tile
+     * @param message
+     */
     private void writeEmpty(Tile tile, String message) {
         tile.servletResp.setHeader("geowebcache-message", message);
         tile.servletResp.setStatus(200);

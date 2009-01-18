@@ -50,10 +50,6 @@ public class ReloadRestlet extends GWCRestlet {
         }
     }
 
-    public boolean allowPost() {
-        return true;
-    }
-
     public void doPost(Request req, Response resp) throws RestletException {
         Form form = req.getEntityAsForm();
 

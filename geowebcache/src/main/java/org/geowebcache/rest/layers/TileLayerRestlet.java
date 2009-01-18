@@ -17,18 +17,13 @@
  */
 package org.geowebcache.rest.layers;
 
-import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.io.StringWriter;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -43,11 +38,8 @@ import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
-import org.restlet.resource.DomRepresentation;
 import org.restlet.resource.Representation;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import org.restlet.resource.StringRepresentation;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
@@ -94,8 +86,9 @@ public class TileLayerRestlet extends GWCRestlet {
             response.setStatus(re.getStatus());
         } catch (Exception e) {
             // Either GeoWebCacheException or IOException
-            response.setEntity(e.getMessage(), MediaType.TEXT_PLAIN);
+            response.setEntity(e.getMessage() + " " + e.toString(), MediaType.TEXT_PLAIN);
             response.setStatus(Status.SERVER_ERROR_INTERNAL);
+            e.printStackTrace();
         }
     }
     
@@ -141,9 +134,15 @@ public class TileLayerRestlet extends GWCRestlet {
      * @param resp
      * @throws RestletException
      */
-    private void doPost(Request req, Response resp) throws RestletException, IOException {
-        TileLayer tl = deserializeAndCheckLayer(req, resp);
-        xmlConfig.modifyLayer(tl);
+    private void doPost(Request req, Response resp) 
+    throws RestletException, IOException, GeoWebCacheException {
+        TileLayer tl = deserializeAndCheckLayer(req, resp, false);
+        if( ! xmlConfig.modifyLayer(tl) ) {
+            throw new RestletException("Layer " + tl.getName() + " is not known by the configuration." 
+                    + "Maybe it was loaded from another source, or you're trying to add a new "
+                    + "layer and need to do an HTTP PUT ?", Status.CLIENT_ERROR_BAD_REQUEST);
+        }
+        layerDispatcher.reInit();
     }
     
     /**
@@ -153,8 +152,9 @@ public class TileLayerRestlet extends GWCRestlet {
      * @param resp
      * @throws RestletException
      */
-    private void doPut(Request req, Response resp) throws RestletException, IOException {
-        TileLayer tl = deserializeAndCheckLayer(req, resp);
+    private void doPut(Request req, Response resp) 
+    throws RestletException, IOException , GeoWebCacheException {
+        TileLayer tl = deserializeAndCheckLayer(req, resp, true);
         
         TileLayer testtl = null;
         try {
@@ -170,6 +170,7 @@ public class TileLayerRestlet extends GWCRestlet {
             "Layer with name " + tl.getName() + " already exists, "
             +"use POST if you want to replace it.", Status.CLIENT_ERROR_BAD_REQUEST );
         }
+        layerDispatcher.reInit();
     }
     
     /**
@@ -179,18 +180,25 @@ public class TileLayerRestlet extends GWCRestlet {
      * @param resp
      * @throws RestletException
      */
-    private void doDelete(Request req, Response resp) throws RestletException {
+    private void doDelete(Request req, Response resp) 
+    throws RestletException, GeoWebCacheException {
         String layerName = (String) req.getAttributes().get("layer");
         TileLayer tl = findTileLayer(layerName, layerDispatcher);
         xmlConfig.deleteLayer(tl);
+        layerDispatcher.reInit();
     }
     
     
-    protected TileLayer deserializeAndCheckLayer(Request req, Response resp) 
+    protected TileLayer deserializeAndCheckLayer(Request req, Response resp, boolean isPut) 
     throws RestletException, IOException {
         String layerName = (String) req.getAttributes().get("layer");
         String formatExtension = (String) req.getAttributes().get("extension");
         InputStream is = req.getEntity().getStream();
+        
+        // If appropriate, check whether this layer exists
+        if(! isPut) {
+            findTileLayer(layerName, layerDispatcher);
+        }
         
         return deserializeAndCheckLayerInternal(layerName, formatExtension, is);
     }
@@ -209,8 +217,6 @@ public class TileLayerRestlet extends GWCRestlet {
             String layerName, String formatExtension, InputStream is) 
     throws RestletException, IOException {
         
-        TileLayer tl = findTileLayer(layerName, layerDispatcher);
-
         XStream xs = XMLConfiguration.getConfiguredXStream(
                 new XStream(new DomDriver()));
 
@@ -249,28 +255,11 @@ public class TileLayerRestlet extends GWCRestlet {
      * @param layer
      * @return
      */
-    public DomRepresentation getXMLRepresentation(TileLayer layer) {
+    public Representation getXMLRepresentation(TileLayer layer) {
         XStream xs = XMLConfiguration.getConfiguredXStream(new XStream());
-        String xmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + xs.toXML(layer);
+        String xmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + xs.toXML(layer);
         
-        Document doc = null;
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Reader reader = new CharArrayReader(xmlText.toCharArray());
-            doc = builder.parse(new InputSource(reader));
-        } catch (ParserConfigurationException pce) {
-            log.error(pce.getMessage());
-            pce.printStackTrace();
-        } catch (IOException ei) {
-            log.error("Exception occured while creating documet from file");
-            ei.printStackTrace(System.err);
-        } catch (SAXException saxe) {
-            log.error(saxe.getMessage());
-            saxe.printStackTrace();
-        }
-        
-        return new DomRepresentation(MediaType.TEXT_XML, doc);
+        return new StringRepresentation(xmlText, MediaType.TEXT_XML);
     }
 
     /**
@@ -290,18 +279,6 @@ public class TileLayerRestlet extends GWCRestlet {
             jse.printStackTrace();
         }
         return rep;
-    }
-
-    public boolean allowDelete() {
-        return true;
-    }
-
-    public boolean allowPut() {
-        return false;
-    }
-
-    public boolean allowPost() {
-        return true;
     }
     
     public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {

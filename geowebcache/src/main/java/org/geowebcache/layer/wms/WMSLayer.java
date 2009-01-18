@@ -64,9 +64,9 @@ public class WMSLayer extends TileLayer {
     
     private int[] metaWidthHeight = null;
 
-    private String errormime;
+    private String errorMime;
 
-    private String version;
+    private String wmsVersion;
 
     private boolean tiled;
 
@@ -80,13 +80,17 @@ public class WMSLayer extends TileLayer {
     
     private String cachePrefix;
 
-    private int expireCache = -1;
+    private String expireCache;
     
-    private int expireClients = -1;
+    private String expireClients;
     
     protected Integer backendTimeout;
     
     protected Boolean cacheBypassAllowed;
+    
+    private transient int expireCacheInt = -1;
+
+    private transient int expireClientsInt = -1;
 
     private transient int curWmsURL;
 
@@ -143,8 +147,8 @@ public class WMSLayer extends TileLayer {
         this.mimeFormats = mimeFormats;
         this.grids = grids;
         this.metaWidthHeight = metaWidthHeight;
-        this.expireClients = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
-        this.expireCache = GWCVars.CACHE_NEVER_EXPIRE;
+        this.expireClientsInt = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
+        this.expireCacheInt = GWCVars.CACHE_NEVER_EXPIRE;
         this.vendorParameters = vendorParams;
         this.transparent = true;
         //this.bgColor = "0x000000";
@@ -173,16 +177,20 @@ public class WMSLayer extends TileLayer {
         log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
         curWmsURL = 0;
         
-        errormime = ErrorMime.vnd_ogc_se_inimage.getMimeType();
-        version = "1.1.0";
+        errorMime = ErrorMime.vnd_ogc_se_inimage.getMimeType();
+        wmsVersion = "1.1.0";
 
-        if(expireClients == GWCVars.CACHE_VALUE_UNSET) {
+        if(expireClients != null) {
+            expireClientsInt = Integer.parseInt(expireClients);
+        } else {
             saveExpirationHeaders = true;
-            expireClients = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;   
+            expireClientsInt = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;   
         }
         
-        if(expireCache == GWCVars.CACHE_VALUE_UNSET) {
-            expireCache = GWCVars.CACHE_NEVER_EXPIRE;
+        if(expireCache != null) {
+            expireCacheInt = Integer.parseInt(expireCache);
+        } else {
+            expireCacheInt = GWCVars.CACHE_NEVER_EXPIRE;
         }
                 
         layerLock = new ReentrantLock();
@@ -346,7 +354,7 @@ public class WMSLayer extends TileLayer {
             tile.setContent(getTile(gridLoc, gridPositions, metaTile));
 
             // TODO separate thread
-            if (expireCache != GWCVars.CACHE_DISABLE_CACHE) {
+            if (expireCacheInt != GWCVars.CACHE_DISABLE_CACHE) {
                 saveTiles(gridPositions, metaTile, tile);
             }
 
@@ -392,8 +400,8 @@ public class WMSLayer extends TileLayer {
 
             tile = doNonMetatilingRequest(tile);
 
-            if (tile.getStatus() > 299 || expireCache != GWCVars.CACHE_DISABLE_CACHE) {
-                cache.set(cacheKey, tile, expireCache);
+            if (tile.getStatus() > 299 || expireCacheInt != GWCVars.CACHE_DISABLE_CACHE) {
+                cache.set(cacheKey, tile, expireCacheInt);
             }
 
             if (saveExpirationHeaders) {
@@ -409,9 +417,9 @@ public class WMSLayer extends TileLayer {
     }
 
     public boolean tryCacheFetch(Tile tile) {
-        if (expireCache != GWCVars.CACHE_DISABLE_CACHE) {
+        if (expireCacheInt != GWCVars.CACHE_DISABLE_CACHE) {
             try {
-                return cache.get(this.cacheKey, tile, expireCache * 1000);
+                return cache.get(this.cacheKey, tile, expireCacheInt * 1000);
             } catch (CacheException ce) {
                 log.error(ce.getMessage());
                 tile.setError(ce.getMessage());
@@ -439,24 +447,24 @@ public class WMSLayer extends TileLayer {
      * @param response
      */
     public void setExpirationHeader(HttpServletResponse response) {
-        if (expireClients == GWCVars.CACHE_VALUE_UNSET) {
+        if (expireClientsInt == GWCVars.CACHE_VALUE_UNSET) {
             return;
         }
 
         // TODO move to TileResponse
-        if (expireClients > 0) {
+        if (expireClientsInt > 0) {
             response.setHeader("Cache-Control", "max-age=" + expireClients
                     + ", must-revalidate");
             response.setHeader("Expires", ServletUtils
-                    .makeExpiresHeader(expireClients));
-        } else if (expireClients == GWCVars.CACHE_NEVER_EXPIRE) {
+                    .makeExpiresHeader(expireClientsInt));
+        } else if (expireClientsInt == GWCVars.CACHE_NEVER_EXPIRE) {
             long oneYear = 3600 * 24 * 365;
             response.setHeader("Cache-Control", "max-age=" + oneYear);
             response.setHeader("Expires", ServletUtils
                     .makeExpiresHeader((int) oneYear));
-        } else if (expireClients == GWCVars.CACHE_DISABLE_CACHE) {
+        } else if (expireClientsInt == GWCVars.CACHE_DISABLE_CACHE) {
             response.setHeader("Cache-Control", "no-cache");
-        } else if (expireClients == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+        } else if (expireClientsInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
             int seconds = 36000;
             response.setHeader("geowebcache-error",
                     "No real CacheControl information available");
@@ -499,7 +507,7 @@ public class WMSLayer extends TileLayer {
             Tile tile = new Tile(this, tileProto.getSRS(), gridPos,
                     tileProto.getMimeType(), metaTile.getStatus(), out.toByteArray());
             tile.setTileLayer(this);
-            cache.set(this.cacheKey, tile, expireCache);
+            cache.set(this.cacheKey, tile, expireCacheInt);
         }
     }
 
@@ -571,8 +579,8 @@ public class WMSLayer extends TileLayer {
     private void initParameters() throws GeoWebCacheException {
         // everything that happens in profile construction should happen here
 
-        if (expireCache == GWCVars.CACHE_USE_WMS_BACKEND_VALUE
-                || expireClients == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+        if (expireCacheInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE
+                || expireClientsInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
             this.saveExpirationHeaders = true;
         }
         
@@ -617,23 +625,23 @@ public class WMSLayer extends TileLayer {
     protected void saveExpirationInformation(int backendExpire) {
         this.saveExpirationHeaders = false;
         try {
-            if (expireCache == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+            if (expireCacheInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
                 if(backendExpire == -1) {
-                    expireCache = 7200;
+                    expireCacheInt = 7200;
                     log.error("Layer profile wants MaxAge from backend,"
                         + " but backend does not provide this. Setting to 7200 seconds.");
                 } else {
-                    expireCache = backendExpire;
+                    expireCacheInt = backendExpire;
                 }
                 log.trace("Setting expireCache to: " + expireCache);
             }
-            if (expireClients == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+            if (expireClientsInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
                 if(backendExpire == -1) {
-                    expireClients = 7200;
+                    expireClientsInt = 7200;
                     log.error("Layer profile wants MaxAge from backend,"
                             + " but backend does not provide this. Setting to 7200 seconds.");
                 } else {
-                    expireClients = backendExpire;
+                    expireClientsInt = backendExpire;
                 }
                 log.trace("Setting expireClients to: " + expireClients);
             }
@@ -662,7 +670,7 @@ public class WMSLayer extends TileLayer {
         WMSParameters wmsparams = new WMSParameters();
         wmsparams.setRequest("GetMap");
         wmsparams.setService("WMS");
-        wmsparams.setVersion(version);
+        wmsparams.setVersion(wmsVersion);
         
         if(this.wmsLayers != null && this.wmsLayers.length() != 0) {
             wmsparams.setLayer(this.wmsLayers);
@@ -670,7 +678,7 @@ public class WMSLayer extends TileLayer {
             wmsparams.setLayer(this.name);
         }
         
-        wmsparams.setErrorMime(errormime);
+        wmsparams.setErrorMime(errorMime);
 
         wmsparams.setIsTransparent(transparent);
         wmsparams.setIsTiled(tiled);
@@ -895,8 +903,8 @@ public class WMSLayer extends TileLayer {
         waitForQueue(glo, condIdx);
 
         /** ****************** Tile ******************* */
-        if (expireCache != GWCVars.CACHE_DISABLE_CACHE) {
-            cache.set(this.cacheKey, tile, expireCache);
+        if (expireCacheInt != GWCVars.CACHE_DISABLE_CACHE) {
+            cache.set(this.cacheKey, tile, expireCacheInt);
         }
 
         /** ****************** Return lock and response ****** */
@@ -912,7 +920,7 @@ public class WMSLayer extends TileLayer {
     //}
 
     public void setErrorMime(String errormime) {
-        this.errormime = errormime;
+        this.errorMime = errormime;
     }
 
     public void addMetaWidthHeight(int w, int h) {
@@ -950,7 +958,7 @@ public class WMSLayer extends TileLayer {
     }
     
     public void setVersion(String version) {
-        this.version = version;
+        this.wmsVersion = version;
     }
 
     public void setTiled(boolean tiled) {

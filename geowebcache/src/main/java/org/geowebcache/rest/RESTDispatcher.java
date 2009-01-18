@@ -36,8 +36,8 @@ import com.noelios.restlet.ext.servlet.ServletConverter;
  * Spring requests and Restlet requests.
  */
 public class RESTDispatcher extends AbstractController {
-    public static String METHOD_PUT = "PUT";
-    public static String METHOD_DELETE = "DELETE";
+    public static final String METHOD_PUT = "PUT";
+    public static final String METHOD_DELETE = "DELETE";
     
     ServletConverter myConverter;
     
