@@ -5,7 +5,7 @@
   <groupId>org.opengeo</groupId>
   <artifactId>geowebcache</artifactId>
   <packaging>jar</packaging>
-  <version>1.0.x-SNAPSHOT</version>
+  <version>1.0.1</version>
   <name>geowebcache</name>
   <url>http://geowebcache.org</url>
   
