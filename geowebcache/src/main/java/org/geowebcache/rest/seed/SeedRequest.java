@@ -12,9 +12,10 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Marius Suta / The Open Planning Project 2008 
+ * @author Marius Suta / The Open Planning Project 2008
+ * @author Arne Kepp / The Open Planning Project 2009 
  */
-package org.geowebcache.rest;
+package org.geowebcache.rest.seed;
 
 import org.geowebcache.util.wms.BBOX;
 import org.geowebcache.layer.SRS;

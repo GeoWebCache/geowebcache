@@ -1,7 +1,6 @@
 package org.geowebcache.demo;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -13,12 +12,11 @@ import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.wms.BBOX;
 
 public class Demo {
 
-    public static String GWC_HEADER = "<a id=\"logo\" href=\"http://geowebcache.org\">" 
+    public static final String GWC_HEADER = "<a id=\"logo\" href=\"http://geowebcache.org\">" 
         +"<img src=\"http://geowebcache.org/trac/chrome/site/geowebcache_logo.png\""
         +"height=\"100\" width=\"353\" border=\"0\"/>"
         +"</a>\n";

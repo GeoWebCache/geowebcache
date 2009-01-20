@@ -14,7 +14,7 @@
  * 
  * @author Arne Kepp / The Open Planning Project 2008 
  */
-package org.geowebcache.rest;
+package org.geowebcache.rest.seed;
 
 import java.util.Arrays;
 
@@ -26,10 +26,10 @@ import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
-import org.geowebcache.util.wms.BBOX;
+import org.geowebcache.rest.GWCTask;
 
 public class TruncateTask extends GWCTask {
-    private static Log log = LogFactory.getLog(org.geowebcache.rest.TruncateTask.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.TruncateTask.class);
     
     private final SeedRequest req;
     
@@ -49,7 +49,7 @@ public class TruncateTask extends GWCTask {
         super.tilesDone = 0;
     }
     
-    void doAction() throws GeoWebCacheException {
+    public void doAction() throws GeoWebCacheException {
         
         tl.isInitialized();
         

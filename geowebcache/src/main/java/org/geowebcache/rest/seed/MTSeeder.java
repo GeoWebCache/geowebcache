@@ -14,16 +14,17 @@
  * 
  * @author Marius Suta / The Open Planning Project 2008 
  */
-package org.geowebcache.rest;
+package org.geowebcache.rest.seed;
 
 import java.util.concurrent.Callable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.rest.GWCTask;
 
 public class MTSeeder implements Callable<GWCTask> {
-    private static Log log = LogFactory.getLog(org.geowebcache.rest.MTSeeder.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.MTSeeder.class);
     
     protected GWCTask task= null;
     

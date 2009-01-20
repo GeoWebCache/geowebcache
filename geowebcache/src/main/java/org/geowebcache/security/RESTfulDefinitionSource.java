@@ -34,8 +34,8 @@ public class RESTfulDefinitionSource implements
 
     static private Log log = LogFactory.getLog(RESTfulDefinitionSource.class);
 
-    static private final String[] validMethodNames = { "GET", "PUT", "DELETE",
-            "POST" };
+    static private final String[] validMethodNames = 
+        { "GET", "PUT", "DELETE", "POST", "HEAD" };
 
     /**
      * Underlying objectDefinitionSource object

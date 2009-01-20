@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-                  xsi:noNamespaceSchemaLocation="http://geowebcache.org/schema/1.0/geowebcache.xsd" 
-                  xmlns="http://geowebcache.org/schema/1.0">
-<version>1.0.0</version>
+                  xsi:noNamespaceSchemaLocation="http://geowebcache.org/schema/1.0.1/geowebcache.xsd" 
+                  xmlns="http://geowebcache.org/schema/1.0.1">
+<version>1.0.1</version>
 <backendTimeout>120</backendTimeout>
 <cacheBypassAllowed>true</cacheBypassAllowed>
 <layers>
@@ -163,8 +163,7 @@
   <transparent>true</transparent>
   <bgColor></bgColor>
   <palette></palette>
-  <!-- Vendor parameters are appended to every request to the backend -->
-  <vendorParameters>foobar1=TRUE&amp;foobar2=FALSE</vendorParameters>
+  <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
   <!-- cachePrefix>/var/lib/geowebcache/topp_states</cachePrefix -->
   <!-- 
   You can specify expiration times in seconds. In the example below

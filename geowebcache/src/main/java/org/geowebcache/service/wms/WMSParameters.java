@@ -286,7 +286,7 @@ public class WMSParameters extends Parameters {
      *            the height to set
      */
     public void setHeight(int height) {
-        setHeight(new Integer(height));
+        setHeight(Integer.valueOf(height));
     }
 
     /**
@@ -358,7 +358,7 @@ public class WMSParameters extends Parameters {
      *            the width to set
      */
     public void setWidth(int width) {
-        setWidth(new Integer(width));
+        setWidth(Integer.valueOf(width));
     }
 
     /**

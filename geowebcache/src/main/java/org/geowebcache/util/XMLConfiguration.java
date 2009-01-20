@@ -17,9 +17,14 @@
 package org.geowebcache.util;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -34,7 +39,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -43,12 +47,17 @@ import javax.xml.validation.Validator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheFactory;
+import org.geowebcache.cache.CacheKey;
+import org.geowebcache.cache.CacheKeyFactory;
 import org.geowebcache.cache.file.FileCache;
+import org.geowebcache.cache.file.FilePathKey2;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.rest.seed.SeedRequest;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -60,7 +69,6 @@ import org.xml.sax.SAXException;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomReader;
-import com.thoughtworks.xstream.io.xml.DomWriter;
 
 public class XMLConfiguration implements Configuration, ApplicationContextAware {
     private static Log log = LogFactory.getLog(org.geowebcache.util.XMLConfiguration.class);
@@ -77,6 +85,8 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     private String absPath = null;
 
     private String relPath = null;
+    
+    private boolean mockConfiguration = false;
 
     private File configH = null;
 
@@ -114,7 +124,22 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         
         List<TileLayer> layers = gwcConfig.layers;
         
-        // Add the cache factor to each layer object
+        mockConfiguration = true;
+        
+        CacheKeyFactory ckf = new CacheKeyFactory();
+        HashMap<String,CacheKey> cacheKeyMap = new HashMap<String,CacheKey>();
+        cacheKeyMap.put("test key", (CacheKey) new FilePathKey2());
+        ckf.setCacheKeys(cacheKeyMap);
+        
+        cacheFactory = new CacheFactory(ckf);
+        HashMap<String,Cache> cacheMap = new HashMap<String,Cache>();
+        cacheMap.put("test", (Cache) new FileCache());
+        cacheFactory.setCaches(cacheMap);
+        
+        
+        
+        
+        // Add the cache factory to each layer object
         if(layers != null) {
             Iterator<TileLayer> iter = layers.iterator();
             while(iter.hasNext()) {
@@ -151,7 +176,8 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
      * 
      */
     public List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
-        if(this.gwcConfig == null || reload) {
+        if( ! mockConfiguration && 
+                (this.gwcConfig == null || reload)) {
             File xmlFile = findConfFile();
             loadConfiguration(xmlFile);
         }
@@ -192,44 +218,39 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     
     private void loadConfiguration(File xmlFile) 
     throws GeoWebCacheException {
-        
         Node rootNode = loadDocument(xmlFile);
         XStream xs = getConfiguredXStream(new XStream());
 
         gwcConfig = (GeoWebCacheConfiguration) 
             xs.unmarshal(new DomReader((Element) rootNode));
+        
+        gwcConfig.init();
+    }
+    
+    private void writeConfiguration()
+    throws GeoWebCacheException {
+        File xmlFile = findConfFile();
+        persistToFile(xmlFile);
     }
 
-    public static XStream getConfiguredXStream(XStream xstream) {
-        XStream xs = xstream;
+    public static XStream getConfiguredXStream(XStream xs) {
+        //XStream xs = xstream;
         xs.setMode(XStream.NO_REFERENCES);
         
         xs.alias("gwcConfiguration", GeoWebCacheConfiguration.class);
-        xs.aliasType("version", String.class);
-        xs.aliasType("backendTimeout", Integer.class);
-        xs.aliasType("cacheBypassAllowed", Boolean.class);
+        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns_xsi");
+        xs.aliasField("xmlns:xsi", GeoWebCacheConfiguration.class, "xmlns_xsi");
+        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xsi_noNamespaceSchemaLocation");
+        xs.aliasField("xsi:noNamespaceSchemaLocation", GeoWebCacheConfiguration.class, "xsi_noNamespaceSchemaLocation");
+        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
         
         xs.alias("layers", List.class);
-        //xs.alias("layer", TileLayer.class);
         xs.alias("wmsLayer", WMSLayer.class);
-        xs.aliasType("name", String.class);
         xs.alias("grids", new ArrayList<Grid>().getClass());
         xs.alias("grid", Grid.class);
-        xs.aliasType("format", String.class);
         xs.alias("mimeFormats", new ArrayList<String>().getClass());
-        xs.aliasType("wmsUrl", String.class);
-        xs.aliasType("errorMime", String.class);
-        xs.aliasType("cachePrefix", String.class);
-        xs.alias("metaWidthHeight", new int[1].getClass());
-        xs.alias("tiled", boolean.class);
-        xs.alias("transparent", boolean.class);
-        xs.alias("srs", org.geowebcache.layer.SRS.class);
-        
-        xs.alias("zoomStart", int.class);
-        xs.alias("zoomStop", int.class);
-        
-        xs.alias("expireCache", int.class);
-        xs.alias("expireClients", int.class);
+        xs.alias("srs", org.geowebcache.layer.SRS.class);        
+        xs.alias("seedRequest", SeedRequest.class);
 
         return xs;
     }
@@ -238,48 +259,34 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
      * Method responsible for writing out the entire 
      * GeoWebCacheConfiguration object
      * 
-     * @return true if operation succeeded, false otherwise
+     * throws an exception if it does not succeed
      */
 
-    public boolean persist() throws GeoWebCacheException {
-        File xmlFile = findConfFile();
-        // create the XStream for serializing tileLayers to XML
+    protected void persistToFile(File xmlFile) 
+    throws GeoWebCacheException {    
+        // create the XStream for serializing the configuration
         XStream xs = getConfiguredXStream(new XStream());
-        // sent to XML
-        xs.marshal(gwcConfig, new DomWriter((Element) gwcConfig));
-
-        Document doc = createDocument();
+        
+        OutputStreamWriter writer = null;
+        try {
+            writer = new OutputStreamWriter(new FileOutputStream(xmlFile),"UTF-8");
+        } catch (UnsupportedEncodingException uee) {
+            uee.printStackTrace();
+            throw new GeoWebCacheException(uee.getMessage());
+        } catch (FileNotFoundException fnfe) {
+            throw new GeoWebCacheException(fnfe.getMessage());
+        } 
         
         try {
-            DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(xmlFile);
-
-            // write the DOM to the file
-            Transformer xformer = TransformerFactory.newInstance().newTransformer();
-            xformer.transform(source, result);
-            
-        } catch (TransformerConfigurationException e) {
-            log.error(e.getMessage());
-        } catch (TransformerException e) {
-            log.error(e.getMessage());
+            writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+            xs.toXML(gwcConfig, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new GeoWebCacheException("Error writing to " 
+                    + xmlFile.getAbsolutePath() + ": " + e.getMessage());
         }
-
-        return true;
-
-    }
-    
-    private Document createDocument() {
-        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-        docBuilderFactory.setNamespaceAware(true);
-
-        DocumentBuilder docBuilder = null;
-        try {
-            docBuilder = docBuilderFactory.newDocumentBuilder();
-        } catch (ParserConfigurationException e1) {
-            e1.printStackTrace();
-        }
-
-        return docBuilder.newDocument();
+        
+        log.info("Wrote configuration to " + xmlFile.getAbsolutePath());
     }
     
     /**
@@ -292,23 +299,25 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
      * @return true if operation succeeded, false otherwise
      */
 
-    public boolean modifyLayer(TileLayer tl) {        
+    public boolean modifyLayer(TileLayer tl) 
+    throws GeoWebCacheException {        
         tl.setCacheFactory(cacheFactory);
         boolean response = gwcConfig.replaceLayer(tl);
         
         if(response) {
-            //TODO save
+            writeConfiguration();
         }
         return response;
     }
 
-    public boolean addLayer(TileLayer tl) {
+    public boolean addLayer(TileLayer tl) 
+    throws GeoWebCacheException {
         tl.setCacheFactory(cacheFactory);
         
         boolean response = gwcConfig.addLayer(tl);
         
         if(response) {
-            //TODO save
+            writeConfiguration();
         }
         return response;
     }
@@ -319,11 +328,12 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
      *            the name of the layer to be deleted
      * @return true if operation succeeded, false otherwise
      */
-    public boolean deleteLayer(TileLayer layer) {
+    public boolean deleteLayer(TileLayer layer) 
+    throws GeoWebCacheException {
         boolean response = gwcConfig.removeLayer(layer);
         
         if(response) {
-            //TODO save
+            writeConfiguration();
         }
         return response;
     }
@@ -479,6 +489,10 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     }
 
     public String getIdentifier() throws GeoWebCacheException {
+        if(mockConfiguration) {
+            return "Mock configuration";
+        }
+        
         if(configH == null) {
             this.findConfFile();           
         }

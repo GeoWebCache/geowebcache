@@ -57,24 +57,34 @@ public class GetCapabilitiesConfiguration implements Configuration {
     private String metaTiling = null;
     
     private String vendorParameters = null;
+    
+    private boolean allowCacheBypass = false;
 
     public GetCapabilitiesConfiguration(CacheFactory cacheFactory, String url,
-            String mimeTypes, String metaTiling) {
+            String mimeTypes, String metaTiling, String allowCacheBypass) {
         this.cacheFactory = cacheFactory;
         this.url = url;
         this.mimeTypes = mimeTypes;
         this.metaTiling = metaTiling;
+        
+        if(Boolean.parseBoolean(allowCacheBypass)) {
+            this.allowCacheBypass = true;
+        }
         log.info("Constructing from url " + url);
     }
     
     public GetCapabilitiesConfiguration(CacheFactory cacheFactory, String url,
-            String mimeTypes, String metaTiling, String vendorParameters) {
+            String mimeTypes, String metaTiling, String vendorParameters, 
+            String allowCacheBypass) {
         this.cacheFactory = cacheFactory;
         this.url = url;
         this.mimeTypes = mimeTypes;
         this.metaTiling = metaTiling;
         this.vendorParameters = vendorParameters;
         
+        if(Boolean.parseBoolean(allowCacheBypass)) {
+            this.allowCacheBypass = true;
+        }
         log.info("Constructing from url " + url);
     }
 
@@ -194,7 +204,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
                 if (wmsLayer != null) {
                     // Finalize with some defaults
-                    wmsLayer.isCacheBypassAllowed(true);
+                    wmsLayer.isCacheBypassAllowed(allowCacheBypass);
                     wmsLayer.setBackendTimeout(120);
                     layers.add(wmsLayer);
                 }

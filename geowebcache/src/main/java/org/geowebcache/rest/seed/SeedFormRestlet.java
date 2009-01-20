@@ -14,15 +14,13 @@
  * 
  * @author Arne Kepp / The Open Planning Project 2008 
  */
-package org.geowebcache.rest;
+package org.geowebcache.rest.seed;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.demo.Demo;
 import org.geowebcache.layer.Grid;
@@ -31,85 +29,99 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.rest.GWCRestlet;
+import org.geowebcache.rest.GWCTask;
+import org.geowebcache.rest.RestletException;
 import org.geowebcache.util.wms.BBOX;
-import org.restlet.Context;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
+import org.restlet.data.Method;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.data.Status;
-import org.restlet.resource.Representation;
-import org.restlet.resource.Resource;
-import org.restlet.resource.StringRepresentation;
-import org.restlet.resource.Variant;
 
-public class SeedPageResource extends Resource {
-    private static Log log = LogFactory.getLog(org.geowebcache.rest.SeedPageResource.class);
+public class SeedFormRestlet extends GWCRestlet {
+    //private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.SeedFormRestlet.class);
     
-    private String layerName = null;
+    SeederThreadPoolExecutor threadPool;
     
-    private TileLayer tl = null;
-    
-    public SeedPageResource(Context context, Request request, Response response) {
-        super(context, request, response);
-        getVariants().add(new Variant(MediaType.TEXT_HTML));
-        //getVariants().add(new Variant(MediaType.ALL));
-        this.layerName = (String) request.getAttributes().get("layer");
-        
-        TileLayerDispatcher tlDispatch = RESTDispatcher.getInstance().getTileLayerDispatcher();
-        
+    TileLayerDispatcher layerDispatcher;
+
+    public void handle(Request request, Response response){
+        Method met = request.getMethod();
         try {
-            tl = tlDispatch.getTileLayer(this.layerName);
-        } catch (GeoWebCacheException e) {
-            log.error(e.getMessage());
+            if (met.equals(Method.GET)) {
+                doGet(request, response);
+            } else if(met.equals(Method.POST)) {
+                doPost(request, response);
+            } else {
+                throw new RestletException("Method not allowed", Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
+            }
+        } catch (RestletException re) {
+            response.setEntity(re.getRepresentation());
+            response.setStatus(re.getStatus());
         }
-        
-        if(tl != null) {
-            // Need to initialize it first
-            tl.isInitialized();
-        } else {
-            // We'll check later, since we can't write an error from here
-        }
-
-        
-
     }
     
-    public Representation getRepresentation(Variant variant) {
-        Representation rep;
+    public void doGet(Request request, Response response) throws RestletException {
+        String layerName = (String) request.getAttributes().get("layer");
         
-        if(tl != null) {
-            rep = new StringRepresentation(makeFormPage(), MediaType.TEXT_HTML); 
-        } else {
-            rep = new StringRepresentation("Uknown layer: " + this.layerName, MediaType.TEXT_HTML);
-        }
+        TileLayer tl = findTileLayer(layerName, layerDispatcher);
         
-        return rep;
+        tl.isInitialized();
+       
+        response.setEntity(makeFormPage(tl), MediaType.TEXT_HTML);
     }
     
-    private String makeFormPage() {
+    public void doPost(Request req, Response resp) throws RestletException {
+        String layerName = (String) req.getAttributes().get("layer");
+        
+        Form form = req.getEntityAsForm();
+
+        if(form == null) {
+            throw new RestletException("Unable to parse form result.", Status.CLIENT_ERROR_BAD_REQUEST);
+        }
+        
+        //String layerName = form.getFirst("layerName").getValue();
+        
+        TileLayer tl = findTileLayer(layerName, layerDispatcher);
+        
+        if (form != null && form.getFirst("kill_thread") != null) {
+            handleKillThreadPost(form, tl, resp);
+        } else if (form != null && form.getFirst("minX") != null) {
+            handleDoSeedPost(form, tl, resp);
+        } else {
+            throw new RestletException(
+                    "Unknown or malformed request. Please try again, somtimes the form "
+                    +"is not properly received. This frequently happens on the first POST "
+                    +"after a restart. The POST was to " + req.getResourceRef().getPath(), 
+                    Status.CLIENT_ERROR_BAD_REQUEST );
+        }
+    }
+        
+    private String makeFormPage(TileLayer tl) {
         
         StringBuilder doc = new StringBuilder();
         
         makeHeader(doc);
         
-        makeTaskList(doc);
+        makeTaskList(doc, tl);
         
-        makeWarningsAndHints(doc);
+        makeWarningsAndHints(doc, tl);
         
-        makeFormHeader(doc);
+        makeFormHeader(doc, tl);
         
         makeThreadCountPullDown(doc);
         
         makeTypePullDown(doc);
         
-        makeSRSPulldown(doc);
+        makeSRSPulldown(doc, tl);
         
-        makeFormatPullDown(doc);
+        makeFormatPullDown(doc, tl);
         
-        makeZoomStartPullDown(doc);
+        makeZoomStartPullDown(doc, tl);
         
-        makeZoomStopPullDown(doc);
+        makeZoomStopPullDown(doc, tl);
         
         makeBboxFields(doc);
         
@@ -122,7 +134,7 @@ public class SeedPageResource extends Resource {
         return doc.toString();
     }
     
-    private String makeResponsePage() {
+    private String makeResponsePage(TileLayer tl) {
         
         StringBuilder doc = new StringBuilder();
         
@@ -133,7 +145,7 @@ public class SeedPageResource extends Resource {
         doc.append("<p>Below you can find a list of currently executing threads, take the numbers with a grain of salt");
         doc.append(" until the thread has had a chance to run for a few minutes. ");
         
-        makeTaskList(doc);
+        makeTaskList(doc, tl);
         
         makeFooter(doc);
         
@@ -177,11 +189,11 @@ public class SeedPageResource extends Resource {
         doc.append("</td></tr>\n");
     }
     
-    private void makeBboxHints(StringBuilder doc) {
+    private void makeBboxHints(StringBuilder doc, TileLayer tl) {
         Iterator<Entry<SRS, Grid>> iter = tl.getGrids().entrySet().iterator();
         
-        int minStart = Integer.MAX_VALUE;
-        int maxStop = Integer.MIN_VALUE;
+        //int minStart = Integer.MAX_VALUE;
+        //int maxStop = Integer.MIN_VALUE;
         
         while(iter.hasNext()) {
             Entry<SRS, Grid> entry = iter.next();
@@ -199,19 +211,19 @@ public class SeedPageResource extends Resource {
         doc.append("<tr><td></td><td><input type=\"submit\" value=\"Submit\"></td></tr>\n");
     }
 
-    private void makeZoomStopPullDown(StringBuilder doc) {
+    private void makeZoomStopPullDown(StringBuilder doc, TileLayer tl) {
         doc.append("<tr><td>Zoom stop:</td><td>\n");
-        makeZoomPullDown(doc, false);
+        makeZoomPullDown(doc, false, tl);
         doc.append("</td></tr>\n");
     }
 
-    private void makeZoomStartPullDown(StringBuilder doc) {
+    private void makeZoomStartPullDown(StringBuilder doc, TileLayer tl) {
         doc.append("<tr><td>Zoom start:</td><td>\n");
-        makeZoomPullDown(doc, true);
+        makeZoomPullDown(doc, true, tl);
         doc.append("</td></tr>\n");
     }
     
-    private void makeZoomPullDown(StringBuilder doc, boolean isStart) {
+    private void makeZoomPullDown(StringBuilder doc, boolean isStart, TileLayer tl) {
         Map<String,String> keysValues = new TreeMap<String,String>();
         
         Iterator<Entry<SRS, Grid>> iter = tl.getGrids().entrySet().iterator();
@@ -266,11 +278,11 @@ public class SeedPageResource extends Resource {
         }
     }
 
-    private void makeFormatPullDown(StringBuilder doc) {
+    private void makeFormatPullDown(StringBuilder doc, TileLayer tl) {
         doc.append("<tr><td>Format:</td><td>\n");
         Map<String,String> keysValues = new TreeMap<String,String>();
         
-        Iterator<MimeType> iter = this.tl.getMimeTypes().iterator();
+        Iterator<MimeType> iter = tl.getMimeTypes().iterator();
         
         while(iter.hasNext()) {
             MimeType mime = iter.next();
@@ -281,7 +293,7 @@ public class SeedPageResource extends Resource {
         doc.append("</td></tr>\n");
     }
 
-    private void makeSRSPulldown(StringBuilder doc) {
+    private void makeSRSPulldown(StringBuilder doc, TileLayer tl) {
         doc.append("<tr><td>SRS:</td><td>\n");
         Map<String,String> keysValues = new TreeMap<String,String>();
         
@@ -313,9 +325,9 @@ public class SeedPageResource extends Resource {
         doc.append("</select>\n");
     }
     
-    private void makeFormHeader(StringBuilder doc) {
+    private void makeFormHeader(StringBuilder doc, TileLayer tl) {
         doc.append("<h4>Create a new task:</h4>\n");
-        doc.append("<form id=\"seed\" action=\"./"+this.layerName+"\" method=\"post\">\n");
+        doc.append("<form id=\"seed\" action=\"./"+tl.getName()+"\" method=\"post\">\n");
         doc.append("<table border=\"0\" cellspacing=\"10\">\n");
     }
     
@@ -328,7 +340,7 @@ public class SeedPageResource extends Resource {
         doc.append("<html><body>\n" + Demo.GWC_HEADER);    
     }
     
-    private void makeWarningsAndHints(StringBuilder doc) {
+    private void makeWarningsAndHints(StringBuilder doc, TileLayer tl) {
         doc.append("<h4>Please note:</h4><ul>\n"
                 + "<li>This minimalistic interface does not check for correctness.</li>\n"
                 + "<li>Seeding past zoomlevel 20 is usually not recommended.</li>\n"
@@ -338,16 +350,14 @@ public class SeedPageResource extends Resource {
         
         doc.append("Here are the max bounds, if you do not specify bounds these will be used.\n");
         doc.append("<ul>\n");
-        makeBboxHints(doc);
+        makeBboxHints(doc, tl);
         doc.append("</ul>\n");
     }
         
-    private void makeTaskList(StringBuilder doc) {
+    private void makeTaskList(StringBuilder doc, TileLayer tl) {
         doc.append("<h4>List of currently executing tasks:</h4>\n");
         
-        SeederThreadPoolExecutor exec = RESTDispatcher.getInstance().getExecutor();
-        
-        Iterator<Entry<Long, GWCTask>> iter = exec.getRunningTasksIterator();
+        Iterator<Entry<Long, GWCTask>> iter = threadPool.getRunningTasksIterator();
         
         boolean tasks = false;
         if(! iter.hasNext()) {
@@ -364,9 +374,9 @@ public class SeedPageResource extends Resource {
             GWCTask task = entry.getValue();
             
             String timeRemaining;
-            int time = task.timeRemaining;
+            int time = task.getTimeRemaining();
             
-            if(task.tilesDone < 50) {
+            if(task.getTilesDone() < 50) {
                 timeRemaining= " Estimating...";
             } else if(time > (60*60*24)) {
                 timeRemaining= "" + (time / (60*60*24)) + " day(s)";
@@ -381,23 +391,23 @@ public class SeedPageResource extends Resource {
             
             doc.append("<tr>"
                     + "<td>" + entry.getKey() + "</td>"
-                    + "<td>" + task.layerName + "</td>"
+                    + "<td>" + task.getLayerName() + "</td>"
                     + "<td>" + task.getType() + "</td>"
-                    + "<td>" + task.tilesTotal + "</td>"
-                    + "<td>" + task.tilesDone + "</td>"
+                    + "<td>" + task.getTilesTotal() + "</td>"
+                    + "<td>" + task.getTilesDone() + "</td>"
                     + "<td>" + timeRemaining + "</td>"
-                    + "<td>(Thread " + (task.threadOffset+1) + " of " + task.threadCount + ") </td>"
-                    + "<td>" + makeThreadKillForm(entry.getKey()) + "</td><tr>");
+                    + "<td>(Thread " + (task.getThreadOffset()+1) + " of " + task.getThreadCount() + ") </td>"
+                    + "<td>" + makeThreadKillForm(entry.getKey(), tl) + "</td><tr>");
         }
         
         if(tasks) {
             doc.append("</table>");
         }
-        doc.append("<p><a href=\"./"+this.layerName+"\">Refresh list</a></p>\n");
+        doc.append("<p><a href=\"./"+tl.getName()+"\">Refresh list</a></p>\n");
     }
     
-    private String makeThreadKillForm(Long key) {
-        String ret =  "<form form id=\"kill\" action=\"./"+this.layerName+"\" method=\"post\">"
+    private String makeThreadKillForm(Long key, TileLayer tl) {
+        String ret =  "<form form id=\"kill\" action=\"./"+tl.getName()+"\" method=\"post\">"
             	+ "<input type=\"hidden\" name=\"kill_thread\"  value=\"1\" />"
                 + "<input type=\"hidden\" name=\"thread_id\"  value=\""+key+"\" />"
                 + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Kill Thread\"></span>"
@@ -410,98 +420,82 @@ public class SeedPageResource extends Resource {
         doc.append("</body></html>\n");
     }
     
-    public boolean allowPost() {
-        return true;
-    }
-    
-    public void handlePost() {
-        Request req = super.getRequest();
-        Form form = req.getEntityAsForm();
-
-        if (form != null && form.getFirst("kill_thread") != null) {
-            handleKillThreadPost(form);
-        } else if (form != null && form.getFirst("minX") != null) {
-            handleDoSeedPost(form);
-        } else {
-            String error = "Unknown or malformed request, POST was to "
-                    + req.getResourceRef().getPath();
-
-            this.getResponse().setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            this.getResponse().setEntity(error, MediaType.TEXT_HTML);
-            log.error(error);
-        }
-    }
-    
-    private void handleKillThreadPost(Form form) {
+    private void handleKillThreadPost(Form form, TileLayer tl, Response resp) {
         String id = form.getFirstValue("thread_id");
-
-        SeederThreadPoolExecutor exec = RESTDispatcher.getInstance().getExecutor();
         
         StringBuilder doc = new StringBuilder();
         
         makeHeader(doc);
         
-        
-        
-        if(exec.terminateGWCTask(Long.parseLong(id))) {
+        if(threadPool.terminateGWCTask(Long.parseLong(id))) {
             doc.append("<ul><li>Requested to terminate task " + id + ".</li></ul>");
         } else {
             doc.append("<ul><li>Sorry, either task " + id 
                     + " has not started yet, or it is a truncate task that cannot be interrutped.</li></ul>");;
         }
         
-        doc.append("<p><a href=\"./"+this.layerName+"\">Go back</a></p>\n");
+        doc.append("<p><a href=\"./"+tl.getName()+"\">Go back</a></p>\n");
         
-        this.getResponse().setEntity(doc.toString(), MediaType.TEXT_HTML);
+        resp.setEntity(doc.toString(), MediaType.TEXT_HTML);
     }
     
 
-    private void handleDoSeedPost(Form form ) {
+    private void handleDoSeedPost(Form form, TileLayer tl, Response resp)
+            throws RestletException {
+        BBOX bounds = null;
         
-        BBOX bounds = null;        
-        if( form.getFirst("minX").getValue() != null 
-                && form.getFirst("minX").getValue().length() > 0
-                && form.getFirst("minY").getValue() != null 
-                && form.getFirst("minY").getValue().length() > 0 
-                && form.getFirst("maxX").getValue() != null 
-                && form.getFirst("maxX").getValue().length() > 0 
-                && form.getFirst("maxY").getValue() != null 
-                && form.getFirst("maxY").getValue().length() > 0 ) {
-            
+        if (form.getFirst("minX").getValue() != null) {
             bounds = new BBOX(
-                    Double.parseDouble(form.getFirst("minX").getValue()), 
-                    Double.parseDouble(form.getFirst("minY").getValue()), 
-                    Double.parseDouble(form.getFirst("maxX").getValue()), 
-                    Double.parseDouble(form.getFirst("maxY").getValue()));
+                    parseDouble(form, "minX"), 
+                    parseDouble(form, "minY"), 
+                    parseDouble(form, "maxX"),
+                    parseDouble(form, "maxY"));
         }
         
         SRS srs = SRS.getSRS(Integer.parseInt(form.getFirst("srs").getValue()));
-        
-        int threadCount = Integer.parseInt(form.getFirst("threadCount").getValue());
+
+        int threadCount = Integer.parseInt(form.getFirst("threadCount")
+                .getValue());
         int zoomStart = Integer.parseInt(form.getFirst("zoomStart").getValue());
         int zoomStop = Integer.parseInt(form.getFirst("zoomStop").getValue());
-        
+
         String format = form.getFirst("format").getValue();
-        
+
         String type = form.getFirst("type").getValue();
 
-        SeedRequest sr = new SeedRequest(this.layerName, bounds, srs,
+        SeedRequest sr = new SeedRequest(tl.getName(), bounds, srs,
                 threadCount, zoomStart, zoomStop, format, type);
 
-        try {
-            SeedResource.dispatchTasks(sr, this.tl, RESTDispatcher
-                    .getInstance().getExecutor());
-        } catch (GeoWebCacheException gwce) {
-            log.error(gwce.getMessage());
-        }
-        
+        SeedRestlet.dispatchTasks(sr, tl, threadPool);
+
         // Give the thread executor a chance to run
         try {
             Thread.currentThread().sleep(500);
         } catch (InterruptedException e) {
             // Ok, no worries
         }
-        
-        this.getResponse().setEntity(this.makeResponsePage(), MediaType.TEXT_HTML);
+
+        resp.setEntity(this.makeResponsePage(tl), MediaType.TEXT_HTML);
+    }
+    
+    private static double parseDouble(Form form, String key) throws RestletException {
+        String value = form.getFirst(key).getValue();
+        if(value == null || value.length() == 0)
+            throw new RestletException("Missing value for " + key, 
+                    Status.CLIENT_ERROR_BAD_REQUEST);
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException nfe) {
+            throw new  RestletException("Value for " + key + " is not a double", 
+                    Status.CLIENT_ERROR_BAD_REQUEST);
+        }
+    }
+    
+    public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {
+        layerDispatcher = tileLayerDispatcher;
+    }
+    
+    public void setThreadPoolExecutor(SeederThreadPoolExecutor stpe) {
+        threadPool = stpe;
     }
 }
