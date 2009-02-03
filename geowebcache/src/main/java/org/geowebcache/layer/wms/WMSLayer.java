@@ -20,11 +20,12 @@ package org.geowebcache.layer.wms;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -38,10 +39,11 @@ import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
 import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.cache.CacheKey;
+import org.geowebcache.layer.Grid;
+import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.GridLocObj;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.Grid;
 import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
@@ -51,7 +53,7 @@ import org.geowebcache.tile.Tile;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
-import org.geowebcache.layer.GridCalculator;
+import org.geowebcache.util.wms.Dimension;
 
 public class WMSLayer extends TileLayer {
     // needed in configuration object written to xml
@@ -79,7 +81,9 @@ public class WMSLayer extends TileLayer {
     private String vendorParameters;
     
     private String cachePrefix;
-
+    
+    private Map<String, Dimension> dimensions;
+    
     private String expireCache;
     
     private String expireClients;
@@ -137,7 +141,8 @@ public class WMSLayer extends TileLayer {
     public WMSLayer(String layerName, CacheFactory cacheFactory,
             String[] wmsURL, String wmsStyles, String wmsLayers, 
             List<String> mimeFormats, Hashtable<SRS,Grid> grids, 
-            int[] metaWidthHeight, String vendorParams) {
+            int[] metaWidthHeight, String vendorParams, 
+            Map<String, Dimension> dimensions) {
      
         name = layerName;
         initCacheFactory = cacheFactory;
@@ -151,6 +156,7 @@ public class WMSLayer extends TileLayer {
         this.expireCacheInt = GWCVars.CACHE_NEVER_EXPIRE;
         this.vendorParameters = vendorParams;
         this.transparent = true;
+        this.dimensions = dimensions;
         //this.bgColor = "0x000000";
         //this.palette = "test.png";
     }
@@ -300,7 +306,7 @@ public class WMSLayer extends TileLayer {
 
         WMSMetaTile metaTile = new WMSMetaTile(this, tile.getSRS(), 
                 tile.getMimeType(), gridCalc.getGridBounds(gridLoc[2]),
-                gridLoc, metaWidthHeight[0], metaWidthHeight[1]);
+                gridLoc, metaWidthHeight[0], metaWidthHeight[1], tile.getDimensions());
 
         // Leave a hint to save expiration, if necessary
         if (saveExpirationHeaders) {
@@ -504,8 +510,8 @@ public class WMSLayer extends TileLayer {
                 ioe.printStackTrace();
             }
 
-            Tile tile = new Tile(this, tileProto.getSRS(), gridPos,
-                    tileProto.getMimeType(), metaTile.getStatus(), out.toByteArray());
+            Tile tile = new Tile(this, tileProto.getSRS(), gridPos, tileProto.getMimeType(), 
+            		metaTile.getStatus(), out.toByteArray(), metaTile.dimensions);
             tile.setTileLayer(this);
             cache.set(this.cacheKey, tile, expireCacheInt);
         }
@@ -695,6 +701,7 @@ public class WMSLayer extends TileLayer {
         if (wmsStyles != null && wmsStyles.length() != 0) {
             wmsparams.setStyles(wmsStyles);
         }
+        // TODO: set dimensions in wmsparams.
         wmsparams.setFormat(formats.get(0).getFormat());
         return wmsparams;
     }
@@ -973,6 +980,14 @@ public class WMSLayer extends TileLayer {
         //this.debugheaders = debugheaders;
     }
 
+    public Map<String, Dimension> getDimensions() {
+	return dimensions;
+    }
+
+    public void setDimensions(Map<String, Dimension> dimensions) {
+	this.dimensions = dimensions;
+    }
+	
     public Tile getNoncachedTile(Tile tile, boolean requestTiled)
             throws GeoWebCacheException {
 

@@ -22,15 +22,11 @@ import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
-
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.tile.Tile;
@@ -67,7 +63,7 @@ public class KMZHelper {
                 
                 Tile tile = new Tile(
                         tileLayer.getName(), SRS.getEPSG4326(), 
-                        linkGridLocs[i], mime, null, null);
+                        linkGridLocs[i], mime, null, null, null);
                 tile.setTileLayer(tileLayer);
                 
                 try {                                        

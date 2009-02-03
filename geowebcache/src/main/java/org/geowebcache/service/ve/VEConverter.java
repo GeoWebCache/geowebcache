@@ -71,7 +71,7 @@ public class VEConverter extends Service {
             }
         }
         
-        Tile ret = new Tile(layerId, SRS.getEPSG900913(), gridLoc, mimeType, request, response);
+        Tile ret = new Tile(layerId, SRS.getEPSG900913(), gridLoc, mimeType, request, response, null);
         
         if(strCached != null && ! Boolean.parseBoolean(strCached)) {
             ret.setRequestHandler(Tile.RequestHandler.SERVICE);

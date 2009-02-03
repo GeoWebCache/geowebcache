@@ -31,7 +31,7 @@ public class TileLayerDispatcher {
 
     private volatile HashMap<String, TileLayer> layers = null;
 
-    private List configs = null;
+    private List<Configuration> configs = null;
 
     public TileLayerDispatcher() {
         //log.info("TileLayerDispatcher constructed");
@@ -54,7 +54,7 @@ public class TileLayerDispatcher {
         return layer;
     }
 
-    public void setConfig(List configs) {
+    public void setConfig(List<Configuration> configs) {
         this.configs = configs;
     }
 

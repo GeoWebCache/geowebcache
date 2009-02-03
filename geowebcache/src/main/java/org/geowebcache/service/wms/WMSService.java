@@ -17,7 +17,10 @@
  */
 package org.geowebcache.service.wms;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,6 +31,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
@@ -36,6 +40,7 @@ import org.geowebcache.tile.Tile;
 import org.geowebcache.util.Configuration;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
+import org.geowebcache.util.wms.Dimension;
 
 public class WMSService extends Service {
     public static final String SERVICE_WMS = "wms";
@@ -43,10 +48,10 @@ public class WMSService extends Service {
     private static Log log = LogFactory.getLog(org.geowebcache.service.wms.WMSService.class);
 
     // Proxy requests that are not getmap ?
-    private boolean proxyRequests = false;
+    protected boolean proxyRequests = false;
     
     // Proxy requests that are not tiled=true?
-    private boolean proxyNonTiledRequests = false;
+    protected boolean proxyNonTiledRequests = false;
     
     public WMSService() {
         super(SERVICE_WMS);
@@ -117,10 +122,75 @@ public class WMSService extends Service {
             throw new ServiceException(
                     "The bounding box parameter is missing or not sane");
         }
+        
+        Map<String, Dimension> layerDims = ((WMSLayer) tileLayer).getDimensions();
+        
+        Map<String, String> dimensions = wmsParams.getDimensions();
+        Iterator<Entry<String, String>> dimIter = dimensions.entrySet().iterator();
+
+        // Loops layers specified in the capabilities document
+        while (dimIter.hasNext()) {
+        	Entry<String, String> dimParam = dimIter.next();
+        	String dimName = dimParam.getKey();
+        	String dimValue = dimParam.getValue();
+
+        	if (layerDims == null) {
+           		throw new ServiceException(
+           				"The " + dimName + " parameter is not a valid dimension!");
+            }
+        	
+        	// Check that the dimension exists in the layer 
+        	Dimension dim = layerDims.get(dimName);
+        	if (dim == null) {
+        		throw new ServiceException(
+        				"The " + dimName + " parameter is not a valid dimension!");
+        	}
+        	// Simple valid check (will use the validity check in extent handler)
+        	if (!dim.isValid(dimValue)) {
+           		throw new ServiceException(
+           				"The " + dimName + " dimension is not valid!");
+        	}
+        }
+        
+        // Special case for time dimension and "current" as time parameter
+        if (layerDims != null) {
+	        Dimension timeDim = layerDims.get(Dimension.DIMENSION_TIME);
+	        if (timeDim != null) {
+		        String timeValue = dimensions.get(Dimension.DIMENSION_TIME);
+		        if ("current".equalsIgnoreCase(timeValue)) {
+		        	if (timeDim.supportsCurrent()) {
+		        		dimensions.put(Dimension.DIMENSION_TIME, timeDim.getDefaultValue()); //timeDim.getNearestValue()
+		        	} else {
+		           		throw new ServiceException(
+		           				"The layer \"" + tileLayer.getName() + 
+		           				"\" does not support \"current\" as value for time parameter!");
+		        	}
+		        }
+	        }
+	
+	        // Populate the dimensions map with default values for all dimensions 
+	        // specified in the WMSLayer. These will be used when creating the cache key.
+	        Iterator<Dimension> layerDimsIter = layerDims.values().iterator();
+	        while (layerDimsIter.hasNext()) {
+	        	Dimension layerDim = layerDimsIter.next();
+	        	String name = layerDim.getName();
+	        	if (!dimensions.containsKey(name)) {
+	        		if (!"".equalsIgnoreCase(layerDim.getDefaultValue())) {
+	        			// TODO: add HTTP-header info (according to Appendix C.5.1 WMS spec 1.1.1): 
+	        			// "Warning: 99 Default value used: DIM_NAME=value units"
+	        			
+	        			dimensions.put(name, layerDim.getDefaultValue());
+	        		} else {
+	        			throw new ServiceException("MissingDimensionValue: Parameter " 
+	        					+ name + " must be included in the request. Server does not declare default value!");
+	        		}
+	        	}
+	        }
+        }
 
         int[] tileIndex = tileLayer.getGridLocForBounds(srs, bbox);
         
-        return new Tile(layers, srs, tileIndex, mimeType, request, response);
+        return new Tile(layers, srs, tileIndex, mimeType, request, response, dimensions);
     }
 
     public void handleRequest(TileLayerDispatcher tLD, Tile tile)

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.media.jai.JAI;
@@ -53,7 +54,8 @@ public class WMSMetaTile extends MetaTile {
     private final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
 
     protected WMSLayer wmsLayer = null;
-    
+    protected Map<String, String> dimensions = null;
+
     protected boolean requestTiled = false;
 
     /**
@@ -62,10 +64,12 @@ public class WMSMetaTile extends MetaTile {
      * @param profile
      * @param initGridPosition
      */
-    protected WMSMetaTile(WMSLayer layer, SRS srs, MimeType mimeType,
-            int[] gridBounds, int[] tileGridPosition, int metaX, int metaY) {
+    protected WMSMetaTile(WMSLayer layer, SRS srs, MimeType mimeType, 
+    		int[] gridBounds, int[] tileGridPosition, int metaX, int metaY, 
+    		Map<String, String> dimensions) {
         super(srs, mimeType, gridBounds, tileGridPosition, metaX, metaY);
         this.wmsLayer = layer;
+        this.dimensions = dimensions;
     }
 
     protected WMSParameters getWMSParams() throws GeoWebCacheException {
@@ -81,6 +85,7 @@ public class WMSMetaTile extends MetaTile {
         GridCalculator gridCalc = wmsLayer.getGrid(srs).getGridCalculator();
         BBOX metaBbox = gridCalc.bboxFromGridBounds(metaTileGridBounds);
         wmsparams.setBBOX(metaBbox);
+        wmsparams.setDimensions(dimensions);
 
         return wmsparams;
     }

@@ -16,7 +16,7 @@
  */
 package org.geowebcache.service.mgmaps;
 
-import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -60,7 +60,9 @@ public class MGMapsConverter extends Service {
         String strY = ServletUtils.stringFromMap(params, "y");
         String strCached = ServletUtils.stringFromMap(params, "cached");
         String strMetaTiled = ServletUtils.stringFromMap(params, "metatiled");
-        
+        String timeParam = ServletUtils.stringFromMap(params, "time");
+        String elevParam = ServletUtils.stringFromMap(params, "elevation");
+
         int[] gridLoc = MGMapsConverter.convert(Integer.parseInt(strZoom),
                 Integer.parseInt(strX), Integer.parseInt(strY));
 
@@ -74,7 +76,10 @@ public class MGMapsConverter extends Service {
             throw new ServiceException("Unable to determine requested format, "+ strFormat);
         }
         
-        Tile ret = new Tile(layerId, SRS.getEPSG900913(), gridLoc, mimeType, request, response);
+        // TODO: set up time, elevation and dim_* parameters and values in:
+        Map<String, String> dimensions = new HashMap<String, String>();
+        
+        Tile ret = new Tile(layerId, SRS.getEPSG900913(), gridLoc, mimeType, request, response, dimensions);
         
         if(strCached != null && ! Boolean.parseBoolean(strCached)) {
             ret.setRequestHandler(Tile.RequestHandler.SERVICE);

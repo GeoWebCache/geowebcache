@@ -21,7 +21,8 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -75,6 +76,7 @@ public class Tile implements TileResponseReceiver {
     protected int[] tileIndex = null;
     protected String layerId = null;
     protected SRS srs = null;
+    protected Map<String, String> dimensions = null;
     
     protected TileLayer tileLayer = null;
     
@@ -100,13 +102,15 @@ public class Tile implements TileResponseReceiver {
      * then added by the cache
      */
     public Tile(String layerId, SRS srs, int[] tileIndex, MimeType mimeType, 
-            HttpServletRequest servletReq, HttpServletResponse servletResp) {
+            HttpServletRequest servletReq, HttpServletResponse servletResp, 
+            Map<String, String> dimensions) {
         this.layerId = layerId;
         this.srs = srs;
         this.tileIndex = tileIndex.clone();
         this.mimeType = mimeType;
         this.servletReq = servletReq;
         this.servletResp = servletResp;
+        this.dimensions = dimensions;
     }
     /**
      * This constructor is used for a seeding, the data is
@@ -127,7 +131,7 @@ public class Tile implements TileResponseReceiver {
      * This constructor is used by metatile code to create a data tile
      */
     public Tile(TileLayer layer, SRS srs, int[] tileIndex, MimeType mimeType, 
-            long status, byte[] payload) {
+            long status, byte[] payload, Map<String, String> dimensions) {
         this.layerId = layer.getName();
         this.tileLayer = layer;
         this.srs = srs;
@@ -135,6 +139,7 @@ public class Tile implements TileResponseReceiver {
         this.mimeType = mimeType;
         this.status = status;
         this.data = payload;
+        this.dimensions = dimensions;
     }
     
 //    /**
@@ -250,7 +255,30 @@ public class Tile implements TileResponseReceiver {
         this.srs = srs;
     }
     
-    public MimeType getMimeType() {
+    public Map<String, String> getDimensions() {
+		return dimensions;
+	}
+
+	public void setDimensions(Map<String, String> dimensions) {
+		this.dimensions = dimensions;
+	}
+	
+	public void setDimension(String name, String value) {
+		if (this.dimensions == null) {
+			this.dimensions = new HashMap<String, String>();
+		}
+		this.dimensions.put(name, value);
+	}
+	
+	public String getDimension(String name) {
+		String value = null;
+		if (dimensions != null) {
+			value = dimensions.get(name);
+		}
+		return value; 
+	}
+	
+	public MimeType getMimeType() {
         return mimeType;
     }
     

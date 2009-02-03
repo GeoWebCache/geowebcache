@@ -124,8 +124,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
         blankPNG8 = new byte[129];
         
         try {
-            int ret = is.read(blankPNG8);
-            log.info("Read " + ret + " from blank PNG8 file (expected 129).");
+        	if (is != null) {
+	            int ret = is.read(blankPNG8);
+	            log.info("Read " + ret + " from blank PNG8 file (expected 129).");
+        	}
         } catch (IOException ioe) {
             log.error(ioe.getMessage());
         }

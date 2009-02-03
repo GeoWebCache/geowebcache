@@ -20,7 +20,10 @@ package org.geowebcache.service.wms;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -30,6 +33,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.service.Parameters;
 import org.geowebcache.util.wms.BBOX;
+import org.geowebcache.util.wms.Dimension;
 
 @SuppressWarnings("unchecked")
 public class WMSParameters extends Parameters {
@@ -62,6 +66,10 @@ public class WMSParameters extends Parameters {
     public static final String HEIGHT_PARAM = "height";
 
     public static final String WIDTH_PARAM = "width";
+
+    public static final String TIME_PARAM = "time";
+
+    public static final String ELEVATION_PARAM = "elevation";
 
     public static final String FORMAT_PARAM = "format";
 
@@ -327,7 +335,45 @@ public class WMSParameters extends Parameters {
         set(SRS_PARAM, srs.toString());
     }
 
-    /**
+    public Dimension getDimension(String name) {
+    	return Dimension.getDimension((String) get(name));
+    }
+
+    public Map<String, String> getDimensions() {
+    	HashMap<String, String> dimensions = new HashMap<String, String>();
+    	Iterator keys = params.keySet().iterator();
+    	while (keys.hasNext()) {
+    		String key = (String) keys.next();
+    		if (TIME_PARAM.equalsIgnoreCase(key) ||
+    			ELEVATION_PARAM.equalsIgnoreCase(key) ||
+    			key.toLowerCase().startsWith("dim_")) {
+    			String value = ((String[]) params.get(key))[0];
+    			// Strip "dim_" from the key to match the name of the dimension
+    			// as specified in the WMSLayer
+    			key = key.replace("dim_", "");
+    			dimensions.put(key, value);
+    		}
+    	}
+    	return dimensions;
+    }
+
+	public void setDimensions(Map<String, String> dimensions) {
+		if (dimensions != null) {
+			Iterator<Entry<String, String>> dimIter = dimensions.entrySet().iterator();
+			while (dimIter.hasNext()) {
+				Entry<String, String> dim = dimIter.next();
+				set(dim.getKey(), dim.getValue());
+			}
+		}
+	}
+
+	public void setDimension(String name, Dimension dimension) {
+		if (name != null && name.length() != 0 && dimension != null) {
+			set(name, dimension);
+		}
+	}
+
+	/**
      * @return the width
      */
     public Integer getWidth() {

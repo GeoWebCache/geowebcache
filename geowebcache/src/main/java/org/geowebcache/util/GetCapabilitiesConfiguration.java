@@ -26,10 +26,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geotools.data.ows.CRSEnvelope;
 import org.geotools.data.ows.Layer;
 import org.geotools.data.ows.StyleImpl;
 import org.geotools.data.ows.WMSCapabilities;
@@ -43,6 +44,9 @@ import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.util.wms.BBOX;
+import org.geowebcache.util.wms.Dimension;
+import org.geowebcache.util.wms.ExtentHandler;
+import org.geowebcache.util.wms.ExtentHandlerMap;
 
 public class GetCapabilitiesConfiguration implements Configuration {
     private static Log log = LogFactory
@@ -57,6 +61,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
     private String metaTiling = null;
     
     private String vendorParameters = null;
+
+    private ExtentHandlerMap extentHandlerMap;
     
     private boolean allowCacheBypass = false;
 
@@ -134,9 +140,11 @@ public class GetCapabilitiesConfiguration implements Configuration {
         // // http://sigma.openplans.org:8080/geoserver/wms?SERVICE=WMS&
         String wmsUrl = wms.getCapabilities().getRequest().getGetCapabilities().getGet().toString();
         int queryStart = wmsUrl.lastIndexOf("?");
-        String preQuery = wmsUrl.substring(queryStart);
-        if (preQuery.equalsIgnoreCase("?service=wms&")) {
-            wmsUrl = wmsUrl.substring(0, wmsUrl.lastIndexOf("?"));
+        if (queryStart != -1) {
+	        String preQuery = wmsUrl.substring(queryStart);
+	        if (preQuery.equalsIgnoreCase("?service=wms&")) {
+	            wmsUrl = wmsUrl.substring(0, wmsUrl.lastIndexOf("?"));
+	        }
         }
         return wmsUrl;
     }
@@ -185,6 +193,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 log.info("Found layer: " + layer.getName()
                         + " with LatLon bbox " + bounds4326.toString());
                 
+                Map<String, Dimension> dimensions = parseDimensions(layer.getDimensions());
+                
                 BBOX bounds900913 = new BBOX(
                         longToSphericalMercatorX(minX),
                         latToSphericalMercatorY(minY),
@@ -196,7 +206,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 WMSLayer wmsLayer = null;
                 try {
                     wmsLayer = getLayer(name, wmsUrls, bounds4326, 
-                            bounds900913, stylesStr);
+                            bounds900913, stylesStr, dimensions);
                 } catch (GeoWebCacheException gwc) {
                     log.error("Error creating " + layer.getName() + ": "
                             + gwc.getMessage());
@@ -215,7 +225,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
     }
 
     private WMSLayer getLayer(String name, String[] wmsurl, 
-            BBOX bounds4326, BBOX bounds900913, String stylesStr)
+            BBOX bounds4326, BBOX bounds900913, String stylesStr,
+            Map<String, Dimension> dimensions)
             throws GeoWebCacheException {
         
         Hashtable<SRS,Grid> grids = new Hashtable<SRS,Grid>(2);
@@ -244,10 +255,40 @@ public class GetCapabilitiesConfiguration implements Configuration {
         
         int[] metaWidthHeight = { Integer.parseInt(metaStrings[0]), Integer.parseInt(metaStrings[1])};
         
-        // TODO We're dropping the styles now...
-        return new WMSLayer(name, this.cacheFactory,
-                wmsurl, stylesStr, name, mimeFormats, grids, 
-                metaWidthHeight, this.vendorParameters);
+		// TODO We're dropping the styles now...
+        return new WMSLayer(name, this.cacheFactory, wmsurl, stylesStr, name, mimeFormats, 
+        		grids, metaWidthHeight, this.vendorParameters, dimensions);
+    }
+
+    private Map<String, Dimension> parseDimensions(Map<String, 
+            org.geotools.data.wms.xml.Dimension> unparsedDimensions) {
+        Map<String, Dimension> dimensions = new HashMap<String, Dimension>();
+        if (unparsedDimensions != null) {
+            Iterator<Entry<String, org.geotools.data.wms.xml.Dimension>> dimIter = 
+                unparsedDimensions.entrySet().iterator();
+            while (dimIter.hasNext()) {
+                Entry<String, org.geotools.data.wms.xml.Dimension> dim = dimIter.next();
+                String name = dim.getKey();
+                org.geotools.data.wms.xml.Dimension dimension = dim.getValue();
+                if (name == null || name.length() == 0 || dimension == null || 
+                        dimension.getExtent() == null) {
+                    break;
+                }
+
+                ExtentHandler extentHandler = extentHandlerMap.getHandler(dimension.getUnits());
+                Dimension newDimension = new Dimension(name, dimension.getUnits(), 
+                        dimension.getExtent().getValue(), extentHandler);
+
+                newDimension.setCurrent(dimension.isCurrent());
+                newDimension.setUnitSymbol(dimension.getUnitSymbol());
+                newDimension.setDefaultValue(dimension.getExtent().getDefaultValue());
+                newDimension.setMultipleValues(dimension.getExtent().isMultipleValues());
+                newDimension.setNearestValue(dimension.getExtent().getNearestValue());
+                dimensions.put(name, newDimension);
+            }
+        }
+
+        return dimensions;
     }
 
     private WebMapServer getWMS() {
@@ -278,5 +319,14 @@ public class GetCapabilitiesConfiguration implements Configuration {
         double tmp = Math.PI/4.0 + y/2.0; 
         return 20037508.34 * Math.log(Math.tan(tmp)) / Math.PI;
     }
+
+	public ExtentHandlerMap getExtentHandlerMap() {
+		return extentHandlerMap;
+	}
+
+	public void setExtentHandlerMap(ExtentHandlerMap extentHandlerMap) {
+		this.extentHandlerMap = extentHandlerMap;
+	}
+
     
 }
