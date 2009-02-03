@@ -71,6 +71,8 @@ public class WMSParameters extends Parameters {
 
     public static final String ELEVATION_PARAM = "elevation";
 
+    public static final String DIM_PREFIX_PARAM = "dim_";
+
     public static final String FORMAT_PARAM = "format";
 
     public static final String ERROR_TYPE_PARAM = "exceptions";

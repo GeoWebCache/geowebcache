@@ -140,7 +140,7 @@ public class WMSService extends Service {
             }
         	
         	// Check that the dimension exists in the layer 
-        	Dimension dim = layerDims.get(dimName);
+                Dimension dim = layerDims.get(dimName.replace(WMSParameters.DIM_PREFIX_PARAM, ""));
         	if (dim == null) {
         		throw new ServiceException(
         				"The " + dimName + " parameter is not a valid dimension!");
@@ -174,6 +174,9 @@ public class WMSService extends Service {
 	        while (layerDimsIter.hasNext()) {
 	        	Dimension layerDim = layerDimsIter.next();
 	        	String name = layerDim.getName();
+                        if (!(WMSParameters.TIME_PARAM.equalsIgnoreCase(name) || WMSParameters.ELEVATION_PARAM.equalsIgnoreCase(name))) {
+                            name = WMSParameters.DIM_PREFIX_PARAM + name;
+                        }
 	        	if (!dimensions.containsKey(name)) {
 	        		if (!"".equalsIgnoreCase(layerDim.getDefaultValue())) {
 	        			// TODO: add HTTP-header info (according to Appendix C.5.1 WMS spec 1.1.1): 
