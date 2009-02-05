@@ -129,7 +129,16 @@ public class TileLayerDispatcher {
                     
                     while (iter.hasNext()) {
                         TileLayer layer = iter.next();
-                        layers.put(layer.getName(), layer);
+                        
+                        if(layers.containsKey(layer.getName())) {
+                            try {
+                                layers.get(layer.getName()).mergeWith(layer);
+                            } catch (GeoWebCacheException gwce) {
+                                log.error(gwce.getMessage());
+                            }
+                        } else {
+                            layers.put(layer.getName(), layer);
+                        }   
                     }
                 } else {
                     log.error("Configuration " + configIdent

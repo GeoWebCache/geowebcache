@@ -25,12 +25,23 @@
     <constructor-arg value="false"/><!-- Whether to allow cached=false to specificed for certain requests --> 
   </bean>
   
+  <bean id="extentHandlerMap" class="org.geowebcache.util.wms.ExtentHandlerMap">
+    <property name="extents">
+      <map>
+        <entry key="ISO8601" value="org.geowebcache.util.wms.TimeExtentHandler" />
+        <entry key="date_time" value="org.geowebcache.util.wms.TimeExtentHandler" />
+        <entry key="PTime" value="org.geowebcache.util.wms.TimeExtentHandler" />
+        <entry key="m" value="org.geowebcache.util.wms.ElevationExtentHandler" />
+      </map>
+    </property>
+  </bean>
+
   <!-- For each configuration bean above, add them below to activate -->
   <bean id="gwcTLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
     <property name="config">
       <list>
-	    <ref bean="gwcXmlConfig" />
 	    <ref bean="gwcWMSConfig" />
+	    <ref bean="gwcXmlConfig" />
       </list>
     </property>
   </bean>
@@ -50,7 +61,13 @@
   <!-- Services, make sure you name the bean the same as the path -->
   <bean id="gwcServiceWMS" 
     	class="org.geowebcache.service.wms.WMSService">
-    	<property name="proxyRequests"><value>TRUE</value></property>
+    <property name="proxyRequests"><value>TRUE</value></property>
+   	<property name="config">
+   	  <list>
+   	    <ref bean="gwcWMSConfig" />
+   	    <ref bean="gwcXmlConfig" />
+   	  </list>
+   	</property>
   </bean>
   <bean id="gwcServiceGMaps"
 	class="org.geowebcache.service.gmaps.GMapsConverter"/>
@@ -125,7 +142,7 @@
   </bean>
   
   
-  <bean id="gwcCacheKeyFile" class="org.geowebcache.cache.file.FilePathKey2"/>
+  <bean id="gwcCacheKeyFile" class="org.geowebcache.cache.file.DimensionalFilePathKey2" />
   <bean id="gwcCacheFile" class="org.geowebcache.cache.file.FileCache">
     <property name="defaultKeyBeanId"><value>gwcCacheKeyFile</value></property>
   </bean>
