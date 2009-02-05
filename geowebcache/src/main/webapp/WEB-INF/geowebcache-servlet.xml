@@ -31,7 +31,7 @@
         <entry key="ISO8601" value="org.geowebcache.util.wms.TimeExtentHandler" />
         <entry key="date_time" value="org.geowebcache.util.wms.TimeExtentHandler" />
         <entry key="PTime" value="org.geowebcache.util.wms.TimeExtentHandler" />
-        <entry key="m" value="org.geowebcache.util.wms.ElevationExtentHandler" />
+        <entry key="m" value="org.geowebcache.util.wms.NumericExtentHandler" />
       </map>
     </property>
   </bean>
