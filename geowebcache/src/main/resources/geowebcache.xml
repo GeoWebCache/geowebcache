@@ -69,6 +69,11 @@
             <double>90.0</double>
           </coords>
         </gridBounds>
+        <!-- 
+           This grid only allows zoom levels 0 through 20
+        -->
+        <zoomStart>0</zoomStart>
+        <zoomStop>20</zoomStop>
       </grid>
     </entry>
 
@@ -136,11 +141,10 @@
             <double>959189.3312465074</double>
           </coords>
         </gridBounds>
-        <!-- 
-        This grid only allows zoom levels 0 through 20
-        -->
-        <zoomStart>0</zoomStart>
-        <zoomStop>20</zoomStop>
+        <!-- Instead of specifying the max and min zoomlevels,
+             you can also define an explicit list of resolutions (units/pixel).
+             This list has to be in decreasing order. -->
+        <resolutions><double>15000.0</double><double>12000.0</double><double>4000.0</double></resolutions>
       </grid>
     </entry>
   </grids>
