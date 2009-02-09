@@ -76,6 +76,7 @@
      <xs:element name="srs" type="gwc:srs"/>
      <xs:element name="dataBounds" type="gwc:Bounds"/>
      <xs:element name="gridBounds" type="gwc:Bounds"/>
+     <xs:element name="resolutions" type="gwc:Resolutions" minOccurs="0" />
      <xs:element name="zoomStart" type="xs:integer" minOccurs="0" />
      <xs:element name="zoomStop" type="xs:integer" minOccurs="0" />
   </xs:sequence>
@@ -90,6 +91,12 @@
 <xs:complexType name="Coords">
   <xs:sequence>
      <xs:element name="double" type="xs:double" minOccurs="4" maxOccurs="4"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="Resolutions">
+  <xs:sequence>
+     <xs:element name="double" type="xs:double" minOccurs="1" maxOccurs="unbounded"/>
   </xs:sequence>
 </xs:complexType>
 

@@ -40,6 +40,8 @@ public class Grid {
     
     protected double[] resolutions = null;
     
+    private transient boolean staticResolutions = false;
+    
     private volatile transient GridCalculator gridCalculator;
     
     public Grid(SRS srs, BBOX bounds, BBOX gridBounds, double[] resolutions) {
@@ -115,9 +117,13 @@ public class Grid {
         return this.zoomStop;
     }
     
-    public void setResolutions(double[] resolutions) {
-        this.resolutions = resolutions;
+    public boolean hasStaticResolutions() {
+        return this.staticResolutions;
     }
+    
+    //public void setResolutions(double[] resolutions) {
+    //    this.resolutions = resolutions;
+    //}
     
     public double[] getResolutions() throws GeoWebCacheException {
         return getGridCalculator().getResolutions();
@@ -147,6 +153,10 @@ public class Grid {
             log.debug("Missing values, setting zoomStart,zoomStop to 0,30");
             zoomStart = 0;
             zoomStop = 30;
+        }
+        
+        if(resolutions != null) {
+            staticResolutions = true;
         }
         
         GridCalculator gridCalc = new GridCalculator(this);
