@@ -149,14 +149,16 @@ public class Grid {
     }
 
     private GridCalculator initGridCalculator() throws GeoWebCacheException {
-        if(zoomStart < 0 || zoomStop < zoomStart || zoomStop == 0) {
-            log.debug("Missing values, setting zoomStart,zoomStop to 0,30");
-            zoomStart = 0;
-            zoomStop = 30;
-        }
-        
-        if(resolutions != null) {
+        if (resolutions != null) {
             staticResolutions = true;
+            zoomStart = 0;
+            zoomStop = resolutions.length - 1;
+        } else {
+            if (zoomStart < 0 || zoomStop < zoomStart || zoomStop == 0) {
+                log.debug("Missing values, setting zoomStart,zoomStop to 0,30");
+                zoomStart = 0;
+                zoomStop = 30;
+            }
         }
         
         GridCalculator gridCalc = new GridCalculator(this);

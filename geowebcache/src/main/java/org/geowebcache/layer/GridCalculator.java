@@ -67,8 +67,9 @@ public class GridCalculator {
 
         this.grid = grid;
         
-        if(grid.resolutions != null) {
-            this.resolutions = grid.resolutions;
+        if(grid.hasStaticResolutions()) {
+            this.resolutions = new double[grid.resolutions.length];
+            System.arraycopy(grid.resolutions, 0, this.resolutions, 0, this.resolutions.length);
             this.zoomStop = resolutions.length - 1;
         } else {
             this.zoomStart = grid.getZoomStart();
@@ -89,7 +90,7 @@ public class GridCalculator {
     }
     
     private void determineGrid() throws GeoWebCacheException {
-        if(grid.resolutions == null) {
+        if(! grid.hasStaticResolutions()) {
             // Figure out the appropriate resolutions
             
             double ratio = gridWidth / gridHeight;
@@ -128,7 +129,7 @@ public class GridCalculator {
                 determineResolutions();
             }
         } else {
-            double denominator = grid.resolutions[0]* GridCalculator.TILEPIXELS;
+            double denominator = this.resolutions[0]* GridCalculator.TILEPIXELS;
             this.gridX = (int) Math.round(gridWidth / denominator);
             this.gridY = (int) Math.round(gridHeight / denominator);
         }
