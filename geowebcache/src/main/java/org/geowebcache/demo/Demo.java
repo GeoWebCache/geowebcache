@@ -1,7 +1,6 @@
 package org.geowebcache.demo;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -180,15 +179,7 @@ public class Demo {
         BBOX bbox = grid.getGridBounds();
         BBOX zoomBounds = grid.getBounds();
         //String res = "resolutions: "+ Arrays.toString(grid.getResolutions()) + ",\n";
-        String res;
-        
-        if(grid.hasStaticResolutions()) {
-            res = "resolutions: " + Arrays.toString(grid.getResolutions()) + ",\n";
-        } else {
-            res = "maxResolution: " + Double.toString(grid.getResolutions()[grid.getZoomStart()]) +",\n"
-                        +"numZoomLevels: "+(grid.getZoomStop() - grid.getZoomStart() + 1)+",\n";
-        }
-        
+        String res = "maxResolution: " + Double.toString(grid.getResolutions()[grid.getZoomStart()]) +",\n"; 
         String page =
             "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n"
             +"<meta http-equiv=\"imagetoolbar\" content=\"no\">\n"
@@ -207,6 +198,7 @@ public class Demo {
             +"function init(){\n"
             +"var mapOptions = { \n"
             + res
+            +"numZoomLevels: "+(grid.getZoomStop() - grid.getZoomStart() + 1)+",\n"
             +"projection: new OpenLayers.Projection('"+srs.toString()+"'),\n"
             +"maxExtent: new OpenLayers.Bounds("+bbox.toString()+") \n};\n"
             +"map = new OpenLayers.Map('map', mapOptions );\n"
