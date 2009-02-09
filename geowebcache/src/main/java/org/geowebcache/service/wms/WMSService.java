@@ -124,76 +124,63 @@ public class WMSService extends Service {
         }
         
         Map<String, Dimension> layerDims = ((WMSLayer) tileLayer).getDimensions();
-        
-        Map<String, String> dimensions = wmsParams.getDimensions();
-        Iterator<Entry<String, String>> dimIter = dimensions.entrySet().iterator();
+        Map<String, String> paramDims = wmsParams.getDimensions();
 
-        // Loops layers specified in the capabilities document
-        while (dimIter.hasNext()) {
-        	Entry<String, String> dimParam = dimIter.next();
-        	String dimName = dimParam.getKey();
-        	String dimValue = dimParam.getValue();
+        // Loops layers specified in the request parameters
+        Iterator<Entry<String, String>> paramDimsIter = paramDims.entrySet().iterator();
+        while (paramDimsIter.hasNext()) {
+            Entry<String, String> dimParam = paramDimsIter.next();
+            String dimName = dimParam.getKey();
+            String dimValue = dimParam.getValue();
 
-        	if (layerDims == null) {
-           		throw new ServiceException(
-           				"The " + dimName + " parameter is not a valid dimension!");
+            if (layerDims == null) {
+                throw new ServiceException(
+                        "The layer " + tileLayer.getName() + 
+                        " has no specified dimensions. The " + 
+                        dimName + " parameter is not valid!");
             }
-        	
-        	// Check that the dimension exists in the layer 
-                Dimension dim = layerDims.get(dimName.replace(WMSParameters.DIM_PREFIX_PARAM, ""));
-        	if (dim == null) {
-        		throw new ServiceException(
-        				"The " + dimName + " parameter is not a valid dimension!");
-        	}
-        	// Simple valid check (will use the validity check in extent handler)
-        	if (!dim.isValid(dimValue)) {
-           		throw new ServiceException(
-           				"The " + dimName + " dimension is not valid!");
-        	}
+
+            // Strip the "dim_" prefix from the request parameter
+            String layerDimName = dimName.replace(WMSParameters.DIM_PREFIX_PARAM, "");
+            // Check that the dimension exists in the layer
+            Dimension dim = layerDims.get(layerDimName);
+            if (dim == null) {
+                throw new ServiceException(
+                        "The " + dimName + " parameter is not a valid dimension!");
+            }
+
+            // Simple valid check
+            if (!dim.isValid(dimValue)) {
+                throw new ServiceException(
+                        "The " + dimName + " dimension is not valid!\n" +
+                        "Layer: " + tileLayer.getName() + "\n" +
+                        "Parameter: " + dimValue + "\n" +
+                        "Extent: " + dim.getExtent() + "\n");
+            }
         }
         
-        // Special case for time dimension and "current" as time parameter
         if (layerDims != null) {
-	        Dimension timeDim = layerDims.get(Dimension.DIMENSION_TIME);
-	        if (timeDim != null) {
-		        String timeValue = dimensions.get(Dimension.DIMENSION_TIME);
-		        if ("current".equalsIgnoreCase(timeValue)) {
-		        	if (timeDim.supportsCurrent()) {
-		        		dimensions.put(Dimension.DIMENSION_TIME, timeDim.getDefaultValue()); //timeDim.getNearestValue()
-		        	} else {
-		           		throw new ServiceException(
-		           				"The layer \"" + tileLayer.getName() + 
-		           				"\" does not support \"current\" as value for time parameter!");
-		        	}
-		        }
-	        }
-	
-	        // Populate the dimensions map with default values for all dimensions 
-	        // specified in the WMSLayer. These will be used when creating the cache key.
-	        Iterator<Dimension> layerDimsIter = layerDims.values().iterator();
-	        while (layerDimsIter.hasNext()) {
-	        	Dimension layerDim = layerDimsIter.next();
-	        	String name = layerDim.getName();
-                        if (!(WMSParameters.TIME_PARAM.equalsIgnoreCase(name) || WMSParameters.ELEVATION_PARAM.equalsIgnoreCase(name))) {
-                            name = WMSParameters.DIM_PREFIX_PARAM + name;
-                        }
-	        	if (!dimensions.containsKey(name)) {
-	        		if (!"".equalsIgnoreCase(layerDim.getDefaultValue())) {
-	        			// TODO: add HTTP-header info (according to Appendix C.5.1 WMS spec 1.1.1): 
-	        			// "Warning: 99 Default value used: DIM_NAME=value units"
-	        			
-	        			dimensions.put(name, layerDim.getDefaultValue());
-	        		} else {
-	        			throw new ServiceException("MissingDimensionValue: Parameter " 
-	        					+ name + " must be included in the request. Server does not declare default value!");
-	        		}
-	        	}
-	        }
+            // Populate the dimensions map with parsed values for all dimensions 
+            // specified in the WMSLayer. These will be used when creating the cache key.
+            Iterator<Dimension> layerDimsIter = layerDims.values().iterator();
+            while (layerDimsIter.hasNext()) {
+                Dimension layerDim = layerDimsIter.next();
+                String name = layerDim.getName();
+                if (!(WMSParameters.TIME_PARAM.equalsIgnoreCase(name) || WMSParameters.ELEVATION_PARAM.equalsIgnoreCase(name))) {
+                    name = WMSParameters.DIM_PREFIX_PARAM + name;
+                }
+                // We always want to let the layer set the value. It is this value that will
+                // be used when trying to get data from the back end and as cache key
+                // NOTE:  Dimension#getValue() is just a wrapper around the ExtentHandler#getValue()
+                //        Be careful when implementing this method to get a nice string representation
+                String val = paramDims.get(name);
+                paramDims.put(name, layerDim.getValue(val));
+            }
         }
 
         int[] tileIndex = tileLayer.getGridLocForBounds(srs, bbox);
         
-        return new Tile(layers, srs, tileIndex, mimeType, request, response, dimensions);
+        return new Tile(layers, srs, tileIndex, mimeType, request, response, paramDims);
     }
 
     public void handleRequest(TileLayerDispatcher tLD, Tile tile)
