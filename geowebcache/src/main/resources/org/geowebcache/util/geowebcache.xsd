@@ -76,9 +76,13 @@
      <xs:element name="srs" type="gwc:srs"/>
      <xs:element name="dataBounds" type="gwc:Bounds"/>
      <xs:element name="gridBounds" type="gwc:Bounds"/>
-     <xs:element name="resolutions" type="gwc:Resolutions" minOccurs="0" />
-     <xs:element name="zoomStart" type="xs:integer" minOccurs="0" />
-     <xs:element name="zoomStop" type="xs:integer" minOccurs="0" />
+     <xs:choice minOccurs="0" maxOccurs="1">
+       <xs:element name="resolutions" type="gwc:Resolutions" minOccurs="0" />
+       <xs:sequence>
+         <xs:element name="zoomStart" type="xs:integer" minOccurs="0" />
+         <xs:element name="zoomStop" type="xs:integer" minOccurs="0" />
+       </xs:sequence>
+     </xs:choice>
   </xs:sequence>
 </xs:complexType>
 
