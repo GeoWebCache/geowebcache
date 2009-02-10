@@ -182,31 +182,14 @@ public class GetCapabilitiesConfiguration implements Configuration {
                     }
                     stylesStr = buf.toString();
                 }
-                
-                double minX = layer.getLatLonBoundingBox().getMinX();
-                double minY = layer.getLatLonBoundingBox().getMinY();
-                double maxX = layer.getLatLonBoundingBox().getMaxX();
-                double maxY = layer.getLatLonBoundingBox().getMaxY();
-
-                BBOX bounds4326 = new BBOX(minX,minY,maxX,maxY);
-                
-                log.info("Found layer: " + layer.getName()
-                        + " with LatLon bbox " + bounds4326.toString());
-                
+                               
                 Map<String, Dimension> dimensions = parseDimensions(layer.getDimensions());
                 
-                BBOX bounds900913 = new BBOX(
-                        longToSphericalMercatorX(minX),
-                        latToSphericalMercatorY(minY),
-                        longToSphericalMercatorX(maxX),
-                        latToSphericalMercatorY(maxY));
-               
                 String[] wmsUrls = {wmsUrl};
                 
                 WMSLayer wmsLayer = null;
                 try {
-                    wmsLayer = getLayer(name, wmsUrls, bounds4326, 
-                            bounds900913, stylesStr, dimensions);
+                    wmsLayer = getLayer(name, wmsUrls, layer.getBoundingBoxes(), stylesStr, dimensions);
                 } catch (GeoWebCacheException gwc) {
                     log.error("Error creating " + layer.getName() + ": "
                             + gwc.getMessage());
@@ -224,17 +207,59 @@ public class GetCapabilitiesConfiguration implements Configuration {
         return layers;
     }
 
-    private WMSLayer getLayer(String name, String[] wmsurl, 
-            BBOX bounds4326, BBOX bounds900913, String stylesStr,
-            Map<String, Dimension> dimensions)
-            throws GeoWebCacheException {
+	private Map<String, Dimension> parseDimensions(Map<String, 
+			org.geotools.data.wms.xml.Dimension> unparsedDimensions) {
+		Map<String, Dimension> dimensions = new HashMap<String, Dimension>();
+		if (unparsedDimensions != null) {
+			Iterator<Entry<String, org.geotools.data.wms.xml.Dimension>> dimIter = 
+				unparsedDimensions.entrySet().iterator();
+			while (dimIter.hasNext()) {
+				Entry<String, org.geotools.data.wms.xml.Dimension> dim = dimIter.next();
+				String name = dim.getKey();
+				org.geotools.data.wms.xml.Dimension dimension = dim.getValue();
+				if (name == null || name.length() == 0 || dimension == null || 
+						dimension.getExtent() == null) {
+					break;
+				}
+
+				ExtentHandler extentHandler = extentHandlerMap.getHandler(dimension.getUnits());
+				Dimension newDimension = new Dimension(name, dimension.getUnits(), 
+						dimension.getExtent().getValue(), extentHandler);
+
+				newDimension.setCurrent(dimension.isCurrent());
+				newDimension.setUnitSymbol(dimension.getUnitSymbol());
+				newDimension.setDefaultValue(dimension.getExtent().getDefaultValue());
+				newDimension.setMultipleValues(dimension.getExtent().isMultipleValues());
+				newDimension.setNearestValue(dimension.getExtent().getNearestValue());
+				dimensions.put(name, newDimension);
+			}
+		}
+		
+		return dimensions;
+	}
+
+	private WMSLayer getLayer(String name, String[] wmsurl, HashMap<Object, CRSEnvelope> bboxs, 
+			String stylesStr, Map<String, Dimension> dimensions) throws GeoWebCacheException {
         
-        Hashtable<SRS,Grid> grids = new Hashtable<SRS,Grid>(2);
-        grids.put(SRS.getEPSG4326(), new Grid(SRS.getEPSG4326(), bounds4326, 
-                BBOX.WORLD4326, GridCalculator.get4326Resolutions()));
-        grids.put(SRS.getEPSG900913(), new Grid(SRS.getEPSG900913(), bounds900913,
-                BBOX.WORLD900913, GridCalculator.get900913Resolutions()));
-        
+		Hashtable<SRS,Grid> grids = new Hashtable<SRS,Grid>();
+		for (Entry<Object, CRSEnvelope> entry : bboxs.entrySet()) {
+			String key = (String) entry.getKey();
+			CRSEnvelope value = entry.getValue();
+
+			SRS srs = SRS.getSRS(key);
+			BBOX dataBounds = new BBOX(value.getMinX(), value.getMinY(), value.getMaxX(), value.getMaxY());
+			Grid grid;
+			if (SRS.getEPSG4326().getNumber() == srs.getNumber()) {
+				grid = new Grid(SRS.getEPSG4326(), dataBounds, BBOX.WORLD4326, GridCalculator.get4326Resolutions());
+			} else if (SRS.getEPSG900913().getNumber() == srs.getNumber()) {
+				grid = new Grid(SRS.getEPSG900913(), dataBounds, BBOX.WORLD900913, GridCalculator.get900913Resolutions());
+			} else {
+				grid = new Grid(srs, dataBounds, dataBounds, null);
+				grid.setResolutions(grid.getResolutions());
+			}
+			grids.put(srs, grid);
+		}
+		
         List<String> mimeFormats = null;
         if(this.mimeTypes != null) {
             String[] mimeFormatArray = this.mimeTypes.split(",");
@@ -258,37 +283,6 @@ public class GetCapabilitiesConfiguration implements Configuration {
 		// TODO We're dropping the styles now...
         return new WMSLayer(name, this.cacheFactory, wmsurl, stylesStr, name, mimeFormats, 
         		grids, metaWidthHeight, this.vendorParameters, dimensions);
-    }
-
-    private Map<String, Dimension> parseDimensions(Map<String, 
-            org.geotools.data.wms.xml.Dimension> unparsedDimensions) {
-        Map<String, Dimension> dimensions = new HashMap<String, Dimension>();
-        if (unparsedDimensions != null) {
-            Iterator<Entry<String, org.geotools.data.wms.xml.Dimension>> dimIter = 
-                unparsedDimensions.entrySet().iterator();
-            while (dimIter.hasNext()) {
-                Entry<String, org.geotools.data.wms.xml.Dimension> dim = dimIter.next();
-                String name = dim.getKey();
-                org.geotools.data.wms.xml.Dimension dimension = dim.getValue();
-                if (name == null || name.length() == 0 || dimension == null || 
-                        dimension.getExtent() == null) {
-                    break;
-                }
-
-                ExtentHandler extentHandler = extentHandlerMap.getHandler(dimension.getUnits());
-                Dimension newDimension = new Dimension(name, dimension.getUnits(), 
-                        dimension.getExtent().getValue(), extentHandler);
-
-                newDimension.setCurrent(dimension.isCurrent());
-                newDimension.setUnitSymbol(dimension.getUnitSymbol());
-                newDimension.setDefaultValue(dimension.getExtent().getDefaultValue());
-                newDimension.setMultipleValues(dimension.getExtent().isMultipleValues());
-                newDimension.setNearestValue(dimension.getExtent().getNearestValue());
-                dimensions.put(name, newDimension);
-            }
-        }
-
-        return dimensions;
     }
 
     private WebMapServer getWMS() {
@@ -320,13 +314,13 @@ public class GetCapabilitiesConfiguration implements Configuration {
         return 20037508.34 * Math.log(Math.tan(tmp)) / Math.PI;
     }
 
-	public ExtentHandlerMap getExtentHandlerMap() {
-		return extentHandlerMap;
-	}
+    public ExtentHandlerMap getExtentHandlerMap() {
+        return extentHandlerMap;
+    }
 
-	public void setExtentHandlerMap(ExtentHandlerMap extentHandlerMap) {
-		this.extentHandlerMap = extentHandlerMap;
-	}
+    public void setExtentHandlerMap(ExtentHandlerMap extentHandlerMap) {
+        this.extentHandlerMap = extentHandlerMap;
+    }
 
     
 }
