@@ -16,6 +16,9 @@
  */
 package org.geowebcache.rest.seed;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -64,7 +67,11 @@ public class SeedFormRestlet extends GWCRestlet {
     }
     
     public void doGet(Request request, Response response) throws RestletException {
-        String layerName = (String) request.getAttributes().get("layer");
+        //String layerName = (String) request.getAttributes().get("layer");
+        String layerName = null;
+        try {
+            layerName = URLDecoder.decode((String) request.getAttributes().get("layer"), "UTF-8");
+        } catch (UnsupportedEncodingException uee) { }
         
         TileLayer tl = findTileLayer(layerName, layerDispatcher);
         
@@ -74,7 +81,10 @@ public class SeedFormRestlet extends GWCRestlet {
     }
     
     public void doPost(Request req, Response resp) throws RestletException {
-        String layerName = (String) req.getAttributes().get("layer");
+        String layerName = null;
+        try {
+            layerName = URLDecoder.decode((String) req.getAttributes().get("layer"), "UTF-8");
+        } catch (UnsupportedEncodingException uee) { }
         
         Form form = req.getEntityAsForm();
 

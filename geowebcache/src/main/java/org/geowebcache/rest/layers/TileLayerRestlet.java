@@ -20,6 +20,8 @@ package org.geowebcache.rest.layers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -98,9 +100,15 @@ public class TileLayerRestlet extends GWCRestlet {
      * @param req
      * @param resp
      * @throws RestletException
+     * @throws  
      */
     protected void doGet(Request req, Response resp) throws RestletException {
-        String layerName = (String) req.getAttributes().get("layer");
+        //String layerName = (String) req.getAttributes().get("layer");
+        String layerName = null;
+        try {
+            layerName = URLDecoder.decode((String) req.getAttributes().get("layer"), "UTF-8");
+        } catch (UnsupportedEncodingException uee) { }
+        
         String formatExtension = (String) req.getAttributes().get("extension");
         resp.setEntity(doGetInternal(layerName, formatExtension));
     }
