@@ -53,6 +53,9 @@ import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 
 
 public class SeedRestlet extends GWCRestlet {
+    
+    private XMLConfiguration xmlConfig;
+
     SeederThreadPoolExecutor threadPool;
     
     TileLayerDispatcher layerDispatcher;
@@ -117,7 +120,7 @@ public class SeedRestlet extends GWCRestlet {
         
         SeedRequest sr = null;
         
-        XStream xs = XMLConfiguration.getConfiguredXStream(new XStream(new DomDriver()));
+        XStream xs = xmlConfig.getConfiguredXStream(new XStream(new DomDriver()));
         
         if(formatExtension.equalsIgnoreCase("xml")) {
             sr = (SeedRequest) xs.fromXML(req.getEntity().getStream());
@@ -241,6 +244,10 @@ public class SeedRestlet extends GWCRestlet {
         }
         
         return ret;
+    }
+    
+    public void setXMLConfiguration(XMLConfiguration xmlConfig) {
+        this.xmlConfig = xmlConfig;
     }
     
     public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {

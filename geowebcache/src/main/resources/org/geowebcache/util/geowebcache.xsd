@@ -43,6 +43,7 @@
      <xs:element name="expireClients" type="xs:integer" minOccurs="0"/>
      <xs:element name="backendTimeout" type="xs:integer" minOccurs="0"/>
      <xs:element name="cacheBypassAllowed" type="xs:boolean" minOccurs="0"/>
+     <xs:element name="dimensions" type="gwc:dimensions" maxOccurs="1" minOccurs="0"/>
   </xs:sequence>
 </xs:complexType>
 
@@ -59,11 +60,32 @@
 </xs:complexType>
 
 <xs:complexType name="entry">
-  <xs:sequence>
+  <xs:choice>
+    <xs:sequence>
      <xs:element name="srs" type="gwc:srs"/>
      <xs:element name="grid" type="gwc:grid"/>
   </xs:sequence>
+  <xs:sequence>
+    <xs:element name="string" type="xs:string"/>
+    <xs:element name="dimension">
+      <xs:complexType>
+        <xs:simpleContent>
+          <xs:extension base="xs:string">
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="units" type="xs:string" use="required"/>
+            <xs:attribute name="unitSymbol" type="xs:string" use="optional"/>
+            <xs:attribute name="default" type="xs:string" use="optional"/>
+            <xs:attribute name="nearestValue" type="xs:integer" use="optional" default="0"/>
+            <xs:attribute name="multipleValues" type="xs:integer" use="optional" default="0"/>
+            <xs:attribute name="current" type="xs:integer" use="optional" default="0"/>
+          </xs:extension>
+        </xs:simpleContent>
+      </xs:complexType>
+    </xs:element>
+  </xs:sequence>
+  </xs:choice>
 </xs:complexType>
+
 
 <xs:complexType name="srs">
   <xs:sequence>
@@ -102,6 +124,12 @@
 <xs:complexType name="metaWidthHeight">
   <xs:sequence>
      <xs:element name="int" type="xs:integer" minOccurs="2" maxOccurs="2"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="dimensions">
+  <xs:sequence>
+     <xs:element name="entry" type="gwc:entry" minOccurs="0" maxOccurs="unbounded"/>
   </xs:sequence>
 </xs:complexType>
 

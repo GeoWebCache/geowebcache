@@ -58,9 +58,13 @@ import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.rest.seed.SeedRequest;
+import org.geowebcache.util.wms.Dimension;
+import org.geowebcache.util.wms.ExtentHandler;
+import org.geowebcache.util.wms.ExtentHandlerMap;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -68,6 +72,11 @@ import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.xml.DomReader;
 
 public class XMLConfiguration implements Configuration, ApplicationContextAware {
@@ -233,7 +242,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         persistToFile(xmlFile);
     }
 
-    public static XStream getConfiguredXStream(XStream xs) {
+    public XStream getConfiguredXStream(XStream xs) {
         //XStream xs = xstream;
         xs.setMode(XStream.NO_REFERENCES);
         
@@ -251,6 +260,10 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         xs.alias("mimeFormats", new ArrayList<String>().getClass());
         xs.alias("srs", org.geowebcache.layer.SRS.class);        
         xs.alias("seedRequest", SeedRequest.class);
+        xs.alias("dimensions", new HashMap<String, Dimension>().getClass());
+        
+        xs.registerConverter(new DimensionConverter(context));
+        xs.alias("dimension", Dimension.class);
 
         return xs;
     }
@@ -503,6 +516,51 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         }
         
         return null;
+    }
+    
+    private class DimensionConverter implements Converter {
+        
+        private WebApplicationContext context;
+        
+        public DimensionConverter(WebApplicationContext context) {
+            this.context = context;
+        }
+        
+        public void marshal(Object source, HierarchicalStreamWriter writer,
+                MarshallingContext context) {
+            
+        }
+
+        public Object unmarshal(HierarchicalStreamReader reader,
+                UnmarshallingContext marshallingContext) {
+            String name = reader.getAttribute("name");
+            String units = reader.getAttribute("units");
+            ExtentHandlerMap extentHandlerMap = (ExtentHandlerMap) ((AbstractApplicationContext) context).getBean("extentHandlerMap");
+            ExtentHandler handler = extentHandlerMap.getHandler(units);
+            String extent = reader.getValue();
+            Dimension dim = new Dimension(name, units, extent , handler);
+            
+            String current = reader.getAttribute("current");
+            dim.setCurrent("1".equals(current));
+            
+            String nearestValue = reader.getAttribute("nearestValue");
+            dim.setNearestValue("1".equals(nearestValue));
+            
+            String defaultValue = reader.getAttribute("default");
+            dim.setDefaultValue(defaultValue);
+            
+            String multipleValues = reader.getAttribute("multipleValues");
+            dim.setMultipleValues("1".equals(multipleValues));
+            
+            String unitSymbol = reader.getAttribute("unitSymbol");
+            dim.setUnitSymbol(unitSymbol);
+            
+            return dim;
+        }
+
+        public boolean canConvert(Class clazz) {
+            return Dimension.class.equals(clazz);
+        }
     }
 
     public void setRelativePath(String relPath) {

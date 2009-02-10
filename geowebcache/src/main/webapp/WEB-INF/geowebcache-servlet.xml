@@ -23,6 +23,9 @@
     <constructor-arg value="3x3"/><!-- metatiling factors -->
     <constructor-arg value=""/><!-- vendor parameters -->
     <constructor-arg value="false"/><!-- Whether to allow cached=false to specificed for certain requests --> 
+    <property name="extentHandlerMap">
+	  <ref bean="extentHandlerMap" />
+    </property>
   </bean>
   
   <bean id="extentHandlerMap" class="org.geowebcache.util.wms.ExtentHandlerMap">
@@ -87,6 +90,7 @@
 
   <!-- Restlets -->
   <bean id="gwcSeedRestlet" class="org.geowebcache.rest.seed.SeedRestlet">
+    <property name="XMLConfiguration" ref="gwcXmlConfig"/>
     <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
     <property name="threadPoolExecutor" ref="gwcSeederThreadPoolExec"/>
   </bean>  
