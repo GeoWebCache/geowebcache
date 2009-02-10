@@ -31,7 +31,7 @@ public class TileLayerDispatcher {
 
     private volatile HashMap<String, TileLayer> layers = null;
 
-    private List<Configuration> configs = null;
+    private List configs = null;
 
     public TileLayerDispatcher() {
         //log.info("TileLayerDispatcher constructed");
@@ -54,7 +54,7 @@ public class TileLayerDispatcher {
         return layer;
     }
 
-    public void setConfig(List<Configuration> configs) {
+    public void setConfig(List configs) {
         this.configs = configs;
     }
 
@@ -129,16 +129,7 @@ public class TileLayerDispatcher {
                     
                     while (iter.hasNext()) {
                         TileLayer layer = iter.next();
-                        
-                        if(layers.containsKey(layer.getName())) {
-                            try {
-                                layers.get(layer.getName()).mergeWith(layer);
-                            } catch (GeoWebCacheException gwce) {
-                                log.error(gwce.getMessage());
-                            }
-                        } else {
-                            layers.put(layer.getName(), layer);
-                        }   
+                        layers.put(layer.getName(), layer);
                     }
                 } else {
                     log.error("Configuration " + configIdent
