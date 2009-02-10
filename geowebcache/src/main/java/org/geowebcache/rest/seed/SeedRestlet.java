@@ -20,6 +20,8 @@ package org.geowebcache.rest.seed;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -132,7 +134,10 @@ public class SeedRestlet extends GWCRestlet {
                     Status.CLIENT_ERROR_BAD_REQUEST);
         }
         
-        String layerName = (String) req.getAttributes().get("layer");
+        String layerName = null;
+        try {
+            layerName = URLDecoder.decode((String) req.getAttributes().get("layer"), "UTF-8");
+        } catch (UnsupportedEncodingException uee) { }
         
         TileLayer tl = findTileLayer(layerName, layerDispatcher);
         

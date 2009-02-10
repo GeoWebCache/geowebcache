@@ -19,14 +19,10 @@ package org.geowebcache.layer;
 import java.io.IOException;
 
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
@@ -37,7 +33,6 @@ import org.geowebcache.util.wms.BBOX;
 import org.geowebcache.cache.CacheFactory;
 
 public abstract class TileLayer {
-    private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayer.class);
 
     protected String name;
 
@@ -94,40 +89,6 @@ public abstract class TileLayer {
         this.mimeFormats.add(format);
     }
 
-    
-    /**
-     * Merges the information of the current layer with that of
-     * the passed in layer. In cases where both layers have grid
-     * definitions for the same SRS the definition associated with
-     * the layer in the argument prevails. 
-     * 
-     * @param tileLayer
-     */
-    public void mergeWith(TileLayer tileLayer) throws GeoWebCacheException {
-        log.warn("Merging grids and formats of " + this.name);
-
-        if (tileLayer.mimeFormats != null) {
-            Iterator<String> iter = tileLayer.mimeFormats.iterator();
-            while (iter.hasNext()) {
-                String format = iter.next();
-                if (!this.supportsFormat(format)) {
-                    this.addFormat(format);
-                }
-            }
-        }
-
-        if (tileLayer.grids != null && tileLayer.grids.size() > 0) {
-            Iterator<Entry<SRS, Grid>> iter = tileLayer.grids.entrySet().iterator();
-
-            // We are just adding or overwriting as needed
-            while (iter.hasNext()) {
-                Entry<SRS, Grid> entry = iter.next();
-                this.grids.put(entry.getKey(), entry.getValue());
-            }
-        }
-    }
-    
-    
     /**
      * Checks whether the layer has been initialized, otherwise initializes it.
      * 
@@ -172,7 +133,8 @@ public abstract class TileLayer {
             }
         }
 
-        return false;
+        throw new GeoWebCacheException("Format " + strFormat
+                + " is not supported by " + this.getName());
     }
 
     /**
