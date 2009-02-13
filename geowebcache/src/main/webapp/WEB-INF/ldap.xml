@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+	<!-- ======================== FILTER CHAIN ======================= -->
+	<bean id="userSearch" class="org.acegisecurity.ldap.search.FilterBasedLdapUserSearch">
+		<constructor-arg index="0">
+			<value></value>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<value>(uid={0})</value>
+		</constructor-arg>
+		<constructor-arg index="2">
+			<ref local="initialDirContextFactory" />
+		</constructor-arg>
+		<property name="searchSubtree">
+			<value>true</value>
+		</property>
+	</bean>
+
+
+	<bean id="initialDirContextFactory" class="org.acegisecurity.ldap.DefaultInitialDirContextFactory">
+		<constructor-arg value="ldap://localhost:389/dc=org,dc=com" />
+		<property name="managerDn">
+			<value>uid=admin,ou=system</value>
+		</property>
+		<property name="managerPassword">
+			<value>secret</value>
+		</property>
+	</bean>
+
+	<bean id="ldapAuthPop"
+		class="org.acegisecurity.providers.ldap.populator.DefaultLdapAuthoritiesPopulator">
+		<constructor-arg>
+			<ref local="initialDirContextFactory" />
+		</constructor-arg>
+		<constructor-arg>
+			<value>ou=groups</value>
+		</constructor-arg>
+		<property name="groupRoleAttribute">
+			<value>cn</value>
+		</property>
+		<property name="groupSearchFilter">
+			<value>(uniqueMember={0})</value>
+		</property>
+		<property name="defaultRole">
+			<value>ROLE_WEBUSER</value>
+		</property>
+	</bean>
+
+	<bean id="ldapAuthenticationProvider"
+		class="org.acegisecurity.providers.ldap.LdapAuthenticationProvider">
+		<constructor-arg>
+			<ref local="bindAuthenticator" />
+		</constructor-arg>
+		<constructor-arg>
+			<ref local="ldapAuthPop" />
+		</constructor-arg>
+		<property name="forcePrincipalAsString">
+			<value>true</value>
+		</property>
+	</bean>
+
+	<bean id="bindAuthenticator"
+		class="org.acegisecurity.providers.ldap.authenticator.BindAuthenticator">
+		<constructor-arg>
+			<ref local="initialDirContextFactory" />
+		</constructor-arg>
+		<property name="userDnPatterns">
+			<list>
+				<value>uid={0},ou=users</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="passwordComparisonAuthenticator"
+		class="org.acegisecurity.providers.ldap.authenticator.PasswordComparisonAuthenticator">
+		<constructor-arg>
+			<ref local="initialDirContextFactory" />
+		</constructor-arg>
+		<property name="userDnPatterns">
+			<list>
+				<value>uid={0},ou=users</value>
+			</list>
+		</property>
+	</bean>
+
+</beans>

@@ -45,7 +45,6 @@ import org.geowebcache.util.Configuration;
 public class WMSRequests {
     private static Log log = LogFactory.getLog(org.geowebcache.service.wms.WMSRequests.class);
 
-    // The following two are only needed for the temporary getcapabilities code
     protected static List<Configuration> getCapConfigs;
 
     static String getCapsStr;
@@ -82,7 +81,7 @@ public class WMSRequests {
 
     }
 
-    private static String getCapabilitiesHeader() throws GeoWebCacheException {
+    protected static String getCapabilitiesHeader() throws GeoWebCacheException {
         String wms = fetchOriginalWMSCapabilitiesDocument();
 
         if (wms == null) {
@@ -117,7 +116,7 @@ public class WMSRequests {
         return header + "\n<VendorSpecificCapabilities>";
     }
 
-    private static String getCapabilitiesFooter() throws GeoWebCacheException {
+    protected static String getCapabilitiesFooter() throws GeoWebCacheException {
         // return "\n</VendorSpecificCapabilities>" +
         // "\n</WMT_MS_Capabilities>";
         String wms = fetchOriginalWMSCapabilitiesDocument();
@@ -256,7 +255,7 @@ public class WMSRequests {
      * @param tl
      * @return
      */
-    private static String getTileSets(TileLayer tl) throws GeoWebCacheException {
+    protected static String getTileSets(TileLayer tl) throws GeoWebCacheException {
         String ret = "";
 
         List<MimeType> mimeList = tl.getMimeTypes();
@@ -302,7 +301,7 @@ public class WMSRequests {
             + "</TileSet>";
     }
 
-    private static String[] doublesToStrings(double[] doubles) {
+    protected static String[] doublesToStrings(double[] doubles) {
         String[] ret = new String[doubles.length];
         for (int i = 0; i < doubles.length; i++) {
             ret[i] = Double.toString(doubles[i]);
@@ -310,7 +309,7 @@ public class WMSRequests {
         return ret;
     }
 
-    private static String getResolutionString(double[] resolutions) {
+    protected static String getResolutionString(double[] resolutions) {
         String ret = "";
         for (int i = 0; i < resolutions.length; i++) {
             ret += Double.toString(resolutions[i]) + " ";
@@ -325,7 +324,7 @@ public class WMSRequests {
      * @param data
      * @throws IOException
      */
-    private static void writeData(HttpServletResponse response, byte[] data)
+    protected static void writeData(HttpServletResponse response, byte[] data)
             throws IOException {
 
         // Did we get anything?
