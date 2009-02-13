@@ -178,6 +178,7 @@
       <artifactId>spring-webmvc</artifactId>
       <version>${spring.version}</version>
     </dependency>
+
     <!-- This is for Acegi -->
     <dependency>
       <groupId>org.springframework</groupId>
@@ -302,6 +303,12 @@
       <groupId>stax</groupId>
       <artifactId>stax-api</artifactId>
       <version>1.0.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.1.104</version>
     </dependency>
   </dependencies>
   
