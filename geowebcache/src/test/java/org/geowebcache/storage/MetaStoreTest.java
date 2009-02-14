@@ -27,56 +27,85 @@ public class MetaStoreTest extends TestCase {
     public static String TEST_DB_NAME = "gwcTestMetaStore";
     
     public void testTile() throws Exception {
-        MetaStore ms = setup();
+        byte[] bytes = null;
+        TileObject to2 = null;
         
-        long[] xyz = {1L,2L,3L};
-        byte[] bytes = "Test 1 2 3".getBytes();
-        TileObject to = TileObject.createCompleteTileObject(
-                "test'Layer:æøå;", xyz, "jpeg", "a=x&b=y", bytes);
-        
-        ms.put(to);
-        
-        long[] xyz2 = {1L,2L,3L};
-        TileObject to2 = TileObject.createQueryTileObject(
-                "test'Layer:æøå;", xyz2, "jpeg", "a=x&b=y");
-        
-        ms.get(to2);
-        
+        try {
+            MetaStore ms = setup();
+
+            long[] xyz = { 1L, 2L, 3L };
+            bytes = "Test 1 2 3".getBytes();
+            TileObject to = TileObject.createCompleteTileObject(
+                    "test'Layer:æøå;", xyz, "jpeg", "a=x&b=y", bytes);
+
+            ms.put(to);
+
+            long[] xyz2 = { 1L, 2L, 3L };
+            to2 = TileObject.createQueryTileObject(
+                    "test'Layer:æøå;", xyz2, "jpeg", "a=x&b=y");
+
+            ms.get(to2);
+
+        } catch (StorageException se) {
+            System.out.println(se.getMessage());
+            throw se;
+        }
         assertEquals(bytes.length,to2.getBlobSize());
         assertEquals(true, to2.getCreated() <= System.currentTimeMillis());
     }
     
     public void testWFSParam() throws Exception {
-        MetaStore ms = setup();
-        
-        byte[] bytes = "1 2 3 Test".getBytes();
-        WFSObject wo = WFSObject.createCompleteWFSObject("a=æ&å=Ø", bytes);
-        ms.put(wo);
-        
-        WFSObject wo2 = WFSObject.createQueryWFSObject("a=æ&å=Ø");
-        ms.get(wo2);
-        
+        byte[] bytes = null;
+
+        WFSObject wo2 = null;
+        try {
+            MetaStore ms = setup();
+
+            bytes = "1 2 3 Test".getBytes();
+            WFSObject wo = WFSObject.createCompleteWFSObject("a=æ&å=Ø", bytes);
+            ms.put(wo);
+
+            wo2 = WFSObject.createQueryWFSObject("a=æ&å=Ø");
+            ms.get(wo2);
+
+        } catch (StorageException se) {
+            System.out.println(se.getMessage());
+            throw se;
+        }
+
         assertEquals(bytes.length, wo2.getBlobSize());
         assertEquals(true, wo2.getCreated() <= System.currentTimeMillis());
     }
     
     public void testWFSQueryBlob() throws Exception {
-        MetaStore ms = setup();
+        WFSObject wo = null;
+        WFSObject wo2 = null;
+        byte[] bytes = null;
+        byte[] queryBytes = null;
         
-        byte[] bytes = "1 2 3 Test".getBytes();
-        byte[] queryBytes = "1 2 3 4 5 6 Test".getBytes();
-        WFSObject wo = WFSObject.createCompleteWFSObject(queryBytes, bytes);
-        ms.put(wo);
-        
-        WFSObject wo2 = WFSObject.createQueryWFSObject(queryBytes);
-        ms.get(wo2);
-        
+        try {
+
+            MetaStore ms = setup();
+
+            bytes = "1 2 3 Test".getBytes();
+            queryBytes = "1 2 3 4 5 6 Test".getBytes();
+            wo = WFSObject.createCompleteWFSObject(queryBytes, bytes);
+            ms.put(wo);
+
+            wo2 = WFSObject.createQueryWFSObject(queryBytes);
+            ms.get(wo2);
+
+        } catch (StorageException se) {
+            System.out.println(se.getMessage());
+            throw se;
+        }
+
         assertEquals(bytes.length, wo2.getBlobSize());
         // The next few are a bit silly, but they should be equal anyway
         assertEquals(wo2.getQueryBlobMd5(), wo.getQueryBlobMd5());
         assertEquals(wo2.getQueryBlobSize(), queryBytes.length);
         assertEquals(true, wo2.getCreated() <= System.currentTimeMillis());
-        
+
         StorageBrokerTest.deleteDb(TEST_DB_NAME);
     }
 

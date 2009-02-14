@@ -19,7 +19,7 @@ public class StorageBrokerTest extends TestCase {
     
     public static int TILE_PUT_COUNT = 1000;
     
-    public static boolean RUN_PERFORMANCE_TESTS = true;
+    public static boolean RUN_PERFORMANCE_TESTS = false;
     
     public void testTileSingleThread() throws Exception {
         if(! RUN_PERFORMANCE_TESTS)
