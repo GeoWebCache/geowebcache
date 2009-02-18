@@ -350,9 +350,6 @@ public class WMSParameters extends Parameters {
     			ELEVATION_PARAM.equalsIgnoreCase(key) ||
     			key.toLowerCase().startsWith("dim_")) {
     			String value = ((String[]) params.get(key))[0];
-    			// Strip "dim_" from the key to match the name of the dimension
-    			// as specified in the WMSLayer
-    			key = key.replace("dim_", "");
     			dimensions.put(key, value);
     		}
     	}

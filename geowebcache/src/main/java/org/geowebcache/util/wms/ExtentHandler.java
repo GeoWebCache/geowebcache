@@ -37,7 +37,7 @@ public abstract class ExtentHandler {
         if (value == null || value.length() == 0) {
             String defaultValue = dimension.getDefaultValue();
             if (defaultValue == null || defaultValue.length() == 0) {
-                throw new ServiceException("Time parameter is null and dimension does not specify a default value");
+                throw new ServiceException("Parameter is null and dimension " + dimension.getName() +" does not specify a default value");
             } else {
                 parsedValue = defaultValue;
             }
