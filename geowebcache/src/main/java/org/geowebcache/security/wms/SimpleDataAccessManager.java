@@ -107,12 +107,12 @@ public class SimpleDataAccessManager implements DataAccessManager {
 
                 // no security folder, let's work against an empty properties then
                 if (security == null || !security.exists()) {
-                    this.layerProperies = new Properties();
+                    setLayerProperties(new Properties());
                 } else {
                     // no security config, let's work against an empty properties then
                     layers = new File(security, "layers.properties");
                     if (!layers.exists()) {
-                        this.layerProperies = new Properties();
+                        setLayerProperties(new Properties());
                     } else {
                         // ok, something is there, let's load it
                         watcher = new PropertyFileWatcher(layers);
