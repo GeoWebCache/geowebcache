@@ -26,6 +26,7 @@ import java.net.URL;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.TileResponseReceiver;
@@ -33,7 +34,6 @@ import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.service.Request;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.service.wms.WMSParameters;
-import org.geowebcache.tile.Tile;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
@@ -66,11 +66,11 @@ public class WMSHttpHelper {
      * @return
      * @throws GeoWebCacheException
      */
-    protected static byte[] makeRequest(Tile tile) throws GeoWebCacheException {
+    protected static byte[] makeRequest(ConveyorTile tile) throws GeoWebCacheException {
         return makeRequest(tile, false);
     }
 
-    protected static byte[] makeRequest(Tile tile, boolean requestTiled) throws GeoWebCacheException {
+    protected static byte[] makeRequest(ConveyorTile tile, boolean requestTiled) throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
         WMSParameters wmsparams = layer.getWMSParamTemplate();
 

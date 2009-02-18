@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -32,7 +33,7 @@ import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
-import org.geowebcache.tile.Tile;
+import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.Configuration;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
@@ -52,7 +53,7 @@ public class WMSService extends Service {
         super(SERVICE_WMS);
     }
 
-    public Tile getTile(HttpServletRequest request, HttpServletResponse response)
+    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response, StorageBroker sb) 
             throws GeoWebCacheException {
         String[] keys = { "layers", "request", "tiled", "cached", "metatiled" };
         String[] values = ServletUtils.selectedStringsFromMap(
@@ -66,18 +67,18 @@ public class WMSService extends Service {
                 values[0] = ServletUtils.stringFromMap(request.getParameterMap(), "layer");
             }
             
-            Tile tile = new Tile(values[0], request, response);
+            ConveyorTile tile = new ConveyorTile(sb, values[0], request, response);
             tile.setHint(req.toLowerCase());
-            tile.setRequestHandler(Tile.RequestHandler.SERVICE);
+            tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
             return tile;
         }
 
         // Check whether this request is missing tiled=true
         if (proxyNonTiledRequests
                 && (values[2] == null || !values[2].equalsIgnoreCase("true"))) {
-            Tile tile = new Tile(values[0], request, response);
+            ConveyorTile tile = new ConveyorTile(sb, values[0], request, response);
             tile.setHint(req);
-            tile.setRequestHandler(Tile.RequestHandler.SERVICE);
+            tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
             return tile;
         }
 
@@ -120,14 +121,14 @@ public class WMSService extends Service {
 
         int[] tileIndex = tileLayer.getGridLocForBounds(srs, bbox);
         
-        return new Tile(layers, srs, tileIndex, mimeType, request, response);
+        return new ConveyorTile(sb, layers, srs, tileIndex, mimeType, null, request, response);
     }
 
-    public void handleRequest(TileLayerDispatcher tLD, Tile tile)
+    public void handleRequest(TileLayerDispatcher tLD, ConveyorTile tile)
             throws GeoWebCacheException {
 
-        if (tile.hint != null) {
-            if(tile.hint.equalsIgnoreCase("getcapabilities")) {
+        if (tile.getHint() != null) {
+            if(tile.getHint().equalsIgnoreCase("getcapabilities")) {
                 WMSRequests.handleGetCapabilities(tLD, tile.servletResp);
             } else {
                 WMSRequests.handleProxy(tLD, tile);

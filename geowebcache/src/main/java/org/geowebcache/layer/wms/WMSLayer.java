@@ -34,10 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.cache.Cache;
-import org.geowebcache.cache.CacheException;
-import org.geowebcache.cache.CacheFactory;
-import org.geowebcache.cache.CacheKey;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.GridLocObj;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
@@ -47,7 +44,7 @@ import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.wms.WMSParameters;
-import org.geowebcache.tile.Tile;
+import org.geowebcache.storage.TileObject;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
@@ -96,10 +93,6 @@ public class WMSLayer extends TileLayer {
 
     private transient boolean saveExpirationHeaders;
 
-    private transient Cache cache;
-
-    private transient CacheKey cacheKey;
-
     private transient Lock layerLock;
 
     private transient boolean layerLocked;
@@ -115,8 +108,6 @@ public class WMSLayer extends TileLayer {
     //transient Integer cacheLockWait;
 
     private transient volatile Boolean isInitialized;
-
-    private transient CacheFactory initCacheFactory;
 
     private static transient Log log;
     
@@ -134,13 +125,12 @@ public class WMSLayer extends TileLayer {
      * @param metaWidthHeight
      * @param vendorParams
      */
-    public WMSLayer(String layerName, CacheFactory cacheFactory,
+    public WMSLayer(String layerName,
             String[] wmsURL, String wmsStyles, String wmsLayers, 
             List<String> mimeFormats, Hashtable<SRS,Grid> grids, 
             int[] metaWidthHeight, String vendorParams) {
      
         name = layerName;
-        initCacheFactory = cacheFactory;
         this.wmsUrl = wmsURL;
         this.wmsLayers = wmsLayers;
         this.wmsStyles = wmsStyles;
@@ -153,11 +143,6 @@ public class WMSLayer extends TileLayer {
         this.transparent = true;
         //this.bgColor = "0x000000";
         //this.palette = "test.png";
-    }
-    
-    public void setCacheFactory(CacheFactory cacheFactory) {
-        initCacheFactory = cacheFactory;
-        //log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
     }
 
     public Boolean isInitialized() {
@@ -228,9 +213,6 @@ public class WMSLayer extends TileLayer {
             gridLocConds[i] = layerLock.newCondition();
         }
 
-        // Unset variables for garbage collection
-        initCacheFactory = null;
-
         return new Boolean(true);
     }
 
@@ -246,7 +228,7 @@ public class WMSLayer extends TileLayer {
      * @param wmsparams
      * @return
      */
-    public Tile getTile(Tile tile) throws GeoWebCacheException, IOException {
+    public ConveyorTile getTile(ConveyorTile tile) throws GeoWebCacheException, IOException {
         MimeType mime = tile.getMimeType();
 
         if (mime == null) {
@@ -276,7 +258,7 @@ public class WMSLayer extends TileLayer {
     /**
      * Used for seeding
      */
-    public void seedTile(Tile tile, boolean tryCache) throws GeoWebCacheException, IOException {     
+    public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException, IOException {     
         if (tile.getMimeType().supportsTiling()) {
             getMetatilingReponse(tile, tryCache);
         } else {
@@ -292,7 +274,7 @@ public class WMSLayer extends TileLayer {
      * @param tryCache whether to try the cache, or seed
      * @throws GeoWebCacheException
      */
-    private Tile getMetatilingReponse(Tile tile, boolean tryCache) 
+    private ConveyorTile getMetatilingReponse(ConveyorTile tile, boolean tryCache) 
     throws GeoWebCacheException {
         //int idx = this.getSRSIndex(tile.getSRS());
         int[] gridLoc = tile.getTileIndex();
@@ -372,7 +354,7 @@ public class WMSLayer extends TileLayer {
      * @param tryCache whether to try the cache, or seed
      * @throws GeoWebCacheException
      */
-    private Tile getNonMetatilingReponse(Tile tile, boolean tryCache) 
+    private ConveyorTile getNonMetatilingReponse(ConveyorTile tile, boolean tryCache) 
     throws GeoWebCacheException {
         // String debugHeadersStr = null;
         int[] gridLoc = tile.getTileIndex();
@@ -401,7 +383,7 @@ public class WMSLayer extends TileLayer {
             tile = doNonMetatilingRequest(tile);
 
             if (tile.getStatus() > 299 || expireCacheInt != GWCVars.CACHE_DISABLE_CACHE) {
-                cache.set(cacheKey, tile, expireCacheInt);
+                tile.persist();
             }
 
             if (saveExpirationHeaders) {
@@ -416,17 +398,17 @@ public class WMSLayer extends TileLayer {
         return finalizeTile(tile);
     }
 
-    public boolean tryCacheFetch(Tile tile) {
+    public boolean tryCacheFetch(ConveyorTile tile) {
         if (expireCacheInt != GWCVars.CACHE_DISABLE_CACHE) {
             try {
-                return cache.get(this.cacheKey, tile, expireCacheInt * 1000);
-            } catch (CacheException ce) {
-                log.error(ce.getMessage());
-                tile.setError(ce.getMessage());
-                return false;
+                return tile.retrieve(expireCacheInt * 1000);
+            //} catch (StorageException ce) {
+            //    log.error(ce.getMessage());
+            //    tile.setError(ce.getMessage());
+            //    return false;
             } catch (GeoWebCacheException gwce) {
                 log.error(gwce.getMessage());
-                tile.setError(gwce.getMessage());
+                tile.setErrorMsg(gwce.getMessage());
                 return false;
             }
         }
@@ -474,7 +456,7 @@ public class WMSLayer extends TileLayer {
         }
     }
     
-    public void setTileIndexHeader(Tile tile) {
+    public void setTileIndexHeader(ConveyorTile tile) {
         tile.servletResp.addHeader("geowebcache-tile-index", Arrays.toString(tile.getTileIndex()));
     }
 
@@ -486,11 +468,9 @@ public class WMSLayer extends TileLayer {
      * @param imageFormat
      */
     protected void saveTiles(int[][] gridPositions, WMSMetaTile metaTile,
-            Tile tileProto) throws GeoWebCacheException {
+            ConveyorTile tileProto) throws GeoWebCacheException {
 
         for (int i = 0; i < gridPositions.length; i++) {
-            int[] gridPos = gridPositions[i];
-
             ByteArrayOutputStream out = new ByteArrayOutputStream();
 
             try {
@@ -504,10 +484,17 @@ public class WMSLayer extends TileLayer {
                 ioe.printStackTrace();
             }
 
-            Tile tile = new Tile(this, tileProto.getSRS(), gridPos,
-                    tileProto.getMimeType(), metaTile.getStatus(), out.toByteArray());
-            tile.setTileLayer(this);
-            cache.set(this.cacheKey, tile, expireCacheInt);
+            long[] idx = {gridPositions[i][0],gridPositions[i][1],gridPositions[i][2]};
+            TileObject tile = TileObject.createCompleteTileObject(this.getName(), idx, tileProto.getSRS().getNumber(), 
+                    tileProto.getMimeType().getFormat(), tileProto.getParameters(), out.toByteArray());
+            
+            tileProto.getStorageBroker().put(tile);
+            //ConveyorTile tile = new ConveyorTile(storageBroker,this, tileProto.getSRS(), gridPos,
+            //        tileProto.getMimeType(), metaTile.getStatus(), out.toByteArray());
+            //tile.setTileLayer(this);
+            //tile.persist();
+            
+            //cache.set(this.cacheKey, tile, expireCacheInt);
         }
     }
 
@@ -547,7 +534,7 @@ public class WMSLayer extends TileLayer {
                 "Bug: WMSLayer.getTile() didn't have tile...");
     }
 
-    public Tile doNonMetatilingRequest(Tile tile) throws GeoWebCacheException {
+    public ConveyorTile doNonMetatilingRequest(ConveyorTile tile) throws GeoWebCacheException {
         byte[] response = WMSHttpHelper.makeRequest(tile);
 
         if (tile.getError() || response == null) {
@@ -559,11 +546,11 @@ public class WMSLayer extends TileLayer {
         return tile;
     }
 
-    private Tile finalizeTile(Tile tile) {
+    private ConveyorTile finalizeTile(ConveyorTile tile) {
         if (tile.getStatus() == 0 && !tile.getError()) {
             tile.setStatus(200);
         }
-        if (tile.servletResp != null) {
+        if (tile != null) {
             setExpirationHeader(tile.servletResp);
             setTileIndexHeader(tile);
         }
@@ -595,31 +582,6 @@ public class WMSLayer extends TileLayer {
             formats.add(0, ImageMime.createFromFormat("image/png"));
             formats.add(1, ImageMime.createFromFormat("image/jpeg"));
         }
-        
-        if(initCacheFactory.isForTesting()) {
-            // Stop here if this is for unit testing
-            return;
-        }
-        
-        // Cache and CacheKey
-        cache = initCacheFactory.getDefaultCache();
-        
-        if (cache == null) {
-            throw new GeoWebCacheException("Unable to get default cache from cacheFactory in WMSLayer.");
-        }
-
-        cacheKey = initCacheFactory.getCacheKeyFactory().getCacheKey(cache.getDefaultKeyBeanId());
-        
-        String sanitizedName = name.replace(':', '_');
-        
-        if(cachePrefix == null || cachePrefix.length() == 0) {
-            cachePrefix = cache.getDefaultPrefix(sanitizedName);
-            log.warn("cachePrefix not defined for layer " + name
-                    + ", using default prefix and name instead: " + cachePrefix);
-        }
-        
-        // Initialize the cache
-        cache.setUp(cachePrefix);
     }
 
     protected void saveExpirationInformation(int backendExpire) {
@@ -711,7 +673,6 @@ public class WMSLayer extends TileLayer {
     }
 
     public void destroy() {
-        cache.destroy();
         // Not that it really matters:
         procQueue.clear();
     }
@@ -755,14 +716,6 @@ public class WMSLayer extends TileLayer {
     public int[] getZoomedOutGridLoc(SRS srs)
     throws GeoWebCacheException {
         return grids.get(srs).getGridCalculator().getZoomedOutGridLoc();
-    }
-
-    public Cache getCache() {
-        return this.cache;
-    }
-
-    public CacheKey getCacheKey() {
-        return this.cacheKey;
     }
 
     public String getCachePrefix() {
@@ -895,7 +848,7 @@ public class WMSLayer extends TileLayer {
      * @param gridLoc
      * @throws CacheException
      */
-    public void putTile(Tile tile) throws GeoWebCacheException {
+    public void putTile(ConveyorTile tile) throws GeoWebCacheException {
         int condIdx = this.calcLocCondIdx(tile.getTileIndex());
         GridLocObj glo = new GridLocObj(tile.getTileIndex());
 
@@ -904,7 +857,7 @@ public class WMSLayer extends TileLayer {
 
         /** ****************** Tile ******************* */
         if (expireCacheInt != GWCVars.CACHE_DISABLE_CACHE) {
-            cache.set(this.cacheKey, tile, expireCacheInt);
+            tile.persist();
         }
 
         /** ****************** Return lock and response ****** */
@@ -973,7 +926,7 @@ public class WMSLayer extends TileLayer {
         //this.debugheaders = debugheaders;
     }
 
-    public Tile getNoncachedTile(Tile tile, boolean requestTiled)
+    public ConveyorTile getNoncachedTile(ConveyorTile tile, boolean requestTiled)
             throws GeoWebCacheException {
 
         byte[] data = WMSHttpHelper.makeRequest(tile,requestTiled);        

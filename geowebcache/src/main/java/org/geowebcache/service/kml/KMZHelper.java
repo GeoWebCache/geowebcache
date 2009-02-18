@@ -28,12 +28,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.ServiceException;
-import org.geowebcache.tile.Tile;
+import org.geowebcache.storage.StorageBroker;
 
 /**
  * Just a helper class for KMZ experimentation stuff
@@ -58,16 +59,16 @@ public class KMZHelper {
      * @param linkGridLocs
      * @return
      */
-    public static int[][] filterGridLocs(TileLayer tileLayer,
+    public static int[][] filterGridLocs(StorageBroker sb, TileLayer tileLayer,
             MimeType mime, int[][] linkGridLocs) 
     throws GeoWebCacheException {
         
         for(int i=0;i<linkGridLocs.length; i++) {
             if(linkGridLocs[i][2] > 0) {
                 
-                Tile tile = new Tile(
+                ConveyorTile tile = new ConveyorTile(sb,
                         tileLayer.getName(), SRS.getEPSG4326(), 
-                        linkGridLocs[i], mime, null, null);
+                        linkGridLocs[i], mime, null, null, null);
                 tile.setTileLayer(tileLayer);
                 
                 try {                                        

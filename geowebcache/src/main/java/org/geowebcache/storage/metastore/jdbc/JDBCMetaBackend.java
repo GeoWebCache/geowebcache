@@ -109,11 +109,7 @@ public class JDBCMetaBackend implements MetaStore {
         
         if(stObj.getParameters() != null) {
             parameters_id = idCache.getParametersId(stObj.getParameters());
-        } 
-        //else {
-        //    throw new StorageException(
-        //            "Unable to deal with WFS requests that do not use a parameter string.");
-        //}
+        }
         
         try {
             return wrpr.getWFS(parameters_id, stObj);

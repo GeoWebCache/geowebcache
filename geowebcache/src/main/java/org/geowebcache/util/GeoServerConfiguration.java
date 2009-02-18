@@ -19,7 +19,6 @@ package org.geowebcache.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.cache.CacheFactory;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
@@ -34,24 +33,17 @@ public class GeoServerConfiguration extends GetCapabilitiesConfiguration {
     
     private static Log log = LogFactory.getLog(org.geowebcache.util.GeoServerConfiguration.class);
     
-    public GeoServerConfiguration(CacheFactory cacheFactory,
-            String mimeTypes, String metaTiling) {
-        super(  cacheFactory, 
-                GeoServerConfiguration.getSystemVar(
-                        cacheFactory.getWebAppContext(), GEOSERVER_WMS_URL),
+    public GeoServerConfiguration(ApplicationContextProvider ctxProv, String mimeTypes, String metaTiling) {
+        super( GeoServerConfiguration.getSystemVar( ctxProv.getApplicationContext(), GEOSERVER_WMS_URL),
                         mimeTypes, 
                         metaTiling,
-                        GeoServerConfiguration.getSystemVar(
-                        cacheFactory.getWebAppContext(), GEOWEBCACHE_VENDOR_PARAMS),
+                        GeoServerConfiguration.getSystemVar( ctxProv.getApplicationContext(), GEOWEBCACHE_VENDOR_PARAMS),
                         "true"
             );
     }    
     
-    public GeoServerConfiguration(CacheFactory cacheFactory,
-            String mimeTypes, String metaTiling, String vendorParams) {
-        super(  cacheFactory, 
-                GeoServerConfiguration.getSystemVar(
-                        cacheFactory.getWebAppContext(), GEOSERVER_WMS_URL),
+    public GeoServerConfiguration(ApplicationContextProvider ctxProv, String mimeTypes, String metaTiling, String vendorParams) {
+        super( GeoServerConfiguration.getSystemVar(ctxProv.getApplicationContext(), GEOSERVER_WMS_URL),
                         mimeTypes, 
                         metaTiling,
                         vendorParams,

@@ -235,7 +235,6 @@ public class FileBlobStore implements BlobStore {
     }
     
     public void clear() throws StorageException {
-        // TODO Auto-generated method stub
         throw new StorageException("Not implemented yet!");
     }
 }

@@ -35,12 +35,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.tile.Tile;
 import org.geowebcache.util.Configuration;
 
 public class WMSRequests {
@@ -349,7 +349,7 @@ public class WMSRequests {
         }
     }
 
-    public static void handleProxy(TileLayerDispatcher tld, Tile tile) throws GeoWebCacheException {
+    public static void handleProxy(TileLayerDispatcher tld, ConveyorTile tile) throws GeoWebCacheException {
 
         WMSLayer layer = null;
         TileLayer tl = tld.getTileLayer(tile.getLayerId());

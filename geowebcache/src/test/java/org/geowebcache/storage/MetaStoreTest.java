@@ -36,13 +36,13 @@ public class MetaStoreTest extends TestCase {
             long[] xyz = { 1L, 2L, 3L };
             bytes = "Test 1 2 3".getBytes();
             TileObject to = TileObject.createCompleteTileObject(
-                    "test'Layer:æøå;", xyz, "jpeg", "a=x&b=y", bytes);
+                    "test'Layer:æøå;", xyz, 4326, "jpeg", "a=x&b=y", bytes);
 
             ms.put(to);
 
             long[] xyz2 = { 1L, 2L, 3L };
             to2 = TileObject.createQueryTileObject(
-                    "test'Layer:æøå;", xyz2, "jpeg", "a=x&b=y");
+                    "test'Layer:æøå;", xyz2, 4326, "jpeg", "a=x&b=y");
 
             ms.get(to2);
 

@@ -61,10 +61,20 @@ public abstract class StorageObject {
     }
     
     public void setBlob(byte[] blob) {
+        if(blob != null) {
+            this.blob_size = blob.length;
+        } else {
+            this.blob_size = -1;
+        }
+        
         this.blob = blob;
     }
     
-    public void setBlobSize(int blob_size) {
-        this.blob_size = blob_size;
+    public void setBlobSize(int blob_size) { //throws StorageException {
+        if(this.blob == null) {
+            this.blob_size = blob_size;
+        }// else {
+        //    throw new StorageException("Cannot set blob size if blob is not null");
+        //}
     }
 }

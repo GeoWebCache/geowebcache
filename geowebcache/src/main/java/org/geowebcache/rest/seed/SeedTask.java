@@ -22,12 +22,13 @@ import java.io.IOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCTask;
-import org.geowebcache.tile.Tile;
+import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.wms.BBOX;
 
 public class SeedTask extends GWCTask {
@@ -39,11 +40,14 @@ public class SeedTask extends GWCTask {
     
     private boolean reseed = false; 
     
+    private StorageBroker storageBroker;
+    
     /**
      * Constructs a SeedTask from a SeedRequest
      * @param req - the SeedRequest
      */
-    public SeedTask(SeedRequest req, TileLayer tl, boolean reseed) {
+    public SeedTask(StorageBroker sb, SeedRequest req, TileLayer tl, boolean reseed) {
+        this.storageBroker = sb;
         this.req = req;
         this.tl = tl;
         this.reseed = reseed;
@@ -115,7 +119,7 @@ public class SeedTask extends GWCTask {
 
                     int[] gridLoc = { gridx, gridy, level };
 
-                    Tile tile = new Tile(tl, srs, gridLoc, mimeType, null, null);
+                    ConveyorTile tile = new ConveyorTile(storageBroker, tl.getName(), srs, gridLoc, mimeType, null, null, null);
                     
                     // Question is, how resilient should we be ?
                     try {

@@ -35,6 +35,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.rest.RestletException;
+import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.wms.BBOX;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
@@ -49,6 +50,10 @@ public class SeedFormRestlet extends GWCRestlet {
     SeederThreadPoolExecutor threadPool;
     
     TileLayerDispatcher layerDispatcher;
+    
+    StorageBroker storageBroker;
+    
+    SeedRestlet seedRestlet;
 
     public void handle(Request request, Response response){
         Method met = request.getMethod();
@@ -476,7 +481,7 @@ public class SeedFormRestlet extends GWCRestlet {
         SeedRequest sr = new SeedRequest(tl.getName(), bounds, srs,
                 threadCount, zoomStart, zoomStop, format, type);
 
-        SeedRestlet.dispatchTasks(sr, tl, threadPool);
+        seedRestlet.dispatchTasks(sr, tl, threadPool);
 
         // Give the thread executor a chance to run
         try {
@@ -508,4 +513,13 @@ public class SeedFormRestlet extends GWCRestlet {
     public void setThreadPoolExecutor(SeederThreadPoolExecutor stpe) {
         threadPool = stpe;
     }
+    
+    public void setStorageBroker(StorageBroker sb) {
+        storageBroker = sb;
+    }
+    
+    public void setSeedRestlet(SeedRestlet sr) {
+        seedRestlet = sr;
+    }
+    
 }

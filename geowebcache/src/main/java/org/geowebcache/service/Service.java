@@ -23,9 +23,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.conveyor.Conveyor;
+import org.geowebcache.conveyor.ConveyorKMLTile;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.tile.Tile;
+import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
 
 public abstract class Service {
@@ -55,14 +58,14 @@ public abstract class Service {
         return pathName;
     }
     
-    public Tile getTile(HttpServletRequest request, HttpServletResponse response) 
+    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response, StorageBroker sb) 
     throws GeoWebCacheException {
         throw new ServiceException (
                 "Service for " + pathName  + " needs to override "
                 +"getTile(HttpSerlvetRequest)" );
     }
     
-    public void handleRequest(TileLayerDispatcher tLD, Tile tile) 
+    public void handleRequest(TileLayerDispatcher tLD, ConveyorTile conv) 
     throws GeoWebCacheException {
         throw new RuntimeException(
                 "Service for " + pathName  + " needs to override "
@@ -94,31 +97,40 @@ public abstract class Service {
     }
     
     
-    protected static void writeResponse(Tile tile, boolean writeExpiration) {
-        HttpServletResponse response = tile.servletResp;
-        byte[] data = tile.getContent();
-        
-        response.setStatus((int) tile.getStatus());
-        
+    protected static void writeResponse(Conveyor conv, boolean writeExpiration) {
+        HttpServletResponse response = conv.servletResp;
+        byte[] data = conv.getContent();
+
+        String mimeStr = conv.getMimeType().getMimeType();
+
         response.setCharacterEncoding("utf-8");
-        
-        TileLayer layer = tile.getLayer();
-        if(layer != null) {
-            layer.setExpirationHeader(tile.servletResp);
+
+        if (conv instanceof ConveyorTile) {
+            ConveyorTile tile = (ConveyorTile) conv;
+
+            response.setStatus((int) tile.getStatus());
+
+            TileLayer layer = tile.getLayer();
+            if (layer != null) {
+                layer.setExpirationHeader(conv.servletResp);
+            }
+
+            if (writeExpiration) {
+                tile.getLayer().setExpirationHeader(response);
+            }
+        }
+
+        if (conv instanceof ConveyorKMLTile) {
+            ConveyorKMLTile kmlTile = (ConveyorKMLTile) conv;
+            if(kmlTile.getWrapperMimeType() != null) {
+                mimeStr = kmlTile.getWrapperMimeType().getMimeType();
+            }
         }
         
-        if(tile.getWrapperMimeType() != null) {
-            response.setContentType(tile.getWrapperMimeType().getMimeType());
-        } else {
-            response.setContentType(tile.getMimeType().getMimeType());
-        }
-        
+        response.setContentType(mimeStr);
+
         response.setContentLength(data.length);
-        
-        if(writeExpiration) {
-            tile.getLayer().setExpirationHeader(response);
-        }
-        
+
         try {
             OutputStream os = response.getOutputStream();
             os.write(data);

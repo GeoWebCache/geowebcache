@@ -17,12 +17,9 @@
  */
 package org.geowebcache.storage;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.util.ServletUtils;
+import org.geowebcache.GeoWebCacheException;
 
 public class StorageBroker {
     private static Log log = LogFactory.getLog(org.geowebcache.storage.StorageBroker.class);
@@ -36,11 +33,38 @@ public class StorageBroker {
         this.blobStore = blobStore;
     }
     
-    public void get(TileObject tileObj) throws StorageException {
-        metaStore.get(tileObj);
+    public boolean get(StorageObject stObj) throws GeoWebCacheException {
+       try {
+        if(stObj instanceof TileObject) {
+            return get((TileObject) stObj);
+        } else if(stObj instanceof WFSObject) {
+            return get((WFSObject) stObj);
+        }
+       } catch (StorageException se) {
+           throw new GeoWebCacheException(se.getMessage());
+       }
+       
+       return false;
+    }
+    
+    public boolean put(StorageObject stObj) {
+         if(stObj instanceof TileObject) {
+             return put((TileObject) stObj);
+         } else if(stObj instanceof WFSObject) {
+             return put((WFSObject) stObj);
+         }
+         
+         return false;
+     }
+    
+    public boolean get(TileObject tileObj) throws StorageException {
+        if(! metaStore.get(tileObj)) {
+            return false;
+        }
+        
         if(tileObj.getId() == -1) {
             throw new StorageException(
-                    "metaStore did not set an id on the object");
+                    "metaStore.get() returned true, but did not set an id on the object");
         }
         
         if(tileObj.blob_size > 0) {
@@ -57,19 +81,40 @@ public class StorageBroker {
                 
             tileObj.blob = blob;
         }
+        
+        return true;
     }
     
-    public void get(WFSObject wfsObj) throws StorageException {
+    public boolean get(WFSObject wfsObj) throws StorageException {
         //if(WFSObject)
+        throw new StorageException("Oops. Forgot to implement.");
+        
+        //return false;
     }
     
-    public void put(TileObject tileObj) throws StorageException {
-        metaStore.put(tileObj);
-        blobStore.put(tileObj);
+    public boolean put(TileObject tileObj) {
+        try {
+            metaStore.put(tileObj);
+            blobStore.put(tileObj);
+            return true;
+            
+        } catch (StorageException se) {
+            log.error(se.getMessage());
+        }
+
+        return false;
     }
     
-    public void put(WFSObject wfsObj) throws StorageException {
-        metaStore.put(wfsObj);
-        blobStore.put(wfsObj);
+    public boolean put(WFSObject wfsObj) {
+        try {
+            metaStore.put(wfsObj);
+            blobStore.put(wfsObj);
+            return true;
+            
+        } catch (StorageException se) {
+            log.error(se.getMessage());
+        }
+
+        return false;
     }
 }

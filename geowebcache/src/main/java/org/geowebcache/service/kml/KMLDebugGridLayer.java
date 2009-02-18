@@ -24,16 +24,12 @@ import java.util.Properties;
 import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.cache.Cache;
-import org.geowebcache.cache.CacheFactory;
-import org.geowebcache.cache.CacheException;
-import org.geowebcache.cache.CacheKey;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.tile.Tile;
 import org.geowebcache.util.wms.BBOX;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -43,7 +39,7 @@ import org.springframework.context.ApplicationContext;
  * Creates a grid of tiles and puts the grid index on each of them
  * 
  */
-public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
+public class KMLDebugGridLayer extends TileLayer {
 
     public static final String LAYERNAME = "debugGrid";
     
@@ -52,14 +48,6 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
     //private static Log log = LogFactory.getLog(org.geowebcache.service.kml.KMLDebugGridLayer.class);
     
     private static KMLDebugGridLayer instance;
-    
-    
-    
-    //temporary hack
-    public void lazyLayerInitialization(CacheFactory c){
-        //blah
-
-    }
 
     private KMLDebugGridLayer() {
         super.grids = new Hashtable<SRS,Grid>();
@@ -79,24 +67,12 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
     public void destroy() {
     }
 
-    public Tile doNonMetatilingRequest(Tile tile) throws GeoWebCacheException {
+    public ConveyorTile doNonMetatilingRequest(ConveyorTile tile) throws GeoWebCacheException {
         return null;
     }
 
     public BBOX getBounds(SRS srs) {
         return new BBOX(-180.0, -90.0, 180.0, 90.0);
-    }
-
-    public Cache getCache() {
-        return null;
-    }
-
-    public CacheKey getCacheKey() {
-        return this;
-    }
-
-    public String getCachePrefix() {
-        return null;
     }
 
     public MimeType getDefaultMimeType() {
@@ -124,7 +100,7 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
         return null;
     }
 
-    public Tile getTile(Tile tile)
+    public ConveyorTile getTile(ConveyorTile tile)
             throws GeoWebCacheException, IOException {        
         int[] gridLoc = tile.getTileIndex();
 
@@ -211,10 +187,6 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
         return true;
     }
 
-    public void putTile(Tile tile, Object ck, int[] gridLoc)
-            throws CacheException {
-    }
-
     public void releaseLayerLock() {
     }
 
@@ -232,53 +204,6 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
 
     public boolean supportsSRS(SRS srs) throws GeoWebCacheException {
         return false;
-    }
-
-    public boolean get(Tile tile, long ttl) throws CacheException {
-
-        return true;
-    }
-
-    public String getDefaultKeyBeanId() {
-
-        return null;
-    }
-
-    public String getDefaultPrefix(String param) throws CacheException {
-
-        return null;
-    }
-
-    
-    public void init(Properties props) throws CacheException {
-
-        
-    }
-
-    public boolean remove(Tile tile) throws CacheException {
-
-        return false;
-    }
-
-    public void removeAll() throws CacheException {
-
-        
-    }
-
-    /** Cache interface **/
-    public void set(Object key, Object obj, long ttl) throws CacheException {
-
-        
-    }
-
-    public void setDefaultKeyBeanId(String defaultKeyBeanId) {
-
-        
-    }
-
-    public void setUp(String cachePrefix) throws CacheException {
-
-        
     }
 
     public void setApplicationContext(ApplicationContext arg0)
@@ -310,42 +235,6 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
     public void init() {
 
         
-    }
-
-    public void putTile(Tile tile) throws CacheException {
-
-        
-    }
-
-    public void set(Tile tile, long ttl) throws CacheException {
-
-        
-    }
-
-    public boolean tryCacheFetch(Tile tile) {
-
-        return false;
-    }
-
-    public boolean get(CacheKey keyProto, Tile tile, long ttl)
-            throws CacheException, GeoWebCacheException {
-
-        return false;
-    }
-
-    public boolean remove(CacheKey keyProto, Tile tile) throws CacheException {
-        return false;
-    }
-
-    public void set(CacheKey keyProto, Tile tile, long ttl)
-            throws CacheException, GeoWebCacheException {
-    }
-
-    public Object createKey(Tile tile) {
-        return null;
-    }
-
-    public void setCacheFactory(CacheFactory cacheFactory) {
     }
 
     public BBOX getBboxForGridLoc(SRS srs, int[] gridLoc) {
@@ -380,20 +269,8 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
 
     }
 
-    public void seedTile(Tile tile, boolean tryCache)
-            throws GeoWebCacheException, IOException {
-        
-    }
-
-
-    public int truncate(TileLayer tl, SRS srs, int zoomStart, int zoomStop,
-            int[][] bounds, MimeType[] mimeTypes) throws CacheException {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
     @Override
-    public Tile getNoncachedTile(Tile tile, boolean requestTiled)
+    public ConveyorTile getNoncachedTile(ConveyorTile tile, boolean requestTiled)
             throws GeoWebCacheException {
         // TODO Auto-generated method stub
         return null;
@@ -415,6 +292,19 @@ public class KMLDebugGridLayer extends TileLayer implements Cache, CacheKey {
 
     @Override
     public void setBackendTimeout(int seconds) {
+    }
+
+    @Override
+    public void putTile(ConveyorTile tile) throws GeoWebCacheException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void seedTile(ConveyorTile tile, boolean tryCache)
+            throws GeoWebCacheException, IOException {
+        // TODO Auto-generated method stub
+        
     }
 
 }

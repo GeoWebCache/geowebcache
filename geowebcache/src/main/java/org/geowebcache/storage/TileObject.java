@@ -27,13 +27,16 @@ public class TileObject extends StorageObject {
     String layer_name;
     
     String parameters;
+    
+    int srs = -1;
         
     public static TileObject createQueryTileObject(
-            String layerName, long[] xyz, String format, String parameters) {
+            String layerName, long[] xyz, int srs, String format, String parameters) {
         TileObject obj = new TileObject();
         
         obj.layer_name = layerName;
         obj.xyz = xyz;
+        obj.srs = srs;
         obj.blob_format = format;
         obj.parameters = parameters;
         
@@ -41,12 +44,13 @@ public class TileObject extends StorageObject {
     }
     
     public static TileObject createCompleteTileObject(
-            String layerName, long[] xyz, String format, 
+            String layerName, long[] xyz, int srs, String format, 
             String parameters, byte[] blob) {
         TileObject obj = new TileObject();
         
         obj.layer_name = layerName;
         obj.xyz = xyz;
+        obj.srs = srs;
         obj.blob_format = format;
         obj.parameters = parameters;
         
@@ -75,6 +79,10 @@ public class TileObject extends StorageObject {
     
     public long[] getXYZ() { 
         return xyz;
+    }
+    
+    public int getSrs() {
+        return srs;
     }
     
     public String getLayerName() {

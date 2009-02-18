@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.demo.Demo;
 import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.OutOfBoundsException;
@@ -36,7 +37,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.service.Service;
-import org.geowebcache.tile.Tile;
+import org.geowebcache.storage.StorageBroker;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
@@ -56,6 +57,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
     public static final String TYPE_DEMO = "demo";
 
     private TileLayerDispatcher tileLayerDispatcher = null;
+    
+    private StorageBroker storageBroker = null;
 
     private HashMap<String,Service> services = null;
     
@@ -67,6 +70,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
         super();
     }
 
+    public void setStorageBroker(StorageBroker sb) {
+       this.storageBroker = sb;
+    }
+    
     /**
      * Setter method for Spring. TileLayerDispatcher is a class for looking up
      * TileLayer objects based on the name of the layer.
@@ -224,39 +231,39 @@ public class GeoWebCacheDispatcher extends AbstractController {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
-        Tile tile = null;
+        ConveyorTile conv = null;
         
         try {
         // 1) Figure out what Service should handle this request
         Service service = findService(serviceStr);
 
         // 2) Find out what layer will be used and how
-        tile = service.getTile(request, response);
+        conv = service.getConveyor(request, response, storageBroker);
 
         // Check where this should be dispatched
-        if (tile.reqHandler == Tile.RequestHandler.SERVICE) {            
+        if (conv.reqHandler == ConveyorTile.RequestHandler.SERVICE) {            
             // A3 The service object takes it from here
-            service.handleRequest(tileLayerDispatcher, tile);
+            service.handleRequest(tileLayerDispatcher, conv);
             
         } else {
             // B3) Get the configuration that has to respond to this request
-            TileLayer layer = tileLayerDispatcher.getTileLayer(tile.getLayerId());
+            TileLayer layer = tileLayerDispatcher.getTileLayer(conv.getLayerId());
             
             // Save it for later
-            tile.setTileLayer(layer);
+            conv.setTileLayer(layer);
             
             // Keep the URI 
             //tile.requestURI = request.getRequestURI();
             
             // A5) Ask the layer to provide the content for the tile
-            layer.getTile(tile);
+            layer.getTile(conv);
 
             // A6) Write response
-            writeData(tile);
+            writeData(conv);
         }
         
         } catch (OutOfBoundsException e) {
-            writeEmpty(tile, e.getMessage());
+            writeEmpty(conv, e.getMessage());
         }
         // Log statistic
     }
@@ -378,7 +385,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
      *            the response with the data and MIME type
      * @throws IOException
      */
-    private void writeData(Tile tile) throws IOException {
+    private void writeData(ConveyorTile tile) throws IOException {
         byte[] data = tile.getContent();
         
         HttpServletResponse response = tile.servletResp;
@@ -411,7 +418,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * @param tile
      * @param message
      */
-    private void writeEmpty(Tile tile, String message) {
+    private void writeEmpty(ConveyorTile tile, String message) {
         tile.servletResp.setHeader("geowebcache-message", message);
         tile.servletResp.setStatus(200);
         tile.servletResp.setContentType(ImageMime.png.getMimeType());

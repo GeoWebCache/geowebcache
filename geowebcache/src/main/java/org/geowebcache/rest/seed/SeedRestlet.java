@@ -33,6 +33,7 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.rest.RestletException;
+import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.XMLConfiguration;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -58,6 +59,8 @@ public class SeedRestlet extends GWCRestlet {
     SeederThreadPoolExecutor threadPool;
     
     TileLayerDispatcher layerDispatcher;
+    
+    StorageBroker storageBroker;
     
     //private static int[][] statusArray;
     
@@ -168,7 +171,7 @@ public class SeedRestlet extends GWCRestlet {
         return writer.toString();
     }
     
-    static void dispatchTasks(SeedRequest sr, TileLayer tl, 
+    void dispatchTasks(SeedRequest sr, TileLayer tl, 
             ThreadPoolExecutor threadPoolExec) throws RestletException {
         String type;
         if(sr.getType() == null || sr.getType().length() == 0) {
@@ -210,15 +213,15 @@ public class SeedRestlet extends GWCRestlet {
         }
     }
     
-    private static GWCTask createTask(String type, SeedRequest rq, TileLayer tl) {
+    private GWCTask createTask(String type, SeedRequest rq, TileLayer tl) {
         if(type.equalsIgnoreCase("seed")) {
-            return new SeedTask(rq,tl,false);
+            return new SeedTask(storageBroker,rq,tl,false);
         }
         if(type.equalsIgnoreCase("reseed")) {
-            return new SeedTask(rq,tl,true);
+            return new SeedTask(storageBroker,rq,tl,true);
         }
         if(type.equalsIgnoreCase("truncate")) {
-            return new TruncateTask(rq, tl);
+            return new TruncateTask(storageBroker, rq, tl);
         }
         
         return null;
@@ -255,5 +258,9 @@ public class SeedRestlet extends GWCRestlet {
     public void setThreadPoolExecutor(SeederThreadPoolExecutor stpe) {
         threadPool = stpe;
         //statusArray = new int[threadPool.getMaximumPoolSize()][3];
+    }
+    
+    public void setStorageBroker(StorageBroker sb) {
+        storageBroker = sb;
     }
 }

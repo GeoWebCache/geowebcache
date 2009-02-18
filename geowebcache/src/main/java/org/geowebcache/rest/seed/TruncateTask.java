@@ -21,12 +21,12 @@ import java.util.Arrays;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.cache.Cache;
 import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.rest.GWCTask;
+import org.geowebcache.storage.StorageBroker;
 
 public class TruncateTask extends GWCTask {
     private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.TruncateTask.class);
@@ -35,9 +35,12 @@ public class TruncateTask extends GWCTask {
     
     private final TileLayer tl;
     
+    private final StorageBroker storageBroker;
+    
     private final static double[] nullBbox = {0.0,0.0,0.0,0.0};
     
-    public TruncateTask(SeedRequest req, TileLayer tl) {
+    public TruncateTask(StorageBroker sb, SeedRequest req, TileLayer tl) {
+        this.storageBroker = sb;
         this.req = req;
         this.tl = tl;
         
@@ -52,8 +55,6 @@ public class TruncateTask extends GWCTask {
     public void doAction() throws GeoWebCacheException {
         
         tl.isInitialized();
-        
-        Cache cache = tl.getCache();
 
         int[][] bounds = null;
         
@@ -94,10 +95,11 @@ public class TruncateTask extends GWCTask {
             }
         }
         
-        int count = cache.truncate(tl, req.getSRS(), 
-                req.getZoomStart(), req.getZoomStop(), 
-                bounds, mimeTypes);
-        log.info("Completed truncating " + count + " tiles");
+        log.fatal("Truncation not implemented!");
+        //int count = cache.truncate(tl, req.getSRS(), 
+        //        req.getZoomStart(), req.getZoomStop(), 
+        //        bounds, mimeTypes);
+        //log.info("Completed truncating " + count + " tiles");
     }
 
 }

@@ -36,7 +36,6 @@ import org.geotools.data.ows.WMSCapabilities;
 import org.geotools.data.wms.WebMapServer;
 import org.geotools.ows.ServiceException;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.cache.CacheFactory;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.SRS;
@@ -48,8 +47,6 @@ public class GetCapabilitiesConfiguration implements Configuration {
     private static Log log = LogFactory
             .getLog(org.geowebcache.util.GetCapabilitiesConfiguration.class);
 
-    private CacheFactory cacheFactory = null;
-
     private String url = null;
 
     private String mimeTypes = null;
@@ -60,9 +57,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
     
     private boolean allowCacheBypass = false;
 
-    public GetCapabilitiesConfiguration(CacheFactory cacheFactory, String url,
+    public GetCapabilitiesConfiguration(String url,
             String mimeTypes, String metaTiling, String allowCacheBypass) {
-        this.cacheFactory = cacheFactory;
         this.url = url;
         this.mimeTypes = mimeTypes;
         this.metaTiling = metaTiling;
@@ -73,10 +69,9 @@ public class GetCapabilitiesConfiguration implements Configuration {
         log.info("Constructing from url " + url);
     }
     
-    public GetCapabilitiesConfiguration(CacheFactory cacheFactory, String url,
+    public GetCapabilitiesConfiguration(String url,
             String mimeTypes, String metaTiling, String vendorParameters, 
             String allowCacheBypass) {
-        this.cacheFactory = cacheFactory;
         this.url = url;
         this.mimeTypes = mimeTypes;
         this.metaTiling = metaTiling;
@@ -245,7 +240,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
         int[] metaWidthHeight = { Integer.parseInt(metaStrings[0]), Integer.parseInt(metaStrings[1])};
         
         // TODO We're dropping the styles now...
-        return new WMSLayer(name, this.cacheFactory,
+        return new WMSLayer(name,
                 wmsurl, stylesStr, name, mimeFormats, grids, 
                 metaWidthHeight, this.vendorParameters);
     }

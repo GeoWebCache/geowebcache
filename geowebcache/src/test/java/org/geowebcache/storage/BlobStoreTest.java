@@ -32,12 +32,12 @@ public class BlobStoreTest extends TestCase {
         
         byte[] bytes = "1 2 3 4 5 6 test".getBytes();
         long[] xyz = {1L,2L,3L};
-        TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, "jpeg", "a=x&b=ø", bytes);
+        TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, 4326, "jpeg", "a=x&b=ø", bytes);
         to.setId(11231231);
         
         fbs.put(to);
         
-        TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, "jpeg", "a=x&b=ø");
+        TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, 4326, "jpeg", "a=x&b=ø");
         to2.setId(11231231);
         
         fbs.get(to2);

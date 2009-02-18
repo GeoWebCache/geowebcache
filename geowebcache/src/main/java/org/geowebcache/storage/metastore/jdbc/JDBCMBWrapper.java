@@ -171,10 +171,10 @@ class JDBCMBWrapper {
         condCreate(conn,
                 "TILES", 
                 "TILE_ID BIGINT AUTO_INCREMENT PRIMARY KEY, LAYER_ID INT, "
-                + "X BIGINT, Y BIGINT, Z BIGINT, FORMAT_ID INT, "
+                + "X BIGINT, Y BIGINT, Z BIGINT, SRS_ID INT, FORMAT_ID INT, "
                 + "PARAMETERS_ID INT, BLOB_SIZE INT, "
                 + "CREATED BIGINT, ACCESS_LAST BIGINT, ACCESS_COUNT BIGINT",
-                "LAYER_ID, X, Y, Z, FORMAT_ID, PARAMETERS_ID",
+                "LAYER_ID, X, Y, Z, SRS_ID, FORMAT_ID, PARAMETERS_ID",
                 null);
     }
     
@@ -300,8 +300,8 @@ class JDBCMBWrapper {
     throws SQLException, StorageException {
 
         String query = "INSERT INTO TILES (" 
-                + "  LAYER_ID,X,Y,Z,FORMAT_ID,PARAMETERS_ID,BLOB_SIZE" 
-                + ") VALUES(?,?,?,?,?,?,?)";
+                + "  LAYER_ID,X,Y,Z,SRS_ID,FORMAT_ID,PARAMETERS_ID,BLOB_SIZE" 
+                + ") VALUES(?,?,?,?,?,?,?,?)";
         
         PreparedStatement prep = getConnection().prepareStatement(
                 query, Statement.RETURN_GENERATED_KEYS);
@@ -309,13 +309,14 @@ class JDBCMBWrapper {
         prep.setLong(2, xyz[0]);
         prep.setLong(3, xyz[1]);
         prep.setLong(4, xyz[2]);
-        prep.setInt(5, format_id);
+        prep.setInt(5, stObj.getSrs());
+        prep.setInt(6, format_id);
         if(parameters == null) {
-            prep.setNull(6, java.sql.Types.INTEGER);
+            prep.setNull(7, java.sql.Types.INTEGER);
         } else {
-            prep.setInt(6, parameters);
+            prep.setInt(7, parameters);
         }
-        prep.setInt(7, stObj.getBlobSize());
+        prep.setInt(8, stObj.getBlobSize());
         
         Long insertId = wrappedInsert(prep);
         

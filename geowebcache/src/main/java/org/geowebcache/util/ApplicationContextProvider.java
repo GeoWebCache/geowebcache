@@ -12,27 +12,30 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Arne Kepp / The Open Planning Project 2008
- *  
+ * @author Arne Kepp, The Open Planning Project, Copyright 2009
+ * 
+ * How can this be necessary...
  */
-package org.geowebcache.tile;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+package org.geowebcache.util;
 
-public class KMLTile extends Tile {
-    String urlPrefix = null;
-        
-    public KMLTile(String layerId, HttpServletRequest servletReq, HttpServletResponse servletResp) {
-        super(layerId, servletReq, servletResp);
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.web.context.WebApplicationContext;
+
+public class ApplicationContextProvider implements ApplicationContextAware {
+
+    WebApplicationContext ctx;
+    
+    public void setApplicationContext(ApplicationContext arg0)
+            throws BeansException {
+        ctx = (WebApplicationContext) arg0;
     }
     
-    public void setUrlPrefix(String urlPrefix) {
-        this.urlPrefix = urlPrefix;
+    public WebApplicationContext getApplicationContext() {
+        return ctx;
     }
-    
-    public String getUrlPrefix() {
-        return urlPrefix;
-    }
-    
+   
+
 }

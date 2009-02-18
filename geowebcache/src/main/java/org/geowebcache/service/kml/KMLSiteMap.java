@@ -24,21 +24,24 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.conveyor.ConveyorKMLTile;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
-import org.geowebcache.tile.KMLTile;
+import org.geowebcache.storage.StorageBroker;
 
 public class KMLSiteMap {
-    private KMLTile tile = null;
+    private ConveyorKMLTile tile = null;
     private TileLayerDispatcher tLD = null;
+    private StorageBroker storageBroker;
     
-    public KMLSiteMap(KMLTile tile, TileLayerDispatcher tLD) {
+    public KMLSiteMap(ConveyorKMLTile tile, TileLayerDispatcher tLD) {
         this.tile = tile;
         this.tLD = tLD;
+        this.storageBroker = tile.getStorageBroker();
     }
     
     public void write() throws GeoWebCacheException, IOException {
@@ -141,7 +144,7 @@ public class KMLSiteMap {
         while(subTileList.peek() != null) {
             int[] curLoc = subTileList.removeFirst();
             int[][] linkGridLocs = tileLayer.getZoomInGridLoc(srs, curLoc);
-            linkGridLocs = KMZHelper.filterGridLocs(tileLayer, XMLMime.kml, linkGridLocs);
+            linkGridLocs = KMZHelper.filterGridLocs(storageBroker, tileLayer, XMLMime.kml, linkGridLocs);
          
             // Save the links we still need to follow for later
             for(int[] subTile : linkGridLocs) {

@@ -24,13 +24,9 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.cache.Cache;
-import org.geowebcache.cache.CacheException;
-import org.geowebcache.cache.CacheKey;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.tile.Tile;
 import org.geowebcache.util.wms.BBOX;
-import org.geowebcache.cache.CacheFactory;
+import org.geowebcache.conveyor.ConveyorTile;
 
 public abstract class TileLayer {
 
@@ -178,7 +174,7 @@ public abstract class TileLayer {
      * @throws GeoWebCacheException
      * @throws IOException
      */
-    public abstract Tile getTile(Tile tile) 
+    public abstract ConveyorTile getTile(ConveyorTile tile) 
     throws GeoWebCacheException, IOException;
 
     
@@ -192,7 +188,7 @@ public abstract class TileLayer {
      * @throws GeoWebCacheException
      * @throws IOException
      */
-    public abstract Tile getNoncachedTile(Tile tile, boolean requestTiled) 
+    public abstract ConveyorTile getNoncachedTile(ConveyorTile tile, boolean requestTiled) 
     throws GeoWebCacheException;
     
     /**
@@ -202,7 +198,7 @@ public abstract class TileLayer {
      * @throws GeoWebCacheException
      * @throws IOException
      */
-    public abstract void seedTile(Tile tile, boolean tryCache) 
+    public abstract void seedTile(ConveyorTile tile, boolean tryCache) 
     throws GeoWebCacheException, IOException;
     
     /**
@@ -217,7 +213,7 @@ public abstract class TileLayer {
      * @return
      * @throws GeoWebCacheException
      */
-    public abstract Tile doNonMetatilingRequest(Tile tile)
+    public abstract ConveyorTile doNonMetatilingRequest(ConveyorTile tile)
             throws GeoWebCacheException;
 
     /**
@@ -372,35 +368,6 @@ public abstract class TileLayer {
     public abstract int[] getZoomedOutGridLoc(SRS srs) throws GeoWebCacheException;
 
     /**
-     * Quick, non-synchronized way of trying the cache
-     * 
-     * @param cacheKey
-     * @return
-     */
-    public abstract boolean tryCacheFetch(Tile tile);
-
-    /**
-     * Get the prefix for the cache
-     * 
-     * @return
-     */
-    public abstract String getCachePrefix();
-
-    /**
-     * Get an example of a cachekey object
-     * 
-     * @return
-     */
-    public abstract CacheKey getCacheKey();
-
-    /**
-     * Get the cache for the layer
-     * 
-     * @return
-     */
-    public abstract Cache getCache();
-
-    /**
      * Acquire the global lock for the layer, primarily used for truncating
      * 
      */
@@ -421,9 +388,7 @@ public abstract class TileLayer {
      * @param mime
      * @throws CacheException
      */
-    public abstract void putTile(Tile tile) throws GeoWebCacheException;
+    public abstract void putTile(ConveyorTile tile) throws GeoWebCacheException;
 
     public abstract void setExpirationHeader(HttpServletResponse response);
-    
-    public abstract void setCacheFactory(CacheFactory cacheFactory);
 }

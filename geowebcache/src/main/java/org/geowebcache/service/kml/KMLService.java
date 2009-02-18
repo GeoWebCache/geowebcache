@@ -28,6 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.conveyor.ConveyorKMLTile;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.OutOfBoundsException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
@@ -37,8 +39,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
-import org.geowebcache.tile.KMLTile;
-import org.geowebcache.tile.Tile;
+import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.wms.BBOX;
 
 
@@ -126,7 +127,7 @@ public class KMLService extends Service {
      * This is the entry point, this is where we tell the dispatcher whether we want 
      * to handle the request or forward it to the tile layer (just a PNG).
      */
-    public Tile getTile(HttpServletRequest request, HttpServletResponse response) 
+    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response, StorageBroker sb) 
     throws GeoWebCacheException  {
         String[] parsed = null;
         try {
@@ -137,7 +138,7 @@ public class KMLService extends Service {
             throw new ServiceException("Unable to parse KML request : "+ e.getMessage());
         }
         
-        KMLTile tile =  new KMLTile(parsed[0], request, response);
+        ConveyorKMLTile tile =  new ConveyorKMLTile(sb, parsed[0], request, response);
         tile.setMimeType(MimeType.createFromExtension(parsed[2]));
         tile.setSRS(SRS.getEPSG4326());
         
@@ -146,7 +147,7 @@ public class KMLService extends Service {
             tile.setHint(HINT_SITEMAP_GLOBAL);
             String tmpUrl = urlPrefix(request.getRequestURL().toString(),parsed);
             tile.setUrlPrefix(tmpUrl.substring(0, tmpUrl.length() - "sitemap".length()));
-            tile.setRequestHandler(Tile.RequestHandler.SERVICE);
+            tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
             return tile;
         }
         
@@ -154,7 +155,7 @@ public class KMLService extends Service {
         if(parsed[1].equalsIgnoreCase(HINT_SITEMAP_LAYER)) {
             tile.setHint(HINT_SITEMAP_LAYER);
             tile.setUrlPrefix(urlPrefix(request.getRequestURL().toString(),parsed));
-            tile.setRequestHandler(Tile.RequestHandler.SERVICE);
+            tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
             return tile;
         }
         
@@ -165,7 +166,7 @@ public class KMLService extends Service {
         
         // Is this a [super]overlay?
         if(parsed[3] != null) {
-            tile.setRequestHandler(Tile.RequestHandler.SERVICE);
+            tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
             tile.setUrlPrefix(urlPrefix(request.getRequestURL().toString(),parsed));
             tile.setWrapperMimeType(MimeType.createFromExtension(parsed[3]));
         }
@@ -173,7 +174,7 @@ public class KMLService extends Service {
         // Debug layer?
         if(tile.getLayerId().equalsIgnoreCase(KMLDebugGridLayer.LAYERNAME)) {
             tile.setHint(HINT_DEBUGGRID);
-            tile.setRequestHandler(Tile.RequestHandler.SERVICE);
+            tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
         }
         
         //System.out.println(Arrays.toString(tile.getTileIndex()) + " " + tile.servletReq.getHeader("referer"));
@@ -183,9 +184,9 @@ public class KMLService extends Service {
     /**
      * Let the service handle the request 
      */
-    public void handleRequest(TileLayerDispatcher tLD, Tile kmlTile) 
+    public void handleRequest(TileLayerDispatcher tLD, ConveyorTile kmlTile) 
     throws GeoWebCacheException {
-        KMLTile tile = (KMLTile) kmlTile;
+        ConveyorKMLTile tile = (ConveyorKMLTile) kmlTile;
         
         TileLayer layer; 
         if(tile.getHint() == HINT_DEBUGGRID) {
@@ -250,7 +251,7 @@ public class KMLService extends Service {
      * 
      * @param tile
      */
-    private static void handleSuperOverlay(KMLTile tile) throws GeoWebCacheException {
+    private static void handleSuperOverlay(ConveyorKMLTile tile) throws GeoWebCacheException {
         SRS srs = SRS.getEPSG4326();
         TileLayer layer = tile.getLayer();
         
@@ -363,7 +364,7 @@ public class KMLService extends Service {
      *    The cache will only contain the overlay itself, 
      *    the overlay will cause a separate tile request to get the data
      */
-    private static void handleOverlay(KMLTile tile) 
+    private static void handleOverlay(ConveyorKMLTile tile) 
     throws GeoWebCacheException {
         
         TileLayer tileLayer = tile.getLayer();
@@ -374,7 +375,8 @@ public class KMLService extends Service {
         }
 
         // Did we get lucky?
-        if(tileLayer.tryCacheFetch(tile)) {
+        // TODO need to look into expiration here
+        if(tile.retrieve(-1)) { 
             writeResponse(tile,true);
             return;
         }
@@ -436,7 +438,7 @@ public class KMLService extends Service {
      * @return
      * @throws ServiceException
      */
-    private static String createOverlay(KMLTile tile, boolean isPackaged)
+    private static String createOverlay(ConveyorKMLTile tile, boolean isPackaged)
     throws ServiceException,GeoWebCacheException {
 
         TileLayer tileLayer = tile.getLayer();
@@ -457,7 +459,7 @@ public class KMLService extends Service {
 
         // 3) Apply secondary filter against linking to empty tiles
         if (tile.getMimeType() == XMLMime.kml) {
-            linkGridLocs = KMZHelper.filterGridLocs(tileLayer, tile.getMimeType(),linkGridLocs);
+            linkGridLocs = KMZHelper.filterGridLocs(tile.getStorageBroker(), tileLayer, tile.getMimeType(),linkGridLocs);
         }
 
         //int moreData = 0;

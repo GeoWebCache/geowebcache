@@ -47,17 +47,12 @@ import javax.xml.validation.Validator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.cache.Cache;
-import org.geowebcache.cache.CacheException;
-import org.geowebcache.cache.CacheFactory;
-import org.geowebcache.cache.CacheKey;
-import org.geowebcache.cache.CacheKeyFactory;
-import org.geowebcache.cache.file.FileCache;
-import org.geowebcache.cache.file.FilePathKey2;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.rest.seed.SeedRequest;
+import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.blobstore.file.FilePathKey2;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -80,8 +75,6 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     
     private WebApplicationContext context;
 
-    private CacheFactory cacheFactory = null;
-
     private String absPath = null;
 
     private String relPath = null;
@@ -90,8 +83,8 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
     private File configH = null;
 
-    private FileCache fileCache = null;
-    
+    StorageBroker storageBroker = null;
+
     private GeoWebCacheConfiguration gwcConfig = null;
     
     /**
@@ -100,8 +93,8 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
      * 
      * @param cacheFactory
      */
-    public XMLConfiguration(CacheFactory cacheFactory) {
-        this.cacheFactory = cacheFactory;
+    public XMLConfiguration(StorageBroker storageBroker) {
+        this.storageBroker = storageBroker;
     }
 
     public XMLConfiguration() {
@@ -126,18 +119,15 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         
         mockConfiguration = true;
         
-        CacheKeyFactory ckf = new CacheKeyFactory();
-        HashMap<String,CacheKey> cacheKeyMap = new HashMap<String,CacheKey>();
-        cacheKeyMap.put("test key", (CacheKey) new FilePathKey2());
-        ckf.setCacheKeys(cacheKeyMap);
+        //CacheKeyFactory ckf = new CacheKeyFactory();
+        //HashMap<String,CacheKey> cacheKeyMap = new HashMap<String,CacheKey>();
+        //cacheKeyMap.put("test key", (CacheKey) new FilePathKey2());
+        //ckf.setCacheKeys(cacheKeyMap);
         
-        cacheFactory = new CacheFactory(ckf);
-        HashMap<String,Cache> cacheMap = new HashMap<String,Cache>();
-        cacheMap.put("test", (Cache) new FileCache());
-        cacheFactory.setCaches(cacheMap);
-        
-        
-        
+        //cacheFactory = new CacheFactory(ckf);
+        //HashMap<String,Cache> cacheMap = new HashMap<String,Cache>();
+        //cacheMap.put("test", (Cache) new FileCache());
+        //cacheFactory.setCaches(cacheMap);
         
         // Add the cache factory to each layer object
         if(layers != null) {
@@ -196,7 +186,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     }
     
     private void setDefaultValues(TileLayer layer) {
-        layer.setCacheFactory(this.cacheFactory);
+        //layer.setCacheFactory(this.cacheFactory);
         
         //Additional values that can have defaults set
         if(layer.isCacheBypassAllowed() == null) {
@@ -301,7 +291,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
     public boolean modifyLayer(TileLayer tl) 
     throws GeoWebCacheException {        
-        tl.setCacheFactory(cacheFactory);
+        //tl.setCacheFactory(cacheFactory);
         boolean response = gwcConfig.replaceLayer(tl);
         
         if(response) {
@@ -312,7 +302,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
     public boolean addLayer(TileLayer tl) 
     throws GeoWebCacheException {
-        tl.setCacheFactory(cacheFactory);
+        //tl.setCacheFactory(cacheFactory);
         
         boolean response = gwcConfig.addLayer(tl);
         
@@ -442,20 +432,20 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
             // Try env variables
             File tmpPath = null;
 
-            if (fileCache != null) {
-                try {
+            //if (fileCache != null) {
+            //    try {
                     // Careful, this appends a separator
-                    tmpPath = new File(fileCache.getDefaultPrefix(CONFIGURATION_FILE_NAME));
+            //        tmpPath = new File(fileCache.getDefaultPrefix(CONFIGURATION_FILE_NAME));
 
-                    if (tmpPath.exists() && tmpPath.canRead()) {
-                        String filePath = tmpPath.getAbsolutePath();
-                        configH = new File(filePath.substring(0, 
-                                filePath.length()- CONFIGURATION_FILE_NAME.length() - 1));
-                    }
-                } catch (CacheException ce) {
+            //        if (tmpPath.exists() && tmpPath.canRead()) {
+            //            String filePath = tmpPath.getAbsolutePath();
+            //            configH = new File(filePath.substring(0, 
+            //                    filePath.length()- CONFIGURATION_FILE_NAME.length() - 1));
+            //        }
+            //    } catch (CacheException ce) {
                     // Ignore
-                }
-            }
+            //    }
+            //}
 
             // Finally, try "standard" paths if we have to.
             if (configH == null) {
@@ -512,18 +502,10 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     public void setAbsolutePath(String absPath) {
         this.absPath = absPath;
     }
-    
-    public void setFileCache(FileCache fileCache) {
-        this.fileCache = fileCache;
-    }
 
     public void setApplicationContext(ApplicationContext arg0)
             throws BeansException {
         context = (WebApplicationContext) arg0;
-    }
-
-    public CacheFactory getCacheFactory() {
-        return this.cacheFactory;
     }
 
 }
