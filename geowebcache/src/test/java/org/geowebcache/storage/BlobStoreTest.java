@@ -32,15 +32,17 @@ public class BlobStoreTest extends TestCase {
         
         byte[] bytes = "1 2 3 4 5 6 test".getBytes();
         long[] xyz = {1L,2L,3L};
-        TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, 4326, "jpeg", "a=x&b=ø", bytes);
+        TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, 4326, "image/jpeg", "a=x&b=ø", bytes);
         to.setId(11231231);
         
         fbs.put(to);
         
-        TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, 4326, "jpeg", "a=x&b=ø");
+        TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, 4326, "image/jpeg", "a=x&b=ø");
         to2.setId(11231231);
         
-        fbs.get(to2);
+        byte[] resp = fbs.get(to2);
+        
+        to2.setBlob(resp);
         
         assertEquals(to.getBlobFormat(), to2.getBlobFormat());
         assertTrue(Arrays.equals(to.getBlob(), to2.getBlob()));
@@ -58,7 +60,9 @@ public class BlobStoreTest extends TestCase {
         WFSObject wo2 = WFSObject.createQueryWFSObject("a=æ&å=Ø");
         wo2.setId(123123123);
         
-        fbs.get(wo2);
+        byte[] resp = fbs.get(wo2);
+        
+        wo2.setBlob(resp);
         
         assertTrue(Arrays.equals(wo.getBlob(), wo2.getBlob()));
     }
@@ -77,7 +81,8 @@ public class BlobStoreTest extends TestCase {
         WFSObject wo2 = WFSObject.createQueryWFSObject(queryBlob);
         wo2.setId(123123123);
         
-        fbs.get(wo2);
+        byte[] resp = fbs.get(wo2);
+        wo2.setBlob(resp);
         
         assertTrue(Arrays.equals(wo.getBlob(), wo2.getBlob()));
     }
