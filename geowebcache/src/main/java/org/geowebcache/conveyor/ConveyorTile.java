@@ -20,11 +20,13 @@ package org.geowebcache.conveyor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 
 public class ConveyorTile extends Conveyor implements TileResponseReceiver {    
@@ -34,14 +36,6 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     protected SRS srs = null;
     
     protected TileLayer tileLayer = null;
-    
-    // Shared metadata, this is stored in the tile
-    //protected byte version = 0;
-    //protected byte type = 0;
-    //protected byte length = -1;
-    //protected long tsCreated = 0;
-    //protected long tsExpire = 0;
-
     
     public ConveyorTile(StorageBroker sb, String layerId, HttpServletRequest servletReq, HttpServletResponse servletResp) {
         super(sb, servletReq, servletResp);
@@ -65,24 +59,6 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         stObj = TileObject.createQueryTileObject(layerId, idx, srs.getNumber(), mimeType.getFormat(), parameters);
     }
     
-    /**
-     * This constructor is used by metatile code to create a data tile
-     */
-    //public ConveyorTile(StorageBroker sb, TileLayer layer, SRS srs, int[] tileIndex, MimeType mimeType, 
-    //        long status, byte[] payload) {
-    //    super(sb, null, null);
-    //    this.layerId = layer.getName();
-    //    this.tileLayer = layer;
-    //    this.srs = srs;
-    //    this.tileIndex = tileIndex.clone();
-    //    super.mimeType = mimeType;
-    //    this.status = status;
-    //    
-    //    long[] idx = {tileIndex[0], tileIndex[1], tileIndex[2]};
-    //    stObj = TileObject.createQueryTileObject(layerId, idx, srs.getNumber(), mimeType.getFormat(), null);
-    //    stObj.setBlob(payload);
-    //}
-    
     public String getLayerId() {
         return this.layerId;
     }
@@ -102,14 +78,6 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     public long getTSCreated() {
         return stObj.getCreated();
     }
-    
-    //public long getTSExpire() {
-    //    return tsExpire;
-    //}
-    
-    //public void setTSExpire(long ts){
-    //    this.tsExpire = ts;
-    //}
         
     public int getStatus() {
         return (int) status;
@@ -145,5 +113,17 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     
     public void setSRS(SRS srs) {
         this.srs = srs;
+    }
+
+    public boolean persist() throws GeoWebCacheException {
+        return storageBroker.put((TileObject) stObj);
+    }
+
+    public boolean retrieve(int maxAge) throws GeoWebCacheException {
+        try {
+            return storageBroker.get((TileObject) stObj);
+        } catch (StorageException se) {
+            throw new GeoWebCacheException(se.getMessage());
+        }
     }
 }

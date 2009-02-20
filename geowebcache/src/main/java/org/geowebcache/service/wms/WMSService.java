@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
@@ -78,7 +79,7 @@ public class WMSService extends Service {
                 && (values[2] == null || !values[2].equalsIgnoreCase("true"))) {
             ConveyorTile tile = new ConveyorTile(sb, values[0], request, response);
             tile.setHint(req);
-            tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
+            tile.setRequestHandler(Conveyor.RequestHandler.SERVICE);
             return tile;
         }
 
@@ -124,9 +125,11 @@ public class WMSService extends Service {
         return new ConveyorTile(sb, layers, srs, tileIndex, mimeType, null, request, response);
     }
 
-    public void handleRequest(TileLayerDispatcher tLD, ConveyorTile tile)
+    public void handleRequest(TileLayerDispatcher tLD, Conveyor conv)
             throws GeoWebCacheException {
 
+        ConveyorTile tile = (ConveyorTile) conv;
+        
         if (tile.getHint() != null) {
             if(tile.getHint().equalsIgnoreCase("getcapabilities")) {
                 WMSRequests.handleGetCapabilities(tLD, tile.servletResp);

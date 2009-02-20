@@ -47,46 +47,7 @@ public class JDBCMetaBackend implements MetaStore {
         idCache = new JDBCMBIdCache(wrpr);
     }
 
-    public boolean get(StorageObject stObj) throws StorageException {
-        if(stObj instanceof TileObject) {
-            return getTile((TileObject) stObj);
-        } else if(stObj instanceof WFSObject) {
-            return getWFS((WFSObject) stObj);
-        } else {
-            throw new StorageException(
-                    this.getClass().getCanonicalName() 
-                    + " cannot handle " 
-                    + stObj.getClass().getCanonicalName() );
-        }
-    }
-    
-    public void put(StorageObject stObj) throws StorageException {
-        if(stObj instanceof TileObject) {
-            putTile((TileObject) stObj);
-        } else if(stObj instanceof WFSObject) {
-            putWFS((WFSObject) stObj);
-        } else {
-            throw new StorageException(
-                    this.getClass().getCanonicalName() 
-                    + " cannot handle " 
-                    + stObj.getClass().getCanonicalName() );
-        }
-    }
-    
-    public void remove(StorageObject stObj) throws StorageException {
-        if(stObj instanceof TileObject) {
-            removeTile((TileObject) stObj);
-        } else if(stObj instanceof WFSObject) {
-            removeWFS((WFSObject) stObj);
-        } else {
-            throw new StorageException(
-                    this.getClass().getCanonicalName() 
-                    + " cannot handle " 
-                    + stObj.getClass().getCanonicalName() );
-        }
-    }
-
-    private boolean getTile(TileObject stObj) throws StorageException {
+    public boolean get(TileObject stObj) throws StorageException {
         long[] xyz = stObj.getXYZ();
         Integer layer_id = idCache.getLayerId(stObj.getLayerName());
         Integer format_id = idCache.getFormatId(stObj.getBlobFormat());
@@ -104,7 +65,7 @@ public class JDBCMetaBackend implements MetaStore {
         return false;
     }
     
-    private boolean getWFS(WFSObject stObj) throws StorageException {
+    public boolean get(WFSObject stObj) throws StorageException {
         Integer parameters_id = null;
         
         if(stObj.getParameters() != null) {
@@ -122,7 +83,7 @@ public class JDBCMetaBackend implements MetaStore {
 
 
 
-    private void putTile(TileObject stObj) throws StorageException {
+    public void put(TileObject stObj) throws StorageException {
         long[] xyz = stObj.getXYZ();
         Integer layer_id = idCache.getLayerId(stObj.getLayerName());
         Integer format_id = idCache.getFormatId(stObj.getBlobFormat());
@@ -139,7 +100,7 @@ public class JDBCMetaBackend implements MetaStore {
     }
     
 
-    private void putWFS(WFSObject stObj) throws StorageException {
+    public void put(WFSObject stObj) throws StorageException {
         Integer parameters_id = null;
 
         if (stObj.getParameters() != null) {
@@ -154,12 +115,12 @@ public class JDBCMetaBackend implements MetaStore {
 
     }
     
-    private void removeWFS(WFSObject stObj) {
+    public void delete(WFSObject stObj) {
         // TODO Auto-generated method stub
         
     }
 
-    private void removeTile(TileObject stObj) {
+    public void delete(TileObject stObj) {
         // TODO Auto-generated method stub
         
     }

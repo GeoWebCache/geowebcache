@@ -52,7 +52,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.rest.seed.SeedRequest;
 import org.geowebcache.storage.StorageBroker;
-import org.geowebcache.storage.blobstore.file.FilePathKey2;
+import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;

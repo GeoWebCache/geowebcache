@@ -28,7 +28,8 @@ public interface BlobStore {
      * @param key
      * @return true if succeeded, false if key did not exist
      */
-    public boolean delete(StorageObject stObj) throws StorageException;
+    public boolean delete(TileObject obj) throws StorageException;
+    public boolean delete(WFSObject obj) throws StorageException;
     
     /**
      * Retrieve a blob from storage. Calls setBlob() on passed object.
@@ -37,7 +38,8 @@ public interface BlobStore {
      * @return data, byte[0] if the blob is empty, null if it did not exist
      * @throws StorageException
      */
-    public byte[] get(StorageObject stObj) throws StorageException;
+    public byte[] get(TileObject obj) throws StorageException;
+    public byte[] get(WFSObject obj) throws StorageException;
     
     /**
      * Store blob. Calls getBlob() on passed object, does not modify the object.
@@ -46,8 +48,9 @@ public interface BlobStore {
      * @param blog
      * @throws StorageException
      */
-    public void put(StorageObject stObj) throws StorageException;
-    
+    public void put(TileObject obj) throws StorageException;
+    public void put(WFSObject obj) throws StorageException;
+
     /**
      * Wipes the entire storage. Should only be invoked during testing.
      * 

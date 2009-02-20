@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorKMLTile;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.OutOfBoundsException;
@@ -184,9 +185,10 @@ public class KMLService extends Service {
     /**
      * Let the service handle the request 
      */
-    public void handleRequest(TileLayerDispatcher tLD, ConveyorTile kmlTile) 
+    public void handleRequest(TileLayerDispatcher tLD, Conveyor conv)
     throws GeoWebCacheException {
-        ConveyorKMLTile tile = (ConveyorKMLTile) kmlTile;
+        
+        ConveyorKMLTile tile = (ConveyorKMLTile) conv;
         
         TileLayer layer; 
         if(tile.getHint() == HINT_DEBUGGRID) {

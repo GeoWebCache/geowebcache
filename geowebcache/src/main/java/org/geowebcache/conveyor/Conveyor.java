@@ -8,7 +8,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageObject;
 
-public class Conveyor {
+public abstract class Conveyor {
     public static enum RequestHandler {LAYER, SERVICE};
     
     // Internal routing
@@ -94,14 +94,17 @@ public class Conveyor {
         this.reqHandler = reqHandler;
     }
     
-    public boolean persist() throws GeoWebCacheException {
-        return storageBroker.put(stObj);
-    }
+    public abstract boolean persist() throws GeoWebCacheException;
+    //{
+    //    return storageBroker.put(stObj);
+    //}
     
-    public boolean retrieve(int maxAge) throws GeoWebCacheException {
-        //TODO hook up maxAge
-        return storageBroker.get(stObj);
-    }
+    public abstract boolean retrieve(int maxAge) throws GeoWebCacheException;
+    //{
+    //    //TODO hook up maxAge
+    //    if(stObj instanceof TileObject) {
+    //    return storageBroker.get(stObj);
+    //}
     
     public StorageBroker getStorageBroker() {
         return storageBroker;

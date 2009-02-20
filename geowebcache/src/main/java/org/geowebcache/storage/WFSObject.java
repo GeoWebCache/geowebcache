@@ -100,7 +100,7 @@ public class WFSObject extends StorageObject {
         wfs_id = id;
     }
     
-   public void setQueryBlob(byte[] query_blob) {
+   private void setQueryBlob(byte[] query_blob) {
        this.query_blob = query_blob;
        this.query_blob_size = query_blob.length;
        this.query_blob_md5 = calculateMd5(query_blob);

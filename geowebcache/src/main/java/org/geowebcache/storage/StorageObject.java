@@ -70,6 +70,10 @@ public abstract class StorageObject {
         this.blob = blob;
     }
     
+    public void setBlobFormat(String blobFormat) {
+        this.blob_format = blobFormat;
+    }
+    
     public void setBlobSize(int blob_size) { //throws StorageException {
         if(this.blob == null) {
             this.blob_size = blob_size;

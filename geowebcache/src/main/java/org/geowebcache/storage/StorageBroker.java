@@ -19,7 +19,6 @@ package org.geowebcache.storage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.GeoWebCacheException;
 
 public class StorageBroker {
     private static Log log = LogFactory.getLog(org.geowebcache.storage.StorageBroker.class);
@@ -32,30 +31,6 @@ public class StorageBroker {
         this.metaStore = metaStore;
         this.blobStore = blobStore;
     }
-    
-    public boolean get(StorageObject stObj) throws GeoWebCacheException {
-       try {
-        if(stObj instanceof TileObject) {
-            return get((TileObject) stObj);
-        } else if(stObj instanceof WFSObject) {
-            return get((WFSObject) stObj);
-        }
-       } catch (StorageException se) {
-           throw new GeoWebCacheException(se.getMessage());
-       }
-       
-       return false;
-    }
-    
-    public boolean put(StorageObject stObj) {
-         if(stObj instanceof TileObject) {
-             return put((TileObject) stObj);
-         } else if(stObj instanceof WFSObject) {
-             return put((WFSObject) stObj);
-         }
-         
-         return false;
-     }
     
     public boolean get(TileObject tileObj) throws StorageException {
         if(! metaStore.get(tileObj)) {
@@ -86,10 +61,29 @@ public class StorageBroker {
     }
     
     public boolean get(WFSObject wfsObj) throws StorageException {
-        //if(WFSObject)
-        throw new StorageException("Oops. Forgot to implement.");
-        
-        //return false;
+        if (!metaStore.get(wfsObj)) {
+            return false;
+        }
+
+        if (wfsObj.getId() == -1) {
+            throw new StorageException(
+                    "metaStore.get() returned true, but did not set an id on the object");
+        }
+
+        if (wfsObj.blob_size > 0) {
+            byte[] blob = blobStore.get(wfsObj);
+            if (blob == null) {
+                throw new StorageException("Blob was expected to have size "
+                        + wfsObj.blob_size + " but was null.");
+            } else if (blob.length != wfsObj.blob_size) {
+                throw new StorageException("Blob was expected to have size "
+                        + wfsObj.blob_size + " but was " + blob.length);
+            }
+
+            wfsObj.blob = blob;
+        }
+
+        return true;
     }
     
     public boolean put(TileObject tileObj) {

@@ -23,9 +23,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.geowebcache.mime.MimeException;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.StorageException;
-import org.geowebcache.storage.StorageObject;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.WFSObject;
 import org.geowebcache.util.ServletUtils;
@@ -35,6 +38,8 @@ import org.geowebcache.util.ServletUtils;
  * 
  */
 public class FileBlobStore implements BlobStore {
+    private static Log log = LogFactory.getLog(org.geowebcache.storage.blobstore.file.FileBlobStore.class);
+    
     public static final int BUFFER_SIZE = 32768;
     
     private final String path;
@@ -47,20 +52,8 @@ public class FileBlobStore implements BlobStore {
             throw new StorageException(path + " is not writable a writable directory.");
         }
     }
-
-    public boolean delete(StorageObject stObj) throws StorageException {
-        if (stObj instanceof TileObject) {
-            return delete((TileObject) stObj);
-        } else if (stObj instanceof WFSObject) {
-            return delete((WFSObject) stObj);
-        } else {
-            throw new StorageException(
-                    "Cannot handle objects of type "
-                    + stObj.getClass());
-        }   
-    }
     
-    private boolean delete(TileObject stObj) throws StorageException {
+    public boolean delete(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, false);
         if (!fh.exists())
             return false;
@@ -73,7 +66,7 @@ public class FileBlobStore implements BlobStore {
         return true;
     }
 
-    private boolean delete(WFSObject stObj) throws StorageException {
+    public boolean delete(WFSObject stObj) throws StorageException {
         if(stObj.getQueryBlobSize() != -1) {
             File fh = getFileHandleWFS(stObj, true, false);
 
@@ -95,55 +88,23 @@ public class FileBlobStore implements BlobStore {
         return true;
     }
 
-
-    public byte[] get(StorageObject stObj) throws StorageException {
-        byte[] res = null;
-        if (stObj instanceof TileObject) {
-            res = get((TileObject) stObj);
-        } else if (stObj instanceof WFSObject) {
-            res = get((WFSObject) stObj);
-        } else {
-            throw new StorageException(
-                    "Cannot handle objects of type "
-                    + stObj.getClass());
-        }
-        
-        stObj.setBlob(res);
-        
-        return res;
-    }
-
-    private byte[] get(TileObject stObj) throws StorageException {
+    public byte[] get(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, false);
         return readFile(fh);
     }
 
-    private byte[] get(WFSObject stObj) throws StorageException {
+    public byte[] get(WFSObject stObj) throws StorageException {
         // Should we check and compare the blobs?
         File fh = getFileHandleWFS(stObj, false, false);
         return readFile(fh);
     }
-
-    public void put(StorageObject stObj) throws StorageException {
-        if (stObj.getBlobSize() == -1)
-            return;
-
-        if (stObj instanceof TileObject) {
-            put((TileObject) stObj);
-        } else if (stObj instanceof WFSObject) {
-            put((WFSObject) stObj);
-        } else {
-            throw new StorageException("Cannot handle objects of type "
-                    + stObj.getClass());
-        }
-    }
     
-    private void put(TileObject stObj) throws StorageException {
+    public void put(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, true);
         writeFile(fh,stObj.getBlob());
     }
     
-    private void put(WFSObject stObj) throws StorageException {
+    public void put(WFSObject stObj) throws StorageException {
         if(stObj.getQueryBlobSize() != -1) {
             File queryfh = getFileHandleWFS(stObj,true, true);
             writeFile(queryfh, stObj.getQueryBlob());
@@ -154,13 +115,23 @@ public class FileBlobStore implements BlobStore {
     }
     
     private File getFileHandleTile(TileObject stObj, boolean create) {
-        String parentPath = path +File.separator+ stObj.getType();
-        if(create) {
-            File parent = new File(parentPath);
+        String[] paths = null;
+        try {
+            paths = FilePathGenerator.tilePath(
+                    path, stObj.getLayerName(),
+                    stObj.getXYZ(), stObj.getSrs(), 
+                    MimeType.createFromFormat(stObj.getBlobFormat()), 
+                    stObj.getParameters());
+        } catch (MimeException me) {
+            log.error(me.getMessage());
+        }
+
+        if (create) {
+            File parent = new File(paths[0]);
             parent.mkdirs();
         }
-        
-        return new File(parentPath + File.separator + stObj.getId());
+
+        return new File(paths[0] + File.separator + paths[1]);
     }
     
     private File getFileHandleWFS(WFSObject stObj, boolean query, boolean create) {

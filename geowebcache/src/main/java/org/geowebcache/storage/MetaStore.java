@@ -19,11 +19,14 @@ package org.geowebcache.storage;
 
 
 public interface MetaStore {
-    public boolean get(StorageObject stObj) throws StorageException;
+    public boolean get(TileObject obj) throws StorageException;
+    public boolean get(WFSObject obj) throws StorageException;
     
-    public void put(StorageObject stObj) throws StorageException;
+    public void put(TileObject stObj) throws StorageException;
+    public void put(WFSObject stObj) throws StorageException;
     
-    public void remove(StorageObject stObj) throws StorageException;
+    public void delete(TileObject stObj) throws StorageException;
+    public void delete(WFSObject stObj) throws StorageException;
     
     /**
      * Wipes the entire storage. Should only be invoked during testing.

@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.demo.Demo;
 import org.geowebcache.layer.BadTileException;
@@ -49,10 +50,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private static Log log = LogFactory.getLog(org.geowebcache.GeoWebCacheDispatcher.class);
 
     public static final String TYPE_SERVICE = "service";
-    
-    public static final String TYPE_TRUNCATE = "truncate";
-    
-    public static final String TYPE_RPC = "rpc";
     
     public static final String TYPE_DEMO = "demo";
 
@@ -231,9 +228,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
-        ConveyorTile conv = null;
-        
-        try {
+        Conveyor conv = null;
+
         // 1) Figure out what Service should handle this request
         Service service = findService(serviceStr);
 
@@ -241,31 +237,34 @@ public class GeoWebCacheDispatcher extends AbstractController {
         conv = service.getConveyor(request, response, storageBroker);
 
         // Check where this should be dispatched
-        if (conv.reqHandler == ConveyorTile.RequestHandler.SERVICE) {            
+        if (conv.reqHandler == Conveyor.RequestHandler.SERVICE) {
             // A3 The service object takes it from here
             service.handleRequest(tileLayerDispatcher, conv);
-            
+
         } else {
+            ConveyorTile convTile = (ConveyorTile) conv;
+
             // B3) Get the configuration that has to respond to this request
-            TileLayer layer = tileLayerDispatcher.getTileLayer(conv.getLayerId());
-            
+            TileLayer layer = tileLayerDispatcher.getTileLayer(convTile.getLayerId());
+
             // Save it for later
-            conv.setTileLayer(layer);
-            
-            // Keep the URI 
-            //tile.requestURI = request.getRequestURI();
-            
-            // A5) Ask the layer to provide the content for the tile
-            layer.getTile(conv);
+            convTile.setTileLayer(layer);
+
+            // Keep the URI
+            // tile.requestURI = request.getRequestURI();
+
+            try {
+                // A5) Ask the layer to provide the content for the tile
+                layer.getTile(convTile);
+            } catch (OutOfBoundsException e) {
+                writeEmpty(convTile, e.getMessage());
+            }
 
             // A6) Write response
-            writeData(conv);
+            writeData(convTile);
         }
-        
-        } catch (OutOfBoundsException e) {
-            writeEmpty(conv, e.getMessage());
-        }
-        // Log statistic
+
+        // Log statistic?
     }
     
     private void handleDemoRequest(String action, HttpServletRequest request, 

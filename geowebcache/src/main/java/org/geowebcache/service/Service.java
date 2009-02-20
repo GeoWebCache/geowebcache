@@ -26,6 +26,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorKMLTile;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.conveyor.ConveyorWFS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.StorageBroker;
@@ -58,14 +59,14 @@ public abstract class Service {
         return pathName;
     }
     
-    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response, StorageBroker sb) 
+    public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response, StorageBroker sb) 
     throws GeoWebCacheException {
         throw new ServiceException (
                 "Service for " + pathName  + " needs to override "
                 +"getTile(HttpSerlvetRequest)" );
     }
     
-    public void handleRequest(TileLayerDispatcher tLD, ConveyorTile conv) 
+    public void handleRequest(TileLayerDispatcher tLD, Conveyor conv) 
     throws GeoWebCacheException {
         throw new RuntimeException(
                 "Service for " + pathName  + " needs to override "
@@ -101,7 +102,13 @@ public abstract class Service {
         HttpServletResponse response = conv.servletResp;
         byte[] data = conv.getContent();
 
-        String mimeStr = conv.getMimeType().getMimeType();
+        String mimeStr = null;
+        if(conv instanceof ConveyorWFS) {
+            mimeStr = ((ConveyorWFS) conv).getMimeTypeString();
+        } else {
+            mimeStr = conv.getMimeType().getMimeType();
+        }
+         
 
         response.setCharacterEncoding("utf-8");
 
