@@ -256,12 +256,14 @@ public class GeoWebCacheDispatcher extends AbstractController {
             try {
                 // A5) Ask the layer to provide the content for the tile
                 layer.getTile(convTile);
+                
+                // A6) Write response
+                writeData(convTile);
+                
+                // Alternatively: 
             } catch (OutOfBoundsException e) {
                 writeEmpty(convTile, e.getMessage());
             }
-
-            // A6) Write response
-            writeData(convTile);
         }
 
         // Log statistic?
