@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.BlobStore;
+import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.WFSObject;
@@ -43,6 +44,11 @@ public class FileBlobStore implements BlobStore {
     public static final int BUFFER_SIZE = 32768;
     
     private final String path;
+    
+    
+    public FileBlobStore(DefaultStorageFinder defStoreFinder) throws StorageException {
+        path = defStoreFinder.getDefaultPath();
+    }
     
     public FileBlobStore(String rootPath) throws StorageException {
         path = rootPath;

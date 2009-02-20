@@ -17,6 +17,7 @@
  */
 package org.geowebcache.storage.metastore.jdbc;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -26,6 +27,7 @@ import java.sql.Statement;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.WFSObject;
@@ -72,6 +74,24 @@ class JDBCMBWrapper {
         checkTables();
     }
     
+    public JDBCMBWrapper(DefaultStorageFinder defStoreFind) throws StorageException,SQLException {
+        this.username = "sa";
+        this.password = "";
+        this.driverClass = "org.h2.Driver";
+        String path = defStoreFind.getDefaultPath() + File.separator + "meta_jdbc_h2";
+        File dir = new File(path);
+        dir.mkdirs();
+        this.jdbcString = "jdbc:h2:file:"+path+File.separator+"gwc_metastore";
+        
+        try {
+            Class.forName(driverClass);
+        } catch(ClassNotFoundException cnfe) {
+            throw new StorageException("Class not found: " + cnfe.getMessage());
+        }
+        
+        checkTables();
+    }
+
     protected Connection getConnection() throws SQLException {
         return DriverManager.getConnection(jdbcString,username,password);
     }

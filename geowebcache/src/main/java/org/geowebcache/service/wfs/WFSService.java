@@ -40,13 +40,14 @@ public class WFSService extends Service {
     
     private static Log log = LogFactory.getLog(org.geowebcache.service.wfs.WFSService.class);
 
-    private int readTimeout = 10 * 60 * 1000;
+    private int readTimeout;
     
     private String urlString;
     
-    public WFSService(String urlString) {
+    public WFSService(String urlString, int readTimeout) {
         super(SERVICE_WFS);
         this.urlString = urlString;
+        readTimeout = 1000 * readTimeout;
     }
     
     public ConveyorWFS getConveyor(HttpServletRequest request,
@@ -75,8 +76,14 @@ public class WFSService extends Service {
     throws GeoWebCacheException {
         ConveyorWFS conv = (ConveyorWFS) genConv;
         if(! conv.retrieve(-1)) {
-            forwardRequest(conv);
-            conv.persist();
+            //TODO Replace with hash-based locking
+            synchronized(this) {
+                if(! conv.retrieve(-1)) {
+                    forwardRequest(conv);
+                    conv.persist();
+                }
+            }
+
         }
         
         super.writeResponse(conv, false);

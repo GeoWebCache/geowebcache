@@ -21,12 +21,11 @@ import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.MetaStore;
 import org.geowebcache.storage.StorageException;
-import org.geowebcache.storage.StorageObject;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.WFSObject;
-import org.h2.tools.DeleteDbFiles;
 
 public class JDBCMetaBackend implements MetaStore {
     private static Log log = LogFactory.getLog(org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend.class);
@@ -37,9 +36,20 @@ public class JDBCMetaBackend implements MetaStore {
     /** Cache for translating layers and parameter strings to ids */
     private final JDBCMBIdCache idCache;
     
-    public JDBCMetaBackend(String driverClass, String jdbcString, String username, String password) throws StorageException {
+    public JDBCMetaBackend(String driverClass, String jdbcString, 
+            String username, String password) throws StorageException {
         try {
             wrpr = new JDBCMBWrapper(driverClass, jdbcString, username, password);
+        } catch(SQLException se) {
+            throw new StorageException(se.getMessage());
+        }
+        
+        idCache = new JDBCMBIdCache(wrpr);
+    }
+    
+    public JDBCMetaBackend(DefaultStorageFinder defStoreFind) throws StorageException {
+        try {
+            wrpr = new JDBCMBWrapper(defStoreFind);
         } catch(SQLException se) {
             throw new StorageException(se.getMessage());
         }
