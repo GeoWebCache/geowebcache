@@ -43,15 +43,21 @@ import org.geowebcache.util.ServletUtils;
 public class MGMapsConverter extends Service {
     public static final String SERVICE_MGMAPS = "mgmaps";
 
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.service.mgmaps.MGMapsConverter.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.service.mgmaps.MGMapsConverter.class);
 
-    public MGMapsConverter() {
+    private StorageBroker sb;
+    
+    private TileLayerDispatcher tld; 
+    
+    public MGMapsConverter(StorageBroker sb, TileLayerDispatcher tld) {
         super(SERVICE_MGMAPS);
+        
+        this.sb = sb;
+        this.tld = tld;
     }
 
-    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response, StorageBroker sb)
-            throws ServiceException {
+    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response)
+    throws ServiceException {
         String layerId = super.getLayersParameter(request);
         
         Map<String,String[]> params = request.getParameterMap();

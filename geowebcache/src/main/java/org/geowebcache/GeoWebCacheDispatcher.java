@@ -108,7 +108,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
      */
     private void loadServices() {
         // Give all service objects direct access to the tileLayerDispatcher
-        Service.setTileLayerDispatcher(tileLayerDispatcher);
         WebApplicationContext context = (WebApplicationContext) getApplicationContext();
         
         Map serviceBeans = context.getBeansOfType(Service.class);
@@ -234,7 +233,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         Service service = findService(serviceStr);
 
         // 2) Find out what layer will be used and how
-        conv = service.getConveyor(request, response, storageBroker);
+        conv = service.getConveyor(request, response);
 
         // Check where this should be dispatched
         if (conv.reqHandler == Conveyor.RequestHandler.SERVICE) {

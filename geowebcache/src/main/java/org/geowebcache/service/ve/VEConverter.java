@@ -43,14 +43,19 @@ import org.geowebcache.util.ServletUtils;
 public class VEConverter extends Service {
     public static final String SERVICE_VE = "ve";
 
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.service.ve.VEConverter.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.service.ve.VEConverter.class);
 
-    public VEConverter() {
+    private StorageBroker sb;
+    
+    private TileLayerDispatcher tld; 
+    
+    public VEConverter(StorageBroker sb, TileLayerDispatcher tld) {
         super(SERVICE_VE);
+        this.sb = sb;
+        this.tld = tld;
     }
 
-    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response, StorageBroker sb)  
+    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response)  
     throws ServiceException  {
         Map<String,String[]> params = request.getParameterMap();
         

@@ -36,15 +36,15 @@ public abstract class Service {
     
     private String pathName = null;
     
-    protected static TileLayerDispatcher tlDispatcher;
+    //protected static TileLayerDispatcher tlDispatcher;
     
     public Service(String pathName){
         this.pathName = pathName;
     }
     
-    public static void setTileLayerDispatcher(TileLayerDispatcher tlDispatcher) {
-        Service.tlDispatcher = tlDispatcher;
-    }
+    //public static void setTileLayerDispatcher(TileLayerDispatcher tlDispatcher) {
+    //    Service.tlDispatcher = tlDispatcher;
+    //}
     
     /**
      * Whether this service can handle the given request
@@ -59,7 +59,8 @@ public abstract class Service {
         return pathName;
     }
     
-    public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response, StorageBroker sb) 
+    // TODO these should be renamed / removed
+    public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response) 
     throws GeoWebCacheException {
         throw new ServiceException (
                 "Service for " + pathName  + " needs to override "

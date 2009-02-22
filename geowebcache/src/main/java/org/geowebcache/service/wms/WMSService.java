@@ -50,11 +50,18 @@ public class WMSService extends Service {
     // Proxy requests that are not tiled=true?
     private boolean proxyNonTiledRequests = false;
     
-    public WMSService() {
+    private StorageBroker sb;
+    
+    private TileLayerDispatcher tld; 
+    
+    public WMSService(StorageBroker sb, TileLayerDispatcher tld) {
         super(SERVICE_WMS);
+        
+        this.sb = sb;
+        this.tld = tld;
     }
 
-    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response, StorageBroker sb) 
+    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response) 
             throws GeoWebCacheException {
         String[] keys = { "layers", "request", "tiled", "cached", "metatiled" };
         String[] values = ServletUtils.selectedStringsFromMap(
@@ -90,7 +97,7 @@ public class WMSService extends Service {
                     "Unable to parse layers parameter from request.");
         }
 
-        TileLayer tileLayer = Service.tlDispatcher.getTileLayer(layers);
+        TileLayer tileLayer = tld.getTileLayer(layers);
 
         WMSParameters wmsParams = new WMSParameters(request);
         MimeType mimeType = null;

@@ -41,21 +41,34 @@ public class WFSService extends Service {
     
     public static final String GEOSERVER_WFS_URL = "GEOSERVER_WFS_URL";
     
+    public static final String GEOWEBCACHE_WFS_FILTER = "GEOWEBCACHE_WFS_FILTER";
+    
     private static Log log = LogFactory.getLog(org.geowebcache.service.wfs.WFSService.class);
 
     private int readTimeout;
     
     private String urlString;
     
-    public WFSService(String urlString, int readTimeout) {
+    private String regexFilter;
+    
+    public WFSService(String urlString, String regexFilter, int readTimeout) {
         super(SERVICE_WFS);
         this.urlString = urlString;
+        
+        if(regexFilter != null && regexFilter.length() == 0) {
+            this.regexFilter = null;
+        } else {
+            this.regexFilter = regexFilter;
+        }
+        
         readTimeout = 1000 * readTimeout;
         
-        log.info("Configured to forward to " + urlString + " , timeout is " + readTimeout + "ms");
+        log.info("Configured to forward to " + urlString 
+                + " , timeout is " + readTimeout 
+                + "ms regex filter " + regexFilter);
     }
     
-    public WFSService(ApplicationContextProvider ctxProv, int readTimeout) {
+    public WFSService(ApplicationContextProvider ctxProv, String regexFilter, int readTimeout) {
         super(SERVICE_WFS);
         urlString = ctxProv.getSystemVar(GEOSERVER_WFS_URL);
         if(urlString != null) {
@@ -65,31 +78,58 @@ public class WFSService extends Service {
         } else {
             urlString = "http://localhost:8080/geoserver/wfs";
         }
+        
+        regexFilter = ctxProv.getSystemVar(GEOWEBCACHE_WFS_FILTER);
+        
         readTimeout = 1000 * readTimeout;
         
-        log.info("Configured to forward to " + urlString + " , timeout is " + readTimeout + "ms");
+        log.info("Configured to forward to " + urlString 
+                + " , timeout is " + readTimeout 
+                + "ms, regex filter " + regexFilter);
     }
     
     public ConveyorWFS getConveyor(HttpServletRequest request,
             HttpServletResponse response, StorageBroker sb)
             throws GeoWebCacheException {
+        
         String parameters = null;
-
         byte[] queryBlob = null;
+        
         if (request.getContentLength() > 0) {
             try {
                 queryBlob = ServletUtils.readStream(request.getInputStream(),2048, 1024);
             } catch (IOException ioe) {
                 throw new GeoWebCacheException("Unable to get WFS query blob: "+ ioe.getMessage());
             }
+            performRegexCheck(queryBlob);
         } else {
             parameters = request.getQueryString();
+            performRegexCheck(parameters);
         }
        
         // Request handler is set automatically
         ConveyorWFS conv = new ConveyorWFS(sb, parameters, queryBlob, request, response);
         
         return conv;
+    }
+    
+    private void performRegexCheck(byte[] queryBlob) throws GeoWebCacheException {
+        if(regexFilter == null)
+            return;
+        if(queryBlob.length > 100*1024)
+            throw new GeoWebCacheException("Queryblob is too large ("
+                    +queryBlob.length
+                    +") to apply filter.");
+        else
+            performRegexCheck(new String(queryBlob));
+    }
+    
+    private void performRegexCheck(String parameters) throws GeoWebCacheException {
+        if(regexFilter == null)
+            return;
+        
+        if(! parameters.matches(regexFilter))
+            throw new GeoWebCacheException("Sorry. The request violates the filter.");
     }
     
     public void handleRequest(TileLayerDispatcher tLD, Conveyor genConv) 

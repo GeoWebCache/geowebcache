@@ -58,8 +58,7 @@ import org.geowebcache.util.wms.BBOX;
  *    -> check cache, or call createOverlay and package
  */
 public class KMLService extends Service {
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.service.kml.KMLService.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.service.kml.KMLService.class);
 
     public static final String SERVICE_KML = "kml";
     
@@ -69,8 +68,15 @@ public class KMLService extends Service {
     
     public static final String HINT_SITEMAP_GLOBAL = "sitemap_global";
     
-    public KMLService() {
+    private StorageBroker sb;
+    
+    private TileLayerDispatcher tld; 
+    
+    public KMLService(StorageBroker sb, TileLayerDispatcher tld) {
         super(SERVICE_KML);
+        
+        this.sb = sb;
+        this.tld = tld;
     }
 
     /**
@@ -128,7 +134,7 @@ public class KMLService extends Service {
      * This is the entry point, this is where we tell the dispatcher whether we want 
      * to handle the request or forward it to the tile layer (just a PNG).
      */
-    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response, StorageBroker sb) 
+    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response) 
     throws GeoWebCacheException  {
         String[] parsed = null;
         try {

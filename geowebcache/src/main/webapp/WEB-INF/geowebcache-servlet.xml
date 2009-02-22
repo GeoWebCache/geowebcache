@@ -59,22 +59,39 @@
     <!-- property name="servletPrefix" value=""/ -->
   </bean>
   
-  <!-- Services, make sure you name the bean the same as the path -->
+  <!-- WMS based services -->
   <bean id="gwcServiceWMS" 
     	class="org.geowebcache.service.wms.WMSService">
-    	<property name="proxyRequests"><value>TRUE</value></property>
+    <constructor-arg ref="gwcStorageBroker"/>
+	<constructor-arg ref="gwcTLDispatcher"/>
+    <property name="proxyRequests"><value>TRUE</value></property>
   </bean>
   <bean id="gwcServiceGMaps"
 	class="org.geowebcache.service.gmaps.GMapsConverter"/>
+	<constructor-arg ref="gwcStorageBroker"/>
+	<constructor-arg ref="gwcTLDispatcher"/>
+  </bean>
   <bean id="gwcServiceMGMaps"
 	class="org.geowebcache.service.mgmaps.MGMapsConverter"/>
+	<constructor-arg ref="gwcStorageBroker"/>
+	<constructor-arg ref="gwcTLDispatcher"/>
+  </bean>
   <bean id="gwcServiceVE"
 	class="org.geowebcache.service.ve.VEConverter"/>
+	<constructor-arg ref="gwcStorageBroker"/>
+	<constructor-arg ref="gwcTLDispatcher"/>
+  </bean>
   <bean id="gwcServiceKML"
-	class="org.geowebcache.service.kml.KMLService"/>
+	class="org.geowebcache.service.kml.KMLService">
+	<constructor-arg ref="gwcStorageBroker"/>
+	<constructor-arg ref="gwcTLDispatcher"/>
+  </bean>
+ 
+  <!-- WFS based services -->
   <bean id="gwcServiceWFS"
 	class="org.geowebcache.service.wfs.WFSService">
 	<constructor-arg value="http://localhost:8080/geoserver/wfs" />
+	<constrcutor-arg value="" />
 	<constructor-arg value="600" />
   </bean>
 	
