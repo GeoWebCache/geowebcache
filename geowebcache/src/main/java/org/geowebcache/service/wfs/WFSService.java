@@ -33,10 +33,13 @@ import org.geowebcache.conveyor.ConveyorWFS;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.service.Service;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.util.ApplicationContextProvider;
 import org.geowebcache.util.ServletUtils;
 
 public class WFSService extends Service {
     public static final String SERVICE_WFS = "wfs";
+    
+    public static final String GEOSERVER_WFS_URL = "GEOSERVER_WFS_URL";
     
     private static Log log = LogFactory.getLog(org.geowebcache.service.wfs.WFSService.class);
 
@@ -48,6 +51,23 @@ public class WFSService extends Service {
         super(SERVICE_WFS);
         this.urlString = urlString;
         readTimeout = 1000 * readTimeout;
+        
+        log.info("Configured to forward to " + urlString + " , timeout is " + readTimeout + "ms");
+    }
+    
+    public WFSService(ApplicationContextProvider ctxProv, int readTimeout) {
+        super(SERVICE_WFS);
+        urlString = ctxProv.getSystemVar(GEOSERVER_WFS_URL);
+        if(urlString != null) {
+            if(urlString.contains("?")) {
+                urlString = urlString.substring(0, urlString.indexOf("?"));
+            }
+        } else {
+            urlString = "http://localhost:8080/geoserver/wfs";
+        }
+        readTimeout = 1000 * readTimeout;
+        
+        log.info("Configured to forward to " + urlString + " , timeout is " + readTimeout + "ms");
     }
     
     public ConveyorWFS getConveyor(HttpServletRequest request,

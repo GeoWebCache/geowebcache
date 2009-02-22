@@ -19,6 +19,8 @@
 
 package org.geowebcache.util;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -26,6 +28,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 public class ApplicationContextProvider implements ApplicationContextAware {
 
+    private static Log log = LogFactory.getLog(org.geowebcache.util.ApplicationContextProvider.class);
+    
     WebApplicationContext ctx;
     
     public void setApplicationContext(ApplicationContext arg0)
@@ -36,6 +40,37 @@ public class ApplicationContextProvider implements ApplicationContextAware {
     public WebApplicationContext getApplicationContext() {
         return ctx;
     }
-   
 
+    
+    public String getSystemVar(String varName) {
+        if(ctx == null) {
+            String msg = "Application context was not set yet! Damn you Spring Framework :( ";
+            log.error(msg);
+            throw new RuntimeException(msg);
+        }
+        
+        String tmpVar = ctx.getServletContext().getInitParameter(varName);
+        if(tmpVar != null && tmpVar.length() > 7) {
+            log.info("Using servlet init context parameter to configure "+varName+" to "+tmpVar);
+            return tmpVar;
+        }
+        
+        tmpVar = System.getProperty(varName);
+        if(tmpVar != null && tmpVar.length() > 7) {
+            log.info("Using Java environment variable to configure "+varName+" to "+tmpVar);
+            return tmpVar;
+        }
+        
+        tmpVar = System.getenv(varName);
+        if(tmpVar != null && tmpVar.length() > 7) {
+            log.info("Using System environment variable to configure "+varName+" to "+tmpVar);
+            return tmpVar;
+        }
+        
+        tmpVar = "http://localhost:8080/geoserver/wms?request=GetCapabilities";
+        log.info("No context parameter, system or Java environment variables found for " + varName);
+        log.info("Reverting to " + tmpVar );
+        
+        return tmpVar;
+    }
 }

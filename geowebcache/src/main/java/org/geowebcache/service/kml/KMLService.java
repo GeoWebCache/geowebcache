@@ -205,13 +205,6 @@ public class KMLService extends Service {
         }
         tile.setTileLayer(layer);
         
-        //TODO this needs to be done more nicely
-        //TODO debuggrid should not have skipped this one [debuggrid, x1y0z0, kml, kmz]
-        //boolean isRaster = true;
-        //if(tile.getWrapperMimeType() != null || tile.getMimeType() ) {
-        //    isRaster = false;
-        //}
-
         if(tile.getHint() == HINT_SITEMAP_LAYER || tile.getHint() == HINT_SITEMAP_GLOBAL) {
             KMLSiteMap sm = new KMLSiteMap(tile,tLD);
             try {
@@ -376,12 +369,15 @@ public class KMLService extends Service {
             packageData = true;
         }
 
+        // TODO The 1.1 branch doesn't have a good way of storing the archives.
+        // For now we compress on every request
+        
         // Did we get lucky?
         // TODO need to look into expiration here
-        if(tile.retrieve(-1)) { 
-            writeResponse(tile,true);
-            return;
-        }
+        //if(tile.retrieve(-1)) { 
+        //    writeResponse(tile,true);
+        //    return;
+        //}
         
         // Sigh.... 
         if(packageData) {
@@ -411,7 +407,7 @@ public class KMLService extends Service {
             
             tile.setContent(zip);
             tile.setStatus(200);
-            tileLayer.putTile(tile);
+            //tileLayer.putTile(tile);
 
         } else {
             String overlayXml = createOverlay(tile, false);
@@ -482,45 +478,6 @@ public class KMLService extends Service {
                 //moreData++;
             }
         }
-        
-// The following was a nice try, unfortunately Google Earth appears to go to 100% CPU etc...
-// and the pane on the left hand side with the tile tree doesn't really know what to do
-// with new parents....
-//
-//        buf.append("\n<!-- Network link to parent or sibling tile -->\n");
-//        // 4) Add link to parent or sibling tile
-//        //    Just in case someone comes in via a search result
-//        //    Sibling = other hemisphere, when at zoom level 0
-//        if(gridLoc[2] >= 0) {
-//            int z = gridLoc[2] - 1;
-//            int x = Math.min((int) Math.round((gridLoc[0] -0.01) / 2.0), 2*(1 << z) - 1);
-//            int y = Math.min((int) Math.round((gridLoc[1] -0.01) / 2.0), (1 << z) - 1);
-//            
-//            
-//            // Override if we're linking to the sibling top tile
-//            if(gridLoc[2] == 0 && tile.getLayer().getZoomedOutGridLoc(srs)[2] == -1) {
-//                if(gridLoc[0] == 0) {
-//                    x = 1;
-//                } else {
-//                    x = 0;
-//                }
-//                y = 0;
-//                z = 0;
-//            }
-//            
-//            int[] parentGridLoc = {x,y,z};
-//            
-//            BBOX linkBbox = tileLayer.getBboxForGridLoc(srs,parentGridLoc);
-//            
-//            // Absolute URLs for these
-//            String gridLocStr = gridLocString(parentGridLoc);
-//            
-//            String gridLocUrl = tile.getUrlPrefix() 
-//                + gridLocStr +"." +tile.getMimeType().getFileExtension()
-//                + "." + tile.getWrapperMimeType().getFileExtension();
-//            
-//            buf.append(createNetworkLinkElement(tileLayer, linkBbox, gridLocUrl, gridLocStr, 385));
-//        }
         
         buf.append("\n<!-- Network link to actual content -->\n");
         // 5) Overlay, should be relative 
@@ -629,10 +586,6 @@ public class KMLService extends Service {
 
         return xml;
     }
-    
-    //private static String lookAtPlaceMark(BBOX bbox) {
-    //    getLookAt(bbox)
-    //}
     
     private static String getLookAt(BBOX bbox) {
         double lon1 = bbox.coords[0];
