@@ -85,6 +85,7 @@ public abstract class MetaTile implements TileResponseReceiver {
     public long getExpiresHeader() {
         return this.expiresHeader;
     }
+    
 
     public void setExpiresHeader(long seconds) {
         this.expiresHeader = seconds;
@@ -173,5 +174,9 @@ public abstract class MetaTile implements TileResponseReceiver {
 
     public SRS getSRS() {
         return this.srs;
+    }
+    
+    public MimeType getMimeType() {
+        return mimeType;
     }
 }

@@ -77,7 +77,7 @@ public class VEConverter extends Service {
             }
         }
         
-        ConveyorTile ret = new ConveyorTile(sb, layerId, SRS.getEPSG900913(), gridLoc, mimeType, null, request, response);
+        ConveyorTile ret = new ConveyorTile(sb, layerId, SRS.getEPSG900913(), gridLoc, mimeType, null, null, request, response);
         
         if(strCached != null && ! Boolean.parseBoolean(strCached)) {
             ret.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);

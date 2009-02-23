@@ -79,7 +79,7 @@
 
   </grids>
   <wmsUrl>
-    <string>http://localhost:8080/geoserver/wms</string>
+    <string>http://sigma.openplans.org/geoserver/wms</string>
   </wmsUrl>
   <wmsLayers>topp:states</wmsLayers>
   <wmsStyles>population</wmsStyles>
@@ -92,7 +92,6 @@
   <bgColor></bgColor>
   <palette></palette>
   <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
-  <!-- cachePrefix>/var/lib/geowebcache/topp_states</cachePrefix -->
 </wmsLayer>
 
  <!-- 
@@ -154,8 +153,8 @@
   properly, the next one will be used automatically.
   -->
   <wmsUrl>
-    <string>http://localhost:8080/geoserver/wms</string>
-    <string>http://127.0.0.1:8080/geoserver/wms</string>
+    <string>http://sigma.openplans.org/geoserver/wms</string>
+    <string>http://sigma.openplans.org/geoserver/wms</string>
   </wmsUrl>
   <wmsLayers>topp:states</wmsLayers>
   <wmsStyles>polygon</wmsStyles>
@@ -168,7 +167,6 @@
   <bgColor></bgColor>
   <palette></palette>
   <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
-  <!-- cachePrefix>/var/lib/geowebcache/topp_states</cachePrefix -->
   <!-- 
   You can specify expiration times in seconds. In the example below
   - disk cached is refreshed every 2 hours

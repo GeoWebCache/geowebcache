@@ -30,6 +30,7 @@ import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
@@ -64,8 +65,7 @@ public class WMSService extends Service {
     public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response) 
             throws GeoWebCacheException {
         String[] keys = { "layers", "request", "tiled", "cached", "metatiled" };
-        String[] values = ServletUtils.selectedStringsFromMap(
-                request.getParameterMap(), keys);
+        String[] values = ServletUtils.selectedStringsFromMap(request.getParameterMap(), keys);
 
         // Look for requests that are not getmap
         String req = values[1];
@@ -93,35 +93,44 @@ public class WMSService extends Service {
         // Look for layer
         String layers = values[0];
         if (layers == null) {
-            throw new ServiceException(
-                    "Unable to parse layers parameter from request.");
+            throw new ServiceException("Unable to parse layers parameter from request.");
         }
 
         TileLayer tileLayer = tld.getTileLayer(layers);
+        
+        String[] paramKeys = { "format","srs","bbox"};
+        String[] paramValues = ServletUtils.selectedStringsFromMap(request.getParameterMap(), paramKeys);
 
-        WMSParameters wmsParams = new WMSParameters(request);
+        String[] modStrs = null;
+        if(tileLayer instanceof WMSLayer) {
+            modStrs = ((WMSLayer) tileLayer).getModifiableParameters(request.getParameterMap());
+        }
+         
+        if(modStrs == null) {
+            modStrs = new String[2];
+            modStrs[0] = "";
+            modStrs[1] = "";
+        }
+                
         MimeType mimeType = null;
-        String strFormat = wmsParams.getFormat();
-
         try {
-            mimeType = MimeType.createFromFormat(strFormat);
+            mimeType = MimeType.createFromFormat(paramValues[0]);
         } catch (MimeException me) {
             throw new ServiceException("Unable to determine requested format, "
-                    + strFormat);
+                    + paramValues[0]);
         }
-
-        if (wmsParams.getSrs() == null) {
+        
+        if (paramValues[1] == null) {
             throw new ServiceException("No SRS specified");
         }
-
-        SRS srs = wmsParams.getSrs();
-
+        
+        SRS srs = SRS.getSRS(paramValues[1]);
         if (! tileLayer.supportsSRS(srs)) {
             throw new ServiceException("Unable to match requested SRS "
-                    + wmsParams.getSrs() + " to those supported by layer");
+                    + paramValues[1] + " to those supported by layer");
         }
-
-        BBOX bbox = wmsParams.getBBOX();
+   
+        BBOX bbox = new BBOX(paramValues[2]);
         if (bbox == null || !bbox.isSane()) {
             throw new ServiceException(
                     "The bounding box parameter is missing or not sane");
@@ -129,7 +138,9 @@ public class WMSService extends Service {
 
         int[] tileIndex = tileLayer.getGridLocForBounds(srs, bbox);
         
-        return new ConveyorTile(sb, layers, srs, tileIndex, mimeType, null, request, response);
+        return new ConveyorTile(
+                sb, layers, srs, tileIndex, mimeType, 
+                modStrs[0], modStrs[1], request, response);
     }
 
     public void handleRequest(TileLayerDispatcher tLD, Conveyor conv)

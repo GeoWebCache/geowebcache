@@ -119,16 +119,6 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         
         mockConfiguration = true;
         
-        //CacheKeyFactory ckf = new CacheKeyFactory();
-        //HashMap<String,CacheKey> cacheKeyMap = new HashMap<String,CacheKey>();
-        //cacheKeyMap.put("test key", (CacheKey) new FilePathKey2());
-        //ckf.setCacheKeys(cacheKeyMap);
-        
-        //cacheFactory = new CacheFactory(ckf);
-        //HashMap<String,Cache> cacheMap = new HashMap<String,Cache>();
-        //cacheMap.put("test", (Cache) new FileCache());
-        //cacheFactory.setCaches(cacheMap);
-        
         // Add the cache factory to each layer object
         if(layers != null) {
             Iterator<TileLayer> iter = layers.iterator();
@@ -241,7 +231,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         xs.alias("mimeFormats", new ArrayList<String>().getClass());
         xs.alias("srs", org.geowebcache.layer.SRS.class);        
         xs.alias("seedRequest", SeedRequest.class);
-
+        
         return xs;
     }
 
@@ -367,25 +357,15 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         if (!rootNode.getNodeName().equals("gwcConfiguration")) {
             log.info("The configuration file is of the old type, trying to convert.");
 
-            DOMResult result = new DOMResult();
-            Transformer transformer;
-
-            InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache_pre10.xsl");
-
-            try {
-                transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(is));
-                transformer.transform(new DOMSource(rootNode), result);
-            } catch (TransformerConfigurationException e) {
-                e.printStackTrace();
-            } catch (TransformerFactoryConfigurationError e) {
-                e.printStackTrace();
-            } catch (TransformerException e) {
-                e.printStackTrace();
-            }
-
-            rootNode = result.getNode().getFirstChild();
+            rootNode = applyTransform(rootNode, "geowebcache_pre10.xsl");
         }
 
+        if (true) {
+            log.info("Blindly removing cachePrefix references.");
+
+            rootNode = applyTransform(rootNode, "geowebcache_10.xsl");
+        }
+                
         // Check again after transform
         if (!rootNode.getNodeName().equals("gwcConfiguration")) {
             log.error("Unable to parse file, expected gwcConfiguration at root after transform.");
@@ -412,6 +392,26 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         return rootNode;
     }
     
+    private Node applyTransform(Node oldRootNode, String xslFilename) {
+        DOMResult result = new DOMResult();
+        Transformer transformer;
+
+        InputStream is = XMLConfiguration.class.getResourceAsStream(xslFilename);
+
+        try {
+            transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(is));
+            transformer.transform(new DOMSource(oldRootNode), result);
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+        } catch (TransformerFactoryConfigurationError e) {
+            e.printStackTrace();
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+
+        return result.getNode().getFirstChild();
+    }
+    
     public void determineConfigDirH() {
         String baseDir = context.getServletContext().getRealPath("");
         
@@ -431,21 +431,6 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         } else if (relPath == null) {
             // Try env variables
             File tmpPath = null;
-
-            //if (fileCache != null) {
-            //    try {
-                    // Careful, this appends a separator
-            //        tmpPath = new File(fileCache.getDefaultPrefix(CONFIGURATION_FILE_NAME));
-
-            //        if (tmpPath.exists() && tmpPath.canRead()) {
-            //            String filePath = tmpPath.getAbsolutePath();
-            //            configH = new File(filePath.substring(0, 
-            //                    filePath.length()- CONFIGURATION_FILE_NAME.length() - 1));
-            //        }
-            //    } catch (CacheException ce) {
-                    // Ignore
-            //    }
-            //}
 
             // Finally, try "standard" paths if we have to.
             if (configH == null) {

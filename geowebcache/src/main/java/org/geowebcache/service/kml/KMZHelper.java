@@ -68,7 +68,7 @@ public class KMZHelper {
                 
                 ConveyorTile tile = new ConveyorTile(sb,
                         tileLayer.getName(), SRS.getEPSG4326(), 
-                        linkGridLocs[i], mime, null, null, null);
+                        linkGridLocs[i], mime, null, null, null, null);
                 tile.setTileLayer(tileLayer);
                 
                 try {                                        

@@ -119,7 +119,7 @@ public class SeedTask extends GWCTask {
 
                     int[] gridLoc = { gridx, gridy, level };
 
-                    ConveyorTile tile = new ConveyorTile(storageBroker, tl.getName(), srs, gridLoc, mimeType, null, null, null);
+                    ConveyorTile tile = new ConveyorTile(storageBroker, tl.getName(), srs, gridLoc, mimeType, null, null, null, null);
                     
                     // Question is, how resilient should we be ?
                     try {

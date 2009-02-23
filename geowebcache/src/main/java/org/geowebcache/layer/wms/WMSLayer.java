@@ -23,11 +23,15 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -43,7 +47,7 @@ import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.service.wms.WMSParameters;
+import org.geowebcache.service.wms.ModifiableParameter;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
@@ -57,26 +61,35 @@ public class WMSLayer extends TileLayer {
 
     private String wmsLayers = null;
     
+    //pat
     private String wmsStyles = null;
     
     private int[] metaWidthHeight = null;
 
+    //pat
     private String errorMime;
 
+    //pat
     private String wmsVersion;
 
-    private boolean tiled;
+    //pat
+    private Boolean tiled;
 
-    private boolean transparent;
+    //pat
+    private Boolean transparent;
     
+    //pat
     private String bgColor;
 
+    //pat
     private String palette;
     
+    // ?
     private String vendorParameters;
     
+    //Not used, should be removed through XSL
     private String cachePrefix;
-
+    
     private String expireCache;
     
     private String expireClients;
@@ -84,6 +97,8 @@ public class WMSLayer extends TileLayer {
     protected Integer backendTimeout;
     
     protected Boolean cacheBypassAllowed;
+    
+    protected List<ModifiableParameter> modifiableParameters;
     
     private transient int expireCacheInt = -1;
 
@@ -104,6 +119,13 @@ public class WMSLayer extends TileLayer {
     private transient List<MimeType> formats;
 
     private transient HashMap<GridLocObj, Boolean> procQueue;
+    
+    //private transient TreeMap<String,ModifiableParameter> 
+    private transient ModifiableParameter[] sortedModParams;
+    
+    private transient String[] sortedModParamsKeys;
+    
+    //private transient SortedSet test;
 
     //transient Integer cacheLockWait;
 
@@ -162,9 +184,6 @@ public class WMSLayer extends TileLayer {
         log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
         curWmsURL = 0;
         
-        errorMime = ErrorMime.vnd_ogc_se_inimage.getMimeType();
-        wmsVersion = "1.1.0";
-
         if(expireClients != null) {
             expireClientsInt = Integer.parseInt(expireClients);
         } else {
@@ -211,6 +230,29 @@ public class WMSLayer extends TileLayer {
         this.gridLocConds = new Condition[17];
         for (int i = 0; i < gridLocConds.length; i++) {
             gridLocConds[i] = layerLock.newCondition();
+        }
+        
+        if (this.modifiableParameters != null
+                && this.modifiableParameters.size() > 0) {
+            Iterator<ModifiableParameter> iter = modifiableParameters.iterator();
+            TreeMap<String, ModifiableParameter> tree = new TreeMap<String, ModifiableParameter>();
+
+            while (iter.hasNext()) {
+                ModifiableParameter modParam = iter.next();
+                tree.put(modParam.getKey(), modParam);
+            }
+
+            // this.sortedModParams = new
+            // ModifiableParameter[this.modifiableParameters.size()];
+
+            this.sortedModParams = (ModifiableParameter[]) tree.values().toArray();
+
+            this.sortedModParamsKeys = new String[sortedModParams.length];
+
+            for (int i = 0; i < sortedModParams.length; i++) {
+                sortedModParamsKeys[i] = sortedModParams[i].getKey();
+            }
+
         }
 
         return new Boolean(true);
@@ -282,7 +324,8 @@ public class WMSLayer extends TileLayer {
 
         WMSMetaTile metaTile = new WMSMetaTile(this, tile.getSRS(), 
                 tile.getMimeType(), gridCalc.getGridBounds(gridLoc[2]),
-                gridLoc, metaWidthHeight[0], metaWidthHeight[1]);
+                gridLoc, metaWidthHeight[0], metaWidthHeight[1],
+                tile.getFullParameters());
 
         // Leave a hint to save expiration, if necessary
         if (saveExpirationHeaders) {
@@ -628,37 +671,55 @@ public class WMSLayer extends TileLayer {
         }
     }
 
-    public WMSParameters getWMSParamTemplate() {
-        WMSParameters wmsparams = new WMSParameters();
-        wmsparams.setRequest("GetMap");
-        wmsparams.setService("WMS");
-        wmsparams.setVersion(wmsVersion);
+    public String getWMSRequestTemplate() {
+        StringBuilder strBuilder = new StringBuilder();
+        strBuilder.append("SERVICE=WMS");
+        strBuilder.append("&REQUEST=GetMap");
         
-        if(this.wmsLayers != null && this.wmsLayers.length() != 0) {
-            wmsparams.setLayer(this.wmsLayers);
+        strBuilder.append("&VERSION=");
+        if(wmsVersion != null) {
+            strBuilder.append(wmsVersion);
         } else {
-            wmsparams.setLayer(this.name);
+            strBuilder.append("1.1.0");
+        }
+
+        strBuilder.append("&LAYERS=");
+        if(this.wmsLayers != null && this.wmsLayers.length() != 0) {
+            strBuilder.append(wmsLayers);
+        } else {
+            strBuilder.append(name);
         }
         
-        wmsparams.setErrorMime(errorMime);
+        strBuilder.append("&EXCEPTIONS=");
+        if(errorMime != null) {
+            strBuilder.append(errorMime);
+        } else {
+            strBuilder.append(ErrorMime.vnd_ogc_se_inimage.getMimeType());
+        }
+        
+        if (wmsStyles != null && wmsStyles.length() != 0) {
+            strBuilder.append("&STYLES=").append(wmsStyles);
+        }
 
-        wmsparams.setIsTransparent(transparent);
-        wmsparams.setIsTiled(tiled);
-
+        if(transparent != null) {
+            strBuilder.append("&TRANSPARENT=").append(Boolean.toString(transparent));
+        }
+        
         if (bgColor != null && bgColor.length() != 0) {
-            wmsparams.setBgColor(bgColor);
+            strBuilder.append("&BGCOLOR=").append(bgColor);
         }
         if (palette != null && palette.length() != 0) {
-            wmsparams.setPalette(palette);
+            strBuilder.append("&PALETTE=").append(palette);
         }
+        
         if (vendorParameters != null && vendorParameters.length() != 0) {
-            wmsparams.setVendorParams(vendorParameters);
+            if(! vendorParameters.startsWith("&"))
+                strBuilder.append("&");
+            
+            strBuilder.append(vendorParameters);
         }
-        if (wmsStyles != null && wmsStyles.length() != 0) {
-            wmsparams.setStyles(wmsStyles);
-        }
-        wmsparams.setFormat(formats.get(0).getFormat());
-        return wmsparams;
+        
+        return strBuilder.toString();
     }
 
     /**
@@ -716,10 +777,6 @@ public class WMSLayer extends TileLayer {
     public int[] getZoomedOutGridLoc(SRS srs)
     throws GeoWebCacheException {
         return grids.get(srs).getGridCalculator().getZoomedOutGridLoc();
-    }
-
-    public String getCachePrefix() {
-        return new String(this.cachePrefix);
     }
 
     /**
@@ -935,4 +992,45 @@ public class WMSLayer extends TileLayer {
         return tile;
     }
 
+    /**
+     * 
+     * @param map
+     * @return {full query string with default, query string with modifiers} 
+     * @throws GeoWebCacheException
+     */
+    public String[] getModifiableParameters(Map<String,String[]> map) throws GeoWebCacheException {
+        String[] paramStrs = new String[2];
+        
+        if(sortedModParamsKeys == null)
+            return null;
+        
+        String[] values = ServletUtils.selectedStringsFromMap(map, sortedModParamsKeys);
+        
+        StringBuilder strModifiers = new StringBuilder();
+        StringBuilder strFull = new StringBuilder();
+        
+        for(int i = 0; i<values.length; i++) {
+            String value = values[i];
+            ModifiableParameter modParam = this.sortedModParams[i];
+            
+            if(value == null) {
+                strFull.append("&").append(modParam.getKey()).append("=").append(modParam.getDefaultValue());
+            } else {
+                Matcher matcher = modParam.getMatcher(value);
+                if(! matcher.matches()) {
+                    throw new GeoWebCacheException(
+                            "Value " + value 
+                            + " for parameter " +  modParam.getKey()  
+                            + " violates filter.");
+                }
+                
+                strModifiers.append("&").append(modParam.getKey()).append("=").append(value);
+            }
+        }
+        
+        paramStrs[1] = strModifiers.toString();
+        paramStrs[0] = strFull.append(strModifiers).toString();
+        
+        return paramStrs;
+    }
 }

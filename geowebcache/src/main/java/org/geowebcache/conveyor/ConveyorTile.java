@@ -37,6 +37,8 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     
     protected TileLayer tileLayer = null;
     
+    String fullParameters;
+    
     public ConveyorTile(StorageBroker sb, String layerId, HttpServletRequest servletReq, HttpServletResponse servletResp) {
         super(sb, servletReq, servletResp);
         this.layerId = layerId;
@@ -46,7 +48,8 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
      * This constructor is used for an incoming request, the data is
      * then added by the cache
      */
-    public ConveyorTile(StorageBroker sb, String layerId, SRS srs, int[] tileIndex, MimeType mimeType, String parameters, 
+    public ConveyorTile(StorageBroker sb, String layerId, SRS srs, int[] tileIndex, MimeType mimeType, 
+            String fullParameters, String modifiedParameters,
             HttpServletRequest servletReq, HttpServletResponse servletResp) {
         super(sb, servletReq, servletResp);
         this.layerId = layerId;
@@ -56,7 +59,13 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         
         long[] idx = {tileIndex[0], tileIndex[1], tileIndex[2]};
         
-        stObj = TileObject.createQueryTileObject(layerId, idx, srs.getNumber(), mimeType.getFormat(), parameters);
+        this.fullParameters = fullParameters;
+        
+        stObj = TileObject.createQueryTileObject(layerId, idx, srs.getNumber(), mimeType.getFormat(), modifiedParameters);
+    }
+    
+    public String getFullParameters() {
+        return this.fullParameters;
     }
     
     public String getLayerId() {

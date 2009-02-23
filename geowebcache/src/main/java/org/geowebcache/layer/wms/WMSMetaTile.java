@@ -38,7 +38,6 @@ import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.MetaTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.service.wms.WMSParameters;
 import org.geowebcache.util.wms.BBOX;
 
 public class WMSMetaTile extends MetaTile {
@@ -56,6 +55,8 @@ public class WMSMetaTile extends MetaTile {
     
     protected boolean requestTiled = false;
 
+    protected String fullParameters;
+    
     /**
      * Used for requests by clients
      * 
@@ -63,26 +64,32 @@ public class WMSMetaTile extends MetaTile {
      * @param initGridPosition
      */
     protected WMSMetaTile(WMSLayer layer, SRS srs, MimeType mimeType,
-            int[] gridBounds, int[] tileGridPosition, int metaX, int metaY) {
+            int[] gridBounds, int[] tileGridPosition, int metaX, int metaY, String fullParameters) {
         super(srs, mimeType, gridBounds, tileGridPosition, metaX, metaY);
         this.wmsLayer = layer;
+        this.fullParameters = fullParameters;
     }
 
-    protected WMSParameters getWMSParams() throws GeoWebCacheException {
-        WMSParameters wmsparams = wmsLayer.getWMSParamTemplate();
+    protected String getWMSParams() throws GeoWebCacheException {
+        String baseParameters = wmsLayer.getWMSRequestTemplate();
         //int srsIdx = wmsLayer.getSRSIndex(srs);
 
         // Fill in the blanks
-        wmsparams.setFormat(mimeType.getFormat());
-        wmsparams.setSrs(srs);
-        wmsparams.setWidth(metaX * GridCalculator.TILEPIXELS);
-        wmsparams.setHeight(metaY * GridCalculator.TILEPIXELS);
-        wmsparams.setIsTiled(requestTiled);
+        StringBuilder strBuilder = new StringBuilder(baseParameters);
+        
+        strBuilder.append("&FORMAT=").append(mimeType.getFormat());
+        strBuilder.append("&SRS=").append(srs.toString());
+        strBuilder.append("&HEIGHT=").append(metaX * GridCalculator.TILEPIXELS);
+        strBuilder.append("&WIDTH=").append(metaY * GridCalculator.TILEPIXELS);
+        
         GridCalculator gridCalc = wmsLayer.getGrid(srs).getGridCalculator();
         BBOX metaBbox = gridCalc.bboxFromGridBounds(metaTileGridBounds);
-        wmsparams.setBBOX(metaBbox);
-
-        return wmsparams;
+        
+        strBuilder.append("&BBOX=").append(metaBbox);
+        
+        strBuilder.append(fullParameters);
+        
+        return strBuilder.toString();
     }
 
     protected WMSLayer getLayer() {
