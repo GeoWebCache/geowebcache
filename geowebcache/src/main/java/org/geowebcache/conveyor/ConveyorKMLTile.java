@@ -22,20 +22,25 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.layer.SRS;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
 
 
 public class ConveyorKMLTile extends ConveyorTile {
+    public ConveyorKMLTile(StorageBroker sb, String layerId, SRS srs,
+            int[] tileIndex, MimeType mimeType, String fullParameters,
+            String modifiedParameters, HttpServletRequest servletReq,
+            HttpServletResponse servletResp) {
+        super(sb, layerId, srs, tileIndex, mimeType, fullParameters,
+                modifiedParameters, servletReq, servletResp);
+    }
+
     private static Log log = LogFactory.getLog(org.geowebcache.conveyor.ConveyorKMLTile.class);
     
     String urlPrefix = null;
     
     protected MimeType wrapperMimeType = null;
-    
-    public ConveyorKMLTile(StorageBroker sb, String layerId, HttpServletRequest servletReq, HttpServletResponse servletResp) {
-        super(sb, layerId, servletReq, servletResp);
-    }
     
     public void setUrlPrefix(String urlPrefix) {
         this.urlPrefix = urlPrefix;

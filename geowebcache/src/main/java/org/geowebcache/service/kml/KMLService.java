@@ -145,8 +145,15 @@ public class KMLService extends Service {
             throw new ServiceException("Unable to parse KML request : "+ e.getMessage());
         }
         
-        ConveyorKMLTile tile =  new ConveyorKMLTile(sb, parsed[0], request, response);
-        tile.setMimeType(MimeType.createFromExtension(parsed[2]));
+        int[] gridLoc = null;
+        // Do we have a key for the grid location?
+        if(parsed[1].length() > 0) {
+            gridLoc = KMLService.parseGridLocString(parsed[1]);
+        }
+        
+        ConveyorKMLTile tile = new ConveyorKMLTile(sb, parsed[0], SRS.getEPSG4326(),
+                gridLoc, MimeType.createFromExtension(parsed[2]), "", "", request, response);
+        
         tile.setSRS(SRS.getEPSG4326());
         
         // Sitemap index ? kml/sitemap.xml 
@@ -165,12 +172,7 @@ public class KMLService extends Service {
             tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
             return tile;
         }
-        
-        // Do we have a key for the grid location?
-        if(parsed[1].length() > 0) {
-            tile.setTileIndex(KMLService.parseGridLocString(parsed[1]));
-        }
-        
+                
         // Is this a [super]overlay?
         if(parsed[3] != null) {
             tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);

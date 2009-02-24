@@ -54,18 +54,25 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         super(sb, servletReq, servletResp);
         this.layerId = layerId;
         this.srs = srs;
-        this.tileIndex = tileIndex.clone();
+        
+        long[] idx = new long[3];
+        if(tileIndex != null) {
+            this.tileIndex = tileIndex.clone();
+            idx[0] = tileIndex[0]; idx[1] = tileIndex[1]; idx[2] = tileIndex[2];
+        }
+        
         super.mimeType = mimeType;
-        
-        long[] idx = {tileIndex[0], tileIndex[1], tileIndex[2]};
-        
+               
         this.fullParameters = fullParameters;
         
         stObj = TileObject.createQueryTileObject(layerId, idx, srs.getNumber(), mimeType.getFormat(), modifiedParameters);
     }
     
     public String getFullParameters() {
-        return this.fullParameters;
+        if(this.fullParameters == null)
+            return "";
+            
+        return fullParameters;
     }
     
     public String getLayerId() {
@@ -112,9 +119,9 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         return tileIndex;
     }
     
-    public void setTileIndex(int[] tileIndex) {
-        this.tileIndex = tileIndex.clone();
-    }
+    //public void setTileIndex(int[] tileIndex) {
+    //    this.tileIndex = tileIndex.clone();
+    //}
     
     public SRS getSRS() {
         return srs;
