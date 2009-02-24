@@ -71,8 +71,9 @@ public class WFSService extends Service {
                 + "ms regex filter " + regexFilter);
     }
     
-    public WFSService(ApplicationContextProvider ctxProv, String regexFilter, int readTimeout) {
+    public WFSService(StorageBroker sb, ApplicationContextProvider ctxProv, String regexFilter, int readTimeout) {
         super(SERVICE_WFS);
+        this.storageBroker = sb;
         urlString = ctxProv.getSystemVar(GEOSERVER_WFS_URL);
         if(urlString != null) {
             if(urlString.contains("?")) {
