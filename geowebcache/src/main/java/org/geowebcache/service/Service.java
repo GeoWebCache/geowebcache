@@ -64,7 +64,7 @@ public abstract class Service {
     throws GeoWebCacheException {
         throw new ServiceException (
                 "Service for " + pathName  + " needs to override "
-                +"getTile(HttpSerlvetRequest)" );
+                +"getConveyor(HttpSerlvetRequest,HttpServletResponse)" );
     }
     
     public void handleRequest(TileLayerDispatcher tLD, Conveyor conv) 

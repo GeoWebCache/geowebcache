@@ -90,6 +90,7 @@
   <!-- WFS based services -->
   <bean id="gwcServiceWFS"
 	class="org.geowebcache.service.wfs.WFSService">
+	<constructor-arg ref="gwcStorageBroker"/>
 	<constructor-arg value="http://localhost:8080/geoserver/wfs" />
 	<constructor-arg value="" />
 	<constructor-arg value="600" />

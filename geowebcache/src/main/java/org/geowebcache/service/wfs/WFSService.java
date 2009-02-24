@@ -51,9 +51,12 @@ public class WFSService extends Service {
     
     private String regexFilter;
     
-    public WFSService(String urlString, String regexFilter, int readTimeout) {
+    private StorageBroker storageBroker;
+    
+    public WFSService(StorageBroker sb, String urlString, String regexFilter, int readTimeout) {
         super(SERVICE_WFS);
         this.urlString = urlString;
+        this.storageBroker = sb;
         
         if(regexFilter != null && regexFilter.length() == 0) {
             this.regexFilter = null;
@@ -88,9 +91,8 @@ public class WFSService extends Service {
                 + "ms, regex filter " + regexFilter);
     }
     
-    public ConveyorWFS getConveyor(HttpServletRequest request,
-            HttpServletResponse response, StorageBroker sb)
-            throws GeoWebCacheException {
+    public ConveyorWFS getConveyor(HttpServletRequest request,HttpServletResponse response)
+    throws GeoWebCacheException {
         
         String parameters = null;
         byte[] queryBlob = null;
@@ -108,7 +110,7 @@ public class WFSService extends Service {
         }
        
         // Request handler is set automatically
-        ConveyorWFS conv = new ConveyorWFS(sb, parameters, queryBlob, request, response);
+        ConveyorWFS conv = new ConveyorWFS(storageBroker, parameters, queryBlob, request, response);
         
         return conv;
     }
