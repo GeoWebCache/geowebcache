@@ -157,7 +157,6 @@
     <string>http://sigma.openplans.org/geoserver/wms</string>
   </wmsUrl>
   <wmsLayers>topp:states</wmsLayers>
-  <wmsStyles>polygon</wmsStyles>
   <metaWidthHeight>
     <int>3</int>
     <int>3</int>
@@ -174,6 +173,13 @@
   -->
   <expireCache>7200</expireCache>
   <expireClients>240</expireClients>
+  <modifiableParameters>
+    <modifiableParameter>
+      <key>STYLES</key>
+      <defaultValue></defaultValue>
+      <filter>^(|polygon|population)$</filter>
+    </modifiableParameter>
+  </modifiableParameters>
 </wmsLayer>
 </layers>
 </gwcConfiguration>

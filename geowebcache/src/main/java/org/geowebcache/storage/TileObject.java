@@ -22,6 +22,12 @@ public class TileObject extends StorageObject {
     
     long tile_id = -1L;
     
+    long parameters_id = -1;
+    
+    long layer_id = -1L;
+    
+    long format_id = -1L;
+    
     long[] xyz;
     
     String layer_name;
@@ -76,6 +82,32 @@ public class TileObject extends StorageObject {
     public void setId(long tile_id) {
         this.tile_id = tile_id;
     }
+
+    public long getFormatId() {
+        return this.format_id;
+    }
+    
+    public void setFormatId(long format_id) {
+        this.format_id = format_id;
+    }
+
+    public long getLayerId() {
+        return this.layer_id;
+    }
+    
+    public void setLayerId(long layer_id) {
+        this.layer_id = layer_id;
+    }
+
+    
+    public long getParametersId() {
+        return this.parameters_id;
+    }
+    
+    public void setParamtersId(long parameters_id) {
+        this.parameters_id = parameters_id;
+    }
+
     
     public long[] getXYZ() { 
         return xyz;

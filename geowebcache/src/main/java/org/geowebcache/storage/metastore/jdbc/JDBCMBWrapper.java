@@ -106,17 +106,17 @@ class JDBCMBWrapper {
             /** Easy ones */
             condCreate(conn,
                     "LAYERS", 
-                    "ID INT AUTO_INCREMENT PRIMARY KEY, VALUE VARCHAR(254) UNIQUE", 
+                    "ID BIGINT AUTO_INCREMENT PRIMARY KEY, VALUE VARCHAR(254) UNIQUE", 
                     "VALUE",
                     null);
             condCreate(conn,
                     "PARAMETERS", 
-                    "ID INT AUTO_INCREMENT PRIMARY KEY, VALUE VARCHAR(254) UNIQUE", 
+                    "ID BIGINT AUTO_INCREMENT PRIMARY KEY, VALUE VARCHAR(254) UNIQUE", 
                     "VALUE",
                     null);
             condCreate(conn,
                     "FORMATS", 
-                    "ID INT AUTO_INCREMENT PRIMARY KEY, VALUE VARCHAR(126) UNIQUE", 
+                    "ID BIGINT AUTO_INCREMENT PRIMARY KEY, VALUE VARCHAR(126) UNIQUE", 
                     "VALUE",
                     null);
             
@@ -179,7 +179,7 @@ class JDBCMBWrapper {
     private void checkWFSTable(Connection conn) throws SQLException {
         condCreate(conn,
                 "WFS", 
-                "WFS_ID BIGINT AUTO_INCREMENT PRIMARY KEY, PARAMETERS_ID INT, "
+                "WFS_ID BIGINT AUTO_INCREMENT PRIMARY KEY, PARAMETERS_ID BIGINT, "
                 +"QUERY_BLOB_MD5 VARCHAR(32), QUERY_BLOB_SIZE INT, "
                 +"BLOB_SIZE INT, "
                 +"CREATED BIGINT, ACCESS_LAST BIGINT, ACCESS_COUNT BIGINT",
@@ -190,9 +190,9 @@ class JDBCMBWrapper {
     private void checkTilesTable(Connection conn) throws SQLException {
         condCreate(conn,
                 "TILES", 
-                "TILE_ID BIGINT AUTO_INCREMENT PRIMARY KEY, LAYER_ID INT, "
-                + "X BIGINT, Y BIGINT, Z BIGINT, SRS_ID INT, FORMAT_ID INT, "
-                + "PARAMETERS_ID INT, BLOB_SIZE INT, "
+                "TILE_ID BIGINT AUTO_INCREMENT PRIMARY KEY, LAYER_ID BIGINT, "
+                + "X BIGINT, Y BIGINT, Z BIGINT, SRS_ID INT, FORMAT_ID BIGINT, "
+                + "PARAMETERS_ID BIGINT, BLOB_SIZE INT, "
                 + "CREATED BIGINT, ACCESS_LAST BIGINT, ACCESS_COUNT BIGINT",
                 "LAYER_ID, X, Y, Z, SRS_ID, FORMAT_ID, PARAMETERS_ID",
                 null);
@@ -228,38 +228,41 @@ class JDBCMBWrapper {
                 + " to " + JDBCMBWrapper.DB_VERSION);
     }
     
-    protected boolean getTile(Integer layer_id, long[] xyz, Integer format_id,
-            Integer parameters, TileObject tileObj) throws SQLException {
+    protected boolean getTile(TileObject stObj) throws SQLException {
 
         String query;
-        if(parameters == null) {
+        if(stObj.getParametersId() == -1L) {
             query = "SELECT TILE_ID,BLOB_SIZE,CREATED FROM TILES WHERE " 
-                + " LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? AND FORMAT_ID = ? "
-                + " AND PARAMETERS_ID IS NULL LIMIT 1 ";
+                + " LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? AND SRS_ID = ? " 
+                + " AND FORMAT_ID = ? AND PARAMETERS_ID IS NULL LIMIT 1 ";
         } else {
             query = "SELECT TILE_ID,BLOB_SIZE,CREATED FROM TILES WHERE " 
-                + " LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? AND FORMAT_ID = ? "
-                + " AND PARAMETERS_ID = ? LIMIT 1 ";
+                + " LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? AND SRS_ID = ? "
+                + " AND FORMAT_ID = ? AND PARAMETERS_ID = ? LIMIT 1 ";
         }
+        long[] xyz = stObj.getXYZ();
+        
         PreparedStatement prep = getConnection().prepareStatement(query);
-        prep.setInt(1, layer_id);
+        prep.setLong(1, stObj.getLayerId());
         prep.setLong(2, xyz[0]);
         prep.setLong(3, xyz[1]);
         prep.setLong(4, xyz[2]);
-        prep.setInt(5, format_id);
-        if(parameters != null) {
-            prep.setInt(6, parameters);
+        prep.setLong(5, stObj.getSrs());
+        prep.setLong(6, stObj.getFormatId());
+        
+        if(stObj.getParametersId() != -1L) {
+            prep.setLong(7, stObj.getParametersId());
         }
-
+        
         ResultSet rs = null;
         
         try {
             rs = prep.executeQuery();
 
             if (rs.first()) {
-                tileObj.setId(rs.getLong(1));
-                tileObj.setBlobSize(rs.getInt(2));
-                tileObj.setCreated(rs.getLong(3));
+                stObj.setId(rs.getLong(1));
+                stObj.setBlobSize(rs.getInt(2));
+                stObj.setCreated(rs.getLong(3));
                 return true;
             } else {
                 return false;
@@ -273,7 +276,7 @@ class JDBCMBWrapper {
         }
     }
     
-    protected boolean getWFS(Integer parameters, WFSObject wfsObj) 
+    protected boolean getWFS(Long parameters, WFSObject wfsObj) 
     throws SQLException {
         String query = null;
         PreparedStatement prep = null;
@@ -283,7 +286,7 @@ class JDBCMBWrapper {
                 + " PARAMETERS_ID = ? LIMIT 1 ";
              
             prep = getConnection().prepareStatement(query);
-            prep.setInt(1, parameters);
+            prep.setLong(1, parameters);
         } else {
             query = "SELECT WFS_ID,BLOB_SIZE,CREATED FROM WFS WHERE " 
                 + " QUERY_BLOB_MD5 LIKE ? AND QUERY_BLOB_SIZE = ? LIMIT 1";
@@ -315,26 +318,27 @@ class JDBCMBWrapper {
         }
     }
     
-    public void putTile(Integer layer_id, long[] xyz, Integer format_id,
-            Integer parameters, TileObject stObj) 
+    public void putTile(TileObject stObj) 
     throws SQLException, StorageException {
 
         String query = "INSERT INTO TILES (" 
                 + "  LAYER_ID,X,Y,Z,SRS_ID,FORMAT_ID,PARAMETERS_ID,BLOB_SIZE" 
                 + ") VALUES(?,?,?,?,?,?,?,?)";
         
+        long[] xyz = stObj.getXYZ();
+        
         PreparedStatement prep = getConnection().prepareStatement(
                 query, Statement.RETURN_GENERATED_KEYS);
-        prep.setInt(1, layer_id);
+        prep.setLong(1, stObj.getLayerId());
         prep.setLong(2, xyz[0]);
         prep.setLong(3, xyz[1]);
         prep.setLong(4, xyz[2]);
-        prep.setInt(5, stObj.getSrs());
-        prep.setInt(6, format_id);
-        if(parameters == null) {
-            prep.setNull(7, java.sql.Types.INTEGER);
+        prep.setLong(5, stObj.getSrs());
+        prep.setLong(6, stObj.getFormatId());
+        if(stObj.getParametersId() == -1L) {
+            prep.setNull(7, java.sql.Types.BIGINT);
         } else {
-            prep.setInt(7, parameters);
+            prep.setLong(7, stObj.getParametersId());
         }
         prep.setInt(8, stObj.getBlobSize());
         
@@ -347,7 +351,7 @@ class JDBCMBWrapper {
         }
     }
     
-    public void putWFS(Integer parameters, WFSObject stObj)
+    public void putWFS(Long parameters, WFSObject stObj)
             throws SQLException, StorageException {
 
         PreparedStatement prep = null;
@@ -360,7 +364,7 @@ class JDBCMBWrapper {
 
             prep = getConnection().prepareStatement(query,
                     Statement.RETURN_GENERATED_KEYS);
-            prep.setInt(1, parameters);
+            prep.setLong(1, parameters);
             prep.setInt(2, stObj.getBlobSize());
             prep.setLong(3, stObj.getCreated());
             

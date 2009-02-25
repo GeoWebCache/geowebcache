@@ -108,8 +108,8 @@ public class WMSService extends Service {
          
         if(modStrs == null) {
             modStrs = new String[2];
-            modStrs[0] = "";
-            modStrs[1] = "";
+            modStrs[0] = null;
+            modStrs[1] = null;
         }
                 
         MimeType mimeType = null;

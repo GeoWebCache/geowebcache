@@ -58,16 +58,14 @@ public class JDBCMetaBackend implements MetaStore {
     }
 
     public boolean get(TileObject stObj) throws StorageException {
-        long[] xyz = stObj.getXYZ();
-        Integer layer_id = idCache.getLayerId(stObj.getLayerName());
-        Integer format_id = idCache.getFormatId(stObj.getBlobFormat());
-        Integer parameters_id = null;
-        if(stObj.getParameters() != null) {
-            parameters_id = idCache.getParametersId(stObj.getParameters());
+        stObj.setLayerId(idCache.getLayerId(stObj.getLayerName()));
+        stObj.setFormatId(idCache.getFormatId(stObj.getBlobFormat()));
+        if(stObj.getParameters() != null && stObj.getParameters().length() != 0) {
+            stObj.setParamtersId(idCache.getParametersId(stObj.getParameters()));
         }
         
         try {
-            return wrpr.getTile(layer_id,xyz,format_id,parameters_id, stObj);
+            return wrpr.getTile(stObj);
         } catch (SQLException se) {
             log.error("Failed to get tile: " + se.getMessage());
         }
@@ -76,9 +74,9 @@ public class JDBCMetaBackend implements MetaStore {
     }
     
     public boolean get(WFSObject stObj) throws StorageException {
-        Integer parameters_id = null;
+        Long parameters_id = null;
         
-        if(stObj.getParameters() != null) {
+        if(stObj.getParameters() != null && stObj.getParameters().length() != 0) {
             parameters_id = idCache.getParametersId(stObj.getParameters());
         }
         
@@ -92,18 +90,15 @@ public class JDBCMetaBackend implements MetaStore {
     }
 
 
-
     public void put(TileObject stObj) throws StorageException {
-        long[] xyz = stObj.getXYZ();
-        Integer layer_id = idCache.getLayerId(stObj.getLayerName());
-        Integer format_id = idCache.getFormatId(stObj.getBlobFormat());
-        Integer parameters_id = null;
-        if(stObj.getParameters() != null) {
-            parameters_id = idCache.getParametersId(stObj.getParameters());
+        stObj.setLayerId(idCache.getLayerId(stObj.getLayerName()));
+        stObj.setFormatId(idCache.getFormatId(stObj.getBlobFormat()));
+        if(stObj.getParameters() != null && stObj.getParameters().length() != 0) {
+            stObj.setParamtersId(idCache.getParametersId(stObj.getParameters()));
         }
         
         try {
-            wrpr.putTile(layer_id,xyz,format_id,parameters_id, stObj);
+            wrpr.putTile(stObj);
         } catch (SQLException se) {
             log.error("Failed to put tile: " + se.getMessage());
         }
@@ -111,9 +106,9 @@ public class JDBCMetaBackend implements MetaStore {
     
 
     public void put(WFSObject stObj) throws StorageException {
-        Integer parameters_id = null;
+        Long parameters_id = null;
 
-        if (stObj.getParameters() != null) {
+        if (stObj.getParameters() != null && stObj.getParameters().length() != 0) {
             parameters_id = idCache.getParametersId(stObj.getParameters());
         }
 

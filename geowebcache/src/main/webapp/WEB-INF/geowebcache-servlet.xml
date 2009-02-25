@@ -91,7 +91,7 @@
   <bean id="gwcServiceWFS"
 	class="org.geowebcache.service.wfs.WFSService">
 	<constructor-arg ref="gwcStorageBroker"/>
-	<constructor-arg value="http://localhost:8080/geoserver/wfs" />
+	<constructor-arg value="http://sigma.openplans.org:8080/geoserver/wfs" />
 	<constructor-arg value="" />
 	<constructor-arg value="600" />
   </bean>

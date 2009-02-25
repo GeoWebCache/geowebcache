@@ -127,7 +127,7 @@ public class FileBlobStore implements BlobStore {
                     path, stObj.getLayerName(),
                     stObj.getXYZ(), stObj.getSrs(), 
                     MimeType.createFromFormat(stObj.getBlobFormat()), 
-                    stObj.getParameters());
+                    stObj.getParametersId());
         } catch (MimeException me) {
             log.error(me.getMessage());
         }

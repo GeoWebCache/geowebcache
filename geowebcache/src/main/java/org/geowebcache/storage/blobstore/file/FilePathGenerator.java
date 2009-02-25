@@ -22,7 +22,7 @@ import org.geowebcache.mime.MimeType;
 
 public class FilePathGenerator {
     protected static String[] tilePath(String prefix, String layerName, long[] tileIndex, int srsNumb, 
-            MimeType mimeType, String parameters) {
+            MimeType mimeType, long parameters_id) {
         long x = tileIndex[0];
         long y = tileIndex[1];
         long z = tileIndex[2];
@@ -32,8 +32,8 @@ public class FilePathGenerator {
         layerName = layerName.replace(':', '_').replace(' ', '_');
         
         String paramStr = "";
-        if(parameters != null) {
-            paramStr = "_" + Long.toHexString(parameters.hashCode());
+        if(parameters_id != -1L) {
+            paramStr = "_" + Long.toHexString(parameters_id);
         }
         
         long shift = z / 2;

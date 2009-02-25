@@ -35,21 +35,21 @@ class JDBCMBIdCache {
     public static int MAX_LAYERS = 100;
     public static int MAX_PARAMETERS = 100;
     
-    private final Map<String,Integer> formatsCache;
-    private final Map<String,Integer> layersCache;
-    private final Map<String,Integer> parametersCache;
+    private final Map<String,Long> formatsCache;
+    private final Map<String,Long> layersCache;
+    private final Map<String,Long> parametersCache;
     
     private final JDBCMBWrapper wrpr;
     
     protected JDBCMBIdCache(JDBCMBWrapper wrpr) {
-        formatsCache = new HashMap<String,Integer>();
-        layersCache = new HashMap<String,Integer>();
-        parametersCache = new HashMap<String,Integer>();
+        formatsCache = new HashMap<String,Long>();
+        layersCache = new HashMap<String,Long>();
+        parametersCache = new HashMap<String,Long>();
         
         this.wrpr = wrpr;
     }
     
-    private Integer getOrInsert(String key, Map<String, Integer> map, 
+    private Long getOrInsert(String key, Map<String, Long> map, 
             int maxSize, String table) 
     throws StorageException {
         if(key.length() > 254) {
@@ -57,7 +57,7 @@ class JDBCMBIdCache {
                     "Value is too big for table " + table + ":" + key );
         }
         
-        Integer res = null;
+        Long res = null;
         try {
             res = doSelect(table, key);
         
@@ -79,8 +79,8 @@ class JDBCMBIdCache {
     }
     
     /** Ask the database for next auto increment */
-    private Integer doInsert(String table, String key) {
-        Integer res = null;
+    private Long doInsert(String table, String key) {
+        Long res = null;
         
         try {
             String query = "INSERT INTO " + table + " (value) VALUES (?)";
@@ -96,7 +96,7 @@ class JDBCMBIdCache {
             
             rs = prep.getGeneratedKeys();
             rs.first();
-            res = Integer.valueOf(rs.getInt(1));
+            res = Long.valueOf(rs.getLong(1));
             rs.close();
             prep.close();
         } catch (SQLException se) {
@@ -107,7 +107,7 @@ class JDBCMBIdCache {
     }
     
     /** See whether the database knows anything */
-    private Integer doSelect(String table, String key) 
+    private Long doSelect(String table, String key) 
     throws SQLException {
         PreparedStatement prep = null;
         ResultSet rs = null;
@@ -121,7 +121,7 @@ class JDBCMBIdCache {
             rs = prep.executeQuery();
             
             if(rs.first()) {
-                return Integer.valueOf(Integer.valueOf(rs.getInt(1)));
+                return Long.valueOf(rs.getLong(1));
             }
         } catch (SQLException se) {
             log.error(se.getMessage());
@@ -135,9 +135,9 @@ class JDBCMBIdCache {
     }
 
     
-    protected Integer getFormatId(String format) throws StorageException {
+    protected Long getFormatId(String format) throws StorageException {
         synchronized (this.formatsCache) {
-            Integer ret = formatsCache.get(format);
+            Long ret = formatsCache.get(format);
             if (ret == null)
                 ret = getOrInsert(format, formatsCache, MAX_FORMATS, "FORMATS");
 
@@ -145,9 +145,9 @@ class JDBCMBIdCache {
         }
     }
     
-    protected Integer getLayerId(String layer) throws StorageException {
+    protected Long getLayerId(String layer) throws StorageException {
         synchronized (this.layersCache) {
-            Integer ret = layersCache.get(layer);
+            Long ret = layersCache.get(layer);
             if (ret == null)
                 ret = getOrInsert(layer, layersCache, MAX_LAYERS, "LAYERS");
 
@@ -155,9 +155,9 @@ class JDBCMBIdCache {
         }
     }
     
-    protected Integer getParametersId(String parameters) throws StorageException {
+    protected Long getParametersId(String parameters) throws StorageException {
         synchronized (this.parametersCache) {
-            Integer ret = parametersCache.get(parameters);
+            Long ret = parametersCache.get(parameters);
             if (ret == null)
                 ret = getOrInsert(parameters, parametersCache, MAX_PARAMETERS,"PARAMETERS");
 

@@ -244,8 +244,12 @@ public class WMSLayer extends TileLayer {
 
             // this.sortedModParams = new
             // ModifiableParameter[this.modifiableParameters.size()];
-
-            this.sortedModParams = (ModifiableParameter[]) tree.values().toArray();
+            int arSize = tree.values().size();
+            Iterator<ModifiableParameter> sortedIter = tree.values().iterator();
+            this.sortedModParams = new ModifiableParameter[arSize];
+            for(int i=0; i<arSize; i++) {
+                sortedModParams[i] = sortedIter.next();
+            }
 
             this.sortedModParamsKeys = new String[sortedModParams.length];
 
@@ -1013,7 +1017,7 @@ public class WMSLayer extends TileLayer {
             String value = values[i];
             ModifiableParameter modParam = this.sortedModParams[i];
             
-            if(value == null) {
+            if(value == null || value.length() == 0) {
                 strFull.append("&").append(modParam.getKey()).append("=").append(modParam.getDefaultValue());
             } else {
                 Matcher matcher = modParam.getMatcher(value);
