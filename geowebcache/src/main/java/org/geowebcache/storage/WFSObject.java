@@ -17,6 +17,9 @@
  */
 package org.geowebcache.storage;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -35,23 +38,19 @@ public class WFSObject extends StorageObject {
     
     String query_blob_md5;
     
+    InputStream wfsInputStream;
+     
     public static WFSObject createCompleteWFSObject(
-            String parameters, byte[] blob) {
+            String parameters) {
         WFSObject obj = createQueryWFSObject(parameters);
-        obj.blob = blob;
-        if(blob != null) 
-            obj.blob_size = blob.length;
         
         obj.created = System.currentTimeMillis();
         return obj;
     }
     
     public static WFSObject createCompleteWFSObject(
-            byte[] queryBlob, byte[] blob) {
+            byte[] queryBlob) {
         WFSObject obj = createQueryWFSObject(queryBlob);
-        obj.blob = blob;
-        if(blob != null) 
-            obj.blob_size = blob.length;
         
         obj.created = System.currentTimeMillis();
         return obj;
@@ -91,6 +90,15 @@ public class WFSObject extends StorageObject {
     public String getQueryBlobMd5() {
         return query_blob_md5;
     }
+    
+    public InputStream getInputStream() {
+        return wfsInputStream;
+    }
+    
+    public void setInputStream(InputStream is) {
+        wfsInputStream = is;
+    }
+ 
     
     public int getQueryBlobSize() {
         return query_blob_size;

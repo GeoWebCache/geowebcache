@@ -238,7 +238,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         // Check where this should be dispatched
         if (conv.reqHandler == Conveyor.RequestHandler.SERVICE) {
             // A3 The service object takes it from here
-            service.handleRequest(tileLayerDispatcher, conv);
+            service.handleRequest(conv);
 
         } else {
             ConveyorTile convTile = (ConveyorTile) conv;

@@ -37,6 +37,8 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     
     protected TileLayer tileLayer = null;
     
+    TileObject stObj = null;
+    
     String fullParameters;
     
     public ConveyorTile(StorageBroker sb, String layerId, HttpServletRequest servletReq, HttpServletResponse servletResp) {
@@ -131,6 +133,14 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         this.srs = srs;
     }
 
+    public byte[] getContent() {
+        return stObj.getBlob();
+    }
+    
+    public void setContent(byte[] payload) {
+        stObj.setBlob(payload);
+    }
+    
     public boolean persist() throws GeoWebCacheException {
         return storageBroker.put((TileObject) stObj);
     }

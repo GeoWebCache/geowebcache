@@ -28,7 +28,7 @@ public abstract class StorageObject {
     
     int blob_size;
     
-    byte[] blob;
+
 
     /** 
      * @return the unique id for this object (within the type), -1 if it has not been set
@@ -39,10 +39,6 @@ public abstract class StorageObject {
      * @return the name of the type of object. Identical for all objects of a class.
      */
     abstract public String getType();
-    
-    public byte[] getBlob() {
-        return blob;
-    }
     
     public int getBlobSize() {
         return blob_size;
@@ -60,25 +56,11 @@ public abstract class StorageObject {
         this.created = created;
     }
     
-    public void setBlob(byte[] blob) {
-        if(blob != null) {
-            this.blob_size = blob.length;
-        } else {
-            this.blob_size = -1;
-        }
-        
-        this.blob = blob;
-    }
-    
     public void setBlobFormat(String blobFormat) {
         this.blob_format = blobFormat;
     }
     
-    public void setBlobSize(int blob_size) { //throws StorageException {
-        if(this.blob == null) {
-            this.blob_size = blob_size;
-        }// else {
-        //    throw new StorageException("Cannot set blob size if blob is not null");
-        //}
+    public void setBlobSize(int blob_size) {
+        this.blob_size = blob_size;
     }
 }

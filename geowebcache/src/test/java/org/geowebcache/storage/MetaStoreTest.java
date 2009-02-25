@@ -24,7 +24,7 @@ import org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend;
 import junit.framework.TestCase;
 
 public class MetaStoreTest extends TestCase {
-    public static String TEST_DB_NAME = "gwcTestMetaStore";
+    public static final String TEST_DB_NAME = "gwcTestMetaStore";
     
     public void testTile() throws Exception {
         byte[] bytes = null;
@@ -62,7 +62,7 @@ public class MetaStoreTest extends TestCase {
             MetaStore ms = setup();
 
             bytes = "1 2 3 Test".getBytes();
-            WFSObject wo = WFSObject.createCompleteWFSObject("a=æ&å=Ø", bytes);
+            WFSObject wo = WFSObject.createCompleteWFSObject("a=æ&å=Ø");
             ms.put(wo);
 
             wo2 = WFSObject.createQueryWFSObject("a=æ&å=Ø");
@@ -89,7 +89,7 @@ public class MetaStoreTest extends TestCase {
 
             bytes = "1 2 3 Test".getBytes();
             queryBytes = "1 2 3 4 5 6 Test".getBytes();
-            wo = WFSObject.createCompleteWFSObject(queryBytes, bytes);
+            wo = WFSObject.createCompleteWFSObject(queryBytes);
             ms.put(wo);
 
             wo2 = WFSObject.createQueryWFSObject(queryBytes);

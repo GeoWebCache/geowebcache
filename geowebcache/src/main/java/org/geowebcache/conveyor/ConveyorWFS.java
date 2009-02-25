@@ -17,6 +17,9 @@
  */
 package org.geowebcache.conveyor;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -30,39 +33,49 @@ import org.geowebcache.storage.WFSObject;
 public class ConveyorWFS extends Conveyor {
     private static Log log = LogFactory.getLog(org.geowebcache.conveyor.ConveyorWFS.class);
     
+    WFSObject stObj = null;
+    
     public ConveyorWFS(StorageBroker sb, String parameters, byte[] queryBlob, 
             HttpServletRequest srq, HttpServletResponse srp) {
         super(sb, srq, srp);
         super.setRequestHandler(Conveyor.RequestHandler.SERVICE);
         
         if(queryBlob != null) {
-            super.stObj = WFSObject.createQueryWFSObject(queryBlob);
+            stObj = WFSObject.createQueryWFSObject(queryBlob);
         } else if(parameters != null) {
-            super.stObj = WFSObject.createQueryWFSObject(parameters);
+            stObj = WFSObject.createQueryWFSObject(parameters);
         }
     }
     
     public byte[] getQueryBlob() {
-        return ((WFSObject) stObj).getQueryBlob();
+        return stObj.getQueryBlob();
     }
     
     public boolean persist() throws GeoWebCacheException {
-        return storageBroker.put((WFSObject) stObj);
+        return storageBroker.put(stObj);
     }
     
     public String getMimeTypeString() {
-        return ((WFSObject) stObj).getBlobFormat();
+        return stObj.getBlobFormat();
     }
     
     public void setMimeTypeString(String mimeType) {
-        ((WFSObject) stObj).setBlobFormat(mimeType);
+        stObj.setBlobFormat(mimeType);
     }
     
     public boolean retrieve(int maxAge) throws GeoWebCacheException {
         try {
-            return storageBroker.get((WFSObject) stObj);
+            return storageBroker.get(stObj);
         } catch (StorageException se) {
             throw new GeoWebCacheException(se.getMessage());
         }
+    }
+    
+    public InputStream getInputStream() {
+        return stObj.getInputStream();
+    }
+    
+    public void setInputStream(InputStream is) {
+        stObj.setInputStream(is);
     }
 }

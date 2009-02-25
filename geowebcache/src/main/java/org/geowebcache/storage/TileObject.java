@@ -22,6 +22,8 @@ public class TileObject extends StorageObject {
     
     long tile_id = -1L;
     
+    byte[] blob;
+    
     long parameters_id = -1;
     
     long layer_id = -1L;
@@ -75,6 +77,20 @@ public class TileObject extends StorageObject {
         
     }
     
+    public byte[] getBlob() {
+        return blob;
+    }
+    
+    public void setBlob(byte[] blob) {
+        if(blob != null) {
+            this.blob_size = blob.length;
+        } else {
+            this.blob_size = -1;
+        }
+        
+        this.blob = blob;
+    }
+        
     public long getId() {
         return tile_id;
     }

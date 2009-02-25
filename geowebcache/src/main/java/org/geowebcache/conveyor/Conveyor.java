@@ -35,7 +35,7 @@ public abstract class Conveyor {
     
     protected MimeType mimeType = null;
     
-    protected StorageObject stObj = null;
+    //protected StorageObject stObj = null;
     
     protected long status = 0;
     
@@ -108,13 +108,5 @@ public abstract class Conveyor {
     
     public StorageBroker getStorageBroker() {
         return storageBroker;
-    }
-    
-    public byte[] getContent() {
-        return stObj.getBlob();
-    }
-    
-    public void setContent(byte[] payload) {
-        stObj.setBlob(payload);
     }
 }

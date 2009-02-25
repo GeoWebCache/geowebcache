@@ -70,19 +70,10 @@ public class StorageBroker {
                     "metaStore.get() returned true, but did not set an id on the object");
         }
 
-        if (wfsObj.blob_size > 0) {
-            byte[] blob = blobStore.get(wfsObj);
-            if (blob == null) {
-                throw new StorageException("Blob was expected to have size "
-                        + wfsObj.blob_size + " but was null.");
-            } else if (blob.length != wfsObj.blob_size) {
-                throw new StorageException("Blob was expected to have size "
-                        + wfsObj.blob_size + " but was " + blob.length);
-            }
-
-            wfsObj.blob = blob;
+        if(blobStore.get(wfsObj) == 0) {
+            throw new StorageException("The blob for WFS " + Long.toString(wfsObj.getId()) + " was of size 0");
         }
-
+        
         return true;
     }
     

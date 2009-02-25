@@ -39,7 +39,7 @@ public interface BlobStore {
      * @throws StorageException
      */
     public byte[] get(TileObject obj) throws StorageException;
-    public byte[] get(WFSObject obj) throws StorageException;
+    public long get(WFSObject obj) throws StorageException;
     
     /**
      * Store blob. Calls getBlob() on passed object, does not modify the object.

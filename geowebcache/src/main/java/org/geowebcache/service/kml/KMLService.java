@@ -193,7 +193,7 @@ public class KMLService extends Service {
     /**
      * Let the service handle the request 
      */
-    public void handleRequest(TileLayerDispatcher tLD, Conveyor conv)
+    public void handleRequest(Conveyor conv)
     throws GeoWebCacheException {
         
         ConveyorKMLTile tile = (ConveyorKMLTile) conv;
@@ -204,7 +204,7 @@ public class KMLService extends Service {
         } else if (tile.getHint() == HINT_SITEMAP_GLOBAL) {
             layer = null;  
         } else {
-            layer = tLD.getTileLayer(tile.getLayerId());
+            layer = tld.getTileLayer(tile.getLayerId());
             
             if(layer == null) {
                 throw new ServiceException(
@@ -214,7 +214,7 @@ public class KMLService extends Service {
         tile.setTileLayer(layer);
         
         if(tile.getHint() == HINT_SITEMAP_LAYER || tile.getHint() == HINT_SITEMAP_GLOBAL) {
-            KMLSiteMap sm = new KMLSiteMap(tile,tLD);
+            KMLSiteMap sm = new KMLSiteMap(tile,tld);
             try {
                 sm.write();
             } catch (IOException ioe) {
@@ -306,7 +306,7 @@ public class KMLService extends Service {
         tile.setContent(xml.getBytes());
         tile.setMimeType(XMLMime.kml);
         tile.setStatus(200);
-        writeResponse(tile,true);
+        writeTileResponse(tile,true);
     }
 
     /**
@@ -424,7 +424,7 @@ public class KMLService extends Service {
             tileLayer.putTile(tile);
         }
 
-        writeResponse(tile, true);
+        writeTileResponse(tile, true);
     }
     
     /**

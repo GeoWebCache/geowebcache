@@ -101,7 +101,7 @@ public class GMapsConverter extends Service {
     /** 
      * NB The following code is shared across Google Maps, Mobile Google Maps and Virtual Earth
      */
-    public void handleRequest(TileLayerDispatcher tLD, ConveyorTile tile)
+    public void handleRequest(ConveyorTile tile)
             throws GeoWebCacheException {
         if (tile.getHint() != null) {
             boolean requestTiled = true;
@@ -112,7 +112,7 @@ public class GMapsConverter extends Service {
                 throw new GeoWebCacheException("Hint " + tile.getHint() + " is not known.");
             }
 
-            TileLayer tl = tLD.getTileLayer(tile.getLayerId());
+            TileLayer tl = tld.getTileLayer(tile.getLayerId());
 
             if(tl == null) {
                 throw new GeoWebCacheException("Unknown layer " + tile.getLayerId());
@@ -126,7 +126,7 @@ public class GMapsConverter extends Service {
             tile.setTileLayer(tl);
             tl.getNoncachedTile(tile, requestTiled);
             
-            Service.writeResponse(tile, false);
+            Service.writeTileResponse(tile, false);
         }
     }
 

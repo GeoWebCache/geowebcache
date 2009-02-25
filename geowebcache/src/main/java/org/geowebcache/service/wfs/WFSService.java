@@ -18,6 +18,7 @@
 package org.geowebcache.service.wfs;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -135,21 +136,31 @@ public class WFSService extends Service {
             throw new GeoWebCacheException("Sorry. The request violates the filter.");
     }
     
-    public void handleRequest(TileLayerDispatcher tLD, Conveyor genConv) 
-    throws GeoWebCacheException {
+    public void handleRequest(Conveyor genConv) throws GeoWebCacheException {
         ConveyorWFS conv = (ConveyorWFS) genConv;
-        if(! conv.retrieve(-1)) {
-            //TODO Replace with hash-based locking
-            synchronized(this) {
-                if(! conv.retrieve(-1)) {
-                    forwardRequest(conv);
-                    conv.persist();
+
+        try {
+            if (!conv.retrieve(-1)) {
+                // TODO Replace with hash-based locking
+                synchronized (this) {
+                    if (!conv.retrieve(-1)) {
+                        forwardRequest(conv);
+                        conv.persist();
+                    }
                 }
             }
-
+            super.writeWFSResponse(conv, false);
+            
+        } finally {
+            InputStream is = conv.getInputStream();
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    throw new GeoWebCacheException(e.getMessage());
+                }
+            }
         }
-        
-        super.writeResponse(conv, false);
     }
 
     /**
@@ -191,9 +202,6 @@ public class WFSService extends Service {
         } catch (IOException ioe) {
             throw new GeoWebCacheException(
                     "Unable to communicate with WFS backend " + ioe.getMessage());
-        } finally {
-            if (conxn != null)
-                conxn.disconnect();
         }
     }
     
@@ -210,41 +218,43 @@ public class WFSService extends Service {
         int contentLength = conxn.getContentLength();
         String contentType = conxn.getContentType();
         
-        byte[] data = ServletUtils.readStream(
-                conxn.getInputStream(),
-                50 * 1024, 1024);
-
-        if (data == null || data.length == 0
-                || (contentLength > 0 && contentLength != data.length) ) {
-            String dataDesc;
-            if (data == null) {
-                dataDesc = "null";
-            } else {
-                dataDesc = "byte[" + data.length + "]";
-            }
-
-            throw new GeoWebCacheException(
-                    "Data: " + dataDesc + ", HTTP Content-Lenght: " + contentLength);
-        }
+        conv.setInputStream(conxn.getInputStream());
+//        byte[] data = ServletUtils.readStream(
+//                conxn.getInputStream(),
+//                50 * 1024, 1024);
+//
+//
+//        if (data == null || data.length == 0
+//                || (contentLength > 0 && contentLength != data.length) ) {
+//            String dataDesc;
+//            if (data == null) {
+//                dataDesc = "null";
+//            } else {
+//                dataDesc = "byte[" + data.length + "]";
+//            }
+//
+//            throw new GeoWebCacheException(
+//                    "Data: " + dataDesc + ", HTTP Content-Lenght: " + contentLength);
+//        }
         
         // Check whether this is an exception report
-        if(contentType.startsWith("text/xml")) {
-            String testStr = "<?xml version=\"1.0\" ?>\n<ServiceExceptionReport";
-            int byteLength = testStr.getBytes().length;
-            
-            if(byteLength < data.length) {
-                byte[] tmp = new byte[byteLength];
-                System.arraycopy(data, 0, tmp, 0, byteLength);
-                String tmpStr = new String(tmp);
-                if(tmpStr.contains("xception")) {
-                    throw new GeoWebCacheException(
-                            "Not caching response because it is believed to be an "
-                            + " exception: " + tmpStr + "(Excerpt may use XML tags, use \"view source\")");
-                }                                     
-            }
-        }
-        
-        conv.setContent(data);
+//        if(contentType.startsWith("text/xml")) {
+//            String testStr = "<?xml version=\"1.0\" ?>\n<ServiceExceptionReport";
+//            int byteLength = testStr.getBytes().length;
+//            
+//            if(byteLength < data.length) {
+//                byte[] tmp = new byte[byteLength];
+//                System.arraycopy(data, 0, tmp, 0, byteLength);
+//                String tmpStr = new String(tmp);
+//                if(tmpStr.contains("xception")) {
+//                    throw new GeoWebCacheException(
+//                            "Not caching response because it is believed to be an "
+//                            + " exception: " + tmpStr + "(Excerpt may use XML tags, use \"view source\")");
+//                }                                     
+//            }
+//        }
+//        
+//        conv.setContent(data);
         conv.setMimeTypeString(contentType);
     }
 }

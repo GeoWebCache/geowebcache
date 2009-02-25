@@ -143,16 +143,16 @@ public class WMSService extends Service {
                 modStrs[0], modStrs[1], request, response);
     }
 
-    public void handleRequest(TileLayerDispatcher tLD, Conveyor conv)
+    public void handleRequest(Conveyor conv)
             throws GeoWebCacheException {
 
         ConveyorTile tile = (ConveyorTile) conv;
         
         if (tile.getHint() != null) {
             if(tile.getHint().equalsIgnoreCase("getcapabilities")) {
-                WMSRequests.handleGetCapabilities(tLD, tile.servletResp);
+                WMSRequests.handleGetCapabilities(tld, tile.servletResp);
             } else {
-                WMSRequests.handleProxy(tLD, tile);
+                WMSRequests.handleProxy(tld, tile);
             }
         } else {
             throw new GeoWebCacheException(

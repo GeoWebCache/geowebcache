@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -99,10 +100,14 @@ public class FileBlobStore implements BlobStore {
         return readFile(fh);
     }
 
-    public byte[] get(WFSObject stObj) throws StorageException {
+    public long get(WFSObject stObj) throws StorageException {
         // Should we check and compare the blobs?
         File fh = getFileHandleWFS(stObj, false, false);
-        return readFile(fh);
+        //return readFile(fh);
+        
+        stObj.setInputStream(getFileInputStream(fh));
+        
+        return fh.length();
     }
     
     public void put(TileObject stObj) throws StorageException {
@@ -117,7 +122,11 @@ public class FileBlobStore implements BlobStore {
         }
         
         File responsefh = getFileHandleWFS(stObj, false, true);
-        writeFile(responsefh,stObj.getBlob());
+        writeFile(responsefh,stObj.getInputStream());
+        
+        InputStream is = getFileInputStream(responsefh);
+
+        stObj.setInputStream(is);
     }
     
     private File getFileHandleTile(TileObject stObj, boolean create) {
@@ -185,6 +194,17 @@ public class FileBlobStore implements BlobStore {
         return blob;
     }
     
+    private InputStream getFileInputStream(File fh) throws StorageException {
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(fh);
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+        
+        return fis;
+    }
+    
     private void writeFile(File fh, byte[] blob) throws StorageException {
         // Open the output stream
         FileOutputStream fos;
@@ -211,6 +231,42 @@ public class FileBlobStore implements BlobStore {
         }
     }
     
+    private int writeFile(File fh, InputStream is) throws StorageException {
+        // Open the output stream
+        FileOutputStream fos;
+        try {
+            fos = new FileOutputStream(fh);
+        } catch (FileNotFoundException ioe) {
+            throw new StorageException(ioe.getMessage() + " for "
+                    + fh.getAbsolutePath());
+        }
+
+        byte[] buffer = new byte[2048];
+        int read = 0;
+        int total = 0;
+        try {
+            while(read != -1) {
+                 read = is.read(buffer);
+                 if(read != -1) {
+                     fos.write(buffer, 0, read);
+                     total += read;
+                 }
+            }
+        } catch (IOException ioe) {
+            throw new StorageException(ioe.getMessage() + " for "
+                    + fh.getAbsolutePath());
+        } finally {
+            try {
+                fos.close();
+                is.close();
+            } catch (IOException ioe) {
+                throw new StorageException(ioe.getMessage() + " for "
+                        + fh.getAbsolutePath());
+            }
+        }
+        return read;
+    }
+       
     public void clear() throws StorageException {
         throw new StorageException("Not implemented yet!");
     }

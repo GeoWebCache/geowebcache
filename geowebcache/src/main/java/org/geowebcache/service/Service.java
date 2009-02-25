@@ -17,6 +17,7 @@
 package org.geowebcache.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletRequest;
@@ -67,7 +68,7 @@ public abstract class Service {
                 +"getConveyor(HttpSerlvetRequest,HttpServletResponse)" );
     }
     
-    public void handleRequest(TileLayerDispatcher tLD, Conveyor conv) 
+    public void handleRequest(Conveyor conv) 
     throws GeoWebCacheException {
         throw new RuntimeException(
                 "Service for " + pathName  + " needs to override "
@@ -99,18 +100,13 @@ public abstract class Service {
     }
     
     
-    protected static void writeResponse(Conveyor conv, boolean writeExpiration) {
+    protected static void writeTileResponse(ConveyorTile conv, boolean writeExpiration) {
         HttpServletResponse response = conv.servletResp;
         byte[] data = conv.getContent();
 
-        String mimeStr = null;
-        if(conv instanceof ConveyorWFS) {
-            mimeStr = ((ConveyorWFS) conv).getMimeTypeString();
-        } else {
-            mimeStr = conv.getMimeType().getMimeType();
-        }
-         
-
+        String mimeStr = conv.getMimeType().getMimeType();
+       
+        
         response.setCharacterEncoding("utf-8");
 
         if (conv instanceof ConveyorTile) {
@@ -144,6 +140,39 @@ public abstract class Service {
             os.write(data);
         } catch (IOException ioe) {
             // Do nothing...
+        }
+    }
+    
+    protected static void writeWFSResponse(ConveyorWFS conv,
+            boolean writeExpiration) {
+        HttpServletResponse response = conv.servletResp;
+        
+        String mimeStr = ((ConveyorWFS) conv).getMimeTypeString();
+
+        response.setCharacterEncoding("utf-8");
+
+        response.setContentType(mimeStr);
+
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            is = conv.getInputStream();
+            os = response.getOutputStream();
+
+            byte[] buffer = new byte[2048];
+            int read = 0;
+
+            while (read != -1) {
+                read = is.read(buffer);
+                if(read != -1) {
+                    os.write(buffer, 0, read);
+                }
+            }
+        } catch (IOException ioe) {
+            // Do nothing...
+        } finally {
+            try{ if(is != null) is.close(); } catch (IOException ioe) {   }
+            try{ if(os != null) os.close(); } catch (IOException ioe) {   }
         }
     }
     

@@ -9,17 +9,17 @@ import org.h2.tools.DeleteDbFiles;
 import junit.framework.TestCase;
 
 public class StorageBrokerTest extends TestCase {
-    public static String TEST_DB_NAME = "gwcTestStorageBroker";
+    public static final String TEST_DB_NAME = "gwcTestStorageBroker";
     
-    public static String TEST_BLOB_DIR_NAME = "gwcTestBlobs";
+    public static final String TEST_BLOB_DIR_NAME = "gwcTestBlobs";
     
-    public static int THREAD_COUNT = 4;
+    public static final int THREAD_COUNT = 4;
     
-    public static int TILE_GET_COUNT = 1000;
+    public static final int TILE_GET_COUNT = 1000;
     
-    public static int TILE_PUT_COUNT = 1000;
+    public static final int TILE_PUT_COUNT = 1000;
     
-    public static boolean RUN_PERFORMANCE_TESTS = false;
+    public static final boolean RUN_PERFORMANCE_TESTS = false;
     
     public void testTileSingleThread() throws Exception {
         if(! RUN_PERFORMANCE_TESTS)

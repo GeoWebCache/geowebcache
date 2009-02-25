@@ -17,7 +17,9 @@
  */
 package org.geowebcache.storage;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.util.Arrays;
 
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
@@ -25,7 +27,7 @@ import org.geowebcache.storage.blobstore.file.FileBlobStore;
 import junit.framework.TestCase;
 
 public class BlobStoreTest extends TestCase {
-    public static String TEST_BLOB_DIR_NAME = "gwcTestBlobs";
+    public static final String TEST_BLOB_DIR_NAME = "gwcTestBlobs";
     
     public void testTile() throws Exception {
         FileBlobStore fbs = setup();
@@ -52,7 +54,8 @@ public class BlobStoreTest extends TestCase {
         FileBlobStore fbs = setup();
         
         byte[] bytes = "1 2 3 Test".getBytes();
-        WFSObject wo = WFSObject.createCompleteWFSObject("a=æ&å=Ø", bytes);
+        WFSObject wo = WFSObject.createCompleteWFSObject("a=æ&å=Ø");
+        wo.setInputStream(new ByteArrayInputStream(bytes));
         wo.setId(123123123);
         
         fbs.put(wo);
@@ -60,11 +63,24 @@ public class BlobStoreTest extends TestCase {
         WFSObject wo2 = WFSObject.createQueryWFSObject("a=æ&å=Ø");
         wo2.setId(123123123);
         
-        byte[] resp = fbs.get(wo2);
+        fbs.get(wo2);
         
-        wo2.setBlob(resp);
+        InputStream is = new ByteArrayInputStream(bytes);
+        InputStream is2 = wo2.getInputStream();
         
-        assertTrue(Arrays.equals(wo.getBlob(), wo2.getBlob()));
+        int read1 = 0;
+        int read2 = 0;
+        byte[] tmp1 = new byte[1];
+        byte[] tmp2 = new byte[1];
+        while(read1 != -1 && read2 != -1){
+            read1 = is.read(tmp1);
+            read2 = is2.read(tmp2);
+            
+            if(read1 != -1)
+                assertEquals(tmp1[0],tmp2[0]);
+        }
+        
+        assertEquals(read1,read2);
     }
     
     public void testWFSBlob() throws Exception {
@@ -73,7 +89,8 @@ public class BlobStoreTest extends TestCase {
         byte[] bytes = "1 2 3 Test".getBytes();
         byte[] queryBlob = "'ad;wer0sv234".getBytes();
         
-        WFSObject wo = WFSObject.createCompleteWFSObject(queryBlob, bytes);
+        WFSObject wo = WFSObject.createCompleteWFSObject(queryBlob);
+        wo.setInputStream(new ByteArrayInputStream(bytes));
         wo.setId(123123123);
         
         fbs.put(wo);
@@ -81,10 +98,24 @@ public class BlobStoreTest extends TestCase {
         WFSObject wo2 = WFSObject.createQueryWFSObject(queryBlob);
         wo2.setId(123123123);
         
-        byte[] resp = fbs.get(wo2);
-        wo2.setBlob(resp);
+        fbs.get(wo2);
         
-        assertTrue(Arrays.equals(wo.getBlob(), wo2.getBlob()));
+        InputStream is = new ByteArrayInputStream(bytes);
+        InputStream is2 = wo2.getInputStream();
+        
+        int read1 = 0;
+        int read2 = 0;
+        byte[] tmp1 = new byte[1];
+        byte[] tmp2 = new byte[1];
+        while(read1 != -1 && read2 != -1){
+            read1 = is.read(tmp1);
+            read2 = is2.read(tmp2);
+            
+            if(read1 != -1)
+                assertEquals(tmp1[0],tmp2[0]);
+        }
+        
+        assertEquals(read1,read2);
     }
     
     public FileBlobStore setup() throws Exception {

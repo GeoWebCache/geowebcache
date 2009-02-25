@@ -96,7 +96,7 @@ public class RESTfulDefinitionSource implements
         int counter = 0;
         String line;
 
-        List mappings = new ArrayList();
+        List mappings = new ArrayList<String>();
 
         while (true) {
             counter++;
