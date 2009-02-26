@@ -29,8 +29,8 @@
   <bean id="gwcTLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
     <property name="config">
       <list>
-	    <ref bean="gwcXmlConfig" />
 	    <ref bean="gwcWMSConfig" />
+	    <ref bean="gwcXmlConfig" />
       </list>
     </property>
   </bean>

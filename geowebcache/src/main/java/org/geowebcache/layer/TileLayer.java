@@ -17,18 +17,23 @@
 package org.geowebcache.layer;
 
 import java.io.IOException;
-
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.wms.BBOX;
-import org.geowebcache.conveyor.ConveyorTile;
 
 public abstract class TileLayer {
+    private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayer.class);
 
     protected String name;
 
@@ -391,4 +396,40 @@ public abstract class TileLayer {
     public abstract void putTile(ConveyorTile tile) throws GeoWebCacheException;
 
     public abstract void setExpirationHeader(HttpServletResponse response);
+    
+    /**
+     * Merges the information of the the passed in layer into this layer. 
+     * In cases where both layers have grid definitions for the same SRS the 
+     * definition associated with the layer in the argument prevails. 
+     * 
+     * @param otherLayer
+     */
+    public void mergeWith(TileLayer otherLayer) throws GeoWebCacheException {
+        log.warn("Merging grids, formats and filters of " + this.name);
+
+        if (otherLayer.mimeFormats != null) {
+            Iterator<String> iter = otherLayer.mimeFormats.iterator();
+            while (iter.hasNext()) {
+                String format = iter.next();
+                if (!this.supportsFormat(format)) {
+                    this.addFormat(format);
+                }
+            }
+        }
+
+        if (otherLayer.grids != null && otherLayer.grids.size() > 0) {
+            Iterator<Entry<SRS, Grid>> iter = otherLayer.grids.entrySet().iterator();
+
+            // We are just adding or overwriting as needed
+            while (iter.hasNext()) {
+                Entry<SRS, Grid> entry = iter.next();
+                this.grids.put(entry.getKey(), entry.getValue());
+            }
+        }
+        
+        if(this instanceof WMSLayer) {
+            WMSLayer thisWMSLayer = (WMSLayer) this;
+            thisWMSLayer.mergeWith((WMSLayer) otherLayer);
+        }
+    }
 }

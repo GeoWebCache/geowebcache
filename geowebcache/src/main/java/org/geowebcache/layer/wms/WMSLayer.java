@@ -20,18 +20,17 @@ package org.geowebcache.layer.wms;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Matcher;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -40,11 +39,11 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.ParameterFilter;
-import org.geowebcache.filter.RegexParameterFilter;
+import org.geowebcache.layer.Grid;
+import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.GridLocObj;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.Grid;
 import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
@@ -53,7 +52,6 @@ import org.geowebcache.storage.TileObject;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
-import org.geowebcache.layer.GridCalculator;
 
 public class WMSLayer extends TileLayer {
     // needed in configuration object written to xml
@@ -1039,4 +1037,19 @@ public class WMSLayer extends TileLayer {
         
         return paramStrs;
     }
+    
+    
+    public void mergeWith(WMSLayer otherLayer) throws GeoWebCacheException {
+        if (otherLayer.parameterFilters != null) {
+            if (this.parameterFilters != null) {
+                Iterator<ParameterFilter> iter = otherLayer.parameterFilters.iterator();
+                while (iter.hasNext()) {
+                    this.parameterFilters.add(iter.next());
+                }
+            } else {
+                this.parameterFilters = otherLayer.parameterFilters;
+            }
+        }
+    }
+    
 }
