@@ -173,13 +173,22 @@
   -->
   <expireCache>7200</expireCache>
   <expireClients>240</expireClients>
-  <modifiableParameters>
+  <!-- modifiableParameters>
     <modifiableParameter>
       <key>STYLES</key>
       <defaultValue></defaultValue>
-      <filter>^(|polygon|population)$</filter>
+      <filter class="RegexParameterFilter">
+          <regex></regex>
+      </filter>
     </modifiableParameter>
-  </modifiableParameters>
+  </modifiableParameters -->
+  <parameterFilters>
+    <regexParameterFilter>
+      <key>STYLES</key>
+      <defaultValue></defaultValue>
+      <regex>^(|polygon|population)$</regex>
+    </regexParameterFilter>
+  </parameterFilters>
 </wmsLayer>
 </layers>
 </gwcConfiguration>

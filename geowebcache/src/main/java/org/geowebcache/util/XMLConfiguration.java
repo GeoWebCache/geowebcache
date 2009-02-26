@@ -47,11 +47,13 @@ import javax.xml.validation.Validator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.filter.FloatParameterFilter;
+import org.geowebcache.filter.ParameterFilter;
+import org.geowebcache.filter.RegexParameterFilter;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.rest.seed.SeedRequest;
-import org.geowebcache.service.wms.ModifiableParameter;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 import org.springframework.beans.BeansException;
@@ -231,10 +233,13 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         xs.alias("grid", Grid.class);
         xs.alias("mimeFormats", new ArrayList<String>().getClass());
         xs.alias("srs", org.geowebcache.layer.SRS.class);        
-        xs.alias("modifiableParameters", new ArrayList<ModifiableParameter>().getClass());
-        xs.alias("modifiableParameter", ModifiableParameter.class);
+        xs.alias("parameterFilters", new ArrayList<ParameterFilter>().getClass());
+        xs.alias("parameterFilter", ParameterFilter.class);
         xs.alias("seedRequest", SeedRequest.class);
-        
+        //xs.alias("parameterFilter", ParameterFilter.class);
+        xs.alias("floatParameterFilter", FloatParameterFilter.class);
+        xs.alias("regexParameterFilter", RegexParameterFilter.class);
+        //xs.alias("regex", String.class);
         return xs;
     }
 

@@ -14,37 +14,14 @@
  * 
  * @author Arne Kepp, The Open Planning Project, Copyright 2009
  */
-package org.geowebcache.service.wms;
+package org.geowebcache.filter;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.geowebcache.GeoWebCacheException;
 
-public class ModifiableParameter {
-    String key;
-    String defaultValue;
-    String filter;
-    
-    transient Pattern pat;
-    
-    public ModifiableParameter() {
-        // Empty for XStream
+public class ParameterException extends GeoWebCacheException {
+
+    public ParameterException(String msg) {
+        super(msg);
     }
-    
-    public String getKey() {
-        return key;
-    }
-    
-    public String getDefaultValue() {
-        return defaultValue;
-    }
-    
-    public Matcher getMatcher(String value) {
-        synchronized(this) {
-            if(pat == null) {
-                pat = Pattern.compile(filter);
-            }
-        }
-        
-        return pat.matcher(value);
-    }
+
 }

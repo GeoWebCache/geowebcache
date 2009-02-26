@@ -39,6 +39,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.filter.ParameterFilter;
+import org.geowebcache.filter.RegexParameterFilter;
 import org.geowebcache.layer.GridLocObj;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
@@ -47,7 +49,6 @@ import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.service.wms.ModifiableParameter;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
@@ -98,7 +99,7 @@ public class WMSLayer extends TileLayer {
     
     protected Boolean cacheBypassAllowed;
     
-    protected List<ModifiableParameter> modifiableParameters;
+    protected List<ParameterFilter> parameterFilters;
     
     private transient int expireCacheInt = -1;
 
@@ -121,7 +122,7 @@ public class WMSLayer extends TileLayer {
     private transient HashMap<GridLocObj, Boolean> procQueue;
     
     //private transient TreeMap<String,ModifiableParameter> 
-    private transient ModifiableParameter[] sortedModParams;
+    private transient ParameterFilter[] sortedModParams;
     
     private transient String[] sortedModParamsKeys;
     
@@ -232,21 +233,21 @@ public class WMSLayer extends TileLayer {
             gridLocConds[i] = layerLock.newCondition();
         }
         
-        if (this.modifiableParameters != null
-                && this.modifiableParameters.size() > 0) {
-            Iterator<ModifiableParameter> iter = modifiableParameters.iterator();
-            TreeMap<String, ModifiableParameter> tree = new TreeMap<String, ModifiableParameter>();
+        if (this.parameterFilters != null
+                && this.parameterFilters.size() > 0) {
+            Iterator<ParameterFilter> iter = parameterFilters.iterator();
+            TreeMap<String, ParameterFilter> tree = new TreeMap<String, ParameterFilter>();
 
             while (iter.hasNext()) {
-                ModifiableParameter modParam = iter.next();
+                ParameterFilter modParam = iter.next();
                 tree.put(modParam.getKey(), modParam);
             }
 
             // this.sortedModParams = new
             // ModifiableParameter[this.modifiableParameters.size()];
             int arSize = tree.values().size();
-            Iterator<ModifiableParameter> sortedIter = tree.values().iterator();
-            this.sortedModParams = new ModifiableParameter[arSize];
+            Iterator<ParameterFilter> sortedIter = tree.values().iterator();
+            this.sortedModParams = new ParameterFilter[arSize];
             for(int i=0; i<arSize; i++) {
                 sortedModParams[i] = sortedIter.next();
             }
@@ -629,6 +630,14 @@ public class WMSLayer extends TileLayer {
             formats.add(0, ImageMime.createFromFormat("image/png"));
             formats.add(1, ImageMime.createFromFormat("image/jpeg"));
         }
+        
+        //RegexParameterFilter param = new RegexParameterFilter();
+        //this.parameterFilters = new ArrayList<ParameterFilter>();
+        
+        //param.defaultValue = "default";
+        //param.key = "key";
+        //param.regex = "regex";
+        //this.parameterFilters.add(param);
     }
 
     protected void saveExpirationInformation(int backendExpire) {
@@ -1015,20 +1024,13 @@ public class WMSLayer extends TileLayer {
         
         for(int i = 0; i<values.length; i++) {
             String value = values[i];
-            ModifiableParameter modParam = this.sortedModParams[i];
+            ParameterFilter modParam = this.sortedModParams[i];
             
             if(value == null || value.length() == 0) {
                 strFull.append("&").append(modParam.getKey()).append("=").append(modParam.getDefaultValue());
             } else {
-                Matcher matcher = modParam.getMatcher(value);
-                if(! matcher.matches()) {
-                    throw new GeoWebCacheException(
-                            "Value " + value 
-                            + " for parameter " +  modParam.getKey()  
-                            + " violates filter.");
-                }
-                
-                strModifiers.append("&").append(modParam.getKey()).append("=").append(value);
+                String filteredValue = modParam.apply(value);
+                strModifiers.append("&").append(modParam.getKey()).append("=").append(filteredValue);
             }
         }
         
