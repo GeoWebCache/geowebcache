@@ -22,16 +22,12 @@ import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
-
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.storage.StorageBroker;

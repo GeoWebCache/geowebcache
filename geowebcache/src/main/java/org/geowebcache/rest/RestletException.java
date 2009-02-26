@@ -16,10 +16,10 @@
  */
 package org.geowebcache.rest;
 
+import org.restlet.data.MediaType;
+import org.restlet.data.Status;
 import org.restlet.resource.Representation;
 import org.restlet.resource.StringRepresentation;
-import org.restlet.data.Status;
-import org.restlet.data.MediaType;
 
 /**
  * An exception that specifies the Restlet representation and status code that

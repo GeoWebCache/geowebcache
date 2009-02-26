@@ -22,9 +22,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import org.geowebcache.storage.blobstore.file.FileBlobStore;
-
 import junit.framework.TestCase;
+
+import org.geowebcache.storage.blobstore.file.FileBlobStore;
 
 public class BlobStoreTest extends TestCase {
     public static final String TEST_BLOB_DIR_NAME = "gwcTestBlobs";

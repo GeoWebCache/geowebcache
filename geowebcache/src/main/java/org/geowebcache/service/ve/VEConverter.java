@@ -16,7 +16,6 @@
  */
 package org.geowebcache.service.ve;
 
-import java.io.IOException;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;

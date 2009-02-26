@@ -5,9 +5,6 @@ import java.util.Arrays;
 import junit.framework.TestCase;
 
 import org.geowebcache.util.wms.BBOX;
-import org.geowebcache.layer.Grid;
-import org.geowebcache.layer.GridCalculator;
-import org.geowebcache.layer.SRS;
 
 public class GridCalculatorTest extends TestCase {
     @Override

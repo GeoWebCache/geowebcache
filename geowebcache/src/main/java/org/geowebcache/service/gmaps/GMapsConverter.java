@@ -16,7 +16,6 @@
  */
 package org.geowebcache.service.gmaps;
 
-import java.io.IOException;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,8 +32,6 @@ import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
-import org.geowebcache.service.mgmaps.MGMapsConverter;
-import org.geowebcache.service.wms.WMSRequests;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
 

@@ -19,7 +19,6 @@ package org.geowebcache.service.kml;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Properties;
 
 import javax.servlet.http.HttpServletResponse;
 

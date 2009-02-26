@@ -4,11 +4,11 @@ import java.util.Arrays;
 
 import junit.framework.TestCase;
 
-import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.Grid;
+import org.geowebcache.layer.GridCalculator;
+import org.geowebcache.layer.SRS;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.util.wms.BBOX;
-import org.geowebcache.layer.GridCalculator;
 
 public class MetaTileTest extends TestCase {
 

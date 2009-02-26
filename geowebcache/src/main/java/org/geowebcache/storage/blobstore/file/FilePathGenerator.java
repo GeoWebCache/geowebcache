@@ -18,6 +18,7 @@
 package org.geowebcache.storage.blobstore.file;
 
 import java.io.File;
+
 import org.geowebcache.mime.MimeType;
 
 public class FilePathGenerator {

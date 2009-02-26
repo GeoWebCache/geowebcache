@@ -6,7 +6,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
-import org.geowebcache.storage.StorageObject;
 
 public abstract class Conveyor {
     public static enum RequestHandler {LAYER, SERVICE};

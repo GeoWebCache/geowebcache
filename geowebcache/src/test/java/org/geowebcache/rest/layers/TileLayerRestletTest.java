@@ -19,14 +19,14 @@ package org.geowebcache.rest.layers;
 import java.io.InputStream;
 import java.util.LinkedList;
 
+import junit.framework.TestCase;
+
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.util.Configuration;
 import org.geowebcache.util.XMLConfiguration;
 import org.geowebcache.util.XMLConfigurationTest;
 import org.restlet.resource.Representation;
-
-import junit.framework.TestCase;
 
 /**
  *  Most of the work is done by XMLConfig and XStream, so this is fairly short

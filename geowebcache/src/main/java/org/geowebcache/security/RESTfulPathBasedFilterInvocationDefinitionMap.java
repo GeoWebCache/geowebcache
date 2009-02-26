@@ -16,15 +16,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.acegisecurity.ConfigAttributeDefinition;
-import org.acegisecurity.intercept.web.PathBasedFilterInvocationDefinitionMap;
+import org.acegisecurity.intercept.web.AbstractFilterInvocationDefinitionSource;
 import org.acegisecurity.intercept.web.FilterInvocation;
 import org.acegisecurity.intercept.web.FilterInvocationDefinition;
-import org.acegisecurity.intercept.web.AbstractFilterInvocationDefinitionSource;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
 

@@ -17,8 +17,8 @@
  */
 package org.geowebcache.rest.seed;
 
-import org.geowebcache.util.wms.BBOX;
 import org.geowebcache.layer.SRS;
+import org.geowebcache.util.wms.BBOX;
 
 public class SeedRequest {
     private String name = null;

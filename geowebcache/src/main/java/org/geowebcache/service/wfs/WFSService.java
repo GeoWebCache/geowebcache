@@ -31,7 +31,6 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorWFS;
-import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.service.Service;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ApplicationContextProvider;

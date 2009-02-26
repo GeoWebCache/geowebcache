@@ -14,18 +14,16 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Iterator;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.List;
 
 import org.acegisecurity.ConfigAttributeDefinition;
 import org.acegisecurity.SecurityConfig;
 import org.acegisecurity.intercept.web.FilterInvocation;
 import org.acegisecurity.intercept.web.FilterInvocationDefinitionSource;
-
 import org.acegisecurity.util.StringSplitUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.util.StringUtils;
 
 

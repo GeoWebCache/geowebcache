@@ -17,9 +17,7 @@
 package org.geowebcache.service.kml;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.Arrays;
 
 import javax.servlet.http.HttpServletRequest;

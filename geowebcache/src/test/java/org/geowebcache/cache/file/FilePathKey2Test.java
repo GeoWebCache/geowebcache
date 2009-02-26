@@ -1,14 +1,8 @@
 package org.geowebcache.cache.file;
 
-import java.io.File;
-
-import org.geowebcache.layer.SRS;
-import org.geowebcache.mime.ImageMime;
-import org.geowebcache.mime.MimeType;
-import org.geowebcache.mime.XMLMime;
-import org.geowebcache.storage.blobstore.file.FilePathGenerator;
-
 import junit.framework.TestCase;
+
+import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 
 public class FilePathKey2Test extends TestCase {
 

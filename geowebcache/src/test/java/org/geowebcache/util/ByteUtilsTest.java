@@ -1,7 +1,5 @@
 package org.geowebcache.util;
 
-import org.geowebcache.util.ByteUtils;
-
 import junit.framework.TestCase;
 
 public class ByteUtilsTest extends TestCase {

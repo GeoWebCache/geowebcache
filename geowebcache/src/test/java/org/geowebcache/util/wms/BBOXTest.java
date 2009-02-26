@@ -3,8 +3,6 @@ package org.geowebcache.util.wms;
 
 import junit.framework.TestCase;
 
-import org.geowebcache.util.wms.BBOX;
-
 public class BBOXTest extends TestCase {
 
     @Override

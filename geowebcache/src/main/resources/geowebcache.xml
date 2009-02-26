@@ -92,6 +92,13 @@
   <bgColor></bgColor>
   <palette></palette>
   <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
+    <parameterFilters>
+    <regexParameterFilter>
+      <key>STYLES</key>
+      <defaultValue></defaultValue>
+      <regex>^(|polygon|population)$</regex>
+    </regexParameterFilter>
+  </parameterFilters>
 </wmsLayer>
 
  <!-- 

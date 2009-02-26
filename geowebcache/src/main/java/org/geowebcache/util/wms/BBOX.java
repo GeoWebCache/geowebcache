@@ -21,7 +21,6 @@ import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.layer.SRS;
 
 public class BBOX {
     private static Log log = LogFactory

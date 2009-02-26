@@ -29,8 +29,6 @@ import org.geowebcache.conveyor.ConveyorKMLTile;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.conveyor.ConveyorWFS;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
 
 public abstract class Service {

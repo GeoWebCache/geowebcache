@@ -16,7 +16,6 @@
  */
 package org.geowebcache.rest.seed;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Iterator;

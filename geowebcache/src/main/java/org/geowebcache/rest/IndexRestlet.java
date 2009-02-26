@@ -16,7 +16,6 @@
  */
 package org.geowebcache.rest;
 
-import org.restlet.Context;
 import org.restlet.Router;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
@@ -24,9 +23,7 @@ import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.data.Status;
 import org.restlet.resource.Representation;
-import org.restlet.resource.Resource;
 import org.restlet.resource.StringRepresentation;
-import org.restlet.resource.Variant;
 
 /** 
  * This class just provides links to the actual resources
