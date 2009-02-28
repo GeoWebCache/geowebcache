@@ -12,7 +12,6 @@
     <!--property name="absolutePath"><value>/etc/geowebcache/conf</value></property-->
   </bean>
   
-
   <!-- If you like to automatically configure GWC from a WMS Getcapabilities document,
        change the values below. The last constructor-arg lets you specify parameters 
        that are appended to every WMS request to the backed, for example: 
@@ -154,9 +153,9 @@
     <property name="alwaysUseFullPath" value="true"/>
     <property name="mappings">
       <props>
+        <prop key="/rest/**">gwcRestDispatcher</prop>        
         <prop key="/service/**">geowebcacheDispatcher</prop>
         <prop key="/demo/**">geowebcacheDispatcher</prop>
-	    <prop key="/rest/**">gwcRestDispatcher</prop>
 	    <prop key="/proxy/**">gwcProxyDispatcher</prop>
       </props>
     </property>

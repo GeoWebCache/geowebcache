@@ -22,6 +22,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.restlet.Restlet;
 import org.restlet.Router;
 import org.restlet.resource.StringRepresentation;
@@ -36,7 +38,10 @@ import com.noelios.restlet.ext.servlet.ServletConverter;
  * Spring requests and Restlet requests.
  */
 public class RESTDispatcher extends AbstractController {
+    private static Log log = LogFactory.getLog(org.geowebcache.rest.RESTDispatcher.class);
+    
     public static final String METHOD_PUT = "PUT";
+    
     public static final String METHOD_DELETE = "DELETE";
     
     ServletConverter myConverter;
@@ -51,6 +56,8 @@ public class RESTDispatcher extends AbstractController {
         addRoutes(map);
         
         myRouter.attach("", new IndexRestlet(myRouter));
+        
+        log.info("Created RESTDispatcher with " + map.size() + " paths");
     }
 
     protected void initApplicationContext() throws BeansException {
