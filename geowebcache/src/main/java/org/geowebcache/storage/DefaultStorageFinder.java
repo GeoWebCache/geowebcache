@@ -96,7 +96,7 @@ public class DefaultStorageFinder {
 
                 if (value == null || value.equalsIgnoreCase("")) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Found " + typeStr + varStr + " to be unset");
+                        log.debug(typeStr + varStr + " is unset");
                     }
                     continue;
                 }

@@ -53,6 +53,14 @@ public class WFSService extends Service {
     
     private StorageBroker storageBroker;
     
+    /**
+     * Constructor that hardcodes all parameters
+     * 
+     * @param sb
+     * @param urlString
+     * @param regexFilter
+     * @param readTimeout
+     */
     public WFSService(StorageBroker sb, String urlString, String regexFilter, int readTimeout) {
         super(SERVICE_WFS);
         this.urlString = urlString;
@@ -71,6 +79,14 @@ public class WFSService extends Service {
                 + "ms regex filter " + regexFilter);
     }
     
+    /** 
+     * Constructor that can use environment variables to set GEOSERVER_WFS_URL 
+     * 
+     * @param sb
+     * @param ctxProv
+     * @param regexFilter
+     * @param readTimeout
+     */
     public WFSService(StorageBroker sb, ApplicationContextProvider ctxProv, String regexFilter, int readTimeout) {
         super(SERVICE_WFS);
         this.storageBroker = sb;
