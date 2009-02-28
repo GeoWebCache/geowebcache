@@ -382,6 +382,11 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
         //debugPrint(rootNode);
         
+        if(rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.0.2")) {
+            log.info("Updating configuration from 1.0.2 to 1.1.0");
+            rootNode = applyTransform(rootNode, "geowebcache_102.xsl").getFirstChild();
+        }
+        
         // Check again after transform
         if (!rootNode.getNodeName().equals("gwcConfiguration")) {
             log.error("Unable to parse file, expected gwcConfiguration at root after transform.");
@@ -396,9 +401,9 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
                 Schema schema = factory.newSchema(new StreamSource(is));
                 Validator validator = schema.newValidator();
                                 
-                //debugPrint(rootNode,"");
+                //debugPrint(rootNode);
                 
-                DOMSource domSrc = new DOMSource(rootNode.getParentNode());
+                DOMSource domSrc = new DOMSource(rootNode);
                 validator.validate(domSrc);
                 log.info("Configuration file validated fine.");
             } catch (SAXException e) {
