@@ -49,8 +49,9 @@ public class FloatParameterFilter extends ParameterFilter {
             return Float.toString(best);
         }
         
-        throw new ParameterException("Closest match for " + str 
+        throw new ParameterException("Closest match for " 
+                + super.key + "=" + str 
                 + " is " + Float.toString(best) 
-                + ", but this exceeds threshold " + Float.toString(threshold));
+                + ", but this exceeds the threshold of " + Float.toString(threshold));
     }
 }

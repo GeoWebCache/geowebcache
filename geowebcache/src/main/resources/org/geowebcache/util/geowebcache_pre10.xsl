@@ -34,8 +34,19 @@
 
 <xsl:template match="layers">
   <gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                  xsi:noNamespaceSchemaLocation="http://geowebcache.org/schema/1.0.1/geowebcache.xsd"
-                  xmlns="http://geowebcache.org/schema/1.0.1">
+                  xsi:noNamespaceSchemaLocation="http://geowebcache.org/schema/1.0.0/geowebcache.xsd"
+                  xmlns="http://geowebcache.org/schema/1.0.0">
+  <version>1.0.0</version>
+  <layers>
+    <xsl:apply-templates/>
+  </layers>
+  </gwcConfiguration>
+</xsl:template>
+
+<xsl:template match="gwcConfiguration">
+  <gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:noNamespaceSchemaLocation="http://geowebcache.org/schema/1.0.2/geowebcache.xsd"
+                  xmlns="http://geowebcache.org/schema/1.0.2">
   <version>1.0.0</version>
   <layers>
     <xsl:apply-templates/>
