@@ -46,6 +46,7 @@ import javax.xml.validation.Validator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.xml.serialize.XMLSerializer;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.cache.Cache;
 import org.geowebcache.cache.CacheException;
@@ -67,6 +68,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomReader;
 
@@ -135,9 +137,6 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         HashMap<String,Cache> cacheMap = new HashMap<String,Cache>();
         cacheMap.put("test", (Cache) new FileCache());
         cacheFactory.setCaches(cacheMap);
-        
-        
-        
         
         // Add the cache factory to each layer object
         if(layers != null) {
@@ -370,32 +369,32 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         return topNode;
     }
     
-    private Node checkAndTransform(Document doc)
-            throws ConfigurationException {
+    private Node checkAndTransform(Document doc) throws ConfigurationException {
         Node rootNode = doc.getDocumentElement();
 
-        if (!rootNode.getNodeName().equals("gwcConfiguration")) {
-            log.info("The configuration file is of the old type, trying to convert.");
-
-            DOMResult result = new DOMResult();
-            Transformer transformer;
-
-            InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache_pre10.xsl");
-
-            try {
-                transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(is));
-                transformer.transform(new DOMSource(rootNode), result);
-            } catch (TransformerConfigurationException e) {
-                e.printStackTrace();
-            } catch (TransformerFactoryConfigurationError e) {
-                e.printStackTrace();
-            } catch (TransformerException e) {
-                e.printStackTrace();
-            }
-
-            rootNode = result.getNode().getFirstChild();
+        //debugPrint(rootNode);
+  
+        if (! rootNode.getNodeName().equals("gwcConfiguration")) {
+            log.info("The configuration file is of the pre 1.0 type, trying to convert.");
+            rootNode = applyTransform(rootNode, "geowebcache_pre10.xsl").getFirstChild();
+        }
+        
+        //debugPrint(rootNode);        
+     
+        if(rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.0.0")) {
+            log.info("Updating configuration from 1.0.0 to 1.0.1");
+            rootNode = applyTransform(rootNode, "geowebcache_100.xsl").getFirstChild();
         }
 
+        //debugPrint(rootNode);
+        
+        if(rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.0.1")) {
+            log.info("Updating configuration from 1.0.1 to 1.0.2");
+            rootNode = applyTransform(rootNode, "geowebcache_101.xsl").getFirstChild();
+        }
+
+        //debugPrint(rootNode);
+        
         // Check again after transform
         if (!rootNode.getNodeName().equals("gwcConfiguration")) {
             log.error("Unable to parse file, expected gwcConfiguration at root after transform.");
@@ -409,7 +408,11 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
             try {
                 Schema schema = factory.newSchema(new StreamSource(is));
                 Validator validator = schema.newValidator();
-                validator.validate(new DOMSource(rootNode));
+                                
+                //debugPrint(rootNode,"");
+                
+                DOMSource domSrc = new DOMSource(rootNode.getParentNode());
+                validator.validate(domSrc);
                 log.info("Configuration file validated fine.");
             } catch (SAXException e) {
                 log.info(e.getMessage());
@@ -418,8 +421,29 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
                 e.printStackTrace();
             }
         }
-        
+
         return rootNode;
+    }
+
+    private Node applyTransform(Node oldRootNode, String xslFilename) {
+        DOMResult result = new DOMResult();
+        Transformer transformer;
+
+        InputStream is = XMLConfiguration.class.getResourceAsStream(xslFilename);
+
+        try {
+            transformer = TransformerFactory.newInstance().newTransformer(
+                    new StreamSource(is));
+            transformer.transform(new DOMSource(oldRootNode), result);
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+        } catch (TransformerFactoryConfigurationError e) {
+            e.printStackTrace();
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+
+        return result.getNode();
     }
     
     public void determineConfigDirH() {
@@ -525,5 +549,22 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
     public CacheFactory getCacheFactory() {
         return this.cacheFactory;
     }
-
+    
+    public void debugPrint(Node node) {
+        if(node == null) {
+            System.out.println("1: No node");
+            return;
+        }
+        
+        System.out.println("1: " + node.getNodeName() + " " + node.getNamespaceURI());
+        
+        node = node.getFirstChild();
+        if(node != null) {
+            System.out.println("2: " + node.getNodeName() + " " + node.getNamespaceURI()); 
+            node = node.getFirstChild();
+        }
+        if(node != null) {
+            System.out.println("3: " + node.getNodeName() + " " + node.getNamespaceURI()); 
+        }
+    }
 }
