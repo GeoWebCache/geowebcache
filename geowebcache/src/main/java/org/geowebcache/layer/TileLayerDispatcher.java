@@ -31,7 +31,7 @@ public class TileLayerDispatcher {
 
     private volatile HashMap<String, TileLayer> layers = null;
 
-    private List configs = null;
+    private List<Configuration> configs = null;
 
     public TileLayerDispatcher() {
         //log.info("TileLayerDispatcher constructed");
@@ -54,7 +54,7 @@ public class TileLayerDispatcher {
         return layer;
     }
 
-    public void setConfig(List configs) {
+    public void setConfig(List<Configuration> configs) {
         this.configs = configs;
     }
 
@@ -99,7 +99,7 @@ public class TileLayerDispatcher {
     private HashMap<String, TileLayer> initialize() {
         log.debug("Thread initLayers(), initializing");
 
-        HashMap<String, TileLayer> layers = new HashMap<String, TileLayer>();
+        layers = new HashMap<String, TileLayer>();
 
         Iterator<Configuration> configIter = configs.iterator();
         while (configIter.hasNext()) {
@@ -129,16 +129,7 @@ public class TileLayerDispatcher {
                     
                     while (iter.hasNext()) {
                         TileLayer layer = iter.next();
-                        
-                        if(layers.containsKey(layer.getName())) {
-                            try {
-                                layers.get(layer.getName()).mergeWith(layer);
-                            } catch (GeoWebCacheException gwce) {
-                                log.error(gwce.getMessage());
-                            }
-                        } else {
-                            layers.put(layer.getName(), layer);
-                        }   
+                        add(layer);
                     }
                 } else {
                     log.error("Configuration " + configIdent
@@ -148,5 +139,32 @@ public class TileLayerDispatcher {
         }
 
         return layers;
+    }
+    
+    public void update(TileLayer layer) {
+        TileLayer oldLayer = layers.get(layer.getName());
+        oldLayer.acquireLayerLock();
+        layers.remove(layer.getName());
+        oldLayer.releaseLayerLock();
+        layers.put(layer.getName(), layer);
+    }
+    
+    public void remove(String layerName) {
+        TileLayer layer = layers.get(layerName);
+        layer.acquireLayerLock();
+        layers.remove(layerName);
+        layer.releaseLayerLock();
+    }
+    
+    public void add(TileLayer layer) {        
+        if(layers.containsKey(layer.getName())) {
+            try {
+                layers.get(layer.getName()).mergeWith(layer);
+            } catch (GeoWebCacheException gwce) {
+                log.error(gwce.getMessage());
+            }
+        } else {
+            layers.put(layer.getName(), layer);
+        }
     }
 }
