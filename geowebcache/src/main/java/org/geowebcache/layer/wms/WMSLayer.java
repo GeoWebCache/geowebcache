@@ -257,6 +257,13 @@ public class WMSLayer extends TileLayer {
             }
 
         }
+        
+        for(int i=0; i < wmsUrl.length; i++) {
+            String url = wmsUrl[i];
+            if(! url.endsWith("?")) {
+                wmsUrl[i] = url + "?";
+            }
+        }
 
         return new Boolean(true);
     }
@@ -461,14 +468,6 @@ public class WMSLayer extends TileLayer {
         return false;
     }
 
-    public int purge(OutputStream os) throws GeoWebCacheException {
-        // Loop over directories
-        // Not implemented
-        throw new GeoWebCacheException("purge() has not been implemented yet."
-                + " Maybe you want to sponsor it? ;) ");
-        // return 0;
-    }
-
     /**
      * Uses the HTTP 1.1 spec to set expiration headers
      * 
@@ -481,15 +480,12 @@ public class WMSLayer extends TileLayer {
 
         // TODO move to TileResponse
         if (expireClientsInt > 0) {
-            response.setHeader("Cache-Control", "max-age=" + expireClients
-                    + ", must-revalidate");
-            response.setHeader("Expires", ServletUtils
-                    .makeExpiresHeader(expireClientsInt));
+            response.setHeader("Cache-Control", "max-age=" + expireClients + ", must-revalidate");
+            response.setHeader("Expires", ServletUtils.makeExpiresHeader(expireClientsInt));
         } else if (expireClientsInt == GWCVars.CACHE_NEVER_EXPIRE) {
             long oneYear = 3600 * 24 * 365;
             response.setHeader("Cache-Control", "max-age=" + oneYear);
-            response.setHeader("Expires", ServletUtils
-                    .makeExpiresHeader((int) oneYear));
+            response.setHeader("Expires", ServletUtils.makeExpiresHeader((int) oneYear));
         } else if (expireClientsInt == GWCVars.CACHE_DISABLE_CACHE) {
             response.setHeader("Cache-Control", "no-cache");
         } else if (expireClientsInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
@@ -497,8 +493,7 @@ public class WMSLayer extends TileLayer {
             response.setHeader("geowebcache-error",
                     "No real CacheControl information available");
             response.setHeader("Cache-Control", "max-age=" + seconds);
-            response.setHeader("Expires", ServletUtils
-                    .makeExpiresHeader(seconds));
+            response.setHeader("Expires", ServletUtils.makeExpiresHeader(seconds));
         }
     }
     
@@ -713,7 +708,11 @@ public class WMSLayer extends TileLayer {
         }
 
         if(transparent != null) {
-            strBuilder.append("&TRANSPARENT=").append(Boolean.toString(transparent));
+            if(transparent) {
+                strBuilder.append("&TRANSPARENT=").append("TRUE");
+            } else {
+                strBuilder.append("&TRANSPARENT=").append("FALSE");
+            }
         }
         
         if (bgColor != null && bgColor.length() != 0) {

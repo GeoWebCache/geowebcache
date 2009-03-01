@@ -86,7 +86,7 @@ public class WMSHttpHelper {
         strBuilder.append("&BBOX=").append(bbox);
         
         if(requestTiled) {
-            strBuilder.append("&TILED=").append(Boolean.toString(requestTiled));
+            strBuilder.append("&TILED=").append("TRUE");
         }
         
         strBuilder.append(tile.getFullParameters());
@@ -111,7 +111,7 @@ public class WMSHttpHelper {
 
         int backendTries = 0; // keep track of how many backends we have tried
         while (data == null && backendTries < layer.getWMSurl().length) {
-            String requestUrl = layer.nextWmsURL() + "?" + wmsParams;
+            String requestUrl = layer.nextWmsURL() + wmsParams;
             
             try {
                 wmsBackendUrl = new URL(requestUrl);
