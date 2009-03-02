@@ -53,7 +53,9 @@
   	   which decides if a user can or can not see a specific layer. To be used in conjunction with
   	   AuthWMSService as WMSService -->
   <bean id="gwcDataAccessManager" class="org.geowebcache.security.wms.SimpleDataAccessManager">
-    <property name="layersPropertiesDirectory" value="/Users/pereng/Projekt/src/geowebcache-1.0.1/src/main/webapp/WEB-INF"/>
+    <!-- layersPropertiesDirectory: Path to directory containing layers.properties -->
+    <!-- Default tomcat dir -->
+    <property name="layersPropertiesDirectory" value="/usr/local/tomcat/webapps/geowebcache/WEB-INF"/>
   </bean>
   
   <!-- controller for handling incoming requests made through the REST interface -->
