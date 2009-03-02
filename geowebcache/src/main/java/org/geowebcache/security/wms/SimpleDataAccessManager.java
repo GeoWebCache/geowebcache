@@ -104,17 +104,21 @@ public class SimpleDataAccessManager implements DataAccessManager {
         try {
             if (layerProperies == null) {
                 File security = new File(layersPropertiesDirectory);
+                LOGGER.log(Level.INFO, "Looking for layers.properties in " + security.getAbsolutePath());
 
                 // no security folder, let's work against an empty properties then
                 if (security == null || !security.exists()) {
+                    LOGGER.log(Level.WARNING, "Did not find directory for layers.properties, creating default.");
                     setLayerProperties(new Properties());
                 } else {
                     // no security config, let's work against an empty properties then
                     layers = new File(security, "layers.properties");
                     if (!layers.exists()) {
+                        LOGGER.log(Level.WARNING, "Did not find layers.properties, creating default!");
                         setLayerProperties(new Properties());
                     } else {
                         // ok, something is there, let's load it
+                        LOGGER.log(Level.INFO, "Found layers.properties, setting layer properties.");
                         watcher = new PropertyFileWatcher(layers);
                         setLayerProperties(watcher.getProperties());
                     }
