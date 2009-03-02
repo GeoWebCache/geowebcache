@@ -11,6 +11,10 @@ public class SRS {
 
     private static transient final SRS epsg900913 = new SRS(900913);
     
+    private static transient final SRS epsg3021 = new SRS(3021);
+
+    private static transient final SRS epsg3006 = new SRS(3006);
+    
     private static Hashtable<Integer,SRS> list = new Hashtable<Integer,SRS>();
 
     private SRS(int epsgNumber) {
@@ -26,6 +30,10 @@ public class SRS {
                 list.put(4326, SRS.getEPSG4326());
             } else if(epsgNumber == 900913) {
                 list.put(900913, SRS.getEPSG900913());
+            } else if(epsgNumber == 3021) {
+                list.put(3021, SRS.getEPSG3021());
+            } else if(epsgNumber == 3021) {
+                list.put(3006, SRS.getEPSG3006());
             }
             
             ret = new SRS(epsgNumber);
@@ -75,6 +83,14 @@ public class SRS {
 
     public static SRS getEPSG900913() {
         return epsg900913;
+    }
+
+    public static SRS getEPSG3021() {
+        return epsg3021;
+    }
+
+    public static SRS getEPSG3006() {
+        return epsg3006;
     }
 
 }

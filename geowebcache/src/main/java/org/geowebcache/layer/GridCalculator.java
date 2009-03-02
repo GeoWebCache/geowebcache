@@ -42,6 +42,16 @@ public class GridCalculator {
     
     private final static double[] RESOLUTIONS900913 = 
         GridCalculator.getResolutionArray(20037508.34*2,TILEPIXELS, 31);
+
+    // TODO: This is an ugly hack to introduce custom projections
+    // This should be done in some other way - question is how!?
+    // see also SRS.java, WMSLayer.java, GetCapabilitiesConfiguration.java
+    // and BBOX.java
+    private final static double[] RESOLUTIONS3021 =
+        GridCalculator.getResolutionArray(2084773.121382,TILEPIXELS, 31);
+    
+    private final static double[] RESOLUTIONS3006 =
+        GridCalculator.getResolutionArray(486256.24235,TILEPIXELS, 31);
     
     // The following are the width of the actual layer
     private double gridWidth;
@@ -608,6 +618,14 @@ public class GridCalculator {
     
     public static double[] get4326Resolutions() {
         return GridCalculator.RESOLUTIONS4326;
+    }
+
+    public static double[] get3021Resolutions() {
+        return GridCalculator.RESOLUTIONS3021;
+    }
+    
+    public static double[] get3006Resolutions() {
+        return GridCalculator.RESOLUTIONS3006;
     }
     
 }

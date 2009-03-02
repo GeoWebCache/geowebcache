@@ -251,8 +251,12 @@ public class GetCapabilitiesConfiguration implements Configuration {
 			Grid grid;
 			if (SRS.getEPSG4326().getNumber() == srs.getNumber()) {
 				grid = new Grid(SRS.getEPSG4326(), dataBounds, BBOX.WORLD4326, GridCalculator.get4326Resolutions());
-			} else if (SRS.getEPSG900913().getNumber() == srs.getNumber()) {
-				grid = new Grid(SRS.getEPSG900913(), dataBounds, BBOX.WORLD900913, GridCalculator.get900913Resolutions());
+                        } else if (SRS.getEPSG900913().getNumber() == srs.getNumber()) {
+                            grid = new Grid(SRS.getEPSG900913(), dataBounds, BBOX.WORLD900913, GridCalculator.get900913Resolutions());
+                        } else if (SRS.getEPSG3021().getNumber() == srs.getNumber()) {
+                            grid = new Grid(SRS.getEPSG3021(), dataBounds, BBOX.EUROPE3021, GridCalculator.get3021Resolutions());
+                        } else if (SRS.getEPSG3006().getNumber() == srs.getNumber()) {
+                            grid = new Grid(SRS.getEPSG3006(), dataBounds, BBOX.EUROPE3006, GridCalculator.get3006Resolutions());
 			} else {
 				grid = new Grid(srs, dataBounds, dataBounds, null);
 				grid.setResolutions(grid.getResolutions());

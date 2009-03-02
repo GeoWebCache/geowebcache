@@ -21,7 +21,6 @@ import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.layer.SRS;
 
 public class BBOX {
     private static Log log = LogFactory
@@ -36,6 +35,12 @@ public class BBOX {
     
     public static final BBOX WORLD900913 = 
         new BBOX(-20037508.34,-20037508.34,20037508.34,20037508.34);
+    
+    public static final BBOX EUROPE3021 = 
+        new BBOX(156291.406699,5712054.271578,2241064.528081,7738294.414112);
+    
+    public static final BBOX EUROPE3006 = 
+        new BBOX(785995.223524,5695741.192086,1272251.465874,7746062.498557);
     
     // minx, miny, maxx, maxy
     public double[] coords = new double[4];

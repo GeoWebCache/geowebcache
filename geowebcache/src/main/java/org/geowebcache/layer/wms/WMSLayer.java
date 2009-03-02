@@ -224,8 +224,12 @@ public class WMSLayer extends TileLayer {
         if(this.grids.size() == 0) {
             Grid epsg4326Grid = new Grid(SRS.getEPSG4326(), BBOX.WORLD4326, BBOX.WORLD4326, null);
             Grid epsg900913Grid = new Grid(SRS.getEPSG900913(), BBOX.WORLD900913, BBOX.WORLD900913, null);
+            Grid epsg3021Grid = new Grid(SRS.getEPSG3021(), BBOX.EUROPE3021, BBOX.EUROPE3021, null);
+            Grid epsg3006Grid = new Grid(SRS.getEPSG3006(), BBOX.EUROPE3006, BBOX.EUROPE3006, null);
             grids.put(SRS.getEPSG4326(), epsg4326Grid);
             grids.put(SRS.getEPSG900913(), epsg900913Grid);
+            grids.put(SRS.getEPSG3021(), epsg3021Grid);
+            grids.put(SRS.getEPSG3006(), epsg3006Grid);
         }
 
         // Create conditions for tile locking
