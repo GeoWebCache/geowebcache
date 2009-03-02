@@ -56,14 +56,14 @@ public abstract class ExtentHandler {
                 throw new ServiceException("Dimension does not allow multiple values");
             }
             if (extent.containsAll(parsedValues)) {
-                parsedValue = listToString(parsedValues);
+                parsedValue = listToString(extent, parsedValues);
             } else if (dimension.supportsNearestValue()) {
                 List<Object> nearestTimes = new ArrayList<Object>(parsedValues.size());
                 for (Object obj : parsedValues) {
                     Object nearestValue = getNearestValue(obj, extent);
                     nearestTimes.add(nearestValue);
                 }
-                parsedValue = listToString(nearestTimes);
+                parsedValue = listToString(extent, nearestTimes);
             } else {
                 throw new ServiceException("Dimension does not contain one or more values and does not support nearest value");
             }
@@ -124,12 +124,24 @@ public abstract class ExtentHandler {
         }
     }
 
-    protected String listToString(List<Object> values) {
+    /**
+     * Help function to get the text representation of the request.
+     * 
+     * Always be sure to get the value from the extent - values may be parsed and
+     * valid but not formatted in request as in extent. 
+     * I.e. 2009-01-01T00:00:00Z = 2009-01-01T01:00:00+01:00 
+     *  
+     * @param extent - the extent to get the values from
+     * @param values - the values to be expressed as text 
+     * @return a text representation of the values
+     */
+    protected String listToString(List<Object> extent, List<Object> values) {
         StringBuffer value = new StringBuffer();
         Iterator<Object> valuesIter = values.iterator();
         while (valuesIter.hasNext()) {
             Object val = valuesIter.next();
-            value.append(val.toString());
+            int i = extent.indexOf(val);
+            value.append(extent.get(i).toString());
             if (valuesIter.hasNext()) {
                 value.append(",");
             }

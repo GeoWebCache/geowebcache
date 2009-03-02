@@ -7,13 +7,8 @@ import org.geowebcache.service.ServiceException;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.Period;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 
 public class TimeExtentHandler extends ExtentHandler {
-
-    
-    private static DateTimeFormatter fmt = ISODateTimeFormat.dateHourMinuteSecond();
 
     @Override
     protected List<Object> parseValue(String value) {
@@ -33,12 +28,14 @@ public class TimeExtentHandler extends ExtentHandler {
                 DateTime now = interval.getStart();
                 DateTime end = interval.getEnd();
                 while (now.isBefore(end) || now.equals(end)) {
-                    dateTimes.add(now);
+                    // TODO: Use interval start and end instants (plus period?) 
+                    // to figure out how to format the date
+                    dateTimes.add(new DateTimeWrapper(now.toString(), now));
                     now = now.plus(period);
                 }
                 usesPeriods = true;
             } else {
-                dateTimes.add(new DateTime(t));
+                dateTimes.add(new DateTimeWrapper(t, new DateTime(t)));
                 usesList = true;
             }
         }
@@ -52,11 +49,11 @@ public class TimeExtentHandler extends ExtentHandler {
     @Override
     protected Object getNearestValue(Object obj, List<Object> extent) {
         Long minSize = Long.MAX_VALUE;
-        DateTime time = (DateTime) obj;
-        DateTime nearestTime = time;
+        DateTimeWrapper time = (DateTimeWrapper) obj;
+        DateTimeWrapper nearestTime = time;
         for (Object ext : extent) {
-            DateTime e = (DateTime) ext;
-            Long interval = Math.abs(e.getMillis() - time.getMillis());
+            DateTimeWrapper e = (DateTimeWrapper) ext;
+            Long interval = Math.abs(e.getDateTime().getMillis() - time.getDateTime().getMillis());
             if (interval < minSize) {
                 minSize = interval;
                 nearestTime = e;
@@ -65,40 +62,64 @@ public class TimeExtentHandler extends ExtentHandler {
         return nearestTime;
     }
 
-    // TODO use string buffer
-    @Override
-    protected String listToString(List<Object> times) {
-        String string = "";
-        for (Object time : times) {
-            if (time instanceof DateTime) {
-                string += ((DateTime) time).toString(fmt);
-            }
-        }
-        return string;
-    }
-
     public static String getCurrentValue(List<Object> extent) throws ServiceException {
         Long minSize = Long.MAX_VALUE;
-        DateTime nearestTime = new DateTime();
-        DateTime now = nearestTime;
+        DateTimeWrapper nearestTime = new DateTimeWrapper("", new DateTime());
+        DateTimeWrapper now = nearestTime;
         for (Object obj : extent) {
-            if (!(obj instanceof DateTime)) {
-                throw new ServiceException("");
+            if (!(obj instanceof DateTimeWrapper)) {
+                throw new ServiceException("Could not find current value. Extent is not a list of DateTimeWrappers!");
             }
-            DateTime e = (DateTime) obj;
+            DateTimeWrapper e = (DateTimeWrapper) obj;
             Long interval;
-            if (e.isBefore(now)) {
-                interval = e.getMillis() - now.getMillis();
+            if (e.getDateTime().isBefore(now.getDateTime())) {
+                interval = e.getDateTime().getMillis() - now.getDateTime().getMillis();
             } else {
-                interval = now.getMillis() - e.getMillis();
+                interval = now.getDateTime().getMillis() - e.getDateTime().getMillis();
             }
             if (interval < minSize) {
                 minSize = interval;
                 nearestTime = e;
             }
         }
-        return nearestTime.toString(fmt);
+        return nearestTime.getValue();
     }
 
-   
+    public static class DateTimeWrapper {
+        
+        private String value;
+        private DateTime dateTime;
+        
+        public DateTimeWrapper(String value, DateTime dateTime) {
+            this.value = value;
+            this.dateTime = dateTime;
+        }
+        
+        public String getValue() {
+            return value;
+        }
+        public DateTime getDateTime() {
+            return dateTime;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof DateTimeWrapper)) {
+                return false;
+            }
+            DateTimeWrapper other = (DateTimeWrapper) obj;
+            if (this.dateTime != null && other.dateTime != null) {
+                return this.dateTime.equals(other.dateTime);
+            }
+            return super.equals(obj);
+        }
+
+        @Override
+        public String toString() {
+            return getValue();
+        }
+    }
 }
