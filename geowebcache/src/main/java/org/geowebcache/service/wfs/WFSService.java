@@ -90,7 +90,7 @@ public class WFSService extends Service {
     public WFSService(StorageBroker sb, ApplicationContextProvider ctxProv, String regexFilter, int readTimeout) {
         super(SERVICE_WFS);
         this.storageBroker = sb;
-        urlString = ctxProv.getSystemVar(GEOSERVER_WFS_URL);
+        urlString = ctxProv.getSystemVar(GEOSERVER_WFS_URL, null);
         if(urlString != null) {
             if(urlString.contains("?")) {
                 urlString = urlString.substring(0, urlString.indexOf("?"));
@@ -99,7 +99,7 @@ public class WFSService extends Service {
             urlString = "http://localhost:8080/geoserver/wfs";
         }
         
-        regexFilter = ctxProv.getSystemVar(GEOWEBCACHE_WFS_FILTER);
+        regexFilter = ctxProv.getSystemVar(GEOWEBCACHE_WFS_FILTER, null);
         
         readTimeout = 1000 * readTimeout;
         

@@ -42,7 +42,7 @@ public class ApplicationContextProvider implements ApplicationContextAware {
     }
 
     
-    public String getSystemVar(String varName) {
+    public String getSystemVar(String varName, String defaultValue) {
         if(ctx == null) {
             String msg = "Application context was not set yet! Damn you Spring Framework :( ";
             log.error(msg);
@@ -67,10 +67,10 @@ public class ApplicationContextProvider implements ApplicationContextAware {
             return tmpVar;
         }
         
-        tmpVar = "http://localhost:8080/geoserver/wms?request=GetCapabilities";
+        //tmpVar = ;
         log.info("No context parameter, system or Java environment variables found for " + varName);
-        log.info("Reverting to " + tmpVar );
+        log.info("Reverting to " + defaultValue );
         
-        return tmpVar;
+        return defaultValue;
     }
 }

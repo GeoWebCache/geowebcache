@@ -25,22 +25,25 @@ public class GeoServerConfiguration extends GetCapabilitiesConfiguration {
 
     public final static String GEOSERVER_WMS_URL = "GEOSERVER_WMS_URL";
 
+    public final static String DEFAULT_GEOSERVER_WMS_URL = "http://localhost:8080/geoserver/wms?request=GetCapabilities";
+    
     public final static String GEOWEBCACHE_VENDOR_PARAMS = "GEOWEBCACHE_VENDOR_PARAMS";
+    
     
     //private static Log log = LogFactory.getLog(org.geowebcache.util.GeoServerConfiguration.class);
     
     public GeoServerConfiguration(ApplicationContextProvider ctxProv,
             String mimeTypes, String metaTiling) {
-        super(  ctxProv.getSystemVar(GEOSERVER_WMS_URL),
+        super(  ctxProv.getSystemVar(GEOSERVER_WMS_URL, DEFAULT_GEOSERVER_WMS_URL),
                 mimeTypes,
                 metaTiling, 
-                ctxProv.getSystemVar(GEOWEBCACHE_VENDOR_PARAMS),
+                ctxProv.getSystemVar(GEOWEBCACHE_VENDOR_PARAMS,""),
                 "true" );
     }    
     
     public GeoServerConfiguration(ApplicationContextProvider ctxProv, 
             String mimeTypes, String metaTiling, String vendorParams) {
-        super(  ctxProv.getSystemVar(GEOSERVER_WMS_URL),
+        super(  ctxProv.getSystemVar(GEOSERVER_WMS_URL, DEFAULT_GEOSERVER_WMS_URL),
                 mimeTypes, 
                 metaTiling,
                 vendorParams,
