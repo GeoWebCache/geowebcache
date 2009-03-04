@@ -138,13 +138,15 @@ public class WMSLayer extends TileLayer {
      * @param metaWidthHeight
      * @param vendorParams
      */
-    public WMSLayer(String layerName, CacheFactory cacheFactory,
+    public WMSLayer(String layerName, String title, String _abstract, CacheFactory cacheFactory,
             String[] wmsURL, String wmsStyles, String wmsLayers, 
             List<String> mimeFormats, Hashtable<SRS,Grid> grids, 
             int[] metaWidthHeight, String vendorParams, 
             Map<String, Dimension> dimensions) {
      
         name = layerName;
+        this.title = title;
+        this._abstract = _abstract;
         initCacheFactory = cacheFactory;
         this.wmsUrl = wmsURL;
         this.wmsLayers = wmsLayers;

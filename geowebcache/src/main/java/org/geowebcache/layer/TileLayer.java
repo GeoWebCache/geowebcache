@@ -36,6 +36,10 @@ public abstract class TileLayer {
 
     protected String name;
 
+    protected String title;
+
+    protected String _abstract;
+
     protected List<String> mimeFormats;
 
     protected Hashtable<SRS,Grid> grids;
@@ -59,6 +63,44 @@ public abstract class TileLayer {
      */
     public String getName() {
         return this.name;
+    }
+
+    /**
+     * Sets the layer title
+     * 
+     * @param title
+     */
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
+     * The title of the layer
+     * 
+     * @return
+     */
+    public String getTitle() {
+        return this.title;
+    }
+
+    /**
+     * Sets the layer abstract
+     * 
+     * @param _abstract
+     */
+
+    public void set_abstract(String _abstract) {
+        this._abstract = _abstract;
+    }
+
+    /**
+     * The abstract of the layer
+     * 
+     * @return
+     */
+    public String get_abstract() {
+        return this._abstract;
     }
 
     /**

@@ -50,7 +50,7 @@ import org.geowebcache.util.wms.ExtentHandlerMap;
 
 public class GetCapabilitiesConfiguration implements Configuration {
     private static Log log = LogFactory
-            .getLog(org.geowebcache.util.GetCapabilitiesConfiguration.class);
+    .getLog(org.geowebcache.util.GetCapabilitiesConfiguration.class);
 
     private CacheFactory cacheFactory = null;
 
@@ -59,11 +59,11 @@ public class GetCapabilitiesConfiguration implements Configuration {
     private String mimeTypes = null;
 
     private String metaTiling = null;
-    
+
     private String vendorParameters = null;
 
     private ExtentHandlerMap extentHandlerMap;
-    
+
     private boolean allowCacheBypass = false;
 
     public GetCapabilitiesConfiguration(CacheFactory cacheFactory, String url,
@@ -72,13 +72,13 @@ public class GetCapabilitiesConfiguration implements Configuration {
         this.url = url;
         this.mimeTypes = mimeTypes;
         this.metaTiling = metaTiling;
-        
+
         if(Boolean.parseBoolean(allowCacheBypass)) {
             this.allowCacheBypass = true;
         }
         log.info("Constructing from url " + url);
     }
-    
+
     public GetCapabilitiesConfiguration(CacheFactory cacheFactory, String url,
             String mimeTypes, String metaTiling, String vendorParameters, 
             String allowCacheBypass) {
@@ -87,7 +87,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
         this.mimeTypes = mimeTypes;
         this.metaTiling = metaTiling;
         this.vendorParameters = vendorParameters;
-        
+
         if(Boolean.parseBoolean(allowCacheBypass)) {
             this.allowCacheBypass = true;
         }
@@ -141,18 +141,18 @@ public class GetCapabilitiesConfiguration implements Configuration {
         String wmsUrl = wms.getCapabilities().getRequest().getGetCapabilities().getGet().toString();
         int queryStart = wmsUrl.lastIndexOf("?");
         if (queryStart != -1) {
-	        String preQuery = wmsUrl.substring(queryStart);
-	        if (preQuery.equalsIgnoreCase("?service=wms&")) {
-	            wmsUrl = wmsUrl.substring(0, wmsUrl.lastIndexOf("?"));
-	        }
+            String preQuery = wmsUrl.substring(queryStart);
+            if (preQuery.equalsIgnoreCase("?service=wms&")) {
+                wmsUrl = wmsUrl.substring(0, wmsUrl.lastIndexOf("?"));
+            }
         }
         return wmsUrl;
     }
 
     private List<TileLayer> getLayers(WebMapServer wms, String wmsUrl)
-            throws GeoWebCacheException {
+    throws GeoWebCacheException {
         List<TileLayer> layers = new LinkedList<TileLayer>();
-        
+
         WMSCapabilities capabilities = wms.getCapabilities();
         if (capabilities == null) {
             throw new ConfigurationException("Unable to get capabitilies from " + wmsUrl);
@@ -160,15 +160,18 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
         List<Layer> layerList = capabilities.getLayerList();
         Iterator<Layer> layerIter = layerList.iterator();
-        
+
         while (layerIter.hasNext()) {
             Layer layer = layerIter.next();
             String name = layer.getName();
-            String stylesStr = "";
+            String title = layer.getTitle();
+            String _abstract = layer.get_abstract();
             
+            String stylesStr = "";
+
             if (name != null) {
                 List<StyleImpl> styles = layer.getStyles();
-                
+
                 StringBuffer buf = new StringBuffer();
                 if(styles != null) {
                     Iterator<StyleImpl> iter = styles.iterator();
@@ -182,14 +185,14 @@ public class GetCapabilitiesConfiguration implements Configuration {
                     }
                     stylesStr = buf.toString();
                 }
-                               
+
                 Map<String, Dimension> dimensions = parseDimensions(layer.getDimensions());
-                
+
                 String[] wmsUrls = {wmsUrl};
-                
+
                 WMSLayer wmsLayer = null;
                 try {
-                    wmsLayer = getLayer(name, wmsUrls, layer.getBoundingBoxes(), stylesStr, dimensions);
+                    wmsLayer = getLayer(name, title, _abstract, wmsUrls, layer.getBoundingBoxes(), stylesStr, dimensions);
                 } catch (GeoWebCacheException gwc) {
                     log.error("Error creating " + layer.getName() + ": "
                             + gwc.getMessage());
@@ -207,68 +210,68 @@ public class GetCapabilitiesConfiguration implements Configuration {
         return layers;
     }
 
-	private Map<String, Dimension> parseDimensions(Map<String, 
-			org.geotools.data.wms.xml.Dimension> unparsedDimensions) {
-		Map<String, Dimension> dimensions = new HashMap<String, Dimension>();
-		if (unparsedDimensions != null) {
-			Iterator<Entry<String, org.geotools.data.wms.xml.Dimension>> dimIter = 
-				unparsedDimensions.entrySet().iterator();
-			while (dimIter.hasNext()) {
-				Entry<String, org.geotools.data.wms.xml.Dimension> dim = dimIter.next();
-				String name = dim.getKey();
-				org.geotools.data.wms.xml.Dimension dimension = dim.getValue();
-				if (name == null || name.length() == 0 || dimension == null || 
-						dimension.getExtent() == null) {
-					break;
-				}
+    private Map<String, Dimension> parseDimensions(Map<String, 
+            org.geotools.data.wms.xml.Dimension> unparsedDimensions) {
+        Map<String, Dimension> dimensions = new HashMap<String, Dimension>();
+        if (unparsedDimensions != null) {
+            Iterator<Entry<String, org.geotools.data.wms.xml.Dimension>> dimIter = 
+                unparsedDimensions.entrySet().iterator();
+            while (dimIter.hasNext()) {
+                Entry<String, org.geotools.data.wms.xml.Dimension> dim = dimIter.next();
+                String name = dim.getKey();
+                org.geotools.data.wms.xml.Dimension dimension = dim.getValue();
+                if (name == null || name.length() == 0 || dimension == null || 
+                        dimension.getExtent() == null) {
+                    break;
+                }
 
-				ExtentHandler extentHandler = extentHandlerMap.getHandler(dimension.getUnits());
-				Dimension newDimension = new Dimension(name, dimension.getUnits(), 
-						dimension.getExtent().getValue(), extentHandler);
+                ExtentHandler extentHandler = extentHandlerMap.getHandler(dimension.getUnits());
+                Dimension newDimension = new Dimension(name, dimension.getUnits(), 
+                        dimension.getExtent().getValue(), extentHandler);
 
-				newDimension.setCurrent(dimension.isCurrent());
-				newDimension.setUnitSymbol(dimension.getUnitSymbol());
-				newDimension.setDefaultValue(dimension.getExtent().getDefaultValue());
-				newDimension.setMultipleValues(dimension.getExtent().isMultipleValues());
-				newDimension.setNearestValue(dimension.getExtent().getNearestValue());
-				dimensions.put(name, newDimension);
-			}
-		}
-		
-		return dimensions;
-	}
+                newDimension.setCurrent(dimension.isCurrent());
+                newDimension.setUnitSymbol(dimension.getUnitSymbol());
+                newDimension.setDefaultValue(dimension.getExtent().getDefaultValue());
+                newDimension.setMultipleValues(dimension.getExtent().isMultipleValues());
+                newDimension.setNearestValue(dimension.getExtent().getNearestValue());
+                dimensions.put(name, newDimension);
+            }
+        }
 
-	private WMSLayer getLayer(String name, String[] wmsurl, HashMap<Object, CRSEnvelope> bboxs, 
-			String stylesStr, Map<String, Dimension> dimensions) throws GeoWebCacheException {
-        
-		Hashtable<SRS,Grid> grids = new Hashtable<SRS,Grid>();
-		for (Entry<Object, CRSEnvelope> entry : bboxs.entrySet()) {
-			String key = (String) entry.getKey();
-			CRSEnvelope value = entry.getValue();
+        return dimensions;
+    }
 
-			SRS srs = SRS.getSRS(key);
-			BBOX dataBounds = new BBOX(value.getMinX(), value.getMinY(), value.getMaxX(), value.getMaxY());
-			Grid grid;
-			if (SRS.getEPSG4326().getNumber() == srs.getNumber()) {
-				grid = new Grid(SRS.getEPSG4326(), dataBounds, BBOX.WORLD4326, GridCalculator.get4326Resolutions());
-                        } else if (SRS.getEPSG900913().getNumber() == srs.getNumber()) {
-                            grid = new Grid(SRS.getEPSG900913(), dataBounds, BBOX.WORLD900913, GridCalculator.get900913Resolutions());
-                        } else if (SRS.getEPSG3021().getNumber() == srs.getNumber()) {
-                            grid = new Grid(SRS.getEPSG3021(), dataBounds, BBOX.EUROPE3021, GridCalculator.get3021Resolutions());
-                        } else if (SRS.getEPSG3006().getNumber() == srs.getNumber()) {
-                            grid = new Grid(SRS.getEPSG3006(), dataBounds, BBOX.EUROPE3006, GridCalculator.get3006Resolutions());
-			} else {
-				grid = new Grid(srs, dataBounds, dataBounds, null);
-				grid.setResolutions(grid.getResolutions());
-			}
-			grids.put(srs, grid);
-		}
-		
+    private WMSLayer getLayer(String name, String title, String _abstract, String[] wmsurl, HashMap<Object, CRSEnvelope> bboxs, 
+            String stylesStr, Map<String, Dimension> dimensions) throws GeoWebCacheException {
+
+        Hashtable<SRS,Grid> grids = new Hashtable<SRS,Grid>();
+        for (Entry<Object, CRSEnvelope> entry : bboxs.entrySet()) {
+            String key = (String) entry.getKey();
+            CRSEnvelope value = entry.getValue();
+
+            SRS srs = SRS.getSRS(key);
+            BBOX dataBounds = new BBOX(value.getMinX(), value.getMinY(), value.getMaxX(), value.getMaxY());
+            Grid grid;
+            if (SRS.getEPSG4326().getNumber() == srs.getNumber()) {
+                grid = new Grid(SRS.getEPSG4326(), dataBounds, BBOX.WORLD4326, GridCalculator.get4326Resolutions());
+            } else if (SRS.getEPSG900913().getNumber() == srs.getNumber()) {
+                grid = new Grid(SRS.getEPSG900913(), dataBounds, BBOX.WORLD900913, GridCalculator.get900913Resolutions());
+            } else if (SRS.getEPSG3021().getNumber() == srs.getNumber()) {
+                grid = new Grid(SRS.getEPSG3021(), dataBounds, BBOX.EUROPE3021, GridCalculator.get3021Resolutions());
+            } else if (SRS.getEPSG3006().getNumber() == srs.getNumber()) {
+                grid = new Grid(SRS.getEPSG3006(), dataBounds, BBOX.EUROPE3006, GridCalculator.get3006Resolutions());
+            } else {
+                grid = new Grid(srs, dataBounds, dataBounds, null);
+                grid.setResolutions(grid.getResolutions());
+            }
+            grids.put(srs, grid);
+        }
+
         List<String> mimeFormats = null;
         if(this.mimeTypes != null) {
             String[] mimeFormatArray = this.mimeTypes.split(",");
             mimeFormats = new ArrayList<String>(mimeFormatArray.length);
-            
+
             // This is stupid... but oh well, we're only doing it once
             for(int i=0;i<mimeFormatArray.length;i++) {
                 mimeFormats.add(mimeFormatArray[i]);
@@ -279,14 +282,14 @@ public class GetCapabilitiesConfiguration implements Configuration {
             mimeFormats.add("image/png8");
             mimeFormats.add("image/jpeg");  
         }
-        
+
         String[] metaStrings = this.metaTiling.split("x");
-        
+
         int[] metaWidthHeight = { Integer.parseInt(metaStrings[0]), Integer.parseInt(metaStrings[1])};
-        
-		// TODO We're dropping the styles now...
-        return new WMSLayer(name, this.cacheFactory, wmsurl, stylesStr, name, mimeFormats, 
-        		grids, metaWidthHeight, this.vendorParameters, dimensions);
+
+        // TODO We're dropping the styles now...
+        return new WMSLayer(name, title, _abstract, this.cacheFactory, wmsurl, stylesStr, name, mimeFormats, 
+                grids, metaWidthHeight, this.vendorParameters, dimensions);
     }
 
     private WebMapServer getWMS() {
@@ -299,20 +302,20 @@ public class GetCapabilitiesConfiguration implements Configuration {
         }
         return null;
     }
-    
+
     private double longToSphericalMercatorX(double x) {
         return (x/180.0)*20037508.34;
     }
-    
+
     private double latToSphericalMercatorY(double y) {        
         if(y > 85.05112) {
             y = 85.05112;
         }
-        
+
         if(y < -85.05112) {
             y = -85.05112;
         }
-        
+
         y = (Math.PI/180.0)*y;
         double tmp = Math.PI/4.0 + y/2.0; 
         return 20037508.34 * Math.log(Math.tan(tmp)) / Math.PI;
@@ -326,5 +329,5 @@ public class GetCapabilitiesConfiguration implements Configuration {
         this.extentHandlerMap = extentHandlerMap;
     }
 
-    
+
 }

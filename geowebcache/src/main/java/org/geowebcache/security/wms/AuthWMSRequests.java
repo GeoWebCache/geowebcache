@@ -46,9 +46,9 @@ public class AuthWMSRequests extends WMSRequests {
     private static Tile tile;
 
     private static final String NS_GWC = "http://geowebcache.org/";
-    
+
     private DataAccessManager dataAccessManager;
-    
+
     public AuthWMSRequests(DataAccessManager dataAccessManager) {
         this.dataAccessManager = dataAccessManager;
     }
@@ -168,7 +168,7 @@ public class AuthWMSRequests extends WMSRequests {
         writeSimpleElement(handler, "Format", "application/vnd.ogc.se_blank");
         handler.endElement(NS_GWC, "Exception", "Exception");
     }
-    
+
     private void writeLayers(ContentHandler handler) throws SAXException {
         Map<String, TileLayer> layerMap = tileLayerDispatcher.getLayers();
         Iterator<TileLayer> iter = layerMap.values().iterator();
@@ -191,89 +191,93 @@ public class AuthWMSRequests extends WMSRequests {
      */
     private static void writeLayer(ContentHandler handler, TileLayer layer) throws SAXException {
         handler.startElement(NS_GWC, "Layer", "Layer", null);
-        writeSimpleElement(handler, "Title", layer.getName());
-        
-            try {
-                Grid grid = layer.getGrid(SRS.getEPSG4326());
-                String[] latLongBounds = doublesToStrings(grid.getBounds().coords);
-                String minx = latLongBounds[0];
-                String miny = latLongBounds[1];
-                String maxx = latLongBounds[2];
-                String maxy = latLongBounds[3];
+        writeSimpleElement(handler, "Name", layer.getName());
+        writeSimpleElement(handler, "Title", layer.getTitle());
+        if (layer.get_abstract() != null) {
+            writeSimpleElement(handler, "Abstract", layer.get_abstract());
+        }
 
-                AttributesImpl srsAtts = new AttributesImpl();
-                srsAtts.addAttribute(NS_GWC, "minx", "minx", "String", minx);
-                srsAtts.addAttribute(NS_GWC, "miny", "miny", "String", miny);
-                srsAtts.addAttribute(NS_GWC, "maxx", "maxx", "String", maxx);
-                srsAtts.addAttribute(NS_GWC, "maxy", "maxy", "String", maxy);
-                handler.startElement(NS_GWC,"LatLonBoundingBox","LatLonBoundingBox", srsAtts);
-                handler.endElement(NS_GWC,"LatLonBoundingBox","LatLonBoundingBox");
-                
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+        try {
+            Grid grid = layer.getGrid(SRS.getEPSG4326());
+            String[] latLongBounds = doublesToStrings(grid.getBounds().coords);
+            String minx = latLongBounds[0];
+            String miny = latLongBounds[1];
+            String maxx = latLongBounds[2];
+            String maxy = latLongBounds[3];
 
-            Iterator<Grid> iter = layer.getGrids().values().iterator();
-            while (iter.hasNext()) {
-                Grid grid = iter.next();
-                String srs = grid.getSRS().toString();
-                writeSimpleElement(handler, "SRS", srs);
-                
-                String[] strBounds = doublesToStrings(grid.getBounds().coords);
-                String minx = strBounds[0];
-                String miny = strBounds[1];
-                String maxx = strBounds[2];
-                String maxy = strBounds[3];
-                
-                AttributesImpl srsAtts = new AttributesImpl();
-                srsAtts.addAttribute(NS_GWC, "srs", "srs", "String", srs);
-                srsAtts.addAttribute(NS_GWC, "minx", "minx", "String", minx);
-                srsAtts.addAttribute(NS_GWC, "miny", "miny", "String", miny);
-                srsAtts.addAttribute(NS_GWC, "maxx", "maxx", "String", maxx);
-                srsAtts.addAttribute(NS_GWC, "maxy", "maxy", "String", maxy);
-                handler.startElement(NS_GWC,"BoundingBox","BoundingBox", srsAtts);
-                handler.endElement(NS_GWC,"BoundingBox","BoundingBox");
+            AttributesImpl srsAtts = new AttributesImpl();
+            srsAtts.addAttribute(NS_GWC, "minx", "minx", "String", minx);
+            srsAtts.addAttribute(NS_GWC, "miny", "miny", "String", miny);
+            srsAtts.addAttribute(NS_GWC, "maxx", "maxx", "String", maxx);
+            srsAtts.addAttribute(NS_GWC, "maxy", "maxy", "String", maxy);
+            handler.startElement(NS_GWC,"LatLonBoundingBox","LatLonBoundingBox", srsAtts);
+            handler.endElement(NS_GWC,"LatLonBoundingBox","LatLonBoundingBox");
 
-//                      String resolutions = getResolutionString(grid.getResolutions());
-//                      writeSimpleElement(handler, "Resolution", resolutions);
-            }
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
-            if (layer instanceof WMSLayer) {
-                WMSLayer wmsLayer = (WMSLayer) layer;
-                Map<String, Dimension> dims = wmsLayer.getDimensions();
-                if (dims != null) {
-                    Iterator<Dimension> dimsIter = dims.values().iterator();
-                    while (dimsIter.hasNext()) {
-                        Dimension dim = dimsIter.next();
-                        AttributesImpl dimAtts = new AttributesImpl();
-                        dimAtts.addAttribute(NS_GWC, "name", "name", "String", dim.getName());
-                        dimAtts.addAttribute(NS_GWC, "units", "units", "String", dim.getUnits());
-                        dimAtts.addAttribute(NS_GWC, "unitSymbol", "unitSymbol", "String", dim.getUnitSymbol());
-                        handler.startElement(NS_GWC,"Dimension","Dimension", dimAtts);
-                        String extent = dim.getExtent();
-                        handler.characters(extent.toCharArray(), 0, extent.length());
-                        handler.endElement(NS_GWC, "Dimension", "Dimension");
-                    }
+        Iterator<Grid> iter = layer.getGrids().values().iterator();
+        while (iter.hasNext()) {
+            Grid grid = iter.next();
+            String srs = grid.getSRS().toString();
+            writeSimpleElement(handler, "SRS", srs);
+
+            String[] strBounds = doublesToStrings(grid.getBounds().coords);
+            String minx = strBounds[0];
+            String miny = strBounds[1];
+            String maxx = strBounds[2];
+            String maxy = strBounds[3];
+
+            AttributesImpl srsAtts = new AttributesImpl();
+            srsAtts.addAttribute(NS_GWC, "srs", "srs", "String", srs);
+            srsAtts.addAttribute(NS_GWC, "minx", "minx", "String", minx);
+            srsAtts.addAttribute(NS_GWC, "miny", "miny", "String", miny);
+            srsAtts.addAttribute(NS_GWC, "maxx", "maxx", "String", maxx);
+            srsAtts.addAttribute(NS_GWC, "maxy", "maxy", "String", maxy);
+            handler.startElement(NS_GWC,"BoundingBox","BoundingBox", srsAtts);
+            handler.endElement(NS_GWC,"BoundingBox","BoundingBox");
+
+            //                      String resolutions = getResolutionString(grid.getResolutions());
+            //                      writeSimpleElement(handler, "Resolution", resolutions);
+        }
+
+        if (layer instanceof WMSLayer) {
+            WMSLayer wmsLayer = (WMSLayer) layer;
+            Map<String, Dimension> dims = wmsLayer.getDimensions();
+            if (dims != null) {
+                Iterator<Dimension> dimsIter = dims.values().iterator();
+                while (dimsIter.hasNext()) {
+                    Dimension dim = dimsIter.next();
+                    AttributesImpl dimAtts = new AttributesImpl();
+                    dimAtts.addAttribute(NS_GWC, "name", "name", "String", dim.getName());
+                    dimAtts.addAttribute(NS_GWC, "units", "units", "String", dim.getUnits());
+                    dimAtts.addAttribute(NS_GWC, "unitSymbol", "unitSymbol", "String", dim.getUnitSymbol());
+                    handler.startElement(NS_GWC,"Dimension","Dimension", dimAtts);
+                    String extent = dim.getExtent();
+                    handler.characters(extent.toCharArray(), 0, extent.length());
+                    handler.endElement(NS_GWC, "Dimension", "Dimension");
                 }
             }
-            
-            List<MimeType> mimeList = layer.getMimeTypes();
-            for (MimeType mime : mimeList) {
-                String format = mime.getFormat();
-                writeSimpleElement(handler, "Format", format);
-            }
-            
-            String style = layer.getStyles();
-            style = style == null ? "default" : style;
-            handler.startElement(NS_GWC, "Style", "Style", null);
-            writeSimpleElement(handler, "Name", style);
-            writeSimpleElement(handler, "Title", style);
-            handler.endElement(NS_GWC, "Style", "Style");
-            
+        }
+
+        List<MimeType> mimeList = layer.getMimeTypes();
+        for (MimeType mime : mimeList) {
+            String format = mime.getFormat();
+            writeSimpleElement(handler, "Format", format);
+        }
+
+        String style = layer.getStyles();
+        style = style == null ? "default" : style;
+        handler.startElement(NS_GWC, "Style", "Style", null);
+        writeSimpleElement(handler, "Name", style);
+        writeSimpleElement(handler, "Title", style);
+        handler.endElement(NS_GWC, "Style", "Style");
+
         handler.endElement(NS_GWC, "Layer", "Layer");
     }
-    
+
     /**	<VendorSpecificCapabilities>
      * 		<TileSet>...</TileSet>
      * 		...
