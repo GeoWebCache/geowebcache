@@ -53,10 +53,11 @@ import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.rest.seed.SeedRequest;
+import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.StorageException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.context.WebApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -66,7 +67,11 @@ import org.xml.sax.SAXException;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomReader;
 
-public class XMLConfiguration implements Configuration, ApplicationContextAware {
+/**
+ * XMLConfiguration class responsible for reading/writing layer
+ * configurations to and from XML file
+ */
+public class XMLConfiguration implements Configuration {
     private static Log log = LogFactory.getLog(org.geowebcache.util.XMLConfiguration.class);
 
     private static final String CONFIGURATION_FILE_NAME = "geowebcache.xml";
@@ -75,6 +80,8 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
         { "/WEB-INF/classes", "/../resources" };
     
     private WebApplicationContext context;
+    
+    private DefaultStorageFinder defStoreFind;
 
     private String absPath = null;
 
@@ -88,17 +95,10 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
     private GeoWebCacheConfiguration gwcConfig = null;
     
-    /**
-     * XMLConfiguration class responsible for reading/writing layer
-     * configurations to and from XML file
-     * 
-     * @param cacheFactory
-     */
-    public XMLConfiguration(StorageBroker storageBroker) {
-        this.storageBroker = storageBroker;
-    }
 
-    public XMLConfiguration() {
+    public XMLConfiguration(ApplicationContextProvider appCtx, DefaultStorageFinder defaultStorage) {
+        context = appCtx.getApplicationContext();
+        defStoreFind = defaultStorage;
     }
     
     /**
@@ -456,8 +456,19 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
                     + configH.getAbsolutePath());
         } else if (relPath == null) {
             // Try env variables
-            File tmpPath = null;
-
+            String defaultPath = null;
+            try {
+                defaultPath = defStoreFind.getDefaultPath();
+            } catch(StorageException se) {
+                // Do nothing
+            }
+            if(defaultPath != null) {
+                File tmpPath = new File( defaultPath + File.separator + CONFIGURATION_FILE_NAME);
+                if(tmpPath.exists()) {
+                    configH = new File(tmpPath.getParent());
+                }
+            }
+            
             // Finally, try "standard" paths if we have to.
             if (configH == null) {
                 for (int i = 0; i < CONFIGURATION_REL_PATHS.length; i++) {
@@ -466,7 +477,7 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
                         relPath = relPath.replace("/", "\\");
                     }
 
-                    tmpPath = new File(baseDir + relPath + File.separator
+                    File tmpPath = new File(baseDir + relPath + File.separator
                             + CONFIGURATION_FILE_NAME);
 
                     if (tmpPath.exists() && tmpPath.canRead()) {
@@ -512,11 +523,6 @@ public class XMLConfiguration implements Configuration, ApplicationContextAware 
 
     public void setAbsolutePath(String absPath) {
         this.absPath = absPath;
-    }
-
-    public void setApplicationContext(ApplicationContext arg0)
-            throws BeansException {
-        context = (WebApplicationContext) arg0;
     }
     
     public void debugPrint(Node node) {

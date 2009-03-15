@@ -165,7 +165,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 handleFrontPage(request, response);
             } else if (requestComps[0].equalsIgnoreCase(TYPE_SERVICE)) {
                 handleServiceRequest(requestComps[1], request, response);
-            } else if (requestComps[0].equalsIgnoreCase(TYPE_DEMO)) {
+            } else if (requestComps[0].equalsIgnoreCase(TYPE_DEMO) 
+                    || requestComps[0].equalsIgnoreCase(TYPE_DEMO + "s")) {
                 handleDemoRequest(requestComps[1],request, response);   
             } else {
                 writeError(response, 404, "Unknown path: " + requestComps[0]);
