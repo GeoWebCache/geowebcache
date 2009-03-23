@@ -322,18 +322,55 @@
 
 <xs:complexType name="regexParameterFilter">
   <xs:sequence>
-    <xs:element name="key" type="xs:string"/>
-    <xs:element name="defaultValue" type="xs:string"/>
-    <xs:element name="regex" type="xs:string"/>
+    <xs:element name="key" type="xs:string">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The key for which the filter should be invoked. The key is case insensitive.
+       </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="defaultValue" type="xs:string">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The default value. This value is used When the client does not specify 
+        the parameter in the request. In many cases this should be an empty element.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="regex" type="xs:string">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The regular expression used to match against the value requested by the client.
+        Care should be taken to allow as few values as possible and to make the 
+        expression as efficient as possible. See Java's regular expression documentation, 
+        the dialect is similar to Perl's regular expressions.
+      </xs:documentation></xs:annotation>
+    </xs:element>
   </xs:sequence>
 </xs:complexType>
 
 <xs:complexType name="floatParameterFilter">
   <xs:sequence>
-    <xs:element name="key" type="xs:string"/>
-    <xs:element name="defaultValue" type="xs:string"/>
-    <xs:element name="values" type="gwc:floatList"/>
-    <xs:element name="threshold" type="xs:float"/>
+    <xs:element name="key" type="xs:string">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The key for which the filter should be invoked. The key is case insensitive.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="defaultValue" type="xs:string">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The default value. This value is used When the client does not specify 
+        the parameter in the request. In many cases this should be an empty element.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="values" type="gwc:floatList">
+      <xs:annotation><xs:documentation xml:lang="en">
+        A list of floating point numbers that are possible values. When a client request is 
+        received these are scanned linearly and that best match, in terms of smallest
+        absolute difference, is used.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="threshold" type="xs:float">
+      <xs:annotation><xs:documentation xml:lang="en">
+        For a request to be accepted, the difference between the value and the best match
+        must not exceed the threshold specified here. A reasonable value is the largest
+        difference between two adjacent values.
+      </xs:documentation></xs:annotation>
+    </xs:element>
   </xs:sequence>
 </xs:complexType>
 
