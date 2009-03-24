@@ -53,10 +53,16 @@ public class Demo {
             page = generateHTML(layer, srs, formatStr);
 
         } else {
-            if(request.getRequestURI().endsWith("demo/")) {
-                page = generateHTML(tileLayerDispatcher, true);
+            if(request.getRequestURI().endsWith("/")) {
+                try {
+                    String reqUri = request.getRequestURI();
+                    response.sendRedirect(response.encodeRedirectURL(reqUri.substring(0, reqUri.length() - 1)));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return;
             } else {
-                page = generateHTML(tileLayerDispatcher, false);
+                page = generateHTML(tileLayerDispatcher);
             }
             
         }
@@ -69,12 +75,10 @@ public class Demo {
         }
     }
     
-    private static String generateHTML(TileLayerDispatcher tileLayerDispatcher, boolean trailingSlash) 
+    private static String generateHTML(TileLayerDispatcher tileLayerDispatcher) 
     throws GeoWebCacheException {
         String reloadPath = "rest/reload";
-        if(trailingSlash) {
-            reloadPath = "../rest/reload";
-        }
+
         String header = 
             "<html><body>\n"
             + GWC_HEADER
@@ -100,14 +104,14 @@ public class Demo {
             +"<td><strong>Custom:</strong></td>" 
             +"</tr>\n";
         
-        String rows = tableRows(tileLayerDispatcher, trailingSlash);
+        String rows = tableRows(tileLayerDispatcher);
         
         String footer = "</table>\n</body></html>";
         
         return header + rows + footer;
     }
     
-    private static String tableRows(TileLayerDispatcher tileLayerDispatcher, boolean trailingSlash)
+    private static String tableRows(TileLayerDispatcher tileLayerDispatcher)
     throws GeoWebCacheException {
         Iterator<Entry<String,TileLayer>> it = 
             tileLayerDispatcher.getLayers().entrySet().iterator();
@@ -118,22 +122,19 @@ public class Demo {
             TileLayer layer = it.next().getValue();     
             buf.append("<tr><td>"+layer.getName()+"</td>");
             if(layer.supportsSRS(SRS.getEPSG4326())) {
-                buf.append("<td>"+generateDemoUrl(layer.getName(), 4326,"EPSG:4326", trailingSlash)+"</td>");
+                buf.append("<td>"+generateDemoUrl(layer.getName(), 4326,"EPSG:4326")+"</td>");
             } else {
                 buf.append("<td>EPSG:4326 not supported</td>");
             }
             
             if(layer.supportsSRS(SRS.getEPSG900913())) {
-                buf.append("<td>"+generateDemoUrl(layer.getName(), 900913,"EPSG:900913", trailingSlash)+"</td>");
+                buf.append("<td>"+generateDemoUrl(layer.getName(), 900913,"EPSG:900913")+"</td>");
             } else {
                 buf.append("<td>EPSG:900913 not supported</td>");
             }
             
             if(layer.supportsSRS(SRS.getEPSG4326())) {
                 String prefix = "";
-                if(trailingSlash) {
-                    prefix = "../";
-                }
                 buf.append("<td><a href=\""+prefix+"service/kml/"+layer.getName()+".png.kmz\">KML (PNG)</a></td>"
                 + "<td><a href=\""+prefix+"service/kml/"+layer.getName()+".kml.kmz\">KML (vector)</a></td>");
             } else {
@@ -147,7 +148,7 @@ public class Demo {
             while(iter.hasNext()) {
                 SRS curSRS = iter.next();
                 if(curSRS.getNumber() != 4326 && curSRS.getNumber() != 900913) { 
-                    buf.append(generateDemoUrl(layer.getName(), curSRS.getNumber(),curSRS.toString(), trailingSlash)+"<br />");
+                    buf.append(generateDemoUrl(layer.getName(), curSRS.getNumber(),curSRS.toString())+"<br />");
                     count++;
                 }
             }
@@ -162,12 +163,8 @@ public class Demo {
         return buf.toString();
     }
     
-    private static String generateDemoUrl(String layerName, int epsgNumber, String text, boolean trailingSlash) {
-        if(trailingSlash) {
-            return "<a href=\"./"+layerName+"?srs=EPSG:"+epsgNumber+"\">"+text+"</a>";
-        } else {
-            return "<a href=\"demo/"+layerName+"?srs=EPSG:"+epsgNumber+"\">"+text+"</a>";
-        }
+    private static String generateDemoUrl(String layerName, int epsgNumber, String text) {
+        return "<a href=\"demo/"+layerName+"?srs=EPSG:"+epsgNumber+"\">"+text+"</a>";
     }
     
     private static String generateHTML(TileLayer layer, SRS srs, String formatStr) 
