@@ -20,6 +20,8 @@ package org.geowebcache.conveyor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
@@ -29,7 +31,9 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 
-public class ConveyorTile extends Conveyor implements TileResponseReceiver {    
+public class ConveyorTile extends Conveyor implements TileResponseReceiver {
+    private static Log log = LogFactory.getLog(org.geowebcache.conveyor.ConveyorTile.class);
+    
     // Shared request information, this is stored by the cache key
     protected int[] tileIndex = null;
     protected String layerId = null;
@@ -149,7 +153,8 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         try {
             return storageBroker.get((TileObject) stObj);
         } catch (StorageException se) {
-            throw new GeoWebCacheException(se.getMessage());
+            log.warn(se.getMessage());
+            return false;
         }
     }
 }
