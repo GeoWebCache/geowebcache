@@ -60,7 +60,7 @@ public class AuthWMSRequests extends WMSRequests {
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-        OutputFormat of = new OutputFormat("XML","ISO-8859-1",true);
+        OutputFormat of = new OutputFormat("XML","UTF-8",true);
         of.setIndent(1);
         of.setIndenting(true);
         //		<!DOCTYPE WMT_MS_Capabilities SYSTEM
@@ -68,7 +68,7 @@ public class AuthWMSRequests extends WMSRequests {
         //			[
         //				<!ELEMENT VendorSpecificCapabilities EMPTY>
         //			]>
-        of.setDoctype(null, "http://schemas.opengis.net/wms/1.1.1/WMS_MS_Capabilities.dtd");
+        of.setDoctype(null, "http://schemas.opengis.net/wms/1.3.0/WMS_MS_Capabilities.dtd");
 
         XMLSerializer serializer = new XMLSerializer(outputStream, of);
         ContentHandler handler;
@@ -97,12 +97,15 @@ public class AuthWMSRequests extends WMSRequests {
      */
     private void writeWMT_MS_Capabilities(ContentHandler handler) throws SAXException {
         AttributesImpl atts = new AttributesImpl();
-        atts.addAttribute(NS_GWC, "version", "version", "String", "1.1.1");
+        atts.addAttribute(NS_GWC, "version", "version", "String", "1.3.0");
         atts.addAttribute(NS_GWC, "updateSequence", "updateSequence", "Integer", "250");
+        handler.startPrefixMapping("xlink", "http://www.w3.org/1999/xlink");
+
         handler.startElement(NS_GWC,"","WMT_MS_Capabilities",atts);
         writeService(handler);
         writeCapability(handler);
         handler.endElement(NS_GWC, "WMT_MS_Capabilities", "WMT_MS_Capabilities");
+        handler.endPrefixMapping("xlink");
     }
 
     /**
@@ -121,10 +124,10 @@ public class AuthWMSRequests extends WMSRequests {
         atts.addAttribute(NS_GWC, "type", "xlink:type", "String", "simple");
         String url = tile.servletReq.getRequestURL().toString();
         atts.addAttribute(NS_GWC, "href", "xlink:href", "String", url);
-        handler.startPrefixMapping("xlink", "http://www.w3.org/1999/xlink");
+
         handler.startElement(NS_GWC,"","OnlineResource", atts);
         handler.endElement(NS_GWC,"","OnlineResource");
-        handler.endPrefixMapping("xlink");
+
         handler.endElement(NS_GWC, "Service", "Service");
     }
 
@@ -140,7 +143,7 @@ public class AuthWMSRequests extends WMSRequests {
         writeRequest(handler);
         writeException(handler);
         writeLayers(handler);
-        writeVendorSpecificCapabilities(handler);
+        //writeVendorSpecificCapabilities(handler);
         handler.endElement(NS_GWC, "Capability", "Capability");
     }
 
@@ -215,7 +218,6 @@ public class AuthWMSRequests extends WMSRequests {
 
         } catch (Exception e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
         }
 
         Iterator<Grid> iter = layer.getGrids().values().iterator();
@@ -325,9 +327,9 @@ public class AuthWMSRequests extends WMSRequests {
         handler.startElement(NS_GWC,"DCPType","DCPType", null);
         handler.startElement(NS_GWC,"Get","Get", null);
         AttributesImpl atts = new AttributesImpl();
-        atts.addAttribute(NS_GWC, "type", "xlink:type", "String", "simple");
         String url = tile.servletReq.getRequestURL().toString();
         atts.addAttribute(NS_GWC, "href", "xlink:href", "String", url);
+        atts.addAttribute(NS_GWC, "type", "xlink:type", "String", "simple");
         handler.startElement(NS_GWC,"OnlineResource","OnlineResource", atts);
         handler.endElement(NS_GWC, "OnlineResource", "OnlineResource");
         handler.endElement(NS_GWC, "Get", "Get");
