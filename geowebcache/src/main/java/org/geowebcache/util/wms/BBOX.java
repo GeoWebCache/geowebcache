@@ -37,12 +37,12 @@ public class BBOX {
         new BBOX(-20037508.34,-20037508.34,20037508.34,20037508.34);
     
     public static final BBOX EUROPE3021 = 
-        new BBOX(156291.406699,5712054.271578,2241064.528081,7738294.414112);
-    
+        new BBOX(-3448511.54390563, 4066427.80737109, 3183067.83188831, 8670169.65264369);
+
     public static final BBOX EUROPE3006 = 
-        new BBOX(785995.223524,5695741.192086,1272251.465874,7746062.498557);
-    
-    // minx, miny, maxx, maxy
+        new BBOX(-4351812.68513065, 4019846.80102952, 2201719.09870337, 8691275.06360015);
+
+// minx, miny, maxx, maxy
     public double[] coords = new double[4];
 
     public BBOX(BBOX bbox) {
