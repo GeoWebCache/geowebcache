@@ -82,6 +82,10 @@ public class Dimension {
         }
         return valid;
     }
+    
+    public String getFirstValue() {
+        return extentHandler.getFirstValue(extent);
+    }
 
     /**
      * @see org.geowebcache.util.wms.ExtentHandler.getValue(Dimension dimension, String value)

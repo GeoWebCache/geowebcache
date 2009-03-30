@@ -13,7 +13,9 @@ import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.util.wms.BBOX;
+import org.geowebcache.util.wms.Dimension;
 
 public class Demo {
 
@@ -212,7 +214,23 @@ public class Demo {
             +"map = new OpenLayers.Map('map', mapOptions );\n"
             +"var demolayer = new OpenLayers.Layer.WMS(\n"
             +"\""+layerName+"\",\"../service/wms\",\n"
-            +"{layers: '"+layerName+"', format: '"+formatStr+"'} );\n"
+            +"{layers: '"+layerName+"', format: '"+formatStr + "'";
+            
+        if (layer instanceof WMSLayer && ((WMSLayer) layer).getDimensions() != null) {
+            WMSLayer wmsLayer = (WMSLayer) layer;
+            Iterator<Dimension> dimsIter = wmsLayer.getDimensions().values().iterator();
+            while (dimsIter.hasNext()) {
+                Dimension dim = dimsIter.next();
+                String dimName = dim.getName();
+                if (!("time".equalsIgnoreCase(dimName) || "elevation".equalsIgnoreCase(dimName))) {
+                    dimName = "dim_" + dimName;
+                }
+                String extent = dim.getFirstValue();
+                page += ", " + dimName + ": '" + extent + "'";
+            }
+        }
+            
+        page += "} );\n"
             +"map.addLayer(demolayer);\n"
             +"map.zoomToExtent(new OpenLayers.Bounds("+zoomBounds.toString()+"));\n"
             +"}\n"

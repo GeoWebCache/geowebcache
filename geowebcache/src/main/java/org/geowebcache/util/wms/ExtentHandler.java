@@ -70,6 +70,14 @@ public abstract class ExtentHandler {
         }
         return parsedValue;
     }
+    
+    public String getFirstValue(String extent) {
+        if (extent == null) {
+            return null;
+        }
+        List<String> extents = splitString(extent);
+        return extents.get(0);
+    }
 
     /**
      * Splits the string value of a parameter on "," into a list of trimmed 
