@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
@@ -163,36 +164,10 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
         while (layerIter.hasNext()) {
             Layer layer = layerIter.next();
-            String name = layer.getName();
-            String title = layer.getTitle();
-            String _abstract = layer.get_abstract();
-            
-            String stylesStr = "";
-
-            if (name != null) {
-                List<StyleImpl> styles = layer.getStyles();
-
-                StringBuffer buf = new StringBuffer();
-                if(styles != null) {
-                    Iterator<StyleImpl> iter = styles.iterator();
-                    boolean hasOne = false;
-                    while(iter.hasNext()) {
-                        if(hasOne) {
-                            buf.append(",");
-                        }
-                        buf.append(iter.next().getName());
-                        hasOne = true;
-                    }
-                    stylesStr = buf.toString();
-                }
-
-                Map<String, Dimension> dimensions = parseDimensions(layer.getDimensions());
-
-                String[] wmsUrls = {wmsUrl};
-
+            if (layer.getName() != null) {
                 WMSLayer wmsLayer = null;
                 try {
-                    wmsLayer = getLayer(name, title, _abstract, wmsUrls, layer.getBoundingBoxes(), stylesStr, dimensions);
+                    wmsLayer = getLayer(layer, wmsUrl);
                 } catch (GeoWebCacheException gwc) {
                     log.error("Error creating " + layer.getName() + ": "
                             + gwc.getMessage());
@@ -241,32 +216,76 @@ public class GetCapabilitiesConfiguration implements Configuration {
         return dimensions;
     }
 
-    private WMSLayer getLayer(String name, String title, String _abstract, String[] wmsurl, HashMap<Object, CRSEnvelope> bboxs, 
-            String stylesStr, Map<String, Dimension> dimensions) throws GeoWebCacheException {
+    private WMSLayer getLayer(Layer layer, String wmsUrl) throws GeoWebCacheException {
 
-        Hashtable<SRS,Grid> grids = new Hashtable<SRS,Grid>();
-        for (Entry<Object, CRSEnvelope> entry : bboxs.entrySet()) {
-            String key = (String) entry.getKey();
-            CRSEnvelope value = entry.getValue();
+        String name = layer.getName();
+        String title = layer.getTitle();
+        String _abstract = layer.get_abstract();
+        
+        String stylesStr = "";
 
-            SRS srs = SRS.getSRS(key);
-            BBOX dataBounds = new BBOX(value.getMinX(), value.getMinY(), value.getMaxX(), value.getMaxY());
-            Grid grid;
-            if (SRS.getEPSG4326().getNumber() == srs.getNumber()) {
-                grid = new Grid(SRS.getEPSG4326(), dataBounds, BBOX.WORLD4326, GridCalculator.get4326Resolutions());
-            } else if (SRS.getEPSG900913().getNumber() == srs.getNumber()) {
-                grid = new Grid(SRS.getEPSG900913(), dataBounds, BBOX.WORLD900913, GridCalculator.get900913Resolutions());
-            } else if (SRS.getEPSG3021().getNumber() == srs.getNumber()) {
-                grid = new Grid(SRS.getEPSG3021(), dataBounds, BBOX.EUROPE3021, GridCalculator.get3021Resolutions());
-            } else if (SRS.getEPSG3006().getNumber() == srs.getNumber()) {
-                grid = new Grid(SRS.getEPSG3006(), dataBounds, BBOX.EUROPE3006, GridCalculator.get3006Resolutions());
-            } else {
-                grid = new Grid(srs, dataBounds, dataBounds, null);
-                grid.setResolutions(grid.getResolutions());
+        List<StyleImpl> styles = layer.getStyles();
+
+        StringBuffer buf = new StringBuffer();
+        if(styles != null) {
+            Iterator<StyleImpl> iter = styles.iterator();
+            boolean hasOne = false;
+            while(iter.hasNext()) {
+                if(hasOne) {
+                    buf.append(",");
+                }
+                buf.append(iter.next().getName());
+                hasOne = true;
             }
-            grids.put(srs, grid);
+            stylesStr = buf.toString();
         }
 
+        Map<String, Dimension> dimensions = parseDimensions(layer.getDimensions());
+
+        String[] wmsUrls = {wmsUrl};
+        
+        Hashtable<SRS,Grid> grids = new Hashtable<SRS,Grid>();
+        
+        Set<Object> srss = layer.getSrs();
+        Map<Object, CRSEnvelope> bboxs = layer.getBoundingBoxes();
+        CRSEnvelope latLongBBOX = layer.getLatLonBoundingBox();
+        if (latLongBBOX != null) {
+            latLongBBOX.setEPSGCode("EPSG:4326");
+            bboxs.put("EPSG:4326", latLongBBOX);
+            srss.add("EPSG:4326");
+        }
+        for (Object srsKey : srss) {
+            String key = (String) srsKey;
+            CRSEnvelope value = bboxs.get(srsKey);
+            SRS srs = SRS.getSRS(key);
+            Grid grid = null;
+            
+            // select st_astext(st_transform(st_setsrid(st_point(1200000, 6100000), 3021), 3006))
+
+            if (value != null) {
+                BBOX dataBounds = new BBOX(value.getMinX(), value.getMinY(), value.getMaxX(), value.getMaxY());
+                if (SRS.getEPSG4326().getNumber() == srs.getNumber()) {
+                    grid = new Grid(SRS.getEPSG4326(), dataBounds, BBOX.WORLD4326, GridCalculator.get4326Resolutions());
+                } else if (SRS.getEPSG900913().getNumber() == srs.getNumber()) {
+                    grid = new Grid(SRS.getEPSG900913(), dataBounds, BBOX.WORLD900913, GridCalculator.get900913Resolutions());
+                } else {
+                    grid = new Grid(srs, dataBounds, dataBounds, null);
+                    grid.setResolutions(grid.getResolutions());
+                }
+            } else if (SRS.getEPSG3021().getNumber() == srs.getNumber()) {
+                grid = new Grid(SRS.getEPSG3021(), BBOX.EUROPE3021, BBOX.EUROPE3021, GridCalculator.get3021Resolutions());
+            } else if (SRS.getEPSG3006().getNumber() == srs.getNumber()) {
+                grid = new Grid(SRS.getEPSG3006(), BBOX.EUROPE3006, BBOX.EUROPE3006, GridCalculator.get3006Resolutions());
+            } else if (SRS.getEPSG900913().getNumber() == srs.getNumber()) {
+                grid = new Grid(SRS.getEPSG900913(), BBOX.WORLD900913, BBOX.WORLD900913, GridCalculator.get900913Resolutions());
+            } else if (SRS.getEPSG4326().getNumber() == srs.getNumber()) {
+                grid = new Grid(SRS.getEPSG4326(), BBOX.WORLD4326, BBOX.WORLD4326, GridCalculator.get4326Resolutions());
+            }
+            if (grid != null) {
+                grids.put(srs, grid);
+            }
+        }
+        
         List<String> mimeFormats = null;
         if(this.mimeTypes != null) {
             String[] mimeFormatArray = this.mimeTypes.split(",");
@@ -288,7 +307,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
         int[] metaWidthHeight = { Integer.parseInt(metaStrings[0]), Integer.parseInt(metaStrings[1])};
 
         // TODO We're dropping the styles now...
-        return new WMSLayer(name, title, _abstract, this.cacheFactory, wmsurl, stylesStr, name, mimeFormats, 
+        return new WMSLayer(name, title, _abstract, this.cacheFactory, wmsUrls, stylesStr, name, mimeFormats, 
                 grids, metaWidthHeight, this.vendorParameters, dimensions);
     }
 
