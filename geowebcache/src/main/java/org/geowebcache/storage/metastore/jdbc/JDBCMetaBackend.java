@@ -142,4 +142,11 @@ public class JDBCMetaBackend implements MetaStore {
         
     }
 
+    public void destroy() {
+        if(this.wrpr != null) {
+            wrpr.destroy();
+        }
+        
+    }
+
 }

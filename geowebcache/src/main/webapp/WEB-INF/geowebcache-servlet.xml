@@ -39,15 +39,15 @@
   	<constructor-arg ref="gwcAppCtx" />
   </bean>
 
-  <bean id="gwcMetaStore" class="org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend">
+  <bean id="gwcMetaStore" class="org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend" destroy-method="destroy">
     <constructor-arg ref="gwcDefaultStorageFinder" />
   </bean>
   
-  <bean id="gwcBlobStore" class="org.geowebcache.storage.blobstore.file.FileBlobStore">
+  <bean id="gwcBlobStore" class="org.geowebcache.storage.blobstore.file.FileBlobStore" destroy-method="destroy">
     <constructor-arg ref="gwcDefaultStorageFinder" />
   </bean>
   
-  <bean id="gwcStorageBroker" class="org.geowebcache.storage.StorageBroker">
+  <bean id="gwcStorageBroker" class="org.geowebcache.storage.StorageBroker" destroy-method="destroy">
     <constructor-arg type="org.geowebcache.storage.MetaStore" ref="gwcMetaStore" />
     <constructor-arg type="org.geowebcache.storage.BlobStore" ref="gwcBlobStore" />
   </bean>

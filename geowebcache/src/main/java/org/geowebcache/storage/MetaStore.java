@@ -34,4 +34,9 @@ public interface MetaStore {
      * @throws StorageException
      */
     public void clear() throws StorageException;
+    
+    /** 
+     * Destroy method for Spring
+     */
+    public void destroy();
 }

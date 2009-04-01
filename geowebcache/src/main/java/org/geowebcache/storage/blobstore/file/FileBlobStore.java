@@ -270,4 +270,11 @@ public class FileBlobStore implements BlobStore {
     public void clear() throws StorageException {
         throw new StorageException("Not implemented yet!");
     }
+
+    /** 
+     * Destroy method for Spring
+     */
+    public void destroy() {
+       // Do nothing 
+    }
 }

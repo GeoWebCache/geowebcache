@@ -5,10 +5,11 @@
   <groupId>org.opengeo</groupId>
   <artifactId>geowebcache</artifactId>
   <packaging>jar</packaging>
-  <version>1.1.0a</version>
+  <version>1.1.0b</version>
   <name>geowebcache</name>
   <url>http://geowebcache.org</url>
-  
+
+<!-- mvn -Dtest=StorageBrokerTest -Dmaven.test.jvmargs='-XX:+HeapDumpOnOutOfMemoryError -Xms32m -Xmx32m' test -->  
   <properties>
     <!-- gs.version>1.6.4</gs.version -->
     <gt.version>2.5.2</gt.version>
@@ -20,7 +21,8 @@
     <java.awt.headless>true</java.awt.headless>
     <jalopy.phase>disabled</jalopy.phase>
     <jalopy.srcExcludesPattern>disabled</jalopy.srcExcludesPattern>
-    <test.maxHeapSize>512M</test.maxHeapSize>
+    <test.maxHeapSize>64M</test.maxHeapSize>
+    <maven.test.jvmargs></maven.test.jvmargs>
   </properties>
   
   <repositories>
@@ -308,7 +310,7 @@
     <dependency>
       <groupId>org.h2database</groupId>
       <artifactId>h2</artifactId>
-      <version>1.1.104</version>
+      <version>1.1.109</version>
     </dependency>
   </dependencies>
 
@@ -389,6 +391,15 @@
 	</executions>
       </plugin>
       
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <forkMode>pertest</forkMode>
+          <argLine>${maven.test.jvmargs}</argLine>
+        </configuration>
+      </plugin>
+
     </plugins>
     
     <extensions>

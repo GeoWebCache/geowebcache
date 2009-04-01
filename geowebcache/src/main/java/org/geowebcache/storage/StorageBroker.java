@@ -102,4 +102,11 @@ public class StorageBroker {
 
         return false;
     }
+    
+    /** 
+     * Destroy method for Spring
+     */
+    public void destroy() {
+        log.info("Destroying StorageBroker");
+    }
 }
