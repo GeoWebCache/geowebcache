@@ -19,7 +19,6 @@ package org.geowebcache.layer.wms;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -114,6 +113,8 @@ public class WMSLayer extends TileLayer {
     private transient ParameterFilter[] sortedModParams;
     
     private transient String[] sortedModParamsKeys;
+    
+    private transient boolean stylesIsModParam = false;
 
     private transient volatile Boolean isInitialized;
 
@@ -225,6 +226,12 @@ public class WMSLayer extends TileLayer {
 
             while (iter.hasNext()) {
                 ParameterFilter modParam = iter.next();
+                String key = modParam.getKey();
+                
+                // STYLES is special because it is mandatory, so we need to make a special case
+                if(key.equalsIgnoreCase("STYLES")) {
+                    stylesIsModParam = true;
+                }
                 tree.put(modParam.getKey(), modParam);
             }
 
@@ -682,9 +689,11 @@ public class WMSLayer extends TileLayer {
             strBuilder.append(ErrorMime.vnd_ogc_se_inimage.getMimeType());
         }
         
-        strBuilder.append("&STYLES=");
-        if (wmsStyles != null && wmsStyles.length() != 0) {
-            strBuilder.append(wmsStyles);
+        if (!stylesIsModParam) {
+            strBuilder.append("&STYLES=");
+            if (wmsStyles != null && wmsStyles.length() != 0) {
+                strBuilder.append(wmsStyles);
+            }
         }
 
         if(transparent != null) {
