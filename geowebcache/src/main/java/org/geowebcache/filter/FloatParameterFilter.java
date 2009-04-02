@@ -26,6 +26,10 @@ public class FloatParameterFilter extends ParameterFilter {
     Float threshold;
     
     public String apply(String str) throws ParameterException {
+        if(str == null || str.length() == 0) {
+            return "";
+        }
+        
         float val = Float.parseFloat(str);
    
         float best = Float.MIN_VALUE;
