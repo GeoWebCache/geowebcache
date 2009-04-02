@@ -196,7 +196,7 @@ public class Demo {
             +"#map { width: 85%; height: 85%; border: 0px; padding: 0px; }\n"
             +"</style>\n"
 
-            +"<script src=\"http://openlayers.org/api/OpenLayers.js\"></script>\n"
+            +"<script src=\"../openlayers/OpenLayers.js\"></script>\n"
             +"<script type=\"text/javascript\">\n"
             +"OpenLayers.Util.onImageLoadErrorColor = 'transparent';\n"
             +"var map, layer;\n"
