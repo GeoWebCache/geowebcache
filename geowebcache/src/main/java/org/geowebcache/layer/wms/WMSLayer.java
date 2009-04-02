@@ -60,30 +60,22 @@ public class WMSLayer extends TileLayer {
 
     private String wmsLayers = null;
     
-    //pat
     private String wmsStyles = null;
     
     private int[] metaWidthHeight = null;
 
-    //pat
     private String errorMime;
 
-    //pat
     private String wmsVersion;
 
-    //pat
     private Boolean tiled;
 
-    //pat
     private Boolean transparent;
     
-    //pat
     private String bgColor;
 
-    //pat
     private String palette;
     
-    // ?
     private String vendorParameters;
     
     //Not used, should be removed through XSL
@@ -119,14 +111,9 @@ public class WMSLayer extends TileLayer {
 
     private transient HashMap<GridLocObj, Boolean> procQueue;
     
-    //private transient TreeMap<String,ModifiableParameter> 
     private transient ParameterFilter[] sortedModParams;
     
     private transient String[] sortedModParamsKeys;
-    
-    //private transient SortedSet test;
-
-    //transient Integer cacheLockWait;
 
     private transient volatile Boolean isInitialized;
 
@@ -623,14 +610,6 @@ public class WMSLayer extends TileLayer {
             formats.add(0, ImageMime.createFromFormat("image/png"));
             formats.add(1, ImageMime.createFromFormat("image/jpeg"));
         }
-        
-        //RegexParameterFilter param = new RegexParameterFilter();
-        //this.parameterFilters = new ArrayList<ParameterFilter>();
-        
-        //param.defaultValue = "default";
-        //param.key = "key";
-        //param.regex = "regex";
-        //this.parameterFilters.add(param);
     }
 
     protected void saveExpirationInformation(int backendExpire) {
@@ -703,8 +682,9 @@ public class WMSLayer extends TileLayer {
             strBuilder.append(ErrorMime.vnd_ogc_se_inimage.getMimeType());
         }
         
+        strBuilder.append("&STYLES=");
         if (wmsStyles != null && wmsStyles.length() != 0) {
-            strBuilder.append("&STYLES=").append(wmsStyles);
+            strBuilder.append(wmsStyles);
         }
 
         if(transparent != null) {
