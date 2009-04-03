@@ -44,7 +44,7 @@ public class TileLayerDispatcher {
 
         TileLayer layer = tmpLayers.get(layerIdent);
         if (layer == null) {
-            throw new GeoWebCacheException("Unknown layer " + layerIdent
+            throw new GeoWebCacheException("Thread " + Thread.currentThread().getId() + " Unknown layer " + layerIdent
                     + ". Check the logfiles,"
                     + " it may not have loaded properly.");
         }
@@ -85,21 +85,25 @@ public class TileLayerDispatcher {
      */
     public HashMap<String, TileLayer> getLayers() {
         HashMap<String, TileLayer> result = this.layers;
+        //System.out.println("Thread " + Thread.currentThread().getId() + " coming in");
         if (result == null) {
+            //System.out.println("Thread " + Thread.currentThread().getId() + " found result == null");
             synchronized (this) {
                 result = this.layers;
                 if (result == null) {
+                    //System.out.println("Thread " + Thread.currentThread().getId() + " DID ACTUAL INIT");
                     this.layers = result = initialize();
                 }
             }
         }
+        //System.out.println("Thread " + Thread.currentThread().getId() + " exiting");
         return result;
     }
 
     private HashMap<String, TileLayer> initialize() {
         log.debug("Thread initLayers(), initializing");
 
-        layers = new HashMap<String, TileLayer>();
+        HashMap<String, TileLayer> newLayers = new HashMap<String, TileLayer>();
 
         Iterator<Configuration> configIter = configs.iterator();
         while (configIter.hasNext()) {
@@ -129,7 +133,8 @@ public class TileLayerDispatcher {
                     
                     while (iter.hasNext()) {
                         TileLayer layer = iter.next();
-                        add(layer);
+                        log.info("Adding: " + layer.getName());
+                        add(layer, newLayers);
                     }
                 } else {
                     log.error("Configuration " + configIdent
@@ -138,7 +143,7 @@ public class TileLayerDispatcher {
             }
         }
 
-        return layers;
+        return newLayers;
     }
     
     public void update(TileLayer layer) {
@@ -157,14 +162,18 @@ public class TileLayerDispatcher {
     }
     
     public void add(TileLayer layer) {        
-        if(layers.containsKey(layer.getName())) {
+        add(layer, this.layers);
+    }
+    
+    private void add(TileLayer layer, HashMap<String, TileLayer> layerMap) {        
+        if(layerMap.containsKey(layer.getName())) {
             try {
-                layers.get(layer.getName()).mergeWith(layer);
+                layerMap.get(layer.getName()).mergeWith(layer);
             } catch (GeoWebCacheException gwce) {
                 log.error(gwce.getMessage());
             }
         } else {
-            layers.put(layer.getName(), layer);
+            layerMap.put(layer.getName(), layer);
         }
     }
 }
