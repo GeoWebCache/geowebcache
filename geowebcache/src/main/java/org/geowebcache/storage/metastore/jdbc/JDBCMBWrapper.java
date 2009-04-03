@@ -58,6 +58,10 @@ class JDBCMBWrapper {
         
     final String driverClass;
     
+    final Connection persistentConnection;
+    
+    boolean closing = false;
+    
     protected JDBCMBWrapper(String driverClass, String jdbcString,String username, String password)
     throws StorageException,SQLException {
         this.jdbcString = jdbcString;
@@ -71,6 +75,8 @@ class JDBCMBWrapper {
             throw new StorageException("Class not found: " + cnfe.getMessage());
         }
         
+        persistentConnection = getConnection();
+        
         checkTables();
     }
     
@@ -81,7 +87,7 @@ class JDBCMBWrapper {
         String path = defStoreFind.getDefaultPath() + File.separator + "meta_jdbc_h2";
         File dir = new File(path);
         dir.mkdirs();
-        this.jdbcString = "jdbc:h2:file:"+path+File.separator+"gwc_metastore";
+        this.jdbcString = "jdbc:h2:file:"+path+File.separator+"gwc_metastore" + ";TRACE_LEVEL_FILE=0";
         
         try {
             Class.forName(driverClass);
@@ -89,11 +95,17 @@ class JDBCMBWrapper {
             throw new StorageException("Class not found: " + cnfe.getMessage());
         }
         
+        persistentConnection = getConnection();
+        
         checkTables();
     }
 
     protected Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(jdbcString,username,password);
+        if(! closing) {
+            return DriverManager.getConnection(jdbcString,username,password);
+        } else {
+            return null;
+        }
     }
     
     private void checkTables() throws StorageException,SQLException {
@@ -242,7 +254,9 @@ class JDBCMBWrapper {
         }
         long[] xyz = stObj.getXYZ();
         
-        PreparedStatement prep = getConnection().prepareStatement(query);
+        Connection conn = getConnection();
+        
+        PreparedStatement prep = conn.prepareStatement(query);
         prep.setLong(1, stObj.getLayerId());
         prep.setLong(2, xyz[0]);
         prep.setLong(3, xyz[1]);
@@ -273,6 +287,8 @@ class JDBCMBWrapper {
             
             if(prep != null)
                 prep.close();
+            
+            conn.close();
         }
     }
     
@@ -280,18 +296,19 @@ class JDBCMBWrapper {
     throws SQLException {
         String query = null;
         PreparedStatement prep = null;
+        Connection conn = getConnection();
         
         if(parameters != null) {
             query = "SELECT WFS_ID,BLOB_SIZE,CREATED FROM WFS WHERE " 
                 + " PARAMETERS_ID = ? LIMIT 1 ";
              
-            prep = getConnection().prepareStatement(query);
+            prep = conn.prepareStatement(query);
             prep.setLong(1, parameters);
         } else {
             query = "SELECT WFS_ID,BLOB_SIZE,CREATED FROM WFS WHERE " 
                 + " QUERY_BLOB_MD5 LIKE ? AND QUERY_BLOB_SIZE = ? LIMIT 1";
             
-            prep = getConnection().prepareStatement(query);
+            prep = conn.prepareStatement(query);
             prep.setString(1,wfsObj.getQueryBlobMd5());
             prep.setInt(2, wfsObj.getQueryBlobSize());
         }
@@ -315,40 +332,49 @@ class JDBCMBWrapper {
             
             if(prep != null)
                 prep.close();
+            
+            conn.close();
         }
     }
     
     public void putTile(TileObject stObj) 
     throws SQLException, StorageException {
 
-        String query = "INSERT INTO TILES (" 
-                + "  LAYER_ID,X,Y,Z,SRS_ID,FORMAT_ID,PARAMETERS_ID,BLOB_SIZE" 
+        String query = "INSERT INTO TILES ("
+                + "  LAYER_ID,X,Y,Z,SRS_ID,FORMAT_ID,PARAMETERS_ID,BLOB_SIZE"
                 + ") VALUES(?,?,?,?,?,?,?,?)";
-        
+
         long[] xyz = stObj.getXYZ();
-        
-        PreparedStatement prep = getConnection().prepareStatement(
-                query, Statement.RETURN_GENERATED_KEYS);
-        prep.setLong(1, stObj.getLayerId());
-        prep.setLong(2, xyz[0]);
-        prep.setLong(3, xyz[1]);
-        prep.setLong(4, xyz[2]);
-        prep.setLong(5, stObj.getSrs());
-        prep.setLong(6, stObj.getFormatId());
-        if(stObj.getParametersId() == -1L) {
-            prep.setNull(7, java.sql.Types.BIGINT);
-        } else {
-            prep.setLong(7, stObj.getParametersId());
+
+        Connection conn = getConnection();
+
+        try {
+            PreparedStatement prep = conn.prepareStatement(query,
+                    Statement.RETURN_GENERATED_KEYS);
+            prep.setLong(1, stObj.getLayerId());
+            prep.setLong(2, xyz[0]);
+            prep.setLong(3, xyz[1]);
+            prep.setLong(4, xyz[2]);
+            prep.setLong(5, stObj.getSrs());
+            prep.setLong(6, stObj.getFormatId());
+            if (stObj.getParametersId() == -1L) {
+                prep.setNull(7, java.sql.Types.BIGINT);
+            } else {
+                prep.setLong(7, stObj.getParametersId());
+            }
+            prep.setInt(8, stObj.getBlobSize());
+
+            Long insertId = wrappedInsert(prep);
+
+            if (insertId == null) {
+                log.error("Did not receive a id for " + query);
+            } else {
+                stObj.setId(insertId.longValue());
+            }
+        } finally {
+            conn.close();
         }
-        prep.setInt(8, stObj.getBlobSize());
         
-        Long insertId = wrappedInsert(prep);
-        
-        if(insertId == null) {
-            log.error("Did not receive a id for " + query);
-        } else {
-            stObj.setId(insertId.longValue());
-        }
     }
     
     public void putWFS(Long parameters, WFSObject stObj)
@@ -356,38 +382,43 @@ class JDBCMBWrapper {
 
         PreparedStatement prep = null;
         String query = null;
+        Connection conn = getConnection();
 
-        if (parameters != null) {
-            query = "INSERT INTO WFS (" 
-                    + "  PARAMETERS_ID,BLOB_SIZE,CREATED" 
-                    + ") VALUES(?,?,?)";
+        try {
+            if (parameters != null) {
+                query = "INSERT INTO WFS ("
+                        + "  PARAMETERS_ID,BLOB_SIZE,CREATED"
+                        + ") VALUES(?,?,?)";
 
-            prep = getConnection().prepareStatement(query,
-                    Statement.RETURN_GENERATED_KEYS);
-            prep.setLong(1, parameters);
-            prep.setInt(2, stObj.getBlobSize());
-            prep.setLong(3, stObj.getCreated());
-            
-        } else {
-            query = "INSERT INTO WFS (" 
-                    + " QUERY_BLOB_MD5, QUERY_BLOB_SIZE,BLOB_SIZE,CREATED"
-                    + ") VALUES(?,?,?,?)";
+                prep = conn.prepareStatement(query,
+                        Statement.RETURN_GENERATED_KEYS);
+                prep.setLong(1, parameters);
+                prep.setInt(2, stObj.getBlobSize());
+                prep.setLong(3, stObj.getCreated());
 
-            prep = getConnection().prepareStatement(query,
-                    Statement.RETURN_GENERATED_KEYS);
+            } else {
+                query = "INSERT INTO WFS ("
+                        + " QUERY_BLOB_MD5, QUERY_BLOB_SIZE,BLOB_SIZE,CREATED"
+                        + ") VALUES(?,?,?,?)";
 
-            prep.setString(1, stObj.getQueryBlobMd5());
-            prep.setInt(2, stObj.getQueryBlobSize());
-            prep.setInt(3, stObj.getBlobSize());
-            prep.setLong(4, stObj.getCreated());
-        }
+                prep = conn.prepareStatement(query,
+                        Statement.RETURN_GENERATED_KEYS);
 
-        Long insertId = wrappedInsert(prep);
+                prep.setString(1, stObj.getQueryBlobMd5());
+                prep.setInt(2, stObj.getQueryBlobSize());
+                prep.setInt(3, stObj.getBlobSize());
+                prep.setLong(4, stObj.getCreated());
+            }
 
-        if (insertId == null) {
-            log.error("Did not receive a id for " + query);
-        } else {
-            stObj.setId(insertId.longValue());
+            Long insertId = wrappedInsert(prep);
+
+            if (insertId == null) {
+                log.error("Did not receive a id for " + query);
+            } else {
+                stObj.setId(insertId.longValue());
+            }
+        } finally {
+            conn.close();
         }
     }
     
@@ -411,5 +442,32 @@ class JDBCMBWrapper {
             if (st != null)
                 st.close();
         }
+    }
+    
+    protected void destroy() {
+        this.closing = true;
+        try {
+            persistentConnection.createStatement().execute("SHUTDOWN");
+        } catch (SQLException se) {
+            log.warn("SHUTDOWN call to JDBC resulted in: " + se.getMessage());
+        }
+        try {
+            persistentConnection.close();
+        } catch (SQLException se) {
+            log.warn(se.getMessage());
+        }
+        
+        try {
+            Thread.sleep(250);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.gc();
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.gc();
     }
 }

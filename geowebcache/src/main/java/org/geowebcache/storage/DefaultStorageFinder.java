@@ -125,8 +125,8 @@ public class DefaultStorageFinder {
             }
         }
         if (this.defaultPrefix == null) {
-            log.error("Found no usable default cache prefixes !!! "
-                    + "Please set " + GWC_CACHE_DIR);
+            log.warn("Found no usable default cache prefixes !!! "
+                    + "Please set " + GWC_CACHE_DIR + " if you would like a specific location.");
 
             String tmpDir = System.getProperty("java.io.tmpdir");
             if (tmpDir != null) {

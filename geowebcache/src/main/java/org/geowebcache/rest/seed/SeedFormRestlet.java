@@ -388,10 +388,12 @@ public class SeedFormRestlet extends GWCRestlet {
             GWCTask task = entry.getValue();
             
             String timeRemaining;
-            int time = task.getTimeRemaining();
+            long time = task.getTimeRemaining();
             
             if(task.getTilesDone() < 50) {
                 timeRemaining= " Estimating...";
+            } else if(time == -2) {
+                timeRemaining= " A decade or three.";
             } else if(time > (60*60*24)) {
                 timeRemaining= "" + (time / (60*60*24)) + " day(s)";
             } else if(time > 60*60) {
@@ -407,7 +409,7 @@ public class SeedFormRestlet extends GWCRestlet {
                     + "<td>" + entry.getKey() + "</td>"
                     + "<td>" + task.getLayerName() + "</td>"
                     + "<td>" + task.getType() + "</td>"
-                    + "<td>" + task.getTilesTotal() + "</td>"
+                    + "<td>" + task.getTilesTotalStr() + "</td>"
                     + "<td>" + task.getTilesDone() + "</td>"
                     + "<td>" + timeRemaining + "</td>"
                     + "<td>(Thread " + (task.getThreadOffset()+1) + " of " + task.getThreadCount() + ") </td>"

@@ -56,8 +56,8 @@ public class GeoWebCacheConfiguration {
      */
     public void init() {
         xmlns_xsi = "http://www.w3.org/2001/XMLSchema-instance";
-        xsi_noNamespaceSchemaLocation = "http://geowebcache.org/schema/1.0.1/geowebcache.xsd";
-        xmlns = "http://geowebcache.org/schema/1.0.1";
+        xsi_noNamespaceSchemaLocation = "http://geowebcache.org/schema/1.1.0/geowebcache.xsd";
+        xmlns = "http://geowebcache.org/schema/1.1.0";
     }
     
     protected boolean replaceLayer(TileLayer layer) {

@@ -39,9 +39,9 @@ public abstract class GWCTask {
     
     protected String layerName = null;
     
-    protected int timeSpent = -1;
+    protected long timeSpent = -1;
     
-    protected int timeRemaining  = -1;
+    protected long timeRemaining  = -1;
     
     protected long tilesDone = -1;
     
@@ -80,12 +80,25 @@ public abstract class GWCTask {
         return tilesTotal;
     }
     
+    public String getTilesTotalStr() {
+        if(tilesTotal > 0) {
+            return Long.toString(tilesTotal);
+        } else {
+            return "Too many to count";
+        }
+        
+    }
+    
     public long getTilesDone() {
         return tilesDone;
     }
     
-    public int getTimeRemaining() {
-        return timeRemaining;
+    public long getTimeRemaining() {
+        if(tilesTotal > 0) {
+            return timeRemaining;
+        } else {
+            return -2;
+        }   
     }
     
     public void terminateNicely() {

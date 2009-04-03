@@ -98,7 +98,7 @@ public class SeedRestlet extends GWCRestlet {
         try {
             XStream xs = new XStream(new JsonHierarchicalStreamDriver());
             JSONObject obj = null;
-            int[][] list = getStatusList();
+            long[][] list = getStatusList();
             synchronized (list) {
                 obj = new JSONObject(xs.toXML(list));
             }
@@ -231,10 +231,10 @@ public class SeedRestlet extends GWCRestlet {
      * Method returns List of Strings representing the status of the currently running threads
      * @return
      */
-    private int[][] getStatusList() {
+    private long[][] getStatusList() {
         Iterator<Entry<Long, GWCTask>> iter = threadPool.getRunningTasksIterator();
         
-        int[][] ret = new int[threadPool.getMaximumPoolSize()][3];
+        long[][] ret = new long[threadPool.getMaximumPoolSize()][3];
         int idx = 0;
         
         while(iter.hasNext()) {

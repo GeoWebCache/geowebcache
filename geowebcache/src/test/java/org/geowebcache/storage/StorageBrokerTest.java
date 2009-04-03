@@ -15,9 +15,11 @@ public class StorageBrokerTest extends TestCase {
     
     public static final int THREAD_COUNT = 4;
     
-    public static final int TILE_GET_COUNT = 10000;
+    public static final int REPEAT_COUNT = 10;
     
-    public static final int TILE_PUT_COUNT = 20000;
+    public static final int TILE_GET_COUNT = 20000;
+    
+    public static final int TILE_PUT_COUNT = 30000;
     
     public static final boolean RUN_PERFORMANCE_TESTS = false;
     
@@ -27,7 +29,7 @@ public class StorageBrokerTest extends TestCase {
         
         StorageBroker sb = resetAndPrepBasicTestDb();
         
-        for(int i=0;i<4; i++) {
+        for(int i=0;i<REPEAT_COUNT; i++) {
             runBasicTileTest(sb, i, "Uni");
         }
     }
@@ -40,7 +42,7 @@ public class StorageBrokerTest extends TestCase {
         System.out.println("\n");
         StorageBroker sb = resetAndPrepBasicTestDb();
         
-        int iterations = 4;
+        int iterations = REPEAT_COUNT;
         
         long start = System.currentTimeMillis();
         Thread[] threadAr = new Thread[THREAD_COUNT];
@@ -66,14 +68,17 @@ public class StorageBrokerTest extends TestCase {
     }
     
     private StorageBroker resetAndPrepBasicTestDb() throws Exception {
+        System.out.println("Deleting old test database.");
         deleteDb(TEST_DB_NAME);
-        
-        MetaStore metaStore = new JDBCMetaBackend("org.h2.Driver", 
+
+        System.out.println("Creating new metastore in " + findTempDir() + File.separator +TEST_DB_NAME);
+        MetaStore metaStore = new JDBCMetaBackend("org.h2.Driver",
                 "jdbc:h2:file:" + findTempDir() + File.separator +TEST_DB_NAME,
                 "sa",
                 "");
 
         String blobPath = findTempDir() + File.separator + TEST_BLOB_DIR_NAME;
+        System.out.println("Creating new blobstore in " + blobPath);
         (new File(blobPath)).mkdirs();
         BlobStore blobStore = new FileBlobStore(blobPath);
         
@@ -82,6 +87,7 @@ public class StorageBrokerTest extends TestCase {
         //long[] xyz = {1L,2L,3L};
         byte[] blob = new byte[20*1024];
 
+        System.out.println("Inserting into database, " + TILE_PUT_COUNT + " tiles");
         
         long startInsert = System.currentTimeMillis();
         for(int i=1; i < TILE_PUT_COUNT; i++) {
