@@ -105,9 +105,12 @@ public class SeedTask extends GWCTask {
         int tilesPerMetaTile = metaTilingFactors[0] * metaTilingFactors[1];
 
         int arrayIndex = getCurrentThreadArrayIndex();
-        long TOTAL_TILES = tileCount(coveredGridLevels, zoomStart, zoomStop);
-        this.tilesTotal = TOTAL_TILES / (long) threadCount;
-
+        long TOTAL_TILES = -1;
+        this.tilesTotal = -1;
+        if(zoomStop > 20) {
+            TOTAL_TILES = tileCount(coveredGridLevels, zoomStart, zoomStop);
+            tilesTotal = TOTAL_TILES / (long) threadCount;
+        }
         int count = 0;
         boolean tryCache = !reseed;
 
