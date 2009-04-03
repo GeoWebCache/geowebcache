@@ -38,14 +38,29 @@
   <bean id="gwcDefaultStorageFinder" class="org.geowebcache.storage.DefaultStorageFinder">
   	<constructor-arg ref="gwcAppCtx" />
   </bean>
-
+  
   <bean id="gwcMetaStore" class="org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend" destroy-method="destroy">
     <constructor-arg ref="gwcDefaultStorageFinder" />
   </bean>
   
+  <!-- Static definition of where to put the metastore. 
+       Note that the directory is AUTOMATICALLY CREATED if it does not exist. -->
+  <!-- bean id="gwcMetaStore" class="org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend" destroy-method="destroy">
+    <constructor-arg value="org.h2.Driver" />
+    <constructor-arg value="jdbc:h2:file:/tmp/gwc_metastore/h2_metastore;TRACE_LEVEL_FILE=0" />
+    <constructor-arg value="username" />
+    <constructor-arg value="password" />
+  </bean -->
+  
   <bean id="gwcBlobStore" class="org.geowebcache.storage.blobstore.file.FileBlobStore" destroy-method="destroy">
     <constructor-arg ref="gwcDefaultStorageFinder" />
   </bean>
+  
+  <!-- Static definition of where to put the blobstore. 
+       Note that the directory MUST EXIST when GWC is started. -->
+  <!-- bean id="gwcBlobStore" class="org.geowebcache.storage.blobstore.file.FileBlobStore" destroy-method="destroy">
+    <constructor-arg value="/tmp/gwc_blobstore" />
+  </bean -->
   
   <bean id="gwcStorageBroker" class="org.geowebcache.storage.StorageBroker" destroy-method="destroy">
     <constructor-arg type="org.geowebcache.storage.MetaStore" ref="gwcMetaStore" />
@@ -91,7 +106,7 @@
   <bean id="gwcServiceWFS"
 	class="org.geowebcache.service.wfs.WFSService">
 	<constructor-arg ref="gwcStorageBroker"/>
-	<constructor-arg value="http://sigma.openplans.org:8080/geoserver/wfs" />
+	<constructor-arg value="http://localhost:8080/geoserver/wfs" />
 	<constructor-arg value="" />
 	<constructor-arg value="600" />
   </bean>
