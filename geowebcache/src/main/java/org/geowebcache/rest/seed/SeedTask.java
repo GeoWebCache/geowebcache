@@ -106,11 +106,12 @@ public class SeedTask extends GWCTask {
 
         int arrayIndex = getCurrentThreadArrayIndex();
         long TOTAL_TILES = -1;
-        this.tilesTotal = -1;
-        if(zoomStop > 20) {
-            TOTAL_TILES = tileCount(coveredGridLevels, zoomStart, zoomStop);
-            tilesTotal = TOTAL_TILES / (long) threadCount;
-        }
+        super.tilesTotal = -1;
+        TOTAL_TILES = tileCount(coveredGridLevels, zoomStart, zoomStop);
+        if(TOTAL_TILES > 0) {
+            super.tilesTotal = TOTAL_TILES / (long) threadCount;
+	}
+        
         int count = 0;
         boolean tryCache = !reseed;
 
@@ -162,7 +163,7 @@ public class SeedTask extends GWCTask {
             }
 
             double percCompl = (100.0 * count)
-                    / (double) (tilesTotal * tilesPerMetaTile);
+                    / (double) (super.tilesTotal * tilesPerMetaTile);
             int intPercCompl = (int) Math.floor(percCompl);
             int decPercCompl = (int) Math
                     .round((percCompl - intPercCompl) * 100);
@@ -181,8 +182,8 @@ public class SeedTask extends GWCTask {
             log.info("Thread " + threadOffset + " was terminated after " + this.tilesDone + " tiles");
         } else {
             log.info("Thread " + threadOffset + " completed (re)seeding layer "
-                    + tl.getName() + " after " + this.tilesDone
-                    + " tiles, of an estimated " + this.tilesTotal);
+                    + tl.getName() + " after " + super.tilesDone
+                    + " tiles, of an estimated " + super.tilesTotal);
         }
     }
 
@@ -191,14 +192,21 @@ public class SeedTask extends GWCTask {
      * @param layer
      * @param level
      * @param gridBounds
-     * @return
+     * @return -1 if too many
      */
     private long tileCount(int[][] coveredGridLevels, int startZoom, int stopZoom) {
         long count = 0;
         
         for(int i=startZoom; i<=stopZoom; i++) {
             int[] gridBounds = coveredGridLevels[i];
-            count += (1 + gridBounds[2] - gridBounds[0]) * (1 + gridBounds[3] - gridBounds[1]);
+            
+            long thisLevel = (1 + gridBounds[2] - gridBounds[0]) * (1 + gridBounds[3] - gridBounds[1]);
+            
+            if(thisLevel > (Long.MAX_VALUE / 4) && i != stopZoom) {
+                return -1;
+            } else {
+                count += (1 + gridBounds[2] - gridBounds[0]) * (1 + gridBounds[3] - gridBounds[1]);
+            }
         }
         
         return count;

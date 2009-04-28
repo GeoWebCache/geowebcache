@@ -393,7 +393,9 @@ public class XMLConfiguration implements Configuration {
             throw new ConfigurationException("Unable to parse after transform.");
         } else {
             // Perform validation
-            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            // TODO dont know why this one suddenly failed to look up, revert to 
+            //XMLConstants.W3C_XML_SCHEMA_NS_URI
+            SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
             InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd");
 
             // Parsing the schema file
