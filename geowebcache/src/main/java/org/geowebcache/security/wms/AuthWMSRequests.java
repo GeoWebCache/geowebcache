@@ -48,13 +48,15 @@ public class AuthWMSRequests extends WMSRequests {
     private static final String NS_GWC = "http://geowebcache.org/";
 
     private DataAccessManager dataAccessManager;
+    static String version;
 
     public AuthWMSRequests(DataAccessManager dataAccessManager) {
         this.dataAccessManager = dataAccessManager;
     }
 
     public void handleGetCapabilities(TileLayerDispatcher tLD,
-            Tile t) throws GeoWebCacheException {
+            Tile t, String version) throws GeoWebCacheException {
+        AuthWMSRequests.version = version;
         tileLayerDispatcher = tLD;
         tile = t;
 
@@ -68,7 +70,9 @@ public class AuthWMSRequests extends WMSRequests {
         //			[
         //				<!ELEMENT VendorSpecificCapabilities EMPTY>
         //			]>
-        of.setDoctype(null, "http://schemas.opengis.net/wms/1.3.0/WMS_MS_Capabilities.dtd");
+        if (AuthWMSService.WMS_VERSION_1_1_1.equals(version)){
+            of.setDoctype(null, "http://schemas.opengis.net/wms/1.1.1/WMS_MS_Capabilities.dtd");
+        } 
 
         XMLSerializer serializer = new XMLSerializer(outputStream, of);
         ContentHandler handler;
@@ -92,19 +96,34 @@ public class AuthWMSRequests extends WMSRequests {
 
     /**
      * <WMT_MS_Capabilities version="1.1.1" updateSequence="250">
+     * 
+     * <WMS_Capabilities 
+     **  version="1.3.0" 
+     *  xmlns="http://www.opengis.net/wms"
+     **  xmlns:xlink="http://www.w3.org/1999/xlink"
+     **  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     **  xsi:schemaLocation="http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd">
      * @param handler
      * @throws SAXException
      */
     private void writeWMT_MS_Capabilities(ContentHandler handler) throws SAXException {
         AttributesImpl atts = new AttributesImpl();
-        atts.addAttribute(NS_GWC, "version", "version", "String", "1.3.0");
-        atts.addAttribute(NS_GWC, "updateSequence", "updateSequence", "Integer", "250");
+        if (AuthWMSService.WMS_VERSION_1_1_1.equals(version)) {
+            atts.addAttribute(NS_GWC, "version", "version", "String", AuthWMSService.WMS_VERSION_1_1_1);
+        } else if (AuthWMSService.WMS_VERSION_1_3_0.equals(version)){
+            atts.addAttribute(NS_GWC, "version", "version", "String", AuthWMSService.WMS_VERSION_1_3_0);
+            atts.addAttribute(NS_GWC, "xmlns", "xmlns", "String", "http://www.opengis.net/wms");
+            atts.addAttribute(NS_GWC, "xsi:schemaLocation", "xsi:schemaLocation", "String", "http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd");
+        }
+
         handler.startPrefixMapping("xlink", "http://www.w3.org/1999/xlink");
+        handler.startPrefixMapping("xsi", "http://www.w3.org/2001/XMLSchema-instance");
 
         handler.startElement(NS_GWC,"","WMT_MS_Capabilities",atts);
         writeService(handler);
         writeCapability(handler);
         handler.endElement(NS_GWC, "WMT_MS_Capabilities", "WMT_MS_Capabilities");
+        handler.endPrefixMapping("xsi");
         handler.endPrefixMapping("xlink");
     }
 
@@ -251,15 +270,36 @@ public class AuthWMSRequests extends WMSRequests {
             if (dims != null) {
                 Iterator<Dimension> dimsIter = dims.values().iterator();
                 while (dimsIter.hasNext()) {
-                    Dimension dim = dimsIter.next();
-                    AttributesImpl dimAtts = new AttributesImpl();
-                    dimAtts.addAttribute(NS_GWC, "name", "name", "String", dim.getName());
-                    dimAtts.addAttribute(NS_GWC, "units", "units", "String", dim.getUnits());
-                    dimAtts.addAttribute(NS_GWC, "unitSymbol", "unitSymbol", "String", dim.getUnitSymbol());
-                    handler.startElement(NS_GWC,"Dimension","Dimension", dimAtts);
-                    String extent = dim.getExtent();
-                    handler.characters(extent.toCharArray(), 0, extent.length());
-                    handler.endElement(NS_GWC, "Dimension", "Dimension");
+                    if (AuthWMSService.WMS_VERSION_1_1_1.equals(version)){
+                        Dimension dim = dimsIter.next();
+                        AttributesImpl dimAtts = new AttributesImpl();
+                        dimAtts.addAttribute(NS_GWC, "name", "name", "String", dim.getName());
+                        dimAtts.addAttribute(NS_GWC, "units", "units", "String", dim.getUnits());
+                        dimAtts.addAttribute(NS_GWC, "unitSymbol", "unitSymbol", "String", dim.getUnitSymbol());
+                        handler.startElement(NS_GWC,"Dimension","Dimension", dimAtts);
+                        handler.endElement(NS_GWC, "Dimension", "Dimension");
+
+                        AttributesImpl extAtts = new AttributesImpl();
+                        extAtts.addAttribute(NS_GWC, "name", "name", "String", dim.getName());
+                        if (dim.getDefaultValue() != null) {
+                            extAtts.addAttribute(NS_GWC, "default", "default", "String", dim.getDefaultValue());
+                        }
+                        handler.startElement(NS_GWC,"Extent","Extent", extAtts);
+                        String extent = dim.getExtent();
+                        handler.characters(extent.toCharArray(), 0, extent.length());
+                        handler.endElement(NS_GWC, "Extent", "Extent");
+
+                    } else if (AuthWMSService.WMS_VERSION_1_3_0.equals(version)) {
+                        Dimension dim = dimsIter.next();
+                        AttributesImpl dimAtts = new AttributesImpl();
+                        dimAtts.addAttribute(NS_GWC, "name", "name", "String", dim.getName());
+                        dimAtts.addAttribute(NS_GWC, "units", "units", "String", dim.getUnits());
+                        dimAtts.addAttribute(NS_GWC, "unitSymbol", "unitSymbol", "String", dim.getUnitSymbol());
+                        handler.startElement(NS_GWC,"Dimension","Dimension", dimAtts);
+                        String extent = dim.getExtent();
+                        handler.characters(extent.toCharArray(), 0, extent.length());
+                        handler.endElement(NS_GWC, "Dimension", "Dimension");
+                    }
                 }
             }
         }

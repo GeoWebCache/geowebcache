@@ -27,15 +27,18 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.service.wms.WMSService;
 import org.geowebcache.tile.Tile;
 import org.geowebcache.util.Configuration;
+import org.geowebcache.util.ServletUtils;
 
 public class AuthWMSService extends WMSService {
     private static Log log = LogFactory.getLog(AuthWMSService.class);
     
+    public final static String WMS_VERSION_1_1_1 = "1.1.1";
+    public final static String WMS_VERSION_1_3_0 = "1.3.0";
+        
     private AuthWMSRequests wmsRequests;
     
     private DataAccessManager dataAccessManager;
@@ -47,13 +50,23 @@ public class AuthWMSService extends WMSService {
     @Override
     public void handleRequest(TileLayerDispatcher tLD, Tile tile)
     throws GeoWebCacheException {
+        
+        String[] keys = { "version" };
+        String[] values = ServletUtils.selectedStringsFromMap(
+                tile.servletReq.getParameterMap(), keys);
+        String version;
+        if (!(values == null || values.length == 0) && (WMS_VERSION_1_1_1.equals(values[0]) || WMS_VERSION_1_3_0.equals(values[0]))) {
+            version = values[0];
+        } else {
+            version = "1.3.0";
+        }
 
         if (tile.hint != null) {
             if(tile.hint.equalsIgnoreCase("getcapabilities")) {
                 if (wmsRequests == null) {
                     wmsRequests = new AuthWMSRequests(dataAccessManager);
                 }
-                wmsRequests.handleGetCapabilities(tLD, tile);
+                wmsRequests.handleGetCapabilities(tLD, tile, version);
             } else {
                 AuthWMSRequests.handleProxy(tLD, tile);
             }
