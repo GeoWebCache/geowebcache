@@ -163,6 +163,46 @@ public class WMSLayer extends TileLayer {
         //this.palette = "test.png";
     }
     
+    
+    /** 
+     * Note XStream uses reflection, this is only used for testing
+     * and loading from getCapabilities
+     * 
+     * @param layerName
+     * @param cacheFactory
+     * @param wmsURL
+     * @param wmsStyles
+     * @param wmsLayers
+     * @param mimeFormats
+     * @param grids
+     * @param metaWidthHeight
+     * @param vendorParams
+     */
+    public WMSLayer(String layerName, String title, String _abstract, CacheFactory cacheFactory,
+            String[] wmsURL, String wmsStyles, String wmsLayers, 
+            List<String> mimeFormats, Hashtable<SRS,Grid> grids, 
+            int[] metaWidthHeight, String vendorParams, 
+            Map<String, Dimension> dimensions, int expireClientsInt, int expireCacheInt) {
+     
+        name = layerName;
+        this.title = title;
+        this._abstract = _abstract;
+        initCacheFactory = cacheFactory;
+        this.wmsUrl = wmsURL;
+        this.wmsLayers = wmsLayers;
+        this.wmsStyles = wmsStyles;
+        this.mimeFormats = mimeFormats;
+        this.grids = grids;
+        this.metaWidthHeight = metaWidthHeight;
+        this.expireClientsInt = expireClientsInt;
+        this.expireCacheInt = expireCacheInt;
+        this.vendorParameters = vendorParams;
+        this.transparent = true;
+        this.dimensions = dimensions;
+        //this.bgColor = "0x000000";
+        //this.palette = "test.png";
+    }
+    
     public void setCacheFactory(CacheFactory cacheFactory) {
         initCacheFactory = cacheFactory;
         //log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);

@@ -64,6 +64,10 @@ public class GetCapabilitiesConfiguration implements Configuration {
     private String vendorParameters = null;
 
     private ExtentHandlerMap extentHandlerMap;
+    
+    private Integer expireClientsInt;
+    
+    private Integer expireCacheInt;
 
     private boolean allowCacheBypass = false;
 
@@ -268,7 +272,12 @@ public class GetCapabilitiesConfiguration implements Configuration {
                     grid = new Grid(SRS.getEPSG4326(), dataBounds, BBOX.WORLD4326, GridCalculator.get4326Resolutions());
                 } else if (SRS.getEPSG900913().getNumber() == srs.getNumber()) {
                     grid = new Grid(SRS.getEPSG900913(), dataBounds, BBOX.WORLD900913, GridCalculator.get900913Resolutions());
+                } else if (SRS.getEPSG3021().getNumber() == srs.getNumber()) {
+                    grid = new Grid(SRS.getEPSG3021(), dataBounds, BBOX.EUROPE3021, GridCalculator.get3021Resolutions());
+                } else if (SRS.getEPSG3006().getNumber() == srs.getNumber()) {
+                    grid = new Grid(SRS.getEPSG3021(), dataBounds, BBOX.EUROPE3006, GridCalculator.get3006Resolutions());
                 } else {
+                    // Fallback for all 
                     grid = new Grid(srs, dataBounds, dataBounds, null);
                     grid.setResolutions(grid.getResolutions());
                 }
@@ -306,9 +315,17 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
         int[] metaWidthHeight = { Integer.parseInt(metaStrings[0]), Integer.parseInt(metaStrings[1])};
 
+        int expireClientsInt = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
+        if (this.expireClientsInt != null) {
+            expireClientsInt = this.expireClientsInt;
+        }
+        int expireCacheInt = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
+        if (this.expireCacheInt != null) {
+            expireCacheInt = this.expireCacheInt;
+        }
         // TODO We're dropping the styles now...
         return new WMSLayer(name, title, _abstract, this.cacheFactory, wmsUrls, stylesStr, name, mimeFormats, 
-                grids, metaWidthHeight, this.vendorParameters, dimensions);
+                grids, metaWidthHeight, this.vendorParameters, dimensions, expireClientsInt, expireCacheInt);
     }
 
     private WebMapServer getWMS() {
@@ -346,6 +363,22 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
     public void setExtentHandlerMap(ExtentHandlerMap extentHandlerMap) {
         this.extentHandlerMap = extentHandlerMap;
+    }
+
+    public Integer getExpireClientsInt() {
+        return expireClientsInt;
+    }
+
+    public void setExpireClientsInt(Integer expireClientsInt) {
+        this.expireClientsInt = expireClientsInt;
+    }
+
+    public Integer getExpireCacheInt() {
+        return expireCacheInt;
+    }
+
+    public void setExpireCacheInt(Integer expireCacheInt) {
+        this.expireCacheInt = expireCacheInt;
     }
 
 
