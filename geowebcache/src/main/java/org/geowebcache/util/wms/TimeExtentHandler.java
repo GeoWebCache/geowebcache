@@ -17,26 +17,28 @@ public class TimeExtentHandler extends ExtentHandler {
         boolean usesPeriods = false;
         boolean usesList = false;
         for (String t : times) {
-            if (t.contains("/")) {
-                List<String> parsedTimes = getPeriodExtents(t);
-                if (parsedTimes.size() != 3) {
-                    throw new IllegalArgumentException("Could not parse time period!");
+            if (t != null && !"null".equals(t)) {
+                if (t.contains("/")) {
+                    List<String> parsedTimes = getPeriodExtents(t);
+                    if (parsedTimes.size() != 3) {
+                        throw new IllegalArgumentException("Could not parse time period!");
+                    }
+                    Interval interval = new Interval(new DateTime(parsedTimes.get(0)), 
+                            new DateTime(parsedTimes.get(1)));
+                    Period period = new Period(parsedTimes.get(2));
+                    DateTime now = interval.getStart();
+                    DateTime end = interval.getEnd();
+                    while (now.isBefore(end) || now.equals(end)) {
+                        // TODO: Use interval start and end instants (plus period?) 
+                        // to figure out how to format the date
+                        dateTimes.add(new DateTimeWrapper(now.toString(), now));
+                        now = now.plus(period);
+                    }
+                    usesPeriods = true;
+                } else {
+                    dateTimes.add(new DateTimeWrapper(t, new DateTime(t)));
+                    usesList = true;
                 }
-                Interval interval = new Interval(new DateTime(parsedTimes.get(0)), 
-                        new DateTime(parsedTimes.get(1)));
-                Period period = new Period(parsedTimes.get(2));
-                DateTime now = interval.getStart();
-                DateTime end = interval.getEnd();
-                while (now.isBefore(end) || now.equals(end)) {
-                    // TODO: Use interval start and end instants (plus period?) 
-                    // to figure out how to format the date
-                    dateTimes.add(new DateTimeWrapper(now.toString(), now));
-                    now = now.plus(period);
-                }
-                usesPeriods = true;
-            } else {
-                dateTimes.add(new DateTimeWrapper(t, new DateTime(t)));
-                usesList = true;
             }
         }
         if (usesPeriods && usesList) {
