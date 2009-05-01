@@ -50,7 +50,14 @@ public class Demo {
             } else {
                 srs = SRS.getEPSG900913();
             }
-            page = generateHTML(layer, srs, formatStr);
+            
+            if(request.getPathInfo().startsWith("/demo")) {
+                // Running in GeoServer
+                page = generateHTML(layer, srs, formatStr, true);
+            } else {
+                page = generateHTML(layer, srs, formatStr, false);
+            }
+            
 
         } else {
             if(request.getRequestURI().endsWith("/")) {
@@ -167,7 +174,7 @@ public class Demo {
         return "<a href=\"demo/"+layerName+"?srs=EPSG:"+epsgNumber+"\">"+text+"</a>";
     }
     
-    private static String generateHTML(TileLayer layer, SRS srs, String formatStr) 
+    private static String generateHTML(TileLayer layer, SRS srs, String formatStr, boolean asPlugin) 
     throws GeoWebCacheException {
         String layerName = layer.getName();
         //String mime = MimeType.createFromFormat(formatStr).g;
@@ -186,6 +193,14 @@ public class Demo {
                         +"numZoomLevels: "+(grid.getZoomStop() - grid.getZoomStart() + 1)+",\n";
         }
         
+        String openLayersPath;
+        if(asPlugin) {
+            openLayersPath = "../../openlayers/OpenLayers.js";
+        } else {
+            openLayersPath = "../openlayers/OpenLayers.js";
+        }
+        
+        
         String page =
             "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n"
             +"<meta http-equiv=\"imagetoolbar\" content=\"no\">\n"
@@ -196,7 +211,7 @@ public class Demo {
             +"#map { width: 85%; height: 85%; border: 0px; padding: 0px; }\n"
             +"</style>\n"
 
-            +"<script src=\"../openlayers/OpenLayers.js\"></script>\n"
+            +"<script src=\""+openLayersPath+"\"></script>\n"
             +"<script type=\"text/javascript\">\n"
             +"OpenLayers.Util.onImageLoadErrorColor = 'transparent';\n"
             +"var map, layer;\n"
