@@ -194,8 +194,10 @@ public class WMSLayer extends TileLayer {
         this.mimeFormats = mimeFormats;
         this.grids = grids;
         this.metaWidthHeight = metaWidthHeight;
-        this.expireClientsInt = expireClientsInt;
-        this.expireCacheInt = expireCacheInt;
+        
+        // TODO This is ugly and should be refactored
+        this.expireClients = Integer.toString(expireCacheInt);
+        this.expireCache = Integer.toString(expireCacheInt);
         this.vendorParameters = vendorParams;
         this.transparent = true;
         this.dimensions = dimensions;

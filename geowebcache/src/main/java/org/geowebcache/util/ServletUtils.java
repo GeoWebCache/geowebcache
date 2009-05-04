@@ -229,7 +229,7 @@ public class ServletUtils {
                 ServletUtils.format.setTimeZone(ServletUtils.timeZone);
             }
 
-            calendar.setTimeInMillis(System.currentTimeMillis() + seconds * 1000);
+            calendar.setTimeInMillis(System.currentTimeMillis() + seconds * 1000L);
             ret = format.format(calendar.getTime());
         }
         return ret;
