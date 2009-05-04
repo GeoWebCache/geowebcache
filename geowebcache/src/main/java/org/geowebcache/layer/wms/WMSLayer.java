@@ -785,6 +785,7 @@ public class WMSLayer extends TileLayer {
     public void acquireLayerLock() {
         if(layerLock == null) {
             layerLocked = true;
+            return;
         }
         
         boolean wait = true;
