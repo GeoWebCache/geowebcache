@@ -783,6 +783,10 @@ public class WMSLayer extends TileLayer {
      * that could write to the queue have finished
      */
     public void acquireLayerLock() {
+        if(layerLock == null) {
+            layerLocked = true;
+        }
+        
         boolean wait = true;
         // Wait until the queue is free
         while (wait) {
@@ -803,6 +807,11 @@ public class WMSLayer extends TileLayer {
      * waiting
      */
     public void releaseLayerLock() {
+        if(layerLock == null) {
+            layerLocked = false;
+            return;
+        }
+        
         layerLock.lock();
         try {
             layerLocked = false;
