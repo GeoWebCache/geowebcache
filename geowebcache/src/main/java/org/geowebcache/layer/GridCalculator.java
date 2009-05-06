@@ -48,10 +48,10 @@ public class GridCalculator {
     // see also SRS.java, WMSLayer.java, GetCapabilitiesConfiguration.java
     // and BBOX.java
     private final static double[] RESOLUTIONS3021 =
-        GridCalculator.getResolutionArray(6631579.37579394,TILEPIXELS, 31);
+        GridCalculator.getResolutionArray(BBOX.getMaxDelta(BBOX.EUROPE3021),TILEPIXELS, 31);
     
     private final static double[] RESOLUTIONS3006 =
-        GridCalculator.getResolutionArray(6553531.78383402,TILEPIXELS, 31);
+        GridCalculator.getResolutionArray(BBOX.getMaxDelta(BBOX.EUROPE3006),TILEPIXELS, 31);
     
     // The following are the width of the actual layer
     private double gridWidth;

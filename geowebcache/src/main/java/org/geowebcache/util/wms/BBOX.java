@@ -220,6 +220,12 @@ public class BBOX {
         return retBbox;
     }
     
+    public static double getMaxDelta(BBOX bbox) {
+        double deltaX = Math.abs(bbox.coords[2] - bbox.coords[0]);
+        double deltaY = Math.abs(bbox.coords[3] - bbox.coords[1]);
+        return Math.max(deltaX, deltaY);
+    }
+    
     public void scale(double factor) {
        double x = coords[2] - coords[0];
        double xdiff = (x*factor - x)/2;
