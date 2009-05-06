@@ -728,7 +728,21 @@ public class WMSLayer extends TileLayer {
         
         if(this.wmsLayers != null && this.wmsLayers.length() != 0) {
             wmsparams.setLayer(this.wmsLayers);
-        } else {
+            /*
+             * The following if-statement checks for vendorParameters to fulfill the case when you
+             * want to specify the layers to use in an external or URL-encoded SLD. The SLD must then
+             * include one or more namedLayers element. When an SLD and namedLayers are specified 
+             * you can not specify LAYERS as a request parameter.
+             * 
+             * Thus either:
+             *   - LAYERS=...
+             * OR
+             *   - SLD=...
+             * 
+             * Not:
+             *   - LAYERS=...&SLD=... 
+             */
+        } else if (vendorParameters == null || vendorParameters.length() == 0) {
             wmsparams.setLayer(this.name);
         }
         
