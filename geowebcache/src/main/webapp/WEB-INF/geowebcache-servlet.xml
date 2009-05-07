@@ -18,7 +18,7 @@
        that are appended to every WMS request to the backed, for example: 
        "format_options=regionate_by:auto&amp;bgcolor=0x112233" -->
   <bean id="gwcWMSConfig" class="org.geowebcache.util.GetCapabilitiesConfiguration">
-    <constructor-arg value="http://maps.urban.uiowa.edu/arcgis/services/JohnsonCounty1/MapServer/WMSServer?service=wms&amp;request=getcapabilities&amp;version=1.1.0" />
+    <constructor-arg value="http://localhost:8080/geoserver/wms?service=wms&amp;request=getcapabilities&amp;version=1.1.0" />
     <constructor-arg value="image/png,image/jpeg,image/png8,image/gif,application/vnd.google-earth.kml+xml"/>
     <constructor-arg value="3x3"/><!-- metatiling factors -->
     <constructor-arg value=""/><!-- vendor parameters -->

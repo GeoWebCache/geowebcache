@@ -182,7 +182,7 @@ public class WMSHttpHelper {
             if (responseCode != 200 && responseCode != 204) {
                 tileRespRecv.setError();
                 throw new ServiceException(
-                        "Unexpected reponse code from backend: " + responseCode
+                        "Unexpected response code from backend: " + responseCode
                                 + " for " + wmsBackendUrl.toString());
             }
 
