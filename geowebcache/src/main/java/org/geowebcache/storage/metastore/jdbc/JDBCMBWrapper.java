@@ -320,13 +320,13 @@ class JDBCMBWrapper {
         
         if(parameters != null) {
             query = "DELETE FROM WFS WHERE " 
-                + " PARAMETERS_ID = ? LIMIT 1 ";
+                + " PARAMETERS_ID = ?";
              
             prep = conn.prepareStatement(query);
             prep.setLong(1, parameters);
         } else {
             query = "DELETE FROM WFS WHERE " 
-                + " QUERY_BLOB_MD5 LIKE ? AND QUERY_BLOB_SIZE = ? LIMIT 1";
+                + " QUERY_BLOB_MD5 LIKE ? AND QUERY_BLOB_SIZE = ?";
             
             prep = conn.prepareStatement(query);
             prep.setString(1,wfsObj.getQueryBlobMd5());
@@ -335,8 +335,11 @@ class JDBCMBWrapper {
         
         try {
             return prep.execute();
+            
         } finally {
-            prep.close();
+            if(prep != null)
+                prep.close();
+            
             conn.close();
         }
     }

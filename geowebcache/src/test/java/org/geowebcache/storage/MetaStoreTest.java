@@ -39,7 +39,8 @@ public class MetaStoreTest extends TestCase {
                     "test'Layer:æøå;", xyz, 4326, "jpeg", "a=x&b=y", bytes);
 
             ms.put(to);
-
+            ms.unlock(to);
+            
             long[] xyz2 = { 1L, 2L, 3L };
             to2 = TileObject.createQueryTileObject(
                     "test'Layer:æøå;", xyz2, 4326, "jpeg", "a=x&b=y");
@@ -64,7 +65,8 @@ public class MetaStoreTest extends TestCase {
             bytes = "1 2 3 Test".getBytes();
             WFSObject wo = WFSObject.createCompleteWFSObject("a=æ&å=Ø");
             ms.put(wo);
-
+            ms.unlock(wo);
+            
             wo2 = WFSObject.createQueryWFSObject("a=æ&å=Ø");
             ms.get(wo2);
 
@@ -91,7 +93,7 @@ public class MetaStoreTest extends TestCase {
             queryBytes = "1 2 3 4 5 6 Test".getBytes();
             wo = WFSObject.createCompleteWFSObject(queryBytes);
             ms.put(wo);
-
+            ms.unlock(wo);
             wo2 = WFSObject.createQueryWFSObject(queryBytes);
             ms.get(wo2);
 
