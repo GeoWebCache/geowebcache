@@ -17,16 +17,19 @@
  */
 package org.geowebcache.storage;
 
-
 public interface MetaStore {
+    public boolean delete(TileObject stObj) throws StorageException;
+    public boolean delete(WFSObject stObj) throws StorageException;
+
+    // If lock is encountered, wait inscide function until available
     public boolean get(TileObject obj) throws StorageException;
     public boolean get(WFSObject obj) throws StorageException;
     
     public void put(TileObject stObj) throws StorageException;
     public void put(WFSObject stObj) throws StorageException;
     
-    public void delete(TileObject stObj) throws StorageException;
-    public void delete(WFSObject stObj) throws StorageException;
+    public boolean unlock(TileObject stObj) throws StorageException;
+    public boolean unlock(WFSObject stObj) throws StorageException;
     
     /**
      * Wipes the entire storage. Should only be invoked during testing.

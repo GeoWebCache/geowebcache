@@ -18,6 +18,10 @@
 package org.geowebcache.storage;
 
 public abstract class StorageObject {
+    public static enum Status { UNSET, HIT, MISS, LOCK, EXPIRED_LOCK};
+    
+    Status status = Status.UNSET;
+    
     long created;
     
     long access_last;
@@ -52,6 +56,10 @@ public abstract class StorageObject {
         return created;
     }
     
+    public Status getStatus() {
+        return status;
+    }
+    
     public void setCreated(long created) {
         this.created = created;
     }
@@ -62,5 +70,9 @@ public abstract class StorageObject {
     
     public void setBlobSize(int blob_size) {
         this.blob_size = blob_size;
+    }
+    
+    public void setStatus(Status status) {
+        this.status = status;
     }
 }

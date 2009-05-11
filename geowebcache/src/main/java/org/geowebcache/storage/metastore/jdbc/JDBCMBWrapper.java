@@ -24,11 +24,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.StorageObject;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.WFSObject;
 
@@ -47,7 +50,7 @@ class JDBCMBWrapper {
     private static Log log = LogFactory.getLog(org.geowebcache.storage.metastore.jdbc.JDBCMBWrapper.class);
     
     /** Database version, for automatic updates */
-    static int DB_VERSION = 110;
+    static int DB_VERSION = 111;
     
     /** Connection information */
     final String jdbcString;
@@ -61,6 +64,9 @@ class JDBCMBWrapper {
     final Connection persistentConnection;
     
     boolean closing = false;
+    
+    /** Timeout for locked objects, 60 seconds by default **/
+    protected long lockTimeout = 60000;
     
     protected JDBCMBWrapper(String driverClass, String jdbcString,String username, String password)
     throws StorageException,SQLException {
@@ -194,7 +200,8 @@ class JDBCMBWrapper {
                 "WFS_ID BIGINT AUTO_INCREMENT PRIMARY KEY, PARAMETERS_ID BIGINT, "
                 +"QUERY_BLOB_MD5 VARCHAR(32), QUERY_BLOB_SIZE INT, "
                 +"BLOB_SIZE INT, "
-                +"CREATED BIGINT, ACCESS_LAST BIGINT, ACCESS_COUNT BIGINT",
+                +"CREATED BIGINT, ACCESS_LAST BIGINT, ACCESS_COUNT BIGINT, "
+                +"LOCK TIMESTAMP",
                 "PARAMETERS_ID",
                 "QUERY_BLOB_MD5, QUERY_BLOB_SIZE");
     }
@@ -205,7 +212,8 @@ class JDBCMBWrapper {
                 "TILE_ID BIGINT AUTO_INCREMENT PRIMARY KEY, LAYER_ID BIGINT, "
                 + "X BIGINT, Y BIGINT, Z BIGINT, SRS_ID INT, FORMAT_ID BIGINT, "
                 + "PARAMETERS_ID BIGINT, BLOB_SIZE INT, "
-                + "CREATED BIGINT, ACCESS_LAST BIGINT, ACCESS_COUNT BIGINT",
+                + "CREATED BIGINT, ACCESS_LAST BIGINT, ACCESS_COUNT BIGINT, " 
+                + "LOCK TIMESTAMP",
                 "LAYER_ID, X, Y, Z, SRS_ID, FORMAT_ID, PARAMETERS_ID",
                 null);
     }
@@ -238,17 +246,110 @@ class JDBCMBWrapper {
     private void runDbUpgrade(Connection conn, int fromVersion) {
         log.info("Upgrading  H2 database from " + fromVersion 
                 + " to " + JDBCMBWrapper.DB_VERSION);
+        
+        if(fromVersion == 110) {
+            try {
+                // We start with this one to block other instances
+                String query = "UPDATE VARIABLES SET VALUE = ? WHERE KEY = ?";
+                PreparedStatement prep = conn.prepareStatement(query);
+                prep.setString(1, "111");
+                prep.setString(2, "db_version");
+                prep.execute();
+                prep.close();
+                
+                query = "ALTER TABLE TILES ADD LOCK TIMESTAMP";
+                Statement st = conn.createStatement();
+                st.execute(query);
+                st.close();
+                
+                query = "ALTER TABLE WFS ADD LOCK TIMESTAMP";
+                st = conn.createStatement();
+                st.execute(query);
+                st.close();
+            } catch (SQLException se) {
+                log.error("110 to 111 upgrade failed: " + se.getMessage());
+            }
+        } else {
+            log.error("Unknown version " + fromVersion);
+        }
+        
+    }
+    
+    protected boolean deleteTile(TileObject stObj) throws SQLException {
+
+        String query;
+        if(stObj.getParametersId() == -1L) {
+            query = "DELETE FROM TILES WHERE " 
+                + " LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? AND SRS_ID = ? " 
+                + " AND FORMAT_ID = ? AND PARAMETERS_ID IS NULL";
+        } else {
+            query = "DELETE FROM TILES WHERE " 
+                + " LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? AND SRS_ID = ? "
+                + " AND FORMAT_ID = ? AND PARAMETERS_ID = ?";
+        }
+        long[] xyz = stObj.getXYZ();
+        
+        Connection conn = getConnection();
+        
+        PreparedStatement prep = conn.prepareStatement(query);
+        prep.setLong(1, stObj.getLayerId());
+        prep.setLong(2, xyz[0]);
+        prep.setLong(3, xyz[1]);
+        prep.setLong(4, xyz[2]);
+        prep.setLong(5, stObj.getSrs());
+        prep.setLong(6, stObj.getFormatId());
+        
+        if(stObj.getParametersId() != -1L) {
+            prep.setLong(7, stObj.getParametersId());
+        }
+        
+        try {
+            return prep.execute();
+            
+        } finally {
+            prep.close();
+            conn.close();
+        }
+    }
+    
+    protected boolean deleteWFS(Long parameters, WFSObject wfsObj) 
+    throws SQLException {
+        String query = null;
+        PreparedStatement prep = null;
+        Connection conn = getConnection();
+        
+        if(parameters != null) {
+            query = "DELETE FROM WFS WHERE " 
+                + " PARAMETERS_ID = ? LIMIT 1 ";
+             
+            prep = conn.prepareStatement(query);
+            prep.setLong(1, parameters);
+        } else {
+            query = "DELETE FROM WFS WHERE " 
+                + " QUERY_BLOB_MD5 LIKE ? AND QUERY_BLOB_SIZE = ? LIMIT 1";
+            
+            prep = conn.prepareStatement(query);
+            prep.setString(1,wfsObj.getQueryBlobMd5());
+            prep.setInt(2, wfsObj.getQueryBlobSize());
+        }
+        
+        try {
+            return prep.execute();
+        } finally {
+            prep.close();
+            conn.close();
+        }
     }
     
     protected boolean getTile(TileObject stObj) throws SQLException {
 
         String query;
         if(stObj.getParametersId() == -1L) {
-            query = "SELECT TILE_ID,BLOB_SIZE,CREATED FROM TILES WHERE " 
+            query = "SELECT TILE_ID,BLOB_SIZE,CREATED,LOCK,NOW() FROM TILES WHERE " 
                 + " LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? AND SRS_ID = ? " 
                 + " AND FORMAT_ID = ? AND PARAMETERS_ID IS NULL LIMIT 1 ";
         } else {
-            query = "SELECT TILE_ID,BLOB_SIZE,CREATED FROM TILES WHERE " 
+            query = "SELECT TILE_ID,BLOB_SIZE,CREATED,LOCK,NOW() FROM TILES WHERE " 
                 + " LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? AND SRS_ID = ? "
                 + " AND FORMAT_ID = ? AND PARAMETERS_ID = ? LIMIT 1 ";
         }
@@ -274,11 +375,32 @@ class JDBCMBWrapper {
             rs = prep.executeQuery();
 
             if (rs.first()) {
+                Timestamp lock = rs.getTimestamp(4);
+                
+                // This tile is locked
+                if(lock != null) {    
+                    Timestamp now = rs.getTimestamp(5);
+                    long diff = now.getTime() - lock.getTime();
+                    //System.out.println(now.getTime() + " " + System.currentTimeMillis());
+                    if(diff > lockTimeout) {
+                        log.warn("Database lock exceeded ("+diff+"ms , " + lock.toString() + ") for " + stObj.toString()+ ", clearing tile.");
+                        deleteTile(stObj);
+                        stObj.setStatus(StorageObject.Status.EXPIRED_LOCK);
+                    } else {
+                        stObj.setStatus(StorageObject.Status.LOCK);
+                    }
+                    
+                    // This puts the request back in the queue
+                    return false;
+                }
+
                 stObj.setId(rs.getLong(1));
                 stObj.setBlobSize(rs.getInt(2));
                 stObj.setCreated(rs.getLong(3));
+                stObj.setStatus(StorageObject.Status.HIT);
                 return true;
             } else {
+                stObj.setStatus(StorageObject.Status.MISS);
                 return false;
             }
         } finally {
@@ -299,13 +421,13 @@ class JDBCMBWrapper {
         Connection conn = getConnection();
         
         if(parameters != null) {
-            query = "SELECT WFS_ID,BLOB_SIZE,CREATED FROM WFS WHERE " 
+            query = "SELECT WFS_ID,BLOB_SIZE,CREATED,LOCK,NOW() FROM WFS WHERE " 
                 + " PARAMETERS_ID = ? LIMIT 1 ";
              
             prep = conn.prepareStatement(query);
             prep.setLong(1, parameters);
         } else {
-            query = "SELECT WFS_ID,BLOB_SIZE,CREATED FROM WFS WHERE " 
+            query = "SELECT WFS_ID,BLOB_SIZE,CREATED,LOCK,NOW() FROM WFS WHERE " 
                 + " QUERY_BLOB_MD5 LIKE ? AND QUERY_BLOB_SIZE = ? LIMIT 1";
             
             prep = conn.prepareStatement(query);
@@ -319,11 +441,31 @@ class JDBCMBWrapper {
             rs = prep.executeQuery();
 
             if (rs.next()) {
+                Timestamp lock = rs.getTimestamp(4);
+
+                // This tile is locked
+                if (lock != null) {
+                    Timestamp now = rs.getTimestamp(5);
+                    if (now.getTime() - lock.getTime() > lockTimeout) {
+                        log.warn("Database lock exceeded for " + wfsObj.toString() + ", clearing WFS object.");
+                        deleteWFS(parameters, wfsObj);
+                        wfsObj.setStatus(StorageObject.Status.EXPIRED_LOCK);
+                    } else {
+                        wfsObj.setStatus(StorageObject.Status.LOCK);
+                    }
+                    
+                    // This puts the request back in the queue
+                    return false;
+                }
+                
                 wfsObj.setId(rs.getLong(1));
                 wfsObj.setBlobSize(rs.getInt(2));
                 wfsObj.setCreated(rs.getLong(3));
+                
+                wfsObj.setStatus(StorageObject.Status.HIT);
                 return true;
             } else {
+                wfsObj.setStatus(StorageObject.Status.MISS);
                 return false;
             }
         } finally {
@@ -341,8 +483,8 @@ class JDBCMBWrapper {
     throws SQLException, StorageException {
 
         String query = "INSERT INTO TILES ("
-                + "  LAYER_ID,X,Y,Z,SRS_ID,FORMAT_ID,PARAMETERS_ID,BLOB_SIZE"
-                + ") VALUES(?,?,?,?,?,?,?,?)";
+                + "  LAYER_ID,X,Y,Z,SRS_ID,FORMAT_ID,PARAMETERS_ID,BLOB_SIZE,LOCK"
+                + ") VALUES(?,?,?,?,?,?,?,?,NOW())";
 
         long[] xyz = stObj.getXYZ();
 
@@ -387,8 +529,8 @@ class JDBCMBWrapper {
         try {
             if (parameters != null) {
                 query = "INSERT INTO WFS ("
-                        + "  PARAMETERS_ID,BLOB_SIZE,CREATED"
-                        + ") VALUES(?,?,?)";
+                        + "  PARAMETERS_ID,BLOB_SIZE,CREATED,LOCK"
+                        + ") VALUES(?,?,?,NOW())";
 
                 prep = conn.prepareStatement(query,
                         Statement.RETURN_GENERATED_KEYS);
@@ -398,8 +540,8 @@ class JDBCMBWrapper {
 
             } else {
                 query = "INSERT INTO WFS ("
-                        + " QUERY_BLOB_MD5, QUERY_BLOB_SIZE,BLOB_SIZE,CREATED"
-                        + ") VALUES(?,?,?,?)";
+                        + " QUERY_BLOB_MD5, QUERY_BLOB_SIZE,BLOB_SIZE,CREATED,LOCK"
+                        + ") VALUES(?,?,?,?,NOW())";
 
                 prep = conn.prepareStatement(query,
                         Statement.RETURN_GENERATED_KEYS);
@@ -418,6 +560,100 @@ class JDBCMBWrapper {
                 stObj.setId(insertId.longValue());
             }
         } finally {
+            conn.close();
+        }
+    }
+    
+    
+    public boolean unlockTile(TileObject stObj) 
+    throws SQLException, StorageException {
+
+        String query = null;
+        
+        if (stObj.getParametersId() == -1L) {
+            query = "UPDATE TILES SET LOCK = NULL WHERE "
+                + "  LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? "
+                + " AND SRS_ID = ? AND FORMAT_ID = ? AND "
+                + " PARAMETERS_ID IS NULL";
+        } else {
+            query = "UPDATE TILES SET LOCK = NULL WHERE "
+                + "  LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? "
+                + " AND SRS_ID = ? AND FORMAT_ID = ? AND "
+                + " PARAMETERS_ID = ?";
+        }
+        
+
+
+        long[] xyz = stObj.getXYZ();
+
+        Connection conn = getConnection();
+
+        PreparedStatement prep = null;
+        
+        try {
+            prep = conn.prepareStatement(query);
+            prep.setLong(1, stObj.getLayerId());
+            prep.setLong(2, xyz[0]);
+            prep.setLong(3, xyz[1]);
+            prep.setLong(4, xyz[2]);
+            prep.setLong(5, stObj.getSrs());
+            prep.setLong(6, stObj.getFormatId());
+            if (stObj.getParametersId() != -1L) {
+                prep.setLong(7, stObj.getParametersId());
+            }
+            
+            int affected = prep.executeUpdate();
+            //System.out.println("Affected: " + affected);
+            if(affected == 1) {
+                return true;
+            } else {
+                log.error("Expected to clear lock on one row, but got " + affected);
+                return false;
+            }
+        } finally {
+            if(prep != null)
+                prep.close();
+            
+            conn.close();
+        }
+        
+    }
+    
+    public boolean unlockWFS(Long parameters, WFSObject stObj)
+            throws SQLException, StorageException {
+
+        PreparedStatement prep = null;
+        String query = null;
+        Connection conn = getConnection();
+
+        try {
+            if (parameters != null) {
+                query = "UPDATE WFS SET LOCK = NULL WHERE PARAMETERS_ID = ? ";
+
+                prep = conn.prepareStatement(query);
+                prep.setLong(1, parameters);         
+            } else {
+                query = "UPDATE WFS SET LOCK = NULL WHERE QUERY_BLOB_MD5 = ? AND QUERY_BLOB_SIZE = ?";
+
+                prep = conn.prepareStatement(query);
+
+                prep.setString(1, stObj.getQueryBlobMd5());
+                prep.setInt(2, stObj.getQueryBlobSize());
+                prep.setInt(3, stObj.getBlobSize());
+            }
+
+            int affected = prep.executeUpdate();
+            //System.out.println("Affected: " + affected);
+            if(affected == 1) {
+                return true;
+            } else {
+                log.error("Expected to clear lock on one row, but got " + affected);
+                return false;
+            }
+        } finally {
+            if(prep != null)
+                prep.close();
+            
             conn.close();
         }
     }

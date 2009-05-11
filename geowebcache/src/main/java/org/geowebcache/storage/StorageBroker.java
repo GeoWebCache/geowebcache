@@ -81,6 +81,7 @@ public class StorageBroker {
         try {
             metaStore.put(tileObj);
             blobStore.put(tileObj);
+            metaStore.unlock(tileObj);
             return true;
             
         } catch (StorageException se) {
@@ -94,6 +95,7 @@ public class StorageBroker {
         try {
             metaStore.put(wfsObj);
             blobStore.put(wfsObj);
+            metaStore.unlock(wfsObj);
             return true;
             
         } catch (StorageException se) {

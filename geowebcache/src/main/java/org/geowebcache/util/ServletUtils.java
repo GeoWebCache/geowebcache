@@ -187,22 +187,28 @@ public class ServletUtils {
             tmpBuffer = new byte[1024];
         }
         
-        
         int totalCount = 0;
-        for(int c = 0; c != -1; c = is.read(tmpBuffer)) {
+        int c = is.read(tmpBuffer);
+        while(c != -1) {
+            if (c != 0) {
+                totalCount += c;
+
                 // Expand buffer if needed
-                if(totalCount + c >= buffer.length) {
-                        int newLength = buffer.length * 2;
-                        if(newLength < totalCount)
-                                newLength = totalCount;
-                        
-                        byte[] newBuffer = new byte[newLength];
-                        System.arraycopy(buffer, 0, newBuffer, 0, totalCount);
-                        buffer = newBuffer;
+                if (totalCount >= buffer.length) {
+                    int newLength = buffer.length * 2;
+                    if (newLength < totalCount)
+                        newLength = totalCount;
+
+                    byte[] newBuffer = new byte[newLength];
+                    System.arraycopy(buffer, 0, newBuffer, 0, buffer.length);
+                    buffer = newBuffer;
                 }
-                System.arraycopy(tmpBuffer, 0, buffer, totalCount, c);
-                totalCount += c;                
+
+                System.arraycopy(tmpBuffer, 0, buffer, (totalCount - c), c);
+            }
+            c = is.read(tmpBuffer);
         }
+        
         is.close();
         
         // Compact buffer

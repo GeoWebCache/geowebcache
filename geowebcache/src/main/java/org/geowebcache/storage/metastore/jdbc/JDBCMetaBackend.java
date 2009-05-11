@@ -24,8 +24,10 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.MetaStore;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.StorageObject;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.WFSObject;
+import org.geowebcache.storage.StorageObject.Status;
 
 public class JDBCMetaBackend implements MetaStore {
     private static Log log = LogFactory.getLog(org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend.class);
@@ -35,6 +37,9 @@ public class JDBCMetaBackend implements MetaStore {
     
     /** Cache for translating layers and parameter strings to ids */
     private final JDBCMBIdCache idCache;
+
+    /** Delay before trying a lock again, in ms **/
+    private long lockRetryDelay = 50;
     
     public JDBCMetaBackend(String driverClass, String jdbcString, 
             String username, String password) throws StorageException {
@@ -56,6 +61,39 @@ public class JDBCMetaBackend implements MetaStore {
         
         idCache = new JDBCMBIdCache(wrpr);
     }
+    
+    public boolean delete(TileObject stObj) throws StorageException {
+        stObj.setLayerId(idCache.getLayerId(stObj.getLayerName()));
+        stObj.setFormatId(idCache.getFormatId(stObj.getBlobFormat()));
+        if(stObj.getParameters() != null && stObj.getParameters().length() != 0) {
+            stObj.setParamtersId(idCache.getParametersId(stObj.getParameters()));
+        }
+        
+        try {
+            return wrpr.deleteTile(stObj);
+        } catch (SQLException se) {
+            log.error("Failed to get tile: " + se.getMessage());
+        }
+        
+        return false;
+    }
+
+    
+    public boolean delete(WFSObject stObj) throws StorageException {
+        Long parameters_id = null;
+        
+        if(stObj.getParameters() != null && stObj.getParameters().length() != 0) {
+            parameters_id = idCache.getParametersId(stObj.getParameters());
+        }
+        
+        try {
+            return wrpr.deleteWFS(parameters_id, stObj);
+        } catch (SQLException se) {
+            log.error("Failed to delete WFS object: " + se.getMessage());
+        }
+        
+        return false;
+    }
 
     public boolean get(TileObject stObj) throws StorageException {
         stObj.setLayerId(idCache.getLayerId(stObj.getLayerName()));
@@ -65,7 +103,21 @@ public class JDBCMetaBackend implements MetaStore {
         }
         
         try {
-            return wrpr.getTile(stObj);
+            
+            boolean response = wrpr.getTile(stObj);
+            
+            while(stObj.getStatus().equals(Status.LOCK)) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                
+                response = wrpr.getTile(stObj);
+            }
+            
+            return response;
+            
         } catch (SQLException se) {
             log.error("Failed to get tile: " + se.getMessage());
         }
@@ -80,8 +132,21 @@ public class JDBCMetaBackend implements MetaStore {
             parameters_id = idCache.getParametersId(stObj.getParameters());
         }
         
-        try {
-            return wrpr.getWFS(parameters_id, stObj);
+        try {            
+            boolean response = wrpr.getWFS(parameters_id, stObj);
+            
+            while(stObj.getStatus().equals(Status.LOCK)) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                
+                response = wrpr.getWFS(parameters_id, stObj);
+            }
+            
+            return response;
+            
         } catch (SQLException se) {
             log.error("Failed to get WFS object: " + se.getMessage());
         }
@@ -98,6 +163,12 @@ public class JDBCMetaBackend implements MetaStore {
         }
         
         try {
+            wrpr.deleteTile(stObj);
+        } catch (SQLException se) {
+            log.error("Failed to delete tile: " + se.getMessage());
+        }
+        
+        try {
             wrpr.putTile(stObj);
         } catch (SQLException se) {
             log.error("Failed to put tile: " + se.getMessage());
@@ -111,7 +182,13 @@ public class JDBCMetaBackend implements MetaStore {
         if (stObj.getParameters() != null && stObj.getParameters().length() != 0) {
             parameters_id = idCache.getParametersId(stObj.getParameters());
         }
-
+        
+        try {
+            wrpr.deleteWFS(parameters_id, stObj);
+        } catch (SQLException se) {
+            log.error("Failed to delete WFS object: " + se.getMessage());
+        }
+        
         try {
             wrpr.putWFS(parameters_id, stObj);
         } catch (SQLException se) {
@@ -120,15 +197,33 @@ public class JDBCMetaBackend implements MetaStore {
 
     }
     
-    public void delete(WFSObject stObj) {
-        // TODO Auto-generated method stub
+    public boolean unlock(TileObject stObj) throws StorageException {        
+        try {
+            return wrpr.unlockTile(stObj);
+        } catch (SQLException se) {
+            log.error("Failed to unlock tile: " + se.getMessage());
+        }
         
+        return false;
     }
 
-    public void delete(TileObject stObj) {
-        // TODO Auto-generated method stub
+    
+    public boolean unlock(WFSObject stObj) throws StorageException {
+        Long parameters_id = null;
         
+        if(stObj.getParameters() != null && stObj.getParameters().length() != 0) {
+            parameters_id = idCache.getParametersId(stObj.getParameters());
+        }
+        
+        try {
+            return wrpr.unlockWFS(parameters_id, stObj);
+        } catch (SQLException se) {
+            log.error("Failed to unlock WFS object: " + se.getMessage());
+        }
+        
+        return false;
     }
+
 
     public void clear() throws StorageException {
        if(wrpr.driverClass.equals("org.h2.Driver")) {
@@ -149,4 +244,11 @@ public class JDBCMetaBackend implements MetaStore {
         
     }
 
+    public void setLockTimeout(long lockTimeout) {
+        wrpr.lockTimeout = lockTimeout;
+    }
+
+    public void setLockRetryDelay(long lockRetryDelay) {
+        this.lockRetryDelay = lockRetryDelay;
+    }
 }

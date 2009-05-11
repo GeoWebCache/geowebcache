@@ -7,12 +7,13 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
 
+
 public abstract class Conveyor {
     public static enum RequestHandler {LAYER, SERVICE};
     
     // Internal routing
     public RequestHandler reqHandler = RequestHandler.LAYER;
-    
+        
     // Set this flag to true when request has been completed
     //protected boolean complete = false;
     

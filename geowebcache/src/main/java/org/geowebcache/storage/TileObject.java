@@ -17,6 +17,8 @@
  */
 package org.geowebcache.storage;
 
+import java.util.Arrays;
+
 public class TileObject extends StorageObject {
     public static final String TYPE = "tile";
     
@@ -144,5 +146,8 @@ public class TileObject extends StorageObject {
     public String getType() {
         return TYPE;
     }
-
+    
+    public String toString() {
+        return "["+ layer_name+","+srs+",{"+Arrays.toString(xyz)+"}]";
+    }
 }
