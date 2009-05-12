@@ -642,7 +642,6 @@ class JDBCMBWrapper {
 
                 prep.setString(1, stObj.getQueryBlobMd5());
                 prep.setInt(2, stObj.getQueryBlobSize());
-                prep.setInt(3, stObj.getBlobSize());
             }
 
             int affected = prep.executeUpdate();
