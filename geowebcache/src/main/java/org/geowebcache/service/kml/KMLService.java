@@ -386,7 +386,13 @@ public class KMLService extends Service {
         //}
         
         // Sigh.... 
-        if(packageData) {
+        if(! packageData) {
+            
+                String overlayXml = createOverlay(tile, false);
+                tile.setContent(overlayXml.getBytes());
+                tile.setStatus(200);
+                //tileLayer.putTile(tile);
+        } else {
             // Get the overlay
             String overlayXml = createOverlay(tile, true);
             
@@ -415,11 +421,6 @@ public class KMLService extends Service {
             tile.setStatus(200);
             //tileLayer.putTile(tile);
 
-        } else {
-            String overlayXml = createOverlay(tile, false);
-            tile.setContent(overlayXml.getBytes());
-            tile.setStatus(200);
-            tileLayer.putTile(tile);
         }
 
         writeTileResponse(tile, true);
