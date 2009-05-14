@@ -105,10 +105,9 @@ public class JDBCMetaBackend implements MetaStore {
         try {
             
             boolean response = wrpr.getTile(stObj);
-            
             while(stObj.getStatus().equals(Status.LOCK)) {
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(lockRetryDelay);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -134,10 +133,9 @@ public class JDBCMetaBackend implements MetaStore {
         
         try {            
             boolean response = wrpr.getWFS(parameters_id, stObj);
-            
             while(stObj.getStatus().equals(Status.LOCK)) {
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(lockRetryDelay);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

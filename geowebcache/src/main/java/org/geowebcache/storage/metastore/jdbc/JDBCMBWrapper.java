@@ -485,17 +485,17 @@ class JDBCMBWrapper {
     public void putTile(TileObject stObj) 
     throws SQLException, StorageException {
 
-        String query = "INSERT INTO TILES ("
-                + "  LAYER_ID,X,Y,Z,SRS_ID,FORMAT_ID,PARAMETERS_ID,BLOB_SIZE,LOCK"
-                + ") VALUES(?,?,?,?,?,?,?,?,NOW())";
+        String query = "MERGE INTO "
+                +"TILES(LAYER_ID,X,Y,Z,SRS_ID,FORMAT_ID,PARAMETERS_ID,BLOB_SIZE,LOCK) "
+                +"KEY(LAYER_ID,X,Y,Z,SRS_ID,FORMAT_ID,PARAMETERS_ID) "
+                +"VALUES(?,?,?,?,?,?,?,?,NOW())";
 
         long[] xyz = stObj.getXYZ();
 
         Connection conn = getConnection();
 
         try {
-            PreparedStatement prep = conn.prepareStatement(query,
-                    Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement prep = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             prep.setLong(1, stObj.getLayerId());
             prep.setLong(2, xyz[0]);
             prep.setLong(3, xyz[1]);
@@ -531,9 +531,10 @@ class JDBCMBWrapper {
 
         try {
             if (parameters != null) {
-                query = "INSERT INTO WFS ("
-                        + "  PARAMETERS_ID,BLOB_SIZE,CREATED,LOCK"
-                        + ") VALUES(?,?,?,NOW())";
+                query = "MERGE INTO " 
+                    + "WFS(PARAMETERS_ID,BLOB_SIZE,CREATED,LOCK) "
+                    + "KEY(PARAMETERS_ID) "
+                    + "VALUES(?,?,?,NOW())";
 
                 prep = conn.prepareStatement(query,
                         Statement.RETURN_GENERATED_KEYS);
@@ -542,9 +543,10 @@ class JDBCMBWrapper {
                 prep.setLong(3, stObj.getCreated());
 
             } else {
-                query = "INSERT INTO WFS ("
-                        + " QUERY_BLOB_MD5, QUERY_BLOB_SIZE,BLOB_SIZE,CREATED,LOCK"
-                        + ") VALUES(?,?,?,?,NOW())";
+                query = "MERGE INTO "
+                    + "WFS(QUERY_BLOB_MD5, QUERY_BLOB_SIZE,BLOB_SIZE,CREATED,LOCK) "
+                    + "KEY(QUERY_BLOB_MD5, QUERY_BLOB_SIZE) "
+                    + "VALUES(?,?,?,?,NOW())";
 
                 prep = conn.prepareStatement(query,
                         Statement.RETURN_GENERATED_KEYS);
@@ -556,11 +558,16 @@ class JDBCMBWrapper {
             }
 
             Long insertId = wrappedInsert(prep);
-
+            
             if (insertId == null) {
                 log.error("Did not receive a id for " + query);
             } else {
-                stObj.setId(insertId.longValue());
+                if(insertId.longValue() == 0) {
+                    // This was an update due to merge, so we do a get to pick up the id
+                    this.getWFS(parameters, stObj);
+                } else{
+                    stObj.setId(insertId.longValue());
+                }
             }
         } finally {
             conn.close();
