@@ -116,10 +116,10 @@ public class SeedTask extends GWCTask {
         boolean tryCache = !reseed;
 
         for (int level = zoomStart; level <= zoomStop && this.terminate == false; level++) {
-            int[] gridBounds = coveredGridLevels[level];
-            for (int gridy = gridBounds[1]; gridy <= gridBounds[3];) {
+            int[] levelGrid = coveredGridLevels[level];
+            for (int gridy = levelGrid[1]; gridy <= levelGrid[3];) {
 
-                for (int gridx = gridBounds[0] + threadOffset; gridx <= gridBounds[2] && this.terminate == false; ) {
+                for (int gridx = levelGrid[0] + (threadOffset * metaTilingFactors[0]); gridx <= levelGrid[2] && this.terminate == false; ) {
 
                     int[] gridLoc = { gridx, gridy, level };
 
@@ -136,17 +136,15 @@ public class SeedTask extends GWCTask {
                     }
 
                     int countX;
-                    if (gridx + metaTilingFactors[0] - 1 > gridBounds[2]) {
-                        countX = (gridx + metaTilingFactors[0] - 1)
-                                - gridBounds[2];
+                    if (gridx + metaTilingFactors[0] - 1 > levelGrid[2]) {
+                        countX = (gridx + metaTilingFactors[0] - 1) - levelGrid[2];
                     } else {
                         countX = metaTilingFactors[0];
                     }
 
                     int countY;
-                    if (gridy + metaTilingFactors[1] - 1 > gridBounds[3]) {
-                        countY = (gridy + metaTilingFactors[1] - 1)
-                                - gridBounds[3];
+                    if (gridy + metaTilingFactors[1] - 1 > levelGrid[3]) {
+                        countY = (gridy + metaTilingFactors[1] - 1) - levelGrid[3];
                     } else {
                         countY = metaTilingFactors[1];
                     }
@@ -156,7 +154,7 @@ public class SeedTask extends GWCTask {
                     updateStatusInfo(arrayIndex, tl, count, START_TIME);
 
                     // Next column
-                    gridx += metaTilingFactors[0];
+                    gridx += (metaTilingFactors[0] * threadCount);
                 }
                 // Next row
                 gridy += metaTilingFactors[1];
@@ -204,7 +202,7 @@ public class SeedTask extends GWCTask {
             if(thisLevel > (Long.MAX_VALUE / 4) && i != stopZoom) {
                 return -1;
             } else {
-                count += (1 + gridBounds[2] - gridBounds[0]) * (1 + gridBounds[3] - gridBounds[1]);
+                count += thisLevel;
             }
         }
         
