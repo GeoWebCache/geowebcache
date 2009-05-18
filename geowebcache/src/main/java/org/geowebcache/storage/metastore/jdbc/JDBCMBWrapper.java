@@ -28,7 +28,6 @@ import java.sql.Timestamp;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.StorageObject;
@@ -68,7 +67,7 @@ class JDBCMBWrapper {
     /** Timeout for locked objects, 60 seconds by default **/
     protected long lockTimeout = 60000;
     
-    protected JDBCMBWrapper(String driverClass, String jdbcString,String username, String password)
+    protected JDBCMBWrapper(String driverClass, String jdbcString, String username, String password)
     throws StorageException,SQLException {
         this.jdbcString = jdbcString;
         this.username = username;
@@ -84,17 +83,43 @@ class JDBCMBWrapper {
         persistentConnection = getConnection();
         
         checkTables();
+        
+        //System.out.println("\n\n\nAUTO: " + persistentConnection.getAutoCommit() + "\n\n\n");
     }
     
     public JDBCMBWrapper(DefaultStorageFinder defStoreFind) throws StorageException,SQLException {
-        this.username = "sa";
-        this.password = "";
-        this.driverClass = "org.h2.Driver";
-        String path = defStoreFind.getDefaultPath() + File.separator + "meta_jdbc_h2";
-        File dir = new File(path);
-        dir.mkdirs();
-        this.jdbcString = "jdbc:h2:file:"+path+File.separator+"gwc_metastore" + ";TRACE_LEVEL_FILE=0";
+        String envStrUsername = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_USERNAME);
+        String envStrPassword = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_PASSWORD);
+        String envStrJdbcUrl = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_JDBC_URL);
+        String envStrDriver = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_DRIVER_CLASS);
         
+        if(envStrUsername != null) {
+            username = envStrUsername;
+        } else {
+            this.username = "sa";
+        }
+        
+        if(envStrPassword != null) {
+            this.password = envStrPassword;
+        } else {
+            this.password = "";
+        }
+        
+        if(envStrDriver != null) {
+            this.driverClass = envStrDriver;
+        } else {
+            this.driverClass = "org.h2.Driver"; 
+        }
+        
+        if(envStrJdbcUrl != null) {
+            this.jdbcString = envStrJdbcUrl;
+        } else {
+            String path = defStoreFind.getDefaultPath() + File.separator + "meta_jdbc_h2";
+            File dir = new File(path);
+            dir.mkdirs();
+            this.jdbcString = "jdbc:h2:file:"+path+File.separator+"gwc_metastore" + ";TRACE_LEVEL_FILE=0";
+        }
+
         try {
             Class.forName(driverClass);
         } catch(ClassNotFoundException cnfe) {
@@ -108,7 +133,9 @@ class JDBCMBWrapper {
 
     protected Connection getConnection() throws SQLException {
         if(! closing) {
-            return DriverManager.getConnection(jdbcString,username,password);
+            Connection conn = DriverManager.getConnection(jdbcString,username,password);
+            conn.setAutoCommit(true);
+            return conn;
         } else {
             return null;
         }

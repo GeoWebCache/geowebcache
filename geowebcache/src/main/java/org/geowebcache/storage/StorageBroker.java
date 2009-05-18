@@ -27,12 +27,24 @@ public class StorageBroker {
     
     private MetaStore metaStore; 
     
+    private boolean metaStoreEnabled = true;
+    
     public StorageBroker(MetaStore metaStore, BlobStore blobStore) {
         this.metaStore = metaStore;
         this.blobStore = blobStore;
+        
+        if(metaStore != null) {
+            metaStoreEnabled = metaStore.enabled();
+        } else {
+            metaStoreEnabled = false;
+        }
     }
     
     public boolean get(TileObject tileObj) throws StorageException {
+        if(! metaStoreEnabled) {
+            return getBlobOnly(tileObj);
+        }
+        
         if(! metaStore.get(tileObj)) {
             return false;
         }
@@ -60,8 +72,25 @@ public class StorageBroker {
         return true;
     }
     
+    private boolean getBlobOnly(TileObject tileObj) throws StorageException {
+        if(tileObj.getParameters() == null 
+                || tileObj.getParameters().length() == 0) {
+            byte[] blob = blobStore.get(tileObj);
+            if(blob == null) {
+                return false;
+            } else {
+                tileObj.blob = blob;
+                return true;
+            }
+        } else {
+            log.error("Cannot fetch tile with parameters if metastore is disabled!");
+            return false;
+        }
+    }
+
     public boolean get(WFSObject wfsObj) throws StorageException {
         if (!metaStore.get(wfsObj)) {
+            log.error("Cannot use WFS objects if metastore is disabled!");
             return false;
         }
 
@@ -78,6 +107,10 @@ public class StorageBroker {
     }
     
     public boolean put(TileObject tileObj) {
+        if(! metaStoreEnabled) {
+            return putBlobOnly(tileObj);
+        }
+        
         try {
             metaStore.put(tileObj);
             blobStore.put(tileObj);
@@ -91,7 +124,28 @@ public class StorageBroker {
         return false;
     }
     
+    private boolean putBlobOnly(TileObject tileObj) {
+        if(tileObj.getParameters() == null 
+                || tileObj.getParameters().length() == 0) {
+            try {
+                blobStore.put(tileObj);
+            } catch (StorageException se) {
+                log.error("Unable to save tile: " + se.getMessage());
+                return false;
+            }
+            return true;
+        } else {
+            log.debug("Cannot save tile with parameters if metastore is disabled!");
+            return false;
+        }
+    }
+
     public boolean put(WFSObject wfsObj) {
+        if(! metaStoreEnabled) {
+            log.debug("Cannot use WFS objects if metastore is disabled!");
+            return false;
+        }
+        
         try {
             metaStore.put(wfsObj);
             blobStore.put(wfsObj);

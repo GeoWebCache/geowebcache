@@ -26,7 +26,7 @@ public class TileObject extends StorageObject {
     
     byte[] blob;
     
-    long parameters_id = -1;
+    long parameters_id = -1L;
     
     long layer_id = -1L;
     

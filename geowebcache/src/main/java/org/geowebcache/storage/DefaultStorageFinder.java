@@ -31,7 +31,17 @@ public class DefaultStorageFinder {
     public final static String GWC_CACHE_DIR = "GEOWEBCACHE_CACHE_DIR";
 
     public final static String GS_DATA_DIR = "GEOSERVER_DATA_DIR";
-
+    
+    public final static String GWC_METASTORE_DISABLED = "GWC_METASTORE_DISABLED";
+    
+    public final static String GWC_METASTORE_JDBC_URL = "GWC_METASTORE_JDBC_URL";
+    
+    public final static String GWC_METASTORE_USERNAME = "GWC_METASTORE_USERNAME";
+    
+    public final static String GWC_METASTORE_PASSWORD = "GWC_METASTORE_PASSWORD";
+    
+    public final static String GWC_METASTORE_DRIVER_CLASS = "GWC_METASTORE_DRIVER_CLASS";
+    
     private static Log log = LogFactory.getLog(org.geowebcache.storage.DefaultStorageFinder.class);
 
     private String defaultPrefix = null;
@@ -52,6 +62,41 @@ public class DefaultStorageFinder {
         }
 
         return this.defaultPrefix;
+    }
+    
+    public String findEnvVar(String varStr) {
+        ServletContext serlvCtx = context.getServletContext();
+
+        final String[] typeStrs = { "Java environment variable ",
+                "servlet context parameter ", "system environment variable " };
+        
+        String value = null;
+
+        for (int j = 0; j < typeStrs.length && value == null; j++) {
+            String typeStr = typeStrs[j];
+
+            switch (j) {
+            case 1:
+                value = System.getProperty(varStr);
+                break;
+            case 2:
+                value = serlvCtx.getInitParameter(varStr);
+                break;
+            case 3:
+                value = System.getenv(varStr);
+                break;
+            }
+            
+            if(value != null) {
+                if(varStr.equals(GWC_METASTORE_PASSWORD)) {
+                    log.info("Found " + typeStr + " for " + varStr + " set to <hidden>");
+                } else {
+                    log.info("Found " + typeStr + " for " + varStr + " set to " + value);
+                }
+            }
+        }
+        
+        return value;
     }
 
     /**

@@ -33,7 +33,7 @@ public class JDBCMetaBackend implements MetaStore {
     private static Log log = LogFactory.getLog(org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend.class);
     
     /** Wrapper that sets everything up */
-    private final JDBCMBWrapper wrpr;
+    private JDBCMBWrapper wrpr;
     
     /** Cache for translating layers and parameter strings to ids */
     private final JDBCMBIdCache idCache;
@@ -41,25 +41,51 @@ public class JDBCMetaBackend implements MetaStore {
     /** Delay before trying a lock again, in ms **/
     private long lockRetryDelay = 50;
     
+    private boolean enabled = true;
+    
     public JDBCMetaBackend(String driverClass, String jdbcString, 
             String username, String password) throws StorageException {
         try {
             wrpr = new JDBCMBWrapper(driverClass, jdbcString, username, password);
         } catch(SQLException se) {
+            enabled = false;
             throw new StorageException(se.getMessage());
         }
         
-        idCache = new JDBCMBIdCache(wrpr);
+        if(enabled) {
+            idCache = new JDBCMBIdCache(wrpr);
+        } else {
+            idCache = null;
+        }
     }
     
     public JDBCMetaBackend(DefaultStorageFinder defStoreFind) throws StorageException {
-        try {
-            wrpr = new JDBCMBWrapper(defStoreFind);
-        } catch(SQLException se) {
-            throw new StorageException(se.getMessage());
+        // Check whether we want a meta store at all, or whether GS just gave us a dummy
+        String metaStoreDisabled = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_DISABLED);
+        if (metaStoreDisabled != null && Boolean.parseBoolean(metaStoreDisabled)) {
+            enabled = false;
+            wrpr = null;
+            idCache = null;
+        } else {
+            try {
+                wrpr = new JDBCMBWrapper(defStoreFind);
+            } catch (SQLException se) {
+                log.error("Failed to start JDBC metastore: " + se.getMessage());
+                log.warn("Disabling JDBC metastore, not all functionality will be available!");
+                enabled = false;
+                wrpr = null;
+            }
+
+            if (enabled) {
+                idCache = new JDBCMBIdCache(wrpr);
+            } else {
+                idCache = null;
+            }
         }
-        
-        idCache = new JDBCMBIdCache(wrpr);
+    }
+    
+    public boolean enabled() {
+        return enabled;
     }
     
     public boolean delete(TileObject stObj) throws StorageException {
