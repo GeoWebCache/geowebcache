@@ -42,13 +42,13 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 public class AuthWMSRequests extends WMSRequests {
-    private static TileLayerDispatcher tileLayerDispatcher;
-    private static Tile tile;
+    private TileLayerDispatcher tileLayerDispatcher;
+    private Tile tile;
 
     private static final String NS_GWC = "http://geowebcache.org/";
 
     private DataAccessManager dataAccessManager;
-    static String version;
+    private String version;
 
     public AuthWMSRequests(DataAccessManager dataAccessManager) {
         this.dataAccessManager = dataAccessManager;
@@ -56,7 +56,7 @@ public class AuthWMSRequests extends WMSRequests {
 
     public void handleGetCapabilities(TileLayerDispatcher tLD,
             Tile t, String version) throws GeoWebCacheException {
-        AuthWMSRequests.version = version;
+        this.version = version;
         tileLayerDispatcher = tLD;
         tile = t;
 
@@ -134,7 +134,7 @@ public class AuthWMSRequests extends WMSRequests {
      * 		<OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://yourhost.com/wms"/>
      * 	</Service>
      */
-    private static void writeService(ContentHandler handler) throws SAXException {
+    private void writeService(ContentHandler handler) throws SAXException {
         handler.startElement(NS_GWC,"Service","Service", null);
         writeSimpleElement(handler, "Name", "GeoWebCache");
         writeSimpleElement(handler, "Title", null);
@@ -172,7 +172,7 @@ public class AuthWMSRequests extends WMSRequests {
      * 		<GetFeatureInfo>...</GetFeatureInfo>
      * 	</Request>
      */
-    private static void writeRequest(ContentHandler handler) throws SAXException {
+    private void writeRequest(ContentHandler handler) throws SAXException {
         handler.startElement(NS_GWC,"Request","Request", null);
         writeGetCapability(handler);
         writeGetMap(handler);
@@ -183,7 +183,7 @@ public class AuthWMSRequests extends WMSRequests {
      * 		<Format>...</Format>
      * 	</Exception>
      */
-    private static void writeException(ContentHandler handler) throws SAXException {
+    private void writeException(ContentHandler handler) throws SAXException {
         handler.startElement(NS_GWC,"Exception","Exception", null);
         writeSimpleElement(handler, "Format", "application/vnd.ogc.se_xml");
         writeSimpleElement(handler, "Format", "application/vnd.ogc.se_inimage");
@@ -211,7 +211,7 @@ public class AuthWMSRequests extends WMSRequests {
      *          <Style>...</Style>
      *  </Layer>
      */
-    private static void writeLayer(ContentHandler handler, TileLayer layer) throws SAXException {
+    private void writeLayer(ContentHandler handler, TileLayer layer) throws SAXException {
         handler.startElement(NS_GWC, "Layer", "Layer", null);
         writeSimpleElement(handler, "Name", layer.getName());
         writeSimpleElement(handler, "Title", layer.getTitle());
@@ -337,7 +337,7 @@ public class AuthWMSRequests extends WMSRequests {
      * 		<DCPType>...</DCPType>
      * 	</GetCapabilities>
      */
-    private static void writeGetCapability(ContentHandler handler) throws SAXException {
+    private void writeGetCapability(ContentHandler handler) throws SAXException {
         handler.startElement(NS_GWC,"GetCapability","GetCapability", null);
         writeSimpleElement(handler, "Format", "application/vnd.ogc.wms_xml");
         writeDCPType(handler);
@@ -349,7 +349,7 @@ public class AuthWMSRequests extends WMSRequests {
      * 		<DCPType>...</DCPType>
      * 	</GetMap>
      */
-    private static void writeGetMap(ContentHandler handler) throws SAXException {
+    private void writeGetMap(ContentHandler handler) throws SAXException {
         handler.startElement(NS_GWC,"GetMap","GetMap", null);
         writeDCPType(handler);
         handler.endElement(NS_GWC, "GetMap", "GetMap");
@@ -363,7 +363,7 @@ public class AuthWMSRequests extends WMSRequests {
      * 		</HTTP>
      * 	</DCPType>
      */
-    private static void writeDCPType(ContentHandler handler) throws SAXException {
+    private void writeDCPType(ContentHandler handler) throws SAXException {
         handler.startElement(NS_GWC,"DCPType","DCPType", null);
         handler.startElement(NS_GWC,"Get","Get", null);
         AttributesImpl atts = new AttributesImpl();
@@ -401,7 +401,7 @@ public class AuthWMSRequests extends WMSRequests {
      * 		<Dimension>...</Dimension>
      * 	</TileSet>
      */
-    private static void writeTileSet(ContentHandler handler, TileLayer layer) throws SAXException {
+    private void writeTileSet(ContentHandler handler, TileLayer layer) throws SAXException {
         List<MimeType> mimeList = layer.getMimeTypes();
         String strStyles = layer.getStyles();
         if (strStyles == null) {
@@ -473,7 +473,7 @@ public class AuthWMSRequests extends WMSRequests {
     /**
      * <name>value</name>
      */
-    private static void writeSimpleElement(ContentHandler handler, String name, String value) throws SAXException {
+    private void writeSimpleElement(ContentHandler handler, String name, String value) throws SAXException {
         handler.startElement(NS_GWC, name, name, null);
         if (value != null) {
             handler.characters(value.toCharArray(), 0, value.length());

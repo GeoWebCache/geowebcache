@@ -63,10 +63,7 @@ public class AuthWMSService extends WMSService {
 
         if (tile.hint != null) {
             if(tile.hint.equalsIgnoreCase("getcapabilities")) {
-                if (wmsRequests == null) {
-                    wmsRequests = new AuthWMSRequests(dataAccessManager);
-                }
-                wmsRequests.handleGetCapabilities(tLD, tile, version);
+                new AuthWMSRequests(dataAccessManager).handleGetCapabilities(tLD, tile, version);
             } else {
                 AuthWMSRequests.handleProxy(tLD, tile);
             }
