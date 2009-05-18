@@ -7,6 +7,7 @@ package org.geowebcache.security.wms;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -64,21 +65,59 @@ public class SimpleDataAccessManager implements DataAccessManager {
     SimpleDataAccessManager() {
     }
     
-    public boolean canAccess(Authentication user, String layerName) {
+	public boolean canAccess(Authentication user, String layerName) {
         checkPropertyFile();
-        String allLayersRoleKey = (String) layerProperies.get("*");
-        // Can user access all layers?
-        if (allLayersRoleKey != null && testRoleKey(allLayersRoleKey, user)) {
-            return true;
-        } else {
-            String layerRoleKey = (String) layerProperies.get(layerName);
-            // Can user see specific layer?
-            if (layerRoleKey != null) {
-                return testRoleKey(layerRoleKey, user);
-            } else {
-                return false;
-            }
+        
+        // FIXME This is a bad hack to get around the smelly code in GeoWebCacheDispatcher.handleServiceRequest
+        // where they lookup which layer is requested even for a GetCapabilities request. The proper fix would
+        // be to not do this access check at all when handling a GetCapabilties request, but only when filtering
+        // the layer list in the GetCapabilities response. In the event of a GetCapabilties the layer is null,
+        // hence this special case.
+        if(layerName == null) { return true; }
+        
+        String layerRoleKey = findLayerRoleKey(layerName);
+
+        if (layerRoleKey != null) {
+            return testRoleKey(layerRoleKey, user);
+    	} else {
+    		// We should never ever end up here since a default permission (*=*) is added explicitly in checkPropertyFile()
+    		// FIXME This is an exceptional state so it's perfectly fine to raise an exception instead
+    		return false;
         }
+    }
+    
+    /**
+     * Find the role key for a given layer. Performs a substring match if there is no exact
+     * matching key in the properties object. It picks the longest matching substring.
+     * 
+     * @param layerName
+     * @return the value of the longest matching key (String.startsWith) or the value of * if no matching property is found
+     */
+    @SuppressWarnings("unchecked")
+	private String findLayerRoleKey(String layerName) {
+    	String layerRoleKey = layerProperies.getProperty(layerName);
+    	
+    	if(layerRoleKey != null) {
+    		return layerRoleKey;
+    	}
+    	
+    	String longestMatch = null;
+    	Enumeration names = layerProperies.propertyNames();
+    	while(names.hasMoreElements()) {
+    		String key = (String) names.nextElement();
+
+    		if(layerName.startsWith(key)) {
+    			if(longestMatch == null || longestMatch.length() < key.length()) {
+    				longestMatch = key;
+    			}
+    		}
+    	}
+        
+    	if(longestMatch == null) {
+    		return layerProperies.getProperty("*");
+    	}
+    	
+        return layerProperies.getProperty(longestMatch);
     }
     
     private boolean testRoleKey(String roleKey, Authentication user) {
