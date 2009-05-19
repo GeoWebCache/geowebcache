@@ -469,7 +469,7 @@ public class KMLService extends Service {
 
         StringBuffer buf = new StringBuffer();
         // 1) Header
-        boolean setMaxLod = false;
+        boolean setMaxLod = true;
         if(isRaster && gridLoc[2] < tileLayer.getZoomStop(srs)) {
             setMaxLod = false;
         }
