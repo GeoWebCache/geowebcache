@@ -476,8 +476,7 @@ public class KMLService extends Service {
         buf.append(createOverlayHeader(bbox, setMaxLod));
 
         buf.append("\n<!-- Network links to subtiles -->\n");
-        // 2) Network links, only to tiles within bounds. 
-        //    isRaster = true -> respect zoomStop
+        // 2) Network links, only to tiles within bounds
         int[][] linkGridLocs = tileLayer.getZoomInGridLoc(srs, gridLoc);
 
         // 3) Apply secondary filter against linking to empty tiles
