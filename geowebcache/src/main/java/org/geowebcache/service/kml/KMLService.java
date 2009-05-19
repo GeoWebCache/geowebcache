@@ -458,7 +458,8 @@ public class KMLService extends Service {
      */
     private static String createOverlay(ConveyorKMLTile tile, boolean isPackaged)
     throws ServiceException,GeoWebCacheException {
-
+        boolean isRaster = (tile.getMimeType() instanceof ImageMime);
+        
         TileLayer tileLayer = tile.getLayer();
         int[] gridLoc = tile.getTileIndex();
         
@@ -468,11 +469,15 @@ public class KMLService extends Service {
 
         StringBuffer buf = new StringBuffer();
         // 1) Header
-        buf.append(createOverlayHeader(bbox, 
-                tile.getMimeType() instanceof ImageMime));
+        boolean setMaxLod = false;
+        if(isRaster && gridLoc[2] < tileLayer.getZoomStop(srs)) {
+            setMaxLod = false;
+        }
+        buf.append(createOverlayHeader(bbox, setMaxLod));
 
         buf.append("\n<!-- Network links to subtiles -->\n");
-        // 2) Network links, only to tiles within bounds
+        // 2) Network links, only to tiles within bounds. 
+        //    isRaster = true -> respect zoomStop
         int[][] linkGridLocs = tileLayer.getZoomInGridLoc(srs, gridLoc);
 
         // 3) Apply secondary filter against linking to empty tiles
@@ -501,7 +506,7 @@ public class KMLService extends Service {
         
         buf.append("\n<!-- Network link to actual content -->\n");
         // 5) Overlay, should be relative 
-        if (tile.getMimeType() instanceof ImageMime) {
+        if (isRaster) {
             buf.append(
                     createGroundOverLayElement(
                     gridLoc, tile.getUrlPrefix(), 
@@ -538,9 +543,9 @@ public class KMLService extends Service {
      * @param bbox
      * @return
      */
-    private static String createOverlayHeader(BBOX bbox, boolean isRaster) {
+    private static String createOverlayHeader(BBOX bbox, boolean setMaxLod) {
         int maxLodPixels = -1;
-        if(isRaster) {
+        if(setMaxLod) {
             maxLodPixels = 385;
         }
         
