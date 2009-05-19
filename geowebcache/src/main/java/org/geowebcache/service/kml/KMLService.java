@@ -199,6 +199,19 @@ public class KMLService extends Service {
         TileLayer layer; 
         if(tile.getHint() == HINT_DEBUGGRID) {
             layer = KMLDebugGridLayer.getInstance();
+            
+            // Generate random tile for debugging
+            if(tile.getWrapperMimeType() == null) {
+                tile.setTileLayer(layer);
+                try {
+                    layer.getTile(tile);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                
+                writeTileResponse(tile, false);
+                return;
+            }
         } else if (tile.getHint() == HINT_SITEMAP_GLOBAL) {
             layer = null;  
         } else {
@@ -475,7 +488,7 @@ public class KMLService extends Service {
                         linkGridLocs[i]);
                 
                 String gridLocStr = gridLocString(linkGridLocs[i]);
-                
+                                
                 // Always use absolute URLs for these
                 String gridLocUrl = tile.getUrlPrefix() 
                     + gridLocStr +"." +tile.getMimeType().getFileExtension()
