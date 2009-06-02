@@ -393,6 +393,11 @@ public class GridCalculator {
 
     	retVal[0][2] = retVal[1][2] = retVal[2][2] = retVal[3][2] = z;
     	
+    	// Do not check bounds if z was too great
+    	if(z < 0) {
+    	    return retVal;
+    	}
+    	
     	// Need to check that it doesn't fall outside
     	int[] bounds = boundsGridLevels[z];
     	for(int i=0; i<4; i++) {
