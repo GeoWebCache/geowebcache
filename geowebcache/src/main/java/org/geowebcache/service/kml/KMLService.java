@@ -592,7 +592,10 @@ public class KMLService extends Service {
                 + "\n<Icon>" 
                 + "\n<href>" 
                 +  gridLocString(gridLoc) + "." + formatExtension 
-                + "</href>" + "</Icon>\n" + bbox.toKML()
+                + "</href>" 
+                + "<refreshMode>onInterval</refreshMode>"
+                + "<refreshInterval>7200</refreshInterval>"
+                + "</Icon>\n" + bbox.toKML()
                 + "\n</GroundOverlay>\n";
 
         return xml;
