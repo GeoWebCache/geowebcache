@@ -171,16 +171,16 @@ public class DefaultStorageFinder {
                 iVar = i;
             }
         }
+        String logMsg;
+        
         if (this.defaultPrefix == null) {
-            log.warn("Found no usable default cache prefixes !!! "
-                    + "Please set " + GWC_CACHE_DIR + " if you would like a specific location.");
-
             String tmpDir = System.getProperty("java.io.tmpdir");
             if (tmpDir != null) {
-                this.defaultPrefix = tmpDir + File.separator
-                        + "geowebcache";
-                log.warn("Reverting to java.io.tmpdir: "
-                        + this.defaultPrefix);
+                this.defaultPrefix = tmpDir + File.separator + "geowebcache";
+                logMsg = "Reverting to java.io.tmpdir " + this.defaultPrefix + " for storage. "
+                    +"Please set " + GWC_CACHE_DIR + ".";
+            } else {
+                logMsg = "Unable to determine temp directory. Proceeding with undefined results.";
             }
         } else {
             switch (iVar) {
@@ -197,7 +197,18 @@ public class DefaultStorageFinder {
                 this.defaultPrefix = this.defaultPrefix
                         + File.separator + "geowebcache";
             }
-            log.info(msgPrefix + ", using it as the default prefix.");
+            
+            logMsg = msgPrefix + ", using it as the default prefix.";
         }
+        
+        String warnStr = "*** "+logMsg+" ***";
+        StringBuilder stars = new StringBuilder();
+        for(int i=0; i < warnStr.length(); i++) {
+            stars.append("*");
+        }
+        
+        log.info(stars.toString());
+        log.info(warnStr);
+        log.info(stars.toString());
     }
 }
