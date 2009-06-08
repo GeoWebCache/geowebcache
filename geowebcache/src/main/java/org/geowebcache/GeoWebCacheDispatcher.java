@@ -17,6 +17,9 @@
 
 package org.geowebcache;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,6 +41,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.service.Service;
+import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
@@ -56,10 +60,12 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private TileLayerDispatcher tileLayerDispatcher = null;
     
     private StorageBroker storageBroker = null;
+    
+    private DefaultStorageFinder defaultStorageFinder = null;
 
     private HashMap<String,Service> services = null;
     
-    private byte[] blankPNG8 = null; 
+    private byte[] blankTile = null; 
     
     private String servletPrefix = null;
 
@@ -83,6 +89,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
         log.info("set TileLayerDispatcher");
     }
 
+    public void setDefaultStorageFinder(DefaultStorageFinder defaultStorageFinder) {
+        this.defaultStorageFinder = defaultStorageFinder;
+    }
+    
     /**
      * GeoServer and other solutions that embedded this dispatcher will prepend a
      * path, this is used to remove it.
@@ -119,15 +129,49 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
     }
 
-    private void loadBlankPNG8() {
-        //WebApplicationContext context = (WebApplicationContext) getApplicationContext();
+    private void loadBlankTile() {        
+        String blankTilePath = defaultStorageFinder.findEnvVar(DefaultStorageFinder.GWC_BLANK_TILE_PATH);
         
+        if(blankTilePath != null) {
+            File fh = new File(blankTilePath);
+            if(fh.exists() && fh.canRead() && fh.isFile()) {
+                long fileSize = fh.length();
+                blankTile = new byte[(int) fileSize];
+                
+                int total = 0;
+                try {
+                    FileInputStream fis = new FileInputStream(fh);
+                    int read = 0;
+                    while(read != -1) {
+                        read = fis.read(blankTile, total, blankTile.length - total);
+                        
+                        if(read != -1)
+                            total += read;
+                    }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                
+                if(total == blankTile.length && total > 0) {
+                    log.info("Loaded blank tile from " + blankTilePath);
+                } else {
+                    log.error("Failed to load blank tile from " + blankTilePath);
+                }
+
+                return;
+            } else {
+                log.error("" + blankTilePath + " does not exist or is not readable.");
+            }
+        }
+        
+        // Use the built-in one: 
         InputStream is = GeoWebCacheDispatcher.class.getResourceAsStream("blank.png");
-        //URL test = GeoWebCacheDispatcher.class.getResource("blank.png");
-        blankPNG8 = new byte[129];
+        blankTile = new byte[129];
         
         try {
-            int ret = is.read(blankPNG8);
+            int ret = is.read(blankTile);
             log.info("Read " + ret + " from blank PNG8 file (expected 129).");
         } catch (IOException ioe) {
             log.error(ioe.getMessage());
@@ -285,7 +329,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private Service findService(String serviceStr) throws GeoWebCacheException {
         if (this.services == null) {
             loadServices();
-            loadBlankPNG8();
+            loadBlankTile();
         }
 
         // E.g. /wms/test -> /wms
@@ -428,7 +472,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             layer.setExpirationHeader(tile.servletResp);
         }
         try { 
-            tile.servletResp.getOutputStream().write(this.blankPNG8);
+            tile.servletResp.getOutputStream().write(this.blankTile);
         } catch (IOException ioe) {
             log.debug("Caught IOException: " + ioe.getMessage() + "\n\n" + ioe.toString());
         }

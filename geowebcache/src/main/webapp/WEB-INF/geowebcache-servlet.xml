@@ -71,6 +71,7 @@
   <bean id="geowebcacheDispatcher" class="org.geowebcache.GeoWebCacheDispatcher" destroy-method="destroy">
     <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
     <property name="storageBroker" ref="gwcStorageBroker"/>
+    <property name="defaultStorageFinder" ref="gwcDefaultStorageFinder"/>
     <!-- property name="servletPrefix" value=""/ -->
   </bean>
   

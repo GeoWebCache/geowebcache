@@ -42,6 +42,8 @@ public class DefaultStorageFinder {
     
     public final static String GWC_METASTORE_DRIVER_CLASS = "GWC_METASTORE_DRIVER_CLASS";
     
+    public final static String GWC_BLANK_TILE_PATH = "GWC_BLANK_TILE_PATH";
+    
     private static Log log = LogFactory.getLog(org.geowebcache.storage.DefaultStorageFinder.class);
 
     private String defaultPrefix = null;
