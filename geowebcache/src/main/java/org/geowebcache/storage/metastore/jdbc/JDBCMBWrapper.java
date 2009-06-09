@@ -117,7 +117,7 @@ class JDBCMBWrapper {
             String path = defStoreFind.getDefaultPath() + File.separator + "meta_jdbc_h2";
             File dir = new File(path);
             dir.mkdirs();
-            this.jdbcString = "jdbc:h2:file:"+path+File.separator+"gwc_metastore" + ";TRACE_LEVEL_FILE=0";
+            this.jdbcString = "jdbc:h2:file:"+path+File.separator+"gwc_metastore" + ";TRACE_LEVEL_FILE=0;AUTO_SERVER=TRUE";
         }
 
         try {
