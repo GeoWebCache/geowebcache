@@ -86,6 +86,7 @@
     <int>3</int>
     <int>3</int>
   </metaWidthHeight>
+  <errorMime>application/vnd.ogc.se_xml</errorMime>
   <tiled>false</tiled>
   <transparent>true</transparent>
   <bgColor></bgColor>
