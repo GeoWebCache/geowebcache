@@ -90,6 +90,14 @@
          Higher reduced the number of repeated labels, but can overload the backend server.
        </xs:documentation></xs:annotation>
      </xs:element>
+     <xs:element name="gutter" type="xs:integer" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         The gutter is a buffer around the image that is sliced away when saving the tiles
+         to disk. It only applies to metatiles and is not applied if the resulting request
+         would exceed the layer bounds. Note that your styles on the backend should avoid 
+         rendering labels near the edges of requested images. The default is zero.
+       </xs:documentation></xs:annotation>
+     </xs:element>
      <xs:element name="errorMime" type="xs:string" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
          The ERROR parameter sent to the WMS backend. The default is application/vnd.ogc.se_inimage, 

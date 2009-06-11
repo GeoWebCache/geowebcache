@@ -199,6 +199,8 @@
     <int>3</int>
     <int>3</int>
   </metaWidthHeight>
+  <!-- 3 pixel gutter -->
+  <gutter>3</gutter>
   <tiled>false</tiled>
   <transparent>true</transparent>
   <bgColor></bgColor>

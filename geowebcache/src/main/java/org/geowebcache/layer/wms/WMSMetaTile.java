@@ -28,13 +28,11 @@ import java.io.OutputStream;
 import java.util.Arrays;
 
 import javax.imageio.ImageIO;
-import javax.imageio.spi.ImageReaderSpi;
 import javax.media.jai.JAI;
 import javax.media.jai.operator.CropDescriptor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geotools.resources.image.ImageUtilities;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.MetaTile;
@@ -45,9 +43,7 @@ import org.geowebcache.util.wms.BBOX;
 public class WMSMetaTile extends MetaTile {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSMetaTile.class);
 
-    private BufferedImage img = null; // buffer for storing the metatile, if
-
-    // it's an image
+    private BufferedImage img = null; // buffer for storing the metatile, if it is an image
 
     private RenderedImage[] tiles = null; // array with tiles (after cropping)
 
@@ -58,6 +54,8 @@ public class WMSMetaTile extends MetaTile {
     protected boolean requestTiled = false;
 
     protected String fullParameters;
+    
+    protected int[] gutter = new int[4]; // L,B,R,T in pixels
     
     /**
      * Used for requests by clients
@@ -78,24 +76,84 @@ public class WMSMetaTile extends MetaTile {
         String baseParameters = wmsLayer.getWMSRequestTemplate();
         //int srsIdx = wmsLayer.getSRSIndex(srs);
 
-        // Fill in the blanks
-        StringBuilder strBuilder = new StringBuilder(baseParameters);
-        
-        strBuilder.append("&FORMAT=").append(mimeType.getFormat());
-        strBuilder.append("&SRS=").append(srs.toString());
-        strBuilder.append("&WIDTH=").append(metaX * GridCalculator.TILEPIXELS);
-        strBuilder.append("&HEIGHT=").append(metaY * GridCalculator.TILEPIXELS);
-
         GridCalculator gridCalc = wmsLayer.getGrid(srs).getGridCalculator();
         BBOX metaBbox = gridCalc.bboxFromGridBounds(metaTileGridBounds);
         
-        strBuilder.append("&BBOX=").append(metaBbox);
+        // Fill in the blanks
+        StringBuilder strBuilder = new StringBuilder(baseParameters);
+        strBuilder.append("&FORMAT=").append(mimeType.getFormat());
+        strBuilder.append("&SRS=").append(srs.toString());
+        
+        if(wmsLayer.gutter == 0 || metaX*metaY == 1) {
+            strBuilder.append("&WIDTH=").append(metaX * GridCalculator.TILEPIXELS);
+            strBuilder.append("&HEIGHT=").append(metaY * GridCalculator.TILEPIXELS);
+            strBuilder.append("&BBOX=").append(metaBbox);
+        } else {
+            adjustParamsForGutter(strBuilder, metaTileGridBounds);
+        }
         
         strBuilder.append(fullParameters);
         
         return strBuilder.toString();
     }
-
+    
+    /***
+     * Adding a gutter should be really easy, just add to all sides, right ?
+     * 
+     * But GeoServer / GeoTools, and possibly other WMS servers, can get mad 
+     * if we exceed 180,90 (or the equivalent for other projections), 
+     * so we'lll treat those with special care.
+     * 
+     * @param strBuilder
+     * @param metaTileGridBounds
+     */
+    protected void adjustParamsForGutter(StringBuilder strBuilder, int[] metaBounds) 
+    throws GeoWebCacheException {
+        GridCalculator gridCalc = wmsLayer.getGrid(srs).getGridCalculator();
+        int[] layerBounds = gridCalc.getGridBounds((int) metaTileGridBounds[4]);
+        
+        BBOX metaBbox = gridCalc.bboxFromGridBounds(metaTileGridBounds);
+        
+        double[] metaCoords = metaBbox.coords;
+        
+        long pixelWidth = metaX * GridCalculator.TILEPIXELS;
+        long pixelHeight = metaY * GridCalculator.TILEPIXELS;
+        
+        double widthRelDelta = ((1.0 * pixelWidth + wmsLayer.gutter) / pixelWidth ) - 1.0;
+        double heightRelDelta = ((1.0 * pixelHeight + wmsLayer.gutter) / pixelHeight ) - 1.0;
+        
+        double coordWidth = metaCoords[2] - metaCoords[0];
+        double coordHeight = metaCoords[3] - metaCoords[1];
+        
+        double coordWidthDelta = coordWidth * widthRelDelta;
+        double coordHeightDelta = coordHeight * heightRelDelta;
+        
+        if(layerBounds[0] < metaBounds[0]) {
+            pixelWidth += wmsLayer.gutter;
+            gutter[0] = wmsLayer.gutter;
+            metaCoords[0] -= coordWidthDelta;
+        }
+        if(layerBounds[1] < metaBounds[1]) {
+            pixelHeight += wmsLayer.gutter;
+            gutter[1] = wmsLayer.gutter;
+            metaCoords[1] -= coordHeightDelta;
+        }
+        if(layerBounds[2] > metaBounds[2]) {
+            pixelWidth += wmsLayer.gutter;
+            gutter[2] = wmsLayer.gutter;
+            metaCoords[2] += coordWidthDelta;
+        }
+        if(layerBounds[3] > metaBounds[3]) {
+            pixelHeight += wmsLayer.gutter;
+            gutter[3] = wmsLayer.gutter;
+            metaCoords[3] += coordHeightDelta;
+        }
+        
+        strBuilder.append("&WIDTH=").append(pixelWidth);
+        strBuilder.append("&HEIGHT=").append(pixelHeight);
+        strBuilder.append("&BBOX=").append(metaBbox);
+    }
+    
     protected WMSLayer getLayer() {
         return wmsLayer;
     }
@@ -132,8 +190,8 @@ public class WMSMetaTile extends MetaTile {
         if (tileCount > 1) {
             for (int y = 0; y < metaY; y++) {
                 for (int x = 0; x < metaX; x++) {
-                    int i = x * tileWidth;
-                    int j = (metaY - 1 - y) * tileHeight;
+                    int i = x * tileWidth + gutter[0];
+                    int j = (metaY - 1 - y) * tileHeight + gutter[3];
 
                     tiles[y * metaX + x] = createTile(i, j, tileWidth,
                             tileHeight, useJAI);

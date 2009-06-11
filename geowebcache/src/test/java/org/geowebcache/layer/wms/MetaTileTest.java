@@ -1,6 +1,9 @@
 package org.geowebcache.layer.wms;
 
 import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -123,5 +126,86 @@ public class MetaTileTest extends TestCase {
                     + "} {" + Arrays.toString(mt.getMetaTileGridBounds()) + "}");
         }
         assertTrue(test);
+    }
+    
+    /**
+     * 
+     * @throws Exception
+     */
+    public void test5MetaTileGutter() throws Exception {
+        BBOX bbox = new BBOX(0, 0, 180, 90);
+        
+        WMSLayer layer = createWMSLayer(bbox);
+
+        Grid grid = layer.getGrid(SRS.getEPSG4326());
+        GridCalculator gridCalc = grid.getGridCalculator();
+        
+        // Set the gutter
+        layer.gutter = 50;
+
+        // Lets make a tile close to the edge, this should only have a gutter to west / south
+        int[] gridPos = { 127, 63, 6 };
+        WMSMetaTile mt = new WMSMetaTile(
+                    layer, grid.getSRS(), ImageMime.png, 
+                    gridCalc.getGridBounds(gridPos[2]), 
+                    gridPos, layer.getMetaTilingFactors()[0], 
+                    layer.getMetaTilingFactors()[1], "&test=test1");
+
+        // The actual gutter is calculated when we make the request
+        String wmsParams = mt.getWMSParams();
+        assertTrue(mt.gutter[0] == layer.gutter);
+        assertTrue(mt.gutter[1] == layer.gutter);
+        assertTrue(mt.gutter[2] == 0);
+        assertTrue(mt.gutter[3] == 0);
+        
+        int heightLoc = wmsParams.indexOf("HEIGHT=");
+        int heightEnd = wmsParams.indexOf("&",heightLoc);
+        int height = Integer.parseInt(wmsParams.substring(heightLoc + "HEIGHT=".length(), heightEnd));
+        
+        assertEquals(height, 256 + 50);
+
+        int[] midGridPos = { 83, 45, 6 };
+        mt = new WMSMetaTile(
+                    layer, grid.getSRS(), ImageMime.png, 
+                    gridCalc.getGridBounds(midGridPos[2]), 
+                    midGridPos, layer.getMetaTilingFactors()[0], 
+                    layer.getMetaTilingFactors()[1], "&test=test1");
+
+        // The actual gutter is calculated when we make the request
+        wmsParams = mt.getWMSParams();
+        assertTrue(mt.gutter[0] == layer.gutter);
+        assertTrue(mt.gutter[1] == layer.gutter);
+        assertTrue(mt.gutter[2] == layer.gutter);
+        assertTrue(mt.gutter[3] == layer.gutter);
+        
+        heightLoc = wmsParams.indexOf("HEIGHT=");
+        heightEnd = wmsParams.indexOf("&",heightLoc);
+        height = Integer.parseInt(wmsParams.substring(heightLoc + "HEIGHT=".length(), heightEnd));
+        
+        assertEquals(height, 768 + 2*50);
+        
+        int bboxLoc = wmsParams.indexOf("BBOX=");
+        int bboxEnd = wmsParams.indexOf("&",bboxLoc);
+        
+        String[] coordStrs = wmsParams.substring(bboxLoc + "BBOX=".length(), bboxEnd).split(",");
+        
+        // Lets check some specific coordinates too
+        assertTrue(Math.abs( Double.parseDouble(coordStrs[0]) - 47.26318359375) < 0.001);   
+        assertTrue(Math.abs( Double.parseDouble(coordStrs[3]) - 45.54931640625) < 0.001);
+    }
+    
+    private WMSLayer createWMSLayer(BBOX layerBounds) {
+        String[] urls = {"http://localhost:38080/wms"};
+        List<String> formatList = new LinkedList<String>();
+        formatList.add("image/png");
+        Hashtable<SRS,Grid> grids = new Hashtable<SRS,Grid>();
+       
+        BBOX gridBase = new BBOX(-180, -90, 180, 90);
+        Grid grid = new Grid(SRS.getEPSG4326(), layerBounds, gridBase, null);
+        grids.put(SRS.getEPSG4326(), grid);
+        int[] metaWidthHeight = {3,3};
+        WMSLayer layer = new WMSLayer("test:layer", urls, "aStyle", "test:layer", formatList, grids, metaWidthHeight, "vendorparam=true");
+        
+        return layer;
     }
 }

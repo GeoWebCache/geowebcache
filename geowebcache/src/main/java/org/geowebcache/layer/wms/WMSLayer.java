@@ -62,6 +62,8 @@ public class WMSLayer extends TileLayer {
     private String wmsStyles = null;
     
     private int[] metaWidthHeight = null;
+    
+    protected Integer gutter;
 
     private String errorMime;
 
@@ -257,6 +259,10 @@ public class WMSLayer extends TileLayer {
             if(! url.endsWith("?")) {
                 wmsUrl[i] = url + "?";
             }
+        }
+        
+        if(gutter == null) {
+            gutter = Integer.valueOf(0);
         }
 
         return new Boolean(true);
