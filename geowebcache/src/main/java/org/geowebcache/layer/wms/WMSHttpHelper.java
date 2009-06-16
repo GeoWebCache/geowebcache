@@ -51,10 +51,11 @@ public class WMSHttpHelper {
      */
     protected static byte[] makeRequest(WMSMetaTile metaTile)
             throws GeoWebCacheException {
+        
         String wmsParams = metaTile.getWMSParams();
         WMSLayer layer = metaTile.getLayer();
-
-        return makeRequest(metaTile, layer, wmsParams, metaTile.getMimeType().getMimeType());
+        
+        return makeRequest(metaTile, layer, wmsParams, metaTile.getRequestFormat().getFormat());
     }
 
     /**
@@ -70,9 +71,10 @@ public class WMSHttpHelper {
 
     protected static byte[] makeRequest(ConveyorTile tile, boolean requestTiled) throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
-        String wmsParams = layer.getWMSRequestTemplate();
+        String wmsParams = layer.getWMSRequestTemplate(tile.getMimeType());
 
         StringBuilder strBuilder = new StringBuilder(wmsParams);
+        
         
         strBuilder.append("&FORMAT=").append(tile.getMimeType().getFormat());
         strBuilder.append("&SRS=").append(tile.getSRS().toString());

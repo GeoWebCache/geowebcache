@@ -44,6 +44,7 @@ import org.geowebcache.layer.GridLocObj;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.ErrorMime;
+import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
@@ -333,7 +334,8 @@ public class WMSLayer extends TileLayer {
         GridCalculator gridCalc = getGrid(tile.getSRS()).getGridCalculator();
 
         WMSMetaTile metaTile = new WMSMetaTile(this, tile.getSRS(), 
-                tile.getMimeType(), gridCalc.getGridBounds(gridLoc[2]),
+                tile.getMimeType(), this.getFormatModifier(tile.getMimeType()),
+                gridCalc.getGridBounds(gridLoc[2]),
                 gridLoc, metaWidthHeight[0], metaWidthHeight[1],
                 tile.getFullParameters());
 
@@ -669,7 +671,9 @@ public class WMSLayer extends TileLayer {
         }
     }
 
-    public String getWMSRequestTemplate() {
+    public String getWMSRequestTemplate(MimeType responseFormat) {
+        FormatModifier mod = getFormatModifier(responseFormat);
+        
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append("SERVICE=WMS");
         strBuilder.append("&REQUEST=GetMap");
@@ -702,19 +706,34 @@ public class WMSLayer extends TileLayer {
             }
         }
 
-        if(transparent != null) {
-            if(transparent) {
+        Boolean tmpTransparent = transparent;
+        if (mod != null && mod.getTransparent() != null) {
+            tmpTransparent = mod.getTransparent();
+        }
+        if (tmpTransparent != null) {
+            if (tmpTransparent) {
                 strBuilder.append("&TRANSPARENT=").append("TRUE");
             } else {
                 strBuilder.append("&TRANSPARENT=").append("FALSE");
             }
         }
         
-        if (bgColor != null && bgColor.length() != 0) {
-            strBuilder.append("&BGCOLOR=").append(bgColor);
+
+        String tmpBgColor = bgColor;
+        if (mod != null && mod.getBgColor() != null) {
+            tmpBgColor = mod.getBgColor();
         }
-        if (palette != null && palette.length() != 0) {
-            strBuilder.append("&PALETTE=").append(palette);
+        
+        if (tmpBgColor != null && tmpBgColor.length() != 0) {
+            strBuilder.append("&BGCOLOR=").append(tmpBgColor);
+        }
+        
+        String tmpPalette = palette;
+        if (mod != null && mod.getPalette() != null) {
+            tmpPalette = mod.getPalette();
+        }
+        if (tmpPalette != null && tmpPalette.length() != 0) {
+            strBuilder.append("&PALETTE=").append(tmpPalette);
         }
         
         if (vendorParameters != null && vendorParameters.length() != 0) {
@@ -1041,8 +1060,7 @@ public class WMSLayer extends TileLayer {
         
         return paramStrs;
     }
-    
-    
+        
     public void mergeWith(WMSLayer otherLayer) throws GeoWebCacheException {
         if (otherLayer.parameterFilters != null) {
             if (this.parameterFilters != null) {

@@ -32,7 +32,7 @@ public class MetaTileTest extends TestCase {
         int[] gridPos = { 0, 0, 0 };
         //int[] gridBounds, int[] tileGridPosition, int metaX, int metaY
         WMSMetaTile mt = new WMSMetaTile(
-                null, grid.getSRS(), ImageMime.png, 
+                null, grid.getSRS(), ImageMime.png, null, 
                 gridCalc.getGridBounds(gridPos[2]),
                 gridPos, metaWidth, metaHeight, "&test=test1");
 
@@ -57,7 +57,7 @@ public class MetaTileTest extends TestCase {
         
         int[] gridPos = { 127, 63, 6 };
         WMSMetaTile mt = new WMSMetaTile(
-                    null, grid.getSRS(), ImageMime.png, 
+                    null, grid.getSRS(), ImageMime.png, null, 
                     gridCalc.getGridBounds(gridPos[2]), 
                     gridPos, metaWidth, metaHeight, "&test=test1");
 
@@ -84,7 +84,7 @@ public class MetaTileTest extends TestCase {
               
         int[] gridPos = { 0, 0, 0 };
         WMSMetaTile mt = new WMSMetaTile(
-                null, grid.getSRS(), ImageMime.png,
+                null, grid.getSRS(), ImageMime.png, null, 
                 gridCalc.getGridBounds(gridPos[2]), 
                 gridPos, metaWidth, metaHeight, "&test=test1");
         
@@ -112,7 +112,7 @@ public class MetaTileTest extends TestCase {
         
         int[] gridPos = { 70, 70, 6 };
         WMSMetaTile mt = new WMSMetaTile(
-                null, grid.getSRS(), ImageMime.png,
+                null, grid.getSRS(), ImageMime.png, null, 
         	gridCalc.getGridBounds(gridPos[2]), 
         	gridPos, metaWidth, metaHeight, "&test=test1");
         
@@ -146,7 +146,7 @@ public class MetaTileTest extends TestCase {
         // Lets make a tile close to the edge, this should only have a gutter to west / south
         int[] gridPos = { 127, 63, 6 };
         WMSMetaTile mt = new WMSMetaTile(
-                    layer, grid.getSRS(), ImageMime.png, 
+                    layer, grid.getSRS(), ImageMime.png, null, 
                     gridCalc.getGridBounds(gridPos[2]), 
                     gridPos, layer.getMetaTilingFactors()[0], 
                     layer.getMetaTilingFactors()[1], "&test=test1");
@@ -166,7 +166,7 @@ public class MetaTileTest extends TestCase {
 
         int[] midGridPos = { 83, 45, 6 };
         mt = new WMSMetaTile(
-                    layer, grid.getSRS(), ImageMime.png, 
+                    layer, grid.getSRS(), ImageMime.png, null, 
                     gridCalc.getGridBounds(midGridPos[2]), 
                     midGridPos, layer.getMetaTilingFactors()[0], 
                     layer.getMetaTilingFactors()[1], "&test=test1");

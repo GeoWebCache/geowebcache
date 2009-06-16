@@ -16,8 +16,30 @@
   <mimeFormats>
     <string>image/png</string>
     <string>image/jpeg</string>
+    <string>image/gif</string>
     <string>application/vnd.google-earth.kml+xml</string>
   </mimeFormats>
+  <!-- Format modifiers change certain settings for a
+       specific format -->
+  <formatModifiers>
+    <formatModifier>
+      <!-- Mandatory, the format requested by client -->
+      <responseFormat>image/jpeg</responseFormat>
+      <!-- Optional, the format GWC will use to get metatiles from backend,
+           This allows you to avoid lossy compression, such as JPEG, to be
+           applied twice. Use image/png; mode=24bit for MapServer -->
+      <requestFormat>image/png</requestFormat>
+      <!-- Optional, override transparent parameter in WMS request-->
+      <transparent>false</transparent>
+      <!-- Optional, override or set backgroud color for WMS request-->
+      <bgColor>0xDDDDDD</bgColor>
+      <!-- Optional, override or set palette parameter for WMS request -->
+      <!-- palette>webSafePalette</palette -->
+      <!-- Optional, adjust the compression ratio used when saving
+           the tiles. For minimum compression use 1.0 -->
+      <compressionQuality>1.0</compressionQuality>
+    </formatModifier>
+  </formatModifiers>
   <grids>
     <entry>
       <srs>

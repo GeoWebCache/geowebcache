@@ -18,6 +18,7 @@ package org.geowebcache.layer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
 
 public abstract class MetaTile implements TileResponseReceiver {
@@ -44,17 +45,34 @@ public abstract class MetaTile implements TileResponseReceiver {
 
     protected long expiresHeader = -1;
 
-    protected MimeType mimeType;
+    protected MimeType responseFormat;
+    
+    protected FormatModifier formatModifier;
 
-    protected MetaTile(SRS srs, MimeType mimeType, int[] gridBounds,
-            int[] tileGridPosition, int metaX, int metaY) {
+    /**
+     * The the request format is the format used for the request to the backend. 
+     * 
+     * The response format is what the tiles are actually saved as. The primary
+     * example is to use image/png or image/tiff for backend requests, and then
+     * save the resulting tiles to JPEG to avoid loss of quality.
+     * 
+     * @param srs
+     * @param responseFormat
+     * @param requestFormat
+     * @param gridBounds
+     * @param tileGridPosition
+     * @param metaX
+     * @param metaY
+     */
+    protected MetaTile(SRS srs, MimeType responseFormat, FormatModifier formatModifier, 
+            int[] gridBounds, int[] tileGridPosition, int metaX, int metaY) {
         this.srs = srs;
-        this.mimeType = mimeType;
+        this.responseFormat = responseFormat;
+        this.formatModifier = formatModifier;
         this.metaX = metaX;
         this.metaY = metaY;
 
-        metaTileGridBounds = calculateMetaTileGridBounds(gridBounds,
-                tileGridPosition);
+        metaTileGridBounds = calculateMetaTileGridBounds(gridBounds, tileGridPosition);
         tilesGridPositions = calculateTilesGridPositions();
     }
 
@@ -176,7 +194,15 @@ public abstract class MetaTile implements TileResponseReceiver {
         return this.srs;
     }
     
-    public MimeType getMimeType() {
-        return mimeType;
+    public MimeType getResponseFormat() {
+        return this.responseFormat;
+    }
+    
+    public MimeType getRequestFormat() {
+        if(formatModifier == null) {
+            return this.responseFormat;
+        } else {
+            return this.formatModifier.getRequestFormat();
+        }
     }
 }

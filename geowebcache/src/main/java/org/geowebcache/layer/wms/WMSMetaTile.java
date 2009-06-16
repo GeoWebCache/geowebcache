@@ -26,8 +26,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Locale;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 import javax.media.jai.JAI;
 import javax.media.jai.operator.CropDescriptor;
 
@@ -37,6 +43,8 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.MetaTile;
 import org.geowebcache.layer.SRS;
+import org.geowebcache.mime.FormatModifier;
+import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.wms.BBOX;
 
@@ -63,9 +71,9 @@ public class WMSMetaTile extends MetaTile {
      * @param profile
      * @param initGridPosition
      */
-    protected WMSMetaTile(WMSLayer layer, SRS srs, MimeType mimeType,
+    protected WMSMetaTile(WMSLayer layer, SRS srs, MimeType responseFormat, FormatModifier formatModifier,
             int[] gridBounds, int[] tileGridPosition, int metaX, int metaY, String fullParameters) {
-        super(srs, mimeType, gridBounds, tileGridPosition, metaX, metaY);
+        super(srs, responseFormat, formatModifier, gridBounds, tileGridPosition, metaX, metaY);
         this.wmsLayer = layer;
         this.fullParameters = fullParameters;
         
@@ -73,7 +81,7 @@ public class WMSMetaTile extends MetaTile {
     }
 
     protected String getWMSParams() throws GeoWebCacheException {
-        String baseParameters = wmsLayer.getWMSRequestTemplate();
+        String baseParameters = wmsLayer.getWMSRequestTemplate(this.getResponseFormat());
         //int srsIdx = wmsLayer.getSRSIndex(srs);
 
         GridCalculator gridCalc = wmsLayer.getGrid(srs).getGridCalculator();
@@ -81,7 +89,11 @@ public class WMSMetaTile extends MetaTile {
         
         // Fill in the blanks
         StringBuilder strBuilder = new StringBuilder(baseParameters);
-        strBuilder.append("&FORMAT=").append(mimeType.getFormat());
+        if(formatModifier == null) {
+            strBuilder.append("&FORMAT=").append(responseFormat.getFormat());
+        } else {
+            strBuilder.append("&FORMAT=").append(formatModifier.getRequestFormat().getFormat());
+        }
         strBuilder.append("&SRS=").append(srs.toString());
         
         if(wmsLayer.gutter == 0 || metaX*metaY == 1) {
@@ -271,18 +283,28 @@ public class WMSMetaTile extends MetaTile {
     protected boolean writeTileToStream(int tileIdx, OutputStream os)
             throws IOException {
         if (tiles != null) {
-            String format = super.mimeType.getInternalName();
+            String format = super.responseFormat.getInternalName();
 
             if (log.isDebugEnabled()) {
-                log.debug("Thread: " + Thread.currentThread().getName()
-                        + " writing: " + tileIdx);
+                log.debug("Thread: " + Thread.currentThread().getName() + " writing: " + tileIdx);
             }
-
-            if (!javax.imageio.ImageIO.write(tiles[tileIdx], format, os)) {
-                log.error("javax.imageio.ImageIO.write("
-                        + tiles[tileIdx].toString() + "," + format + ","
-                        + os.toString() + ")");
+            
+            
+            // TODO should we recycle the writers ? 
+            ImageWriter writer = javax.imageio.ImageIO.getImageWritersByFormatName(format).next();
+            ImageWriteParam param  = writer.getDefaultWriteParam();
+            
+            if(this.formatModifier != null) {
+                param = formatModifier.adjustImageWriteParam(param);
             }
+            
+            ImageOutputStream imgOut = new MemoryCacheImageOutputStream(os);
+            writer.setOutput(imgOut);
+            IIOImage image = new IIOImage(tiles[tileIdx], null, null);
+            writer.write(null, image, param);
+            imgOut.close();
+            writer.dispose();
+            
             return true;
         }
 

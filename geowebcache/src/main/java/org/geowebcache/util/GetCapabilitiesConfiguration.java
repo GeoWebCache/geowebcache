@@ -236,7 +236,6 @@ public class GetCapabilitiesConfiguration implements Configuration {
         
         int[] metaWidthHeight = { Integer.parseInt(metaStrings[0]), Integer.parseInt(metaStrings[1])};
         
-        // TODO We're dropping the styles now...
         return new WMSLayer(name,
                 wmsurl, stylesStr, name, mimeFormats, grids, 
                 metaWidthHeight, this.vendorParameters);

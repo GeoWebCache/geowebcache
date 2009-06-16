@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.wms.BBOX;
 
@@ -38,6 +39,8 @@ public abstract class TileLayer {
     protected String name;
 
     protected List<String> mimeFormats;
+    
+    protected List<FormatModifier> formatModifiers;
 
     protected Hashtable<SRS,Grid> grids;
     
@@ -117,7 +120,7 @@ public abstract class TileLayer {
         }
         return false;
     }
-
+    
     /**
      * Whether the layer supports the given format string
      * 
@@ -245,6 +248,32 @@ public abstract class TileLayer {
     public double[] getResolutions(SRS srs) throws GeoWebCacheException {
         return grids.get(srs).getGridCalculator().getResolutions();
     }
+    
+
+    public FormatModifier getFormatModifier(MimeType responseFormat) {
+        if(this.formatModifiers == null || formatModifiers.size() == 0) {
+            return null;
+        }
+        
+        Iterator<FormatModifier> iter = formatModifiers.iterator();
+        while(iter.hasNext()) {
+            FormatModifier mod = iter.next();
+            if(mod.getResponseFormat() == responseFormat) {
+                return mod;
+            }
+        }
+        
+        return null;
+    }
+    
+    public List<FormatModifier> getFormatModifiers() {
+        return formatModifiers;
+    }
+    
+    public void setFormatModifiers(List<FormatModifier> formatModifiers) {
+        this.formatModifiers = formatModifiers;       
+    }
+    
 
     /**
      * 
@@ -416,11 +445,21 @@ public abstract class TileLayer {
                 }
             }
         }
+        
+        if(otherLayer.formatModifiers != null) {
+            if(formatModifiers == null) {
+                formatModifiers = otherLayer.formatModifiers;
+            } else {
+                Iterator<FormatModifier> iter = otherLayer.formatModifiers.iterator();
+                while(iter.hasNext()) {
+                    FormatModifier mod = iter.next();
+                    formatModifiers.add(mod);
+                }
+            }
+        }
 
         if (otherLayer.grids != null && otherLayer.grids.size() > 0) {
             Iterator<Entry<SRS, Grid>> iter = otherLayer.grids.entrySet().iterator();
-
-            // We are just adding or overwriting as needed
             while (iter.hasNext()) {
                 Entry<SRS, Grid> entry = iter.next();
                 this.grids.put(entry.getKey(), entry.getValue());

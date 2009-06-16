@@ -19,8 +19,10 @@ package org.geowebcache.util;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.mime.FormatModifier;
 
 
 /**
@@ -43,6 +45,8 @@ public class GeoWebCacheConfiguration {
     Integer backendTimeout;
     
     Boolean cacheBypassAllowed;
+    
+    protected List<FormatModifier> formatModifiers;
     
     /* The layers */
     LinkedList<TileLayer> layers;

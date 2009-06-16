@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -52,6 +53,7 @@ import org.geowebcache.filter.RegexParameterFilter;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.rest.seed.SeedRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
@@ -195,6 +197,12 @@ public class XMLConfiguration implements Configuration {
                 layer.setBackendTimeout(120);
             }
         }
+        
+        if(layer.getFormatModifiers() == null) {
+            if(gwcConfig.formatModifiers != null) {
+                layer.setFormatModifiers(gwcConfig.formatModifiers);
+            }
+        }
     }
     
     private void loadConfiguration(File xmlFile) 
@@ -230,6 +238,7 @@ public class XMLConfiguration implements Configuration {
         xs.alias("grids", new ArrayList<Grid>().getClass());
         xs.alias("grid", Grid.class);
         xs.alias("mimeFormats", new ArrayList<String>().getClass());
+        xs.alias("formatModifiers", new ArrayList<FormatModifier>().getClass());
         xs.alias("srs", org.geowebcache.layer.SRS.class);        
         xs.alias("parameterFilters", new ArrayList<ParameterFilter>().getClass());
         xs.alias("parameterFilter", ParameterFilter.class);
@@ -238,6 +247,7 @@ public class XMLConfiguration implements Configuration {
         xs.alias("floatParameterFilter", FloatParameterFilter.class);
         xs.alias("regexParameterFilter", RegexParameterFilter.class);
         //xs.alias("regex", String.class);
+        xs.alias("formatModifier", FormatModifier.class);
         return xs;
     }
 
