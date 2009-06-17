@@ -117,9 +117,14 @@ public class SeedTask extends GWCTask {
 
         for (int level = zoomStart; level <= zoomStop && this.terminate == false; level++) {
             int[] levelGrid = coveredGridLevels[level];
-            for (int gridy = levelGrid[1]; gridy <= levelGrid[3];) {
-
-                for (int gridx = levelGrid[0] + (threadOffset * metaTilingFactors[0]); gridx <= levelGrid[2] && this.terminate == false; ) {
+            
+            // Round down to the closes metatile boundary before starting
+            int starty = levelGrid[1] - (levelGrid[1] % metaTilingFactors[1]);
+            for (int gridy = starty; gridy <= levelGrid[3];) {
+            	
+            	// Round down to the closest metatile boundary before starting
+            	int startx = levelGrid[0] - (levelGrid[0] % metaTilingFactors[0]);
+                for (int gridx = startx + (threadOffset * metaTilingFactors[0]); gridx <= levelGrid[2] && this.terminate == false; ) {
 
                     int[] gridLoc = { gridx, gridy, level };
 
