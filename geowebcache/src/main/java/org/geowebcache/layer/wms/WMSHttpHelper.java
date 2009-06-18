@@ -269,8 +269,7 @@ public class WMSHttpHelper {
         if(responseMime.equalsIgnoreCase(requestMime)) {
             return true;
         } else {
-            if(requestMime.startsWith("image/png") 
-                    && responseMime.equalsIgnoreCase("image/png")) {
+            if(requestMime.startsWith("image/png") && responseMime.startsWith("image/png")) {
                 return true;
             }
         }

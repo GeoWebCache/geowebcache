@@ -31,8 +31,7 @@ public class MimeType {
     
     protected boolean supportsTiling;
 
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.mime.MimeType.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.mime.MimeType.class);
 
 
     public MimeType(String mimeType, String fileExtension, String internalName, String format, boolean supportsTiling) {

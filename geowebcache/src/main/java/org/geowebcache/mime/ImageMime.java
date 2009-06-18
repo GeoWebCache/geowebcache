@@ -43,7 +43,7 @@ public class ImageMime extends MimeType {
         new ImageMime("image/png", "png24", "png", "image/png24", true);
 
     public static final ImageMime png_24 = 
-        new ImageMime("image/png; mode=24bit", "png_24", "png", "image/png; mode=24bit", true);
+        new ImageMime("image/png; mode=24bit", "png_24", "png", "image/png;%20mode=24bit", true);
     
     public ImageMime(String mimeType, String fileExtension, 
             String internalName, String format, boolean noop) {
@@ -77,6 +77,8 @@ public class ImageMime extends MimeType {
         } else if ( tmpStr.equalsIgnoreCase("png24")) {
             return png24;
         } else if ( tmpStr.equalsIgnoreCase("png; mode=24bit")) {
+            return png_24;
+        } else if ( tmpStr.equalsIgnoreCase("png;%20mode=24bit")) {
             return png_24;
         }
         return null;
