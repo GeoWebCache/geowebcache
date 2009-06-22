@@ -397,6 +397,11 @@ public class XMLConfiguration implements Configuration {
             rootNode = applyTransform(rootNode, "geowebcache_102.xsl").getFirstChild();
         }
         
+        if(rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.1.0")) {
+            log.info("Updating configuration from 1.1.0 to 1.1.3");
+            rootNode = applyTransform(rootNode, "geowebcache_110.xsl").getFirstChild();
+        }
+        
         // Check again after transform
         if (!rootNode.getNodeName().equals("gwcConfiguration")) {
             log.error("Unable to parse file, expected gwcConfiguration at root after transform.");
