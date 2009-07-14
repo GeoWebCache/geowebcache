@@ -14,7 +14,7 @@
  * 
  * @author Arne Kepp, The Open Planning Project, Copyright 2009
  */
-package org.geowebcache.filter;
+package org.geowebcache.filter.parameters;
 
 import java.util.Iterator;
 import java.util.List;

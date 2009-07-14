@@ -14,7 +14,7 @@
  * 
  * @author Arne Kepp, The Open Planning Project, Copyright 2009
  */
-package org.geowebcache.filter;
+package org.geowebcache.filter.parameters;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

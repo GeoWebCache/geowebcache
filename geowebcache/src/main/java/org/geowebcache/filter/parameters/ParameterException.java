@@ -14,26 +14,14 @@
  * 
  * @author Arne Kepp, The Open Planning Project, Copyright 2009
  */
-package org.geowebcache.filter;
+package org.geowebcache.filter.parameters;
 
-public class ParameterFilter {
-    public String key;
-    
-    public String defaultValue;
-    
-    public ParameterFilter() {
-        // Empty for XStream
+import org.geowebcache.GeoWebCacheException;
+
+public class ParameterException extends GeoWebCacheException {
+
+    public ParameterException(String msg) {
+        super(msg);
     }
-    
-    public String getKey() {
-        return key;
-    }
-    
-    public String getDefaultValue() {
-        return defaultValue;
-    }
-    
-    public String apply(String str) throws ParameterException {
-        return null;
-    }
+
 }
