@@ -480,9 +480,7 @@ public class KMLService extends Service {
         int[][] linkGridLocs = tileLayer.getZoomInGridLoc(srs, gridLoc);
 
         // 3) Apply secondary filter against linking to empty tiles
-        if (tile.getMimeType() == XMLMime.kml) {
-            linkGridLocs = KMZHelper.filterGridLocs(tile.getStorageBroker(), tileLayer, tile.getMimeType(),linkGridLocs);
-        }
+        linkGridLocs = KMZHelper.filterGridLocs(tile.getStorageBroker(), tileLayer, tile.getMimeType(), linkGridLocs);
 
         //int moreData = 0;
         for (int i = 0; i < 4; i++) {

@@ -35,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.demo.Demo;
+import org.geowebcache.filter.request.RequestFilterException;
 import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.OutOfBoundsException;
 import org.geowebcache.layer.TileLayer;
@@ -217,14 +218,22 @@ public class GeoWebCacheDispatcher extends AbstractController {
             }
         } catch (Exception e) {
             // e.printStackTrace();
-            if(! (e instanceof BadTileException) || log.isDebugEnabled()) {
-                log.error(e.getMessage()+ " " + request.getRequestURL().toString());
-            }
-            
-            writeError(response, 400, e.getMessage());
-            if(! (e instanceof GeoWebCacheException) 
-                    || log.isDebugEnabled()) {
-                e.printStackTrace();
+            if(e instanceof RequestFilterException) {
+                
+                RequestFilterException reqE = (RequestFilterException) e;
+                reqE.setHttpInfoHeader(response);
+                writeFixedResponse(response, reqE.getResponseCode(), reqE.getContenType(), reqE.getResponse());
+                
+            } else {
+                if(! (e instanceof BadTileException) || log.isDebugEnabled()) {
+                    log.error(e.getMessage()+ " " + request.getRequestURL().toString());
+                }
+                
+                writeError(response, 400, e.getMessage());
+                
+                if(! (e instanceof GeoWebCacheException) || log.isDebugEnabled()) {
+                    e.printStackTrace();
+                }
             }
         }
         return null;
@@ -290,9 +299,12 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
             // B3) Get the configuration that has to respond to this request
             TileLayer layer = tileLayerDispatcher.getTileLayer(convTile.getLayerId());
-
+            
             // Save it for later
             convTile.setTileLayer(layer);
+            
+            // Apply the filters
+            layer.applyFilters(convTile);
 
             // Keep the URI
             // tile.requestURI = request.getRequestURI();
@@ -384,97 +396,51 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * @param errorMsg
      *            the actual error message, human readable
      */
-    private static void writeError(HttpServletResponse response, int httpCode,
-            String errorMsg) {
-        
+    private static void writeError(HttpServletResponse response, int httpCode, String errorMsg) {
         log.debug(errorMsg);
-
-        errorMsg = 
-                "<html><body>\n"
-                + Demo.GWC_HEADER
-                +"<h4>"+httpCode+": "+errorMsg+"</h4>"
-                +"</body></html>\n";
-
+        errorMsg =  "<html><body>\n" + Demo.GWC_HEADER + "<h4>"+httpCode+": "+errorMsg+"</h4>" + "</body></html>\n";
         writePage(response, httpCode, errorMsg);
     }
-    
-    
-    private static void writePage(HttpServletResponse response, int httpCode,
-            String message) {
-        response.setContentType("text/html");
-        response.setStatus(httpCode);
-
-        if (message == null) {
-            return;
-        }
-
-        try {
-            OutputStream os = response.getOutputStream();
-            os.write(message.getBytes());
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
         
+    private static void writePage(HttpServletResponse response, int httpCode, String message) {
+        writeFixedResponse(response, httpCode, "text/html", message.getBytes());        
     }
 
     /**
      * Happy ending, sets the headers and writes the response back to the
      * client.
-     * 
-     * Note that the expiration header should already have been set by
-     * the layer that retrieved the data.
-     * 
-     * @param response
-     *            where to write to
-     * @param tileResponse
-     *            the response with the data and MIME type
-     * @throws IOException
      */
-    private void writeData(ConveyorTile tile) throws IOException {
-        byte[] data = tile.getContent();
-        
-        HttpServletResponse response = tile.servletResp;
-        
-        // Did we get anything?
-        if (tile.getError() && data != null) {
-            // TODO something nice
-            log.error("writeData() oops.. no data or tile was null");
-        } else {
-            response.setStatus(tile.getStatus());
-            response.setContentType(tile.getMimeType().getMimeType());
-            
-            if(data != null) {
-                response.setContentLength(data.length);
-                
-                try {
-                    OutputStream os = response.getOutputStream();
-                    os.write(data);
-                } catch (IOException ioe) {
-                    log.debug("Caught IOException: " + ioe.getMessage() + "\n\n" + ioe.toString());
-                }
-            }
-        }
+    private void writeData(ConveyorTile tile) throws IOException {  
+        writeFixedResponse(tile.servletResp, 200, tile.getMimeType().getMimeType(), tile.getContent());
     }
     
     /**
      * Writes a transparent, 8 bit PNG to avoid having clients like OpenLayers
      * showing lots of pink tiles
-     * 
-     * @param tile
-     * @param message
      */
     private void writeEmpty(ConveyorTile tile, String message) {
         tile.servletResp.setHeader("geowebcache-message", message);
-        tile.servletResp.setStatus(200);
-        tile.servletResp.setContentType(ImageMime.png.getMimeType());
         TileLayer layer = tile.getLayer();
         if(layer != null) {
             layer.setExpirationHeader(tile.servletResp);
         }
-        try { 
-            tile.servletResp.getOutputStream().write(this.blankTile);
-        } catch (IOException ioe) {
-            log.debug("Caught IOException: " + ioe.getMessage() + "\n\n" + ioe.toString());
+
+        writeFixedResponse(tile.servletResp, 200, ImageMime.png.getMimeType(), this.blankTile);
+    }
+    
+    private static void writeFixedResponse(HttpServletResponse response, int httpCode, String contentType, byte[] data) {
+        response.setStatus(httpCode);
+        response.setContentType(contentType);
+        
+        if(data != null) {
+            response.setContentLength(data.length);
+            
+            try {
+                OutputStream os = response.getOutputStream();
+                os.write(data);
+            } catch (IOException ioe) {
+                log.debug("Caught IOException: " + ioe.getMessage() + "\n\n" + ioe.toString());
+            }
         }
     }
 }

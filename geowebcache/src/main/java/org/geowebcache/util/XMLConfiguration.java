@@ -24,11 +24,9 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -47,9 +45,10 @@ import javax.xml.validation.Validator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.filter.FloatParameterFilter;
-import org.geowebcache.filter.ParameterFilter;
-import org.geowebcache.filter.RegexParameterFilter;
+import org.geowebcache.filter.parameters.FloatParameterFilter;
+import org.geowebcache.filter.parameters.ParameterFilter;
+import org.geowebcache.filter.parameters.RegexParameterFilter;
+import org.geowebcache.filter.request.CircularExtentFilter;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -58,8 +57,6 @@ import org.geowebcache.rest.seed.SeedRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -248,6 +245,8 @@ public class XMLConfiguration implements Configuration {
         xs.alias("regexParameterFilter", RegexParameterFilter.class);
         //xs.alias("regex", String.class);
         xs.alias("formatModifier", FormatModifier.class);
+        
+        xs.alias("circularExtentFilter", CircularExtentFilter.class);
         return xs;
     }
 
@@ -400,6 +399,11 @@ public class XMLConfiguration implements Configuration {
         if(rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.1.0")) {
             log.info("Updating configuration from 1.1.0 to 1.1.3");
             rootNode = applyTransform(rootNode, "geowebcache_110.xsl").getFirstChild();
+        }
+        
+        if(rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.1.3")) {
+            log.info("Updating configuration from 1.1.3 to 1.1.4");
+            rootNode = applyTransform(rootNode, "geowebcache_113.xsl").getFirstChild();
         }
         
         // Check again after transform

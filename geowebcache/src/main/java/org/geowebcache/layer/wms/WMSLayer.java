@@ -37,7 +37,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.filter.ParameterFilter;
+import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.GridLocObj;

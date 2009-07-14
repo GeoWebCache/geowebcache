@@ -28,6 +28,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.filter.request.RequestFilter;
+import org.geowebcache.filter.request.RequestFilterException;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
@@ -43,6 +45,8 @@ public abstract class TileLayer {
     protected List<FormatModifier> formatModifiers;
 
     protected Hashtable<SRS,Grid> grids;
+    
+    protected List<RequestFilter> requestFilters;
     
     // Styles?
 
@@ -469,6 +473,20 @@ public abstract class TileLayer {
         if(this instanceof WMSLayer) {
             WMSLayer thisWMSLayer = (WMSLayer) this;
             thisWMSLayer.mergeWith((WMSLayer) otherLayer);
+        }
+    }
+    
+    /**
+     * Loops over all the request filters and applies them successively.
+     * 
+     * @param convTile
+     * @throws RequestFilterException
+     */
+    public void applyFilters(ConveyorTile convTile) throws RequestFilterException {
+        Iterator<RequestFilter> iter = requestFilters.iterator();
+        while(iter.hasNext()) {
+            RequestFilter filter = iter.next();
+            filter.apply(convTile);
         }
     }
 }

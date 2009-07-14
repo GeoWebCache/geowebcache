@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
            xmlns:xml="http://www.w3.org/XML/1998/namespace"
-           targetNamespace="http://geowebcache.org/schema/1.1.3" 
-           xmlns:gwc="http://geowebcache.org/schema/1.1.3"
+           targetNamespace="http://geowebcache.org/schema/1.1.4" 
+           xmlns:gwc="http://geowebcache.org/schema/1.1.4"
            elementFormDefault="qualified">
 
 <xs:element name="gwcConfiguration">
@@ -79,6 +79,13 @@
        <xs:annotation><xs:documentation xml:lang="en">
          The grid definitions contain information about the SRS, the maximum extent for 
          this SRS and the bounds of your data.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="requestFilters" type="gwc:requestFilters">
+       <xs:annotation><xs:documentation xml:lang="en">
+         Request filters are applied to all requests and make it possible to apply
+         special rules for certain requests. The filters themselves are written
+         in Java, though they can be made configurable through XML.
        </xs:documentation></xs:annotation>
      </xs:element>
      <xs:element name="wmsUrl" type="gwc:wmsUrl">
@@ -456,6 +463,27 @@
         compression (best quality) use 1.0, smaller values yield better 
         file sizes. Note that as of GWC 1.1.3 this setting only applies
         to the response format JPEG.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="requestFilters">
+  <xs:sequence>
+    <xs:element name="circularExtentFilter" type="gwc:circularExtentFilter" minOccurs="1" maxOccurs="unbounded">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The circular extent filter is just a dummy filter for testing purposes
+      </xs:documentation></xs:annotation>
+    </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="circularExtentFilter">
+  <xs:sequence>
+    <xs:element name="name" type="xs:string" minOccurs="1">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The name of the filter. This is added to the HTTP header when a filter triggers,
+        to make debugging the filters easier.
       </xs:documentation></xs:annotation>
     </xs:element>
   </xs:sequence>

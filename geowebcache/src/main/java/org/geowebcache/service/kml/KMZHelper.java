@@ -26,9 +26,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.filter.request.RequestFilterException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.mime.XMLMime;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.storage.StorageBroker;
 
@@ -65,26 +68,38 @@ public class KMZHelper {
                 ConveyorTile tile = new ConveyorTile(sb,
                         tileLayer.getName(), SRS.getEPSG4326(), 
                         linkGridLocs[i], mime, null, null, null, null);
+                
                 tile.setTileLayer(tileLayer);
                 
-                try {                                        
-                    tileLayer.getTile(tile);
-                    
-                } catch (IOException ioe) {
-                    log.error(ioe.getMessage());
+                // Apply request filters
+                try {
+                    tileLayer.applyFilters(tile);
+                } catch(RequestFilterException e) {
                     linkGridLocs[i][2] = -1;
-                } catch (GeoWebCacheException gwce) {
-                    log.error(gwce.getMessage());
-                    gwce.printStackTrace();
-                    linkGridLocs[i][2] = -1;
+                    continue;
                 }
-                             
-                // If it's a 204 it means no content -> don't link to it
-                if(tile.getStatus() == 204) {
-                    linkGridLocs[i][2] = -1;
-                } else if(tile.getStatus() != 200) {
-                    throw new GeoWebCacheException(
-                            "Unexpected response code from server " + tile.getStatus());
+                
+                // Special treatment for regionated KML
+                if (mime.equals(XMLMime.kml)) {
+                    try {
+                        tileLayer.getTile(tile);
+                    } catch (IOException ioe) {
+                        log.error(ioe.getMessage());
+                        linkGridLocs[i][2] = -1;
+                    } catch (GeoWebCacheException gwce) {
+                        log.error(gwce.getMessage());
+                        gwce.printStackTrace();
+                        linkGridLocs[i][2] = -1;
+                    }
+
+                    // If it's a 204 it means no content -> don't link to it
+                    if (tile.getStatus() == 204) {
+                        linkGridLocs[i][2] = -1;
+                    } else if (tile.getStatus() != 200) {
+                        throw new GeoWebCacheException(
+                                "Unexpected response code from server "
+                                + tile.getStatus());
+                    }
                 }
             }
         }

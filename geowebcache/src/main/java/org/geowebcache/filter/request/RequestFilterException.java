@@ -16,21 +16,35 @@
  */
 package org.geowebcache.filter.request;
 
-import org.geowebcache.conveyor.ConveyorTile;
+import javax.servlet.http.HttpServletResponse;
 
-/** 
- * This is just a dummy class. Should be abstract, 
- * but that gets tricky with XStream
- */
-public class RequestFilter {
+public class RequestFilterException extends Exception {
     
-    String name;
+    RequestFilter reqFilter;
     
-    public void apply(ConveyorTile convTile) throws RequestFilterException {
-        
+    int httpCode;
+    
+    String contentType;
+    
+    public RequestFilterException(RequestFilter reqFilter, int httpCode, String contentType) {
+        this.reqFilter = reqFilter;
+        this.httpCode = httpCode;
+        this.contentType = contentType;
     }
     
-    protected String getName() { 
-        return name;
+    public void setHttpInfoHeader(HttpServletResponse resp) {
+        resp.setHeader("gwc-request-filter", reqFilter.getName());
+    }
+    
+    public int getResponseCode() {
+        return httpCode;
+    }
+    
+    public String getContenType() {
+        return contentType;
+    }
+    
+    public byte[] getResponse() {
+        return null;
     }
 }
