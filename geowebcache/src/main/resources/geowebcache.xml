@@ -100,9 +100,14 @@
     </entry>
   </grids>
   <requestFilters>
-    <circularExtentFilter>
+    <!-- circularExtentFilter>
       <name>testfilter</name>
-    </circularExtentFilter>
+    </circularExtentFilter -->
+    <wmsRasterFilter>
+      <name>testRasterFilter</name>
+      <zoomStop>14</zoomStop>
+      <styles>onebit</styles>
+    </wmsRasterFilter>
   </requestFilters>
   <wmsUrl>
     <string>http://sigma.openplans.org/geoserver/wms</string>

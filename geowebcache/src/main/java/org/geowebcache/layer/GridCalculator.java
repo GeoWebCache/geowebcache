@@ -187,10 +187,21 @@ public class GridCalculator {
         return gridLevels;
     }
 
+    /** 
+     * This returns the inclusive bounds. I.e. if the returned array is {2, 5, 5, 6} , then 5,6,3 is valid.
+     * 
+     * @param zoomLevel
+     * @return
+     */
     public int[] getGridBounds(int zoomLevel) {
         return boundsGridLevels[zoomLevel].clone();
     }
 
+    /** 
+     * This returns the inclusive bounds. I.e. if the returned array is {2, 5, 5, 6} , then 5,6,3 is valid.
+     * 
+     * @return
+     */
     public int[][] getGridBounds() {
         int[][] ret = new int[boundsGridLevels.length][boundsGridLevels[0].length];
         
