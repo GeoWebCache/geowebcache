@@ -306,4 +306,10 @@ public class KMLDebugGridLayer extends TileLayer {
         
     }
 
+    @Override
+    public BBOX getZoomedOutBbox(SRS srs) throws GeoWebCacheException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

@@ -150,7 +150,8 @@ public class WMSService extends Service {
         
         if (tile.getHint() != null) {
             if(tile.getHint().equalsIgnoreCase("getcapabilities")) {
-                WMSRequests.handleGetCapabilities(tld, tile.servletResp);
+                WMSGetCapabilities wmsCap = new WMSGetCapabilities(tld, tile.servletReq);
+                wmsCap.writeReponse(tile.servletResp);
             } else {
                 WMSRequests.handleProxy(tld, tile);
             }
@@ -161,12 +162,7 @@ public class WMSService extends Service {
                   + "Please include request URL if you file a bug report.");
         }
     }
-    
-    public void setConfig(List<Configuration> getCapConfigs) {
-        WMSRequests.getCapConfigs = getCapConfigs;
-        log.info("Got passed " + getCapConfigs.size() + " configuration objects for getCapabilities.");
-    }
-    
+       
     public void setProxyRequests(String trueFalse) {
         this.proxyRequests = Boolean.parseBoolean(trueFalse);
         if(this.proxyRequests) {

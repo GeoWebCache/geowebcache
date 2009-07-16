@@ -802,6 +802,23 @@ public class WMSLayer extends TileLayer {
     throws GeoWebCacheException {
         return grids.get(srs).getGridCalculator().getZoomedOutGridLoc();
     }
+    
+    public BBOX getZoomedOutBbox(SRS srs)
+    throws GeoWebCacheException {
+        GridCalculator calc = grids.get(srs).getGridCalculator();
+        int[] loc = calc.getZoomedOutGridLoc();
+        if(loc[2] == -1) {
+            if(srs.equals(SRS.getEPSG4326())) {
+                return BBOX.WORLD4326;
+            } else {
+                int[] fourTuple = calc.getGridBounds()[0];
+                int[] fiveTuple = {fourTuple[0], fourTuple[1], fourTuple[2], fourTuple[3], 0};
+                return calc.bboxFromGridBounds(fiveTuple);
+            }
+        } else {
+            return calc.bboxFromGridLocation(loc);
+        }
+    }
 
     /**
      * Acquires lock for the entire layer, returns only after all other requests

@@ -400,11 +400,20 @@ public abstract class TileLayer {
      * -1.
      * 
      * @param srsIdx
-     * @return x,y,z}
+     * @return {x,y,z}
      * @throws GeoWebCacheException 
      */
     public abstract int[] getZoomedOutGridLoc(SRS srs) throws GeoWebCacheException;
 
+    /**
+     * Converts the zoomed out grid location into a bounding box
+     * 
+     * @param srs
+     * @return
+     * @throws GeoWebCacheException
+     */
+    public abstract BBOX getZoomedOutBbox(SRS srs) throws GeoWebCacheException;
+    
     /**
      * Acquire the global lock for the layer, primarily used for truncating
      * 
