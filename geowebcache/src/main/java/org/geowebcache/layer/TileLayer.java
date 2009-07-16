@@ -483,6 +483,9 @@ public abstract class TileLayer {
      * @throws RequestFilterException
      */
     public void applyFilters(ConveyorTile convTile) throws RequestFilterException {
+        if(requestFilters == null)
+            return;
+        
         Iterator<RequestFilter> iter = requestFilters.iterator();
         while(iter.hasNext()) {
             RequestFilter filter = iter.next();
