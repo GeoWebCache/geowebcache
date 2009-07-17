@@ -14,141 +14,37 @@
  * 
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
-
 package org.geowebcache.filter.request;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Hashtable;
 
 import javax.imageio.ImageIO;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.SRS;
+import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
 
-public class WMSRasterFilter extends RequestFilter {
-    private static Log log = LogFactory.getLog(WMSRasterFilter.class);
-    
-    public int zoomStop;
-    
-    public String styles;
-    
-    public transient Hashtable<Integer,BufferedImage[]> matrices;
-    
-    public void apply(ConveyorTile convTile) throws RequestFilterException {
-        int[] idx = convTile.getTileIndex().clone();
-        SRS srs = convTile.getSRS();
-        
-        // Basic bounds test first
-        try {
-            convTile.getLayer().getGrid(srs).getGridCalculator().locationWithinBounds(idx);
-        } catch (GeoWebCacheException gwce) {
-            throw new BlankTileException(this);
-        }
-        
-        if(idx[2] + 1 < zoomStop) {
-            // Sample one level higher
-            idx[0] = idx[0] * 2;
-            idx[1] = idx[1] * 2;
-            idx[2] = idx[2] + 1;
-        } else {
-            // Reduce to highest supported resolution
-            int diff = idx[2] - zoomStop;
-            idx[0] = idx[0] >> diff;
-            idx[1] = idx[1] >> diff;
-            idx[2] = zoomStop;
-        }
-        
-        if(matrices == null || matrices.get(srs.getNumber()) == null || matrices.get(srs.getNumber())[idx[2]] == null) {
-            setMatrix((WMSLayer) convTile.getLayer(), srs, idx[2]);
-        }
-        
-        if(! lookup(convTile.getLayer().getGrid(srs), idx)) {
-            throw new GreenTileException(this);
-        }
-    }
-    
-    private boolean lookup(Grid grid, int[] idx) {
-        RenderedImage mat = matrices.get(grid.getSRS().getNumber())[idx[2]];
-        
-        int[] gridBounds = null;
-        try {
-            gridBounds = grid.getGridCalculator().getGridBounds(idx[2]);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        
-        // Changing index to top left hand origin
-        int baseX = idx[0] - gridBounds[0];
-        int baseY = gridBounds[3] - idx[1];
+public class WMSRasterFilter extends RasterFilter {
+    private static Log log = LogFactory.getLog(RasterFilter.class);
 
-        int width = mat.getWidth();
-        int height = mat.getHeight();
-
-        int x = baseX; 
-        int y = baseY;
+    protected BufferedImage loadMatrix(TileLayer tlayer, SRS srs, int z) throws IOException {
+        if(! (tlayer instanceof WMSLayer))
+            return null;
         
-        // We're checking 4 samples. The base is bottom left hand corner
-        boolean hasData = false;
-
-        // BL, BR, TL, TR
-        int[] xOffsets = {0,1,0,1};
-        int[] yOffsets = {0,0,1,1};
+        WMSLayer layer = (WMSLayer) tlayer;
         
-        try {
-            for(int i=0; i<4; i++) {
-                x = baseX + xOffsets[i];
-                y = baseY - yOffsets[i];
-                
-                if(x > -1 && x < width && y > -1 && y < height) {
-                    if( mat.getData().getSample(x, y, 0) == 0 ) {
-                        hasData = true;
-                    }
-                }   
-            }
-        } catch (ArrayIndexOutOfBoundsException aioob) {
-            System.out.println("x:" + x + "  y:" + y  + " (" + mat.getWidth() + " " + mat.getHeight() + ")");
-        }
-        
-        // Was there at 
-        return hasData;
-    }
-    
-    protected synchronized void setMatrix(WMSLayer layer, SRS srs, int z) {
-        int srsId = srs.getNumber();
-        
-        if(matrices == null) {
-            matrices = new Hashtable<Integer,BufferedImage[]>();
-        }
-        
-        if(matrices.get(srsId) == null) {
-            matrices.put(srsId, new BufferedImage[zoomStop + 1]);
-        }
-        
-        if(matrices.get(srsId)[z] == null) {
-            try {
-                matrices.get(srsId)[z] = loadMatrix(layer,srs,z);
-            } catch(IOException ioe) {
-                log.error(ioe.getMessage());
-            }
-        }
-    }
-    
-    // TODO this code needs to be merged into the layer
-    protected BufferedImage loadMatrix(WMSLayer layer, SRS srs, int z) throws IOException {
         String urlStr = wmsUrl(layer,srs,z);
         
         URL wmsUrl = new URL(urlStr);
@@ -200,4 +96,5 @@ public class WMSRasterFilter extends RequestFilter {
         
         return str.toString();
     }
+
 }
