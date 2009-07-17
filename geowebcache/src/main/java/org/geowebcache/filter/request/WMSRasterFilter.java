@@ -38,7 +38,9 @@ import org.geowebcache.util.wms.BBOX;
 
 public class WMSRasterFilter extends RasterFilter {
     private static Log log = LogFactory.getLog(RasterFilter.class);
-
+    
+    public String wmsStyles;
+    
     protected BufferedImage loadMatrix(TileLayer tlayer, SRS srs, int z) throws IOException {
         if(! (tlayer instanceof WMSLayer))
             return null;
@@ -86,7 +88,7 @@ public class WMSRasterFilter extends RasterFilter {
         str.append(layer.getWMSurl()[0]);
         str.append("SERVICE=WMS&REQUEST=getmap&VERSION=1.1.1");
         str.append("&LAYERS=").append(layer.getName());
-        str.append("&STYLES=").append(this.styles);
+        str.append("&STYLES=").append(this.wmsStyles);
         str.append("&BBOX=").append(bbox.toString());
         str.append("&WIDTH=").append(width);
         str.append("&HEIGHT=").append(height);

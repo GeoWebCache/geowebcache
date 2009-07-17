@@ -94,7 +94,7 @@
         <!-- 
            This grid only allows zoom levels 0 through 20
         -->
-        <zoomStart>0</zoomStart>
+        <zoomStart>12</zoomStart>
         <zoomStop>20</zoomStop>
       </grid>
     </entry>
@@ -106,7 +106,7 @@
     <wmsRasterFilter>
       <name>testRasterFilter</name>
       <zoomStop>14</zoomStop>
-      <styles>onebit</styles>
+      <wmsStyles>onebit</wmsStyles>
     </wmsRasterFilter>
   </requestFilters>
   <wmsUrl>

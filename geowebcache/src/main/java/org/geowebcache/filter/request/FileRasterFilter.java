@@ -49,14 +49,11 @@ public class FileRasterFilter extends RasterFilter {
         return path;
     }
     
-    public void setMatrix(byte[] data, TileLayer layer, SRS srs, int zoomLevel) throws IOException {
+    public void saveMatrix(byte[] data, TileLayer layer, SRS srs, int zoomLevel) throws IOException {
         // Persist
         File fh = new File( createFilePath(srs, zoomLevel) );
         FileOutputStream fos = new FileOutputStream(fh);
         fos.write(data);
         fos.close();
-        
-        // Load
-        super.setMatrix(layer, srs, zoomLevel);
     }
 }

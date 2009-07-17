@@ -36,9 +36,11 @@ public abstract class RasterFilter extends RequestFilter {
     
     public int zoomStop;
     
-    public String styles;
-    
     public transient Hashtable<Integer,BufferedImage[]> matrices;
+    
+    public RasterFilter() {
+        
+    }
     
     public void apply(ConveyorTile convTile) throws RequestFilterException {
         int[] idx = convTile.getTileIndex().clone();
@@ -67,7 +69,7 @@ public abstract class RasterFilter extends RequestFilter {
         if(matrices == null 
                 || matrices.get(srs.getNumber()) == null 
                 || matrices.get(srs.getNumber())[idx[2]] == null) {
-            setMatrix((WMSLayer) convTile.getLayer(), srs, idx[2]);
+            setMatrix((WMSLayer) convTile.getLayer(), srs, idx[2], false);
         }
         
         if(! lookup(convTile.getLayer().getGrid(srs), idx)) {
@@ -133,35 +135,53 @@ public abstract class RasterFilter extends RequestFilter {
      * @param srs
      * @param z
      */
-    protected synchronized void setMatrix(TileLayer layer, SRS srs, int z) {
+    protected synchronized void setMatrix(TileLayer layer, SRS srs, int z, boolean replace) {
         int srsId = srs.getNumber();
-        
-        if(matrices == null) {
-            matrices = new Hashtable<Integer,BufferedImage[]>();
+
+        if (matrices == null) {
+            matrices = new Hashtable<Integer, BufferedImage[]>();
         }
-        
-        if(matrices.get(srsId) == null) {
+
+        if (matrices.get(srsId) == null) {
             matrices.put(srsId, new BufferedImage[zoomStop + 1]);
         }
-        
-        if(matrices.get(srsId)[z] == null) {
+
+        if (matrices.get(srsId)[z] == null) {
             try {
-                matrices.get(srsId)[z] = loadMatrix(layer,srs,z);
-            } catch(IOException ioe) {
+                matrices.get(srsId)[z] = loadMatrix(layer, srs, z);
+            } catch (IOException ioe) {
                 log.error(ioe.getMessage());
             }
-        } else {
-            // We need to lock it
+        } else if(replace) {
             BufferedImage oldImg = matrices.get(srsId)[z];
-            synchronized(oldImg) {
-                try {
-                    matrices.get(srsId)[z] = loadMatrix(layer,srs,z);
-                } catch(IOException ioe) {
-                    log.error(ioe.getMessage());
+            BufferedImage[] matArray = matrices.get(srsId);
+            
+            try {
+                // Get the replacement
+                BufferedImage newImg = loadMatrix(layer, srs, z);
+                
+                // We need to lock it
+                synchronized (oldImg) {
+                    matArray[z] = newImg;
                 }
+
+            } catch (IOException ioe) {
+                log.error("Failed to replace matrix for " 
+                        + this.name + ", " + srs.getNumber() + ", " + z + " : "
+                        + ioe.getMessage());
             }
         }
     }
     
-    protected abstract BufferedImage loadMatrix(TileLayer layer, SRS srs, int zoomLevel) throws IOException;
+    /**
+     * This should be abstract, but XStream throws a fit. Oh well.
+     * 
+     * @param layer
+     * @param srs
+     * @param zoomLevel
+     * @return
+     * @throws IOException
+     */
+    protected abstract BufferedImage loadMatrix(TileLayer layer, SRS srs, int zoomLevel) 
+    throws IOException;
 }
