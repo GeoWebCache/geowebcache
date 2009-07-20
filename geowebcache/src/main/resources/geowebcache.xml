@@ -105,7 +105,7 @@
     </circularExtentFilter -->
     <wmsRasterFilter>
       <name>testRasterFilter</name>
-      <zoomStop>14</zoomStop>
+      <zoomStop>12</zoomStop>
       <wmsStyles>onebit</wmsStyles>
     </wmsRasterFilter>
   </requestFilters>

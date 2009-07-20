@@ -16,21 +16,37 @@
  */
 package org.geowebcache.filter.request;
 
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.layer.SRS;
+import org.geowebcache.layer.TileLayer;
 
 /** 
  * This is just a dummy class. Should be abstract, 
  * but that gets tricky with XStream
  */
-public class RequestFilter {
+public abstract class RequestFilter {
     
     String name;
     
-    public void apply(ConveyorTile convTile) throws RequestFilterException {
-        
-    }
+    /**
+     * Apply the filter to the 
+     * 
+     * @param convTile
+     * @throws RequestFilterException
+     */
+    public abstract void apply(ConveyorTile convTile) throws RequestFilterException;
     
+    /**
+     * The name of the filter, as chosen by the user. It should be unique, buth this is not enforced.
+     * @return
+     */
     protected String getName() { 
         return name;
     }
+    
+    /**
+     * Optional initialization 
+     */
+    public abstract void initialize(TileLayer layer) throws GeoWebCacheException;
 }

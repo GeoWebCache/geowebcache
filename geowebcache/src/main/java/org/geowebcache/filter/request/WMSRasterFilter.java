@@ -41,18 +41,42 @@ public class WMSRasterFilter extends RasterFilter {
     
     public String wmsStyles;
     
-    protected BufferedImage loadMatrix(TileLayer tlayer, SRS srs, int z) throws IOException {
+    public Integer backendTimeout;
+    
+    protected BufferedImage loadMatrix(TileLayer tlayer, SRS srs, int z) throws IOException, GeoWebCacheException {
         if(! (tlayer instanceof WMSLayer))
             return null;
         
         WMSLayer layer = (WMSLayer) tlayer;
         
-        String urlStr = wmsUrl(layer,srs,z);
+        Grid grid = layer.getGrid(srs);
+        
+        int[] widthHeight = calculateWidthHeight(grid, z);
+        
+        String urlStr = wmsUrl(layer,srs,z, widthHeight);
+        
+        System.out.println(z + " " + urlStr);
         
         URL wmsUrl = new URL(urlStr);
         
         HttpURLConnection conn = (HttpURLConnection) wmsUrl.openConnection();
-          
+
+        if(backendTimeout != null) {
+            conn.setConnectTimeout(backendTimeout * 1000);
+            conn.setReadTimeout(backendTimeout * 1000);
+        } else {
+            conn.setConnectTimeout(120000);
+            conn.setReadTimeout(120000);
+        }
+        
+        if(! conn.getContentType().startsWith("image/")) {
+            throw new GeoWebCacheException("Unexpected response content type " + conn.getContentType());
+        }
+        
+        if(conn.getResponseCode() != 200) {
+            throw new GeoWebCacheException("Received response code " + conn.getResponseCode());
+        }
+        
         byte[] ret = ServletUtils.readStream(conn.getInputStream(), 16384, 2048);
         
         InputStream is = new ByteArrayInputStream(ret);
@@ -64,25 +88,27 @@ public class WMSRasterFilter extends RasterFilter {
             log.error(ioe.getMessage());
         }
         
+        if(img.getWidth() != widthHeight[0] || img.getHeight() != widthHeight[1]) {
+            String msg = "WMS raster filter has dimensions " + img.getWidth() + "," + img.getHeight()
+                    + ", expected " + widthHeight[0] + "," + widthHeight[1];
+            throw new GeoWebCacheException(msg);
+        }
+        
         return img;
     }
-    
-    protected String wmsUrl(WMSLayer layer, SRS srs, int z) {
+        
+    /**
+     * Generates the URL used to create the lookup raster
+     * 
+     * @param layer
+     * @param srs
+     * @param z
+     * @return
+     */
+    protected String wmsUrl(WMSLayer layer, SRS srs, int z, int[] widthHeight) throws GeoWebCacheException {
         Grid grid = layer.getGrid(srs);
         
-        int[] bounds  = null;
-        BBOX bbox = null;
-        
-        try {
-            bounds = grid.getGridCalculator().getGridBounds(z);
-            int[] gridLocBounds = {bounds[0],bounds[1],bounds[2],bounds[3],z};
-            bbox = grid.getGridCalculator().bboxFromGridBounds(gridLocBounds);
-        } catch (GeoWebCacheException gwce) {
-            log.error(gwce.getMessage());
-        }
-
-        int width = bounds[2] - bounds[0] + 1;
-        int height = bounds[3] - bounds[1] + 1;
+        BBOX bbox = calculateBbox(grid, z);
         
         StringBuilder str = new StringBuilder();
         str.append(layer.getWMSurl()[0]);
@@ -90,13 +116,12 @@ public class WMSRasterFilter extends RasterFilter {
         str.append("&LAYERS=").append(layer.getName());
         str.append("&STYLES=").append(this.wmsStyles);
         str.append("&BBOX=").append(bbox.toString());
-        str.append("&WIDTH=").append(width);
-        str.append("&HEIGHT=").append(height);
+        str.append("&WIDTH=").append(widthHeight[0]);
+        str.append("&HEIGHT=").append(widthHeight[1]);
         str.append("&FORMAT=").append(ImageMime.tiff.getFormat());
         str.append("&FORMAT_OPTIONS=antialias:none");
         str.append("&BGCOLOR=0xFFFFFF");
         
         return str.toString();
     }
-
 }

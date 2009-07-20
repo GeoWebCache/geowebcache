@@ -21,6 +21,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,11 +31,24 @@ import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.util.wms.BBOX;
 
+/**
+ * A raster filter uses multiple rasters, one for each zoom level,
+ * as a lookup matrix. Each pixel on the raster corresponds to one
+ * (256x256) tile, so the size of the matrix is 1 / 2^16.
+ * 
+ * To conserve memory, the layer bounds are used.
+ * 
+ * The raster must match the dimensions of the zoomlevel and use
+ * 0x000000 for tiles that are valid.
+ */
 public abstract class RasterFilter extends RequestFilter {
     private static Log log = LogFactory.getLog(RasterFilter.class);
     
     public int zoomStop;
+    
+    public String preLoad;
     
     public transient Hashtable<Integer,BufferedImage[]> matrices;
     
@@ -53,7 +67,7 @@ public abstract class RasterFilter extends RequestFilter {
             throw new BlankTileException(this);
         }
         
-        if(idx[2] + 1 < zoomStop) {
+        if(idx[2] < zoomStop) {
             // Sample one level higher
             idx[0] = idx[0] * 2;
             idx[1] = idx[1] * 2;
@@ -69,15 +83,91 @@ public abstract class RasterFilter extends RequestFilter {
         if(matrices == null 
                 || matrices.get(srs.getNumber()) == null 
                 || matrices.get(srs.getNumber())[idx[2]] == null) {
-            setMatrix((WMSLayer) convTile.getLayer(), srs, idx[2], false);
+            try {
+                setMatrix((WMSLayer) convTile.getLayer(), srs, idx[2], false);
+            } catch(Exception e) {
+                log.error("Failed to load matrix for " 
+                        + this.name + ", " + srs.getNumber() + ", " + idx[2] + " : "
+                        + e.getMessage());
+                throw new RequestFilterException(this,500,"Failed while trying to load filter for " 
+                        + idx[2] + ", please check the logs");
+            }
         }
+
         
-        if(! lookup(convTile.getLayer().getGrid(srs), idx)) {
-            throw new GreenTileException(this);
+        if(idx[1] == zoomStop) {
+            if(! lookup(convTile.getLayer().getGrid(srs), idx)) {
+                throw new GreenTileException(this);
+            }
+        } else {
+            if(! lookupQuad(convTile.getLayer().getGrid(srs), idx)) {
+                throw new GreenTileException(this);
+            }
         }
     }
     
-    private boolean lookup(Grid grid, int[] idx) {
+    /**
+     * Loops over all the zoom levels and initializes the lookup images.
+     */
+    public void initialize(TileLayer layer) throws GeoWebCacheException {
+        if (!(layer instanceof WMSLayer)) {
+            throw new GeoWebCacheException("Unable to handle non-WMS layers for request filter init.");
+        }
+
+        if (preLoad != null && Boolean.parseBoolean(preLoad)) {
+            Iterator<SRS> iter = layer.getGrids().keySet().iterator();
+            
+            while(iter.hasNext()) {
+                SRS srs = iter.next();
+                
+                for (int i = 0; i <= zoomStop; i++) {
+                    try {
+                        setMatrix(layer, srs, i, false);
+                    } catch (Exception e) {
+                        log.error("Failed to load matrix for " + this.name
+                                + ", " + srs.getNumber() + ", " + i + " : "
+                                + e.getMessage());
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    /**
+     * Performs a lookup against an internal raster.
+     * 
+     * @param grid
+     * @param idx
+     * @return
+     */
+     private boolean lookup(Grid grid, int[] idx) {
+         RenderedImage mat = matrices.get(grid.getSRS().getNumber())[idx[2]];
+         
+         int[] gridBounds = null;
+         try {
+             gridBounds = grid.getGridCalculator().getGridBounds(idx[2]);
+         } catch (Exception e) {
+             log.error(e.getMessage());
+         }
+         
+         // Changing index to top left hand origin
+         int x = idx[0] - gridBounds[0];
+         int y = gridBounds[3] - idx[1];
+
+         return (mat.getData().getSample(x, y, 0) == 0);
+     }
+    
+   /**
+    * Performs a lookup against an internal raster. The sampling is
+    * actually done against 4 pixels, idx should already have been
+    * modified to use one level higher than strictly necessary.
+    * 
+    * @param grid
+    * @param idx
+    * @return
+    */
+    private boolean lookupQuad(Grid grid, int[] idx) {
         RenderedImage mat = matrices.get(grid.getSRS().getNumber())[idx[2]];
         
         int[] gridBounds = null;
@@ -135,7 +225,8 @@ public abstract class RasterFilter extends RequestFilter {
      * @param srs
      * @param z
      */
-    protected synchronized void setMatrix(TileLayer layer, SRS srs, int z, boolean replace) {
+    protected synchronized void setMatrix(TileLayer layer, SRS srs, int z,
+            boolean replace) throws IOException, GeoWebCacheException {
         int srsId = srs.getNumber();
 
         if (matrices == null) {
@@ -147,30 +238,52 @@ public abstract class RasterFilter extends RequestFilter {
         }
 
         if (matrices.get(srsId)[z] == null) {
-            try {
-                matrices.get(srsId)[z] = loadMatrix(layer, srs, z);
-            } catch (IOException ioe) {
-                log.error(ioe.getMessage());
-            }
-        } else if(replace) {
+            matrices.get(srsId)[z] = loadMatrix(layer, srs, z);
+
+        } else if (replace) {
             BufferedImage oldImg = matrices.get(srsId)[z];
             BufferedImage[] matArray = matrices.get(srsId);
-            
-            try {
-                // Get the replacement
-                BufferedImage newImg = loadMatrix(layer, srs, z);
-                
-                // We need to lock it
-                synchronized (oldImg) {
-                    matArray[z] = newImg;
-                }
 
-            } catch (IOException ioe) {
-                log.error("Failed to replace matrix for " 
-                        + this.name + ", " + srs.getNumber() + ", " + z + " : "
-                        + ioe.getMessage());
+            // Get the replacement
+            BufferedImage newImg = loadMatrix(layer, srs, z);
+
+            // We need to lock it
+            synchronized (oldImg) {
+                matArray[z] = newImg;
             }
         }
+    }
+    
+    /**
+     * Helper function for calculating width and height
+     * 
+     * @param grid
+     * @param z
+     * @return
+     * @throws GeoWebCacheException
+     */
+    protected int[] calculateWidthHeight(Grid grid, int z) throws GeoWebCacheException {
+        int[] bounds = grid.getGridCalculator().getGridBounds(z);
+
+        int[] widthHeight = new int[2];
+        widthHeight[0] = bounds[2] - bounds[0] + 1;
+        widthHeight[1] = bounds[3] - bounds[1] + 1;
+        
+        return widthHeight; 
+    }
+
+    /**
+     * Helper function for calculating the bounding box
+     * 
+     * @param grid
+     * @param z
+     * @return
+     * @throws GeoWebCacheException
+     */
+    protected BBOX calculateBbox(Grid grid, int z) throws GeoWebCacheException {
+        int[] bounds = grid.getGridCalculator().getGridBounds(z);
+        int[] gridLocBounds = {bounds[0],bounds[1],bounds[2],bounds[3],z};
+        return grid.getGridCalculator().bboxFromGridBounds(gridLocBounds);
     }
     
     /**
@@ -183,5 +296,5 @@ public abstract class RasterFilter extends RequestFilter {
      * @throws IOException
      */
     protected abstract BufferedImage loadMatrix(TileLayer layer, SRS srs, int zoomLevel) 
-    throws IOException;
+    throws IOException, GeoWebCacheException;
 }

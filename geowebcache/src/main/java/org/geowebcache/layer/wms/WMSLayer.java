@@ -38,6 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
+import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.GridLocObj;
@@ -264,6 +265,17 @@ public class WMSLayer extends TileLayer {
         
         if(gutter == null) {
             gutter = Integer.valueOf(0);
+        }
+        
+        if(this.requestFilters != null) {
+            Iterator<RequestFilter> iter = requestFilters.iterator();
+            while(iter.hasNext()) {
+                try {
+                    iter.next().initialize(this);
+                } catch (GeoWebCacheException e) {
+                    log.error(e.getMessage());
+                }
+            }
         }
 
         return new Boolean(true);

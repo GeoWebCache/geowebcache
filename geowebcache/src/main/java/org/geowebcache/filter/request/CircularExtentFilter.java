@@ -77,4 +77,8 @@ public class CircularExtentFilter extends RequestFilter {
             throw new BlankTileException(this);
         }   
     }
+
+    public void initialize(TileLayer layer) throws GeoWebCacheException {
+        // Do nothing
+    }
 }

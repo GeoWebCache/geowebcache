@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 
@@ -33,11 +34,24 @@ public class FileRasterFilter extends RasterFilter {
     String fileExtension;
 
     protected BufferedImage loadMatrix(TileLayer layer, SRS srs, int zoomLevel)
-    throws IOException {
-
-        return ImageIO.read(
-                new File( createFilePath(srs, zoomLevel) )
-                );
+    throws IOException, GeoWebCacheException {
+        File fh = new File( createFilePath(srs, zoomLevel) );
+        
+        if(! fh.exists() || ! fh.canRead()) {
+            throw new GeoWebCacheException(fh.getAbsolutePath() + " does not exist or is not readable");
+        }
+        
+        BufferedImage img = ImageIO.read(fh);
+        
+        int[] widthHeight = calculateWidthHeight(layer.getGrid(srs), zoomLevel);
+        
+        if(img.getWidth() != widthHeight[0] || img.getHeight() != widthHeight[1]) {
+            String msg = fh.getAbsolutePath() + " has dimensions " + img.getWidth() + "," + img.getHeight()
+            + ", expected " + widthHeight[0] + "," + widthHeight[1];
+            throw new GeoWebCacheException(msg);
+        }
+        
+        return img;
     }
     
     private String createFilePath(SRS srs, int zoomLevel) {

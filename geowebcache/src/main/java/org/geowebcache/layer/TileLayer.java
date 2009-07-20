@@ -17,6 +17,7 @@
 package org.geowebcache.layer;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -476,6 +477,17 @@ public abstract class TileLayer {
             while (iter.hasNext()) {
                 Entry<SRS, Grid> entry = iter.next();
                 this.grids.put(entry.getKey(), entry.getValue());
+            }
+        }
+        
+        if(otherLayer.requestFilters != null) {
+            if(requestFilters == null)
+                requestFilters = new ArrayList<RequestFilter>();
+            
+            Iterator<RequestFilter> iter = otherLayer.requestFilters.iterator();
+            
+            while(iter.hasNext()) {
+                this.requestFilters.add(iter.next());
             }
         }
         
