@@ -39,6 +39,8 @@ import org.geowebcache.util.wms.BBOX;
 public class WMSRasterFilter extends RasterFilter {
     private static Log log = LogFactory.getLog(RasterFilter.class);
     
+    public String wmsLayers;
+
     public String wmsStyles;
     
     public Integer backendTimeout;
@@ -115,6 +117,11 @@ public class WMSRasterFilter extends RasterFilter {
         StringBuilder str = new StringBuilder();
         str.append(layer.getWMSurl()[0]);
         str.append("SERVICE=WMS&REQUEST=getmap&VERSION=1.1.1");
+        if(this.wmsLayers != null) {
+             str.append("&LAYERS=").append(this.wmsLayers);
+        } else {
+             str.append("&LAYERS=").append(layer.getName());
+        }
         str.append("&LAYERS=").append(layer.getName());
         str.append("&STYLES=").append(this.wmsStyles);
         str.append("&BBOX=").append(bbox.toString());
