@@ -50,6 +50,8 @@ public abstract class RasterFilter extends RequestFilter {
     
     public String preLoad;
     
+    public String debug;
+    
     public transient Hashtable<Integer,BufferedImage[]> matrices;
     
     public RasterFilter() {
@@ -97,11 +99,19 @@ public abstract class RasterFilter extends RequestFilter {
         
         if(idx[1] == zoomStop) {
             if(! lookup(convTile.getLayer().getGrid(srs), idx)) {
-                throw new GreenTileException(this);
+                if(debug != null) {
+                    throw new GreenTileException(this);
+                } else {
+                    throw new BlankTileException(this);
+                }
             }
         } else {
             if(! lookupQuad(convTile.getLayer().getGrid(srs), idx)) {
-                throw new GreenTileException(this);
+                if(debug != null) {
+                    throw new GreenTileException(this);
+                } else {
+                    throw new BlankTileException(this);
+                }
             }
         }
     }
@@ -218,14 +228,12 @@ public abstract class RasterFilter extends RequestFilter {
     /** 
      * This function will load the matrix from the appropriate source.
      * 
-     * Calling this function twice for a particular combination will
-     * cause the existing matrix to be overwritten.
-     * 
-     * @param layer
+     * @param layer Access to the layer, to make the object simpler
      * @param srs
-     * @param z
+     * @param z (zoom level)
+     * @param replace Whether to update if a matrix exists
      */
-    protected synchronized void setMatrix(TileLayer layer, SRS srs, int z,
+    public synchronized void setMatrix(TileLayer layer, SRS srs, int z,
             boolean replace) throws IOException, GeoWebCacheException {
         int srsId = srs.getNumber();
 
@@ -286,15 +294,6 @@ public abstract class RasterFilter extends RequestFilter {
         return grid.getGridCalculator().bboxFromGridBounds(gridLocBounds);
     }
     
-    /**
-     * This should be abstract, but XStream throws a fit. Oh well.
-     * 
-     * @param layer
-     * @param srs
-     * @param zoomLevel
-     * @return
-     * @throws IOException
-     */
     protected abstract BufferedImage loadMatrix(TileLayer layer, SRS srs, int zoomLevel) 
     throws IOException, GeoWebCacheException;
 }

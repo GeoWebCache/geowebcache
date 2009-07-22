@@ -41,7 +41,7 @@ public abstract class RequestFilter {
      * The name of the filter, as chosen by the user. It should be unique, buth this is not enforced.
      * @return
      */
-    protected String getName() { 
+    public String getName() { 
         return name;
     }
     
@@ -49,4 +49,12 @@ public abstract class RequestFilter {
      * Optional initialization 
      */
     public abstract void initialize(TileLayer layer) throws GeoWebCacheException;
+
+    
+    /**
+     * Optional updates, filters should implement at least one
+     */
+    public abstract void update(byte[] filterData, TileLayer layer, SRS srs, int z) throws GeoWebCacheException;
+    
+    public abstract void update(TileLayer layer, SRS srs, int z) throws GeoWebCacheException;
 }

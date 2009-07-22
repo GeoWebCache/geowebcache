@@ -503,7 +503,7 @@ public abstract class TileLayer {
      * @param convTile
      * @throws RequestFilterException
      */
-    public void applyFilters(ConveyorTile convTile) throws RequestFilterException {
+    public void applyRequestFilters(ConveyorTile convTile) throws RequestFilterException {
         if(requestFilters == null)
             return;
         
@@ -512,5 +512,9 @@ public abstract class TileLayer {
             RequestFilter filter = iter.next();
             filter.apply(convTile);
         }
+    }
+    
+    public List<RequestFilter> getRequestFilters() {
+        return requestFilters;
     }
 }

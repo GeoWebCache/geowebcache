@@ -138,8 +138,11 @@
     <property name="XMLConfiguration" ref="gwcXmlConfig"/>
     <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
   </bean>
-    <bean id="gwcBoundsRestlet" class="org.geowebcache.rest.bounds.BoundsRestlet">
+  <bean id="gwcBoundsRestlet" class="org.geowebcache.rest.bounds.BoundsRestlet">
     <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
+  </bean>
+  <bean id="gwcFilterUpdateRestlet" class="org.geowebcache.rest.filter.FilterUpdateRestlet">
+    <constructor-arg  ref="gwcTLDispatcher"/>
   </bean>
   
   
@@ -166,6 +169,10 @@
         <entry>
           <key><value>/bounds/{layer}/{srs}/{type}</value></key>
           <ref bean="gwcBoundsRestlet" />
+        </entry>
+        <entry>
+          <key><value>/filter/{filterName}/update/{updateType}</value></key>
+          <ref bean="gwcFilterUpdateRestlet" />
         </entry>
       </map>
     </constructor-arg>

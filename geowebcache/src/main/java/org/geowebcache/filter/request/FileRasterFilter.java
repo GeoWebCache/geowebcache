@@ -70,4 +70,28 @@ public class FileRasterFilter extends RasterFilter {
         fos.write(data);
         fos.close();
     }
+
+    public void update(byte[] filterData, TileLayer layer, SRS srs, int z)
+            throws GeoWebCacheException {
+        try {
+            saveMatrix(filterData, layer, srs, z);
+            
+        } catch (IOException e) {
+            throw new GeoWebCacheException(this.getName() 
+                    + " encountered an error while persisting matrix, " + e.getMessage());
+        }
+        
+        try {
+            super.setMatrix(layer, srs, z, true);
+        } catch (IOException e) {
+            throw new GeoWebCacheException(this.getName() 
+                    + " encountered an error while loading matrix, " + e.getMessage());
+        }
+    }
+
+    
+    public void update(TileLayer layer, SRS srs, int z)
+            throws GeoWebCacheException {
+        throw new GeoWebCacheException("TileLayer layer, SRS srs, int z) is not appropriate for FileRasterFilters");
+    }
 }

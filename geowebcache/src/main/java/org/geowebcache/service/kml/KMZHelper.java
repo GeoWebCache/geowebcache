@@ -73,7 +73,7 @@ public class KMZHelper {
                 
                 // Apply request filters
                 try {
-                    tileLayer.applyFilters(tile);
+                    tileLayer.applyRequestFilters(tile);
                 } catch(RequestFilterException e) {
                     linkGridLocs[i][2] = -1;
                     continue;

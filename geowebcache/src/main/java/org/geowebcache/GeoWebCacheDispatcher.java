@@ -304,7 +304,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             convTile.setTileLayer(layer);
             
             // Apply the filters
-            layer.applyFilters(convTile);
+            layer.applyRequestFilters(convTile);
 
             // Keep the URI
             // tile.requestURI = request.getRequestURI();

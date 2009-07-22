@@ -49,11 +49,13 @@ import org.geowebcache.filter.parameters.FloatParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.RegexParameterFilter;
 import org.geowebcache.filter.request.CircularExtentFilter;
+import org.geowebcache.filter.request.FileRasterFilter;
 import org.geowebcache.filter.request.WMSRasterFilter;
 import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
+import org.geowebcache.rest.filter.WMSRasterFilterUpdate;
 import org.geowebcache.rest.seed.SeedRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
@@ -249,6 +251,9 @@ public class XMLConfiguration implements Configuration {
         
         xs.alias("circularExtentFilter", CircularExtentFilter.class);
         xs.alias("wmsRasterFilter", WMSRasterFilter.class);
+        xs.alias("fileRasterFilter", FileRasterFilter.class);
+        
+        xs.alias("wmsRasterFilterUpdate", WMSRasterFilterUpdate.class);
         
         return xs;
     }

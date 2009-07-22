@@ -103,11 +103,17 @@
     <!-- circularExtentFilter>
       <name>testfilter</name>
     </circularExtentFilter -->
-    <wmsRasterFilter>
+    <!-- wmsRasterFilter>
       <name>testRasterFilter</name>
       <zoomStop>12</zoomStop>
       <wmsStyles>onebit</wmsStyles>
-    </wmsRasterFilter>
+    </wmsRasterFilter -->
+    <!-- fileRasterFilter>
+      <name>testRasterFilter</name>
+      <zoomStop>8</zoomStop>
+      <storagePath>/home/ak/testfilter</storagePath>
+      <fileExtension>tiff</fileExtension>
+    </fileRasterFilter -->
   </requestFilters>
   <wmsUrl>
     <string>http://sigma.openplans.org/geoserver/wms</string>

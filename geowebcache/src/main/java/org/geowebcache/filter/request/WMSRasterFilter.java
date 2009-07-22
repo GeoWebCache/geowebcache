@@ -49,13 +49,15 @@ public class WMSRasterFilter extends RasterFilter {
         
         WMSLayer layer = (WMSLayer) tlayer;
         
+        tlayer.isInitialized();
+        
         Grid grid = layer.getGrid(srs);
         
         int[] widthHeight = calculateWidthHeight(grid, z);
         
         String urlStr = wmsUrl(layer,srs,z, widthHeight);
         
-        System.out.println(z + " " + urlStr);
+        log.info("Updated WMS raster filter, zoom level " + z + " for " + getName() + " (" + layer.getName() +  ") , " + urlStr);
         
         URL wmsUrl = new URL(urlStr);
         
@@ -70,11 +72,11 @@ public class WMSRasterFilter extends RasterFilter {
         }
         
         if(! conn.getContentType().startsWith("image/")) {
-            throw new GeoWebCacheException("Unexpected response content type " + conn.getContentType());
+            throw new GeoWebCacheException("Unexpected response content type " + conn.getContentType() + " , request was " + urlStr + "\n");
         }
         
         if(conn.getResponseCode() != 200) {
-            throw new GeoWebCacheException("Received response code " + conn.getResponseCode());
+            throw new GeoWebCacheException("Received response code " + conn.getResponseCode() + "\n");
         }
         
         byte[] ret = ServletUtils.readStream(conn.getInputStream(), 16384, 2048);
@@ -90,7 +92,7 @@ public class WMSRasterFilter extends RasterFilter {
         
         if(img.getWidth() != widthHeight[0] || img.getHeight() != widthHeight[1]) {
             String msg = "WMS raster filter has dimensions " + img.getWidth() + "," + img.getHeight()
-                    + ", expected " + widthHeight[0] + "," + widthHeight[1];
+                    + ", expected " + widthHeight[0] + "," + widthHeight[1] + "\n";
             throw new GeoWebCacheException(msg);
         }
         
@@ -123,5 +125,20 @@ public class WMSRasterFilter extends RasterFilter {
         str.append("&BGCOLOR=0xFFFFFF");
         
         return str.toString();
+    }
+
+    public void update(byte[] filterData, TileLayer layer) throws GeoWebCacheException {
+       
+        
+    }
+
+    public void update(byte[] filterData, TileLayer layer, SRS srs, int z)
+            throws GeoWebCacheException {
+        throw new GeoWebCacheException("update(byte[] filterData, TileLayer layer, SRS srs, int z) is not appropriate for WMSRasterFilters");
+    }
+
+    public void update(TileLayer layer, SRS srs, int z)
+            throws GeoWebCacheException {
+        throw new GeoWebCacheException("TileLayer layer, SRS srs, int z) is not appropriate for WMSRasterFilters");
     }
 }

@@ -172,7 +172,10 @@ public class ServletUtils {
      * @throws IOException
      */
     public static byte[] readStream(InputStream is, int bufferHint, int tmpBufferSize) throws IOException {
-        
+        return readStream(is, bufferHint, tmpBufferSize, true);
+    }
+    
+    public static byte[] readStream(InputStream is, int bufferHint, int tmpBufferSize, boolean close) throws IOException {
         byte[] buffer = null;
         if(bufferHint > 0) {
             buffer = new byte[bufferHint];
@@ -209,7 +212,8 @@ public class ServletUtils {
             c = is.read(tmpBuffer);
         }
         
-        is.close();
+        if(close)
+            is.close();
         
         // Compact buffer
         byte[] newBuffer = new byte[totalCount];
