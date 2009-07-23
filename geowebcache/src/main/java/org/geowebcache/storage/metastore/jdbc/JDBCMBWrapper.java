@@ -116,7 +116,7 @@ class JDBCMBWrapper {
         } else {
             String path = defStoreFind.getDefaultPath() + File.separator + "meta_jdbc_h2";
             File dir = new File(path);
-            if(! dir.mkdirs()){
+            if(! dir.exists() && ! dir.mkdirs()){
                 throw new StorageException("Unable to create " + dir.getAbsolutePath() + " for H2 database.");
             }
             this.jdbcString = "jdbc:h2:file:"+path+File.separator+"gwc_metastore" + ";TRACE_LEVEL_FILE=0;AUTO_SERVER=TRUE";

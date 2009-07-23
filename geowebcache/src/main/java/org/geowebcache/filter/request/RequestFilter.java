@@ -38,7 +38,7 @@ public abstract class RequestFilter {
     public abstract void apply(ConveyorTile convTile) throws RequestFilterException;
     
     /**
-     * The name of the filter, as chosen by the user. It should be unique, buth this is not enforced.
+     * The name of the filter, as chosen by the user. It should be unique, but this is not enforced.
      * @return
      */
     public String getName() { 

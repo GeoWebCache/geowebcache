@@ -80,7 +80,8 @@ public class StorageBrokerTest extends TestCase {
         String blobPath = findTempDir() + File.separator + TEST_BLOB_DIR_NAME;
         System.out.println("Creating new blobstore in " + blobPath);
         
-        if(! (new File(blobPath)).mkdirs()) {
+        File blobDirs = new File(blobPath);
+        if(! blobDirs.exists() && ! blobDirs.mkdirs()) {
             throw new StorageException("Unable to create " + blobPath);
         }
         

@@ -122,7 +122,7 @@ public class BlobStoreTest extends TestCase {
         File fh = new File(StorageBrokerTest.findTempDir() 
                 + File.separator + TEST_BLOB_DIR_NAME);
         
-        if(! fh.mkdirs()) {
+        if(! fh.exists() && ! fh.mkdirs()) {
             throw new StorageException("Unable to create " + fh.getAbsolutePath());
         }
         
