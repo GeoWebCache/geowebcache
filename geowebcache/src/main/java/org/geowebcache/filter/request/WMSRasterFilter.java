@@ -117,13 +117,19 @@ public class WMSRasterFilter extends RasterFilter {
         StringBuilder str = new StringBuilder();
         str.append(layer.getWMSurl()[0]);
         str.append("SERVICE=WMS&REQUEST=getmap&VERSION=1.1.1");
+        
+        str.append("&LAYERS=");
         if(this.wmsLayers != null) {
-             str.append("&LAYERS=").append(this.wmsLayers);
+            str.append(this.wmsLayers);
         } else {
-             str.append("&LAYERS=").append(layer.getName());
+             str.append(layer.getName());
         }
-        str.append("&LAYERS=").append(layer.getName());
-        str.append("&STYLES=").append(this.wmsStyles);
+        
+        str.append("&STYLES=");
+        if(this.wmsStyles != null) {
+            str.append(this.wmsStyles);
+        }
+
         str.append("&BBOX=").append(bbox.toString());
         str.append("&WIDTH=").append(widthHeight[0]);
         str.append("&HEIGHT=").append(widthHeight[1]);

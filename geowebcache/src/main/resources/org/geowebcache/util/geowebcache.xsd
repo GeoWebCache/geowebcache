@@ -81,7 +81,7 @@
          this SRS and the bounds of your data.
        </xs:documentation></xs:annotation>
      </xs:element>
-     <xs:element name="requestFilters" type="gwc:requestFilters">
+     <xs:element name="requestFilters" type="gwc:requestFilters" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
          Request filters are applied to all requests and make it possible to apply
          special rules for certain requests. The filters themselves are written
@@ -202,6 +202,12 @@
        <xs:annotation><xs:documentation xml:lang="en">
          Whether this layer allows the clients to bypass the cache. The default value 
          is the global value, alternatively false.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="queryable" type="xs:boolean" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         Whether this layer supports getfeatureinfo requests, which are proxied to the WMS backend.
+         The default is false.
        </xs:documentation></xs:annotation>
      </xs:element>
      <xs:element name="parameterFilters" type="gwc:parameterFilters" minOccurs="0">
@@ -470,9 +476,26 @@
 
 <xs:complexType name="requestFilters">
   <xs:sequence>
-    <xs:element name="circularExtentFilter" type="gwc:circularExtentFilter" minOccurs="1" maxOccurs="unbounded">
+    <xs:element name="circularExtentFilter" type="gwc:circularExtentFilter" minOccurs="0" maxOccurs="unbounded">
       <xs:annotation><xs:documentation xml:lang="en">
         The circular extent filter is just a dummy filter for testing purposes
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="wmsRasterFilter" type="gwc:wmsRasterFilter" minOccurs="0" maxOccurs="unbounded">
+      <xs:annotation><xs:documentation xml:lang="en">
+        A filter that uses a raster to represent each tile on the grid. A black pixel represents
+        one that has data which GWC will return. Other values are interpreted as meaning no data.
+        This allows great refinement compared to the rectangular bounds. This particular implementation uses
+        WMS requests to retrieve filters for each zoomlevel, which are then stored in memory until
+        GWC is restarted.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="fileRasterFilter" type="gwc:fileRasterFilter" minOccurs="0" maxOccurs="unbounded">
+      <xs:annotation><xs:documentation xml:lang="en">
+        A filter that uses a raster to represent each tile on the grid. A black pixel represents
+        one that has data which GWC will return. Other values are interpreted as meaning no data.
+        This allows great refinement compared to the rectangular bounds. This particular implementation uses
+        reads raster files from a directory, which are then stored in memory until GWC is restarted.
       </xs:documentation></xs:annotation>
     </xs:element>
   </xs:sequence>
@@ -483,7 +506,104 @@
     <xs:element name="name" type="xs:string" minOccurs="1">
       <xs:annotation><xs:documentation xml:lang="en">
         The name of the filter. This is added to the HTTP header when a filter triggers,
-        to make debugging the filters easier.
+        to make debugging the filters easier. This name should be unique.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="wmsRasterFilter">
+  <xs:sequence>
+    <xs:element name="name" type="xs:string" minOccurs="1">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The name of the filter. This is added to the HTTP header when a filter triggers,
+        to make debugging the filters easier. This name should be unique.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="zoomStop" type="xs:integer" minOccurs="1">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The maximum zoom level for which to load a raster. For higher zoom levels
+        the last supported level will be upsampled. The best value is a compromise
+        between the size of the raster (depends on the bounds) and a zoom level 
+        that is sufficcient to approximate the shape of the actual data.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="preload" type="xs:boolean" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+		Whether to load all the rasters from zoom level 0 to zoomStop upon initialization.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="debug" type="xs:boolean" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+		Setting this variable to TRUE provides visual debug output by returning a bright
+		green tile where normally a transparent one would be returned. This also means
+		KML hierarchies will link to these particular tiles.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="wmsLayers" type="xs:string" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The LAYERS value sent to the WMS backend server. This should refer to one
+        or more (comma separated) layers that cover all data of interest. It can 
+        be the data itself, or a simpler metadata layer.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="wmsStyles" type="xs:string" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The STYLES value sent to the WMS backend server. This should refer to an
+        exaggerated style to ensure the tiles do not cut off any features. 
+        A sample SLD is distributed with GWC in the resource (WEB-INF/class) directory.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="backendTimeout" type="xs:string" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The timeout for requesting a raster from the WMS server. The default is two
+        minutes, since these can be quite large. 
+      </xs:documentation></xs:annotation>
+    </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="fileRasterFilter">
+  <xs:sequence>
+    <xs:element name="name" type="xs:string" minOccurs="1">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The name of the filter. This is added to the HTTP header when a filter triggers,
+        to make debugging the filters easier. This name should be unique.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="zoomStop" type="xs:integer" minOccurs="1">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The maximum zoom level for which to load a raster. For higher zoom levels
+        the last supported level will be upsampled. The best value is a compromise
+        between the size of the raster (depends on the bounds) and a zoom level 
+        that is sufficcient to approximate the shape of the actual data.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="preload" type="xs:boolean" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+		Whether to load all the rasters from zoom level 0 to zoomStop upon initialization.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="debug" type="xs:boolean" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+		Setting this variable to TRUE provides visual debug output by returning a bright
+		green tile where normally a transparent one would be returned. This also means
+		KML hierarchies will link to these particular tiles.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="storagePath" type="xs:string" minOccurs="1">
+      <xs:annotation><xs:documentation xml:lang="en">
+		The local storage path for the raster files used to build the filter.
+		This should be a local path at least readable by the user
+		that GWC runs as. The files should have names as follows:
+		[name of filter]_EPSG_[EPSG code]_[zoom level, from 0 to zoomStop].[fileExtension]
+		Example: testfilter_EPSG_4326_4.tiff
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="fileExtension" type="xs:string" minOccurs="1">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The extension of the raster files. Typically you would use a 1 bit TIFF, 
+        but PNG and GIF could also be used.
       </xs:documentation></xs:annotation>
     </xs:element>
   </xs:sequence>

@@ -179,14 +179,12 @@ public class XMLConfiguration implements Configuration {
     }
     
     private void setDefaultValues(TileLayer layer) {
-        //layer.setCacheFactory(this.cacheFactory);
-        
         //Additional values that can have defaults set
         if(layer.isCacheBypassAllowed() == null) {
             if(gwcConfig.cacheBypassAllowed !=  null) {
-                layer.isCacheBypassAllowed(gwcConfig.cacheBypassAllowed);
+                layer.setCacheBypassAllowed(gwcConfig.cacheBypassAllowed);
             } else {
-                layer.isCacheBypassAllowed(false);
+                layer.setCacheBypassAllowed(false);
             }
         }
         

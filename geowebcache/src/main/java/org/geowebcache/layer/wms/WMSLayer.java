@@ -92,6 +92,8 @@ public class WMSLayer extends TileLayer {
     
     protected Boolean cacheBypassAllowed;
     
+    protected Boolean queryable;
+    
     protected List<ParameterFilter> parameterFilters;
     
     private transient int expireCacheInt = -1;
@@ -141,7 +143,7 @@ public class WMSLayer extends TileLayer {
     public WMSLayer(String layerName,
             String[] wmsURL, String wmsStyles, String wmsLayers, 
             List<String> mimeFormats, Hashtable<SRS,Grid> grids, 
-            int[] metaWidthHeight, String vendorParams) {
+            int[] metaWidthHeight, String vendorParams, boolean queryable) {
      
         name = layerName;
         this.wmsUrl = wmsURL;
@@ -156,6 +158,7 @@ public class WMSLayer extends TileLayer {
         this.transparent = true;
         //this.bgColor = "0x000000";
         //this.palette = "test.png";
+        this.queryable = queryable;
     }
 
     public Boolean isInitialized() {
@@ -1020,8 +1023,16 @@ public class WMSLayer extends TileLayer {
         return cacheBypassAllowed;
     }
 
-    public void isCacheBypassAllowed(boolean allowed) {
+    public void setCacheBypassAllowed(boolean allowed) {
         cacheBypassAllowed = Boolean.valueOf(allowed);
+    }
+    
+    public boolean isQueryable() {
+        if(queryable != null && queryable) {
+            return true;
+        } else {
+            return false;
+        }
     }
     
     public Integer getBackendTimeout() {

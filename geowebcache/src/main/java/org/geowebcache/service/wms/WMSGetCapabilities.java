@@ -32,6 +32,7 @@ import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.wms.BBOX;
@@ -280,8 +281,12 @@ public class WMSGetCapabilities {
     }
     
     private void capabilityLayerInner(StringBuilder str, TileLayer layer) throws GeoWebCacheException {
-        // TODO Really queryable ?
-        str.append("    <Layer queryable=\"1\">\n");
+        if(layer instanceof WMSLayer && ((WMSLayer) layer).isQueryable()) {
+            str.append("    <Layer queryable=\"1\">\n");
+        } else {
+            str.append("    <Layer>\n");
+        }
+
         str.append("      <Name>"+layer.getName()+"</Name>\n");
         str.append("      <Title>"+layer.getName()+"</Title>\n");
         

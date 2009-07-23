@@ -297,7 +297,7 @@ public abstract class TileLayer {
      * Whether clients may specify cache=false and go straight to source
      */
     public abstract Boolean isCacheBypassAllowed();
-    public abstract void isCacheBypassAllowed(boolean allowed);
+    public abstract void setCacheBypassAllowed(boolean allowed);
     
     /**
      * The timeout used when querying the backend server. The same value is used

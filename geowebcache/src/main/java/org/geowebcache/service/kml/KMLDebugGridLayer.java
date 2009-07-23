@@ -281,7 +281,7 @@ public class KMLDebugGridLayer extends TileLayer {
     }
 
     @Override
-    public void isCacheBypassAllowed(boolean allowed) {
+    public void setCacheBypassAllowed(boolean allowed) {
     }
 
     @Override

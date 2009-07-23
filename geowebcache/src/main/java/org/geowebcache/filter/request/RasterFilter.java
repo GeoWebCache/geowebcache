@@ -48,9 +48,9 @@ public abstract class RasterFilter extends RequestFilter {
     
     public int zoomStop;
     
-    public String preLoad;
+    public Boolean preload;
     
-    public String debug;
+    public Boolean debug;
     
     public transient Hashtable<Integer,BufferedImage[]> matrices;
     
@@ -99,7 +99,7 @@ public abstract class RasterFilter extends RequestFilter {
         
         if(idx[1] == zoomStop) {
             if(! lookup(convTile.getLayer().getGrid(srs), idx)) {
-                if(debug != null) {
+                if(debug != null && debug) {
                     throw new GreenTileException(this);
                 } else {
                     throw new BlankTileException(this);
@@ -107,7 +107,7 @@ public abstract class RasterFilter extends RequestFilter {
             }
         } else {
             if(! lookupQuad(convTile.getLayer().getGrid(srs), idx)) {
-                if(debug != null) {
+                if(debug != null && debug) {
                     throw new GreenTileException(this);
                 } else {
                     throw new BlankTileException(this);
@@ -124,7 +124,7 @@ public abstract class RasterFilter extends RequestFilter {
             throw new GeoWebCacheException("Unable to handle non-WMS layers for request filter init.");
         }
 
-        if (preLoad != null && Boolean.parseBoolean(preLoad)) {
+        if (preload != null && preload) {
             Iterator<SRS> iter = layer.getGrids().keySet().iterator();
             
             while(iter.hasNext()) {

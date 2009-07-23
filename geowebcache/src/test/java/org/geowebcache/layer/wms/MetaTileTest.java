@@ -204,7 +204,7 @@ public class MetaTileTest extends TestCase {
         Grid grid = new Grid(SRS.getEPSG4326(), layerBounds, gridBase, null);
         grids.put(SRS.getEPSG4326(), grid);
         int[] metaWidthHeight = {3,3};
-        WMSLayer layer = new WMSLayer("test:layer", urls, "aStyle", "test:layer", formatList, grids, metaWidthHeight, "vendorparam=true");
+        WMSLayer layer = new WMSLayer("test:layer", urls, "aStyle", "test:layer", formatList, grids, metaWidthHeight, "vendorparam=true", false);
         
         return layer;
     }

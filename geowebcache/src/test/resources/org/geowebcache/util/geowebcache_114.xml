@@ -100,22 +100,19 @@
     </entry>
   </grids>
   <requestFilters>
-    <!-- circularExtentFilter>
-      <name>testfilter</name>
-    </circularExtentFilter -->
-    <!-- wmsRasterFilter>
-      <name>testRasterFilter</name>
+    <wmsRasterFilter>
+      <name>testWMSRasterFilter</name>
       <zoomStop>12</zoomStop>
       <wmsLayers>metadataLayer</wmsLayers>
       <wmsStyles>onebit</wmsStyles>
       <backendTimeout>120</backendTimeout>
-    </wmsRasterFilter -->
-    <!-- fileRasterFilter>
-      <name>testRasterFilter</name>
+    </wmsRasterFilter>
+    <fileRasterFilter>
+      <name>testFileRasterFilter</name>
       <zoomStop>8</zoomStop>
       <storagePath>/home/ak/testfilter</storagePath>
       <fileExtension>tiff</fileExtension>
-    </fileRasterFilter -->
+    </fileRasterFilter>
   </requestFilters>
   <wmsUrl>
     <string>http://sigma.openplans.org/geoserver/wms</string>

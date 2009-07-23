@@ -150,6 +150,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
             String name = layer.getName();
             String stylesStr = "";
             
+            boolean queryable = layer.isQueryable();
+            
             if (name != null) {
                 List<StyleImpl> styles = layer.getStyles();
                 
@@ -188,7 +190,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 WMSLayer wmsLayer = null;
                 try {
                     wmsLayer = getLayer(name, wmsUrls, bounds4326, 
-                            bounds900913, stylesStr);
+                            bounds900913, stylesStr, queryable);
                 } catch (GeoWebCacheException gwc) {
                     log.error("Error creating " + layer.getName() + ": "
                             + gwc.getMessage());
@@ -196,7 +198,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
                 if (wmsLayer != null) {
                     // Finalize with some defaults
-                    wmsLayer.isCacheBypassAllowed(allowCacheBypass);
+                    wmsLayer.setCacheBypassAllowed(allowCacheBypass);
                     wmsLayer.setBackendTimeout(120);
                     layers.add(wmsLayer);
                 }
@@ -207,7 +209,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
     }
 
     private WMSLayer getLayer(String name, String[] wmsurl, 
-            BBOX bounds4326, BBOX bounds900913, String stylesStr)
+            BBOX bounds4326, BBOX bounds900913, String stylesStr, boolean queryable)
             throws GeoWebCacheException {
         
         Hashtable<SRS,Grid> grids = new Hashtable<SRS,Grid>(2);
@@ -238,7 +240,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
         
         return new WMSLayer(name,
                 wmsurl, stylesStr, name, mimeFormats, grids, 
-                metaWidthHeight, this.vendorParameters);
+                metaWidthHeight, this.vendorParameters, queryable);
     }
 
     private WebMapServer getWMS() {
