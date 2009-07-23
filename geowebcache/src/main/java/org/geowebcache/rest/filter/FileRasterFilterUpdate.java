@@ -24,7 +24,6 @@ import org.geowebcache.filter.request.WMSRasterFilter;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.rest.RestletException;
-import org.restlet.data.Response;
 import org.restlet.data.Status;
 
 public class FileRasterFilterUpdate extends XmlFilterUpdate {

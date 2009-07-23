@@ -140,8 +140,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 blankTile = new byte[(int) fileSize];
                 
                 int total = 0;
+                FileInputStream fis = null;
                 try {
-                    FileInputStream fis = new FileInputStream(fh);
+                    fis = new FileInputStream(fh);
                     int read = 0;
                     while(read != -1) {
                         read = fis.read(blankTile, total, blankTile.length - total);
@@ -153,6 +154,12 @@ public class GeoWebCacheDispatcher extends AbstractController {
                     e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    try {
+                        fis.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
                 
                 if(total == blankTile.length && total > 0) {
@@ -168,14 +175,21 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
         
         // Use the built-in one: 
-        InputStream is = GeoWebCacheDispatcher.class.getResourceAsStream("blank.png");
-        blankTile = new byte[129];
+        InputStream is = null;
         
         try {
+            GeoWebCacheDispatcher.class.getResourceAsStream("blank.png");
+            blankTile = new byte[129];
             int ret = is.read(blankTile);
             log.info("Read " + ret + " from blank PNG8 file (expected 129).");
         } catch (IOException ioe) {
             log.error(ioe.getMessage());
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         
     }

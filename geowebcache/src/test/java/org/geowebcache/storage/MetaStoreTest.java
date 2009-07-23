@@ -56,13 +56,10 @@ public class MetaStoreTest extends TestCase {
     }
     
     public void testWFSParam() throws Exception {
-        byte[] bytes = null;
-
         WFSObject wo2 = null;
         try {
             MetaStore ms = setup();
-
-            bytes = "1 2 3 Test".getBytes();
+            
             WFSObject wo = WFSObject.createCompleteWFSObject("a=æ&å=Ø");
             ms.put(wo);
             ms.unlock(wo);
@@ -82,14 +79,11 @@ public class MetaStoreTest extends TestCase {
     public void testWFSQueryBlob() throws Exception {
         WFSObject wo = null;
         WFSObject wo2 = null;
-        byte[] bytes = null;
         byte[] queryBytes = null;
         
         try {
 
             MetaStore ms = setup();
-
-            bytes = "1 2 3 Test".getBytes();
             queryBytes = "1 2 3 4 5 6 Test".getBytes();
             wo = WFSObject.createCompleteWFSObject(queryBytes);
             ms.put(wo);

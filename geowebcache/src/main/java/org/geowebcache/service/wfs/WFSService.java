@@ -99,7 +99,9 @@ public class WFSService extends Service {
             urlString = "http://localhost:8080/geoserver/wfs";
         }
         
-        regexFilter = ctxProv.getSystemVar(GEOWEBCACHE_WFS_FILTER, null);
+        if(ctxProv.getSystemVar(GEOWEBCACHE_WFS_FILTER, null) != null) {
+            regexFilter = ctxProv.getSystemVar(GEOWEBCACHE_WFS_FILTER, null);
+        }
         
         readTimeout = 1000 * readTimeout;
         
@@ -230,7 +232,7 @@ public class WFSService extends Service {
                     + " from " + conxn.getURL());
         }
 
-        int contentLength = conxn.getContentLength();
+        //int contentLength = conxn.getContentLength();
         String contentType = conxn.getContentType();
         
         conv.setInputStream(conxn.getInputStream());

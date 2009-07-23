@@ -116,7 +116,9 @@ class JDBCMBWrapper {
         } else {
             String path = defStoreFind.getDefaultPath() + File.separator + "meta_jdbc_h2";
             File dir = new File(path);
-            dir.mkdirs();
+            if(! dir.mkdirs()){
+                throw new StorageException("Unable to create " + dir.getAbsolutePath() + " for H2 database.");
+            }
             this.jdbcString = "jdbc:h2:file:"+path+File.separator+"gwc_metastore" + ";TRACE_LEVEL_FILE=0;AUTO_SERVER=TRUE";
         }
 
@@ -722,13 +724,14 @@ class JDBCMBWrapper {
             persistentConnection.createStatement().execute("SHUTDOWN");
         } catch (SQLException se) {
             log.warn("SHUTDOWN call to JDBC resulted in: " + se.getMessage());
+        } finally {
+            try {
+                persistentConnection.close();
+            } catch (SQLException se) {
+                log.warn(se.getMessage());
+            }
         }
-        try {
-            persistentConnection.close();
-        } catch (SQLException se) {
-            log.warn(se.getMessage());
-        }
-        
+
         try {
             Thread.sleep(250);
         } catch (InterruptedException e) {

@@ -40,17 +40,24 @@ public class GreenTileException extends RequestFilterException {
     }
 
     private byte[] getGreenTile() {
-        InputStream is = GreenTileException.class.getResourceAsStream("green.png");
-        byte[] blank = new byte[659];
-        
+        byte[] green = new byte[659];
+        InputStream is = null;
+       
         try {
-            int ret = is.read(blank);
-            log.info("Read " + ret + " from file.");
+            is = GreenTileException.class.getResourceAsStream("green.png");
+            int ret = is.read(green);
+            log.info("Read " + ret + " from blank PNG8 file (expected 129).");
         } catch (IOException ioe) {
             log.error(ioe.getMessage());
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         
-        return blank;
+        return green;
     }
 
     

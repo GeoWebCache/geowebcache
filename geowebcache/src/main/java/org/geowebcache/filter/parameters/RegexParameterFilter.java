@@ -28,13 +28,11 @@ public class RegexParameterFilter extends ParameterFilter {
         super();
     }
     
-    public Matcher getMatcher(String value) {
-        synchronized(this) {
-            if(pat == null) {
-                pat = Pattern.compile(regex);
-            }
+    public synchronized Matcher getMatcher(String value) {
+        if (pat == null) {
+            pat = Pattern.compile(regex);
         }
-        
+
         return pat.matcher(value);
     }
 

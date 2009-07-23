@@ -121,7 +121,11 @@ public class BlobStoreTest extends TestCase {
     public FileBlobStore setup() throws Exception {
         File fh = new File(StorageBrokerTest.findTempDir() 
                 + File.separator + TEST_BLOB_DIR_NAME);
-        fh.mkdirs();
+        
+        if(! fh.mkdirs()) {
+            throw new StorageException("Unable to create " + fh.getAbsolutePath());
+        }
+        
         return new FileBlobStore(StorageBrokerTest.findTempDir() 
                 + File.separator + TEST_BLOB_DIR_NAME);
     }

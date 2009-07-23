@@ -319,7 +319,7 @@ public class ServletUtils {
                 case 15: out += "F"; break;
                 }
             } else {
-                out += Integer.toString(temp);
+                out += temp;
             }
         }
         return out;

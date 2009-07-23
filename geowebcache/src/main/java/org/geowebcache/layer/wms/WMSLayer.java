@@ -278,6 +278,7 @@ public class WMSLayer extends TileLayer {
             }
         }
 
+        // Use this constructor for volatile
         return new Boolean(true);
     }
 
@@ -605,7 +606,8 @@ public class WMSLayer extends TileLayer {
         if (tile.getStatus() == 0 && !tile.getError()) {
             tile.setStatus(200);
         }
-        if (tile != null && tile.servletResp != null) {
+        
+        if (tile.servletResp != null) {
             setExpirationHeader(tile.servletResp);
             setTileIndexHeader(tile);
         }

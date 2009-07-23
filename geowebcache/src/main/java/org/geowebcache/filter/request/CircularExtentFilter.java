@@ -82,14 +82,14 @@ public class CircularExtentFilter extends RequestFilter {
         // Do nothing
     }
 
-    @Override
     public void update(byte[] filterData, TileLayer layer, SRS srs, int z)
             throws GeoWebCacheException {
+        // Do nothing
     }
 
-    @Override
     public void update(TileLayer layer, SRS srs, int z)
-            throws GeoWebCacheException {        
+            throws GeoWebCacheException {
+        // Do nothing
     }
 
 }

@@ -79,7 +79,11 @@ public class StorageBrokerTest extends TestCase {
 
         String blobPath = findTempDir() + File.separator + TEST_BLOB_DIR_NAME;
         System.out.println("Creating new blobstore in " + blobPath);
-        (new File(blobPath)).mkdirs();
+        
+        if(! (new File(blobPath)).mkdirs()) {
+            throw new StorageException("Unable to create " + blobPath);
+        }
+        
         BlobStore blobStore = new FileBlobStore(blobPath);
         
         StorageBroker sb = new StorageBroker(metaStore, blobStore);

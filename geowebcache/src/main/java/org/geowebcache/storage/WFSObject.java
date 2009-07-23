@@ -119,7 +119,9 @@ public class WFSObject extends StorageObject {
        } catch (NoSuchAlgorithmException e) {
            e.printStackTrace();
        }
-       digest.update(queryBlob);
+       
+       if(digest != null)
+           digest.update(queryBlob);
        
        return ServletUtils.hexOfBytes(digest.digest());
    }

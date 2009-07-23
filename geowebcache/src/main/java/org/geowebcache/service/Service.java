@@ -98,37 +98,33 @@ public abstract class Service {
     }
     
     
-    protected static void writeTileResponse(ConveyorTile conv, boolean writeExpiration) {
+    protected static void writeTileResponse(ConveyorTile conv,
+            boolean writeExpiration) {
         HttpServletResponse response = conv.servletResp;
         byte[] data = conv.getContent();
 
         String mimeStr = conv.getMimeType().getMimeType();
-       
-        
+
         response.setCharacterEncoding("utf-8");
 
-        if (conv instanceof ConveyorTile) {
-            ConveyorTile tile = (ConveyorTile) conv;
+        response.setStatus((int) conv.getStatus());
 
-            response.setStatus((int) tile.getStatus());
+        TileLayer layer = conv.getLayer();
+        if (layer != null) {
+            layer.setExpirationHeader(conv.servletResp);
+        }
 
-            TileLayer layer = tile.getLayer();
-            if (layer != null) {
-                layer.setExpirationHeader(conv.servletResp);
-            }
-
-            if (writeExpiration) {
-                tile.getLayer().setExpirationHeader(response);
-            }
+        if (writeExpiration) {
+            conv.getLayer().setExpirationHeader(response);
         }
 
         if (conv instanceof ConveyorKMLTile) {
             ConveyorKMLTile kmlTile = (ConveyorKMLTile) conv;
-            if(kmlTile.getWrapperMimeType() != null) {
+            if (kmlTile.getWrapperMimeType() != null) {
                 mimeStr = kmlTile.getWrapperMimeType().getMimeType();
             }
         }
-        
+
         response.setContentType(mimeStr);
 
         response.setContentLength(data.length);
