@@ -142,8 +142,8 @@ public class Demo {
             
             if(layer.supportsSRS(SRS.getEPSG4326())) {
                 String prefix = "";
-                buf.append("<td><a href=\""+prefix+"service/kml/"+layer.getName()+".png.kmz\">KML (PNG)</a></td>"
-                + "<td><a href=\""+prefix+"service/kml/"+layer.getName()+".kml.kmz\">KML (vector)</a></td>");
+                buf.append("<td><a href=\""+prefix+"service/kml/"+layer.getName()+".png.kml\">KML (PNG)</a></td>"
+                + "<td><a href=\""+prefix+"service/kml/"+layer.getName()+".kml.kmz\">KMZ (vector)</a></td>");
             } else {
                 buf.append("<td colspan=\"2\"> Google Earth requires EPSG:4326 support</td>");
             }

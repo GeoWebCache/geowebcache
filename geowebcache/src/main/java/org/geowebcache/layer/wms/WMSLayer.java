@@ -507,9 +507,8 @@ public class WMSLayer extends TileLayer {
         } else if (expireClientsInt == GWCVars.CACHE_DISABLE_CACHE) {
             response.setHeader("Cache-Control", "no-cache");
         } else if (expireClientsInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
-            int seconds = 36000;
-            response.setHeader("geowebcache-error",
-                    "No real CacheControl information available");
+            int seconds = 3600;
+            response.setHeader("geowebcache-error", "No real CacheControl information available");
             response.setHeader("Cache-Control", "max-age=" + seconds);
             response.setHeader("Expires", ServletUtils.makeExpiresHeader(seconds));
         }
@@ -1041,6 +1040,18 @@ public class WMSLayer extends TileLayer {
 
     public void setBackendTimeout(int seconds) {
         backendTimeout = seconds;
+    }
+    
+    public int getExpireClients() {
+        if(expireClientsInt > 0) {
+            return expireClientsInt;
+        } else if(expireClientsInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE|| expireClientsInt == 0) {
+            return 7200;
+        } else if(expireClientsInt == GWCVars.CACHE_NEVER_EXPIRE) {
+            return 3600*24*365;
+        } else {
+            return -1;
+        }
     }
     
     public void setVersion(String version) {

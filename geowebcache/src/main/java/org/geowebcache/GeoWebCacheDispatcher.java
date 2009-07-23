@@ -175,18 +175,18 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
         
         // Use the built-in one: 
-        InputStream is = null;
-        
+        InputStream is = null;   
         try {
-            GeoWebCacheDispatcher.class.getResourceAsStream("blank.png");
-            blankTile = new byte[129];
+            is = GeoWebCacheDispatcher.class.getResourceAsStream("blank.png");
+            blankTile = new byte[425];
             int ret = is.read(blankTile);
-            log.info("Read " + ret + " from blank PNG8 file (expected 129).");
+            log.info("Read " + ret + " from blank PNG file (expected 425).");
         } catch (IOException ioe) {
             log.error(ioe.getMessage());
         } finally {
             try {
-                is.close();
+                if(is != null) 
+                    is.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }

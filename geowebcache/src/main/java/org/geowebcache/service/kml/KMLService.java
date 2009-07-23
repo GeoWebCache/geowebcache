@@ -33,6 +33,7 @@ import org.geowebcache.layer.OutOfBoundsException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
@@ -461,13 +462,26 @@ public class KMLService extends Service {
         boolean isRaster = (tile.getMimeType() instanceof ImageMime);
         
         TileLayer tileLayer = tile.getLayer();
-        int[] gridLoc = tile.getTileIndex();
         
+        
+        int[] gridLoc = tile.getTileIndex();
         SRS srs = SRS.getEPSG4326();
-        //int srsIdx = tileLayer.getSRSIndex();
         BBOX bbox = tileLayer.getBboxForGridLoc(srs, gridLoc);
 
+        String refreshTags = "";
+        if(tileLayer instanceof WMSLayer) {
+            int refreshInterval = ((WMSLayer) tileLayer).getExpireClients();
+            
+            if(refreshInterval > 0) {
+                refreshTags = "\n<refreshMode>onInterval</refreshMode>"
+                    + "\n<refreshInterval>"+refreshInterval+"</refreshInterval>";
+            }
+            
+        }
+
+                
         StringBuffer buf = new StringBuffer();
+        
         // 1) Header
         boolean setMaxLod = false;
         if(isRaster && gridLoc[2] < tileLayer.getZoomStop(srs)) {
@@ -496,18 +510,22 @@ public class KMLService extends Service {
                     + gridLocStr +"." +tile.getMimeType().getFileExtension()
                     + "." + tile.getWrapperMimeType().getFileExtension();
 
-                buf.append(createNetworkLinkElement(tileLayer, linkBbox, gridLocUrl, gridLocStr,-1));
+                buf.append(createNetworkLinkElement(tileLayer, linkBbox, gridLocUrl, gridLocStr,-1, refreshTags));
                 //moreData++;
             }
         }
         
         buf.append("\n<!-- Network link to actual content -->\n");
-        // 5) Overlay, should be relative 
+        
+
+
+        // 5) Overlay, should be relative
         if (isRaster) {
             buf.append(
                     createGroundOverLayElement(
                     gridLoc, tile.getUrlPrefix(), 
-                    bbox, tile.getMimeType().getFileExtension()));
+                    bbox, tile.getMimeType().getFileExtension(),
+                    refreshTags));
         } else {
             // KML
             String gridLocStr = gridLocString(gridLoc);
@@ -522,7 +540,7 @@ public class KMLService extends Service {
                 maxLodPixels = 385;
             }
             
-            buf.append(createNetworkLinkElement(tileLayer, bbox, gridLocUrl, gridLocStr, maxLodPixels));
+            buf.append(createNetworkLinkElement(tileLayer, bbox, gridLocUrl, gridLocStr, maxLodPixels, refreshTags));
         }
 
         //if(moreData > 0) {
@@ -566,7 +584,8 @@ public class KMLService extends Service {
      * @return
      */
     private static String createNetworkLinkElement(
-            TileLayer layer, BBOX bbox, String gridLocUrl, String tileIdx, int maxLodPixels) {
+            TileLayer layer, BBOX bbox, String gridLocUrl, String tileIdx,
+            int maxLodPixels, String refreshTags) {
       
         String xml = "\n<NetworkLink>"
                 + "\n<name>"
@@ -580,7 +599,9 @@ public class KMLService extends Service {
                 + "\n<href>"
                 +  gridLocUrl
                 +"</href>"
-                + "\n<viewRefreshMode>onRegion</viewRefreshMode>" + "</Link>"
+                + refreshTags
+                + "\n<viewRefreshMode>onRegion</viewRefreshMode>" 
+                + "\n</Link>"
                 + "\n</NetworkLink>\n";
 
         return xml;
@@ -596,14 +617,18 @@ public class KMLService extends Service {
      * @return
      */
     private static String createGroundOverLayElement(int[] gridLoc, String urlStr,
-            BBOX bbox, String formatExtension) {
+            BBOX bbox, String formatExtension, String refreshTags) {
+        
         String xml = "\n<GroundOverlay>"
                 + "\n<drawOrder>"+gridLoc[2]+"</drawOrder>"
                 + "\n<altitudeMode>clampToGround</altitudeMode>"
                 + "\n<Icon>" 
                 + "\n<href>" 
                 +  gridLocString(gridLoc) + "." + formatExtension 
-                + "</href>" + "</Icon>\n" + bbox.toKML()
+                + "</href>"
+                + refreshTags
+                + "\n</Icon>\n" 
+                + bbox.toKML()
                 + "\n</GroundOverlay>\n";
 
         return xml;

@@ -26,6 +26,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.filter.request.BlankTileException;
+import org.geowebcache.filter.request.GreenTileException;
 import org.geowebcache.filter.request.RequestFilterException;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
@@ -74,6 +76,8 @@ public class KMZHelper {
                 // Apply request filters
                 try {
                     tileLayer.applyRequestFilters(tile);
+                } catch(GreenTileException e) {
+                    // We will link to this one
                 } catch(RequestFilterException e) {
                     linkGridLocs[i][2] = -1;
                     continue;
@@ -157,14 +161,12 @@ public class KMZHelper {
         ZipEntry zeOl = new ZipEntry("netlinks_"+namePfx + ".kml");
         zipos.putNextEntry(zeOl);
         zipos.write(overlay);
-        //zipos.closeEntry();
 
         // Add the actual data, if applicable
         if(data != null) {
             ZipEntry zeData = new ZipEntry("data_" + namePfx+"."+formatExtension);
             zipos.putNextEntry(zeData);
             zipos.write(data);
-            //zipos.closeEntry();
         }
         zipos.finish();
     }
