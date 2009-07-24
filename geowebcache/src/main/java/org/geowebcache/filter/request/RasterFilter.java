@@ -46,7 +46,11 @@ import org.geowebcache.util.wms.BBOX;
 public abstract class RasterFilter extends RequestFilter {
     private static Log log = LogFactory.getLog(RasterFilter.class);
     
-    public int zoomStop;
+    public Integer zoomStart;
+    
+    public Integer zoomStop;
+    
+    public Boolean resample;
     
     public Boolean preload;
     
@@ -69,16 +73,33 @@ public abstract class RasterFilter extends RequestFilter {
             throw new BlankTileException(this);
         }
         
-        if(idx[2] < zoomStop) {
+        int zoomDiff = 0;
+        
+        // Three scenarios below:
+        // 1. z is too low , upsample if resampling is enabled
+        // 2. z is within range, downsample one level and apply
+        // 3. z is too large , downsample
+        if(zoomStart != null && idx[2] < zoomStart) {
+            if(resample == null || ! resample) {
+                // Filter does not apply, zoomlevel is too low
+                return;
+            } else {
+                // Upsample
+                zoomDiff = idx[2] - zoomStart;
+                idx[0] = idx[0] << (-1*zoomDiff);
+                idx[1] = idx[1] << (-1*zoomDiff);
+                idx[2] = zoomStart;
+            }
+        }else if(idx[2] < zoomStop) {
             // Sample one level higher
             idx[0] = idx[0] * 2;
             idx[1] = idx[1] * 2;
             idx[2] = idx[2] + 1;
         } else {
             // Reduce to highest supported resolution
-            int diff = idx[2] - zoomStop;
-            idx[0] = idx[0] >> diff;
-            idx[1] = idx[1] >> diff;
+            zoomDiff = idx[2] - zoomStop;
+            idx[0] = idx[0] >> zoomDiff;
+            idx[1] = idx[1] >> zoomDiff;
             idx[2] = zoomStop;
         }
         
@@ -97,7 +118,7 @@ public abstract class RasterFilter extends RequestFilter {
         }
 
         
-        if(idx[1] == zoomStop) {
+        if(zoomDiff == 0) {
             if(! lookup(convTile.getLayer().getGrid(srs), idx)) {
                 if(debug != null && debug) {
                     throw new GreenTileException(this);
@@ -105,8 +126,16 @@ public abstract class RasterFilter extends RequestFilter {
                     throw new BlankTileException(this);
                 }
             }
-        } else {
+        } else if(zoomDiff > 0) {
             if(! lookupQuad(convTile.getLayer().getGrid(srs), idx)) {
+                if(debug != null && debug) {
+                    throw new GreenTileException(this);
+                } else {
+                    throw new BlankTileException(this);
+                }
+            }
+        } else if(zoomDiff < 0) {
+            if(! lookupSubsample(convTile.getLayer().getGrid(srs), idx, zoomDiff)) {
                 if(debug != null && debug) {
                     throw new GreenTileException(this);
                 } else {
@@ -152,7 +181,7 @@ public abstract class RasterFilter extends RequestFilter {
      * @return
      */
      private boolean lookup(Grid grid, int[] idx) {
-         RenderedImage mat = matrices.get(grid.getSRS().getNumber())[idx[2]];
+         BufferedImage mat = matrices.get(grid.getSRS().getNumber())[idx[2]];
          
          int[] gridBounds = null;
          try {
@@ -165,7 +194,7 @@ public abstract class RasterFilter extends RequestFilter {
          int x = idx[0] - gridBounds[0];
          int y = gridBounds[3] - idx[1];
 
-         return (mat.getData().getSample(x, y, 0) == 0);
+         return (mat.getRaster().getSample(x, y, 0) == 0);
      }
     
    /**
@@ -178,7 +207,7 @@ public abstract class RasterFilter extends RequestFilter {
     * @return
     */
     private boolean lookupQuad(Grid grid, int[] idx) {
-        RenderedImage mat = matrices.get(grid.getSRS().getNumber())[idx[2]];
+        BufferedImage mat = matrices.get(grid.getSRS().getNumber())[idx[2]];
         
         int[] gridBounds = null;
         try {
@@ -207,12 +236,12 @@ public abstract class RasterFilter extends RequestFilter {
         // Lock, in case someone wants to replace the matrix
         synchronized (mat) {
             try {
-                for (int i = 0; i < 4; i++) {
+                for (int i = 0; i < 4 && ! hasData; i++) {
                     x = baseX + xOffsets[i];
                     y = baseY - yOffsets[i];
 
                     if (x > -1 && x < width && y > -1 && y < height) {
-                        if (mat.getData().getSample(x, y, 0) == 0) {
+                        if (mat.getRaster().getSample(x, y, 0) == 0) {
                             hasData = true;
                         }
                     }
@@ -223,6 +252,70 @@ public abstract class RasterFilter extends RequestFilter {
         }
         
         return hasData;
+    }
+    
+    private boolean lookupSubsample(Grid grid, int[] idx, int zoomDiff) {
+        BufferedImage mat = matrices.get(grid.getSRS().getNumber())[idx[2]];
+        
+        int sampleChange = 1 << (-1* zoomDiff);
+        
+        int[] gridBounds = null;
+        try {
+            gridBounds = grid.getGridCalculator().getGridBounds(idx[2]);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        
+        // Changing index to top left hand origin
+        int baseX = idx[0] - gridBounds[0];
+        int baseY = gridBounds[3] - idx[1];
+        
+        int width = mat.getWidth();
+        int height = mat.getHeight();
+
+        int startX = Math.max(0, baseX);
+        int stopX = Math.min(width, baseX + sampleChange);
+        int startY = Math.min(baseY, height - 1);
+        int stopY = Math.max(0,  baseY - sampleChange);
+        
+        int x = -1;
+        int y = -1; 
+        
+        // Lock, in case someone wants to replace the matrix
+        synchronized (mat) {            
+            try {
+                // Try center and edges first 
+                x = (stopX + startX)/2;
+                y = (startY + stopY)/2;
+                if (mat.getRaster().getSample(x,y,0) == 0
+                        || mat.getRaster().getSample(stopX -1, stopY + 1, 0) == 0
+                        || mat.getRaster().getSample(stopX -1, startY   , 0) == 0
+                        || mat.getRaster().getSample(startX  , stopY + 1, 0) == 0) {
+                    return true;
+                }
+                
+                // Do the hard work, loop over all pixels
+                x = startX;
+                y = startY;
+                
+                // Left to right
+                while(x < stopX) {
+                    // Bottom to top
+                    while(y > stopY) {
+                        if (mat.getRaster().getSample(x, y, 0) == 0) {
+                            return true;
+                        }
+                        y--;
+                    }
+                    x++;
+                    y = startY;
+                }
+            } catch (ArrayIndexOutOfBoundsException aioob) {
+                log.error("x:" + x + "  y:" + y + " (" + mat.getWidth() + " " + mat.getHeight() + ")");
+            }
+        }
+        
+        return false;
     }
     
     /** 

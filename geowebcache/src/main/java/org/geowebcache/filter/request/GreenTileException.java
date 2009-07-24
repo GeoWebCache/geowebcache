@@ -46,7 +46,7 @@ public class GreenTileException extends RequestFilterException {
         try {
             is = GreenTileException.class.getResourceAsStream("green.png");
             int ret = is.read(green);
-            log.info("Read " + ret + " from blank PNG8 file (expected 129).");
+            log.info("Read " + ret + " from gree PNG file (expected 659).");
         } catch (IOException ioe) {
             log.error(ioe.getMessage());
         } finally {

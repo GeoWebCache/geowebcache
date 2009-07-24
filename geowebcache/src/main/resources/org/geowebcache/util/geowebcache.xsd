@@ -520,12 +520,28 @@
         to make debugging the filters easier. This name should be unique.
       </xs:documentation></xs:annotation>
     </xs:element>
+    <xs:element name="zoomStart" type="xs:integer" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        This is the minimum zoom level for which the filter is applied. If the request
+        is for a lower zoom level, and you do not enable resample below, it will
+        be accepted.
+      </xs:documentation></xs:annotation>
+    </xs:element>
     <xs:element name="zoomStop" type="xs:integer" minOccurs="1">
       <xs:annotation><xs:documentation xml:lang="en">
         The maximum zoom level for which to load a raster. For higher zoom levels
         the last supported level will be upsampled. The best value is a compromise
         between the size of the raster (depends on the bounds) and a zoom level 
         that is sufficcient to approximate the shape of the actual data.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="resample" type="xs:boolean" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+		If you enable resampling and zoomStart, requests
+		for zoom levels &lt; zoomStart will be upsampled and then checked against the
+		zoomStart raster. This is useful if, due to rounding errors, the raster 
+		for zoom levels lowers than zoomStart do not contain all features.
+		all features at higher zoom levels.
       </xs:documentation></xs:annotation>
     </xs:element>
     <xs:element name="preload" type="xs:boolean" minOccurs="0">
@@ -571,12 +587,28 @@
         to make debugging the filters easier. This name should be unique.
       </xs:documentation></xs:annotation>
     </xs:element>
+    <xs:element name="zoomStart" type="xs:integer" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        This is the minimum zoom level for which the filter is applied. If the request
+        is for a lower zoom level, and you do not enable resample below, it will
+        be accepted.
+      </xs:documentation></xs:annotation>
+    </xs:element>
     <xs:element name="zoomStop" type="xs:integer" minOccurs="1">
       <xs:annotation><xs:documentation xml:lang="en">
         The maximum zoom level for which to load a raster. For higher zoom levels
         the last supported level will be upsampled. The best value is a compromise
         between the size of the raster (depends on the bounds) and a zoom level 
         that is sufficcient to approximate the shape of the actual data.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="resample" type="xs:boolean" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+		If you enable resampling and zoomStart, requests
+		for zoom levels &lt; zoomStart will be upsampled and then checked against the
+		zoomStart raster. This is useful if, due to rounding errors, the raster 
+		for zoom levels lowers than zoomStart do not contain all features.
+		all features at higher zoom levels.
       </xs:documentation></xs:annotation>
     </xs:element>
     <xs:element name="preload" type="xs:boolean" minOccurs="0">

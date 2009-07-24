@@ -106,7 +106,9 @@
     </circularExtentFilter -->
     <!-- wmsRasterFilter>
       <name>testRasterFilter</name>
-      <zoomStop>12</zoomStop>
+      <zoomStart>12</zoomStart>
+      <zoomStop>13</zoomStop>
+      <resample>true</resample>
       <debug>true</debug>
       <wmsStyles>onebit</wmsStyles>
       <backendTimeout>120</backendTimeout>
