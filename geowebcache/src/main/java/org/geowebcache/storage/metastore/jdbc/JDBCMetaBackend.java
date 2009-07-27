@@ -131,7 +131,13 @@ public class JDBCMetaBackend implements MetaStore {
 
         long layerId = idCache.getLayerId(trObj.layerName);
         long formatId = idCache.getFormatId(trObj.mimeType.getFormat());
-        long parametersId = idCache.getParametersId(trObj.parameters);
+        long parametersId;
+        if(trObj.parameters != null) {
+             parametersId = idCache.getParametersId(trObj.parameters);
+        } else {
+            parametersId = -1L;
+        }
+        
         
         for(int zoomLevel = trObj.zoomStart; zoomLevel <= trObj.zoomStop; zoomLevel++) {
             wrpr.deleteRange(

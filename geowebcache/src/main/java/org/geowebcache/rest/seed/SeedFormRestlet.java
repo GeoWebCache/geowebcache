@@ -137,6 +137,8 @@ public class SeedFormRestlet extends GWCRestlet {
         
         makeZoomStopPullDown(doc, tl);
         
+        //TODO make list of modifiable parameter combos
+        
         makeBboxFields(doc);
         
         makeSubmit(doc);
@@ -480,7 +482,7 @@ public class SeedFormRestlet extends GWCRestlet {
         String type = form.getFirst("type").getValue();
 
         SeedRequest sr = new SeedRequest(tl.getName(), bounds, srs,
-                threadCount, zoomStart, zoomStop, format, type);
+                threadCount, zoomStart, zoomStop, format, type, null);
 
         seedRestlet.dispatchTasks(sr, tl, threadPool);
 

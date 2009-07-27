@@ -27,6 +27,8 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.TileRangeObject;
 
 public class TruncateTask extends GWCTask {
     private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.TruncateTask.class);
@@ -46,60 +48,40 @@ public class TruncateTask extends GWCTask {
         
         super.type = GWCTask.TYPE_TRUNCATE;
         super.layerName = tl.getName();
-        super.tilesTotal = 0;
-        super.timeRemaining = 0;
-        super.timeSpent = 0;
-        super.tilesDone = 0;
     }
     
     public void doAction() throws GeoWebCacheException {
-        
+
         tl.isInitialized();
 
         int[][] bounds = null;
-        
-        if(req.getBounds() == null) {
-            //TODO need nicer interface, just send null
+
+        if (req.getBounds() == null) {
+            // TODO need nicer interface, just send null
             bounds = tl.getCoveredGridLevels(req.getSRS(), tl.getGrid(req.getSRS()).getBounds());
-        } else if(! Arrays.equals(req.getBounds().coords, nullBbox)) {
+        } else if (!Arrays.equals(req.getBounds().coords, nullBbox)) {
             bounds = tl.getCoveredGridLevels(req.getSRS(), req.getBounds());
         }
-        
-        // Check if MimeType supports metatiling, in which case 
-        // we may have to throw a wider net
-        MimeType[] mimeTypes = null;
-        if (req.getMimeFormat() != null && req.getMimeFormat().length() > 0) {
-            MimeType mimeType = MimeType.createFromFormat(req.getMimeFormat());
-            if(mimeType == XMLMime.kml) {
-                mimeTypes = new MimeType[2];
-                mimeTypes[0] = mimeType;
-                mimeTypes[1] = XMLMime.kmz;
-                log.info("Truncate request was for KML. This will also truncate all KMZ archives.");
-            } else {
-                mimeTypes = new MimeType[1];
-                mimeTypes[0] = mimeType;
-            }
-            
 
-            if (bounds != null) {
-                int[] metaFactors = tl.getMetaTilingFactors();
+        MimeType mimeType = MimeType.createFromFormat(req.getMimeFormat());
 
-                int gridBounds[][] = tl.getGrid(req.getSRS())
-                        .getGridCalculator().getGridBounds();
+        if (bounds != null) {
+            int[] metaFactors = tl.getMetaTilingFactors();
 
-                if (metaFactors[0] > 1 || metaFactors[1] > 1
-                        && mimeType.supportsTiling()) {
-                    bounds = GridCalculator.expandBoundsToMetaTiles(gridBounds,
-                            bounds, metaFactors);
-                }
+            int gridBounds[][] = tl.getGrid(req.getSRS()).getGridCalculator().getGridBounds();
+
+            if (metaFactors[0] > 1 || metaFactors[1] > 1 && mimeType.supportsTiling()) {
+                bounds = GridCalculator.expandBoundsToMetaTiles(gridBounds, bounds, metaFactors);
             }
         }
         
-        log.fatal("Truncation not implemented!");
-        //int count = cache.truncate(tl, req.getSRS(), 
-        //        req.getZoomStart(), req.getZoomStop(), 
-        //        bounds, mimeTypes);
-        //log.info("Completed truncating " + count + " tiles");
+        TileRangeObject trObj = new TileRangeObject(layerName, req.getSRS(), req.getZoomStart(), req.getZoomStop(), bounds, mimeType, req.getParameters());
+        
+        try {
+            storageBroker.delete(trObj);
+        } catch (StorageException e) {
+            e.printStackTrace();
+        }
     }
 
 }

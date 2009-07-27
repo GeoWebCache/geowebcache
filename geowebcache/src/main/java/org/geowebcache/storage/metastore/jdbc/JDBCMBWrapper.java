@@ -811,7 +811,7 @@ class JDBCMBWrapper {
             prep.setLong(9, parametersId);
         }
         
-        prep.executeQuery();
+        prep.execute();
     }
 
     public boolean deleteRange(BlobStore blobStore, TileRangeObject trObj, int zoomLevel,
@@ -828,9 +828,9 @@ class JDBCMBWrapper {
                 // TILE_ID, X, Y, Z
                 //long tileId = rs.getLong(0);
                 long[] xyz = new long[3];
-                xyz[1] = rs.getLong(1);
-                xyz[2] = rs.getLong(2);
-                xyz[3] = rs.getLong(3);
+                xyz[0] = rs.getLong(1);
+                xyz[1] = rs.getLong(2);
+                xyz[2] = rs.getLong(3);
                 
                 TileObject to = TileObject.createQueryTileObject(
                         trObj.layerName, 

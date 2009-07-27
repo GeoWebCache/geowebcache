@@ -37,6 +37,8 @@ public class SeedRequest {
     
     private String type = null;
     
+    private String parameters = null;
+    
     public SeedRequest() {
         //do nothing, i guess
     }
@@ -55,7 +57,7 @@ public class SeedRequest {
      */
     protected SeedRequest(String name, BBOX bounds, 
             SRS srs, int threadCount, int zoomStart, 
-            int zoomStop, String format, String type) {
+            int zoomStop, String format, String type, String parameters) {
         this.name = name;
         this.bounds = bounds;
         this.srs = srs;
@@ -64,6 +66,7 @@ public class SeedRequest {
         this.zoomStop = zoomStop;
         this.format = format;
         this.type = type;
+        this.parameters = parameters;
     }
     
     /**
@@ -130,6 +133,15 @@ public class SeedRequest {
      */
     public String getType() {
         return type;
+    }
+    
+    /**
+     * The settings for the modifiable parameters
+     * 
+     * @return String representing the modifiable parameters
+     */
+    public String getParameters() {
+        return parameters;
     }
 
 }
