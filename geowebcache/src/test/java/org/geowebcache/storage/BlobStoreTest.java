@@ -24,6 +24,10 @@ import java.util.Arrays;
 
 import junit.framework.TestCase;
 
+import org.geowebcache.layer.SRS;
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.mime.ImageMime;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 
 public class BlobStoreTest extends TestCase {
@@ -116,6 +120,80 @@ public class BlobStoreTest extends TestCase {
         }
         
         assertEquals(read1,read2);
+    }
+    
+    
+    public void testTileDelete() throws Exception {
+        FileBlobStore fbs = setup();
+        
+        byte[] bytes = "1 2 3 4 5 6 test".getBytes();
+        long[] xyz = {5L,6L,7L};
+        TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, 4326, "image/jpeg", "a=x&b=ø", bytes);
+        to.setId(11231231);
+        
+        fbs.put(to);
+        
+        TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, 4326, "image/jpeg", "a=x&b=ø");
+        to2.setId(11231231);
+        
+        byte[] resp = fbs.get(to2);
+        
+        //to2.setBlob(resp);
+
+        assertTrue(Arrays.equals(resp, bytes));
+        
+        TileObject to3 = TileObject.createQueryTileObject("test:123123 112", xyz, 4326, "image/jpeg", "a=x&b=ø");
+        fbs.delete(to3);
+        
+        TileObject to4 = TileObject.createQueryTileObject("test:123123 112", xyz, 4326, "image/jpeg", "a=x&b=ø");
+        assertNull(fbs.get(to4));
+    }
+    
+    public void testTilRangeDelete() throws Exception {
+        FileBlobStore fbs = setup();
+        
+        byte[] bytes = "1 2 3 4 5 6 test".getBytes();
+        String parameters = "a=x&b=ø";
+        MimeType mime = ImageMime.png;
+        SRS srs = SRS.getEPSG4326();
+        String layerName = "test:123123 112";
+        
+        int zoomLevel = 7;
+        int x = 25;
+        int y = 6;
+        
+        //long[] origXYZ = {x,y,zoomLevel};
+        
+        TileObject[] tos = new TileObject[6];
+        
+        for(int i = 0; i<tos.length; i++) {
+            long[] xyz = {x + i - 1, y, zoomLevel};
+            tos[i] = TileObject.createCompleteTileObject(layerName, xyz, srs.getNumber(), mime.getFormat(), parameters, bytes);
+            fbs.put(tos[i]);
+        }
+        
+        int[][] rangeBounds = new int[zoomLevel + 2][4];
+        int zoomStart = zoomLevel - 1;
+        int zoomStop = zoomLevel + 1;
+        
+        int[] range = {x,y,x + tos.length - 3,y};
+        rangeBounds[zoomLevel] = range;
+        
+        TileRangeObject trObj = new TileRangeObject(layerName, srs, zoomStart, zoomStop, rangeBounds, mime, parameters);
+        
+        fbs.delete(trObj);
+        
+        // starting x and x + tos.length should have data, the remaining should not
+        TileObject firstTO = TileObject.createQueryTileObject(layerName, tos[0].xyz, srs.getNumber(), mime.getFormat(), parameters);
+        assertTrue(Arrays.equals(fbs.get(firstTO), bytes));
+        
+        TileObject lastTO = TileObject.createQueryTileObject(layerName, tos[tos.length - 1].xyz, srs.getNumber(), mime.getFormat(), parameters);
+        assertTrue(Arrays.equals(fbs.get(lastTO), bytes));
+        
+        TileObject midTO =  TileObject.createQueryTileObject(layerName, tos[ (tos.length - 1) / 2].xyz, srs.getNumber(), mime.getFormat(), parameters);
+        byte[] res = fbs.get(midTO);
+        
+        assertNull(res);
     }
     
     public FileBlobStore setup() throws Exception {

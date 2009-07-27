@@ -22,15 +22,15 @@ import java.io.File;
 import org.geowebcache.mime.MimeType;
 
 public class FilePathGenerator {
-    protected static String[] tilePath(String prefix, String layerName, long[] tileIndex, int srsNumb, 
-            MimeType mimeType, long parameters_id) {
+    protected static String[] tilePath(String prefix, String layerName, long[] tileIndex, 
+            int srsNumber, MimeType mimeType, long parameters_id) {
         long x = tileIndex[0];
         long y = tileIndex[1];
         long z = tileIndex[2];
         
-        String srsStr = "EPSG_"+ srsNumb;
         
-        layerName = layerName.replace(':', '_').replace(' ', '_');
+        String srsStr = filteredSRSName(srsNumber);
+        String layerStr = filteredLayerName(layerName);
         
         String paramStr = "";
         if(parameters_id != -1L) {
@@ -50,7 +50,7 @@ public class FilePathGenerator {
         
         String[] ret = new String[2];
         
-        ret[0] = prefix + File.separator + layerName + File.separator
+        ret[0] = prefix + File.separator + layerStr + File.separator
                 + srsStr + "_" + zeroPadder(z, 2) + paramStr + File.separator 
                 + zeroPadder(halfx, digits) + "_" 
                 + zeroPadder(halfy, digits);
@@ -90,5 +90,13 @@ public class FilePathGenerator {
         }
 
         return padding.toString() + Long.toString(number);
+    }
+    
+    public static String filteredSRSName(int srsNumber) {
+        return "EPSG_"+ srsNumber;
+    }
+    
+    public static String filteredLayerName(String layerName) {
+        return layerName.replace(':', '_').replace(' ', '_');
     }
 }

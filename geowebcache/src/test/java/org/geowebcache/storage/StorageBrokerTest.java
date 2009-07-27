@@ -73,7 +73,7 @@ public class StorageBrokerTest extends TestCase {
 
         System.out.println("Creating new metastore in " + findTempDir() + File.separator +TEST_DB_NAME);
         MetaStore metaStore = new JDBCMetaBackend("org.h2.Driver",
-                "jdbc:h2:file:" + findTempDir() + File.separator +TEST_DB_NAME,
+                "jdbc:h2:file:" + findTempDir() + File.separator +TEST_DB_NAME + ";TRACE_LEVEL_FILE=0",
                 "sa",
                 "");
 

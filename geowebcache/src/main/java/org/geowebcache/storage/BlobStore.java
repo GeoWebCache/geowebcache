@@ -30,6 +30,7 @@ public interface BlobStore {
      */
     public boolean delete(TileObject obj) throws StorageException;
     public boolean delete(WFSObject obj) throws StorageException;
+    public boolean delete(TileRangeObject obj) throws StorageException;
     
     /**
      * Retrieve a blob from storage. Calls setBlob() on passed object.

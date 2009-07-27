@@ -28,10 +28,12 @@ import java.sql.Timestamp;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.StorageObject;
 import org.geowebcache.storage.TileObject;
+import org.geowebcache.storage.TileRangeObject;
 import org.geowebcache.storage.WFSObject;
 
 /**
@@ -304,7 +306,7 @@ class JDBCMBWrapper {
         
     }
     
-    protected boolean deleteTile(TileObject stObj) throws SQLException {
+    protected void deleteTile(TileObject stObj) throws SQLException {
 
         String query;
         if(stObj.getParametersId() == -1L) {
@@ -333,7 +335,7 @@ class JDBCMBWrapper {
         }
         
         try {
-            return prep.execute();
+            prep.execute();
             
         } finally {
             prep.close();
@@ -341,7 +343,7 @@ class JDBCMBWrapper {
         }
     }
     
-    protected boolean deleteWFS(Long parameters, WFSObject wfsObj) 
+    protected void deleteWFS(Long parameters, WFSObject wfsObj) 
     throws SQLException {
         String query = null;
         PreparedStatement prep = null;
@@ -363,7 +365,7 @@ class JDBCMBWrapper {
         }
         
         try {
-            return prep.execute();
+            prep.execute();
             
         } finally {
             if(prep != null)
@@ -744,5 +746,121 @@ class JDBCMBWrapper {
             e.printStackTrace();
         }
         System.gc();
+    }
+
+    private ResultSet getTileSet(long layerId, long formatId, long parametersId, 
+            int zoomLevel, int[] bounds, int srsNumber) throws SQLException {
+        String query;
+        
+        if(parametersId == -1L) {
+            query = "SELECT TILE_ID, X, Y, Z FROM TILES WHERE " 
+                + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND SRS_ID = ? " 
+                + " AND FORMAT_ID = ? AND PARAMETERS_ID IS NULL LIMIT 1 ";
+        } else {
+            query = "SELECT TILE_ID, X, Y, Z FROM TILES WHERE " 
+                + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND SRS_ID = ? " 
+                + " AND FORMAT_ID = ? AND PARAMETERS_ID = ? LIMIT 1 ";
+        }
+        
+        Connection conn = getConnection();
+        
+        PreparedStatement prep = conn.prepareStatement(query);
+        prep.setLong(1, layerId);
+        prep.setLong(2, bounds[0]);
+        prep.setLong(3, bounds[2]);
+        prep.setLong(4, bounds[1]);
+        prep.setLong(5, bounds[3]);
+        prep.setLong(6, zoomLevel);
+        prep.setLong(7, srsNumber);
+        prep.setLong(8, formatId);
+        
+        if(parametersId != -1L) {
+            prep.setLong(9, parametersId);
+        }
+        
+        return prep.executeQuery();
+    }
+    
+    private void deleteRange(long layerId, long formatId, long parametersId, 
+            int zoomLevel, int[] bounds, int srsNumber) throws SQLException {
+        String query;
+        
+        if(parametersId == -1L) {
+            query = "DELETE FROM TILES WHERE " 
+                + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND SRS_ID = ? " 
+                + " AND FORMAT_ID = ? AND PARAMETERS_ID IS NULL";
+        } else {
+            query = "DELETE FROM TILES WHERE " 
+                + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND SRS_ID = ? " 
+                + " AND FORMAT_ID = ? AND PARAMETERS_ID = ?";
+        }
+        
+        Connection conn = getConnection();
+        
+        PreparedStatement prep = conn.prepareStatement(query);
+        prep.setLong(1, layerId);
+        prep.setLong(2, bounds[0]);
+        prep.setLong(3, bounds[2]);
+        prep.setLong(4, bounds[1]);
+        prep.setLong(5, bounds[3]);
+        prep.setLong(6, zoomLevel);
+        prep.setLong(7, srsNumber);
+        prep.setLong(8, formatId);
+        
+        if(parametersId != -1L) {
+            prep.setLong(9, parametersId);
+        }
+        
+        prep.executeQuery();
+    }
+
+    public boolean deleteRange(BlobStore blobStore, TileRangeObject trObj, int zoomLevel,
+            long layerId, long formatId, long parametersId) {
+        
+        int[] bounds = trObj.rangeBounds[zoomLevel]; 
+        int srsNumber = trObj.srs.getNumber();
+      
+        ResultSet rs = null;
+        try {
+            rs = getTileSet(layerId, formatId, parametersId, zoomLevel, bounds, srsNumber);
+            
+            while(rs.next()) {
+                // TILE_ID, X, Y, Z
+                //long tileId = rs.getLong(0);
+                long[] xyz = new long[3];
+                xyz[1] = rs.getLong(1);
+                xyz[2] = rs.getLong(2);
+                xyz[3] = rs.getLong(3);
+                
+                TileObject to = TileObject.createQueryTileObject(
+                        trObj.layerName, 
+                        xyz, 
+                        srsNumber, 
+                        trObj.mimeType.getFormat(), 
+                        trObj.parameters);
+                
+                try {
+                    blobStore.delete(to);
+                } catch (StorageException e) {
+                    log.debug("Error while deleting range: " + e.getMessage());
+                }
+            }
+            
+            // Now remove the tiles from the database
+            deleteRange(layerId, formatId, parametersId, zoomLevel, bounds, srsNumber);
+            
+        } catch (SQLException e) {
+            log.error("deleteRange failed: " + e.getMessage());
+            
+            return false;
+        } finally {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                log.debug(e.getMessage());
+            }
+        }
+        
+        return true;   
     }
 }

@@ -17,15 +17,18 @@
  */
 package org.geowebcache.storage.metastore.jdbc;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.MetaStore;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.StorageObject;
 import org.geowebcache.storage.TileObject;
+import org.geowebcache.storage.TileRangeObject;
 import org.geowebcache.storage.WFSObject;
 import org.geowebcache.storage.StorageObject.Status;
 
@@ -96,7 +99,8 @@ public class JDBCMetaBackend implements MetaStore {
         }
         
         try {
-            return wrpr.deleteTile(stObj);
+            wrpr.deleteTile(stObj);
+            return true;
         } catch (SQLException se) {
             log.error("Failed to get tile: " + se.getMessage());
         }
@@ -113,12 +117,33 @@ public class JDBCMetaBackend implements MetaStore {
         }
         
         try {
-            return wrpr.deleteWFS(parameters_id, stObj);
+            wrpr.deleteWFS(parameters_id, stObj);
+            return true;
         } catch (SQLException se) {
             log.error("Failed to delete WFS object: " + se.getMessage());
         }
         
         return false;
+    }
+    
+    public boolean delete(BlobStore blobStore, TileRangeObject trObj)
+    throws StorageException {
+
+        long layerId = idCache.getLayerId(trObj.layerName);
+        long formatId = idCache.getFormatId(trObj.mimeType.getFormat());
+        long parametersId = idCache.getParametersId(trObj.parameters);
+        
+        for(int zoomLevel = trObj.zoomStart; zoomLevel <= trObj.zoomStop; zoomLevel++) {
+            wrpr.deleteRange(
+                    blobStore,
+                    trObj,
+                    zoomLevel,
+                    layerId,
+                    formatId,
+                    parametersId);
+        }
+        
+        return true;
     }
 
     public boolean get(TileObject stObj) throws StorageException {

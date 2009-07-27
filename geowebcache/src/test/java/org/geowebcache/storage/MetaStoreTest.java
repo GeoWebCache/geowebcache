@@ -104,13 +104,59 @@ public class MetaStoreTest extends TestCase {
 
         StorageBrokerTest.deleteDb(TEST_DB_NAME);
     }
+    
+    public void testTileDelete() throws Exception {
+        byte[] bytes = null;
+        TileObject to2 = null;
+        TileObject to3 = null;
+        String layerName = "test'Layer:æøå;";
+        String format = "jpeg";
+        String parameters = "a=x&b=y";
+        
+        try {
+            MetaStore ms = setup();
+
+            long[] xyz = { 1L, 2L, 3L };
+            bytes = "Test 1 2 3".getBytes();
+            TileObject to = TileObject.createCompleteTileObject(
+                    layerName, xyz, 4326, format, parameters, bytes);
+
+            ms.put(to);
+            ms.unlock(to);
+            
+            // Check
+            long[] xyz2 = { 1L, 2L, 3L };
+            to2 = TileObject.createQueryTileObject(
+                    layerName, xyz2, 4326, format, parameters);
+
+            assertTrue(ms.get(to2));
+            assertEquals(bytes.length,to2.getBlobSize());
+            
+            // Delete
+            assertTrue(ms.delete(to));
+            
+            // Check
+            long[] xyz3 = { 1L, 2L, 3L };
+            to3 = TileObject.createQueryTileObject(
+                    layerName, xyz3, 4326, format, parameters);
+
+            assertFalse(ms.get(to3));
+
+            assertTrue(to3.status == StorageObject.Status.MISS);
+            
+        } catch (StorageException se) {
+            System.out.println(se.getMessage());
+            throw se;
+        }
+
+    }
 
     public MetaStore setup() throws Exception {
         StorageBrokerTest.deleteDb(TEST_DB_NAME);
         
         return new JDBCMetaBackend("org.h2.Driver", 
                 "jdbc:h2:file:" + StorageBrokerTest.findTempDir() 
-                + File.separator +TEST_DB_NAME,
+                + File.separator +TEST_DB_NAME + ";TRACE_LEVEL_FILE=0",
                 "sa",
                 "");
     }

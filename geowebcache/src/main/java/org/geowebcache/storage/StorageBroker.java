@@ -40,6 +40,16 @@ public class StorageBroker {
         }
     }
     
+    
+    public boolean delete(TileRangeObject trObj) throws StorageException {
+        if(metaStoreEnabled) {
+            return metaStore.delete(blobStore, trObj);
+        } else {
+            return blobStore.delete(trObj);
+        }
+    }
+    
+    
     public boolean get(TileObject tileObj) throws StorageException {
         if(! metaStoreEnabled) {
             return getBlobOnly(tileObj);

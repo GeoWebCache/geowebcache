@@ -32,6 +32,7 @@ import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
+import org.geowebcache.storage.TileRangeObject;
 import org.geowebcache.storage.WFSObject;
 import org.geowebcache.util.ServletUtils;
 
@@ -69,10 +70,18 @@ public class FileBlobStore implements BlobStore {
             throw new StorageException("Unable to delete "
                     + fh.getAbsolutePath());
         }
+        
+        File parentDir = new File(fh.getParent());
+        
+        // TODO This could potentially be very slow
+        if(parentDir.isDirectory() && parentDir.canWrite() && parentDir.list().length == 0) {
+            parentDir.delete();
+        }
 
         return true;
     }
 
+    
     public boolean delete(WFSObject stObj) throws StorageException {
         if(stObj.getQueryBlobSize() != -1) {
             File fh = getFileHandleWFS(stObj, true, false);
@@ -91,6 +100,53 @@ public class FileBlobStore implements BlobStore {
             throw new StorageException("Unable to delete "
                     + fh.getAbsolutePath());
         }
+
+        return true;
+    }
+    
+    public boolean delete(TileRangeObject trObj) throws StorageException {
+        int count = 0;
+
+        String prefix = path + File.separator 
+            + FilePathGenerator.filteredLayerName(trObj.layerName);
+
+        File layerPath = new File(prefix);
+
+        if (!layerPath.exists() || !layerPath.canWrite()) {
+            throw new StorageException(prefix
+                    + " does not exist or is not writable.");
+        }
+        FilePathFilter fpf = new FilePathFilter(trObj);
+
+        File[] srsZoomDirs = layerPath.listFiles(fpf);
+
+        for (File srsZoom : srsZoomDirs) {
+            File[] intermediates = srsZoom.listFiles(fpf);
+
+            for (File imd : intermediates) {
+                File[] tiles = imd.listFiles(fpf);
+
+                for (File tile : tiles) {
+                    tile.delete();
+                    count++;
+                }
+
+                String[] chk = imd.list();
+                if (chk == null || chk.length == 0) {
+                    imd.delete();
+                    count++;
+                }
+            }
+
+            String[] chk = srsZoom.list();
+            if (chk == null || chk.length == 0) {
+                srsZoom.delete();
+                count++;
+            }
+
+        }
+
+        log.info("Truncated " + count + " tiles");
 
         return true;
     }
@@ -277,4 +333,6 @@ public class FileBlobStore implements BlobStore {
     public void destroy() {
        // Do nothing 
     }
+
+
 }
