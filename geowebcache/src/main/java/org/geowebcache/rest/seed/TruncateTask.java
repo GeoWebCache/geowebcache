@@ -81,6 +81,8 @@ public class TruncateTask extends GWCTask {
             storageBroker.delete(trObj);
         } catch (StorageException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

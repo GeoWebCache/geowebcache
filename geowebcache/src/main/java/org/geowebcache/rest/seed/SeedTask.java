@@ -166,7 +166,7 @@ public class SeedTask extends GWCTask {
             }
 
             double percCompl = (100.0 * count)
-                    / (double) (super.tilesTotal * tilesPerMetaTile);
+                    / (double) super.tilesTotal;
             int intPercCompl = (int) Math.floor(percCompl);
             int decPercCompl = (int) Math.round((percCompl - intPercCompl) * 100);
 

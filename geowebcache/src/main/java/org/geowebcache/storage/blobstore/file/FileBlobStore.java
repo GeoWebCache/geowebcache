@@ -66,6 +66,8 @@ public class FileBlobStore implements BlobStore {
         if (!fh.exists())
             return false;
 
+        //System.out.println("Deleting " + fh.getAbsolutePath());
+        
         if (!fh.delete()) {
             throw new StorageException("Unable to delete "
                     + fh.getAbsolutePath());

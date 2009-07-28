@@ -755,11 +755,11 @@ class JDBCMBWrapper {
         if(parametersId == -1L) {
             query = "SELECT TILE_ID, X, Y, Z FROM TILES WHERE " 
                 + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND SRS_ID = ? " 
-                + " AND FORMAT_ID = ? AND PARAMETERS_ID IS NULL LIMIT 1 ";
+                + " AND FORMAT_ID = ? AND PARAMETERS_ID IS NULL";
         } else {
             query = "SELECT TILE_ID, X, Y, Z FROM TILES WHERE " 
                 + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND SRS_ID = ? " 
-                + " AND FORMAT_ID = ? AND PARAMETERS_ID = ? LIMIT 1 ";
+                + " AND FORMAT_ID = ? AND PARAMETERS_ID = ?";
         }
         
         Connection conn = getConnection();
@@ -828,9 +828,11 @@ class JDBCMBWrapper {
                 // TILE_ID, X, Y, Z
                 //long tileId = rs.getLong(0);
                 long[] xyz = new long[3];
-                xyz[0] = rs.getLong(1);
-                xyz[1] = rs.getLong(2);
-                xyz[2] = rs.getLong(3);
+                xyz[0] = rs.getLong(2);
+                xyz[1] = rs.getLong(3);
+                xyz[2] = rs.getLong(4);
+                
+                //System.out.println("x: " + xyz[0] + " y: " + xyz[1] + " z: " + xyz[2]);
                 
                 TileObject to = TileObject.createQueryTileObject(
                         trObj.layerName, 
@@ -843,6 +845,8 @@ class JDBCMBWrapper {
                     blobStore.delete(to);
                 } catch (StorageException e) {
                     log.debug("Error while deleting range: " + e.getMessage());
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
             

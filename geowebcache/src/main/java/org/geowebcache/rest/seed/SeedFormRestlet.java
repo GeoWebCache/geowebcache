@@ -394,7 +394,7 @@ public class SeedFormRestlet extends GWCRestlet {
             
             if(task.getTilesDone() < 50) {
                 timeRemaining= " Estimating...";
-            } else if(time == -2) {
+            } else if(time == -2 && task.getTilesDone() < task.getTilesTotal()) {
                 timeRemaining= " A decade or three.";
             } else if(time > (60*60*24)) {
                 timeRemaining= "" + (time / (60*60*24)) + " day(s)";

@@ -82,6 +82,9 @@ public class FilePathGenerator {
 
         int diffOrder = order - numberOrder;
         
+        //if(diffOrder < 0) {
+        //    System.out.println("number: " + number + " order: " + order + " diff: " + diffOrder);
+        //}
         StringBuilder padding = new StringBuilder(diffOrder);
         
         while (diffOrder > 0) {
