@@ -78,13 +78,13 @@ public class DefaultStorageFinder {
             String typeStr = typeStrs[j];
 
             switch (j) {
-            case 1:
+            case 0:
                 value = System.getProperty(varStr);
                 break;
-            case 2:
+            case 1:
                 value = serlvCtx.getInitParameter(varStr);
                 break;
-            case 3:
+            case 2:
                 value = System.getenv(varStr);
                 break;
             }
