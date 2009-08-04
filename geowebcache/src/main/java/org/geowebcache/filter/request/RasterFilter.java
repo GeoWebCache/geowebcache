@@ -27,7 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.layer.Grid;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -180,7 +180,7 @@ public abstract class RasterFilter extends RequestFilter {
      * @param idx
      * @return
      */
-     private boolean lookup(Grid grid, int[] idx) {
+     private boolean lookup(GridSet grid, int[] idx) {
          BufferedImage mat = matrices.get(grid.getSRS().getNumber())[idx[2]];
          
          int[] gridBounds = null;
@@ -206,7 +206,7 @@ public abstract class RasterFilter extends RequestFilter {
     * @param idx
     * @return
     */
-    private boolean lookupQuad(Grid grid, int[] idx) {
+    private boolean lookupQuad(GridSet grid, int[] idx) {
         BufferedImage mat = matrices.get(grid.getSRS().getNumber())[idx[2]];
         
         int[] gridBounds = null;
@@ -254,7 +254,7 @@ public abstract class RasterFilter extends RequestFilter {
         return hasData;
     }
     
-    private boolean lookupSubsample(Grid grid, int[] idx, int zoomDiff) {
+    private boolean lookupSubsample(GridSet grid, int[] idx, int zoomDiff) {
         BufferedImage mat = matrices.get(grid.getSRS().getNumber())[idx[2]];
         
         int sampleChange = 1 << (-1* zoomDiff);
@@ -363,7 +363,7 @@ public abstract class RasterFilter extends RequestFilter {
      * @return
      * @throws GeoWebCacheException
      */
-    protected int[] calculateWidthHeight(Grid grid, int z) throws GeoWebCacheException {
+    protected int[] calculateWidthHeight(GridSet grid, int z) throws GeoWebCacheException {
         int[] bounds = grid.getGridCalculator().getGridBounds(z);
 
         int[] widthHeight = new int[2];
@@ -381,7 +381,7 @@ public abstract class RasterFilter extends RequestFilter {
      * @return
      * @throws GeoWebCacheException
      */
-    protected BBOX calculateBbox(Grid grid, int z) throws GeoWebCacheException {
+    protected BBOX calculateBbox(GridSet grid, int z) throws GeoWebCacheException {
         int[] bounds = grid.getGridCalculator().getGridBounds(z);
         int[] gridLocBounds = {bounds[0],bounds[1],bounds[2],bounds[3],z};
         return grid.getGridCalculator().bboxFromGridBounds(gridLocBounds);

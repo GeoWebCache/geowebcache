@@ -7,8 +7,8 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.geowebcache.layer.Grid;
-import org.geowebcache.layer.GridCalculator;
+import org.geowebcache.grid.GridSet;
+import org.geowebcache.grid.GridCalculator;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.util.wms.BBOX;
@@ -26,7 +26,7 @@ public class MetaTileTest extends TestCase {
         int metaHeight = 1;
         int metaWidth = 1;
 
-        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, GridCalculator.get4326Resolutions());
+        GridSet grid = new GridSet(SRS.getEPSG4326(), bbox, gridBase, GridCalculator.get4326Resolutions());
         GridCalculator gridCalc = grid.getGridCalculator();
         
         int[] gridPos = { 0, 0, 0 };
@@ -52,7 +52,7 @@ public class MetaTileTest extends TestCase {
         int metaHeight = 3;
         int metaWidth = 3;
 
-        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridSet grid = new GridSet(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
         
         int[] gridPos = { 127, 63, 6 };
@@ -79,7 +79,7 @@ public class MetaTileTest extends TestCase {
         int metaHeight = 1;
         int metaWidth = 1;
         
-        Grid grid = new Grid(SRS.getEPSG900913(), bbox, gridBase, GridCalculator.get900913Resolutions());
+        GridSet grid = new GridSet(SRS.getEPSG900913(), bbox, gridBase, GridCalculator.get900913Resolutions());
         GridCalculator gridCalc = grid.getGridCalculator();
               
         int[] gridPos = { 0, 0, 0 };
@@ -107,7 +107,7 @@ public class MetaTileTest extends TestCase {
         int metaHeight = 3;
         int metaWidth = 3;
         
-        Grid grid = new Grid(SRS.getEPSG900913(), bbox, gridBase, null);
+        GridSet grid = new GridSet(SRS.getEPSG900913(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
         
         int[] gridPos = { 70, 70, 6 };
@@ -137,7 +137,7 @@ public class MetaTileTest extends TestCase {
         
         WMSLayer layer = createWMSLayer(bbox);
 
-        Grid grid = layer.getGrid(SRS.getEPSG4326());
+        GridSet grid = layer.getGrid(SRS.getEPSG4326());
         GridCalculator gridCalc = grid.getGridCalculator();
         
         // Set the gutter
@@ -198,10 +198,10 @@ public class MetaTileTest extends TestCase {
         String[] urls = {"http://localhost:38080/wms"};
         List<String> formatList = new LinkedList<String>();
         formatList.add("image/png");
-        Hashtable<SRS,Grid> grids = new Hashtable<SRS,Grid>();
+        Hashtable<SRS,GridSet> grids = new Hashtable<SRS,GridSet>();
        
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
-        Grid grid = new Grid(SRS.getEPSG4326(), layerBounds, gridBase, null);
+        GridSet grid = new GridSet(SRS.getEPSG4326(), layerBounds, gridBase, null);
         grids.put(SRS.getEPSG4326(), grid);
         int[] metaWidthHeight = {3,3};
         WMSLayer layer = new WMSLayer("test:layer", urls, "aStyle", "test:layer", formatList, grids, metaWidthHeight, "vendorparam=true", false);

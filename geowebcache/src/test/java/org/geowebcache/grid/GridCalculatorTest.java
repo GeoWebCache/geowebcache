@@ -1,9 +1,13 @@
-package org.geowebcache.layer;
+package org.geowebcache.grid;
 
 import java.util.Arrays;
 
 import junit.framework.TestCase;
 
+import org.geowebcache.grid.GridSet;
+import org.geowebcache.grid.GridCalculator;
+import org.geowebcache.layer.BadTileException;
+import org.geowebcache.layer.SRS;
 import org.geowebcache.util.wms.BBOX;
 
 public class GridCalculatorTest extends TestCase {
@@ -16,7 +20,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(0, 0, 180, 90);
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
         
-        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridSet grid = new GridSet(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
 
         int[][] solution = { { 1, 0, 1, 0 }, { 2, 1, 3, 1 }, { 4, 2, 7, 3 },
@@ -37,7 +41,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(0, 0, 180, 90);
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
         
-        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridSet grid = new GridSet(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
         
         int[][] solution = { { 1, 0, 1, 0 }, { 2, 1, 3, 1 }, { 4, 2, 7, 3 },
@@ -59,7 +63,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(-10.0, -10.0, 10.0, 10.0);
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
 
-        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridSet grid = new GridSet(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
 
         int[][] solution = { { 0, 0, 1, 0 }, { 1, 0, 2, 1 }, { 3, 1, 4, 2 },
@@ -81,7 +85,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(175.0, 87.0, 180.0, 90.0);
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
         
-        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridSet grid = new GridSet(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
 
         int[][] solution = { { 1, 0, 1, 0 }, { 3, 1, 3, 1 }, { 7, 3, 7, 3 },
@@ -105,7 +109,7 @@ public class GridCalculatorTest extends TestCase {
         		-20037508.34, -20037508.34, 
         		20037508.34, 20037508.34);
         
-        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridSet grid = new GridSet(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
         
         int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 2, 2, 3, 3 },
@@ -129,7 +133,7 @@ public class GridCalculatorTest extends TestCase {
         		-20037508.34, -20037508.34, 
         		20037508.34, 20037508.34);
         
-        Grid grid = new Grid(SRS.getEPSG900913(), bbox, gridBase, null);
+        GridSet grid = new GridSet(SRS.getEPSG900913(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
         
         int[][] solution = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 2, 2, 3, 3 },
@@ -154,7 +158,7 @@ public class GridCalculatorTest extends TestCase {
         		-20037508.34, -20037508.34, 
         		20037508.34, 20037508.34);
         
-        Grid grid = new Grid(SRS.getEPSG900913(), bbox, gridBase, null);
+        GridSet grid = new GridSet(SRS.getEPSG900913(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
         
         int[][] solution = { { 0, 0, 0, 0 }, { 0, 0, 1, 1 }, { 1, 1, 2, 2 },
@@ -177,7 +181,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(-124.73, 24.96, -66.97, 49.37);
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
 
-        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridSet grid = new GridSet(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
         
         int[] gridLoc = gridCalc.getZoomedOutGridLoc();
@@ -189,7 +193,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(-124.73, 24.96, -66.97, 49.37);
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
         
-        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridSet grid = new GridSet(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
         
         int[] gridLoc1 = {1, 1, 1};
@@ -215,7 +219,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(-124.731422, 24.955967, -66.969849, 49.371735);
         BBOX gridBase = new BBOX(-180, -90, 180, 90);
         
-        Grid grid = new Grid(SRS.getEPSG4326(), bbox, gridBase, null);
+        GridSet grid = new GridSet(SRS.getEPSG4326(), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
         
         int[][] solution = { { 0, 0, 0, 0 }, { 0, 1, 1, 1 }, { 1, 2, 2, 3 },
@@ -275,7 +279,7 @@ public class GridCalculatorTest extends TestCase {
                 4936753.265000001);
 
         // Test the basic algorithm for calculating appropriate resolutions
-        Grid grid = new Grid(SRS.getSRS(26713), bbox, gridBase, null);
+        GridSet grid = new GridSet(SRS.getSRS(26713), bbox, gridBase, null);
         GridCalculator gridCalc = grid.getGridCalculator();
         assertTrue(Math.abs(gridCalc.getResolutions()[0] - 94.9270) / 94.9270 < 0.01);
 

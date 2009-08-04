@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorKMLTile;
-import org.geowebcache.layer.Grid;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -81,7 +81,7 @@ public class KMLSiteMap {
             // May have to initialize
             tl.isInitialized();
             
-            Hashtable<SRS,Grid> grids = tl.getGrids();
+            Hashtable<SRS,GridSet> grids = tl.getGrids();
             List<MimeType> mimeTypes = tl.getMimeTypes();
             
             if( grids != null && grids.containsKey(SRS.getEPSG4326())

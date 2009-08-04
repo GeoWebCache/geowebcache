@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.layer.Grid;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -208,10 +208,10 @@ public class WMSGetCapabilities {
         Iterator<TileLayer> layerIter = tld.getLayers().values().iterator();
         while(layerIter.hasNext()) {
             TileLayer layer = layerIter.next();
-            Iterator<Grid> gridIter = layer.getGrids().values().iterator();
+            Iterator<GridSet> gridIter = layer.getGrids().values().iterator();
 
             while(gridIter.hasNext()) {
-                Grid grid = gridIter.next();
+                GridSet grid = gridIter.next();
                 
                 Iterator<MimeType> mimeIter = null;
                 
@@ -236,7 +236,7 @@ public class WMSGetCapabilities {
         str.append("  </VendorSpecificCapabilities>\n");   
     }
     
-    private void capabilityVendorSpecificTileset(StringBuilder str, TileLayer layer, Grid grid, String formatStr) 
+    private void capabilityVendorSpecificTileset(StringBuilder str, TileLayer layer, GridSet grid, String formatStr) 
     throws GeoWebCacheException {
         String srsStr = grid.getSRS().toString();
         StringBuilder resolutionsStr = new StringBuilder();
@@ -298,9 +298,9 @@ public class WMSGetCapabilities {
             String[] bs = boundsPrep(layer.getZoomedOutBbox(SRS.getEPSG4326()));
             str.append("      <LatLonBoundingBox minx=\""+bs[0]+"\" miny=\""+bs[1]+"\" maxx=\""+bs[2]+"\" maxy=\""+bs[3]+"\"/>\n");    
         }
-        Iterator<Grid> gridIter = layer.getGrids().values().iterator();
+        Iterator<GridSet> gridIter = layer.getGrids().values().iterator();
         while(gridIter.hasNext()) {
-            Grid grid = gridIter.next();
+            GridSet grid = gridIter.next();
             String[] bs = boundsPrep(layer.getZoomedOutBbox(grid.getSRS()));
             str.append("      <BoundingBox SRS=\"" + grid.getSRS().toString() +"\" minx=\""+bs[0]+"\" miny=\""+bs[1]+"\" maxx=\""+bs[2]+"\" maxy=\""+bs[3]+"\"/>\n");    
         }

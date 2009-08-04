@@ -14,15 +14,17 @@
  * 
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
-package org.geowebcache.layer;
+package org.geowebcache.grid;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.layer.BadTileException;
+import org.geowebcache.layer.OutOfBoundsException;
 import org.geowebcache.util.wms.BBOX;
 
 public class GridCalculator {
-    private static Log log = LogFactory.getLog(org.geowebcache.layer.GridCalculator.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.grid.GridCalculator.class);
 
     // We may want to change this later
     public static final int TILEPIXELS = 256;
@@ -31,7 +33,7 @@ public class GridCalculator {
     public static final double RESOLUTION_TOLERANCE = 0.05;
     
     //private BBOX gridBounds = null;
-    private Grid grid;
+    private GridSet grid;
     
     // The following are created to save memory. 
     // Note that they can be modified by external code -> not 100% safe!
@@ -61,7 +63,7 @@ public class GridCalculator {
     
     private int[][] boundsGridLevels = null;
 
-    public GridCalculator(Grid grid) throws GeoWebCacheException {
+    public GridCalculator(GridSet grid) throws GeoWebCacheException {
 
         this.grid = grid;
         
@@ -84,7 +86,7 @@ public class GridCalculator {
         // Figure out the rest
         determineGrid();
         
-        boundsGridLevels = calculateGridBounds(grid.dataBounds);
+        boundsGridLevels = calculateGridBounds(grid.getDataBounds());
     }
     
     private void determineGrid() throws GeoWebCacheException {

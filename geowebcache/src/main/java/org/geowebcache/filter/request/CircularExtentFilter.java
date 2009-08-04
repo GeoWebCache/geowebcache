@@ -18,7 +18,7 @@ package org.geowebcache.filter.request;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.layer.Grid;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 
@@ -40,7 +40,7 @@ public class CircularExtentFilter extends RequestFilter {
     public void apply(ConveyorTile convTile) throws RequestFilterException {
         TileLayer tl = convTile.getLayer();
         SRS srs = convTile.getSRS(); 
-        Grid grid = tl.getGrid(srs);
+        GridSet grid = tl.getGrid(srs);
         int z = convTile.getTileIndex()[2];
         int[] gridBounds = null;
         

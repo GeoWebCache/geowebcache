@@ -31,6 +31,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.filter.request.RequestFilterException;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
@@ -45,7 +46,7 @@ public abstract class TileLayer {
     
     protected List<FormatModifier> formatModifiers;
 
-    protected Hashtable<SRS,Grid> grids;
+    protected Hashtable<SRS,GridSet> grids;
     
     protected List<RequestFilter> requestFilters;
     
@@ -76,7 +77,7 @@ public abstract class TileLayer {
      * @param grid
      */
 
-    public void addGrid(SRS srs,Grid grid) {
+    public void addGrid(SRS srs,GridSet grid) {
         this.grids.put(srs,grid);
     }
 
@@ -85,7 +86,7 @@ public abstract class TileLayer {
      * 
      * @return
      */
-    public Hashtable<SRS,Grid> getGrids() {
+    public Hashtable<SRS,GridSet> getGrids() {
         return this.grids;
     }
 
@@ -164,9 +165,9 @@ public abstract class TileLayer {
                     + reqBounds.getReadableString() + " is not sane";
         }
 
-        if(! grids.get(srs).dataBounds.contains(reqBounds)) {
+        if(! grids.get(srs).getDataBounds().contains(reqBounds)) {
             return "The layers grid box " 
-                + grids.get(srs).dataBounds.getReadableString()
+                + grids.get(srs).getDataBounds().getReadableString()
                 + " does not cover the requested bounding box "
                 + reqBounds.getReadableString();
         }
@@ -238,7 +239,7 @@ public abstract class TileLayer {
     //}
 
     
-    public Grid getGrid(SRS srs) {
+    public GridSet getGrid(SRS srs) {
         return grids.get(srs);
     }
     //public BBOX getBounds(int srsIdx) {
@@ -473,9 +474,9 @@ public abstract class TileLayer {
         }
 
         if (otherLayer.grids != null && otherLayer.grids.size() > 0) {
-            Iterator<Entry<SRS, Grid>> iter = otherLayer.grids.entrySet().iterator();
+            Iterator<Entry<SRS, GridSet>> iter = otherLayer.grids.entrySet().iterator();
             while (iter.hasNext()) {
-                Entry<SRS, Grid> entry = iter.next();
+                Entry<SRS, GridSet> entry = iter.next();
                 this.grids.put(entry.getKey(), entry.getValue());
             }
         }

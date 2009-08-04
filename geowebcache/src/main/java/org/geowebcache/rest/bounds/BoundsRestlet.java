@@ -26,7 +26,7 @@ import java.net.URLDecoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.layer.Grid;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -128,7 +128,7 @@ public class BoundsRestlet extends GWCRestlet {
             throw new RestletException(e.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
         }
         
-        Grid grid = tl.getGrid(srs);
+        GridSet grid = tl.getGrid(srs);
         
         if(grid == null) {
             throw new RestletException(layerName + " does not support " + srsStr, Status.CLIENT_ERROR_NOT_FOUND);

@@ -51,7 +51,7 @@ import org.geowebcache.filter.parameters.RegexParameterFilter;
 import org.geowebcache.filter.request.CircularExtentFilter;
 import org.geowebcache.filter.request.FileRasterFilter;
 import org.geowebcache.filter.request.WMSRasterFilter;
-import org.geowebcache.layer.Grid;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
@@ -233,8 +233,8 @@ public class XMLConfiguration implements Configuration {
         
         xs.alias("layers", List.class);
         xs.alias("wmsLayer", WMSLayer.class);
-        xs.alias("grids", new ArrayList<Grid>().getClass());
-        xs.alias("grid", Grid.class);
+        xs.alias("grids", new ArrayList<GridSet>().getClass());
+        xs.alias("grid", GridSet.class);
         xs.alias("mimeFormats", new ArrayList<String>().getClass());
         xs.alias("formatModifiers", new ArrayList<FormatModifier>().getClass());
         xs.alias("srs", org.geowebcache.layer.SRS.class);        

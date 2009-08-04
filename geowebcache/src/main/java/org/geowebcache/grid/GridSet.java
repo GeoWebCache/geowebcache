@@ -14,23 +14,24 @@
  * 
  * @author Marius Suta, The Open Planning Project, Copyright 2008
  */
-package org.geowebcache.layer;
+package org.geowebcache.grid;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.layer.SRS;
 import org.geowebcache.util.wms.BBOX;
 
 /**
  * Grid Class - Each TileLayer keeps a list of Grid Objects
  */
 
-public class Grid {
-    private static Log log = LogFactory.getLog(org.geowebcache.layer.Grid.class);
+public class GridSet {
+    private static Log log = LogFactory.getLog(org.geowebcache.grid.GridSet.class);
 
     private SRS srs = null;
     
-    protected BBOX dataBounds = null;
+    private BBOX dataBounds = null;
     
     protected BBOX gridBounds = null;
     
@@ -44,9 +45,9 @@ public class Grid {
     
     private volatile transient GridCalculator gridCalculator;
     
-    public Grid(SRS srs, BBOX bounds, BBOX gridBounds, double[] resolutions) {
+    public GridSet(SRS srs, BBOX bounds, BBOX gridBounds, double[] resolutions) {
         this.srs = srs;
-        this.dataBounds = bounds;
+        this.setDataBounds(bounds);
         this.gridBounds = gridBounds;
         this.resolutions = resolutions;
     }
@@ -56,14 +57,14 @@ public class Grid {
      * @param bounds - BBOX with bounds
      */
     public void setBounds(BBOX bounds) {
-        this.dataBounds = bounds;
+        this.setDataBounds(bounds);
     }
     /**
      * method will set the bounds of the layer for this grid from a String
      * @param bounds - String containing bounds
      */
     public void setBounds(String bounds) {
-        this.dataBounds = new BBOX(bounds);
+        this.setDataBounds(new BBOX(bounds));
     }
     /**
      * method will set the grid bounds (world) of the layer for this grid from a BBOX 
@@ -99,7 +100,7 @@ public class Grid {
      * @return
      */
     public BBOX getBounds() {
-        return this.dataBounds;
+        return this.getDataBounds();
     }
     /**
      * method returns the grid bounds of the layer for this grid
@@ -163,5 +164,13 @@ public class Grid {
         
         GridCalculator gridCalc = new GridCalculator(this);
         return gridCalc;
+    }
+
+    public void setDataBounds(BBOX dataBounds) {
+        this.dataBounds = dataBounds;
+    }
+
+    public BBOX getDataBounds() {
+        return dataBounds;
     }
 }

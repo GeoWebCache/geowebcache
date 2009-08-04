@@ -24,8 +24,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.layer.BadTileException;
-import org.geowebcache.layer.Grid;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
@@ -49,8 +49,8 @@ public class KMLDebugGridLayer extends TileLayer {
     private static KMLDebugGridLayer instance;
 
     private KMLDebugGridLayer() {
-        super.grids = new Hashtable<SRS,Grid>();
-        grids.put(SRS.getEPSG4326(), new Grid(SRS.getEPSG4326(),BBOX.WORLD4326, BBOX.WORLD4326, null));
+        super.grids = new Hashtable<SRS,GridSet>();
+        grids.put(SRS.getEPSG4326(), new GridSet(SRS.getEPSG4326(),BBOX.WORLD4326, BBOX.WORLD4326, null));
     }
     
     synchronized static public KMLDebugGridLayer getInstance() {

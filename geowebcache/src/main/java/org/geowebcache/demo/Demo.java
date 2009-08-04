@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.layer.Grid;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -180,7 +180,7 @@ public class Demo {
         //String mime = MimeType.createFromFormat(formatStr).g;
         //int srsIdx = layer.getSRSIndex(SRS.getSRS(srsStr));
         
-        Grid grid = layer.getGrid(srs);
+        GridSet grid = layer.getGrid(srs);
         BBOX bbox = grid.getGridBounds();
         BBOX zoomBounds = grid.getBounds();
         //String res = "resolutions: "+ Arrays.toString(grid.getResolutions()) + ",\n";

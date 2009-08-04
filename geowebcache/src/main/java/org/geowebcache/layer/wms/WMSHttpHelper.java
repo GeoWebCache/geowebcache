@@ -27,8 +27,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.layer.Grid;
-import org.geowebcache.layer.GridCalculator;
+import org.geowebcache.grid.GridSet;
+import org.geowebcache.grid.GridCalculator;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.service.ServiceException;
@@ -82,7 +82,7 @@ public class WMSHttpHelper {
         strBuilder.append("&WIDTH=").append(GridCalculator.TILEPIXELS);
         strBuilder.append("&TILED=").append(requestTiled);
         
-        Grid grid = layer.getGrid(tile.getSRS());
+        GridSet grid = layer.getGrid(tile.getSRS());
         BBOX bbox = grid.getGridCalculator().bboxFromGridLocation(tile.getTileIndex());
         
         strBuilder.append("&BBOX=").append(bbox);

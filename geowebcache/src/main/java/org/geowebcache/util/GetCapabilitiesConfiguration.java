@@ -33,8 +33,8 @@ import org.geotools.data.ows.WMSCapabilities;
 import org.geotools.data.wms.WebMapServer;
 import org.geotools.ows.ServiceException;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.layer.Grid;
-import org.geowebcache.layer.GridCalculator;
+import org.geowebcache.grid.GridSet;
+import org.geowebcache.grid.GridCalculator;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -212,10 +212,10 @@ public class GetCapabilitiesConfiguration implements Configuration {
             BBOX bounds4326, BBOX bounds900913, String stylesStr, boolean queryable)
             throws GeoWebCacheException {
         
-        Hashtable<SRS,Grid> grids = new Hashtable<SRS,Grid>(2);
-        grids.put(SRS.getEPSG4326(), new Grid(SRS.getEPSG4326(), bounds4326, 
+        Hashtable<SRS,GridSet> grids = new Hashtable<SRS,GridSet>(2);
+        grids.put(SRS.getEPSG4326(), new GridSet(SRS.getEPSG4326(), bounds4326, 
                 BBOX.WORLD4326, GridCalculator.get4326Resolutions()));
-        grids.put(SRS.getEPSG900913(), new Grid(SRS.getEPSG900913(), bounds900913,
+        grids.put(SRS.getEPSG900913(), new GridSet(SRS.getEPSG900913(), bounds900913,
                 BBOX.WORLD900913, GridCalculator.get900913Resolutions()));
         
         List<String> mimeFormats = null;

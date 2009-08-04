@@ -25,7 +25,7 @@ import java.util.Map.Entry;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.demo.Demo;
-import org.geowebcache.layer.Grid;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -206,13 +206,13 @@ public class SeedFormRestlet extends GWCRestlet {
     }
     
     private void makeBboxHints(StringBuilder doc, TileLayer tl) {
-        Iterator<Entry<SRS, Grid>> iter = tl.getGrids().entrySet().iterator();
+        Iterator<Entry<SRS, GridSet>> iter = tl.getGrids().entrySet().iterator();
         
         //int minStart = Integer.MAX_VALUE;
         //int maxStop = Integer.MIN_VALUE;
         
         while(iter.hasNext()) {
-            Entry<SRS, Grid> entry = iter.next();
+            Entry<SRS, GridSet> entry = iter.next();
             doc.append("<li>"+entry.getKey().toString()
                     +":   "+entry.getValue().getBounds().toString()+"</li>\n");
         }
@@ -242,13 +242,13 @@ public class SeedFormRestlet extends GWCRestlet {
     private void makeZoomPullDown(StringBuilder doc, boolean isStart, TileLayer tl) {
         Map<String,String> keysValues = new TreeMap<String,String>();
         
-        Iterator<Entry<SRS, Grid>> iter = tl.getGrids().entrySet().iterator();
+        Iterator<Entry<SRS, GridSet>> iter = tl.getGrids().entrySet().iterator();
         
         int minStart = Integer.MAX_VALUE;
         int maxStop = Integer.MIN_VALUE;
         
         while(iter.hasNext()) {
-            Entry<SRS, Grid> entry = iter.next();
+            Entry<SRS, GridSet> entry = iter.next();
             
             // This is a bit of an issue...
             // TODO shouldn't have to initialize grid calc here
@@ -313,10 +313,10 @@ public class SeedFormRestlet extends GWCRestlet {
         doc.append("<tr><td>SRS:</td><td>\n");
         Map<String,String> keysValues = new TreeMap<String,String>();
         
-        Iterator<Entry<SRS, Grid>> iter = tl.getGrids().entrySet().iterator();
+        Iterator<Entry<SRS, GridSet>> iter = tl.getGrids().entrySet().iterator();
         
         while(iter.hasNext()) {
-            Entry<SRS, Grid> entry = iter.next();
+            Entry<SRS, GridSet> entry = iter.next();
             keysValues.put(entry.getKey().toString(), Integer.toString(entry.getKey().getNumber()));
         }
         

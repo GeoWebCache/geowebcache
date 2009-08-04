@@ -28,7 +28,7 @@ import javax.imageio.ImageIO;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.layer.Grid;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -53,7 +53,7 @@ public class WMSRasterFilter extends RasterFilter {
         
         tlayer.isInitialized();
         
-        Grid grid = layer.getGrid(srs);
+        GridSet grid = layer.getGrid(srs);
         
         int[] widthHeight = calculateWidthHeight(grid, z);
         
@@ -110,7 +110,7 @@ public class WMSRasterFilter extends RasterFilter {
      * @return
      */
     protected String wmsUrl(WMSLayer layer, SRS srs, int z, int[] widthHeight) throws GeoWebCacheException {
-        Grid grid = layer.getGrid(srs);
+        GridSet grid = layer.getGrid(srs);
         
         BBOX bbox = calculateBbox(grid, z);
         

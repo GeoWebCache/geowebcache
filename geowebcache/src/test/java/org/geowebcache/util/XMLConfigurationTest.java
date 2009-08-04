@@ -8,7 +8,7 @@ import junit.framework.TestCase;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.request.RequestFilter;
-import org.geowebcache.layer.Grid;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.FormatModifier;
@@ -28,7 +28,7 @@ public class XMLConfigurationTest extends TestCase {
         TileLayer layer = findLayer(layers, "topp:states");
         assertTrue(layer != null);
         TileLayer layer2 = findLayer(layers, "topp:states2");
-        Grid grid = layer2.getGrid(SRS.getSRS(2163));
+        GridSet grid = layer2.getGrid(SRS.getSRS(2163));
         assertTrue(layer2 != null);
         assertTrue(grid != null);
     }
@@ -39,7 +39,7 @@ public class XMLConfigurationTest extends TestCase {
         assertTrue(layer != null);
         //assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
         TileLayer layer2 = findLayer(layers, "topp:states2");
-        Grid grid = layer2.getGrid(SRS.getSRS(2163));
+        GridSet grid = layer2.getGrid(SRS.getSRS(2163));
         assertTrue(layer2 != null);
         assertTrue(grid != null);
     }
@@ -50,7 +50,7 @@ public class XMLConfigurationTest extends TestCase {
         assertTrue(layer != null);
         //assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
         TileLayer layer2 = findLayer(layers, "topp:states2");
-        Grid grid = layer2.getGrid(SRS.getSRS(2163));
+        GridSet grid = layer2.getGrid(SRS.getSRS(2163));
         assertTrue(layer2 != null);
         assertTrue(grid != null);
         
@@ -67,7 +67,7 @@ public class XMLConfigurationTest extends TestCase {
         assertTrue(layer != null);
         //assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
         TileLayer layer2 = findLayer(layers, "topp:states2");
-        Grid grid = layer2.getGrid(SRS.getSRS(2163));
+        GridSet grid = layer2.getGrid(SRS.getSRS(2163));
         assertTrue(layer2 != null);
         assertTrue(grid != null);
         

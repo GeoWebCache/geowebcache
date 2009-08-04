@@ -39,8 +39,8 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.request.RequestFilter;
-import org.geowebcache.layer.Grid;
-import org.geowebcache.layer.GridCalculator;
+import org.geowebcache.grid.GridSet;
+import org.geowebcache.grid.GridCalculator;
 import org.geowebcache.layer.GridLocObj;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
@@ -142,7 +142,7 @@ public class WMSLayer extends TileLayer {
      */
     public WMSLayer(String layerName,
             String[] wmsURL, String wmsStyles, String wmsLayers, 
-            List<String> mimeFormats, Hashtable<SRS,Grid> grids, 
+            List<String> mimeFormats, Hashtable<SRS,GridSet> grids, 
             int[] metaWidthHeight, String vendorParams, boolean queryable) {
      
         name = layerName;
@@ -209,13 +209,13 @@ public class WMSLayer extends TileLayer {
         }
         
         if(this.grids == null) {
-            grids = new Hashtable<SRS,Grid>();
+            grids = new Hashtable<SRS,GridSet>();
             
         }
         
         if(this.grids.size() == 0) {
-            Grid epsg4326Grid = new Grid(SRS.getEPSG4326(), BBOX.WORLD4326, BBOX.WORLD4326, null);
-            Grid epsg900913Grid = new Grid(SRS.getEPSG900913(), BBOX.WORLD900913, BBOX.WORLD900913, null);
+            GridSet epsg4326Grid = new GridSet(SRS.getEPSG4326(), BBOX.WORLD4326, BBOX.WORLD4326, null);
+            GridSet epsg900913Grid = new GridSet(SRS.getEPSG900913(), BBOX.WORLD900913, BBOX.WORLD900913, null);
             grids.put(SRS.getEPSG4326(), epsg4326Grid);
             grids.put(SRS.getEPSG900913(), epsg900913Grid);
         }
@@ -781,7 +781,7 @@ public class WMSLayer extends TileLayer {
     public int[][] getCoveredGridLevels(SRS srs, BBOX bounds)
     throws GeoWebCacheException {
         BBOX adjustedBounds = bounds;
-        Grid grid = grids.get(srs);
+        GridSet grid = grids.get(srs);
         
         if (! grid.getBounds().contains(bounds) ) {
             adjustedBounds = BBOX.intersection(grid.getBounds(), bounds);

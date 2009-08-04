@@ -40,7 +40,7 @@ import javax.media.jai.operator.CropDescriptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.layer.GridCalculator;
+import org.geowebcache.grid.GridCalculator;
 import org.geowebcache.layer.MetaTile;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.mime.FormatModifier;
