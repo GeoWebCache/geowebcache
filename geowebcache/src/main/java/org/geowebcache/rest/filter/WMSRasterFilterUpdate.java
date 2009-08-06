@@ -50,9 +50,7 @@ public class WMSRasterFilterUpdate extends XmlFilterUpdate {
 
         // Run the actual update
         try {
-            for (int z = zoomStart; z <= zoomStop; z++) {
-                wmsFilter.setMatrix(tl, srs, z, true);
-            }
+            wmsFilter.update(tl, srs, zoomStart, zoomStop);
         } catch (GeoWebCacheException e) {
             throw new RestletException("Error updating " + wmsFilter.getName()
                     + ": " + e.getMessage(), Status.SERVER_ERROR_INTERNAL);

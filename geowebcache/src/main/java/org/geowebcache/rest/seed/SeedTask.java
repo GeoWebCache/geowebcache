@@ -18,11 +18,14 @@
 package org.geowebcache.rest.seed;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeException;
@@ -133,11 +136,12 @@ public class SeedTask extends GWCTask {
                     // Question is, how resilient should we be ?
                     try {
                         tl.seedTile(tile, tryCache);
-                    //} catch (GeoWebCacheException e) {
-                    //    e.printStackTrace();
                     } catch (IOException ioe) {
-                        //e.printStackTrace();
+                        log.error("Seed failed at " + tile.toString());
                         throw new GeoWebCacheException(ioe.getMessage());
+                    } catch (GeoWebCacheException gwce) {
+                        log.error("Seed failed at " + tile.toString());
+                        throw gwce;
                     }
 
                     int countX;
@@ -186,6 +190,11 @@ public class SeedTask extends GWCTask {
             log.info("Thread " + threadOffset + " completed (re)seeding layer "
                     + tl.getName() + " after " + super.tilesDone
                     + " tiles, of an estimated " + super.tilesTotal);
+        }
+        
+        // The first thread updates the filters, if any
+        if(threadOffset == 0) {
+            runFilterUpdates();
         }
     }
 
@@ -249,5 +258,27 @@ public class SeedTask extends GWCTask {
         long timeTotal = Math.round((double) timeSpent * ((double) tilesTotal / (double) tilesCount));
         
         timeRemaining = (int) (timeTotal - timeSpent);
+    }
+    
+    /**
+     * Updates any request filters
+     */
+    private void runFilterUpdates() {
+        // We will assume that all filters that can be updated should be updated
+        if(req.getFilterUpdate() == null || req.getFilterUpdate()) {
+            
+            List<RequestFilter> reqFilters = tl.getRequestFilters();
+            if(reqFilters != null && ! reqFilters.isEmpty()) {
+                Iterator<RequestFilter> iter = reqFilters.iterator();
+                while(iter.hasNext()) {
+                    RequestFilter reqFilter = iter.next();
+                    if(reqFilter.update(tl, req.getSRS())) {
+                        log.info("Updated request filter " + reqFilter.getName());
+                    } else {
+                        log.debug("Request filter " + reqFilter.getName() + " returned false on update.");
+                    }
+                }
+            }
+        }
     }
 }

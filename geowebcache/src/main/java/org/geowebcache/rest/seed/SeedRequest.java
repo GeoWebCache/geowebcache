@@ -39,6 +39,8 @@ public class SeedRequest {
     
     private String parameters = null;
     
+    private Boolean filterUpdate = null;
+    
     public SeedRequest() {
         //do nothing, i guess
     }
@@ -142,6 +144,17 @@ public class SeedRequest {
      */
     public String getParameters() {
         return parameters;
+    }
+
+    /**
+     * 
+     * Whether any request filters should be updated after this
+     * seed request completes. 
+     * 
+     * @return
+     */
+    public Boolean getFilterUpdate() {
+        return filterUpdate;
     }
 
 }

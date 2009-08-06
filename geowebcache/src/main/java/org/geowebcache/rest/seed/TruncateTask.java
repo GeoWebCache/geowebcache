@@ -17,10 +17,13 @@
 package org.geowebcache.rest.seed;
 
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.GridCalculator;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
@@ -53,6 +56,8 @@ public class TruncateTask extends GWCTask {
     public void doAction() throws GeoWebCacheException {
 
         tl.isInitialized();
+        
+        runFilterUpdates();
 
         int[][] bounds = null;
 
@@ -79,10 +84,32 @@ public class TruncateTask extends GWCTask {
         
         try {
             storageBroker.delete(trObj);
-        } catch (StorageException e) {
-            e.printStackTrace();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+        }
+        
+        log.info("Completed truncate request.");
+    }
+    
+    /**
+     * Updates any request filters
+     */
+    private void runFilterUpdates() {
+        // We will assume that all filters that can be updated should be updated
+        
+        if(req.getFilterUpdate() == null || req.getFilterUpdate()) {
+            List<RequestFilter> reqFilters = tl.getRequestFilters();
+            if(reqFilters != null && ! reqFilters.isEmpty()) {
+                Iterator<RequestFilter> iter = reqFilters.iterator();
+                while(iter.hasNext()) {
+                    RequestFilter reqFilter = iter.next();
+                    if(reqFilter.update(tl, req.getSRS())) {
+                        log.info("Updated request filter " + reqFilter.getName());
+                    } else {
+                        log.debug("Request filter " + reqFilter.getName() + " returned false on update.");
+                    }
+                }
+            }
         }
     }
 

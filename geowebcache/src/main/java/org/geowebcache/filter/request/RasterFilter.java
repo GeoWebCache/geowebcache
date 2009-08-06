@@ -18,7 +18,6 @@
 package org.geowebcache.filter.request;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Iterator;

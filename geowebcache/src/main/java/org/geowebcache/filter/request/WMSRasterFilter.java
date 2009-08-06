@@ -140,18 +140,32 @@ public class WMSRasterFilter extends RasterFilter {
         return str.toString();
     }
 
-    public void update(byte[] filterData, TileLayer layer) throws GeoWebCacheException {
-       
-        
-    }
-
     public void update(byte[] filterData, TileLayer layer, SRS srs, int z)
-            throws GeoWebCacheException {
+    throws GeoWebCacheException {
         throw new GeoWebCacheException("update(byte[] filterData, TileLayer layer, SRS srs, int z) is not appropriate for WMSRasterFilters");
     }
 
-    public void update(TileLayer layer, SRS srs, int z)
-            throws GeoWebCacheException {
-        throw new GeoWebCacheException("TileLayer layer, SRS srs, int z) is not appropriate for WMSRasterFilters");
+
+    public boolean update(TileLayer layer, SRS srs) {
+        for (int z = super.zoomStart; z <= super.zoomStop; z++) {
+            try {
+                this.setMatrix(layer, srs, z, true);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        }
+        return true;
+    }
+
+
+    public void update(TileLayer layer, SRS srs, int zStart, int zStop)
+    throws GeoWebCacheException {
+        for (int z = zStart; z <= zStop; z++) {
+            try {
+                this.setMatrix(layer, srs, z, true);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        }
     }
 }

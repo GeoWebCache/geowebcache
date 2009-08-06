@@ -90,8 +90,14 @@ public class FileRasterFilter extends RasterFilter {
     }
 
     
-    public void update(TileLayer layer, SRS srs, int z)
+    public void update(TileLayer layer, SRS srs, int zoomStart, int zoomStop)
             throws GeoWebCacheException {
-        throw new GeoWebCacheException("TileLayer layer, SRS srs, int z) is not appropriate for FileRasterFilters");
+        throw new GeoWebCacheException(
+                "TileLayer layer, SRS srs, int zoomStart, int zoomStop) is not "
+                + "appropriate for FileRasterFilters");
+    }
+
+    public boolean update(TileLayer layer, SRS srs) {
+        return false;
     }
 }

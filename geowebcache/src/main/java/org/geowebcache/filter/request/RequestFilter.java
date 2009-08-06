@@ -49,12 +49,15 @@ public abstract class RequestFilter {
      * Optional initialization 
      */
     public abstract void initialize(TileLayer layer) throws GeoWebCacheException;
-
+    
     
     /**
-     * Optional updates, filters should implement at least one
+     * Optional updates, filters should implement at least one. The first two are used for
+     * filters that can update themselves (eg. WMSRasterFilter), the last one for those that need input.
      */
-    public abstract void update(byte[] filterData, TileLayer layer, SRS srs, int z) throws GeoWebCacheException;
+    public abstract boolean update(TileLayer layer, SRS srs);
+
+    public abstract void update(TileLayer layer, SRS srs, int zoomStart, int zoomStop) throws GeoWebCacheException;
     
-    public abstract void update(TileLayer layer, SRS srs, int z) throws GeoWebCacheException;
+    public abstract void update(byte[] filterData, TileLayer layer, SRS srs, int z) throws GeoWebCacheException;
 }
