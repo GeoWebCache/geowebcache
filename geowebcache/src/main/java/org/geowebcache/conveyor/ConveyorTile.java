@@ -159,12 +159,28 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     }
     
     public String toString() {
-        return "ConveyorTile {"
-            +tileIndex[0]+","
-            +tileIndex[1]+","
-            +tileIndex[2]+"} " 
-            + this.layerId + " " 
-            + srs.toString() + " " 
-            + this.mimeType.getFormat();
+        StringBuilder str = new StringBuilder();
+        str.append("ConveyorTile ) ");
+        if(tileIndex != null && tileIndex.length == 3) {
+            str.append( "{"
+                +tileIndex[0]+","
+                +tileIndex[1]+","
+                +tileIndex[2]
+                           +"} ");
+        }
+        
+        if(layerId != null) {
+            str.append(this.layerId).append(" ");
+        }
+        
+        if(this.srs != null) {
+            str.append(srs.toString()).append(" ");
+        }
+        
+        if(this.mimeType != null) {
+            str.append(this.mimeType.getFormat());
+        }
+        
+        return str.toString();
     }
 }
