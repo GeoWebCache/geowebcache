@@ -382,20 +382,25 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private static void handleFrontPage(HttpServletRequest request,
             HttpServletResponse response) {
 
-        String url;
+        String baseUrl;
         
         if(request.getRequestURL().toString().endsWith("/")) {
-            url = "./demo";
+            baseUrl = "";
         } else {
             String[] strs = request.getRequestURL().toString().split("/");
-            url = strs[strs.length - 1]+ "/demo";
+            baseUrl = strs[strs.length - 1]+ "/";
         }
         
         String message = "<html><body>\n" + Demo.GWC_HEADER
-                + "<h4>Welcome to GeoWebCache</h4>"
-                + "<a href=\""+url+"\">Dynamic list of layers</a>"
+                + "<h3>Welcome to GeoWebCache version {GWC_VERSION}, built {GWC_BUILD_DATE}</h3>\n"
+                + "<h3>Dynamic demos:</h3>\n"
+                + "<ul><li><a href=\""+baseUrl+ "demo\">Dynamically generated list of layers</a></li></ul>\n"
+                + "<h3>GetCapabilities:</h3>\n"
+                + "<ul><li><a href=\""+baseUrl+"service/wms?service=WMS&version=1.1.1&request=getcapabilities&tiled=true\">WMS 1.1.1 GetCapabilities document</a>" 
+                + "Note that this will only work with clients that are "
+                + "<a href=\"http://wiki.osgeo.org/wiki/WMS_Tiling_Client_Recommendation\">WMS-C capable</a>.\n"
+                + "Omitting tiled=true from the URL will omit the TileSet elements.</li></ul>\n"
                 + "</body></html>\n";
-
         writePage(response, 200, message);
     }
 
