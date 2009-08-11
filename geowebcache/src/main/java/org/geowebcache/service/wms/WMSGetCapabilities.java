@@ -45,9 +45,15 @@ public class WMSGetCapabilities {
     
     private String urlStr;
     
+    private boolean renderTileSets = false;
+    
     protected WMSGetCapabilities(TileLayerDispatcher tld, HttpServletRequest servReq) {
         this.tld = tld;
         urlStr = servReq.getRequestURL().toString() + "?SERVICE=WMS&amp;";
+        String tiledStr = servReq.getParameter("tiled");
+        if(tiledStr != null && tiledStr.equalsIgnoreCase("true")) {
+            renderTileSets = true;
+        }
     }
     
     protected void writeReponse(HttpServletResponse response) {
@@ -163,9 +169,11 @@ public class WMSGetCapabilities {
         str.append("      <Format>text/html</Format>\n");
         str.append("      <Format>application/vnd.ogc.gml</Format>\n");
         str.append("      <DCPType>\n");
-        str.append("        <Get>\n");
-        str.append("          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""+urlStr+"\"/>\n");
-        str.append("        </Get>\n");
+        str.append("        <HTTP>\n");
+        str.append("          <Get>\n");
+        str.append("            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""+urlStr+"\"/>\n");
+        str.append("          </Get>\n");
+        str.append("        </HTTP>\n");
         str.append("      </DCPType>\n");
         str.append("    </GetFeatureInfo>\n");
         
@@ -175,9 +183,11 @@ public class WMSGetCapabilities {
         str.append("    <DescribeLayer>\n");
         str.append("      <Format>application/vnd.ogc.wms_xml</Format>\n");
         str.append("      <DCPType>\n");
-        str.append("        <Get>\n");
-        str.append("          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""+urlStr+"\"/>\n");
-        str.append("        </Get>\n");
+        str.append("        <HTTP>\n");
+        str.append("          <Get>\n");
+        str.append("            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""+urlStr+"\"/>\n");
+        str.append("          </Get>\n");
+        str.append("        </HTTP>\n");
         str.append("      </DCPType>\n");
         str.append("    </DescribeLayer>\n");
     }
@@ -188,9 +198,11 @@ public class WMSGetCapabilities {
         str.append("      <Format>image/jpeg</Format>\n");
         str.append("      <Format>image/gif</Format>\n");
         str.append("      <DCPType>\n");
-        str.append("        <Get>\n");
-        str.append("          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""+urlStr+"\"/>\n");
-        str.append("        </Get>\n");
+        str.append("        <HTTP>\n");
+        str.append("          <Get>\n");
+        str.append("            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""+urlStr+"\"/>\n");
+        str.append("          </Get>\n");
+        str.append("        </HTTP>\n");
         str.append("      </DCPType>\n");
         str.append("    </GetLegendGraphic>\n");
         
@@ -204,6 +216,10 @@ public class WMSGetCapabilities {
     
     
     private void capabilityVendorSpecific(StringBuilder str) {
+        // If tiled=true is omitted we do not include the TileSets
+        if(! renderTileSets)
+            return;
+        
         str.append("  <VendorSpecificCapabilities>\n");
         Iterator<TileLayer> layerIter = tld.getLayers().values().iterator();
         while(layerIter.hasNext()) {
