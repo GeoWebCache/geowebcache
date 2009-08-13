@@ -179,8 +179,22 @@ public class GridSet {
     }
     
     public BBOX getBounds() {
-        // TODO easier said than done?
-        return null;
+        int i;
+        long[] extent = null;
+
+        for (i = (gridLevels.length -1); i > 0; i--) {
+            extent = gridLevels[i].extent;
+
+            if (extent[0] == 1 && extent[1] == 0) {
+                break;
+            }
+        }
+        
+        extent = gridLevels[i].extent;
+        
+        long[] ret = { 0, 0, extent[0] - 1, extent[1] - 1, i};
+
+        return boundsFromRectangle(ret);
     }
     
     public String getName() {

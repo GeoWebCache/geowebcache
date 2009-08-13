@@ -36,7 +36,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     private static Log log = LogFactory.getLog(org.geowebcache.conveyor.ConveyorTile.class);
     
     // Shared request information, this is stored by the cache key
-    protected long[] tileIndex = null;
+    //protected long[] tileIndex = null;
     
     protected String layerId = null;
     //protected SRS srs = null;
@@ -67,6 +67,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         this.gridSetId = gridSetId;
         
         long[] idx = new long[3];
+        
         if(tileIndex != null) {
             idx[0] = tileIndex[0]; idx[1] = tileIndex[1]; idx[2] = tileIndex[2];
         }
@@ -126,7 +127,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     }
     
     public long[] getTileIndex() {
-        return tileIndex;
+        return stObj.getXYZ();
     }
     
     //public void setTileIndex(int[] tileIndex) {

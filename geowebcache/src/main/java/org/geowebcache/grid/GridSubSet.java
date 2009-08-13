@@ -52,9 +52,9 @@ public class GridSubSet {
     }
     
     public void checkCoverage(long[] index) throws OutsideCoverageException {
-        if(index[3] >= firstLevel || 
-                index[3] < gridCoverageLevels.length) {
-            long[] coverage = gridCoverageLevels[(int) index[3]].coverage;
+        if(index[2] >= firstLevel || 
+                index[2] < gridCoverageLevels.length) {
+            long[] coverage = gridCoverageLevels[(int) index[2]].coverage;
             
             if(index[0] >= coverage[0] &&
                     index[0] <= coverage[2]) {
@@ -103,13 +103,15 @@ public class GridSubSet {
         int i;
         long[] cov = null;
         
-        for(i = (gridCoverageLevels.length - 1); i >= 0; i--) {
+        for(i = gridCoverageLevels.length - 1; i > 0; i--) {
             cov = gridCoverageLevels[i].coverage;
             
             if(cov[0] == cov[2] && cov[1] == cov[3]) {
                 break;
             }
         }
+        
+        cov = gridCoverageLevels[i].coverage;
         
         long[] ret = {cov[0],cov[1],cov[2],cov[3], i + firstLevel};
         
