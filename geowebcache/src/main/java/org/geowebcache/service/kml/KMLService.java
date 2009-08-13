@@ -29,8 +29,11 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorKMLTile;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.OutsideCoverageException;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.OutOfBoundsException;
-import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -144,16 +147,14 @@ public class KMLService extends Service {
             throw new ServiceException("Unable to parse KML request : "+ e.getMessage());
         }
         
-        int[] gridLoc = null;
+        long[] gridLoc = null;
         // Do we have a key for the grid location?
         if(parsed[1].length() > 0) {
             gridLoc = KMLService.parseGridLocString(parsed[1]);
         }
         
-        ConveyorKMLTile tile = new ConveyorKMLTile(sb, parsed[0], SRS.getEPSG4326(),
+        ConveyorKMLTile tile = new ConveyorKMLTile(sb, parsed[0], GridSetBroker.WORLD_EPSG4326.getName(),
                 gridLoc, MimeType.createFromExtension(parsed[2]), "", "", request, response);
-        
-        tile.setSRS(SRS.getEPSG4326());
         
         // Sitemap index ? kml/sitemap.xml 
         if(parsed[0].equalsIgnoreCase("sitemap") && parsed[2].equalsIgnoreCase("xml")) {
@@ -204,9 +205,10 @@ public class KMLService extends Service {
             // Generate random tile for debugging
             if(tile.getWrapperMimeType() == null) {
                 tile.setTileLayer(layer);
+                
                 try {
                     layer.getTile(tile);
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 
@@ -225,15 +227,15 @@ public class KMLService extends Service {
         }
         tile.setTileLayer(layer);
         
-        if(tile.getHint() == HINT_SITEMAP_LAYER || tile.getHint() == HINT_SITEMAP_GLOBAL) {
-            KMLSiteMap sm = new KMLSiteMap(tile,tld);
-            try {
-                sm.write();
-            } catch (IOException ioe) {
-                throw new GeoWebCacheException("Unable to write sitemap: " + ioe.getMessage());
-            }
-            return;
-        }
+        //if(tile.getHint() == HINT_SITEMAP_LAYER || tile.getHint() == HINT_SITEMAP_GLOBAL) {
+        //    KMLSiteMap sm = new KMLSiteMap(tile,tld);
+        //    try {
+        //        sm.write();
+        //    } catch (IOException ioe) {
+        //        throw new GeoWebCacheException("Unable to write sitemap: " + ioe.getMessage());
+        //    }
+        //    return;
+        //}
         
         if(tile.getTileIndex() == null) {
             // No tile index -> super overlay
@@ -267,24 +269,30 @@ public class KMLService extends Service {
      * @param tile
      */
     private static void handleSuperOverlay(ConveyorKMLTile tile) throws GeoWebCacheException {
-        SRS srs = SRS.getEPSG4326();
         TileLayer layer = tile.getLayer();
         
+        GridSubSet gridSubSet = tile.getGridSubSet();
+        
         //int srsIdx = layer.getSRSIndex(srs);
-        BBOX bbox = layer.getGrid(srs).getBounds();
+        BBOX bbox = gridSubSet.getCoverageBestFitBounds();
         
         String formatExtension = "."+tile.getMimeType().getFileExtension();
         if(tile.getWrapperMimeType() != null) {
             formatExtension = formatExtension + "." + tile.getWrapperMimeType().getFileExtension();
         }
         
-        int[] gridLoc = layer.getZoomedOutGridLoc(srs);
+        long[] gridRect = gridSubSet.getCoverageBestFit();
         String networkLinks = null;
         
         // Check whether we need two tiles for world bounds or not
-        if(gridLoc[2] < 0) {
-            int[] gridLocWest = {0,0,0};
-            int[] gridLocEast = {1,0,0};
+        if(gridRect[4] > 0 && (gridRect[2] != gridRect[0] || gridRect[3] != gridRect[1])) {
+            throw new GeoWebCacheException(
+                    layer.getName() + " (" + bbox.toString() 
+                    + ") is too big for the sub grid set for " 
+                    + gridSubSet.getName() + ", allow for smaller zoom levels.");
+        } else if(gridRect[0] != gridRect[2]) {
+            long[] gridLocWest = {0,0,0};
+            long[] gridLocEast = {1,0,0};
             
             BBOX bboxWest = new BBOX(
                     bbox.coords[0], bbox.coords[1], 0.0, bbox.coords[3] );
@@ -302,6 +310,8 @@ public class KMLService extends Service {
                     tile.getUrlPrefix() + "/" + gridLocString(gridLocEast) +formatExtension);
             
         } else {
+            long[] gridLoc = {gridRect[0], gridRect[1], gridRect[4]};
+            
             networkLinks = superOverlayNetworLink(
                     layer.getName(), 
                     bbox, 
@@ -344,21 +354,21 @@ public class KMLService extends Service {
         return xml;
     }
 
-    protected static String gridLocString(int[] gridLoc) {
+    protected static String gridLocString(long[] gridLoc) {
         return "x" + gridLoc[0] + "y" + gridLoc[1] + "z" + gridLoc[2];
     }
 
-    protected static int[] parseGridLocString(String key) throws ServiceException {
+    protected static long[] parseGridLocString(String key) throws ServiceException {
         // format should be x<x>y<y>z<z>
 
-        int[] ret = new int[3];
+        long[] ret = new long[3];
         int yloc = key.indexOf("y");
         int zloc = key.indexOf("z");
 
         try {
-            ret[0] = Integer.parseInt(key.substring(1, yloc));
-            ret[1] = Integer.parseInt(key.substring(yloc + 1, zloc));
-            ret[2] = Integer.parseInt(key.substring(zloc + 1, key.length()));
+            ret[0] = Long.parseLong(key.substring(1, yloc));
+            ret[1] = Long.parseLong(key.substring(yloc + 1, zloc));
+            ret[2] = Long.parseLong(key.substring(zloc + 1, key.length()));
         } catch (NumberFormatException nfe) {
             throw new ServiceException("Unable to parse " + key);
         } catch (StringIndexOutOfBoundsException sobe) {
@@ -419,6 +429,8 @@ public class KMLService extends Service {
                     log.error("Out of bounds: " + Arrays.toString(tile.getTileIndex()) 
                             + " should never habe been linked to.");
                     throw oobe;
+                } catch (OutsideCoverageException e) {
+                    throw new OutOfBoundsException(e.getMessage());
                 }
                 tile.setWrapperMimeType(XMLMime.kmz);
             } catch (IOException ioe) {
@@ -463,11 +475,12 @@ public class KMLService extends Service {
         
         TileLayer tileLayer = tile.getLayer();
         
+        GridSubSet gridSubSet = tile.getGridSubSet();
         
-        int[] gridLoc = tile.getTileIndex();
-        SRS srs = SRS.getEPSG4326();
-        BBOX bbox = tileLayer.getBboxForGridLoc(srs, gridLoc);
-
+        long[] gridLoc = tile.getTileIndex();
+        
+        BBOX bbox = gridSubSet.boundsFromIndex(gridLoc);
+        
         String refreshTags = "";
         if(tileLayer instanceof WMSLayer) {
             int refreshInterval = ((WMSLayer) tileLayer).getExpireClients();
@@ -484,15 +497,15 @@ public class KMLService extends Service {
         
         // 1) Header
         boolean setMaxLod = false;
-        if(isRaster && gridLoc[2] < tileLayer.getZoomStop(srs)) {
+        if(isRaster && gridLoc[2] < gridSubSet.getZoomStop()) {
             setMaxLod = true;
         }
         buf.append(createOverlayHeader(bbox, setMaxLod));
 
         buf.append("\n<!-- Network links to subtiles -->\n");
         // 2) Network links, only to tiles within bounds
-        int[][] linkGridLocs = tileLayer.getZoomInGridLoc(srs, gridLoc);
-
+        long[][] linkGridLocs = tileLayer.getZoomedInIndexes(gridSubSet.getName(), gridLoc);
+        
         // 3) Apply secondary filter against linking to empty tiles
         linkGridLocs = KMZHelper.filterGridLocs(tile.getStorageBroker(), tileLayer, tile.getMimeType(), linkGridLocs);
 
@@ -500,8 +513,7 @@ public class KMLService extends Service {
         for (int i = 0; i < 4; i++) {
             // Only add this link if it is within the bounds
             if (linkGridLocs[i][2] > 0) {
-                BBOX linkBbox = tileLayer.getBboxForGridLoc(srs,
-                        linkGridLocs[i]);
+                BBOX linkBbox = gridSubSet.boundsFromIndex(linkGridLocs[i]);
                 
                 String gridLocStr = gridLocString(linkGridLocs[i]);
                                 
@@ -616,7 +628,7 @@ public class KMLService extends Service {
      * @param formatExtension
      * @return
      */
-    private static String createGroundOverLayElement(int[] gridLoc, String urlStr,
+    private static String createGroundOverLayElement(long[] gridLoc, String urlStr,
             BBOX bbox, String formatExtension, String refreshTags) {
         
         String xml = "\n<GroundOverlay>"

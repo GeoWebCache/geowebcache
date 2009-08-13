@@ -24,7 +24,7 @@ import java.util.Arrays;
 
 import junit.framework.TestCase;
 
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
@@ -38,12 +38,12 @@ public class BlobStoreTest extends TestCase {
         
         byte[] bytes = "1 2 3 4 5 6 test".getBytes();
         long[] xyz = {1L,2L,3L};
-        TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, 4326, "image/jpeg", "a=x&b=ø", bytes);
+        TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", "a=x&b=ø", bytes);
         to.setId(11231231);
         
         fbs.put(to);
         
-        TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, 4326, "image/jpeg", "a=x&b=ø");
+        TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", "a=x&b=ø");
         to2.setId(11231231);
         
         byte[] resp = fbs.get(to2);
@@ -128,12 +128,12 @@ public class BlobStoreTest extends TestCase {
         
         byte[] bytes = "1 2 3 4 5 6 test".getBytes();
         long[] xyz = {5L,6L,7L};
-        TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, 4326, "image/jpeg", "a=x&b=ø", bytes);
+        TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", "a=x&b=ø", bytes);
         to.setId(11231231);
         
         fbs.put(to);
         
-        TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, 4326, "image/jpeg", "a=x&b=ø");
+        TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", "a=x&b=ø");
         to2.setId(11231231);
         
         byte[] resp = fbs.get(to2);
@@ -142,10 +142,10 @@ public class BlobStoreTest extends TestCase {
 
         assertTrue(Arrays.equals(resp, bytes));
         
-        TileObject to3 = TileObject.createQueryTileObject("test:123123 112", xyz, 4326, "image/jpeg", "a=x&b=ø");
+        TileObject to3 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", "a=x&b=ø");
         fbs.delete(to3);
         
-        TileObject to4 = TileObject.createQueryTileObject("test:123123 112", xyz, 4326, "image/jpeg", "a=x&b=ø");
+        TileObject to4 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", "a=x&b=ø");
         assertNull(fbs.get(to4));
     }
     
@@ -168,29 +168,29 @@ public class BlobStoreTest extends TestCase {
         
         for(int i = 0; i<tos.length; i++) {
             long[] xyz = {x + i - 1, y, zoomLevel};
-            tos[i] = TileObject.createCompleteTileObject(layerName, xyz, srs.getNumber(), mime.getFormat(), parameters, bytes);
+            tos[i] = TileObject.createCompleteTileObject(layerName, xyz, srs.toString(), mime.getFormat(), parameters, bytes);
             fbs.put(tos[i]);
         }
         
-        int[][] rangeBounds = new int[zoomLevel + 2][4];
+        long[][] rangeBounds = new long[zoomLevel + 2][4];
         int zoomStart = zoomLevel - 1;
         int zoomStop = zoomLevel + 1;
         
-        int[] range = {x,y,x + tos.length - 3,y};
+        long[] range = {x,y,x + tos.length - 3,y};
         rangeBounds[zoomLevel] = range;
         
-        TileRangeObject trObj = new TileRangeObject(layerName, srs, zoomStart, zoomStop, rangeBounds, mime, parameters);
+        TileRangeObject trObj = new TileRangeObject(layerName, srs.toString(), zoomStart, zoomStop, rangeBounds, mime, parameters);
         
         fbs.delete(trObj);
         
         // starting x and x + tos.length should have data, the remaining should not
-        TileObject firstTO = TileObject.createQueryTileObject(layerName, tos[0].xyz, srs.getNumber(), mime.getFormat(), parameters);
+        TileObject firstTO = TileObject.createQueryTileObject(layerName, tos[0].xyz, srs.toString(), mime.getFormat(), parameters);
         assertTrue(Arrays.equals(fbs.get(firstTO), bytes));
         
-        TileObject lastTO = TileObject.createQueryTileObject(layerName, tos[tos.length - 1].xyz, srs.getNumber(), mime.getFormat(), parameters);
+        TileObject lastTO = TileObject.createQueryTileObject(layerName, tos[tos.length - 1].xyz, srs.toString(), mime.getFormat(), parameters);
         assertTrue(Arrays.equals(fbs.get(lastTO), bytes));
         
-        TileObject midTO =  TileObject.createQueryTileObject(layerName, tos[ (tos.length - 1) / 2].xyz, srs.getNumber(), mime.getFormat(), parameters);
+        TileObject midTO =  TileObject.createQueryTileObject(layerName, tos[ (tos.length - 1) / 2].xyz, srs.toString(), mime.getFormat(), parameters);
         byte[] res = fbs.get(midTO);
         
         assertNull(res);

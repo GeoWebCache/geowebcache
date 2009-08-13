@@ -24,9 +24,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.grid.GridSet;
+import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubSetFactory;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.BadTileException;
-import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.wms.BBOX;
@@ -49,8 +51,10 @@ public class KMLDebugGridLayer extends TileLayer {
     private static KMLDebugGridLayer instance;
 
     private KMLDebugGridLayer() {
-        super.grids = new Hashtable<SRS,GridSet>();
-        grids.put(SRS.getEPSG4326(), new GridSet(SRS.getEPSG4326(),BBOX.WORLD4326, BBOX.WORLD4326, null));
+        super.gridSubSets = new Hashtable<String,GridSubSet>();
+        gridSubSets.put(
+                GridSetBroker.WORLD_EPSG4326.getName(),
+                GridSubSetFactory.createGridSubSet(GridSetBroker.WORLD_EPSG4326, BBOX.WORLD4326, 0, 3));
     }
     
     synchronized static public KMLDebugGridLayer getInstance() {
@@ -100,11 +104,11 @@ public class KMLDebugGridLayer extends TileLayer {
     }
 
     public ConveyorTile getTile(ConveyorTile tile)
-            throws GeoWebCacheException, IOException {        
-        int[] gridLoc = tile.getTileIndex();
+    throws GeoWebCacheException, IOException {        
+        long[] gridLoc = tile.getTileIndex();
 
-        BBOX bbox = this.getBboxForGridLoc(SRS.getEPSG4326(), gridLoc);
-       
+        BBOX bbox = tile.getGridSubSet().boundsFromIndex(gridLoc);
+        
         String data  = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
                 + "<Document>\n"
@@ -269,6 +273,19 @@ public class KMLDebugGridLayer extends TileLayer {
     }
 
     @Override
+    public BBOX boundsFromIndex(String gridSetId, long[] gridLoc)
+            throws GeoWebCacheException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Integer getBackendTimeout() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
     public ConveyorTile getNoncachedTile(ConveyorTile tile, boolean requestTiled)
             throws GeoWebCacheException {
         // TODO Auto-generated method stub
@@ -276,21 +293,35 @@ public class KMLDebugGridLayer extends TileLayer {
     }
 
     @Override
-    public Boolean isCacheBypassAllowed() {
-        return false;
-    }
-
-    @Override
-    public void setCacheBypassAllowed(boolean allowed) {
-    }
-
-    @Override
-    public Integer getBackendTimeout() {
+    public long[][] getZoomedInIndexes(String gridSetId, long[] gridLoc)
+            throws GeoWebCacheException {
+        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public void setBackendTimeout(int seconds) {
+    public BBOX getZoomedOutBounds(SRS srs) throws GeoWebCacheException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public int[] getZoomedOutIndex(SRS srs) throws GeoWebCacheException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public long[] indexFromBounds(String gridSetId, BBOX bounds)
+            throws BadTileException, GeoWebCacheException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Boolean isCacheBypassAllowed() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @Override
@@ -307,9 +338,14 @@ public class KMLDebugGridLayer extends TileLayer {
     }
 
     @Override
-    public BBOX getZoomedOutBbox(SRS srs) throws GeoWebCacheException {
+    public void setBackendTimeout(int seconds) {
         // TODO Auto-generated method stub
-        return null;
+        
     }
 
+    @Override
+    public void setCacheBypassAllowed(boolean allowed) {
+        // TODO Auto-generated method stub
+        
+    }
 }

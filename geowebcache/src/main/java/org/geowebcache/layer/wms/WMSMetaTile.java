@@ -40,9 +40,9 @@ import javax.media.jai.operator.CropDescriptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.grid.GridCalculator;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.MetaTile;
-import org.geowebcache.layer.SRS;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
@@ -71,9 +71,9 @@ public class WMSMetaTile extends MetaTile {
      * @param profile
      * @param initGridPosition
      */
-    protected WMSMetaTile(WMSLayer layer, SRS srs, MimeType responseFormat, FormatModifier formatModifier,
-            int[] gridBounds, int[] tileGridPosition, int metaX, int metaY, String fullParameters) {
-        super(srs, responseFormat, formatModifier, gridBounds, tileGridPosition, metaX, metaY);
+    protected WMSMetaTile(WMSLayer layer, GridSubSet gridSubSet, MimeType responseFormat, FormatModifier formatModifier, 
+            long[] tileGridPosition, int metaX, int metaY, String fullParameters) {
+        super(gridSubSet, responseFormat, formatModifier, tileGridPosition, metaX, metaY);
         this.wmsLayer = layer;
         this.fullParameters = fullParameters;
         
@@ -82,10 +82,8 @@ public class WMSMetaTile extends MetaTile {
 
     protected String getWMSParams() throws GeoWebCacheException {
         String baseParameters = wmsLayer.getWMSRequestTemplate(this.getResponseFormat());
-        //int srsIdx = wmsLayer.getSRSIndex(srs);
 
-        GridCalculator gridCalc = wmsLayer.getGrid(srs).getGridCalculator();
-        BBOX metaBbox = gridCalc.bboxFromGridBounds(metaTileGridBounds);
+        BBOX metaBbox = gridSubSet.boundsFromRectangle(metaGridCov);
         
         // Fill in the blanks
         StringBuilder strBuilder = new StringBuilder(baseParameters);
@@ -94,14 +92,15 @@ public class WMSMetaTile extends MetaTile {
         } else {
             strBuilder.append("&FORMAT=").append(formatModifier.getRequestFormat().getFormat());
         }
-        strBuilder.append("&SRS=").append(srs.toString());
+        
+        strBuilder.append("&SRS=").append(gridSubSet.getSRS());
         
         if(wmsLayer.gutter == 0 || metaX*metaY == 1) {
-            strBuilder.append("&WIDTH=").append(metaX * GridCalculator.TILEPIXELS);
-            strBuilder.append("&HEIGHT=").append(metaY * GridCalculator.TILEPIXELS);
+            strBuilder.append("&WIDTH=").append(metaX * gridSubSet.getTileWidth());
+            strBuilder.append("&HEIGHT=").append(metaY * gridSubSet.getTileHeight());
             strBuilder.append("&BBOX=").append(metaBbox);
         } else {
-            adjustParamsForGutter(strBuilder, metaTileGridBounds);
+            adjustParamsForGutter(strBuilder);
         }
         
         strBuilder.append(fullParameters);
@@ -119,17 +118,18 @@ public class WMSMetaTile extends MetaTile {
      * @param strBuilder
      * @param metaTileGridBounds
      */
-    protected void adjustParamsForGutter(StringBuilder strBuilder, int[] metaBounds) 
+    protected void adjustParamsForGutter(StringBuilder strBuilder) 
     throws GeoWebCacheException {
-        GridCalculator gridCalc = wmsLayer.getGrid(srs).getGridCalculator();
-        int[] layerBounds = gridCalc.getGridBounds((int) metaTileGridBounds[4]);
+        //GridCalculator gridCalc = wmsLayer.getGrid(srs).getGridCalculator();
         
-        BBOX metaBbox = gridCalc.bboxFromGridBounds(metaTileGridBounds);
+        long[] layerCov = gridSubSet.getCoverage((int) this.metaGridCov[4]);
+        
+        BBOX metaBbox = gridSubSet.boundsFromRectangle(metaGridCov);
         
         double[] metaCoords = metaBbox.coords;
         
-        long pixelWidth = metaX * GridCalculator.TILEPIXELS;
-        long pixelHeight = metaY * GridCalculator.TILEPIXELS;
+        long pixelWidth = metaX * gridSubSet.getTileWidth();
+        long pixelHeight = metaY * gridSubSet.getTileHeight();
         
         double widthRelDelta = ((1.0 * pixelWidth + wmsLayer.gutter) / pixelWidth ) - 1.0;
         double heightRelDelta = ((1.0 * pixelHeight + wmsLayer.gutter) / pixelHeight ) - 1.0;
@@ -140,22 +140,22 @@ public class WMSMetaTile extends MetaTile {
         double coordWidthDelta = coordWidth * widthRelDelta;
         double coordHeightDelta = coordHeight * heightRelDelta;
         
-        if(layerBounds[0] < metaBounds[0]) {
+        if(layerCov[0] < metaGridCov[0]) {
             pixelWidth += wmsLayer.gutter;
             gutter[0] = wmsLayer.gutter;
             metaCoords[0] -= coordWidthDelta;
         }
-        if(layerBounds[1] < metaBounds[1]) {
+        if(layerCov[1] < metaGridCov[1]) {
             pixelHeight += wmsLayer.gutter;
             gutter[1] = wmsLayer.gutter;
             metaCoords[1] -= coordHeightDelta;
         }
-        if(layerBounds[2] > metaBounds[2]) {
+        if(layerCov[2] > metaGridCov[2]) {
             pixelWidth += wmsLayer.gutter;
             gutter[2] = wmsLayer.gutter;
             metaCoords[2] += coordWidthDelta;
         }
-        if(layerBounds[3] > metaBounds[3]) {
+        if(layerCov[3] > metaGridCov[3]) {
             pixelHeight += wmsLayer.gutter;
             gutter[3] = wmsLayer.gutter;
             metaCoords[3] += coordHeightDelta;
@@ -195,7 +195,7 @@ public class WMSMetaTile extends MetaTile {
      * @param tileHeight
      *            height of each tile
      */
-    protected void createTiles(int tileWidth, int tileHeight, boolean useJAI) {
+    protected void createTiles(int tileHeight, int tileWidth, boolean useJAI) {
         int tileCount = metaX * metaY;
         tiles = new RenderedImage[tileCount];
 
@@ -312,7 +312,7 @@ public class WMSMetaTile extends MetaTile {
     }
 
     public String debugString() {
-        return " metaX: " + metaX + " metaY: " + metaY + " metaGrid: "
-                + Arrays.toString(metaTileGridBounds);
+        return " metaX: " + metaX + " metaY: " + metaY + " metaGridCov: "
+                + Arrays.toString(metaGridCov);
     }
 }

@@ -8,8 +8,9 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.geowebcache.grid.GridSet;
-import org.geowebcache.grid.GridCalculator;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubSetFactory;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.util.wms.BBOX;
 
@@ -22,21 +23,23 @@ public class MetaTileTest extends TestCase {
 
     public void test1MetaTile() throws Exception {
         BBOX bbox = new BBOX(0, 0, 180, 90);
-        BBOX gridBase = new BBOX(-180, -90, 180, 90);
         int metaHeight = 1;
         int metaWidth = 1;
 
-        GridSet grid = new GridSet(SRS.getEPSG4326(), bbox, gridBase, GridCalculator.get4326Resolutions());
-        GridCalculator gridCalc = grid.getGridCalculator();
+        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+                GridSetBroker.WORLD_EPSG4326,
+                bbox,
+                0,
+                30);
         
-        int[] gridPos = { 0, 0, 0 };
+        long[] gridPos = { 0, 0, 0 };
+        
         //int[] gridBounds, int[] tileGridPosition, int metaX, int metaY
         WMSMetaTile mt = new WMSMetaTile(
-                null, grid.getSRS(), ImageMime.png, null, 
-                gridCalc.getGridBounds(gridPos[2]),
+                null, grid, ImageMime.png, null,
                 gridPos, metaWidth, metaHeight, "&test=test1");
 
-        int[] solution = { 0, 0, 0, 0, 0 };
+        long[] solution = { 0, 0, 0, 0, 0 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
         if (!test) {
             System.out.println("1 - " + mt.debugString());
@@ -48,20 +51,21 @@ public class MetaTileTest extends TestCase {
 
     public void test2MetaTile() throws Exception {
         BBOX bbox = new BBOX(0, 0, 180, 90);
-        BBOX gridBase = new BBOX(-180, -90, 180, 90);
         int metaHeight = 3;
         int metaWidth = 3;
 
-        GridSet grid = new GridSet(SRS.getEPSG4326(), bbox, gridBase, null);
-        GridCalculator gridCalc = grid.getGridCalculator();
+        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+                GridSetBroker.WORLD_EPSG4326,
+                bbox,
+                0,
+                30);
         
-        int[] gridPos = { 127, 63, 6 };
+        long[] gridPos = { 127, 63, 6 };
         WMSMetaTile mt = new WMSMetaTile(
-                    null, grid.getSRS(), ImageMime.png, null, 
-                    gridCalc.getGridBounds(gridPos[2]), 
+                    null, grid, ImageMime.png, null,
                     gridPos, metaWidth, metaHeight, "&test=test1");
 
-        int[] solution = { 126, 63, 127, 63, 6 };
+        long[] solution = { 126, 63, 127, 63, 6 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
         if (!test) {
             System.out.println("2 - " + mt.debugString());
@@ -73,22 +77,21 @@ public class MetaTileTest extends TestCase {
 
     public void test3MetaTile() throws Exception {
         BBOX bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
-        BBOX gridBase = new BBOX(
-        		-20037508.34, -20037508.34, 
-        		20037508.34, 20037508.34);
         int metaHeight = 1;
         int metaWidth = 1;
         
-        GridSet grid = new GridSet(SRS.getEPSG900913(), bbox, gridBase, GridCalculator.get900913Resolutions());
-        GridCalculator gridCalc = grid.getGridCalculator();
-              
-        int[] gridPos = { 0, 0, 0 };
+        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+                GridSetBroker.WORLD_EPSG3785,
+                bbox,
+                0,
+                30);
+          
+        long[] gridPos = { 0, 0, 0 };
         WMSMetaTile mt = new WMSMetaTile(
-                null, grid.getSRS(), ImageMime.png, null, 
-                gridCalc.getGridBounds(gridPos[2]), 
+                null, grid, ImageMime.png, null, 
                 gridPos, metaWidth, metaHeight, "&test=test1");
         
-        int[] solution = { 0, 0, 0, 0, 0 };
+        long[] solution = { 0, 0, 0, 0, 0 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
         if (!test) {
             System.out.println("3 - " + mt.debugString());
@@ -100,23 +103,23 @@ public class MetaTileTest extends TestCase {
 
     public void test4MetaTile() throws Exception {
         BBOX bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
-        BBOX gridBase = new BBOX(
-        		-20037508.34, -20037508.34, 
-        		20037508.34, 20037508.34);
         
         int metaHeight = 3;
         int metaWidth = 3;
         
-        GridSet grid = new GridSet(SRS.getEPSG900913(), bbox, gridBase, null);
-        GridCalculator gridCalc = grid.getGridCalculator();
+        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+                GridSetBroker.WORLD_EPSG3785,
+                bbox,
+                0,
+                30);
         
-        int[] gridPos = { 70, 70, 6 };
+        
+        long[] gridPos = { 70, 70, 6 };
         WMSMetaTile mt = new WMSMetaTile(
-                null, grid.getSRS(), ImageMime.png, null, 
-        	gridCalc.getGridBounds(gridPos[2]), 
+                null, grid, ImageMime.png, null, 
         	gridPos, metaWidth, metaHeight, "&test=test1");
         
-        int[] solution = { 69, 69, 63, 63, 6 };
+        long[] solution = { 69, 69, 63, 63, 6 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
         if (test) {
 
@@ -137,17 +140,19 @@ public class MetaTileTest extends TestCase {
         
         WMSLayer layer = createWMSLayer(bbox);
 
-        GridSet grid = layer.getGrid(SRS.getEPSG4326());
-        GridCalculator gridCalc = grid.getGridCalculator();
+        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+                GridSetBroker.WORLD_EPSG4326,
+                bbox,
+                0,
+                30);
         
         // Set the gutter
         layer.gutter = 50;
 
         // Lets make a tile close to the edge, this should only have a gutter to west / south
-        int[] gridPos = { 127, 63, 6 };
+        long[] gridPos = { 127, 63, 6 };
         WMSMetaTile mt = new WMSMetaTile(
-                    layer, grid.getSRS(), ImageMime.png, null, 
-                    gridCalc.getGridBounds(gridPos[2]), 
+                    layer, grid, ImageMime.png, null, 
                     gridPos, layer.getMetaTilingFactors()[0], 
                     layer.getMetaTilingFactors()[1], "&test=test1");
 
@@ -164,10 +169,9 @@ public class MetaTileTest extends TestCase {
         
         assertEquals(height, 256 + 50);
 
-        int[] midGridPos = { 83, 45, 6 };
+        long[] midGridPos = { 83, 45, 6 };
         mt = new WMSMetaTile(
-                    layer, grid.getSRS(), ImageMime.png, null, 
-                    gridCalc.getGridBounds(midGridPos[2]), 
+                    layer, grid, ImageMime.png, null, 
                     midGridPos, layer.getMetaTilingFactors()[0], 
                     layer.getMetaTilingFactors()[1], "&test=test1");
 
@@ -198,13 +202,17 @@ public class MetaTileTest extends TestCase {
         String[] urls = {"http://localhost:38080/wms"};
         List<String> formatList = new LinkedList<String>();
         formatList.add("image/png");
-        Hashtable<SRS,GridSet> grids = new Hashtable<SRS,GridSet>();
-       
-        BBOX gridBase = new BBOX(-180, -90, 180, 90);
-        GridSet grid = new GridSet(SRS.getEPSG4326(), layerBounds, gridBase, null);
-        grids.put(SRS.getEPSG4326(), grid);
+        
+        Hashtable<String,GridSubSet> grids = new Hashtable<String,GridSubSet>();
+
+        GridSubSet grid = GridSubSetFactory.createGridSubSet(GridSetBroker.WORLD_EPSG4326);
+        
+        grids.put(grid.getName(), grid);
         int[] metaWidthHeight = {3,3};
+        
         WMSLayer layer = new WMSLayer("test:layer", urls, "aStyle", "test:layer", formatList, grids, metaWidthHeight, "vendorparam=true", false);
+        
+        layer.initialize();
         
         return layer;
     }

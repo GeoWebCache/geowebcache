@@ -327,7 +327,7 @@ class JDBCMBWrapper {
         prep.setLong(2, xyz[0]);
         prep.setLong(3, xyz[1]);
         prep.setLong(4, xyz[2]);
-        prep.setLong(5, stObj.getSrs());
+        prep.setLong(5, stObj.getGridSetIdId());
         prep.setLong(6, stObj.getFormatId());
         
         if(stObj.getParametersId() != -1L) {
@@ -396,7 +396,7 @@ class JDBCMBWrapper {
         prep.setLong(2, xyz[0]);
         prep.setLong(3, xyz[1]);
         prep.setLong(4, xyz[2]);
-        prep.setLong(5, stObj.getSrs());
+        prep.setLong(5, stObj.getGridSetIdId());
         prep.setLong(6, stObj.getFormatId());
         
         if(stObj.getParametersId() != -1L) {
@@ -531,7 +531,7 @@ class JDBCMBWrapper {
             prep.setLong(2, xyz[0]);
             prep.setLong(3, xyz[1]);
             prep.setLong(4, xyz[2]);
-            prep.setLong(5, stObj.getSrs());
+            prep.setLong(5, stObj.getGridSetIdId());
             prep.setLong(6, stObj.getFormatId());
             if (stObj.getParametersId() == -1L) {
                 prep.setNull(7, java.sql.Types.BIGINT);
@@ -637,7 +637,7 @@ class JDBCMBWrapper {
             prep.setLong(2, xyz[0]);
             prep.setLong(3, xyz[1]);
             prep.setLong(4, xyz[2]);
-            prep.setLong(5, stObj.getSrs());
+            prep.setLong(5, stObj.getGridSetIdId());
             prep.setLong(6, stObj.getFormatId());
             if (stObj.getParametersId() != -1L) {
                 prep.setLong(7, stObj.getParametersId());
@@ -749,7 +749,7 @@ class JDBCMBWrapper {
     }
 
     private ResultSet getTileSet(long layerId, long formatId, long parametersId, 
-            int zoomLevel, int[] bounds, int srsNumber) throws SQLException {
+            long zoomLevel, long[] bounds, long srsNumber) throws SQLException {
         String query;
         
         if(parametersId == -1L) {
@@ -782,7 +782,7 @@ class JDBCMBWrapper {
     }
     
     private void deleteRange(long layerId, long formatId, long parametersId, 
-            int zoomLevel, int[] bounds, int srsNumber) throws SQLException {
+            int zoomLevel, long[] bounds, long gridSetIdId) throws SQLException {
         String query;
         
         if(parametersId == -1L) {
@@ -804,7 +804,7 @@ class JDBCMBWrapper {
         prep.setLong(4, bounds[1]);
         prep.setLong(5, bounds[3]);
         prep.setLong(6, zoomLevel);
-        prep.setLong(7, srsNumber);
+        prep.setLong(7, gridSetIdId);
         prep.setLong(8, formatId);
         
         if(parametersId != -1L) {
@@ -815,14 +815,13 @@ class JDBCMBWrapper {
     }
 
     public boolean deleteRange(BlobStore blobStore, TileRangeObject trObj, int zoomLevel,
-            long layerId, long formatId, long parametersId) {
+            long layerId, long formatId, long parametersId, long gridSetIdId) {
         
-        int[] bounds = trObj.rangeBounds[zoomLevel]; 
-        int srsNumber = trObj.srs.getNumber();
+        long[] bounds = trObj.rangeBounds[zoomLevel]; 
       
         ResultSet rs = null;
         try {
-            rs = getTileSet(layerId, formatId, parametersId, zoomLevel, bounds, srsNumber);
+            rs = getTileSet(layerId, formatId, parametersId, zoomLevel, bounds, gridSetIdId);
             
             while(rs.next()) {
                 // TILE_ID, X, Y, Z
@@ -837,7 +836,7 @@ class JDBCMBWrapper {
                 TileObject to = TileObject.createQueryTileObject(
                         trObj.layerName, 
                         xyz, 
-                        srsNumber, 
+                        trObj.gridSetId, 
                         trObj.mimeType.getFormat(), 
                         trObj.parameters);
                 
@@ -851,7 +850,7 @@ class JDBCMBWrapper {
             }
             
             // Now remove the tiles from the database
-            deleteRange(layerId, formatId, parametersId, zoomLevel, bounds, srsNumber);
+            deleteRange(layerId, formatId, parametersId, zoomLevel, bounds, gridSetIdId);
             
         } catch (SQLException e) {
             log.error("deleteRange failed: " + e.getMessage());

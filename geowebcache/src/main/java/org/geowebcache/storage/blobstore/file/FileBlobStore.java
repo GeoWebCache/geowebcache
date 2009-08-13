@@ -192,7 +192,7 @@ public class FileBlobStore implements BlobStore {
         try {
             paths = FilePathGenerator.tilePath(
                     path, stObj.getLayerName(),
-                    stObj.getXYZ(), stObj.getSrs(), 
+                    stObj.getXYZ(), stObj.getGridSetId(), 
                     MimeType.createFromFormat(stObj.getBlobFormat()), 
                     stObj.getParametersId());
         } catch (MimeException me) {

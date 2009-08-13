@@ -21,14 +21,14 @@ import java.util.Arrays;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.grid.GridCalculator;
+import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.mime.XMLMime;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileRangeObject;
+import org.geowebcache.util.wms.BBOX;
 
 public class TruncateTask extends GWCTask {
     private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.TruncateTask.class);
@@ -54,28 +54,34 @@ public class TruncateTask extends GWCTask {
 
         tl.isInitialized();
 
-        int[][] bounds = null;
+        GridSubSet gridSubSet = tl.getGridSubSet(req.getGridSetId());
+        
+        long[][] coverages = null;
 
-        if (req.getBounds() == null) {
-            // TODO need nicer interface, just send null
-            bounds = tl.getCoveredGridLevels(req.getSRS(), tl.getGrid(req.getSRS()).getBounds());
-        } else if (!Arrays.equals(req.getBounds().coords, nullBbox)) {
-            bounds = tl.getCoveredGridLevels(req.getSRS(), req.getBounds());
+        BBOX reqBounds = req.getBounds();
+        if (req.getBounds() == null 
+                || Arrays.equals(req.getBounds().coords, nullBbox)) {
+            coverages = gridSubSet.getCoverages();
+        } else {
+            coverages = gridSubSet.getCoverageIntersections(reqBounds);
         }
 
         MimeType mimeType = MimeType.createFromFormat(req.getMimeFormat());
 
-        if (bounds != null) {
-            int[] metaFactors = tl.getMetaTilingFactors();
+        int[] metaFactors = tl.getMetaTilingFactors();
 
-            int gridBounds[][] = tl.getGrid(req.getSRS()).getGridCalculator().getGridBounds();
-
-            if (metaFactors[0] > 1 || metaFactors[1] > 1 && mimeType.supportsTiling()) {
-                bounds = GridCalculator.expandBoundsToMetaTiles(gridBounds, bounds, metaFactors);
-            }
+        if (metaFactors[0] > 1 || metaFactors[1] > 1 && mimeType.supportsTiling()) {
+            coverages = gridSubSet.expandToMetaFactors(coverages, metaFactors);
         }
         
-        TileRangeObject trObj = new TileRangeObject(layerName, req.getSRS(), req.getZoomStart(), req.getZoomStop(), bounds, mimeType, req.getParameters());
+        TileRangeObject trObj = new TileRangeObject(
+                layerName, 
+                req.getGridSetId(), 
+                req.getZoomStart(), 
+                req.getZoomStop(), 
+                coverages, 
+                mimeType, 
+                req.getParameters());
         
         try {
             storageBroker.delete(trObj);

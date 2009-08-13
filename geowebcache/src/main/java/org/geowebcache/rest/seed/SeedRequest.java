@@ -17,7 +17,7 @@
  */
 package org.geowebcache.rest.seed;
 
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.util.wms.BBOX;
 
 public class SeedRequest {
@@ -25,7 +25,7 @@ public class SeedRequest {
 
     private BBOX bounds = null;
 
-    private SRS srs = null;
+    private String gridSetId;
     
     private Integer threadCount = null;
 
@@ -56,11 +56,11 @@ public class SeedRequest {
      * @param type
      */
     protected SeedRequest(String name, BBOX bounds, 
-            SRS srs, int threadCount, int zoomStart, 
+            String gridSetId, int threadCount, int zoomStart, 
             int zoomStop, String format, String type, String parameters) {
         this.name = name;
         this.bounds = bounds;
-        this.srs = srs;
+        this.gridSetId = gridSetId;
         this.threadCount = threadCount;
         this.zoomStart = zoomStart;
         this.zoomStop = zoomStop;
@@ -84,11 +84,11 @@ public class SeedRequest {
         return this.bounds;
     }
     /**
-     * Method returns the projection for this request
-     * @return SRS
+     * Method returns the grid set id for this request
+     * @return String
      */
-    public SRS getSRS() {
-        return this.srs;
+    public String getGridSetId() {
+        return this.gridSetId;
     }
     /**
      * Method returns the format requested

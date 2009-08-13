@@ -18,8 +18,8 @@ package org.geowebcache.filter.request;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.grid.GridSet;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 
 /**
@@ -39,24 +39,19 @@ public class CircularExtentFilter extends RequestFilter {
     
     public void apply(ConveyorTile convTile) throws RequestFilterException {
         TileLayer tl = convTile.getLayer();
-        SRS srs = convTile.getSRS(); 
-        GridSet grid = tl.getGrid(srs);
-        int z = convTile.getTileIndex()[2];
-        int[] gridBounds = null;
+        //SRS srs = convTile.getSRS(); 
+        GridSubSet gridSubSet = tl.getGridSubSet(convTile.getGridSetId());
         
-        try {
-            gridBounds = grid.getGridCalculator().getGridBounds(z);
-        } catch (GeoWebCacheException e) {
-            e.printStackTrace();
-        }
-        
+        int z = (int) convTile.getTileIndex()[2];
+        long[] gridCoverage = gridSubSet.getCoverage(z);
+
         // Figure out the radius
-        int width = gridBounds[2] - gridBounds[0];
-        int height = gridBounds[3] - gridBounds[1];
+        long width = gridCoverage[2] - gridCoverage[0];
+        long height = gridCoverage[3] - gridCoverage[1];
         
         // Rounding must always err on the side of 
         // caution if you want to use KML hierarchies
-        int maxRad = 0;
+        long maxRad = 0;
         if(width > height) {
             maxRad = (width / 4) + 1;
         } else {
@@ -64,12 +59,12 @@ public class CircularExtentFilter extends RequestFilter {
         }
         
         // Figure out how the requested bounds relate
-        int midX = gridBounds[0] + width/2;
-        int midY = gridBounds[1] + height/2;
+        long midX = gridCoverage[0] + width/2;
+        long midY = gridCoverage[1] + height/2;
         
 
-        int xDist = midX - convTile.getTileIndex()[0];
-        int yDist = midY - convTile.getTileIndex()[1];
+        long xDist = midX - convTile.getTileIndex()[0];
+        long yDist = midY - convTile.getTileIndex()[1];
         
         long rad = Math.round(Math.sqrt(xDist*xDist + yDist*yDist));
         
@@ -82,14 +77,13 @@ public class CircularExtentFilter extends RequestFilter {
         // Do nothing
     }
 
-    public void update(byte[] filterData, TileLayer layer, SRS srs, int z)
+    public void update(byte[] filterData, TileLayer layer, String gridSetId, int z)
             throws GeoWebCacheException {
         // Do nothing
     }
 
-    public void update(TileLayer layer, SRS srs, int z)
+    public void update(TileLayer layer, String gridSetId, int z)
             throws GeoWebCacheException {
         // Do nothing
     }
-
 }

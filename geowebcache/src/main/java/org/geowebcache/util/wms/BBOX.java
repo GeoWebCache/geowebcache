@@ -33,7 +33,7 @@ public class BBOX {
     public static final BBOX WORLD4326 = 
         new BBOX(-180.0,-90.0,180.0,90.0);
     
-    public static final BBOX WORLD900913 = 
+    public static final BBOX WORLD3785 = 
         new BBOX(-20037508.34,-20037508.34,20037508.34,20037508.34);
     
     // minx, miny, maxx, maxy
@@ -70,6 +70,14 @@ public class BBOX {
             log.trace("Created BBOX: " + getReadableString());
         }
     }
+    
+    public double getWidth() {
+        return coords[2] - coords[0];
+    }
+    
+    public double getHeight() {
+        return coords[3] - coords[1];
+    }
 
     /**
      * Sets from an array of strings
@@ -103,7 +111,7 @@ public class BBOX {
         String[] tokens = BBOX.split(DELIMITER);
         setFromStringArray(tokens, recWatch + 1);
     }
-
+    
     /**
      * Outputs a string suitable for logging and other human-readable tasks
      * 

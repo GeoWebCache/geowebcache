@@ -33,9 +33,9 @@ import org.geotools.data.ows.WMSCapabilities;
 import org.geotools.data.wms.WebMapServer;
 import org.geotools.ows.ServiceException;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.grid.GridSet;
-import org.geowebcache.grid.GridCalculator;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubSetFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.util.wms.BBOX;
@@ -179,7 +179,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 log.info("Found layer: " + layer.getName()
                         + " with LatLon bbox " + bounds4326.toString());
                 
-                BBOX bounds900913 = new BBOX(
+                BBOX bounds3785 = new BBOX(
                         longToSphericalMercatorX(minX),
                         latToSphericalMercatorY(minY),
                         longToSphericalMercatorX(maxX),
@@ -190,7 +190,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 WMSLayer wmsLayer = null;
                 try {
                     wmsLayer = getLayer(name, wmsUrls, bounds4326, 
-                            bounds900913, stylesStr, queryable);
+                            bounds3785, stylesStr, queryable);
                 } catch (GeoWebCacheException gwc) {
                     log.error("Error creating " + layer.getName() + ": "
                             + gwc.getMessage());
@@ -209,14 +209,12 @@ public class GetCapabilitiesConfiguration implements Configuration {
     }
 
     private WMSLayer getLayer(String name, String[] wmsurl, 
-            BBOX bounds4326, BBOX bounds900913, String stylesStr, boolean queryable)
+            BBOX bounds4326, BBOX bounds3785, String stylesStr, boolean queryable)
             throws GeoWebCacheException {
         
-        Hashtable<SRS,GridSet> grids = new Hashtable<SRS,GridSet>(2);
-        grids.put(SRS.getEPSG4326(), new GridSet(SRS.getEPSG4326(), bounds4326, 
-                BBOX.WORLD4326, GridCalculator.get4326Resolutions()));
-        grids.put(SRS.getEPSG900913(), new GridSet(SRS.getEPSG900913(), bounds900913,
-                BBOX.WORLD900913, GridCalculator.get900913Resolutions()));
+        Hashtable<String,GridSubSet> grids = new Hashtable<String,GridSubSet>(2);
+        grids.put("EPSG:4326", GridSubSetFactory.createGridSubSet(GridSetBroker.WORLD_EPSG4326, bounds4326, 0, 30));
+        grids.put("EPSG:3785", GridSubSetFactory.createGridSubSet(GridSetBroker.WORLD_EPSG3785, bounds3785, 0, 30));
         
         List<String> mimeFormats = null;
         if(this.mimeTypes != null) {

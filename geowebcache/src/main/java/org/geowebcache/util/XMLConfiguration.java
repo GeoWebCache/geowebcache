@@ -51,7 +51,8 @@ import org.geowebcache.filter.parameters.RegexParameterFilter;
 import org.geowebcache.filter.request.CircularExtentFilter;
 import org.geowebcache.filter.request.FileRasterFilter;
 import org.geowebcache.filter.request.WMSRasterFilter;
-import org.geowebcache.grid.GridSet;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.OldGrid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
@@ -233,11 +234,14 @@ public class XMLConfiguration implements Configuration {
         
         xs.alias("layers", List.class);
         xs.alias("wmsLayer", WMSLayer.class);
-        xs.alias("grids", new ArrayList<GridSet>().getClass());
-        xs.alias("grid", GridSet.class);
+        
+        // These two are for 1.1.x compatibility
+        xs.alias("grids", new ArrayList<OldGrid>().getClass());
+        xs.alias("grid", OldGrid.class);
+        
         xs.alias("mimeFormats", new ArrayList<String>().getClass());
         xs.alias("formatModifiers", new ArrayList<FormatModifier>().getClass());
-        xs.alias("srs", org.geowebcache.layer.SRS.class);        
+        xs.alias("srs", org.geowebcache.grid.SRS.class);        
         xs.alias("parameterFilters", new ArrayList<ParameterFilter>().getClass());
         xs.alias("parameterFilter", ParameterFilter.class);
         xs.alias("seedRequest", SeedRequest.class);

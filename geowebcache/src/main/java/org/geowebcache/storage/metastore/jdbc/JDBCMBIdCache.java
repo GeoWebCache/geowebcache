@@ -34,10 +34,12 @@ class JDBCMBIdCache {
     public static int MAX_FORMATS = 50;
     public static int MAX_LAYERS = 100;
     public static int MAX_PARAMETERS = 100;
+    public static int MAX_GRIDSETS = 50;
     
     private final Map<String,Long> formatsCache;
     private final Map<String,Long> layersCache;
     private final Map<String,Long> parametersCache;
+    private final Map<String,Long> gridSetsCache;
     
     private final JDBCMBWrapper wrpr;
     
@@ -45,12 +47,12 @@ class JDBCMBIdCache {
         formatsCache = new HashMap<String,Long>();
         layersCache = new HashMap<String,Long>();
         parametersCache = new HashMap<String,Long>();
+        gridSetsCache = new HashMap<String,Long>();
         
         this.wrpr = wrpr;
     }
     
-    private Long getOrInsert(String key, Map<String, Long> map, 
-            int maxSize, String table) 
+    private Long getOrInsert(String key, Map<String, Long> map, int maxSize, String table) 
     throws StorageException {
         if(key.length() > 254) {
             throw new StorageException(
@@ -160,6 +162,16 @@ class JDBCMBIdCache {
             Long ret = parametersCache.get(parameters);
             if (ret == null)
                 ret = getOrInsert(parameters, parametersCache, MAX_PARAMETERS,"PARAMETERS");
+
+            return ret;
+        }
+    }
+    
+    protected Long getGridSetsId(String gridSetId) throws StorageException {
+        synchronized (this.gridSetsCache) {
+            Long ret = gridSetsCache.get(gridSetId);
+            if (ret == null)
+                ret = getOrInsert(gridSetId, gridSetsCache, MAX_GRIDSETS,"GRIDSETS");
 
             return ret;
         }

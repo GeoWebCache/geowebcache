@@ -20,8 +20,8 @@ public class GMapsConverterTest extends TestCase {
     public void testGMapsConverter() throws Exception {
     	/* Check origin location */
     	int x = 0; int y = 0; int z = 0;
-    	int[] gridLoc = GMapsConverter.convert(z, x, y);
-    	int[] solution = {0,0,0};
+    	long[] gridLoc = GMapsConverter.convert(z, x, y);
+    	long[] solution = {0,0,0};
     	assert(Arrays.equals(gridLoc, solution));
     	
     	/* Check zoomlevel */

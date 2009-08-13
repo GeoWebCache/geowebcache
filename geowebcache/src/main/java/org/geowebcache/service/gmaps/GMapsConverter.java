@@ -25,7 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
@@ -67,7 +67,7 @@ public class GMapsConverter extends Service {
         String strCached = ServletUtils.stringFromMap(params, "cached");
         String strMetaTiled = ServletUtils.stringFromMap(params, "metatiled");
 
-        int[] gridLoc = GMapsConverter.convert(Integer.parseInt(strZoom), 
+        long[] gridLoc = GMapsConverter.convert(Integer.parseInt(strZoom), 
                 Integer.parseInt(strX), Integer.parseInt(strY));
 
         MimeType mimeType = null;
@@ -80,7 +80,7 @@ public class GMapsConverter extends Service {
             throw new ServiceException("Unable to determine requested format, "+ strFormat);
         }
         
-        ConveyorTile ret = new ConveyorTile(sb, layerId, SRS.getEPSG900913(), gridLoc, mimeType, null, null, request, response);
+        ConveyorTile ret = new ConveyorTile(sb, layerId, GridSetBroker.WORLD_EPSG3785.getName(), gridLoc, mimeType, null, null, request, response);
         
         if(strCached != null && ! Boolean.parseBoolean(strCached)) {
             ret.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
@@ -136,10 +136,10 @@ public class GMapsConverter extends Service {
      * @param quadKey
      * @return
      */
-    public static int[] convert(int zoomLevel, int x, int y) 
+    public static long[] convert(long zoomLevel, long x, long y) 
     throws ServiceException {
         // Extent is the total number of tiles in y direction
-        int extent = (int) Math.pow(2, zoomLevel);
+        long extent = (long) Math.pow(2, zoomLevel);
 
         if (x < 0 || x > extent - 1) {
             throw new ServiceException("The X coordinate is not sane: " + x);
@@ -150,7 +150,7 @@ public class GMapsConverter extends Service {
         }
 
         // xPos and yPos correspond to the top left hand corner
-        int[] gridLoc = { x, extent - y - 1, zoomLevel };
+        long[] gridLoc = { x, extent - y - 1, zoomLevel };
 
         return gridLoc;
     }

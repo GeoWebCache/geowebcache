@@ -22,17 +22,17 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
 
 
 public class ConveyorKMLTile extends ConveyorTile {
-    public ConveyorKMLTile(StorageBroker sb, String layerId, SRS srs,
-            int[] tileIndex, MimeType mimeType, String fullParameters,
+    public ConveyorKMLTile(StorageBroker sb, String layerId, String gridSetId,
+            long[] tileIndex, MimeType mimeType, String fullParameters,
             String modifiedParameters, HttpServletRequest servletReq,
             HttpServletResponse servletResp) {
-        super(sb, layerId, srs, tileIndex, mimeType, fullParameters,
+        super(sb, layerId, gridSetId, tileIndex, mimeType, fullParameters,
                 modifiedParameters, servletReq, servletResp);
     }
 

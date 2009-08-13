@@ -25,7 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
@@ -65,7 +65,7 @@ public class VEConverter extends Service {
         String strCached = ServletUtils.stringFromMap(params, "cached");
         String strMetaTiled = ServletUtils.stringFromMap(params, "metatiled");
         
-        int[] gridLoc = VEConverter.convert(strQuadKey);
+        long[] gridLoc = VEConverter.convert(strQuadKey);
         
         MimeType mimeType = null;
         if(strFormat != null) {
@@ -76,7 +76,7 @@ public class VEConverter extends Service {
             }
         }
         
-        ConveyorTile ret = new ConveyorTile(sb, layerId, SRS.getEPSG900913(), gridLoc, mimeType, null, null, request, response);
+        ConveyorTile ret = new ConveyorTile(sb, layerId, GridSetBroker.WORLD_EPSG3785.getName(), gridLoc, mimeType, null, null, request, response);
         
         if(strCached != null && ! Boolean.parseBoolean(strCached)) {
             ret.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
@@ -128,14 +128,14 @@ public class VEConverter extends Service {
      * @param quadKey
      * @return internal representation
      */
-    public static int[] convert(String strQuadKey) {
+    public static long[] convert(String strQuadKey) {
         char[] quadArray = strQuadKey.toCharArray();
 
-        int zoomLevel = quadArray.length;
+        long zoomLevel = quadArray.length;
 
-        int extent = (int) Math.pow(2, zoomLevel);
-        int yPos = 0;
-        int xPos = 0;
+        long extent = (long) Math.pow(2, zoomLevel);
+        long yPos = 0;
+        long xPos = 0;
 
         // Now we traverse the quadArray from left to right, interpretation
         // 0 1
@@ -168,7 +168,7 @@ public class VEConverter extends Service {
             }
         }
 
-        int[] gridLoc = { xPos, yPos, zoomLevel };
+        long[] gridLoc = { xPos, yPos, zoomLevel };
 
         return gridLoc;
     }

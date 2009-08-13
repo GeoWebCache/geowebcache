@@ -137,7 +137,7 @@ public class JDBCMetaBackend implements MetaStore {
         } else {
             parametersId = -1L;
         }
-        
+        long gridSetIdId = idCache.getGridSetsId(trObj.gridSetId);
         
         for(int zoomLevel = trObj.zoomStart; zoomLevel <= trObj.zoomStop; zoomLevel++) {
             wrpr.deleteRange(
@@ -146,7 +146,8 @@ public class JDBCMetaBackend implements MetaStore {
                     zoomLevel,
                     layerId,
                     formatId,
-                    parametersId);
+                    parametersId,
+                    gridSetIdId);
         }
         
         return true;

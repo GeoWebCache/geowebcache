@@ -28,8 +28,8 @@ import javax.imageio.ImageIO;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.grid.GridSet;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.ImageMime;
@@ -45,7 +45,7 @@ public class WMSRasterFilter extends RasterFilter {
     
     public Integer backendTimeout;
     
-    protected BufferedImage loadMatrix(TileLayer tlayer, SRS srs, int z) throws IOException, GeoWebCacheException {
+    protected BufferedImage loadMatrix(TileLayer tlayer, String gridSetId, int z) throws IOException, GeoWebCacheException {
         if(! (tlayer instanceof WMSLayer))
             return null;
         
@@ -53,11 +53,11 @@ public class WMSRasterFilter extends RasterFilter {
         
         tlayer.isInitialized();
         
-        GridSet grid = layer.getGrid(srs);
+        GridSubSet gridSet = layer.getGridSubSet(gridSetId);
         
-        int[] widthHeight = calculateWidthHeight(grid, z);
+        int[] widthHeight = calculateWidthHeight(gridSet, z);
         
-        String urlStr = wmsUrl(layer,srs,z, widthHeight);
+        String urlStr = wmsUrl(layer, gridSet, z, widthHeight);
         
         log.info("Updated WMS raster filter, zoom level " + z + " for " + getName() + " (" + layer.getName() +  ") , " + urlStr);
         
@@ -109,10 +109,8 @@ public class WMSRasterFilter extends RasterFilter {
      * @param z
      * @return
      */
-    protected String wmsUrl(WMSLayer layer, SRS srs, int z, int[] widthHeight) throws GeoWebCacheException {
-        GridSet grid = layer.getGrid(srs);
-        
-        BBOX bbox = calculateBbox(grid, z);
+    protected String wmsUrl(WMSLayer layer, GridSubSet gridSubSet, int z, int[] widthHeight) throws GeoWebCacheException {  
+        BBOX bbox = gridSubSet.getCoverageBounds(z);
         
         StringBuilder str = new StringBuilder();
         str.append(layer.getWMSurl()[0]);
@@ -140,18 +138,13 @@ public class WMSRasterFilter extends RasterFilter {
         return str.toString();
     }
 
-    public void update(byte[] filterData, TileLayer layer) throws GeoWebCacheException {
-       
-        
-    }
-
-    public void update(byte[] filterData, TileLayer layer, SRS srs, int z)
+    public void update(byte[] filterData, TileLayer layer, String gridSetId, int z)
             throws GeoWebCacheException {
-        throw new GeoWebCacheException("update(byte[] filterData, TileLayer layer, SRS srs, int z) is not appropriate for WMSRasterFilters");
+        throw new GeoWebCacheException("update(byte[] filterData, TileLayer layer, String gridSetId, int z) is not appropriate for WMSRasterFilters");
     }
-
-    public void update(TileLayer layer, SRS srs, int z)
-            throws GeoWebCacheException {
-        throw new GeoWebCacheException("TileLayer layer, SRS srs, int z) is not appropriate for WMSRasterFilters");
+    
+    public void update(TileLayer layer, String gridSetId, int z)
+    throws GeoWebCacheException {
+        throw new GeoWebCacheException("TileLayer layer, String gridSetId, int z) is not appropriate for WMSRasterFilters");
     }
 }

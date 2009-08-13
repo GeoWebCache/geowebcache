@@ -31,7 +31,12 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.filter.request.RequestFilterException;
-import org.geowebcache.grid.GridSet;
+import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.OldGrid;
+import org.geowebcache.grid.OutsideCoverageException;
+import org.geowebcache.grid.SRS;
+import org.geowebcache.grid.XMLSubGrid;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
@@ -45,11 +50,17 @@ public abstract class TileLayer {
     protected List<String> mimeFormats;
     
     protected List<FormatModifier> formatModifiers;
+    
+    protected List<XMLSubGrid> subGrids;
 
-    protected Hashtable<SRS,GridSet> grids;
+    protected Hashtable<SRS,OldGrid> grids;
     
     protected List<RequestFilter> requestFilters;
     
+    protected transient Hashtable<String,GridSubSet> gridSubSets;
+    
+    protected transient GridSetBroker gridSetBroker; 
+
     // Styles?
 
     /**
@@ -77,8 +88,8 @@ public abstract class TileLayer {
      * @param grid
      */
 
-    public void addGrid(SRS srs,GridSet grid) {
-        this.grids.put(srs,grid);
+    public void addGridSet(String gridSetId, GridSubSet gridSubSet) {
+        this.gridSubSets.put(gridSetId, gridSubSet);
     }
 
     /**
@@ -86,8 +97,8 @@ public abstract class TileLayer {
      * 
      * @return
      */
-    public Hashtable<SRS,GridSet> getGrids() {
-        return this.grids;
+    public Hashtable<String,GridSubSet> getGridSubSets() {
+        return this.gridSubSets;
     }
 
     /**
@@ -120,11 +131,18 @@ public abstract class TileLayer {
      * @return
      * @throws GeoWebCacheException
      */
-    public boolean supportsSRS(SRS srs) throws GeoWebCacheException {
-        if(this.isInitialized() && this.grids.containsKey(srs)) {
-            return true;
-        }
-        return false;
+    public GridSubSet getGridSubSetForSRS(SRS srs) {
+        this.isInitialized();
+
+            Iterator<GridSubSet> iter = this.gridSubSets.values().iterator();
+            while(iter.hasNext()) {
+                GridSubSet gridSubSet = iter.next();
+                if(gridSubSet.getSRS().equals(srs)) {
+                    return gridSubSet;
+                }
+            }
+
+        return null;
     }
     
     /**
@@ -148,35 +166,6 @@ public abstract class TileLayer {
     }
 
     /**
-     * Whether the layer supports the given projection and bounding box
-     * combination
-     * 
-     * @param srs
-     * @param dataBounds
-     * @return null if ok, error message otherwise
-     * @throws GeoWebCacheException
-     */
-    public String supportsBbox(SRS srs, BBOX reqBounds)
-            throws GeoWebCacheException {
-        this.supportsSRS(srs);
-
-        if (!reqBounds.isSane()) {
-            return "The requested bounding box "
-                    + reqBounds.getReadableString() + " is not sane";
-        }
-
-        if(! grids.get(srs).getDataBounds().contains(reqBounds)) {
-            return "The layers grid box " 
-                + grids.get(srs).getDataBounds().getReadableString()
-                + " does not cover the requested bounding box "
-                + reqBounds.getReadableString();
-        }
-
-        // All ok
-        return null;
-    }
-
-    /**
      * The normal way of getting a single tile from the layer. Under the hood,
      * this may result in several tiles being requested and stored before
      * returning.
@@ -187,9 +176,10 @@ public abstract class TileLayer {
      * @return
      * @throws GeoWebCacheException
      * @throws IOException
+     * @throws OutsideCoverageException 
      */
     public abstract ConveyorTile getTile(ConveyorTile tile) 
-    throws GeoWebCacheException, IOException;
+    throws GeoWebCacheException, IOException, OutsideCoverageException;
 
     
     /**
@@ -230,20 +220,8 @@ public abstract class TileLayer {
     public abstract ConveyorTile doNonMetatilingRequest(ConveyorTile tile)
             throws GeoWebCacheException;
 
-    /**
-     * 
-     * @return the array of supported projections
-     */
-    //public SRS[] getProjections() {
-    //    return (SRS[]) this.grids.keySet().toArray();
-    //}
-
-    
-    public GridSet getGrid(SRS srs) {
-        return grids.get(srs);
-    }
-    //public BBOX getBounds(int srsIdx) {
-    //    return this.grids.get(srsIdx).getBounds();
+    //public GridSet getGrid(SRS srs) {
+    //    return gridSets.get(srs);
     //}
 
     /**
@@ -251,8 +229,8 @@ public abstract class TileLayer {
      * @param srsIdx
      * @return the resolutions (units/pixel) for the layer
      */
-    public double[] getResolutions(SRS srs) throws GeoWebCacheException {
-        return grids.get(srs).getGridCalculator().getResolutions();
+    public double[] getResolutions(String gridSetId) throws GeoWebCacheException {
+        return gridSubSets.get(gridSetId).getResolutions();
     }
     
 
@@ -349,7 +327,7 @@ public abstract class TileLayer {
      * @throws GeoWebCacheException 
      * @throws GeoWebCacheException
      */
-    public abstract int[] getGridLocForBounds(SRS srs, BBOX bounds)
+    public abstract long[] indexFromBounds(String gridSetId, BBOX bounds)
             throws BadTileException, GeoWebCacheException;
 
     /**
@@ -359,25 +337,8 @@ public abstract class TileLayer {
      * @return
      * @throws GeoWebCacheException 
      */
-    public abstract BBOX getBboxForGridLoc(SRS srs, int[] gridLoc) throws GeoWebCacheException;
-
-    /**
-     * The starting zoomlevel (inclusive)
-     * 
-     * @return
-     */
-    public int getZoomStart(SRS srs) {
-        return grids.get(srs).getZoomStart();
-    }
-
-    /**
-     * The stopping zoomlevel (inclusive)
-     * 
-     * @return
-     */
-    public int getZoomStop(SRS srs) {
-        return grids.get(srs).getZoomStop();
-    }
+    public abstract BBOX boundsFromIndex(String gridSetId, long[] gridLoc) 
+    throws GeoWebCacheException;
 
     /**
      * Returns an array with four grid locations, the result of zooming in one
@@ -390,8 +351,8 @@ public abstract class TileLayer {
      * @return
      * @throws GeoWebCacheException 
      */
-    // TODO this is generic
-    public abstract int[][] getZoomInGridLoc(SRS srs, int[] gridLoc) throws GeoWebCacheException;
+    public abstract long[][] getZoomedInIndexes(String gridSetId, long[] gridLoc) 
+    throws GeoWebCacheException;
 
     /**
      * The furthest zoomed in grid location that returns the entire layer on a
@@ -405,7 +366,7 @@ public abstract class TileLayer {
      * @return {x,y,z}
      * @throws GeoWebCacheException 
      */
-    public abstract int[] getZoomedOutGridLoc(SRS srs) throws GeoWebCacheException;
+    public abstract int[] getZoomedOutIndex(SRS srs) throws GeoWebCacheException;
 
     /**
      * Converts the zoomed out grid location into a bounding box
@@ -414,7 +375,7 @@ public abstract class TileLayer {
      * @return
      * @throws GeoWebCacheException
      */
-    public abstract BBOX getZoomedOutBbox(SRS srs) throws GeoWebCacheException;
+    public abstract BBOX getZoomedOutBounds(SRS srs) throws GeoWebCacheException;
     
     /**
      * Acquire the global lock for the layer, primarily used for truncating
@@ -473,11 +434,11 @@ public abstract class TileLayer {
             }
         }
 
-        if (otherLayer.grids != null && otherLayer.grids.size() > 0) {
-            Iterator<Entry<SRS, GridSet>> iter = otherLayer.grids.entrySet().iterator();
+        if (otherLayer.gridSubSets != null && otherLayer.gridSubSets.size() > 0) {
+            Iterator<Entry<String, GridSubSet>> iter = otherLayer.gridSubSets.entrySet().iterator();
             while (iter.hasNext()) {
-                Entry<SRS, GridSet> entry = iter.next();
-                this.grids.put(entry.getKey(), entry.getValue());
+                Entry<String, GridSubSet> entry = iter.next();
+                this.gridSubSets.put(entry.getKey(), entry.getValue());
             }
         }
         
@@ -517,5 +478,9 @@ public abstract class TileLayer {
     
     public List<RequestFilter> getRequestFilters() {
         return requestFilters;
+    }
+
+    public GridSubSet getGridSubSet(String gridSetId) {
+        return this.gridSubSets.get(gridSetId);
     }
 }

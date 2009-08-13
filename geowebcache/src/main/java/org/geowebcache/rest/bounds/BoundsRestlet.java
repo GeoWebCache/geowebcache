@@ -26,8 +26,8 @@ import java.net.URLDecoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.grid.GridSet;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -113,7 +113,7 @@ public class BoundsRestlet extends GWCRestlet {
      * @return
      * @throws RestletException
      */
-    protected Representation doGetInternal(String layerName, String srsStr, String type) 
+    protected Representation doGetInternal(String layerName, String gridSetId, String type) 
     throws RestletException {
         TileLayer tl = findTileLayer(layerName, layerDispatcher);
    
@@ -121,26 +121,14 @@ public class BoundsRestlet extends GWCRestlet {
             throw new RestletException(layerName + " is not known", Status.CLIENT_ERROR_NOT_FOUND);
         }
         
-        SRS srs;
-        try {
-            srs = SRS.getSRS(srsStr);
-        } catch (GeoWebCacheException e) {
-            throw new RestletException(e.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
-        }
-        
-        GridSet grid = tl.getGrid(srs);
+        GridSubSet grid = tl.getGridSubSet(gridSetId);
         
         if(grid == null) {
-            throw new RestletException(layerName + " does not support " + srsStr, Status.CLIENT_ERROR_NOT_FOUND);
+            throw new RestletException(layerName + " does not support " + gridSetId, Status.CLIENT_ERROR_NOT_FOUND);
         }
         
         StringBuilder str = new StringBuilder();
-        int[][] bounds;
-        try {
-            bounds = grid.getGridCalculator().getGridBounds();
-        } catch (GeoWebCacheException e) {
-            throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL);
-        }
+        long[][] bounds = grid.getCoverages();
         
         if(type.equalsIgnoreCase("java")) {
             str.append("{");

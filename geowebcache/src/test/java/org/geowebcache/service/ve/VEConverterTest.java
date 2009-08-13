@@ -23,8 +23,8 @@ public class VEConverterTest extends TestCase {
     public void testVEConverter() throws Exception {
     	/* Check origin location */
     	String quadKey = "2";
-    	int[] gridLoc = VEConverter.convert(quadKey);
-    	int[] solution = {0,0,1};
+    	long[] gridLoc = VEConverter.convert(quadKey);
+    	long[] solution = {0,0,1};
     	assert(Arrays.equals(gridLoc, solution));
     	
     	/* Check zoomlevel */

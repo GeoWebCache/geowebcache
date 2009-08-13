@@ -17,8 +17,6 @@
  */
 package org.geowebcache.service.wms;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,7 +25,9 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.ResolutionMismatchException;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -36,7 +36,6 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.storage.StorageBroker;
-import org.geowebcache.util.Configuration;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.wms.BBOX;
 
@@ -125,21 +124,21 @@ public class WMSService extends Service {
         }
         
         SRS srs = SRS.getSRS(paramValues[1]);
-        if (! tileLayer.supportsSRS(srs)) {
+        GridSubSet gridSubSet = tileLayer.getGridSubSetForSRS(srs);
+        if (gridSubSet == null) {
             throw new ServiceException("Unable to match requested SRS "
                     + paramValues[1] + " to those supported by layer");
         }
    
         BBOX bbox = new BBOX(paramValues[2]);
         if (bbox == null || !bbox.isSane()) {
-            throw new ServiceException(
-                    "The bounding box parameter is missing or not sane");
+            throw new ServiceException("The bounding box parameter is missing or not sane");
         }
 
-        int[] tileIndex = tileLayer.getGridLocForBounds(srs, bbox);
-        
+        long[] tileIndex = gridSubSet.closestIndex(bbox);
+
         return new ConveyorTile(
-                sb, layers, srs, tileIndex, mimeType, 
+                sb, layers, gridSubSet.getName(), tileIndex, mimeType, 
                 modStrs[0], modStrs[1], request, response);
     }
 

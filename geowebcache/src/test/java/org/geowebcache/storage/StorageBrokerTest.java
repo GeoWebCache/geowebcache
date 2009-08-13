@@ -99,7 +99,7 @@ public class StorageBrokerTest extends TestCase {
             long tmp = (long) Math.log(i) + 1;
             long tmp2 = i % tmp; 
             long[] xyz = { tmp2, tmp2, (long) Math.log10(i)};
-            TileObject completeObj = TileObject.createCompleteTileObject("test", xyz,900913, "image/jpeg", null, blob);    
+            TileObject completeObj = TileObject.createCompleteTileObject("test", xyz,"hefty-gridSet:id1", "image/jpeg", null, blob);    
             sb.put(completeObj);
         }
         long stopInsert = System.currentTimeMillis();
@@ -129,7 +129,7 @@ public class StorageBrokerTest extends TestCase {
             long tmp = (long) Math.log(i) + 1;
             long tmp2 = i % tmp; 
             long[] xyz = { tmp2, tmp2, (long) Math.log10(i)};
-            TileObject queryObj2 = TileObject.createQueryTileObject("test", xyz,900913, "image/jpeg", null);
+            TileObject queryObj2 = TileObject.createQueryTileObject("test", xyz,"hefty-gridSet:id1", "image/jpeg", null);
             sb.get(queryObj2);
         }
         

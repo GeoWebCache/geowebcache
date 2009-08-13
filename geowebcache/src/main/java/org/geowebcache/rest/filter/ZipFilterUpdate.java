@@ -25,7 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.request.RequestFilter;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.util.ServletUtils;
@@ -62,9 +62,9 @@ public class ZipFilterUpdate {
                 
                 try {
                     filter.update(
-                            data, 
+                            data,
                             tl, 
-                            SRS.getSRS(Integer.parseInt(parsedName[0])), 
+                            parsedName[0], 
                             Integer.parseInt(parsedName[1]));
                     
                 } catch (GeoWebCacheException e) {
@@ -94,24 +94,9 @@ public class ZipFilterUpdate {
         // Slice away the extension, we dont have the data to test it
         String[] zExt = strs[2].split("\\.");
         strs[2] = zExt[0];
+
+        String[] gridSetIdZ = { strs[1], strs[2] };
         
-        try {
-            if (strs[0].equals("EPSG") 
-                    && Integer.parseInt(strs[1]) >= 0
-                    && Integer.parseInt(strs[2]) >= 0) {
-                
-                String[] srsZ = { strs[1], strs[2] };
-
-                return srsZ;
-            }
-
-        } catch (NumberFormatException nfe) {
-            // Do nothing
-        }
-
-        throw new RestletException(
-                "Unexpected filename " + fileName
-                + ", expected EPSG_<number>_<zoom level>.<format>",
-                Status.CLIENT_ERROR_BAD_REQUEST);
+        return gridSetIdZ;
     }
 }

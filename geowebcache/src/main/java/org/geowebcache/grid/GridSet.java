@@ -12,165 +12,178 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Marius Suta, The Open Planning Project, Copyright 2008
+ * @author Arne Kepp, OpenGeo, Copyright 2009
  */
 package org.geowebcache.grid;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.layer.SRS;
 import org.geowebcache.util.wms.BBOX;
 
-/**
- * Grid Class - Each TileLayer keeps a list of Grid Objects
- */
-
 public class GridSet {
-    private static Log log = LogFactory.getLog(org.geowebcache.grid.GridSet.class);
-
-    private SRS srs = null;
+        
+    protected Grid[] gridLevels;
     
-    private BBOX dataBounds = null;
+    protected double[] leftBottom = new double[2];
     
-    protected BBOX gridBounds = null;
+    protected String name;
     
-    protected int zoomStart;
+    protected SRS srs;
     
-    protected int zoomStop;
+    protected int tileWidth;
     
-    protected double[] resolutions = null;
+    protected int tileHeight;
     
-    private transient boolean staticResolutions = false;
-    
-    private volatile transient GridCalculator gridCalculator;
-    
-    public GridSet(SRS srs, BBOX bounds, BBOX gridBounds, double[] resolutions) {
-        this.srs = srs;
-        this.setDataBounds(bounds);
-        this.gridBounds = gridBounds;
-        this.resolutions = resolutions;
+    protected GridSet() {
+        // Blank
     }
     
-    /**
-     * method will set the bounds of the layer for this grid from a BBOX 
-     * @param bounds - BBOX with bounds
-     */
-    public void setBounds(BBOX bounds) {
-        this.setDataBounds(bounds);
-    }
-    /**
-     * method will set the bounds of the layer for this grid from a String
-     * @param bounds - String containing bounds
-     */
-    public void setBounds(String bounds) {
-        this.setDataBounds(new BBOX(bounds));
-    }
-    /**
-     * method will set the grid bounds (world) of the layer for this grid from a BBOX 
-     * @param dataBounds - BBOX with bounds
-     */
-    public void setGridBounds(BBOX gridbounds) {
-        this.gridBounds = gridbounds;
-    }
-    /**
-     * method will set the grid bounds (world) of the layer for this grid from a String 
-     * @param dataBounds - String containing bounds
-     */
-    public void setGridBounds(String gridbounds) {
-
-        this.gridBounds = new BBOX(gridbounds);
-    }
-    /**
-     * method set the projection supported by the layer for this grid
-     * @param projection - SRS
-     */
-    public void setSRS(SRS srs) {
-        this.srs = srs;
-    }
-    /**
-     * method returns the projection supported by the layer for this grid
-     * @return
-     */
-    public SRS getSRS() {
-        return this.srs;
-    }
-    /**
-     * method returns the bounds of the layer for this grid
-     * @return
-     */
-    public BBOX getBounds() {
-        return this.getDataBounds();
-    }
-    /**
-     * method returns the grid bounds of the layer for this grid
-     * @return
-     */
-    public BBOX getGridBounds() {
-        return this.gridBounds;
+    protected BBOX boundsFromIndex(long[] tileIndex) {
+        Grid grid = gridLevels[(int) tileIndex[2]];
+        
+        double width = grid.resolution * tileWidth;
+        double height = grid.resolution * tileHeight;
+        
+        BBOX tileBounds = new BBOX(
+                leftBottom[0] + width*tileIndex[0],
+                leftBottom[1] + height*tileIndex[1],
+                leftBottom[0] + width*(tileIndex[0] + 1),
+                leftBottom[1] + height*(tileIndex[1] + 1));
+        return tileBounds;
     }
     
-    public int getZoomStart() {
-        return this.zoomStart;
+    protected BBOX boundsFromRectangle(long[] rectangleExtent) {
+        Grid grid = gridLevels[(int) rectangleExtent[4]];
+        
+        double width = grid.resolution * tileWidth;
+        double height = grid.resolution * tileHeight;
+        
+        BBOX rectangleBounds = new BBOX(
+                leftBottom[0] + width*rectangleExtent[0], 
+                leftBottom[1] + height*rectangleExtent[1],
+                leftBottom[0] + width*(rectangleExtent[2] + 1),
+                leftBottom[1] + height*(rectangleExtent[3] + 1) );
+                
+        return rectangleBounds;
     }
     
-    public int getZoomStop() {
-        return this.zoomStop;
-    }
-    
-    public boolean hasStaticResolutions() {
-        return this.staticResolutions;
-    }
-    
-    //public void setResolutions(double[] resolutions) {
-    //    this.resolutions = resolutions;
-    //}
-    
-    public double[] getResolutions() throws GeoWebCacheException {
-        return getGridCalculator().getResolutions();
-    }
-    
-    /** 
-     * Use double locking to get the calculator to avoid performance hit.
-     * 
-     * @return
-     * @throws GeoWebCacheException
-     */
-    public GridCalculator getGridCalculator() throws GeoWebCacheException {
-        GridCalculator ret = gridCalculator;
-        if (ret == null) {
-            synchronized (this) {
-                ret = gridCalculator;
-                if (gridCalculator == null) {
-                    gridCalculator = ret = initGridCalculator();
-                }
+    protected long[] closestIndex(BBOX tileBounds) {       
+        double wRes = tileBounds.getWidth() / tileWidth;
+        
+        double bestError = Double.MAX_VALUE;
+        int bestLevel = -1;
+        
+        for(int i=0; i< gridLevels.length; i++) {
+            Grid grid = gridLevels[i];
+            
+            double error = Math.abs(wRes - grid.resolution);
+            
+            if(error < bestError) {
+                bestError = error;
+                bestLevel = i;
+            } else {
+                break;
             }
         }
+
+        return closestIndex(bestLevel, tileBounds);
+    }
+    
+    protected long[] closestIndex(int level, BBOX tileBounds) {
+        Grid grid = gridLevels[level];
+        
+        double width = grid.resolution * tileWidth;
+        double height = grid.resolution * tileHeight;
+        
+        long posX = (long) Math.round((tileBounds.coords[0] - leftBottom[0]) / width);
+        
+        long posY = (long) Math.round((tileBounds.coords[1] - leftBottom[1]) / height);
+        
+        long[] ret = { posX, posY, level };
+        
         return ret;
     }
+    
+    public long[] closestRectangle(BBOX rectangleBounds) {       
+        double rectWidth = rectangleBounds.getWidth();
+        double rectHeight = rectangleBounds.getHeight();
+        
+        double bestError = Double.MAX_VALUE;
+        int bestLevel = -1;
+        
+        // Now we loop over the resolutions until
+        for(int i=0; i< gridLevels.length; i++) {
+            Grid grid = gridLevels[i];
 
-    private GridCalculator initGridCalculator() throws GeoWebCacheException {
-        if (resolutions != null) {
-            staticResolutions = true;
-            zoomStart = 0;
-            zoomStop = resolutions.length - 1;
-        } else {
-            if (zoomStart < 0 || zoomStop < zoomStart || zoomStop == 0) {
-                log.debug("Missing values, setting zoomStart,zoomStop to 0,30");
-                zoomStart = 0;
-                zoomStop = 30;
+            double countX = rectWidth / (grid.resolution * tileWidth);
+            double countY = rectHeight / (grid.resolution * tileHeight);
+            
+            double error = 
+                Math.abs(countX - Math.round(countX)) + 
+                Math.abs(countY - Math.round(countY));
+
+            if(error < bestError) {
+                bestError = error;
+                bestLevel = i;
+            } else if(error > bestError) {
+                break;
             }
         }
         
-        GridCalculator gridCalc = new GridCalculator(this);
-        return gridCalc;
+        return closestRectangle(bestLevel, rectangleBounds);
     }
-
-    public void setDataBounds(BBOX dataBounds) {
-        this.dataBounds = dataBounds;
+    
+    protected long[] closestRectangle(int level, BBOX rectangeBounds) {
+        Grid grid = gridLevels[level];
+        
+        double width = grid.resolution * tileWidth;
+        double height = grid.resolution * tileHeight;
+        
+        long minX = (long) Math.floor((rectangeBounds.coords[0] - leftBottom[0]) / width);
+        long minY = (long) Math.floor((rectangeBounds.coords[1] - leftBottom[1]) / height);
+        long maxX = (long) Math.ceil(((rectangeBounds.coords[2] - leftBottom[0]) / width));
+        long maxY = (long) Math.ceil(((rectangeBounds.coords[3] - leftBottom[1]) / height));
+        
+        // We substract one, since that's the tile at that position
+        long[] ret = { minX, minY, maxX - 1, maxY - 1, level };
+        
+        return ret;
     }
-
-    public BBOX getDataBounds() {
-        return dataBounds;
+    
+    public boolean equals(Object obj) {
+        if(! (obj instanceof GridSet))
+            return false;
+        
+        GridSet other = (GridSet) obj;
+        
+        if(this == other)
+            return true;
+        
+        if(! other.srs.equals(srs))
+            return false;
+        
+        if(! other.name.equals(name))
+            return false;
+     
+        if(tileWidth != other.tileWidth ||
+                tileHeight != other.tileHeight)
+            return false;
+        
+        if(gridLevels.length != other.gridLevels.length)
+            return false;
+        
+        for(int i=0; i<gridLevels.length; i++) {
+            if(! gridLevels[i].equals(other.gridLevels[i]))
+                return false;
+        }
+        
+        return true;
+    }
+    
+    public BBOX getBounds() {
+        // TODO easier said than done?
+        return null;
+    }
+    
+    public String getName() {
+        return name;
     }
 }

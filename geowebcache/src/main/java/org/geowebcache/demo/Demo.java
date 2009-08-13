@@ -9,8 +9,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.grid.GridSet;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.util.wms.BBOX;
@@ -32,7 +33,16 @@ public class Demo {
         if (action != null) {
             TileLayer layer = tileLayerDispatcher.getTileLayer(action);
 
-            String srsStr = request.getParameter("srs");
+            String gridSetStr = request.getParameter("gridSet");
+            
+            if(gridSetStr == null) {
+                gridSetStr = request.getParameter("srs");
+                
+                if(gridSetStr == null) {
+                    gridSetStr = SRS.getEPSG4326().toString();
+                }
+            }
+            
             String formatStr = request.getParameter("format");
 
             if (formatStr != null) {
@@ -43,19 +53,12 @@ public class Demo {
             } else {
                 formatStr = layer.getDefaultMimeType().getFormat();
             }
-
-            SRS srs = null;
-            if (srsStr != null) {
-                srs = SRS.getSRS(srsStr);
-            } else {
-                srs = SRS.getEPSG900913();
-            }
             
             if(request.getPathInfo().startsWith("/demo")) {
                 // Running in GeoServer
-                page = generateHTML(layer, srs, formatStr, true);
+                page = generateHTML(layer, gridSetStr, formatStr, true);
             } else {
-                page = generateHTML(layer, srs, formatStr, false);
+                page = generateHTML(layer, gridSetStr, formatStr, false);
             }
             
 
@@ -120,27 +123,28 @@ public class Demo {
     
     private static String tableRows(TileLayerDispatcher tileLayerDispatcher)
     throws GeoWebCacheException {
-        Iterator<Entry<String,TileLayer>> it = 
-            tileLayerDispatcher.getLayers().entrySet().iterator();
+        Iterator<Entry<String,TileLayer>> it = tileLayerDispatcher.getLayers().entrySet().iterator();
         
         StringBuffer buf = new StringBuffer();
         
         while(it.hasNext()) {
             TileLayer layer = it.next().getValue();     
             buf.append("<tr><td>"+layer.getName()+"</td>");
-            if(layer.supportsSRS(SRS.getEPSG4326())) {
+            
+            GridSubSet epsg4326GridSubSet = layer.getGridSubSetForSRS(SRS.getEPSG4326());
+            if(null != epsg4326GridSubSet ) {
                 buf.append("<td>"+generateDemoUrl(layer.getName(), 4326,"EPSG:4326")+"</td>");
             } else {
                 buf.append("<td>EPSG:4326 not supported</td>");
             }
             
-            if(layer.supportsSRS(SRS.getEPSG900913())) {
-                buf.append("<td>"+generateDemoUrl(layer.getName(), 900913,"EPSG:900913")+"</td>");
+            if(null != layer.getGridSubSetForSRS(SRS.getEPSG3785())) {
+                buf.append("<td>"+generateDemoUrl(layer.getName(), 3785,"EPSG:3785")+"</td>");
             } else {
-                buf.append("<td>EPSG:900913 not supported</td>");
+                buf.append("<td>EPSG:3785 not supported</td>");
             }
             
-            if(layer.supportsSRS(SRS.getEPSG4326())) {
+            if(null != epsg4326GridSubSet && epsg4326GridSubSet.getGridSet().equals(GridSetBroker.WORLD_EPSG4326)) {
                 String prefix = "";
                 buf.append("<td><a href=\""+prefix+"service/kml/"+layer.getName()+".png.kml\">KML (PNG)</a></td>"
                 + "<td><a href=\""+prefix+"service/kml/"+layer.getName()+".kml.kmz\">KMZ (vector)</a></td>");
@@ -151,9 +155,10 @@ public class Demo {
             // Any custom projections?
             buf.append("<td>");
             int count = 0;
-            Iterator<SRS> iter = layer.getGrids().keySet().iterator();
+            Iterator<GridSubSet> iter = layer.getGridSubSets().values().iterator();
             while(iter.hasNext()) {
-                SRS curSRS = iter.next();
+                GridSubSet gridSet = iter.next();
+                SRS curSRS = gridSet.getSRS();
                 if(curSRS.getNumber() != 4326 && curSRS.getNumber() != 900913) { 
                     buf.append(generateDemoUrl(layer.getName(), curSRS.getNumber(),curSRS.toString())+"<br />");
                     count++;
@@ -174,24 +179,16 @@ public class Demo {
         return "<a href=\"demo/"+layerName+"?srs=EPSG:"+epsgNumber+"\">"+text+"</a>";
     }
     
-    private static String generateHTML(TileLayer layer, SRS srs, String formatStr, boolean asPlugin) 
+    private static String generateHTML(TileLayer layer, String gridSetStr, String formatStr, boolean asPlugin) 
     throws GeoWebCacheException {
         String layerName = layer.getName();
-        //String mime = MimeType.createFromFormat(formatStr).g;
-        //int srsIdx = layer.getSRSIndex(SRS.getSRS(srsStr));
         
-        GridSet grid = layer.getGrid(srs);
-        BBOX bbox = grid.getGridBounds();
-        BBOX zoomBounds = grid.getBounds();
-        //String res = "resolutions: "+ Arrays.toString(grid.getResolutions()) + ",\n";
-        String res;
+        GridSubSet gridSubSet = layer.getGridSubSet(gridSetStr);
         
-        if(grid.hasStaticResolutions()) {
-            res = "resolutions: " + Arrays.toString(grid.getResolutions()) + ",\n";
-        } else {
-            res = "maxResolution: " + Double.toString(grid.getResolutions()[grid.getZoomStart()]) +",\n"
-                        +"numZoomLevels: "+(grid.getZoomStop() - grid.getZoomStart() + 1)+",\n";
-        }
+        BBOX bbox = gridSubSet.getGridSetBounds();
+        BBOX zoomBounds = gridSubSet.getCoverageBestFitBounds();
+        
+        String res = "resolutions: " + Arrays.toString(gridSubSet.getResolutions()) + ",\n";
         
         String openLayersPath;
         if(asPlugin) {
@@ -204,7 +201,7 @@ public class Demo {
         String page =
             "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n"
             +"<meta http-equiv=\"imagetoolbar\" content=\"no\">\n"
-            +"<title>"+layerName+" "+srs.toString()+" "+formatStr+"</title>\n"
+            +"<title>"+layerName+" "+gridSubSet.getName()+" "+formatStr+"</title>\n"
             +"<style type=\"text/css\">\n"
             +"body { font-family: sans-serif; font-weight: bold; font-size: .8em; }\n"
             +"body { border: 0px; margin: 0px; padding: 0px; }\n"
@@ -219,7 +216,7 @@ public class Demo {
             +"function init(){\n"
             +"var mapOptions = { \n"
             + res
-            +"projection: new OpenLayers.Projection('"+srs.toString()+"'),\n"
+            +"projection: new OpenLayers.Projection('"+gridSubSet.getSRS().toString()+"'),\n"
             +"maxExtent: new OpenLayers.Bounds("+bbox.toString()+"),\n"
 	    +"controls: [] "
 	    +"};\n"

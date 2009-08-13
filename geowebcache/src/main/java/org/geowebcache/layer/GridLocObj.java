@@ -16,39 +16,38 @@
  */
 package org.geowebcache.layer;
 
+import java.util.Arrays;
+
 /**
  * This is an annoying object that exists solely because Java doesn't play nice
  * with int[] in hashmaps
  * 
  * @author ak
  */
-public class GridLocObj {
-    private int x;
+public class GridLocObj {    
+    private long[] gridLoc;
 
-    private int y;
-
-    private int z;
-
-    public GridLocObj(int[] gridLoc) {
-        x = gridLoc[0];
-        y = gridLoc[1];
-        z = gridLoc[2];
+    int hashCode;
+        
+    public GridLocObj(long[] gridLoc, int max) {
+        this.gridLoc = gridLoc;
+        this.hashCode = (int) (gridLoc[0] * 433 + gridLoc[1] * 19 + gridLoc[2]) % max;
     }
 
     public boolean equals(Object obj) {
         if (obj instanceof GridLocObj) {
             GridLocObj other = (GridLocObj) obj;
-            return x == other.x && y == other.y && z == other.z;
+            return Arrays.equals(gridLoc, other.gridLoc);
         }
-
+        
         return false;
     }
 
     public int hashCode() {
-        return (int) ((x * 433 + y * 73 + z) % Integer.MAX_VALUE);
+        return hashCode;
     }
 
     public String toString() {
-        return "{" + x + "," + y + "," + z + "}";
+        return "{" + gridLoc[0] + "," + gridLoc[1] + "," + gridLoc[2] + "}";
     }
 }

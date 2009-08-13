@@ -18,6 +18,8 @@ package org.geowebcache.layer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
 
@@ -25,17 +27,19 @@ public abstract class MetaTile implements TileResponseReceiver {
     private static Log log = LogFactory
             .getLog(org.geowebcache.layer.MetaTile.class);
 
-    protected int[] metaTileGridBounds = null; // minx,miny,maxx,maxy,zoomlevel
+    // minx,miny,maxx,maxy,zoomlevel
+    protected long[] metaGridCov = null; 
 
-    protected int[][] tilesGridPositions = null; // the grid positions of the
+    // the grid positions of the individual tiles
+    protected long[][] tilesGridPositions = null; 
 
-    // individual tiles
+    // X metatiling factor, after adjusting to bounds
+    protected int metaX; 
 
-    protected int metaX; // X metatiling factor, after adjusting to bounds
+    // Y metatiling factor, after adjusting to bounds
+    protected int metaY; 
 
-    protected int metaY; // Y metatiling factor, after adjusting to bounds
-
-    protected SRS srs;
+    protected GridSubSet gridSubSet;
 
     protected long status = -1;
 
@@ -59,20 +63,19 @@ public abstract class MetaTile implements TileResponseReceiver {
      * @param srs
      * @param responseFormat
      * @param requestFormat
-     * @param gridBounds
      * @param tileGridPosition
      * @param metaX
      * @param metaY
      */
-    protected MetaTile(SRS srs, MimeType responseFormat, FormatModifier formatModifier, 
-            int[] gridBounds, int[] tileGridPosition, int metaX, int metaY) {
-        this.srs = srs;
+    protected MetaTile(GridSubSet gridSubSet, MimeType responseFormat, FormatModifier formatModifier, 
+            long[] tileGridPosition, int metaX, int metaY) {
+        this.gridSubSet = gridSubSet;
         this.responseFormat = responseFormat;
         this.formatModifier = formatModifier;
         this.metaX = metaX;
         this.metaY = metaY;
 
-        metaTileGridBounds = calculateMetaTileGridBounds(gridBounds, tileGridPosition);
+        metaGridCov = calculateMetaTileGridBounds(gridSubSet.getCoverage((int) tileGridPosition[2]), tileGridPosition);
         tilesGridPositions = calculateTilesGridPositions();
     }
 
@@ -120,49 +123,41 @@ public abstract class MetaTile implements TileResponseReceiver {
      * @param tileGridPosition
      * @return
      */
-    private int[] calculateMetaTileGridBounds(int[] gridBounds,
-            int[] tileGridPosition) {
-
-        int[] metaTileGridBounds = new int[5];
-        metaTileGridBounds[0] = tileGridPosition[0]
-                - (tileGridPosition[0] % metaX);
-        metaTileGridBounds[1] = tileGridPosition[1]
-                - (tileGridPosition[1] % metaY);
-        metaTileGridBounds[2] = Math.min(metaTileGridBounds[0] + metaX - 1,
-                gridBounds[2]);
-        metaTileGridBounds[3] = Math.min(metaTileGridBounds[1] + metaY - 1,
-                gridBounds[3]);
-        metaTileGridBounds[4] = tileGridPosition[2];
+    private long[] calculateMetaTileGridBounds(long[] coverage, long[] tileIdx) {
+        long[] metaGridCov = new long[5];
+        metaGridCov[0] = tileIdx[0] - (tileIdx[0] % metaX);
+        metaGridCov[1] = tileIdx[1] - (tileIdx[1] % metaY);
+        metaGridCov[2] = Math.min(metaGridCov[0] + metaX - 1, coverage[2]);
+        metaGridCov[3] = Math.min(metaGridCov[1] + metaY - 1, coverage[3]);
+        metaGridCov[4] = tileIdx[2];
 
         // Save the actual metatiling factor, important at the boundaries
-        metaX = metaTileGridBounds[2] - metaTileGridBounds[0] + 1;
-        metaY = metaTileGridBounds[3] - metaTileGridBounds[1] + 1;
+        metaX = (int) (metaGridCov[2] - metaGridCov[0] + 1);
+        metaY = (int) (metaGridCov[3] - metaGridCov[1] + 1);
 
-        return metaTileGridBounds;
+        return metaGridCov;
     }
 
     /**
      * Creates an array with all the grid positions, used for cache keys
      */
-    private int[][] calculateTilesGridPositions() {
+    private long[][] calculateTilesGridPositions() {
         if (metaX < 0 || metaY < 0) {
             return null;
         }
-        int[][] tilesGridPositions = new int[metaX * metaY][3];
+        
+        long[][] tilesGridPos = new long[metaX * metaY][3];
 
-        try {
-            for (int y = 0; y < metaY; y++) {
-                for (int x = 0; x < metaX; x++) {
-                    int tile = y * metaX + x;
-                    tilesGridPositions[tile][0] = metaTileGridBounds[0] + x;
-                    tilesGridPositions[tile][1] = metaTileGridBounds[1] + y;
-                    tilesGridPositions[tile][2] = metaTileGridBounds[4];
-                }
+        for (int y = 0; y < metaY; y++) {
+            for (int x = 0; x < metaX; x++) {
+                int tile = y * metaX + x;
+                tilesGridPos[tile][0] = metaGridCov[0] + x;
+                tilesGridPos[tile][1] = metaGridCov[1] + y;
+                tilesGridPos[tile][2] = metaGridCov[4];
             }
-        } catch (java.lang.NullPointerException npe) {
-            log.error("Null pointer exception in calculateTilesGridositions()");
         }
-        return tilesGridPositions;
+
+        return tilesGridPos;
     }
 
     /**
@@ -171,9 +166,8 @@ public abstract class MetaTile implements TileResponseReceiver {
      * 
      * @return
      */
-    public int[] getMetaGridPos() {
-        int[] gridPos = { metaTileGridBounds[0], metaTileGridBounds[1],
-                metaTileGridBounds[4] };
+    public long[] getMetaGridPos() {
+        long[] gridPos = { metaGridCov[0], metaGridCov[1], metaGridCov[4] };
         return gridPos;
     }
 
@@ -182,16 +176,16 @@ public abstract class MetaTile implements TileResponseReceiver {
      * 
      * @return
      */
-    public int[] getMetaTileGridBounds() {
-        return metaTileGridBounds;
+    public long[] getMetaTileGridBounds() {
+        return metaGridCov;
     }
 
-    public int[][] getTilesGridPositions() {
+    public long[][] getTilesGridPositions() {
         return tilesGridPositions;
     }
 
     public SRS getSRS() {
-        return this.srs;
+        return this.gridSubSet.getSRS();
     }
     
     public MimeType getResponseFormat() {

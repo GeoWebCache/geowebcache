@@ -32,21 +32,23 @@ public class TileObject extends StorageObject {
     
     long format_id = -1L;
     
+    long gridset_id = -1L;
+    
     long[] xyz;
     
     String layer_name;
     
     String parameters;
     
-    int srs = -1;
+    String gridSetId;
         
     public static TileObject createQueryTileObject(
-            String layerName, long[] xyz, int srs, String format, String parameters) {
+            String layerName, long[] xyz, String gridSetId, String format, String parameters) {
         TileObject obj = new TileObject();
         
         obj.layer_name = layerName;
         obj.xyz = xyz;
-        obj.srs = srs;
+        obj.gridSetId = gridSetId;
         obj.blob_format = format;
         obj.parameters = parameters;
         
@@ -54,13 +56,13 @@ public class TileObject extends StorageObject {
     }
     
     public static TileObject createCompleteTileObject(
-            String layerName, long[] xyz, int srs, String format, 
+            String layerName, long[] xyz, String gridSetId, String format, 
             String parameters, byte[] blob) {
         TileObject obj = new TileObject();
         
         obj.layer_name = layerName;
         obj.xyz = xyz;
-        obj.srs = srs;
+        obj.gridSetId = gridSetId;
         obj.blob_format = format;
         obj.parameters = parameters;
         
@@ -108,6 +110,10 @@ public class TileObject extends StorageObject {
     public void setFormatId(long format_id) {
         this.format_id = format_id;
     }
+    
+    public String getGridSetId() {
+        return this.gridSetId;
+    }
 
     public long getLayerId() {
         return this.layer_id;
@@ -131,8 +137,16 @@ public class TileObject extends StorageObject {
         return xyz;
     }
     
-    public int getSrs() {
-        return srs;
+    //public int getSrs() {
+    //    return srs;
+    //}
+    
+    public long getGridSetIdId() {
+        return gridset_id;
+    }
+    
+    public void setGridSetIdId(long gridset_id) {
+        this.gridset_id = gridset_id;
     }
     
     public String getLayerName() {
@@ -148,6 +162,6 @@ public class TileObject extends StorageObject {
     }
     
     public String toString() {
-        return "["+ layer_name+","+srs+",{"+Arrays.toString(xyz)+"}]";
+        return "["+ layer_name+","+gridSetId+",{"+Arrays.toString(xyz)+"}]";
     }
 }

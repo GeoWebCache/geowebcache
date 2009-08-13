@@ -25,18 +25,18 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileRangeObject;
 
 public class FilePathFilter implements FilenameFilter {
-    String srsPrefix = null;
+    String gridSetPrefix = null;
     String mimeExtension = null;
     TileRangeObject tr;
     
     public FilePathFilter(TileRangeObject trObj) throws StorageException {
         this.tr = trObj;
         
-        if(tr.srs == null) {
-            throw new StorageException("Specifying the SRS is currently mandatory.");
+        if(tr.gridSetId == null) {
+            throw new StorageException("Specifying the grid set id is currently mandatory.");
         }
        
-        srsPrefix = "EPSG_"+tr.srs.getNumber();
+        gridSetPrefix = tr.gridSetId;
 
         if(tr.mimeType != null) {
             mimeExtension = tr.mimeType.getFileExtension();
@@ -52,8 +52,8 @@ public class FilePathFilter implements FilenameFilter {
      */
     public boolean accept(File dir, String name) {
         boolean ret;
-        if(name.startsWith("EPSG_")) {
-            // srs and zoomlevel level
+        if(name.startsWith(gridSetPrefix)) {
+            // gridset and zoomlevel level
             ret = acceptZoomLevelDir(name);
         } else if(name.contains(".")) {
             // filename
@@ -71,7 +71,7 @@ public class FilePathFilter implements FilenameFilter {
      * Example: EPSG_2163_01
      */
     private boolean acceptZoomLevelDir(String name) {
-        if(! name.startsWith(srsPrefix)) {
+        if(! name.startsWith(gridSetPrefix)) {
             return false;
         }
         
@@ -127,10 +127,10 @@ public class FilePathFilter implements FilenameFilter {
 
             int zoomLevel = findZoomLevel(dir.getParentFile().getName());
 
-            int x = Integer.parseInt(coords[0]);
-            int y = Integer.parseInt(coords[1]);
+            long x = Integer.parseInt(coords[0]);
+            long y = Integer.parseInt(coords[1]);
 
-            int[] box = tr.rangeBounds[zoomLevel];
+            long[] box = tr.rangeBounds[zoomLevel];
 
             
             if (x < box[0] || x > box[2]) {
@@ -154,6 +154,6 @@ public class FilePathFilter implements FilenameFilter {
      * @return
      */
     private int findZoomLevel(String dirName) {
-        return Integer.parseInt(dirName.substring(srsPrefix.length() +1));
+        return Integer.parseInt(dirName.substring(gridSetPrefix.length() +1));
     }
 }

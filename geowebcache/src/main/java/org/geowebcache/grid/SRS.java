@@ -1,4 +1,4 @@
-package org.geowebcache.layer;
+package org.geowebcache.grid;
 
 import java.util.Hashtable;
 
@@ -7,9 +7,11 @@ import org.geowebcache.GeoWebCacheException;
 public class SRS {
     private final int number;
 
-    private static transient final SRS epsg4326 = new SRS(4326);
+    private static final SRS EPSG4326 = new SRS(4326);
 
-    private static transient final SRS epsg900913 = new SRS(900913);
+    private static final SRS EPSG3785 = new SRS(3785);
+    
+    //private static final SRS EPSG900913 = EPSG3785;
     
     private static Hashtable<Integer,SRS> list = new Hashtable<Integer,SRS>();
 
@@ -17,15 +19,22 @@ public class SRS {
         number = epsgNumber;
     }
     
+    
+    /**
+     * This is already externally synchronized
+     *  
+     * @param epsgNumber
+     * @return
+     */
     public static SRS getSRS(int epsgNumber) {
         SRS ret = list.get(epsgNumber);
         
         if(ret == null) {
             // We'll use these a lot, so leave some shortcuts that avoid all the hashing
             if(epsgNumber == 4326) {
-                list.put(4326, SRS.getEPSG4326());
-            } else if(epsgNumber == 900913) {
-                list.put(900913, SRS.getEPSG900913());
+                list.put(4326, EPSG4326);
+            } else if(epsgNumber == 900913 || epsgNumber == 3785) {
+                list.put(3785, EPSG3785);
             }
             
             ret = new SRS(epsgNumber);
@@ -44,13 +53,14 @@ public class SRS {
         }
     }
     
-    public boolean equals(Object other) {
-        if (other == null || other.getClass() != this.getClass()) {
-            return false;
-        } else {
-            SRS otherSRS = (SRS) other;
-            return (otherSRS.number == this.number);
+    public boolean equals(Object obj) {
+        if(obj instanceof SRS) {
+            SRS other = (SRS) obj;
+            if(other.number == this.number) {
+                return true;
+            }
         }
+        return false;
     }
 
     public int getNumber() {
@@ -70,11 +80,14 @@ public class SRS {
     }
 
     public static SRS getEPSG4326() {
-        return epsg4326;
+        return EPSG4326;
     }
 
+    public static SRS getEPSG3785() {
+        return EPSG3785;
+    }
+    
     public static SRS getEPSG900913() {
-        return epsg900913;
+        return EPSG3785;
     }
-
 }

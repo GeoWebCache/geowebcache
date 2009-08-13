@@ -23,7 +23,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.MimeType;
@@ -35,9 +36,13 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     private static Log log = LogFactory.getLog(org.geowebcache.conveyor.ConveyorTile.class);
     
     // Shared request information, this is stored by the cache key
-    protected int[] tileIndex = null;
+    protected long[] tileIndex = null;
+    
     protected String layerId = null;
-    protected SRS srs = null;
+    //protected SRS srs = null;
+    protected String gridSetId = null;
+    
+    protected GridSubSet gridSet = null;
     
     protected TileLayer tileLayer = null;
     
@@ -54,16 +59,15 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
      * This constructor is used for an incoming request, the data is
      * then added by the cache
      */
-    public ConveyorTile(StorageBroker sb, String layerId, SRS srs, int[] tileIndex, MimeType mimeType, 
+    public ConveyorTile(StorageBroker sb, String layerId, String gridSetId, long[] tileIndex, MimeType mimeType, 
             String fullParameters, String modifiedParameters,
             HttpServletRequest servletReq, HttpServletResponse servletResp) {
         super(sb, servletReq, servletResp);
         this.layerId = layerId;
-        this.srs = srs;
+        this.gridSetId = gridSetId;
         
         long[] idx = new long[3];
         if(tileIndex != null) {
-            this.tileIndex = tileIndex.clone();
             idx[0] = tileIndex[0]; idx[1] = tileIndex[1]; idx[2] = tileIndex[2];
         }
         
@@ -71,7 +75,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
                
         this.fullParameters = fullParameters;
         
-        stObj = TileObject.createQueryTileObject(layerId, idx, srs.getNumber(), mimeType.getFormat(), modifiedParameters);
+        stObj = TileObject.createQueryTileObject(layerId, idx, gridSetId, mimeType.getFormat(), modifiedParameters);
     }
     
     public String getFullParameters() {
@@ -121,7 +125,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         return ((TileObject) stObj).getParameters();
     }
     
-    public int[] getTileIndex() {
+    public long[] getTileIndex() {
         return tileIndex;
     }
     
@@ -129,13 +133,24 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     //    this.tileIndex = tileIndex.clone();
     //}
     
-    public SRS getSRS() {
-        return srs;
+    //public SRS getSRS() {
+    //    return srs;
+    //}
+    public GridSubSet getGridSubSet() {
+        return tileLayer.getGridSubSet(this.gridSetId);
     }
     
-    public void setSRS(SRS srs) {
-        this.srs = srs;
+    public String getGridSetId() {
+        return gridSetId;
     }
+    
+    public void setGridSetId(String gridSetId) {
+        this.gridSetId = gridSetId;
+    }
+    
+    //public void setSRS(SRS srs) {
+    //    this.srs = srs;
+    //}
 
     public byte[] getContent() {
         return stObj.getBlob();

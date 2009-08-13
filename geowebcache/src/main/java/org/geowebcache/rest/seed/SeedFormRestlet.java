@@ -25,8 +25,8 @@ import java.util.Map.Entry;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.demo.Demo;
-import org.geowebcache.grid.GridSet;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.ImageMime;
@@ -129,7 +129,7 @@ public class SeedFormRestlet extends GWCRestlet {
         
         makeTypePullDown(doc);
         
-        makeSRSPulldown(doc, tl);
+        makeGridSetPulldown(doc, tl);
         
         makeFormatPullDown(doc, tl);
         
@@ -206,15 +206,15 @@ public class SeedFormRestlet extends GWCRestlet {
     }
     
     private void makeBboxHints(StringBuilder doc, TileLayer tl) {
-        Iterator<Entry<SRS, GridSet>> iter = tl.getGrids().entrySet().iterator();
+        Iterator<Entry<String, GridSubSet>> iter = tl.getGridSubSets().entrySet().iterator();
         
         //int minStart = Integer.MAX_VALUE;
         //int maxStop = Integer.MIN_VALUE;
         
         while(iter.hasNext()) {
-            Entry<SRS, GridSet> entry = iter.next();
+            Entry<String, GridSubSet> entry = iter.next();
             doc.append("<li>"+entry.getKey().toString()
-                    +":   "+entry.getValue().getBounds().toString()+"</li>\n");
+                    +":   "+entry.getValue().getCoverageBestFitBounds().toString()+"</li>\n");
         }
         
     }
@@ -242,21 +242,13 @@ public class SeedFormRestlet extends GWCRestlet {
     private void makeZoomPullDown(StringBuilder doc, boolean isStart, TileLayer tl) {
         Map<String,String> keysValues = new TreeMap<String,String>();
         
-        Iterator<Entry<SRS, GridSet>> iter = tl.getGrids().entrySet().iterator();
+        Iterator<Entry<String, GridSubSet>> iter = tl.getGridSubSets().entrySet().iterator();
         
         int minStart = Integer.MAX_VALUE;
         int maxStop = Integer.MIN_VALUE;
         
         while(iter.hasNext()) {
-            Entry<SRS, GridSet> entry = iter.next();
-            
-            // This is a bit of an issue...
-            // TODO shouldn't have to initialize grid calc here
-            try {
-                entry.getValue().getGridCalculator();
-            } catch (GeoWebCacheException e) {
-                e.printStackTrace();
-            }
+            Entry<String, GridSubSet> entry = iter.next();
             
             int start = entry.getValue().getZoomStart();
             int stop = entry.getValue().getZoomStop();
@@ -309,18 +301,22 @@ public class SeedFormRestlet extends GWCRestlet {
         doc.append("</td></tr>\n");
     }
 
-    private void makeSRSPulldown(StringBuilder doc, TileLayer tl) {
-        doc.append("<tr><td>SRS:</td><td>\n");
+    private void makeGridSetPulldown(StringBuilder doc, TileLayer tl) {
+        doc.append("<tr><td>Grid Set:</td><td>\n");
         Map<String,String> keysValues = new TreeMap<String,String>();
         
-        Iterator<Entry<SRS, GridSet>> iter = tl.getGrids().entrySet().iterator();
+        Iterator<String> iter = tl.getGridSubSets().keySet().iterator();
         
+        String firstGridSetId = null;
         while(iter.hasNext()) {
-            Entry<SRS, GridSet> entry = iter.next();
-            keysValues.put(entry.getKey().toString(), Integer.toString(entry.getKey().getNumber()));
+            String gridSetId = iter.next();
+            if(firstGridSetId == null) {
+                firstGridSetId = gridSetId;
+            }
+            keysValues.put(gridSetId,gridSetId);
         }
         
-        makePullDown(doc, "srs", keysValues, SRS.getEPSG4326().toString());
+        makePullDown(doc, "gridSetId", keysValues, firstGridSetId);
         doc.append("</td></tr>\n");
     }
 
@@ -470,7 +466,7 @@ public class SeedFormRestlet extends GWCRestlet {
                     parseDouble(form, "maxY"));
         }
         
-        SRS srs = SRS.getSRS(Integer.parseInt(form.getFirst("srs").getValue()));
+        String gridSetId = form.getFirst("gridSetId").getValue();
 
         int threadCount = Integer.parseInt(form.getFirst("threadCount")
                 .getValue());
@@ -481,7 +477,7 @@ public class SeedFormRestlet extends GWCRestlet {
 
         String type = form.getFirst("type").getValue();
 
-        SeedRequest sr = new SeedRequest(tl.getName(), bounds, srs,
+        SeedRequest sr = new SeedRequest(tl.getName(), bounds, gridSetId,
                 threadCount, zoomStart, zoomStop, format, type, null);
 
         seedRestlet.dispatchTasks(sr, tl, threadPool);

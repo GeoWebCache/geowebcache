@@ -21,13 +21,13 @@ import java.io.IOException;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.filter.request.WMSRasterFilter;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.rest.RestletException;
 import org.restlet.data.Status;
 
 public class FileRasterFilterUpdate extends XmlFilterUpdate {
-    SRS srs;
+    String gridSetId;
     int zoomStart;
     int zoomStop;
     
@@ -41,16 +41,16 @@ public class FileRasterFilterUpdate extends XmlFilterUpdate {
         WMSRasterFilter wmsFilter = (WMSRasterFilter) filter;
         
         // Check that the SRS makes sense
-        if (tl.getGrid(srs) == null) {
+        if (tl.getGridSubSet(gridSetId) == null) {
             throw new RestletException("The filter " + wmsFilter.getName()
                     + " is associated with a layer that does not support "
-                    + srs.toString(), Status.CLIENT_ERROR_BAD_REQUEST);
+                    + gridSetId, Status.CLIENT_ERROR_BAD_REQUEST);
         }
 
         // Run the actual update
         try {
             for (int z = zoomStart; z <= zoomStop; z++) {
-                wmsFilter.setMatrix(tl, srs, z, true);
+                wmsFilter.setMatrix(tl, gridSetId, z, true);
             }
         } catch (GeoWebCacheException e) {
             throw new RestletException("Error updating " + wmsFilter.getName()

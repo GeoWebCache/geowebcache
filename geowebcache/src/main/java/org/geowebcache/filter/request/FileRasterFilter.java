@@ -24,7 +24,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 
 public class FileRasterFilter extends RasterFilter {
@@ -33,9 +33,9 @@ public class FileRasterFilter extends RasterFilter {
     
     String fileExtension;
 
-    protected BufferedImage loadMatrix(TileLayer layer, SRS srs, int zoomLevel)
+    protected BufferedImage loadMatrix(TileLayer layer, String gridSetId, int zoomLevel)
     throws IOException, GeoWebCacheException {
-        File fh = new File( createFilePath(srs, zoomLevel) );
+        File fh = new File( createFilePath(gridSetId, zoomLevel) );
         
         if(! fh.exists() || ! fh.canRead()) {
             throw new GeoWebCacheException(fh.getAbsolutePath() + " does not exist or is not readable");
@@ -43,7 +43,7 @@ public class FileRasterFilter extends RasterFilter {
         
         BufferedImage img = ImageIO.read(fh);
         
-        int[] widthHeight = calculateWidthHeight(layer.getGrid(srs), zoomLevel);
+        int[] widthHeight = calculateWidthHeight(layer.getGridSubSet(gridSetId), zoomLevel);
         
         if(img.getWidth() != widthHeight[0] || img.getHeight() != widthHeight[1]) {
             String msg = fh.getAbsolutePath() + " has dimensions " + img.getWidth() + "," + img.getHeight()
@@ -54,27 +54,27 @@ public class FileRasterFilter extends RasterFilter {
         return img;
     }
     
-    private String createFilePath(SRS srs, int zoomLevel) {
+    private String createFilePath(String gridSetId, int zoomLevel) {
         String path =  
             storagePath + File.separator 
-            + this.name + "_" + "EPSG_" + srs.getNumber() 
+            + this.name + "_" + gridSetId 
             + "_" + zoomLevel + "." + fileExtension;
         
         return path;
     }
     
-    public void saveMatrix(byte[] data, TileLayer layer, SRS srs, int zoomLevel) throws IOException {
+    public void saveMatrix(byte[] data, TileLayer layer, String gridSetId, int zoomLevel) throws IOException {
         // Persist
-        File fh = new File( createFilePath(srs, zoomLevel) );
+        File fh = new File(createFilePath(gridSetId, zoomLevel) );
         FileOutputStream fos = new FileOutputStream(fh);
         fos.write(data);
         fos.close();
     }
 
-    public void update(byte[] filterData, TileLayer layer, SRS srs, int z)
+    public void update(byte[] filterData, TileLayer layer, String gridSetId, int z)
             throws GeoWebCacheException {
         try {
-            saveMatrix(filterData, layer, srs, z);
+            saveMatrix(filterData, layer, gridSetId, z);
             
         } catch (IOException e) {
             throw new GeoWebCacheException(this.getName() 
@@ -82,7 +82,7 @@ public class FileRasterFilter extends RasterFilter {
         }
         
         try {
-            super.setMatrix(layer, srs, z, true);
+            super.setMatrix(layer, gridSetId, z, true);
         } catch (IOException e) {
             throw new GeoWebCacheException(this.getName() 
                     + " encountered an error while loading matrix, " + e.getMessage());
@@ -90,7 +90,7 @@ public class FileRasterFilter extends RasterFilter {
     }
 
     
-    public void update(TileLayer layer, SRS srs, int z)
+    public void update(TileLayer layer, String gridSetId, int z)
             throws GeoWebCacheException {
         throw new GeoWebCacheException("TileLayer layer, SRS srs, int z) is not appropriate for FileRasterFilters");
     }

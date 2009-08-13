@@ -18,7 +18,6 @@ package org.geowebcache.filter.request;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.layer.SRS;
 import org.geowebcache.layer.TileLayer;
 
 /** 
@@ -54,7 +53,7 @@ public abstract class RequestFilter {
     /**
      * Optional updates, filters should implement at least one
      */
-    public abstract void update(byte[] filterData, TileLayer layer, SRS srs, int z) throws GeoWebCacheException;
+    public abstract void update(byte[] filterData, TileLayer layer, String gridSetId, int z) throws GeoWebCacheException;
     
-    public abstract void update(TileLayer layer, SRS srs, int z) throws GeoWebCacheException;
+    public abstract void update(TileLayer layer, String gridSetId, int z) throws GeoWebCacheException;
 }

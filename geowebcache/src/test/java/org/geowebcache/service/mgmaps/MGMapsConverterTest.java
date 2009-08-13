@@ -21,8 +21,8 @@ public class MGMapsConverterTest extends TestCase {
         int x = 0;
         int y = 0;
         int z = 17;
-        int[] gridLoc = MGMapsConverter.convert(z, x, y);
-        int[] solution = { 0, 0, 0 };
+        long[] gridLoc = MGMapsConverter.convert(z, x, y);
+        long[] solution = { 0, 0, 0 };
 
         assert (Arrays.equals(gridLoc, solution));
 

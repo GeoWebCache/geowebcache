@@ -29,7 +29,10 @@ import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.BlankTileException;
 import org.geowebcache.filter.request.GreenTileException;
 import org.geowebcache.filter.request.RequestFilterException;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.OutsideCoverageException;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
@@ -60,15 +63,15 @@ public class KMZHelper {
      * @param linkGridLocs
      * @return
      */
-    public static int[][] filterGridLocs(StorageBroker sb, TileLayer tileLayer,
-            MimeType mime, int[][] linkGridLocs) 
+    public static long[][] filterGridLocs(StorageBroker sb, TileLayer tileLayer,
+            MimeType mime, long[][] linkGridLocs) 
     throws GeoWebCacheException {
         
         for(int i=0;i<linkGridLocs.length; i++) {
             if(linkGridLocs[i][2] > 0) {
                 
                 ConveyorTile tile = new ConveyorTile(sb,
-                        tileLayer.getName(), SRS.getEPSG4326(), 
+                        tileLayer.getName(), GridSetBroker.WORLD_EPSG4326.getName(), 
                         linkGridLocs[i], mime, null, null, null, null);
                 
                 tile.setTileLayer(tileLayer);
@@ -93,6 +96,8 @@ public class KMZHelper {
                     } catch (GeoWebCacheException gwce) {
                         log.error(gwce.getMessage());
                         gwce.printStackTrace();
+                        linkGridLocs[i][2] = -1;
+                    } catch (OutsideCoverageException e) {
                         linkGridLocs[i][2] = -1;
                     }
 

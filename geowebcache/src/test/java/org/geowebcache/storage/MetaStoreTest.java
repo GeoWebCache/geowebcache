@@ -36,14 +36,14 @@ public class MetaStoreTest extends TestCase {
             long[] xyz = { 1L, 2L, 3L };
             bytes = "Test 1 2 3".getBytes();
             TileObject to = TileObject.createCompleteTileObject(
-                    "test'Layer:æøå;", xyz, 4326, "jpeg", "a=x&b=y", bytes);
+                    "test'Layer:æøå;", xyz, "hefty-gridSet:id", "jpeg", "a=x&b=y", bytes);
 
             ms.put(to);
             ms.unlock(to);
             
             long[] xyz2 = { 1L, 2L, 3L };
             to2 = TileObject.createQueryTileObject(
-                    "test'Layer:æøå;", xyz2, 4326, "jpeg", "a=x&b=y");
+                    "test'Layer:æøå;", xyz2, "hefty-gridSet:id", "jpeg", "a=x&b=y");
 
             ms.get(to2);
 
@@ -119,7 +119,7 @@ public class MetaStoreTest extends TestCase {
             long[] xyz = { 1L, 2L, 3L };
             bytes = "Test 1 2 3".getBytes();
             TileObject to = TileObject.createCompleteTileObject(
-                    layerName, xyz, 4326, format, parameters, bytes);
+                    layerName, xyz, "hefty-gridSet:id", format, parameters, bytes);
 
             ms.put(to);
             ms.unlock(to);
@@ -127,7 +127,7 @@ public class MetaStoreTest extends TestCase {
             // Check
             long[] xyz2 = { 1L, 2L, 3L };
             to2 = TileObject.createQueryTileObject(
-                    layerName, xyz2, 4326, format, parameters);
+                    layerName, xyz2, "hefty-gridSet:id", format, parameters);
 
             assertTrue(ms.get(to2));
             assertEquals(bytes.length,to2.getBlobSize());
@@ -138,7 +138,7 @@ public class MetaStoreTest extends TestCase {
             // Check
             long[] xyz3 = { 1L, 2L, 3L };
             to3 = TileObject.createQueryTileObject(
-                    layerName, xyz3, 4326, format, parameters);
+                    layerName, xyz3, "hefty-gridSet:id", format, parameters);
 
             assertFalse(ms.get(to3));
 

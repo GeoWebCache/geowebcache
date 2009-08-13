@@ -23,7 +23,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
@@ -90,19 +91,23 @@ public class SeedTask extends GWCTask {
             }
         }
         
-        SRS srs = req.getSRS();
-        if (srs == null) {
-            srs = tl.getGrids().entrySet().iterator().next().getKey();
+        String gridSetId = req.getGridSetId();
+        if (gridSetId == null) {
+            gridSetId = tl.getGridSubSets().entrySet().iterator().next().getKey();
         }
+        
+        GridSubSet gridSubSet = tl.getGridSubSet(gridSetId);
 
+        long[][] coveredGridLevels;
+        
         BBOX bounds = req.getBounds();
         if (bounds == null) {
-            bounds = tl.getGrid(srs).getBounds();
+            coveredGridLevels = gridSubSet.getCoverages();
+        } else {
+            coveredGridLevels = gridSubSet.getCoverageIntersections(bounds);
         }
-
-        int[][] coveredGridLevels = tl.getCoveredGridLevels(srs, bounds);
+   
         int[] metaTilingFactors = tl.getMetaTilingFactors();
-        int tilesPerMetaTile = metaTilingFactors[0] * metaTilingFactors[1];
 
         int arrayIndex = getCurrentThreadArrayIndex();
         long TOTAL_TILES = -1;
@@ -116,19 +121,19 @@ public class SeedTask extends GWCTask {
         boolean tryCache = !reseed;
 
         for (int level = zoomStart; level <= zoomStop && this.terminate == false; level++) {
-            int[] levelGrid = coveredGridLevels[level];
+            long[] levelGrid = coveredGridLevels[level];
             
             // Round down to the closes metatile boundary before starting
-            int starty = levelGrid[1] - (levelGrid[1] % metaTilingFactors[1]);
-            for (int gridy = starty; gridy <= levelGrid[3];) {
+            long starty = levelGrid[1] - (levelGrid[1] % metaTilingFactors[1]);
+            for (long gridy = starty; gridy <= levelGrid[3];) {
             	
             	// Round down to the closest metatile boundary before starting
-            	int startx = levelGrid[0] - (levelGrid[0] % metaTilingFactors[0]);
-                for (int gridx = startx + (threadOffset * metaTilingFactors[0]); gridx <= levelGrid[2] && this.terminate == false; ) {
+            	long startx = levelGrid[0] - (levelGrid[0] % metaTilingFactors[0]);
+                for (long gridx = startx + (threadOffset * metaTilingFactors[0]); gridx <= levelGrid[2] && this.terminate == false; ) {
 
-                    int[] gridLoc = { gridx, gridy, level };
+                    long[] gridLoc = { gridx, gridy, level };
 
-                    ConveyorTile tile = new ConveyorTile(storageBroker, tl.getName(), srs, gridLoc, mimeType, null, null, null, null);
+                    ConveyorTile tile = new ConveyorTile(storageBroker, tl.getName(), gridSetId, gridLoc, mimeType, null, null, null, null);
                     
                     // Question is, how resilient should we be ?
                     try {
@@ -140,14 +145,14 @@ public class SeedTask extends GWCTask {
                         throw new GeoWebCacheException(ioe.getMessage());
                     }
 
-                    int countX;
+                    long countX;
                     if (gridx + metaTilingFactors[0] - 1 > levelGrid[2]) {
                         countX = (gridx + metaTilingFactors[0] - 1) - levelGrid[2];
                     } else {
                         countX = metaTilingFactors[0];
                     }
 
-                    int countY;
+                    long countY;
                     if (gridy + metaTilingFactors[1] - 1 > levelGrid[3]) {
                         countY = (gridy + metaTilingFactors[1] - 1) - levelGrid[3];
                     } else {
@@ -196,11 +201,11 @@ public class SeedTask extends GWCTask {
      * @param gridBounds
      * @return -1 if too many
      */
-    private long tileCount(int[][] coveredGridLevels, int startZoom, int stopZoom) {
+    private long tileCount(long[][] coveredGridLevels, int startZoom, int stopZoom) {
         long count = 0;
         
         for(int i=startZoom; i<=stopZoom; i++) {
-            int[] gridBounds = coveredGridLevels[i];
+            long[] gridBounds = coveredGridLevels[i];
             
             long thisLevel = (1 + gridBounds[2] - gridBounds[0]) * (1 + gridBounds[3] - gridBounds[1]);
             

@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,8 +29,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.grid.GridSet;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -208,10 +209,10 @@ public class WMSGetCapabilities {
         Iterator<TileLayer> layerIter = tld.getLayers().values().iterator();
         while(layerIter.hasNext()) {
             TileLayer layer = layerIter.next();
-            Iterator<GridSet> gridIter = layer.getGrids().values().iterator();
+            Iterator<GridSubSet> gridIter = layer.getGridSubSets().values().iterator();
 
             while(gridIter.hasNext()) {
-                GridSet grid = gridIter.next();
+                GridSubSet grid = gridIter.next();
                 
                 Iterator<MimeType> mimeIter = null;
                 
@@ -236,7 +237,7 @@ public class WMSGetCapabilities {
         str.append("  </VendorSpecificCapabilities>\n");   
     }
     
-    private void capabilityVendorSpecificTileset(StringBuilder str, TileLayer layer, GridSet grid, String formatStr) 
+    private void capabilityVendorSpecificTileset(StringBuilder str, TileLayer layer, GridSubSet grid, String formatStr) 
     throws GeoWebCacheException {
         String srsStr = grid.getSRS().toString();
         StringBuilder resolutionsStr = new StringBuilder();
@@ -245,7 +246,7 @@ public class WMSGetCapabilities {
            resolutionsStr.append(Double.toString(res[i]) + " ");
         }
         
-        String[] bs = boundsPrep(layer.getZoomedOutBbox(grid.getSRS()));
+        String[] bs = boundsPrep(grid.getCoverageBestFitBounds());
         
         str.append("    <TileSet>\n");
         str.append("      <SRS>"+srsStr+"</SRS>\n");        
@@ -290,20 +291,31 @@ public class WMSGetCapabilities {
         str.append("      <Name>"+layer.getName()+"</Name>\n");
         str.append("      <Title>"+layer.getName()+"</Title>\n");
         
-        Iterator<SRS> srsIter = layer.getGrids().keySet().iterator();
-        while(srsIter.hasNext()) {
-            str.append("      <SRS>"+srsIter.next().toString()+"</SRS>\n");
+        Iterator<GridSubSet> gridSetIter = layer.getGridSubSets().values().iterator();
+        TreeSet<SRS> srsSet = new TreeSet<SRS>();
+        StringBuilder boundingBoxStr = new StringBuilder();
+        while(gridSetIter.hasNext()) {
+            GridSubSet curGridSubSet = gridSetIter.next();
+            SRS curSRS = curGridSubSet.getSRS();
+            if(! srsSet.contains(curSRS)) {
+                str.append("      <SRS>"+curSRS.toString()+"</SRS>\n");
+                
+                // Save bounding boxes for later
+                String[] bs = boundsPrep(curGridSubSet.getCoverageBestFitBounds());
+                boundingBoxStr.append("      <BoundingBox SRS=\"" + curGridSubSet.getSRS().toString() +"\" minx=\""+bs[0]+"\" miny=\""+bs[1]+"\" maxx=\""+bs[2]+"\" maxy=\""+bs[3]+"\"/>\n");    
+                
+                srsSet.add(curSRS);
+            }
         }
-        if(layer.getGrid(SRS.getEPSG4326()) != null) {
-            String[] bs = boundsPrep(layer.getZoomedOutBbox(SRS.getEPSG4326()));
+        
+        GridSubSet epsg4326GridSubSet = layer.getGridSubSetForSRS(SRS.getEPSG4326());
+        if(null != epsg4326GridSubSet) {
+            String[] bs = boundsPrep(epsg4326GridSubSet.getCoverageBestFitBounds());
             str.append("      <LatLonBoundingBox minx=\""+bs[0]+"\" miny=\""+bs[1]+"\" maxx=\""+bs[2]+"\" maxy=\""+bs[3]+"\"/>\n");    
         }
-        Iterator<GridSet> gridIter = layer.getGrids().values().iterator();
-        while(gridIter.hasNext()) {
-            GridSet grid = gridIter.next();
-            String[] bs = boundsPrep(layer.getZoomedOutBbox(grid.getSRS()));
-            str.append("      <BoundingBox SRS=\"" + grid.getSRS().toString() +"\" minx=\""+bs[0]+"\" miny=\""+bs[1]+"\" maxx=\""+bs[2]+"\" maxy=\""+bs[3]+"\"/>\n");    
-        }
+        
+        // Bounding boxes gathered earlier
+        str.append(boundingBoxStr);
         
         // TODO style?
         str.append("    </Layer>\n");

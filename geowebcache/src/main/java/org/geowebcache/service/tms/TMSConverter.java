@@ -20,7 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
@@ -55,7 +56,7 @@ public class TMSConverter extends Service {
             throw new ServiceException("Expected at least 5 parameters, found " + params.length);
         }
         
-        int[] gridLoc = new int[3];
+        long[] gridLoc = new long[3];
         
         String[] yExt = params[paramsLength - 1].split("\\.");
         
@@ -76,7 +77,7 @@ public class TMSConverter extends Service {
         }
         // TMS does not specify projection, simply choose the first available
         // SRS for the layer.
-        SRS srs = tileLayer.getGrids().keys().nextElement();
+        String gridSubSetId = tileLayer.getGridSubSets().keySet().iterator().next();
 
         // TMS specifies only the extension of the format, assume that the mime
         // type is image/something
@@ -87,7 +88,7 @@ public class TMSConverter extends Service {
             throw new ServiceException("Unable to determine requested format based on extension " + yExt[1]);
         }
 
-        ConveyorTile ret = new ConveyorTile(sb, layerId, srs, gridLoc, mimeType, null, null, request, response);
+        ConveyorTile ret = new ConveyorTile(sb, layerId, gridSubSetId, gridLoc, mimeType, null, null, request, response);
         return ret;
     }
 

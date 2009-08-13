@@ -17,29 +17,29 @@
  */
 package org.geowebcache.storage;
 
-import org.geowebcache.layer.SRS;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.mime.MimeType;
 
 public class TileRangeObject {
     public String layerName;
     
-    public SRS srs;
+    public String gridSetId;
     
     public int zoomStart;
     
     public int zoomStop;
     
     // {zoom}{minx,miny,maxx,maxy}
-    public int[][] rangeBounds;
+    public long[][] rangeBounds;
     
     public MimeType mimeType;
     
     public String parameters;
     
-    public TileRangeObject(String layerName, SRS srs, int zoomStart, 
-            int zoomStop, int[][] rangeBounds, MimeType mimeType, String parameters) {
+    public TileRangeObject(String layerName, String gridSetId, int zoomStart, 
+            int zoomStop, long[][] rangeBounds, MimeType mimeType, String parameters) {
         this.layerName = layerName;
-        this.srs = srs;
+        this.gridSetId = gridSetId;
         this.rangeBounds = rangeBounds;
         this.zoomStart = zoomStart;
         this.zoomStop = zoomStop;

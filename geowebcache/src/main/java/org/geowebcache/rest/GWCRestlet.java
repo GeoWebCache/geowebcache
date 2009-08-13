@@ -44,6 +44,8 @@ public class GWCRestlet extends Restlet {
                     Status.CLIENT_ERROR_NOT_FOUND);
         }
         
+        layer.isInitialized();
+        
         return layer;
     }
 }
