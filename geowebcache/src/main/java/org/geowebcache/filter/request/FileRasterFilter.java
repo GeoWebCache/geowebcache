@@ -24,7 +24,6 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 
 public class FileRasterFilter extends RasterFilter {

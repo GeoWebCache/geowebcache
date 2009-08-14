@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Locale;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -41,10 +40,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.GridSubSet;
-import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.MetaTile;
 import org.geowebcache.mime.FormatModifier;
-import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.wms.BBOX;
 

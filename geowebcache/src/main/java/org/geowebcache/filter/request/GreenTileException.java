@@ -23,7 +23,6 @@ import java.io.InputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.GeoWebCacheDispatcher;
 
 /**
  * Hardcoded to the built-in blank tile for now

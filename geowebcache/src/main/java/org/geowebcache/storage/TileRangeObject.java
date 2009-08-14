@@ -17,7 +17,6 @@
  */
 package org.geowebcache.storage;
 
-import org.geowebcache.grid.SRS;
 import org.geowebcache.mime.MimeType;
 
 public class TileRangeObject {

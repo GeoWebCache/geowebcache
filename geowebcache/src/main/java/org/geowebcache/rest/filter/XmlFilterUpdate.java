@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.rest.RestletException;
-import org.restlet.data.Response;
 
 public abstract class XmlFilterUpdate {
     abstract protected void runUpdate(RequestFilter filter, TileLayer tl) throws IOException, RestletException;

@@ -51,7 +51,6 @@ import org.geowebcache.filter.parameters.RegexParameterFilter;
 import org.geowebcache.filter.request.CircularExtentFilter;
 import org.geowebcache.filter.request.FileRasterFilter;
 import org.geowebcache.filter.request.WMSRasterFilter;
-import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.OldGrid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;

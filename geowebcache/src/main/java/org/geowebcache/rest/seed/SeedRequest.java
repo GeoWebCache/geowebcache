@@ -17,7 +17,6 @@
  */
 package org.geowebcache.rest.seed;
 
-import org.geowebcache.grid.SRS;
 import org.geowebcache.util.wms.BBOX;
 
 public class SeedRequest {

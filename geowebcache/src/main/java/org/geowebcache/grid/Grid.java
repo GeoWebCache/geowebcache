@@ -18,8 +18,6 @@ package org.geowebcache.grid;
 
 import java.util.Arrays;
 
-import org.geowebcache.util.wms.BBOX;
-
 public class Grid {    
     // maxX and maxY
     protected long[] extent = new long[2];

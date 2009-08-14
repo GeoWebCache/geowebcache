@@ -17,7 +17,6 @@
  */
 package org.geowebcache.storage.metastore.jdbc;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
@@ -26,7 +25,6 @@ import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.MetaStore;
 import org.geowebcache.storage.StorageException;
-import org.geowebcache.storage.StorageObject;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRangeObject;
 import org.geowebcache.storage.WFSObject;

@@ -19,7 +19,6 @@ package org.geowebcache.filter.request;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSubSet;
-import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 
 /**

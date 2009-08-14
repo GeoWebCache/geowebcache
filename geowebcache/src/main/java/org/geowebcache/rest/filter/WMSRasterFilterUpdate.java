@@ -21,10 +21,8 @@ import java.io.IOException;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.filter.request.WMSRasterFilter;
-import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.rest.RestletException;
-import org.restlet.data.Response;
 import org.restlet.data.Status;
 
 public class WMSRasterFilterUpdate extends XmlFilterUpdate {

@@ -18,7 +18,6 @@
 package org.geowebcache.mime;
 
 import javax.imageio.ImageWriteParam;
-import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -18,7 +18,6 @@
 package org.geowebcache.filter.request;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -29,10 +28,8 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.OutsideCoverageException;
-import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
-import org.geowebcache.util.wms.BBOX;
 
 /**
  * A raster filter uses multiple rasters, one for each zoom level,

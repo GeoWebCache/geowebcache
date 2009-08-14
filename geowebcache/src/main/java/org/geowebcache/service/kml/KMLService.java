@@ -32,7 +32,6 @@ import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.OutsideCoverageException;
-import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.OutOfBoundsException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
