@@ -21,8 +21,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSetBroker;
@@ -41,8 +39,6 @@ import org.geowebcache.util.ServletUtils;
  */
 public class GMapsConverter extends Service {
     public static final String SERVICE_GMAPS = "gmaps";
-
-    private static Log log = LogFactory.getLog(org.geowebcache.service.gmaps.GMapsConverter.class);
 
     private StorageBroker sb;
     

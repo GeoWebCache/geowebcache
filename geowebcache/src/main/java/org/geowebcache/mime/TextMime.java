@@ -1,10 +1,6 @@
 package org.geowebcache.mime;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 public class TextMime extends MimeType {
-    private static Log log = LogFactory.getLog(org.geowebcache.mime.TextMime.class);
 
     public static final TextMime txt = new TextMime(
        "text/plain", "txt", "txt",

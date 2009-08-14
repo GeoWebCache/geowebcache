@@ -22,6 +22,6 @@ public class ByteUtilsTest extends TestCase {
         byte[] testB = ByteUtils.uIntLongToByteWord((long) number);
         long testL = ByteUtils.bytesToUIntLong(testB, 0);
         
-        this.assertEquals((long) number, testL);
+        assertEquals((long) number, testL);
     }
 }

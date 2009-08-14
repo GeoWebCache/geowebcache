@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 import junit.framework.TestCase;
 
-import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.util.wms.BBOX;
 
 /**

@@ -18,8 +18,6 @@ package org.geowebcache.rest.seed;
 
 import java.util.Arrays;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.layer.TileLayer;
@@ -31,7 +29,6 @@ import org.geowebcache.storage.TileRangeObject;
 import org.geowebcache.util.wms.BBOX;
 
 public class TruncateTask extends GWCTask {
-    private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.TruncateTask.class);
     
     private final SeedRequest req;
     

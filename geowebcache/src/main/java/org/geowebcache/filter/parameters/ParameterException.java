@@ -19,6 +19,8 @@ package org.geowebcache.filter.parameters;
 import org.geowebcache.GeoWebCacheException;
 
 public class ParameterException extends GeoWebCacheException {
+    
+    private static final long serialVersionUID = 2471474123508934754L;
 
     public ParameterException(String msg) {
         super(msg);

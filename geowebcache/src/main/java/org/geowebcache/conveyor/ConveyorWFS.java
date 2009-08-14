@@ -22,15 +22,12 @@ import java.io.InputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.WFSObject;
 
 public class ConveyorWFS extends Conveyor {
-    private static Log log = LogFactory.getLog(org.geowebcache.conveyor.ConveyorWFS.class);
     
     WFSObject stObj = null;
     

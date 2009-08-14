@@ -16,16 +16,12 @@
  */
 package org.geowebcache.layer;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
 
 public abstract class MetaTile implements TileResponseReceiver {
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.MetaTile.class);
 
     // minx,miny,maxx,maxy,zoomlevel
     protected long[] metaGridCov = null; 

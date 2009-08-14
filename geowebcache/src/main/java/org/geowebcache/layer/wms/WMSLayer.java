@@ -77,6 +77,8 @@ public class WMSLayer extends TileLayer {
 
     private String wmsVersion;
 
+    //Not used, should be removed through XSL
+    @SuppressWarnings("unused")
     private Boolean tiled;
 
     private Boolean transparent;
@@ -88,6 +90,7 @@ public class WMSLayer extends TileLayer {
     private String vendorParameters;
     
     //Not used, should be removed through XSL
+    @SuppressWarnings("unused")
     private String cachePrefix;
     
     private String expireCache;
@@ -972,25 +975,9 @@ public class WMSLayer extends TileLayer {
         }
     }
 
-    private int calcLocCondIdx(int[] gridLoc) {
-        return (gridLoc[0] * 7 + gridLoc[1] * 13 + gridLoc[2] * 5) % gridLocConds.length;
-    }
-
-    //public int getZoomStart() {
-    //    return this.zoomStart;
-    //}
-
-    //public int getZoomStop() {
-    //    return this.zoomStop;
-    //}
-
     public List<MimeType> getMimeTypes() {
         return formats;
     }
-
-    //public double[] getResolutions(int srsIdx) {
-    //    return gridCalc[srsIdx].getResolutions(this.width);
-    //}
 
     public String getStyles() {
         return wmsStyles;
@@ -1018,14 +1005,6 @@ public class WMSLayer extends TileLayer {
         removeFromQueue(glo);
     }
 
-    //public int getWidth() {
-    //    return this.width;
-    //}
-
-    //public int getHeight() {
-    //    return this.height;
-    //}
-
     public void setErrorMime(String errormime) {
         this.errorMime = errormime;
     }
@@ -1042,11 +1021,6 @@ public class WMSLayer extends TileLayer {
     public String[] getWMSurl() {
         return this.wmsUrl;
     }
-
-    //public void setWidthHeight(int w, int h) {
-    //    this.width = h;
-    //    this.height = h;
-    //}
 
     public Boolean isCacheBypassAllowed() {
         return cacheBypassAllowed;
@@ -1094,10 +1068,6 @@ public class WMSLayer extends TileLayer {
 
     public void setTransparent(boolean transparent) {
         this.transparent = transparent;
-    }
-
-    public void setDebugHeaders(boolean debugheaders) {
-        //this.debugheaders = debugheaders;
     }
 
     public ConveyorTile getNoncachedTile(ConveyorTile tile, boolean requestTiled)

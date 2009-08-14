@@ -17,7 +17,7 @@ public class GridSubSetFactoryTest extends TestCase {
         long[] ret = grid.getCoverage(0);
         long[] correct = {1, 0, 1, 0, 0};
         
-        this.assertTrue(Arrays.equals(correct, ret));
+        assertTrue(Arrays.equals(correct, ret));
     }
     
     public void testCoverageBounds2() throws Exception {
@@ -29,6 +29,6 @@ public class GridSubSetFactoryTest extends TestCase {
         long[] ret = grid.getCoverage(1);
         long[] correct = { 2, 1, 3, 1, 1 };
         
-        this.assertTrue(Arrays.equals(correct, ret));
+        assertTrue(Arrays.equals(correct, ret));
     }
 }

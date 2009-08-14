@@ -25,7 +25,6 @@ import java.util.Arrays;
 import junit.framework.TestCase;
 
 import org.geowebcache.grid.SRS;
-import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;

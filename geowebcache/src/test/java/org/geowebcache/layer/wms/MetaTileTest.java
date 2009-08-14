@@ -7,7 +7,6 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.GridSubSetFactory;

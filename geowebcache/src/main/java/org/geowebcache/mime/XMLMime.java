@@ -17,11 +17,7 @@
  */
 package org.geowebcache.mime;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 public class XMLMime extends MimeType {
-    private static Log log = LogFactory.getLog(org.geowebcache.mime.XMLMime.class);
 
     public static final XMLMime ogcxml = new XMLMime(
        "application/vnd.ogc.se_xml", "ogc-xml", "ogc-xml",

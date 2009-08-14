@@ -13,40 +13,40 @@ public class FilePathKey2Test extends TestCase {
 
     public void testPadder() throws Exception {
         String actual = FilePathGenerator.zeroPadder(0, 1);
-        this.assertEquals("0", actual);
+        assertEquals("0", actual);
         
         actual = FilePathGenerator.zeroPadder(1, 2);
-        this.assertEquals("01", actual);
+        assertEquals("01", actual);
         
         actual = FilePathGenerator.zeroPadder(1, 3);
-        this.assertEquals("001", actual);
+        assertEquals("001", actual);
         
         actual = FilePathGenerator.zeroPadder(12, 2);
-        this.assertEquals("12", actual);
+        assertEquals("12", actual);
 
         actual = FilePathGenerator.zeroPadder(11, 2);
-        this.assertEquals("11", actual);
+        assertEquals("11", actual);
         
         actual = FilePathGenerator.zeroPadder(10, 2);
-        this.assertEquals("10", actual);
+        assertEquals("10", actual);
         
         actual = FilePathGenerator.zeroPadder(100, 2);
-        this.assertEquals("100", actual);
+        assertEquals("100", actual);
 
         actual = FilePathGenerator.zeroPadder(101, 3);
-        this.assertEquals("101", actual);
+        assertEquals("101", actual);
         
         actual = FilePathGenerator.zeroPadder(102, 3);
-        this.assertEquals("102", actual);
+        assertEquals("102", actual);
         
         actual = FilePathGenerator.zeroPadder(103, 3);
-        this.assertEquals("103", actual);
+        assertEquals("103", actual);
         
         actual = FilePathGenerator.zeroPadder(99, 2);
-        this.assertEquals("99", actual);
+        assertEquals("99", actual);
         
         actual = FilePathGenerator.zeroPadder(99, 3);
-        this.assertEquals("099", actual);
+        assertEquals("099", actual);
     }
     
 //    public void testFilePath() throws Exception {

@@ -17,12 +17,7 @@
  */
 package org.geowebcache.mime;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 public class ImageMime extends MimeType {
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.mime.ImageMime.class);
 
     public static final ImageMime png = 
         new ImageMime("image/png", "png", "png", "image/png", true);

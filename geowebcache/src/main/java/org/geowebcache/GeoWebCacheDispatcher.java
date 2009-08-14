@@ -60,8 +60,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
     private TileLayerDispatcher tileLayerDispatcher = null;
     
-    private StorageBroker storageBroker = null;
-    
     private DefaultStorageFinder defaultStorageFinder = null;
 
     private HashMap<String,Service> services = null;
@@ -75,7 +73,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
     }
 
     public void setStorageBroker(StorageBroker sb) {
-       this.storageBroker = sb;
+       // This is just to force initialization
+       log.debug("GeoWebCacheDispatcher received StorageBroker : " + sb.toString());
     }
     
     /**
@@ -117,15 +116,16 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * The classpath is scanned for objects extending Service, thereby making it
      * easy to add new services.
      */
+    @SuppressWarnings("unchecked")
     private void loadServices() {
         // Give all service objects direct access to the tileLayerDispatcher
         WebApplicationContext context = (WebApplicationContext) getApplicationContext();
         
-        Map serviceBeans = context.getBeansOfType(Service.class);
-        Iterator beanIter = serviceBeans.keySet().iterator();
+        Map<String,Service> serviceBeans = (Map<String,Service>) context.getBeansOfType(Service.class);
+        Iterator<Service> beanIter = serviceBeans.values().iterator();
         services = new HashMap<String,Service>();
         while (beanIter.hasNext()) {
-            Service aService = (Service) serviceBeans.get(beanIter.next());
+            Service aService = (Service) beanIter.next();
             services.put(aService.getPathName(), aService);
         }
     }

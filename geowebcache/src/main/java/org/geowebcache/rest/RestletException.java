@@ -28,6 +28,10 @@ import org.restlet.resource.StringRepresentation;
  * @author David Winslow
  */
 public class RestletException extends RuntimeException {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 193659009533707359L;
     Status myStatus;
     Representation myRepresentation;
 

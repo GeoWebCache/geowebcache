@@ -39,8 +39,8 @@ public class KMLServiceTest extends TestCase {
         assertTrue(retVals[2].equals("jpeg"));
         assertTrue(retVals[3].equals("kml"));
         int[] test = {1,2,3};
-        this.assertEquals(test[0], KMLService.parseGridLocString(retVals[1])[0]);
-        this.assertEquals(test[1], KMLService.parseGridLocString(retVals[1])[1]);
-        this.assertEquals(test[2], KMLService.parseGridLocString(retVals[1])[2]);
+        assertEquals(test[0], KMLService.parseGridLocString(retVals[1])[0]);
+        assertEquals(test[1], KMLService.parseGridLocString(retVals[1])[1]);
+        assertEquals(test[2], KMLService.parseGridLocString(retVals[1])[2]);
     }
 }

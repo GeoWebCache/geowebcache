@@ -19,6 +19,11 @@ package org.geowebcache.grid;
 import java.util.Arrays;
 
 public class OutsideCoverageException extends Exception {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -2465389680194367974L;
+
     public OutsideCoverageException(long[] index, long firstLevel, long lastLevel) {
         super("Zoom level was " + index[2] + ", but value has to be in ["+firstLevel+","+lastLevel+ "]");
     }

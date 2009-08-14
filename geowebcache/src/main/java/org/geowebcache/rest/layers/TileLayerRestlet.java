@@ -23,8 +23,6 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -56,8 +54,6 @@ import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
  * This is the TileLayer resource class required by the REST interface
  */
 public class TileLayerRestlet extends GWCRestlet {
-    private static Log log = 
-        LogFactory.getLog(org.geowebcache.rest.layers.TileLayerRestlet.class);
     
     private XMLConfiguration xmlConfig;
     

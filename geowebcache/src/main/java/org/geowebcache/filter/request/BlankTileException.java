@@ -31,6 +31,11 @@ import org.geowebcache.GeoWebCacheDispatcher;
  * @author ak
  */
 public class BlankTileException extends RequestFilterException {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 6910805463474341350L;
+
     private static Log log = LogFactory.getLog(org.geowebcache.filter.request.BlankTileException.class);
     
     private volatile static byte[] blankTile;

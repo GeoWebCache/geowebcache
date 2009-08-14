@@ -20,6 +20,11 @@ import javax.servlet.http.HttpServletResponse;
 
 public class RequestFilterException extends Exception {
     
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -6790605482047043946L;
+
     RequestFilter reqFilter;
     
     int httpCode;

@@ -18,6 +18,7 @@ package org.geowebcache.rest;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -48,7 +49,7 @@ public class RESTDispatcher extends AbstractController {
     
     private Router myRouter = new Router();
 
-    public RESTDispatcher(Map map) {
+    public RESTDispatcher(Map<String,Object> map) {
         super();
         setSupportedMethods(new String[] {
                 METHOD_GET, METHOD_POST, METHOD_PUT, METHOD_DELETE, METHOD_HEAD
@@ -102,18 +103,18 @@ public class RESTDispatcher extends AbstractController {
         return null;
     }
 
-    private void addRoutes(Map m){
-        Iterator it = m.entrySet().iterator();
+    private void addRoutes(Map<String, Object> m){
+        Iterator<Entry<String,Object>> it = m.entrySet().iterator();
 
         while (it.hasNext()){
-            Map.Entry entry = (Map.Entry) it.next();
+            Entry<String,Object> entry = it.next();
 
             if (entry.getValue() instanceof GWCResource){
                 myRouter.attach(entry.getKey().toString(), ((GWCResource) entry.getValue()).getClass());
             } else if (entry.getValue() instanceof Restlet){
                 myRouter.attach(entry.getKey().toString(), (Restlet) entry.getValue());
             } else {
-                
+                log.error("Unexpected " + entry.getValue());
             }
         }
     }

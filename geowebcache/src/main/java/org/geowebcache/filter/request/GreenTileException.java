@@ -30,6 +30,11 @@ import org.apache.commons.logging.LogFactory;
  * @author ak
  */
 public class GreenTileException extends RequestFilterException {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -3369293469656922254L;
+
     private static Log log = LogFactory.getLog(GreenTileException.class);
     
     private volatile static byte[] greenTile;

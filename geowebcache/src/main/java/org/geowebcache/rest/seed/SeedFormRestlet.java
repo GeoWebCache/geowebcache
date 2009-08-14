@@ -482,7 +482,7 @@ public class SeedFormRestlet extends GWCRestlet {
 
         // Give the thread executor a chance to run
         try {
-            Thread.currentThread().sleep(500);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             // Ok, no worries
         }

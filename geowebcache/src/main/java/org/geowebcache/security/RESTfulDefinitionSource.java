@@ -218,8 +218,7 @@ public class RESTfulDefinitionSource implements
     public void setMappings(List mappings) {
         Iterator it = mappings.iterator();
         while (it.hasNext()) {
-            RESTfulDefinitionSourceMapping mapping = (RESTfulDefinitionSourceMapping) it
-                    .next();
+            RESTfulDefinitionSourceMapping mapping = (RESTfulDefinitionSourceMapping) it.next();
             ConfigAttributeDefinition configDefinition = new ConfigAttributeDefinition();
 
             Iterator configAttributesIt = mapping.getConfigAttributes().iterator();

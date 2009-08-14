@@ -21,6 +21,11 @@ import org.geowebcache.GeoWebCacheException;
 
 
 public class BadTileException extends GeoWebCacheException {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -8591262755936233177L;
+
     public BadTileException(String msg) {
         super(msg);
     }

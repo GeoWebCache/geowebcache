@@ -21,6 +21,9 @@ import org.geowebcache.GeoWebCacheException;
 
 
 public class OutOfBoundsException extends GeoWebCacheException {
+
+    private static final long serialVersionUID = 1812355779560516786L;
+
     public OutOfBoundsException(String msg) {
         super(msg);
     }

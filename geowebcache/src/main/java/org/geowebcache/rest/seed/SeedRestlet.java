@@ -26,8 +26,6 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.GWCRestlet;
@@ -62,11 +60,7 @@ public class SeedRestlet extends GWCRestlet {
     
     StorageBroker storageBroker;
     
-    //private static int[][] statusArray;
-    
     public JSONObject myrequest; 
-    
-    private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.SeedRestlet.class);
     
     
     public void handle(Request request, Response response){
