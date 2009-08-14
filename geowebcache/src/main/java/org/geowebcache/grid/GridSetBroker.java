@@ -21,15 +21,41 @@ import java.util.Hashtable;
 import org.geowebcache.util.wms.BBOX;
 
 public class GridSetBroker {
-    public static GridSet WORLD_EPSG4326 = 
-        GridSetFactory.createGridSet(
-                "EPSG:4326", SRS.getEPSG4326(), BBOX.WORLD4326, GridSetFactory.DEFAULT_LEVELS, 256, 256 );
+
+    public final GridSet WORLD_EPSG4326;
     
-    public static GridSet WORLD_EPSG3785 = 
-        GridSetFactory.createGridSet(
-                "EPSG:3785", SRS.getEPSG3785(), BBOX.WORLD3785, GridSetFactory.DEFAULT_LEVELS, 256, 256 );
+    public final GridSet WORLD_EPSG3857;
+
     
     Hashtable<String,GridSet> gridSets = new Hashtable<String,GridSet>();
+    
+    public GridSetBroker(boolean useEPSG900913) {
+        WORLD_EPSG4326 = GridSetFactory.createGridSet(
+                "EPSG:4326", 
+                SRS.getEPSG4326(), 
+                BBOX.WORLD4326, 
+                GridSetFactory.DEFAULT_LEVELS, 
+                256,
+                256 );
+        
+        if(useEPSG900913) {
+            WORLD_EPSG3857 = GridSetFactory.createGridSet(
+                    "GoogleMapsCompatible",
+                    SRS.getEPSG900913(),
+                    BBOX.WORLD3857,
+                    GridSetFactory.DEFAULT_LEVELS, 
+                    256,
+                    256 );
+        } else {
+            WORLD_EPSG3857 = GridSetFactory.createGridSet(
+                    "GoogleMapsCompatible", 
+                    SRS.getEPSG3857(),
+                    BBOX.WORLD3857,
+                    GridSetFactory.DEFAULT_LEVELS,
+                    256,
+                    256 );
+        }        
+    }
     
     public GridSet get(String gridSetId) {
         return gridSets.get(gridSetId);

@@ -12,6 +12,9 @@ import org.geowebcache.util.wms.BBOX;
  * but its legacy lives on through the tests we still have to pass...
  */
 public class GridCalculatorTest extends TestCase {
+    
+    GridSetBroker gridSetBroker = new GridSetBroker(false);
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -21,7 +24,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(0, 0, 180.0, 90.0);
         
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
-                GridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
+                gridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
         
         long[][] solution = { 
                 { 1, 0, 1, 0, 0 }, { 2, 1, 3, 1, 1 }, 
@@ -42,7 +45,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(0, 0, 180, 90);
 
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
-                GridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
+                gridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
         
         long[][] solution = { 
                 { 1, 0, 1, 0, 0 }, { 2, 1, 3, 1, 1 }, 
@@ -65,7 +68,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(-10.0, -10.0, 10.0, 10.0);
 
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
-                GridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
+                gridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
 
         long[][] solution = {
                 { 0, 0, 1, 0, 0 }, { 1, 0, 2, 1, 1 }, 
@@ -89,7 +92,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(175.0, 87.0, 180.0, 90.0);
         
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
-                GridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
+                gridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
 
         long[][] solution = {
                 { 1, 0, 1, 0, 0 }, { 3, 1, 3, 1, 1 }, 
@@ -113,7 +116,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
         
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
-                GridSetBroker.WORLD_EPSG3785, bbox, 0, 10);
+                gridSetBroker.WORLD_EPSG3857, bbox, 0, 10);
         
         long[][] solution = { { 0, 0, 0, 0, 0 }, { 1, 1, 1, 1, 1 }, { 2, 2, 3, 3, 2 },
                 { 4, 4, 7, 7, 3 }, { 8, 8, 15, 15, 4 } };
@@ -134,7 +137,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
         
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
-                GridSetBroker.WORLD_EPSG3785, bbox, 0, 10);
+                gridSetBroker.WORLD_EPSG3857, bbox, 0, 10);
         
         long[][] solution = { { 0, 0, 0, 0, 0 }, { 1, 1, 1, 1, 1 }, { 2, 2, 3, 3, 2 },
                 { 4, 4, 7, 7, 3 }, { 8, 8, 15, 15, 4 }, { 16, 16, 31, 31, 5 },
@@ -156,7 +159,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(-500000, -500000, 500000, 500000);
         
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
-                GridSetBroker.WORLD_EPSG3785, bbox, 0, 10);
+                gridSetBroker.WORLD_EPSG3857, bbox, 0, 10);
         
         long[][] solution = { { 0, 0, 0, 0, 0 }, { 0, 0, 1, 1, 1 }, { 1, 1, 2, 2, 2 },
                 { 3, 3, 4, 4, 3 }, { 7, 7, 8, 8, 4 }, { 15, 15, 16, 16, 5 },
@@ -178,7 +181,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(-124.73, 24.96, -66.97, 49.37);
 
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
-                GridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
+                gridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
         
         long[] bestFit = grid.getCoverageBestFit();
         long[] solution = {0, 0, 0, 0, 0};
@@ -189,7 +192,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(-124.73, 24.96, -66.97, 49.37);
 
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
-                GridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
+                gridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
         
         long[] gridLoc1 = {1, 1, 1};
         BBOX box1 = grid.boundsFromIndex(gridLoc1);
@@ -215,7 +218,7 @@ public class GridCalculatorTest extends TestCase {
         BBOX bbox = new BBOX(-124.731422, 24.955967, -66.969849, 49.371735);
         
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
-                GridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
+                gridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
         
         long[][] solution = { { 0, 0, 0, 0, 0 }, { 0, 1, 1, 1, 1 }, { 1, 2, 2, 3, 2 },
                 { 2, 5, 5, 6, 3 } };

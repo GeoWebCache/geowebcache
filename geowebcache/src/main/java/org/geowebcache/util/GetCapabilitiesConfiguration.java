@@ -44,6 +44,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
     private static Log log = LogFactory
             .getLog(org.geowebcache.util.GetCapabilitiesConfiguration.class);
 
+    private GridSetBroker gridSetBroker;
+    
     private String url = null;
 
     private String mimeTypes = null;
@@ -54,8 +56,10 @@ public class GetCapabilitiesConfiguration implements Configuration {
     
     private boolean allowCacheBypass = false;
 
-    public GetCapabilitiesConfiguration(String url,
+    public GetCapabilitiesConfiguration(
+            GridSetBroker gridSetBroker, String url,
             String mimeTypes, String metaTiling, String allowCacheBypass) {
+        this.gridSetBroker = gridSetBroker;
         this.url = url;
         this.mimeTypes = mimeTypes;
         this.metaTiling = metaTiling;
@@ -66,9 +70,11 @@ public class GetCapabilitiesConfiguration implements Configuration {
         log.info("Constructing from url " + url);
     }
     
-    public GetCapabilitiesConfiguration(String url,
+    public GetCapabilitiesConfiguration(
+            GridSetBroker gridSetBroker, String url,
             String mimeTypes, String metaTiling, String vendorParameters, 
             String allowCacheBypass) {
+        this.gridSetBroker = gridSetBroker;
         this.url = url;
         this.mimeTypes = mimeTypes;
         this.metaTiling = metaTiling;
@@ -213,8 +219,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
             throws GeoWebCacheException {
         
         Hashtable<String,GridSubSet> grids = new Hashtable<String,GridSubSet>(2);
-        grids.put("EPSG:4326", GridSubSetFactory.createGridSubSet(GridSetBroker.WORLD_EPSG4326, bounds4326, 0, 30));
-        grids.put("EPSG:3785", GridSubSetFactory.createGridSubSet(GridSetBroker.WORLD_EPSG3785, bounds3785, 0, 30));
+        grids.put("EPSG:4326", GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bounds4326, 0, 30));
+        grids.put("EPSG:3785", GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857, bounds3785, 0, 30));
         
         List<String> mimeFormats = null;
         if(this.mimeTypes != null) {

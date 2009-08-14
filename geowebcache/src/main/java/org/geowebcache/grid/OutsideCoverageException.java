@@ -18,7 +18,9 @@ package org.geowebcache.grid;
 
 import java.util.Arrays;
 
-public class OutsideCoverageException extends Exception {
+import org.geowebcache.GeoWebCacheException;
+
+public class OutsideCoverageException extends GeoWebCacheException {
     /**
      * 
      */

@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.util.Configuration;
 
 public class TileLayerDispatcher {
@@ -33,8 +34,11 @@ public class TileLayerDispatcher {
 
     private List<Configuration> configs = null;
 
-    public TileLayerDispatcher() {
+    private GridSetBroker gridSetBroker;
+    
+    public TileLayerDispatcher(GridSetBroker gridSetBroker) {
         //log.info("TileLayerDispatcher constructed");
+        this.gridSetBroker = gridSetBroker;
     }
 
     public TileLayer getTileLayer(String layerIdent)
@@ -133,7 +137,11 @@ public class TileLayerDispatcher {
                     
                     while (iter.hasNext()) {
                         TileLayer layer = iter.next();
+                        
                         log.info("Adding: " + layer.getName());
+                        
+                        layer.gridSetBroker = gridSetBroker;
+                        
                         add(layer, newLayers);
                     }
                 } else {

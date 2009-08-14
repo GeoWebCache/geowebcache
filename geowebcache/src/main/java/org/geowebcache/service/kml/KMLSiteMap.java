@@ -37,11 +37,13 @@ public class KMLSiteMap {
     private ConveyorKMLTile tile = null;
     private TileLayerDispatcher tLD = null;
     private StorageBroker storageBroker;
+    private GridSetBroker gridSetBroker;
     
-    public KMLSiteMap(ConveyorKMLTile tile, TileLayerDispatcher tLD) {
+    public KMLSiteMap(ConveyorKMLTile tile, TileLayerDispatcher tLD, GridSetBroker gridSetBroker) {
         this.tile = tile;
         this.tLD = tLD;
         this.storageBroker = tile.getStorageBroker();
+        this.gridSetBroker = gridSetBroker;
     }
     
     public void write() throws GeoWebCacheException, IOException {
@@ -84,7 +86,7 @@ public class KMLSiteMap {
             Hashtable<String,GridSubSet> grids = tl.getGridSubSets();
             List<MimeType> mimeTypes = tl.getMimeTypes();
             
-            if( grids != null && grids.containsKey(GridSetBroker.WORLD_EPSG4326.getName())
+            if( grids != null && grids.containsKey(gridSetBroker.WORLD_EPSG4326.getName())
                     && mimeTypes != null && mimeTypes.contains(XMLMime.kml) ) {
                 String smStr = "<sitemap><loc>"+urlPrefix+tl.getName()+"/sitemap.xml</loc></sitemap>";
                 os.write(smStr.getBytes());
@@ -95,7 +97,7 @@ public class KMLSiteMap {
     private void writeSiteMap() throws GeoWebCacheException, IOException {
         TileLayer layer = tile.getLayer();
         
-        GridSubSet gridSubSet = layer.getGridSubSet(GridSetBroker.WORLD_EPSG4326.getName());
+        GridSubSet gridSubSet = layer.getGridSubSet(gridSetBroker.WORLD_EPSG4326.getName());
         
         writeSiteMapHeader();
         
@@ -150,9 +152,10 @@ public class KMLSiteMap {
         subTileList.addFirst(gridLoc);
         
         while(subTileList.peek() != null) {
+            String gridSetId = gridSetBroker.WORLD_EPSG4326.getName();
             long[] curLoc = subTileList.removeFirst();
-            long[][] linkGridLocs = tileLayer.getZoomedInIndexes(GridSetBroker.WORLD_EPSG4326.getName(), curLoc);
-            linkGridLocs = KMZHelper.filterGridLocs(storageBroker, tileLayer, XMLMime.kml, linkGridLocs);
+            long[][] linkGridLocs = tileLayer.getZoomedInIndexes(gridSetId, curLoc);
+            linkGridLocs = KMZHelper.filterGridLocs(storageBroker, tileLayer, gridSetId, XMLMime.kml, linkGridLocs);
          
             // Save the links we still need to follow for later
             for(long[] subTile : linkGridLocs) {

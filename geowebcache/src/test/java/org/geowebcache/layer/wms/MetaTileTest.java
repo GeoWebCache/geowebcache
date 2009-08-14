@@ -15,6 +15,8 @@ import org.geowebcache.util.wms.BBOX;
 
 public class MetaTileTest extends TestCase {
 
+    GridSetBroker gridSetBroker = new GridSetBroker(false);
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -26,7 +28,7 @@ public class MetaTileTest extends TestCase {
         int metaWidth = 1;
 
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
-                GridSetBroker.WORLD_EPSG4326,
+                gridSetBroker.WORLD_EPSG4326,
                 bbox,
                 0,
                 30);
@@ -54,7 +56,7 @@ public class MetaTileTest extends TestCase {
         int metaWidth = 3;
 
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
-                GridSetBroker.WORLD_EPSG4326,
+                gridSetBroker.WORLD_EPSG4326,
                 bbox,
                 0,
                 30);
@@ -80,7 +82,7 @@ public class MetaTileTest extends TestCase {
         int metaWidth = 1;
         
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
-                GridSetBroker.WORLD_EPSG3785,
+                gridSetBroker.WORLD_EPSG3857,
                 bbox,
                 0,
                 30);
@@ -107,7 +109,7 @@ public class MetaTileTest extends TestCase {
         int metaWidth = 3;
         
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
-                GridSetBroker.WORLD_EPSG3785,
+                gridSetBroker.WORLD_EPSG3857,
                 bbox,
                 0,
                 30);
@@ -140,7 +142,7 @@ public class MetaTileTest extends TestCase {
         WMSLayer layer = createWMSLayer(bbox);
 
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
-                GridSetBroker.WORLD_EPSG4326,
+                gridSetBroker.WORLD_EPSG4326,
                 bbox,
                 0,
                 30);
@@ -204,7 +206,7 @@ public class MetaTileTest extends TestCase {
         
         Hashtable<String,GridSubSet> grids = new Hashtable<String,GridSubSet>();
 
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(GridSetBroker.WORLD_EPSG4326);
+        GridSubSet grid = GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326);
         
         grids.put(grid.getName(), grid);
         int[] metaWidthHeight = {3,3};

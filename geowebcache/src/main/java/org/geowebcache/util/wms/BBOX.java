@@ -33,7 +33,7 @@ public class BBOX {
     public static final BBOX WORLD4326 = 
         new BBOX(-180.0,-90.0,180.0,90.0);
     
-    public static final BBOX WORLD3785 = 
+    public static final BBOX WORLD3857 = 
         new BBOX(-20037508.34,-20037508.34,20037508.34,20037508.34);
     
     // minx, miny, maxx, maxy

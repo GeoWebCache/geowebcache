@@ -23,7 +23,7 @@ public class Demo {
         +"height=\"100\" width=\"353\" border=\"0\"/>"
         +"</a>\n";
     
-    public static void makeMap(TileLayerDispatcher tileLayerDispatcher,
+    public static void makeMap(TileLayerDispatcher tileLayerDispatcher, GridSetBroker gridSetBroker, 
             String action, HttpServletRequest request,
             HttpServletResponse response) throws GeoWebCacheException {
 
@@ -72,7 +72,7 @@ public class Demo {
                 }
                 return;
             } else {
-                page = generateHTML(tileLayerDispatcher);
+                page = generateHTML(tileLayerDispatcher, gridSetBroker);
             }
             
         }
@@ -85,7 +85,7 @@ public class Demo {
         }
     }
     
-    private static String generateHTML(TileLayerDispatcher tileLayerDispatcher) 
+    private static String generateHTML(TileLayerDispatcher tileLayerDispatcher, GridSetBroker gridSetBroker) 
     throws GeoWebCacheException {
         String reloadPath = "rest/reload";
 
@@ -114,14 +114,14 @@ public class Demo {
             +"<td><strong>Custom:</strong></td>" 
             +"</tr>\n";
         
-        String rows = tableRows(tileLayerDispatcher);
+        String rows = tableRows(tileLayerDispatcher, gridSetBroker);
         
         String footer = "</table>\n</body></html>";
         
         return header + rows + footer;
     }
     
-    private static String tableRows(TileLayerDispatcher tileLayerDispatcher)
+    private static String tableRows(TileLayerDispatcher tileLayerDispatcher, GridSetBroker gridSetBroker)
     throws GeoWebCacheException {
         Iterator<Entry<String,TileLayer>> it = tileLayerDispatcher.getLayers().entrySet().iterator();
         
@@ -132,24 +132,31 @@ public class Demo {
             buf.append("<tr><td>"+layer.getName()+"</td>");
             
             GridSubSet epsg4326GridSubSet = layer.getGridSubSetForSRS(SRS.getEPSG4326());
-            if(null != epsg4326GridSubSet ) {
-                buf.append("<td>"+generateDemoUrl(layer.getName(), 4326,"EPSG:4326")+"</td>");
+            if(null != epsg4326GridSubSet) {
+                buf.append("<td>"+generateDemoUrl(
+                        layer.getName(),
+                        epsg4326GridSubSet.getName())
+                        +"</td>");
             } else {
                 buf.append("<td>EPSG:4326 not supported</td>");
             }
             
-            if(null != layer.getGridSubSetForSRS(SRS.getEPSG3785())) {
-                buf.append("<td>"+generateDemoUrl(layer.getName(), 3785,"EPSG:3785")+"</td>");
+            GridSubSet epsg3785GridSubSet = layer.getGridSubSetForSRS(SRS.getEPSG3857());
+            if(null != epsg3785GridSubSet) {
+                buf.append("<td>"+generateDemoUrl(
+                        layer.getName(),
+                        epsg3785GridSubSet.getName())
+                        +"</td>");
             } else {
                 buf.append("<td>EPSG:3785 not supported</td>");
             }
             
-            if(null != epsg4326GridSubSet && epsg4326GridSubSet.getGridSet().equals(GridSetBroker.WORLD_EPSG4326)) {
+            if(null != epsg4326GridSubSet && epsg4326GridSubSet.getGridSet().equals(gridSetBroker.WORLD_EPSG4326)) {
                 String prefix = "";
                 buf.append("<td><a href=\""+prefix+"service/kml/"+layer.getName()+".png.kml\">KML (PNG)</a></td>"
                 + "<td><a href=\""+prefix+"service/kml/"+layer.getName()+".kml.kmz\">KMZ (vector)</a></td>");
             } else {
-                buf.append("<td colspan=\"2\"> Google Earth requires EPSG:4326 support</td>");
+                buf.append("<td colspan=\"2\"> Google Earth requires "+gridSetBroker.WORLD_EPSG4326.getName()+"</td>");
             }
             
             // Any custom projections?
@@ -157,10 +164,10 @@ public class Demo {
             int count = 0;
             Iterator<GridSubSet> iter = layer.getGridSubSets().values().iterator();
             while(iter.hasNext()) {
-                GridSubSet gridSet = iter.next();
-                SRS curSRS = gridSet.getSRS();
-                if(curSRS.getNumber() != 4326 && curSRS.getNumber() != 900913) { 
-                    buf.append(generateDemoUrl(layer.getName(), curSRS.getNumber(),curSRS.toString())+"<br />");
+                GridSubSet gridSubSet = iter.next();
+                if(! gridSubSet.getGridSet().equals(gridSetBroker.WORLD_EPSG4326) 
+                        && ! gridSubSet.getGridSet().equals(gridSetBroker.WORLD_EPSG3857)) { 
+                    buf.append(generateDemoUrl(layer.getName(), gridSubSet.getName())+"<br />");
                     count++;
                 }
             }
@@ -175,8 +182,8 @@ public class Demo {
         return buf.toString();
     }
     
-    private static String generateDemoUrl(String layerName, int epsgNumber, String text) {
-        return "<a href=\"demo/"+layerName+"?srs=EPSG:"+epsgNumber+"\">"+text+"</a>";
+    private static String generateDemoUrl(String layerName, String gridSetId) {
+        return "<a href=\"demo/"+layerName+"?gridSet="+gridSetId+"\">"+gridSetId+"</a>";
     }
     
     private static String generateHTML(TileLayer layer, String gridSetStr, String formatStr, boolean asPlugin) 

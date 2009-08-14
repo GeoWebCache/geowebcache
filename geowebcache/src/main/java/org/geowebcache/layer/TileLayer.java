@@ -33,7 +33,7 @@ import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.filter.request.RequestFilterException;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubSet;
-import org.geowebcache.grid.OldGrid;
+import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.grid.XMLSubGrid;
@@ -53,7 +53,7 @@ public abstract class TileLayer {
     
     protected List<XMLSubGrid> subGrids;
 
-    protected Hashtable<SRS,OldGrid> grids;
+    protected Hashtable<SRS,XMLOldGrid> grids;
     
     protected List<RequestFilter> requestFilters;
     

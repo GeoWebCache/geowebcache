@@ -24,7 +24,7 @@ import org.geowebcache.util.wms.BBOX;
  * The problem is that it cannot use the GridSetBroker, so we end up with one
  * GridSet per layer anyway.
  */
-public class OldGrid {
+public class XMLOldGrid {
     private SRS srs = null;
     
     private BBOX dataBounds = null;
@@ -37,11 +37,11 @@ public class OldGrid {
     
     protected double[] resolutions = null;
     
-    protected OldGrid() {
+    protected XMLOldGrid() {
         // Empty
     }
     
-    public GridSubSet convertToGridSubset() {
+    public GridSubSet convertToGridSubset(GridSetBroker gridSetBroker) {
         if(zoomStart == null || resolutions != null) {
             zoomStart = 0;
         }
@@ -59,9 +59,9 @@ public class OldGrid {
         GridSet gridSet;
         
         if(srs.equals(SRS.getEPSG4326()) && gridBounds.equals(BBOX.WORLD4326) && resolutions == null) {
-            gridSet = GridSetBroker.WORLD_EPSG4326;
-        } else if(srs.equals(SRS.getEPSG3785()) && gridBounds.equals(BBOX.WORLD3785) && resolutions == null) {
-            gridSet = GridSetBroker.WORLD_EPSG3785;
+            gridSet = gridSetBroker.WORLD_EPSG4326;
+        } else if(srs.equals(SRS.getEPSG3857()) && gridBounds.equals(BBOX.WORLD3857) && resolutions == null) {
+            gridSet = gridSetBroker.WORLD_EPSG3857;
         } else {
             if(resolutions != null) {
                 gridSet = GridSetFactory.createGridSet(srs.toString(), srs, gridBounds, resolutions, 256, 256);

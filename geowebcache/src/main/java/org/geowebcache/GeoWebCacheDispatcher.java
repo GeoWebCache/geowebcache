@@ -36,8 +36,9 @@ import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.demo.Demo;
 import org.geowebcache.filter.request.RequestFilterException;
+import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.layer.BadTileException;
-import org.geowebcache.layer.OutOfBoundsException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.ImageMime;
@@ -61,6 +62,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private TileLayerDispatcher tileLayerDispatcher = null;
     
     private DefaultStorageFinder defaultStorageFinder = null;
+    
+    private GridSetBroker gridSetBroker = null;
 
     private HashMap<String,Service> services = null;
     
@@ -68,25 +71,21 @@ public class GeoWebCacheDispatcher extends AbstractController {
     
     private String servletPrefix = null;
 
-    public GeoWebCacheDispatcher() {
-        super();
-    }
-
-    public void setStorageBroker(StorageBroker sb) {
-       // This is just to force initialization
-       log.debug("GeoWebCacheDispatcher received StorageBroker : " + sb.toString());
-    }
-    
-    /**
-     * Setter method for Spring. TileLayerDispatcher is a class for looking up
-     * TileLayer objects based on the name of the layer.
+    /** 
+     * Should be invoked through Spring 
      * 
      * @param tileLayerDispatcher
-     *            a class for looking up TileLayer objects
+     * @param gridSetBroker
      */
-    public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {
+    public GeoWebCacheDispatcher(TileLayerDispatcher tileLayerDispatcher, GridSetBroker gridSetBroker) {
+        super();
         this.tileLayerDispatcher = tileLayerDispatcher;
-        log.info("set TileLayerDispatcher");
+        this.gridSetBroker = gridSetBroker;
+    }
+
+    public void setStorageBroker(StorageBroker storageBroker) {
+       // This is just to force initialization
+       log.debug("GeoWebCacheDispatcher received StorageBroker : " + storageBroker.toString());
     }
 
     public void setDefaultStorageFinder(DefaultStorageFinder defaultStorageFinder) {
@@ -316,7 +315,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             
             // Save it for later
             convTile.setTileLayer(layer);
-            
+                        
             // Apply the filters
             layer.applyRequestFilters(convTile);
 
@@ -331,7 +330,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 writeData(convTile);
                 
                 // Alternatively: 
-            } catch (OutOfBoundsException e) {
+            } catch (OutsideCoverageException e) {
                 writeEmpty(convTile, e.getMessage());
             }
         }
@@ -341,7 +340,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     
     private void handleDemoRequest(String action, HttpServletRequest request, 
             HttpServletResponse response) throws GeoWebCacheException {
-        Demo.makeMap(this.tileLayerDispatcher, action, request, response);        
+        Demo.makeMap(tileLayerDispatcher, gridSetBroker, action, request, response);        
     }
     
     /**

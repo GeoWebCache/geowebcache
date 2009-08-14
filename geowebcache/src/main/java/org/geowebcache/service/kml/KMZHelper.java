@@ -60,14 +60,14 @@ public class KMZHelper {
      * @return
      */
     public static long[][] filterGridLocs(StorageBroker sb, TileLayer tileLayer,
-            MimeType mime, long[][] linkGridLocs) 
+            String gridSetId, MimeType mime, long[][] linkGridLocs) 
     throws GeoWebCacheException {
         
         for(int i=0;i<linkGridLocs.length; i++) {
             if(linkGridLocs[i][2] > 0) {
                 
                 ConveyorTile tile = new ConveyorTile(sb,
-                        tileLayer.getName(), GridSetBroker.WORLD_EPSG4326.getName(), 
+                        tileLayer.getName(), gridSetId, 
                         linkGridLocs[i], mime, null, null, null, null);
                 
                 tile.setTileLayer(tileLayer);
@@ -90,10 +90,6 @@ public class KMZHelper {
                         log.error(ioe.getMessage());
                         linkGridLocs[i][2] = -1;
                     } catch (GeoWebCacheException gwce) {
-                        log.error(gwce.getMessage());
-                        gwce.printStackTrace();
-                        linkGridLocs[i][2] = -1;
-                    } catch (OutsideCoverageException e) {
                         linkGridLocs[i][2] = -1;
                     }
 

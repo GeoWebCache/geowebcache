@@ -17,6 +17,8 @@
  */
 package org.geowebcache.util;
 
+import org.geowebcache.grid.GridSetBroker;
+
 /**
  * This is just a subclass of the GetCapabilities object, but makes it possible to set
  * GEOSERVER_WMS_URL externally. 
@@ -32,18 +34,23 @@ public class GeoServerConfiguration extends GetCapabilitiesConfiguration {
     
     //private static Log log = LogFactory.getLog(org.geowebcache.util.GeoServerConfiguration.class);
     
-    public GeoServerConfiguration(ApplicationContextProvider ctxProv,
+    public GeoServerConfiguration(
+            ApplicationContextProvider ctxProv,
+            GridSetBroker gridSetBroker,
             String mimeTypes, String metaTiling) {
-        super(  ctxProv.getSystemVar(GEOSERVER_WMS_URL, DEFAULT_GEOSERVER_WMS_URL),
+        super(  gridSetBroker,
+                ctxProv.getSystemVar(GEOSERVER_WMS_URL, DEFAULT_GEOSERVER_WMS_URL),
                 mimeTypes,
                 metaTiling, 
                 ctxProv.getSystemVar(GEOWEBCACHE_VENDOR_PARAMS,""),
                 "true" );
     }    
     
-    public GeoServerConfiguration(ApplicationContextProvider ctxProv, 
+    public GeoServerConfiguration(ApplicationContextProvider ctxProv,
+            GridSetBroker gridSetBroker,
             String mimeTypes, String metaTiling, String vendorParams) {
-        super(  ctxProv.getSystemVar(GEOSERVER_WMS_URL, DEFAULT_GEOSERVER_WMS_URL),
+        super(  gridSetBroker,
+                ctxProv.getSystemVar(GEOSERVER_WMS_URL, DEFAULT_GEOSERVER_WMS_URL),
                 mimeTypes, 
                 metaTiling,
                 vendorParams,

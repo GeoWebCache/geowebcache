@@ -51,7 +51,8 @@ import org.geowebcache.filter.parameters.RegexParameterFilter;
 import org.geowebcache.filter.request.CircularExtentFilter;
 import org.geowebcache.filter.request.FileRasterFilter;
 import org.geowebcache.filter.request.WMSRasterFilter;
-import org.geowebcache.grid.OldGrid;
+import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
@@ -83,6 +84,8 @@ public class XMLConfiguration implements Configuration {
     
     private WebApplicationContext context;
     
+    private GridSetBroker gridSetBroker;
+    
     private DefaultStorageFinder defStoreFind;
 
     private String absPath = null;
@@ -98,7 +101,11 @@ public class XMLConfiguration implements Configuration {
     private GeoWebCacheConfiguration gwcConfig = null;
     
 
-    public XMLConfiguration(ApplicationContextProvider appCtx, DefaultStorageFinder defaultStorage) {
+    public XMLConfiguration(
+            ApplicationContextProvider appCtx, 
+            GridSetBroker gridSetBroker,
+            DefaultStorageFinder defaultStorage) {
+        
         context = appCtx.getApplicationContext();
         defStoreFind = defaultStorage;
     }
@@ -235,8 +242,8 @@ public class XMLConfiguration implements Configuration {
         xs.alias("wmsLayer", WMSLayer.class);
         
         // These two are for 1.1.x compatibility
-        xs.alias("grids", new ArrayList<OldGrid>().getClass());
-        xs.alias("grid", OldGrid.class);
+        xs.alias("grids", new ArrayList<XMLOldGrid>().getClass());
+        xs.alias("grid", XMLOldGrid.class);
         
         xs.alias("mimeFormats", new ArrayList<String>().getClass());
         xs.alias("formatModifiers", new ArrayList<FormatModifier>().getClass());

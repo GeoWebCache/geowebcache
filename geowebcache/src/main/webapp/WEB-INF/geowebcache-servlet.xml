@@ -6,6 +6,7 @@
   
   <bean id="gwcXmlConfig" class="org.geowebcache.util.XMLConfiguration">
     <constructor-arg ref="gwcAppCtx" />
+    <constructor-arg ref="gwcGridSetBroker"/>
     <constructor-arg ref="gwcDefaultStorageFinder" />
     <!-- Other samples: -->
     <!--property name="relativePath"><value>../resources</value></property -->
@@ -18,6 +19,7 @@
        that are appended to every WMS request to the backed, for example: 
        "format_options=regionate_by:auto&amp;bgcolor=0x112233" -->
   <bean id="gwcWMSConfig" class="org.geowebcache.util.GetCapabilitiesConfiguration">
+  	<constructor-arg ref="gwcGridSetBroker"/>
     <constructor-arg value="http://localhost:8080/geoserver/wms?service=wms&amp;request=getcapabilities&amp;version=1.1.0" />
     <constructor-arg value="image/png,image/jpeg,image/png8,image/gif,application/vnd.google-earth.kml+xml"/>
     <constructor-arg value="3x3"/><!-- metatiling factors -->
@@ -27,6 +29,7 @@
   
   <!-- For each configuration bean above, add them below to activate -->
   <bean id="gwcTLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
+    <constructor-arg ref="gwcGridSetBroker"/>
     <property name="config">
       <list>
 	    <ref bean="gwcWMSConfig" />
@@ -63,13 +66,20 @@
   </bean -->
   
   <bean id="gwcStorageBroker" class="org.geowebcache.storage.StorageBroker" destroy-method="destroy">
-    <constructor-arg type="org.geowebcache.storage.MetaStore" ref="gwcMetaStore" />
-    <constructor-arg type="org.geowebcache.storage.BlobStore" ref="gwcBlobStore" />
+    <constructor-arg ref="gwcMetaStore" />
+    <constructor-arg ref="gwcBlobStore" />
+  </bean>
+  
+  
+  <bean id="gwcGridSetBroker" class="org.geowebcache.grid.GridSetBroker">
+    <!-- Should we used EPSG:900913 instead of EPSG:3785 ? -->
+    <constructor-arg type="boolean" value="TRUE" />
   </bean>
   
   <!-- controller for handling all incoming requests -->
   <bean id="geowebcacheDispatcher" class="org.geowebcache.GeoWebCacheDispatcher" destroy-method="destroy">
-    <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
+    <constructor-arg ref="gwcTLDispatcher"/>
+    <constructor-arg ref="gwcGridSetBroker"/>
     <property name="storageBroker" ref="gwcStorageBroker"/>
     <property name="defaultStorageFinder" ref="gwcDefaultStorageFinder"/>
     <!-- property name="servletPrefix" value=""/ -->
@@ -86,21 +96,25 @@
 	class="org.geowebcache.service.gmaps.GMapsConverter">
 	<constructor-arg ref="gwcStorageBroker"/>
 	<constructor-arg ref="gwcTLDispatcher"/>
+	<constructor-arg ref="gwcGridSetBroker"/>
   </bean>
   <bean id="gwcServiceMGMaps"
 	class="org.geowebcache.service.mgmaps.MGMapsConverter">
 	<constructor-arg ref="gwcStorageBroker"/>
 	<constructor-arg ref="gwcTLDispatcher"/>
+	<constructor-arg ref="gwcGridSetBroker"/>
   </bean>
   <bean id="gwcServiceVE"
 	class="org.geowebcache.service.ve.VEConverter">
 	<constructor-arg ref="gwcStorageBroker"/>
 	<constructor-arg ref="gwcTLDispatcher"/>
+	<constructor-arg ref="gwcGridSetBroker"/>
   </bean>
   <bean id="gwcServiceKML"
 	class="org.geowebcache.service.kml.KMLService">
 	<constructor-arg ref="gwcStorageBroker"/>
 	<constructor-arg ref="gwcTLDispatcher"/>
+	<constructor-arg ref="gwcGridSetBroker"/>
   </bean>
   <bean id="gwcServiceTMS"
 	class="org.geowebcache.service.tms.TMSConverter">

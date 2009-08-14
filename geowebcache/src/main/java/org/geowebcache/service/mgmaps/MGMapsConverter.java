@@ -42,13 +42,16 @@ public class MGMapsConverter extends Service {
 
     private StorageBroker sb;
     
-    private TileLayerDispatcher tld; 
+    private TileLayerDispatcher tld;
     
-    public MGMapsConverter(StorageBroker sb, TileLayerDispatcher tld) {
+    private GridSetBroker gsb;
+    
+    public MGMapsConverter(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb) {
         super(SERVICE_MGMAPS);
         
         this.sb = sb;
         this.tld = tld;
+        this.gsb = gsb;
     }
 
     public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response)
@@ -76,7 +79,7 @@ public class MGMapsConverter extends Service {
             throw new ServiceException("Unable to determine requested format, "+ strFormat);
         }
         
-        ConveyorTile ret = new ConveyorTile(sb, layerId, GridSetBroker.WORLD_EPSG3785.getName(), gridLoc, mimeType, null, null, request, response);
+        ConveyorTile ret = new ConveyorTile(sb, layerId, gsb.WORLD_EPSG3857.getName(), gridLoc, mimeType, null, null, request, response);
         
         if(strCached != null && ! Boolean.parseBoolean(strCached)) {
             ret.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);

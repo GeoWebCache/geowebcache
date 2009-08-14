@@ -21,6 +21,7 @@ import java.util.LinkedList;
 
 import junit.framework.TestCase;
 
+import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.util.Configuration;
@@ -92,7 +93,7 @@ public class TileLayerRestletTest extends TestCase {
     }
     
     TileLayerRestlet preparedTileLayerRestlet() {
-        TileLayerDispatcher layerDispatcher = new TileLayerDispatcher();
+        TileLayerDispatcher layerDispatcher = new TileLayerDispatcher(new GridSetBroker(false));
         XMLConfiguration xmlConfig = loadXMLConfig();
         LinkedList<Configuration> configList = new LinkedList<Configuration>();
         configList.add(xmlConfig);

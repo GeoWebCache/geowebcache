@@ -42,7 +42,7 @@ import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.GridSubSetFactory;
-import org.geowebcache.grid.OldGrid;
+import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.grid.XMLSubGrid;
@@ -224,24 +224,23 @@ public class WMSLayer extends TileLayer {
         if (this.subGrids != null) {
             Iterator<XMLSubGrid> iter = subGrids.iterator();
             while (iter.hasNext()) {
-                GridSubSet gridSubSet = iter.next()
-                        .getGridSubSet(gridSetBroker);
+                GridSubSet gridSubSet = iter.next().getGridSubSet(gridSetBroker);
                 gridSubSets.put(gridSubSet.getName(), gridSubSet);
             }
         }
 
         if (this.gridSubSets.size() == 0) {
-            gridSubSets.put(GridSetBroker.WORLD_EPSG4326.getName(),
-                    GridSubSetFactory.createGridSubSet(GridSetBroker.WORLD_EPSG4326));
-            gridSubSets.put(GridSetBroker.WORLD_EPSG3785.getName(),
-                    GridSubSetFactory.createGridSubSet(GridSetBroker.WORLD_EPSG3785));
+            gridSubSets.put(gridSetBroker.WORLD_EPSG4326.getName(),
+                    GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326));
+            gridSubSets.put(gridSetBroker.WORLD_EPSG3857.getName(),
+                    GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857));
         }
 
         // Convert version 1.1.x and 1.0.x grid objects
         if (grids != null && !grids.isEmpty()) {
-            Iterator<OldGrid> iter = grids.values().iterator();
+            Iterator<XMLOldGrid> iter = grids.values().iterator();
             while (iter.hasNext()) {
-                GridSubSet converted = iter.next().convertToGridSubset();
+                GridSubSet converted = iter.next().convertToGridSubset(gridSetBroker);
                 gridSubSets.put(converted.getSRS().toString(), converted);
             }
 
@@ -346,7 +345,7 @@ public class WMSLayer extends TileLayer {
         long[] gridLoc = tile.getTileIndex();
 
         // Final preflight check, throws exception if necessary
-        this.getGridSubSet(tileGridSetId).checkCoverage(gridLoc);
+        getGridSubSet(tileGridSetId).checkCoverage(gridLoc);
         
         if (tryCacheFetch(tile)) {
             return finalizeTile(tile);

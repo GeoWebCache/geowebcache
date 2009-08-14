@@ -47,14 +47,17 @@ public class KMLDebugGridLayer extends TileLayer {
     public static final int IS_KMZ = 100;
     
     //private static Log log = LogFactory.getLog(org.geowebcache.service.kml.KMLDebugGridLayer.class);
+
+    // This is completely isolated anyway
+    private static GridSetBroker gridSetBroker = new GridSetBroker(false);
     
     private static KMLDebugGridLayer instance;
 
     private KMLDebugGridLayer() {
         super.gridSubSets = new Hashtable<String,GridSubSet>();
         gridSubSets.put(
-                GridSetBroker.WORLD_EPSG4326.getName(),
-                GridSubSetFactory.createGridSubSet(GridSetBroker.WORLD_EPSG4326, BBOX.WORLD4326, 0, 3));
+                gridSetBroker.WORLD_EPSG4326.getName(),
+                GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, BBOX.WORLD4326, 0, 3));
     }
     
     synchronized static public KMLDebugGridLayer getInstance() {

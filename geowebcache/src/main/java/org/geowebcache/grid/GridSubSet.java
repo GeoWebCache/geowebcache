@@ -64,13 +64,12 @@ public class GridSubSet {
                     // Everything is good
                     return;
                 }
-            } else {
-                throw new OutsideCoverageException(index, coverage);
             }
-        } else {
-            throw new OutsideCoverageException(index, firstLevel, gridCoverageLevels.length - 1);
+
+            throw new OutsideCoverageException(index, coverage);            
         }
-        
+
+        throw new OutsideCoverageException(index, firstLevel, gridCoverageLevels.length - 1);        
     }
     
     public long[][] expandToMetaFactors(long[][] coverages, int[] metaFactors) {

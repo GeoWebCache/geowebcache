@@ -32,7 +32,6 @@ import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.OutsideCoverageException;
-import org.geowebcache.layer.OutOfBoundsException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -71,13 +70,16 @@ public class KMLService extends Service {
     
     private StorageBroker sb;
     
-    private TileLayerDispatcher tld; 
+    private TileLayerDispatcher tld;
     
-    public KMLService(StorageBroker sb, TileLayerDispatcher tld) {
+    private GridSetBroker gsb;
+    
+    public KMLService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb) {
         super(SERVICE_KML);
         
         this.sb = sb;
         this.tld = tld;
+        this.gsb = gsb;
     }
 
     /**
@@ -152,7 +154,7 @@ public class KMLService extends Service {
             gridLoc = KMLService.parseGridLocString(parsed[1]);
         }
         
-        ConveyorKMLTile tile = new ConveyorKMLTile(sb, parsed[0], GridSetBroker.WORLD_EPSG4326.getName(),
+        ConveyorKMLTile tile = new ConveyorKMLTile(sb, parsed[0], gsb.WORLD_EPSG4326.getName(),
                 gridLoc, MimeType.createFromExtension(parsed[2]), "", "", request, response);
         
         // Sitemap index ? kml/sitemap.xml 
@@ -424,12 +426,10 @@ public class KMLService extends Service {
                 tile.setWrapperMimeType(null);
                 try { 
                     tileLayer.getTile(tile);
-                } catch (OutOfBoundsException oobe) {
+                } catch (OutsideCoverageException oce) {
                     log.error("Out of bounds: " + Arrays.toString(tile.getTileIndex()) 
                             + " should never habe been linked to.");
-                    throw oobe;
-                } catch (OutsideCoverageException e) {
-                    throw new OutOfBoundsException(e.getMessage());
+                    throw oce;
                 }
                 tile.setWrapperMimeType(XMLMime.kmz);
             } catch (IOException ioe) {
@@ -506,7 +506,12 @@ public class KMLService extends Service {
         long[][] linkGridLocs = tileLayer.getZoomedInIndexes(gridSubSet.getName(), gridLoc);
         
         // 3) Apply secondary filter against linking to empty tiles
-        linkGridLocs = KMZHelper.filterGridLocs(tile.getStorageBroker(), tileLayer, tile.getMimeType(), linkGridLocs);
+        linkGridLocs = KMZHelper.filterGridLocs(
+                tile.getStorageBroker(), 
+                tileLayer, 
+                gridSubSet.getName(), 
+                tile.getMimeType(), 
+                linkGridLocs );
 
         //int moreData = 0;
         for (int i = 0; i < 4; i++) {

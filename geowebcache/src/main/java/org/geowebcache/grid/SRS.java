@@ -9,9 +9,9 @@ public class SRS {
 
     private static final SRS EPSG4326 = new SRS(4326);
 
-    private static final SRS EPSG3785 = new SRS(3785);
+    private static final SRS EPSG3857 = new SRS(3857);
     
-    //private static final SRS EPSG900913 = EPSG3785;
+    private static final SRS EPSG900913 = new SRS(900913);
     
     private static Hashtable<Integer,SRS> list = new Hashtable<Integer,SRS>();
 
@@ -34,7 +34,7 @@ public class SRS {
             if(epsgNumber == 4326) {
                 list.put(4326, EPSG4326);
             } else if(epsgNumber == 900913 || epsgNumber == 3785) {
-                list.put(3785, EPSG3785);
+                list.put(3785, EPSG3857);
             }
             
             ret = new SRS(epsgNumber);
@@ -83,11 +83,11 @@ public class SRS {
         return EPSG4326;
     }
 
-    public static SRS getEPSG3785() {
-        return EPSG3785;
+    public static SRS getEPSG3857() {
+        return EPSG3857;
     }
     
     public static SRS getEPSG900913() {
-        return EPSG3785;
+        return EPSG900913;
     }
 }
