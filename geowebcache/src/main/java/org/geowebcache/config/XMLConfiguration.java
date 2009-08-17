@@ -128,14 +128,16 @@ public class XMLConfiguration implements Configuration {
         
         List<TileLayer> layers = gwcConfig.layers;
         
+        GridSetBroker gridSetBroker = new GridSetBroker(false);
+        
         mockConfiguration = true;
         
-        // Add the cache factory to each layer object
         if(layers != null) {
             Iterator<TileLayer> iter = layers.iterator();
             while(iter.hasNext()) {
                 TileLayer layer = iter.next();
                 setDefaultValues(layer);
+                layer.setGridSetBroker(gridSetBroker);
             }
         }
     }

@@ -483,4 +483,8 @@ public abstract class TileLayer {
     public GridSubSet getGridSubSet(String gridSetId) {
         return this.gridSubSets.get(gridSetId);
     }
+    
+    public void setGridSetBroker(GridSetBroker gridSetBroker) {
+        this.gridSetBroker = gridSetBroker;
+    }
 }
