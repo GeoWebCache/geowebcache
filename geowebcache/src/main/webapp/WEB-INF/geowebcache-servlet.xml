@@ -4,7 +4,7 @@
 
   <bean id="gwcAppCtx" class="org.geowebcache.util.ApplicationContextProvider" />
   
-  <bean id="gwcXmlConfig" class="org.geowebcache.util.XMLConfiguration">
+  <bean id="gwcXmlConfig" class="org.geowebcache.config.XMLConfiguration">
     <constructor-arg ref="gwcAppCtx" />
     <constructor-arg ref="gwcGridSetBroker"/>
     <constructor-arg ref="gwcDefaultStorageFinder" />
@@ -18,7 +18,7 @@
        change the values below. The last constructor-arg lets you specify parameters 
        that are appended to every WMS request to the backed, for example: 
        "format_options=regionate_by:auto&amp;bgcolor=0x112233" -->
-  <bean id="gwcWMSConfig" class="org.geowebcache.util.GetCapabilitiesConfiguration">
+  <bean id="gwcWMSConfig" class="org.geowebcache.config.GetCapabilitiesConfiguration">
   	<constructor-arg ref="gwcGridSetBroker"/>
     <constructor-arg value="http://localhost:8080/geoserver/wms?service=wms&amp;request=getcapabilities&amp;version=1.1.0" />
     <constructor-arg value="image/png,image/jpeg,image/png8,image/gif,application/vnd.google-earth.kml+xml"/>

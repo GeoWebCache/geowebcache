@@ -24,12 +24,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
-import org.geowebcache.util.XMLConfiguration;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.restlet.data.MediaType;

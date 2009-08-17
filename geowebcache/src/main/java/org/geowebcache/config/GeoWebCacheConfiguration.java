@@ -15,7 +15,7 @@
  * @author Arne Kepp, The Open Planning Project, Copyright 2009
  */
 
-package org.geowebcache.util;
+package org.geowebcache.config;
 
 import java.util.Iterator;
 import java.util.LinkedList;

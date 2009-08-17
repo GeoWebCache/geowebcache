@@ -24,6 +24,7 @@ import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import org.geowebcache.demo.Demo;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -33,7 +34,6 @@ import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.storage.StorageBroker;
-import org.geowebcache.util.wms.BBOX;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
@@ -454,10 +454,10 @@ public class SeedFormRestlet extends GWCRestlet {
 
     private void handleDoSeedPost(Form form, TileLayer tl, Response resp)
             throws RestletException {
-        BBOX bounds = null;
+        BoundingBox bounds = null;
         
         if (form.getFirst("minX").getValue() != null) {
-            bounds = new BBOX(
+            bounds = new BoundingBox(
                     parseDouble(form, "minX"), 
                     parseDouble(form, "minY"), 
                     parseDouble(form, "maxX"),

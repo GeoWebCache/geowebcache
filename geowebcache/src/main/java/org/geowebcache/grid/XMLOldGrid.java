@@ -16,7 +16,6 @@
  */
 package org.geowebcache.grid;
 
-import org.geowebcache.util.wms.BBOX;
 
 /**
  * This class exists mainly to parse the old XML objects using XStream
@@ -27,9 +26,9 @@ import org.geowebcache.util.wms.BBOX;
 public class XMLOldGrid {
     private SRS srs = null;
     
-    private BBOX dataBounds = null;
+    private BoundingBox dataBounds = null;
     
-    protected BBOX gridBounds = null;
+    protected BoundingBox gridBounds = null;
     
     protected Integer zoomStart;
     
@@ -58,9 +57,9 @@ public class XMLOldGrid {
         
         GridSet gridSet;
         
-        if(srs.equals(SRS.getEPSG4326()) && gridBounds.equals(BBOX.WORLD4326) && resolutions == null) {
+        if(srs.equals(SRS.getEPSG4326()) && gridBounds.equals(BoundingBox.WORLD4326) && resolutions == null) {
             gridSet = gridSetBroker.WORLD_EPSG4326;
-        } else if(srs.equals(SRS.getEPSG3857()) && gridBounds.equals(BBOX.WORLD3857) && resolutions == null) {
+        } else if(srs.equals(SRS.getEPSG3857()) && gridBounds.equals(BoundingBox.WORLD3857) && resolutions == null) {
             gridSet = gridSetBroker.WORLD_EPSG3857;
         } else {
             if(resolutions != null) {

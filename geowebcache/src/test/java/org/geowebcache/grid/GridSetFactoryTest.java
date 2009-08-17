@@ -2,12 +2,11 @@ package org.geowebcache.grid;
 
 import junit.framework.TestCase;
 
-import org.geowebcache.util.wms.BBOX;
 
 public class GridSetFactoryTest extends TestCase {
 
     public void testResolutionsArrayEPSG4326() throws Exception {
-        BBOX extent = new BBOX(-180, -90, 180, 90);
+        BoundingBox extent = new BoundingBox(-180, -90, 180, 90);
         double[] resolutions = {180.0/256, 180.0/512, 180.0/1024, 180.0/2048};
         
         GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), extent, resolutions, 256, 256);
@@ -31,7 +30,7 @@ public class GridSetFactoryTest extends TestCase {
     }
 
     public void testResolutionsArrayEPSG3785() throws Exception {
-        BBOX extent = new BBOX(-20037508.34,-20037508.34,20037508.34,20037508.34);
+        BoundingBox extent = new BoundingBox(-20037508.34,-20037508.34,20037508.34,20037508.34);
         double[] resolutions = {(20037508.34*2)/256, (20037508.34*2)/512, (20037508.34*2)/1024, (20037508.34*2)/2048};
         
         GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getEPSG3857(), extent, resolutions, 256, 256);
@@ -50,7 +49,7 @@ public class GridSetFactoryTest extends TestCase {
     
     public void testResolutionsArrayTricky1() throws Exception {
         // This should be expanded in the X direction
-        BBOX extent = new BBOX(-173, -90, 180, 96);
+        BoundingBox extent = new BoundingBox(-173, -90, 180, 96);
         double[] resolutions = {180.0/200, 180.0/400, 180.0/800};
         
         GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), extent, resolutions, 200, 200);
@@ -74,7 +73,7 @@ public class GridSetFactoryTest extends TestCase {
     }
     
     public void testBoundingBoxEPSG4326() throws Exception {
-        BBOX extent = new BBOX(-180, -90, 180, 90);
+        BoundingBox extent = new BoundingBox(-180, -90, 180, 90);
         
         GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), extent, 4, 256, 256);
         
@@ -97,7 +96,7 @@ public class GridSetFactoryTest extends TestCase {
     }
     
     public void testBoundingBoxEPSG3785() throws Exception {
-        BBOX extent = new BBOX(-20037508.34,-20037508.34,20037508.34,20037508.34);
+        BoundingBox extent = new BoundingBox(-20037508.34,-20037508.34,20037508.34,20037508.34);
         GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getEPSG3857(), extent, 6, 256, 256);
         
         Grid grid0 = gridSet.gridLevels[0];
@@ -113,7 +112,7 @@ public class GridSetFactoryTest extends TestCase {
     }
     
     public void testBoundingBoxTricky1() throws Exception {
-        BBOX extent = new BBOX(-180, -90, 172, 90);
+        BoundingBox extent = new BoundingBox(-180, -90, 172, 90);
         
         GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), extent, 4, 256, 256);
         
@@ -130,7 +129,7 @@ public class GridSetFactoryTest extends TestCase {
     }
     
     public void testBoundingBoxTricky2() throws Exception {
-        BBOX extent = new BBOX(-180, -90, 180, 82);
+        BoundingBox extent = new BoundingBox(-180, -90, 180, 82);
         
         SRS srs = SRS.getEPSG4326();
         

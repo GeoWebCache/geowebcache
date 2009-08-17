@@ -1,9 +1,11 @@
-package org.geowebcache.util.wms;
+package org.geowebcache.grid;
 
+
+import org.geowebcache.grid.BoundingBox;
 
 import junit.framework.TestCase;
 
-public class BBOXTest extends TestCase {
+public class BoundingBoxTest extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
@@ -19,7 +21,7 @@ public class BBOXTest extends TestCase {
      * @throws Exception
      */
     public void testBBOX() throws Exception {
-    	BBOX bbox = new BBOX(-180.0,-90.0,180.0,90.0);
+    	BoundingBox bbox = new BoundingBox(-180.0,-90.0,180.0,90.0);
     	assert(bbox.isSane());
     	
     	String bboxStr = bbox.toString();
@@ -31,9 +33,9 @@ public class BBOXTest extends TestCase {
     }
     
     public void testBBOXScale() throws Exception {
-        BBOX bbox = new BBOX(-180.0,-90.0,180.0,90.0);
+        BoundingBox bbox = new BoundingBox(-180.0,-90.0,180.0,90.0);
         
-        BBOX copy = new BBOX(bbox);
+        BoundingBox copy = new BoundingBox(bbox);
         bbox.scale(1.0);
         bbox.scale(0.5);
         bbox.scale(2.0);

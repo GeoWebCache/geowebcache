@@ -16,7 +16,6 @@
  */
 package org.geowebcache.grid;
 
-import org.geowebcache.util.wms.BBOX;
 
 /**
  * A GridSubSet is a GridSet + a coverage area
@@ -35,19 +34,19 @@ public class GridSubSet {
         this.gridSet = gridSet;
     }
     
-    public BBOX boundsFromIndex(long[] tileIndex) {
+    public BoundingBox boundsFromIndex(long[] tileIndex) {
         return gridSet.boundsFromIndex(tileIndex);
     }
     
-    public BBOX boundsFromRectangle(long[] rectangleExtent) {
+    public BoundingBox boundsFromRectangle(long[] rectangleExtent) {
         return gridSet.boundsFromRectangle(rectangleExtent);
     }
     
-    public long[] closestIndex(BBOX tileBounds) {
+    public long[] closestIndex(BoundingBox tileBounds) {
         return gridSet.closestIndex(tileBounds);
     }
     
-    public long[] closestRectangle(BBOX rectangleBounds) {
+    public long[] closestRectangle(BoundingBox rectangleBounds) {
         return gridSet.closestRectangle(rectangleBounds);
     }
     
@@ -92,7 +91,7 @@ public class GridSubSet {
         return ret;
     }
     
-    public BBOX getCoverageBounds(int level) {
+    public BoundingBox getCoverageBounds(int level) {
         long[] coverage = gridCoverageLevels[firstLevel + level].coverage;
         return gridSet.boundsFromRectangle(coverage);
     }
@@ -117,7 +116,7 @@ public class GridSubSet {
         return ret;
     }
     
-    public BBOX getCoverageBestFitBounds() {
+    public BoundingBox getCoverageBestFitBounds() {
         return boundsFromRectangle(getCoverageBestFit());
     }
     
@@ -126,7 +125,7 @@ public class GridSubSet {
         return gridCov.getIntersection(reqRectangle);
     }
     
-    public long[][] getCoverageIntersections(BBOX reqBounds) {
+    public long[][] getCoverageIntersections(BoundingBox reqBounds) {
         long[][] ret = new long[gridCoverageLevels.length][5];
         for(int i = 0; i < gridCoverageLevels.length; i++) {
              long[] reqRectangle = gridSet.closestRectangle(i + firstLevel, reqBounds);
@@ -144,7 +143,7 @@ public class GridSubSet {
         return gridSet;
     }
 
-    public BBOX getGridSetBounds() {
+    public BoundingBox getGridSetBounds() {
         return gridSet.getBounds();
     }
         

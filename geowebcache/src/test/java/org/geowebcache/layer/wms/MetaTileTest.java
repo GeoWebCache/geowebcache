@@ -7,11 +7,11 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.GridSubSetFactory;
 import org.geowebcache.mime.ImageMime;
-import org.geowebcache.util.wms.BBOX;
 
 public class MetaTileTest extends TestCase {
 
@@ -23,7 +23,7 @@ public class MetaTileTest extends TestCase {
     }
 
     public void test1MetaTile() throws Exception {
-        BBOX bbox = new BBOX(0, 0, 180, 90);
+        BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
         int metaHeight = 1;
         int metaWidth = 1;
 
@@ -51,7 +51,7 @@ public class MetaTileTest extends TestCase {
     }
 
     public void test2MetaTile() throws Exception {
-        BBOX bbox = new BBOX(0, 0, 180, 90);
+        BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
         int metaHeight = 3;
         int metaWidth = 3;
 
@@ -77,7 +77,7 @@ public class MetaTileTest extends TestCase {
     }
 
     public void test3MetaTile() throws Exception {
-        BBOX bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
+        BoundingBox bbox = new BoundingBox(0, 0, 20037508.34, 20037508.34);
         int metaHeight = 1;
         int metaWidth = 1;
         
@@ -103,7 +103,7 @@ public class MetaTileTest extends TestCase {
     }
 
     public void test4MetaTile() throws Exception {
-        BBOX bbox = new BBOX(0, 0, 20037508.34, 20037508.34);
+        BoundingBox bbox = new BoundingBox(0, 0, 20037508.34, 20037508.34);
         
         int metaHeight = 3;
         int metaWidth = 3;
@@ -137,7 +137,7 @@ public class MetaTileTest extends TestCase {
      * @throws Exception
      */
     public void test5MetaTileGutter() throws Exception {
-        BBOX bbox = new BBOX(0, 0, 180, 90);
+        BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
         
         WMSLayer layer = createWMSLayer(bbox);
 
@@ -199,7 +199,7 @@ public class MetaTileTest extends TestCase {
         assertTrue(Math.abs( Double.parseDouble(coordStrs[3]) - 45.54931640625) < 0.001);
     }
     
-    private WMSLayer createWMSLayer(BBOX layerBounds) {
+    private WMSLayer createWMSLayer(BoundingBox layerBounds) {
         String[] urls = {"http://localhost:38080/wms"};
         List<String> formatList = new LinkedList<String>();
         formatList.add("image/png");

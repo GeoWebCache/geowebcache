@@ -27,13 +27,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
-import org.geowebcache.util.wms.BBOX;
 
 /**
  * This class is a wrapper for HTTP interaction with WMS backend
@@ -83,7 +83,7 @@ public class WMSHttpHelper {
         strBuilder.append("&WIDTH=").append(gridSubSet.getTileWidth());
         strBuilder.append("&TILED=").append(requestTiled);
         
-        BBOX bbox = gridSubSet.boundsFromIndex(tile.getTileIndex());
+        BoundingBox bbox = gridSubSet.boundsFromIndex(tile.getTileIndex());
         
         strBuilder.append("&BBOX=").append(bbox);
         

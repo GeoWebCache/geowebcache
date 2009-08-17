@@ -17,12 +17,12 @@
  */
 package org.geowebcache.rest.seed;
 
-import org.geowebcache.util.wms.BBOX;
+import org.geowebcache.grid.BoundingBox;
 
 public class SeedRequest {
     private String name = null;
 
-    private BBOX bounds = null;
+    private BoundingBox bounds = null;
 
     private String gridSetId;
     
@@ -54,7 +54,7 @@ public class SeedRequest {
      * @param format
      * @param type
      */
-    protected SeedRequest(String name, BBOX bounds, 
+    protected SeedRequest(String name, BoundingBox bounds, 
             String gridSetId, int threadCount, int zoomStart, 
             int zoomStop, String format, String type, String parameters) {
         this.name = name;
@@ -79,7 +79,7 @@ public class SeedRequest {
      * Method gets the bounds for the requested region
      * @return a BBOX 
      */
-    public BBOX getBounds() {
+    public BoundingBox getBounds() {
         return this.bounds;
     }
     /**

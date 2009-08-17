@@ -1,11 +1,10 @@
 package org.geowebcache.grid;
 
-import org.geowebcache.util.wms.BBOX;
 
 public class XMLGridSet {
     String name;
     SRS srs;
-    BBOX extent;
+    BoundingBox extent;
     double[] resolutions;
     Integer levels;
     Integer tileHeight;

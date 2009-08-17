@@ -15,52 +15,52 @@
  * @author Chris Whitney
  *  
  */
-package org.geowebcache.util.wms;
+package org.geowebcache.grid;
 
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class BBOX {
+public class BoundingBox {
     private static Log log = LogFactory
-            .getLog(org.geowebcache.util.wms.BBOX.class);
+            .getLog(org.geowebcache.grid.BoundingBox.class);
 
     private static String DELIMITER = ",";
 
     private static double EQUALITYTHRESHOLD = 0.03;
 
-    public static final BBOX WORLD4326 = 
-        new BBOX(-180.0,-90.0,180.0,90.0);
+    public static final BoundingBox WORLD4326 = 
+        new BoundingBox(-180.0,-90.0,180.0,90.0);
     
-    public static final BBOX WORLD3857 = 
-        new BBOX(-20037508.34,-20037508.34,20037508.34,20037508.34);
+    public static final BoundingBox WORLD3857 = 
+        new BoundingBox(-20037508.34,-20037508.34,20037508.34,20037508.34);
     
     // minx, miny, maxx, maxy
     public double[] coords = new double[4];
 
-    public BBOX(BBOX bbox) {
+    public BoundingBox(BoundingBox bbox) {
         coords[0] = bbox.coords[0];
         coords[1] = bbox.coords[1];
         coords[2] = bbox.coords[2];
         coords[3] = bbox.coords[3];
     }
     
-    public BBOX(String BBOX) {
+    public BoundingBox(String BBOX) {
         setFromBBOXString(BBOX, 0);
         if (log.isTraceEnabled()) {
             log.trace("Created BBOX: " + getReadableString());
         }
     }
 
-    public BBOX(String[] BBOX) {
+    public BoundingBox(String[] BBOX) {
         setFromStringArray(BBOX);
         if (log.isTraceEnabled()) {
             log.trace("Created BBOX: " + getReadableString());
         }
     }
 
-    public BBOX(double minx, double miny, double maxx, double maxy) {
+    public BoundingBox(double minx, double miny, double maxx, double maxy) {
         coords[0] = minx;
         coords[1] = miny;
         coords[2] = maxx;
@@ -156,7 +156,7 @@ public class BBOX {
      */
     public boolean equals(Object obj) {
         if (obj != null && obj.getClass() == this.getClass()) {
-            BBOX other = (BBOX) obj;
+            BoundingBox other = (BoundingBox) obj;
             boolean result = true;
             for (int i = 0; i < 4 && result; i++) {
                 result = (Math.abs(coords[i]) < EQUALITYTHRESHOLD) 
@@ -175,7 +175,7 @@ public class BBOX {
      * @param other
      * @return whether other is contained by this
      */
-    public boolean contains(BBOX other) {
+    public boolean contains(BoundingBox other) {
         return (coords[0] - EQUALITYTHRESHOLD <= other.coords[0]
                 && coords[1] - EQUALITYTHRESHOLD <= other.coords[1]
                 && coords[2] + EQUALITYTHRESHOLD >= other.coords[2] && coords[3]
@@ -198,8 +198,8 @@ public class BBOX {
     }
 
     
-    public static BBOX intersection(BBOX bboxA, BBOX bboxB) {
-        BBOX retBbox = new BBOX(0,0,0,0);
+    public static BoundingBox intersection(BoundingBox bboxA, BoundingBox bboxB) {
+        BoundingBox retBbox = new BoundingBox(0,0,0,0);
 
         for(int i=0; i<2; i++) {
             if(bboxA.coords[i] > bboxB.coords[i]) {

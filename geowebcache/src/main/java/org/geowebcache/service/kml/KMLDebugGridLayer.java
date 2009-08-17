@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.GridSubSetFactory;
@@ -31,7 +32,6 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.util.wms.BBOX;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 
@@ -57,7 +57,7 @@ public class KMLDebugGridLayer extends TileLayer {
         super.gridSubSets = new Hashtable<String,GridSubSet>();
         gridSubSets.put(
                 gridSetBroker.WORLD_EPSG4326.getName(),
-                GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, BBOX.WORLD4326, 0, 3));
+                GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, BoundingBox.WORLD4326, 0, 3));
     }
     
     synchronized static public KMLDebugGridLayer getInstance() {
@@ -77,8 +77,8 @@ public class KMLDebugGridLayer extends TileLayer {
         return null;
     }
 
-    public BBOX getBounds(SRS srs) {
-        return new BBOX(-180.0, -90.0, 180.0, 90.0);
+    public BoundingBox getBounds(SRS srs) {
+        return new BoundingBox(-180.0, -90.0, 180.0, 90.0);
     }
 
     public MimeType getDefaultMimeType() {
@@ -110,7 +110,7 @@ public class KMLDebugGridLayer extends TileLayer {
     throws GeoWebCacheException, IOException {        
         long[] gridLoc = tile.getTileIndex();
 
-        BBOX bbox = tile.getGridSubSet().boundsFromIndex(gridLoc);
+        BoundingBox bbox = tile.getGridSubSet().boundsFromIndex(gridLoc);
         
         String data  = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
@@ -199,7 +199,7 @@ public class KMLDebugGridLayer extends TileLayer {
     public void setExpirationHeader(HttpServletResponse response) {
     }
 
-    public String supportsBbox(SRS srs, BBOX bounds)
+    public String supportsBbox(SRS srs, BoundingBox bounds)
             throws GeoWebCacheException {
         return null;
     }
@@ -243,10 +243,10 @@ public class KMLDebugGridLayer extends TileLayer {
         
     }
 
-    public BBOX getBboxForGridLoc(SRS srs, int[] gridLoc) {
+    public BoundingBox getBboxForGridLoc(SRS srs, int[] gridLoc) {
         double tileWidth = 180.0 / Math.pow(2, gridLoc[2]);
 
-        BBOX bbox = new BBOX(
+        BoundingBox bbox = new BoundingBox(
                      -180.0 + tileWidth * gridLoc[0],
                      -90.0 + tileWidth * gridLoc[1],
                      -180.0 + tileWidth * (gridLoc[0] + 1),
@@ -255,11 +255,11 @@ public class KMLDebugGridLayer extends TileLayer {
         return bbox;
     }
 
-    public int[][] getCoveredGridLevels(SRS srs, BBOX bounds) {
+    public int[][] getCoveredGridLevels(SRS srs, BoundingBox bounds) {
         return null;
     }
 
-    public int[] getGridLocForBounds(SRS srs, BBOX bounds)
+    public int[] getGridLocForBounds(SRS srs, BoundingBox bounds)
             throws BadTileException {
         return null;
     }
@@ -276,7 +276,7 @@ public class KMLDebugGridLayer extends TileLayer {
     }
 
     @Override
-    public BBOX boundsFromIndex(String gridSetId, long[] gridLoc)
+    public BoundingBox boundsFromIndex(String gridSetId, long[] gridLoc)
             throws GeoWebCacheException {
         // TODO Auto-generated method stub
         return null;
@@ -303,7 +303,7 @@ public class KMLDebugGridLayer extends TileLayer {
     }
 
     @Override
-    public BBOX getZoomedOutBounds(SRS srs) throws GeoWebCacheException {
+    public BoundingBox getZoomedOutBounds(SRS srs) throws GeoWebCacheException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -315,7 +315,7 @@ public class KMLDebugGridLayer extends TileLayer {
     }
 
     @Override
-    public long[] indexFromBounds(String gridSetId, BBOX bounds)
+    public long[] indexFromBounds(String gridSetId, BoundingBox bounds)
             throws BadTileException, GeoWebCacheException {
         // TODO Auto-generated method stub
         return null;

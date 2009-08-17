@@ -23,13 +23,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.storage.StorageBroker;
-import org.geowebcache.util.wms.BBOX;
 
 public class SeedTask extends GWCTask {
     private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.SeedTask.class);
@@ -99,7 +99,7 @@ public class SeedTask extends GWCTask {
 
         long[][] coveredGridLevels;
         
-        BBOX bounds = req.getBounds();
+        BoundingBox bounds = req.getBounds();
         if (bounds == null) {
             coveredGridLevels = gridSubSet.getCoverages();
         } else {

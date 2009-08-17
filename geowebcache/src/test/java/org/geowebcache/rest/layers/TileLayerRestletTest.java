@@ -21,12 +21,12 @@ import java.util.LinkedList;
 
 import junit.framework.TestCase;
 
+import org.geowebcache.config.Configuration;
+import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.config.XMLConfigurationTest;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.RestletException;
-import org.geowebcache.util.Configuration;
-import org.geowebcache.util.XMLConfiguration;
-import org.geowebcache.util.XMLConfigurationTest;
 import org.restlet.resource.Representation;
 
 /**

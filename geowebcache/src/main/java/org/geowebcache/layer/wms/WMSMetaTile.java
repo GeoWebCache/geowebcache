@@ -39,11 +39,11 @@ import javax.media.jai.operator.CropDescriptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.layer.MetaTile;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.util.wms.BBOX;
 
 public class WMSMetaTile extends MetaTile {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSMetaTile.class);
@@ -80,7 +80,7 @@ public class WMSMetaTile extends MetaTile {
     protected String getWMSParams() throws GeoWebCacheException {
         String baseParameters = wmsLayer.getWMSRequestTemplate(this.getResponseFormat());
 
-        BBOX metaBbox = gridSubSet.boundsFromRectangle(metaGridCov);
+        BoundingBox metaBbox = gridSubSet.boundsFromRectangle(metaGridCov);
         
         // Fill in the blanks
         StringBuilder strBuilder = new StringBuilder(baseParameters);
@@ -121,7 +121,7 @@ public class WMSMetaTile extends MetaTile {
         
         long[] layerCov = gridSubSet.getCoverage((int) this.metaGridCov[4]);
         
-        BBOX metaBbox = gridSubSet.boundsFromRectangle(metaGridCov);
+        BoundingBox metaBbox = gridSubSet.boundsFromRectangle(metaGridCov);
         
         double[] metaCoords = metaBbox.coords;
         

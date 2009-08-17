@@ -28,12 +28,12 @@ import javax.imageio.ImageIO;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.util.ServletUtils;
-import org.geowebcache.util.wms.BBOX;
 
 public class WMSRasterFilter extends RasterFilter {
     private static Log log = LogFactory.getLog(RasterFilter.class);
@@ -109,7 +109,7 @@ public class WMSRasterFilter extends RasterFilter {
      * @return
      */
     protected String wmsUrl(WMSLayer layer, GridSubSet gridSubSet, int z, int[] widthHeight) throws GeoWebCacheException {  
-        BBOX bbox = gridSubSet.getCoverageBounds(z);
+        BoundingBox bbox = gridSubSet.getCoverageBounds(z);
         
         StringBuilder str = new StringBuilder();
         str.append(layer.getWMSurl()[0]);

@@ -1,12 +1,11 @@
 package org.geowebcache.grid;
 
-import org.geowebcache.util.wms.BBOX;
 
 public class XMLSubGrid {
     
     String gridSetId;
     
-    BBOX coverageBounds;
+    BoundingBox coverageBounds;
     
     Integer zoomStart;
     

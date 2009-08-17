@@ -19,6 +19,7 @@ package org.geowebcache.rest.seed;
 import java.util.Arrays;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
@@ -26,7 +27,6 @@ import org.geowebcache.rest.GWCTask;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileRangeObject;
-import org.geowebcache.util.wms.BBOX;
 
 public class TruncateTask extends GWCTask {
     
@@ -55,7 +55,7 @@ public class TruncateTask extends GWCTask {
         
         long[][] coverages = null;
 
-        BBOX reqBounds = req.getBounds();
+        BoundingBox reqBounds = req.getBounds();
         if (req.getBounds() == null 
                 || Arrays.equals(req.getBounds().coords, nullBbox)) {
             coverages = gridSubSet.getCoverages();

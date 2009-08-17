@@ -16,7 +16,6 @@
  */
 package org.geowebcache.grid;
 
-import org.geowebcache.util.wms.BBOX;
 
 public class GridSubSetFactory {
     public static GridSubSet createGridSubSet(GridSet gridSet) {
@@ -35,7 +34,7 @@ public class GridSubSetFactory {
         return ret;
     }
     
-    public static GridSubSet createGridSubSet(GridSet gridSet, BBOX coverageBounds, int zoomStart, int zoomStop) {
+    public static GridSubSet createGridSubSet(GridSet gridSet, BoundingBox coverageBounds, int zoomStart, int zoomStop) {
         GridSubSet ret = new GridSubSet(gridSet);
         
         ret.firstLevel = zoomStart;

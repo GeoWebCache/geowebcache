@@ -15,7 +15,7 @@
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  *  
  */
-package org.geowebcache.util;
+package org.geowebcache.config;
 
 import java.io.IOException;
 import java.net.URL;
@@ -33,16 +33,16 @@ import org.geotools.data.ows.WMSCapabilities;
 import org.geotools.data.wms.WebMapServer;
 import org.geotools.ows.ServiceException;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.GridSubSetFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
-import org.geowebcache.util.wms.BBOX;
 
 public class GetCapabilitiesConfiguration implements Configuration {
     private static Log log = LogFactory
-            .getLog(org.geowebcache.util.GetCapabilitiesConfiguration.class);
+            .getLog(org.geowebcache.config.GetCapabilitiesConfiguration.class);
 
     private GridSetBroker gridSetBroker;
     
@@ -180,12 +180,12 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 double maxX = layer.getLatLonBoundingBox().getMaxX();
                 double maxY = layer.getLatLonBoundingBox().getMaxY();
 
-                BBOX bounds4326 = new BBOX(minX,minY,maxX,maxY);
+                BoundingBox bounds4326 = new BoundingBox(minX,minY,maxX,maxY);
                 
                 log.info("Found layer: " + layer.getName()
                         + " with LatLon bbox " + bounds4326.toString());
                 
-                BBOX bounds3785 = new BBOX(
+                BoundingBox bounds3785 = new BoundingBox(
                         longToSphericalMercatorX(minX),
                         latToSphericalMercatorY(minY),
                         longToSphericalMercatorX(maxX),
@@ -215,7 +215,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
     }
 
     private WMSLayer getLayer(String name, String[] wmsurl, 
-            BBOX bounds4326, BBOX bounds3785, String stylesStr, boolean queryable)
+            BoundingBox bounds4326, BoundingBox bounds3785, String stylesStr, boolean queryable)
             throws GeoWebCacheException {
         
         Hashtable<String,GridSubSet> grids = new Hashtable<String,GridSubSet>(2);

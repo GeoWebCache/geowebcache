@@ -15,14 +15,16 @@
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  *  
  */
-package org.geowebcache.util;
-
-import java.util.List;
+package org.geowebcache.config;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.layer.TileLayer;
 
-public interface Configuration {
-	public List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException;
-	public String getIdentifier() throws GeoWebCacheException;
+public class ConfigurationException extends GeoWebCacheException {
+    public ConfigurationException(String msg) {
+        super(msg);
+    }
+
+    private static final long serialVersionUID = -3728930637143910200L;
+
+    
 }

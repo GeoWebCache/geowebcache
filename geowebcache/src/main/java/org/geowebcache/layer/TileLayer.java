@@ -31,6 +31,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.filter.request.RequestFilterException;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.XMLOldGrid;
@@ -40,7 +41,6 @@ import org.geowebcache.grid.XMLSubGrid;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.util.wms.BBOX;
 
 public abstract class TileLayer {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayer.class);
@@ -296,7 +296,7 @@ public abstract class TileLayer {
      * @return
      * @throws GeoWebCacheException 
      */
-    public abstract int[][] getCoveredGridLevels(SRS srs, BBOX bounds) throws GeoWebCacheException;
+    public abstract int[][] getCoveredGridLevels(SRS srs, BoundingBox bounds) throws GeoWebCacheException;
 
     /**
      * 
@@ -327,7 +327,7 @@ public abstract class TileLayer {
      * @throws GeoWebCacheException 
      * @throws GeoWebCacheException
      */
-    public abstract long[] indexFromBounds(String gridSetId, BBOX bounds)
+    public abstract long[] indexFromBounds(String gridSetId, BoundingBox bounds)
             throws BadTileException, GeoWebCacheException;
 
     /**
@@ -337,7 +337,7 @@ public abstract class TileLayer {
      * @return
      * @throws GeoWebCacheException 
      */
-    public abstract BBOX boundsFromIndex(String gridSetId, long[] gridLoc) 
+    public abstract BoundingBox boundsFromIndex(String gridSetId, long[] gridLoc) 
     throws GeoWebCacheException;
 
     /**
@@ -375,7 +375,7 @@ public abstract class TileLayer {
      * @return
      * @throws GeoWebCacheException
      */
-    public abstract BBOX getZoomedOutBounds(SRS srs) throws GeoWebCacheException;
+    public abstract BoundingBox getZoomedOutBounds(SRS srs) throws GeoWebCacheException;
     
     /**
      * Acquire the global lock for the layer, primarily used for truncating

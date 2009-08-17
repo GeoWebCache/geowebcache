@@ -26,13 +26,13 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.storage.StorageBroker;
-import org.geowebcache.util.XMLConfiguration;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.restlet.data.MediaType;

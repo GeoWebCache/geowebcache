@@ -29,6 +29,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorKMLTile;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.OutsideCoverageException;
@@ -41,7 +42,6 @@ import org.geowebcache.mime.XMLMime;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.storage.StorageBroker;
-import org.geowebcache.util.wms.BBOX;
 
 
 /**
@@ -275,7 +275,7 @@ public class KMLService extends Service {
         GridSubSet gridSubSet = tile.getGridSubSet();
         
         //int srsIdx = layer.getSRSIndex(srs);
-        BBOX bbox = gridSubSet.getCoverageBestFitBounds();
+        BoundingBox bbox = gridSubSet.getCoverageBestFitBounds();
         
         String formatExtension = "."+tile.getMimeType().getFileExtension();
         if(tile.getWrapperMimeType() != null) {
@@ -295,9 +295,9 @@ public class KMLService extends Service {
             long[] gridLocWest = {0,0,0};
             long[] gridLocEast = {1,0,0};
             
-            BBOX bboxWest = new BBOX(
+            BoundingBox bboxWest = new BoundingBox(
                     bbox.coords[0], bbox.coords[1], 0.0, bbox.coords[3] );
-            BBOX bboxEast = new BBOX(
+            BoundingBox bboxEast = new BoundingBox(
                     0.0, bbox.coords[1], bbox.coords[2], bbox.coords[3] );
             
             networkLinks = 
@@ -340,7 +340,7 @@ public class KMLService extends Service {
      * @param url
      * @return
      */
-    private static String superOverlayNetworLink(String superString, BBOX bbox, String url) {
+    private static String superOverlayNetworLink(String superString, BoundingBox bbox, String url) {
         String xml = "\n<NetworkLink><name>Super-overlay: "+superString+"</name>"
         + "\n<Region>\n"
         + bbox.toKML()
@@ -478,7 +478,7 @@ public class KMLService extends Service {
         
         long[] gridLoc = tile.getTileIndex();
         
-        BBOX bbox = gridSubSet.boundsFromIndex(gridLoc);
+        BoundingBox bbox = gridSubSet.boundsFromIndex(gridLoc);
         
         String refreshTags = "";
         if(tileLayer instanceof WMSLayer) {
@@ -517,7 +517,7 @@ public class KMLService extends Service {
         for (int i = 0; i < 4; i++) {
             // Only add this link if it is within the bounds
             if (linkGridLocs[i][2] > 0) {
-                BBOX linkBbox = gridSubSet.boundsFromIndex(linkGridLocs[i]);
+                BoundingBox linkBbox = gridSubSet.boundsFromIndex(linkGridLocs[i]);
                 
                 String gridLocStr = gridLocString(linkGridLocs[i]);
                                 
@@ -574,7 +574,7 @@ public class KMLService extends Service {
      * @param bbox
      * @return
      */
-    private static String createOverlayHeader(BBOX bbox, boolean setMaxLod) {
+    private static String createOverlayHeader(BoundingBox bbox, boolean setMaxLod) {
         int maxLodPixels = -1;
         if(setMaxLod) {
             maxLodPixels = 385;
@@ -600,7 +600,7 @@ public class KMLService extends Service {
      * @return
      */
     private static String createNetworkLinkElement(
-            TileLayer layer, BBOX bbox, String gridLocUrl, String tileIdx,
+            TileLayer layer, BoundingBox bbox, String gridLocUrl, String tileIdx,
             int maxLodPixels, String refreshTags) {
       
         String xml = "\n<NetworkLink>"
@@ -633,7 +633,7 @@ public class KMLService extends Service {
      * @return
      */
     private static String createGroundOverLayElement(long[] gridLoc, String urlStr,
-            BBOX bbox, String formatExtension, String refreshTags) {
+            BoundingBox bbox, String formatExtension, String refreshTags) {
         
         String xml = "\n<GroundOverlay>"
                 + "\n<drawOrder>"+gridLoc[2]+"</drawOrder>"
@@ -650,7 +650,7 @@ public class KMLService extends Service {
         return xml;
     }
     
-    private static String getLookAt(BBOX bbox) {
+    private static String getLookAt(BoundingBox bbox) {
         double lon1 = bbox.coords[0];
         double lat1 = bbox.coords[1];
         double lon2 = bbox.coords[2];

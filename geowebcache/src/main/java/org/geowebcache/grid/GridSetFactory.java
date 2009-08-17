@@ -16,7 +16,6 @@
  */
 package org.geowebcache.grid;
 
-import org.geowebcache.util.wms.BBOX;
 
 public class GridSetFactory {
     static int DEFAULT_LEVELS = 31;
@@ -33,7 +32,7 @@ public class GridSetFactory {
         return gridSet;
     }
         
-    public static GridSet createGridSet(String name, SRS srs, BBOX extent, double[] resolutions, int tileWidth, int tileHeight) {
+    public static GridSet createGridSet(String name, SRS srs, BoundingBox extent, double[] resolutions, int tileWidth, int tileHeight) {
         GridSet gridSet = baseGridSet(name, srs, tileWidth, tileHeight);
         
         gridSet.leftBottom[0] = extent.coords[0];
@@ -58,7 +57,7 @@ public class GridSetFactory {
         return gridSet; 
     }
     
-    public static GridSet createGridSet(String name, SRS srs, BBOX extent, int levels, int tileWidth, int tileHeight) {
+    public static GridSet createGridSet(String name, SRS srs, BoundingBox extent, int levels, int tileWidth, int tileHeight) {
         double[] resolutions = new double[levels];
         
         double relWidth =  extent.getWidth() / tileWidth;

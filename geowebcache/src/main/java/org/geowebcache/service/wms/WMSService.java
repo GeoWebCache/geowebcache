@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
@@ -36,7 +37,6 @@ import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
-import org.geowebcache.util.wms.BBOX;
 
 public class WMSService extends Service {
     public static final String SERVICE_WMS = "wms";
@@ -129,7 +129,7 @@ public class WMSService extends Service {
                     + paramValues[1] + " to those supported by layer");
         }
    
-        BBOX bbox = new BBOX(paramValues[2]);
+        BoundingBox bbox = new BoundingBox(paramValues[2]);
         if (bbox == null || !bbox.isSane()) {
             throw new ServiceException("The bounding box parameter is missing or not sane");
         }

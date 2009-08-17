@@ -39,6 +39,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.request.RequestFilter;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.GridSubSetFactory;
@@ -56,7 +57,6 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
-import org.geowebcache.util.wms.BBOX;
 
 public class WMSLayer extends TileLayer {
     // needed in configuration object written to xml
@@ -831,7 +831,7 @@ public class WMSLayer extends TileLayer {
         return metaWidthHeight;
     }
 
-    public long[] indexFromBounds(String gridSetId, BBOX tileBounds) {
+    public long[] indexFromBounds(String gridSetId, BoundingBox tileBounds) {
         return gridSubSets.get(gridSetId).closestIndex(tileBounds);
     }
 
@@ -840,7 +840,7 @@ public class WMSLayer extends TileLayer {
     }
 
     // TODO Move these to TileLayer
-    public BBOX boundsFromIndex(String gridSetId, long[] gridLoc) {
+    public BoundingBox boundsFromIndex(String gridSetId, long[] gridLoc) {
         return gridSubSets.get(gridSetId).boundsFromIndex(gridLoc);
     }
 
@@ -1127,7 +1127,7 @@ public class WMSLayer extends TileLayer {
     }
 
     @Override
-    public int[][] getCoveredGridLevels(SRS srs, BBOX bounds)
+    public int[][] getCoveredGridLevels(SRS srs, BoundingBox bounds)
             throws GeoWebCacheException {
         // TODO Auto-generated method stub
         return null;
@@ -1141,7 +1141,7 @@ public class WMSLayer extends TileLayer {
     }
 
     @Override
-    public BBOX getZoomedOutBounds(SRS srs) throws GeoWebCacheException {
+    public BoundingBox getZoomedOutBounds(SRS srs) throws GeoWebCacheException {
         // TODO Auto-generated method stub
         return null;
     }

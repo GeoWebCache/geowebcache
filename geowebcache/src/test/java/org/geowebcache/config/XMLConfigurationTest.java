@@ -1,4 +1,4 @@
-package org.geowebcache.util;
+package org.geowebcache.config;
 
 import java.io.InputStream;
 import java.util.Iterator;
@@ -7,6 +7,7 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.SRS;

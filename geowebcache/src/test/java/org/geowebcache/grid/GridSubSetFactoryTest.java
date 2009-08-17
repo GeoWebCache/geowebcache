@@ -4,14 +4,13 @@ import java.util.Arrays;
 
 import junit.framework.TestCase;
 
-import org.geowebcache.util.wms.BBOX;
 
 public class GridSubSetFactoryTest extends TestCase {
     
     GridSetBroker gridSetBroker = new GridSetBroker(false);
     
     public void testCoverageBounds() throws Exception {
-        BBOX bbox = new BBOX(0, 0, 180, 90);
+        BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
         
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG4326, bbox, 0, 0);
@@ -23,7 +22,7 @@ public class GridSubSetFactoryTest extends TestCase {
     }
     
     public void testCoverageBounds2() throws Exception {
-        BBOX bbox = new BBOX(0, 0, 180, 90);
+        BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
         
         GridSubSet grid = GridSubSetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG4326, bbox, 0, 1);

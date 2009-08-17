@@ -15,9 +15,10 @@
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  *  
  */
-package org.geowebcache.util;
+package org.geowebcache.config;
 
 import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.util.ApplicationContextProvider;
 
 /**
  * This is just a subclass of the GetCapabilities object, but makes it possible to set

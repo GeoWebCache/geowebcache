@@ -18,7 +18,6 @@ package org.geowebcache.grid;
 
 import java.util.Hashtable;
 
-import org.geowebcache.util.wms.BBOX;
 
 public class GridSetBroker {
 
@@ -33,7 +32,7 @@ public class GridSetBroker {
         WORLD_EPSG4326 = GridSetFactory.createGridSet(
                 "EPSG:4326", 
                 SRS.getEPSG4326(), 
-                BBOX.WORLD4326, 
+                BoundingBox.WORLD4326, 
                 GridSetFactory.DEFAULT_LEVELS, 
                 256,
                 256 );
@@ -42,7 +41,7 @@ public class GridSetBroker {
             WORLD_EPSG3857 = GridSetFactory.createGridSet(
                     "GoogleMapsCompatible",
                     SRS.getEPSG900913(),
-                    BBOX.WORLD3857,
+                    BoundingBox.WORLD3857,
                     GridSetFactory.DEFAULT_LEVELS, 
                     256,
                     256 );
@@ -50,7 +49,7 @@ public class GridSetBroker {
             WORLD_EPSG3857 = GridSetFactory.createGridSet(
                     "GoogleMapsCompatible", 
                     SRS.getEPSG3857(),
-                    BBOX.WORLD3857,
+                    BoundingBox.WORLD3857,
                     GridSetFactory.DEFAULT_LEVELS,
                     256,
                     256 );

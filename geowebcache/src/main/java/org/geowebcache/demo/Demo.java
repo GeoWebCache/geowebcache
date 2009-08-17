@@ -9,12 +9,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.util.wms.BBOX;
 
 public class Demo {
 
@@ -141,14 +141,15 @@ public class Demo {
                 buf.append("<td>EPSG:4326 not supported</td>");
             }
             
-            GridSubSet epsg3785GridSubSet = layer.getGridSubSetForSRS(SRS.getEPSG3857());
-            if(null != epsg3785GridSubSet) {
+            // We get the SRS from the GridSet because it may use EPSG:900913 under the covers
+            GridSubSet epsg3857GridSubSet = layer.getGridSubSetForSRS(gridSetBroker.WORLD_EPSG3857.getSRS());
+            if(null != epsg3857GridSubSet) {
                 buf.append("<td>"+generateDemoUrl(
                         layer.getName(),
-                        epsg3785GridSubSet.getName())
+                        epsg3857GridSubSet.getName())
                         +"</td>");
             } else {
-                buf.append("<td>EPSG:3785 not supported</td>");
+                buf.append("<td>EPSG:3857 not supported</td>");
             }
             
             if(null != epsg4326GridSubSet && epsg4326GridSubSet.getGridSet().equals(gridSetBroker.WORLD_EPSG4326)) {
@@ -192,8 +193,8 @@ public class Demo {
         
         GridSubSet gridSubSet = layer.getGridSubSet(gridSetStr);
         
-        BBOX bbox = gridSubSet.getGridSetBounds();
-        BBOX zoomBounds = gridSubSet.getCoverageBestFitBounds();
+        BoundingBox bbox = gridSubSet.getGridSetBounds();
+        BoundingBox zoomBounds = gridSubSet.getCoverageBestFitBounds();
         
         String res = "resolutions: " + Arrays.toString(gridSubSet.getResolutions()) + ",\n";
         

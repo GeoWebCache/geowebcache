@@ -16,7 +16,6 @@
  */
 package org.geowebcache.grid;
 
-import org.geowebcache.util.wms.BBOX;
 
 public class GridSet {
         
@@ -36,13 +35,13 @@ public class GridSet {
         // Blank
     }
     
-    protected BBOX boundsFromIndex(long[] tileIndex) {
+    protected BoundingBox boundsFromIndex(long[] tileIndex) {
         Grid grid = gridLevels[(int) tileIndex[2]];
         
         double width = grid.resolution * tileWidth;
         double height = grid.resolution * tileHeight;
         
-        BBOX tileBounds = new BBOX(
+        BoundingBox tileBounds = new BoundingBox(
                 leftBottom[0] + width*tileIndex[0],
                 leftBottom[1] + height*tileIndex[1],
                 leftBottom[0] + width*(tileIndex[0] + 1),
@@ -50,13 +49,13 @@ public class GridSet {
         return tileBounds;
     }
     
-    protected BBOX boundsFromRectangle(long[] rectangleExtent) {
+    protected BoundingBox boundsFromRectangle(long[] rectangleExtent) {
         Grid grid = gridLevels[(int) rectangleExtent[4]];
         
         double width = grid.resolution * tileWidth;
         double height = grid.resolution * tileHeight;
         
-        BBOX rectangleBounds = new BBOX(
+        BoundingBox rectangleBounds = new BoundingBox(
                 leftBottom[0] + width*rectangleExtent[0], 
                 leftBottom[1] + height*rectangleExtent[1],
                 leftBottom[0] + width*(rectangleExtent[2] + 1),
@@ -65,7 +64,7 @@ public class GridSet {
         return rectangleBounds;
     }
     
-    protected long[] closestIndex(BBOX tileBounds) {       
+    protected long[] closestIndex(BoundingBox tileBounds) {       
         double wRes = tileBounds.getWidth() / tileWidth;
         
         double bestError = Double.MAX_VALUE;
@@ -87,7 +86,7 @@ public class GridSet {
         return closestIndex(bestLevel, tileBounds);
     }
     
-    protected long[] closestIndex(int level, BBOX tileBounds) {
+    protected long[] closestIndex(int level, BoundingBox tileBounds) {
         Grid grid = gridLevels[level];
         
         double width = grid.resolution * tileWidth;
@@ -102,7 +101,7 @@ public class GridSet {
         return ret;
     }
     
-    public long[] closestRectangle(BBOX rectangleBounds) {       
+    public long[] closestRectangle(BoundingBox rectangleBounds) {       
         double rectWidth = rectangleBounds.getWidth();
         double rectHeight = rectangleBounds.getHeight();
         
@@ -131,7 +130,7 @@ public class GridSet {
         return closestRectangle(bestLevel, rectangleBounds);
     }
     
-    protected long[] closestRectangle(int level, BBOX rectangeBounds) {
+    protected long[] closestRectangle(int level, BoundingBox rectangeBounds) {
         Grid grid = gridLevels[level];
         
         double width = grid.resolution * tileWidth;
@@ -178,7 +177,7 @@ public class GridSet {
         return true;
     }
     
-    public BBOX getBounds() {
+    public BoundingBox getBounds() {
         int i;
         long[] extent = null;
 
@@ -199,5 +198,9 @@ public class GridSet {
     
     public String getName() {
         return name;
+    }
+    
+    public SRS getSRS() {
+        return srs;
     }
 }

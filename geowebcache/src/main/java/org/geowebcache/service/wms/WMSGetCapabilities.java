@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
@@ -36,7 +37,6 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.util.wms.BBOX;
 
 public class WMSGetCapabilities {
     
@@ -321,7 +321,7 @@ public class WMSGetCapabilities {
         str.append("    </Layer>\n");
     }
     
-    String[] boundsPrep(BBOX bbox) {
+    String[] boundsPrep(BoundingBox bbox) {
         String[] bs = { 
                 Double.toString(bbox.coords[0]), 
                 Double.toString(bbox.coords[1]), 

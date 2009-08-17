@@ -19,12 +19,12 @@ package org.geowebcache.rest.filter;
 import java.io.IOException;
 import java.util.Iterator;
 
+import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
-import org.geowebcache.util.XMLConfiguration;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
 import org.restlet.data.Request;

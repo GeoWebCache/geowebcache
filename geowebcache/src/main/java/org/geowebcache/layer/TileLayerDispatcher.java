@@ -23,8 +23,8 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.Configuration;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.util.Configuration;
 
 public class TileLayerDispatcher {
     private static Log log = LogFactory

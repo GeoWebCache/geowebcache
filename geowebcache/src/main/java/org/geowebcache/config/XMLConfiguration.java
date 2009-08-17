@@ -14,7 +14,7 @@
  * 
  * @author Arne Kepp, Marius Suta,  The Open Planning Project, Copyright 2008
  */
-package org.geowebcache.util;
+package org.geowebcache.config;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -61,6 +61,7 @@ import org.geowebcache.rest.seed.SeedRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.util.ApplicationContextProvider;
 import org.springframework.web.context.WebApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -75,7 +76,7 @@ import com.thoughtworks.xstream.io.xml.DomReader;
  * configurations to and from XML file
  */
 public class XMLConfiguration implements Configuration {
-    private static Log log = LogFactory.getLog(org.geowebcache.util.XMLConfiguration.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.config.XMLConfiguration.class);
 
     private static final String CONFIGURATION_FILE_NAME = "geowebcache.xml";
     
