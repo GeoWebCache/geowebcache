@@ -51,7 +51,7 @@ public class WMSGetCapabilities {
         urlStr = servReq.getRequestURL().toString() + "?SERVICE=WMS&amp;";
     }
     
-    protected void writeReponse(HttpServletResponse response) {
+    protected void writeResponse(HttpServletResponse response) {
         
         byte[] data = generateGetCapabilities().getBytes();
 

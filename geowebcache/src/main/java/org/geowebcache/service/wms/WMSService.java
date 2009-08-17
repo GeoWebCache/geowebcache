@@ -149,7 +149,7 @@ public class WMSService extends Service {
         if (tile.getHint() != null) {
             if(tile.getHint().equalsIgnoreCase("getcapabilities")) {
                 WMSGetCapabilities wmsCap = new WMSGetCapabilities(tld, tile.servletReq);
-                wmsCap.writeReponse(tile.servletResp);
+                wmsCap.writeResponse(tile.servletResp);
             } else {
                 WMSRequests.handleProxy(tld, tile);
             }

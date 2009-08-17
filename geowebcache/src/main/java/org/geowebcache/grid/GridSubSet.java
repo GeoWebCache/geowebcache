@@ -134,6 +134,16 @@ public class GridSubSet {
         return ret;
     }
     
+    public long getGridIndex(String gridId) {
+        for(int i = 0; i < gridCoverageLevels.length; i++) {
+            if(gridSet.gridLevels[firstLevel + i].name.equals(gridId)) {
+                return i;
+            }
+        }
+        
+        return -1L;
+    }
+    
     //public long[][] getCoverageIntersections(long[] reqRectangle) {
     //    GridCoverage gridCov = gridCoverageLevels[firstLevel + (int) reqRectangle[4]];        
     //    return gridCov.getIntersection(reqRectangle);

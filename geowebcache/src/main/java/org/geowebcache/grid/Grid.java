@@ -24,6 +24,8 @@ public class Grid {
     
     protected double resolution;
  
+    protected String name;
+    
     public boolean equals(Object obj) {
         if(! (obj instanceof Grid))
             return false;
