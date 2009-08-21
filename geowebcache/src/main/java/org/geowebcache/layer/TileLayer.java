@@ -58,8 +58,6 @@ public abstract class TileLayer {
     protected List<RequestFilter> requestFilters;
     
     protected transient Hashtable<String,GridSubSet> gridSubSets;
-    
-    protected transient GridSetBroker gridSetBroker; 
 
     // Styles?
 
@@ -111,17 +109,10 @@ public abstract class TileLayer {
     }
 
     /**
-     * Checks whether the layer has been initialized, otherwise initializes it.
-     * 
-     * @return
-     */
-    public abstract Boolean isInitialized();
-
-    /**
      * Initializes the layer, creating internal structures for calculating grid
      * location and so forth.
      */
-    protected abstract Boolean initialize();
+    protected abstract Boolean initialize(GridSetBroker gridSetBroker);
 
     /**
      * Whether the layer supports the given projection
@@ -132,15 +123,13 @@ public abstract class TileLayer {
      * @throws GeoWebCacheException
      */
     public GridSubSet getGridSubSetForSRS(SRS srs) {
-        this.isInitialized();
-
-            Iterator<GridSubSet> iter = this.gridSubSets.values().iterator();
-            while(iter.hasNext()) {
-                GridSubSet gridSubSet = iter.next();
-                if(gridSubSet.getSRS().equals(srs)) {
-                    return gridSubSet;
-                }
+        Iterator<GridSubSet> iter = this.gridSubSets.values().iterator();
+        while (iter.hasNext()) {
+            GridSubSet gridSubSet = iter.next();
+            if (gridSubSet.getSRS().equals(srs)) {
+                return gridSubSet;
             }
+        }
 
         return null;
     }
@@ -482,9 +471,5 @@ public abstract class TileLayer {
 
     public GridSubSet getGridSubSet(String gridSetId) {
         return this.gridSubSets.get(gridSetId);
-    }
-    
-    public void setGridSetBroker(GridSetBroker gridSetBroker) {
-        this.gridSetBroker = gridSetBroker;
     }
 }

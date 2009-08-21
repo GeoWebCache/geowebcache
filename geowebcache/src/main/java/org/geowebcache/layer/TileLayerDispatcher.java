@@ -27,25 +27,30 @@ import org.geowebcache.config.Configuration;
 import org.geowebcache.grid.GridSetBroker;
 
 public class TileLayerDispatcher {
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.layer.TileLayerDispatcher.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayerDispatcher.class);
 
-    private volatile HashMap<String, TileLayer> layers = null;
+    private HashMap<String, TileLayer> layers = null;
 
     private List<Configuration> configs = null;
 
     private GridSetBroker gridSetBroker;
     
-    public TileLayerDispatcher(GridSetBroker gridSetBroker) {
-        //log.info("TileLayerDispatcher constructed");
+    public TileLayerDispatcher(GridSetBroker gridSetBroker, List<Configuration> configs) {
         this.gridSetBroker = gridSetBroker;
+        
+        this.configs = configs;
+        
+        layers = initialize();
     }
 
     public TileLayer getTileLayer(String layerIdent)
             throws GeoWebCacheException {
 
-        HashMap<String, TileLayer> tmpLayers = this.getLayers();
-
+        HashMap<String, TileLayer> tmpLayers = null;
+        synchronized(this) {
+            tmpLayers = this.getLayers();
+        }
+        
         TileLayer layer = tmpLayers.get(layerIdent);
         if (layer == null) {
             throw new GeoWebCacheException("Thread " + Thread.currentThread().getId() + " Unknown layer " + layerIdent
@@ -53,13 +58,7 @@ public class TileLayerDispatcher {
                     + " it may not have loaded properly.");
         }
 
-        layer.isInitialized();
-
         return layer;
-    }
-
-    public void setConfig(List<Configuration> configs) {
-        this.configs = configs;
     }
 
     /***
@@ -72,15 +71,13 @@ public class TileLayerDispatcher {
      * 
      * @throws GeoWebCacheException
      */
-    public void reInit() throws GeoWebCacheException {
-        // Clear
+    public synchronized void reInit() throws GeoWebCacheException {
         synchronized (this) {
             this.layers = null;
+            this.layers = initialize();
         }
-        // And then we do it again
-        getLayers();
     }
-
+    
     /**
      * Returns a list of all the layers. The consumer may still have to
      * initialize each layer!
@@ -88,20 +85,7 @@ public class TileLayerDispatcher {
      * @return
      */
     public HashMap<String, TileLayer> getLayers() {
-        HashMap<String, TileLayer> result = this.layers;
-        //System.out.println("Thread " + Thread.currentThread().getId() + " coming in");
-        if (result == null) {
-            //System.out.println("Thread " + Thread.currentThread().getId() + " found result == null");
-            synchronized (this) {
-                result = this.layers;
-                if (result == null) {
-                    //System.out.println("Thread " + Thread.currentThread().getId() + " DID ACTUAL INIT");
-                    this.layers = result = initialize();
-                }
-            }
-        }
-        //System.out.println("Thread " + Thread.currentThread().getId() + " exiting");
-        return result;
+        return this.layers;
     }
 
     private HashMap<String, TileLayer> initialize() {
@@ -110,6 +94,7 @@ public class TileLayerDispatcher {
         HashMap<String, TileLayer> newLayers = new HashMap<String, TileLayer>();
 
         Iterator<Configuration> configIter = configs.iterator();
+        
         while (configIter.hasNext()) {
             List<TileLayer> configLayers = null;
 
@@ -140,7 +125,7 @@ public class TileLayerDispatcher {
                         
                         log.info("Adding: " + layer.getName());
                         
-                        layer.gridSetBroker = gridSetBroker;
+                        layer.initialize(gridSetBroker);
                         
                         add(layer, newLayers);
                     }
@@ -154,7 +139,7 @@ public class TileLayerDispatcher {
         return newLayers;
     }
     
-    public void update(TileLayer layer) {
+    public synchronized void update(TileLayer layer) {
         TileLayer oldLayer = layers.get(layer.getName());
         oldLayer.acquireLayerLock();
         layers.remove(layer.getName());
@@ -162,18 +147,18 @@ public class TileLayerDispatcher {
         layers.put(layer.getName(), layer);
     }
     
-    public void remove(String layerName) {
+    public synchronized void remove(String layerName) {
         TileLayer layer = layers.get(layerName);
         layer.acquireLayerLock();
         layers.remove(layerName);
         layer.releaseLayerLock();
     }
     
-    public void add(TileLayer layer) {        
+    public synchronized void add(TileLayer layer) {        
         add(layer, this.layers);
     }
     
-    private void add(TileLayer layer, HashMap<String, TileLayer> layerMap) {        
+    private synchronized void add(TileLayer layer, HashMap<String, TileLayer> layerMap) {        
         if(layerMap.containsKey(layer.getName())) {
             try {
                 layerMap.get(layer.getName()).mergeWith(layer);

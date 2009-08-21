@@ -76,8 +76,6 @@ public class SeedFormRestlet extends GWCRestlet {
         } catch (UnsupportedEncodingException uee) { }
         
         TileLayer tl = findTileLayer(layerName, layerDispatcher);
-        
-        tl.isInitialized();
        
         response.setEntity(makeFormPage(tl), MediaType.TEXT_HTML);
     }

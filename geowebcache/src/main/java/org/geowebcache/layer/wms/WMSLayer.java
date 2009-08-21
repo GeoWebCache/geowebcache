@@ -131,8 +131,6 @@ public class WMSLayer extends TileLayer {
     
     private transient boolean stylesIsModParam = false;
 
-    private transient volatile Boolean isInitialized;
-
     private static transient Log log;
     
     /** 
@@ -170,20 +168,7 @@ public class WMSLayer extends TileLayer {
         this.queryable = queryable;
     }
 
-    public Boolean isInitialized() {
-        Boolean result = isInitialized;
-        if (result == null) {
-            synchronized (this) {
-                result = isInitialized;
-                if (result == null) {
-                    isInitialized = result = initialize();
-                }
-            }
-        }
-        return result;
-    }
-
-    protected Boolean initialize() {
+    protected Boolean initialize(GridSetBroker gridSetBroker) {
         log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
         curWmsURL = 0;
 

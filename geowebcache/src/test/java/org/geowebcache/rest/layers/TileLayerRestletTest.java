@@ -93,11 +93,12 @@ public class TileLayerRestletTest extends TestCase {
     }
     
     TileLayerRestlet preparedTileLayerRestlet() {
-        TileLayerDispatcher layerDispatcher = new TileLayerDispatcher(new GridSetBroker(false));
+        
         XMLConfiguration xmlConfig = loadXMLConfig();
         LinkedList<Configuration> configList = new LinkedList<Configuration>();
         configList.add(xmlConfig);
-        layerDispatcher.setConfig(configList);
+        
+        TileLayerDispatcher layerDispatcher = new TileLayerDispatcher(new GridSetBroker(false), configList);
         
         TileLayerRestlet tlr = new TileLayerRestlet();
         tlr.setXMLConfiguration(xmlConfig);

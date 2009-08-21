@@ -24,8 +24,7 @@ import org.restlet.data.Status;
 
 public class GWCRestlet extends Restlet {
     
-    protected static TileLayer findTileLayer(String layerName, 
-            TileLayerDispatcher layerDispatcher) {
+    protected static TileLayer findTileLayer(String layerName, TileLayerDispatcher layerDispatcher) {
         if(layerName == null || layerName.length() == 0) {
             throw new RestletException("Layer not specified",
                     Status.CLIENT_ERROR_BAD_REQUEST);
@@ -43,8 +42,6 @@ public class GWCRestlet extends Restlet {
             throw new RestletException("Uknown layer: " + layerName, 
                     Status.CLIENT_ERROR_NOT_FOUND);
         }
-        
-        layer.isInitialized();
         
         return layer;
     }

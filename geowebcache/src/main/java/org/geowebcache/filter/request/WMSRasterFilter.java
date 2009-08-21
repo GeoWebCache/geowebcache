@@ -50,8 +50,6 @@ public class WMSRasterFilter extends RasterFilter {
         
         WMSLayer layer = (WMSLayer) tlayer;
         
-        tlayer.isInitialized();
-        
         GridSubSet gridSet = layer.getGridSubSet(gridSetId);
         
         int[] widthHeight = calculateWidthHeight(gridSet, z);

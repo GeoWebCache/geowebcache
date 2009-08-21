@@ -79,10 +79,7 @@ public class KMLSiteMap {
         
         while(iter.hasNext()) {
             TileLayer tl = iter.next();
-            
-            // May have to initialize
-            tl.isInitialized();
-            
+
             Hashtable<String,GridSubSet> grids = tl.getGridSubSets();
             List<MimeType> mimeTypes = tl.getMimeTypes();
             

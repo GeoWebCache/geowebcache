@@ -213,7 +213,7 @@ public class MetaTileTest extends TestCase {
         
         WMSLayer layer = new WMSLayer("test:layer", urls, "aStyle", "test:layer", formatList, grids, metaWidthHeight, "vendorparam=true", false);
         
-        layer.initialize();
+        layer.initialize(gridSetBroker);
         
         return layer;
     }

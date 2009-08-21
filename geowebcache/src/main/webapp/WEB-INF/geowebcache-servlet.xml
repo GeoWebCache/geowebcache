@@ -30,12 +30,12 @@
   <!-- For each configuration bean above, add them below to activate -->
   <bean id="gwcTLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
     <constructor-arg ref="gwcGridSetBroker"/>
-    <property name="config">
+    <constructor-arg>
       <list>
 	    <ref bean="gwcWMSConfig" />
 	    <ref bean="gwcXmlConfig" />
       </list>
-    </property>
+    </constructor-arg>
   </bean>
   
   <bean id="gwcDefaultStorageFinder" class="org.geowebcache.storage.DefaultStorageFinder">

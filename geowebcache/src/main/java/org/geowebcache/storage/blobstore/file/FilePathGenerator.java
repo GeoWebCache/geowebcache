@@ -28,6 +28,7 @@ public class FilePathGenerator {
         long y = tileIndex[1];
         long z = tileIndex[2];
         
+        System.out.println("x: " + x + " y: " + y + " z: " + z);
         
         String gridSetStr = filteredGridSetId(gridSetId);
         String layerStr = filteredLayerName(layerName);
@@ -82,9 +83,9 @@ public class FilePathGenerator {
 
         int diffOrder = order - numberOrder;
         
-        //if(diffOrder < 0) {
-        //    System.out.println("number: " + number + " order: " + order + " diff: " + diffOrder);
-        //}
+        if(diffOrder < 0) {
+            System.out.println("number: " + number + " order: " + order + " diff: " + diffOrder);
+        }
         StringBuilder padding = new StringBuilder(diffOrder);
         
         while (diffOrder > 0) {

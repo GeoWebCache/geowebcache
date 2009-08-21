@@ -66,13 +66,10 @@ public class SeedTask extends GWCTask {
      */
     public void doAction() throws GeoWebCacheException {        
         // Lower the priority of the thread
-        Thread.currentThread().setPriority(
-                (java.lang.Thread.NORM_PRIORITY + java.lang.Thread.MIN_PRIORITY) / 2);
+        Thread.currentThread().setPriority((java.lang.Thread.NORM_PRIORITY + java.lang.Thread.MIN_PRIORITY) / 2);
 
         // approximate thread creation time
         long START_TIME = System.currentTimeMillis();
-
-        tl.isInitialized();
 
         log.info("Thread " + threadOffset + " begins seeding layer : " + tl.getName());
         int zoomStart = req.getZoomStart().intValue();
