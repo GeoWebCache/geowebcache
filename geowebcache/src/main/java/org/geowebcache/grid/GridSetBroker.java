@@ -60,6 +60,10 @@ public class GridSetBroker {
         return gridSets.get(gridSetId);
     }
     
+    public Hashtable<String,GridSet> getGridSets() {
+        return gridSets;
+    }
+    
     public void put(GridSet gridSet) {
         gridSets.put(gridSet.getName(), gridSet);
     }

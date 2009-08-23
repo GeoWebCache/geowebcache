@@ -168,7 +168,7 @@ public class WMSLayer extends TileLayer {
         this.queryable = queryable;
     }
 
-    protected Boolean initialize(GridSetBroker gridSetBroker) {
+    public boolean initialize(GridSetBroker gridSetBroker) {
         log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
         curWmsURL = 0;
 

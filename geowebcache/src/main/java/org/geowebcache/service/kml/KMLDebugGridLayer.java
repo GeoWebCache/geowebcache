@@ -185,7 +185,7 @@ public class KMLDebugGridLayer extends TileLayer {
         return 25;
     }
 
-    public Boolean initialize(GridSetBroker gridSetBroker) {
+    public boolean initialize(GridSetBroker gridSetBroker) {
         return true;
     }
 

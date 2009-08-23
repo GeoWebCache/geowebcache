@@ -33,6 +33,7 @@ import org.geotools.data.ows.WMSCapabilities;
 import org.geotools.data.wms.WebMapServer;
 import org.geotools.ows.ServiceException;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubSet;
@@ -119,6 +120,10 @@ public class GetCapabilitiesConfiguration implements Configuration {
         }
 
         return layers;
+    }
+    
+    public ServiceInformation getServiceInformation() throws GeoWebCacheException {
+        return null;
     }
 
     /**

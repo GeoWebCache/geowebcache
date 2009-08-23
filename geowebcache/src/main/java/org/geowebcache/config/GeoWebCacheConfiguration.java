@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.FormatModifier;
 
@@ -46,6 +47,8 @@ public class GeoWebCacheConfiguration {
     
     Boolean cacheBypassAllowed;
     
+    ServiceInformation serviceInformation;
+    
     protected List<FormatModifier> formatModifiers;
     
     /* The layers */
@@ -60,8 +63,8 @@ public class GeoWebCacheConfiguration {
      */
     public void init() {
         xmlns_xsi = "http://www.w3.org/2001/XMLSchema-instance";
-        xsi_noNamespaceSchemaLocation = "http://geowebcache.org/schema/1.1.0/geowebcache.xsd";
-        xmlns = "http://geowebcache.org/schema/1.1.0";
+        xsi_noNamespaceSchemaLocation = "http://geowebcache.org/schema/1.2.0/geowebcache.xsd";
+        xmlns = "http://geowebcache.org/schema/1.2.0";
     }
     
     protected boolean replaceLayer(TileLayer layer) {

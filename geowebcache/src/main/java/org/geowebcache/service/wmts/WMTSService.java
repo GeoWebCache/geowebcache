@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -43,11 +44,14 @@ public class WMTSService extends Service {
     
     private TileLayerDispatcher tld; 
     
-    public WMTSService(StorageBroker sb, TileLayerDispatcher tld) {
+    private GridSetBroker gsb;
+    
+    public WMTSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb) {
         super(SERVICE_WMTS);
         
         this.sb = sb;
         this.tld = tld;
+        this.gsb = gsb;
     }
 
     public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response) 
@@ -123,11 +127,12 @@ public class WMTSService extends Service {
             throw new ServiceException("Unknown TILEMATRIX " + values[5]);
         }
         
+        // WMTS has 0 in the top left corner -> flip y value
         if(values[6] == null) {
             throw new ServiceException("No TILEROW specified");
         }
-        long y = Long.parseLong(values[6]);
-        
+        long[] gridExtent = gridSubSet.getGridSetExtent((int) z);
+        long y = gridExtent[1] - Long.parseLong(values[6]);
 
         if(values[7] == null) {
             throw new ServiceException("No TILECOLUMN specified");
@@ -150,7 +155,7 @@ public class WMTSService extends Service {
         
         if (tile.getHint() != null) {
             if(tile.getHint().equals("getcapabilities")) {
-                WMTSGetCapabilities wmsGC = new WMTSGetCapabilities(tld, tile.servletReq);      
+                WMTSGetCapabilities wmsGC = new WMTSGetCapabilities(tld, gsb, tile.servletReq);      
                 wmsGC.writeResponse(tile.servletResp);
                 
             } else if(tile.getHint().equals("getfeatureinfo")) {

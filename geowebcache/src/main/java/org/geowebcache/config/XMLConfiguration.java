@@ -45,6 +45,7 @@ import javax.xml.validation.Validator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.RegexParameterFilter;
@@ -165,7 +166,7 @@ public class XMLConfiguration implements Configuration {
      * Method responsible for loading XML configuration file
      * 
      */
-    public List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
+    public synchronized List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
         if( ! mockConfiguration && 
                 (this.gwcConfig == null || reload)) {
             File xmlFile = findConfFile();
@@ -183,6 +184,17 @@ public class XMLConfiguration implements Configuration {
             }
         }
         return layers;
+    }
+    
+    
+    public synchronized ServiceInformation getServiceInformation() 
+    throws GeoWebCacheException {
+        if( ! mockConfiguration && this.gwcConfig == null) {
+            File xmlFile = findConfFile();
+            loadConfiguration(xmlFile);
+        }
+        
+        return gwcConfig.serviceInformation;
     }
     
     private void setDefaultValues(TileLayer layer) {

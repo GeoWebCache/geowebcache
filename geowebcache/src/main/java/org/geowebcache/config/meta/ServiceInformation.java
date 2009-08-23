@@ -12,19 +12,27 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Arne Kepp, The Open Planning Project, Copyright 2008
- *  
+ * @author Arne Kepp, OpenGeo, Copyright 2009
  */
-package org.geowebcache.config;
+package org.geowebcache.config.meta;
 
 import java.util.List;
 
-import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.meta.ServiceInformation;
-import org.geowebcache.layer.TileLayer;
+public class ServiceInformation {
+    public String title;
+    
+    public String description;
+    
+    public List<String> keywords;
+    
+    public String fees;
+    
+    public String accesConstraints;
+    
+    public String providerName;
+    
+    public String providerSite;
+    
+    public ServiceProvider serviceProvider;
 
-public interface Configuration {
-	public List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException;
-	public String getIdentifier() throws GeoWebCacheException;
-	public ServiceInformation getServiceInformation() throws GeoWebCacheException;
 }

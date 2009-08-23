@@ -9,6 +9,7 @@ import junit.framework.TestCase;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.filter.request.RequestFilter;
+import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
@@ -107,6 +108,17 @@ public class XMLConfigurationTest extends TestCase {
         
         XMLConfiguration xmlConfig = new XMLConfiguration(is);
         
-        return xmlConfig.getTileLayers(false);
+        GridSetBroker gsb = new GridSetBroker(false);
+        
+        List<TileLayer> list = xmlConfig.getTileLayers(false);
+        
+        Iterator<TileLayer> iter = list.iterator();
+        while(iter.hasNext()) {
+            TileLayer layer = iter.next();
+            
+            layer.initialize(gsb);   
+        }
+        
+        return list;
     }
 }

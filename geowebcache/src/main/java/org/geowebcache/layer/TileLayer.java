@@ -38,6 +38,7 @@ import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.grid.XMLSubGrid;
+import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
@@ -46,6 +47,8 @@ public abstract class TileLayer {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayer.class);
 
     protected String name;
+    
+    protected LayerMetaInformation layerMetaInfo;
 
     protected List<String> mimeFormats;
     
@@ -78,6 +81,15 @@ public abstract class TileLayer {
      */
     public String getName() {
         return this.name;
+    }
+    
+    /**
+     * Layer meta information
+     * 
+     * @return
+     */
+    public LayerMetaInformation getMetaInformation() {
+        return this.layerMetaInfo;
     }
 
     /**
@@ -112,7 +124,7 @@ public abstract class TileLayer {
      * Initializes the layer, creating internal structures for calculating grid
      * location and so forth.
      */
-    protected abstract Boolean initialize(GridSetBroker gridSetBroker);
+    public abstract boolean initialize(GridSetBroker gridSetBroker);
 
     /**
      * Whether the layer supports the given projection

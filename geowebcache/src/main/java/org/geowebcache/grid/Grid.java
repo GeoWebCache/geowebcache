@@ -23,6 +23,8 @@ public class Grid {
     protected long[] extent = new long[2];
     
     protected double resolution;
+    
+    protected double scale;
  
     protected String name;
     
@@ -39,5 +41,17 @@ public class Grid {
             return false;
         
         return true;
+    }
+    
+    public long[] getExtent() {
+        return extent;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public double getScale() {
+        return scale;
     }
 }

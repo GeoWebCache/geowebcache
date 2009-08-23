@@ -144,6 +144,15 @@ public class GridSubSet {
         return -1L;
     }
     
+    public String[] getGridNames() {
+        String[] ret = new String[gridCoverageLevels.length];
+        for(int i=0; i<gridCoverageLevels.length; i++) {
+            ret[i] = gridSet.gridLevels[i + firstLevel].name;
+        }
+        
+        return ret;
+    }
+    
     //public long[][] getCoverageIntersections(long[] reqRectangle) {
     //    GridCoverage gridCov = gridCoverageLevels[firstLevel + (int) reqRectangle[4]];        
     //    return gridCov.getIntersection(reqRectangle);
@@ -155,6 +164,10 @@ public class GridSubSet {
 
     public BoundingBox getGridSetBounds() {
         return gridSet.getBounds();
+    }
+    
+    public long[] getGridSetExtent(int z) {
+        return gridSet.gridLevels[z].extent;
     }
         
     public String getName() {
@@ -181,6 +194,30 @@ public class GridSubSet {
     
     public int getTileWidth() {
         return gridSet.tileWidth;
+    }
+    
+    /**
+     * WMTS is indexed from top left hand corner
+     * @return
+     */
+    public long[][] getWMTSCoverages() {
+        long[][] ret = new long[gridCoverageLevels.length][4];
+        
+        for(int i=0; i<gridCoverageLevels.length; i++) {
+            Grid grid = gridSet.gridLevels[i + firstLevel];
+            GridCoverage gridCov = gridCoverageLevels[i];
+            
+            long[] cur = {
+                    gridCov.coverage[0],
+                    grid.extent[1] - gridCov.coverage[1],
+                    gridCov.coverage[1],
+                    grid.extent[1] - gridCov.coverage[3]
+            };
+            
+            ret[i] = cur;
+        }
+        
+        return ret;
     }
     
     public int getZoomStart() {

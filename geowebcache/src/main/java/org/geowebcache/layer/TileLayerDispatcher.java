@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.Configuration;
+import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.GridSetBroker;
 
 public class TileLayerDispatcher {
@@ -33,7 +34,9 @@ public class TileLayerDispatcher {
 
     private List<Configuration> configs = null;
 
-    private GridSetBroker gridSetBroker;
+    private GridSetBroker gridSetBroker = null;
+    
+    private ServiceInformation serviceInformation = null;
     
     public TileLayerDispatcher(GridSetBroker gridSetBroker, List<Configuration> configs) {
         this.gridSetBroker = gridSetBroker;
@@ -133,10 +136,23 @@ public class TileLayerDispatcher {
                     log.error("Configuration " + configIdent
                             + " contained no layers.");
                 }
+                
+                // Check whether there is any general service information
+                if(this.serviceInformation == null) {
+                    try {
+                        this.serviceInformation = config.getServiceInformation();
+                    } catch (GeoWebCacheException e) {
+                        log.error("Error reading service information from "+ configIdent +": " + e.getMessage());
+                    }
+                }
             }
         }
 
         return newLayers;
+    }
+    
+    public ServiceInformation getServiceInformation() {
+        return this.serviceInformation;
     }
     
     public synchronized void update(TileLayer layer) {

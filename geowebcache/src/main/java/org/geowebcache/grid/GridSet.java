@@ -196,11 +196,23 @@ public class GridSet {
         return boundsFromRectangle(ret);
     }
     
+    public Grid[] getGrids() {
+        return gridLevels;
+    }
+    
     public String getName() {
         return name;
     }
     
     public SRS getSRS() {
         return srs;
+    }
+    
+    public int getTileHeight() {
+        return tileHeight;
+    }
+    
+    public int getTileWidth() {
+        return tileWidth;
     }
 }
