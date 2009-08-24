@@ -20,6 +20,8 @@ package org.geowebcache.grid;
 public class GridSetFactory {
     static int DEFAULT_LEVELS = 31;
     
+    final static double OGC_DEGREE_TO_METERS = 6378137.0 * 2.0 * Math.PI / 360;
+    
     private static GridSet baseGridSet(String name, SRS srs, int tileWidth, int tileHeight) {
         GridSet gridSet = new GridSet();
         
@@ -44,6 +46,9 @@ public class GridSetFactory {
             Grid curGrid = new Grid();
             curGrid.resolution = resolutions[i];
 
+            // OGC magic potion
+            curGrid.scale = resolutions[i] / 0.00028;
+                
             double mapUnitWidth = tileWidth * curGrid.resolution;
             double mapUnitHeight = tileHeight * curGrid.resolution;            
             
