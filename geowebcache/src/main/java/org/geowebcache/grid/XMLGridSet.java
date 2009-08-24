@@ -6,6 +6,7 @@ public class XMLGridSet {
     SRS srs;
     BoundingBox extent;
     double[] resolutions;
+    double[] scales;
     Integer levels;
     Integer tileHeight;
     Integer tileWidth;
@@ -18,8 +19,8 @@ public class XMLGridSet {
             tileHeight = 256;
         }
         
-        if(resolutions != null) {
-            return GridSetFactory.createGridSet(name, srs, extent, resolutions, tileWidth, tileHeight);
+        if(resolutions != null || scales != null) {
+            return GridSetFactory.createGridSet(name, srs, extent, resolutions, scales, tileWidth, tileHeight);
         } else {
             if(levels == null) {
                 levels = 30;

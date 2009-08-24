@@ -9,7 +9,7 @@ public class GridSetFactoryTest extends TestCase {
         BoundingBox extent = new BoundingBox(-180, -90, 180, 90);
         double[] resolutions = {180.0/256, 180.0/512, 180.0/1024, 180.0/2048};
         
-        GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), extent, resolutions, 256, 256);
+        GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), extent, resolutions, null, 256, 256);
         
         assertEquals("test", gridSet.name);
         assertEquals(-180.0, gridSet.leftBottom[0]);
@@ -33,7 +33,7 @@ public class GridSetFactoryTest extends TestCase {
         BoundingBox extent = new BoundingBox(-20037508.34,-20037508.34,20037508.34,20037508.34);
         double[] resolutions = {(20037508.34*2)/256, (20037508.34*2)/512, (20037508.34*2)/1024, (20037508.34*2)/2048};
         
-        GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getEPSG3857(), extent, resolutions, 256, 256);
+        GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getEPSG3857(), extent, resolutions, null, 256, 256);
         
         Grid grid0 = gridSet.gridLevels[0];
         
@@ -52,7 +52,7 @@ public class GridSetFactoryTest extends TestCase {
         BoundingBox extent = new BoundingBox(-173, -90, 180, 96);
         double[] resolutions = {180.0/200, 180.0/400, 180.0/800};
         
-        GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), extent, resolutions, 200, 200);
+        GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), extent, resolutions, null, 200, 200);
         
         assertEquals(-173.0, gridSet.leftBottom[0]);
         assertEquals(-90.0, gridSet.leftBottom[1]);

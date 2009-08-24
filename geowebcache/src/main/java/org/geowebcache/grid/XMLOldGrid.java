@@ -63,7 +63,7 @@ public class XMLOldGrid {
             gridSet = gridSetBroker.WORLD_EPSG3857;
         } else {
             if(resolutions != null) {
-                gridSet = GridSetFactory.createGridSet(srs.toString(), srs, gridBounds, resolutions, 256, 256);
+                gridSet = GridSetFactory.createGridSet(srs.toString(), srs, gridBounds, resolutions, null, 256, 256);
             } else {
                 if(zoomStop == null) {
                     zoomStop = 30;

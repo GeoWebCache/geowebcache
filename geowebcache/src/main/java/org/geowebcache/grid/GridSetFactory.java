@@ -33,14 +33,32 @@ public class GridSetFactory {
         
         return gridSet;
     }
-        
-    public static GridSet createGridSet(String name, SRS srs, BoundingBox extent, double[] resolutions, int tileWidth, int tileHeight) {
+    /**
+     * Note that you should provide EITHER resolutions or scales. Providing both will cause scales to be overwritten
+     * 
+     * @param name
+     * @param srs
+     * @param extent
+     * @param resolutions
+     * @param scales
+     * @param tileWidth
+     * @param tileHeight
+     * @return
+     */
+    public static GridSet createGridSet(String name, SRS srs, BoundingBox extent, double[] resolutions, double[] scales, int tileWidth, int tileHeight) {
         GridSet gridSet = baseGridSet(name, srs, tileWidth, tileHeight);
         
         gridSet.leftBottom[0] = extent.coords[0];
         gridSet.leftBottom[1] = extent.coords[1];
         
         gridSet.gridLevels = new Grid[resolutions.length];
+        
+        if(resolutions == null) {
+            resolutions = new double[scales.length];
+            for(int i=0; i<scales.length; i++) {
+                resolutions[i] = scales[i] * 0.00028;
+            }
+        }
         
         for(int i=0; i<resolutions.length; i++) {
             Grid curGrid = new Grid();
@@ -107,6 +125,6 @@ public class GridSetFactory {
             resolutions[i] = resolutions[i - 1] / 2;
         }
         
-        return createGridSet(name, srs, extent, resolutions, tileWidth, tileHeight);
+        return createGridSet(name, srs, extent, resolutions, null, tileWidth, tileHeight);
     }
 }
