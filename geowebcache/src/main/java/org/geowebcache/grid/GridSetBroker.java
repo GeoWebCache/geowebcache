@@ -25,7 +25,6 @@ public class GridSetBroker {
     
     public final GridSet WORLD_EPSG3857;
 
-    
     Hashtable<String,GridSet> gridSets = new Hashtable<String,GridSet>();
     
     public GridSetBroker(boolean useEPSG900913) {
@@ -36,6 +35,7 @@ public class GridSetBroker {
                 GridSetFactory.DEFAULT_LEVELS, 
                 256,
                 256 );
+        gridSets.put(WORLD_EPSG4326.name, WORLD_EPSG4326);
         
         if(useEPSG900913) {
             WORLD_EPSG3857 = GridSetFactory.createGridSet(
@@ -53,7 +53,8 @@ public class GridSetBroker {
                     GridSetFactory.DEFAULT_LEVELS,
                     256,
                     256 );
-        }        
+        }
+        gridSets.put(WORLD_EPSG3857.name, WORLD_EPSG3857);
     }
     
     public GridSet get(String gridSetId) {

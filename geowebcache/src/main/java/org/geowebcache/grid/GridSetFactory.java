@@ -20,8 +20,6 @@ package org.geowebcache.grid;
 public class GridSetFactory {
     static int DEFAULT_LEVELS = 31;
     
-    final static double OGC_DEGREE_TO_METERS = 6378137.0 * 2.0 * Math.PI / 360;
-    
     private static GridSet baseGridSet(String name, SRS srs, int tileWidth, int tileHeight) {
         GridSet gridSet = new GridSet();
         
@@ -68,12 +66,13 @@ public class GridSetFactory {
             curGrid.scale = resolutions[i] / 0.00028;
                 
             double mapUnitWidth = tileWidth * curGrid.resolution;
-            double mapUnitHeight = tileHeight * curGrid.resolution;            
+            double mapUnitHeight = tileHeight * curGrid.resolution;
             
-            // Give 2.5% * tileWidth slack, to account for floating point errors
-            curGrid.extent[0] = (long) Math.ceil( (extent.getWidth() - mapUnitWidth*0.025) / mapUnitWidth);
-            curGrid.extent[1] = (long) Math.ceil( (extent.getHeight() - mapUnitHeight*0.025) / mapUnitHeight);
-
+            curGrid.extent[0] = (long) Math.round( (extent.getWidth() / mapUnitWidth));
+            curGrid.extent[1] = (long) Math.round( (extent.getHeight() / mapUnitHeight));
+            
+            curGrid.name = gridSet.name + ":" + i;
+            
             gridSet.gridLevels[i] = curGrid;
         }
         

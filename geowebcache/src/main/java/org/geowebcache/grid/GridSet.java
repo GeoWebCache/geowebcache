@@ -200,6 +200,20 @@ public class GridSet {
         return gridLevels;
     }
     
+    public double[] getLeftTopCorner(int gridIndex) {
+        Grid grid = gridLevels[gridIndex];
+        
+        double dTileHeight = tileHeight;
+        double dGridExtent = grid.extent[1] + 1;
+        
+        double[] ret = {
+                leftBottom[0],
+                leftBottom[1] + dTileHeight * grid.resolution * dGridExtent 
+                }; 
+        
+        return ret;
+    }
+    
     public String getName() {
         return name;
     }
