@@ -125,6 +125,7 @@
 	class="org.geowebcache.service.wmts.WMTSService">
 	<constructor-arg ref="gwcStorageBroker"/>
 	<constructor-arg ref="gwcTLDispatcher"/>
+	<constructor-arg ref="gwcGridSetBroker"/>
   </bean>
    
   <!-- WFS based services -->
