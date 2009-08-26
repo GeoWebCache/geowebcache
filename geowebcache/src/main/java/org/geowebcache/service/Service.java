@@ -68,7 +68,7 @@ public abstract class Service {
     }
     
     protected String getLayersParameter(HttpServletRequest request) throws ServiceException {
-    	String layers = ServletUtils.stringFromMap(request.getParameterMap(), "layers");
+    	String layers = ServletUtils.stringFromMap(request.getParameterMap(), request.getCharacterEncoding(), "layers");
     	if(layers == null) {
     		throw new ServiceException("Unable to parse layers parameter from request.");
     	} 

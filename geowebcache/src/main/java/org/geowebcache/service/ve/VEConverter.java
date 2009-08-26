@@ -63,10 +63,12 @@ public class VEConverter extends Service {
         
         String layerId = super.getLayersParameter(request);
         
-        String strQuadKey = ServletUtils.stringFromMap(params, "quadkey");
-        String strFormat = ServletUtils.stringFromMap(params, "format");
-        String strCached = ServletUtils.stringFromMap(params, "cached");
-        String strMetaTiled = ServletUtils.stringFromMap(params, "metatiled");
+        String encoding = request.getCharacterEncoding();
+        
+        String strQuadKey = ServletUtils.stringFromMap(params, encoding, "quadkey");
+        String strFormat = ServletUtils.stringFromMap(params, encoding, "format");
+        String strCached = ServletUtils.stringFromMap(params, encoding, "cached");
+        String strMetaTiled = ServletUtils.stringFromMap(params, encoding, "metatiled");
         
         long[] gridLoc = VEConverter.convert(strQuadKey);
         

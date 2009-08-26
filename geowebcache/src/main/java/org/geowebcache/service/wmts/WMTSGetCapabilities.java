@@ -64,7 +64,6 @@ public class WMTSGetCapabilities {
         str.append("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
         str.append("xmlns:gml=\"http://www.opengis.net/gml\" ");
         str.append("xsi:schemaLocation=\"http://www.opengis.net/wmts/1.0 http://schemas.opengis.net/wmts/1.0.0/wmtsGetCapabilities_response.xsd\"\n"); 
-        str.append("xmlns:ows=\"http://opengis.net/ows");
         str.append("version=\"1.0.0\">\n");
         
         serviceIdentification(str);
@@ -156,7 +155,7 @@ public class WMTSGetCapabilities {
         str.append("<ows:OperationsMetadata>\n");
         operation(str, "GetCapabilities", baseUrl);
         operation(str, "GetTile", baseUrl);
-        str.append("<ows:OperationsMetadata>\n");
+        str.append("</ows:OperationsMetadata>\n");
     }
         
      private void operation(StringBuilder str, String operationName, String baseUrl) {
@@ -240,17 +239,20 @@ public class WMTSGetCapabilities {
              str.append("      <TileMatrixSet>" + gridSubSet.getName() + "</TileMatrixSet>\n");
              
              String[] levelNames = gridSubSet.getGridNames();
-             long[][] wmtsLimit = gridSubSet.getWMTSCoverages();
+             long[][] wmtsLimits = gridSubSet.getWMTSCoverages();
              
              str.append("      <TileMatrixSetLimits>\n");
              for(int i=0; i < levelNames.length; i++) {
-                 str.append("        <TileMatrix>"+levelNames[i]+"</TileMatrix>\n");
-                 str.append("        <MinTileRow>"+wmtsLimit[1]+"</MinTileRow>\n");
-                 str.append("        <MaxTileRow>"+wmtsLimit[3]+"</MaxTileRow>\n");
-                 str.append("        <MinTileCol>"+wmtsLimit[0]+"</MinTileCol>\n");
-                 str.append("        <MaxTileCol>"+wmtsLimit[2]+"</MaxTileCol>\n");
+                 str.append("        <TileMatrixLimits>\n");
+                 str.append("          <TileMatrix>"+levelNames[i]+"</TileMatrix>\n");
+                 str.append("          <MinTileRow>"+wmtsLimits[i][1]+"</MinTileRow>\n");
+                 str.append("          <MaxTileRow>"+wmtsLimits[i][3]+"</MaxTileRow>\n");
+                 str.append("          <MinTileCol>"+wmtsLimits[i][0]+"</MinTileCol>\n");
+                 str.append("          <MaxTileCol>"+wmtsLimits[i][2]+"</MaxTileCol>\n");
+                 str.append("        </TileMatrixLimits>\n");
              }
              str.append("      </TileMatrixSetLimits>\n");
+             
          }
          str.append("    </TileMatrixSetLink>");     
      }
@@ -263,16 +265,17 @@ public class WMTSGetCapabilities {
          // TODO detect these str.append("    <WellKnownScaleSet>urn:ogc:def:wkss:GlobalCRS84Pixel</WellKnownScaleSet>\n");
          Grid[] grids = gridSet.getGrids();
          for(int i=0; i<grids.length; i++) {
-             tileMatrix(str, grids[i], gridSet.getTileWidth(), gridSet.getTileHeight());
+             double[] leftTop = gridSet.getLeftTopCorner(i);
+             tileMatrix(str, grids[i], leftTop[1], leftTop[0], gridSet.getTileWidth(), gridSet.getTileHeight());
          }
-         
          str.append("  </TileMatrixSet>\n");
      }
      
-     private void tileMatrix(StringBuilder str, Grid grid, int tileWidth, int tileHeight) {
+     private void tileMatrix(StringBuilder str, Grid grid, double top, double left, int tileWidth, int tileHeight) {
          str.append("    <TileMatrix>\n");
          str.append("      <ows:Identifier>"+grid.getName()+"</ows:Identifier>\n");         
          str.append("      <ScaleDenominator>"+grid.getScale()+"</ScaleDenominator>\n");
+         str.append("      <TopLeftCorner>"+ top +" "+ left +"</TopLeftCorner>\n");
          str.append("      <TileWidth>"+tileWidth+"</TileWidth>\n");    
          str.append("      <TileHeight>"+tileHeight+"</TileHeight>\n");      
          str.append("      <MatrixWidth>"+grid.getExtent()[0]+"</MatrixWidth>\n");    

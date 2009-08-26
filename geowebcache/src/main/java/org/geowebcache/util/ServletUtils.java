@@ -18,6 +18,9 @@ package org.geowebcache.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -47,7 +50,7 @@ public class ServletUtils {
      * @param key
      * @return all matchings string
      */
-    public static String[] stringsFromMap(Map<String, String[]> map, String key) {
+    public static String[] stringsFromMap(Map<String, String[]> map, String encoding, String key) {
         String[] strArray = (String[]) map.get(key);
         
         if (strArray != null) {
@@ -58,7 +61,7 @@ public class ServletUtils {
             while (iter.hasNext()) {
                 Entry<String,String[]> entry = iter.next();
                 if(entry.getKey().equalsIgnoreCase(key)) {
-                    return entry.getValue();
+                    return URLDecode(entry.getValue(), encoding);
                 }
             }
         }
@@ -72,8 +75,8 @@ public class ServletUtils {
      * @param key
      * @return
      */
-    public static String stringFromMap(Map<String,String[]> map, String key) {
-        String[] strArray = stringsFromMap(map, key);
+    public static String stringFromMap(Map<String, String[]> map, String encoding, String key) {
+        String[] strArray = stringsFromMap(map, encoding, key);
         if(strArray != null) {
             return strArray[0];
         }
@@ -89,7 +92,7 @@ public class ServletUtils {
      * @param keys
      * @return
      */
-    public static String[][] selectedStringArraysFromMap(Map<String,String[]> map, String[] keys) {
+    public static String[][] selectedStringArraysFromMap(Map<String, String[]> map, String encoding, String[] keys) {
         String[][] retAr = new String[keys.length][];
         
         Iterator<Entry<String,String[]>> iter = map.entrySet().iterator();
@@ -99,7 +102,7 @@ public class ServletUtils {
             
             for(int i=0;i<keys.length;i++) {
                 if(key.equalsIgnoreCase(keys[i])) {
-                    retAr[i] = entry.getValue();
+                    retAr[i] = URLDecode(entry.getValue(), encoding);
                     continue;
                 }
             }
@@ -107,7 +110,6 @@ public class ServletUtils {
         
         return retAr;
     }
-    
     
     /**
      * Case insensitive lookup for a couple of strings,
@@ -117,7 +119,7 @@ public class ServletUtils {
      * @param keys
      * @return
      */
-    public static String[] selectedStringsFromMap(Map<String,String[]> map, String[] keys) {
+    public static String[] selectedStringsFromMap(Map<String,String[]> map, String encoding, String[] keys) {
         String[] retAr = new String[keys.length];
         
         Iterator<Entry<String,String[]>> iter = map.entrySet().iterator();
@@ -127,7 +129,7 @@ public class ServletUtils {
             
             for(int i=0;i<keys.length;i++) {
                 if(key.equalsIgnoreCase(keys[i])) {
-                    retAr[i] = entry.getValue()[0];
+                    retAr[i] = URLDecode(entry.getValue()[0], encoding);
                     break;
                 }
             }
@@ -323,5 +325,42 @@ public class ServletUtils {
             }
         }
         return out;
+    }
+    
+    public static String URLEncode(String str) {
+        String ret = null;
+        
+        try {
+            ret = URLEncoder.encode(str,"UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            log.debug(e.getMessage());
+        }
+        
+        return ret;
+    }
+    
+    public static String URLDecode(String str, String encoding) {
+        String ret = null;
+        
+        if(encoding != null) {
+        try {
+                ret = URLDecoder.decode(str, encoding);
+            } catch (UnsupportedEncodingException e) {
+                log.debug(e.getMessage());
+            }
+        }
+        
+        try {
+            ret = URLDecoder.decode(str,"UTF-8");   
+        } catch (UnsupportedEncodingException e1) {
+            log.debug(e1.getMessage());
+        }
+        
+        return ret;
+    }
+    
+    private static String[] URLDecode(String[] value, String encoding) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

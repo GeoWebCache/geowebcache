@@ -15,6 +15,7 @@ import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.util.ServletUtils;
 
 public class Demo {
 
@@ -31,9 +32,11 @@ public class Demo {
 
         // Do we have a layer, or should we make a list?
         if (action != null) {
-            TileLayer layer = tileLayerDispatcher.getTileLayer(action);
+            String layerName = ServletUtils.URLDecode(action, request.getCharacterEncoding());
+            
+            TileLayer layer = tileLayerDispatcher.getTileLayer(layerName);
 
-            String gridSetStr = request.getParameter("gridSet");
+            String gridSetStr = ServletUtils.URLDecode(request.getParameter("gridSet"), request.getCharacterEncoding());
             
             if(gridSetStr == null) {
                 gridSetStr = request.getParameter("srs");

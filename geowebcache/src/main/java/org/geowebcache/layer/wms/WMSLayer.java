@@ -19,6 +19,7 @@ package org.geowebcache.layer.wms;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -130,6 +131,12 @@ public class WMSLayer extends TileLayer {
     private transient String[] sortedModParamsKeys;
     
     private transient boolean stylesIsModParam = false;
+    
+    private transient String encodedWMSLayers;
+    
+    private transient String encodedWMSStyles;
+    
+    private transient String encodedPalette;
 
     private static transient Log log;
     
@@ -300,8 +307,17 @@ public class WMSLayer extends TileLayer {
             }
         }
 
-        // Use this constructor for volatile
-        return new Boolean(true);
+        encodedWMSLayers = ServletUtils.URLEncode(wmsLayers);
+        
+        if(wmsStyles != null) {
+            encodedWMSStyles = ServletUtils.URLEncode(wmsStyles);
+        }
+        
+        if(palette != null) {
+            encodedPalette = ServletUtils.URLEncode(palette);
+        }
+        
+        return true;
     }
 
     /**
@@ -724,7 +740,7 @@ public class WMSLayer extends TileLayer {
 
         strBuilder.append("&LAYERS=");
         if(this.wmsLayers != null && this.wmsLayers.length() != 0) {
-            strBuilder.append(wmsLayers);
+            strBuilder.append(encodedWMSLayers);
         } else {
             strBuilder.append(name);
         }
@@ -739,7 +755,7 @@ public class WMSLayer extends TileLayer {
         if (!stylesIsModParam) {
             strBuilder.append("&STYLES=");
             if (wmsStyles != null && wmsStyles.length() != 0) {
-                strBuilder.append(wmsStyles);
+                strBuilder.append(encodedWMSStyles);
             }
         }
 
@@ -765,7 +781,7 @@ public class WMSLayer extends TileLayer {
             strBuilder.append("&BGCOLOR=").append(tmpBgColor);
         }
         
-        String tmpPalette = palette;
+        String tmpPalette = encodedPalette;
         if (mod != null && mod.getPalette() != null) {
             tmpPalette = mod.getPalette();
         }
@@ -1069,13 +1085,13 @@ public class WMSLayer extends TileLayer {
      * @return {full query string with default, query string with modifiers} 
      * @throws GeoWebCacheException
      */
-    public String[] getModifiableParameters(Map<String,String[]> map) throws GeoWebCacheException {
+    public String[] getModifiableParameters(Map<String,String[]> map, String encoding) throws GeoWebCacheException {
         String[] paramStrs = new String[2];
         
         if(sortedModParamsKeys == null)
             return null;
         
-        String[] values = ServletUtils.selectedStringsFromMap(map, sortedModParamsKeys);
+        String[] values = ServletUtils.selectedStringsFromMap(map, encoding, sortedModParamsKeys);
         
         StringBuilder strModifiers = new StringBuilder();
         StringBuilder strFull = new StringBuilder();

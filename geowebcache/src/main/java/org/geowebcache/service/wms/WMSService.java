@@ -62,15 +62,17 @@ public class WMSService extends Service {
 
     public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response) 
             throws GeoWebCacheException {
+        String encoding = request.getCharacterEncoding();
+        
         String[] keys = { "layers", "request", "tiled", "cached", "metatiled" };
-        String[] values = ServletUtils.selectedStringsFromMap(request.getParameterMap(), keys);
+        String[] values = ServletUtils.selectedStringsFromMap(request.getParameterMap(), encoding, keys);
 
         // Look for requests that are not getmap
         String req = values[1];
         if (req != null && !req.equalsIgnoreCase("getmap")) {
             // One more chance
             if(values[0] == null || values[0].length() == 0) {    
-                values[0] = ServletUtils.stringFromMap(request.getParameterMap(), "layer");
+                values[0] = ServletUtils.stringFromMap(request.getParameterMap(), encoding, "layer");
             }
             
             ConveyorTile tile = new ConveyorTile(sb, values[0], request, response);
@@ -97,11 +99,11 @@ public class WMSService extends Service {
         TileLayer tileLayer = tld.getTileLayer(layers);
         
         String[] paramKeys = { "format","srs","bbox"};
-        String[] paramValues = ServletUtils.selectedStringsFromMap(request.getParameterMap(), paramKeys);
+        String[] paramValues = ServletUtils.selectedStringsFromMap(request.getParameterMap(), encoding, paramKeys);
 
         String[] modStrs = null;
         if(tileLayer instanceof WMSLayer) {
-            modStrs = ((WMSLayer) tileLayer).getModifiableParameters(request.getParameterMap());
+            modStrs = ((WMSLayer) tileLayer).getModifiableParameters(request.getParameterMap(), encoding);
         }
          
         if(modStrs == null) {

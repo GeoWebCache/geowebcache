@@ -57,14 +57,16 @@ public class GMapsConverter extends Service {
     public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response) 
     throws ServiceException {
         String layerId = super.getLayersParameter(request);
+        
+        String encoding = request.getCharacterEncoding();
 
         Map<String,String[]> params = request.getParameterMap();
-        String strFormat = ServletUtils.stringFromMap(params, "format");
-        String strZoom = ServletUtils.stringFromMap(params, "zoom");
-        String strX = ServletUtils.stringFromMap(params, "x");
-        String strY = ServletUtils.stringFromMap(params, "y");
-        String strCached = ServletUtils.stringFromMap(params, "cached");
-        String strMetaTiled = ServletUtils.stringFromMap(params, "metatiled");
+        String strFormat = ServletUtils.stringFromMap(params, encoding, "format");
+        String strZoom = ServletUtils.stringFromMap(params, encoding, "zoom");
+        String strX = ServletUtils.stringFromMap(params, encoding, "x");
+        String strY = ServletUtils.stringFromMap(params, encoding, "y");
+        String strCached = ServletUtils.stringFromMap(params, encoding, "cached");
+        String strMetaTiled = ServletUtils.stringFromMap(params, encoding, "metatiled");
 
         long[] gridLoc = GMapsConverter.convert(Integer.parseInt(strZoom), 
                 Integer.parseInt(strX), Integer.parseInt(strY));

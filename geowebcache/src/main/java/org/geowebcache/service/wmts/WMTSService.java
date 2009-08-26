@@ -56,8 +56,9 @@ public class WMTSService extends Service {
 
     public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response) 
     throws GeoWebCacheException {
+        String encoding = request.getCharacterEncoding();
         String[] keys = { "layer", "request", "style", "format", "tilematrixset", "tilematrix", "tilerow", "tilecol" };
-        String[] values = ServletUtils.selectedStringsFromMap(request.getParameterMap(), keys);
+        String[] values = ServletUtils.selectedStringsFromMap(request.getParameterMap(), encoding, keys);
 
         String req = values[1].toLowerCase();
         
@@ -83,6 +84,8 @@ public class WMTSService extends Service {
     
     private ConveyorTile getTile(String[] values, HttpServletRequest request, HttpServletResponse response)
     throws GeoWebCacheException {
+        String encoding = request.getCharacterEncoding();
+        
         String layer = values[0];
         if (layer == null) {
             throw new ServiceException("Unable to parse LAYER parameter from request.");
@@ -92,7 +95,7 @@ public class WMTSService extends Service {
         
         String[] modStrs = null;
         if(tileLayer instanceof WMSLayer) {
-            modStrs = ((WMSLayer) tileLayer).getModifiableParameters(request.getParameterMap());
+            modStrs = ((WMSLayer) tileLayer).getModifiableParameters(request.getParameterMap(), encoding);
         }
          
         if(modStrs == null) {
