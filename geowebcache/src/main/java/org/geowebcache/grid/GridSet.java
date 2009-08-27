@@ -206,11 +206,18 @@ public class GridSet {
         double dTileHeight = tileHeight;
         double dGridExtent = grid.extent[1] + 1;
         
+        double top = leftBottom[1] + dTileHeight * grid.resolution * dGridExtent;
+        
+        // Round off if we are within 0.5% of an integer value
+        if(top - Math.round(top) < (top / 200)) {
+            top = Math.round(top);
+        }
+        
         double[] ret = {
                 leftBottom[0],
-                leftBottom[1] + dTileHeight * grid.resolution * dGridExtent 
-                }; 
-        
+                top 
+                };
+                
         return ret;
     }
     

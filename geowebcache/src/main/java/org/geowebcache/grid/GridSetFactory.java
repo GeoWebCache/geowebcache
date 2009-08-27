@@ -68,8 +68,8 @@ public class GridSetFactory {
             double mapUnitWidth = tileWidth * curGrid.resolution;
             double mapUnitHeight = tileHeight * curGrid.resolution;
             
-            curGrid.extent[0] = (long) Math.round( (extent.getWidth() / mapUnitWidth));
-            curGrid.extent[1] = (long) Math.round( (extent.getHeight() / mapUnitHeight));
+            curGrid.extent[0] = (long) Math.ceil( (extent.getWidth() - mapUnitWidth * 0.01) / mapUnitWidth);
+            curGrid.extent[1] = (long) Math.ceil( (extent.getHeight() - mapUnitHeight * 0.01) / mapUnitHeight);
             
             curGrid.name = gridSet.name + ":" + i;
             
