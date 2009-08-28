@@ -197,7 +197,10 @@ public class GridSubSet {
     }
     
     /**
-     * WMTS is indexed from top left hand corner
+     * WMTS is indexed from top left hand corner.
+     * We will still return {minx,miny,maxx,maxy}, 
+     * but note that the y positions have been reversed
+     * 
      * @return
      */
     public long[][] getWMTSCoverages() {
@@ -209,9 +212,9 @@ public class GridSubSet {
             
             long[] cur = {
                     gridCov.coverage[0],
-                    grid.extent[1] - gridCov.coverage[1],
-                    gridCov.coverage[1],
-                    grid.extent[1] - gridCov.coverage[3]
+                    grid.extent[1] - gridCov.coverage[3],
+                    gridCov.coverage[2],
+                    grid.extent[1] - gridCov.coverage[1]
             };
             
             ret[i] = cur;
