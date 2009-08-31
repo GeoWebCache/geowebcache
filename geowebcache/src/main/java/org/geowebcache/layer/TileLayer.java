@@ -37,7 +37,7 @@ import org.geowebcache.grid.GridSubSet;
 import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
-import org.geowebcache.grid.XMLSubGrid;
+import org.geowebcache.grid.XMLGridSubSet;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
@@ -54,13 +54,14 @@ public abstract class TileLayer {
     
     protected List<FormatModifier> formatModifiers;
     
-    protected List<XMLSubGrid> subGrids;
+    protected List<XMLGridSubSet> gridSubSets;
 
+    // 1.1.x compatibility
     protected Hashtable<SRS,XMLOldGrid> grids;
     
     protected List<RequestFilter> requestFilters;
     
-    protected transient Hashtable<String,GridSubSet> gridSubSets;
+    protected transient Hashtable<String,GridSubSet> subSets;
 
     // Styles?
 
@@ -99,7 +100,7 @@ public abstract class TileLayer {
      */
 
     public void addGridSet(String gridSetId, GridSubSet gridSubSet) {
-        this.gridSubSets.put(gridSetId, gridSubSet);
+        this.subSets.put(gridSetId, gridSubSet);
     }
 
     /**
@@ -108,7 +109,7 @@ public abstract class TileLayer {
      * @return
      */
     public Hashtable<String,GridSubSet> getGridSubSets() {
-        return this.gridSubSets;
+        return this.subSets;
     }
 
     /**
@@ -135,7 +136,7 @@ public abstract class TileLayer {
      * @throws GeoWebCacheException
      */
     public GridSubSet getGridSubSetForSRS(SRS srs) {
-        Iterator<GridSubSet> iter = this.gridSubSets.values().iterator();
+        Iterator<GridSubSet> iter = this.subSets.values().iterator();
         while (iter.hasNext()) {
             GridSubSet gridSubSet = iter.next();
             if (gridSubSet.getSRS().equals(srs)) {
@@ -231,7 +232,7 @@ public abstract class TileLayer {
      * @return the resolutions (units/pixel) for the layer
      */
     public double[] getResolutions(String gridSetId) throws GeoWebCacheException {
-        return gridSubSets.get(gridSetId).getResolutions();
+        return subSets.get(gridSetId).getResolutions();
     }
     
 
@@ -297,7 +298,7 @@ public abstract class TileLayer {
      * @return
      * @throws GeoWebCacheException 
      */
-    public abstract int[][] getCoveredGridLevels(SRS srs, BoundingBox bounds) throws GeoWebCacheException;
+    //public abstract int[][] getCoveredGridLevels(SRS srs, BoundingBox bounds) throws GeoWebCacheException;
 
     /**
      * 
@@ -341,43 +342,6 @@ public abstract class TileLayer {
     public abstract BoundingBox boundsFromIndex(String gridSetId, long[] gridLoc) 
     throws GeoWebCacheException;
 
-    /**
-     * Returns an array with four grid locations, the result of zooming in one
-     * level on the provided grid location. [4][x,y,z]
-     * 
-     * If the location is not within the bounds, the z value will be negative
-     * 
-     * @param srsIdx
-     * @param gridLoc
-     * @return
-     * @throws GeoWebCacheException 
-     */
-    public abstract long[][] getZoomedInIndexes(String gridSetId, long[] gridLoc) 
-    throws GeoWebCacheException;
-
-    /**
-     * The furthest zoomed in grid location that returns the entire layer on a
-     * single tile.
-     * 
-     * If there is no single tile, say your layer is in EPSG:4326 and covers
-     * both the western and eastern hemissphere, then zoomlevel will be set to
-     * -1.
-     * 
-     * @param srsIdx
-     * @return {x,y,z}
-     * @throws GeoWebCacheException 
-     */
-    public abstract int[] getZoomedOutIndex(SRS srs) throws GeoWebCacheException;
-
-    /**
-     * Converts the zoomed out grid location into a bounding box
-     * 
-     * @param srs
-     * @return
-     * @throws GeoWebCacheException
-     */
-    public abstract BoundingBox getZoomedOutBounds(SRS srs) throws GeoWebCacheException;
-    
     /**
      * Acquire the global lock for the layer, primarily used for truncating
      * 
@@ -435,11 +399,11 @@ public abstract class TileLayer {
             }
         }
 
-        if (otherLayer.gridSubSets != null && otherLayer.gridSubSets.size() > 0) {
-            Iterator<Entry<String, GridSubSet>> iter = otherLayer.gridSubSets.entrySet().iterator();
+        if (otherLayer.subSets != null && otherLayer.subSets.size() > 0) {
+            Iterator<Entry<String, GridSubSet>> iter = otherLayer.subSets.entrySet().iterator();
             while (iter.hasNext()) {
                 Entry<String, GridSubSet> entry = iter.next();
-                this.gridSubSets.put(entry.getKey(), entry.getValue());
+                this.subSets.put(entry.getKey(), entry.getValue());
             }
         }
         
@@ -482,6 +446,6 @@ public abstract class TileLayer {
     }
 
     public GridSubSet getGridSubSet(String gridSetId) {
-        return this.gridSubSets.get(gridSetId);
+        return this.subSets.get(gridSetId);
     }
 }

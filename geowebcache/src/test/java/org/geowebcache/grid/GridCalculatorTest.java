@@ -237,7 +237,7 @@ public class GridCalculatorTest extends TestCase {
         BoundingBox bbox = new BoundingBox(-4.0,-4.0,4.0,4.0);
         double[] resolutions = {8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
         
-        GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(0), bbox, resolutions, null, 256, 256);        
+        GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(0), bbox, resolutions, null, null, 256, 256);        
         GridSubSet gridSubSet = GridSubSetFactory.createGridSubSet(gridSet);
         
         BoundingBox tileBounds = createApproximateTileBounds(gridSubSet, bbox, 5.04, 256, 256);

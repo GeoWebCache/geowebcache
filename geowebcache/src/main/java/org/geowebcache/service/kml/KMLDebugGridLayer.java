@@ -54,8 +54,8 @@ public class KMLDebugGridLayer extends TileLayer {
     private static KMLDebugGridLayer instance;
 
     private KMLDebugGridLayer() {
-        super.gridSubSets = new Hashtable<String,GridSubSet>();
-        gridSubSets.put(
+        super.subSets = new Hashtable<String,GridSubSet>();
+        subSets.put(
                 gridSetBroker.WORLD_EPSG4326.getName(),
                 GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, BoundingBox.WORLD4326, 0, 3));
     }
@@ -291,24 +291,24 @@ public class KMLDebugGridLayer extends TileLayer {
         return null;
     }
 
-    @Override
-    public long[][] getZoomedInIndexes(String gridSetId, long[] gridLoc)
-            throws GeoWebCacheException {
-        // TODO Auto-generated method stub
-        return null;
-    }
+//    @Override
+//    public long[][] getZoomedInIndexes(String gridSetId, long[] gridLoc)
+//            throws GeoWebCacheException {
+//        // TODO Auto-generated method stub
+//        return null;
+//    }
 
-    @Override
-    public BoundingBox getZoomedOutBounds(SRS srs) throws GeoWebCacheException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public int[] getZoomedOutIndex(SRS srs) throws GeoWebCacheException {
-        // TODO Auto-generated method stub
-        return null;
-    }
+//    @Override
+//    public BoundingBox getZoomedOutBounds(SRS srs) throws GeoWebCacheException {
+//        // TODO Auto-generated method stub
+//        return null;
+//    }
+//
+//    @Override
+//    public int[] getZoomedOutIndex(SRS srs) throws GeoWebCacheException {
+//        // TODO Auto-generated method stub
+//        return null;
+//    }
 
     @Override
     public long[] indexFromBounds(String gridSetId, BoundingBox bounds)

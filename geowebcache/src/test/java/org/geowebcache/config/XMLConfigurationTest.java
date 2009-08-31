@@ -18,7 +18,7 @@ import org.geowebcache.mime.ImageMime;
 
 public class XMLConfigurationTest extends TestCase {
     
-    public static final String LATEST_FILENAME = "geowebcache_114.xml";
+    public static final String LATEST_FILENAME = "geowebcache_115.xml";
 
     @Override
     protected void setUp() throws Exception {
@@ -64,7 +64,7 @@ public class XMLConfigurationTest extends TestCase {
     }
     
     public void testLoad114() throws Exception {
-        List<TileLayer> layers = loadResource(LATEST_FILENAME);
+        List<TileLayer> layers = loadResource("geowebcache_114.xml");
         TileLayer layer = findLayer(layers, "topp:states");
         assertTrue(layer != null);
         //assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
@@ -86,6 +86,34 @@ public class XMLConfigurationTest extends TestCase {
         List<RequestFilter> filters = layer.getRequestFilters();
         assertEquals(filters.get(0).getName(),"testWMSRasterFilter");
         assertEquals(filters.get(1).getName(),"testFileRasterFilter");
+    }
+    
+    
+    public void testLoad115() throws Exception {
+        List<TileLayer> layers = loadResource(LATEST_FILENAME);
+        TileLayer layer = findLayer(layers, "topp:states");
+        assertTrue(layer != null);
+        //assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
+        TileLayer layer2 = findLayer(layers, "topp:states2");
+        GridSubSet grid = layer2.getGridSubSetForSRS(SRS.getSRS(2163));
+        assertTrue(layer2 != null);
+        assertTrue(grid != null);
+        
+        // The additions in 1.0.1 are allowCacheBypass and backendTimeout
+        assertEquals(layer.getBackendTimeout().intValue(), 120);
+        assertEquals(layer2.getBackendTimeout().intValue(), 120);
+        assertEquals(layer.isCacheBypassAllowed().booleanValue(), true);
+        assertEquals(layer2.isCacheBypassAllowed().booleanValue(), true);
+        
+        FormatModifier fm = layer.getFormatModifier(ImageMime.jpeg); 
+        assertEquals(fm.getBgColor(), "0xDDDDDD");
+        assertTrue(fm.getRequestFormat().equals(ImageMime.png));
+        
+        List<RequestFilter> filters = layer.getRequestFilters();
+        RequestFilter filter0 = filters.get(0);
+        assertEquals(filter0.getName(),"testWMSRasterFilter");
+        RequestFilter filter1 = filters.get(1);
+        assertEquals(filter1.getName(),"testFileRasterFilter");
     }
     
     private TileLayer findLayer(List<TileLayer> layers, String layerName) 

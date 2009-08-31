@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
            xmlns:xml="http://www.w3.org/XML/1998/namespace"
-           targetNamespace="http://geowebcache.org/schema/1.1.5" 
-           xmlns:gwc="http://geowebcache.org/schema/1.1.5"
+           targetNamespace="http://geowebcache.org/schema/1.2.0" 
+           xmlns:gwc="http://geowebcache.org/schema/1.2.0"
            elementFormDefault="qualified">
 
 <xs:element name="gwcConfiguration">

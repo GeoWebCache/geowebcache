@@ -43,7 +43,7 @@ public class GridSetFactory {
      * @param tileHeight
      * @return
      */
-    public static GridSet createGridSet(String name, SRS srs, BoundingBox extent, double[] resolutions, double[] scales, int tileWidth, int tileHeight) {
+    public static GridSet createGridSet(String name, SRS srs, BoundingBox extent, double[] resolutions, double[] scales, String[] scaleNames, int tileWidth, int tileHeight) {
         GridSet gridSet = baseGridSet(name, srs, tileWidth, tileHeight);
         
         gridSet.leftBottom[0] = extent.coords[0];
@@ -71,7 +71,11 @@ public class GridSetFactory {
             curGrid.extent[0] = (long) Math.ceil( (extent.getWidth() - mapUnitWidth * 0.01) / mapUnitWidth);
             curGrid.extent[1] = (long) Math.ceil( (extent.getHeight() - mapUnitHeight * 0.01) / mapUnitHeight);
             
-            curGrid.name = gridSet.name + ":" + i;
+            if(scaleNames == null) {
+                curGrid.name = gridSet.name + ":" + i;
+            } else {
+                curGrid.name = scaleNames[i];
+            }
             
             gridSet.gridLevels[i] = curGrid;
         }
@@ -124,6 +128,6 @@ public class GridSetFactory {
             resolutions[i] = resolutions[i - 1] / 2;
         }
         
-        return createGridSet(name, srs, extent, resolutions, null, tileWidth, tileHeight);
+        return createGridSet(name, srs, extent, resolutions, null, null, tileWidth, tileHeight);
     }
 }

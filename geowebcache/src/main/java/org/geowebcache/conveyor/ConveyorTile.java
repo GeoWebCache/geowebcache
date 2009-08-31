@@ -41,7 +41,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     //protected SRS srs = null;
     protected String gridSetId = null;
     
-    protected GridSubSet gridSet = null;
+    protected GridSubSet gridSubSet = null;
     
     protected TileLayer tileLayer = null;
     
@@ -136,8 +136,12 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     //public SRS getSRS() {
     //    return srs;
     //}
-    public GridSubSet getGridSubSet() {
-        return tileLayer.getGridSubSet(this.gridSetId);
+    public synchronized GridSubSet getGridSubSet() {
+        if(gridSubSet == null) {
+            gridSubSet = tileLayer.getGridSubSet(gridSetId);
+        }
+        
+        return gridSubSet;
     }
     
     public String getGridSetId() {

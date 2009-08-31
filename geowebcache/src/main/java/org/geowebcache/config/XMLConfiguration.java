@@ -52,8 +52,11 @@ import org.geowebcache.filter.parameters.RegexParameterFilter;
 import org.geowebcache.filter.request.CircularExtentFilter;
 import org.geowebcache.filter.request.FileRasterFilter;
 import org.geowebcache.filter.request.WMSRasterFilter;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.XMLGridSet;
 import org.geowebcache.grid.XMLOldGrid;
+import org.geowebcache.grid.XMLGridSubSet;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
@@ -107,15 +110,18 @@ public class XMLConfiguration implements Configuration {
             DefaultStorageFinder defaultStorage) {
         
         context = appCtx.getApplicationContext();
+        this.gridSetBroker = gridSetBroker;
         defStoreFind = defaultStorage;
         
 
         try {
             File xmlFile = findConfFile();
-            loadConfiguration(xmlFile);
+            loadConfiguration(xmlFile);            
         } catch (GeoWebCacheException e) {
             e.printStackTrace();
         }
+        
+        initialize();
     }
     
     /**
@@ -133,12 +139,32 @@ public class XMLConfiguration implements Configuration {
         gwcConfig = (GeoWebCacheConfiguration) 
             xs.unmarshal(new DomReader((Element) checkAndTransform(docBuilder.parse(is))));
         
-        List<TileLayer> layers = gwcConfig.layers;
-        
         mockConfiguration = true;
+
+        initialize();
+    }
+    
+    private void initialize() {
+        if(gwcConfig.gridSets != null) {
+            Iterator<XMLGridSet> iter = gwcConfig.gridSets.iterator();
+            while(iter.hasNext()) {
+                XMLGridSet xmlGridSet = iter.next();
+                
+                if(log.isDebugEnabled()) {
+                    log.debug("Reading " + xmlGridSet.getName());
+                }
+                
+                GridSet gridSet = xmlGridSet.makeGridSet();
+              
+                log.info("Read GridSet " + gridSet.getName());
+                
+                gridSetBroker.put(gridSet);
+            }
+        }
         
-        if(layers != null) {
-            Iterator<TileLayer> iter = layers.iterator();
+        // Loop over the old layers
+        if(gwcConfig.layers != null) {
+            Iterator<TileLayer> iter = gwcConfig.layers.iterator();
             while(iter.hasNext()) {
                 TileLayer layer = iter.next();
                 setDefaultValues(layer);
@@ -173,23 +199,12 @@ public class XMLConfiguration implements Configuration {
      * 
      */
     public synchronized List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
-        
         if (reload && ! mockConfiguration) {
             File xmlFile = findConfFile();
             loadConfiguration(xmlFile);
         }
         
-        List<TileLayer> layers = gwcConfig.layers;
-        
-        // Add the cache factor to each layer object
-        if(layers != null) {
-            Iterator<TileLayer> iter = layers.iterator();
-            while(iter.hasNext()) {
-                TileLayer layer = iter.next();
-                setDefaultValues(layer);
-            }
-        }
-        return layers;
+        return gwcConfig.layers;
     }
     
     public boolean isRuntimeStatsEnabled() {
@@ -270,6 +285,9 @@ public class XMLConfiguration implements Configuration {
         // These two are for 1.1.x compatibility
         xs.alias("grids", new ArrayList<XMLOldGrid>().getClass());
         xs.alias("grid", XMLOldGrid.class);
+        
+        xs.alias("gridSet", XMLGridSet.class);
+        xs.alias("gridSubSet", XMLGridSubSet.class);
         
         xs.alias("mimeFormats", new ArrayList<String>().getClass());
         xs.alias("formatModifiers", new ArrayList<FormatModifier>().getClass());
@@ -451,6 +469,11 @@ public class XMLConfiguration implements Configuration {
         if(rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.1.4")) {
             log.info("Updating configuration from 1.1.4 to 1.1.5");
             rootNode = applyTransform(rootNode, "geowebcache_114.xsl").getFirstChild();
+        }
+        
+        if(rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.1.5")) {
+            log.info("Updating configuration from 1.1.5 to 1.2.0");
+            rootNode = applyTransform(rootNode, "geowebcache_115.xsl").getFirstChild();
         }
         
         // Check again after transform

@@ -17,6 +17,8 @@
  */
 package org.geowebcache.storage;
 
+import java.util.Arrays;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -68,7 +70,7 @@ public class StorageBroker {
             byte[] blob = blobStore.get(tileObj);
             if(blob == null) {
                 throw new StorageException(
-                        "Blob was expected to have size " 
+                        "Blob for "+Arrays.toString(tileObj.xyz)+" was expected to have size " 
                         + tileObj.blob_size + " but was null.");
             } else if(blob.length != tileObj.blob_size) {
                 throw new StorageException(
@@ -122,8 +124,11 @@ public class StorageBroker {
         }
         
         try {
+            //System.out.println("Pre metastore put: " + Arrays.toString(tileObj.xyz));
             metaStore.put(tileObj);
+            //System.out.println("Pre blobstore put: " + Arrays.toString(tileObj.xyz));
             blobStore.put(tileObj);
+            //System.out.println("Pre unlock put: " + Arrays.toString(tileObj.xyz));
             metaStore.unlock(tileObj);
             return true;
             

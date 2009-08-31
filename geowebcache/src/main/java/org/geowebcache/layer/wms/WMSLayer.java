@@ -47,7 +47,7 @@ import org.geowebcache.grid.GridSubSetFactory;
 import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
-import org.geowebcache.grid.XMLSubGrid;
+import org.geowebcache.grid.XMLGridSubSet;
 import org.geowebcache.layer.GridLocObj;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.ErrorMime;
@@ -55,6 +55,7 @@ import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.mime.XMLMime;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
@@ -156,7 +157,7 @@ public class WMSLayer extends TileLayer {
      */
     public WMSLayer(String layerName,
             String[] wmsURL, String wmsStyles, String wmsLayers, 
-            List<String> mimeFormats, Hashtable<String,GridSubSet> grids, 
+            List<String> mimeFormats, Hashtable<String,GridSubSet> subSets, 
             int[] metaWidthHeight, String vendorParams, boolean queryable) {
      
         name = layerName;
@@ -164,7 +165,7 @@ public class WMSLayer extends TileLayer {
         this.wmsLayers = wmsLayers;
         this.wmsStyles = wmsStyles;
         this.mimeFormats = mimeFormats;
-        this.gridSubSets = grids;
+        this.subSets = subSets;
         this.metaWidthHeight = metaWidthHeight;
         this.expireClientsInt = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
         this.expireCacheInt = GWCVars.CACHE_NEVER_EXPIRE;
@@ -191,6 +192,10 @@ public class WMSLayer extends TileLayer {
         } else {
             expireCacheInt = GWCVars.CACHE_NEVER_EXPIRE;
         }
+        
+        if(backendTimeout == null) {
+            backendTimeout = 120;
+        }
 
         layerLock = new ReentrantLock();
         layerLockedCond = layerLock.newCondition();
@@ -209,34 +214,39 @@ public class WMSLayer extends TileLayer {
             this.metaWidthHeight[1] = 3;
         }
 
-        if (gridSubSets == null) {
-            gridSubSets = new Hashtable<String, GridSubSet>();
+        if (subSets == null) {
+            subSets = new Hashtable<String, GridSubSet>();
         }
 
-        if (this.subGrids != null) {
-            Iterator<XMLSubGrid> iter = subGrids.iterator();
+        if (this.gridSubSets != null) {
+            Iterator<XMLGridSubSet> iter = gridSubSets.iterator();
             while (iter.hasNext()) {
-                GridSubSet gridSubSet = iter.next().getGridSubSet(gridSetBroker);
-                gridSubSets.put(gridSubSet.getName(), gridSubSet);
+                XMLGridSubSet xmlGridSubSet = iter.next();
+                GridSubSet gridSubSet = xmlGridSubSet.getGridSubSet(gridSetBroker);
+                subSets.put(gridSubSet.getName(), gridSubSet);
             }
+            
+            this.gridSubSets = null;
         }
+        
+        
         
         // Convert version 1.1.x and 1.0.x grid objects
         if (grids != null && !grids.isEmpty()) {
             Iterator<XMLOldGrid> iter = grids.values().iterator();
             while (iter.hasNext()) {
                 GridSubSet converted = iter.next().convertToGridSubset(gridSetBroker);
-                gridSubSets.put(converted.getSRS().toString(), converted);
+                subSets.put(converted.getSRS().toString(), converted);
             }
 
             // Null it for the garbage collector
             grids = null;
         }
-
-        if (this.gridSubSets.size() == 0) {
-            gridSubSets.put(gridSetBroker.WORLD_EPSG4326.getName(),
+        
+        if (this.subSets.size() == 0) {
+            subSets.put(gridSetBroker.WORLD_EPSG4326.getName(),
                     GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326));
-            gridSubSets.put(gridSetBroker.WORLD_EPSG3857.getName(),
+            subSets.put(gridSetBroker.WORLD_EPSG3857.getName(),
                     GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857));
         }
         
@@ -385,7 +395,7 @@ public class WMSLayer extends TileLayer {
         //int idx = this.getSRSIndex(tile.getSRS());
         long[] gridLoc = tile.getTileIndex();
         
-        GridSubSet gridSubSet = tile.getGridSubSet();
+        GridSubSet gridSubSet = subSets.get(tile.getGridSetId());
         
         //GridCalculator gridCalc = getGrid(tile.getSRS()).getGridCalculator();
 
@@ -749,7 +759,7 @@ public class WMSLayer extends TileLayer {
         if(errorMime != null) {
             strBuilder.append(errorMime);
         } else {
-            strBuilder.append(ErrorMime.vnd_ogc_se_inimage.getMimeType());
+            strBuilder.append(XMLMime.ogcxml.getMimeType());
         }
         
         if (!stylesIsModParam) {
@@ -815,25 +825,12 @@ public class WMSLayer extends TileLayer {
         procQueue.clear();
     }
 
-    /* public int[][] getCoveredGridLevels(SRS srs, BBOX bounds)
-    throws GeoWebCacheException {
-        BBOX adjustedBounds = bounds;
-        GridSubSet grid = gridSets.get(srs);
-        
-        if (! grid.getBounds().contains(bounds) ) {
-            adjustedBounds = BBOX.intersection(grid.getBounds(), bounds);
-            log.warn("Adjusting bounds from " + bounds.toString() + " to "
-                    + adjustedBounds.toString());
-        }
-        return grid.getGridCalculator().coveredGridLevels(adjustedBounds);
-    } */
-
     public int[] getMetaTilingFactors() {
         return metaWidthHeight;
     }
 
     public long[] indexFromBounds(String gridSetId, BoundingBox tileBounds) {
-        return gridSubSets.get(gridSetId).closestIndex(tileBounds);
+        return subSets.get(gridSetId).closestIndex(tileBounds);
     }
 
     public MimeType getDefaultMimeType() {
@@ -842,34 +839,13 @@ public class WMSLayer extends TileLayer {
 
     // TODO Move these to TileLayer
     public BoundingBox boundsFromIndex(String gridSetId, long[] gridLoc) {
-        return gridSubSets.get(gridSetId).boundsFromIndex(gridLoc);
+        return subSets.get(gridSetId).boundsFromIndex(gridLoc);
     }
 
     public long[][] getZoomedInGridLoc(String gridSetId, long[] gridLoc)
     throws GeoWebCacheException {
         return null;
     }
-
-    //public long[] getZoomedOutIndex(String gridSetId)
-    //throws GeoWebCacheException {
-    //    return gridSubSets.get(gridSetId).getCoverageBestFit();
-    //}
-    
-    //public BBOX getZoomedOutBbox(SRS srs)
-    //throws GeoWebCacheException {
-    //    int[] loc = getZoomedOutGridLoc();
-    //    if(loc[2] == -1) {
-    //        if(srs.equals(SRS.getEPSG4326())) {
-    //            return BBOX.WORLD4326;
-    //        } else {
-    //            int[] fourTuple = calc.getGridBounds()[0];
-    //            int[] fiveTuple = {fourTuple[0], fourTuple[1], fourTuple[2], fourTuple[3], 0};
-    //            return calc.bboxFromGridBounds(fiveTuple);
-    //        }
-    //    } else {
-    //        return calc.bboxFromGridLocation(loc);
-    //    }
-    //}
 
     /**
      * Acquires lock for the entire layer, returns only after all other requests
@@ -1125,32 +1101,5 @@ public class WMSLayer extends TileLayer {
                 this.parameterFilters = otherLayer.parameterFilters;
             }
         }
-    }
-
-    @Override
-    public int[][] getCoveredGridLevels(SRS srs, BoundingBox bounds)
-            throws GeoWebCacheException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public long[][] getZoomedInIndexes(String gridSetId, long[] gridLoc)
-            throws GeoWebCacheException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public BoundingBox getZoomedOutBounds(SRS srs) throws GeoWebCacheException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public int[] getZoomedOutIndex(SRS srs) throws GeoWebCacheException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-    
+    }    
 }

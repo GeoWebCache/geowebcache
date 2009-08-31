@@ -34,17 +34,31 @@ public class GridSubSetFactory {
         return ret;
     }
     
-    public static GridSubSet createGridSubSet(GridSet gridSet, BoundingBox coverageBounds, int zoomStart, int zoomStop) {
+    public static GridSubSet createGridSubSet(GridSet gridSet, BoundingBox coverageBounds, Integer zoomStart, Integer zoomStop) {
         GridSubSet ret = new GridSubSet(gridSet);
         
-        ret.firstLevel = zoomStart;
+        if(zoomStart != null) {
+            ret.firstLevel = zoomStart;
+        } else {
+            ret.firstLevel = 0;
+        }
         
-        ret.gridCoverageLevels = new GridCoverage[zoomStop - zoomStart + 1];
+        if(zoomStop != null) {
+            ret.gridCoverageLevels = new GridCoverage[zoomStop - zoomStart + 1];
+        } else {
+            ret.gridCoverageLevels = new GridCoverage[gridSet.gridLevels.length - ret.firstLevel];
+        }
         
         for(int i=0; i<ret.gridCoverageLevels.length; i++) {
-            GridCoverage gridCov = new GridCoverage(
-                    gridSet.closestRectangle(i + zoomStart,coverageBounds) );
+            GridCoverage gridCov;
             
+            if(coverageBounds != null) {
+                gridCov = new GridCoverage(
+                        gridSet.closestRectangle(i + ret.firstLevel, coverageBounds) );
+            } else {
+                gridCov = new GridCoverage(gridSet.closestRectangle(i + ret.firstLevel, gridSet.getBounds()));
+            }
+
             ret.gridCoverageLevels[i] = gridCov;
         }
        

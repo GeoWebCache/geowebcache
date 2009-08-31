@@ -134,11 +134,9 @@ public class SeedTask extends GWCTask {
                     // Question is, how resilient should we be ?
                     try {
                         tl.seedTile(tile, tryCache);
-                    //} catch (GeoWebCacheException e) {
-                    //    e.printStackTrace();
-                    } catch (IOException ioe) {
-                        //e.printStackTrace();
-                        throw new GeoWebCacheException(ioe.getMessage());
+                    } catch (Exception e) { 
+                        e.printStackTrace();
+                        throw new GeoWebCacheException(e.getMessage());
                     }
 
                     long countX;

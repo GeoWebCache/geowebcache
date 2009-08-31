@@ -151,7 +151,7 @@ public class KMLSiteMap {
         while(subTileList.peek() != null) {
             String gridSetId = gridSetBroker.WORLD_EPSG4326.getName();
             long[] curLoc = subTileList.removeFirst();
-            long[][] linkGridLocs = tileLayer.getZoomedInIndexes(gridSetId, curLoc);
+            long[][] linkGridLocs = tileLayer.getGridSubSet(gridSetId).getSubGrid(curLoc);
             linkGridLocs = KMZHelper.filterGridLocs(storageBroker, tileLayer, gridSetId, XMLMime.kml, linkGridLocs);
          
             // Save the links we still need to follow for later

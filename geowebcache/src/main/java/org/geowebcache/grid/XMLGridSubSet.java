@@ -1,9 +1,9 @@
 package org.geowebcache.grid;
 
 
-public class XMLSubGrid {
+public class XMLGridSubSet {
     
-    String gridSetId;
+    String gridSetName;
     
     BoundingBox coverageBounds;
     
@@ -13,7 +13,7 @@ public class XMLSubGrid {
     
     
     public GridSubSet getGridSubSet(GridSetBroker gridSetBroker) {
-        GridSet gridSet = gridSetBroker.get(gridSetId);
+        GridSet gridSet = gridSetBroker.get(gridSetName);
         
         return GridSubSetFactory.createGridSubSet(gridSet, coverageBounds, zoomStart, zoomStop);
     }

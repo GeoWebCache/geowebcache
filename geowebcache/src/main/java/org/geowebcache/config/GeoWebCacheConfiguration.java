@@ -22,6 +22,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.geowebcache.config.meta.ServiceInformation;
+import org.geowebcache.grid.GridSet;
+import org.geowebcache.grid.XMLGridSet;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.FormatModifier;
 
@@ -52,8 +54,10 @@ public class GeoWebCacheConfiguration {
     ServiceInformation serviceInformation;
     
     protected List<FormatModifier> formatModifiers;
-        
-    /* The layers */
+    
+    protected List<XMLGridSet> gridSets;
+    
+    /* The old type of layers */
     LinkedList<TileLayer> layers;
 
     public GeoWebCacheConfiguration() {
