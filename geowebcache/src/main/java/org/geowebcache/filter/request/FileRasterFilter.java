@@ -42,7 +42,7 @@ public class FileRasterFilter extends RasterFilter {
         
         BufferedImage img = ImageIO.read(fh);
         
-        int[] widthHeight = calculateWidthHeight(layer.getGridSubSet(gridSetId), zoomLevel);
+        int[] widthHeight = calculateWidthHeight(layer.getGridSubset(gridSetId), zoomLevel);
         
         if(img.getWidth() != widthHeight[0] || img.getHeight() != widthHeight[1]) {
             String msg = fh.getAbsolutePath() + " has dimensions " + img.getWidth() + "," + img.getHeight()

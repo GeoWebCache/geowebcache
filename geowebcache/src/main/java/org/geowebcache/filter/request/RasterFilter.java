@@ -26,7 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -66,7 +66,7 @@ public abstract class RasterFilter extends RequestFilter {
         
         // Basic bounds test first
         try {
-            convTile.getGridSubSet().checkCoverage(idx);
+            convTile.getGridSubset().checkCoverage(idx);
         } catch (OutsideCoverageException oce) {
             throw new BlankTileException(this);
         }
@@ -117,7 +117,7 @@ public abstract class RasterFilter extends RequestFilter {
 
         
         if(zoomDiff == 0) {
-            if(! lookup(convTile.getGridSubSet(), idx)) {
+            if(! lookup(convTile.getGridSubset(), idx)) {
                 if(debug != null && debug) {
                     throw new GreenTileException(this);
                 } else {
@@ -125,7 +125,7 @@ public abstract class RasterFilter extends RequestFilter {
                 }
             }
         } else if(zoomDiff > 0) {
-            if(! lookupQuad(convTile.getGridSubSet(), idx)) {
+            if(! lookupQuad(convTile.getGridSubset(), idx)) {
                 if(debug != null && debug) {
                     throw new GreenTileException(this);
                 } else {
@@ -133,7 +133,7 @@ public abstract class RasterFilter extends RequestFilter {
                 }
             }
         } else if(zoomDiff < 0) {
-            if(! lookupSubsample(convTile.getGridSubSet(), idx, zoomDiff)) {
+            if(! lookupSubsample(convTile.getGridSubset(), idx, zoomDiff)) {
                 if(debug != null && debug) {
                     throw new GreenTileException(this);
                 } else {
@@ -152,10 +152,10 @@ public abstract class RasterFilter extends RequestFilter {
         }
 
         if (preload != null && preload) {
-            Iterator<GridSubSet> iter = layer.getGridSubSets().values().iterator();
+            Iterator<GridSubset> iter = layer.getGridSubsets().values().iterator();
             
             while(iter.hasNext()) {
-                GridSubSet grid = iter.next();
+                GridSubset grid = iter.next();
                 
                 for (int i = 0; i <= zoomStop; i++) {
                     try {
@@ -178,7 +178,7 @@ public abstract class RasterFilter extends RequestFilter {
      * @param idx
      * @return
      */
-     private boolean lookup(GridSubSet grid, long[] idx) {
+     private boolean lookup(GridSubset grid, long[] idx) {
          BufferedImage mat = matrices.get(grid.getName())[(int) idx[2]];
          
          long[] gridCoverage = grid.getCoverage((int) idx[2]);
@@ -199,7 +199,7 @@ public abstract class RasterFilter extends RequestFilter {
     * @param idx
     * @return
     */
-    private boolean lookupQuad(GridSubSet grid, long[] idx) {
+    private boolean lookupQuad(GridSubset grid, long[] idx) {
         BufferedImage mat = matrices.get(grid.getName())[(int) idx[2]];
         
         long[] gridCoverage = grid.getCoverage((int) idx[2]);
@@ -242,7 +242,7 @@ public abstract class RasterFilter extends RequestFilter {
         return hasData;
     }
     
-    private boolean lookupSubsample(GridSubSet grid, long[] idx, int zoomDiff) {
+    private boolean lookupSubsample(GridSubset grid, long[] idx, int zoomDiff) {
         BufferedImage mat = matrices.get(grid.getName())[(int) idx[2]];
         
         int sampleChange = 1 << (-1* zoomDiff);
@@ -345,7 +345,7 @@ public abstract class RasterFilter extends RequestFilter {
      * @return
      * @throws GeoWebCacheException
      */
-    protected int[] calculateWidthHeight(GridSubSet grid, int z) throws GeoWebCacheException {
+    protected int[] calculateWidthHeight(GridSubset grid, int z) throws GeoWebCacheException {
         long[] bounds = grid.getCoverage(z);
 
         int[] widthHeight = new int[2];

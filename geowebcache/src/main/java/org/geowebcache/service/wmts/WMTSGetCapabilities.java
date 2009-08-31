@@ -15,7 +15,7 @@ import org.geowebcache.config.meta.ServiceProvider;
 import org.geowebcache.grid.Grid;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.LayerMetaInformation;
@@ -233,13 +233,13 @@ public class WMTSGetCapabilities {
      
      private void layerGridSubSets(StringBuilder str, TileLayer layer) {
          str.append("    <TileMatrixSetLink>");
-         Iterator<GridSubSet> gridSubSets = layer.getGridSubSets().values().iterator();
-         while(gridSubSets.hasNext()) {
-             GridSubSet gridSubSet = gridSubSets.next();
-             str.append("      <TileMatrixSet>" + gridSubSet.getName() + "</TileMatrixSet>\n");
+         Iterator<GridSubset> gridSubsets = layer.getGridSubsets().values().iterator();
+         while(gridSubsets.hasNext()) {
+             GridSubset gridSubset = gridSubsets.next();
+             str.append("      <TileMatrixSet>" + gridSubset.getName() + "</TileMatrixSet>\n");
              
-             String[] levelNames = gridSubSet.getGridNames();
-             long[][] wmtsLimits = gridSubSet.getWMTSCoverages();
+             String[] levelNames = gridSubset.getGridNames();
+             long[][] wmtsLimits = gridSubset.getWMTSCoverages();
              
              str.append("      <TileMatrixSetLimits>\n");
              for(int i=0; i < levelNames.length; i++) {

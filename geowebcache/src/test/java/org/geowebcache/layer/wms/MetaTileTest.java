@@ -9,8 +9,8 @@ import junit.framework.TestCase;
 
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubSet;
-import org.geowebcache.grid.GridSubSetFactory;
+import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.mime.ImageMime;
 
 public class MetaTileTest extends TestCase {
@@ -27,7 +27,7 @@ public class MetaTileTest extends TestCase {
         int metaHeight = 1;
         int metaWidth = 1;
 
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG4326,
                 bbox,
                 0,
@@ -55,7 +55,7 @@ public class MetaTileTest extends TestCase {
         int metaHeight = 3;
         int metaWidth = 3;
 
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG4326,
                 bbox,
                 0,
@@ -81,7 +81,7 @@ public class MetaTileTest extends TestCase {
         int metaHeight = 1;
         int metaWidth = 1;
         
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG3857,
                 bbox,
                 0,
@@ -108,7 +108,7 @@ public class MetaTileTest extends TestCase {
         int metaHeight = 3;
         int metaWidth = 3;
         
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG3857,
                 bbox,
                 0,
@@ -141,7 +141,7 @@ public class MetaTileTest extends TestCase {
         
         WMSLayer layer = createWMSLayer(bbox);
 
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG4326,
                 bbox,
                 0,
@@ -204,9 +204,9 @@ public class MetaTileTest extends TestCase {
         List<String> formatList = new LinkedList<String>();
         formatList.add("image/png");
         
-        Hashtable<String,GridSubSet> grids = new Hashtable<String,GridSubSet>();
+        Hashtable<String,GridSubset> grids = new Hashtable<String,GridSubset>();
 
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326);
         
         grids.put(grid.getName(), grid);
         int[] metaWidthHeight = {3,3};

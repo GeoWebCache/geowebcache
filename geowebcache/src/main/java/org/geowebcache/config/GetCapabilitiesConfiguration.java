@@ -36,8 +36,8 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubSet;
-import org.geowebcache.grid.GridSubSetFactory;
+import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 
@@ -223,9 +223,9 @@ public class GetCapabilitiesConfiguration implements Configuration {
             BoundingBox bounds4326, BoundingBox bounds3785, String stylesStr, boolean queryable)
             throws GeoWebCacheException {
         
-        Hashtable<String,GridSubSet> grids = new Hashtable<String,GridSubSet>(2);
-        grids.put("EPSG:4326", GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bounds4326, 0, 30));
-        grids.put("EPSG:3785", GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857, bounds3785, 0, 30));
+        Hashtable<String,GridSubset> grids = new Hashtable<String,GridSubset>(2);
+        grids.put("EPSG:4326", GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bounds4326, 0, 30));
+        grids.put("EPSG:3785", GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857, bounds3785, 0, 30));
         
         List<String> mimeFormats = null;
         if(this.mimeTypes != null) {

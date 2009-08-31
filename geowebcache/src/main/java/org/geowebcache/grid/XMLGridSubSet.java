@@ -12,9 +12,9 @@ public class XMLGridSubSet {
     Integer zoomStop;
     
     
-    public GridSubSet getGridSubSet(GridSetBroker gridSetBroker) {
+    public GridSubset getGridSubSet(GridSetBroker gridSetBroker) {
         GridSet gridSet = gridSetBroker.get(gridSetName);
         
-        return GridSubSetFactory.createGridSubSet(gridSet, coverageBounds, zoomStart, zoomStop);
+        return GridSubsetFactory.createGridSubSet(gridSet, coverageBounds, zoomStart, zoomStop);
     }
 }

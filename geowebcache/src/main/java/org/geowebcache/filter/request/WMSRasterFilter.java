@@ -29,7 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.ImageMime;
@@ -50,7 +50,7 @@ public class WMSRasterFilter extends RasterFilter {
         
         WMSLayer layer = (WMSLayer) tlayer;
         
-        GridSubSet gridSet = layer.getGridSubSet(gridSetId);
+        GridSubset gridSet = layer.getGridSubset(gridSetId);
         
         int[] widthHeight = calculateWidthHeight(gridSet, z);
         
@@ -106,8 +106,8 @@ public class WMSRasterFilter extends RasterFilter {
      * @param z
      * @return
      */
-    protected String wmsUrl(WMSLayer layer, GridSubSet gridSubSet, int z, int[] widthHeight) throws GeoWebCacheException {  
-        BoundingBox bbox = gridSubSet.getCoverageBounds(z);
+    protected String wmsUrl(WMSLayer layer, GridSubset gridSubset, int z, int[] widthHeight) throws GeoWebCacheException {  
+        BoundingBox bbox = gridSubset.getCoverageBounds(z);
         
         StringBuilder str = new StringBuilder();
         str.append(layer.getWMSurl()[0]);

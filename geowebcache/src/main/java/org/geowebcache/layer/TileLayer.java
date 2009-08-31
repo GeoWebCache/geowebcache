@@ -33,7 +33,7 @@ import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.filter.request.RequestFilterException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
@@ -54,15 +54,15 @@ public abstract class TileLayer {
     
     protected List<FormatModifier> formatModifiers;
     
-    protected List<XMLGridSubSet> gridSubSets;
+    protected List<XMLGridSubSet> gridSubsets;
 
     // 1.1.x compatibility
     protected Hashtable<SRS,XMLOldGrid> grids;
     
     protected List<RequestFilter> requestFilters;
     
-    protected transient Hashtable<String,GridSubSet> subSets;
-
+    protected transient Hashtable<String,GridSubset> subSets;
+   
     // Styles?
 
     /**
@@ -99,8 +99,8 @@ public abstract class TileLayer {
      * @param grid
      */
 
-    public void addGridSet(String gridSetId, GridSubSet gridSubSet) {
-        this.subSets.put(gridSetId, gridSubSet);
+    public void addGridSet(String gridSetId, GridSubset gridSubset) {
+        this.subSets.put(gridSetId, gridSubset);
     }
 
     /**
@@ -108,7 +108,7 @@ public abstract class TileLayer {
      * 
      * @return
      */
-    public Hashtable<String,GridSubSet> getGridSubSets() {
+    public Hashtable<String,GridSubset> getGridSubsets() {
         return this.subSets;
     }
 
@@ -135,12 +135,12 @@ public abstract class TileLayer {
      * @return
      * @throws GeoWebCacheException
      */
-    public GridSubSet getGridSubSetForSRS(SRS srs) {
-        Iterator<GridSubSet> iter = this.subSets.values().iterator();
+    public GridSubset getGridSubsetForSRS(SRS srs) {
+        Iterator<GridSubset> iter = this.subSets.values().iterator();
         while (iter.hasNext()) {
-            GridSubSet gridSubSet = iter.next();
-            if (gridSubSet.getSRS().equals(srs)) {
-                return gridSubSet;
+            GridSubset gridSubset = iter.next();
+            if (gridSubset.getSRS().equals(srs)) {
+                return gridSubset;
             }
         }
 
@@ -400,9 +400,9 @@ public abstract class TileLayer {
         }
 
         if (otherLayer.subSets != null && otherLayer.subSets.size() > 0) {
-            Iterator<Entry<String, GridSubSet>> iter = otherLayer.subSets.entrySet().iterator();
+            Iterator<Entry<String, GridSubset>> iter = otherLayer.subSets.entrySet().iterator();
             while (iter.hasNext()) {
-                Entry<String, GridSubSet> entry = iter.next();
+                Entry<String, GridSubset> entry = iter.next();
                 this.subSets.put(entry.getKey(), entry.getValue());
             }
         }
@@ -445,7 +445,7 @@ public abstract class TileLayer {
         return requestFilters;
     }
 
-    public GridSubSet getGridSubSet(String gridSetId) {
+    public GridSubset getGridSubset(String gridSetId) {
         return this.subSets.get(gridSetId);
     }
 }

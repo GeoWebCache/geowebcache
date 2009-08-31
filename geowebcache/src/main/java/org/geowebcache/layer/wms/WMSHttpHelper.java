@@ -28,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.service.ServiceException;
@@ -71,19 +71,19 @@ public class WMSHttpHelper {
     protected static byte[] makeRequest(ConveyorTile tile, boolean requestTiled) throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
         
-        GridSubSet gridSubSet = tile.getGridSubSet();
+        GridSubset gridSubset = tile.getGridSubset();
         
         String wmsParams = layer.getWMSRequestTemplate(tile.getMimeType());
 
         StringBuilder strBuilder = new StringBuilder(wmsParams);
         
         strBuilder.append("&FORMAT=").append(tile.getMimeType().getFormat());
-        strBuilder.append("&SRS=").append(gridSubSet.getSRS().toString());
-        strBuilder.append("&HEIGHT=").append(gridSubSet.getTileHeight());
-        strBuilder.append("&WIDTH=").append(gridSubSet.getTileWidth());
+        strBuilder.append("&SRS=").append(gridSubset.getSRS().toString());
+        strBuilder.append("&HEIGHT=").append(gridSubset.getTileHeight());
+        strBuilder.append("&WIDTH=").append(gridSubset.getTileWidth());
         strBuilder.append("&TILED=").append(requestTiled);
         
-        BoundingBox bbox = gridSubSet.boundsFromIndex(tile.getTileIndex());
+        BoundingBox bbox = gridSubset.boundsFromIndex(tile.getTileIndex());
         
         strBuilder.append("&BBOX=").append(bbox);
         

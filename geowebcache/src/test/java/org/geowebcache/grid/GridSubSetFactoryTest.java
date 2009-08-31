@@ -12,7 +12,7 @@ public class GridSubSetFactoryTest extends TestCase {
     public void testCoverageBounds() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
         
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG4326, bbox, 0, 0);
         
         long[] ret = grid.getCoverage(0);
@@ -24,7 +24,7 @@ public class GridSubSetFactoryTest extends TestCase {
     public void testCoverageBounds2() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
         
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG4326, bbox, 0, 1);
         
         long[] ret = grid.getCoverage(1);

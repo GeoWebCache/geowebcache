@@ -41,11 +41,11 @@
   
   <wmsLayer>
     <name>testLayer for testGridSet1</name>
-    <gridSubSets>
-      <gridSubSet>
+    <gridSubsets>
+      <gridSubset>
         <gridSetName>testGridSet1</gridSetName>
-      </gridSubSet>
-    </gridSubSets>
+      </gridSubset>
+    </gridSubsets>
     <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>
     <wmsLayers>topp:states</wmsLayers>
   </wmsLayer>

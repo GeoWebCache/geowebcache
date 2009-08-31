@@ -10,7 +10,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.FormatModifier;
@@ -30,7 +30,7 @@ public class XMLConfigurationTest extends TestCase {
         TileLayer layer = findLayer(layers, "topp:states");
         assertTrue(layer != null);
         TileLayer layer2 = findLayer(layers, "topp:states2");
-        GridSubSet grid = layer2.getGridSubSetForSRS(SRS.getSRS(2163));
+        GridSubset grid = layer2.getGridSubsetForSRS(SRS.getSRS(2163));
         assertTrue(layer2 != null);
         assertTrue(grid != null);
     }
@@ -41,7 +41,7 @@ public class XMLConfigurationTest extends TestCase {
         assertTrue(layer != null);
         //assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
         TileLayer layer2 = findLayer(layers, "topp:states2");
-        GridSubSet grid = layer2.getGridSubSetForSRS(SRS.getSRS(2163));
+        GridSubset grid = layer2.getGridSubsetForSRS(SRS.getSRS(2163));
         assertTrue(layer2 != null);
         assertTrue(grid != null);
     }
@@ -52,7 +52,7 @@ public class XMLConfigurationTest extends TestCase {
         assertTrue(layer != null);
         //assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
         TileLayer layer2 = findLayer(layers, "topp:states2");
-        GridSubSet grid = layer2.getGridSubSetForSRS(SRS.getSRS(2163));
+        GridSubset grid = layer2.getGridSubsetForSRS(SRS.getSRS(2163));
         assertTrue(layer2 != null);
         assertTrue(grid != null);
         
@@ -69,7 +69,7 @@ public class XMLConfigurationTest extends TestCase {
         assertTrue(layer != null);
         //assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
         TileLayer layer2 = findLayer(layers, "topp:states2");
-        GridSubSet grid = layer2.getGridSubSetForSRS(SRS.getSRS(2163));
+        GridSubset grid = layer2.getGridSubsetForSRS(SRS.getSRS(2163));
         assertTrue(layer2 != null);
         assertTrue(grid != null);
         
@@ -95,7 +95,7 @@ public class XMLConfigurationTest extends TestCase {
         assertTrue(layer != null);
         //assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
         TileLayer layer2 = findLayer(layers, "topp:states2");
-        GridSubSet grid = layer2.getGridSubSetForSRS(SRS.getSRS(2163));
+        GridSubset grid = layer2.getGridSubsetForSRS(SRS.getSRS(2163));
         assertTrue(layer2 != null);
         assertTrue(grid != null);
         

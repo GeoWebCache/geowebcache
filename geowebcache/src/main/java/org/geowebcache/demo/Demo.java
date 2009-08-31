@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -134,7 +134,7 @@ public class Demo {
             TileLayer layer = it.next().getValue();     
             buf.append("<tr><td>"+layer.getName()+"</td>");
             
-            GridSubSet epsg4326GridSubSet = layer.getGridSubSetForSRS(SRS.getEPSG4326());
+            GridSubset epsg4326GridSubSet = layer.getGridSubsetForSRS(SRS.getEPSG4326());
             if(null != epsg4326GridSubSet) {
                 buf.append("<td>"+generateDemoUrl(
                         layer.getName(),
@@ -145,7 +145,7 @@ public class Demo {
             }
             
             // We get the SRS from the GridSet because it may use EPSG:900913 under the covers
-            GridSubSet epsg3857GridSubSet = layer.getGridSubSetForSRS(gridSetBroker.WORLD_EPSG3857.getSRS());
+            GridSubset epsg3857GridSubSet = layer.getGridSubsetForSRS(gridSetBroker.WORLD_EPSG3857.getSRS());
             if(null != epsg3857GridSubSet) {
                 buf.append("<td>"+generateDemoUrl(
                         layer.getName(),
@@ -166,12 +166,12 @@ public class Demo {
             // Any custom projections?
             buf.append("<td>");
             int count = 0;
-            Iterator<GridSubSet> iter = layer.getGridSubSets().values().iterator();
+            Iterator<GridSubset> iter = layer.getGridSubsets().values().iterator();
             while(iter.hasNext()) {
-                GridSubSet gridSubSet = iter.next();
-                if(! gridSubSet.getGridSet().equals(gridSetBroker.WORLD_EPSG4326) 
-                        && ! gridSubSet.getGridSet().equals(gridSetBroker.WORLD_EPSG3857)) { 
-                    buf.append(generateDemoUrl(layer.getName(), gridSubSet.getName())+"<br />");
+                GridSubset gridSubset = iter.next();
+                if(! gridSubset.getGridSet().equals(gridSetBroker.WORLD_EPSG4326) 
+                        && ! gridSubset.getGridSet().equals(gridSetBroker.WORLD_EPSG3857)) { 
+                    buf.append(generateDemoUrl(layer.getName(), gridSubset.getName())+"<br />");
                     count++;
                 }
             }
@@ -194,12 +194,12 @@ public class Demo {
     throws GeoWebCacheException {
         String layerName = layer.getName();
         
-        GridSubSet gridSubSet = layer.getGridSubSet(gridSetStr);
+        GridSubset gridSubset = layer.getGridSubset(gridSetStr);
         
-        BoundingBox bbox = gridSubSet.getGridSetBounds();
-        BoundingBox zoomBounds = gridSubSet.getCoverageBestFitBounds();
+        BoundingBox bbox = gridSubset.getGridSetBounds();
+        BoundingBox zoomBounds = gridSubset.getCoverageBestFitBounds();
         
-        String res = "resolutions: " + Arrays.toString(gridSubSet.getResolutions()) + ",\n";
+        String res = "resolutions: " + Arrays.toString(gridSubset.getResolutions()) + ",\n";
         
         String openLayersPath;
         if(asPlugin) {
@@ -212,7 +212,7 @@ public class Demo {
         String page =
             "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n"
             +"<meta http-equiv=\"imagetoolbar\" content=\"no\">\n"
-            +"<title>"+layerName+" "+gridSubSet.getName()+" "+formatStr+"</title>\n"
+            +"<title>"+layerName+" "+gridSubset.getName()+" "+formatStr+"</title>\n"
             +"<style type=\"text/css\">\n"
             +"body { font-family: sans-serif; font-weight: bold; font-size: .8em; }\n"
             +"body { border: 0px; margin: 0px; padding: 0px; }\n"
@@ -227,7 +227,7 @@ public class Demo {
             +"function init(){\n"
             +"var mapOptions = { \n"
             + res
-            +"projection: new OpenLayers.Projection('"+gridSubSet.getSRS().toString()+"'),\n"
+            +"projection: new OpenLayers.Projection('"+gridSubset.getSRS().toString()+"'),\n"
             +"maxExtent: new OpenLayers.Bounds("+bbox.toString()+"),\n"
 	    +"controls: []\n"
 	    +"};\n"
@@ -241,7 +241,7 @@ public class Demo {
             +"var demolayer = new OpenLayers.Layer.WMS(\n"
             +"\""+layerName+"\",\"../service/wms\",\n"
             +"{layers: '"+layerName+"', format: '"+formatStr+"' },\n"
-            +"{ tileSize: new OpenLayers.Size("+gridSubSet.getTileWidth()+","+gridSubSet.getTileHeight()+") }\n"	
+            +"{ tileSize: new OpenLayers.Size("+gridSubset.getTileWidth()+","+gridSubset.getTileHeight()+") }\n"	
             + ");\n"
             +"map.addLayer(demolayer);\n"
             +"map.zoomToExtent(new OpenLayers.Bounds("+zoomBounds.toString()+"));\n"

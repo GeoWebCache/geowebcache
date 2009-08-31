@@ -24,7 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
@@ -89,18 +89,18 @@ public class SeedTask extends GWCTask {
         
         String gridSetId = req.getGridSetId();
         if (gridSetId == null) {
-            gridSetId = tl.getGridSubSets().entrySet().iterator().next().getKey();
+            gridSetId = tl.getGridSubsets().entrySet().iterator().next().getKey();
         }
         
-        GridSubSet gridSubSet = tl.getGridSubSet(gridSetId);
+        GridSubset gridSubset = tl.getGridSubset(gridSetId);
 
         long[][] coveredGridLevels;
         
         BoundingBox bounds = req.getBounds();
         if (bounds == null) {
-            coveredGridLevels = gridSubSet.getCoverages();
+            coveredGridLevels = gridSubset.getCoverages();
         } else {
-            coveredGridLevels = gridSubSet.getCoverageIntersections(bounds);
+            coveredGridLevels = gridSubset.getCoverageIntersections(bounds);
         }
    
         int[] metaTilingFactors = tl.getMetaTilingFactors();

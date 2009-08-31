@@ -40,7 +40,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.MetaTile;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
@@ -68,9 +68,9 @@ public class WMSMetaTile extends MetaTile {
      * @param profile
      * @param initGridPosition
      */
-    protected WMSMetaTile(WMSLayer layer, GridSubSet gridSubSet, MimeType responseFormat, FormatModifier formatModifier, 
+    protected WMSMetaTile(WMSLayer layer, GridSubset gridSubset, MimeType responseFormat, FormatModifier formatModifier, 
             long[] tileGridPosition, int metaX, int metaY, String fullParameters) {
-        super(gridSubSet, responseFormat, formatModifier, tileGridPosition, metaX, metaY);
+        super(gridSubset, responseFormat, formatModifier, tileGridPosition, metaX, metaY);
         this.wmsLayer = layer;
         this.fullParameters = fullParameters;
         
@@ -80,7 +80,7 @@ public class WMSMetaTile extends MetaTile {
     protected String getWMSParams() throws GeoWebCacheException {
         String baseParameters = wmsLayer.getWMSRequestTemplate(this.getResponseFormat());
 
-        BoundingBox metaBbox = gridSubSet.boundsFromRectangle(metaGridCov);
+        BoundingBox metaBbox = gridSubset.boundsFromRectangle(metaGridCov);
         
         // Fill in the blanks
         StringBuilder strBuilder = new StringBuilder(baseParameters);
@@ -90,11 +90,11 @@ public class WMSMetaTile extends MetaTile {
             strBuilder.append("&FORMAT=").append(formatModifier.getRequestFormat().getFormat());
         }
         
-        strBuilder.append("&SRS=").append(gridSubSet.getSRS());
+        strBuilder.append("&SRS=").append(gridSubset.getSRS());
         
         if(wmsLayer.gutter == 0 || metaX*metaY == 1) {
-            strBuilder.append("&WIDTH=").append(metaX * gridSubSet.getTileWidth());
-            strBuilder.append("&HEIGHT=").append(metaY * gridSubSet.getTileHeight());
+            strBuilder.append("&WIDTH=").append(metaX * gridSubset.getTileWidth());
+            strBuilder.append("&HEIGHT=").append(metaY * gridSubset.getTileHeight());
             strBuilder.append("&BBOX=").append(metaBbox);
         } else {
             adjustParamsForGutter(strBuilder);
@@ -119,14 +119,14 @@ public class WMSMetaTile extends MetaTile {
     throws GeoWebCacheException {
         //GridCalculator gridCalc = wmsLayer.getGrid(srs).getGridCalculator();
         
-        long[] layerCov = gridSubSet.getCoverage((int) this.metaGridCov[4]);
+        long[] layerCov = gridSubset.getCoverage((int) this.metaGridCov[4]);
         
-        BoundingBox metaBbox = gridSubSet.boundsFromRectangle(metaGridCov);
+        BoundingBox metaBbox = gridSubset.boundsFromRectangle(metaGridCov);
         
         double[] metaCoords = metaBbox.coords;
         
-        long pixelWidth = metaX * gridSubSet.getTileWidth();
-        long pixelHeight = metaY * gridSubSet.getTileHeight();
+        long pixelWidth = metaX * gridSubset.getTileWidth();
+        long pixelHeight = metaY * gridSubset.getTileHeight();
         
         double widthRelDelta = ((1.0 * pixelWidth + wmsLayer.gutter) / pixelWidth ) - 1.0;
         double heightRelDelta = ((1.0 * pixelHeight + wmsLayer.gutter) / pixelHeight ) - 1.0;

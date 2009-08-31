@@ -22,7 +22,7 @@ public class GridCalculatorTest extends TestCase {
     public void test1gridLevels4326() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180.0, 90.0);
         
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
         
         long[][] solution = { 
@@ -43,7 +43,7 @@ public class GridCalculatorTest extends TestCase {
     public void test2gridLevels4326() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
 
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
         
         long[][] solution = { 
@@ -66,7 +66,7 @@ public class GridCalculatorTest extends TestCase {
     public void test3gridLevels4326() throws Exception {
         BoundingBox bbox = new BoundingBox(-10.0, -10.0, 10.0, 10.0);
 
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
 
         long[][] solution = {
@@ -90,7 +90,7 @@ public class GridCalculatorTest extends TestCase {
     public void test4gridLevels4326() throws Exception {
         BoundingBox bbox = new BoundingBox(175.0, 87.0, 180.0, 90.0);
         
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
 
         long[][] solution = {
@@ -114,7 +114,7 @@ public class GridCalculatorTest extends TestCase {
     public void test1gridLevels900913() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 20037508.34, 20037508.34);
         
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG3857, bbox, 0, 10);
         
         long[][] solution = { { 0, 0, 0, 0, 0 }, { 1, 1, 1, 1, 1 }, { 2, 2, 3, 3, 2 },
@@ -135,7 +135,7 @@ public class GridCalculatorTest extends TestCase {
     public void test2gridLevels900913() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 20037508.34, 20037508.34);
         
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG3857, bbox, 0, 10);
         
         long[][] solution = { { 0, 0, 0, 0, 0 }, { 1, 1, 1, 1, 1 }, { 2, 2, 3, 3, 2 },
@@ -157,7 +157,7 @@ public class GridCalculatorTest extends TestCase {
     public void test3gridLevels900913() throws Exception {
         BoundingBox bbox = new BoundingBox(-500000, -500000, 500000, 500000);
         
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG3857, bbox, 0, 10);
         
         long[][] solution = { { 0, 0, 0, 0, 0 }, { 0, 0, 1, 1, 1 }, { 1, 1, 2, 2, 2 },
@@ -179,7 +179,7 @@ public class GridCalculatorTest extends TestCase {
     public void test5gridBoundsLoc4326() throws Exception {
         BoundingBox bbox = new BoundingBox(-124.73, 24.96, -66.97, 49.37);
 
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
         
         long[] bestFit = grid.getCoverageBestFit();
@@ -190,7 +190,7 @@ public class GridCalculatorTest extends TestCase {
     public void test6gridLoctoBounds4326() throws Exception {
         BoundingBox bbox = new BoundingBox(-124.73, 24.96, -66.97, 49.37);
 
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
         
         long[] gridLoc1 = {1, 1, 1};
@@ -216,7 +216,7 @@ public class GridCalculatorTest extends TestCase {
     public void test5gridLevels4326() throws Exception {
         BoundingBox bbox = new BoundingBox(-124.731422, 24.955967, -66.969849, 49.371735);
         
-        GridSubSet grid = GridSubSetFactory.createGridSubSet(
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
                 gridSetBroker.WORLD_EPSG4326, bbox, 0, 10);
         
         long[][] solution = { { 0, 0, 0, 0, 0 }, { 0, 1, 1, 1, 1 }, { 1, 2, 2, 3, 2 },
@@ -238,26 +238,26 @@ public class GridCalculatorTest extends TestCase {
         double[] resolutions = {8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
         
         GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(0), bbox, resolutions, null, null, 256, 256);        
-        GridSubSet gridSubSet = GridSubSetFactory.createGridSubSet(gridSet);
+        GridSubset gridSubset = GridSubsetFactory.createGridSubSet(gridSet);
         
-        BoundingBox tileBounds = createApproximateTileBounds(gridSubSet, bbox, 5.04, 256, 256);
-        long[] test = gridSubSet.closestIndex(tileBounds);
+        BoundingBox tileBounds = createApproximateTileBounds(gridSubset, bbox, 5.04, 256, 256);
+        long[] test = gridSubset.closestIndex(tileBounds);
         assertEquals(3L, test[2]);
         
-        tileBounds = createApproximateTileBounds(gridSubSet, bbox, 8.03, 256, 256);
-        test = gridSubSet.closestIndex(tileBounds);
+        tileBounds = createApproximateTileBounds(gridSubset, bbox, 8.03, 256, 256);
+        test = gridSubset.closestIndex(tileBounds);
         assertEquals(0L, test[2]);
 
-        tileBounds = createApproximateTileBounds(gridSubSet, bbox, 0.98, 256, 256);
-        test = gridSubSet.closestIndex(tileBounds);
+        tileBounds = createApproximateTileBounds(gridSubset, bbox, 0.98, 256, 256);
+        test = gridSubset.closestIndex(tileBounds);
         assertEquals(7L, test[2]);
         
-        tileBounds = createApproximateTileBounds(gridSubSet, bbox, 1.005, 256, 256);
-        test = gridSubSet.closestIndex(tileBounds);
+        tileBounds = createApproximateTileBounds(gridSubset, bbox, 1.005, 256, 256);
+        test = gridSubset.closestIndex(tileBounds);
         assertEquals(7L, test[2]);
         
-        tileBounds = createApproximateTileBounds(gridSubSet, bbox, 6.025, 256, 256);
-        test = gridSubSet.closestIndex(tileBounds);
+        tileBounds = createApproximateTileBounds(gridSubset, bbox, 6.025, 256, 256);
+        test = gridSubset.closestIndex(tileBounds);
         assertEquals(2L, test[2]);
     }
     
@@ -269,31 +269,31 @@ public class GridCalculatorTest extends TestCase {
                 4936753.265000001);
         
         GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(26713), gridBase, 30, 256, 256);
-        GridSubSet gridSubSet = GridSubSetFactory.createGridSubSet(gridSet, bbox, 0, 20);
+        GridSubset gridSubset = GridSubsetFactory.createGridSubSet(gridSet, bbox, 0, 20);
 
         // Test the basic algorithm for calculating appropriate resolutions
-        assertTrue(Math.abs(gridSubSet.getResolutions()[0] - 94.9270) / 94.9270 < 0.01);
+        assertTrue(Math.abs(gridSubset.getResolutions()[0] - 94.9270) / 94.9270 < 0.01);
 
         // Check the actual max bounds
         long[] solution = { 0, 0, 0 };
-        assertTrue(Arrays.equals(solution, gridSubSet.closestIndex(bbox)));
+        assertTrue(Arrays.equals(solution, gridSubset.closestIndex(bbox)));
 
         // Test a grid location
         long[] gridLoc = { 1, 0, 1 };
         BoundingBox bboxSolution = new BoundingBox(599484.8750000002, 4912451.9275,
                 611635.5437500004, 4924602.59625);
-        assertTrue(bboxSolution.equals(gridSubSet.boundsFromIndex(gridLoc)));
+        assertTrue(bboxSolution.equals(gridSubset.boundsFromIndex(gridLoc)));
 
         // Now lets go the other way
-        assertTrue(Arrays.equals(gridLoc, gridSubSet.closestIndex(bboxSolution)));
+        assertTrue(Arrays.equals(gridLoc, gridSubset.closestIndex(bboxSolution)));
 
         // This is a bit easy, but whatever
         // TODO 
-        //long[] zoomedOut = gridSubSet.gridCalc.getZoomedOutGridLoc();
+        //long[] zoomedOut = gridSubset.gridCalc.getZoomedOutGridLoc();
         //assertTrue(Arrays.equals(solution, zoomedOut));
     }
 
-    private BoundingBox createApproximateTileBounds(GridSubSet gridSubSet, BoundingBox bbox, 
+    private BoundingBox createApproximateTileBounds(GridSubset gridSubset, BoundingBox bbox, 
             double resolution, int tileWidth, int tileHeight) {
         
         double width = tileWidth * resolution;

@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.MimeType;
@@ -41,7 +41,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     //protected SRS srs = null;
     protected String gridSetId = null;
     
-    protected GridSubSet gridSubSet = null;
+    protected GridSubset gridSubset = null;
     
     protected TileLayer tileLayer = null;
     
@@ -136,12 +136,12 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     //public SRS getSRS() {
     //    return srs;
     //}
-    public synchronized GridSubSet getGridSubSet() {
-        if(gridSubSet == null) {
-            gridSubSet = tileLayer.getGridSubSet(gridSetId);
+    public synchronized GridSubset getGridSubset() {
+        if(gridSubset == null) {
+            gridSubset = tileLayer.getGridSubset(gridSetId);
         }
         
-        return gridSubSet;
+        return gridSubset;
     }
     
     public String getGridSetId() {

@@ -26,7 +26,7 @@ import java.util.List;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorKMLTile;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeType;
@@ -80,7 +80,7 @@ public class KMLSiteMap {
         while(iter.hasNext()) {
             TileLayer tl = iter.next();
 
-            Hashtable<String,GridSubSet> grids = tl.getGridSubSets();
+            Hashtable<String,GridSubset> grids = tl.getGridSubsets();
             List<MimeType> mimeTypes = tl.getMimeTypes();
             
             if( grids != null && grids.containsKey(gridSetBroker.WORLD_EPSG4326.getName())
@@ -94,17 +94,17 @@ public class KMLSiteMap {
     private void writeSiteMap() throws GeoWebCacheException, IOException {
         TileLayer layer = tile.getLayer();
         
-        GridSubSet gridSubSet = layer.getGridSubSet(gridSetBroker.WORLD_EPSG4326.getName());
+        GridSubset gridSubset = layer.getGridSubset(gridSetBroker.WORLD_EPSG4326.getName());
         
         writeSiteMapHeader();
         
-        long[] gridRect = gridSubSet.getCoverageBestFit();
+        long[] gridRect = gridSubset.getCoverageBestFit();
         
         // Check whether we need two tiles for world bounds or not
         if(gridRect[4] > 0 && (gridRect[2] != gridRect[0] || gridRect[3] != gridRect[1])) {
             throw new GeoWebCacheException(
                     layer.getName() + " is too big for the sub grid set for " 
-                    + gridSubSet.getName() + ", allow for smaller zoom levels.");
+                    + gridSubset.getName() + ", allow for smaller zoom levels.");
         } else if(gridRect[0] != gridRect[2]) {
             long[] gridLocWest = {0,0,0};
             long[] gridLocEast = {1,0,0};
@@ -151,7 +151,7 @@ public class KMLSiteMap {
         while(subTileList.peek() != null) {
             String gridSetId = gridSetBroker.WORLD_EPSG4326.getName();
             long[] curLoc = subTileList.removeFirst();
-            long[][] linkGridLocs = tileLayer.getGridSubSet(gridSetId).getSubGrid(curLoc);
+            long[][] linkGridLocs = tileLayer.getGridSubset(gridSetId).getSubGrid(curLoc);
             linkGridLocs = KMZHelper.filterGridLocs(storageBroker, tileLayer, gridSetId, XMLMime.kml, linkGridLocs);
          
             // Save the links we still need to follow for later

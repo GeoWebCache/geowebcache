@@ -40,7 +40,7 @@ public class XMLOldGrid {
         // Empty
     }
     
-    public GridSubSet convertToGridSubset(GridSetBroker gridSetBroker) {
+    public GridSubset convertToGridSubset(GridSetBroker gridSetBroker) {
         if(zoomStart == null || resolutions != null) {
             zoomStart = 0;
         }
@@ -73,14 +73,14 @@ public class XMLOldGrid {
             }
         }
         
-        GridSubSet gridSubSet;
+        GridSubset gridSubset;
         
         if(this.dataBounds == null) {
-            gridSubSet = GridSubSetFactory.createGridSubSet(gridSet, dataBounds, zoomStart, zoomStop);
+            gridSubset = GridSubsetFactory.createGridSubSet(gridSet, dataBounds, zoomStart, zoomStop);
         } else {
-            gridSubSet = GridSubSetFactory.createGridSubSet(gridSet, dataBounds, zoomStart, zoomStop);
+            gridSubset = GridSubsetFactory.createGridSubSet(gridSet, dataBounds, zoomStart, zoomStop);
         }
         
-        return gridSubSet;
+        return gridSubset;
     }
 }

@@ -17,9 +17,9 @@
 package org.geowebcache.grid;
 
 
-public class GridSubSetFactory {
-    public static GridSubSet createGridSubSet(GridSet gridSet) {
-        GridSubSet ret = new GridSubSet(gridSet);
+public class GridSubsetFactory {
+    public static GridSubset createGridSubSet(GridSet gridSet) {
+        GridSubset ret = new GridSubset(gridSet);
         
         ret.firstLevel = 0;
         
@@ -34,8 +34,8 @@ public class GridSubSetFactory {
         return ret;
     }
     
-    public static GridSubSet createGridSubSet(GridSet gridSet, BoundingBox coverageBounds, Integer zoomStart, Integer zoomStop) {
-        GridSubSet ret = new GridSubSet(gridSet);
+    public static GridSubset createGridSubSet(GridSet gridSet, BoundingBox coverageBounds, Integer zoomStart, Integer zoomStop) {
+        GridSubset ret = new GridSubset(gridSet);
         
         if(zoomStart != null) {
             ret.firstLevel = zoomStart;

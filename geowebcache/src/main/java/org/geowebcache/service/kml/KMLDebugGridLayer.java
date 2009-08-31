@@ -26,8 +26,8 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubSet;
-import org.geowebcache.grid.GridSubSetFactory;
+import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.TileLayer;
@@ -54,10 +54,10 @@ public class KMLDebugGridLayer extends TileLayer {
     private static KMLDebugGridLayer instance;
 
     private KMLDebugGridLayer() {
-        super.subSets = new Hashtable<String,GridSubSet>();
+        super.subSets = new Hashtable<String,GridSubset>();
         subSets.put(
                 gridSetBroker.WORLD_EPSG4326.getName(),
-                GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, BoundingBox.WORLD4326, 0, 3));
+                GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, BoundingBox.WORLD4326, 0, 3));
     }
     
     synchronized static public KMLDebugGridLayer getInstance() {
@@ -110,7 +110,7 @@ public class KMLDebugGridLayer extends TileLayer {
     throws GeoWebCacheException, IOException {        
         long[] gridLoc = tile.getTileIndex();
 
-        BoundingBox bbox = tile.getGridSubSet().boundsFromIndex(gridLoc);
+        BoundingBox bbox = tile.getGridSubset().boundsFromIndex(gridLoc);
         
         String data  = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
@@ -290,25 +290,6 @@ public class KMLDebugGridLayer extends TileLayer {
         // TODO Auto-generated method stub
         return null;
     }
-
-//    @Override
-//    public long[][] getZoomedInIndexes(String gridSetId, long[] gridLoc)
-//            throws GeoWebCacheException {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-
-//    @Override
-//    public BoundingBox getZoomedOutBounds(SRS srs) throws GeoWebCacheException {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public int[] getZoomedOutIndex(SRS srs) throws GeoWebCacheException {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
 
     @Override
     public long[] indexFromBounds(String gridSetId, BoundingBox bounds)

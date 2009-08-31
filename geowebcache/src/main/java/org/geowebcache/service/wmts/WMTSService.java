@@ -24,7 +24,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -115,8 +115,8 @@ public class WMTSService extends Service {
             throw new ServiceException("No TILEMATRIXSET specified");
         }
         
-        GridSubSet gridSubSet = tileLayer.getGridSubSet(values[4]);
-        if (gridSubSet == null) {
+        GridSubset gridSubset = tileLayer.getGridSubset(values[4]);
+        if (gridSubset == null) {
             throw new ServiceException("Unable to match requested TILEMATRIXSET "
                     + values[4] + " to those supported by layer");
         }
@@ -124,7 +124,7 @@ public class WMTSService extends Service {
         if(values[5] == null) {
             throw new ServiceException("No TILEMATRIX specified");
         }
-        long z = gridSubSet.getGridIndex(values[5]);
+        long z = gridSubset.getGridIndex(values[5]);
         
         if(z < 0) {
             throw new ServiceException("Unknown TILEMATRIX " + values[5]);
@@ -134,7 +134,7 @@ public class WMTSService extends Service {
         if(values[6] == null) {
             throw new ServiceException("No TILEROW specified");
         }
-        long[] gridExtent = gridSubSet.getGridSetExtent((int) z);
+        long[] gridExtent = gridSubset.getGridSetExtent((int) z);
         long y = gridExtent[1] - Long.parseLong(values[6]);
 
         if(values[7] == null) {
@@ -146,7 +146,7 @@ public class WMTSService extends Service {
         long[] tileIndex = {x,y,z};
 
         return new ConveyorTile(
-                sb, layer, gridSubSet.getName(), tileIndex, mimeType, 
+                sb, layer, gridSubset.getName(), tileIndex, mimeType, 
                 modStrs[0], modStrs[1], request, response);
 
     }

@@ -75,7 +75,7 @@ public class TMSConverter extends Service {
         }
         // TMS does not specify projection, simply choose the first available
         // SRS for the layer.
-        String gridSubSetId = tileLayer.getGridSubSets().keySet().iterator().next();
+        String gridSubsetId = tileLayer.getGridSubsets().keySet().iterator().next();
 
         // TMS specifies only the extension of the format, assume that the mime
         // type is image/something
@@ -86,7 +86,7 @@ public class TMSConverter extends Service {
             throw new ServiceException("Unable to determine requested format based on extension " + yExt[1]);
         }
 
-        ConveyorTile ret = new ConveyorTile(sb, layerId, gridSubSetId, gridLoc, mimeType, null, null, request, response);
+        ConveyorTile ret = new ConveyorTile(sb, layerId, gridSubsetId, gridLoc, mimeType, null, null, request, response);
         return ret;
     }
 

@@ -26,7 +26,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -125,8 +125,8 @@ public class WMSService extends Service {
         }
         
         SRS srs = SRS.getSRS(paramValues[1]);
-        GridSubSet gridSubSet = tileLayer.getGridSubSetForSRS(srs);
-        if (gridSubSet == null) {
+        GridSubset gridSubset = tileLayer.getGridSubsetForSRS(srs);
+        if (gridSubset == null) {
             throw new ServiceException("Unable to match requested SRS "
                     + paramValues[1] + " to those supported by layer");
         }
@@ -136,10 +136,10 @@ public class WMSService extends Service {
             throw new ServiceException("The bounding box parameter is missing or not sane");
         }
 
-        long[] tileIndex = gridSubSet.closestIndex(bbox);
+        long[] tileIndex = gridSubset.closestIndex(bbox);
 
         return new ConveyorTile(
-                sb, layers, gridSubSet.getName(), tileIndex, mimeType, 
+                sb, layers, gridSubset.getName(), tileIndex, mimeType, 
                 modStrs[0], modStrs[1], request, response);
     }
 

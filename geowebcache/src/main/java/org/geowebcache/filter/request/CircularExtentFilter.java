@@ -18,7 +18,7 @@ package org.geowebcache.filter.request;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 
 /**
@@ -39,10 +39,10 @@ public class CircularExtentFilter extends RequestFilter {
     public void apply(ConveyorTile convTile) throws RequestFilterException {
         TileLayer tl = convTile.getLayer();
         //SRS srs = convTile.getSRS(); 
-        GridSubSet gridSubSet = tl.getGridSubSet(convTile.getGridSetId());
+        GridSubset gridSubset = tl.getGridSubset(convTile.getGridSetId());
         
         int z = (int) convTile.getTileIndex()[2];
-        long[] gridCoverage = gridSubSet.getCoverage(z);
+        long[] gridCoverage = gridSubset.getCoverage(z);
 
         // Figure out the radius
         long width = gridCoverage[2] - gridCoverage[0];

@@ -25,7 +25,7 @@ import java.util.Map.Entry;
 
 import org.geowebcache.demo.Demo;
 import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.ImageMime;
@@ -202,13 +202,13 @@ public class SeedFormRestlet extends GWCRestlet {
     }
     
     private void makeBboxHints(StringBuilder doc, TileLayer tl) {
-        Iterator<Entry<String, GridSubSet>> iter = tl.getGridSubSets().entrySet().iterator();
+        Iterator<Entry<String, GridSubset>> iter = tl.getGridSubsets().entrySet().iterator();
         
         //int minStart = Integer.MAX_VALUE;
         //int maxStop = Integer.MIN_VALUE;
         
         while(iter.hasNext()) {
-            Entry<String, GridSubSet> entry = iter.next();
+            Entry<String, GridSubset> entry = iter.next();
             doc.append("<li>"+entry.getKey().toString()
                     +":   "+entry.getValue().getCoverageBestFitBounds().toString()+"</li>\n");
         }
@@ -238,13 +238,13 @@ public class SeedFormRestlet extends GWCRestlet {
     private void makeZoomPullDown(StringBuilder doc, boolean isStart, TileLayer tl) {
         Map<String,String> keysValues = new TreeMap<String,String>();
         
-        Iterator<Entry<String, GridSubSet>> iter = tl.getGridSubSets().entrySet().iterator();
+        Iterator<Entry<String, GridSubset>> iter = tl.getGridSubsets().entrySet().iterator();
         
         int minStart = Integer.MAX_VALUE;
         int maxStop = Integer.MIN_VALUE;
         
         while(iter.hasNext()) {
-            Entry<String, GridSubSet> entry = iter.next();
+            Entry<String, GridSubset> entry = iter.next();
             
             int start = entry.getValue().getZoomStart();
             int stop = entry.getValue().getZoomStop();
@@ -301,7 +301,7 @@ public class SeedFormRestlet extends GWCRestlet {
         doc.append("<tr><td>Grid Set:</td><td>\n");
         Map<String,String> keysValues = new TreeMap<String,String>();
         
-        Iterator<String> iter = tl.getGridSubSets().keySet().iterator();
+        Iterator<String> iter = tl.getGridSubsets().keySet().iterator();
         
         String firstGridSetId = null;
         while(iter.hasNext()) {

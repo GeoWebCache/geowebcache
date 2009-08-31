@@ -16,7 +16,7 @@
  */
 package org.geowebcache.layer;
 
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
@@ -35,7 +35,7 @@ public abstract class MetaTile implements TileResponseReceiver {
     // Y metatiling factor, after adjusting to bounds
     protected int metaY; 
 
-    protected GridSubSet gridSubSet;
+    protected GridSubset gridSubset;
 
     protected long status = -1;
 
@@ -63,15 +63,15 @@ public abstract class MetaTile implements TileResponseReceiver {
      * @param metaX
      * @param metaY
      */
-    protected MetaTile(GridSubSet gridSubSet, MimeType responseFormat, FormatModifier formatModifier, 
+    protected MetaTile(GridSubset gridSubset, MimeType responseFormat, FormatModifier formatModifier, 
             long[] tileGridPosition, int metaX, int metaY) {
-        this.gridSubSet = gridSubSet;
+        this.gridSubset = gridSubset;
         this.responseFormat = responseFormat;
         this.formatModifier = formatModifier;
         this.metaX = metaX;
         this.metaY = metaY;
 
-        metaGridCov = calculateMetaTileGridBounds(gridSubSet.getCoverage((int) tileGridPosition[2]), tileGridPosition);
+        metaGridCov = calculateMetaTileGridBounds(gridSubset.getCoverage((int) tileGridPosition[2]), tileGridPosition);
         tilesGridPositions = calculateTilesGridPositions();
     }
 
@@ -181,7 +181,7 @@ public abstract class MetaTile implements TileResponseReceiver {
     }
 
     public SRS getSRS() {
-        return this.gridSubSet.getSRS();
+        return this.gridSubset.getSRS();
     }
     
     public MimeType getResponseFormat() {

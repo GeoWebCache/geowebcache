@@ -42,8 +42,8 @@ import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubSet;
-import org.geowebcache.grid.GridSubSetFactory;
+import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
@@ -157,7 +157,7 @@ public class WMSLayer extends TileLayer {
      */
     public WMSLayer(String layerName,
             String[] wmsURL, String wmsStyles, String wmsLayers, 
-            List<String> mimeFormats, Hashtable<String,GridSubSet> subSets, 
+            List<String> mimeFormats, Hashtable<String,GridSubset> subSets, 
             int[] metaWidthHeight, String vendorParams, boolean queryable) {
      
         name = layerName;
@@ -215,18 +215,18 @@ public class WMSLayer extends TileLayer {
         }
 
         if (subSets == null) {
-            subSets = new Hashtable<String, GridSubSet>();
+            subSets = new Hashtable<String, GridSubset>();
         }
 
-        if (this.gridSubSets != null) {
-            Iterator<XMLGridSubSet> iter = gridSubSets.iterator();
+        if (this.gridSubsets != null) {
+            Iterator<XMLGridSubSet> iter = gridSubsets.iterator();
             while (iter.hasNext()) {
                 XMLGridSubSet xmlGridSubSet = iter.next();
-                GridSubSet gridSubSet = xmlGridSubSet.getGridSubSet(gridSetBroker);
-                subSets.put(gridSubSet.getName(), gridSubSet);
+                GridSubset gridSubset = xmlGridSubSet.getGridSubSet(gridSetBroker);
+                subSets.put(gridSubset.getName(), gridSubset);
             }
             
-            this.gridSubSets = null;
+            this.gridSubsets = null;
         }
         
         
@@ -235,7 +235,7 @@ public class WMSLayer extends TileLayer {
         if (grids != null && !grids.isEmpty()) {
             Iterator<XMLOldGrid> iter = grids.values().iterator();
             while (iter.hasNext()) {
-                GridSubSet converted = iter.next().convertToGridSubset(gridSetBroker);
+                GridSubset converted = iter.next().convertToGridSubset(gridSetBroker);
                 subSets.put(converted.getSRS().toString(), converted);
             }
 
@@ -245,9 +245,9 @@ public class WMSLayer extends TileLayer {
         
         if (this.subSets.size() == 0) {
             subSets.put(gridSetBroker.WORLD_EPSG4326.getName(),
-                    GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326));
+                    GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326));
             subSets.put(gridSetBroker.WORLD_EPSG3857.getName(),
-                    GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857));
+                    GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857));
         }
         
         // Create conditions for tile locking
@@ -356,7 +356,7 @@ public class WMSLayer extends TileLayer {
         long[] gridLoc = tile.getTileIndex();
 
         // Final preflight check, throws exception if necessary
-        getGridSubSet(tileGridSetId).checkCoverage(gridLoc);
+        getGridSubset(tileGridSetId).checkCoverage(gridLoc);
         
         if (tryCacheFetch(tile)) {
             return finalizeTile(tile);
@@ -395,11 +395,11 @@ public class WMSLayer extends TileLayer {
         //int idx = this.getSRSIndex(tile.getSRS());
         long[] gridLoc = tile.getTileIndex();
         
-        GridSubSet gridSubSet = subSets.get(tile.getGridSetId());
+        GridSubset gridSubset = subSets.get(tile.getGridSetId());
         
         //GridCalculator gridCalc = getGrid(tile.getSRS()).getGridCalculator();
 
-        WMSMetaTile metaTile = new WMSMetaTile(this, gridSubSet, 
+        WMSMetaTile metaTile = new WMSMetaTile(this, gridSubset, 
                 tile.getMimeType(), this.getFormatModifier(tile.getMimeType()),
                 gridLoc, metaWidthHeight[0], metaWidthHeight[1],
                 tile.getFullParameters());
@@ -448,7 +448,7 @@ public class WMSLayer extends TileLayer {
                 useJAI = false;
             }
 
-            metaTile.createTiles(gridSubSet.getTileHeight(), gridSubSet.getTileWidth(), useJAI);
+            metaTile.createTiles(gridSubset.getTileHeight(), gridSubset.getTileWidth(), useJAI);
 
             long[][] gridPositions = metaTile.getTilesGridPositions();
 

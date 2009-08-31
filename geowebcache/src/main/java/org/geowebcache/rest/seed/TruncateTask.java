@@ -20,7 +20,7 @@ import java.util.Arrays;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCTask;
@@ -48,16 +48,16 @@ public class TruncateTask extends GWCTask {
     }
     
     public void doAction() throws GeoWebCacheException {
-        GridSubSet gridSubSet = tl.getGridSubSet(req.getGridSetId());
+        GridSubset gridSubset = tl.getGridSubset(req.getGridSetId());
         
         long[][] coverages = null;
 
         BoundingBox reqBounds = req.getBounds();
         if (req.getBounds() == null 
                 || Arrays.equals(req.getBounds().coords, nullBbox)) {
-            coverages = gridSubSet.getCoverages();
+            coverages = gridSubset.getCoverages();
         } else {
-            coverages = gridSubSet.getCoverageIntersections(reqBounds);
+            coverages = gridSubset.getCoverageIntersections(reqBounds);
         }
 
         MimeType mimeType = MimeType.createFromFormat(req.getMimeFormat());
@@ -65,7 +65,7 @@ public class TruncateTask extends GWCTask {
         int[] metaFactors = tl.getMetaTilingFactors();
 
         if (metaFactors[0] > 1 || metaFactors[1] > 1 && mimeType.supportsTiling()) {
-            coverages = gridSubSet.expandToMetaFactors(coverages, metaFactors);
+            coverages = gridSubset.expandToMetaFactors(coverages, metaFactors);
         }
         
         TileRangeObject trObj = new TileRangeObject(

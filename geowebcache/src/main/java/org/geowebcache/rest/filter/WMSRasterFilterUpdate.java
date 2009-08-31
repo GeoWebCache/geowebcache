@@ -40,7 +40,7 @@ public class WMSRasterFilterUpdate extends XmlFilterUpdate {
         WMSRasterFilter wmsFilter = (WMSRasterFilter) filter;
         
         // Check that the SRS makes sense
-        if (tl.getGridSubSet(gridSetId) == null) {
+        if (tl.getGridSubset(gridSetId) == null) {
             throw new RestletException("The filter " + wmsFilter.getName()
                     + " is associated with a layer that does not support "
                     + gridSetId, Status.CLIENT_ERROR_BAD_REQUEST);

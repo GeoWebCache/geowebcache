@@ -31,7 +31,7 @@ import org.geowebcache.conveyor.ConveyorKMLTile;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -277,17 +277,17 @@ public class KMLService extends Service {
     private void handleSuperOverlay(ConveyorKMLTile tile) throws GeoWebCacheException {
         TileLayer layer = tile.getLayer();
         
-        GridSubSet gridSubSet = tile.getGridSubSet();
+        GridSubset gridSubset = tile.getGridSubset();
         
         //int srsIdx = layer.getSRSIndex(srs);
-        BoundingBox bbox = gridSubSet.getCoverageBestFitBounds();
+        BoundingBox bbox = gridSubset.getCoverageBestFitBounds();
         
         String formatExtension = "."+tile.getMimeType().getFileExtension();
         if(tile.getWrapperMimeType() != null) {
             formatExtension = formatExtension + "." + tile.getWrapperMimeType().getFileExtension();
         }
         
-        long[] gridRect = gridSubSet.getCoverageBestFit();
+        long[] gridRect = gridSubset.getCoverageBestFit();
         String networkLinks = null;
         
         // Check whether we need two tiles for world bounds or not
@@ -295,7 +295,7 @@ public class KMLService extends Service {
             throw new GeoWebCacheException(
                     layer.getName() + " (" + bbox.toString() 
                     + ") is too big for the sub grid set for " 
-                    + gridSubSet.getName() + ", allow for smaller zoom levels.");
+                    + gridSubset.getName() + ", allow for smaller zoom levels.");
         } else if(gridRect[0] != gridRect[2]) {
             long[] gridLocWest = {0,0,0};
             long[] gridLocEast = {1,0,0};
@@ -483,11 +483,11 @@ public class KMLService extends Service {
         
         TileLayer tileLayer = tile.getLayer();
         
-        GridSubSet gridSubSet = tile.getGridSubSet();
+        GridSubset gridSubset = tile.getGridSubset();
         
         long[] gridLoc = tile.getTileIndex();
         
-        BoundingBox bbox = gridSubSet.boundsFromIndex(gridLoc);
+        BoundingBox bbox = gridSubset.boundsFromIndex(gridLoc);
         
         String refreshTags = "";
         if(tileLayer instanceof WMSLayer) {
@@ -504,7 +504,7 @@ public class KMLService extends Service {
         
         // 1) Header
         boolean setMaxLod = false;
-        if(isRaster && gridLoc[2] < gridSubSet.getZoomStop()) {
+        if(isRaster && gridLoc[2] < gridSubset.getZoomStop()) {
             setMaxLod = true;
         }
         buf.append(createOverlayHeader(bbox, setMaxLod));
@@ -512,13 +512,13 @@ public class KMLService extends Service {
         buf.append("\n<!-- Network links to subtiles -->\n");
         // 2) Network links, only to tiles getCoverages();within bounds
         
-        long[][] linkGridLocs = gridSubSet.getSubGrid(gridLoc);
+        long[][] linkGridLocs = gridSubset.getSubGrid(gridLoc);
         
         // 3) Apply secondary filter against linking to empty tiles
         linkGridLocs = KMZHelper.filterGridLocs(
                 tile.getStorageBroker(), 
                 tileLayer, 
-                gridSubSet.getName(), 
+                gridSubset.getName(), 
                 tile.getMimeType(), 
                 linkGridLocs );
 
@@ -526,7 +526,7 @@ public class KMLService extends Service {
         for (int i = 0; i < 4; i++) {
             // Only add this link if it is within the bounds
             if (linkGridLocs[i][2] > 0) {
-                BoundingBox linkBbox = gridSubSet.boundsFromIndex(linkGridLocs[i]);
+                BoundingBox linkBbox = gridSubset.boundsFromIndex(linkGridLocs[i]);
                 
                 String gridLocStr = gridLocString(linkGridLocs[i]);
                                 

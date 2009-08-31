@@ -22,7 +22,7 @@ import org.geowebcache.GeoWebCacheException;
 /**
  * A GridSubSet is a GridSet + a coverage area
  */
-public class GridSubSet {
+public class GridSubset {
     protected int firstLevel = 0;
     
     protected GridSet gridSet;
@@ -32,7 +32,7 @@ public class GridSubSet {
     // max zoom =  gridCoverageLevels.legth + firstLevel
     protected GridCoverage[] gridCoverageLevels; 
     
-    protected GridSubSet(GridSet gridSet) {
+    protected GridSubset(GridSet gridSet) {
         this.gridSet = gridSet;
     }
     

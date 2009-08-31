@@ -20,7 +20,7 @@ package org.geowebcache.rest.bounds;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
-import org.geowebcache.grid.GridSubSet;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.GWCRestlet;
@@ -100,7 +100,7 @@ public class BoundsRestlet extends GWCRestlet {
             throw new RestletException(layerName + " is not known", Status.CLIENT_ERROR_NOT_FOUND);
         }
         
-        GridSubSet grid = tl.getGridSubSet(gridSetId);
+        GridSubset grid = tl.getGridSubset(gridSetId);
         
         if(grid == null) {
             throw new RestletException(layerName + " does not support " + gridSetId, Status.CLIENT_ERROR_NOT_FOUND);
