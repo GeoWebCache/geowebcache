@@ -47,10 +47,12 @@ public class GeoWebCacheConfiguration {
     
     Boolean cacheBypassAllowed;
     
+    Boolean disableRuntimeStats;
+    
     ServiceInformation serviceInformation;
     
     protected List<FormatModifier> formatModifiers;
-    
+        
     /* The layers */
     LinkedList<TileLayer> layers;
 

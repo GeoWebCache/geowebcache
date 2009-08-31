@@ -220,14 +220,7 @@ public class WMSLayer extends TileLayer {
                 gridSubSets.put(gridSubSet.getName(), gridSubSet);
             }
         }
-
-        if (this.gridSubSets.size() == 0) {
-            gridSubSets.put(gridSetBroker.WORLD_EPSG4326.getName(),
-                    GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326));
-            gridSubSets.put(gridSetBroker.WORLD_EPSG3857.getName(),
-                    GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857));
-        }
-
+        
         // Convert version 1.1.x and 1.0.x grid objects
         if (grids != null && !grids.isEmpty()) {
             Iterator<XMLOldGrid> iter = grids.values().iterator();
@@ -240,6 +233,13 @@ public class WMSLayer extends TileLayer {
             grids = null;
         }
 
+        if (this.gridSubSets.size() == 0) {
+            gridSubSets.put(gridSetBroker.WORLD_EPSG4326.getName(),
+                    GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326));
+            gridSubSets.put(gridSetBroker.WORLD_EPSG3857.getName(),
+                    GridSubSetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857));
+        }
+        
         // Create conditions for tile locking
         if (concurrency == null) {
             concurrency = 32;

@@ -41,6 +41,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
+import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 
 
@@ -74,12 +75,15 @@ public class KMLService extends Service {
     
     private GridSetBroker gsb;
     
-    public KMLService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb) {
+    private RuntimeStats stats;
+    
+    public KMLService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb, RuntimeStats stats) {
         super(SERVICE_KML);
         
         this.sb = sb;
         this.tld = tld;
         this.gsb = gsb;
+        this.stats = stats;
     }
 
     /**
@@ -148,7 +152,8 @@ public class KMLService extends Service {
             throw new ServiceException("Unable to parse KML request : "+ e.getMessage());
         }
         
-        long[] gridLoc = null;
+        long[] gridLoc = {-1,-1,-1};
+        
         // Do we have a key for the grid location?
         if(parsed[1].length() > 0) {
             gridLoc = KMLService.parseGridLocString(parsed[1]);
@@ -213,7 +218,7 @@ public class KMLService extends Service {
                     e.printStackTrace();
                 }
                 
-                writeTileResponse(tile, false);
+                writeTileResponse(tile, false, stats);
                 return;
             }
         } else if (tile.getHint() == HINT_SITEMAP_GLOBAL) {
@@ -238,7 +243,7 @@ public class KMLService extends Service {
         //    return;
         //}
         
-        if(tile.getTileIndex() == null) {
+        if(tile.getTileIndex()[2] == -1) {
             // No tile index -> super overlay
             if(log.isDebugEnabled()) { 
                 log.debug("Request for super overlay for "+tile.getLayerId()+" received");
@@ -269,7 +274,7 @@ public class KMLService extends Service {
      * 
      * @param tile
      */
-    private static void handleSuperOverlay(ConveyorKMLTile tile) throws GeoWebCacheException {
+    private void handleSuperOverlay(ConveyorKMLTile tile) throws GeoWebCacheException {
         TileLayer layer = tile.getLayer();
         
         GridSubSet gridSubSet = tile.getGridSubSet();
@@ -329,7 +334,7 @@ public class KMLService extends Service {
         tile.setContent(xml.getBytes());
         tile.setMimeType(XMLMime.kml);
         tile.setStatus(200);
-        writeTileResponse(tile,true);
+        writeTileResponse(tile, true, stats);
     }
 
     /**
@@ -362,10 +367,15 @@ public class KMLService extends Service {
     protected static long[] parseGridLocString(String key) throws ServiceException {
         // format should be x<x>y<y>z<z>
 
-        long[] ret = new long[3];
+        long[] ret = {-1,-1,-1};
+        
         int yloc = key.indexOf("y");
         int zloc = key.indexOf("z");
-
+        
+        if( yloc < 2 || zloc < 4 ) {
+            return ret;
+        }
+        
         try {
             ret[0] = Long.parseLong(key.substring(1, yloc));
             ret[1] = Long.parseLong(key.substring(yloc + 1, zloc));
@@ -390,7 +400,7 @@ public class KMLService extends Service {
      *    The cache will only contain the overlay itself, 
      *    the overlay will cause a separate tile request to get the data
      */
-    private static void handleOverlay(ConveyorKMLTile tile) 
+    private void handleOverlay(ConveyorKMLTile tile) 
     throws GeoWebCacheException {
         
         TileLayer tileLayer = tile.getLayer();
@@ -412,7 +422,6 @@ public class KMLService extends Service {
         
         // Sigh.... 
         if(! packageData) {
-            
                 String overlayXml = createOverlay(tile, false);
                 tile.setContent(overlayXml.getBytes());
                 tile.setStatus(200);
@@ -448,7 +457,7 @@ public class KMLService extends Service {
 
         }
 
-        writeTileResponse(tile, true);
+        writeTileResponse(tile, true, stats);
     }
     
     /**
@@ -490,7 +499,6 @@ public class KMLService extends Service {
             }
             
         }
-
                 
         StringBuffer buf = new StringBuffer();
         
@@ -502,8 +510,9 @@ public class KMLService extends Service {
         buf.append(createOverlayHeader(bbox, setMaxLod));
 
         buf.append("\n<!-- Network links to subtiles -->\n");
-        // 2) Network links, only to tiles within bounds
-        long[][] linkGridLocs = tileLayer.getZoomedInIndexes(gridSubSet.getName(), gridLoc);
+        // 2) Network links, only to tiles getCoverages();within bounds
+        
+        long[][] linkGridLocs = gridSubSet.getSubGrid(gridLoc);
         
         // 3) Apply secondary filter against linking to empty tiles
         linkGridLocs = KMZHelper.filterGridLocs(

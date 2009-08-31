@@ -16,6 +16,8 @@
  */
 package org.geowebcache.grid;
 
+import org.geowebcache.GeoWebCacheException;
+
 
 /**
  * A GridSubSet is a GridSet + a coverage area
@@ -158,7 +160,7 @@ public class GridSubSet {
     //    return gridCov.getIntersection(reqRectangle);
     //}
     
-    public Object getGridSet() {
+    public GridSet getGridSet() {
         return gridSet;
     }
 
@@ -182,6 +184,43 @@ public class GridSubSet {
         }
         
         return ret;
+    }
+    
+    public long[][] getSubGrid(long[] gridLoc) throws GeoWebCacheException {
+       int idx = (int) gridLoc[2];
+       
+       long[][] ret = {{-1,-1,-1},{-1,-1,-1},{-1,-1,-1},{-1,-1,-1}};
+
+       if((idx - firstLevel + 1) < gridCoverageLevels.length) {
+           // Check whether this grid is doubling
+           double resolutionCheck = gridSet.gridLevels[idx].resolution / 2 - gridSet.gridLevels[idx + 1].resolution;
+           
+           if (Math.abs(resolutionCheck) > gridSet.gridLevels[idx + 1].resolution * 0.025) {
+               throw new GeoWebCacheException("The resolution is not decreasing by a factor of two for " + this.getName());
+           } else {
+               GridCoverage cov = gridCoverageLevels[idx + 1];
+               
+               long baseX = gridLoc[0] * 2;
+               long baseY = gridLoc[1] * 2;
+               long baseZ = idx + 1;
+               
+               long[] xOffset = {0,1,0,1};
+               long[] yOffset = {0,0,1,1};
+
+               
+               for(int i=0; i<4; i++) {
+                   if(     baseX + xOffset[i] >= cov.coverage[0] &&
+                           baseX + xOffset[i] <= cov.coverage[2] &&
+                           baseY + yOffset[i] >= cov.coverage[1] && 
+                           baseY + yOffset[i] <= cov.coverage[3] ) {
+                       
+                       ret[i][0] = baseX + xOffset[i]; ret[i][1] = baseY + yOffset[i]; ret[i][2] = baseZ;
+                   }
+               }
+           }
+       }
+       
+       return ret;
     }
     
     public SRS getSRS() {

@@ -76,6 +76,11 @@
     <url-pattern>/rest/*</url-pattern>
   </servlet-mapping>
   
+  <servlet-mapping>
+    <servlet-name>geowebcache</servlet-name>
+    <url-pattern>/home</url-pattern>
+  </servlet-mapping>
+  
   <!-- The following disables the metadata storage,
        which by default is an embedded H2 database -->
   <!--

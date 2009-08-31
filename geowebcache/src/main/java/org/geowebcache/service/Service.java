@@ -29,6 +29,7 @@ import org.geowebcache.conveyor.ConveyorKMLTile;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.conveyor.ConveyorWFS;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.util.ServletUtils;
 
 public abstract class Service {
@@ -91,9 +92,11 @@ public abstract class Service {
         return pathName.hashCode();
     }
     
+    protected static void writeTileResponse(ConveyorTile conv, boolean writeExpiration) {
+        writeTileResponse(conv, writeExpiration, null);
+    }
     
-    protected static void writeTileResponse(ConveyorTile conv,
-            boolean writeExpiration) {
+    protected static void writeTileResponse(ConveyorTile conv, boolean writeExpiration, RuntimeStats stats) {
         HttpServletResponse response = conv.servletResp;
         byte[] data = conv.getContent();
 
@@ -126,6 +129,10 @@ public abstract class Service {
         try {
             OutputStream os = response.getOutputStream();
             os.write(data);
+            
+            if(stats != null) {
+                stats.log(data.length);
+            }
         } catch (IOException ioe) {
             // Do nothing...
         }

@@ -81,8 +81,7 @@ public class XMLConfiguration implements Configuration {
 
     private static final String CONFIGURATION_FILE_NAME = "geowebcache.xml";
     
-    private static final String[] CONFIGURATION_REL_PATHS = 
-        { "/WEB-INF/classes", "/../resources" };
+    private static final String[] CONFIGURATION_REL_PATHS = { "/WEB-INF/classes", "/../resources" };
     
     private WebApplicationContext context;
     
@@ -102,7 +101,6 @@ public class XMLConfiguration implements Configuration {
 
     private GeoWebCacheConfiguration gwcConfig = null;
     
-
     public XMLConfiguration(
             ApplicationContextProvider appCtx, 
             GridSetBroker gridSetBroker,
@@ -110,6 +108,14 @@ public class XMLConfiguration implements Configuration {
         
         context = appCtx.getApplicationContext();
         defStoreFind = defaultStorage;
+        
+
+        try {
+            File xmlFile = findConfFile();
+            loadConfiguration(xmlFile);
+        } catch (GeoWebCacheException e) {
+            e.printStackTrace();
+        }
     }
     
     /**
@@ -167,8 +173,8 @@ public class XMLConfiguration implements Configuration {
      * 
      */
     public synchronized List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
-        if( ! mockConfiguration && 
-                (this.gwcConfig == null || reload)) {
+        
+        if (reload && ! mockConfiguration) {
             File xmlFile = findConfFile();
             loadConfiguration(xmlFile);
         }
@@ -184,6 +190,14 @@ public class XMLConfiguration implements Configuration {
             }
         }
         return layers;
+    }
+    
+    public boolean isRuntimeStatsEnabled() {
+        if(gwcConfig.disableRuntimeStats == null) {
+            return true;
+        } else {
+            return ! gwcConfig.disableRuntimeStats;
+        }
     }
     
     
@@ -492,7 +506,7 @@ public class XMLConfiguration implements Configuration {
         return result.getNode();
     }
     
-    public void determineConfigDirH() {
+    private void determineConfigDirH() {
         String baseDir = context.getServletContext().getRealPath("");
         
         /*

@@ -152,7 +152,7 @@ public class Demo {
                         epsg3857GridSubSet.getName())
                         +"</td>");
             } else {
-                buf.append("<td>EPSG:3857 not supported</td>");
+                buf.append("<td>Spherical Mercator not supported</td>");
             }
             
             if(null != epsg4326GridSubSet && epsg4326GridSubSet.getGridSet().equals(gridSetBroker.WORLD_EPSG4326)) {
@@ -160,7 +160,7 @@ public class Demo {
                 buf.append("<td><a href=\""+prefix+"service/kml/"+layer.getName()+".png.kml\">KML (PNG)</a></td>"
                 + "<td><a href=\""+prefix+"service/kml/"+layer.getName()+".kml.kmz\">KMZ (vector)</a></td>");
             } else {
-                buf.append("<td colspan=\"2\"> Google Earth requires "+gridSetBroker.WORLD_EPSG4326.getName()+"</td>");
+                buf.append("<td colspan=\"2\">Google Earth requires "+gridSetBroker.WORLD_EPSG4326.getName()+"</td>");
             }
             
             // Any custom projections?

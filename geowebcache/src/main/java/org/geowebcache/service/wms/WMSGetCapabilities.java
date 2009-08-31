@@ -252,9 +252,8 @@ public class WMSGetCapabilities {
         str.append("      <SRS>"+srsStr+"</SRS>\n");        
         str.append("      <BoundingBox srs=\""+srsStr+"\" minx=\""+bs[0]+"\" miny=\""+bs[1]+"\"  maxx=\""+bs[2]+"\"  maxy=\""+bs[3]+"\" />\n");        
         str.append("      <Resolutions>"+resolutionsStr.toString()+"</Resolutions>\n");
-        // TODO softcode
-        str.append("      <Width>256</Width>\n");
-        str.append("      <Height>256</Height>\n");
+        str.append("      <Width>"+grid.getTileWidth()+"</Width>\n");
+        str.append("      <Height>"+grid.getTileHeight()+"</Height>\n");
         str.append("      <Format>"+formatStr+"</Format>\n"); 
         str.append("      <Layers>"+layer.getName()+"</Layers>\n");
         // TODO ignoring styles for now

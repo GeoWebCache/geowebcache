@@ -8,7 +8,7 @@
     <constructor-arg ref="gwcAppCtx" />
     <constructor-arg ref="gwcGridSetBroker"/>
     <constructor-arg ref="gwcDefaultStorageFinder" />
-    <!-- Other samples: -->
+    <!-- Other examples: -->
     <!--property name="relativePath"><value>../resources</value></property -->
     <!--property name="relativePath"><value>/WEB-INF/classes</value></property-->
     <!--property name="absolutePath"><value>/etc/geowebcache/conf</value></property-->
@@ -76,13 +76,16 @@
     <constructor-arg type="boolean" value="TRUE" />
   </bean>
   
+  <bean id="gwcRuntimeStats" class="org.geowebcache.stats.RuntimeStats" destroy-method="stop" />
+  
   <!-- controller for handling all incoming requests -->
   <bean id="geowebcacheDispatcher" class="org.geowebcache.GeoWebCacheDispatcher" destroy-method="destroy">
     <constructor-arg ref="gwcTLDispatcher"/>
     <constructor-arg ref="gwcGridSetBroker"/>
+    <constructor-arg ref="gwcXmlConfig"/>
+    <constructor-arg ref="gwcRuntimeStats"/>
     <property name="storageBroker" ref="gwcStorageBroker"/>
     <property name="defaultStorageFinder" ref="gwcDefaultStorageFinder"/>
-    <!-- property name="servletPrefix" value=""/ -->
   </bean>
   
   <!-- WMS based services -->
@@ -115,6 +118,7 @@
 	<constructor-arg ref="gwcStorageBroker"/>
 	<constructor-arg ref="gwcTLDispatcher"/>
 	<constructor-arg ref="gwcGridSetBroker"/>
+	<constructor-arg ref="gwcRuntimeStats"/>
   </bean>
   <bean id="gwcServiceTMS"
 	class="org.geowebcache.service.tms.TMSConverter">
@@ -209,11 +213,12 @@
   <bean id="gwcUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
     <property name="alwaysUseFullPath" value="true"/>
     <property name="mappings">
-      <props>
+      <props> 
         <prop key="/rest/**">gwcRestDispatcher</prop>        
         <prop key="/service/**">geowebcacheDispatcher</prop>
         <prop key="/demo/**">geowebcacheDispatcher</prop>
 	    <prop key="/proxy/**">gwcProxyDispatcher</prop>
+	    <prop key="/home">geowebcacheDispatcher</prop>
       </props>
     </property>
   </bean>
