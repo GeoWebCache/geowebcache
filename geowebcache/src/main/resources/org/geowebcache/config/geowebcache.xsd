@@ -28,6 +28,16 @@
           including converters such as Google Maps. Enabling this disables caching for those requests.
         </xs:documentation></xs:annotation>
       </xs:element>
+      <xs:element name="runtimeStats" type="xs:boolean" minOccurs="0">
+        <xs:annotation><xs:documentation xml:lang="en">
+	  Runtime statistics run, by default, every three second and provide data about
+          how many requests the system has been serving in the past 3, 15 and 60 seconds,
+          as well as aggregate numbers.
+
+          The overhead of this system is extremely low, the syncrhonized code only involves
+          incrementing two counters. By default it is enabled.
+        </xs:documentation></xs:annotation>
+      </xs:element>
       <xs:element name="formatModifiers" type="gwc:formatModifiers" minOccurs="0">
         <xs:annotation><xs:documentation xml:lang="en">
           These are the global format modifiers that apply to all layers in this
@@ -85,7 +95,7 @@
           and then persist that to disk.
         </xs:documentation></xs:annotation>
      </xs:element>
-     <xs:element name="gridSubsets" type="gwc:gridSubsets">
+     <xs:element name="gridSubsets" type="gwc:GridSubsets" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
          The grid definitions contain information about the SRS, the maximum extent for 
          this SRS and the bounds of your data.
@@ -236,16 +246,6 @@
   </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="gridSets">
-  <xs:sequence>
-      <xs:element name="entry" type="gwc:entry" minOccurs="1" maxOccurs="unbounded">
-        <xs:annotation><xs:documentation xml:lang="en">
-          
-        </xs:documentation></xs:annotation>
-      </xs:element>
-  </xs:sequence>
-</xs:complexType>
-
 <xs:complexType name="srs">
   <xs:sequence>
      <xs:element name="number" type="xs:integer">
@@ -256,60 +256,123 @@
   </xs:sequence>
 </xs:complexType>
 
+<xs:complexType name="gridSets">
+  <xs:sequence>
+      <xs:element name="gridSet" type="gwc:gridSet" minOccurs="1" maxOccurs="unbounded" />
+  </xs:sequence>
+</xs:complexType>
+
 <xs:complexType name="gridSet">
   <xs:sequence>
-     <xs:element name="srs" type="gwc:srs"/>
-     <xs:element name="dataBounds" type="gwc:Bounds">
+     <xs:element name="name" type="xs:string">
         <xs:annotation><xs:documentation xml:lang="en">
-          The data bounds denote the extent of the data. They should generally be the smallest 
-          bounding box in which all your data fits. There is no penalty for expanding these 
-          bounds at a later time, old tiles will still work. Coordinates must be specified in 
-          the context of the SRS for which the grid is being defined.
-          
-          These bounds have to be contained by the grid bounds, but approximate values are
-          perfectly fine. GeoWebCache will automatically expand to the best matching grid bounds
-          for each zoomlevel.
+          The name is the unique identifer of the grid set 
+        </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="srs" type="gwc:srs"/>
+     <xs:element name="extent" type="gwc:Bounds">
+        <xs:annotation><xs:documentation xml:lang="en">
+          The extent of the grid. This should generally be the biggest 
+          bounding box that is valid for the selected SRS. If you change the 
+          grid bounds you must also clear all caches related to this layer. 
+          Coordinates must be specified in  the context of the SRS for which the 
+          grid is being defined.
+
+          To set tighter bounds and avoid repetitive tiles, use the gridSubset
+          on each layer to define the exact bounds.
+         
+          The area does not have to be square, GeoWebCache will automatically
+          pad it to form a set of suitable, rectangular grids
         </xs:documentation></xs:annotation>
       </xs:element>
-     <xs:element name="gridBounds" type="gwc:Bounds">
-       <xs:annotation><xs:documentation xml:lang="en">
-         The grid bounds denote the extent of the grid. They should generally be the biggest 
-         bounding box that is valid for the current SRS. If you change the grid bounds you
-         must also clear all caches related to this layer. Coordinates must be specified in 
-         the context of the SRS for which the grid is being defined.
-         
-         The area does not have to be square, GeoWebCache will automatically create a
-         suitable, rectangular grid or expand it to a square. 
-       </xs:documentation></xs:annotation>
-     </xs:element>
-     <xs:choice minOccurs="0" maxOccurs="1">
-       <xs:element name="resolutions" type="gwc:Resolutions" minOccurs="0">
-         <xs:annotation><xs:documentation xml:lang="en">
+      <xs:choice minOccurs="0" maxOccurs="1">
+        <xs:element name="resolutions" type="gwc:doubleArray" minOccurs="0">
+          <xs:annotation><xs:documentation xml:lang="en">
+            You can either specify an array of resolutions in descending order, 
+            scales in ascending order OR the number of zoom levels.
+           
+            Resolutions are specified as (SRS units) / pixel. For instance,
+            if your grid bounds are 180 by 180 degrees (in WGS84, this would be
+            either hemissphere), and the tiles are 256 by 256 pixels, then first
+            resolution would be 180 degress / 256 pixels = 0.703125 degrees / pixel.   
+          </xs:documentation></xs:annotation>
+        </xs:element>
+        <xs:element name="scales" type="gwc:doubleArray" minOccurs="0">
+          <xs:annotation><xs:documentation xml:lang="en">
+            You can either specify an array of resolutions in descending order, 
+            scales in ascending order OR the number of zoom levels.
+
+            Scales are calculated in accordance with the OGC WMS 1.3.0 standard.
+            Slightly simplified: scale = resolution / 0.00028
+          </xs:documentation></xs:annotation>
+        </xs:element>
+        <xs:element name="levels" type="xs:integer" minOccurs="0">
+          <xs:annotation><xs:documentation xml:lang="en">
            You can either specify an array of resolutions in descending order, 
-           or maximum and a minimum zoomlevels.
-           
-           Resolutions are specified as (SRS units) / pixel. For instance,
-           if your grid bounds are 180 by 180 degrees (in WGS84, this would be
-           either hemissphere), and the tiles are 256 by 256 pixels, then first
-           resolution would be 180 degress / 256 pixels = 0.703125 degrees / pixel.
-           
-         </xs:documentation></xs:annotation>
-       </xs:element>
-       <xs:sequence>
-         <xs:element name="zoomStart" type="xs:integer" minOccurs="0">
-           <xs:annotation><xs:documentation xml:lang="en">
-             You can either specify an array of resolutions in descending order, 
-             or maximum and a minimum zoomlevels. 
-           </xs:documentation></xs:annotation>
-         </xs:element>
-         <xs:element name="zoomStop" type="xs:integer" minOccurs="0">
-           <xs:annotation><xs:documentation xml:lang="en">
-             You can either specify an array of resolutions in descending order, 
-             or maximum and a minimum zoomlevels.
-           </xs:documentation></xs:annotation>
-         </xs:element>
-       </xs:sequence>
+           scales in ascending order OR the number of zoom levels.
+
+           If the desired number of zoom levels is specified GWC will try to
+           automatically determine a sensible set of resolutions.
+          </xs:documentation></xs:annotation>
+        </xs:element>
      </xs:choice>
+      <xs:element name="tileHeight" type="xs:integer" minOccurs="0">
+        <xs:annotation><xs:documentation xml:lang="en">
+          The number of pixels every tile is in the Y-direction. The default is 256
+
+          If you change this value you must also reconsidering metatiling and 
+          clear the cache.
+        </xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="tileWidth" type="xs:integer" minOccurs="0">
+        <xs:annotation><xs:documentation xml:lang="en">
+          The number of pixels every tile is in the X-direction. The default is 256
+
+          If you change this value you must also reconsidering metatiling and 
+          clear the cache.
+        </xs:documentation></xs:annotation>
+      </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="GridSubsets">
+  <xs:sequence>
+      <xs:element name="gridSubset" type="gwc:GridSubset" minOccurs="1" maxOccurs="unbounded" />
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="GridSubset">
+  <xs:sequence>
+    <xs:element name="gridSetName" type="xs:string">
+      <xs:annotation><xs:documentation xml:lang="en">
+        This name must match the name of the parent gridSet exactly. 
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="coverageBounds" type="gwc:Bounds" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        These bounds define the subset of the extent that this
+        grid subset covers. The bounds must be given in the 
+        same spatial reference system as the extent.
+
+        The default is the full extent of the parent grid set.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="zoomStart" type="xs:integer" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        If the the layer does not make sense at high zoom levels
+        you can define a starting point here.
+
+        The default is 0.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="zoomStop" type="xs:integer" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        If the layer does not contain features that make sense to show when
+        zoomed in then you can set the stop level here.
+
+        The default is the length of the resolutions / scale array, plus one.
+      </xs:documentation></xs:annotation>
+    </xs:element>
   </xs:sequence>
 </xs:complexType>
 
@@ -325,7 +388,7 @@
   </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="Resolutions">
+<xs:complexType name="doubleArray">
   <xs:sequence>
      <xs:element name="double" type="xs:double" minOccurs="1" maxOccurs="unbounded"/>
   </xs:sequence>

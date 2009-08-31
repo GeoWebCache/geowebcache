@@ -49,7 +49,7 @@ public class GeoWebCacheConfiguration {
     
     Boolean cacheBypassAllowed;
     
-    Boolean disableRuntimeStats;
+    Boolean runtimeStats;
     
     ServiceInformation serviceInformation;
     

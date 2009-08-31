@@ -208,10 +208,10 @@ public class XMLConfiguration implements Configuration {
     }
     
     public boolean isRuntimeStatsEnabled() {
-        if(gwcConfig.disableRuntimeStats == null) {
+        if(gwcConfig.runtimeStats == null) {
             return true;
         } else {
-            return ! gwcConfig.disableRuntimeStats;
+            return gwcConfig.runtimeStats;
         }
     }
     
@@ -287,7 +287,7 @@ public class XMLConfiguration implements Configuration {
         xs.alias("grid", XMLOldGrid.class);
         
         xs.alias("gridSet", XMLGridSet.class);
-        xs.alias("gridSubSet", XMLGridSubset.class);
+        xs.alias("gridSubset", XMLGridSubset.class);
         
         xs.alias("mimeFormats", new ArrayList<String>().getClass());
         xs.alias("formatModifiers", new ArrayList<FormatModifier>().getClass());
