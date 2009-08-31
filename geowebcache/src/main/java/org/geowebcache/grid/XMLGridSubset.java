@@ -1,7 +1,7 @@
 package org.geowebcache.grid;
 
 
-public class XMLGridSubSet {
+public class XMLGridSubset {
     
     String gridSetName;
     

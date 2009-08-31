@@ -47,7 +47,7 @@ import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
-import org.geowebcache.grid.XMLGridSubSet;
+import org.geowebcache.grid.XMLGridSubset;
 import org.geowebcache.layer.GridLocObj;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.ErrorMime;
@@ -219,9 +219,9 @@ public class WMSLayer extends TileLayer {
         }
 
         if (this.gridSubsets != null) {
-            Iterator<XMLGridSubSet> iter = gridSubsets.iterator();
+            Iterator<XMLGridSubset> iter = gridSubsets.iterator();
             while (iter.hasNext()) {
-                XMLGridSubSet xmlGridSubSet = iter.next();
+                XMLGridSubset xmlGridSubSet = iter.next();
                 GridSubset gridSubset = xmlGridSubSet.getGridSubSet(gridSetBroker);
                 subSets.put(gridSubset.getName(), gridSubset);
             }

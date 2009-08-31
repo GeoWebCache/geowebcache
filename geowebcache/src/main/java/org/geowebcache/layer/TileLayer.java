@@ -37,7 +37,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
-import org.geowebcache.grid.XMLGridSubSet;
+import org.geowebcache.grid.XMLGridSubset;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
@@ -54,7 +54,7 @@ public abstract class TileLayer {
     
     protected List<FormatModifier> formatModifiers;
     
-    protected List<XMLGridSubSet> gridSubsets;
+    protected List<XMLGridSubset> gridSubsets;
 
     // 1.1.x compatibility
     protected Hashtable<SRS,XMLOldGrid> grids;

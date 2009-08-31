@@ -56,7 +56,7 @@ import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.XMLGridSet;
 import org.geowebcache.grid.XMLOldGrid;
-import org.geowebcache.grid.XMLGridSubSet;
+import org.geowebcache.grid.XMLGridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
@@ -287,7 +287,7 @@ public class XMLConfiguration implements Configuration {
         xs.alias("grid", XMLOldGrid.class);
         
         xs.alias("gridSet", XMLGridSet.class);
-        xs.alias("gridSubSet", XMLGridSubSet.class);
+        xs.alias("gridSubSet", XMLGridSubset.class);
         
         xs.alias("mimeFormats", new ArrayList<String>().getClass());
         xs.alias("formatModifiers", new ArrayList<FormatModifier>().getClass());
