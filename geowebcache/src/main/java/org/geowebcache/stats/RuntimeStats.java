@@ -94,15 +94,15 @@ public class RuntimeStats {
         
         
         synchronized(bytes) {
-            str.append("<tr><td colspan=\"3\">Total number of requests:</td><td>"+totalRequests+"</td></tr>\n");
+            str.append("<tr><td colspan=\"2\">Total number of requests:</td><td colspan=\"3\">"+totalRequests+"</td></tr>\n");
             
-            str.append("<tr><td colspan=\"3\">Total number of bytes:</td><td>"+totalBytes+"</td></tr>\n");
+            str.append("<tr><td colspan=\"2\">Total number of bytes:</td><td colspan=\"3\">"+totalBytes+"</td></tr>\n");
             
             str.append("<tr><td colspan=\"5\"> </td></tr>");
             
-            str.append("<tr><td colspan=\"3\">Peak request rate:</td><td>"+ formatRequests( (peakRequests * 1.0) / POLL_INTERVAL) +"</td></tr>\n");
+            str.append("<tr><td colspan=\"2\">Peak request rate:</td><td colspan=\"3\">"+ formatRequests( (peakRequests * 1.0) / POLL_INTERVAL) +"</td></tr>\n");
             
-            str.append("<tr><td colspan=\"3\">Peak bandwidth:</td><td>"+ formatBits((peakBytes * 8.0) / POLL_INTERVAL) +"</td></tr>\n");
+            str.append("<tr><td colspan=\"2\">Peak bandwidth:</td><td colspan=\"3\">"+ formatBits((peakBytes * 8.0) / POLL_INTERVAL) +"</td></tr>\n");
             
             str.append("<tr><td colspan=\"5\"> </td></tr>");
                         
@@ -128,7 +128,7 @@ public class RuntimeStats {
             
             str.append("<tr><td colspan=\"5\"> </td></tr>");
             
-            str.append("<tr><td colspan=\"5\">Note: These figures do not include HTTP overhead</td></tr>");
+            str.append("<tr><td colspan=\"5\">Note: These figures are 3 seconds delayed and do not include HTTP overhead</td></tr>");
             
         }
         

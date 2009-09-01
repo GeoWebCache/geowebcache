@@ -35,7 +35,7 @@ public class WMTSGetCapabilities {
         this.tld = tld;
         this.gsb = gsb;
         // TODO Fix
-        this.baseUrl = servReq.getRequestURL().toString() + "?SERVICE=WMS&amp;";
+        this.baseUrl = servReq.getRequestURL().toString();
     }
     
     protected void writeResponse(HttpServletResponse response) {
@@ -58,19 +58,20 @@ public class WMTSGetCapabilities {
         StringBuilder str = new StringBuilder();
         
         str.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        str.append("<Capabilities xmlns=\"http://www.opengis.net/wmsts/1.0\"\n");
+        str.append("<Capabilities xmlns=\"http://www.opengis.net/wmts/1.0\"\n");
         str.append("xmlns:ows=\"http://www.opengis.net/ows/1.1\"\n"); 
         str.append("xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n");
         str.append("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
         str.append("xmlns:gml=\"http://www.opengis.net/gml\" ");
-        str.append("xsi:schemaLocation=\"http://www.opengis.net/wmts/1.0 http://schemas.opengis.net/wmts/1.0.0/wmtsGetCapabilities_response.xsd\"\n"); 
+        //str.append("xsi:schemaLocation=\"http://www.opengis.net/wmts/1.0 http://schemas.opengis.net/wmts/1.0.0/wmtsGetCapabilities_response.xsd\"\n"); 
+        str.append("xsi:schemaLocation=\"http://www.opengis.net/wmts/1.0 http://geowebcache.org/schema/opengis/wmts/1.0.0/wmtsGetCapabilities_response.xsd\"\n"); 
         str.append("version=\"1.0.0\">\n");
         
         serviceIdentification(str);
         serviceProvider(str);
-        operationsMetadata(str,"http://www.maps.cat/cgi-bin/MiraMon5_0.cgi?");
-        contents(str, baseUrl);
-        str.append("<ServiceMetadataURL xlink:href=\"http://www.maps.cat/wmts/1.0.0/WMTSCapabilities.xml\"/>\n");
+        operationsMetadata(str);
+        contents(str);
+        str.append("<ServiceMetadataURL xlink:href=\""+baseUrl+"?REQUEST=getcapabilities&amp;VERSION=1.0.0\"/>\n");
         str.append("</Capabilities>");
 
         return str.toString();
@@ -118,7 +119,10 @@ public class WMTSGetCapabilities {
         
         if(servProv != null) {
             appendTag(str, "  ", "ows:ProviderName", servProv.providerName, null);
-            // This is an xlink ,,, appendTag(str, "  ", "ows:ProviderSite", servProv.providerSite, null);
+            
+            if(servProv.providerSite != null) {
+                appendXlink(str, "  ", "ows:ProviderSite", servProv.providerSite);
+            }
             
             ServiceContact servCont = servProv.serviceContact;
             if(servCont != null) {
@@ -146,12 +150,18 @@ public class WMTSGetCapabilities {
                 str.append("    </ows:ContactInfo>\n");
                 str.append("  </ows:ServiceContact>\n");
             }
+        } else {
+            appendTag(str, "  ", "ows:ProviderName", baseUrl, null);
+            appendXlink(str, "  ", "ows:ProviderSite", baseUrl);
+            str.append("  <ows:ServiceContact>\n");
+            appendTag(str, "    ", "ows:IndividualName", "GeoWebCache User", null);
+            str.append("  </ows:ServiceContact>\n");
         }
             
         str.append("</ows:ServiceProvider>\n"); 
     }
-        
-    private void operationsMetadata(StringBuilder str, String baseUrl) {
+    
+    private void operationsMetadata(StringBuilder str) {
         str.append("<ows:OperationsMetadata>\n");
         operation(str, "GetCapabilities", baseUrl);
         operation(str, "GetTile", baseUrl);
@@ -162,7 +172,7 @@ public class WMTSGetCapabilities {
         str.append("  <ows:Operation name=\""+operationName+"\">\n");
         str.append("    <ows:DCP>\n");
         str.append("      <ows:HTTP>\n");
-        str.append("        <ows:Get xlink:href=\""+baseUrl+"\">\n");
+        str.append("        <ows:Get xlink:href=\""+baseUrl+"?\">\n");
         str.append("          <ows:Constraint name=\"GetEncoding\">\n");
         str.append("            <ows:AllowedValues>\n");
         str.append("              <ows:Value>KVP</ows:Value>\n");
@@ -174,7 +184,7 @@ public class WMTSGetCapabilities {
         str.append("  </ows:Operation>\n");
      }
      
-     private void contents(StringBuilder str, String baseUrl) {
+     private void contents(StringBuilder str) {
          str.append("<Contents>\n");
          Iterator<TileLayer> iter = tld.getLayers().values().iterator();
          while(iter.hasNext()) {
@@ -218,9 +228,10 @@ public class WMTSGetCapabilities {
      }
      
      private void layerStyle(StringBuilder str, TileLayer layer) {
-         //str.append("    <Style isDefault=\"true\">\n");
-         //str.append("      <ows:Identifier>Default</ows:Identifier>\n");
-         //str.append("    </Style>\n");
+         // TODO Not sure whether blank is legit. It's certainly not unique
+         str.append("    <Style isDefault=\"true\">\n");
+         str.append("      <ows:Identifier></ows:Identifier>\n");
+         str.append("    </Style>\n");
      }
      
      private void layerFormats(StringBuilder str, TileLayer layer) {
@@ -232,10 +243,12 @@ public class WMTSGetCapabilities {
      }
      
      private void layerGridSubSets(StringBuilder str, TileLayer layer) {
-         str.append("    <TileMatrixSetLink>");
          Iterator<GridSubset> gridSubsets = layer.getGridSubsets().values().iterator();
+         
          while(gridSubsets.hasNext()) {
              GridSubset gridSubset = gridSubsets.next();
+         
+             str.append("    <TileMatrixSetLink>");
              str.append("      <TileMatrixSet>" + gridSubset.getName() + "</TileMatrixSet>\n");
              
              String[] levelNames = gridSubset.getGridNames();
@@ -251,10 +264,10 @@ public class WMTSGetCapabilities {
                  str.append("          <MaxTileCol>"+wmtsLimits[i][2]+"</MaxTileCol>\n");
                  str.append("        </TileMatrixLimits>\n");
              }
-             str.append("      </TileMatrixSetLimits>\n");
              
+             str.append("      </TileMatrixSetLimits>\n");
+             str.append("    </TileMatrixSetLink>");
          }
-         str.append("    </TileMatrixSetLink>");     
      }
      
      private void tileMatrixSet(StringBuilder str, GridSet gridSet) {
@@ -296,6 +309,12 @@ public class WMTSGetCapabilities {
          }
 
          str.append(padding + "<"+tagName+">"+escapedValue+"</"+tagName+">\n");         
+     }
+     
+     private void appendXlink(StringBuilder str, String padding, String tagName, String xlink) {         
+         String escapedValue = encodeXmlChars(xlink);
+
+         str.append(padding + "<"+tagName+" xlink:href=\""+escapedValue+"\" />\n");         
      }
      
      private String encodeXmlChars(String input) {
