@@ -48,7 +48,7 @@
           transparency.
         </xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name="gridSets">
+      <xs:element name="gridSets" minOccurs="0">
         <xs:annotation><xs:documentation xml:lang="en">
         The list of grid sets provided by this configuration.
         </xs:documentation></xs:annotation>
