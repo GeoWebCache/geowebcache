@@ -20,6 +20,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.util.ServletUtils;
 
 public class WMTSGetCapabilities {
     
@@ -34,8 +35,12 @@ public class WMTSGetCapabilities {
     protected WMTSGetCapabilities(TileLayerDispatcher tld, GridSetBroker gsb, HttpServletRequest servReq) {
         this.tld = tld;
         this.gsb = gsb;
-        // TODO Fix
-        this.baseUrl = servReq.getRequestURL().toString();
+        
+        baseUrl = ServletUtils.stringFromMap(servReq.getParameterMap(), servReq.getCharacterEncoding(), "base_url");
+        
+        if(baseUrl == null || baseUrl.length() == 0) {
+            baseUrl = servReq.getRequestURL().toString();
+        }
     }
     
     protected void writeResponse(HttpServletResponse response) {
