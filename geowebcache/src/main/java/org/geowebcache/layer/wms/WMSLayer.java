@@ -53,6 +53,7 @@ import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
+import org.geowebcache.service.wmts.WMTSService;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
@@ -1085,8 +1086,9 @@ public class WMSLayer extends TileLayer {
         StringBuilder strFull = new StringBuilder();
         
         for(int i = 0; i<values.length; i++) {
-            String value = values[i];
+            String value = WMTSService.decodeDimensionValue(values[i]);
             ParameterFilter modParam = this.sortedModParams[i];
+            
             
             if(value == null || value.length() == 0) {
                 strFull.append("&").append(modParam.getKey()).append("=").append(modParam.getDefaultValue());

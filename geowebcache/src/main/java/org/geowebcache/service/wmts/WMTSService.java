@@ -171,7 +171,7 @@ public class WMTSService extends Service {
     }
     
     public static String decodeDimensionValue(String value) {
-        if(value.startsWith("_")) {
+        if(value != null && value.startsWith("_")) {
             if(value.equals("_null")) {
                 return null;
             } else if( value.equals("_empty")) {
