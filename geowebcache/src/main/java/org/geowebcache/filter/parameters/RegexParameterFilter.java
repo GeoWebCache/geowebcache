@@ -16,6 +16,7 @@
  */
 package org.geowebcache.filter.parameters;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,6 +42,10 @@ public class RegexParameterFilter extends ParameterFilter {
             return str;
         }
         
-        throw new ParameterException(str + " violates filter for parameter");
+        throw new ParameterException(str + " violates filter for parameter " + key);
+    }
+
+    public List<String> getLegalValues() {
+        return null;
     }
 }

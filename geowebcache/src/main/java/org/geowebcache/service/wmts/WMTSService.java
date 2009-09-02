@@ -65,21 +65,21 @@ public class WMTSService extends Service {
         if(req == null) {
             throw new GeoWebCacheException("Missing REQUEST parameter");
         } else if(req.equals("gettile")) {
-            ConveyorTile tile = new ConveyorTile(sb, values[0], request, response);
-            tile.setHint(req);
-            tile.setRequestHandler(Conveyor.RequestHandler.SERVICE);
+            ConveyorTile tile = getTile(values, request, response);
             return tile;
-        } else if(req.equals("getfeatureinfo") || req.equals("getcapabilities")) {
+        } else if(req.equals("getcapabilities")) {
             ConveyorTile tile = new ConveyorTile(sb, values[0], request, response);
             tile.setHint(req);
             tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
-            
-            return tile; 
+            return tile;
+        } else if(req.equals("getfeatureinfo")) {
+            ConveyorTile tile = getTile(values, request, response);
+            tile.setHint(req);
+            tile.setRequestHandler(Conveyor.RequestHandler.SERVICE);
+            return tile;
         } else {
             throw new GeoWebCacheException("Unknown REQUEST parameter " + req);
         }
-
- 
     }
     
     private ConveyorTile getTile(String[] values, HttpServletRequest request, HttpServletResponse response)
@@ -162,9 +162,35 @@ public class WMTSService extends Service {
                 wmsGC.writeResponse(tile.servletResp);
                 
             } else if(tile.getHint().equals("getfeatureinfo")) {
-                WMTSGetFeatureInfo wmsGFI = new WMTSGetFeatureInfo(tld, tile.servletReq);      
-                wmsGFI.writeResponse(tile.servletResp);
+                ConveyorTile convTile = (ConveyorTile) conv;
+                
+                WMTSGetFeatureInfo wmsGFI = new WMTSGetFeatureInfo(convTile);      
+                wmsGFI.writeResponse();
             }
+        }
+    }
+    
+    public static String decodeDimensionValue(String value) {
+        if(value.startsWith("_")) {
+            if(value.equals("_null")) {
+                return null;
+            } else if( value.equals("_empty")) {
+                return "";
+            } else {
+                return value;
+            }
+        } else {
+            return value;
+        }
+    }
+    
+    public static String encodeDimensionValue(String value) {
+        if(value == null) {
+            return "_null";
+        } else if(value.length() == 0) {
+            return "_empty";
+        } else {
+            return value;
         }
     }
 }

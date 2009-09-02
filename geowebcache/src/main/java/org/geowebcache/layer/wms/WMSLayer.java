@@ -19,7 +19,6 @@ package org.geowebcache.layer.wms;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,11 +45,9 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.grid.OutsideCoverageException;
-import org.geowebcache.grid.SRS;
 import org.geowebcache.grid.XMLGridSubset;
 import org.geowebcache.layer.GridLocObj;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
@@ -61,7 +58,7 @@ import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
 
 public class WMSLayer extends TileLayer {
-    // needed in configuration object written to xml
+    //public enum RequestType {GETMAP, GETLEGEND, GETFEATUREINFO};
     
     private String[] wmsUrl = null;
     
@@ -329,6 +326,11 @@ public class WMSLayer extends TileLayer {
         
         return true;
     }
+    
+    public byte[] getFeatureInfo(ConveyorTile convTile, int x, int y, MimeType format)
+    throws GeoWebCacheException {
+        return  WMSHttpHelper.makeFeatureInfoRequest(convTile,format,x,y);
+    }   
 
     /**
      * The main function
@@ -734,12 +736,15 @@ public class WMSLayer extends TileLayer {
         }
     }
 
-    public String getWMSRequestTemplate(MimeType responseFormat) {
+    public String getWMSRequestTemplate(MimeType responseFormat, boolean isGetMap) {
         FormatModifier mod = getFormatModifier(responseFormat);
         
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append("SERVICE=WMS");
-        strBuilder.append("&REQUEST=GetMap");
+        
+        if(isGetMap) {
+            strBuilder.append("&REQUEST=GetMap");
+        }
         
         strBuilder.append("&VERSION=");
         if(wmsVersion != null) {
@@ -770,7 +775,7 @@ public class WMSLayer extends TileLayer {
         }
 
         Boolean tmpTransparent = transparent;
-        if (mod != null && mod.getTransparent() != null) {
+        if (isGetMap && mod != null && mod.getTransparent() != null) {
             tmpTransparent = mod.getTransparent();
         }
         if (tmpTransparent != null) {
@@ -782,21 +787,24 @@ public class WMSLayer extends TileLayer {
         }
         
 
-        String tmpBgColor = bgColor;
-        if (mod != null && mod.getBgColor() != null) {
-            tmpBgColor = mod.getBgColor();
-        }
-        
-        if (tmpBgColor != null && tmpBgColor.length() != 0) {
-            strBuilder.append("&BGCOLOR=").append(tmpBgColor);
-        }
-        
-        String tmpPalette = encodedPalette;
-        if (mod != null && mod.getPalette() != null) {
-            tmpPalette = mod.getPalette();
-        }
-        if (tmpPalette != null && tmpPalette.length() != 0) {
-            strBuilder.append("&PALETTE=").append(tmpPalette);
+        if (isGetMap) {
+            String tmpBgColor = bgColor;
+            if (mod != null && mod.getBgColor() != null) {
+                tmpBgColor = mod.getBgColor();
+            }
+
+            if (tmpBgColor != null && tmpBgColor.length() != 0) {
+                strBuilder.append("&BGCOLOR=").append(tmpBgColor);
+            }
+
+            String tmpPalette = encodedPalette;
+            if (mod != null && mod.getPalette() != null) {
+                tmpPalette = mod.getPalette();
+            }
+            
+            if (tmpPalette != null && tmpPalette.length() != 0) {
+                strBuilder.append("&PALETTE=").append(tmpPalette);
+            }
         }
         
         if (vendorParameters != null && vendorParameters.length() != 0) {
@@ -955,6 +963,10 @@ public class WMSLayer extends TileLayer {
         return formats;
     }
 
+    public List<ParameterFilter> getParameterFilters() {
+        return parameterFilters;
+    }
+    
     public String getStyles() {
         return wmsStyles;
     }
@@ -1101,5 +1113,5 @@ public class WMSLayer extends TileLayer {
                 this.parameterFilters = otherLayer.parameterFilters;
             }
         }
-    }    
+    } 
 }

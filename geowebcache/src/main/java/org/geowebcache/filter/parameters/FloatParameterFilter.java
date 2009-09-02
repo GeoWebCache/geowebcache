@@ -17,6 +17,7 @@
 package org.geowebcache.filter.parameters;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 public class FloatParameterFilter extends ParameterFilter {
@@ -57,5 +58,16 @@ public class FloatParameterFilter extends ParameterFilter {
                 + super.key + "=" + str 
                 + " is " + Float.toString(best) 
                 + ", but this exceeds the threshold of " + Float.toString(threshold));
+    }
+
+    public List<String> getLegalValues() {
+        List<String> ret = new LinkedList<String>();
+        
+        Iterator<Float> iter = values.iterator();
+        while(iter.hasNext()) {
+            ret.add(Float.toString(iter.next()));
+        }
+        
+        return ret;
     }
 }

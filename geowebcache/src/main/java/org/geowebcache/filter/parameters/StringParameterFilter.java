@@ -16,31 +16,29 @@
  */
 package org.geowebcache.filter.parameters;
 
+import java.util.Iterator;
 import java.util.List;
 
-public abstract class ParameterFilter {
-    public String key;
-    
-    public String defaultValue;
-    
-    public ParameterFilter() {
-        // Empty for XStream
-    }
-    
-    public String getKey() {
-        return key;
-    }
-    
-    public String getDefaultValue() {
-        return defaultValue;
-    }
-    
+public class StringParameterFilter extends ParameterFilter {
+
+    List<String> values;
+        
     public String apply(String str) throws ParameterException {
-        return null;
+        if(str == null || str.length() == 0) {
+            return "";
+        }
+        
+        Iterator<String> iter = values.iterator();
+        while(iter.hasNext()) {
+            if(iter.next().equals(str)) {
+                return str;
+            }
+        }
+        
+        throw new ParameterException(str + " violates filter for parameter " + key);
     }
-    
-    /**
-     * @return null if the legal values cannot be enumerated
-     */
-    public abstract List<String> getLegalValues();
+
+    public List<String> getLegalValues() {
+        return values;
+    }
 }

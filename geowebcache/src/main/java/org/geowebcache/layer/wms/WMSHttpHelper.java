@@ -31,6 +31,7 @@ import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.ErrorMime;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
@@ -73,7 +74,7 @@ public class WMSHttpHelper {
         
         GridSubset gridSubset = tile.getGridSubset();
         
-        String wmsParams = layer.getWMSRequestTemplate(tile.getMimeType());
+        String wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(), true);
 
         StringBuilder strBuilder = new StringBuilder(wmsParams);
         
@@ -95,6 +96,34 @@ public class WMSHttpHelper {
         
         return makeRequest(tile, layer, strBuilder.toString(), tile.getMimeType().getMimeType());
     }
+    
+    protected static byte[] makeFeatureInfoRequest(ConveyorTile tile,MimeType format, int x, int y) 
+    throws GeoWebCacheException {
+        WMSLayer layer = (WMSLayer) tile.getLayer();
+        
+        GridSubset gridSubset = tile.getGridSubset();
+        
+        String wmsParams = layer.getWMSRequestTemplate(format, false);
+
+        StringBuilder strBuilder = new StringBuilder(wmsParams);
+        
+        strBuilder.append("&INFO_FORMAT=").append(format.getFormat());
+        strBuilder.append("&SRS=").append(gridSubset.getSRS().toString());
+        strBuilder.append("&HEIGHT=").append(gridSubset.getTileHeight());
+        strBuilder.append("&WIDTH=").append(gridSubset.getTileWidth());
+        
+        BoundingBox bbox = gridSubset.boundsFromIndex(tile.getTileIndex());
+        
+        strBuilder.append("&BBOX=").append(bbox);
+        
+        strBuilder.append(tile.getFullParameters());
+        
+        strBuilder.append("&X=").append(x);
+        strBuilder.append("&Y=").append(y);
+        
+        return makeRequest(tile, layer, strBuilder.toString(), format.getMimeType());
+    }
+    
 
     /**
      * Loops over the different backends, tries the request

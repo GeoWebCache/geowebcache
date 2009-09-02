@@ -3,6 +3,7 @@ package org.geowebcache.service.wmts;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -12,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.meta.ServiceContact;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.config.meta.ServiceProvider;
+import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.grid.Grid;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -19,6 +21,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.LayerMetaInformation;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.ServletUtils;
 
@@ -37,6 +40,11 @@ public class WMTSGetCapabilities {
         this.gsb = gsb;
         
         baseUrl = ServletUtils.stringFromMap(servReq.getParameterMap(), servReq.getCharacterEncoding(), "base_url");
+        
+        // This should prevent anyone from passing in anything nasty
+        if(baseUrl != null) {
+            baseUrl = encodeXmlChars(baseUrl);
+        }
         
         if(baseUrl == null || baseUrl.length() == 0) {
             baseUrl = servReq.getRequestURL().toString();
@@ -68,6 +76,7 @@ public class WMTSGetCapabilities {
         str.append("xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n");
         str.append("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
         str.append("xmlns:gml=\"http://www.opengis.net/gml\" ");
+        // TODO This is temporary
         //str.append("xsi:schemaLocation=\"http://www.opengis.net/wmts/1.0 http://schemas.opengis.net/wmts/1.0.0/wmtsGetCapabilities_response.xsd\"\n"); 
         str.append("xsi:schemaLocation=\"http://www.opengis.net/wmts/1.0 http://geowebcache.org/schema/opengis/wmts/1.0.0/wmtsGetCapabilities_response.xsd\"\n"); 
         str.append("version=\"1.0.0\">\n");
@@ -170,6 +179,7 @@ public class WMTSGetCapabilities {
         str.append("<ows:OperationsMetadata>\n");
         operation(str, "GetCapabilities", baseUrl);
         operation(str, "GetTile", baseUrl);
+        operation(str, "GetFeatureInfo", baseUrl);
         str.append("</ows:OperationsMetadata>\n");
     }
         
@@ -205,26 +215,44 @@ public class WMTSGetCapabilities {
      }
      
      private void layer(StringBuilder str, TileLayer layer, String baseurl) {
-         str.append("  <Layer>\n");
-         LayerMetaInformation layerMeta = layer.getMetaInformation();
-         
-         if(layerMeta == null) {
-             appendTag(str, "    ", "ows:Title", layer.getName(), null);
-         } else {
-             appendTag(str, "    ", "ows:Title", layerMeta.getTitle(), null);
-             appendTag(str, "    ", "ows:Abstract", layerMeta.getDescription(), null);
-         }
+        str.append("  <Layer>\n");
+        LayerMetaInformation layerMeta = layer.getMetaInformation();
 
-         layerWGS84BoundingBox(str, layer);
-         appendTag(str, "    ", "ows:Identifier", layer.getName(), null);
-         layerStyle(str, layer);
-         layerFormats(str, layer);
-         layerGridSubSets(str, layer);
-         // TODO REST str.append("    <ResourceURL format=\"image/png\" resourceType=\"tile\" template=\"http://www.maps.cat/wmts/BlueMarbleNextGeneration/default/BigWorldPixel/{TileMatrix}/{TileRow}/{TileCol}.png\"/>\n");
-         str.append("  </Layer>\n");
-     }
+        if (layerMeta == null) {
+            appendTag(str, "    ", "ows:Title", layer.getName(), null);
+        } else {
+            appendTag(str, "    ", "ows:Title", layerMeta.getTitle(), null);
+            appendTag(str, "    ", "ows:Abstract", layerMeta.getDescription(),
+                    null);
+        }
+
+        layerWGS84BoundingBox(str, layer);
+        appendTag(str, "    ", "ows:Identifier", layer.getName(), null);
+        
+        // We need the filters for styles and dimensions
+        List<ParameterFilter> filters = null;
+        
+        if(! (layer instanceof WMSLayer)) {
+            filters = ((WMSLayer) layer).getParameterFilters();
+        }
+        
+        layerStyles(str, layer, filters);
+        
+        layerFormats(str, layer);
+        
+        layerInfoFormats(str, layer);
+        
+        if(filters != null) {
+            layerDimensions(str, layer, filters);
+        }
+        
+        layerGridSubSets(str, layer);
+        // TODO REST
+        // str.append("    <ResourceURL format=\"image/png\" resourceType=\"tile\" template=\"http://www.maps.cat/wmts/BlueMarbleNextGeneration/default/BigWorldPixel/{TileMatrix}/{TileRow}/{TileCol}.png\"/>\n");
+        str.append("  </Layer>\n");
+    }
      
-     private void layerWGS84BoundingBox(StringBuilder str, TileLayer layer) {
+    private void layerWGS84BoundingBox(StringBuilder str, TileLayer layer) {
          // TODO this is optional, but quite useful
          //str.append("    <ows:WGS84BoundingBox>\n");
          //str.append("      <ows:LowerCorner>-180 -90</ows:LowerCorner>\n");
@@ -232,11 +260,45 @@ public class WMTSGetCapabilities {
          //str.append("    </ows:WGS84BoundingBox>\n");
      }
      
-     private void layerStyle(StringBuilder str, TileLayer layer) {
-         // TODO Not sure whether blank is legit. It's certainly not unique
-         str.append("    <Style isDefault=\"true\">\n");
-         str.append("      <ows:Identifier></ows:Identifier>\n");
-         str.append("    </Style>\n");
+     private void layerStyles(StringBuilder str, TileLayer layer, List<ParameterFilter> filters) {
+         String defStyle = layer.getStyles();
+         if(filters == null) {
+             str.append("    <Style isDefault=\"true\">\n");
+             str.append("      <ows:Identifier>"+WMTSService.encodeDimensionValue(defStyle)+"</ows:Identifier>\n");
+             str.append("    </Style>\n");
+         } else {
+             ParameterFilter stylesFilter = null;
+             Iterator<ParameterFilter> iter = filters.iterator();
+             while(stylesFilter == null && iter.hasNext()) {
+                 ParameterFilter filter = iter.next();
+                 if(filter.key.equalsIgnoreCase("STYLES")) {
+                     stylesFilter = filter;
+                 }
+             }
+             
+             if(stylesFilter != null) {
+                 String defVal = stylesFilter.defaultValue; 
+                 if(defVal == null) {
+                     if(defStyle != null) {
+                         defVal = defStyle;
+                     } else {
+                         defVal = "";
+                     }
+                 }
+                 
+                 Iterator<String> valIter = stylesFilter.getLegalValues().iterator();
+                 while(valIter.hasNext()) {
+                     String value = valIter.next();
+                         if(value.equals(defVal)) {
+                             str.append("    <Style isDefault=\"true\">\n");
+                         } else {
+                             str.append("    <Style>\n");
+                         }
+                         str.append("      <ows:Identifier>"+WMTSService.encodeDimensionValue(value)+"</ows:Identifier>\n");
+                         str.append("    </Style>\n");
+                 }
+             }
+         }
      }
      
      private void layerFormats(StringBuilder str, TileLayer layer) {
@@ -247,6 +309,52 @@ public class WMTSGetCapabilities {
          }
      }
      
+     private void layerInfoFormats(StringBuilder str, TileLayer layer) {
+         if(! (layer instanceof WMSLayer)) {
+             return;
+         }
+         
+         // TODO properly
+         if(((WMSLayer) layer).isQueryable()) {
+             str.append("    <InfoFormat>text/plain</InfoFormat>\n");
+             str.append("    <InfoFormat>text/html</InfoFormat>\n");
+             str.append("    <InfoFormat>application/vnd.ogc.gml</InfoFormat>\n");
+         }
+         
+     }
+     
+     private void layerDimensions(StringBuilder str, TileLayer layer, List<ParameterFilter> filters) {
+         
+         Iterator<ParameterFilter> iter = filters.iterator();
+         
+         while(iter.hasNext()) {
+             ParameterFilter filter = iter.next();
+             
+             if(! filter.key.equalsIgnoreCase("STYLES")) {
+                 List<String> values = filter.getLegalValues();
+             
+                 if(values != null) {
+                     dimensionDescription(str, filter, values);
+                 }
+             }
+         }
+     }
+         
+     private void dimensionDescription(StringBuilder str, ParameterFilter filter, List<String> values) {
+         str.append("    <Dimension>");
+         str.append("      <Identifier>"+filter.key+"</Identifier>");
+         String defaultStr = WMTSService.encodeDimensionValue(filter.defaultValue);
+         str.append("      <Default>"+encodeXmlChars(defaultStr)+"</Default>");
+         
+         Iterator<String> iter = values.iterator();
+         while(iter.hasNext()) {
+             String value = WMTSService.encodeDimensionValue(iter.next());
+             str.append("      <Value>"+encodeXmlChars(value)+"</Value>");
+         }
+         str.append("    </Dimension>");
+     }
+     
+      
      private void layerGridSubSets(StringBuilder str, TileLayer layer) {
          Iterator<GridSubset> gridSubsets = layer.getGridSubsets().values().iterator();
          

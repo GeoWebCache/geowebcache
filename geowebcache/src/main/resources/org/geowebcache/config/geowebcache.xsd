@@ -422,6 +422,12 @@
          </xs:documentation></xs:annotation>
        </xs:element>
      </xs:sequence>
+       <xs:element name="stringParameterFilter" type="gwc:stringParameterFilter" minOccurs="0" maxOccurs="unbounded">
+         <xs:annotation><xs:documentation xml:lang="en">
+           String parameter filters
+         </xs:documentation></xs:annotation>
+       </xs:element>
+     </xs:sequence>
   </xs:sequence>
 </xs:complexType>
 
@@ -453,13 +459,15 @@
   <xs:sequence>
     <xs:element name="key" type="xs:string">
       <xs:annotation><xs:documentation xml:lang="en">
-        The key for which the filter should be invoked. The key is case insensitive.
+        The key for which the filter should be invoked. The key is NOT casesensitive.
       </xs:documentation></xs:annotation>
     </xs:element>
     <xs:element name="defaultValue" type="xs:string">
       <xs:annotation><xs:documentation xml:lang="en">
         The default value. This value is used When the client does not specify 
         the parameter in the request. In many cases this should be an empty element.
+
+        This value must be included in the list of values
       </xs:documentation></xs:annotation>
     </xs:element>
     <xs:element name="values" type="gwc:floatList">
@@ -479,9 +487,38 @@
   </xs:sequence>
 </xs:complexType>
 
+<xs:complexType name="stringParameterFilter">
+  <xs:sequence>
+    <xs:element name="key" type="xs:string">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The key for which the filter should be invoked. The key is NOT casesensitive.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="defaultValue" type="xs:string">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The default value. This value is used When the client does not specify 
+        the parameter in the request. In many cases this should be an empty element.
+
+        This value must be included in the list of values
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="values" type="gwc:stringList">
+      <xs:annotation><xs:documentation xml:lang="en">
+        A list of strings that represent possible values. These are case sensitive.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
 <xs:complexType name="floatList">
   <xs:sequence>
      <xs:element name="float" type="xs:float" minOccurs="1" maxOccurs="unbounded"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="stringList">
+  <xs:sequence>
+     <xs:element name="string" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
   </xs:sequence>
 </xs:complexType>
 
