@@ -775,20 +775,19 @@ public class WMSLayer extends TileLayer {
             }
         }
 
-        Boolean tmpTransparent = transparent;
-        if (isGetMap && mod != null && mod.getTransparent() != null) {
-            tmpTransparent = mod.getTransparent();
-        }
-        if (tmpTransparent != null) {
-            if (tmpTransparent) {
-                strBuilder.append("&TRANSPARENT=").append("TRUE");
-            } else {
-                strBuilder.append("&TRANSPARENT=").append("FALSE");
+        if(isGetMap) {
+            Boolean tmpTransparent = transparent;
+            if (mod != null && mod.getTransparent() != null) {
+                tmpTransparent = mod.getTransparent();
             }
-        }
-        
+            if (tmpTransparent != null) {
+                if (tmpTransparent) {
+                    strBuilder.append("&TRANSPARENT=").append("TRUE");
+                } else {
+                    strBuilder.append("&TRANSPARENT=").append("FALSE");
+                }
+            }
 
-        if (isGetMap) {
             String tmpBgColor = bgColor;
             if (mod != null && mod.getBgColor() != null) {
                 tmpBgColor = mod.getBgColor();

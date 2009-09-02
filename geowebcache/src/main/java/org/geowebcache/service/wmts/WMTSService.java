@@ -135,7 +135,7 @@ public class WMTSService extends Service {
             throw new ServiceException("No TILEROW specified");
         }
         long[] gridExtent = gridSubset.getGridSetExtent((int) z);
-        long y = gridExtent[1] - Long.parseLong(values[6]);
+        long y = gridExtent[1] - Long.parseLong(values[6]) - 1;
 
         if(values[7] == null) {
             throw new ServiceException("No TILECOLUMN specified");
