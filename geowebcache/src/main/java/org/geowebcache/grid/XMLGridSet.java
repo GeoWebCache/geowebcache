@@ -7,8 +7,8 @@ public class XMLGridSet {
     BoundingBox extent;
     double[] resolutions;
     double[] scales;
-    String[] scaleNames;
     Integer levels;
+    String[] scaleNames;
     Integer tileHeight;
     Integer tileWidth;
     

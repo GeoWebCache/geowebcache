@@ -95,6 +95,8 @@
           and then persist that to disk.
         </xs:documentation></xs:annotation>
      </xs:element>
+     <!-- Ignore the old grids element -->
+     <xs:element name="grids" processContents="skip" minOccurs="0" maxOccurs="1"/>
      <xs:element name="gridSubsets" type="gwc:GridSubsets" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
          The grid definitions contain information about the SRS, the maximum extent for 
@@ -286,7 +288,7 @@
         </xs:documentation></xs:annotation>
       </xs:element>
       <xs:choice minOccurs="0" maxOccurs="1">
-        <xs:element name="resolutions" type="gwc:doubleArray" minOccurs="0">
+        <xs:element name="resolutions" type="gwc:doubleList" minOccurs="0">
           <xs:annotation><xs:documentation xml:lang="en">
             You can either specify an array of resolutions in descending order, 
             scales in ascending order OR the number of zoom levels.
@@ -297,7 +299,7 @@
             resolution would be 180 degress / 256 pixels = 0.703125 degrees / pixel.   
           </xs:documentation></xs:annotation>
         </xs:element>
-        <xs:element name="scales" type="gwc:doubleArray" minOccurs="0">
+        <xs:element name="scales" type="gwc:doubleList" minOccurs="0">
           <xs:annotation><xs:documentation xml:lang="en">
             You can either specify an array of resolutions in descending order, 
             scales in ascending order OR the number of zoom levels.
@@ -315,7 +317,13 @@
            automatically determine a sensible set of resolutions.
           </xs:documentation></xs:annotation>
         </xs:element>
-     </xs:choice>
+      </xs:choice>
+      <xs:element name="scaleNames" type="gwc:stringList" minOccurs="0">
+        <xs:annotation><xs:documentation xml:lang="en">
+          If you specify scales or resolutions, you may optionally specify
+          a list of scale names that, in WMTS, identify each Matrix.
+        </xs:documentation></xs:annotation>
+      </xs:element>
       <xs:element name="tileHeight" type="xs:integer" minOccurs="0">
         <xs:annotation><xs:documentation xml:lang="en">
           The number of pixels every tile is in the Y-direction. The default is 256
@@ -385,12 +393,6 @@
 <xs:complexType name="Coords">
   <xs:sequence>
      <xs:element name="double" type="xs:double" minOccurs="4" maxOccurs="4"/>
-  </xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="doubleArray">
-  <xs:sequence>
-     <xs:element name="double" type="xs:double" minOccurs="1" maxOccurs="unbounded"/>
   </xs:sequence>
 </xs:complexType>
 
@@ -508,6 +510,12 @@
         A list of strings that represent possible values. These are case sensitive.
       </xs:documentation></xs:annotation>
     </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="doubleList">
+  <xs:sequence>
+     <xs:element name="double" type="xs:double" minOccurs="1" maxOccurs="unbounded"/>
   </xs:sequence>
 </xs:complexType>
 
