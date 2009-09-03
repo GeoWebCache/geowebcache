@@ -43,11 +43,23 @@ public class GridSetFactory {
      * @param tileHeight
      * @return
      */
-    public static GridSet createGridSet(String name, SRS srs, BoundingBox extent, double[] resolutions, double[] scales, String[] scaleNames, int tileWidth, int tileHeight) {
+    public static GridSet createGridSet( 
+            String name, SRS srs, BoundingBox extent, 
+            boolean alignTopLeft, double[] resolutions, double[] scales, 
+            String[] scaleNames, int tileWidth, int tileHeight) {
+        
         GridSet gridSet = baseGridSet(name, srs, tileWidth, tileHeight);
         
-        gridSet.leftBottom[0] = extent.coords[0];
-        gridSet.leftBottom[1] = extent.coords[1];
+        gridSet.baseCoords = new double[2];
+        
+        if(alignTopLeft) {
+            gridSet.baseCoords[0] = extent.coords[0];
+            gridSet.baseCoords[1] = extent.coords[3];
+            gridSet.yBaseToggle = true;
+        } else {
+            gridSet.baseCoords[0] = extent.coords[0];
+            gridSet.baseCoords[1] = extent.coords[1];
+        }
         
         gridSet.gridLevels = new Grid[resolutions.length];
         
@@ -83,7 +95,10 @@ public class GridSetFactory {
         return gridSet; 
     }
     
-    public static GridSet createGridSet(String name, SRS srs, BoundingBox extent, int levels, int tileWidth, int tileHeight) {
+    public static GridSet createGridSet(
+            String name, SRS srs, BoundingBox extent, boolean alignTopLeft, 
+            int levels, int tileWidth, int tileHeight) {
+        
         double[] resolutions = new double[levels];
         
         double relWidth =  extent.getWidth() / tileWidth;
@@ -119,7 +134,13 @@ public class GridSetFactory {
             }
             relHeight += ((relWidth / ratio) - relHeight);
             
-            extent.coords[3] = (relHeight * tileHeight) + extent.coords[1];
+            // Do we keep the top or the bottom fixed?
+            if(alignTopLeft) {
+                extent.coords[1] = extent.coords[3] - (relHeight * tileHeight);
+            } else {
+                extent.coords[3] = (relHeight * tileHeight) + extent.coords[1];
+            }
+            
             
             resolutions[0] = (extent.getWidth() / ratio) / tileWidth;
         }
@@ -128,6 +149,6 @@ public class GridSetFactory {
             resolutions[i] = resolutions[i - 1] / 2;
         }
         
-        return createGridSet(name, srs, extent, resolutions, null, null, tileWidth, tileHeight);
+        return createGridSet(name, srs, extent, alignTopLeft, resolutions, null, null, tileWidth, tileHeight);
     }
 }

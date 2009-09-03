@@ -287,6 +287,17 @@
           pad it to form a set of suitable, rectangular grids
         </xs:documentation></xs:annotation>
       </xs:element>
+     <xs:element name="alignTopLeft" type="xs:boolean">
+        <xs:annotation><xs:documentation xml:lang="en">
+          In many cases the specified extent does not result in an integer
+          height or width for every resolution. In these cases GeoWebCache
+          will modify the extent in the X and/or Y direction.
+
+          If you set this to true GWC will not change the top coordinate,
+          but expand the bottom instead. This is convenient for systems
+          like WMTS, but may confuse WMS-C clients.
+        </xs:documentation></xs:annotation>
+      </xs:element>
       <xs:choice minOccurs="0" maxOccurs="1">
         <xs:element name="resolutions" type="gwc:doubleList" minOccurs="0">
           <xs:annotation><xs:documentation xml:lang="en">

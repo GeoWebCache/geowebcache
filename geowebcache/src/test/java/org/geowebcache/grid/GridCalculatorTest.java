@@ -237,7 +237,7 @@ public class GridCalculatorTest extends TestCase {
         BoundingBox bbox = new BoundingBox(-4.0,-4.0,4.0,4.0);
         double[] resolutions = {8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
         
-        GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(0), bbox, resolutions, null, null, 256, 256);        
+        GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(0), bbox, false, resolutions, null, null, 256, 256);        
         GridSubset gridSubset = GridSubsetFactory.createGridSubSet(gridSet);
         
         BoundingBox tileBounds = createApproximateTileBounds(gridSubset, bbox, 5.04, 256, 256);
@@ -261,14 +261,14 @@ public class GridCalculatorTest extends TestCase {
         assertEquals(2L, test[2]);
     }
     
-    public void testCustomSRSGrid() throws Exception {
+    public void testCustomSRSGridBottomLeft() throws Exception {
         // This mimics the Spearfish layer
         BoundingBox bbox = new BoundingBox(587334.20625, 4912451.9275, 611635.54375,
                 4936753.265000001);
         BoundingBox gridBase = new BoundingBox(587334.20625, 4912451.9275, 611635.54375,
                 4936753.265000001);
         
-        GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(26713), gridBase, 30, 256, 256);
+        GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(26713), gridBase, false, 30, 256, 256);
         GridSubset gridSubset = GridSubsetFactory.createGridSubSet(gridSet, bbox, 0, 20);
 
         // Test the basic algorithm for calculating appropriate resolutions
@@ -286,11 +286,59 @@ public class GridCalculatorTest extends TestCase {
 
         // Now lets go the other way
         assertTrue(Arrays.equals(gridLoc, gridSubset.closestIndex(bboxSolution)));
+    }
+    
+    public void testTopLeftNaive() throws Exception {
+        // This mimics the Spearfish layer
+        BoundingBox bbox = new BoundingBox(-180.0,-90.0,180.0,90.0);
+        BoundingBox gridBase = new BoundingBox(-180.0,-90.0,180.0,90.0);
+        
+        GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(4326), gridBase, true, 30, 256, 256);
+        GridSubset gridSubset = GridSubsetFactory.createGridSubSet(gridSet, bbox, 0, 20);
 
-        // This is a bit easy, but whatever
-        // TODO 
-        //long[] zoomedOut = gridSubset.gridCalc.getZoomedOutGridLoc();
-        //assertTrue(Arrays.equals(solution, zoomedOut));
+        // Check the actual max bounds
+        long[] solution = { 0, 0, 0 };
+        long[] closest = gridSubset.closestIndex(new BoundingBox(-180.0,-90.0,0.0,90.0));
+        assertTrue(Arrays.equals(solution, closest));
+
+        long[] solution2 = { 1, 0, 0 };
+        closest = gridSubset.closestIndex(new BoundingBox(0.0,-90.0,180.0,90.0));
+        assertTrue(Arrays.equals(solution2, closest));
+        
+        long[] t1 = {0,0,1}; // 90x90 degrees
+        BoundingBox test1 = gridSubset.boundsFromIndex(t1);
+        assertTrue(Math.abs(test1.coords[0] + 180.0) < 0.01);
+        assertTrue(Math.abs(test1.coords[1] + 90.0) < 0.01);
+        assertTrue(Math.abs(test1.coords[3]) < 0.01);
+    }
+    
+    public void testCustomSRSGridTopLeft() throws Exception {
+        // This mimics the Spearfish layer
+        BoundingBox bbox = new BoundingBox(587334.20625, 4912451.9275, 611635.54375,
+                4936753.265000001);
+        BoundingBox gridBase = new BoundingBox(587334.20625, 4912451.9275, 611635.54375,
+                4936753.265000001);
+        
+        GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(26713), gridBase, true, 30, 256, 256);
+        GridSubset gridSubset = GridSubsetFactory.createGridSubSet(gridSet, bbox, 0, 20);
+
+        // Test the basic algorithm for calculating appropriate resolutions
+        assertTrue(Math.abs(gridSubset.getResolutions()[0] - 94.9270) / 94.9270 < 0.01);
+
+        // Check the actual max bounds
+        long[] solution = { 0, 0, 0 };
+        long[] closest = gridSubset.closestIndex(bbox);
+        assertTrue(Arrays.equals(solution, closest));
+
+        // Test a grid location
+        long[] gridLoc = { 1, 0, 1 };
+        BoundingBox bboxSolution = new BoundingBox(599484.8750000002, 4912451.9275,
+                611635.5437500004, 4924602.59625);
+        assertTrue(bboxSolution.equals(gridSubset.boundsFromIndex(gridLoc)));
+
+        // Now lets go the other way
+        closest = gridSubset.closestIndex(bboxSolution);
+        assertTrue(Arrays.equals(gridLoc, closest));
     }
 
     private BoundingBox createApproximateTileBounds(GridSubset gridSubset, BoundingBox bbox, 

@@ -31,7 +31,8 @@ public class GridSetBroker {
         WORLD_EPSG4326 = GridSetFactory.createGridSet(
                 "EPSG:4326", 
                 SRS.getEPSG4326(), 
-                BoundingBox.WORLD4326, 
+                BoundingBox.WORLD4326,
+                false,
                 GridSetFactory.DEFAULT_LEVELS, 
                 256,
                 256 );
@@ -42,6 +43,7 @@ public class GridSetBroker {
                     "GoogleMapsCompatible",
                     SRS.getEPSG900913(),
                     BoundingBox.WORLD3857,
+                    false,
                     GridSetFactory.DEFAULT_LEVELS, 
                     256,
                     256 );
@@ -50,6 +52,7 @@ public class GridSetBroker {
                     "GoogleMapsCompatible", 
                     SRS.getEPSG3857(),
                     BoundingBox.WORLD3857,
+                    false,
                     GridSetFactory.DEFAULT_LEVELS,
                     256,
                     256 );

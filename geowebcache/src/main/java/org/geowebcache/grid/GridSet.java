@@ -21,8 +21,20 @@ public class GridSet {
         
     protected Grid[] gridLevels;
     
-    protected double[] leftBottom = new double[2];
     
+    /**
+     * The base cordinates, used to map tile indexes
+     * to coordinate bounding boxes. THese can either
+     * be top left or bottom left, so must be kept private
+     */
+    protected double[] baseCoords;
+    
+    /**
+     * Whether the y-coordinate of baseCoords is at
+     * the top (true) or at the bottom (false)
+     */
+    protected boolean yBaseToggle = false;
+       
     protected String name;
     
     protected SRS srs;
@@ -40,12 +52,17 @@ public class GridSet {
         
         double width = grid.resolution * tileWidth;
         double height = grid.resolution * tileHeight;
+       
+        long y = tileIndex[1];
+        if(yBaseToggle) {
+            y = y - grid.extent[1];
+        }
         
         BoundingBox tileBounds = new BoundingBox(
-                leftBottom[0] + width*tileIndex[0],
-                leftBottom[1] + height*tileIndex[1],
-                leftBottom[0] + width*(tileIndex[0] + 1),
-                leftBottom[1] + height*(tileIndex[1] + 1));
+                baseCoords[0] + width*tileIndex[0],
+                baseCoords[1] + height*(y),
+                baseCoords[0] + width*(tileIndex[0] + 1),
+                baseCoords[1] + height*(y + 1));
         return tileBounds;
     }
     
@@ -55,11 +72,19 @@ public class GridSet {
         double width = grid.resolution * tileWidth;
         double height = grid.resolution * tileHeight;
         
+        long bottomY = rectangleExtent[1];
+        long topY = rectangleExtent[3];
+        
+        if(yBaseToggle) {
+            bottomY = bottomY - grid.extent[1];
+            topY = topY - grid.extent[1];
+        }
+        
         BoundingBox rectangleBounds = new BoundingBox(
-                leftBottom[0] + width*rectangleExtent[0], 
-                leftBottom[1] + height*rectangleExtent[1],
-                leftBottom[0] + width*(rectangleExtent[2] + 1),
-                leftBottom[1] + height*(rectangleExtent[3] + 1) );
+                baseCoords[0] + width*rectangleExtent[0], 
+                baseCoords[1] + height*(bottomY),
+                baseCoords[0] + width*(rectangleExtent[2] + 1),
+                baseCoords[1] + height*(topY + 1) );
                 
         return rectangleBounds;
     }
@@ -92,9 +117,13 @@ public class GridSet {
         double width = grid.resolution * tileWidth;
         double height = grid.resolution * tileHeight;
         
-        long posX = (long) Math.round((tileBounds.coords[0] - leftBottom[0]) / width);
+        long posX = (long) Math.round((tileBounds.coords[0] - baseCoords[0]) / width);
         
-        long posY = (long) Math.round((tileBounds.coords[1] - leftBottom[1]) / height);
+        long posY = (long) Math.round((tileBounds.coords[1] - baseCoords[1]) / height);
+        
+        if(yBaseToggle) {
+            posY = posY + grid.extent[1];
+        }
         
         long[] ret = { posX, posY, level };
         
@@ -122,7 +151,7 @@ public class GridSet {
             if(error < bestError) {
                 bestError = error;
                 bestLevel = i;
-            } else if(error > bestError) {
+            } else if(error >= bestError) {
                 break;
             }
         }
@@ -136,10 +165,16 @@ public class GridSet {
         double width = grid.resolution * tileWidth;
         double height = grid.resolution * tileHeight;
         
-        long minX = (long) Math.floor((rectangeBounds.coords[0] - leftBottom[0]) / width);
-        long minY = (long) Math.floor((rectangeBounds.coords[1] - leftBottom[1]) / height);
-        long maxX = (long) Math.ceil(((rectangeBounds.coords[2] - leftBottom[0]) / width));
-        long maxY = (long) Math.ceil(((rectangeBounds.coords[3] - leftBottom[1]) / height));
+        
+        long minX = (long) Math.floor((rectangeBounds.coords[0] - baseCoords[0]) / width);
+        long minY = (long) Math.floor((rectangeBounds.coords[1] - baseCoords[1])/ height);
+        long maxX = (long) Math.ceil(((rectangeBounds.coords[2] - baseCoords[0]) / width));
+        long maxY = (long) Math.ceil(((rectangeBounds.coords[3] - baseCoords[1]) / height));
+        
+        if(yBaseToggle) {
+            minY = minY + grid.extent[1];
+            maxY = maxY + grid.extent[1];
+        }
         
         // We substract one, since that's the tile at that position
         long[] ret = { minX, minY, maxX - 1, maxY - 1, level };
@@ -174,6 +209,9 @@ public class GridSet {
                 return false;
         }
         
+        if(yBaseToggle != other.yBaseToggle)
+            return false;
+        
         return true;
     }
     
@@ -201,20 +239,25 @@ public class GridSet {
     }
     
     public double[] getLeftTopCorner(int gridIndex) {
+        if(yBaseToggle) {
+            double[] ret = {baseCoords[0], baseCoords[1]}; 
+            return ret;
+        }
+        
         Grid grid = gridLevels[gridIndex];
         
         double dTileHeight = tileHeight;
-        double dGridExtent = grid.extent[1] + 1;
+        double dGridExtent = grid.extent[1];
         
-        double top = leftBottom[1] + dTileHeight * grid.resolution * dGridExtent;
+        double top = baseCoords[1] + dTileHeight * grid.resolution * dGridExtent;
         
         // Round off if we are within 0.5% of an integer value
-        if(top - Math.round(top) < (top / 200)) {
+        if(Math.abs(top - Math.round(top)) < (top / 200)) {
             top = Math.round(top);
         }
         
         double[] ret = {
-                leftBottom[0],
+                baseCoords[0],
                 top 
                 };
                 
