@@ -43,8 +43,6 @@ import org.geowebcache.layer.wms.WMSLayer;
 
 public class GetCapabilitiesConfiguration implements Configuration {
     private static Log log = LogFactory.getLog(org.geowebcache.config.GetCapabilitiesConfiguration.class);
-
-    public static int preFetchWait = 5;
     
     private GridSetBroker gridSetBroker;
     
