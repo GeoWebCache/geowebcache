@@ -74,7 +74,7 @@ public class WMSHttpHelper {
         
         GridSubset gridSubset = tile.getGridSubset();
         
-        String wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(), true);
+        String wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(), WMSLayer.RequestType.MAP );
 
         StringBuilder strBuilder = new StringBuilder(wmsParams);
         
@@ -97,17 +97,17 @@ public class WMSHttpHelper {
         return makeRequest(tile, layer, strBuilder.toString(), tile.getMimeType().getMimeType());
     }
     
-    protected static byte[] makeFeatureInfoRequest(ConveyorTile tile,MimeType format, int x, int y) 
+    protected static byte[] makeFeatureInfoRequest(ConveyorTile tile, int x, int y) 
     throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
         
         GridSubset gridSubset = tile.getGridSubset();
         
-        String wmsParams = layer.getWMSRequestTemplate(format, false);
+        String wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(), WMSLayer.RequestType.FEATUREINFO );
 
         StringBuilder strBuilder = new StringBuilder(wmsParams);
-        
-        strBuilder.append("&INFO_FORMAT=").append(format.getFormat());
+        strBuilder.append("&INFO_FORMAT=").append(tile.getMimeType().getFormat());
+        strBuilder.append("&FORMAT=").append(tile.getMimeType().getFormat());
         strBuilder.append("&SRS=").append(gridSubset.getSRS().toString());
         strBuilder.append("&HEIGHT=").append(gridSubset.getTileHeight());
         strBuilder.append("&WIDTH=").append(gridSubset.getTileWidth());
@@ -121,7 +121,7 @@ public class WMSHttpHelper {
         strBuilder.append("&X=").append(x);
         strBuilder.append("&Y=").append(y);
         
-        return makeRequest(tile, layer, strBuilder.toString(), format.getMimeType());
+        return makeRequest(tile, layer, strBuilder.toString(), tile.getMimeType().getMimeType());
     }
     
 
@@ -297,10 +297,10 @@ public class WMSHttpHelper {
     private static boolean mimeStringCheck(String requestMime, String responseMime) {
         if(responseMime.equalsIgnoreCase(requestMime)) {
             return true;
-        } else {
-            if(requestMime.startsWith("image/png") && responseMime.startsWith("image/png")) {
+        } else if(responseMime.startsWith(requestMime)) {
+            return true;
+        } else if(requestMime.startsWith("image/png") && responseMime.startsWith("image/png")) {
                 return true;
-            }
         }
         return false;
     }

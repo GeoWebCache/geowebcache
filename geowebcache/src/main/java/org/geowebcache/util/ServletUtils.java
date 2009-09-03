@@ -359,8 +359,13 @@ public class ServletUtils {
         return ret;
     }
     
-    private static String[] URLDecode(String[] value, String encoding) {
-        // TODO Auto-generated method stub
-        return null;
+    private static String[] URLDecode(String[] values, String encoding) {
+        String[] decodedValues = new String[values.length];
+        
+        for(int i=0; i<values.length; i++) {
+            decodedValues[i] = URLDecode(values[i], encoding);
+        }
+        
+        return decodedValues;
     }
 }

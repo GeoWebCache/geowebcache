@@ -59,7 +59,7 @@ import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
 
 public class WMSLayer extends TileLayer {
-    //public enum RequestType {GETMAP, GETLEGEND, GETFEATUREINFO};
+    public enum RequestType {MAP, FEATUREINFO};
     
     private String[] wmsUrl = null;
     
@@ -136,6 +136,8 @@ public class WMSLayer extends TileLayer {
     private transient String encodedWMSStyles;
     
     private transient String encodedPalette;
+    
+    private transient String encodedName;
 
     private static transient Log log;
     
@@ -315,7 +317,11 @@ public class WMSLayer extends TileLayer {
             }
         }
 
-        encodedWMSLayers = ServletUtils.URLEncode(wmsLayers);
+        if(wmsLayers != null && wmsLayers.length() > 0) {
+            encodedWMSLayers = ServletUtils.URLEncode(wmsLayers);
+        } else {
+            encodedName = ServletUtils.URLEncode(name);
+        }
         
         if(wmsStyles != null) {
             encodedWMSStyles = ServletUtils.URLEncode(wmsStyles);
@@ -328,9 +334,9 @@ public class WMSLayer extends TileLayer {
         return true;
     }
     
-    public byte[] getFeatureInfo(ConveyorTile convTile, int x, int y, MimeType format)
-    throws GeoWebCacheException {
-        return  WMSHttpHelper.makeFeatureInfoRequest(convTile,format,x,y);
+    public byte[] getFeatureInfo(ConveyorTile convTile, int x, int y)
+    throws GeoWebCacheException {        
+        return  WMSHttpHelper.makeFeatureInfoRequest(convTile,x,y);
     }   
 
     /**
@@ -737,14 +743,17 @@ public class WMSLayer extends TileLayer {
         }
     }
 
-    public String getWMSRequestTemplate(MimeType responseFormat, boolean isGetMap) {
+    public String getWMSRequestTemplate(MimeType responseFormat, RequestType reqType) {
         FormatModifier mod = getFormatModifier(responseFormat);
         
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append("SERVICE=WMS");
         
-        if(isGetMap) {
-            strBuilder.append("&REQUEST=GetMap");
+        strBuilder.append("&REQUEST=");
+        if(reqType == RequestType.MAP) {
+            strBuilder.append("GetMap");
+        } else { //if(reqType == RequestType.FEATUREINFO) {
+            strBuilder.append("GetFeatureInfo");
         }
         
         strBuilder.append("&VERSION=");
@@ -755,10 +764,21 @@ public class WMSLayer extends TileLayer {
         }
 
         strBuilder.append("&LAYERS=");
+        
         if(this.wmsLayers != null && this.wmsLayers.length() != 0) {
             strBuilder.append(encodedWMSLayers);
         } else {
-            strBuilder.append(name);
+            strBuilder.append(encodedName);
+        }
+        
+         if(reqType == RequestType.FEATUREINFO) {
+            strBuilder.append("&QUERY_LAYERS=");
+            
+            if(this.wmsLayers != null && this.wmsLayers.length() != 0) {
+                strBuilder.append(encodedWMSLayers);
+            } else {
+                strBuilder.append(encodedName);
+            }
         }
         
         strBuilder.append("&EXCEPTIONS=");
@@ -775,17 +795,17 @@ public class WMSLayer extends TileLayer {
             }
         }
 
-        if(isGetMap) {
+        if(reqType == RequestType.MAP) {
             Boolean tmpTransparent = transparent;
+            
             if (mod != null && mod.getTransparent() != null) {
                 tmpTransparent = mod.getTransparent();
             }
-            if (tmpTransparent != null) {
-                if (tmpTransparent) {
-                    strBuilder.append("&TRANSPARENT=").append("TRUE");
-                } else {
-                    strBuilder.append("&TRANSPARENT=").append("FALSE");
-                }
+            
+            if (tmpTransparent == null || tmpTransparent) {
+                strBuilder.append("&TRANSPARENT=").append("TRUE");
+            } else {
+                strBuilder.append("&TRANSPARENT=").append("FALSE");
             }
 
             String tmpBgColor = bgColor;

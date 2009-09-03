@@ -38,6 +38,8 @@ import org.geowebcache.util.ServletUtils;
 public class WMTSService extends Service {
     public static final String SERVICE_WMTS = "wmts";
 
+    enum RequestType {TILE, CAPABILITIES, FEATUREINFO};
+    
     //private static Log log = LogFactory.getLog(org.geowebcache.service.wmts.WMTSService.class);
     
     private StorageBroker sb;
@@ -65,7 +67,7 @@ public class WMTSService extends Service {
         if(req == null) {
             throw new GeoWebCacheException("Missing REQUEST parameter");
         } else if(req.equals("gettile")) {
-            ConveyorTile tile = getTile(values, request, response);
+            ConveyorTile tile = getTile(values, request, response, RequestType.TILE);
             return tile;
         } else if(req.equals("getcapabilities")) {
             ConveyorTile tile = new ConveyorTile(sb, values[0], request, response);
@@ -73,7 +75,7 @@ public class WMTSService extends Service {
             tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
             return tile;
         } else if(req.equals("getfeatureinfo")) {
-            ConveyorTile tile = getTile(values, request, response);
+            ConveyorTile tile = getTile(values, request, response, RequestType.FEATUREINFO);
             tile.setHint(req);
             tile.setRequestHandler(Conveyor.RequestHandler.SERVICE);
             return tile;
@@ -82,8 +84,8 @@ public class WMTSService extends Service {
         }
     }
     
-    private ConveyorTile getTile(String[] values, HttpServletRequest request, HttpServletResponse response)
-    throws GeoWebCacheException {
+    private ConveyorTile getTile(String[] values, HttpServletRequest request, 
+            HttpServletResponse response, RequestType reqType) throws GeoWebCacheException {
         String encoding = request.getCharacterEncoding();
         
         String layer = values[0];
@@ -92,6 +94,9 @@ public class WMTSService extends Service {
         }
 
         TileLayer tileLayer = tld.getTileLayer(layer);
+        if(tileLayer == null) {
+            throw new ServiceException("Unknown layer " + layer);
+        }
         
         String[] modStrs = null;
         if(tileLayer instanceof WMSLayer) {
@@ -103,12 +108,25 @@ public class WMTSService extends Service {
             modStrs[0] = null;
             modStrs[1] = null;
         }
-                
+        
         MimeType mimeType = null;
-        try {
-            mimeType = MimeType.createFromFormat(values[3]);
-        } catch (MimeException me) {
-            throw new ServiceException("Unable to determine requested format, " + values[3]);
+        if(reqType == RequestType.TILE) {
+            try {
+                mimeType = MimeType.createFromFormat(values[3]);
+            } catch (MimeException me) {
+                throw new ServiceException("Unable to determine requested format, " + values[3]);
+            } 
+        } else {
+            String infoFormat = ServletUtils.stringFromMap(
+                    request.getParameterMap(), 
+                    request.getCharacterEncoding(), 
+                    "infoformat" );
+            
+            try {
+                mimeType = MimeType.createFromFormat(infoFormat);
+            } catch (MimeException me) {
+                throw new ServiceException("Unable to determine requested infoformat, " + infoFormat);
+            }
         }
         
         if (values[4] == null) {
@@ -145,10 +163,13 @@ public class WMTSService extends Service {
 
         long[] tileIndex = {x,y,z};
 
-        return new ConveyorTile(
+        ConveyorTile convTile = new ConveyorTile(
                 sb, layer, gridSubset.getName(), tileIndex, mimeType, 
                 modStrs[0], modStrs[1], request, response);
 
+        convTile.setTileLayer(tileLayer);
+        
+        return convTile;
     }
 
     public void handleRequest(Conveyor conv)
@@ -163,7 +184,6 @@ public class WMTSService extends Service {
                 
             } else if(tile.getHint().equals("getfeatureinfo")) {
                 ConveyorTile convTile = (ConveyorTile) conv;
-                
                 WMTSGetFeatureInfo wmsGFI = new WMTSGetFeatureInfo(convTile);      
                 wmsGFI.writeResponse();
             }

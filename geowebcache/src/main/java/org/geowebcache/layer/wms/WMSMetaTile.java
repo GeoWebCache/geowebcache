@@ -78,7 +78,7 @@ public class WMSMetaTile extends MetaTile {
     }
 
     protected String getWMSParams() throws GeoWebCacheException {
-        String baseParameters = wmsLayer.getWMSRequestTemplate(this.getResponseFormat(), true);
+        String baseParameters = wmsLayer.getWMSRequestTemplate(this.getResponseFormat(), WMSLayer.RequestType.MAP);
 
         BoundingBox metaBbox = gridSubset.boundsFromRectangle(metaGridCov);
         
