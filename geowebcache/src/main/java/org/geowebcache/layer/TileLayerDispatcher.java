@@ -43,18 +43,31 @@ public class TileLayerDispatcher {
         
         this.configs = configs;
         
-        layers = initialize();
+        ConfigurationLoader loader = new ConfigurationLoader(this, 2);
+        
+        loader.start();
+    }
+    
+    public TileLayerDispatcher(GridSetBroker gridSetBroker, List<Configuration> configs, int loadDelay) {
+        this.gridSetBroker = gridSetBroker;
+        
+        this.configs = configs;
+        
+        ConfigurationLoader loader = new ConfigurationLoader(this, loadDelay);
+        
+        loader.start();
     }
 
     public TileLayer getTileLayer(String layerIdent)
             throws GeoWebCacheException {
 
-        HashMap<String, TileLayer> tmpLayers = null;
+        TileLayer layer;
         synchronized(this) {
-            tmpLayers = this.getLayers();
+            layer = layers.get(layerIdent);
         }
         
-        TileLayer layer = tmpLayers.get(layerIdent);
+        
+        
         if (layer == null) {
             throw new GeoWebCacheException("Thread " + Thread.currentThread().getId() + " Unknown layer " + layerIdent
                     + ". Check the logfiles,"
@@ -88,6 +101,10 @@ public class TileLayerDispatcher {
      * @return
      */
     public HashMap<String, TileLayer> getLayers() {
+        HashMap<String,TileLayer> ret = null;
+        synchronized(this) {
+            ret = this.layers;
+        }
         return this.layers;
     }
 
@@ -184,5 +201,34 @@ public class TileLayerDispatcher {
         } else {
             layerMap.put(layer.getName(), layer);
         }
+    }
+    
+    private class ConfigurationLoader extends Thread {
+        
+        TileLayerDispatcher parent;
+        
+        int loadDelay;
+        
+        private ConfigurationLoader(TileLayerDispatcher parent, int loadDelay) {
+            this.parent = parent;
+            this.loadDelay = loadDelay;
+        }
+        
+        public void run() {
+            synchronized(parent) {
+                log.info("ConfigurationLoader acquired lock, sleeping 5 seconds");
+                try {
+                    Thread.sleep(loadDelay*1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                log.info("ConfigurationLoader woke up, initializing");
+                
+                parent.layers = parent.initialize();
+                
+                log.info("ConfigurationLoader completed");
+            }
+        }
+        
     }
 }

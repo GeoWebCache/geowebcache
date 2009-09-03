@@ -42,9 +42,10 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 
 public class GetCapabilitiesConfiguration implements Configuration {
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.config.GetCapabilitiesConfiguration.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.config.GetCapabilitiesConfiguration.class);
 
+    public static int preFetchWait = 5;
+    
     private GridSetBroker gridSetBroker;
     
     private String url = null;
@@ -101,7 +102,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
      * 
      * @return the layers described at the given URL
      */
-    public List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
+    public synchronized List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
         List<TileLayer> layers = null;
 
         WebMapServer wms = getWMS();
@@ -112,7 +113,9 @@ public class GetCapabilitiesConfiguration implements Configuration {
         String wmsUrl = getWMSUrl(wms);
         log.info("Using " + wmsUrl + " to generate URLs for WMS requests");
 
+        
         layers = getLayers(wms, wmsUrl);
+        
         if (layers == null || layers.size() < 1) {
             log.error("Unable to find any layers based on " + url);
         } else {
@@ -280,5 +283,4 @@ public class GetCapabilitiesConfiguration implements Configuration {
         double tmp = Math.PI/4.0 + y/2.0; 
         return 20037508.34 * Math.log(Math.tan(tmp)) / Math.PI;
     }
-    
 }
