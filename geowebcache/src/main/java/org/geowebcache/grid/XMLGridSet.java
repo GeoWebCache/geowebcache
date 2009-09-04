@@ -7,8 +7,9 @@ public class XMLGridSet {
     BoundingBox extent;
     Boolean alignTopLeft;
     double[] resolutions;
-    double[] scales;
+    double[] scaleDenominators;
     Integer levels;
+    Double metersPerUnit;
     String[] scaleNames;
     Integer tileHeight;
     Integer tileWidth;
@@ -29,14 +30,14 @@ public class XMLGridSet {
             alignTopLeft = false;
         }
         
-        if(resolutions != null || scales != null) {
-            return GridSetFactory.createGridSet(name, srs, extent, alignTopLeft, resolutions, scales, scaleNames, tileWidth, tileHeight);
+        if(resolutions != null || scaleDenominators != null) {
+            return GridSetFactory.createGridSet(name, srs, extent, alignTopLeft, resolutions, scaleDenominators, metersPerUnit, scaleNames, tileWidth, tileHeight);
         } else {
             if(levels == null) {
                 levels = 30;
             }
             
-            return GridSetFactory.createGridSet(name, srs, extent, alignTopLeft, levels, tileWidth, tileHeight);
+            return GridSetFactory.createGridSet(name, srs, extent, alignTopLeft, levels, metersPerUnit, tileWidth, tileHeight);
         }
     }
 }

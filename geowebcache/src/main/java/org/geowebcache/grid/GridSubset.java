@@ -223,6 +223,13 @@ public class GridSubset {
        return ret;
     }
     
+    /**
+     * @return whether the scale is based on CRS84, even though it may not be
+     */
+    public boolean getScaleWarning() {
+        return gridSet.scaleWarning;
+    }
+    
     public SRS getSRS() {
         return gridSet.srs;
     }

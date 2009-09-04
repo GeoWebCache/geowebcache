@@ -392,15 +392,18 @@ public class WMTSGetCapabilities {
          Grid[] grids = gridSet.getGrids();
          for(int i=0; i<grids.length; i++) {
              double[] leftTop = gridSet.getLeftTopCorner(i);
-             tileMatrix(str, grids[i], leftTop[1], leftTop[0], gridSet.getTileWidth(), gridSet.getTileHeight());
+             tileMatrix(str, grids[i], leftTop[1], leftTop[0], gridSet.getTileWidth(), gridSet.getTileHeight(), gridSet.getScaleWarning());
          }
          str.append("  </TileMatrixSet>\n");
      }
      
-     private void tileMatrix(StringBuilder str, Grid grid, double top, double left, int tileWidth, int tileHeight) {
+     private void tileMatrix(StringBuilder str, Grid grid, double top, double left, int tileWidth, int tileHeight, boolean scaleWarning) {
          str.append("    <TileMatrix>\n");
-         str.append("      <ows:Identifier>"+grid.getName()+"</ows:Identifier>\n");         
-         str.append("      <ScaleDenominator>"+grid.getScale()+"</ScaleDenominator>\n");
+         str.append("      <ows:Identifier>"+grid.getName()+"</ows:Identifier>\n");
+         if(scaleWarning) {
+             str.append("      <Abstract>The grid was not well-defined, the scale therefore assumes 1m per map unit.</Abstract>");
+         }
+         str.append("      <ScaleDenominator>"+grid.getScaleDenominator()+"</ScaleDenominator>\n");
          str.append("      <TopLeftCorner>"+ top +" "+ left +"</TopLeftCorner>\n");
          str.append("      <TileWidth>"+tileWidth+"</TileWidth>\n");    
          str.append("      <TileHeight>"+tileHeight+"</TileHeight>\n");      

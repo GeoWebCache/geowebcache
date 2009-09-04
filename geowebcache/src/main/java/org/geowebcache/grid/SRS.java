@@ -72,7 +72,9 @@ public class SRS implements Comparable {
     public boolean equals(Object obj) {
         if(obj instanceof SRS) {
             SRS other = (SRS) obj;
-            if(other.number == this.number) {
+            if(other.number == this.number
+                    || (this.number == 3857 && other.number == 900913)
+                    || (this.number == 900913 && other.number == 3857)) {
                 return true;
             }
         }

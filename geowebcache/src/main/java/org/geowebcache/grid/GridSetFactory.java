@@ -16,9 +16,18 @@
  */
 package org.geowebcache.grid;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
 public class GridSetFactory {
+    private static Log log = LogFactory.getLog(GridSetFactory.class);
+    
     static int DEFAULT_LEVELS = 31;
+    
+    final static double EPSG4326_TO_METERS = 6378137.0 * 2.0 * Math.PI / 360;
+    
+    final static double EPSG3857_TO_METERS = 1;
     
     private static GridSet baseGridSet(String name, SRS srs, int tileWidth, int tileHeight) {
         GridSet gridSet = new GridSet();
@@ -45,7 +54,7 @@ public class GridSetFactory {
      */
     public static GridSet createGridSet( 
             String name, SRS srs, BoundingBox extent, 
-            boolean alignTopLeft, double[] resolutions, double[] scales, 
+            boolean alignTopLeft, double[] resolutions, double[] scaleDenoms, Double metersPerUnit,
             String[] scaleNames, int tileWidth, int tileHeight) {
         
         GridSet gridSet = baseGridSet(name, srs, tileWidth, tileHeight);
@@ -61,22 +70,42 @@ public class GridSetFactory {
             gridSet.baseCoords[1] = extent.coords[1];
         }
         
-        gridSet.gridLevels = new Grid[resolutions.length];
-        
-        if(resolutions == null) {
-            resolutions = new double[scales.length];
-            for(int i=0; i<scales.length; i++) {
-                resolutions[i] = scales[i] * 0.00028;
+        if(metersPerUnit == null) {
+            if(srs.equals(SRS.getEPSG4326())) {
+                metersPerUnit = EPSG4326_TO_METERS;
+            } else if(srs.equals(SRS.getEPSG3857())) {
+                metersPerUnit = EPSG3857_TO_METERS;
+            } else {
+                if(resolutions == null) {
+                    log.warn("GridSet "+name+" was defined without metersPerUnit, assuming 1m/unit."
+                            + " All your tiles will be off if this is incorrect.");
+                } else {
+                    log.warn("GridSet "+name+" was defined without metersPerUnit. Assuming 1m per SRS unit for WMTS scale output.");
+                    gridSet.scaleWarning = true;
+                }
+                metersPerUnit = 1.0;
             }
         }
         
-        for(int i=0; i<resolutions.length; i++) {
+        if(resolutions == null) {
+            gridSet.gridLevels = new Grid[scaleDenoms.length];
+        } else {
+            gridSet.gridLevels = new Grid[resolutions.length];
+        }
+        
+        for(int i=0; i<gridSet.gridLevels.length; i++) {
             Grid curGrid = new Grid();
             curGrid.resolution = resolutions[i];
 
-            // OGC magic potion
-            curGrid.scale = resolutions[i] / 0.00028;
-                
+            if(scaleDenoms != null) {
+                curGrid.scaleDenom = scaleDenoms[i];
+                curGrid.resolution = 0.00028 * (scaleDenoms[i] / metersPerUnit);
+            } else {
+                curGrid.resolution = resolutions[i];
+                curGrid.scaleDenom =  (resolutions[i] * metersPerUnit) / 0.00028;
+                //System.out.println(name+" : "+i+" : "+curGrid.scaleDenom+" : "+resolutions[i]);
+            }
+            
             double mapUnitWidth = tileWidth * curGrid.resolution;
             double mapUnitHeight = tileHeight * curGrid.resolution;
             
@@ -96,8 +125,8 @@ public class GridSetFactory {
     }
     
     public static GridSet createGridSet(
-            String name, SRS srs, BoundingBox extent, boolean alignTopLeft, 
-            int levels, int tileWidth, int tileHeight) {
+            String name, SRS srs, BoundingBox extent, boolean alignTopLeft,
+            int levels, Double metersPerUnit, int tileWidth, int tileHeight) {
         
         double[] resolutions = new double[levels];
         
@@ -141,7 +170,6 @@ public class GridSetFactory {
                 extent.coords[3] = (relHeight * tileHeight) + extent.coords[1];
             }
             
-            
             resolutions[0] = (extent.getWidth() / ratio) / tileWidth;
         }
         
@@ -149,6 +177,6 @@ public class GridSetFactory {
             resolutions[i] = resolutions[i - 1] / 2;
         }
         
-        return createGridSet(name, srs, extent, alignTopLeft, resolutions, null, null, tileWidth, tileHeight);
+        return createGridSet(name, srs, extent, alignTopLeft, resolutions, null, metersPerUnit, null, tileWidth, tileHeight);
     }
 }

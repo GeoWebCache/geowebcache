@@ -27,12 +27,12 @@
         <double>959189.3312465074</double>
       </coords>
     </extent>
-    <alignTopLeft>TRUE</alignTopLeft>
+    <alignTopLeft>true</alignTopLeft>
     <levels>20</levels>
     <tileHeight>150</tileHeight>
     <tileWidth>200</tileWidth>
   </gridSet>
-</gridSets> 
+</gridSets>
 <layers>
     <wmsLayer>
     <name>bluemarble</name>
@@ -45,6 +45,12 @@
     <gridSubsets>
       <gridSubset>
         <gridSetName>testGridSet1</gridSetName>
+      </gridSubset>
+      <gridSubset>
+        <gridSetName>GlobalCRS84Scale</gridSetName>
+      </gridSubset>
+      <gridSubset>
+        <gridSetName>GlobalCRS84Pixel</gridSetName>
       </gridSubset>
     </gridSubsets>
     <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>

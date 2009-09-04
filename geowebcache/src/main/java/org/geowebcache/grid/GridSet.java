@@ -34,6 +34,8 @@ public class GridSet {
      * the top (true) or at the bottom (false)
      */
     protected boolean yBaseToggle = false;
+    
+    protected boolean scaleWarning = false;
        
     protected String name;
     
@@ -270,6 +272,10 @@ public class GridSet {
     
     public SRS getSRS() {
         return srs;
+    }
+    
+    public boolean getScaleWarning() {
+        return scaleWarning;
     }
     
     public int getTileHeight() {

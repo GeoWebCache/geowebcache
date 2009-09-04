@@ -49,14 +49,18 @@ public class GridSubsetFactory {
             ret.gridCoverageLevels = new GridCoverage[gridSet.gridLevels.length - ret.firstLevel];
         }
         
+        // Is this plain wrong? GlobalCRS84Scale, I guess the resolution forces it
+        BoundingBox gridSetBouds = gridSet.getBounds();
+        
         for(int i=0; i<ret.gridCoverageLevels.length; i++) {
             GridCoverage gridCov;
             
             if(coverageBounds != null) {
-                gridCov = new GridCoverage(
-                        gridSet.closestRectangle(i + ret.firstLevel, coverageBounds) );
+                gridCov = new GridCoverage(gridSet.closestRectangle(i + ret.firstLevel, coverageBounds) );
             } else {
-                gridCov = new GridCoverage(gridSet.closestRectangle(i + ret.firstLevel, gridSet.getBounds()));
+                long[] gridExtent = gridSet.gridLevels[i + ret.firstLevel].extent;
+                long[] fullCoverage = {0,0,gridExtent[0] - 1,gridExtent[1] -1, i + ret.firstLevel}; 
+                gridCov = new GridCoverage(fullCoverage);
             }
 
             ret.gridCoverageLevels[i] = gridCov;

@@ -95,7 +95,7 @@
           and then persist that to disk.
         </xs:documentation></xs:annotation>
      </xs:element>
-     <xs:element name="grids" type="gwc:DEPRECATEDgrids">
+     <xs:element name="grids" type="gwc:DEPRECATEDgrids" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
          DEPRECATED
        </xs:documentation></xs:annotation>

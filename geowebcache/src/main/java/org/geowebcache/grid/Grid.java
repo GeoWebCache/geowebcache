@@ -24,7 +24,7 @@ public class Grid {
     
     protected double resolution;
     
-    protected double scale;
+    protected double scaleDenom;
  
     protected String name;
     
@@ -51,7 +51,7 @@ public class Grid {
         return name;
     }
     
-    public double getScale() {
-        return scale;
+    public double getScaleDenominator() {
+        return scaleDenom;
     }
 }
