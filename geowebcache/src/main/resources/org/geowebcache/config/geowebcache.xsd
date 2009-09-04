@@ -95,8 +95,11 @@
           and then persist that to disk.
         </xs:documentation></xs:annotation>
      </xs:element>
-     <!-- Ignore the old grids element -->
-     <xs:element name="grids" processContents="skip" minOccurs="0" maxOccurs="1"/>
+     <xs:element name="grids" type="gwc:DEPRECATEDgrids">
+       <xs:annotation><xs:documentation xml:lang="en">
+         DEPRECATED
+       </xs:documentation></xs:annotation>
+     </xs:element>
      <xs:element name="gridSubsets" type="gwc:GridSubsets" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
          The grid definitions contain information about the SRS, the maximum extent for 
@@ -761,6 +764,59 @@
         but PNG and GIF could also be used.
       </xs:documentation></xs:annotation>
     </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+
+<xs:complexType name="DEPRECATEDgrids">
+  <xs:sequence>
+      <xs:element name="entry" type="gwc:DEPRECATEDentry" minOccurs="1" maxOccurs="unbounded">
+        <xs:annotation><xs:documentation xml:lang="en">
+          DEPRECATED
+        </xs:documentation></xs:annotation>
+      </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="DEPRECATEDentry">
+  <xs:sequence>
+     <xs:element name="srs" type="gwc:srs"/>
+     <xs:element name="grid" type="gwc:DEPRECATEDgrid"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="DEPRECATEDgrid">
+  <xs:sequence>
+     <xs:element name="srs" type="gwc:srs"/>
+     <xs:element name="dataBounds" type="gwc:Bounds">
+        <xs:annotation><xs:documentation xml:lang="en">
+	    DEPRECATED
+        </xs:documentation></xs:annotation>
+      </xs:element>
+     <xs:element name="gridBounds" type="gwc:Bounds">
+       <xs:annotation><xs:documentation xml:lang="en">
+	   DEPRECATED
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:choice minOccurs="0" maxOccurs="1">
+       <xs:element name="resolutions" type="gwc:doubleList" minOccurs="0">
+         <xs:annotation><xs:documentation xml:lang="en">
+	     DEPRECATED
+         </xs:documentation></xs:annotation>
+       </xs:element>
+       <xs:sequence>
+         <xs:element name="zoomStart" type="xs:integer" minOccurs="0">
+           <xs:annotation><xs:documentation xml:lang="en">
+	     DEPRECATED
+           </xs:documentation></xs:annotation>
+         </xs:element>
+         <xs:element name="zoomStop" type="xs:integer" minOccurs="0">
+           <xs:annotation><xs:documentation xml:lang="en">
+	     DEPRECATED
+           </xs:documentation></xs:annotation>
+         </xs:element>
+       </xs:sequence>
+     </xs:choice>
   </xs:sequence>
 </xs:complexType>
 
