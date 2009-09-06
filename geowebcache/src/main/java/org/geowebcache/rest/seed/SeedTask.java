@@ -91,7 +91,11 @@ public class SeedTask extends GWCTask {
         }
         
         String gridSetId = req.getGridSetId();
+        
         if (gridSetId == null) {
+            gridSetId = tl.getGridSubsetForSRS(req.getSRS()).getName();
+        }
+        if(gridSetId == null) {
             gridSetId = tl.getGridSubsets().entrySet().iterator().next().getKey();
         }
         

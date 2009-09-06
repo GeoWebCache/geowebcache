@@ -18,6 +18,7 @@
 package org.geowebcache.rest.seed;
 
 import org.geowebcache.grid.BoundingBox;
+import org.geowebcache.grid.SRS;
 
 public class SeedRequest {
     private String name = null;
@@ -25,6 +26,8 @@ public class SeedRequest {
     private BoundingBox bounds = null;
 
     private String gridSetId;
+    
+    private SRS srs;
     
     private Integer threadCount = null;
 
@@ -105,6 +108,14 @@ public class SeedRequest {
      */
     public String getMimeFormat() {
         return this.format;
+    }
+    
+    /**
+     * Used to handle 1.1.x-style seed requests
+     * @return
+     */
+    public SRS getSRS() {
+        return this.srs;
     }
     /**
      * Method returns the zoom start level for this seed request

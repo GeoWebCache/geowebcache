@@ -54,8 +54,14 @@ public class TruncateTask extends GWCTask {
     }
     
     public void doAction() throws GeoWebCacheException {
-        GridSubset gridSubset = tl.getGridSubset(req.getGridSetId());
-        
+        String gridSetId = req.getGridSetId();
+        GridSubset gridSubset;
+        if(gridSetId == null) {
+            gridSubset = tl.getGridSubsetForSRS(req.getSRS());
+        } else {
+            gridSubset = tl.getGridSubset(gridSetId);
+        }
+         
         runFilterUpdates();
         
         long[][] coverages = null;
