@@ -112,9 +112,9 @@ public class Demo {
             +"<hr>\n"
             +"<table cellspacing=\"10\" border=\"0\">\n"
             +"<tr><td><strong>Layer name:</strong></td>" 
-            +"<td colspan=\"2\"><strong>OpenLayers:</strong></td>"
+            +"<td><strong>Web-friendly Grids Sets:</strong></td>"
             +"<td colspan=\"2\"><strong>Google Earth:</strong></td>" 
-            +"<td><strong>Custom:</strong></td>" 
+            +"<td><strong>Other Grid Sets</strong></td>" 
             +"</tr>\n";
         
         String rows = tableRows(tileLayerDispatcher, gridSetBroker);
@@ -132,35 +132,38 @@ public class Demo {
         
         while(it.hasNext()) {
             TileLayer layer = it.next().getValue();     
-            buf.append("<tr><td>"+layer.getName()+"</td>");
+            buf.append("<tr><td>"+layer.getName()+"</td><td><ul>");
             
-            GridSubset epsg4326GridSubSet = layer.getGridSubsetForSRS(SRS.getEPSG4326());
-            if(null != epsg4326GridSubSet) {
-                buf.append("<td>"+generateDemoUrl(
+            GridSubset epsg4326GridSubset = layer.getGridSubset(gridSetBroker.WORLD_EPSG4326.getName());
+            if(null != epsg4326GridSubset) {
+                buf.append("<li>"+generateDemoUrl(
                         layer.getName(),
-                        epsg4326GridSubSet.getName())
-                        +"</td>");
+                        epsg4326GridSubset.getName(),
+                        epsg4326GridSubset.getSRS())
+                        +"</li>");
             } else {
-                buf.append("<td>EPSG:4326 not supported</td>");
+                buf.append("<li>"+gridSetBroker.WORLD_EPSG4326.getName()+" not supported</li>");
             }
             
             // We get the SRS from the GridSet because it may use EPSG:900913 under the covers
-            GridSubset epsg3857GridSubSet = layer.getGridSubsetForSRS(gridSetBroker.WORLD_EPSG3857.getSRS());
-            if(null != epsg3857GridSubSet) {
-                buf.append("<td>"+generateDemoUrl(
+            GridSubset epsg3857GridSubset = layer.getGridSubset(gridSetBroker.WORLD_EPSG3857.getName());
+            if(null != epsg3857GridSubset) {
+                buf.append("<li>"+generateDemoUrl(
                         layer.getName(),
-                        epsg3857GridSubSet.getName())
-                        +"</td>");
+                        epsg3857GridSubset.getName(),
+                        epsg3857GridSubset.getSRS())
+                        +"</li>");
             } else {
-                buf.append("<td>Spherical Mercator not supported</td>");
+                buf.append("<li>"+gridSetBroker.WORLD_EPSG3857.getName()+" not supported</li>");
             }
             
-            if(null != epsg4326GridSubSet && epsg4326GridSubSet.getGridSet().equals(gridSetBroker.WORLD_EPSG4326)) {
+            buf.append("</ul></td>\n");
+            if(null != epsg4326GridSubset) {
                 String prefix = "";
                 buf.append("<td><a href=\""+prefix+"service/kml/"+layer.getName()+".png.kml\">KML (PNG)</a></td>"
                 + "<td><a href=\""+prefix+"service/kml/"+layer.getName()+".kml.kmz\">KMZ (vector)</a></td>");
             } else {
-                buf.append("<td colspan=\"2\">Google Earth requires "+gridSetBroker.WORLD_EPSG4326.getName()+"</td>");
+                buf.append("<td colspan=\"2\">CRS84Geometric required</td>");
             }
             
             // Any custom projections?
@@ -169,9 +172,9 @@ public class Demo {
             Iterator<GridSubset> iter = layer.getGridSubsets().values().iterator();
             while(iter.hasNext()) {
                 GridSubset gridSubset = iter.next();
-                if(! gridSubset.getGridSet().equals(gridSetBroker.WORLD_EPSG4326) 
-                        && ! gridSubset.getGridSet().equals(gridSetBroker.WORLD_EPSG3857)) { 
-                    buf.append(generateDemoUrl(layer.getName(), gridSubset.getName())+"<br />");
+                if(! gridSubset.getName().equals(gridSetBroker.WORLD_EPSG4326.getName())
+                        && ! gridSubset.getName().equals(gridSetBroker.WORLD_EPSG3857.getName())) { 
+                    buf.append(generateDemoUrl(layer.getName(), gridSubset.getName(), gridSubset.getSRS())+"<br />");
                     count++;
                 }
             }
@@ -186,8 +189,8 @@ public class Demo {
         return buf.toString();
     }
     
-    private static String generateDemoUrl(String layerName, String gridSetId) {
-        return "<a href=\"demo/"+layerName+"?gridSet="+gridSetId+"\">"+gridSetId+"</a>";
+    private static String generateDemoUrl(String layerName, String gridSetId, SRS srs) {
+        return "<a href=\"demo/"+layerName+"?gridSet="+gridSetId+"\">"+gridSetId+" ("+srs.toString()+")</a>";
     }
     
     private static String generateHTML(TileLayer layer, String gridSetStr, String formatStr, boolean asPlugin) 

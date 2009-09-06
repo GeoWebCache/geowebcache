@@ -26,7 +26,7 @@ public class GridSubsetFactory {
         ret.gridCoverageLevels = new GridCoverage[gridSet.gridLevels.length];
         
         for(int i=0; i<ret.gridCoverageLevels.length; i++) {
-            long[] tmp = {0,0,gridSet.gridLevels[i].extent[0],gridSet.gridLevels[i].extent[1], i};
+            long[] tmp = {0,0,gridSet.gridLevels[i].extent[0] - 1,gridSet.gridLevels[i].extent[1] - 1, i};
             GridCoverage gridCov = new GridCoverage(tmp);
             ret.gridCoverageLevels[i] = gridCov;
         }

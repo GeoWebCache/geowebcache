@@ -12,9 +12,6 @@ public class ServiceException extends GeoWebCacheException {
 		super(message);
 	}
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 30867687291108387L;
 	
 }

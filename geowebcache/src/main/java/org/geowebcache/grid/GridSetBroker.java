@@ -28,7 +28,7 @@ public class GridSetBroker {
     
     public GridSetBroker(boolean useEPSG900913) {
         WORLD_EPSG4326 = GridSetFactory.createGridSet(
-                "EPSG:4326", 
+                "GlobalCRS84Geometric", 
                 SRS.getEPSG4326(), 
                 BoundingBox.WORLD4326,
                 false,
