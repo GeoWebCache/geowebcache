@@ -129,13 +129,6 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         return stObj.getXYZ();
     }
     
-    //public void setTileIndex(int[] tileIndex) {
-    //    this.tileIndex = tileIndex.clone();
-    //}
-    
-    //public SRS getSRS() {
-    //    return srs;
-    //}
     public synchronized GridSubset getGridSubset() {
         if(gridSubset == null) {
             gridSubset = tileLayer.getGridSubset(gridSetId);
@@ -152,10 +145,6 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         this.gridSetId = gridSetId;
     }
     
-    //public void setSRS(SRS srs) {
-    //    this.srs = srs;
-    //}
-
     public byte[] getContent() {
         return stObj.getBlob();
     }
@@ -176,4 +165,28 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
             return false;
         }
     }
+    
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        str.append("ConveyorTile ) ");
+        long[] idx = stObj.getXYZ();
+        
+        if (idx != null && idx.length == 3) {
+            str.append("{" + idx[0] + "," + idx[1] + "," + idx[2] + "} ");
+        }
+
+        if (layerId != null) {
+            str.append(this.layerId).append(" ");
+        }
+
+        if (this.gridSetId != null) {
+            str.append(gridSetId).append(" ");
+        }
+
+        if (this.mimeType != null) {
+            str.append(this.mimeType.getFormat());
+        }
+        return str.toString();
+    }
+    
 }

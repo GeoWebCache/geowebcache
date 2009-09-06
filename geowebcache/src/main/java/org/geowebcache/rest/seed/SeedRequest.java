@@ -38,6 +38,8 @@ public class SeedRequest {
     
     private String parameters = null;
     
+    private Boolean filterUpdate = null;
+    
     public SeedRequest() {
         //do nothing, i guess
     }
@@ -81,6 +83,14 @@ public class SeedRequest {
      */
     public BoundingBox getBounds() {
         return this.bounds;
+    }   
+    /**
+     * Whether any request filters should be updated after this seed request
+     * completes.
+     * @return
+     */
+    public Boolean getFilterUpdate() {
+        return filterUpdate;
     }
     /**
      * Method returns the grid set id for this request
