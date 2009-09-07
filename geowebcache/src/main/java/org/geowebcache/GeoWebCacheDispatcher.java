@@ -43,6 +43,7 @@ import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.ImageMime;
+import org.geowebcache.service.OWSException;
 import org.geowebcache.service.Service;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.DefaultStorageFinder;
@@ -253,8 +254,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 RequestFilterException reqE = (RequestFilterException) e;
                 reqE.setHttpInfoHeader(response);
                 
-                writeFixedResponse(response, reqE.getResponseCode(), reqE.getContenType(), reqE.getResponse());
-                
+                writeFixedResponse(response, reqE.getResponseCode(), reqE.getContentType(), reqE.getResponse());
+            } else if(e instanceof OWSException) {
+                OWSException owsE = (OWSException) e;
+                writeFixedResponse(response, owsE.getResponseCode(), owsE.getContentType(), owsE.getResponse());
             } else {
                 if(! (e instanceof BadTileException) || log.isDebugEnabled()) {
                     log.error(e.getMessage()+ " " + request.getRequestURL().toString());

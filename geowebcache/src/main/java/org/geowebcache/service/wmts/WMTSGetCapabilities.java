@@ -399,10 +399,10 @@ public class WMTSGetCapabilities {
      
      private void tileMatrix(StringBuilder str, Grid grid, double top, double left, int tileWidth, int tileHeight, boolean scaleWarning) {
          str.append("    <TileMatrix>\n");
-         str.append("      <ows:Identifier>"+grid.getName()+"</ows:Identifier>\n");
          if(scaleWarning) {
-             str.append("      <Abstract>The grid was not well-defined, the scale therefore assumes 1m per map unit.</Abstract>");
+             str.append("      <ows:Abstract>The grid was not well-defined, the scale therefore assumes 1m per map unit.</ows:Abstract>");
          }
+         str.append("      <ows:Identifier>"+grid.getName()+"</ows:Identifier>\n");
          str.append("      <ScaleDenominator>"+grid.getScaleDenominator()+"</ScaleDenominator>\n");
          str.append("      <TopLeftCorner>"+ top +" "+ left +"</TopLeftCorner>\n");
          str.append("      <TileWidth>"+tileWidth+"</TileWidth>\n");    

@@ -84,6 +84,7 @@ public class GridSubset {
     
     public long[][] getCoverages() {
         long[][] ret = new long[gridCoverageLevels.length][5];
+        
         for(int i=0; i < ret.length; i++) {
             long[] cov = this.gridCoverageLevels[i].coverage;
             long[] cur = { cov[0], cov[1], cov[2], cov[3], firstLevel + i};

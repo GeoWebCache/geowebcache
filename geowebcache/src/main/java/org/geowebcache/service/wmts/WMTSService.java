@@ -17,21 +17,25 @@
  */
 package org.geowebcache.service.wmts;
 
+import java.util.Arrays;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.grid.GridCoverage;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.service.OWSException;
 import org.geowebcache.service.Service;
-import org.geowebcache.service.ServiceException;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
 
@@ -57,7 +61,7 @@ public class WMTSService extends Service {
     }
 
     public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response) 
-    throws GeoWebCacheException {
+    throws OWSException {
         String encoding = request.getCharacterEncoding();
         String[] keys = { "layer", "request", "style", "format", "tilematrixset", "tilematrix", "tilerow", "tilecol" };
         String[] values = ServletUtils.selectedStringsFromMap(request.getParameterMap(), encoding, keys);
@@ -65,7 +69,8 @@ public class WMTSService extends Service {
         String req = values[1].toLowerCase();
         
         if(req == null) {
-            throw new GeoWebCacheException("Missing REQUEST parameter");
+            //OWSException(httpCode, exceptionCode, locator, exceptionText);
+            throw new OWSException(400, "MissingParameterValue", "request", "Missing Request parameter");
         } else if(req.equals("gettile")) {
             ConveyorTile tile = getTile(values, request, response, RequestType.TILE);
             return tile;
@@ -80,27 +85,37 @@ public class WMTSService extends Service {
             tile.setRequestHandler(Conveyor.RequestHandler.SERVICE);
             return tile;
         } else {
-            throw new GeoWebCacheException("Unknown REQUEST parameter " + req);
+            throw new OWSException(501, "OperationNotSupported", "request", req + "is not implemented");
         }
     }
     
     private ConveyorTile getTile(String[] values, HttpServletRequest request, 
-            HttpServletResponse response, RequestType reqType) throws GeoWebCacheException {
+            HttpServletResponse response, RequestType reqType) throws OWSException {
         String encoding = request.getCharacterEncoding();
         
         String layer = values[0];
         if (layer == null) {
-            throw new ServiceException("Unable to parse LAYER parameter from request.");
+            throw new OWSException(400, "MissingParameterValue", "LAYER", "Missing LAYER parameter");
         }
 
-        TileLayer tileLayer = tld.getTileLayer(layer);
+        TileLayer tileLayer = null;
+        
+        try {
+            tileLayer = tld.getTileLayer(layer);
+        } catch (GeoWebCacheException e) {
+            throw new OWSException(500, "NoApplicableCode", "LAYER", e.getMessage() +" while fetching LAYER " + layer);
+        }
         if(tileLayer == null) {
-            throw new ServiceException("Unknown layer " + layer);
+            throw new OWSException(400, "InvalidParameterValue", "LAYER", "LAYER " + layer + " is not known.");
         }
         
         String[] modStrs = null;
         if(tileLayer instanceof WMSLayer) {
-            modStrs = ((WMSLayer) tileLayer).getModifiableParameters(request.getParameterMap(), encoding);
+            try {
+                modStrs = ((WMSLayer) tileLayer).getModifiableParameters(request.getParameterMap(), encoding);
+            } catch (GeoWebCacheException e) {
+                throw new OWSException(500, "NoApplicableCode", "",e.getMessage() + " while fetching modifiable parameters for LAYER " + layer);
+            }
         }
          
         if(modStrs == null) {
@@ -111,10 +126,13 @@ public class WMTSService extends Service {
         
         MimeType mimeType = null;
         if(reqType == RequestType.TILE) {
+            if(values[3] == null) {
+                throw new OWSException(400, "MissingParameterValue", "FORMAT", "Unable to determine requested FORMAT, " + values[3]);
+            }
             try {
                 mimeType = MimeType.createFromFormat(values[3]);
             } catch (MimeException me) {
-                throw new ServiceException("Unable to determine requested format, " + values[3]);
+                throw new OWSException(400, "InvalidParameterValue", "FORMAT", "Unable to determine requested FORMAT, " + values[3]);
             } 
         } else {
             String infoFormat = ServletUtils.stringFromMap(
@@ -125,43 +143,67 @@ public class WMTSService extends Service {
             try {
                 mimeType = MimeType.createFromFormat(infoFormat);
             } catch (MimeException me) {
-                throw new ServiceException("Unable to determine requested infoformat, " + infoFormat);
+                throw new OWSException(400, "MissingParameterValue", "INFOFORMAT", "Unable to determine requested INFOFORMAT, " + infoFormat);
             }
         }
         
         if (values[4] == null) {
-            throw new ServiceException("No TILEMATRIXSET specified");
+            throw new OWSException(400, "MissingParameterValue", "TILEMATRIXSET", "No TILEMATRIXSET specified");
         }
         
         GridSubset gridSubset = tileLayer.getGridSubset(values[4]);
         if (gridSubset == null) {
-            throw new ServiceException("Unable to match requested TILEMATRIXSET "
-                    + values[4] + " to those supported by layer");
+            throw new OWSException(400, "InvalidParameterValue", "TILEMATRIXSET", 
+                    "Unable to match requested TILEMATRIXSET " + values[4] + " to those supported by layer");
         }
         
         if(values[5] == null) {
-            throw new ServiceException("No TILEMATRIX specified");
+            throw new OWSException(400, "MissingParameterValue", "TILEMATRIX", "No TILEMATRIX specified");
         }
         long z = gridSubset.getGridIndex(values[5]);
         
         if(z < 0) {
-            throw new ServiceException("Unknown TILEMATRIX " + values[5]);
+            throw new OWSException(400, "InvalidParameterValue", "TILEMATRIX", "Unknown TILEMATRIX " + values[5]);
         }
         
         // WMTS has 0 in the top left corner -> flip y value
         if(values[6] == null) {
-            throw new ServiceException("No TILEROW specified");
+            throw new OWSException(400, "MissingParameterValue", "TILEROW", "No TILEROW specified");
         }
         long[] gridExtent = gridSubset.getGridSetExtent((int) z);
         long y = gridExtent[1] - Long.parseLong(values[6]) - 1;
 
         if(values[7] == null) {
-            throw new ServiceException("No TILECOLUMN specified");
+            throw new OWSException(400, "MissingParameterValue", "TILECOLUMN", "No TILECOLUMN specified");
         }
         long x = Long.parseLong(values[7]);
         
-
+        long[] gridCov = gridSubset.getCoverage((int) z);
+        
+        if(x < gridCov[0] || x > gridCov[2]) {
+            throw new OWSException(400, "TileOutOfRange", "TILECOLUMN", 
+                    "Column " + x + " is out of range, min: " + gridCov[0] + " max:" + gridCov[2]);
+        }
+        
+        if(y < gridCov[1] || y > gridCov[3]) {
+            long minRow = gridExtent[1] - gridCov[3] - 1;
+            long maxRow = gridExtent[1] - gridCov[1] - 1;
+            
+            throw new OWSException(400, "TileOutOfRange", "TILECOLUMN", 
+                    "Row " + values[6] + " is out of range, min: " + minRow + " max:" + maxRow);
+        }
+        
         long[] tileIndex = {x,y,z};
+        
+        
+        
+        try {
+            gridSubset.checkCoverage(tileIndex);
+        } catch (OutsideCoverageException e) {
+            
+            
+           
+        }
 
         ConveyorTile convTile = new ConveyorTile(
                 sb, layer, gridSubset.getName(), tileIndex, mimeType, 
@@ -173,7 +215,7 @@ public class WMTSService extends Service {
     }
 
     public void handleRequest(Conveyor conv)
-            throws GeoWebCacheException {
+            throws OWSException {
 
         ConveyorTile tile = (ConveyorTile) conv;
         

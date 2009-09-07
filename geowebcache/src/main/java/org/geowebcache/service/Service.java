@@ -55,14 +55,14 @@ public abstract class Service {
     
     // TODO these should be renamed / removed
     public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response) 
-    throws GeoWebCacheException {
+    throws GeoWebCacheException, OWSException {
         throw new ServiceException (
                 "Service for " + pathName  + " needs to override "
                 +"getConveyor(HttpSerlvetRequest,HttpServletResponse)" );
     }
     
     public void handleRequest(Conveyor conv) 
-    throws GeoWebCacheException {
+    throws GeoWebCacheException, OWSException {
         throw new RuntimeException(
                 "Service for " + pathName  + " needs to override "
                 +"handleRequest(TileLayerDispatcher, Tile)" );

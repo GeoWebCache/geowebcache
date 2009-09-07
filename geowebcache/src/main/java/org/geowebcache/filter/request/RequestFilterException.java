@@ -19,10 +19,6 @@ package org.geowebcache.filter.request;
 import javax.servlet.http.HttpServletResponse;
 
 public class RequestFilterException extends Exception {
-    
-    /**
-     * 
-     */
     private static final long serialVersionUID = -6790605482047043946L;
 
     RequestFilter reqFilter;
@@ -45,7 +41,7 @@ public class RequestFilterException extends Exception {
         return httpCode;
     }
     
-    public String getContenType() {
+    public String getContentType() {
         return contentType;
     }
     
