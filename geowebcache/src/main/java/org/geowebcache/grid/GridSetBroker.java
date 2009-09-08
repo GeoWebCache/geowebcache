@@ -18,8 +18,12 @@ package org.geowebcache.grid;
 
 import java.util.Hashtable;
 
-public class GridSetBroker {
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
+public class GridSetBroker {
+    private static Log log = LogFactory.getLog(GridSetBroker.class);
+    
     public final GridSet WORLD_EPSG4326;
     
     public final GridSet WORLD_EPSG3857;
@@ -27,6 +31,7 @@ public class GridSetBroker {
     Hashtable<String,GridSet> gridSets = new Hashtable<String,GridSet>();
     
     public GridSetBroker(boolean useEPSG900913) {
+        log.debug("Adding GlobalCRS84Geometric");
         WORLD_EPSG4326 = GridSetFactory.createGridSet(
                 "GlobalCRS84Geometric", 
                 SRS.getEPSG4326(), 
@@ -39,6 +44,8 @@ public class GridSetBroker {
         gridSets.put(WORLD_EPSG4326.name, WORLD_EPSG4326);
         
         if(useEPSG900913) {
+            log.debug("Adding EPSG:900913 grid set for Spherical Mercator / GoogleMapsCompatible");
+            
             WORLD_EPSG3857 = GridSetFactory.createGridSet(
                     "GoogleMapsCompatible",
                     SRS.getEPSG900913(),
@@ -49,6 +56,8 @@ public class GridSetBroker {
                     256,
                     256);
         } else {
+            log.debug("Adding EPSG:3857 grid set for Spherical Mercator / GoogleMapsCompatible");
+            
             WORLD_EPSG3857 = GridSetFactory.createGridSet(
                     "GoogleMapsCompatible", 
                     SRS.getEPSG3857(),
@@ -61,6 +70,7 @@ public class GridSetBroker {
         }
         gridSets.put(WORLD_EPSG3857.name, WORLD_EPSG3857);
         
+        log.debug("Adding GlobalCRS84Pixel");
         GridSet GlobalCRS84Pixel = GridSetFactory.createGridSet(
                 "GlobalCRS84Pixel",
                 SRS.getEPSG4326(),
@@ -75,6 +85,7 @@ public class GridSetBroker {
         
         gridSets.put(GlobalCRS84Pixel.name, GlobalCRS84Pixel);
         
+        log.debug("Adding GlobalCRS84Scale");
         GridSet GlobalCRS84Scale = GridSetFactory.createGridSet(
                 "GlobalCRS84Scale",
                 SRS.getEPSG4326(),
@@ -99,6 +110,14 @@ public class GridSetBroker {
     }
     
     public void put(GridSet gridSet) {
+        if(gridSets.contains(gridSet.getName())) {
+            log.warn("Duplicate grid set " + gridSet.getName() + ", "
+                    + "removing previous instance, but it may still be referenced by layers.");
+            
+            gridSets.remove(gridSet.getName());
+        }
+        
+        log.debug("Adding " + gridSet.getName());
         gridSets.put(gridSet.getName(), gridSet);
     }
     
