@@ -20,6 +20,7 @@ package org.geowebcache.config;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -27,6 +28,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geotools.data.ows.CRSEnvelope;
 import org.geotools.data.ows.Layer;
 import org.geotools.data.ows.StyleImpl;
 import org.geotools.data.ows.WMSCapabilities;
@@ -35,9 +37,12 @@ import org.geotools.ows.ServiceException;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.BoundingBox;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSetFactory;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 
@@ -138,9 +143,12 @@ public class GetCapabilitiesConfiguration implements Configuration {
         // // http://sigma.openplans.org:8080/geoserver/wms?SERVICE=WMS&
         String wmsUrl = wms.getCapabilities().getRequest().getGetCapabilities().getGet().toString();
         int queryStart = wmsUrl.lastIndexOf("?");
-        String preQuery = wmsUrl.substring(queryStart);
-        if (preQuery.equalsIgnoreCase("?service=wms&")) {
-            wmsUrl = wmsUrl.substring(0, wmsUrl.lastIndexOf("?"));
+        if (queryStart > 0) {
+
+            String preQuery = wmsUrl.substring(queryStart);
+            if (preQuery.equalsIgnoreCase("?service=wms&")) {
+                wmsUrl = wmsUrl.substring(0, wmsUrl.lastIndexOf("?"));
+            }
         }
         return wmsUrl;
     }
@@ -202,7 +210,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 WMSLayer wmsLayer = null;
                 try {
                     wmsLayer = getLayer(name, wmsUrls, bounds4326, 
-                            bounds3785, stylesStr, queryable);
+                            bounds3785, stylesStr, queryable, layer.getBoundingBoxes());
                 } catch (GeoWebCacheException gwc) {
                     log.error("Error creating " + layer.getName() + ": "
                             + gwc.getMessage());
@@ -221,7 +229,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
     }
 
     private WMSLayer getLayer(String name, String[] wmsurl, 
-            BoundingBox bounds4326, BoundingBox bounds3785, String stylesStr, boolean queryable)
+            BoundingBox bounds4326, BoundingBox bounds3785, String stylesStr, 
+            boolean queryable, HashMap<Object, CRSEnvelope> additionalBounds)
             throws GeoWebCacheException {
         
         Hashtable<String,GridSubset> grids = new Hashtable<String,GridSubset>(2);
@@ -229,6 +238,30 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bounds4326, 0, 30) );
         grids.put( gridSetBroker.WORLD_EPSG3857.getName(),
                 GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857, bounds3785, 0, 30));
+        
+        if(additionalBounds != null && additionalBounds.size() > 0) {
+            Iterator<CRSEnvelope> iter = additionalBounds.values().iterator();
+            while(iter.hasNext()) {
+                CRSEnvelope env = iter.next();
+                SRS srs = null;
+                if(env.getEPSGCode() != null) {
+                    srs = SRS.getSRS(env.getEPSGCode());
+                }
+                
+                if(srs == null) {
+                    log.error(env.toString() + " has no EPSG code");
+                } else if(srs.getNumber() == 4326 || srs.getNumber() == 900913 || srs.getNumber() == 3857) {
+                    log.debug("Skipping " + srs.toString() + " for " + name);
+                } else {
+                    String gridSetName = name + ":" + srs.toString();
+                    BoundingBox extent = new BoundingBox(env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY());
+                    
+                    GridSet gridSet = GridSetFactory.createGridSet(gridSetName, srs, extent, false, 25, null, 256, 256);
+                    grids.put(gridSetName, GridSubsetFactory.createGridSubSet(gridSet));
+                }
+            }
+            
+        }
         
         List<String> mimeFormats = null;
         if(this.mimeTypes != null) {
