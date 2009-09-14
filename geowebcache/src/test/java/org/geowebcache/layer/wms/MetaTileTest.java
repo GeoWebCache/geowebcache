@@ -15,7 +15,7 @@ import org.geowebcache.mime.ImageMime;
 
 public class MetaTileTest extends TestCase {
 
-    GridSetBroker gridSetBroker = new GridSetBroker(false);
+    GridSetBroker gridSetBroker = new GridSetBroker(false, false);
     
     @Override
     protected void setUp() throws Exception {

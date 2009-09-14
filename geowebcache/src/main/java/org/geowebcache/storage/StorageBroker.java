@@ -31,6 +31,8 @@ public class StorageBroker {
     
     private boolean metaStoreEnabled = true;
     
+    private boolean isReady = false;
+    
     public StorageBroker(MetaStore metaStore, BlobStore blobStore) {
         this.metaStore = metaStore;
         this.blobStore = blobStore;

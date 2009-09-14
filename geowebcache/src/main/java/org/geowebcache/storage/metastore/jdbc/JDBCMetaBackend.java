@@ -154,6 +154,7 @@ public class JDBCMetaBackend implements MetaStore {
     public boolean get(TileObject stObj) throws StorageException {
         stObj.setLayerId(idCache.getLayerId(stObj.getLayerName()));
         stObj.setFormatId(idCache.getFormatId(stObj.getBlobFormat()));
+        stObj.setGridSetIdId(idCache.getGridSetsId(stObj.getGridSetId()));
         if(stObj.getParameters() != null && stObj.getParameters().length() != 0) {
             stObj.setParamtersId(idCache.getParametersId(stObj.getParameters()));
         }
@@ -212,6 +213,7 @@ public class JDBCMetaBackend implements MetaStore {
     public void put(TileObject stObj) throws StorageException {
         stObj.setLayerId(idCache.getLayerId(stObj.getLayerName()));
         stObj.setFormatId(idCache.getFormatId(stObj.getBlobFormat()));
+        stObj.setGridSetIdId(idCache.getGridSetsId(stObj.getGridSetId()));
         if(stObj.getParameters() != null && stObj.getParameters().length() != 0) {
             stObj.setParamtersId(idCache.getParametersId(stObj.getParameters()));
         }
@@ -297,6 +299,21 @@ public class JDBCMetaBackend implements MetaStore {
         }
         
     }
+    
+//    public boolean isReady() {
+//        try {
+//           int version = wrpr.getDbVersion(wrpr.getConnection());
+//           
+//           if(version == 120) {
+//               return true;
+//           }
+//        } catch (StorageException e) {
+//            e.printStackTrace();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return false;
+//    }
 
     public void setLockTimeout(long lockTimeout) {
         wrpr.lockTimeout = lockTimeout;
@@ -305,4 +322,6 @@ public class JDBCMetaBackend implements MetaStore {
     public void setLockRetryDelay(long lockRetryDelay) {
         this.lockRetryDelay = lockRetryDelay;
     }
+
+
 }

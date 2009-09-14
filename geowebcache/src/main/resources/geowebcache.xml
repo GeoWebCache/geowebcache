@@ -34,10 +34,16 @@
   </gridSet>
 </gridSets>
 <layers>
-    <wmsLayer>
+  <wmsLayer>
     <name>bluemarble</name>
     <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>
     <wmsLayers>blue marble</wmsLayers>
+  </wmsLayer>
+  
+  <wmsLayer>
+    <name>topp:states</name>
+    <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>
+    <wmsLayers>topp:states</wmsLayers>
   </wmsLayer>
   
   <wmsLayer>

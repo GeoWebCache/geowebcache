@@ -49,7 +49,7 @@ public class KMLDebugGridLayer extends TileLayer {
     //private static Log log = LogFactory.getLog(org.geowebcache.service.kml.KMLDebugGridLayer.class);
 
     // This is completely isolated anyway
-    private static GridSetBroker gridSetBroker = new GridSetBroker(false);
+    private static GridSetBroker gridSetBroker = new GridSetBroker(false, false);
     
     private static KMLDebugGridLayer instance;
 

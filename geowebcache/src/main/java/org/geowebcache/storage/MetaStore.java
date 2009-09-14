@@ -47,4 +47,9 @@ public interface MetaStore {
      * Destroy method for Spring
      */
     public void destroy();
+    
+    ///** 
+    // * Test to see whether the metastore is ready or not
+    // */
+    //public boolean isReady();
 }

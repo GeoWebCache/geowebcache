@@ -70,15 +70,19 @@ public class GeoWebCacheDispatcher extends AbstractController {
     
     private GridSetBroker gridSetBroker = null;
     
+    private StorageBroker storageBroker;
+    
     private XMLConfiguration mainConfiguration;
     
     private RuntimeStats runtimeStats;
-
+    
     private HashMap<String,Service> services = null;
     
     private byte[] blankTile = null; 
     
     private String servletPrefix = null;
+
+    
 
     /** 
      * Should be invoked through Spring 
@@ -87,12 +91,14 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * @param gridSetBroker
      */
     public GeoWebCacheDispatcher(TileLayerDispatcher tileLayerDispatcher, 
-            GridSetBroker gridSetBroker, XMLConfiguration mainConfiguration, RuntimeStats runtimeStats) {
+            GridSetBroker gridSetBroker, StorageBroker storageBroker,
+            XMLConfiguration mainConfiguration, RuntimeStats runtimeStats) {
         super();
         this.tileLayerDispatcher = tileLayerDispatcher;
         this.gridSetBroker = gridSetBroker;
         this.mainConfiguration = mainConfiguration;
         this.runtimeStats = runtimeStats;
+        this.storageBroker = storageBroker;
         
         if(mainConfiguration.isRuntimeStatsEnabled()) {
             this.runtimeStats.start();
@@ -101,7 +107,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
     }
 
-    public void setStorageBroker(StorageBroker storageBroker) {
+    public void setStorageBroker() {
        // This is just to force initialization
        log.debug("GeoWebCacheDispatcher received StorageBroker : " + storageBroker.toString());
     }

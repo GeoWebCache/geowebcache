@@ -63,4 +63,9 @@ public interface BlobStore {
      * Destroy method for Spring
      */
     public void destroy();
+    
+    ///** 
+    // * Test to see whether the blobstore is ready or not
+    // */
+    //public boolean isReady();
 }

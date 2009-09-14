@@ -336,5 +336,26 @@ public class FileBlobStore implements BlobStore {
        // Do nothing 
     }
 
-
+//    public boolean isReady() {
+//        File fh = new File(path + File.separator + "version");
+//        if(fh.isFile() && fh.canRead()) {
+//            try {
+//                FileInputStream fis = new FileInputStream(fh);
+//                byte[] ret = ServletUtils.readStream(fis, 10, 10);
+//                
+//                int ver = Integer.parseInt(new String(ret));
+//                
+//                if(ver == 120) {
+//                    return true;
+//                }
+//            } catch (FileNotFoundException e) {
+//                e.printStackTrace();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            return true;
+//        }
+//        log.error("Could not find " + fh.getAbsolutePath() + ", upgrade required.");
+//        return false;
+//    }
 }

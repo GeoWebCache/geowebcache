@@ -7,7 +7,7 @@ import junit.framework.TestCase;
 
 public class GridSubSetFactoryTest extends TestCase {
     
-    GridSetBroker gridSetBroker = new GridSetBroker(false);
+    GridSetBroker gridSetBroker = new GridSetBroker(false, false);
     
     public void testCoverageBounds() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);

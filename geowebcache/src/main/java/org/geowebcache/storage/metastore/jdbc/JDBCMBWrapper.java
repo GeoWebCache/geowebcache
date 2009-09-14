@@ -51,7 +51,7 @@ class JDBCMBWrapper {
     private static Log log = LogFactory.getLog(org.geowebcache.storage.metastore.jdbc.JDBCMBWrapper.class);
     
     /** Database version, for automatic updates */
-    static int DB_VERSION = 111;
+    static int DB_VERSION = 120;
     
     /** Connection information */
     final String jdbcString;
@@ -150,8 +150,6 @@ class JDBCMBWrapper {
         try {
             conn = getConnection();
             
-            checkVariableTable(conn);
-            
             /** Easy ones */
             condCreate(conn,
                     "LAYERS", 
@@ -168,6 +166,24 @@ class JDBCMBWrapper {
                     "ID BIGINT AUTO_INCREMENT PRIMARY KEY, VALUE VARCHAR(126) UNIQUE", 
                     "VALUE",
                     null);
+            
+            condCreate(conn,
+                    "GRIDSETS", 
+                    "ID BIGINT AUTO_INCREMENT PRIMARY KEY, VALUE VARCHAR(126) UNIQUE", 
+                    "VALUE",
+                    null);
+            
+            int fromVersion = getDbVersion(conn);
+            log.info("MetaStore database is version " + fromVersion);
+            
+            
+            if(fromVersion != DB_VERSION) {
+                if(fromVersion < DB_VERSION) {
+                    runDbUpgrade(conn, fromVersion);
+                } else {
+                    log.error("Metastore database is newer than the runnin version of GWC. Proceeding with undefined results.");
+                }
+            }
             
             /** Slightly more complex */
             checkWFSTable(conn);
@@ -186,7 +202,7 @@ class JDBCMBWrapper {
      * @throws SQLException
      * @throws StorageException if the database is newer than the software
      */
-    private void checkVariableTable(Connection conn) 
+    protected int getDbVersion(Connection conn) 
     throws SQLException, StorageException {
         
         condCreate(conn,
@@ -206,16 +222,13 @@ class JDBCMBWrapper {
                 // Check what version of the database this is
                 String db_versionStr = rs.getString("value");
                 int cur_db_version = Integer.parseInt(db_versionStr);
-                if (cur_db_version > JDBCMBWrapper.DB_VERSION) {
-                    throw new StorageException(
-                            "The H2 database was created by a newer version of the software.");
-                } else if (cur_db_version < JDBCMBWrapper.DB_VERSION) {
-                    runDbUpgrade(conn, cur_db_version);
-                }
+                return cur_db_version;
             } else {
                 // This is a new database, insert current value
                 st.execute("INSERT INTO VARIABLES (KEY,VALUE) "
                         +" VALUES ('db_version',"+JDBCMBWrapper.DB_VERSION+")");
+                
+                return JDBCMBWrapper.DB_VERSION; 
             }
         } finally {
             if(rs != null)
@@ -241,11 +254,11 @@ class JDBCMBWrapper {
         condCreate(conn,
                 "TILES", 
                 "TILE_ID BIGINT AUTO_INCREMENT PRIMARY KEY, LAYER_ID BIGINT, "
-                + "X BIGINT, Y BIGINT, Z BIGINT, SRS_ID INT, FORMAT_ID BIGINT, "
+                + "X BIGINT, Y BIGINT, Z BIGINT, GRIDSET_ID INT, FORMAT_ID BIGINT, "
                 + "PARAMETERS_ID BIGINT, BLOB_SIZE INT, "
                 + "CREATED BIGINT, ACCESS_LAST BIGINT, ACCESS_COUNT BIGINT, " 
                 + "LOCK TIMESTAMP",
-                "LAYER_ID, X, Y, Z, SRS_ID, FORMAT_ID, PARAMETERS_ID",
+                "LAYER_ID, X, Y, Z, GRIDSET_ID, FORMAT_ID, PARAMETERS_ID",
                 null);
     }
     
@@ -278,7 +291,12 @@ class JDBCMBWrapper {
         log.info("Upgrading  H2 database from " + fromVersion 
                 + " to " + JDBCMBWrapper.DB_VERSION);
         
+        boolean earlier = false;
+        
         if(fromVersion == 110) {
+            log.info("Running database upgrade from 110 to 111");
+            
+            earlier = true;
             try {
                 // We start with this one to block other instances
                 String query = "UPDATE VARIABLES SET VALUE = ? WHERE KEY = ?";
@@ -297,11 +315,51 @@ class JDBCMBWrapper {
                 st = conn.createStatement();
                 st.execute(query);
                 st.close();
+                log.info("Database upgrade from 110 to 111 completed");
             } catch (SQLException se) {
                 log.error("110 to 111 upgrade failed: " + se.getMessage());
             }
-        } else {
-            log.error("Unknown version " + fromVersion);
+        }
+        
+        if(fromVersion == 111 || earlier) {
+            log.info("Running database upgrade from 111 to 120");
+            try {
+                // We start with this one to block other instances
+                String query = "UPDATE VARIABLES SET VALUE = ? WHERE KEY = ?";
+                PreparedStatement prep = conn.prepareStatement(query);
+                prep.setString(1, "120");
+                prep.setString(2, "db_version");
+                prep.execute();
+                prep.close();
+                
+                query = "ALTER TABLE TILES ALTER COLUMN SRS_ID RENAME TO GRIDSET_ID";
+                Statement st = conn.createStatement();
+                st.execute(query);
+                st.close();
+                
+                // Now add the existing grids to the IdCache, so that the old stuff
+                // continues working: EPSG:4326 -> 4326 , which is what the SRS_ID used to be
+                query = "SELECT GRIDSET_ID FROM TILES GROUP BY GRIDSET_ID";
+                st = conn.createStatement();
+                ResultSet rs = st.executeQuery(query);
+                while(rs.next()) {
+                    int val = rs.getInt(1);
+                    query = "INSERT INTO GRIDSETS (ID, VALUE) VALUES (?,?)";
+                    prep = getConnection().prepareStatement(query);
+                    
+                    prep.setLong(1, val);
+                    prep.setString(2, "EPSG:" + val);
+                    
+                    prep.executeUpdate();
+                    prep.close();
+                }
+                rs.close();
+                st.close();
+                
+                log.info("Database upgrade from 111 to 120 completed");
+            } catch (SQLException se) {
+                log.error("111 to 120 upgrade failed: " + se.getMessage());
+            }
         }
         
     }
@@ -311,11 +369,11 @@ class JDBCMBWrapper {
         String query;
         if(stObj.getParametersId() == -1L) {
             query = "DELETE FROM TILES WHERE " 
-                + " LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? AND SRS_ID = ? " 
+                + " LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? AND GRIDSET_ID = ? " 
                 + " AND FORMAT_ID = ? AND PARAMETERS_ID IS NULL";
         } else {
             query = "DELETE FROM TILES WHERE " 
-                + " LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? AND SRS_ID = ? "
+                + " LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? AND GRIDSET_ID = ? "
                 + " AND FORMAT_ID = ? AND PARAMETERS_ID = ?";
         }
         long[] xyz = stObj.getXYZ();
@@ -376,15 +434,14 @@ class JDBCMBWrapper {
     }
     
     protected boolean getTile(TileObject stObj) throws SQLException {
-
         String query;
         if(stObj.getParametersId() == -1L) {
             query = "SELECT TILE_ID,BLOB_SIZE,CREATED,LOCK,NOW() FROM TILES WHERE " 
-                + " LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? AND SRS_ID = ? " 
+                + " LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? AND GRIDSET_ID = ? " 
                 + " AND FORMAT_ID = ? AND PARAMETERS_ID IS NULL LIMIT 1 ";
         } else {
             query = "SELECT TILE_ID,BLOB_SIZE,CREATED,LOCK,NOW() FROM TILES WHERE " 
-                + " LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? AND SRS_ID = ? "
+                + " LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? AND GRIDSET_ID = ? "
                 + " AND FORMAT_ID = ? AND PARAMETERS_ID = ? LIMIT 1 ";
         }
         long[] xyz = stObj.getXYZ();
@@ -517,8 +574,8 @@ class JDBCMBWrapper {
     throws SQLException, StorageException {
 
         String query = "MERGE INTO "
-                +"TILES(LAYER_ID,X,Y,Z,SRS_ID,FORMAT_ID,PARAMETERS_ID,BLOB_SIZE,LOCK) "
-                +"KEY(LAYER_ID,X,Y,Z,SRS_ID,FORMAT_ID,PARAMETERS_ID) "
+                +"TILES(LAYER_ID,X,Y,Z,GRIDSET_ID,FORMAT_ID,PARAMETERS_ID,BLOB_SIZE,LOCK) "
+                +"KEY(LAYER_ID,X,Y,Z,GRIDSET_ID,FORMAT_ID,PARAMETERS_ID) "
                 +"VALUES(?,?,?,?,?,?,?,?,NOW())";
 
         long[] xyz = stObj.getXYZ();
@@ -614,12 +671,12 @@ class JDBCMBWrapper {
         if (stObj.getParametersId() == -1L) {
             query = "UPDATE TILES SET LOCK = NULL WHERE "
                 + "  LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? "
-                + " AND SRS_ID = ? AND FORMAT_ID = ? AND "
+                + " AND GRIDSET_ID = ? AND FORMAT_ID = ? AND "
                 + " PARAMETERS_ID IS NULL";
         } else {
             query = "UPDATE TILES SET LOCK = NULL WHERE "
                 + "  LAYER_ID = ? AND X = ? AND Y = ? AND Z = ? "
-                + " AND SRS_ID = ? AND FORMAT_ID = ? AND "
+                + " AND GRIDSET_ID = ? AND FORMAT_ID = ? AND "
                 + " PARAMETERS_ID = ?";
         }
         
@@ -754,11 +811,11 @@ class JDBCMBWrapper {
         
         if(parametersId == -1L) {
             query = "SELECT TILE_ID, X, Y, Z FROM TILES WHERE " 
-                + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND SRS_ID = ? " 
+                + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND GRIDSET_ID = ? " 
                 + " AND FORMAT_ID = ? AND PARAMETERS_ID IS NULL";
         } else {
             query = "SELECT TILE_ID, X, Y, Z FROM TILES WHERE " 
-                + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND SRS_ID = ? " 
+                + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND GRIDSET_ID = ? " 
                 + " AND FORMAT_ID = ? AND PARAMETERS_ID = ?";
         }
         
@@ -787,11 +844,11 @@ class JDBCMBWrapper {
         
         if(parametersId == -1L) {
             query = "DELETE FROM TILES WHERE " 
-                + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND SRS_ID = ? " 
+                + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND GRIDSET_ID = ? " 
                 + " AND FORMAT_ID = ? AND PARAMETERS_ID IS NULL";
         } else {
             query = "DELETE FROM TILES WHERE " 
-                + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND SRS_ID = ? " 
+                + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND GRIDSET_ID = ? " 
                 + " AND FORMAT_ID = ? AND PARAMETERS_ID = ?";
         }
         

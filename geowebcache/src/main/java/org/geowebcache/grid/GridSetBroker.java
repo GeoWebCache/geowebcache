@@ -30,10 +30,17 @@ public class GridSetBroker {
 
     Hashtable<String,GridSet> gridSets = new Hashtable<String,GridSet>();
     
-    public GridSetBroker(boolean useEPSG900913) {
-        log.debug("Adding GlobalCRS84Geometric");
+    public GridSetBroker(boolean useEPSG900913, boolean useGWC11xNames) {
+        String unprojectedName = "GlobalCRS84Geometric";
+        String mercatorName = "GoogleMapsCompatible";
+        if(useGWC11xNames) {
+            unprojectedName = "EPSG:4326";
+            mercatorName = "EPSG:900913";
+        }
+        
+        log.debug("Adding " + unprojectedName);
         WORLD_EPSG4326 = GridSetFactory.createGridSet(
-                "GlobalCRS84Geometric", 
+                unprojectedName, 
                 SRS.getEPSG4326(), 
                 BoundingBox.WORLD4326,
                 false,
@@ -47,7 +54,7 @@ public class GridSetBroker {
             log.debug("Adding EPSG:900913 grid set for Spherical Mercator / GoogleMapsCompatible");
             
             WORLD_EPSG3857 = GridSetFactory.createGridSet(
-                    "GoogleMapsCompatible",
+                    mercatorName,
                     SRS.getEPSG900913(),
                     BoundingBox.WORLD3857,
                     false,
@@ -59,7 +66,7 @@ public class GridSetBroker {
             log.debug("Adding EPSG:3857 grid set for Spherical Mercator / GoogleMapsCompatible");
             
             WORLD_EPSG3857 = GridSetFactory.createGridSet(
-                    "GoogleMapsCompatible", 
+                    mercatorName, 
                     SRS.getEPSG3857(),
                     BoundingBox.WORLD3857,
                     false,
