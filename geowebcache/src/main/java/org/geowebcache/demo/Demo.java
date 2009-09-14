@@ -36,13 +36,16 @@ public class Demo {
             
             TileLayer layer = tileLayerDispatcher.getTileLayer(layerName);
 
-            String gridSetStr = ServletUtils.URLDecode(request.getParameter("gridSet"), request.getCharacterEncoding());
+            String rawGridSet = request.getParameter("gridSet");
+            String gridSetStr = null;
+            if(rawGridSet != null)
+                gridSetStr = ServletUtils.URLDecode(rawGridSet, request.getCharacterEncoding());
             
             if(gridSetStr == null) {
                 gridSetStr = request.getParameter("srs");
                 
                 if(gridSetStr == null) {
-                    gridSetStr = SRS.getEPSG4326().toString();
+                    gridSetStr = layer.getGridSubsets().keys().nextElement();
                 }
             }
             
