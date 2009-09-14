@@ -31,6 +31,8 @@ public class GridSubsetFactory {
             ret.gridCoverageLevels[i] = gridCov;
         }
        
+        ret.fullGridSetCoverage = true;
+        
         return ret;
     }
     
@@ -50,7 +52,11 @@ public class GridSubsetFactory {
         }
         
         // Is this plain wrong? GlobalCRS84Scale, I guess the resolution forces it
-        BoundingBox gridSetBouds = gridSet.getBounds();
+        BoundingBox gridSetBounds = gridSet.getBounds();
+        
+        if(coverageBounds == null || coverageBounds.contains(gridSetBounds)) {
+            ret.fullGridSetCoverage = true;
+        }
         
         for(int i=0; i<ret.gridCoverageLevels.length; i++) {
             GridCoverage gridCov;

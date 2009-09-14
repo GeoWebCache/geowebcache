@@ -381,22 +381,23 @@ public class WMTSGetCapabilities {
              str.append("    <TileMatrixSetLink>");
              str.append("      <TileMatrixSet>" + gridSubset.getName() + "</TileMatrixSet>\n");
              
-             String[] levelNames = gridSubset.getGridNames();
-             long[][] wmtsLimits = gridSubset.getWMTSCoverages();
-             
-             str.append("      <TileMatrixSetLimits>\n");
-             for(int i=0; i < levelNames.length; i++) {
-                 str.append("        <TileMatrixLimits>\n");
-                 str.append("          <TileMatrix>"+levelNames[i]+"</TileMatrix>\n");
-                 str.append("          <MinTileRow>"+wmtsLimits[i][1]+"</MinTileRow>\n");
-                 str.append("          <MaxTileRow>"+wmtsLimits[i][3]+"</MaxTileRow>\n");
-                 str.append("          <MinTileCol>"+wmtsLimits[i][0]+"</MinTileCol>\n");
-                 str.append("          <MaxTileCol>"+wmtsLimits[i][2]+"</MaxTileCol>\n");
-                 str.append("        </TileMatrixLimits>\n");
-             }
-             
-             str.append("      </TileMatrixSetLimits>\n");
-             str.append("    </TileMatrixSetLink>");
+             if (! gridSubset.fullGridSetCoverage()) {
+                String[] levelNames = gridSubset.getGridNames();
+                long[][] wmtsLimits = gridSubset.getWMTSCoverages();
+
+                str.append("      <TileMatrixSetLimits>\n");
+                for (int i = 0; i < levelNames.length; i++) {
+                    str.append("        <TileMatrixLimits>\n");
+                    str.append("          <TileMatrix>" + levelNames[i] + "</TileMatrix>\n");
+                    str.append("          <MinTileRow>" + wmtsLimits[i][1] + "</MinTileRow>\n");
+                    str.append("          <MaxTileRow>" + wmtsLimits[i][3] + "</MaxTileRow>\n");
+                    str.append("          <MinTileCol>" + wmtsLimits[i][0] + "</MinTileCol>\n");
+                    str.append("          <MaxTileCol>" + wmtsLimits[i][2] + "</MaxTileCol>\n");
+                    str.append("        </TileMatrixLimits>\n");
+                }
+                str.append("      </TileMatrixSetLimits>\n");
+            }
+            str.append("    </TileMatrixSetLink>");
          }
      }
      

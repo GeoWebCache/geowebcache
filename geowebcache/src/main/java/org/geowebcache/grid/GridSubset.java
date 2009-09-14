@@ -32,6 +32,8 @@ public class GridSubset {
     // max zoom =  gridCoverageLevels.legth + firstLevel
     protected GridCoverage[] gridCoverageLevels; 
     
+    protected boolean fullGridSetCoverage = false;
+    
     protected GridSubset(GridSet gridSet) {
         this.gridSet = gridSet;
     }
@@ -276,5 +278,13 @@ public class GridSubset {
     
     public int getZoomStop() {
         return firstLevel + gridCoverageLevels.length - 1;
+    }
+    
+    /**
+     * Whether the Grid Subset equals or exceeds the extent of the Grid Set
+     * @return
+     */
+    public boolean fullGridSetCoverage() {
+        return fullGridSetCoverage;
     }
 }

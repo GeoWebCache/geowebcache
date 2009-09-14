@@ -225,10 +225,9 @@ public class GetCapabilitiesConfiguration implements Configuration {
             throws GeoWebCacheException {
         
         Hashtable<String,GridSubset> grids = new Hashtable<String,GridSubset>(2);
-        grids.put( 
-                gridSetBroker.WORLD_EPSG4326.getName(), 
+        grids.put( gridSetBroker.WORLD_EPSG4326.getName(), 
                 GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bounds4326, 0, 30) );
-        grids.put(gridSetBroker.WORLD_EPSG3857.getName(),
+        grids.put( gridSetBroker.WORLD_EPSG3857.getName(),
                 GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857, bounds3785, 0, 30));
         
         List<String> mimeFormats = null;
