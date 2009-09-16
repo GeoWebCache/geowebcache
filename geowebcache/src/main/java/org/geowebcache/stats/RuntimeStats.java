@@ -59,11 +59,13 @@ public class RuntimeStats {
         statsThread.start();
     }
     
-    public void shutdown() {
+    public void destroy() {
         if(this.statsThread != null) {
             statsThread.run = false;
         
             statsThread.interrupt();
+            
+            Thread.yield();
         }
     }
     
