@@ -82,7 +82,7 @@
      <constructor-arg type="boolean" value="TRUE" />
   </bean>
   
-  <bean id="gwcRuntimeStats" class="org.geowebcache.stats.RuntimeStats" destroy-method="stop" />
+  <bean id="gwcRuntimeStats" class="org.geowebcache.stats.RuntimeStats" destroy-method="destroy" />
   
   <!-- controller for handling all incoming requests -->
   <bean id="geowebcacheDispatcher" class="org.geowebcache.GeoWebCacheDispatcher" destroy-method="destroy">
