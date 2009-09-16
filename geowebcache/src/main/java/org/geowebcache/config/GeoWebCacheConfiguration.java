@@ -51,6 +51,10 @@ public class GeoWebCacheConfiguration {
     
     Boolean runtimeStats;
     
+    String httpUsername;
+    
+    String httpPassword;
+    
     ServiceInformation serviceInformation;
     
     protected List<FormatModifier> formatModifiers;

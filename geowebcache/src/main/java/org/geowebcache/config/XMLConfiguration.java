@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -169,6 +171,24 @@ public class XMLConfiguration implements Configuration {
                 TileLayer layer = iter.next();
                 setDefaultValues(layer);
             }
+        }
+        
+        if (gwcConfig.httpUsername != null && gwcConfig.httpUsername.length() > 0) {
+            if (gwcConfig.httpPassword != null && gwcConfig.httpPassword.length() > 0) {
+                log.info("Authenticating globally with " + gwcConfig.httpUsername
+                        + " and password ********");
+                
+                final String login = gwcConfig.httpUsername;
+                final String password = gwcConfig.httpPassword;
+
+                Authenticator.setDefault(new Authenticator() {
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(login, password.toCharArray());
+                    }
+                });
+            }
+        } else {
+            log.debug("Not using global HTTP authentication.");
         }
     }
     
