@@ -16,9 +16,15 @@
  */
 package org.geowebcache.grid;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
 public class GridSubsetFactory {
+    private static Log log = LogFactory.getLog(GridSubsetFactory.class);
+    
     public static GridSubset createGridSubSet(GridSet gridSet) {
+        
         GridSubset ret = new GridSubset(gridSet);
         
         ret.firstLevel = 0;
@@ -37,6 +43,10 @@ public class GridSubsetFactory {
     }
     
     public static GridSubset createGridSubSet(GridSet gridSet, BoundingBox coverageBounds, Integer zoomStart, Integer zoomStop) {
+        if(gridSet == null) {
+            log.error("Passed GridSet was null!");
+        }
+        
         GridSubset ret = new GridSubset(gridSet);
         
         if(zoomStart != null) {
