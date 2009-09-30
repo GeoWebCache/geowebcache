@@ -73,13 +73,13 @@
   
   <bean id="gwcGridSetBroker" class="org.geowebcache.grid.GridSetBroker">
     <!-- Should we used EPSG:900913 instead of EPSG:3785 ? -->
-    <constructor-arg type="boolean" value="TRUE" />
+    <constructor-arg type="boolean" value="FALSE" />
     <!--
       Should the default grids be named EPSG:4326 and EPSG:90091,
       or use the new names? If you say no here, you have to manually
       rename the directories and entries in the H2 database.
      -->
-     <constructor-arg type="boolean" value="TRUE" />
+     <constructor-arg type="boolean" value="FALSE" />
   </bean>
   
   <bean id="gwcRuntimeStats" class="org.geowebcache.stats.RuntimeStats" destroy-method="destroy" />
