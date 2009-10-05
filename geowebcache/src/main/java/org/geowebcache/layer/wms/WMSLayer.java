@@ -1110,9 +1110,12 @@ public class WMSLayer extends TileLayer {
             
             
             if(value == null || value.length() == 0) {
-                strFull.append("&").append(modParam.getKey()).append("=").append(modParam.getDefaultValue());
+                if(modParam.getDefaultValue() != null) {
+                    strFull.append("&").append(modParam.getKey()).append("=").append(modParam.getDefaultValue());
+                }
+                // Otherwise we just omit it
             } else {
-                String filteredValue = modParam.apply(value);
+                String filteredValue = ServletUtils.URLEncode(modParam.apply(value));
                 strModifiers.append("&").append(modParam.getKey()).append("=").append(filteredValue);
             }
         }

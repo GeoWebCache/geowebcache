@@ -473,10 +473,11 @@
         The key for which the filter should be invoked. The key is case insensitive.
        </xs:documentation></xs:annotation>
     </xs:element>
-    <xs:element name="defaultValue" type="xs:string">
+    <xs:element name="defaultValue" type="xs:string" minOccurs="0" maxOccurs="1">
       <xs:annotation><xs:documentation xml:lang="en">
         The default value. This value is used When the client does not specify 
-        the parameter in the request. In many cases this should be an empty element.
+        the parameter in the request. If you omit this element, the entire parameter
+        wil be omitted if the client does not include it in request.
       </xs:documentation></xs:annotation>
     </xs:element>
     <xs:element name="regex" type="xs:string">
@@ -497,10 +498,11 @@
         The key for which the filter should be invoked. The key is NOT casesensitive.
       </xs:documentation></xs:annotation>
     </xs:element>
-    <xs:element name="defaultValue" type="xs:string">
+    <xs:element name="defaultValue" type="xs:string" minOccurs="0" maxOccurs="1">
       <xs:annotation><xs:documentation xml:lang="en">
         The default value. This value is used When the client does not specify 
-        the parameter in the request. In many cases this should be an empty element.
+        the parameter in the request. If you omit this element, the entire parameter
+        wil be omitted if the client does not include it in request.
 
         This value must be included in the list of values
       </xs:documentation></xs:annotation>
@@ -529,10 +531,11 @@
         The key for which the filter should be invoked. The key is NOT casesensitive.
       </xs:documentation></xs:annotation>
     </xs:element>
-    <xs:element name="defaultValue" type="xs:string">
+    <xs:element name="defaultValue" type="xs:string" minOccurs="0" maxOccurs="1">
       <xs:annotation><xs:documentation xml:lang="en">
         The default value. This value is used When the client does not specify 
-        the parameter in the request. In many cases this should be an empty element.
+        the parameter in the request. If you omit this element, the entire parameter
+        wil be omitted if the client does not include it in request.
 
         This value must be included in the list of values
       </xs:documentation></xs:annotation>
