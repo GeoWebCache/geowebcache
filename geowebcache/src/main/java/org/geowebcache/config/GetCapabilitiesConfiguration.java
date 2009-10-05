@@ -220,6 +220,10 @@ public class GetCapabilitiesConfiguration implements Configuration {
                     // Finalize with some defaults
                     wmsLayer.setCacheBypassAllowed(allowCacheBypass);
                     wmsLayer.setBackendTimeout(120);
+                    String wmsVersion = capabilities.getVersion();
+                    if(wmsVersion != null && wmsVersion.length() > 0) {
+                        wmsLayer.setVersion(wmsVersion);
+                    }
                     layers.add(wmsLayer);
                 }
             }
