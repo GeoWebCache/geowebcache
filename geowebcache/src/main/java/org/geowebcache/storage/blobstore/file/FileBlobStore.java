@@ -57,7 +57,7 @@ public class FileBlobStore implements BlobStore {
         File fh = new File(path);
         
         if(! fh.exists() || ! fh.isDirectory() || !  fh.canWrite()) {
-            throw new StorageException(path + " is not writable a writable directory.");
+            throw new StorageException(path + " is not writable directory.");
         }
     }
     
