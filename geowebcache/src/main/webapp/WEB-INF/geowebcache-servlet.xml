@@ -79,7 +79,7 @@
       or use the new names? If you say no here, you have to manually
       rename the directories and entries in the H2 database.
      -->
-     <constructor-arg type="boolean" value="FALSE" />
+     <constructor-arg type="boolean" value="TRUE" />
   </bean>
   
   <bean id="gwcRuntimeStats" class="org.geowebcache.stats.RuntimeStats" destroy-method="destroy" />
