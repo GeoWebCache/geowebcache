@@ -42,7 +42,7 @@ public class GridSubsetFactory {
         return ret;
     }
     
-    public static GridSubset createGridSubSet(GridSet gridSet, BoundingBox coverageBounds, Integer zoomStart, Integer zoomStop) {
+    public static GridSubset createGridSubSet(GridSet gridSet, BoundingBox extent, Integer zoomStart, Integer zoomStop) {
         if(gridSet == null) {
             log.error("Passed GridSet was null!");
         }
@@ -61,18 +61,21 @@ public class GridSubsetFactory {
             ret.gridCoverageLevels = new GridCoverage[gridSet.gridLevels.length - ret.firstLevel];
         }
         
+        // Save the original extent provided by the user
+        ret.originalExtent = extent;
+        
         // Is this plain wrong? GlobalCRS84Scale, I guess the resolution forces it
         BoundingBox gridSetBounds = gridSet.getBounds();
         
-        if(coverageBounds == null || coverageBounds.contains(gridSetBounds)) {
+        if(extent == null || extent.contains(gridSetBounds)) {
             ret.fullGridSetCoverage = true;
         }
         
         for(int i=0; i<ret.gridCoverageLevels.length; i++) {
             GridCoverage gridCov;
             
-            if(coverageBounds != null) {
-                gridCov = new GridCoverage(gridSet.closestRectangle(i + ret.firstLevel, coverageBounds) );
+            if(extent != null) {
+                gridCov = new GridCoverage(gridSet.closestRectangle(i + ret.firstLevel, extent) );
             } else {
                 long[] gridExtent = gridSet.gridLevels[i + ret.firstLevel].extent;
                 long[] fullCoverage = {0,0,gridExtent[0] - 1,gridExtent[1] -1, i + ret.firstLevel}; 

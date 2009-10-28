@@ -21,13 +21,14 @@ public class GridSet {
         
     protected Grid[] gridLevels;
     
-    
     /**
      * The base cordinates, used to map tile indexes
-     * to coordinate bounding boxes. THese can either
+     * to coordinate bounding boxes. These can either
      * be top left or bottom left, so must be kept private
      */
     protected double[] baseCoords;
+    
+    protected BoundingBox originalExtent;
     
     /**
      * Whether the y-coordinate of baseCoords is at
@@ -37,6 +38,8 @@ public class GridSet {
     
     protected boolean scaleWarning = false;
        
+    protected double metersPerUnit;
+    
     protected String name;
     
     protected SRS srs;
@@ -284,5 +287,25 @@ public class GridSet {
     
     public int getTileWidth() {
         return tileWidth;
+    }
+    
+    public String guessMapUnits() {
+        if(113000 > metersPerUnit && metersPerUnit > 110000) {
+            return "degrees";
+        } else if(1100 > metersPerUnit && metersPerUnit > 900) {      
+            return "kilometers";
+        } else if(1.1 > metersPerUnit && metersPerUnit > 0.9) {
+            return "meters";
+        } else if(0.4 > metersPerUnit && metersPerUnit > 0.28) {
+            return "feet";
+        } else if(0.03 > metersPerUnit && metersPerUnit > 0.02) {
+            return "inches";
+        } else if(0.02 > metersPerUnit && metersPerUnit > 0.005) {
+            return "centimeters";
+        } else if(0.002 > metersPerUnit && metersPerUnit > 0.0005) {
+            return "milimeters";
+        } else {
+            return "unknown";
+        }
     }
 }

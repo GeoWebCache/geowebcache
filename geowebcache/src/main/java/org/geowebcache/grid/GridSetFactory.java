@@ -25,7 +25,7 @@ public class GridSetFactory {
     
     static int DEFAULT_LEVELS = 31;
     
-    final static double EPSG4326_TO_METERS = 6378137.0 * 2.0 * Math.PI / 360;
+    final static double EPSG4326_TO_METERS = 6378137.0 * 2.0 * Math.PI / 360.0;
     
     final static double EPSG3857_TO_METERS = 1;
     
@@ -70,21 +70,27 @@ public class GridSetFactory {
             gridSet.baseCoords[1] = extent.coords[1];
         }
         
+        gridSet.originalExtent = extent;
+        
         if(metersPerUnit == null) {
             if(srs.equals(SRS.getEPSG4326())) {
-                metersPerUnit = EPSG4326_TO_METERS;
+                gridSet.metersPerUnit = EPSG4326_TO_METERS;
             } else if(srs.equals(SRS.getEPSG3857())) {
-                metersPerUnit = EPSG3857_TO_METERS;
+                gridSet.metersPerUnit = EPSG3857_TO_METERS;
             } else {
                 if(resolutions == null) {
                     log.warn("GridSet "+name+" was defined without metersPerUnit, assuming 1m/unit."
                             + " All your tiles will be off if this is incorrect.");
                 } else {
-                    log.warn("GridSet "+name+" was defined without metersPerUnit. Assuming 1m per SRS unit for WMTS scale output.");
+                    log.warn("GridSet "+name+" was defined without metersPerUnit. " +
+                    		"Assuming 1m per SRS unit for WMTS scale output.");
+                    				
                     gridSet.scaleWarning = true;
                 }
-                metersPerUnit = 1.0;
+                gridSet.metersPerUnit = 1.0;
             }
+        } else {
+            gridSet.metersPerUnit = metersPerUnit;
         }
         
         if(resolutions == null) {
@@ -95,14 +101,13 @@ public class GridSetFactory {
         
         for(int i=0; i<gridSet.gridLevels.length; i++) {
             Grid curGrid = new Grid();
-            curGrid.resolution = resolutions[i];
 
             if(scaleDenoms != null) {
                 curGrid.scaleDenom = scaleDenoms[i];
-                curGrid.resolution = 0.00028 * (scaleDenoms[i] / metersPerUnit);
+                curGrid.resolution = 0.00028 * (scaleDenoms[i] / gridSet.metersPerUnit);
             } else {
                 curGrid.resolution = resolutions[i];
-                curGrid.scaleDenom =  (resolutions[i] * metersPerUnit) / 0.00028;
+                curGrid.scaleDenom =  (resolutions[i] * gridSet.metersPerUnit) / 0.00028;
                 //System.out.println(name+" : "+i+" : "+curGrid.scaleDenom+" : "+resolutions[i]);
             }
             
@@ -124,6 +129,9 @@ public class GridSetFactory {
         return gridSet; 
     }
     
+    /**
+     * This covers the case where a number of zoom levels has been specified, but no resolutions / scale
+     */
     public static GridSet createGridSet(
             String name, SRS srs, BoundingBox extent, boolean alignTopLeft,
             int levels, Double metersPerUnit, int tileWidth, int tileHeight) {
@@ -137,7 +145,7 @@ public class GridSetFactory {
         double roundedRatio = Math.round(ratio);
         double ratioDiff = ratio - roundedRatio;
         
-        // Cute 2.5% slack throughout
+        // Cut 2.5% slack throughout
         if(Math.abs(ratioDiff) < 0.025) {
             // All good
             resolutions[0] = relWidth / roundedRatio;

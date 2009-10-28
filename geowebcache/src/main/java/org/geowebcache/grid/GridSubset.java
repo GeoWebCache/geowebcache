@@ -34,6 +34,8 @@ public class GridSubset {
     
     protected boolean fullGridSetCoverage = false;
     
+    protected BoundingBox originalExtent = null;
+    
     protected GridSubset(GridSet gridSet) {
         this.gridSet = gridSet;
     }
@@ -177,6 +179,13 @@ public class GridSubset {
         
     public String getName() {
         return gridSet.name;
+    }
+    
+    public BoundingBox getOriginalExtent() {
+        if(this.originalExtent == null) {
+            return gridSet.originalExtent;
+        }
+        return this.originalExtent;
     }
     
     public double[] getResolutions() {
