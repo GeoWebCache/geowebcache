@@ -46,9 +46,17 @@ public class WMSGetCapabilities {
     
     private String urlStr;
     
+    private boolean includeVendorSpecific = false; 
+    
     protected WMSGetCapabilities(TileLayerDispatcher tld, HttpServletRequest servReq) {
         this.tld = tld;
         urlStr = servReq.getRequestURL().toString() + "?SERVICE=WMS&amp;";
+        
+        String tiledValue = servReq.getParameter("tiled");
+        
+        if(tiledValue != null) {
+            includeVendorSpecific  = Boolean.parseBoolean(tiledValue);
+        }
     }
     
     protected void writeResponse(HttpServletResponse response) {
@@ -103,7 +111,9 @@ public class WMSGetCapabilities {
           capabilityRequestGetLegendGraphic(str);
         str.append("  </Request>\n");
         capabilityException(str);
-        capabilityVendorSpecific(str);
+        if(this.includeVendorSpecific) {
+            capabilityVendorSpecific(str);
+        }
         capabilityLayerOuter(str);
         str.append("</Capability>\n");
         
