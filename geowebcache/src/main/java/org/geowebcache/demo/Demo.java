@@ -135,15 +135,15 @@ public class Demo {
         
         while(it.hasNext()) {
             TileLayer layer = it.next().getValue();     
-            buf.append("<tr><td>"+layer.getName()+"</td><td><ul>");
+            buf.append("<tr><td>"+layer.getName()+"</td><td>");
             
             GridSubset epsg4326GridSubset = layer.getGridSubset(gridSetBroker.WORLD_EPSG4326.getName());
             if(null != epsg4326GridSubset) {
-                buf.append("<li>"+generateDemoUrl(
+                buf.append(generateDemoUrl(
                         layer.getName(),
                         epsg4326GridSubset.getName(),
                         epsg4326GridSubset.getSRS())
-                        +"</li>");
+                        +"<br />");
             } else {
                 buf.append("<li>"+gridSetBroker.WORLD_EPSG4326.getName()+" not supported</li>");
             }
@@ -151,11 +151,12 @@ public class Demo {
             // We get the SRS from the GridSet because it may use EPSG:900913 under the covers
             GridSubset epsg3857GridSubset = layer.getGridSubset(gridSetBroker.WORLD_EPSG3857.getName());
             if(null != epsg3857GridSubset) {
-                buf.append("<li>"+generateDemoUrl(
+                buf.append(generateDemoUrl(
                         layer.getName(),
                         epsg3857GridSubset.getName(),
                         epsg3857GridSubset.getSRS())
-                        +"</li>");
+                        +"<br />");
+                
             } else {
                 buf.append("<li>"+gridSetBroker.WORLD_EPSG3857.getName()+" not supported</li>");
             }
@@ -163,8 +164,8 @@ public class Demo {
             buf.append("</ul></td>\n");
             if(null != epsg4326GridSubset) {
                 String prefix = "";
-                buf.append("<td><a href=\""+prefix+"service/kml/"+layer.getName()+".png.kml\">KML (PNG)</a></td>"
-                + "<td><a href=\""+prefix+"service/kml/"+layer.getName()+".kml.kmz\">KMZ (vector)</a></td>");
+                buf.append("<td><a href=\""+prefix+"service/kml/"+layer.getName()+".png.kml\">PNG</a></td>"
+                + "<td><a href=\""+prefix+"service/kml/"+layer.getName()+".kml.kmz\">KML</a></td>");
             } else {
                 buf.append("<td colspan=\"2\">CRS84Geometric required</td>");
             }
@@ -203,10 +204,12 @@ public class Demo {
         GridSubset gridSubset = layer.getGridSubset(gridSetStr);
         
         BoundingBox bbox = gridSubset.getGridSetBounds();
-        BoundingBox zoomBounds = gridSubset.getCoverageBestFitBounds();
+        BoundingBox zoomBounds = gridSubset.getOriginalExtent();
         
         String res = "resolutions: " + Arrays.toString(gridSubset.getResolutions()) + ",\n";
         
+        String units = "units: \""+gridSubset.getGridSet().guessMapUnits()+"\",\n";
+
         String openLayersPath;
         if(asPlugin) {
             openLayersPath = "../../openlayers/OpenLayers.js";
@@ -235,6 +238,7 @@ public class Demo {
             + res
             +"projection: new OpenLayers.Projection('"+gridSubset.getSRS().toString()+"'),\n"
             +"maxExtent: new OpenLayers.Bounds("+bbox.toString()+"),\n"
+            + units
 	    +"controls: []\n"
 	    +"};\n"
             +"map = new OpenLayers.Map('map', mapOptions );\n"
