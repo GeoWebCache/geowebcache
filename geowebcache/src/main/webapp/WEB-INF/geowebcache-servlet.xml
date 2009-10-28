@@ -73,7 +73,7 @@
   
   <bean id="gwcGridSetBroker" class="org.geowebcache.grid.GridSetBroker">
     <!-- Should we used EPSG:900913 instead of EPSG:3857 ? -->
-    <constructor-arg type="boolean" value="FALSE" />
+    <constructor-arg type="boolean" value="TRUE" />
     <!--
       Should the default grids be named EPSG:4326 and EPSG:90091,
       or use the new names? If you say no here, you have to manually
@@ -82,7 +82,31 @@
      <constructor-arg type="boolean" value="TRUE" />
   </bean>
   
-  <bean id="gwcRuntimeStats" class="org.geowebcache.stats.RuntimeStats" destroy-method="destroy" />
+  <bean id="gwcRuntimeStats" class="org.geowebcache.stats.RuntimeStats" destroy-method="destroy">
+    <!-- The poll interval, the number of seconds until counters are aggregated -->
+    <constructor-arg type="int" value="3" />
+    <!-- The intervals (in seconds) for which aggregates are reported.
+         Each interval must be a multiple of the poll interval above and
+         listed in ascending order. For example, for a maximum interval 
+         of 60 seconds and 3 second poll interval from above, the amount
+         of memory consumed is (60 / 3) * 8 = 160 bytes
+    -->
+    <constructor-arg>
+      <list>
+        <value>3</value>
+        <value>15</value>
+        <value>60</value>
+      </list>
+    </constructor-arg>
+    <!-- Descriptive texts for each of the intervals above -->
+    <constructor-arg>
+      <list>
+        <value>3 seconds</value>
+        <value>15 seconds</value>
+        <value>60 seconds</value>
+      </list>
+    </constructor-arg>
+  </bean>
   
   <!-- controller for handling all incoming requests -->
   <bean id="geowebcacheDispatcher" class="org.geowebcache.GeoWebCacheDispatcher" destroy-method="destroy">
