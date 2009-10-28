@@ -233,6 +233,11 @@ public class ServletUtils {
      * @return
      */
     public static String makeExpiresHeader(int seconds) {
+        return formatTimestamp(System.currentTimeMillis() + seconds * 1000);
+    }
+    
+    
+    public static String formatTimestamp(long timestamp) {
         String ret;
         synchronized (calendar) {
             if (ServletUtils.format == null) {
@@ -241,7 +246,7 @@ public class ServletUtils {
                 ServletUtils.format.setTimeZone(ServletUtils.timeZone);
             }
 
-            calendar.setTimeInMillis(System.currentTimeMillis() + seconds * 1000);
+            calendar.setTimeInMillis(timestamp);
             ret = format.format(calendar.getTime());
         }
         return ret;
