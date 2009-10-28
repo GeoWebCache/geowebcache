@@ -35,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.demo.Demo;
 import org.geowebcache.filter.request.RequestFilterException;
 import org.geowebcache.grid.GridSetBroker;
@@ -260,10 +261,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 RequestFilterException reqE = (RequestFilterException) e;
                 reqE.setHttpInfoHeader(response);
                 
-                writeFixedResponse(response, reqE.getResponseCode(), reqE.getContentType(), reqE.getResponse());
+                writeFixedResponse(response, reqE.getResponseCode(), reqE.getContentType(), reqE.getResponse(), CacheResult.OTHER);
             } else if(e instanceof OWSException) {
                 OWSException owsE = (OWSException) e;
-                writeFixedResponse(response, owsE.getResponseCode(), owsE.getContentType(), owsE.getResponse());
+                writeFixedResponse(response, owsE.getResponseCode(), owsE.getContentType(), owsE.getResponse(), CacheResult.OTHER);
             } else {
                 if(! (e instanceof BadTileException) || log.isDebugEnabled()) {
                     log.error(e.getMessage()+ " " + request.getRequestURL().toString());
@@ -356,15 +357,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 // A6) Write response
                 writeData(convTile);
                 
-                if(convTile != null && convTile.getContent() != null) {
-                    runtimeStats.log(convTile.getContent().length); 
-                }
-                
                 // Alternatively: 
             } catch (OutsideCoverageException e) {
                 writeEmpty(convTile, e.getMessage());
-                
-                
             }
         }
     }
@@ -461,7 +456,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     }
         
     private void writePage(HttpServletResponse response, int httpCode, String message) {
-        writeFixedResponse(response, httpCode, "text/html", message.getBytes());        
+        writeFixedResponse(response, httpCode, "text/html", message.getBytes(), CacheResult.OTHER);      
     }
 
     /**
@@ -469,7 +464,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * client.
      */
     private void writeData(ConveyorTile tile) throws IOException {  
-        writeFixedResponse(tile.servletResp, 200, tile.getMimeType().getMimeType(), tile.getContent());
+        writeFixedResponse(tile.servletResp, 200, tile.getMimeType().getMimeType(), tile.getContent(), tile.getCacheResult());
     }
     
     /**
@@ -483,10 +478,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
             layer.setExpirationHeader(tile.servletResp);
         }
 
-        writeFixedResponse(tile.servletResp, 200, ImageMime.png.getMimeType(), this.blankTile);
+        writeFixedResponse(tile.servletResp, 200, ImageMime.png.getMimeType(), this.blankTile, CacheResult.OTHER);
     }
     
-    private void writeFixedResponse(HttpServletResponse response, int httpCode, String contentType, byte[] data) {
+    private void writeFixedResponse(HttpServletResponse response, int httpCode, String contentType, byte[] data, CacheResult cacheRes) {
         response.setStatus(httpCode);
         response.setContentType(contentType);
         
@@ -497,7 +492,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 OutputStream os = response.getOutputStream();
                 os.write(data);
                 
-                runtimeStats.log(data.length);
+                runtimeStats.log(data.length, cacheRes);
                 
             } catch (IOException ioe) {
                 log.debug("Caught IOException: " + ioe.getMessage() + "\n\n" + ioe.toString());

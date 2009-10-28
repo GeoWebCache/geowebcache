@@ -16,22 +16,34 @@
  */
 package org.geowebcache.stats;
 
-public class RuntimeStats {
+import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.geowebcache.conveyor.Conveyor.CacheResult;
+import org.geowebcache.util.ServletUtils;
+
+public class RuntimeStats {    
+    private static Log log = LogFactory.getLog(RuntimeStats.class);
     
-    static int POLL_INTERVAL = 3;
+    final int pollInterval;
     
     long startTime = System.currentTimeMillis();
     
     // These must be multiples of POLL_INTERVAL
-    int[] intervals = {3, 15, 60};
+    final int[] intervals;
     
-    String[] intervalDesc = {"3 seconds", "15 seconds", "60 seconds"};
+    final String[] intervalDescs;
     
     int curBytes = 0;
     
     int curRequests = 0;
     
+    long peakBytesTime = 0;
+    
     int peakBytes = 0;
+    
+    long peakRequestsTime = 0;
     
     int peakRequests = 0;
     
@@ -39,18 +51,53 @@ public class RuntimeStats {
     
     long totalRequests = 0;
     
-    // Ringbuffers to holds the samples. 160 bytes in total
+    long totalHits;
     
-    int[] bytes = new int[intervals[intervals.length - 1] / POLL_INTERVAL];
+    long totalMisses;
     
-    int[] requests  = new int[intervals[intervals.length - 1] / POLL_INTERVAL];
+    final int[] bytes;
+    
+    final int[] requests;
     
     int ringPos = 0;
     
     RuntimeStatsThread statsThread;
     
-    public RuntimeStats() {
+    /**
+     * 
+     * @param pollInterval seconds between recording aggregate values
+     * @param intervals the intervals for which to report, in seconds, ascending. Each interval
+     * must be a multiple of the pollInterval
+     * @param intervalDescs the description for each of the previously defined intervals
+     */
+    public RuntimeStats(int pollInterval, List<Integer> intervals, List<String> intervalDescs) {
+        this.pollInterval = pollInterval;
         
+        if(intervals.size() != intervalDescs.size()) {
+            log.fatal("The interval and interval description lists must be of the same size!");
+        }
+        
+        if(pollInterval < 1) {
+            log.error("poll interval cannot be less than 1 second");
+        }
+        
+        this.intervals = new int[intervals.size()];
+        for(int i=0; i< intervals.size(); i++) {
+            int curVal = intervals.get(i);
+            if(curVal % pollInterval  != 0) {
+                log.error("The interval ("+curVal+") must be a multiple of the poll interval " + pollInterval); 
+                curVal = curVal - (curVal % pollInterval);
+            }
+            this.intervals[i] = curVal;
+        }
+        
+        this.intervalDescs = new String[intervalDescs.size()];
+        for(int i=0; i< intervalDescs.size(); i++) {
+            this.intervalDescs[i] = intervalDescs.get(i);
+        }
+        
+        bytes = new int[this.intervals[this.intervals.length - 1] / pollInterval];
+        requests = new int[this.intervals[this.intervals.length - 1] / pollInterval];
     }
     
     public void start() {
@@ -69,11 +116,17 @@ public class RuntimeStats {
         }
     }
     
-    public void log(int size) {
+    public void log(int size, CacheResult cacheResult) {
         if(this.statsThread != null) {
-            synchronized(this) { 
+            synchronized(this) {
                 curBytes += size;
                 curRequests += 1;
+                
+                if(cacheResult == CacheResult.HIT) {
+                    totalHits++;
+                } else if(cacheResult == CacheResult.MISS) {
+                    totalMisses++;
+                }
             }
         }
     }
@@ -96,15 +149,64 @@ public class RuntimeStats {
         
         
         synchronized(bytes) {
-            str.append("<tr><td colspan=\"2\">Total number of requests:</td><td colspan=\"3\">"+totalRequests+"</td></tr>\n");
+            // Starting time
+            str.append("<tr><td colspan=\"2\">Started:</td><td colspan=\"3\">");
+            str.append(ServletUtils.formatTimestamp(this.startTime)+ " (" + formatTimeDiff(runningTime) + ") ");
+            str.append("</td></tr>\n");
             
-            str.append("<tr><td colspan=\"2\">Total number of bytes:</td><td colspan=\"3\">"+totalBytes+"</td></tr>\n");
+            str.append("<tr><td colspan=\"2\">Total number of requests:</td><td colspan=\"3\">"+totalRequests);
+            str.append(" (" + totalRequests / (runningTime) +"/s ) ");
+            str.append("</td></tr>\n");
+            
+            str.append("<tr><td colspan=\"2\">Total number of bytes:</td><td colspan=\"3\">"+totalBytes);
+            str.append(" ("+formatBits((totalBytes*8)/(runningTime))+") ");
+            str.append("</td></tr>\n");
             
             str.append("<tr><td colspan=\"5\"> </td></tr>");
             
-            str.append("<tr><td colspan=\"2\">Peak request rate:</td><td colspan=\"3\">"+ formatRequests( (peakRequests * 1.0) / POLL_INTERVAL) +"</td></tr>\n");
+            str.append("<tr><td colspan=\"2\">Cache hit ratio:</td><td colspan=\"3\">");
+            if(totalHits + totalMisses > 0) {
+                double hitPercentage = (totalHits * 100.0) / (totalHits + totalMisses);
+                int rounded = (int) Math.round(hitPercentage * 100.0);
+                int percents = rounded / 100;
+                int decimals = rounded - percents * 100;
+                str.append( percents + "." + decimals +"% of requests");
+            } else {
+                str.append("No data");
+            }
+
+            str.append("</td></tr>\n");
             
-            str.append("<tr><td colspan=\"2\">Peak bandwidth:</td><td colspan=\"3\">"+ formatBits((peakBytes * 8.0) / POLL_INTERVAL) +"</td></tr>\n");
+            str.append("<tr><td colspan=\"2\">Blank/KML/HTML:</td><td colspan=\"3\">");
+            if(totalRequests > 0) {
+                int rounded = (int) Math.round(((totalRequests - totalHits - totalMisses) * 100.0) / totalRequests);
+                int percents = rounded / 100;
+                int decimals = rounded - percents * 100;
+                str.append( percents + "." + decimals +"% of requests");
+            } else {
+                str.append("No data");
+            }
+            str.append("</td></tr>\n");
+            
+            str.append("<tr><td colspan=\"5\"> </td></tr>");
+            
+            str.append("<tr><td colspan=\"2\">Peak request rate:</td><td colspan=\"3\">");
+            if(totalRequests > 0) {
+                str.append(formatRequests( (peakRequests * 1.0) / pollInterval));
+                str.append(" ("+ServletUtils.formatTimestamp(peakRequestsTime)+") ");
+            } else {
+                str.append("No data");
+            }
+            str.append("</td></tr>\n");
+            
+            str.append("<tr><td colspan=\"2\">Peak bandwidth:</td><td colspan=\"3\">");
+            if(totalRequests > 0) {
+                str.append(formatBits((peakBytes * 8.0) / pollInterval));
+                str.append(" ("+ServletUtils.formatTimestamp(peakRequestsTime)+") ");
+            } else {
+                str.append("No data");
+            }
+            str.append("</td></tr>\n");
             
             str.append("<tr><td colspan=\"5\"> </td></tr>");
                         
@@ -120,7 +222,7 @@ public class RuntimeStats {
                 String[] bits = calculateBits(intervals[i]);
                 
                 str.append("<tr><td>"
-                        +intervalDesc[i]+"</td><td>"
+                        +intervalDescs[i]+"</td><td>"
                         +requests[0]+"</td><td>"
                         +requests[1]+"</td><td>"
                         +bits[0]+"</td><td>"
@@ -130,15 +232,16 @@ public class RuntimeStats {
             
             str.append("<tr><td colspan=\"5\"> </td></tr>");
             
-            str.append("<tr><td colspan=\"5\">Note: These figures are 3 seconds delayed and do not include HTTP overhead</td></tr>");
+            str.append("<tr><td colspan=\"5\">All figures are "+pollInterval+" second(s) delayed and do not include HTTP overhead</td></tr>");
             
+            str.append("<tr><td colspan=\"5\">The cache hit ratio does not account for metatiling</td></tr>");
         }
         
         return str.toString();
     }
     
     private String[] calculateRequests(int interval) {
-        int nodeCount = interval / RuntimeStats.POLL_INTERVAL;
+        int nodeCount = interval / pollInterval;
         
         int accu = 0;
         
@@ -164,7 +267,7 @@ public class RuntimeStats {
     
     private String[] calculateBits(int interval) {
         
-        int nodeCount = interval / RuntimeStats.POLL_INTERVAL;
+        int nodeCount = interval / pollInterval;
         
         int accu = 0;
         
@@ -198,6 +301,16 @@ public class RuntimeStats {
         return avg;
     }
     
+    private String formatTimeDiff(long seconds) {
+        if(seconds < 3600) {
+            return (seconds / 60) + " minutes";
+        } else if(seconds < 3600*48) {
+            return (seconds / 3600) + " hours";
+        } else {
+            return (seconds / (3600*24)) + " days";
+        }
+    }
+    
     private class RuntimeStatsThread extends Thread {
         
         final RuntimeStats stats;
@@ -211,7 +324,7 @@ public class RuntimeStats {
         public void run() {
             while(run) {
                 try {
-                    Thread.sleep(RuntimeStats.POLL_INTERVAL * 1000);
+                    Thread.sleep(stats.pollInterval * 1000);
                 } catch (InterruptedException e) {
                     // /Nothing
                 }
@@ -228,10 +341,12 @@ public class RuntimeStats {
             
             if(bytesRequests[0] > peakBytes) {
                 peakBytes = bytesRequests[0];
+                peakBytesTime = System.currentTimeMillis();
             }
             
             if(bytesRequests[1] > peakRequests) {
                 peakRequests = bytesRequests[1];
+                peakRequestsTime = System.currentTimeMillis();
             }
                         
             synchronized(bytes) {

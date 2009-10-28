@@ -11,11 +11,10 @@ import org.geowebcache.storage.StorageBroker;
 public abstract class Conveyor {
     public static enum RequestHandler {LAYER, SERVICE};
     
+    public static enum CacheResult {HIT, MISS, OTHER};
+    
     // Internal routing
     public RequestHandler reqHandler = RequestHandler.LAYER;
-        
-    // Set this flag to true when request has been completed
-    //protected boolean complete = false;
     
     // Set this flag to true if an error has been encountered
     protected boolean error = false;
@@ -30,14 +29,16 @@ public abstract class Conveyor {
     protected String hint = null;
     
     public HttpServletRequest servletReq = null;
+    
     public HttpServletResponse servletResp = null;
+    
     protected StorageBroker storageBroker = null;
     
     protected MimeType mimeType = null;
     
-    //protected StorageObject stObj = null;
-    
     protected long status = 0;
+    
+    protected CacheResult cacheResult;
     
     protected Conveyor(StorageBroker sb, HttpServletRequest srq, HttpServletResponse srp) {
         storageBroker = sb;
@@ -94,17 +95,17 @@ public abstract class Conveyor {
         this.reqHandler = reqHandler;
     }
     
-    public abstract boolean persist() throws GeoWebCacheException;
-    //{
-    //    return storageBroker.put(stObj);
-    //}
+    public CacheResult getCacheResult() {
+        return this.cacheResult;
+    }
     
-    public abstract boolean retrieve(int maxAge) throws GeoWebCacheException;
-    //{
-    //    //TODO hook up maxAge
-    //    if(stObj instanceof TileObject) {
-    //    return storageBroker.get(stObj);
-    //}
+    public void setCacheResult(CacheResult cacheResult) {
+        this.cacheResult = cacheResult;
+    }
+    
+    //public abstract boolean persist() throws GeoWebCacheException;
+    
+    //public abstract boolean retrieve(int maxAge) throws GeoWebCacheException;
     
     public StorageBroker getStorageBroker() {
         return storageBroker;

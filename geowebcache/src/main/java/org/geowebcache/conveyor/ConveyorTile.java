@@ -159,7 +159,16 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
 
     public boolean retrieve(int maxAge) throws GeoWebCacheException {
         try {
-            return storageBroker.get((TileObject) stObj);
+            boolean ret = storageBroker.get((TileObject) stObj);
+            
+            if(ret) {
+                this.setCacheResult(CacheResult.HIT);
+            } else {
+                this.setCacheResult(CacheResult.MISS);
+            }
+            
+            return ret;
+            
         } catch (StorageException se) {
             log.warn(se.getMessage());
             return false;

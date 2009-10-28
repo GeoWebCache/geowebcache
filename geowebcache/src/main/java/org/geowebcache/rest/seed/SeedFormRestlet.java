@@ -210,7 +210,7 @@ public class SeedFormRestlet extends GWCRestlet {
         while(iter.hasNext()) {
             Entry<String, GridSubset> entry = iter.next();
             doc.append("<li>"+entry.getKey().toString()
-                    +":   "+entry.getValue().getCoverageBestFitBounds().toString()+"</li>\n");
+                    +":   "+entry.getValue().getOriginalExtent().toString()+"</li>\n");
         }
         
     }

@@ -131,7 +131,7 @@ public abstract class Service {
             os.write(data);
             
             if(stats != null) {
-                stats.log(data.length);
+                stats.log(data.length, conv.getCacheResult());
             }
         } catch (IOException ioe) {
             // Do nothing...
