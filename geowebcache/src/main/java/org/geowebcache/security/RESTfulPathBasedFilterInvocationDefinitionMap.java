@@ -37,7 +37,7 @@ public class RESTfulPathBasedFilterInvocationDefinitionMap extends
     // ========================================================
     // ========================================
 
-    private List requestMap = new Vector();
+    private List<EntryHolder> requestMap = new Vector<EntryHolder>();
 
     private PathMatcher pathMatcher = new AntPathMatcher();
 

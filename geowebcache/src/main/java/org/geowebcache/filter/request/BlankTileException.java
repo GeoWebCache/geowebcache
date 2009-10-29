@@ -44,17 +44,16 @@ public class BlankTileException extends RequestFilterException {
         super(reqFilter, 200, "image/png");
     }
 
-    private byte[] getBlankTile() {
-        byte[] blankTile = new byte[425];
-        
+    private byte[] getBlankTile() {       
         // Use the built-in one: 
         InputStream is = null;   
         try {
             is = GeoWebCacheDispatcher.class.getResourceAsStream("blank.png");
-            blankTile = new byte[425];
+            byte[] blankTile = new byte[425];
             int ret = is.read(blankTile);
             log.info("Read " + ret + " from blank PNG file (expected 425).");
             
+            return blankTile;
         } catch (IOException ioe) {
             log.error(ioe.getMessage());
         } finally {
@@ -66,7 +65,7 @@ public class BlankTileException extends RequestFilterException {
             }
         }
         
-        return blankTile;
+       return null;
     }
 
     

@@ -73,13 +73,7 @@ public class XMLOldGrid {
             }
         }
         
-        GridSubset gridSubset;
-        
-        if(this.dataBounds == null) {
-            gridSubset = GridSubsetFactory.createGridSubSet(gridSet, dataBounds, zoomStart, zoomStop);
-        } else {
-            gridSubset = GridSubsetFactory.createGridSubSet(gridSet, dataBounds, zoomStart, zoomStop);
-        }
+        GridSubset gridSubset = GridSubsetFactory.createGridSubSet(gridSet, dataBounds, zoomStart, zoomStop);
         
         return gridSubset;
     }

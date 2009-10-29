@@ -25,14 +25,14 @@ import org.restlet.resource.StringRepresentation;
  * An exception that specifies the Restlet representation and status code that
  * should be used to report it to the user.
  * 
- * @author David Winslow
+ * @author David Winslow / OpenGeo
  */
 public class RestletException extends RuntimeException {
     /**
      * 
      */
     private static final long serialVersionUID = 193659009533707359L;
-    Status myStatus;
+    transient Status myStatus;
     Representation myRepresentation;
 
     /**

@@ -80,7 +80,7 @@ public class GridSetFactory {
             } else {
                 if(resolutions == null) {
                     log.warn("GridSet "+name+" was defined without metersPerUnit, assuming 1m/unit."
-                            + " All your tiles will be off if this is incorrect.");
+                            + " All scales will be off if this is incorrect.");
                 } else {
                     log.warn("GridSet "+name+" was defined without metersPerUnit. " +
                     		"Assuming 1m per SRS unit for WMTS scale output.");

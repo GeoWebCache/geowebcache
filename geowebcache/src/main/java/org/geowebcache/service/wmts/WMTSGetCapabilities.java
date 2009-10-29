@@ -35,6 +35,7 @@ import org.geowebcache.grid.Grid;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.LayerMetaInformation;
@@ -93,7 +94,7 @@ public class WMTSGetCapabilities {
         str.append("xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n");
         str.append("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
         str.append("xmlns:gml=\"http://www.opengis.net/gml\" ");
-        // TODO This is temporary
+        // TODO This is temporary, the original schema contradicts itself
         //str.append("xsi:schemaLocation=\"http://www.opengis.net/wmts/1.0 http://schemas.opengis.net/wmts/1.0.0/wmtsGetCapabilities_response.xsd\"\n"); 
         str.append("xsi:schemaLocation=\"http://www.opengis.net/wmts/1.0 http://geowebcache.org/schema/opengis/wmts/1.0.0/wmtsGetCapabilities_response.xsd\"\n"); 
         str.append("version=\"1.0.0\">\n");
@@ -270,11 +271,14 @@ public class WMTSGetCapabilities {
     }
      
     private void layerWGS84BoundingBox(StringBuilder str, TileLayer layer) {
-         // TODO this is optional, but quite useful
-         //str.append("    <ows:WGS84BoundingBox>\n");
-         //str.append("      <ows:LowerCorner>-180 -90</ows:LowerCorner>\n");
-         //str.append("      <ows:UpperCorner>180 90</ows:UpperCorner>\n");
-         //str.append("    </ows:WGS84BoundingBox>\n");
+        GridSubset subset = layer.getGridSubsetForSRS(SRS.getEPSG4326());
+        if(subset != null) {
+            double[] coords = subset.getOriginalExtent().coords;
+            str.append("    <ows:WGS84BoundingBox>\n");
+            str.append("      <ows:LowerCorner>"+coords[0]+" "+coords[1]+"</ows:LowerCorner>\n");
+            str.append("      <ows:UpperCorner>"+coords[2]+" "+coords[3]+"</ows:UpperCorner>\n");
+            str.append("    </ows:WGS84BoundingBox>\n");   
+        }
      }
      
      private void layerStyles(StringBuilder str, TileLayer layer, List<ParameterFilter> filters) {

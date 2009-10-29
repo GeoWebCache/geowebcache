@@ -27,6 +27,9 @@ import org.geowebcache.config.Configuration;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.GridSetBroker;
 
+/**
+ * Note that the constructor starts the thread to load configurations, making this class unsuitable for subclassing
+ */
 public class TileLayerDispatcher {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayerDispatcher.class);
 
@@ -105,7 +108,7 @@ public class TileLayerDispatcher {
         synchronized(this) {
             ret = this.layers;
         }
-        return this.layers;
+        return ret;
     }
 
     private HashMap<String, TileLayer> initialize() {

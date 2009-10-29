@@ -37,7 +37,7 @@ public class Grid {
         if(! Arrays.equals(other.extent, extent))
             return false;
         
-        if(other.resolution != resolution)
+        if(Math.abs(other.resolution - resolution) / Math.abs(other.resolution + resolution) > 0.005)
             return false;
         
         return true;

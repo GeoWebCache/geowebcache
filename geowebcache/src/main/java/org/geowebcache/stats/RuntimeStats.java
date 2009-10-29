@@ -159,7 +159,7 @@ public class RuntimeStats {
             str.append("</td></tr>\n");
             
             str.append("<tr><td colspan=\"2\">Total number of bytes:</td><td colspan=\"3\">"+totalBytes);
-            str.append(" ("+formatBits((totalBytes*8)/(runningTime))+") ");
+            str.append(" ("+formatBits((totalBytes*8.0)/(runningTime))+") ");
             str.append("</td></tr>\n");
             
             str.append("<tr><td colspan=\"5\"> </td></tr>");
@@ -333,23 +333,23 @@ public class RuntimeStats {
             }
         }
 
-        private void updateLists() {
-            int[] bytesRequests = stats.popIntervalData();
-            
-            stats.totalBytes += bytesRequests[0];
-            stats.totalRequests += bytesRequests[1];
-            
-            if(bytesRequests[0] > peakBytes) {
-                peakBytes = bytesRequests[0];
-                peakBytesTime = System.currentTimeMillis();
-            }
-            
-            if(bytesRequests[1] > peakRequests) {
-                peakRequests = bytesRequests[1];
-                peakRequestsTime = System.currentTimeMillis();
-            }
-                        
+        private void updateLists() {                        
             synchronized(bytes) {
+                int[] bytesRequests = stats.popIntervalData();
+                
+                stats.totalBytes += bytesRequests[0];
+                stats.totalRequests += bytesRequests[1];
+                
+                if(bytesRequests[0] > peakBytes) {
+                    peakBytes = bytesRequests[0];
+                    peakBytesTime = System.currentTimeMillis();
+                }
+                
+                if(bytesRequests[1] > peakRequests) {
+                    peakRequests = bytesRequests[1];
+                    peakRequestsTime = System.currentTimeMillis();
+                }
+                
                 bytes[ringPos] = bytesRequests[0];
                 requests[ringPos] = bytesRequests[1];
                 

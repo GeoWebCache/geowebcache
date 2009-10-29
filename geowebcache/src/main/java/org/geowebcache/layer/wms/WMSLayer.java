@@ -139,7 +139,7 @@ public class WMSLayer extends TileLayer {
     
     private transient String encodedName;
 
-    private static transient Log log;
+    private static transient Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
     
     /** 
      * Note XStream uses reflection, this is only used for testing
@@ -177,7 +177,6 @@ public class WMSLayer extends TileLayer {
     }
 
     public boolean initialize(GridSetBroker gridSetBroker) {
-        log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
         curWmsURL = 0;
 
         if (expireClients != null) {
