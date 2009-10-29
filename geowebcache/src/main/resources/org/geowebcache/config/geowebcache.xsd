@@ -34,8 +34,7 @@
           how many requests the system has been serving in the past 3, 15 and 60 seconds,
           as well as aggregate numbers.
 
-          The overhead of this system is extremely low, the syncrhonized code only involves
-          incrementing two counters. By default it is enabled.
+          The overhead of this system is extremely low, by default it is enabled.
         </xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="httpUsername" type="xs:string" minOccurs="0">
@@ -118,7 +117,7 @@
          DEPRECATED
        </xs:documentation></xs:annotation>
      </xs:element>
-     <xs:element name="gridSubsets" type="gwc:GridSubsets" minOccurs="0">
+     <xs:element name="gridSubsets" type="gwc:gridSubsets" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
          The grid definitions contain information about the SRS, the maximum extent for 
          this SRS and the bounds of your data.
@@ -293,7 +292,7 @@
         </xs:documentation></xs:annotation>
      </xs:element>
      <xs:element name="srs" type="gwc:srs"/>
-     <xs:element name="extent" type="gwc:Bounds">
+     <xs:element name="extent" type="gwc:bounds">
         <xs:annotation><xs:documentation xml:lang="en">
           The extent of the grid. This should generally be the biggest 
           bounding box that is valid for the selected SRS. If you change the 
@@ -331,7 +330,7 @@
             resolution would be 180 degress / 256 pixels = 0.703125 degrees / pixel.   
           </xs:documentation></xs:annotation>
         </xs:element>
-        <xs:element name="scales" type="gwc:doubleList" minOccurs="0">
+        <xs:element name="scaleDenominators" type="gwc:doubleList" minOccurs="0">
           <xs:annotation><xs:documentation xml:lang="en">
             You can either specify an array of resolutions in descending order, 
             scales in ascending order OR the number of zoom levels.
@@ -375,20 +374,20 @@
   </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="GridSubsets">
+<xs:complexType name="gridSubsets">
   <xs:sequence>
-      <xs:element name="gridSubset" type="gwc:GridSubset" minOccurs="1" maxOccurs="unbounded" />
+      <xs:element name="gridSubset" type="gwc:gridSubset" minOccurs="1" maxOccurs="unbounded" />
   </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="GridSubset">
+<xs:complexType name="gridSubset">
   <xs:sequence>
     <xs:element name="gridSetName" type="xs:string">
       <xs:annotation><xs:documentation xml:lang="en">
         This name must match the name of the parent gridSet exactly. 
       </xs:documentation></xs:annotation>
     </xs:element>
-    <xs:element name="coverageBounds" type="gwc:Bounds" minOccurs="0">
+    <xs:element name="extent" type="gwc:bounds" minOccurs="0">
       <xs:annotation><xs:documentation xml:lang="en">
         These bounds define the subset of the extent that this
         grid subset covers. The bounds must be given in the 
@@ -416,13 +415,13 @@
   </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="Bounds">
+<xs:complexType name="bounds">
   <xs:sequence>
-    <xs:element name="coords" type="gwc:Coords"/>
+    <xs:element name="coords" type="gwc:coords"/>
   </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="Coords">
+<xs:complexType name="coords">
   <xs:sequence>
      <xs:element name="double" type="xs:double" minOccurs="4" maxOccurs="4"/>
   </xs:sequence>
@@ -809,12 +808,12 @@
 <xs:complexType name="DEPRECATEDgrid">
   <xs:sequence>
      <xs:element name="srs" type="gwc:srs"/>
-     <xs:element name="dataBounds" type="gwc:Bounds">
+     <xs:element name="dataBounds" type="gwc:bounds">
         <xs:annotation><xs:documentation xml:lang="en">
 	    DEPRECATED
         </xs:documentation></xs:annotation>
       </xs:element>
-     <xs:element name="gridBounds" type="gwc:Bounds">
+     <xs:element name="gridBounds" type="gwc:bounds">
        <xs:annotation><xs:documentation xml:lang="en">
 	   DEPRECATED
        </xs:documentation></xs:annotation>
@@ -840,5 +839,4 @@
      </xs:choice>
   </xs:sequence>
 </xs:complexType>
-
 </xs:schema>
