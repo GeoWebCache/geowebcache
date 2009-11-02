@@ -421,7 +421,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         StringBuilder str = new StringBuilder();
         
         str.append("<html><body>\n" + ServletUtils.gwcHtmlHeader(""));
-        str.append("<h3>Welcome to GeoWebCache version {GWC_VERSION}, built {GWC_BUILD_DATE}</h3>\n");
+        str.append("<h3>Welcome to GeoWebCache version 1.2.0, built 2009-11-02</h3>\n");
         str.append("<h3>Dynamic demos:</h3>\n");
         str.append("<ul><li><a href=\""+baseUrl+ "demo\">Dynamically generated list of layers</a></li></ul>\n");
         str.append("<h3>GetCapabilities:</h3>\n");
