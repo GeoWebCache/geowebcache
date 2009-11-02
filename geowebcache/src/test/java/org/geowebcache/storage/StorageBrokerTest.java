@@ -15,11 +15,11 @@ public class StorageBrokerTest extends TestCase {
     
     public static final int THREAD_COUNT = 4;
     
-    public static final int REPEAT_COUNT = 10;
+    public static final long REPEAT_COUNT = 10;
     
-    public static final int TILE_GET_COUNT = 20000;
+    public static final long TILE_GET_COUNT = 20000;
     
-    public static final int TILE_PUT_COUNT = 30000;
+    public static final long TILE_PUT_COUNT = 30000;
     
     public static final boolean RUN_PERFORMANCE_TESTS = false;
     
@@ -38,11 +38,10 @@ public class StorageBrokerTest extends TestCase {
         if(! RUN_PERFORMANCE_TESTS)
             return;
         
-        
         System.out.println("\n");
         StorageBroker sb = resetAndPrepBasicTestDb();
         
-        int iterations = REPEAT_COUNT;
+        long iterations = REPEAT_COUNT;
         
         long start = System.currentTimeMillis();
         Thread[] threadAr = new Thread[THREAD_COUNT];
@@ -56,7 +55,7 @@ public class StorageBrokerTest extends TestCase {
             threadAr[i].join();
         }
         long stop = System.currentTimeMillis();
-        long totalTiles = (THREAD_COUNT*iterations*TILE_GET_COUNT);
+        long totalTiles = THREAD_COUNT*iterations*TILE_GET_COUNT;
         long diff = stop - start;
         long perSec = totalTiles*1000/diff;
         long bw = (20*1024*8*perSec)/1000000;
@@ -123,7 +122,7 @@ public class StorageBrokerTest extends TestCase {
         return tmpDir;
     }
     
-    private void runBasicTileTest(StorageBroker sb, int run, String name) throws StorageException {
+    private void runBasicTileTest(StorageBroker sb, long run, String name) throws StorageException {
         long start = System.currentTimeMillis();
         for(int i=1; i<TILE_GET_COUNT; i++) {
             long tmp = (long) Math.log(i) + 1;
@@ -143,9 +142,9 @@ public class StorageBrokerTest extends TestCase {
         StorageBroker sb = null;
         String fail = null;
         String name = null;
-        int iterations;
+        long iterations;
         
-        public StorageBrokerTesterThread(StorageBroker sb, String name, int iterations) {
+        public StorageBrokerTesterThread(StorageBroker sb, String name, long iterations) {
             this.sb = sb;
             this.name = name;
             this.iterations = iterations;
@@ -153,7 +152,7 @@ public class StorageBrokerTest extends TestCase {
         
         public void run() {
             try {
-                for(int i=0;i<iterations; i++) {
+                for(long i=0;i<iterations; i++) {
                     runBasicTileTest(sb, i, name);
                 }
             } catch (Exception e) {

@@ -214,7 +214,6 @@ public class H2Test extends TestCase {
         System.out.println("\n\n** Multi-threaded test:");
         doSetup();
         
-        long start = System.currentTimeMillis();
         Thread[] threadAr = new Thread[THREAD_COUNT];
         for(int i=0; i<THREAD_COUNT; i++) {
             threadAr[i] = new H2TestThread("Thread"+i, ITERATIONS);
