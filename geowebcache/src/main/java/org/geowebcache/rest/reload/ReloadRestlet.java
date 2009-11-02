@@ -23,6 +23,7 @@ import org.geowebcache.demo.Demo;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
+import org.geowebcache.util.ServletUtils;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
@@ -63,7 +64,7 @@ public class ReloadRestlet extends GWCRestlet {
 
         StringBuilder doc = new StringBuilder();
 
-        doc.append("<html><body>\n" + Demo.GWC_HEADER);
+        doc.append("<html><body>\n" + ServletUtils.gwcHtmlHeader("../"));
 
         try {
             layerDispatcher.reInit();

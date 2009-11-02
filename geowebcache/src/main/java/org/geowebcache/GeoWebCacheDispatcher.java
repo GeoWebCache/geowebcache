@@ -49,6 +49,7 @@ import org.geowebcache.service.Service;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.util.ServletUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
@@ -419,7 +420,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         
         StringBuilder str = new StringBuilder();
         
-        str.append("<html><body>\n" + Demo.GWC_HEADER);
+        str.append("<html><body>\n" + ServletUtils.gwcHtmlHeader(""));
         str.append("<h3>Welcome to GeoWebCache version {GWC_VERSION}, built {GWC_BUILD_DATE}</h3>\n");
         str.append("<h3>Dynamic demos:</h3>\n");
         str.append("<ul><li><a href=\""+baseUrl+ "demo\">Dynamically generated list of layers</a></li></ul>\n");
@@ -451,7 +452,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
      */
     private void writeError(HttpServletResponse response, int httpCode, String errorMsg) {
         log.debug(errorMsg);
-        errorMsg =  "<html><body>\n" + Demo.GWC_HEADER + "<h4>"+httpCode+": "+errorMsg+"</h4>" + "</body></html>\n";
+        // This will normally happen 
+        errorMsg =  "<html><body>\n" + ServletUtils.gwcHtmlHeader("../") + "<h4>"+httpCode+": "+errorMsg+"</h4>" + "</body></html>\n";
         writePage(response, httpCode, errorMsg);
     }
         

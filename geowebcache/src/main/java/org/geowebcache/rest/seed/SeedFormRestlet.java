@@ -34,6 +34,7 @@ import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.util.ServletUtils;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
@@ -345,7 +346,7 @@ public class SeedFormRestlet extends GWCRestlet {
     }
     
     private void makeHeader(StringBuilder doc) {
-        doc.append("<html><body>\n" + Demo.GWC_HEADER);    
+        doc.append("<html><body>\n" + ServletUtils.gwcHtmlHeader("../../"));    
     }
     
     private void makeWarningsAndHints(StringBuilder doc, TileLayer tl) {

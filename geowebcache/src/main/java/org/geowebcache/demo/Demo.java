@@ -18,11 +18,6 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.util.ServletUtils;
 
 public class Demo {
-
-    public static final String GWC_HEADER = "<a id=\"logo\" href=\"http://geowebcache.org\">" 
-        +"<img src=\"http://geowebcache.org/trac/chrome/site/geowebcache_logo.png\""
-        +"height=\"100\" width=\"353\" border=\"0\"/>"
-        +"</a>\n";
     
     public static void makeMap(TileLayerDispatcher tileLayerDispatcher, GridSetBroker gridSetBroker, 
             String action, HttpServletRequest request,
@@ -97,7 +92,7 @@ public class Demo {
 
         String header = 
             "<html><body>\n"
-            + GWC_HEADER
+            + ServletUtils.gwcHtmlHeader("")
             +"<h3>Reload Configuration:</h3>\n"
             +"<p>You can reload the configuration by pressing the following button. " 
             +"The username / password is configured in WEB-INF/user.properties, or the admin " 

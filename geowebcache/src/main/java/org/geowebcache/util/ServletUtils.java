@@ -373,4 +373,12 @@ public class ServletUtils {
         
         return decodedValues;
     }
+    
+    public static String gwcHtmlHeader(String relBasePath) {
+        return "<a id=\"logo\" href=\"http://geowebcache.org\">" 
+        +"<img src=\""+relBasePath+"rest/web/geowebcache_logo.png\""
+        +"height=\"70\" width=\"247\" border=\"0\"/>"
+        +"</a>\n";
+    }
+
 }
