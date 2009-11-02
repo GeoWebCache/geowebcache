@@ -4,6 +4,8 @@
 
   <bean id="gwcAppCtx" class="org.geowebcache.util.ApplicationContextProvider" />
   
+  <!-- The location of a static configuration file for GeoWebCache. 
+       By default this lives in WEB-INF/classes/geowebcache.xml -->
   <bean id="gwcXmlConfig" class="org.geowebcache.config.XMLConfiguration">
     <constructor-arg ref="gwcAppCtx" />
     <constructor-arg ref="gwcGridSetBroker"/>
@@ -20,11 +22,17 @@
        "format_options=regionate_by:auto&amp;bgcolor=0x112233" -->
   <bean id="gwcWMSConfig" class="org.geowebcache.config.GetCapabilitiesConfiguration">
   	<constructor-arg ref="gwcGridSetBroker"/>
+    <!-- The URL to the WMS GetCapabilities document -->
     <constructor-arg value="http://localhost:8080/geoserver/wms?service=wms&amp;request=getcapabilities&amp;version=1.1.0" />
+    <!-- The formats to support for all layers read for the above document -->    
     <constructor-arg value="image/png,image/jpeg,image/png8,image/gif,application/vnd.google-earth.kml+xml"/>
-    <constructor-arg value="3x3"/><!-- metatiling factors -->
-    <constructor-arg value=""/><!-- vendor parameters -->
-    <constructor-arg value="false"/><!-- Whether to allow cached=false to specificed for certain requests --> 
+    <!-- Metatiling factors, 3x3 is usually a good compromise for vector data -->
+    <constructor-arg value="3x3"/>
+    <!-- Vendor parameters, these are appended to every request sent to the backend.
+         If you use MapServer you probably want to set this to "map=name" -->
+    <constructor-arg value=""/>
+    <!-- Whether to allow cached=false to specificed for certain requests -->
+    <constructor-arg value="false"/> 
   </bean>
   
   <!-- For each configuration bean above, add them below to activate -->
@@ -203,7 +211,7 @@
   <bean id="gwcFilterUpdateRestlet" class="org.geowebcache.rest.filter.FilterUpdateRestlet">
     <constructor-arg  ref="gwcTLDispatcher"/>
   </bean>
-  
+  <bean id="gwcByteStreamerRestlet" class="org.geowebcache.rest.webresources.ByteStreamerRestlet" />
   
   <!-- REST Dispatcher -->
   <bean id="gwcRestDispatcher" class="org.geowebcache.rest.RESTDispatcher">
@@ -232,6 +240,10 @@
         <entry>
           <key><value>/filter/{filterName}/update/{updateType}</value></key>
           <ref bean="gwcFilterUpdateRestlet" />
+        </entry>
+        <entry>
+          <key><value>/web/{filename}</value></key>
+          <ref bean="gwcByteStreamerRestlet" />
         </entry>
       </map>
     </constructor-arg>
