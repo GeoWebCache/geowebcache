@@ -198,7 +198,7 @@ public class SeedTask extends GWCTask {
         }
         
         if(threadOffset == 0) {
-            runFilterUpdates();
+            runFilterUpdates(gridSetId);
         }
     }
 
@@ -267,7 +267,7 @@ public class SeedTask extends GWCTask {
     /**
      * Updates any request filters
      */
-    private void runFilterUpdates() {
+    private void runFilterUpdates(String gridSetId) {
         // We will assume that all filters that can be updated should be updated
         if (req.getFilterUpdate() == null || req.getFilterUpdate()) {
             List<RequestFilter> reqFilters = tl.getRequestFilters();
@@ -275,7 +275,7 @@ public class SeedTask extends GWCTask {
                 Iterator<RequestFilter> iter = reqFilters.iterator();
                 while (iter.hasNext()) {
                     RequestFilter reqFilter = iter.next();
-                    if (reqFilter.update(tl, req.getGridSetId())) {
+                    if (reqFilter.update(tl, gridSetId)) {
                         log.info("Updated request filter "+ reqFilter.getName());
                     } else {
                         log.debug("Request filter " + reqFilter.getName() + " returned false on update.");
