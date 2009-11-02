@@ -62,13 +62,16 @@ public class WMTSService extends Service {
         String encoding = request.getCharacterEncoding();
         String[] keys = { "layer", "request", "style", "format", "tilematrixset", "tilematrix", "tilerow", "tilecol" };
         String[] values = ServletUtils.selectedStringsFromMap(request.getParameterMap(), encoding, keys);
-
-        String req = values[1].toLowerCase();
         
+        String req = values[1];
         if(req == null) {
             //OWSException(httpCode, exceptionCode, locator, exceptionText);
             throw new OWSException(400, "MissingParameterValue", "request", "Missing Request parameter");
-        } else if(req.equals("gettile")) {
+        } else {
+            req = req.toLowerCase();
+        }
+        
+        if(req.equals("gettile")) {
             ConveyorTile tile = getTile(values, request, response, RequestType.TILE);
             return tile;
         } else if(req.equals("getcapabilities")) {
@@ -82,7 +85,7 @@ public class WMTSService extends Service {
             tile.setRequestHandler(Conveyor.RequestHandler.SERVICE);
             return tile;
         } else {
-            throw new OWSException(501, "OperationNotSupported", "request", req + "is not implemented");
+            throw new OWSException(501, "OperationNotSupported", "request", req + " is not implemented");
         }
     }
     
