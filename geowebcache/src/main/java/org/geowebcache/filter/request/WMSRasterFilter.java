@@ -82,13 +82,8 @@ public class WMSRasterFilter extends RasterFilter {
         
         InputStream is = new ByteArrayInputStream(ret);
         
-        BufferedImage img = null;
-        try {
-            img = ImageIO.read(is);
-        } catch (IOException ioe) {
-            log.error(ioe.getMessage());
-        }
-        
+        BufferedImage img = ImageIO.read(is);
+
         if(img.getWidth() != widthHeight[0] || img.getHeight() != widthHeight[1]) {
             String msg = "WMS raster filter has dimensions " + img.getWidth() + "," + img.getHeight()
                     + ", expected " + widthHeight[0] + "," + widthHeight[1] + "\n";
@@ -146,6 +141,9 @@ public class WMSRasterFilter extends RasterFilter {
                 this.setMatrix(layer, gridSetId, z, true);
             } catch (Exception e) {
                 log.error(e.getMessage());
+                if(true || log.isDebugEnabled()) {
+                    e.printStackTrace();
+                }
             }
         }
         return true;
@@ -158,6 +156,9 @@ public class WMSRasterFilter extends RasterFilter {
                   this.setMatrix(layer, gridSetId, z, true);
                } catch (Exception e) {
                    log.error(e.getMessage());
+                   if(true || log.isDebugEnabled()) {
+                       e.printStackTrace();
+                   }
                }
            }
     }
