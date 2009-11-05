@@ -41,6 +41,7 @@ import org.geowebcache.grid.XMLGridSubset;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
+import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 
 public abstract class TileLayer {
@@ -60,6 +61,8 @@ public abstract class TileLayer {
     protected Hashtable<SRS,XMLOldGrid> grids;
     
     protected List<RequestFilter> requestFilters;
+    
+    protected transient List<MimeType> formats;
     
     protected transient Hashtable<String,GridSubset> subSets;
    
@@ -116,9 +119,11 @@ public abstract class TileLayer {
      * Adds another format string to the list of supported formats
      * 
      * @param format
+     * @throws MimeException 
      */
-    public void addFormat(String format) {
-        this.mimeFormats.add(format);
+    public void addFormat(String format) throws MimeException {
+        MimeType mime = MimeType.createFromFormat(format);
+        this.formats.add(mime);
     }
 
     /**
@@ -157,8 +162,9 @@ public abstract class TileLayer {
     public boolean supportsFormat(String strFormat) throws GeoWebCacheException {
         if (strFormat == null)
             return true;
-        for (String format : mimeFormats) {
-            if (strFormat.equalsIgnoreCase(format)) {
+        
+        for (MimeType mime : formats) {
+            if (strFormat.equalsIgnoreCase(mime.getFormat())) {
                 return true;
             }
         }
@@ -222,10 +228,6 @@ public abstract class TileLayer {
     public abstract ConveyorTile doNonMetatilingRequest(ConveyorTile tile)
             throws GeoWebCacheException;
 
-    //public GridSet getGrid(SRS srs) {
-    //    return gridSets.get(srs);
-    //}
-
     /**
      * 
      * @param srsIdx
@@ -287,18 +289,6 @@ public abstract class TileLayer {
      */
     public abstract Integer getBackendTimeout();
     public abstract void setBackendTimeout(int seconds);
-    
-    /**
-     * Provides a 2-dim array with the bounds
-     * 
-     * {z , {minx,miny,maxx,maxy}}
-     * 
-     * @param srsIdx
-     * @param bounds
-     * @return
-     * @throws GeoWebCacheException 
-     */
-    //public abstract int[][] getCoveredGridLevels(SRS srs, BoundingBox bounds) throws GeoWebCacheException;
 
     /**
      * 

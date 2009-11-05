@@ -420,7 +420,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         
         StringBuilder str = new StringBuilder();
         
-        str.append("<html><body>\n" + ServletUtils.gwcHtmlHeader(""));
+        str.append("<html>\n"+ServletUtils.gwcHtmlHeader("GWC Home") +"<body>\n" + ServletUtils.gwcHtmlLogoLink(""));
         str.append("<h3>Welcome to GeoWebCache version {GWC_VERSION}, built {GWC_BUILD_DATE}</h3>\n");
         str.append("<h3>Dynamic demos:</h3>\n");
         str.append("<ul><li><a href=\""+baseUrl+ "demo\">Dynamically generated list of layers</a></li></ul>\n");
@@ -453,7 +453,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private void writeError(HttpServletResponse response, int httpCode, String errorMsg) {
         log.debug(errorMsg);
         // This will normally happen 
-        errorMsg =  "<html><body>\n" + ServletUtils.gwcHtmlHeader("../") + "<h4>"+httpCode+": "+errorMsg+"</h4>" + "</body></html>\n";
+        errorMsg =  "<html>\n"+ServletUtils.gwcHtmlHeader("GWC Error") +"<body>\n" 
+        + ServletUtils.gwcHtmlLogoLink("../") + "<h4>"+httpCode+": "+errorMsg+"</h4>" + "</body></html>\n";
         writePage(response, httpCode, errorMsg);
     }
         

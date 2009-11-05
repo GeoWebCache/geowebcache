@@ -374,7 +374,23 @@ public class ServletUtils {
         return decodedValues;
     }
     
-    public static String gwcHtmlHeader(String relBasePath) {
+    public static String gwcHtmlHeader(String pageTitle) {
+        return 
+            "<head>\n"
+                + "<title>"
+                + pageTitle
+                + "</title>"
+                + "<style type=\"text/css\">\n"
+                + "body, td {\n"
+                + "font-family: Verdana,Arial,\'Bitstream Vera Sans\',Helvetica,sans-serif;\n"
+                + "font-size: 0.85em;\n"
+                + "vertical-align: top;\n"
+                + "}\n"
+                + "</style>\n" 
+                + "</head>\n";
+    }
+    
+    public static String gwcHtmlLogoLink(String relBasePath) {
         return "<a id=\"logo\" href=\"http://geowebcache.org\">" 
         +"<img src=\""+relBasePath+"rest/web/geowebcache_logo.png\""
         +"height=\"70\" width=\"247\" border=\"0\"/>"

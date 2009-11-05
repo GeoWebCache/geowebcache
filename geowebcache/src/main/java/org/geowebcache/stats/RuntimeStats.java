@@ -179,10 +179,14 @@ public class RuntimeStats {
             
             str.append("<tr><td colspan=\"2\">Blank/KML/HTML:</td><td colspan=\"3\">");
             if(totalRequests > 0) {
-                int rounded = (int) Math.round(((totalRequests - totalHits - totalMisses) * 100.0) / totalRequests);
-                int percents = rounded / 100;
-                int decimals = rounded - percents * 100;
-                str.append( percents + "." + decimals +"% of requests");
+                if(totalHits + totalMisses == 0) {
+                    str.append("100.0% of requests");
+                } else {
+                    int rounded = (int) Math.round(((totalRequests - totalHits - totalMisses) * 100.0) / totalRequests);
+                    int percents = rounded / 100;
+                    int decimals = rounded - percents * 100;
+                    str.append( percents + "." + decimals +"% of requests");
+                }
             } else {
                 str.append("No data");
             }
