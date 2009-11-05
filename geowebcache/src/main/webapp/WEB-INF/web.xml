@@ -80,29 +80,4 @@
     <servlet-name>geowebcache</servlet-name>
     <url-pattern>/home</url-pattern>
   </servlet-mapping>
-  
-  <!-- The following disables the metadata storage,
-       which by default is an embedded H2 database -->
-  <!--
-  <context-param>
-	 <param-name>GWC_METASTORE_DISABLED</param-name>
-	 <param-value>TRUE</param-value>
-  </context-param>
-  -->
-  
-  <!-- This variable is deprecated, 
-       see the the blob- and metatstore beans in geowebcache-servlet.xml  
-  <context-param>
-	<param-name>GEOWEBCACHE_CACHE_DIR</param-name>
-	<param-value>/tmp</param-value>
-  </context-param>
-  -->
-  
-  <!-- The following only affects GeoServerConfiguration.class -->
-  <!-- 
-  <context-param>
-	 <param-name>GEOSERVER_WMS_URL</param-name>
-	 <param-value>http://sigma.openplans.org:8080/geosearch/wms?request=GetCapabilities</param-value>
-  </context-param>
-  -->  
 </web-app>
