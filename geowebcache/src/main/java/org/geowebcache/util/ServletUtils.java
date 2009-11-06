@@ -396,5 +396,13 @@ public class ServletUtils {
         +"height=\"70\" width=\"247\" border=\"0\"/>"
         +"</a>\n";
     }
-
+    
+    public static long[][] arrayDeepCopy(long[][] array) {
+        long[][] ret = new long[array.length][array[0].length];
+        for(int i=0; i<array.length; i++) {
+            System.arraycopy(array[i], 0, ret[i], 0, array[i].length);
+        }
+        
+        return ret;
+    }
 }

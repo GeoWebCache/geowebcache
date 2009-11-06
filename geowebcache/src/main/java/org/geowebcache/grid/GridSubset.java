@@ -17,6 +17,7 @@
 package org.geowebcache.grid;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.util.ServletUtils;
 
 
 /**
@@ -78,8 +79,26 @@ public class GridSubset {
     }
     
     public long[][] expandToMetaFactors(long[][] coverages, int[] metaFactors) {
-        // TODO Auto-generated method stub
-        return null;
+        long[][] ret = ServletUtils.arrayDeepCopy(coverages);
+        
+        for(int z=0; z<ret.length; z++) {
+            long[] cov = ret[z];
+            
+            cov[0] = cov[0] - (cov[0] % metaFactors[0]);
+            cov[1] = cov[1] - (cov[1] % metaFactors[1]);
+            
+            cov[2] = cov[2] - (cov[2] % metaFactors[0]) + (metaFactors[0] - 1);
+            if(cov[2] > this.gridSet.gridLevels[z].extent[0]) {
+                cov[2] = this.gridSet.gridLevels[z].extent[0];
+            }
+            
+            cov[3] = cov[3] - (cov[3] % metaFactors[1]) + (metaFactors[1] - 1);
+            if(cov[3] > this.gridSet.gridLevels[z].extent[1]) {
+                cov[3] = this.gridSet.gridLevels[z].extent[1];
+            }
+        }
+        
+        return ret;
     }
 
     public long[] getCoverage(int level) {
@@ -159,11 +178,6 @@ public class GridSubset {
         
         return ret;
     }
-    
-    //public long[][] getCoverageIntersections(long[] reqRectangle) {
-    //    GridCoverage gridCov = gridCoverageLevels[firstLevel + (int) reqRectangle[4]];        
-    //    return gridCov.getIntersection(reqRectangle);
-    //}
     
     public GridSet getGridSet() {
         return gridSet;
