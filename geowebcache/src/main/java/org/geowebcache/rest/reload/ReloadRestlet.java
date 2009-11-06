@@ -64,7 +64,7 @@ public class ReloadRestlet extends GWCRestlet {
 
         StringBuilder doc = new StringBuilder();
 
-        doc.append("<html><body>\n" + ServletUtils.gwcHtmlHeader("../"));
+        doc.append("<html>\n"+ServletUtils.gwcHtmlHeader("GWC Reload") +"<body>\n" + ServletUtils.gwcHtmlLogoLink("../"));
 
         try {
             layerDispatcher.reInit();

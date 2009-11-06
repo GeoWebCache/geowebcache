@@ -64,14 +64,14 @@ public class TruncateTask extends GWCTask {
          
         runFilterUpdates();
         
-        long[][] coverages = null;
+        long[][] rangeBounds = null;
 
         BoundingBox reqBounds = req.getBounds();
         if (req.getBounds() == null 
                 || Arrays.equals(req.getBounds().coords, nullBbox)) {
-            coverages = gridSubset.getCoverages();
+            rangeBounds = gridSubset.getCoverages();
         } else {
-            coverages = gridSubset.getCoverageIntersections(reqBounds);
+            rangeBounds = gridSubset.getCoverageIntersections(reqBounds);
         }
 
         MimeType mimeType = MimeType.createFromFormat(req.getMimeFormat());
@@ -79,7 +79,7 @@ public class TruncateTask extends GWCTask {
         int[] metaFactors = tl.getMetaTilingFactors();
 
         if (metaFactors[0] > 1 || metaFactors[1] > 1 && mimeType.supportsTiling()) {
-            coverages = gridSubset.expandToMetaFactors(coverages, metaFactors);
+            rangeBounds = gridSubset.expandToMetaFactors(rangeBounds, metaFactors);
         }
         
         TileRangeObject trObj = new TileRangeObject(
@@ -87,7 +87,7 @@ public class TruncateTask extends GWCTask {
                 req.getGridSetId(), 
                 req.getZoomStart(), 
                 req.getZoomStop(), 
-                coverages, 
+                rangeBounds, 
                 mimeType, 
                 req.getParameters());
         

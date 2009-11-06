@@ -420,14 +420,16 @@ public class GeoWebCacheDispatcher extends AbstractController {
         
         StringBuilder str = new StringBuilder();
         
-        str.append("<html><body>\n" + ServletUtils.gwcHtmlHeader(""));
+        str.append("<html>\n"+ServletUtils.gwcHtmlHeader("GWC Home") +"<body>\n" + ServletUtils.gwcHtmlLogoLink(""));
         str.append("<h3>Welcome to GeoWebCache version 1.2.0, built 2009-11-02</h3>\n");
-        str.append("<h3>Dynamic demos:</h3>\n");
-        str.append("<ul><li><a href=\""+baseUrl+ "demo\">Dynamically generated list of layers</a></li></ul>\n");
+        str.append("<p><a href=\"http://geowebcache.org\">GeoWebCache</a> is an advanced tile cache for WMS servers.");
+        str.append("It supports a large variety of protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</p>");
+        str.append("<h3>Automatically Generated Demos:</h3>\n");
+        str.append("<ul><li><a href=\""+baseUrl+ "demo\">A list of all the layers and automatic demos</a></li></ul>\n");
         str.append("<h3>GetCapabilities:</h3>\n");
         str.append("<ul><li><a href=\""+baseUrl+"service/wmts?REQUEST=getcapabilities\">WMTS 1.0.0 GetCapabilities document</a></li>");
         str.append("<li><a href=\""+baseUrl+"service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities&TILED=true\">WMS 1.1.1 GetCapabilities document</a></li>");
-        str.append("<li>Note that this will only work with clients that are ");
+        str.append("<li>Note that the latter will only work with clients that are ");
         str.append("<a href=\"http://wiki.osgeo.org/wiki/WMS_Tiling_Client_Recommendation\">WMS-C capable</a>.</li>\n");
         str.append("<li>Omitting tiled=true from the URL will omit the TileSet elements.</li></ul>\n");
         if(runtimeStats != null) {
@@ -453,7 +455,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private void writeError(HttpServletResponse response, int httpCode, String errorMsg) {
         log.debug(errorMsg);
         // This will normally happen 
-        errorMsg =  "<html><body>\n" + ServletUtils.gwcHtmlHeader("../") + "<h4>"+httpCode+": "+errorMsg+"</h4>" + "</body></html>\n";
+        errorMsg =  "<html>\n"+ServletUtils.gwcHtmlHeader("GWC Error") +"<body>\n" 
+        + ServletUtils.gwcHtmlLogoLink("../") + "<h4>"+httpCode+": "+errorMsg+"</h4>" + "</body></html>\n";
         writePage(response, httpCode, errorMsg);
     }
         

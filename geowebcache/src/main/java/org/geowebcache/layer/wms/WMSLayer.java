@@ -121,8 +121,6 @@ public class WMSLayer extends TileLayer {
 
     private transient Condition[] gridLocConds;
 
-    private transient List<MimeType> formats;
-
     private transient HashMap<GridLocObj, Boolean> procQueue;
     
     private transient ParameterFilter[] sortedModParams;

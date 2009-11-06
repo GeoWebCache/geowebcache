@@ -15,6 +15,9 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.mime.ImageMime;
+import org.geowebcache.mime.MimeType;
+import org.geowebcache.mime.XMLMime;
 import org.geowebcache.util.ServletUtils;
 
 public class Demo {
@@ -91,9 +94,29 @@ public class Demo {
         String reloadPath = "rest/reload";
 
         String header = 
-            "<html><body>\n"
-            + ServletUtils.gwcHtmlHeader("")
-            +"<h3>Reload Configuration:</h3>\n"
+            "<html>\n"+ServletUtils.gwcHtmlHeader("GWC Demos") +"<body>\n"
+            + ServletUtils.gwcHtmlLogoLink("")
+            +"<table>\n"
+            +"<table cellspacing=\"10\" border=\"0\">\n"
+            +"<tr><td><strong>Layer name:</strong></td>\n" 
+            +"<td><strong>Grids Sets:</strong></td>\n"  
+            +"</tr>\n";
+            
+        
+        String rows = tableRows(tileLayerDispatcher, gridSetBroker);
+        
+        String footer = "</table>\n"
+            +"<br />"
+            +"<strong>These are just quick demos. GeoWebCache also suppports:</strong><br />\n"
+            +"<ul><li>WMTS, TMS, Virtual Earth and Google Maps</li>\n"
+            +"<li>Proxying GetFeatureInfo, GetLegend and other WMS requests</li>\n"
+            +"<li>Advanced request and parameter filters</li>\n"
+            +"<li>Output format adjustments, such as compression level</li>\n"
+            +"<li>Adjustable expiration headers and automatic cache expiration</li>\n"
+            +"<li>RESTful interface for seeding and configuration (beta)</li>\n"
+            +"</ul>\n"
+            +"<br />\n"
+            +"<strong>Reload Configuration:</strong><br />\n"
             +"<p>You can reload the configuration by pressing the following button. " 
             +"The username / password is configured in WEB-INF/user.properties, or the admin " 
             +" user in GeoServer if you are using the plugin.</p>\n"
@@ -101,95 +124,94 @@ public class Demo {
             +"<input type=\"hidden\" name=\"reload_configuration\"  value=\"1\" />"
             +"<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Reload Configuration\"></span>"
             +"</form>"
-            +"<hr>\n"
-            +"<h3>Known Layers:</h3><table>\n"
-            +"<ul><li>This is just a quick demo, the bounds are likely to be less than perfect.</li>\n"
-            +"<li>You can append &format=image/jpeg to the URLs in the "
-            +"table to change the output format.</li>\n"
-            +"</ul>\n"
-            +"<hr>\n"
-            +"<table cellspacing=\"10\" border=\"0\">\n"
-            +"<tr><td><strong>Layer name:</strong></td>" 
-            +"<td><strong>Web-friendly Grids Sets:</strong></td>"
-            +"<td colspan=\"2\"><strong>Google Earth:</strong></td>" 
-            +"<td><strong>Other Grid Sets</strong></td>" 
-            +"</tr>\n";
-        
-        String rows = tableRows(tileLayerDispatcher, gridSetBroker);
-        
-        String footer = "</table>\n</body></html>";
+            + "</body></html>";
         
         return header + rows + footer;
     }
     
     private static String tableRows(TileLayerDispatcher tileLayerDispatcher, GridSetBroker gridSetBroker)
     throws GeoWebCacheException {
-        Iterator<Entry<String,TileLayer>> it = tileLayerDispatcher.getLayers().entrySet().iterator();
-        
         StringBuffer buf = new StringBuffer();
         
+        Iterator<Entry<String,TileLayer>> it = tileLayerDispatcher.getLayers().entrySet().iterator();
         while(it.hasNext()) {
             TileLayer layer = it.next().getValue();     
-            buf.append("<tr><td>"+layer.getName()+"</td><td>");
+            buf.append("<tr><td style=\"min-width: 100px;\"><strong>"+layer.getName() + "</strong><br />\n");
+            buf.append("<a href=\"rest/seed/"+layer.getName()+"\">Seed this layer</a>\n");
+            buf.append("</td>");
+            buf.append("<td><table width=\"100%\">");
             
-            GridSubset epsg4326GridSubset = layer.getGridSubset(gridSetBroker.WORLD_EPSG4326.getName());
-            if(null != epsg4326GridSubset) {
-                buf.append(generateDemoUrl(
-                        layer.getName(),
-                        epsg4326GridSubset.getName(),
-                        epsg4326GridSubset.getSRS())
-                        +"<br />");
-            } else {
-                buf.append("<li>"+gridSetBroker.WORLD_EPSG4326.getName()+" not supported</li>");
-            }
-            
-            // We get the SRS from the GridSet because it may use EPSG:900913 under the covers
-            GridSubset epsg3857GridSubset = layer.getGridSubset(gridSetBroker.WORLD_EPSG3857.getName());
-            if(null != epsg3857GridSubset) {
-                buf.append(generateDemoUrl(
-                        layer.getName(),
-                        epsg3857GridSubset.getName(),
-                        epsg3857GridSubset.getSRS())
-                        +"<br />");
-                
-            } else {
-                buf.append("<li>"+gridSetBroker.WORLD_EPSG3857.getName()+" not supported</li>");
-            }
-            
-            buf.append("</ul></td>\n");
-            if(null != epsg4326GridSubset) {
-                String prefix = "";
-                buf.append("<td><a href=\""+prefix+"service/kml/"+layer.getName()+".png.kml\">PNG</a></td>"
-                + "<td><a href=\""+prefix+"service/kml/"+layer.getName()+".kml.kmz\">KML</a></td>");
-            } else {
-                buf.append("<td colspan=\"2\">CRS84Geometric required</td>");
-            }
-            
-            // Any custom projections?
-            buf.append("<td>");
             int count = 0;
             Iterator<GridSubset> iter = layer.getGridSubsets().values().iterator();
             while(iter.hasNext()) {
                 GridSubset gridSubset = iter.next();
-                if(! gridSubset.getName().equals(gridSetBroker.WORLD_EPSG4326.getName())
-                        && ! gridSubset.getName().equals(gridSetBroker.WORLD_EPSG3857.getName())) { 
-                    buf.append(generateDemoUrl(layer.getName(), gridSubset.getName(), gridSubset.getSRS())+"<br />");
-                    count++;
+                String gridSetName = gridSubset.getName();
+                if(gridSetName.length() > 20) {
+                    gridSetName = gridSetName.substring(0, 20) + "...";
                 }
+                buf.append("<tr><td style=\"width: 170px;\">").append(gridSetName);
+                
+                buf.append("</td><td>OpenLayers: [");
+                Iterator<MimeType> mimeIter = layer.getMimeTypes().iterator();
+                boolean prependComma = false;
+                while(mimeIter.hasNext()) {
+                    MimeType mime = mimeIter.next();
+                    if(mime instanceof ImageMime) {
+                        if(prependComma) {
+                            buf.append(", ");
+                        } else {
+                            prependComma = true;
+                        }
+                        buf.append(generateDemoUrl(layer.getName(), gridSubset.getName(), (ImageMime) mime));
+                    }
+                }
+                buf.append("]</td><td>\n");
+                
+                if(gridSubset.getName().equals(gridSetBroker.WORLD_EPSG4326.getName())) {
+                    buf.append(" &nbsp; KML: [");
+                    String prefix = "";
+                    prependComma = false;
+                    Iterator<MimeType> kmlIter = layer.getMimeTypes().iterator();
+                    while(kmlIter.hasNext()) {
+                        MimeType mime = kmlIter.next();
+                        if(mime instanceof ImageMime || mime == XMLMime.kml) {
+                            if(prependComma) {
+                                buf.append(", ");
+                            } else {
+                                prependComma = true;
+                            }
+                            buf.append("<a href=\""+prefix+"service/kml/"+layer.getName()+"."+mime.getFileExtension()+".kml\">"+mime.getFileExtension()+"</a>");
+                        } else if(mime == XMLMime.kmz) {
+                            if(prependComma) {
+                                buf.append(", ");
+                            } else {
+                                prependComma = true;
+                            }
+                            buf.append("<a href=\""+prefix+"service/kml/"+layer.getName()+".kml.kmz\">kmz</a>");
+                        }
+                    }
+                    buf.append("]");
+                } else {
+                    // No Google Earth support
+                }
+                buf.append("</td></tr>");
+                count++;
             }
             
-            if(count == 0){
-                buf.append("<i>none</i>");
-            }
-            buf.append("</td>\n");
-            buf.append("<td><a href=\"rest/seed/"+layer.getName()+"\">Seed this layer</a></td>\n");
+            //if(count == 0) {
+            //    buf.append("<tr><td colspan=\"2\"><i>None</i></td></tr>\n");
+            //}
+        
+            buf.append("</table></td>\n");            
             buf.append("</tr>\n");
         }
+        
         return buf.toString();
     }
     
-    private static String generateDemoUrl(String layerName, String gridSetId, SRS srs) {
-        return "<a href=\"demo/"+layerName+"?gridSet="+gridSetId+"\">"+gridSetId+" ("+srs.toString()+")</a>";
+    private static String generateDemoUrl(String layerName, String gridSetId, ImageMime imageMime) {
+        return "<a href=\"demo/"+layerName+"?gridSet="+gridSetId+"&format="+imageMime.getFormat()+"\">"
+            +imageMime.getFileExtension()+"</a>";
     }
     
     private static String generateHTML(TileLayer layer, String gridSetStr, String formatStr, boolean asPlugin) 
