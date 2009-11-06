@@ -358,7 +358,7 @@
 	</configuration>
       </plugin>
 
-      <plugin>
+      <!--WARplugin>
 	   <artifactId>maven-war-plugin</artifactId>
 	   <executions>
 	     <execution>
@@ -368,7 +368,7 @@
 	       </goals>
 	     </execution>
 	   </executions>
-      </plugin>
+      </pluginWAR-->
 
       <plugin>
 	<artifactId>maven-source-plugin</artifactId>
