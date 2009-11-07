@@ -81,7 +81,7 @@
         </xs:documentation></xs:annotation>
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="wmsLayer" type="gwc:wmsLayer" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="wmsLayer" type="gwc:wmsLayer" minOccurs="0" maxOccurs="unbounded"/>
           </xs:sequence>
         </xs:complexType>
      </xs:element>
@@ -136,7 +136,7 @@
          round robin fashion for load balancing and automatic failover.
        </xs:documentation></xs:annotation>
      </xs:element>
-     <xs:element name="wmsLayers" type="xs:string">
+     <xs:element name="wmsLayers" type="xs:string" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
          The LAYERS parameter sent to the WMS backend. 
          It may contain commas, to request composites of several layers from the backend, 
