@@ -10,4 +10,5 @@ This section explains some general concepts used when tiling, as well as special
    
    gridset.rst
    metatile.rst
-
+   parameterfilter.rst
+   requestfilter.rst
