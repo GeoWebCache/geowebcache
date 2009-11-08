@@ -1,4 +1,4 @@
-.. _instructions
+.. _instructions:
 
 Installing Java and Tomcat
 ==========================

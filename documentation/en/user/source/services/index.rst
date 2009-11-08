@@ -8,11 +8,11 @@ Below is a list of the standard services that are distributed with GeoWebCache. 
 .. toctree::
    :maxdepth: 1
 
-   wms-c.rst
+   wms.rst
    wmts.rst
    tms.rst
    kml.rst
    gmaps.rst
-   virtualearth.rst
+   bingmaps.rst
    mobilegmaps.rst
    wfs.rst

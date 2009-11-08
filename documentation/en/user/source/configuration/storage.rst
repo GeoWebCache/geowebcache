@@ -59,3 +59,11 @@ The performance overhead of the metastore is neglible, and speeds up certain ope
 1) Find the bean definition of gwcStorageBroker
 2) Replace ``<constructor-arg ref="gwcMetaStore" />`` with ``<constructor-arg><null /></constructor-arg>``
 3) Comment out the bean for gwcMetaStore as well
+
+
+Cache Expiration
+----------------
+
+In addition to the seeding mechanism, which can truncate the cache, GeoWebCache supports a ``<expireCache>`` value that is configured per layer. The current implementation only checks this value when the tile is actually requested, answering with a tile miss which causes the cache to be updated. By default tiles never expire. 
+
+Also note that this value is distinct from the ``<expireClients>``, which controls the HTTP expiration headers sent to clients.
