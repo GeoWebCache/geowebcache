@@ -307,7 +307,7 @@
           pad it to form a set of suitable, rectangular grids
         </xs:documentation></xs:annotation>
       </xs:element>
-     <xs:element name="alignTopLeft" type="xs:boolean">
+     <xs:element name="alignTopLeft" type="xs:boolean" minOccurs="0" maxOccurs="1">
         <xs:annotation><xs:documentation xml:lang="en">
           In many cases the specified extent does not result in an integer
           height or width for every resolution. In these cases GeoWebCache
