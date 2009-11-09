@@ -233,7 +233,7 @@ public class ServletUtils {
      * @return
      */
     public static String makeExpiresHeader(int seconds) {
-        return formatTimestamp(System.currentTimeMillis() + seconds * 1000);
+        return formatTimestamp(System.currentTimeMillis() + seconds * 1000L);
     }
     
     
