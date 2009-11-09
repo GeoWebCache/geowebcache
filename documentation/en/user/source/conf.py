@@ -39,7 +39,7 @@ master_doc = 'index'
 # General substitutions.
 project = u'GeoWebCache'
 manual = u'User Manual'
-copyright = u'2009 OpenGeo'
+copyright = u'OpenGeo, License: Creative Commons 3.0 - Attribution Share Alike'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.

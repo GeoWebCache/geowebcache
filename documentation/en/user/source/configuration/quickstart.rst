@@ -43,11 +43,11 @@ Special Cases
 
       <constructor-arg value="map=somemap&amp;otherkey=othervalue"/><!-- vendor parameters -->
 
-6. Also note that to get 24 bit PNGs (image/png; mode=24bit") from MapServer, you should add png24 as an output format:
+6. Also note that to get 24 bit PNGs (image/png; mode=24bit") from MapServer (or image/png24 from ArcIMS), you should specify those as output formats:
 
    .. code-block:: xml
 
-      <constructor-arg value="image/png24,image/jpeg"/>
+      <constructor-arg value="image/png; mode=24bit,image/jpeg,image/png24"/>
 
 7. It is possible to change the metatiling factors by changing the fourth element. This will affect all layers derived from this document.
 
