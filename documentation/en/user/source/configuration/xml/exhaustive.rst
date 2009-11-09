@@ -23,9 +23,9 @@ The example below uses all configuration directives that are currently available
      <backendTimeout>120</backendTimeout>
      <!-- OPTIONAL If the following is set to true you can append cached=false to requests and they will be
           proxied without caching. -->
-     <cacheBypassAllowed>FALSE</cacheBypassAllowed>
+     <cacheBypassAllowed>false</cacheBypassAllowed>
      <!-- OPTIONAL By default GWC displays simple runtime statistics on the front page -->
-     <runtimeStats>TRUE</runtimeStats>
+     <runtimeStats>true</runtimeStats>
      <!-- OPTIONAL A HTTP username to use for requests. Due to the design of the HTTP client included with
           Java this setting is global-->
      <httpUsername></httpUsername>
@@ -43,7 +43,7 @@ The example below uses all configuration directives that are currently available
          <!-- OPTIONAL PNG images are requested from the backend to avoid double compression -->
          <requestFormat>image/png</requestFormat>
          <!-- OPTIONAL For request formats that support it  -->
-         <transparent>FALSE</transparent>
+         <transparent>false</transparent>
          <!-- OPTIONAL Background color -->
          <bgColor>0x0066DD</bgColor>
          <!-- OPTIONAL Palette used on WMS server -->
@@ -82,7 +82,7 @@ The example below uses all configuration directives that are currently available
          </extent>
          <!-- OPTIONAL Whether the grid should have a fixed top left origin. The default
               is to use the bottom left -->
-         <alignTopLeft>FALSE</alignTopLeft>
+         <alignTopLeft>false</alignTopLeft>
          <!-- OPTIONAL (CHOICE) By default GWC tries to fit the extent into a single tile and then
               quarters this tile for every subsequent zoom level. Instead you can specify
               specific resolutions that are uniformly decreasing. Resolution is calculated
@@ -197,11 +197,11 @@ The example below uses all configuration directives that are currently available
          <wmsVersion>1.1.0</wmsVersion>
          <!-- OPTIONAL The TILED= value to be sent to the backend server.
               Should normally be omitted -->
-         <tiled>FALSE</tiled>
+         <tiled>false</tiled>
          <!-- OPTIONAL The TRANSPARENT= value to be sent to the backend server.
-              This is normally set to TRUE, but is not good for JPEG. 
+              This is normally set to true, but is not good for JPEG. 
               See formatModifiers. -->
-         <transparent>TRUE</transparent>
+         <transparent>true</transparent>
          <!-- OPTIONAL The background color specified in hexadecimal
               Note that bgColor and transparent are mutually exclusive -->
          <bgColor>0xFF00AA</bgColor>
@@ -233,7 +233,7 @@ The example below uses all configuration directives that are currently available
          <!-- OPTIONAL Whether this layer will represent itself as queryable 
               in the getcapabilities document, and proxy getfeatureinfo requests
               to the backend server. The default is false. -->
-         <queryable>FALSE</queryable>
+         <queryable>false</queryable>
          <!-- OPTIONAL (TODO, see XSD documentation) -->
          <paramaterFilters></parameterFilters>
        <wmsLayer>
