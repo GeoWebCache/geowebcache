@@ -5,19 +5,10 @@
 <version>1.2.0</version>
 <backendTimeout>120</backendTimeout>
 <gridSets>
-  <!--
-    String name;
-    SRS srs;
-    BoundingBox extent;
-    double[] resolutions;
-    double[] scales;
-    String[] scaleNames;
-    Integer levels;
-    Integer tileHeight;
-    Integer tileWidth;
-    -->
+  <!-- Grid Set Example, 
+       by default EPSG:900913 and EPSG:4326 are defined -->
   <gridSet>
-    <name>testGridSet1</name>
+    <name>EPSG:2163 Grid Set</name>
     <srs><number>2163</number></srs>
     <extent>
       <coords>
@@ -27,40 +18,60 @@
         <double>959189.3312465074</double>
       </coords>
     </extent>
-    <alignTopLeft>true</alignTopLeft>
-    <levels>20</levels>
-    <tileHeight>150</tileHeight>
+    <scaleDenominators>
+      <double>25000000</double>
+      <double>1000000</double>
+      <double>100000</double>
+      <double>25000</double>
+    </scaleDenominators>
+    <tileHeight>200</tileHeight>
     <tileWidth>200</tileWidth>
   </gridSet>
 </gridSets>
+
 <layers>
-  <wmsLayer>
-    <name>bluemarble</name>
-    <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>
-    <wmsLayers>blue marble</wmsLayers>
-  </wmsLayer>
-  
+
   <wmsLayer>
     <name>topp:states</name>
+    <gridSubsets>
+      <gridSubset>
+        <gridSetName>EPSG:2163 Grid Set</gridSetName>
+      </gridSubset>
+    </gridSubsets>  
     <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>
-    <wmsLayers>topp:states</wmsLayers>
   </wmsLayer>
   
   <wmsLayer>
-    <name>testLayer for testGridSet1</name>
+    <name>raster test layer</name>
+     <mimeFormats><string>image/jpeg</string></mimeFormats>
+    <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>
+    <wmsLayers>nurc:Img_Sample</wmsLayers>
+  </wmsLayer>
+  
+  <wmsLayer>
+    <name>img states</name>
+    <mimeFormats><string>image/gif</string></mimeFormats>
+    <!-- Grid Subset Example -->
     <gridSubsets>
       <gridSubset>
-        <gridSetName>testGridSet1</gridSetName>
-      </gridSubset>
-      <gridSubset>
-        <gridSetName>GlobalCRS84Scale</gridSetName>
-      </gridSubset>
-      <gridSubset>
-        <gridSetName>GlobalCRS84Pixel</gridSetName>
+        <gridSetName>EPSG:4326</gridSetName>
+        <extent>
+          <coords>
+            <double>-129.6</double>
+            <double>3.45</double>
+            <double>-62.1</double>
+            <double>70.9</double>
+          </coords>
+        </extent>
       </gridSubset>
     </gridSubsets>
-    <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>
-    <wmsLayers>topp:states</wmsLayers>
+    <wmsUrl>
+      <string>http://atlas.openplans.org:8080/geoserver/wms</string>
+    </wmsUrl>
+    <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
+    <transparent>false</transparent>
+    <bgColor>0x0066FF</bgColor>
   </wmsLayer>
+
 </layers>
 </gwcConfiguration>
