@@ -167,8 +167,8 @@
      </xs:element>
      <xs:element name="errorMime" type="xs:string" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
-         The ERROR parameter sent to the WMS backend. The default is application/vnd.ogc.se_inimage, 
-         the alternative is application/vnd.ogc.se_xml
+         The ERROR parameter sent to the WMS backend. The default is application/vnd.ogc.se_xml, 
+         the alternative is application/vnd.ogc.se_inimage
        </xs:documentation></xs:annotation>
      </xs:element>  
      <xs:element name="wmsVersion" type="xs:string" minOccurs="0">
@@ -349,6 +349,17 @@
           </xs:documentation></xs:annotation>
         </xs:element>
       </xs:choice>
+      <xs:element name="metersPerUnit" type="xs:double" minOccurs="0">
+        <xs:annotation><xs:documentation xml:lang="en">
+          The value of "1 map unit" in real world meters. This value is 
+          used for approximate scale calculations and is usually not very accurate.
+          For lat/lon you should use 
+            40041470 meters / 360.0 degrees = 111226.31 m/degree
+
+          If no value is specified, it is assumed that the coordinate
+          system is defined in meters.
+        </xs:documentation></xs:annotation>
+      </xs:element>
       <xs:element name="scaleNames" type="gwc:stringList" minOccurs="0">
         <xs:annotation><xs:documentation xml:lang="en">
           If you specify scales or resolutions, you may optionally specify
