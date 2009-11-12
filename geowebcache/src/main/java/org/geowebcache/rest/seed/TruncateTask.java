@@ -82,11 +82,15 @@ public class TruncateTask extends GWCTask {
             rangeBounds = gridSubset.expandToMetaFactors(rangeBounds, metaFactors);
         }
         
+        int zoomStart = Math.min(req.getZoomStart(), rangeBounds.length - 1);
+        
+        int zoomStop = Math.min(req.getZoomStop(), rangeBounds.length - 1);
+        
         TileRangeObject trObj = new TileRangeObject(
                 layerName, 
                 req.getGridSetId(), 
-                req.getZoomStart(), 
-                req.getZoomStop(), 
+                zoomStart,
+                zoomStop,
                 rangeBounds, 
                 mimeType, 
                 req.getParameters());
