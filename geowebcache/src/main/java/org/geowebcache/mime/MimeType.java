@@ -34,7 +34,7 @@ public class MimeType {
     private static Log log = LogFactory.getLog(org.geowebcache.mime.MimeType.class);
 
 
-    public MimeType(String mimeType, String fileExtension, String internalName, String format, boolean supportsTiling) {
+    protected MimeType(String mimeType, String fileExtension, String internalName, String format, boolean supportsTiling) {
         this.mimeType = mimeType;
         this.fileExtension = fileExtension;
         this.internalName = internalName;
@@ -111,6 +111,11 @@ public class MimeType {
         if (mimeType != null) {
             return mimeType;
         }
+        
+        mimeType = ApplicationMime.checkForFormat(formatStr);
+        if(mimeType != null) {
+            return mimeType;
+        }
 
         throw new MimeException("Unsupported format request: " + formatStr);
     }
@@ -137,6 +142,11 @@ public class MimeType {
         
         mimeType = TextMime.checkForExtension(fileExtension);
         if (mimeType != null) {
+            return mimeType;
+        }
+        
+        mimeType = ApplicationMime.createFromExtension(fileExtension);
+        if(mimeType != null) {
             return mimeType;
         }
 

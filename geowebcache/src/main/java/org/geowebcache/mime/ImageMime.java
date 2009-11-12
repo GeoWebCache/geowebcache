@@ -40,19 +40,12 @@ public class ImageMime extends MimeType {
     public static final ImageMime png_24 = 
         new ImageMime("image/png; mode=24bit", "png_24", "png", "image/png;%20mode=24bit", true);
     
-    public ImageMime(String mimeType, String fileExtension, 
-            String internalName, String format, boolean noop) {
-        super(mimeType, fileExtension, internalName, format, true);   
-    }
+    public static final ImageMime dds = 
+        new ImageMime("image/dds", "dds", "dds", "image/dds", false);
     
-    public ImageMime(String mimeType, String fileExtension, String internalName, String format) 
-    throws MimeException {
-        super(mimeType, fileExtension, internalName, format, true);
-        
-        // Check for trouble
-        if(mimeType.length() < 6 || ! mimeType.substring(0,6).equalsIgnoreCase("image/")) {
-            throw new MimeException("MIME type " + mimeType + " does not start with image/");
-        }
+    private ImageMime(String mimeType, String fileExtension, 
+            String internalName, String format, boolean tiled) {
+        super(mimeType, fileExtension, internalName, format, tiled);   
     }
 
     protected static ImageMime checkForFormat(String formatStr)
