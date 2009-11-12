@@ -174,9 +174,11 @@ public class WMSGetCapabilities {
         str.append("      <Format>text/html</Format>\n");
         str.append("      <Format>application/vnd.ogc.gml</Format>\n");
         str.append("      <DCPType>\n");
+        str.append("        <HTTP>\n");
         str.append("        <Get>\n");
         str.append("          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""+urlStr+"\"/>\n");
         str.append("        </Get>\n");
+        str.append("        </HTTP>\n");
         str.append("      </DCPType>\n");
         str.append("    </GetFeatureInfo>\n");
         
@@ -186,9 +188,11 @@ public class WMSGetCapabilities {
         str.append("    <DescribeLayer>\n");
         str.append("      <Format>application/vnd.ogc.wms_xml</Format>\n");
         str.append("      <DCPType>\n");
+        str.append("        <HTTP>\n");
         str.append("        <Get>\n");
         str.append("          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""+urlStr+"\"/>\n");
         str.append("        </Get>\n");
+        str.append("        </HTTP>\n");
         str.append("      </DCPType>\n");
         str.append("    </DescribeLayer>\n");
     }
@@ -199,9 +203,11 @@ public class WMSGetCapabilities {
         str.append("      <Format>image/jpeg</Format>\n");
         str.append("      <Format>image/gif</Format>\n");
         str.append("      <DCPType>\n");
+        str.append("        <HTTP>\n");
         str.append("        <Get>\n");
         str.append("          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""+urlStr+"\"/>\n");
         str.append("        </Get>\n");
+        str.append("        </HTTP>\n");
         str.append("      </DCPType>\n");
         str.append("    </GetLegendGraphic>\n");
         
