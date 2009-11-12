@@ -31,7 +31,9 @@ public class GridLocObj {
         
     public GridLocObj(long[] gridLoc, int max) {
         this.gridLoc = gridLoc;
-        this.hashCode = (int) (gridLoc[0] * 433 + gridLoc[1] * 19 + gridLoc[2]) % max;
+        long sum = gridLoc[0] * 433L + gridLoc[1] * 19L + gridLoc[2];
+        sum = Math.abs(sum);
+        this.hashCode = (int) (sum % max);
     }
 
     public boolean equals(Object obj) {
