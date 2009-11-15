@@ -115,9 +115,10 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
         String wmsUrl = getWMSUrl(wms);
         log.info("Using " + wmsUrl + " to generate URLs for WMS requests");
-
         
-        layers = getLayers(wms, wmsUrl);
+        String urlVersion = parseVersion(url);
+
+        layers = getLayers(wms, wmsUrl, urlVersion);
         
         if (layers == null || layers.size() < 1) {
             log.error("Unable to find any layers based on " + url);
@@ -153,7 +154,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
         return wmsUrl;
     }
 
-    private List<TileLayer> getLayers(WebMapServer wms, String wmsUrl)
+    private List<TileLayer> getLayers(WebMapServer wms, String wmsUrl, String urlVersion)
             throws GeoWebCacheException {
         List<TileLayer> layers = new LinkedList<TileLayer>();
         
@@ -220,9 +221,13 @@ public class GetCapabilitiesConfiguration implements Configuration {
                     // Finalize with some defaults
                     wmsLayer.setCacheBypassAllowed(allowCacheBypass);
                     wmsLayer.setBackendTimeout(120);
-                    String wmsVersion = capabilities.getVersion();
-                    if(wmsVersion != null && wmsVersion.length() > 0) {
-                        wmsLayer.setVersion(wmsVersion);
+                    if(urlVersion != null) {
+                        wmsLayer.setVersion(urlVersion);
+                    } else {
+                        String wmsVersion = capabilities.getVersion();
+                        if(wmsVersion != null && wmsVersion.length() > 0) {
+                            wmsLayer.setVersion(wmsVersion);
+                        }
                     }
                     layers.add(wmsLayer);
                 }
@@ -301,6 +306,23 @@ public class GetCapabilitiesConfiguration implements Configuration {
             log.error(se.getMessage());
         }
         return null;
+    }
+    
+    private String parseVersion(String url) {
+        String tmp = url.toLowerCase();
+        int start = tmp.indexOf("version=");
+        if(start == -1) {
+            return null;
+        }
+        
+        start += "version=".length();
+        
+        int stop = tmp.indexOf("&",start);
+        if(stop > 0) {
+            return tmp.substring(start, stop);
+        } else {
+            return tmp.substring(start);
+        }   
     }
     
     private double longToSphericalMercatorX(double x) {
