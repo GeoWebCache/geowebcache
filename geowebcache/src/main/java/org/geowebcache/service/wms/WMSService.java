@@ -131,9 +131,15 @@ public class WMSService extends Service {
                     + paramValues[1] + " to those supported by layer");
         }
    
-        BoundingBox bbox = new BoundingBox(paramValues[2]);
+        BoundingBox bbox = null;
+        try {
+            bbox = new BoundingBox(paramValues[2]);    
+        } catch(NumberFormatException nfe) {
+            log.debug(nfe.getMessage());
+        }
+        
         if (bbox == null || !bbox.isSane()) {
-            throw new ServiceException("The bounding box parameter is missing or not sane");
+            throw new ServiceException("The bounding box parameter ("+paramValues[2]+") is missing or not sane");
         }
 
         long[] tileIndex = gridSubset.closestIndex(bbox);
