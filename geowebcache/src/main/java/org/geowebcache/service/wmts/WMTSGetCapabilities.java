@@ -74,6 +74,7 @@ public class WMTSGetCapabilities {
 
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/vnd.ogc.wms_xml");
+        response.setCharacterEncoding("UTF-8");
         response.setContentLength(data.length);
         
         try {

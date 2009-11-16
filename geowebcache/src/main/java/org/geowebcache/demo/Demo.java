@@ -81,6 +81,7 @@ public class Demo {
             
         }
         response.setContentType("text/html");
+        response.setCharacterEncoding("UTF-8");
 
         try {
             response.getOutputStream().write(page.getBytes());
