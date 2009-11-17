@@ -118,6 +118,10 @@ public class XMLConfiguration implements Configuration {
 
         try {
             File xmlFile = findConfFile();
+            if(xmlFile == null) {
+                return;
+            }
+            
             loadConfiguration(xmlFile);            
         } catch (GeoWebCacheException e) {
             e.printStackTrace();
@@ -198,17 +202,21 @@ public class XMLConfiguration implements Configuration {
         }
 
         File xmlFile = null;
+        
         if (configH != null) {
             xmlFile = new File(configH.getAbsolutePath() + File.separator + CONFIGURATION_FILE_NAME);
         } else {
-            throw new GeoWebCacheException("Unable to determine configuration directory.");
+            log.warn("Unable to determine configuration directory."+
+            " If you are running GWC in GeoServer this is probably not an issue.");
+            
+            return null;
         }
 
         if (xmlFile != null) {
-            log.trace("Found configuration file in "+ configH.getAbsolutePath());
+            log.info("Found configuration file in "+ configH.getAbsolutePath());
         } else {
-            throw new GeoWebCacheException("Found no configuration file in "+ configH.getAbsolutePath()+
-            		" If you are running GWC in GeoServer this is probably not a problem.");
+            log.warn("Found no configuration file in "+ configH.getAbsolutePath()+
+            		" If you are running GWC in GeoServer this is probably not an issue.");
         }
         
         return xmlFile;
@@ -228,7 +236,7 @@ public class XMLConfiguration implements Configuration {
     }
     
     public boolean isRuntimeStatsEnabled() {
-        if(gwcConfig.runtimeStats == null) {
+        if(gwcConfig == null || gwcConfig.runtimeStats == null) {
             return true;
         } else {
             return gwcConfig.runtimeStats;
