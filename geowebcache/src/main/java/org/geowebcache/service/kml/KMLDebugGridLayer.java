@@ -285,7 +285,7 @@ public class KMLDebugGridLayer extends TileLayer {
     }
 
     @Override
-    public ConveyorTile getNoncachedTile(ConveyorTile tile, boolean requestTiled)
+    public ConveyorTile getNoncachedTile(ConveyorTile tile)
             throws GeoWebCacheException {
         // TODO Auto-generated method stub
         return null;

@@ -44,6 +44,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 
 public class GetCapabilitiesConfiguration implements Configuration {
@@ -162,7 +163,9 @@ public class GetCapabilitiesConfiguration implements Configuration {
         if (capabilities == null) {
             throw new ConfigurationException("Unable to get capabitilies from " + wmsUrl);
         }
-
+        
+        WMSHttpHelper sourceHelper = new WMSHttpHelper();
+        
         List<Layer> layerList = capabilities.getLayerList();
         Iterator<Layer> layerIter = layerList.iterator();
         
@@ -221,6 +224,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
                     // Finalize with some defaults
                     wmsLayer.setCacheBypassAllowed(allowCacheBypass);
                     wmsLayer.setBackendTimeout(120);
+                    
                     if(urlVersion != null) {
                         wmsLayer.setVersion(urlVersion);
                     } else {
@@ -229,6 +233,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
                             wmsLayer.setVersion(wmsVersion);
                         }
                     }
+                    wmsLayer.setSourceHelper(sourceHelper);
                     layers.add(wmsLayer);
                 }
             }

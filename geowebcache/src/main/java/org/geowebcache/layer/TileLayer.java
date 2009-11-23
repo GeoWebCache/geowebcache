@@ -200,7 +200,7 @@ public abstract class TileLayer {
      * @throws GeoWebCacheException
      * @throws IOException
      */
-    public abstract ConveyorTile getNoncachedTile(ConveyorTile tile, boolean requestTiled) 
+    public abstract ConveyorTile getNoncachedTile(ConveyorTile tile) 
     throws GeoWebCacheException;
     
     /**

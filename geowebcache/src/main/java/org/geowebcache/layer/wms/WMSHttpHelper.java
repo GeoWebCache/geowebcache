@@ -31,16 +31,22 @@ import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.ErrorMime;
-import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
 
 /**
  * This class is a wrapper for HTTP interaction with WMS backend
+ * 
+ * All methods in this class MUST be written as if they were static
+ * 
  */
-public class WMSHttpHelper {
+public class WMSHttpHelper implements WMSSourceHelper {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSHttpHelper.class);
+    
+    public WMSHttpHelper() {
+        
+    }
     
     /**
      * Used for metatiling requests
@@ -49,7 +55,7 @@ public class WMSHttpHelper {
      * @return
      * @throws GeoWebCacheException
      */
-    protected static byte[] makeRequest(WMSMetaTile metaTile)
+    public byte[] makeRequest(WMSMetaTile metaTile)
             throws GeoWebCacheException {
         
         String wmsParams = metaTile.getWMSParams();
@@ -58,18 +64,7 @@ public class WMSHttpHelper {
         return makeRequest(metaTile, layer, wmsParams, metaTile.getRequestFormat().getFormat());
     }
 
-    /**
-     * Used for a non-metatiling requests
-     * 
-     * @param tile
-     * @return
-     * @throws GeoWebCacheException
-     */
-    protected static byte[] makeRequest(ConveyorTile tile) throws GeoWebCacheException {
-        return makeRequest(tile, false);
-    }
-
-    protected static byte[] makeRequest(ConveyorTile tile, boolean requestTiled) throws GeoWebCacheException {
+    public byte[] makeRequest(ConveyorTile tile) throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
         
         GridSubset gridSubset = tile.getGridSubset();
@@ -82,23 +77,18 @@ public class WMSHttpHelper {
         strBuilder.append("&SRS=").append(gridSubset.getSRS().toString());
         strBuilder.append("&HEIGHT=").append(gridSubset.getTileHeight());
         strBuilder.append("&WIDTH=").append(gridSubset.getTileWidth());
-        strBuilder.append("&TILED=").append(requestTiled);
+        //strBuilder.append("&TILED=").append(requestTiled);
         
         BoundingBox bbox = gridSubset.boundsFromIndex(tile.getTileIndex());
         
         strBuilder.append("&BBOX=").append(bbox);
-        
-        if(requestTiled) {
-            strBuilder.append("&TILED=").append("TRUE");
-        }
         
         strBuilder.append(tile.getFullParameters());
         
         return makeRequest(tile, layer, strBuilder.toString(), tile.getMimeType().getMimeType());
     }
     
-    protected static byte[] makeFeatureInfoRequest(ConveyorTile tile, int x, int y) 
-    throws GeoWebCacheException {
+    public byte[] makeFeatureInfoRequest(ConveyorTile tile, int x, int y) throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
         
         GridSubset gridSubset = tile.getGridSubset();
@@ -134,7 +124,7 @@ public class WMSHttpHelper {
      * @return
      * @throws GeoWebCacheException
      */
-    private static byte[] makeRequest(TileResponseReceiver tileRespRecv,
+    private byte[] makeRequest(TileResponseReceiver tileRespRecv,
             WMSLayer layer, String wmsParams, String expectedMimeType)
             throws GeoWebCacheException {
         byte[] data = null;
@@ -178,7 +168,7 @@ public class WMSHttpHelper {
      * @return
      * @throws GeoWebCacheException
      */
-    private static byte[] connectAndCheckHeaders(
+    private byte[] connectAndCheckHeaders(
             TileResponseReceiver tileRespRecv, URL wmsBackendUrl,
             String wmsParams, String requestMime, int backendTimeout) 
     throws GeoWebCacheException {
@@ -294,7 +284,7 @@ public class WMSHttpHelper {
         return ret;
     }
     
-    private static boolean mimeStringCheck(String requestMime, String responseMime) {
+    private boolean mimeStringCheck(String requestMime, String responseMime) {
         if(responseMime.equalsIgnoreCase(requestMime)) {
             return true;
         } else if(responseMime.startsWith(requestMime)) {

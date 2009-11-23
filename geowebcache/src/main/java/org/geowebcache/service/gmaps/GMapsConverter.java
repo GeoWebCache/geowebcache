@@ -102,10 +102,10 @@ public class GMapsConverter extends Service {
     public void handleRequest(ConveyorTile tile)
             throws GeoWebCacheException {
         if (tile.getHint() != null) {
-            boolean requestTiled = true;
+            //boolean requestTiled = true;
             
             if (tile.getHint().equals("not_cached,not_metatiled")) {
-                requestTiled = false;
+                //requestTiled = false;
             } else if (!tile.getHint().equals("not_cached")) {
                 throw new GeoWebCacheException("Hint " + tile.getHint() + " is not known.");
             }
@@ -122,7 +122,7 @@ public class GMapsConverter extends Service {
             }
 
             tile.setTileLayer(tl);
-            tl.getNoncachedTile(tile, requestTiled);
+            tl.getNoncachedTile(tile);
             
             Service.writeTileResponse(tile, false);
         }

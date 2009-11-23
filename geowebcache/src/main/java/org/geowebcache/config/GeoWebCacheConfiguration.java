@@ -22,7 +22,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.geowebcache.config.meta.ServiceInformation;
-import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.XMLGridSet;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.FormatModifier;

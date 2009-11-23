@@ -60,6 +60,7 @@ import org.geowebcache.grid.XMLGridSet;
 import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.grid.XMLGridSubset;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.rest.filter.WMSRasterFilterUpdate;
@@ -171,9 +172,10 @@ public class XMLConfiguration implements Configuration {
         // Loop over the old layers
         if(gwcConfig.layers != null) {
             Iterator<TileLayer> iter = gwcConfig.layers.iterator();
+            WMSHttpHelper sourceHelper = new WMSHttpHelper();
             while(iter.hasNext()) {
                 TileLayer layer = iter.next();
-                setDefaultValues(layer);
+                setDefaultValues(layer, sourceHelper);
             }
         }
         
@@ -254,7 +256,7 @@ public class XMLConfiguration implements Configuration {
         return gwcConfig.serviceInformation;
     }
     
-    private void setDefaultValues(TileLayer layer) {
+    private void setDefaultValues(TileLayer layer, WMSHttpHelper sourceHelper) {
         //Additional values that can have defaults set
         if(layer.isCacheBypassAllowed() == null) {
             if(gwcConfig.cacheBypassAllowed !=  null) {
@@ -276,6 +278,10 @@ public class XMLConfiguration implements Configuration {
             if(gwcConfig.formatModifiers != null) {
                 layer.setFormatModifiers(gwcConfig.formatModifiers);
             }
+        }
+        
+        if(layer instanceof WMSLayer) {
+            ((WMSLayer) layer).setSourceHelper(sourceHelper);
         }
     }
     

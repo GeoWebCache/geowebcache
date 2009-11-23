@@ -137,7 +137,11 @@ public class WMSLayer extends TileLayer {
     
     private transient String encodedName;
 
+    private transient WMSSourceHelper sourceHelper = null;
+    
     private static transient Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
+    
+    
     
     /** 
      * Note XStream uses reflection, this is only used for testing
@@ -175,6 +179,11 @@ public class WMSLayer extends TileLayer {
     }
 
     public boolean initialize(GridSetBroker gridSetBroker) {
+        
+        if(null == this.sourceHelper) {
+            log.error(this.name + " is configured without a source. This is a bug.");
+        }
+
         curWmsURL = 0;
 
         if (expireClients != null) {
@@ -333,7 +342,7 @@ public class WMSLayer extends TileLayer {
     
     public byte[] getFeatureInfo(ConveyorTile convTile, int x, int y)
     throws GeoWebCacheException {        
-        return  WMSHttpHelper.makeFeatureInfoRequest(convTile,x,y);
+        return  sourceHelper.makeFeatureInfoRequest(convTile,x,y);
     }   
 
     /**
@@ -387,7 +396,6 @@ public class WMSLayer extends TileLayer {
             getNonMetatilingReponse(tile, tryCache);
         }
     }
-    
 
     /**
      * Metatiling request forwarding
@@ -434,12 +442,11 @@ public class WMSLayer extends TileLayer {
                 metaTile.setExpiresHeader(GWCVars.CACHE_USE_WMS_BACKEND_VALUE);
             }
 
-            byte[] response = WMSHttpHelper.makeRequest(metaTile);
+            byte[] response = sourceHelper.makeRequest(metaTile);
 
             if (metaTile.getError() || response == null) {
                 throw new GeoWebCacheException(
-                        "Empty metatile, error message: "
-                                + metaTile.getErrorMessage());
+                        "Empty metatile, error message: " + metaTile.getErrorMessage());
             }
 
             if (saveExpirationHeaders) {
@@ -646,7 +653,7 @@ public class WMSLayer extends TileLayer {
     }
 
     public ConveyorTile doNonMetatilingRequest(ConveyorTile tile) throws GeoWebCacheException {
-        byte[] response = WMSHttpHelper.makeRequest(tile);
+        byte[] response = sourceHelper.makeRequest(tile);
 
         if (tile.getError() || response == null) {
             throw new GeoWebCacheException("Empty tile, error message: "
@@ -1063,6 +1070,18 @@ public class WMSLayer extends TileLayer {
         }
     }
     
+    /**
+     * Mandatory
+     */
+    public void setSourceHelper(WMSSourceHelper source) {
+        log.debug("Setting sourceHelper on " + this.name);
+        this.sourceHelper = source;
+    }
+    
+    public WMSSourceHelper getSourceHelper() {
+        return sourceHelper;
+    }
+    
     public void setVersion(String version) {
         this.wmsVersion = version;
     }
@@ -1075,10 +1094,10 @@ public class WMSLayer extends TileLayer {
         this.transparent = transparent;
     }
 
-    public ConveyorTile getNoncachedTile(ConveyorTile tile, boolean requestTiled)
+    public ConveyorTile getNoncachedTile(ConveyorTile tile)
             throws GeoWebCacheException {
 
-        byte[] data = WMSHttpHelper.makeRequest(tile,requestTiled);        
+        byte[] data = sourceHelper.makeRequest(tile);        
         tile.setContent(data);
 
         return tile;
@@ -1134,5 +1153,11 @@ public class WMSLayer extends TileLayer {
                 this.parameterFilters = otherLayer.parameterFilters;
             }
         }
-    } 
+    }
+    
+    private Object readResolve() {
+        //Not really needed at this point
+        return this;
+    }
+
 }

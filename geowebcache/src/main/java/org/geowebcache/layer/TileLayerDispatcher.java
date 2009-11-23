@@ -133,7 +133,7 @@ public class TileLayerDispatcher {
             if (configIdent != null) {
                 try {
                     // This is used by reload as well
-                    configLayers = config.getTileLayers(true);
+                    configLayers = config.getTileLayers(false);
                 } catch (GeoWebCacheException gwce) {
                     log.error(gwce.getMessage());
                     log.error("Failed to add layers from " + configIdent);
