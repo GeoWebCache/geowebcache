@@ -26,9 +26,6 @@ import java.net.URL;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.service.ServiceException;
@@ -41,80 +38,13 @@ import org.geowebcache.util.ServletUtils;
  * All methods in this class MUST be written as if they were static
  * 
  */
-public class WMSHttpHelper implements WMSSourceHelper {
+public class WMSHttpHelper extends WMSSourceHelper {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSHttpHelper.class);
     
     public WMSHttpHelper() {
         
     }
     
-    /**
-     * Used for metatiling requests
-     * 
-     * @param metaTile
-     * @return
-     * @throws GeoWebCacheException
-     */
-    public byte[] makeRequest(WMSMetaTile metaTile)
-            throws GeoWebCacheException {
-        
-        String wmsParams = metaTile.getWMSParams();
-        WMSLayer layer = metaTile.getLayer();
-        
-        return makeRequest(metaTile, layer, wmsParams, metaTile.getRequestFormat().getFormat());
-    }
-
-    public byte[] makeRequest(ConveyorTile tile) throws GeoWebCacheException {
-        WMSLayer layer = (WMSLayer) tile.getLayer();
-        
-        GridSubset gridSubset = tile.getGridSubset();
-        
-        String wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(), WMSLayer.RequestType.MAP );
-
-        StringBuilder strBuilder = new StringBuilder(wmsParams);
-        
-        strBuilder.append("&FORMAT=").append(tile.getMimeType().getFormat());
-        strBuilder.append("&SRS=").append(gridSubset.getSRS().toString());
-        strBuilder.append("&HEIGHT=").append(gridSubset.getTileHeight());
-        strBuilder.append("&WIDTH=").append(gridSubset.getTileWidth());
-        //strBuilder.append("&TILED=").append(requestTiled);
-        
-        BoundingBox bbox = gridSubset.boundsFromIndex(tile.getTileIndex());
-        
-        strBuilder.append("&BBOX=").append(bbox);
-        
-        strBuilder.append(tile.getFullParameters());
-        
-        return makeRequest(tile, layer, strBuilder.toString(), tile.getMimeType().getMimeType());
-    }
-    
-    public byte[] makeFeatureInfoRequest(ConveyorTile tile, int x, int y) throws GeoWebCacheException {
-        WMSLayer layer = (WMSLayer) tile.getLayer();
-        
-        GridSubset gridSubset = tile.getGridSubset();
-        
-        String wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(), WMSLayer.RequestType.FEATUREINFO );
-
-        StringBuilder strBuilder = new StringBuilder(wmsParams);
-        strBuilder.append("&INFO_FORMAT=").append(tile.getMimeType().getFormat());
-        strBuilder.append("&FORMAT=").append(tile.getMimeType().getFormat());
-        strBuilder.append("&SRS=").append(gridSubset.getSRS().toString());
-        strBuilder.append("&HEIGHT=").append(gridSubset.getTileHeight());
-        strBuilder.append("&WIDTH=").append(gridSubset.getTileWidth());
-        
-        BoundingBox bbox = gridSubset.boundsFromIndex(tile.getTileIndex());
-        
-        strBuilder.append("&BBOX=").append(bbox);
-        
-        strBuilder.append(tile.getFullParameters());
-        
-        strBuilder.append("&X=").append(x);
-        strBuilder.append("&Y=").append(y);
-        
-        return makeRequest(tile, layer, strBuilder.toString(), tile.getMimeType().getMimeType());
-    }
-    
-
     /**
      * Loops over the different backends, tries the request
      * 
@@ -124,7 +54,7 @@ public class WMSHttpHelper implements WMSSourceHelper {
      * @return
      * @throws GeoWebCacheException
      */
-    private byte[] makeRequest(TileResponseReceiver tileRespRecv,
+    protected byte[] makeRequest(TileResponseReceiver tileRespRecv, 
             WMSLayer layer, String wmsParams, String expectedMimeType)
             throws GeoWebCacheException {
         byte[] data = null;
@@ -284,14 +214,5 @@ public class WMSHttpHelper implements WMSSourceHelper {
         return ret;
     }
     
-    private boolean mimeStringCheck(String requestMime, String responseMime) {
-        if(responseMime.equalsIgnoreCase(requestMime)) {
-            return true;
-        } else if(responseMime.startsWith(requestMime)) {
-            return true;
-        } else if(requestMime.startsWith("image/png") && responseMime.startsWith("image/png")) {
-                return true;
-        }
-        return false;
-    }
+
 }
