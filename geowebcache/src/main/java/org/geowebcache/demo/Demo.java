@@ -2,7 +2,9 @@ package org.geowebcache.demo;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.TreeSet;
 import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
@@ -134,9 +136,13 @@ public class Demo {
     throws GeoWebCacheException {
         StringBuffer buf = new StringBuffer();
         
-        Iterator<Entry<String,TileLayer>> it = tileLayerDispatcher.getLayers().entrySet().iterator();
+        HashMap<String,TileLayer> layerList = tileLayerDispatcher.getLayers();
+        TreeSet<String> keys = new TreeSet<String>(layerList.keySet());
+
+        Iterator<String> it = keys.iterator();
         while(it.hasNext()) {
-            TileLayer layer = it.next().getValue();     
+            TileLayer layer = layerList.get(it.next());
+            
             buf.append("<tr><td style=\"min-width: 100px;\"><strong>"+layer.getName() + "</strong><br />\n");
             buf.append("<a href=\"rest/seed/"+layer.getName()+"\">Seed this layer</a>\n");
             buf.append("</td>");
