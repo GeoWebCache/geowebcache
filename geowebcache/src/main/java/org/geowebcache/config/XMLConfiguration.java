@@ -208,8 +208,8 @@ public class XMLConfiguration implements Configuration {
         if (configH != null) {
             xmlFile = new File(configH.getAbsolutePath() + File.separator + CONFIGURATION_FILE_NAME);
         } else {
-            log.warn("Unable to determine configuration directory."+
-            " If you are running GWC in GeoServer this is probably not an issue.");
+            log.debug("Unable to determine configuration directory."+
+                    " If you are running GWC in GeoServer this is probably not an issue.");
             
             return null;
         }
@@ -217,7 +217,7 @@ public class XMLConfiguration implements Configuration {
         if (xmlFile != null) {
             log.info("Found configuration file in "+ configH.getAbsolutePath());
         } else {
-            log.warn("Found no configuration file in "+ configH.getAbsolutePath()+
+            log.info("Found no configuration file in "+ configH.getAbsolutePath()+
             		" If you are running GWC in GeoServer this is probably not an issue.");
         }
         
@@ -234,7 +234,11 @@ public class XMLConfiguration implements Configuration {
             loadConfiguration(xmlFile);
         }
         
-        return gwcConfig.layers;
+        if(gwcConfig != null) { 
+            return gwcConfig.layers;
+        } else {
+            return null;
+        }
     }
     
     public boolean isRuntimeStatsEnabled() {
@@ -577,8 +581,7 @@ public class XMLConfiguration implements Configuration {
             configH = new File(absPath);
         } else if (relPath != null) {
             configH = new File(baseDir + relPath);
-            log.info("Configuration directory set to: "
-                    + configH.getAbsolutePath());
+            log.debug("Configuration directory set to: "+ configH.getAbsolutePath());
         } else if (relPath == null) {
             // Try env variables
             String defaultPath = null;
@@ -617,7 +620,7 @@ public class XMLConfiguration implements Configuration {
         if(configH == null) {
             log.info("Failed to find geowebcache.xml. This is not a problem unless you are trying to use a custom XML configuration file.");
         } else {
-            log.info("Configuration directory set to: "+ configH.getAbsolutePath());
+            log.debug("Configuration directory set to: "+ configH.getAbsolutePath());
         
             if (!configH.exists() || !configH.canRead()) {
                 log.error("Configuration file cannot be read or does not exist!");

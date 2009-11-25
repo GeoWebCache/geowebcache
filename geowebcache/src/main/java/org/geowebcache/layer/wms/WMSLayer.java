@@ -301,10 +301,12 @@ public class WMSLayer extends TileLayer {
 
         }
 
-        for (int i = 0; i < wmsUrl.length; i++) {
-            String url = wmsUrl[i];
-            if (!url.endsWith("?")) {
-                wmsUrl[i] = url + "?";
+        if (this.sourceHelper instanceof WMSHttpHelper) {
+            for (int i = 0; i < wmsUrl.length; i++) {
+                String url = wmsUrl[i];
+                if (!url.endsWith("?")) {
+                    wmsUrl[i] = url + "?";
+                }
             }
         }
 

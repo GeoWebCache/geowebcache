@@ -146,6 +146,10 @@ public class TileLayerDispatcher {
                     while (iter.hasNext()) {
                         TileLayer layer = iter.next();
                         
+                        if(layer == null) {
+                            log.error("layer was null");
+                            continue;
+                        }
                         log.info("Adding: " + layer.getName());
                         
                         layer.initialize(gridSetBroker);
@@ -177,17 +181,24 @@ public class TileLayerDispatcher {
     
     public synchronized void update(TileLayer layer) {
         TileLayer oldLayer = layers.get(layer.getName());
-        oldLayer.acquireLayerLock();
-        layers.remove(layer.getName());
-        oldLayer.releaseLayerLock();
+        
+        // Updates from GeoServer ultimately come as changes,
+        // so we can't assume this layer actually existed
+        if(oldLayer != null) {
+            oldLayer.acquireLayerLock();
+            layers.remove(layer.getName());
+            oldLayer.releaseLayerLock();
+        }
         layers.put(layer.getName(), layer);
     }
     
     public synchronized void remove(String layerName) {
         TileLayer layer = layers.get(layerName);
-        layer.acquireLayerLock();
-        layers.remove(layerName);
-        layer.releaseLayerLock();
+        if(layer != null) {
+            layer.acquireLayerLock();
+            layers.remove(layerName);
+            layer.releaseLayerLock();
+        }
     }
     
     public synchronized void add(TileLayer layer) {        
