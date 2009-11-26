@@ -69,6 +69,8 @@
       <string>http://atlas.openplans.org:8080/geoserver/wms</string>
     </wmsUrl>
     <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
+    <expireCache>180</expireCache>
+    <expireClients>180</expireClients>
     <transparent>false</transparent>
     <bgColor>0x0066FF</bgColor>
   </wmsLayer>
