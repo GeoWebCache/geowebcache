@@ -534,7 +534,7 @@ public class WMSLayer extends TileLayer {
     public boolean tryCacheFetch(ConveyorTile tile) {
         if (expireCacheInt != GWCVars.CACHE_DISABLE_CACHE) {
             try {
-                return tile.retrieve(expireCacheInt * 1000);
+                return tile.retrieve(expireCacheInt * 1000L);
             //} catch (StorageException ce) {
             //    log.error(ce.getMessage());
             //    tile.setError(ce.getMessage());

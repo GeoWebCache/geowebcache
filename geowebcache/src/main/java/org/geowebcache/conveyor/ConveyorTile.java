@@ -157,9 +157,15 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         return storageBroker.put((TileObject) stObj);
     }
 
-    public boolean retrieve(int maxAge) throws GeoWebCacheException {
+    public boolean retrieve(long maxAge) throws GeoWebCacheException {
         try {
             boolean ret = storageBroker.get((TileObject) stObj);
+            
+            // Do we use expiration, and if so, is the tile recent enough ?
+            if(ret && maxAge > 0 
+                    && stObj.getCreated() + maxAge < System.currentTimeMillis()) {
+                ret = false;
+            }
             
             if(ret) {
                 this.setCacheResult(CacheResult.HIT);
