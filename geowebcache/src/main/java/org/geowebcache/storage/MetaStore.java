@@ -21,9 +21,12 @@ public interface MetaStore {
     // Whether the metastore is actually enabled
     public boolean enabled();
     
+    public boolean delete(String layerName) throws StorageException;
     public boolean delete(TileObject stObj) throws StorageException;
     public boolean delete(WFSObject stObj) throws StorageException;
     public boolean delete(BlobStore blobStore, TileRangeObject trObj) throws StorageException;
+    
+    public boolean expire(TileRangeObject trObj) throws StorageException;
     
     // If lock is encountered, wait inside function until available
     public boolean get(TileObject obj) throws StorageException;
@@ -47,6 +50,8 @@ public interface MetaStore {
      * Destroy method for Spring
      */
     public void destroy();
+
+    
     
     ///** 
     // * Test to see whether the metastore is ready or not

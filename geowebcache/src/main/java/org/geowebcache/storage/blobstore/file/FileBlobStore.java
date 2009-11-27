@@ -61,6 +61,55 @@ public class FileBlobStore implements BlobStore {
         }
     }
     
+    public boolean delete(String layerName) throws StorageException {
+        int count = 0;
+
+        String prefix = path + File.separator 
+            + FilePathGenerator.filteredLayerName(layerName);
+
+        File layerPath = new File(prefix);
+
+        if (!layerPath.exists() || !layerPath.canWrite()) {
+            log.info(layerPath + " does not exist or is not writable");
+            return false;
+        }
+        File[] srsZoomDirs = layerPath.listFiles();
+
+        for (File srsZoom : srsZoomDirs) {
+            File[] intermediates = srsZoom.listFiles();
+
+            for (File imd : intermediates) {
+                File[] tiles = imd.listFiles();
+
+                for (File tile : tiles) {
+                    tile.delete();
+                    count++;
+                }
+
+                String[] chk = imd.list();
+                if (chk == null || chk.length == 0) {
+                    imd.delete();
+                    count++;
+                }
+            }
+
+            String[] chk = srsZoom.list();
+            if (chk == null || chk.length == 0) {
+                srsZoom.delete();
+                count++;
+            }
+
+        }
+
+        if(layerPath.exists()) {
+            layerPath.delete();
+        }
+        
+        
+        log.info("Truncated " + count + " tiles from " + layerPath);
+        return true;
+    }
+    
     public boolean delete(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, false);
         if (!fh.exists())

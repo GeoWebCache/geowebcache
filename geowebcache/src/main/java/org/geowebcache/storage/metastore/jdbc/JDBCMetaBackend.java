@@ -89,6 +89,18 @@ public class JDBCMetaBackend implements MetaStore {
         return enabled;
     }
     
+    public boolean delete(String layerName) throws StorageException {
+        long layerId = idCache.getLayerId(layerName);
+        try {
+            wrpr.deleteLayer(layerId);
+            return true;
+        } catch (SQLException se) {
+            log.error("Failed to delete layer: " + se.getMessage());
+        }
+        
+        return false;
+    }
+    
     public boolean delete(TileObject stObj) throws StorageException {
         stObj.setLayerId(idCache.getLayerId(stObj.getLayerName()));
         stObj.setFormatId(idCache.getFormatId(stObj.getBlobFormat()));
@@ -126,7 +138,6 @@ public class JDBCMetaBackend implements MetaStore {
     
     public boolean delete(BlobStore blobStore, TileRangeObject trObj)
     throws StorageException {
-
         long layerId = idCache.getLayerId(trObj.layerName);
         long formatId = idCache.getFormatId(trObj.mimeType.getFormat());
         long parametersId;
@@ -146,6 +157,35 @@ public class JDBCMetaBackend implements MetaStore {
                     formatId,
                     parametersId,
                     gridSetIdId);
+        }
+        
+        return true;
+    }
+    
+    public boolean expire(TileRangeObject trObj) throws StorageException {
+        long layerId = idCache.getLayerId(trObj.layerName);
+        long formatId = idCache.getFormatId(trObj.mimeType.getFormat());
+        long parametersId;
+        if(trObj.parameters != null) {
+             parametersId = idCache.getParametersId(trObj.parameters);
+        } else {
+            parametersId = -1L;
+        }
+        long gridSetIdId = idCache.getGridSetsId(trObj.gridSetId);
+        
+        for(int zoomLevel = trObj.zoomStart; zoomLevel <= trObj.zoomStop; zoomLevel++) {
+            try {
+                wrpr.expireRange(
+                        trObj,
+                        zoomLevel,
+                        layerId,
+                        formatId,
+                        parametersId,
+                        gridSetIdId);
+                
+            } catch (SQLException se) {
+                log.error(se.getMessage());
+            }
         }
         
         return true;
@@ -300,21 +340,6 @@ public class JDBCMetaBackend implements MetaStore {
         
     }
     
-//    public boolean isReady() {
-//        try {
-//           int version = wrpr.getDbVersion(wrpr.getConnection());
-//           
-//           if(version == 120) {
-//               return true;
-//           }
-//        } catch (StorageException e) {
-//            e.printStackTrace();
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return false;
-//    }
-
     public void setLockTimeout(long lockTimeout) {
         wrpr.lockTimeout = lockTimeout;
     }
@@ -322,6 +347,4 @@ public class JDBCMetaBackend implements MetaStore {
     public void setLockRetryDelay(long lockRetryDelay) {
         this.lockRetryDelay = lockRetryDelay;
     }
-
-
 }

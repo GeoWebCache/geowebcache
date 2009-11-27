@@ -161,6 +161,10 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         try {
             boolean ret = storageBroker.get((TileObject) stObj);
             
+            // Has the tile been explicitly marked as old?
+            if(ret && stObj.getCreated() == -1) {
+                ret = false;
+            } else
             // Do we use expiration, and if so, is the tile recent enough ?
             if(ret && maxAge > 0 
                     && stObj.getCreated() + maxAge < System.currentTimeMillis()) {

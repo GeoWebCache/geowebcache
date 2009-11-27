@@ -28,6 +28,7 @@ public interface BlobStore {
      * @param key
      * @return true if succeeded, false if key did not exist
      */
+    public boolean delete(String layerName) throws StorageException;
     public boolean delete(TileObject obj) throws StorageException;
     public boolean delete(WFSObject obj) throws StorageException;
     public boolean delete(TileRangeObject obj) throws StorageException;

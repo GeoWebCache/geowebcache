@@ -44,6 +44,13 @@ public class StorageBroker {
         }
     }
     
+    public boolean delete(String layerName) throws StorageException {
+        boolean ret = true;
+        if(metaStoreEnabled) {
+            ret = metaStore.delete(layerName);
+        }
+        return (ret && blobStore.delete(layerName));
+    }
     
     public boolean delete(TileRangeObject trObj) throws StorageException {
         if(metaStoreEnabled) {
@@ -51,6 +58,13 @@ public class StorageBroker {
         } else {
             return blobStore.delete(trObj);
         }
+    }
+    
+    public boolean expire(TileRangeObject trObj) throws StorageException {
+        if(metaStoreEnabled) {
+            return metaStore.expire(trObj);
+        }
+        return false;
     }
     
     
