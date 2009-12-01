@@ -237,9 +237,11 @@ public class SeedRestlet extends GWCRestlet {
         
             ret[idx][0] = (int) task.getTilesDone();
             
-            ret[idx][1] = (int) task.getTilesTotal();;
+            ret[idx][1] = (int) task.getTilesTotal();
             
             ret[idx][2] = task.getTimeRemaining();
+            
+            idx++;
         }
         
         return ret;
