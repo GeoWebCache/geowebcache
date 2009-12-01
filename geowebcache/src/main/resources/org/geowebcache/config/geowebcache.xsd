@@ -360,6 +360,14 @@
           system is defined in meters.
         </xs:documentation></xs:annotation>
       </xs:element>
+      <xs:element name="pixelSize" type="xs:double" minOccurs="0">
+        <xs:annotation><xs:documentation xml:lang="en">
+          The size of one pixel in meters. OGC makes teh assumption this is
+          0.28mm, so the default value is 0.00028. The value is used for
+          scale calculations and passed to the automatically generated 
+          OpenLayers demos.
+        </xs:documentation></xs:annotation>
+      </xs:element>
       <xs:element name="scaleNames" type="gwc:stringList" minOccurs="0">
         <xs:annotation><xs:documentation xml:lang="en">
           If you specify scales or resolutions, you may optionally specify

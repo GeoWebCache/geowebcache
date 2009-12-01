@@ -50,16 +50,19 @@ public class GridSetFactory {
      * @param scales
      * @param tileWidth
      * @param tileHeight
+     * @param pixelSize 
      * @return
      */
     public static GridSet createGridSet( 
             String name, SRS srs, BoundingBox extent, 
-            boolean alignTopLeft, double[] resolutions, double[] scaleDenoms, Double metersPerUnit,
-            String[] scaleNames, int tileWidth, int tileHeight) {
+            boolean alignTopLeft, double[] resolutions, double[] scaleDenoms, Double metersPerUnit, 
+            double pixelSize, String[] scaleNames, int tileWidth, int tileHeight) {
         
         GridSet gridSet = baseGridSet(name, srs, tileWidth, tileHeight);
         
         gridSet.baseCoords = new double[2];
+        
+        gridSet.pixelSize = pixelSize;
         
         if(alignTopLeft) {
             gridSet.baseCoords[0] = extent.coords[0];
@@ -104,7 +107,7 @@ public class GridSetFactory {
 
             if(scaleDenoms != null) {
                 curGrid.scaleDenom = scaleDenoms[i];
-                curGrid.resolution = 0.00028 * (scaleDenoms[i] / gridSet.metersPerUnit);
+                curGrid.resolution = pixelSize * (scaleDenoms[i] / gridSet.metersPerUnit);
             } else {
                 curGrid.resolution = resolutions[i];
                 curGrid.scaleDenom =  (resolutions[i] * gridSet.metersPerUnit) / 0.00028;
@@ -131,10 +134,11 @@ public class GridSetFactory {
     
     /**
      * This covers the case where a number of zoom levels has been specified, but no resolutions / scale
+     * @param pixelSize 
      */
     public static GridSet createGridSet(
             String name, SRS srs, BoundingBox extent, boolean alignTopLeft,
-            int levels, Double metersPerUnit, int tileWidth, int tileHeight) {
+            int levels, Double metersPerUnit, double pixelSize, int tileWidth, int tileHeight) {
         
         double[] resolutions = new double[levels];
         
@@ -185,6 +189,6 @@ public class GridSetFactory {
             resolutions[i] = resolutions[i - 1] / 2;
         }
         
-        return createGridSet(name, srs, extent, alignTopLeft, resolutions, null, metersPerUnit, null, tileWidth, tileHeight);
+        return createGridSet(name, srs, extent, alignTopLeft, resolutions, null, metersPerUnit, pixelSize, null, tileWidth, tileHeight);
     }
 }

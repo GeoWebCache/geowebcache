@@ -46,6 +46,7 @@ public class GridSetBroker {
                 false,
                 GridSetFactory.DEFAULT_LEVELS,
                 null,
+                0.00028,
                 256,
                 256 );
         gridSets.put(WORLD_EPSG4326.name, WORLD_EPSG4326);
@@ -60,8 +61,9 @@ public class GridSetBroker {
                     false,
                     GridSetFactory.DEFAULT_LEVELS,
                     null,
+                    0.00028,
                     256,
-                    256);
+                    256 );
         } else {
             log.debug("Adding EPSG:3857 grid set for Spherical Mercator / GoogleMapsCompatible");
             
@@ -72,6 +74,7 @@ public class GridSetBroker {
                     false,
                     GridSetFactory.DEFAULT_LEVELS,
                     null,
+                    0.00028,
                     256,
                     256 );
         }
@@ -86,6 +89,7 @@ public class GridSetBroker {
                 scalesCRS84PixelResolutions(),
                 null,
                 null,
+                0.00028,
                 null,
                 256,
                 256 );
@@ -101,6 +105,7 @@ public class GridSetBroker {
                 scalesCRS84ScaleResolutions(),
                 null,
                 null,
+                0.00028,
                 null,
                 256,
                 256 );

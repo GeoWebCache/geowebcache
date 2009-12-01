@@ -63,13 +63,13 @@ public class XMLOldGrid {
             gridSet = gridSetBroker.WORLD_EPSG3857;
         } else {
             if(resolutions != null) {
-                gridSet = GridSetFactory.createGridSet(srs.toString(), srs, gridBounds, false, resolutions, null, null, null, 256, 256);
+                gridSet = GridSetFactory.createGridSet(srs.toString(), srs, gridBounds, false, resolutions, null, null, 0.00028, null, 256, 256);
             } else {
                 if(zoomStop == null) {
                     zoomStop = 30;
                 }
                 
-                gridSet = GridSetFactory.createGridSet(srs.toString(), srs, gridBounds, false, zoomStop + 1, null, 256, 256);
+                gridSet = GridSetFactory.createGridSet(srs.toString(), srs, gridBounds, false, zoomStop + 1, null, 0.00028, 256, 256);
             }
         }
         

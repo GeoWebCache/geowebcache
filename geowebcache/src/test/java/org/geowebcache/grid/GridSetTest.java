@@ -9,10 +9,10 @@ public class GridSetTest extends TestCase {
     GridSetBroker gridSetBroker = new GridSetBroker(false, false);
     
     // Top left
-    GridSet gridSetTL = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), BoundingBox.WORLD4326, true, 10, null, 256, 256);
+    GridSet gridSetTL = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), BoundingBox.WORLD4326, true, 10, null, 0.00028, 256, 256);
     
     // Bottom left
-    GridSet gridSetBL = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), BoundingBox.WORLD4326, false, 10, null, 256, 256);
+    GridSet gridSetBL = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), BoundingBox.WORLD4326, false, 10, null, 0.00028, 256, 256);
     
     
     public void testBoundsFromIndex() throws Exception {

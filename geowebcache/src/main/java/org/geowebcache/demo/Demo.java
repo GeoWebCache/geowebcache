@@ -254,6 +254,7 @@ public class Demo {
 
             +"<script src=\""+openLayersPath+"\"></script>\n"
             +"<script type=\"text/javascript\">\n"
+            +"OpenLayers.DOTS_PER_INCH = "+gridSubset.getDotsPerInch()+";\n"
             +"OpenLayers.Util.onImageLoadErrorColor = 'transparent';\n"
             +"var map, layer;\n"
         		

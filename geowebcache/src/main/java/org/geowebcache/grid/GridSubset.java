@@ -117,6 +117,15 @@ public class GridSubset {
         return ret;
     }
     
+    /**
+     * Convert pixel size to dots per inch
+     * 
+     * @return
+     */
+    public double getDotsPerInch() {
+        return (0.0254 / this.gridSet.pixelSize);
+    }
+    
     public BoundingBox getCoverageBounds(int level) {
         long[] coverage = gridCoverageLevels[firstLevel + level].coverage;
         return gridSet.boundsFromRectangle(coverage);

@@ -40,6 +40,8 @@ public class GridSet {
        
     protected double metersPerUnit;
     
+    protected double pixelSize;
+    
     protected String name;
     
     protected SRS srs;
