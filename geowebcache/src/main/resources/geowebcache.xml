@@ -69,10 +69,20 @@
       <string>http://atlas.openplans.org:8080/geoserver/wms</string>
     </wmsUrl>
     <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
-    <expireCache>180</expireCache>
-    <expireClients>180</expireClients>
     <transparent>false</transparent>
     <bgColor>0x0066FF</bgColor>
+    <expireCacheList>
+    	<expirationRule minZoom="0" expiration="500" />
+    	<expirationRule minZoom="4" expiration="600" />
+    	<expirationRule minZoom="10" expiration="900" />
+    	<expirationRule minZoom="15" expiration="1000" />
+    </expireCacheList>
+    <expireClientsList>
+      <expirationRule minZoom="0" expiration="500" />
+      <expirationRule minZoom="4" expiration="600" />
+      <expirationRule minZoom="10" expiration="900" />
+      <expirationRule minZoom="15" expiration="1000" />
+    </expireClientsList>
   </wmsLayer>
 
 </layers>

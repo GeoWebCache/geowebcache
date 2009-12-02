@@ -192,7 +192,7 @@ public class KMLDebugGridLayer extends TileLayer {
     public void releaseLayerLock() {
     }
 
-    public void setExpirationHeader(HttpServletResponse response) {
+    public void setExpirationHeader(HttpServletResponse response, int zoomLevel) {
     }
 
     public String supportsBbox(SRS srs, BoundingBox bounds)

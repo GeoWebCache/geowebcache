@@ -479,7 +479,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         tile.servletResp.setHeader("geowebcache-message", message);
         TileLayer layer = tile.getLayer();
         if(layer != null) {
-            layer.setExpirationHeader(tile.servletResp);
+            layer.setExpirationHeader(tile.servletResp, (int) tile.getTileIndex()[2]);
         }
 
         writeFixedResponse(tile.servletResp, 200, ImageMime.png.getMimeType(), this.blankTile, CacheResult.OTHER);

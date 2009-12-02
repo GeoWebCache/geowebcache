@@ -108,11 +108,11 @@ public abstract class Service {
 
         TileLayer layer = conv.getLayer();
         if (layer != null) {
-            layer.setExpirationHeader(conv.servletResp);
+            layer.setExpirationHeader(conv.servletResp, (int) conv.getTileIndex()[2]);
         }
 
         if (writeExpiration) {
-            conv.getLayer().setExpirationHeader(response);
+            conv.getLayer().setExpirationHeader(response, (int) conv.getTileIndex()[2]);
         }
 
         if (conv instanceof ConveyorKMLTile) {

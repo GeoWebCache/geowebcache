@@ -355,7 +355,7 @@ public abstract class TileLayer {
      */
     public abstract void putTile(ConveyorTile tile) throws GeoWebCacheException;
 
-    public abstract void setExpirationHeader(HttpServletResponse response);
+    public abstract void setExpirationHeader(HttpServletResponse response, int zoomLevel);
     
     /**
      * Merges the information of the the passed in layer into this layer. 

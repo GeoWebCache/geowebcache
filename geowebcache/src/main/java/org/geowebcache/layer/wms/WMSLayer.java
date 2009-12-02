@@ -46,6 +46,7 @@ import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.XMLGridSubset;
+import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.layer.GridLocObj;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.FormatModifier;
@@ -95,7 +96,11 @@ public class WMSLayer extends TileLayer {
     
     private String expireCache;
     
+    private ArrayList<ExpirationRule> expireCacheList;
+    
     private String expireClients;
+    
+    private ArrayList<ExpirationRule> expireClientsList;
     
     protected Integer backendTimeout;
     
@@ -105,9 +110,9 @@ public class WMSLayer extends TileLayer {
     
     protected List<ParameterFilter> parameterFilters;
     
-    private transient int expireCacheInt = -1;
+    //private transient int expireCacheInt = -1;
 
-    private transient int expireClientsInt = -1;
+    //private transient int expireClientsInt = -1;
 
     private transient int curWmsURL;
 
@@ -169,8 +174,6 @@ public class WMSLayer extends TileLayer {
         this.mimeFormats = mimeFormats;
         this.subSets = subSets;
         this.metaWidthHeight = metaWidthHeight;
-        this.expireClientsInt = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
-        this.expireCacheInt = GWCVars.CACHE_NEVER_EXPIRE;
         this.vendorParameters = vendorParams;
         this.transparent = true;
         //this.bgColor = "0x000000";
@@ -185,18 +188,37 @@ public class WMSLayer extends TileLayer {
         }
 
         curWmsURL = 0;
-
-        if (expireClients != null) {
-            expireClientsInt = Integer.parseInt(expireClients);
-        } else {
-            saveExpirationHeaders = true;
-            expireClientsInt = GWCVars.CACHE_USE_WMS_BACKEND_VALUE;
+        
+        if(this.expireCacheList == null) {
+            this.expireCacheList = new ArrayList<ExpirationRule>(1);
+            
+            if(this.expireCache == null) {
+                expireCacheList.add(new ExpirationRule(0, GWCVars.CACHE_NEVER_EXPIRE));
+            } else {
+                int expireCacheInt = Integer.parseInt(expireCache);
+                if(expireCacheInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+                    saveExpirationHeaders = true;
+                }
+                expireCacheList.add(new ExpirationRule(0, expireCacheInt));
+            }
         }
-
-        if (expireCache != null) {
-            expireCacheInt = Integer.parseInt(expireCache);
-        } else {
-            expireCacheInt = GWCVars.CACHE_NEVER_EXPIRE;
+        
+        if(this.expireClientsList == null) {
+            this.expireClientsList = new ArrayList<ExpirationRule>(1);
+            
+            if(this.expireClients == null) {
+                expireClientsList.add(new ExpirationRule(0, 7200));
+            } else {
+                int expireClientsInt = Integer.parseInt(expireClients);
+                
+                if(expireClientsInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+                    saveExpirationHeaders = true;
+                } else if (expireClientsInt == GWCVars.CACHE_NEVER_EXPIRE) {
+                    // One year should do
+                    expireClientsInt = 3600*24*365;
+                }
+                expireClientsList.add(new ExpirationRule(0, expireClientsInt));
+            }
         }
         
         if(backendTimeout == null) {
@@ -470,7 +492,7 @@ public class WMSLayer extends TileLayer {
             tile.setContent(getTile(gridLoc, gridPositions, metaTile));
 
             // TODO separate thread
-            if (expireCacheInt != GWCVars.CACHE_DISABLE_CACHE) {
+            if (this.getExpireCache((int) gridLoc[2]) != GWCVars.CACHE_DISABLE_CACHE) {
                 saveTiles(gridPositions, metaTile, tile);
             }
 
@@ -515,7 +537,7 @@ public class WMSLayer extends TileLayer {
 
             tile = doNonMetatilingRequest(tile);
 
-            if (tile.getStatus() > 299 || expireCacheInt != GWCVars.CACHE_DISABLE_CACHE) {
+            if (tile.getStatus() > 299 || this.getExpireCache((int) gridLoc[2]) != GWCVars.CACHE_DISABLE_CACHE) {
                 tile.persist();
             }
 
@@ -532,13 +554,10 @@ public class WMSLayer extends TileLayer {
     }
 
     public boolean tryCacheFetch(ConveyorTile tile) {
-        if (expireCacheInt != GWCVars.CACHE_DISABLE_CACHE) {
+        int expireCache = this.getExpireCache((int) tile.getTileIndex()[2]);
+        if (expireCache != GWCVars.CACHE_DISABLE_CACHE) {
             try {
-                return tile.retrieve(expireCacheInt * 1000L);
-            //} catch (StorageException ce) {
-            //    log.error(ce.getMessage());
-            //    tile.setError(ce.getMessage());
-            //    return false;
+                return tile.retrieve(expireCache * 1000L);
             } catch (GeoWebCacheException gwce) {
                 log.error(gwce.getMessage());
                 tile.setErrorMsg(gwce.getMessage());
@@ -553,22 +572,25 @@ public class WMSLayer extends TileLayer {
      * 
      * @param response
      */
-    public void setExpirationHeader(HttpServletResponse response) {
-        if (expireClientsInt == GWCVars.CACHE_VALUE_UNSET) {
+    public void setExpirationHeader(HttpServletResponse response,  int zoomLevel) {
+        int expireValue = this.getExpireClients(zoomLevel);
+        
+        // Fixed value
+        if (expireValue == GWCVars.CACHE_VALUE_UNSET) {
             return;
-        }
+        }    
 
         // TODO move to TileResponse
-        if (expireClientsInt > 0) {
-            response.setHeader("Cache-Control", "max-age=" + expireClients + ", must-revalidate");
-            response.setHeader("Expires", ServletUtils.makeExpiresHeader(expireClientsInt));
-        } else if (expireClientsInt == GWCVars.CACHE_NEVER_EXPIRE) {
+        if (expireValue > 0) {
+            response.setHeader("Cache-Control", "max-age=" + expireValue + ", must-revalidate");
+            response.setHeader("Expires", ServletUtils.makeExpiresHeader(expireValue));
+        } else if (expireValue  == GWCVars.CACHE_NEVER_EXPIRE) {
             long oneYear = 3600 * 24 * 365;
             response.setHeader("Cache-Control", "max-age=" + oneYear);
             response.setHeader("Expires", ServletUtils.makeExpiresHeader((int) oneYear));
-        } else if (expireClientsInt == GWCVars.CACHE_DISABLE_CACHE) {
+        } else if (expireValue == GWCVars.CACHE_DISABLE_CACHE) {
             response.setHeader("Cache-Control", "no-cache");
-        } else if (expireClientsInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+        } else if (expireValue == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
             int seconds = 3600;
             response.setHeader("geowebcache-error", "No real CacheControl information available");
             response.setHeader("Cache-Control", "max-age=" + seconds);
@@ -672,7 +694,7 @@ public class WMSLayer extends TileLayer {
         }
         
         if (tile.servletResp != null) {
-            setExpirationHeader(tile.servletResp);
+            setExpirationHeader(tile.servletResp, (int) tile.getTileIndex()[2]);
             setTileIndexHeader(tile);
         }
         
@@ -684,12 +706,26 @@ public class WMSLayer extends TileLayer {
      * @param props
      * @throws CacheException
      */
+    // TODO Deprecated?
     private void initParameters() throws GeoWebCacheException {
         // everything that happens in profile construction should happen here
 
-        if (expireCacheInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE
-                || expireClientsInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
-            this.saveExpirationHeaders = true;
+        if(this.expireCacheList == null) {
+            expireCacheList = new ArrayList<ExpirationRule>(1);
+            if(expireCache == null) {
+                expireCacheList.add(new ExpirationRule(0, GWCVars.CACHE_NEVER_EXPIRE));
+            } else {
+                expireCacheList.add(new ExpirationRule(0, Integer.getInteger(expireCache)));
+            }
+        }
+        
+        if(this.expireClientsList == null) {
+            expireClientsList = new ArrayList<ExpirationRule>(1);
+            if(expireClients == null) {
+                expireClientsList.add(new ExpirationRule(0, GWCVars.CACHE_USE_WMS_BACKEND_VALUE));
+            } else {
+                expireClientsList.add(new ExpirationRule(0, Integer.getInteger(expireCache)));
+            }
         }
         
         // mimetypes
@@ -707,26 +743,28 @@ public class WMSLayer extends TileLayer {
 
     protected void saveExpirationInformation(int backendExpire) {
         this.saveExpirationHeaders = false;
+                
         try {
-            if (expireCacheInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+            if (getExpireCache(0) == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
                 if(backendExpire == -1) {
-                    expireCacheInt = 7200;
+                    this.expireCacheList.set(0, new ExpirationRule(0,7200));
                     log.error("Layer profile wants MaxAge from backend,"
                         + " but backend does not provide this. Setting to 7200 seconds.");
                 } else {
-                    expireCacheInt = backendExpire;
+                    this.expireCacheList.set(backendExpire, new ExpirationRule(0,7200));
                 }
                 log.trace("Setting expireCache to: " + expireCache);
             }
-            if (expireClientsInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+            if (getExpireCache(0) == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
                 if(backendExpire == -1) {
-                    expireClientsInt = 7200;
+                    this.expireClientsList.set(0, new ExpirationRule(0,7200));
                     log.error("Layer profile wants MaxAge from backend,"
                             + " but backend does not provide this. Setting to 7200 seconds.");
                 } else {
-                    expireClientsInt = backendExpire;
+                    this.expireClientsList.set(0, new ExpirationRule(0,backendExpire));
+                    log.trace("Setting expireClients to: " + expireClients);
                 }
-                log.trace("Setting expireClients to: " + expireClients);
+                
             }
         } catch (Exception e) {
             // Sometimes this doesn't work (network conditions?),
@@ -1011,7 +1049,7 @@ public class WMSLayer extends TileLayer {
         waitForQueue(glo);
 
         /** ****************** Tile ******************* */
-        if (expireCacheInt != GWCVars.CACHE_DISABLE_CACHE) {
+        if (getExpireCache((int) tile.getTileIndex()[2]) != GWCVars.CACHE_DISABLE_CACHE) {
             tile.persist();
         }
 
@@ -1059,17 +1097,36 @@ public class WMSLayer extends TileLayer {
     public void setBackendTimeout(int seconds) {
         backendTimeout = seconds;
     }
-    
-    public int getExpireClients() {
-        if(expireClientsInt > 0) {
-            return expireClientsInt;
-        } else if(expireClientsInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE|| expireClientsInt == 0) {
-            return 7200;
-        } else if(expireClientsInt == GWCVars.CACHE_NEVER_EXPIRE) {
-            return 3600*24*365;
+
+    private int getExpiration(ArrayList<ExpirationRule> list, int zoomLevel) {
+        int retVal;
+        
+        int length = list.size();
+        if(length == 1) {
+            retVal = list.get(0).getExpiration();
         } else {
-            return -1;
+            int i;
+            for(i = 1; i<=length; i++) {
+                if(list.get(i).getMinZoom() > zoomLevel) {
+                    break;
+                }
+            }
+            retVal = list.get(i -1).getExpiration();
         }
+        
+        if(retVal == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+            return 7200;
+        }
+        
+        return retVal;     
+    }
+    
+    public int getExpireClients(int zoomLevel) {
+        return getExpiration(this.expireClientsList, zoomLevel);
+    }
+    
+    public int getExpireCache(int zoomLevel) {
+        return getExpiration(this.expireCacheList, zoomLevel);
     }
     
     /**

@@ -224,6 +224,12 @@
          As of GWC 1.1.0 this element is not fully implemented. 
        </xs:documentation></xs:annotation>
      </xs:element>
+     <xs:element name="expireCacheList" type="gwc:expireList" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+        A list of expiration rules, so that cache expiration can be controlled 
+        per layer per zoom level
+       </xs:documentation></xs:annotation>
+     </xs:element>
      <xs:element name="expireClients" type="xs:integer" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
          The HTTP expiration header sent to client. Can either be a value in number of seconds 
@@ -231,6 +237,12 @@
          headers. By default the expiration header from the WMS backend is used. If it is not 
          set or not available (no request has been forwarded to backend since startup) 
          then the value is set to 3600 seconds.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="expireClientsList" type="gwc:expireList" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+        A list of expiration rules, so that client expiration (set through HTTP response
+        headers) can be controlled per layer per zoom level
        </xs:documentation></xs:annotation>
      </xs:element>
      <xs:element name="backendTimeout" type="xs:integer" minOccurs="0">
@@ -806,14 +818,29 @@
   </xs:sequence>
 </xs:complexType>
 
+<xs:complexType name="expireList">
+  <xs:sequence>
+    <xs:element name="expirationRule" type="gwc:expirationRule" minOccurs="1" maxOccurs="unbounded">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The name of the filter. This is added to the HTTP header when a filter triggers,
+        to make debugging the filters easier. This name should be unique.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="expirationRule">
+  <xs:attribute name="minZoom" type="xs:int"/>
+  <xs:attribute name="expiration" type="xs:int"/>
+</xs:complexType>
 
 <xs:complexType name="DEPRECATEDgrids">
   <xs:sequence>
-      <xs:element name="entry" type="gwc:DEPRECATEDentry" minOccurs="1" maxOccurs="unbounded">
-        <xs:annotation><xs:documentation xml:lang="en">
-          DEPRECATED
-        </xs:documentation></xs:annotation>
-      </xs:element>
+    <xs:element name="entry" type="gwc:DEPRECATEDentry" minOccurs="1" maxOccurs="unbounded">
+      <xs:annotation><xs:documentation xml:lang="en">
+        DEPRECATED
+      </xs:documentation></xs:annotation>
+    </xs:element>
   </xs:sequence>
 </xs:complexType>
 

@@ -491,7 +491,7 @@ public class KMLService extends Service {
         
         String refreshTags = "";
         if(tileLayer instanceof WMSLayer) {
-            int refreshInterval = ((WMSLayer) tileLayer).getExpireClients();
+            int refreshInterval = ((WMSLayer) tileLayer).getExpireClients((int) gridLoc[2]);
             
             if(refreshInterval > 0) {
                 refreshTags = "\n<refreshMode>onInterval</refreshMode>"

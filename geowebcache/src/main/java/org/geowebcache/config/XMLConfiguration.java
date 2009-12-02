@@ -59,6 +59,7 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.XMLGridSet;
 import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.grid.XMLGridSubset;
+import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -344,6 +345,10 @@ public class XMLConfiguration implements Configuration {
         xs.alias("fileRasterFilter", FileRasterFilter.class);
         
         xs.alias("wmsRasterFilterUpdate", WMSRasterFilterUpdate.class);
+        
+        xs.alias("expirationRule", ExpirationRule.class);
+        xs.useAttributeFor(ExpirationRule.class, "minZoom");
+        xs.useAttributeFor(ExpirationRule.class, "expiration");
         
         return xs;
     }
