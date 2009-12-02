@@ -30,6 +30,7 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
+import org.geowebcache.util.ServletUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.restlet.data.MediaType;
@@ -195,7 +196,8 @@ public class TileLayerRestlet extends GWCRestlet {
     
     protected TileLayer deserializeAndCheckLayer(Request req, Response resp, boolean isPut) 
     throws RestletException, IOException {
-        String layerName = (String) req.getAttributes().get("layer");
+        // TODO UTF-8 may not always be right here
+        String layerName = ServletUtils.URLDecode((String) req.getAttributes().get("layer"), "UTF-8");
         String formatExtension = (String) req.getAttributes().get("extension");
         InputStream is = req.getEntity().getStream();
         
