@@ -12,6 +12,8 @@ If you receive a "broken tile", you should either use a tool like Firebug to exa
 
 Errors caused by incorrectly configured clients are usually not logged on the server, because a misconfigured client could easily fill up the logs.
 
+If you have a problem with scales, it can be due to the fact that OpenLayers by default assumes 72 DPI, whereas OGC standards such as WMS 1.3.0 assume 0.28mm per pixel (90.72 DPI). See the XSD documentation for how to change `pixelSize`, the value is simply expressed in meters per pixel, i.e.  0.0254 / DPI.
+
 Incorrect or Broken Tiles
 -------------------------
 

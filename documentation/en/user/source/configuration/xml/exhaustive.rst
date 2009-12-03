@@ -10,13 +10,13 @@ The example below uses all configuration directives that are currently available
    <?xml version="1.0" encoding="utf-8"?>
    <gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                      xsi:noNamespaceSchemaLocation="http://geowebcache.org/schema/1.2.0/geowebcache.xsd"
-                     xmlns="http://geowebcache.org/schema/1.2.0">
+                     xmlns="http://geowebcache.org/schema/1.2.1">
 
      <!-- ============================== GLOBAL SETTINGS ======================================== -->
 
      <!-- The following controls certain automatic upgrades. Update this and the namespaces above when 
           you update the configuration file manually -->
-     <version>1.2.0</version>
+     <version>1.2.1</version>
      <!-- OPTIONAL This is the global timeout for HTTP connections to WMS backends. It is used both for the
           connection and the transfer, so the actual timeout may be much longer if the data is
           trickling back slowly. -->
@@ -110,6 +110,10 @@ The example below uses all configuration directives that are currently available
           For feet you use 0.3048 , and so forth
           -->
          <metersPerUnit>111226.31</metersPerUnit>
+         <!-- OPTIONAL The size of a single pixel in meters. OGC standards such as WMS 1.3.0 and
+              WMTS assume 0.28mm per pixel, which corresponds to 90.72 DPI
+          -->
+         <pixelSize>0.00028</pixelSize>
          <!-- OPTIONAL Some protocols, such as WMTS, support named scales. If desired you
               can define the names here, be sure to keep the same order as in the scale or
               resolution definition -->
@@ -219,12 +223,18 @@ The example below uses all configuration directives that are currently available
          <!-- OPTIONAL The number of seconds a tile remains valid on the
               server. Subsequent requests will result in a new tile being fetched.
               The default is to cache forever. -->
-         <expireCache>-1</expireCache>
+         <expireCacheList>
+           <expirationRule minZoom="0"  expiration="14400" />
+           <expirationRule minZoom="10" expiration="7200" />
+         </expireCacheList>
          <!-- OPTIONAL The number of seconds that a client should cache
               a tile it has received from GWC. The default is to use the same
               expiration time as the WMS server provided. If this value is 
               not available, 2 hours is used. -->
-         <expireClients>7200</expireClients>
+         <expireClientsList>
+           <expirationRule minZoom="0" expiration="7200" />
+           <expirationRule minZoom="10" expiration="600" />
+         </expireClientsList>
          <!-- OPTIONAL See the global backendTimeout description -->
          <backendTimeout></backendTimeout>
          <!-- OPTIONAL Whether clients can append &cached=false and thereby use

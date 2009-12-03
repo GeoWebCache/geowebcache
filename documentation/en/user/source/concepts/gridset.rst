@@ -7,7 +7,8 @@ A ``<gridSet>`` defines
  - a spatial reference system (EPSG code)
  - a bounding box describing an extent. This should generally be the maximum extent for the reference system above
  - a set of scale denominators, resolutions or a range of zoom levels
- - tile dimensions in pixels (the same for all zoom levels) 
+ - tile dimensions in pixels (the same for all zoom levels)
+ - to calculate scales, a notion of pixel size is required. The default is 0.28mm/pixel, corresponding to 90.72 DPI
 
 A ``<gridSubset>`` is a hint to GWC that a layer uses a particular gridSet, it optionally defines
  - a bounding box contained by the gridSet bounding box
@@ -24,7 +25,7 @@ The process described below is repeated for every zoom level.
    :align: left
    :class: float_left
 
-   *Initial bounding box.* Assume the grid set bounding box is -10.0,-30.0,85.0,21.0 and that the resolution for the zoom level is set to 11.25 deg / 256 pixels = 0.04395 (Scale 1:1.8E7)*
+   *Initial bounding box.* Assume the grid set bounding box is -10.0,-30.0,85.0,21.0 and that the resolution for the zoom level is set to 11.25 deg / 256 pixels = 0.04395 (Scale 1:1.8E7)
 
 
 .. figure:: gridset_bl.png

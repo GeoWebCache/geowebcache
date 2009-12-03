@@ -76,6 +76,12 @@ The performance overhead of the metastore is neglible, and speeds up certain ope
 Cache Expiration
 ----------------
 
-In addition to the seeding mechanism, which can truncate the cache, GeoWebCache supports a ``<expireCache>`` value that is configured per layer. The current implementation only checks this value when the tile is actually requested, answering with a tile miss which causes the cache to be updated. By default tiles never expire. 
+In addition to the seeding mechanism, which can truncate the cache, GeoWebCache supports a ``<expireCacheList>`` value that is configured per layer. The current implementation only checks this value when the tile is actually requested, answering with a tile miss which causes the cache to be updated. By default tiles never expire. 
 
-Also note that this value is distinct from the ``<expireClients>``, which controls the HTTP expiration headers sent to clients.
+Also note that this value is distinct from the ``<expireClientsList>``, which controls the HTTP expiration headers sent to clients.
+
+
+Modifying the Tiles
+-------------------
+
+By default, GeoWebCache will check the size of each file read from disk and compare to the value stored in the metastore. You can disable this behaior by editing `geowebcache-servlet.xml`, find the bean definition of `gwcStorageBroker` and set `verifyFileSize` to `FALSE`. This is useful if you wish to use software such as PNG Crush or an optimizer for JPEG.
