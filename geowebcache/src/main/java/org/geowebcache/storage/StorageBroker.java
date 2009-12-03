@@ -31,6 +31,8 @@ public class StorageBroker {
     
     private boolean metaStoreEnabled = true;
     
+    private boolean verifyFileSize = false;
+    
     private boolean isReady = false;
     
     public StorageBroker(MetaStore metaStore, BlobStore blobStore) {
@@ -42,6 +44,10 @@ public class StorageBroker {
         } else {
             metaStoreEnabled = false;
         }
+    }
+    
+    public void setVerifyFileSize(boolean verifyFileSize) {
+        this.verifyFileSize = verifyFileSize;
     }
     
     public boolean delete(String layerName) throws StorageException {
@@ -88,7 +94,7 @@ public class StorageBroker {
                 throw new StorageException(
                         "Blob for "+Arrays.toString(tileObj.xyz)+" was expected to have size " 
                         + tileObj.blob_size + " but was null.");
-            } else if(blob.length != tileObj.blob_size) {
+            } else if(verifyFileSize && blob.length != tileObj.blob_size) {
                 throw new StorageException(
                         "Blob was expected to have size " 
                         + tileObj.blob_size + " but was " + blob.length);

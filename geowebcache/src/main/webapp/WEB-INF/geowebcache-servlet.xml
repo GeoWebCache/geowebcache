@@ -78,6 +78,7 @@
   <bean id="gwcStorageBroker" class="org.geowebcache.storage.StorageBroker" destroy-method="destroy">
     <constructor-arg ref="gwcMetaStore" />
     <constructor-arg ref="gwcBlobStore" />
+    <property name="verifyFileSize" value="TRUE"/>
   </bean>
   
   

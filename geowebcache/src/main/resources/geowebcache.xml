@@ -72,16 +72,10 @@
     <transparent>false</transparent>
     <bgColor>0x0066FF</bgColor>
     <expireCacheList>
-    	<expirationRule minZoom="0" expiration="500" />
-    	<expirationRule minZoom="4" expiration="600" />
-    	<expirationRule minZoom="10" expiration="900" />
-    	<expirationRule minZoom="15" expiration="1000" />
+    	<expirationRule minZoom="0" expiration="60" />
     </expireCacheList>
     <expireClientsList>
       <expirationRule minZoom="0" expiration="500" />
-      <expirationRule minZoom="4" expiration="600" />
-      <expirationRule minZoom="10" expiration="900" />
-      <expirationRule minZoom="15" expiration="1000" />
     </expireClientsList>
   </wmsLayer>
 
