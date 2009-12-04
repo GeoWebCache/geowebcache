@@ -420,7 +420,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         StringBuilder str = new StringBuilder();
         
         str.append("<html>\n"+ServletUtils.gwcHtmlHeader("GWC Home") +"<body>\n" + ServletUtils.gwcHtmlLogoLink(baseUrl));
-        str.append("<h3>Welcome to GeoWebCache version NIGHTLY, built 2009-12-04</h3>\n");
+        str.append("<h3>Welcome to GeoWebCache version 1.2.1, built 2009-12-04</h3>\n");
         str.append("<p><a href=\"http://geowebcache.org\">GeoWebCache</a> is an advanced tile cache for WMS servers.");
         str.append("It supports a large variety of protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</p>");
         str.append("<h3>Automatically Generated Demos:</h3>\n");
