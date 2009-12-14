@@ -65,6 +65,16 @@
         </extent>
       </gridSubset>
     </gridSubsets>
+    <requestFilters>
+     <wmsRasterFilter>
+     <name>somename</name>
+     <zoomStart>10</zoomStart>
+     <zoomStop>12</zoomStop>
+     <resample>true</resample>
+     <wmsLayers>topp:states</wmsLayers>
+     <wmsStyles>onebit</wmsStyles>
+     </wmsRasterFilter>
+    </requestFilters>
     <wmsUrl>
       <string>http://atlas.openplans.org:8080/geoserver/wms</string>
     </wmsUrl>
