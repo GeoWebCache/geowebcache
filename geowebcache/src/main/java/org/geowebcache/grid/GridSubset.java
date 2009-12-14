@@ -58,7 +58,7 @@ public class GridSubset {
     }
     
     public void checkCoverage(long[] index) throws OutsideCoverageException {
-        if(index[2] >= firstLevel || 
+        if(index[2] >= firstLevel &&
                 index[2] < gridCoverageLevels.length) {
             long[] coverage = gridCoverageLevels[(int) index[2]].coverage;
             

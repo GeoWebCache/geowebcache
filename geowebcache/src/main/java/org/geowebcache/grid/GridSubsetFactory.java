@@ -56,7 +56,7 @@ public class GridSubsetFactory {
         }
         
         if(zoomStop != null) {
-            ret.gridCoverageLevels = new GridCoverage[zoomStop - zoomStart + 1];
+            ret.gridCoverageLevels = new GridCoverage[zoomStop - ret.firstLevel + 1];
         } else {
             ret.gridCoverageLevels = new GridCoverage[gridSet.gridLevels.length - ret.firstLevel];
         }
