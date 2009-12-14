@@ -22,7 +22,7 @@ Seeding and Truncating the Cache
 
 From the page that lists the demos there is a link for seeding each layer. Seeding and truncating layers with parameter filters is currently not supported, except for the default values.
 
-There is also a RESTful interface for seeding: http://geowebcache.org/trac/wiki/api_proposal
+There is also a RESTful interface for seeding: http://geowebcache.org/trac/wiki/GWC_seeder
 
 Resource Allocation
 -------------------
