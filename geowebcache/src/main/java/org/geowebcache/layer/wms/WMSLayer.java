@@ -43,6 +43,7 @@ import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.XMLGridSubset;
@@ -107,6 +108,8 @@ public class WMSLayer extends TileLayer {
     protected Boolean cacheBypassAllowed;
     
     protected Boolean queryable;
+    
+    protected String sphericalMercatorOverride;
     
     protected List<ParameterFilter> parameterFilters;
     
@@ -1211,6 +1214,15 @@ public class WMSLayer extends TileLayer {
             } else {
                 this.parameterFilters = otherLayer.parameterFilters;
             }
+        }
+    }
+    
+    public String backendSRSOverride(SRS srs) {
+        if(sphericalMercatorOverride != null
+                && srs.equals(SRS.getEPSG3857())) {
+            return sphericalMercatorOverride;
+        } else {
+            return srs.toString();
         }
     }
     

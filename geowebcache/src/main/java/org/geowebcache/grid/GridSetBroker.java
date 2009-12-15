@@ -33,9 +33,15 @@ public class GridSetBroker {
     public GridSetBroker(boolean useEPSG900913, boolean useGWC11xNames) {
         String unprojectedName = "GlobalCRS84Geometric";
         String mercatorName = "GoogleMapsCompatible";
+        
         if(useGWC11xNames) {
             unprojectedName = "EPSG:4326";
-            mercatorName = "EPSG:900913";
+            if(useEPSG900913) {
+                mercatorName = "EPSG:900913";
+            } else {
+                mercatorName = "EPSG:3857";
+            }
+            
         }
         
         log.debug("Adding " + unprojectedName);

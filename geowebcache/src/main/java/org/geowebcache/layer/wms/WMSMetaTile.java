@@ -89,8 +89,8 @@ public class WMSMetaTile extends MetaTile {
         } else {
             strBuilder.append("&FORMAT=").append(formatModifier.getRequestFormat().getFormat());
         }
-        
-        strBuilder.append("&SRS=").append(gridSubset.getSRS());
+
+        strBuilder.append("&SRS=").append(wmsLayer.backendSRSOverride(gridSubset.getSRS()));
         
         if(wmsLayer.gutter == 0 || metaX*metaY == 1) {
             strBuilder.append("&WIDTH=").append(metaX * gridSubset.getTileWidth());

@@ -21,6 +21,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileResponseReceiver;
 
 public abstract class WMSSourceHelper {
@@ -48,7 +49,7 @@ public abstract class WMSSourceHelper {
         StringBuilder strBuilder = new StringBuilder(wmsParams);
 
         strBuilder.append("&FORMAT=").append(tile.getMimeType().getFormat());
-        strBuilder.append("&SRS=").append(gridSubset.getSRS().toString());
+        strBuilder.append("&SRS=").append(layer.backendSRSOverride(gridSubset.getSRS()));
         strBuilder.append("&HEIGHT=").append(gridSubset.getTileHeight());
         strBuilder.append("&WIDTH=").append(gridSubset.getTileWidth());
         // strBuilder.append("&TILED=").append(requestTiled);
@@ -74,7 +75,7 @@ public abstract class WMSSourceHelper {
         StringBuilder strBuilder = new StringBuilder(wmsParams);
         strBuilder.append("&INFO_FORMAT=").append(tile.getMimeType().getFormat());
         strBuilder.append("&FORMAT=").append(tile.getMimeType().getFormat());
-        strBuilder.append("&SRS=").append(gridSubset.getSRS().toString());
+        strBuilder.append("&SRS=").append(layer.backendSRSOverride(gridSubset.getSRS()));
         strBuilder.append("&HEIGHT=").append(gridSubset.getTileHeight());
         strBuilder.append("&WIDTH=").append(gridSubset.getTileWidth());
 

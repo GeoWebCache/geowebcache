@@ -119,6 +119,8 @@ public class WMSRasterFilter extends RasterFilter {
         if(this.wmsStyles != null) {
             str.append(this.wmsStyles);
         }
+        
+        str.append("&SRS=").append(layer.backendSRSOverride(gridSubset.getSRS()));
 
         str.append("&BBOX=").append(bbox.toString());
         str.append("&WIDTH=").append(widthHeight[0]);

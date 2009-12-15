@@ -49,8 +49,8 @@ public class SRS implements Comparable {
             // We'll use these a lot, so leave some shortcuts that avoid all the hashing
             if(epsgNumber == 4326) {
                 list.put(4326, EPSG4326);
-            } else if(epsgNumber == 900913 || epsgNumber == 3785) {
-                list.put(3785, EPSG3857);
+            } else if(epsgNumber == 900913 || epsgNumber == 3857) {
+                list.put(3857, EPSG3857);
             }
             
             ret = new SRS(epsgNumber);
