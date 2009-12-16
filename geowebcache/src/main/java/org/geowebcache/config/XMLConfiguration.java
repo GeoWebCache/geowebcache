@@ -51,6 +51,7 @@ import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.RegexParameterFilter;
+import org.geowebcache.filter.parameters.StringParameterFilter;
 import org.geowebcache.filter.request.CircularExtentFilter;
 import org.geowebcache.filter.request.FileRasterFilter;
 import org.geowebcache.filter.request.WMSRasterFilter;
@@ -337,6 +338,7 @@ public class XMLConfiguration implements Configuration {
         //xs.alias("parameterFilter", ParameterFilter.class);
         xs.alias("floatParameterFilter", FloatParameterFilter.class);
         xs.alias("regexParameterFilter", RegexParameterFilter.class);
+        xs.alias("stringParameterFilter", StringParameterFilter.class);
         //xs.alias("regex", String.class);
         xs.alias("formatModifier", FormatModifier.class);
         
