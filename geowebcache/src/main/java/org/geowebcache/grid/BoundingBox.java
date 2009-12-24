@@ -220,15 +220,19 @@ public class BoundingBox {
         return retBbox;
     }
     
-    public void scale(double factor) {
+    public void scale(double xFactor, double yFactor) {
        double x = coords[2] - coords[0];
-       double xdiff = (x*factor - x)/2;
+       double xdiff = (x*xFactor - x)/2;
        double y = coords[3] - coords[1];
-       double ydiff = (y*factor - y)/2;
+       double ydiff = (y*yFactor - y)/2;
        
        coords[0] = coords[0] - xdiff;
        coords[1] = coords[1] - ydiff;
        coords[2] = coords[2] + xdiff;
        coords[3] = coords[3] + ydiff;
+    }
+    
+    public void scale(double factor) {
+        scale(factor,factor);
     }
 }

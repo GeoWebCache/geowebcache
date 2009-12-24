@@ -17,6 +17,8 @@
  */
 package org.geowebcache.service.wms;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -64,7 +66,7 @@ public class WMSService extends Service {
             throws GeoWebCacheException {
         String encoding = request.getCharacterEncoding();
         
-        String[] keys = { "layers", "request", "tiled", "cached", "metatiled" };
+        String[] keys = { "layers", "request", "tiled", "cached", "metatiled", "width", "height" };
         String[] values = ServletUtils.selectedStringsFromMap(request.getParameterMap(), encoding, keys);
 
         // Look for requests that are not getmap
@@ -125,10 +127,22 @@ public class WMSService extends Service {
         }
         
         SRS srs = SRS.getSRS(paramValues[1]);
+        
         GridSubset gridSubset = tileLayer.getGridSubsetForSRS(srs);
         if (gridSubset == null) {
             throw new ServiceException("Unable to match requested SRS "
                     + paramValues[1] + " to those supported by layer");
+        }
+        
+        // Need to check for requests of the right dimension,
+        // but incorrect origin or resolution
+        if (gridSubset.getTileWidth() != Integer.parseInt(values[5])
+                || gridSubset.getTileHeight() != Integer.parseInt(values[6])) {
+
+            ConveyorTile tile = new ConveyorTile(sb, layers, request, response);
+            tile.setHint("getmap");
+            tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
+            return tile;
         }
    
         BoundingBox bbox = null;
@@ -143,7 +157,7 @@ public class WMSService extends Service {
         }
 
         long[] tileIndex = gridSubset.closestIndex(bbox);
-
+        
         return new ConveyorTile(
                 sb, layers, gridSubset.getName(), tileIndex, mimeType, 
                 modStrs[0], modStrs[1], request, response);
@@ -158,6 +172,14 @@ public class WMSService extends Service {
             if(tile.getHint().equalsIgnoreCase("getcapabilities")) {
                 WMSGetCapabilities wmsCap = new WMSGetCapabilities(tld, tile.servletReq);
                 wmsCap.writeResponse(tile.servletResp);
+            } else if(tile.getHint().equalsIgnoreCase("getmap")) {
+                WMSTileFuser wmsFuser = new WMSTileFuser(tld, sb, tile.servletReq);
+                try {
+                    wmsFuser.writeResponse(tile.servletResp);
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             } else {
                 WMSRequests.handleProxy(tld, tile);
             }

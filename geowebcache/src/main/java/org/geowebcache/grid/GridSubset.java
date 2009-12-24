@@ -169,6 +169,11 @@ public class GridSubset {
         return ret;
     }
     
+    public long[] getCoverageIntersection(int level, BoundingBox reqBounds) {
+        long[] reqRectangle = gridSet.closestRectangle(level, reqBounds);
+        return gridCoverageLevels[level].getIntersection(reqRectangle);
+    }
+    
     public long getGridIndex(String gridId) {
         for(int i = 0; i < gridCoverageLevels.length; i++) {
             if(gridSet.gridLevels[firstLevel + i].name.equals(gridId)) {
@@ -319,4 +324,6 @@ public class GridSubset {
     public boolean fullGridSetCoverage() {
         return fullGridSetCoverage;
     }
+
+
 }
