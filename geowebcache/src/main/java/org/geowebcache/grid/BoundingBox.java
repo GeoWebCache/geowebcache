@@ -157,16 +157,20 @@ public class BoundingBox {
     public boolean equals(Object obj) {
         if (obj != null && obj.getClass() == this.getClass()) {
             BoundingBox other = (BoundingBox) obj;
-            boolean result = true;
-            for (int i = 0; i < 4 && result; i++) {
-                result = (Math.abs(coords[i]) < EQUALITYTHRESHOLD) 
-                        && Math.abs(other.coords[i]) < EQUALITYTHRESHOLD
-                        || (coords[i] - other.coords[i])
-                                / (coords[i] + other.coords[i]) < EQUALITYTHRESHOLD;
-            }
-            return result;
+            return this.equals(other, EQUALITYTHRESHOLD);
         }
         return false;
+    }
+    
+    
+    public boolean equals(BoundingBox other, double threshold) {
+            boolean result = true;
+            for (int i = 0; i < 4 && result; i++) {
+                result = (Math.abs(coords[i]) < threshold) 
+                        && Math.abs(other.coords[i]) < threshold
+                        || (coords[i] - other.coords[i]) / (coords[i] + other.coords[i]) < threshold;
+            }
+            return result;
     }
 
     /**
@@ -194,7 +198,7 @@ public class BoundingBox {
     @Override
     public int hashCode() {
         return Float.floatToIntBits((float) coords[0])
-                ^ Float.floatToIntBits((float) coords[2]);
+                ^ Float.floatToIntBits((float) coords[1]);
     }
 
     

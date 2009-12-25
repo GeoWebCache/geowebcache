@@ -22,6 +22,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 
 import javax.imageio.IIOImage;
@@ -30,6 +31,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -331,13 +333,15 @@ public class WMSTileFuser {
         ImageWriter writer = javax.imageio.ImageIO.getImageWritersByFormatName("PNG").next();
         ImageWriteParam param  = writer.getDefaultWriteParam();
         
-        ImageOutputStream imgOut = new MemoryCacheImageOutputStream(response.getOutputStream());
+        ServletOutputStream os = response.getOutputStream();
+        ImageOutputStream imgOut = new MemoryCacheImageOutputStream(os);
         writer.setOutput(imgOut);
         IIOImage image = new IIOImage(canvas, null, null);
         try {
             writer.write(null, image, param);
             imgOut.close();
             writer.dispose();
+            os.close();
         } catch (IOException ioe) {
             log.debug("IOException writing untiled response to client: " + ioe.getMessage());
         }

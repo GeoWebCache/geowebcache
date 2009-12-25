@@ -44,8 +44,11 @@ public class WMSService extends Service {
     public static final String SERVICE_WMS = "wms";
 
     private static Log log = LogFactory.getLog(org.geowebcache.service.wms.WMSService.class);
+    
+    // Recombine tiles to support regular WMS clients?
+    private boolean fullWMS = false;
 
-    // Proxy requests that are not getmap ?
+    // Proxy requests that are not getmap or getcapabilities?
     private boolean proxyRequests = false;
     
     // Proxy requests that are not tiled=true?
@@ -133,18 +136,7 @@ public class WMSService extends Service {
             throw new ServiceException("Unable to match requested SRS "
                     + paramValues[1] + " to those supported by layer");
         }
-        
-        // Need to check for requests of the right dimension,
-        // but incorrect origin or resolution
-        if (gridSubset.getTileWidth() != Integer.parseInt(values[5])
-                || gridSubset.getTileHeight() != Integer.parseInt(values[6])) {
-
-            ConveyorTile tile = new ConveyorTile(sb, layers, request, response);
-            tile.setHint("getmap");
-            tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
-            return tile;
-        }
-   
+           
         BoundingBox bbox = null;
         try {
             bbox = new BoundingBox(paramValues[2]);    
@@ -157,6 +149,21 @@ public class WMSService extends Service {
         }
 
         long[] tileIndex = gridSubset.closestIndex(bbox);
+        
+        // If we support full WMS we need to do a few tests to determine whether
+        // this is a request that requires us to recombine tiles to respond.
+        if (this.fullWMS &&
+                ( gridSubset.getTileWidth() != Integer.parseInt(values[5])
+                || gridSubset.getTileHeight() != Integer.parseInt(values[6])
+                || ! bbox.equals(gridSubset.boundsFromIndex(tileIndex), 0.05)
+                )) {
+            log.debug("Recombinining tiles to respond to WMS request");
+            ConveyorTile tile = new ConveyorTile(sb, layers, request, response);
+            tile.setHint("getmap");
+            tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
+            return tile;
+        }
+
         
         return new ConveyorTile(
                 sb, layers, gridSubset.getName(), tileIndex, mimeType, 
@@ -190,7 +197,16 @@ public class WMSService extends Service {
                   + "Please include request URL if you file a bug report.");
         }
     }
-       
+
+    public void setFullWMS(String trueFalse) {
+        this.fullWMS = Boolean.parseBoolean(trueFalse);
+        if(this.fullWMS) {
+            log.info("Will recombine tiles for non-tiling clients.");
+        } else {
+            log.info("Will NOT recombine tiles for non-tiling clients.");
+        }
+    }
+    
     public void setProxyRequests(String trueFalse) {
         this.proxyRequests = Boolean.parseBoolean(trueFalse);
         if(this.proxyRequests) {
