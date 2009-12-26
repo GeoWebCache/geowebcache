@@ -17,13 +17,14 @@
 package org.geowebcache.service.wms;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
@@ -43,6 +44,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.ImageMime;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
 
@@ -63,6 +65,8 @@ public class WMSTileFuser {
     final TileLayer layer;
     
     final ImageMime outputFormat;
+    
+    ImageMime srcFormat;
     
     int reqHeight;
     
@@ -114,6 +118,15 @@ public class WMSTileFuser {
         // TODO Parameter filters?
         
         layer = tld.getTileLayer(values[0]);
+        
+        List<MimeType> ml = layer.getMimeTypes();
+        Iterator<MimeType> iter = ml.iterator();
+        while(iter.hasNext()) {
+            MimeType mt = iter.next();
+            if(mt.getInternalName().equalsIgnoreCase("png")) {
+                this.srcFormat = (ImageMime) mt;
+            }
+        }
         
         gridSubset = layer.getGridSubsetForSRS(SRS.getSRS(values[2]));
         
@@ -209,10 +222,9 @@ public class WMSTileFuser {
         
         //Calculate the corresponding pixel offsets. We'll stick to sane,
         // i.e. bottom left, coordinates at this point
-        canvOfs[0] = (int) Math.round(boundOfs[0] / this.srcResolution);
-        canvOfs[1] = (int) Math.round(boundOfs[1] / this.srcResolution);
-        canvOfs[2] = (int) Math.round(boundOfs[2] / this.srcResolution);
-        canvOfs[3] = (int) Math.round(boundOfs[3] / this.srcResolution);
+        for(int i=0; i<4; i++) {
+            canvOfs[i] = (int) Math.round(boundOfs[i] / this.srcResolution);
+        }
         
         if(log.isDebugEnabled()) {
             log.debug("intersection rectangle: " + Arrays.toString(srcRectangle));
