@@ -1152,8 +1152,28 @@ public class WMSLayer extends TileLayer {
         this.tiled = tiled;
     }
 
+    public boolean getTransparent() {
+        if(transparent == null || transparent) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     public void setTransparent(boolean transparent) {
         this.transparent = transparent;
+    }
+    
+    public int[] getBackgroundColor() {
+        if(bgColor == null || transparent != null && transparent) {
+            return null;
+        }
+        int[] ret = new int[3];
+        //0xRRGGBB
+        ret[0] = Integer.parseInt(bgColor.substring(2, 4),16);
+        ret[1] = Integer.parseInt(bgColor.substring(4, 6),16);
+        ret[2] = Integer.parseInt(bgColor.substring(6, 8),16);       
+        return ret;
     }
 
     public ConveyorTile getNoncachedTile(ConveyorTile tile)

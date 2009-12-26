@@ -18,34 +18,42 @@
 package org.geowebcache.mime;
 
 public class ImageMime extends MimeType {
+    
+    boolean supportsAlphaChannel;
+    
+    boolean supportsAlphaBit;
 
     public static final ImageMime png = 
-        new ImageMime("image/png", "png", "png", "image/png", true);
+        new ImageMime("image/png", "png", "png", "image/png", true, true, true);
 
     public static final ImageMime jpeg = 
-        new ImageMime("image/jpeg", "jpeg", "jpeg", "image/jpeg", true);
+        new ImageMime("image/jpeg", "jpeg", "jpeg", "image/jpeg", true, false, false);
     
     public static final ImageMime gif = 
-        new ImageMime("image/gif", "gif", "gif", "image/gif", true);    
+        new ImageMime("image/gif", "gif", "gif", "image/gif", true, false, true);    
     
     public static final ImageMime tiff = 
-            new ImageMime("image/tiff", "tiff", "tiff", "image/tiff", true);
+            new ImageMime("image/tiff", "tiff", "tiff", "image/tiff", true, true, true);
     
     public static final ImageMime png8 = 
-        new ImageMime("image/png", "png8", "png", "image/png8", true);
+        new ImageMime("image/png", "png8", "png", "image/png8", true, false, true);
     
     public static final ImageMime png24 = 
-        new ImageMime("image/png", "png24", "png", "image/png24", true);
+        new ImageMime("image/png", "png24", "png", "image/png24", true, true, true);
 
     public static final ImageMime png_24 = 
-        new ImageMime("image/png; mode=24bit", "png_24", "png", "image/png;%20mode=24bit", true);
+        new ImageMime("image/png; mode=24bit", "png_24", "png", "image/png;%20mode=24bit", true, true, true);
     
     public static final ImageMime dds = 
-        new ImageMime("image/dds", "dds", "dds", "image/dds", false);
+        new ImageMime("image/dds", "dds", "dds", "image/dds", false, false, false);
     
     private ImageMime(String mimeType, String fileExtension, 
-            String internalName, String format, boolean tiled) {
-        super(mimeType, fileExtension, internalName, format, tiled);   
+            String internalName, String format, boolean tiled,
+            boolean alphaChannel, boolean alphaBit) {
+        super(mimeType, fileExtension, internalName, format, tiled);
+        
+        this.supportsAlphaChannel = alphaChannel;
+        this.supportsAlphaBit = alphaBit;
     }
 
     protected static ImageMime checkForFormat(String formatStr)
@@ -101,6 +109,14 @@ public class ImageMime extends MimeType {
             return png_24;
         }
         return null;
+    }
+    
+    public boolean supportsAlphaBit() {
+       return supportsAlphaBit; 
+    }
+    
+    public boolean supportsAlphaChannel() {
+        return supportsAlphaChannel;
     }
 
 //    public static ImageMime createFromExtension(String fileExtension) {

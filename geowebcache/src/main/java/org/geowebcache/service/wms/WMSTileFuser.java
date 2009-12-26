@@ -16,21 +16,16 @@
  */
 package org.geowebcache.service.wms;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Arrays;
 
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
-import javax.imageio.stream.MemoryCacheImageOutputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,12 +34,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.filter.request.RequestFilterException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
@@ -67,11 +64,17 @@ public class WMSTileFuser {
     
     final ImageMime outputFormat;
     
-    int height;
+    int reqHeight;
     
-    int width;
+    int reqWidth;
     
-    final BoundingBox bounds;
+    final BoundingBox reqBounds;
+    
+    String[] reqModStrs;
+    
+    //Boolean reqTransparent;
+    
+    //String reqBgColor;
     
     // For adjustment of final raster
     double xResolution;
@@ -97,13 +100,18 @@ public class WMSTileFuser {
     double[] boundOfs = new double[4];
     
     BufferedImage canvas;
+    
+    Graphics2D gfx;
         
     protected WMSTileFuser(TileLayerDispatcher tld, StorageBroker sb, HttpServletRequest servReq) 
     throws GeoWebCacheException {
         this.sb = sb;
         
-        String[] keys = { "layers", "format","srs","bbox", "width", "height" };
+        String[] keys = { "layers", "format","srs","bbox", "width", "height", "transparent", "bgcolor" };
+        
         String[] values = ServletUtils.selectedStringsFromMap(servReq.getParameterMap(), servReq.getCharacterEncoding(), keys);
+        
+        // TODO Parameter filters?
         
         layer = tld.getTileLayer(values[0]);
         
@@ -111,12 +119,27 @@ public class WMSTileFuser {
         
         outputFormat = (ImageMime) ImageMime.createFromFormat(values[1]);
 
-        bounds = new BoundingBox(values[3]);
+        reqBounds = new BoundingBox(values[3]);
         
-        width = Integer.valueOf(values[4]);
+        reqWidth = Integer.valueOf(values[4]);
         
-        height = Integer.valueOf(values[5]);        
+        reqHeight = Integer.valueOf(values[5]);        
         
+        //if(values[6] != null) {
+        //    this.reqTransparent = Boolean.valueOf(values[6]);
+        //}
+        
+        //if(values[7] != null) {
+        //    this.reqBgColor = values[7];
+        //}
+        
+        if(layer instanceof WMSLayer) {
+            reqModStrs = ((WMSLayer) layer).getModifiableParameters(servReq.getParameterMap(), servReq.getCharacterEncoding());
+        }
+        
+        if(reqModStrs == null){
+            reqModStrs = new String[2];        
+        }     
     }
     
     protected WMSTileFuser(TileLayer layer, GridSubset gridSubset, BoundingBox bounds, int width, int height) {
@@ -124,14 +147,15 @@ public class WMSTileFuser {
         this.outputFormat = ImageMime.png;
         this.layer = layer;
         this.gridSubset = gridSubset;
-        this.bounds = bounds;
-        this.width = width;
-        this.height = height;
+        this.reqBounds = bounds;
+        this.reqWidth = width;
+        this.reqHeight = height;
+        this.reqModStrs = new String[2];
     }
     
     protected void determineSourceResolution() {
-        xResolution = bounds.getWidth() / width;
-        yResolution = bounds.getHeight() / height;
+        xResolution = reqBounds.getWidth() / reqWidth;
+        yResolution = reqBounds.getHeight() / reqHeight;
         
         double tmpResolution;
         // We use the smallest one
@@ -168,20 +192,20 @@ public class WMSTileFuser {
         // At worst, we have the best resolution possible
     }
     
-    protected void determineRasterLayout() {
-        srcRectangle = gridSubset.getCoverageIntersection(srcIdx, bounds);
+    protected void determineCanvasLayout() {
+        srcRectangle = gridSubset.getCoverageIntersection(srcIdx, reqBounds);
         srcBounds = gridSubset.boundsFromRectangle(srcRectangle);
         
         //We now have the complete area, lets figure out our offsets
         //Positive means that there is blank space to the first tile,
         //negative means we will not use the entire tile
-        boundOfs[0] = srcBounds.coords[0] - bounds.coords[0];
-        boundOfs[1] = srcBounds.coords[1] - bounds.coords[1];
-        boundOfs[2] = bounds.coords[2] - srcBounds.coords[2];
-        boundOfs[3] = bounds.coords[3] - srcBounds.coords[3];
+        boundOfs[0] = srcBounds.coords[0] - reqBounds.coords[0];
+        boundOfs[1] = srcBounds.coords[1] - reqBounds.coords[1];
+        boundOfs[2] = reqBounds.coords[2] - srcBounds.coords[2];
+        boundOfs[3] = reqBounds.coords[3] - srcBounds.coords[3];
         
-        canvasSize[0] = (int) Math.round(bounds.getWidth() / this.srcResolution);
-        canvasSize[1] = (int) Math.round(bounds.getHeight() / this.srcResolution);
+        canvasSize[0] = (int) Math.round(reqBounds.getWidth() / this.srcResolution);
+        canvasSize[1] = (int) Math.round(reqBounds.getHeight() / this.srcResolution);
         
         //Calculate the corresponding pixel offsets. We'll stick to sane,
         // i.e. bottom left, coordinates at this point
@@ -192,19 +216,53 @@ public class WMSTileFuser {
         
         if(log.isDebugEnabled()) {
             log.debug("intersection rectangle: " + Arrays.toString(srcRectangle));
-            log.debug("intersection bounds: " + srcBounds + " ("+bounds+")");
+            log.debug("intersection bounds: " + srcBounds + " ("+reqBounds+")");
             log.debug("Bound offsets: " + Arrays.toString(boundOfs));
-            log.debug("Canvas size: " + Arrays.toString(canvasSize) + "("+width+","+height+")");
+            log.debug("Canvas size: " + Arrays.toString(canvasSize) + "("+reqWidth+","+reqHeight+")");
             log.debug("Canvas offsets: " + Arrays.toString(canvOfs));               
         }  
     }
     
-    protected void createRaster() 
+    protected void createCanvas() {        
+        // TODO take bgcolor and transparency from request into account
+        // should move this into a separate function
+        
+        Color bgColor = null;
+        boolean transparent = true;
+        
+        if(layer instanceof WMSLayer) {
+            WMSLayer wmsLayer = (WMSLayer) layer;
+            int[] colorAr = wmsLayer.getBackgroundColor();
+            
+            if(colorAr != null) {
+                bgColor = new Color(colorAr[0], colorAr[1], colorAr[2]);
+            }
+            transparent = wmsLayer.getTransparent();
+        }
+        
+        int canvasType;
+        if(bgColor == null && transparent && 
+                (outputFormat.supportsAlphaBit() || outputFormat.supportsAlphaChannel())) {
+            canvasType = BufferedImage.TYPE_INT_ARGB;
+        } else {
+            canvasType = BufferedImage.TYPE_INT_RGB;
+            if(bgColor == null) {
+                bgColor = Color.WHITE;
+            }       
+        }
+        
+        // Create the actual canvas and graphics object
+        canvas = new BufferedImage(canvasSize[0], canvasSize[1], canvasType);
+        gfx = (Graphics2D) canvas.getGraphics();
+    
+        if(bgColor != null) {
+            gfx.setColor(bgColor);
+            gfx.fillRect(0,0,canvasSize[0], canvasSize[1]);
+        }
+    }
+    
+    protected void renderCanvas() 
     throws OutsideCoverageException, GeoWebCacheException, IOException {
-        canvas = new BufferedImage(canvasSize[0], canvasSize[1], BufferedImage.TYPE_INT_ARGB);
-        
-        Graphics gfx = canvas.getGraphics();
-        
         //Now we loop over all the relevant tiles and write them to the canvas,
         //Starting at the bottom, moving to the right and up
         long starty = srcRectangle[1];
@@ -241,7 +299,16 @@ public class WMSTileFuser {
 
                 long[] gridLoc = { gridx, gridy, srcIdx };
 
-                ConveyorTile tile = new ConveyorTile(sb, layer.getName(), gridSubset.getName(), gridLoc, ImageMime.png, null, null, null, null);
+                ConveyorTile tile = new ConveyorTile(sb, layer.getName(), gridSubset.getName(), 
+                        gridLoc, ImageMime.png, reqModStrs[0], reqModStrs[1], null, null);
+                
+                // Check whether this tile is to be rendered at all
+                try {
+                    layer.applyRequestFilters(tile);
+                } catch (RequestFilterException e) {
+                    log.debug(e.getMessage());
+                    continue;
+                }
                 
                 layer.getTile(tile);
                 
@@ -298,20 +365,20 @@ public class WMSTileFuser {
     }
     
     protected void scaleRaster() {
-        if(canvasSize[0] != width || canvasSize[1] != height) {
+        if(canvasSize[0] != reqWidth || canvasSize[1] != reqHeight) {
             BufferedImage preTransform = canvas;
             
-            canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            canvas = new BufferedImage(reqWidth, reqHeight, preTransform.getType());
             
             Graphics2D gfx = canvas.createGraphics();
             AffineTransform affineTrans =
                 AffineTransform.getScaleInstance(
-                        ((double) width)/preTransform.getWidth(),
-                        ((double) height)/preTransform.getHeight() );
+                        ((double) reqWidth)/preTransform.getWidth(),
+                        ((double) reqHeight)/preTransform.getHeight() );
             
             log.debug("AffineTransform: " 
-                    + (((double) width)/preTransform.getWidth()) + "," + 
-                    + (((double) height)/preTransform.getHeight()) 
+                    + (((double) reqWidth)/preTransform.getWidth()) + "," + 
+                    + (((double) reqHeight)/preTransform.getHeight()) 
             );
             
             gfx.drawRenderedImage(preTransform,affineTrans);
@@ -322,25 +389,18 @@ public class WMSTileFuser {
     protected void writeResponse(HttpServletResponse response) 
     throws IOException, OutsideCoverageException, GeoWebCacheException {
         determineSourceResolution();
-        determineRasterLayout();
-        createRaster();
+        determineCanvasLayout();
+        createCanvas();
+        renderCanvas();
         scaleRaster();
         
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("image/png");
+        response.setContentType(this.outputFormat.getMimeType());
         response.setCharacterEncoding("UTF-8");
-        
-        ImageWriter writer = javax.imageio.ImageIO.getImageWritersByFormatName("PNG").next();
-        ImageWriteParam param  = writer.getDefaultWriteParam();
-        
+
         ServletOutputStream os = response.getOutputStream();
-        ImageOutputStream imgOut = new MemoryCacheImageOutputStream(os);
-        writer.setOutput(imgOut);
-        IIOImage image = new IIOImage(canvas, null, null);
         try {
-            writer.write(null, image, param);
-            imgOut.close();
-            writer.dispose();
+            ImageIO.write(canvas, outputFormat.getInternalName(), os);
             os.close();
         } catch (IOException ioe) {
             log.debug("IOException writing untiled response to client: " + ioe.getMessage());
