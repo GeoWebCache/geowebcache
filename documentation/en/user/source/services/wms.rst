@@ -1,5 +1,12 @@
 .. _wms:
 
+WMS - Web Map Service
+=====================
+Web Map Service (WMS) is an OGC standard that supports requests such as ``getcapabilities``, ``getmap`` and ``getfeatureinfo``. GeoWebCache supports the former two natively and can proxy other requests to the WMS backend server. GeoWebCache was developed with WMS 1.1.0 in mind, but can support elevation and height through the use of modifiable parameters.
+
+To achieve good performance, requests should conform to the tiles that GeoWebCache stores. However, many WMS clients cannot make tiled requests. Since version 1.2.2, GeoWebCache can recombine tiles to answer arbitrary WMS requests. See Support for Regular WMS Clients below.
+
+
 WMS-C - WMS Tiling Clients
 ==========================
 
@@ -27,8 +34,10 @@ Clients written to make tiled WMS requests assume that the origin is the bottom 
 
 Note that to use WMS you should not have two grid sets with the same SRS defined for a layer. GeoWebCache will use the SRS to look up the grid set and simply use the first one it finds. The case where two grid sets may be useful is if you have several sets of scales that you do not want combine into one large set.
 
-Improvements
-------------
 
-GeoWebCache is seeking funding for a full WMS implementation, i.e. recombining and subsampling tiles to answer arbitrary WMS requests.
+Support for Regular WMS Clients
+-------------------------------
 
+GeoWebCache can recombine and resample tiles to answer arbitrary WMS requests. To enable this feature, open ``geowebcache-servlet.xml``, find ``<property name="fullWMS"><value>FALSE</value></property>`` and change to ``<property name="fullWMS"><value>TRUE</value></property>``. All layers that are to support this feature must currently be configured to support a PNG format.
+
+Note that this requires GeoWebCache to decompress many tiles and recompress the resulting canvas. Response times will therefore be on the order of seconds, depending on the size of the requested image and the tile sizes. You may have to increase the heap size of the Java process (``-Xmx256M``) to use this functionality.
