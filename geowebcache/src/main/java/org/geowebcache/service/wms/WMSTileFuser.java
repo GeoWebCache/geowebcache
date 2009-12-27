@@ -34,7 +34,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.filter.request.RequestFilterException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
@@ -45,7 +47,9 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.util.AccountingOutputStream;
 import org.geowebcache.util.ServletUtils;
 
 /*
@@ -398,7 +402,7 @@ public class WMSTileFuser {
         }
     }
     
-    protected void writeResponse(HttpServletResponse response) 
+    protected void writeResponse(HttpServletResponse response, RuntimeStats stats) 
     throws IOException, OutsideCoverageException, GeoWebCacheException {
         determineSourceResolution();
         determineCanvasLayout();
@@ -411,11 +415,17 @@ public class WMSTileFuser {
         response.setCharacterEncoding("UTF-8");
 
         ServletOutputStream os = response.getOutputStream();
+        AccountingOutputStream aos = new AccountingOutputStream(os);
+        
         try {
-            ImageIO.write(canvas, outputFormat.getInternalName(), os);
-            os.close();
+            ImageIO.write(canvas, outputFormat.getInternalName(), aos);
+            aos.close();
         } catch (IOException ioe) {
             log.debug("IOException writing untiled response to client: " + ioe.getMessage());
         }
+        
+        log.debug("WMS response size: " + aos.getCount() + "bytes.");
+        
+        stats.log(aos.getCount(), CacheResult.WMS);
     }
 }

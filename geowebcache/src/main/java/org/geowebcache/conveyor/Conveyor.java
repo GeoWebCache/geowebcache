@@ -3,7 +3,6 @@ package org.geowebcache.conveyor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
 
@@ -11,7 +10,7 @@ import org.geowebcache.storage.StorageBroker;
 public abstract class Conveyor {
     public static enum RequestHandler {LAYER, SERVICE};
     
-    public static enum CacheResult {HIT, MISS, OTHER};
+    public static enum CacheResult {HIT, MISS, WMS, OTHER};
     
     // Internal routing
     public RequestHandler reqHandler = RequestHandler.LAYER;

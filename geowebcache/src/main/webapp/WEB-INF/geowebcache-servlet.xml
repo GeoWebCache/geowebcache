@@ -134,6 +134,7 @@
     	class="org.geowebcache.service.wms.WMSService">
     <constructor-arg ref="gwcStorageBroker"/>
 	<constructor-arg ref="gwcTLDispatcher"/>
+	<constructor-arg ref="gwcRuntimeStats"/>
 	<!-- Set the next line to true to enable full WMS support,
 	     i.e. recombining tiles to serve arbitrary WMS requests -->
     <property name="fullWMS"><value>FALSE</value></property>

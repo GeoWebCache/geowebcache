@@ -54,6 +54,8 @@ public class RuntimeStats {
     long totalHits;
     
     long totalMisses;
+
+    long totalWMS;
     
     final int[] bytes;
     
@@ -126,6 +128,8 @@ public class RuntimeStats {
                     totalHits++;
                 } else if(cacheResult == CacheResult.MISS) {
                     totalMisses++;
+                } else if(cacheResult == CacheResult.WMS) {
+                    totalWMS++;
                 }
             }
         }
@@ -158,6 +162,10 @@ public class RuntimeStats {
             str.append(" (" + totalRequests / (runningTime) +"/s ) ");
             str.append("</td></tr>\n");
             
+            str.append("<tr><td colspan=\"2\">Total number of untiled WMS requests:</td><td colspan=\"3\">"+totalWMS);
+            str.append(" (" + totalWMS / (runningTime) +"/s ) ");
+            str.append("</td></tr>\n");
+            
             str.append("<tr><td colspan=\"2\">Total number of bytes:</td><td colspan=\"3\">"+totalBytes);
             str.append(" ("+formatBits((totalBytes*8.0)/(runningTime))+") ");
             str.append("</td></tr>\n");
@@ -182,7 +190,7 @@ public class RuntimeStats {
                 if(totalHits + totalMisses == 0) {
                     str.append("100.0% of requests");
                 } else {
-                    int rounded = (int) Math.round(((totalRequests - totalHits - totalMisses) * 100.0) / totalRequests);
+                    int rounded = (int) Math.round(((totalRequests - totalHits - totalMisses - totalWMS) * 100.0) / totalRequests);
                     int percents = rounded / 100;
                     int decimals = rounded - percents * 100;
                     str.append( percents + "." + decimals +"% of requests");

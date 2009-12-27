@@ -37,6 +37,7 @@ import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
+import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
 
@@ -56,13 +57,16 @@ public class WMSService extends Service {
     
     private StorageBroker sb;
     
-    private TileLayerDispatcher tld; 
+    private TileLayerDispatcher tld;
     
-    public WMSService(StorageBroker sb, TileLayerDispatcher tld) {
+    private RuntimeStats stats;
+    
+    public WMSService(StorageBroker sb, TileLayerDispatcher tld, RuntimeStats stats) {
         super(SERVICE_WMS);
         
         this.sb = sb;
         this.tld = tld;
+        this.stats = stats;
     }
 
     public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response) 
@@ -182,7 +186,7 @@ public class WMSService extends Service {
             } else if(tile.getHint().equalsIgnoreCase("getmap")) {
                 WMSTileFuser wmsFuser = new WMSTileFuser(tld, sb, tile.servletReq);
                 try {
-                    wmsFuser.writeResponse(tile.servletResp);
+                    wmsFuser.writeResponse(tile.servletResp, stats);
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
