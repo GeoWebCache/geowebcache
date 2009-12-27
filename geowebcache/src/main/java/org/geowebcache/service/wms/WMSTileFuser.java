@@ -310,7 +310,7 @@ public class WMSTileFuser {
             for (long gridx = startx; gridx <= srcRectangle[2]; gridx++) {
 
                 long[] gridLoc = { gridx, gridy, srcIdx };
-
+                
                 ConveyorTile tile = new ConveyorTile(sb, layer.getName(), gridSubset.getName(), 
                         gridLoc, ImageMime.png, reqModStrs[0], reqModStrs[1], null, null);
                 
@@ -346,7 +346,7 @@ public class WMSTileFuser {
                     }
                 }
                 
-                if(gridx == srcRectangle[3] && canvOfs[2] < 0) {
+                if(gridx == srcRectangle[2] && canvOfs[2] < 0) {
                     // Check whether we only use part of the first tiles (bottom row)
                     // Offset is negative, slice the bottom off the tile
                     tileWidth = tileWidth + canvOfs[2];
@@ -364,7 +364,7 @@ public class WMSTileFuser {
                 }
                 
                 // Render the tile on the big canvas
-                log.debug("drawImage(subtile,"+canvasx+","+canvasy+",null)");                
+                log.debug("drawImage(subtile,"+canvasx+","+canvasy+",null) " + Arrays.toString(gridLoc));                
                 gfx.drawImage(
                         tileImg, 
                         canvasx, 
