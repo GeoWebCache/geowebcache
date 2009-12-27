@@ -307,7 +307,7 @@ public class WMSTileFuser {
             if(gridy == srcRectangle[1] && canvOfs[1] < 0) {
                 // Check whether we only use part of the first tiles (bottom row)
                 // Offset is negative, slice the bottom off the tile
-                tileHeight = -canvOfs[1];
+                tileHeight += canvOfs[1];
             }
                         
             long startx = srcRectangle[0];
