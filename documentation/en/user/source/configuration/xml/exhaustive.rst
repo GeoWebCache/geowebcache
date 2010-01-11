@@ -96,10 +96,10 @@ The example below uses all configuration directives that are currently available
               OGC fashion of assuming one pixel = 0.28mm. The numbers must be uniformly
               increasing. -->
          <scaleDenominators>
-              <double>25000000<double>
-              <double>2500000<double>
-              <double>250000<double>
-              <double>50000<double>
+              <double>25000000</double>
+              <double>2500000</double>
+              <double>250000</double>
+              <double>50000</double>
          </scaleDenominators>
          <!-- OPTIONAL (CHOICE) If quartering is good enough, but you wish to limit the number of
               zoom levels, you can do so by defining the number of levels -->
@@ -123,7 +123,7 @@ The example below uses all configuration directives that are currently available
            <string>High Resolution</string>
          </scaleNames>
          <!-- OPTIONAL Specify the tile height, in pixels -->
-         <tileHeight>256</tileWidth>
+         <tileHeight>256</tileHeight>
          <!-- OPTIONAL Specify the tile width, in pixels -->
          <tileWidth>256</tileWidth>
        </gridSet>
