@@ -56,9 +56,9 @@ public class SeedTask extends GWCTask {
         this.reseed = reseed;
         
         if(reseed) {
-            super.type = GWCTask.TYPE_RESEED;
+            super.type = GWCTask.TYPE.RESEED;
         } else {
-            super.type = GWCTask.TYPE_SEED;
+            super.type = GWCTask.TYPE.SEED;
         }
         super.layerName = tl.getName();
     }
@@ -121,7 +121,7 @@ public class SeedTask extends GWCTask {
 	}
         
         int count = 0;
-        boolean tryCache = !reseed;
+        final boolean tryCache = !reseed;
 
         for (int level = zoomStart; level <= zoomStop && this.terminate == false; level++) {
             long[] levelGrid = coveredGridLevels[level];

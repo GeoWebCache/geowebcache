@@ -23,11 +23,9 @@ import org.geowebcache.GeoWebCacheException;
  */
 public abstract class GWCTask {
     
-    public final static int TYPE_SEED = 0;
-    
-    public final static int TYPE_RESEED = 1;
-    
-    public final static int TYPE_TRUNCATE = 2;
+    public static enum TYPE {
+        SEED, RESEED, TRUNCATE, UNSET;
+    };
     
     protected int threadCount = 1;
     
@@ -35,7 +33,7 @@ public abstract class GWCTask {
     
     long taskId = -1;
     
-    protected int type = -1;
+    protected TYPE type = TYPE.UNSET;
     
     protected String layerName = null;
     
@@ -105,20 +103,7 @@ public abstract class GWCTask {
         this.terminate = true;
     }
     
-    public boolean isType(int otherType) {
-        return (this.type == otherType);
-    }
-    
-    public String getType() {
-        switch(type) {
-        case TYPE_SEED:
-            return "Seed";
-        case TYPE_RESEED:
-            return "Reseed";
-        case TYPE_TRUNCATE:
-            return "Truncate";
-        default:
-            return "Not set";
-        }
+    public TYPE getType() {
+        return type;
     }
 }

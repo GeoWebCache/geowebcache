@@ -49,7 +49,7 @@ public class TruncateTask extends GWCTask {
         this.req = req;
         this.tl = tl;
         
-        super.type = GWCTask.TYPE_TRUNCATE;
+        super.type = GWCTask.TYPE.TRUNCATE;
         super.layerName = tl.getName();
     }
     
