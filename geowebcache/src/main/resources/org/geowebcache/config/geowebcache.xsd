@@ -227,7 +227,10 @@
      <xs:element name="expireCacheList" type="gwc:expireList" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
         A list of expiration rules, so that cache expiration can be controlled 
-        per layer per zoom level
+        per layer per zoom level. Special expiration values are -1 to disable 
+        caching and -2 to never expire. 
+        
+        This list must start with minZoom="0" and be monotonically increasing.
        </xs:documentation></xs:annotation>
      </xs:element>
      <xs:element name="expireClients" type="xs:integer" minOccurs="0">
@@ -237,6 +240,8 @@
          headers. By default the expiration header from the WMS backend is used. If it is not 
          set or not available (no request has been forwarded to backend since startup) 
          then the value is set to 3600 seconds.
+
+        This list must start with minZoom="0" and be monotonically increasing.
        </xs:documentation></xs:annotation>
      </xs:element>
      <xs:element name="expireClientsList" type="gwc:expireList" minOccurs="0">

@@ -222,7 +222,15 @@ The example below uses all configuration directives that are currently available
          <vendorParameters></vendorParameters>
          <!-- OPTIONAL The number of seconds a tile remains valid on the
               server. Subsequent requests will result in a new tile being fetched.
-              The default is to cache forever. -->
+              The default is to cache forever. 
+
+              Your list should always start with minZoom="0" and be 
+              monotonically increasing. 
+          
+              Special values: 
+              -1 never cache
+              -2 never expire
+         -->
          <expireCacheList>
            <expirationRule minZoom="0"  expiration="14400" />
            <expirationRule minZoom="10" expiration="7200" />
@@ -230,7 +238,10 @@ The example below uses all configuration directives that are currently available
          <!-- OPTIONAL The number of seconds that a client should cache
               a tile it has received from GWC. The default is to use the same
               expiration time as the WMS server provided. If this value is 
-              not available, 2 hours is used. -->
+              not available, 2 hours is used. 
+
+              See expireCacheList
+         -->
          <expireClientsList>
            <expirationRule minZoom="0" expiration="7200" />
            <expirationRule minZoom="10" expiration="600" />
