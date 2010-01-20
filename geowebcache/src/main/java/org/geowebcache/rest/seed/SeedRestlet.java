@@ -181,7 +181,7 @@ public class SeedRestlet extends GWCRestlet {
             }
         }
         
-        int threadCount;
+        final int threadCount;
         if(null == sr.getThreadCount() 
                 || sr.getThreadCount() < 1 
                 || type.equalsIgnoreCase("truncate")) {
@@ -195,14 +195,9 @@ public class SeedRestlet extends GWCRestlet {
             }
         }
         
-        if(threadCount > 1) {
-            for(int i=0; i<threadCount; i++) {
-                GWCTask task = createTask(type,sr,tl);
-                task.setThreadInfo(threadCount, i);
-                threadPoolExec.submit(new MTSeeder(task));
-            }
-        } else {
+        for(int i=0; i<threadCount; i++) {
             GWCTask task = createTask(type,sr,tl);
+            task.setThreadInfo(threadCount, i);
             threadPoolExec.submit(new MTSeeder(task));
         }
     }
