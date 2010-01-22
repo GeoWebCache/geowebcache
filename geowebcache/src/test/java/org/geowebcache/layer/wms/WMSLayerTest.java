@@ -59,8 +59,8 @@ public class WMSLayerTest extends TestCase {
 
     private final GridSetBroker gridSetBroker = new GridSetBroker(false, false);
 
-    public void testSeed() throws Exception {
-        WMSLayer layer = createWMSLayer();
+    public void testSeedMetaTiled() throws Exception {
+        WMSLayer layer = createWMSLayer("image/png");
 
         WMSSourceHelper mockSourceHelper = EasyMock.createMock(WMSSourceHelper.class);
         byte[] returnBytes = createFakeSourceImage(layer);
@@ -116,10 +116,10 @@ public class WMSLayerTest extends TestCase {
         return out.toByteArray();
     }
 
-    private WMSLayer createWMSLayer() {
+    private WMSLayer createWMSLayer(final String format) {
 
         String[] urls = { "http://localhost:38080/wms" };
-        List<String> formatList = Collections.singletonList("image/png");
+        List<String> formatList = Collections.singletonList(format);
 
         Hashtable<String, GridSubset> grids = new Hashtable<String, GridSubset>();
 
