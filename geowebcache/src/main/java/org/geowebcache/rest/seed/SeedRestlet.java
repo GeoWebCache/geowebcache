@@ -32,6 +32,7 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.rest.RestletException;
+import org.geowebcache.rest.GWCTask.TYPE;
 import org.geowebcache.storage.StorageBroker;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -167,24 +168,17 @@ public class SeedRestlet extends GWCRestlet {
     
     void dispatchTasks(SeedRequest sr, TileLayer tl, 
             ThreadPoolExecutor threadPoolExec) throws RestletException {
-        String type;
-        if(sr.getType() == null || sr.getType().length() == 0) {
-           type = "seed";
+        TYPE type;
+        if(sr.getType() == null) {
+           type = GWCTask.TYPE.SEED;
         } else {
             type = sr.getType();
-            if( type.equalsIgnoreCase("seed")
-                    || type.equalsIgnoreCase("reseed") 
-                    || type.equalsIgnoreCase("truncate")) {
-            } else {
-                throw new RestletException("Unknown request type " + sr.getType(), 
-                        Status.CLIENT_ERROR_BAD_REQUEST);
-            }
         }
         
         final int threadCount;
         if(null == sr.getThreadCount() 
                 || sr.getThreadCount() < 1 
-                || type.equalsIgnoreCase("truncate")) {
+                || type == GWCTask.TYPE.TRUNCATE) {
             threadCount = 1;
         } else {
             threadCount = sr.getThreadCount();
@@ -196,24 +190,24 @@ public class SeedRestlet extends GWCRestlet {
         }
         
         for(int i=0; i<threadCount; i++) {
-            GWCTask task = createTask(type,sr,tl);
+            GWCTask task = createTask(type, sr, tl);
             task.setThreadInfo(threadCount, i);
             threadPoolExec.submit(new MTSeeder(task));
         }
     }
     
-    private GWCTask createTask(String type, SeedRequest rq, TileLayer tl) {
-        if(type.equalsIgnoreCase("seed")) {
-            return new SeedTask(storageBroker,rq,tl,false);
-        }
-        if(type.equalsIgnoreCase("reseed")) {
-            return new SeedTask(storageBroker,rq,tl,true);
-        }
-        if(type.equalsIgnoreCase("truncate")) {
+    private GWCTask createTask(TYPE type, SeedRequest rq, TileLayer tl) throws RestletException {
+        switch (type) {
+        case SEED:
+            return new SeedTask(storageBroker, rq, tl, false);
+        case RESEED:
+            return new SeedTask(storageBroker, rq, tl, true);
+        case TRUNCATE:
             return new TruncateTask(storageBroker, rq, tl);
+        default:
+            throw new RestletException("Unknown request type " + type,
+                    Status.CLIENT_ERROR_BAD_REQUEST);
         }
-        
-        return null;
     }
     
     /**

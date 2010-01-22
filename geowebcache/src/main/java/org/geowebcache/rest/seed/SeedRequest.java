@@ -19,6 +19,8 @@ package org.geowebcache.rest.seed;
 
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.SRS;
+import org.geowebcache.rest.GWCTask;
+import org.geowebcache.rest.GWCTask.TYPE;
 
 public class SeedRequest {
     private String name = null;
@@ -37,7 +39,7 @@ public class SeedRequest {
 
     private String format = null;
     
-    private String type = null;
+    private TYPE type = null;
     
     private String parameters = null;
     
@@ -61,7 +63,7 @@ public class SeedRequest {
      */
     protected SeedRequest(String name, BoundingBox bounds, 
             String gridSetId, int threadCount, int zoomStart, 
-            int zoomStop, String format, String type, String parameters) {
+            int zoomStop, String format, GWCTask.TYPE type, String parameters) {
         this.name = name;
         this.bounds = bounds;
         this.gridSetId = gridSetId;
@@ -149,9 +151,9 @@ public class SeedRequest {
      * <li>truncate - removes tiles</li>
      * </ul>
      * 
-     * @return String representing the type of seed
+     * @return type of seed
      */
-    public String getType() {
+    public TYPE getType() {
         return type;
     }
     

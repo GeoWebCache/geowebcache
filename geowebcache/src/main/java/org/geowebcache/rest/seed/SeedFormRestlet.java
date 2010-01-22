@@ -33,6 +33,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.rest.RestletException;
+import org.geowebcache.rest.GWCTask.TYPE;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
 import org.restlet.data.Form;
@@ -472,7 +473,7 @@ public class SeedFormRestlet extends GWCRestlet {
 
         String format = form.getFirst("format").getValue();
 
-        String type = form.getFirst("type").getValue();
+        TYPE type = GWCTask.TYPE.valueOf(form.getFirst("type").getValue());
 
         SeedRequest sr = new SeedRequest(tl.getName(), bounds, gridSetId,
                 threadCount, zoomStart, zoomStop, format, type, null);
@@ -480,11 +481,7 @@ public class SeedFormRestlet extends GWCRestlet {
         seedRestlet.dispatchTasks(sr, tl, threadPool);
 
         // Give the thread executor a chance to run
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            // Ok, no worries
-        }
+        Thread.yield();
 
         resp.setEntity(this.makeResponsePage(tl), MediaType.TEXT_HTML);
     }
