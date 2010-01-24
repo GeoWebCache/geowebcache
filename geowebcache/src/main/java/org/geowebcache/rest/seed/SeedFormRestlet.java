@@ -473,7 +473,7 @@ public class SeedFormRestlet extends GWCRestlet {
 
         String format = form.getFirst("format").getValue();
 
-        TYPE type = GWCTask.TYPE.valueOf(form.getFirst("type").getValue());
+        TYPE type = GWCTask.TYPE.valueOf(form.getFirst("type").getValue().toUpperCase());
 
         SeedRequest sr = new SeedRequest(tl.getName(), bounds, gridSetId,
                 threadCount, zoomStart, zoomStop, format, type, null);
@@ -481,7 +481,11 @@ public class SeedFormRestlet extends GWCRestlet {
         seedRestlet.dispatchTasks(sr, tl, threadPool);
 
         // Give the thread executor a chance to run
-        Thread.yield();
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            // Ok, no worries
+        }
 
         resp.setEntity(this.makeResponsePage(tl), MediaType.TEXT_HTML);
     }
