@@ -392,6 +392,10 @@ public class WMSLayer extends TileLayer {
         if (mime == null) {
             mime = this.formats.get(0);
         }
+        
+        if(! formats.contains(mime)) {
+            throw new GeoWebCacheException(mime.getFormat() + " is not a supported format for " + name);
+        }
 
         String tileGridSetId = tile.getGridSetId();
 
@@ -1179,6 +1183,8 @@ public class WMSLayer extends TileLayer {
     public ConveyorTile getNoncachedTile(ConveyorTile tile)
             throws GeoWebCacheException {
 
+        // Should we do mime type checks?
+        
         byte[] data = sourceHelper.makeRequest(tile);        
         tile.setContent(data);
 
