@@ -62,6 +62,11 @@ public class StorageBroker {
         if(metaStoreEnabled) {
             return metaStore.delete(blobStore, trObj);
         } else {
+            if(trObj instanceof DiscontinuousTileRange) {
+                throw new StorageException(
+                        "DiscontinuousTileRange currently requries a metastore."
+                        );
+            }
             return blobStore.delete(trObj);
         }
     }
