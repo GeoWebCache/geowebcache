@@ -22,6 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 
 import junit.framework.TestCase;
 
@@ -204,6 +205,79 @@ public class H2Test extends TestCase {
         
         for(int i=0; i<ITERATIONS; i++) {
             doBasicTest("Single threaded, iteration " + i);
+        }
+    }
+    
+    public void testResultSetPersistence() throws Exception {
+        if(! RUN_H2_TESTS)
+            return;
+
+        System.out.println("\n\n** Testing result set persistence:");
+        doSetup();
+
+        String query = "SELECT TILE_ID,BLOB_SIZE,CREATED FROM TILES WHERE X > ? AND X < ?";
+
+        Connection conn = getConnection();
+
+        PreparedStatement prep = conn.prepareStatement(query);
+        prep.setLong(1, 200L);
+        prep.setLong(2, 800L);
+
+        ResultSet rs = null;
+
+        long[] deletedTiles = new long[50];
+        
+        try {
+            rs = prep.executeQuery();
+
+            int idx = 0;
+            while (rs.next()) {
+                long id = rs.getLong(1);
+                //System.out.println(id);
+                if (idx < 50) {
+                    deletedTiles[idx] = id;
+                    idx++;
+                } else if (idx == 50) {
+                    StringBuffer sb = new StringBuffer();
+                    sb.append("DELETE FROM TILES WHERE TILE_ID IN (");
+                    sb.append(deletedTiles[0]);
+                    for (int i = 1; i < deletedTiles.length; i++) {
+                        sb.append(",");
+                        sb.append(deletedTiles[i]);
+                    }
+                    sb.append(")");
+
+                    PreparedStatement prepDel = conn.prepareStatement(sb.toString());
+                    prepDel.execute();
+                    System.out.println("Deleted " + Arrays.toString(deletedTiles));
+                    idx++;
+                }
+            }
+        } finally {
+            if (rs != null)
+                rs.close();
+
+            if (prep != null)
+                prep.close();
+        }
+        
+        query = "SELECT TILE_ID FROM TILES WHERE TILE_ID = ?";
+
+        conn = getConnection();
+
+        prep = conn.prepareStatement(query);
+        prep.setLong(1, deletedTiles[deletedTiles.length / 2]);
+
+        rs = null;
+        try {
+            rs = prep.executeQuery();
+            if(rs.next()) {
+                throw new Exception("Row for tile id " 
+                        + deletedTiles[deletedTiles.length / 2] 
+                        + " should have been deleted.");
+            }
+        } finally {
+            rs.close();
         }
     }
     
