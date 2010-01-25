@@ -22,14 +22,14 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 import org.geowebcache.storage.StorageException;
-import org.geowebcache.storage.TileRangeObject;
+import org.geowebcache.storage.TileRange;
 
 public class FilePathFilter implements FilenameFilter {
     String gridSetPrefix = null;
     String mimeExtension = null;
-    TileRangeObject tr;
+    TileRange tr;
     
-    public FilePathFilter(TileRangeObject trObj) throws StorageException {
+    public FilePathFilter(TileRange trObj) throws StorageException {
         this.tr = trObj;
         
         if(tr.gridSetId == null) {

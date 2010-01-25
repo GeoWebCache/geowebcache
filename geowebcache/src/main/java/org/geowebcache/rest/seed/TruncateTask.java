@@ -31,7 +31,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
-import org.geowebcache.storage.TileRangeObject;
+import org.geowebcache.storage.TileRange;
 
 public class TruncateTask extends GWCTask {
     private static Log log = LogFactory.getLog(TruncateTask.class);
@@ -86,7 +86,7 @@ public class TruncateTask extends GWCTask {
         
         int zoomStop = Math.min(req.getZoomStop(), rangeBounds.length - 1);
         
-        TileRangeObject trObj = new TileRangeObject(
+        TileRange trObj = new TileRange (
                 layerName, 
                 req.getGridSetId(), 
                 zoomStart,

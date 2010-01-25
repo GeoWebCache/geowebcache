@@ -32,7 +32,7 @@ import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
-import org.geowebcache.storage.TileRangeObject;
+import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.WFSObject;
 import org.geowebcache.util.ServletUtils;
 
@@ -155,7 +155,7 @@ public class FileBlobStore implements BlobStore {
         return true;
     }
     
-    public boolean delete(TileRangeObject trObj) throws StorageException {
+    public boolean delete(TileRange trObj) throws StorageException {
         int count = 0;
 
         String prefix = path + File.separator 

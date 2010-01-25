@@ -25,15 +25,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
+import org.geowebcache.storage.DiscontinuousTileRange;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.StorageObject;
 import org.geowebcache.storage.TileObject;
-import org.geowebcache.storage.TileRangeObject;
+import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.WFSObject;
 
 /**
@@ -884,22 +886,34 @@ class JDBCMBWrapper {
         
     }
 
-    public boolean deleteRange(BlobStore blobStore, TileRangeObject trObj, int zoomLevel,
+    public boolean deleteRange(BlobStore blobStore, TileRange trObj, int zoomLevel,
             long layerId, long formatId, long parametersId, long gridSetIdId) {
         
-        long[] bounds = trObj.rangeBounds[zoomLevel]; 
-      
+        DiscontinuousTileRange dtrObj = null;
+        long[] deletedTiles = null;
+        
+        if(trObj instanceof DiscontinuousTileRange) {
+            dtrObj = (DiscontinuousTileRange) trObj;
+            deletedTiles = new long[100];
+        }
+        
+        long[] bounds = trObj.rangeBounds[zoomLevel];
+        
         ResultSet rs = null;
         try {
             rs = getTileSet(layerId, formatId, parametersId, zoomLevel, bounds, gridSetIdId);
+            int deletedIdx = 0;
             
             while(rs.next()) {
                 // TILE_ID, X, Y, Z
-                //long tileId = rs.getLong(0);
                 long[] xyz = new long[3];
                 xyz[0] = rs.getLong(2);
                 xyz[1] = rs.getLong(3);
                 xyz[2] = rs.getLong(4);
+                
+                if(dtrObj != null && ! dtrObj.contains(xyz)) {
+                    continue;
+                }
                 
                 //System.out.println("x: " + xyz[0] + " y: " + xyz[1] + " z: " + xyz[2]);
                 
@@ -917,11 +931,24 @@ class JDBCMBWrapper {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                
+                if(deletedTiles != null) {
+                    deletedTiles[deletedIdx] = rs.getLong(0);
+                    deletedIdx++;
+                    
+                    if(deletedIdx == deletedTiles.length) {
+                        deleteTileSet(deletedTiles, deletedIdx);
+                        deletedIdx = 0;
+                    }
+                }
             }
             
             // Now remove the tiles from the database
-            deleteRange(layerId, formatId, parametersId, zoomLevel, bounds, gridSetIdId);
-            
+            if(deletedTiles != null) { 
+                deleteTileSet(deletedTiles, deletedIdx);
+            } else {
+                deleteRange(layerId, formatId, parametersId, zoomLevel, bounds, gridSetIdId);
+            }
         } catch (SQLException e) {
             log.error("deleteRange failed: " + e.getMessage());
             
@@ -936,8 +963,49 @@ class JDBCMBWrapper {
         
         return true;   
     }
+    
+    /**
+     * Deletes a tile 
+     * 
+     * @param tileIds
+     * @param stopIdx
+     */
+    private void deleteTileSet(long[] tileIds, int stopIdx) {
+        if(stopIdx == 0) {
+            return;
+        }
+        
+        StringBuffer sb = new StringBuffer();
+        sb.append("DELETE FROM TILES WHERE TILE_ID IN ("); 
+        sb.append(tileIds[0]);
+        for (int i = 1; i < stopIdx; i++) {
+            sb.append(",");
+            sb.append(tileIds[i]);
+        }
+        sb.append(")");
 
-    public void expireRange(TileRangeObject trObj, int zoomLevel, long layerId,
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            PreparedStatement prepDel = conn.prepareStatement(sb.toString());
+            prepDel.execute();
+            
+        } catch (SQLException se) {
+            log.error("Error deleting tile set: " + se.getMessage());
+        } finally {
+            try {
+                if(conn != null) {
+                    conn.close();
+                }
+            } catch (SQLException se) {
+                log.error("Error closing connection: " + se.getMessage());
+            }
+        }
+
+        log.debug("Deleted " + Arrays.toString(tileIds));
+    }
+
+    public void expireRange(TileRange trObj, int zoomLevel, long layerId,
             long formatId, long parametersId, long gridSetIdId) throws SQLException {
         
         long[] bounds = trObj.rangeBounds[zoomLevel];

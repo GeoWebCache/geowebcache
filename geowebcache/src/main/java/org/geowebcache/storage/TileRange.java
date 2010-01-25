@@ -19,23 +19,23 @@ package org.geowebcache.storage;
 
 import org.geowebcache.mime.MimeType;
 
-public class TileRangeObject {
-    public String layerName;
+public class TileRange {
+    final public String layerName;
     
-    public String gridSetId;
+    final public String gridSetId;
     
-    public int zoomStart;
+    final public int zoomStart;
     
-    public int zoomStop;
+    final public int zoomStop;
     
     // {zoom}{minx,miny,maxx,maxy}
-    public long[][] rangeBounds;
+    final public long[][] rangeBounds;
     
-    public MimeType mimeType;
+    final public MimeType mimeType;
     
-    public String parameters;
+    final public String parameters;
     
-    public TileRangeObject(String layerName, String gridSetId, int zoomStart, 
+    public TileRange(String layerName, String gridSetId, int zoomStart, 
             int zoomStop, long[][] rangeBounds, MimeType mimeType, String parameters) {
         this.layerName = layerName;
         this.gridSetId = gridSetId;
@@ -44,5 +44,20 @@ public class TileRangeObject {
         this.zoomStop = zoomStop;
         this.mimeType = mimeType;
         this.parameters = parameters;
+    }
+    
+    public boolean contains(long[] idx) {
+        if(idx[2] >= zoomStart && idx[2] <= zoomStop) {
+            
+            long[] rB = rangeBounds[(int) idx[2]];
+            
+            if(rB[0] <= idx[0] 
+                    && rB[2] >= idx[0] 
+                    && rB[1] <= idx[1] 
+                    && rB[3] >= idx[1]) {
+                return true;
+            }
+        }
+        return false;
     }
 }

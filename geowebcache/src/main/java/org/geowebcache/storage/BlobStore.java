@@ -31,7 +31,7 @@ public interface BlobStore {
     public boolean delete(String layerName) throws StorageException;
     public boolean delete(TileObject obj) throws StorageException;
     public boolean delete(WFSObject obj) throws StorageException;
-    public boolean delete(TileRangeObject obj) throws StorageException;
+    public boolean delete(TileRange obj) throws StorageException;
     
     /**
      * Retrieve a blob from storage. Calls setBlob() on passed object.

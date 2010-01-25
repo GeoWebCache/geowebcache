@@ -26,7 +26,7 @@ import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.MetaStore;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
-import org.geowebcache.storage.TileRangeObject;
+import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.WFSObject;
 import org.geowebcache.storage.StorageObject.Status;
 
@@ -136,7 +136,7 @@ public class JDBCMetaBackend implements MetaStore {
         return false;
     }
     
-    public boolean delete(BlobStore blobStore, TileRangeObject trObj)
+    public boolean delete(BlobStore blobStore, TileRange trObj)
     throws StorageException {
         long layerId = idCache.getLayerId(trObj.layerName);
         long formatId = idCache.getFormatId(trObj.mimeType.getFormat());
@@ -162,7 +162,9 @@ public class JDBCMetaBackend implements MetaStore {
         return true;
     }
     
-    public boolean expire(TileRangeObject trObj) throws StorageException {
+
+    
+    public boolean expire(TileRange trObj) throws StorageException {
         long layerId = idCache.getLayerId(trObj.layerName);
         long formatId = idCache.getFormatId(trObj.mimeType.getFormat());
         long parametersId;

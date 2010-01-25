@@ -178,7 +178,7 @@ public class BlobStoreTest extends TestCase {
         long[] range = {x,y,x + tos.length - 3,y};
         rangeBounds[zoomLevel] = range;
         
-        TileRangeObject trObj = new TileRangeObject(layerName, srs.toString(), zoomStart, zoomStop, rangeBounds, mime, parameters);
+        TileRange trObj = new TileRange(layerName, srs.toString(), zoomStart, zoomStop, rangeBounds, mime, parameters);
         
         fbs.delete(trObj);
         
