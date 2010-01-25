@@ -62,6 +62,7 @@ import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.grid.XMLGridSubset;
 import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
@@ -352,6 +353,7 @@ public class XMLConfiguration implements Configuration {
         xs.useAttributeFor(ExpirationRule.class, "minZoom");
         xs.useAttributeFor(ExpirationRule.class, "expiration");
         
+        xs.alias("geoRssFeed", GeoRSSFeedDefinition.class);
         return xs;
     }
 

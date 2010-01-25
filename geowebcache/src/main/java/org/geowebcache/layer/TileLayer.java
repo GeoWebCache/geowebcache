@@ -39,6 +39,7 @@ import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.grid.XMLGridSubset;
 import org.geowebcache.layer.meta.LayerMetaInformation;
+import org.geowebcache.layer.updatesource.UpdateSourceDefinition;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeException;
@@ -61,6 +62,8 @@ public abstract class TileLayer {
     protected Hashtable<SRS,XMLOldGrid> grids;
     
     protected List<RequestFilter> requestFilters;
+    
+    protected List<UpdateSourceDefinition> updateSources;
     
     protected transient List<MimeType> formats;
     
@@ -150,6 +153,10 @@ public abstract class TileLayer {
         }
 
         return null;
+    }
+    
+    public List<UpdateSourceDefinition> getUpdateSources() {
+        return this.updateSources;
     }
     
     /**
@@ -262,7 +269,6 @@ public abstract class TileLayer {
         this.formatModifiers = formatModifiers;       
     }
     
-
     /**
      * 
      * @return the styles configured for the layer, may be null

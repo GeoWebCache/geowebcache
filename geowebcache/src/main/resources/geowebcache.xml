@@ -75,6 +75,13 @@
      <wmsStyles>onebit</wmsStyles>
      </wmsRasterFilter>
     </requestFilters>
+    <updateSources>
+      <geoRssFeed>
+        <feedUrl>http://someserver.com/feed?layers=test</feedUrl>
+        <gridSetId>EPSG:4326</gridSetId>
+        <pollInterval>300</pollInterval>
+      </geoRssFeed>
+    </updateSources>
     <wmsUrl>
       <string>http://atlas.openplans.org:8080/geoserver/wms</string>
     </wmsUrl>
