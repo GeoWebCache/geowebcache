@@ -26,14 +26,21 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.grid.BoundingBox;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.mime.MimeException;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.rest.GWCTask.TYPE;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileRange;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.restlet.data.MediaType;
@@ -55,6 +62,8 @@ import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 
 
 public class SeedRestlet extends GWCRestlet {
+    private static Log log = LogFactory.getLog(SeedFormRestlet.class);
+    
     SeederThreadPoolExecutor threadPool;
     
     TileLayerDispatcher layerDispatcher;
@@ -136,8 +145,12 @@ public class SeedRestlet extends GWCRestlet {
         
         TileLayer tl = findTileLayer(layerName, layerDispatcher);
         
-        dispatchTasks(sr, tl, threadPool);
+        TileRange tr = createTileRange(sr, tl);
         
+        GWCTask[] tasks = createTasks(tr, tl, sr.getType(), 
+                sr.getThreadCount(), sr.getFilterUpdate());
+        
+        dispatchTasks(tasks);
     }
 
     /**
@@ -166,44 +179,97 @@ public class SeedRestlet extends GWCRestlet {
         return writer.toString();
     }
     
-    void dispatchTasks(SeedRequest sr, TileLayer tl, 
-            ThreadPoolExecutor threadPoolExec) throws RestletException {
-        TYPE type;
-        if(sr.getType() == null) {
-           type = GWCTask.TYPE.SEED;
-        } else {
-            type = sr.getType();
+    public GWCTask[] createTasks(TileRange tr, TileLayer tl, GWCTask.TYPE type, 
+            int threadCount, boolean filterUpdate) throws RestletException {
+        
+        if(type == GWCTask.TYPE.TRUNCATE || threadCount < 1) {
+            log.debug("Forcing thread count to 1");
+            threadCount = 1;
         }
         
-        final int threadCount;
-        if(null == sr.getThreadCount() 
-                || sr.getThreadCount() < 1 
-                || type == GWCTask.TYPE.TRUNCATE) {
-            threadCount = 1;
-        } else {
-            threadCount = sr.getThreadCount();
-            if(threadCount > threadPoolExec.getMaximumPoolSize()) {
-                throw new RestletException("Asked to use " + threadCount + " threads," 
-                        +" but maximum is " + threadPoolExec.getMaximumPoolSize(), 
-                        Status.SERVER_ERROR_INTERNAL);
-            }
+        if(threadCount > threadPool.getMaximumPoolSize()) {
+            throw new RestletException("Asked to use " + threadCount + " threads," 
+                    +" but maximum is " + threadPool.getMaximumPoolSize(), 
+                    Status.SERVER_ERROR_INTERNAL);
         }
+        
+        TileRangeIterator trIter = 
+            new TileRangeIterator(tr, tl.getMetaTilingFactors());
+        
+        GWCTask[] tasks = new GWCTask[threadCount];
         
         for(int i=0; i<threadCount; i++) {
-            GWCTask task = createTask(type, sr, tl);
-            task.setThreadInfo(threadCount, i);
-            threadPoolExec.submit(new MTSeeder(task));
+            tasks[i] = createTask(type, trIter, tl, filterUpdate);
+            tasks[i].setThreadInfo(threadCount, i);
+        }
+        
+        return tasks;
+    }
+    
+    void dispatchTasks(GWCTask[] tasks) throws RestletException {
+        for(int i=0; i<tasks.length; i++) {
+            threadPool.submit(new MTSeeder(tasks[i]));
         }
     }
     
-    private GWCTask createTask(TYPE type, SeedRequest rq, TileLayer tl) throws RestletException {
+    protected static TileRange createTileRange(SeedRequest req, TileLayer tl) {
+        int zoomStart = req.getZoomStart().intValue();
+        int zoomStop = req.getZoomStop().intValue();
+        
+        MimeType mimeType = null;
+        String format = req.getMimeFormat();
+        if (format == null) {
+            mimeType = tl.getMimeTypes().get(0);
+        } else {
+            try {
+                mimeType = MimeType.createFromFormat(format);
+            } catch (MimeException e4) {
+                e4.printStackTrace();
+            }
+        }
+        
+        String gridSetId = req.getGridSetId();
+        
+        if (gridSetId == null) {
+            gridSetId = tl.getGridSubsetForSRS(req.getSRS()).getName();
+        }
+        if(gridSetId == null) {
+            gridSetId = tl.getGridSubsets().entrySet().iterator().next().getKey();
+        }
+        
+        GridSubset gridSubset = tl.getGridSubset(gridSetId);
+
+        long[][] coveredGridLevels;
+        
+        BoundingBox bounds = req.getBounds();
+        if (bounds == null) {
+            coveredGridLevels = gridSubset.getCoverages();
+        } else {
+            coveredGridLevels = gridSubset.getCoverageIntersections(bounds);
+        }
+   
+        int[] metaTilingFactors = tl.getMetaTilingFactors();
+        
+        coveredGridLevels = gridSubset.expandToMetaFactors(coveredGridLevels, metaTilingFactors);
+        
+        // TODO Check the null
+        return new TileRange(
+                tl.getName(), gridSetId, 
+                zoomStart, zoomStop, 
+                coveredGridLevels, mimeType, null);
+    }
+    
+    
+    private GWCTask createTask(TYPE type, TileRangeIterator trIter, 
+            TileLayer tl, boolean doFilterUpdate) throws RestletException {
+       
         switch (type) {
         case SEED:
-            return new SeedTask(storageBroker, rq, tl, false);
+            return new SeedTask(storageBroker, trIter, tl, false, doFilterUpdate);
         case RESEED:
-            return new SeedTask(storageBroker, rq, tl, true);
+            return new SeedTask(storageBroker, trIter, tl, true, doFilterUpdate);
         case TRUNCATE:
-            return new TruncateTask(storageBroker, rq, tl);
+            return new TruncateTask(storageBroker, trIter.getTileRange(), tl, doFilterUpdate);
         default:
             throw new RestletException("Unknown request type " + type,
                     Status.CLIENT_ERROR_BAD_REQUEST);

@@ -18,6 +18,7 @@
 package org.geowebcache.rest.seed;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -26,22 +27,21 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.RequestFilter;
-import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.mime.MimeException;
-import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileRange;
 
 public class SeedTask extends GWCTask {
     private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.SeedTask.class);
 
-    private final SeedRequest req; 
+    private final TileRangeIterator trIter;
     
     private final TileLayer tl;
     
-    private boolean reseed = false; 
+    private boolean reseed; 
+    
+    private boolean doFilterUpdate;
     
     private StorageBroker storageBroker;
     
@@ -49,11 +49,15 @@ public class SeedTask extends GWCTask {
      * Constructs a SeedTask from a SeedRequest
      * @param req - the SeedRequest
      */
-    public SeedTask(StorageBroker sb, SeedRequest req, TileLayer tl, boolean reseed) {
+    public SeedTask(
+            StorageBroker sb, TileRangeIterator trIter, 
+            TileLayer tl, boolean reseed,
+            boolean doFilterUpdate) {
         this.storageBroker = sb;
-        this.req = req;
+        this.trIter = trIter;
         this.tl = tl;
         this.reseed = reseed;
+        this.doFilterUpdate = doFilterUpdate;
         
         if(reseed) {
             super.type = GWCTask.TYPE.RESEED;
@@ -62,143 +66,69 @@ public class SeedTask extends GWCTask {
         }
         super.layerName = tl.getName();
     }
-
+    
     /**
      * Method doAction().
      * this is where all the actual work is being done to seed a tile layer. 
      */
-    public void doAction() throws GeoWebCacheException {        
+    public void doAction() throws GeoWebCacheException {   
         // Lower the priority of the thread
         Thread.currentThread().setPriority((java.lang.Thread.NORM_PRIORITY + java.lang.Thread.MIN_PRIORITY) / 2);
-
+        
         // approximate thread creation time
         long START_TIME = System.currentTimeMillis();
 
         log.info("Thread " + threadOffset + " begins seeding layer : " + tl.getName());
-        int zoomStart = req.getZoomStart().intValue();
-        int zoomStop = req.getZoomStop().intValue();
-        
-        MimeType mimeType = null;
-        String format = req.getMimeFormat();
-        if (format == null) {
-            mimeType = tl.getMimeTypes().get(0);
-        } else {
-            try {
-                mimeType = MimeType.createFromFormat(format);
-            } catch (MimeException e4) {
-                e4.printStackTrace();
-            }
-        }
-        
-        String gridSetId = req.getGridSetId();
-        
-        if (gridSetId == null) {
-            gridSetId = tl.getGridSubsetForSRS(req.getSRS()).getName();
-        }
-        if(gridSetId == null) {
-            gridSetId = tl.getGridSubsets().entrySet().iterator().next().getKey();
-        }
-        
-        GridSubset gridSubset = tl.getGridSubset(gridSetId);
-
-        long[][] coveredGridLevels;
-        
-        BoundingBox bounds = req.getBounds();
-        if (bounds == null) {
-            coveredGridLevels = gridSubset.getCoverages();
-        } else {
-            coveredGridLevels = gridSubset.getCoverageIntersections(bounds);
-        }
-   
-        int[] metaTilingFactors = tl.getMetaTilingFactors();
 
         int arrayIndex = getCurrentThreadArrayIndex();
-        long TOTAL_TILES = -1;
-        super.tilesTotal = -1;
-        TOTAL_TILES = tileCount(coveredGridLevels, zoomStart, zoomStop);
-        if(TOTAL_TILES > 0) {
-            super.tilesTotal = TOTAL_TILES / (long) threadCount;
-	}
         
-        int count = 0;
+        TileRange tr = trIter.getTileRange();
+        
+        // TODO move to TileRange object, or distinguish between thread and task
+        super.tilesTotal = tileCount(tr.rangeBounds, tr.zoomStart, tr.zoomStop);
+        
         final boolean tryCache = !reseed;
-
-        for (int level = zoomStart; level <= zoomStop && this.terminate == false; level++) {
-            long[] levelGrid = coveredGridLevels[level];
+        
+        long[] gridLoc = trIter.nextMetaGridLocation();
+        
+        while(gridLoc != null && this.terminate == false) {
             
-            // Round down to the closes metatile boundary before starting
-            long starty = levelGrid[1] - (levelGrid[1] % metaTilingFactors[1]);
-            for (long gridy = starty; gridy <= levelGrid[3];) {
-            	
-            	// Round down to the closest metatile boundary before starting
-            	long startx = levelGrid[0] - (levelGrid[0] % metaTilingFactors[0]);
-                for (long gridx = startx + (threadOffset * metaTilingFactors[0]); gridx <= levelGrid[2] && this.terminate == false; ) {
-
-                    long[] gridLoc = { gridx, gridy, level };
-
-                    ConveyorTile tile = new ConveyorTile(storageBroker, tl.getName(), gridSetId, gridLoc, mimeType, null, null, null, null);
-                    
-                    // Question is, how resilient should we be ?
-                    try {
-                        tl.seedTile(tile, tryCache);
-                    } catch (IOException ioe) {
-                        log.error("Seed failed at " + tile.toString());
-                        throw new GeoWebCacheException(ioe.getMessage());
-                    } catch (GeoWebCacheException gwce) {
-                        log.error("Seed failed at " + tile.toString());
-                        throw gwce;
-                    }
-
-                    long countX;
-                    if (gridx + metaTilingFactors[0] - 1 > levelGrid[2]) {
-                        countX = (gridx + metaTilingFactors[0] - 1) - levelGrid[2];
-                    } else {
-                        countX = metaTilingFactors[0];
-                    }
-
-                    long countY;
-                    if (gridy + metaTilingFactors[1] - 1 > levelGrid[3]) {
-                        countY = (gridy + metaTilingFactors[1] - 1) - levelGrid[3];
-                    } else {
-                        countY = metaTilingFactors[1];
-                    }
-
-                    count += countX * countY;
-
-                    updateStatusInfo(arrayIndex, tl, count, START_TIME);
-
-                    // Next column
-                    gridx += (metaTilingFactors[0] * threadCount);
-                }
-                // Next row
-                gridy += metaTilingFactors[1];
+            ConveyorTile tile = new ConveyorTile(
+                    storageBroker, tl.getName(), 
+                    tr.gridSetId, gridLoc, tr.mimeType, 
+                    null, null, null, null);
+            
+            // Question is, how resilient should we be ?
+            try {
+                tl.seedTile(tile, tryCache);
+            } catch (IOException ioe) {
+                log.error("Seed failed at " + tile.toString() 
+                        + ",\n exception: " + ioe.getMessage());
+                throw new GeoWebCacheException(ioe.getMessage());
+            } catch (GeoWebCacheException gwce) {
+                log.error("Seed failed at " + tile.toString()
+                        + ",\n exception: " + gwce.getMessage());
+                throw gwce;
             }
-
-            double percCompl = (100.0 * count)
-                    / (double) super.tilesTotal;
-            int intPercCompl = (int) Math.floor(percCompl);
-            int decPercCompl = (int) Math.round((percCompl - intPercCompl) * 100);
-
-            if (intPercCompl < 0) {
-                intPercCompl = 0;
-                decPercCompl = 0;
-            }
-
-            log.info("Thread " + threadOffset + " completed (re)seeding level "
-                    + level + " for layer " + tl.getName() + " (ca. "
-                    + intPercCompl + "." + decPercCompl + "%)");
+            
+            log.info("Thread " + threadOffset + " seeded " + Arrays.toString(gridLoc));
+            
+            long totalTilesCompleted = trIter.getCountRendered() + trIter.getCountRendered();
+            
+            updateStatusInfo(arrayIndex, tl, totalTilesCompleted, START_TIME);
+            
+            gridLoc = trIter.nextMetaGridLocation();
         }
         
         if(this.terminate) {
             log.info("Thread " + threadOffset + " was terminated after " + this.tilesDone + " tiles");
         } else {
-            log.info("Thread " + threadOffset + " completed (re)seeding layer "
-                    + tl.getName() + " after " + super.tilesDone
-                    + " tiles, of an estimated " + super.tilesTotal);
+            log.info("Thread " + threadOffset + " completed (re)seeding layer " 
+                    + tl.getName() + " after " + this.tilesDone + " tiles." );
         }
         
-        if(threadOffset == 0) {
-            runFilterUpdates(gridSetId);
+        if(threadOffset == 0 && doFilterUpdate) {
+            runFilterUpdates(tr.gridSetId);
         }
     }
 
@@ -250,8 +180,8 @@ public class SeedTask extends GWCTask {
      * @param gridBounds
      * @return
      */
-    private void updateStatusInfo(int arrayIndex, TileLayer layer,
-            int tilesCount, long start_time) {
+    private void updateStatusInfo(int arrayIndex, TileLayer layer, 
+            long tilesCount, long start_time) {
         
         //working on tile
         this.tilesDone = tilesCount;
@@ -269,17 +199,15 @@ public class SeedTask extends GWCTask {
      */
     private void runFilterUpdates(String gridSetId) {
         // We will assume that all filters that can be updated should be updated
-        if (req.getFilterUpdate() == null || req.getFilterUpdate()) {
-            List<RequestFilter> reqFilters = tl.getRequestFilters();
-            if (reqFilters != null && !reqFilters.isEmpty()) {
-                Iterator<RequestFilter> iter = reqFilters.iterator();
-                while (iter.hasNext()) {
-                    RequestFilter reqFilter = iter.next();
-                    if (reqFilter.update(tl, gridSetId)) {
-                        log.info("Updated request filter "+ reqFilter.getName());
-                    } else {
-                        log.debug("Request filter " + reqFilter.getName() + " returned false on update.");
-                    }
+        List<RequestFilter> reqFilters = tl.getRequestFilters();
+        if (reqFilters != null && !reqFilters.isEmpty()) {
+            Iterator<RequestFilter> iter = reqFilters.iterator();
+            while (iter.hasNext()) {
+                RequestFilter reqFilter = iter.next();
+                if (reqFilter.update(tl, gridSetId)) {
+                    log.info("Updated request filter " + reqFilter.getName());
+                } else {
+                    log.debug("Request filter " + reqFilter.getName() + " returned false on update.");
                 }
             }
         }

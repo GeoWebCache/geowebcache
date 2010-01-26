@@ -16,7 +16,6 @@
  */
 package org.geowebcache.rest.seed;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,10 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.request.RequestFilter;
-import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
@@ -36,72 +32,38 @@ import org.geowebcache.storage.TileRange;
 public class TruncateTask extends GWCTask {
     private static Log log = LogFactory.getLog(TruncateTask.class);
     
-    private final SeedRequest req;
+    private final TileRange tr;
     
     private final TileLayer tl;
     
+    private final boolean doFilterUpdate;
+    
     private final StorageBroker storageBroker;
-    
-    private final static double[] nullBbox = {0.0,0.0,0.0,0.0};
-    
-    public TruncateTask(StorageBroker sb, SeedRequest req, TileLayer tl) {
+        
+    public TruncateTask(StorageBroker sb, TileRange tr, 
+            TileLayer tl, boolean doFilterUpdate) {
         this.storageBroker = sb;
-        this.req = req;
+        this.tr = tr;
         this.tl = tl;
+        this.doFilterUpdate = doFilterUpdate;
         
         super.type = GWCTask.TYPE.TRUNCATE;
         super.layerName = tl.getName();
     }
     
+
     public void doAction() throws GeoWebCacheException {
-        String gridSetId = req.getGridSetId();
-        GridSubset gridSubset;
-        if(gridSetId == null) {
-            gridSubset = tl.getGridSubsetForSRS(req.getSRS());
-        } else {
-            gridSubset = tl.getGridSubset(gridSetId);
-        }
-         
-        runFilterUpdates();
-        
-        long[][] rangeBounds = null;
-
-        BoundingBox reqBounds = req.getBounds();
-        if (req.getBounds() == null 
-                || Arrays.equals(req.getBounds().coords, nullBbox)) {
-            rangeBounds = gridSubset.getCoverages();
-        } else {
-            rangeBounds = gridSubset.getCoverageIntersections(reqBounds);
-        }
-
-        MimeType mimeType = MimeType.createFromFormat(req.getMimeFormat());
-
-        int[] metaFactors = tl.getMetaTilingFactors();
-
-        if (metaFactors[0] > 1 || metaFactors[1] > 1 && mimeType.supportsTiling()) {
-            rangeBounds = gridSubset.expandToMetaFactors(rangeBounds, metaFactors);
-        }
-        
-        int zoomStart = Math.min(req.getZoomStart(), rangeBounds.length - 1);
-        
-        int zoomStop = Math.min(req.getZoomStop(), rangeBounds.length - 1);
-        
-        TileRange trObj = new TileRange (
-                layerName, 
-                req.getGridSetId(), 
-                zoomStart,
-                zoomStop,
-                rangeBounds, 
-                mimeType, 
-                req.getParameters());
-        
         try {
-            storageBroker.delete(trObj);
+            storageBroker.delete(tr);
         } catch (StorageException e) {
             e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage());
+        }
+        
+        if(doFilterUpdate) {
+            runFilterUpdates();
         }
         
         log.info("Completed truncate request.");
@@ -112,17 +74,16 @@ public class TruncateTask extends GWCTask {
      */
     private void runFilterUpdates() {
         // We will assume that all filters that can be updated should be updated
-        if (req.getFilterUpdate() == null || req.getFilterUpdate()) {
-            List<RequestFilter> reqFilters = tl.getRequestFilters();
-            if (reqFilters != null && !reqFilters.isEmpty()) {
-                Iterator<RequestFilter> iter = reqFilters.iterator();
-                while (iter.hasNext()) {
-                    RequestFilter reqFilter = iter.next();
-                    if (reqFilter.update(tl, req.getGridSetId())) {
-                        log.info("Updated request filter "+ reqFilter.getName());
-                    } else {
-                        log.debug("Request filter " + reqFilter.getName() + " returned false on update.");
-                    }
+        List<RequestFilter> reqFilters = tl.getRequestFilters();
+        if (reqFilters != null && !reqFilters.isEmpty()) {
+            Iterator<RequestFilter> iter = reqFilters.iterator();
+            while (iter.hasNext()) {
+                RequestFilter reqFilter = iter.next();
+                if (reqFilter.update(tl, tr.gridSetId)) {
+                    log.info("Updated request filter " + reqFilter.getName());
+                } else {
+                    log.debug("Request filter " + reqFilter.getName()
+                            + " returned false on update.");
                 }
             }
         }

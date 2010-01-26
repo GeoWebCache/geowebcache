@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-import org.geowebcache.demo.Demo;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
@@ -35,6 +34,7 @@ import org.geowebcache.rest.GWCTask;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.rest.GWCTask.TYPE;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileRange;
 import org.geowebcache.util.ServletUtils;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
@@ -466,8 +466,7 @@ public class SeedFormRestlet extends GWCRestlet {
         
         String gridSetId = form.getFirst("gridSetId").getValue();
 
-        int threadCount = Integer.parseInt(form.getFirst("threadCount")
-                .getValue());
+        int threadCount = Integer.parseInt(form.getFirst("threadCount").getValue());
         int zoomStart = Integer.parseInt(form.getFirst("zoomStart").getValue());
         int zoomStop = Integer.parseInt(form.getFirst("zoomStop").getValue());
 
@@ -477,8 +476,13 @@ public class SeedFormRestlet extends GWCRestlet {
 
         SeedRequest sr = new SeedRequest(tl.getName(), bounds, gridSetId,
                 threadCount, zoomStart, zoomStop, format, type, null);
-
-        seedRestlet.dispatchTasks(sr, tl, threadPool);
+        
+        TileRange tr = SeedRestlet.createTileRange(sr, tl);
+        
+        GWCTask[] tasks = seedRestlet.createTasks(tr, tl, sr.getType(), 
+                sr.getThreadCount(), sr.getFilterUpdate());
+        
+        seedRestlet.dispatchTasks(tasks);
 
         // Give the thread executor a chance to run
         try {

@@ -42,12 +42,14 @@ import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
+import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.layer.wms.WMSMetaTile;
 import org.geowebcache.layer.wms.WMSSourceHelper;
 import org.geowebcache.rest.GWCTask.TYPE;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileObject;
+import org.geowebcache.storage.TileRange;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -103,6 +105,9 @@ public class SeedTaskTest extends TestCase {
 
         final int zoomLevel = 4;
         SeedRequest req = createRequest(tl, TYPE.SEED, zoomLevel, zoomLevel);
+        
+        TileRange tr = SeedRestlet.createTileRange(req, tl);
+        TileRangeIterator trIter = new TileRangeIterator(tr, tl.getMetaTilingFactors());
 
         /*
          * Create a mock storage broker that does nothing
@@ -113,7 +118,7 @@ public class SeedTaskTest extends TestCase {
         replay(mockStorageBroker);
 
         boolean reseed = false;
-        SeedTask seedTask = new SeedTask(mockStorageBroker, req, tl, reseed);
+        SeedTask seedTask = new SeedTask(mockStorageBroker, trIter, tl, reseed, false);
         seedTask.setTaskId(1L);
         seedTask.setThreadInfo(1, 0);
         /*
@@ -172,9 +177,12 @@ public class SeedTaskTest extends TestCase {
         expect(mockStorageBroker.put(capture(storedObjects))).andReturn(true).anyTimes();
         expect(mockStorageBroker.get((TileObject) anyObject())).andReturn(false).anyTimes();
         replay(mockStorageBroker);
+        
+        TileRange tr = SeedRestlet.createTileRange(req, tl);
+        TileRangeIterator trIter = new TileRangeIterator(tr, tl.getMetaTilingFactors());
 
         boolean reseed = false;
-        SeedTask task = new SeedTask(mockStorageBroker, req, tl, reseed);
+        SeedTask task = new SeedTask(mockStorageBroker, trIter, tl, reseed, false);
         task.setTaskId(1L);
         task.setThreadInfo(1, 0);
         /*
