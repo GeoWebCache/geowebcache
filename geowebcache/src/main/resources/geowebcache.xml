@@ -39,7 +39,7 @@
     </gridSubsets>
     <updateSources>
       <geoRssFeed>
-        <feedUrl>http://kepp.net</feedUrl>
+        <feedUrl>http://localhost/testfeed.xml</feedUrl>
         <gridSetId>EPSG:4326</gridSetId>
         <pollInterval>300</pollInterval>
         <mimeFormat>image/png</mimeFormat>
