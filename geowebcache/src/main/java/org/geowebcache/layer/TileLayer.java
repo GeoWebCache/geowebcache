@@ -35,10 +35,10 @@ import org.geowebcache.filter.request.RequestFilterException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
-import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.grid.XMLGridSubset;
+import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.updatesource.UpdateSourceDefinition;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -50,26 +50,26 @@ public abstract class TileLayer {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayer.class);
 
     protected String name;
-    
+
     protected LayerMetaInformation layerMetaInfo;
 
     protected List<String> mimeFormats;
-    
+
     protected List<FormatModifier> formatModifiers;
-    
+
     protected List<XMLGridSubset> gridSubsets;
 
     // 1.1.x compatibility
-    protected Hashtable<SRS,XMLOldGrid> grids;
-    
+    protected Hashtable<SRS, XMLOldGrid> grids;
+
     protected List<RequestFilter> requestFilters;
-    
+
     protected List<UpdateSourceDefinition> updateSources;
-    
+
     protected transient List<MimeType> formats;
-    
-    protected transient Hashtable<String,GridSubset> subSets;
-   
+
+    protected transient Hashtable<String, GridSubset> subSets;
+
     // Styles?
 
     /**
@@ -90,7 +90,7 @@ public abstract class TileLayer {
     public String getName() {
         return this.name;
     }
-    
+
     /**
      * Layer meta information
      * 
@@ -115,7 +115,7 @@ public abstract class TileLayer {
      * 
      * @return
      */
-    public Hashtable<String,GridSubset> getGridSubsets() {
+    public Hashtable<String, GridSubset> getGridSubsets() {
         return this.subSets;
     }
 
@@ -123,7 +123,7 @@ public abstract class TileLayer {
      * Adds another format string to the list of supported formats
      * 
      * @param format
-     * @throws MimeException 
+     * @throws MimeException
      */
     public void addFormat(String format) throws MimeException {
         MimeType mime = MimeType.createFromFormat(format);
@@ -131,8 +131,8 @@ public abstract class TileLayer {
     }
 
     /**
-     * Initializes the layer, creating internal structures for calculating grid
-     * location and so forth.
+     * Initializes the layer, creating internal structures for calculating grid location and so
+     * forth.
      */
     public abstract boolean initialize(GridSetBroker gridSetBroker);
 
@@ -155,7 +155,7 @@ public abstract class TileLayer {
 
         return null;
     }
-    
+
     /**
      * @return possibly empty list of update sources for this layer
      */
@@ -164,11 +164,11 @@ public abstract class TileLayer {
         if (updateSources == null) {
             sources = Collections.emptyList();
         } else {
-            sources = new ArrayList<UpdateSourceDefinition>(updateSources);
+            sources = updateSources;
         }
         return sources;
     }
-    
+
     /**
      * Whether the layer supports the given format string
      * 
@@ -179,21 +179,20 @@ public abstract class TileLayer {
     public boolean supportsFormat(String strFormat) throws GeoWebCacheException {
         if (strFormat == null)
             return true;
-        
+
         for (MimeType mime : formats) {
             if (strFormat.equalsIgnoreCase(mime.getFormat())) {
                 return true;
             }
         }
 
-        throw new GeoWebCacheException("Format " + strFormat
-                + " is not supported by " + this.getName());
+        throw new GeoWebCacheException("Format " + strFormat + " is not supported by "
+                + this.getName());
     }
 
     /**
-     * The normal way of getting a single tile from the layer. Under the hood,
-     * this may result in several tiles being requested and stored before
-     * returning.
+     * The normal way of getting a single tile from the layer. Under the hood, this may result in
+     * several tiles being requested and stored before returning.
      * 
      * @param tileRequest
      * @param servReq
@@ -201,25 +200,23 @@ public abstract class TileLayer {
      * @return
      * @throws GeoWebCacheException
      * @throws IOException
-     * @throws OutsideCoverageException 
+     * @throws OutsideCoverageException
      */
-    public abstract ConveyorTile getTile(ConveyorTile tile) 
-    throws GeoWebCacheException, IOException, OutsideCoverageException;
+    public abstract ConveyorTile getTile(ConveyorTile tile) throws GeoWebCacheException,
+            IOException, OutsideCoverageException;
 
-    
     /**
-     * Makes a non-metatiled request to backend, bypassing
-     * the cache before and after
+     * Makes a non-metatiled request to backend, bypassing the cache before and after
      * 
      * @param tile
-     * @param requestTiled whether to use tiled=true or not
+     * @param requestTiled
+     *            whether to use tiled=true or not
      * @return
      * @throws GeoWebCacheException
      * @throws IOException
      */
-    public abstract ConveyorTile getNoncachedTile(ConveyorTile tile) 
-    throws GeoWebCacheException;
-    
+    public abstract ConveyorTile getNoncachedTile(ConveyorTile tile) throws GeoWebCacheException;
+
     /**
      * 
      * @param tile
@@ -227,14 +224,13 @@ public abstract class TileLayer {
      * @throws GeoWebCacheException
      * @throws IOException
      */
-    public abstract void seedTile(ConveyorTile tile, boolean tryCache) 
-    throws GeoWebCacheException, IOException;
-    
+    public abstract void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException,
+            IOException;
+
     /**
-     * This is a more direct way of requesting a tile without invoking
-     * metatiling, and should not be used in general. The method was exposed to
-     * let the KML service traverse the tree ahead of the client, to avoid
-     * linking to empty tiles.
+     * This is a more direct way of requesting a tile without invoking metatiling, and should not be
+     * used in general. The method was exposed to let the KML service traverse the tree ahead of the
+     * client, to avoid linking to empty tiles.
      * 
      * @param gridLoc
      * @param idx
@@ -253,32 +249,31 @@ public abstract class TileLayer {
     public double[] getResolutions(String gridSetId) throws GeoWebCacheException {
         return subSets.get(gridSetId).getResolutions();
     }
-    
 
     public FormatModifier getFormatModifier(MimeType responseFormat) {
-        if(this.formatModifiers == null || formatModifiers.size() == 0) {
+        if (this.formatModifiers == null || formatModifiers.size() == 0) {
             return null;
         }
-        
+
         Iterator<FormatModifier> iter = formatModifiers.iterator();
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             FormatModifier mod = iter.next();
-            if(mod.getResponseFormat() == responseFormat) {
+            if (mod.getResponseFormat() == responseFormat) {
                 return mod;
             }
         }
-        
+
         return null;
     }
-    
+
     public List<FormatModifier> getFormatModifiers() {
         return formatModifiers;
     }
-    
+
     public void setFormatModifiers(List<FormatModifier> formatModifiers) {
-        this.formatModifiers = formatModifiers;       
+        this.formatModifiers = formatModifiers;
     }
-    
+
     /**
      * 
      * @return the styles configured for the layer, may be null
@@ -291,19 +286,19 @@ public abstract class TileLayer {
      */
     public abstract int[] getMetaTilingFactors();
 
-    
     /**
      * Whether clients may specify cache=false and go straight to source
      */
     public abstract Boolean isCacheBypassAllowed();
+
     public abstract void setCacheBypassAllowed(boolean allowed);
-    
+
     /**
-     * The timeout used when querying the backend server. The same value is used
-     * for both the connection and the data timeout, so in theory the timeout
-     * could be twice this value.
+     * The timeout used when querying the backend server. The same value is used for both the
+     * connection and the data timeout, so in theory the timeout could be twice this value.
      */
     public abstract Integer getBackendTimeout();
+
     public abstract void setBackendTimeout(int seconds);
 
     /**
@@ -326,13 +321,13 @@ public abstract class TileLayer {
 
     /**
      * 
-     * Converts the given bounding box into the closest location on the grid
-     * supported by the reference system.
+     * Converts the given bounding box into the closest location on the grid supported by the
+     * reference system.
      * 
      * @param srsIdx
      * @param bounds
      * @return
-     * @throws GeoWebCacheException 
+     * @throws GeoWebCacheException
      * @throws GeoWebCacheException
      */
     public abstract long[] indexFromBounds(String gridSetId, BoundingBox bounds)
@@ -343,10 +338,10 @@ public abstract class TileLayer {
      * @param srsIdx
      * @param gridLoc
      * @return
-     * @throws GeoWebCacheException 
+     * @throws GeoWebCacheException
      */
-    public abstract BoundingBox boundsFromIndex(String gridSetId, long[] gridLoc) 
-    throws GeoWebCacheException;
+    public abstract BoundingBox boundsFromIndex(String gridSetId, long[] gridLoc)
+            throws GeoWebCacheException;
 
     /**
      * Acquire the global lock for the layer, primarily used for truncating
@@ -372,11 +367,11 @@ public abstract class TileLayer {
     public abstract void putTile(ConveyorTile tile) throws GeoWebCacheException;
 
     public abstract void setExpirationHeader(HttpServletResponse response, int zoomLevel);
-    
+
     /**
-     * Merges the information of the the passed in layer into this layer. 
-     * In cases where both layers have grid definitions for the same SRS the 
-     * definition associated with the layer in the argument prevails. 
+     * Merges the information of the the passed in layer into this layer. In cases where both layers
+     * have grid definitions for the same SRS the definition associated with the layer in the
+     * argument prevails.
      * 
      * @param otherLayer
      */
@@ -392,13 +387,13 @@ public abstract class TileLayer {
                 }
             }
         }
-        
-        if(otherLayer.formatModifiers != null) {
-            if(formatModifiers == null) {
+
+        if (otherLayer.formatModifiers != null) {
+            if (formatModifiers == null) {
                 formatModifiers = otherLayer.formatModifiers;
             } else {
                 Iterator<FormatModifier> iter = otherLayer.formatModifiers.iterator();
-                while(iter.hasNext()) {
+                while (iter.hasNext()) {
                     FormatModifier mod = iter.next();
                     formatModifiers.add(mod);
                 }
@@ -412,24 +407,24 @@ public abstract class TileLayer {
                 this.subSets.put(entry.getKey(), entry.getValue());
             }
         }
-        
-        if(otherLayer.requestFilters != null) {
-            if(requestFilters == null)
+
+        if (otherLayer.requestFilters != null) {
+            if (requestFilters == null)
                 requestFilters = new ArrayList<RequestFilter>();
-            
+
             Iterator<RequestFilter> iter = otherLayer.requestFilters.iterator();
-            
-            while(iter.hasNext()) {
+
+            while (iter.hasNext()) {
                 this.requestFilters.add(iter.next());
             }
         }
-        
-        if(this instanceof WMSLayer) {
+
+        if (this instanceof WMSLayer) {
             WMSLayer thisWMSLayer = (WMSLayer) this;
             thisWMSLayer.mergeWith((WMSLayer) otherLayer);
         }
     }
-    
+
     /**
      * Loops over all the request filters and applies them successively.
      * 
@@ -437,16 +432,16 @@ public abstract class TileLayer {
      * @throws RequestFilterException
      */
     public void applyRequestFilters(ConveyorTile convTile) throws RequestFilterException {
-        if(requestFilters == null)
+        if (requestFilters == null)
             return;
-        
+
         Iterator<RequestFilter> iter = requestFilters.iterator();
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             RequestFilter filter = iter.next();
             filter.apply(convTile);
         }
     }
-    
+
     public List<RequestFilter> getRequestFilters() {
         return requestFilters;
     }
