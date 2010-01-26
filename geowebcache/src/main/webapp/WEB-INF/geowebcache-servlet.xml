@@ -197,7 +197,7 @@
   <bean id="gwcGeoRSSPoller" class="org.geowebcache.georss.GeoRSSPoller">
     <constructor-arg ref="gwcTLDispatcher" />
     <constructor-arg ref="gwcSeedRestlet"/>
-    <constructor-arg value="1" />
+    <constructor-arg value="30" />
   </bean>
 
   <!-- Restlets -->
