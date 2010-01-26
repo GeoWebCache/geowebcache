@@ -22,23 +22,22 @@ import org.geowebcache.storage.TileRange;
 
 public class TileRangeIterator {
     final private TileRange tr;
-    
+
     final private DiscontinuousTileRange dtr;
-    
+
     final private int metaX;
-    
+
     final private int metaY;
-    
+
     private long tilesSkippedCount = 0;
-    
+
     private long tilesRenderedCount = 0;
-    
+
     private long[] lastGridLoc;
-    
+
     /**
-     * Note that the bounds of the tile range must already
-     * be expanded to the meta tile factors for this to 
-     * work.
+     * Note that the bounds of the tile range must already be expanded to the meta tile factors for
+     * this to work.
      * 
      * @param tr
      * @param metaTilingFactors
@@ -47,14 +46,14 @@ public class TileRangeIterator {
         this.tr = tr;
         this.metaX = metaTilingFactors[0];
         this.metaY = metaTilingFactors[1];
-        
-        if(tr instanceof DiscontinuousTileRange) {
+
+        if (tr instanceof DiscontinuousTileRange) {
             dtr = (DiscontinuousTileRange) tr;
         } else {
             dtr = null;
         }
     }
-    
+
     /**
      * Returns the underlying tile range
      * 
@@ -63,13 +62,12 @@ public class TileRangeIterator {
     public TileRange getTileRange() {
         return tr;
     }
-    
+
     /**
      * This loops over all the possible tile locations.
      * 
-     * If the TileRange object provided is a DiscontinuousTileRange
-     * implementation, each location is checked against the filter
-     * of that class.
+     * If the TileRange object provided is a DiscontinuousTileRange implementation, each location is
+     * checked against the filter of that class.
      * 
      * @return
      */
@@ -93,38 +91,41 @@ public class TileRangeIterator {
             y = lastGridLoc[1];
         }
 
-        // Loop over any remaining zoom levels
-        for(; z <= tr.zoomStop; z++) {
-            for(;y < levelBounds[3]; y += metaY ) {
-                for(;x < levelBounds[2]; x += metaX ) {
-                    
-                    long[] gridLoc = {x,y,z};
-                    
-                    int tileCount = tilesForLocation(gridLoc,levelBounds);
-                    
-                    if(checkGridLocation(gridLoc)) {
-                        tilesRenderedCount += tileCount;
-                        lastGridLoc = gridLoc.clone();
-                        return gridLoc;
+        try {
+            // Loop over any remaining zoom levels
+            for (; z <= tr.zoomStop; z++) {
+                for (; y < levelBounds[3]; y += metaY) {
+                    for (; x < levelBounds[2]; x += metaX) {
+
+                        long[] gridLoc = { x, y, z };
+
+                        int tileCount = tilesForLocation(gridLoc, levelBounds);
+
+                        if (checkGridLocation(gridLoc)) {
+                            tilesRenderedCount += tileCount;
+                            lastGridLoc = gridLoc.clone();
+                            return gridLoc;
+                        }
+
+                        tilesSkippedCount += tileCount;
                     }
-                    
-                    tilesSkippedCount += tileCount;
+                    x = levelBounds[0];
                 }
+
+                // Get ready for the next level
+                levelBounds = tr.rangeBounds[z + 1];
                 x = levelBounds[0];
+                y = levelBounds[1];
             }
-            
-            // Get ready for the next level
-            levelBounds = tr.rangeBounds[z + 1];
-            x = levelBounds[0];
-            y = levelBounds[1];
+        } catch (RuntimeException e) {
+            e.printStackTrace();
         }
-        
+
         return null;
     }
-    
+
     /**
-     * Calculates the number of tiles covered by the meta tile
-     * for this grid location.
+     * Calculates the number of tiles covered by the meta tile for this grid location.
      * 
      * @param gridLoc
      * @param levelBounds
@@ -132,51 +133,43 @@ public class TileRangeIterator {
      */
     private int tilesForLocation(long[] gridLoc, long[] levelBounds) {
         return (int) Math.min(metaX, levelBounds[2] - gridLoc[0])
-        * (int) Math.min(metaY, levelBounds[3] - gridLoc[1]);
+                * (int) Math.min(metaY, levelBounds[3] - gridLoc[1]);
     }
-    
-    
+
     /**
-     * Checks whether this grid location, or any on the same
-     * meta tile, should be included according to the 
-     * DiscontinuousTileRange
+     * Checks whether this grid location, or any on the same meta tile, should be included according
+     * to the DiscontinuousTileRange
      * 
      * @param gridLoc
      * @return
      */
     private boolean checkGridLocation(long[] gridLoc) {
-        if(dtr == null) {
+        if (dtr == null) {
             return true;
         } else {
-            for(int i=0; i<this.metaX; i++) {
-                for(int j=0; j<this.metaY; j++) {
-                    long[] subIdx = {
-                            gridLoc[0] + i, 
-                            gridLoc[1] + j, 
-                            gridLoc[2]                                        
-                    };
-                    
-                    if(dtr.contains(subIdx)) {
+            for (int i = 0; i < this.metaX; i++) {
+                for (int j = 0; j < this.metaY; j++) {
+                    long[] subIdx = { gridLoc[0] + i, gridLoc[1] + j, gridLoc[2] };
+
+                    if (dtr.contains(subIdx)) {
                         return true;
                     }
                 }
             }
         }
-        
+
         return false;
     }
-    
+
     /**
-     * The number of tiles this iterator has
-     * skipped so far.
+     * The number of tiles this iterator has skipped so far.
      */
     public synchronized long getCountSkipped() {
         return tilesSkippedCount;
     }
-    
+
     /**
-     * The number of tiles for which this iterator
-     * has returned a grid location.
+     * The number of tiles for which this iterator has returned a grid location.
      */
     public synchronized long getCountRendered() {
         return tilesRenderedCount;

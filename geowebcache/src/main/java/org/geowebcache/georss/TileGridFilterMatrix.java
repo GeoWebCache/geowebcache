@@ -73,7 +73,7 @@ public class TileGridFilterMatrix {
 
         for (int level = 0; level < numLevels; level++) {
             if (level > maxMaskLevel) {
-                byLevelMasks[level] = byLevelMasks[level - 1];
+                byLevelMasks[level] = null;
             } else {
                 final long[] levelBounds = gridSubset.getCoverage(level);
                 final long tilesX = (levelBounds[2] + 1) - levelBounds[0];
@@ -125,7 +125,7 @@ public class TileGridFilterMatrix {
             if (levelBounds == null) {
                 continue;
             }
-            final Raster raster = byLevelMasks[level].getRaster();
+            final Raster raster = getMaskFor(level);
             for (long y = levelBounds[1]; y <= levelBounds[3]; y++) {
                 for (long x = levelBounds[0]; x <= levelBounds[2]; x++) {
                     if (isTileSet(raster, x, y, level)) {
@@ -135,6 +135,11 @@ public class TileGridFilterMatrix {
             }
         }
         return tilesSet;
+    }
+
+    private Raster getMaskFor(final int level) {
+        final int actualLevel = Math.min(level, maxMaskLevel);
+        return byLevelMasks[actualLevel].getRaster();
     }
 
     /**
@@ -282,7 +287,10 @@ public class TileGridFilterMatrix {
         final int numLevels = getNumLevels();
         graphics = new Graphics2D[numLevels];
         for (int level = 0; level < numLevels; level++) {
-            graphics[level] = byLevelMasks[level].createGraphics();
+            BufferedImage bufferedImage = byLevelMasks[level];
+            if (bufferedImage != null) {
+                graphics[level] = bufferedImage.createGraphics();
+            }
         }
     }
 
@@ -329,7 +337,7 @@ public class TileGridFilterMatrix {
     }
 
     private long[] calculateMaskBounds(final int level) {
-        final Raster raster = byLevelMasks[level].getData();
+        final Raster raster = getMaskFor(level);
         return calculateMaskBounds(raster, level);
     }
 
@@ -474,7 +482,7 @@ public class TileGridFilterMatrix {
      * @return
      */
     public boolean isTileSet(final long x, final long y, final int level) {
-        final Raster raster = byLevelMasks[level].getRaster();
+        final Raster raster = getMaskFor(level);
         return isTileSet(raster, x, y, level);
     }
 
@@ -483,8 +491,13 @@ public class TileGridFilterMatrix {
      * 
      * @return
      */
-    BufferedImage[] getByLevelMasks() {
-        return byLevelMasks;
+    public BufferedImage[] getByLevelMasks() {
+        final int numMaskedLevels = Math.min(getNumLevels(), maxMaskLevel);
+        BufferedImage[] maskedLevels = new BufferedImage[numMaskedLevels];
+        for (int level = 0; level < numMaskedLevels; level++) {
+            maskedLevels[level] = byLevelMasks[level];
+        }
+        return maskedLevels;
     }
 
     // TODO: get back to life (and finish testing) if we decide to use this approach for truncation

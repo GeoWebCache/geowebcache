@@ -94,7 +94,7 @@ class GeoRSSPollTask implements Runnable {
 
         final boolean tilesAffected = tileRangeMask.hasTilesSet();
         if (tilesAffected) {
-            logger.info("Launching reseed process " + pollDef + " for " + layer.getName() );
+            logger.info("Launching reseed process " + pollDef + " for " + layer.getName());
         } else {
             logger.info(pollDef + " for " + layer.getName()
                     + " did not affect any tile. No need to reseed.");
@@ -156,7 +156,9 @@ class GeoRSSPollTask implements Runnable {
 
         coveredBounds = gridSub.expandToMetaFactors(coveredBounds, layer.getMetaTilingFactors());
 
-        RasterMask rasterMask = new RasterMask(tileRangeMask.getByLevelMasks(), coveredBounds);
+        BufferedImage[] byLevelMasks = tileRangeMask.getByLevelMasks();
+        
+        RasterMask rasterMask = new RasterMask(byLevelMasks, coveredBounds);
 
         DiscontinuousTileRange dtr = new DiscontinuousTileRange(layer.getName(), gridSetId, gridSub
                 .getZoomStart(), gridSub.getZoomStop(), rasterMask, mime, null);
@@ -172,8 +174,7 @@ class GeoRSSPollTask implements Runnable {
 
         // Then we seed
         final int seedingThreads = pollDef.getSeedingThreads();
-        tasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.SEED, seedingThreads,
-                false);
+        tasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.SEED, seedingThreads, false);
 
         seedRestlet.dispatchTasks(tasks);
     }
