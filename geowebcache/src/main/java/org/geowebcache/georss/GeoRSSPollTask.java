@@ -152,13 +152,14 @@ class GeoRSSPollTask implements Runnable {
                     + "aborting GeoRSS update! Check geowebcache.xml");
         }
 
+        long[][] fullCoverage = gridSub.getCoverages();
         long[][] coveredBounds = tileRangeMask.getCoveredBounds();
 
         coveredBounds = gridSub.expandToMetaFactors(coveredBounds, layer.getMetaTilingFactors());
 
         BufferedImage[] byLevelMasks = tileRangeMask.getByLevelMasks();
         
-        RasterMask rasterMask = new RasterMask(byLevelMasks, coveredBounds);
+        RasterMask rasterMask = new RasterMask(byLevelMasks, fullCoverage, coveredBounds);
 
         DiscontinuousTileRange dtr = new DiscontinuousTileRange(layer.getName(), gridSetId, gridSub
                 .getZoomStart(), gridSub.getZoomStop(), rasterMask, mime, null);

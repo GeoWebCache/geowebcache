@@ -29,11 +29,13 @@ public class RasterMask {
      */
     private final BufferedImage[] byLevelMasks;
 
-    private final long[][] gridCoverages;
+    private final long[][] coveredBounds;
 
     private final int maxMaskLevel;
 
     private final int noDataValue;
+
+    private long[][] fullCoverage;
 
     /**
      * Creates a RasterMask from the given parameters with default {@code noDataValue == 0}
@@ -42,8 +44,9 @@ public class RasterMask {
      * @param gridCoverages
      * @see #RasterMask(BufferedImage[], long[][], int)
      */
-    public RasterMask(BufferedImage[] byLevelMasks, long[][] gridCoverages) {
-        this(byLevelMasks, gridCoverages, 0);
+    public RasterMask(BufferedImage[] byLevelMasks, long[][] fullCoverage,
+            final long[][] coveredBounds) {
+        this(byLevelMasks, fullCoverage, coveredBounds, 0);
     }
 
     /**
@@ -61,20 +64,25 @@ public class RasterMask {
      * </p>
      * 
      * @param byLevelMasks
-     * @param gridCoverages
+     * @param fullCoverage
+     *            the full grid subsets coverage, needed to compute downsampled pixel locations
+     * @param coveredBounds
+     *            by level bounds enclosing the area that has pixels set in the masks
      * @param noDatavalue
      *            raster sample value to be considered as no-data (eg, tile is not set at the pixel
      *            location)
      */
-    public RasterMask(BufferedImage[] byLevelMasks, long[][] gridCoverages, final int noDataValue) {
+    public RasterMask(BufferedImage[] byLevelMasks, long[][] fullCoverage,
+            final long[][] coveredBounds, final int noDataValue) {
         this.byLevelMasks = byLevelMasks;
-        this.gridCoverages = gridCoverages;
+        this.fullCoverage = fullCoverage;
+        this.coveredBounds = coveredBounds;
         this.maxMaskLevel = byLevelMasks.length - 1;
         this.noDataValue = noDataValue;
     }
 
     public long[][] getGridCoverages() {
-        return gridCoverages;
+        return coveredBounds;
     }
 
     public boolean lookup(long[] idx) {
@@ -84,7 +92,7 @@ public class RasterMask {
     public boolean lookup(long tileX, long tileY, int level) {
         if (level > maxMaskLevel) {
             // downsample
-            long[] requestedCoverage = getGridCoverages()[level];
+            long[] requestedCoverage = fullCoverage[level];
 
             long[] lastMaskedCoverage = getGridCoverages()[maxMaskLevel];
 
@@ -96,8 +104,8 @@ public class RasterMask {
 
             tileX = Math.round(tileX * (availableW / requestedW));
             tileY = Math.round(tileY * (availableH / requestedH));
-            tileX = Math.max(Math.min(tileX, lastMaskedCoverage[2]), lastMaskedCoverage[0]);
-            tileY = Math.max(Math.min(tileY, lastMaskedCoverage[3]), lastMaskedCoverage[1]);
+            // tileX = Math.max(Math.min(tileX, lastMaskedCoverage[2]), lastMaskedCoverage[0]);
+            // tileY = Math.max(Math.min(tileY, lastMaskedCoverage[3]), lastMaskedCoverage[1]);
 
             level = maxMaskLevel;
         }
