@@ -193,12 +193,20 @@
     <constructor-arg value="32"/><!-- Maximum size of pool -->
   </bean>
 
+  <!-- GeoRSS feeds poller for georss update sources on layers -->
+  <bean id="gwcGeoRSSPoller" class="org.geowebcache.georss.GeoRSSPoller">
+    <constructor-arg ref="gwcTLDispatcher" />
+    <constructor-arg value="10" />
+    <property name="seedRestlet" ref="gwcSeedRestlet"/>
+  </bean>
+
   <!-- Restlets -->
   <bean id="gwcSeedRestlet" class="org.geowebcache.rest.seed.SeedRestlet">
     <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
     <property name="threadPoolExecutor" ref="gwcSeederThreadPoolExec"/>
     <property name="storageBroker" ref="gwcStorageBroker"/>
-  </bean>  
+  </bean>
+
   <bean id="gwcSeedFormRestlet" class="org.geowebcache.rest.seed.SeedFormRestlet">
     <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
     <property name="threadPoolExecutor" ref="gwcSeederThreadPoolExec"/>

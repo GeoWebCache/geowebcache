@@ -28,73 +28,26 @@
     <tileWidth>200</tileWidth>
   </gridSet>
 </gridSets>
-
 <layers>
-
   <wmsLayer>
     <name>topp:states</name>
-    <gridSubsets>
-      <gridSubset>
-        <gridSetName>EPSG:2163 Grid Set</gridSetName>
-      </gridSubset>
-    </gridSubsets>  
-    <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>
-  </wmsLayer>
-  
-  <wmsLayer>
-    <name>raster test layer</name>
-     <mimeFormats><string>image/jpeg</string></mimeFormats>
-    <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>
-    <wmsLayers>nurc:Img_Sample</wmsLayers>
-  </wmsLayer>
-  
-  <wmsLayer>
-    <name>img states</name>
-    <mimeFormats><string>image/gif</string></mimeFormats>
-    <!-- Grid Subset Example -->
+    <mimeFormats><string>image/png</string></mimeFormats>
     <gridSubsets>
       <gridSubset>
         <gridSetName>EPSG:4326</gridSetName>
-        <extent>
-          <coords>
-            <double>-129.6</double>
-            <double>3.45</double>
-            <double>-62.1</double>
-            <double>70.9</double>
-          </coords>
-        </extent>
       </gridSubset>
     </gridSubsets>
-    <requestFilters>
-     <wmsRasterFilter>
-     <name>somename</name>
-     <zoomStart>10</zoomStart>
-     <zoomStop>12</zoomStop>
-     <resample>true</resample>
-     <wmsLayers>topp:states</wmsLayers>
-     <wmsStyles>onebit</wmsStyles>
-     </wmsRasterFilter>
-    </requestFilters>
     <updateSources>
       <geoRssFeed>
-        <feedUrl>http://someserver.com/feed?layers=test</feedUrl>
+        <feedUrl>http://kepp.net</feedUrl>
         <gridSetId>EPSG:4326</gridSetId>
         <pollInterval>300</pollInterval>
+        <mimeFormat>image/png</mimeFormat>
+        <seedingThreads>2</seedingThreads>
+        <maxMaskLevel>8</maxMaskLevel>
       </geoRssFeed>
     </updateSources>
-    <wmsUrl>
-      <string>http://atlas.openplans.org:8080/geoserver/wms</string>
-    </wmsUrl>
-    <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
-    <transparent>false</transparent>
-    <bgColor>0x0066FF</bgColor>
-    <expireCacheList>
-    	<expirationRule minZoom="0" expiration="60" />
-    </expireCacheList>
-    <expireClientsList>
-      <expirationRule minZoom="0" expiration="500" />
-    </expireClientsList>
+    <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>
   </wmsLayer>
-
 </layers>
 </gwcConfiguration>
