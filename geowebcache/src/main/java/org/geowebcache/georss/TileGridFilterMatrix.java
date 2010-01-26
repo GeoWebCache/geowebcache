@@ -22,6 +22,7 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
@@ -44,7 +45,12 @@ public class TileGridFilterMatrix {
 
     private Graphics2D[] graphics;
 
-    private final long[][] maskBounds;
+    /**
+     * Used to calculate maskBounds
+     */
+    private Envelope aggregatedBounds;
+
+    private long[][] maskBounds;
 
     private final MathTransform[] transformCache;
 
@@ -63,7 +69,6 @@ public class TileGridFilterMatrix {
         final int numLevels = gridSubset.getCoverages().length;
 
         byLevelMasks = new BufferedImage[numLevels];
-        maskBounds = new long[numLevels][];
         transformCache = new MathTransform[numLevels];
 
         for (int level = 0; level < numLevels; level++) {
@@ -90,6 +95,16 @@ public class TileGridFilterMatrix {
                 byLevelMasks[level] = mask;
             }
         }
+    }
+
+    public boolean hasTilesSet() {
+        long[][] coveredBounds = getCoveredBounds();
+        for (int i = 0; i < coveredBounds.length; i++) {
+            if (coveredBounds[i] != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public synchronized long getTotalTilesSet() {
@@ -129,6 +144,16 @@ public class TileGridFilterMatrix {
      *            reference system
      */
     void setMasksForGeometry(final Geometry geom) {
+        if (geom == null || geom.isEmpty()) {
+            return;
+        }
+
+        if (aggregatedBounds == null) {
+            aggregatedBounds = new Envelope(geom.getEnvelopeInternal());
+        } else {
+            aggregatedBounds.expandToInclude(geom.getEnvelopeInternal());
+        }
+
         final int startLevel = getStartLevel();
         final int maxLevel = startLevel + getNumLevels() - 1;
 
@@ -272,10 +297,10 @@ public class TileGridFilterMatrix {
     }
 
     public synchronized long[][] getCoveredBounds() {
-        long[][] coveredBounds = new long[maskBounds.length][4];
+        long[][] coveredBounds = new long[getNumLevels()][4];
 
         for (int i = 0; i < coveredBounds.length; i++) {
-            coveredBounds[i] = calculateMaskBounds(i);
+            coveredBounds[i] = getCoveredBounds(i);
         }
         return coveredBounds;
     }
@@ -287,11 +312,19 @@ public class TileGridFilterMatrix {
      * @return the bounds of the set tiles for the given level, or {@code null} if none is set
      */
     public synchronized long[] getCoveredBounds(final int level) {
-        long[] bounds = maskBounds[level];
-        if (bounds == null) {
-            bounds = calculateMaskBounds(level);
-            maskBounds[level] = bounds;
+        if (aggregatedBounds == null) {
+            return null;
         }
+        if (maskBounds == null) {
+            double minx = aggregatedBounds.getMinX();
+            double miny = aggregatedBounds.getMinY();
+            double maxx = aggregatedBounds.getMaxX();
+            double maxy = aggregatedBounds.getMaxY();
+            BoundingBox reqBounds = new BoundingBox(minx, miny, maxx, maxy);
+            long[][] coverageIntersections = gridSubset.getCoverageIntersections(reqBounds);
+            maskBounds = coverageIntersections;
+        }
+        long[] bounds = maskBounds[level];
         return bounds == null ? null : bounds.clone();
     }
 
@@ -301,6 +334,11 @@ public class TileGridFilterMatrix {
     }
 
     private long[] calculateMaskBounds(final Raster raster, final int level) {
+
+        if (level > maxMaskLevel) {
+            return estimateNonMaskedCoveredBounds(level);
+        }
+
         final long[] coverage = gridSubset.getCoverage(level);
 
         long minx = Long.MAX_VALUE;
@@ -336,6 +374,11 @@ public class TileGridFilterMatrix {
         }
 
         return new long[] { minx, miny, maxx, maxy };
+    }
+
+    private long[] estimateNonMaskedCoveredBounds(final int level) {
+        assert level > maxMaskLevel;
+        return null;
     }
 
     private boolean isTileSet(final Raster raster, long tileX, long tileY, int level) {

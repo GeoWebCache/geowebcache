@@ -92,10 +92,9 @@ class GeoRSSPollTask implements Runnable {
                 + " for " + layer.getName() + ". Calculating number of affected tiles...");
         _logImagesToDisk(tileRangeMask);
 
-        final long totalTilesSet = tileRangeMask.getTotalTilesSet();
-        if (totalTilesSet > 0) {
-            logger.info(pollDef + " for " + layer.getName() + " affected " + totalTilesSet
-                    + ". Launching reseed process...");
+        final boolean tilesAffected = tileRangeMask.hasTilesSet();
+        if (tilesAffected) {
+            logger.info("Launching reseed process " + pollDef + " for " + layer.getName() );
         } else {
             logger.info(pollDef + " for " + layer.getName()
                     + " did not affect any tile. No need to reseed.");
@@ -172,7 +171,8 @@ class GeoRSSPollTask implements Runnable {
         }
 
         // Then we seed
-        tasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.SEED, pollDef.getSeedingThreads(),
+        final int seedingThreads = pollDef.getSeedingThreads();
+        tasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.SEED, seedingThreads,
                 false);
 
         seedRestlet.dispatchTasks(tasks);
