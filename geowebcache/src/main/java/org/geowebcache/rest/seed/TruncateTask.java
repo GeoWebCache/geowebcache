@@ -53,20 +53,23 @@ public class TruncateTask extends GWCTask {
     
 
     public void doAction() throws GeoWebCacheException {
+        super.state = GWCTask.STATE.RUNNING;
         try {
             storageBroker.delete(tr);
-        } catch (StorageException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
-            log.error(e.getMessage());
+            super.state = GWCTask.STATE.DEAD;
+            log.error("During truncate request: " + e.getMessage());
         }
         
         if(doFilterUpdate) {
             runFilterUpdates();
         }
         
-        log.info("Completed truncate request.");
+        if(super.state != GWCTask.STATE.DEAD) {
+            super.state = GWCTask.STATE.DONE;
+            log.info("Completed truncate request.");
+        }
     }
     
     /**

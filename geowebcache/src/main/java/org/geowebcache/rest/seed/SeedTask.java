@@ -65,13 +65,17 @@ public class SeedTask extends GWCTask {
             super.type = GWCTask.TYPE.SEED;
         }
         super.layerName = tl.getName();
+        
+        super.state = GWCTask.STATE.READY;
     }
     
     /**
      * Method doAction().
      * this is where all the actual work is being done to seed a tile layer. 
      */
-    public void doAction() throws GeoWebCacheException {   
+    public void doAction() throws GeoWebCacheException {
+        super.state = GWCTask.STATE.RUNNING;
+        
         // Lower the priority of the thread
         Thread.currentThread().setPriority((java.lang.Thread.NORM_PRIORITY + java.lang.Thread.MIN_PRIORITY) / 2);
         
@@ -104,10 +108,12 @@ public class SeedTask extends GWCTask {
             } catch (IOException ioe) {
                 log.error("Seed failed at " + tile.toString() 
                         + ",\n exception: " + ioe.getMessage());
+                super.state = GWCTask.STATE.DEAD;
                 throw new GeoWebCacheException(ioe.getMessage());
             } catch (GeoWebCacheException gwce) {
                 log.error("Seed failed at " + tile.toString()
                         + ",\n exception: " + gwce.getMessage());
+                super.state = GWCTask.STATE.DEAD;
                 throw gwce;
             }
             
@@ -130,6 +136,8 @@ public class SeedTask extends GWCTask {
         if(threadOffset == 0 && doFilterUpdate) {
             runFilterUpdates(tr.gridSetId);
         }
+        
+        super.state = GWCTask.STATE.DONE;
     }
 
     /**

@@ -24,7 +24,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -206,7 +205,7 @@ public class SeedRestlet extends GWCRestlet {
         return tasks;
     }
     
-    void dispatchTasks(GWCTask[] tasks) throws RestletException {
+    public void dispatchTasks(GWCTask[] tasks) throws RestletException {
         for(int i=0; i<tasks.length; i++) {
             threadPool.submit(new MTSeeder(tasks[i]));
         }

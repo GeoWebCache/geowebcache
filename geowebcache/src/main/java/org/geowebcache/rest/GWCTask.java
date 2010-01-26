@@ -24,7 +24,11 @@ import org.geowebcache.GeoWebCacheException;
 public abstract class GWCTask {
     
     public static enum TYPE {
-        SEED, RESEED, TRUNCATE, UNSET;
+        UNSET, SEED, RESEED, TRUNCATE
+    };
+    
+    public static enum STATE {
+        UNSET, READY, RUNNING, DONE, DEAD
     };
     
     protected int threadCount = 1;
@@ -34,6 +38,8 @@ public abstract class GWCTask {
     long taskId = -1;
     
     protected TYPE type = TYPE.UNSET;
+    
+    protected STATE state = STATE.UNSET;
     
     protected String layerName = null;
     
