@@ -94,7 +94,7 @@ public class RasterMask {
             // downsample
             long[] requestedCoverage = fullCoverage[level];
 
-            long[] lastMaskedCoverage = getGridCoverages()[maxMaskLevel];
+            long[] lastMaskedCoverage = fullCoverage[maxMaskLevel];
 
             double requestedW = 1 + requestedCoverage[2] - requestedCoverage[0];
             double requestedH = 1 + requestedCoverage[3] - requestedCoverage[1];
@@ -104,8 +104,8 @@ public class RasterMask {
 
             tileX = Math.round(tileX * (availableW / requestedW));
             tileY = Math.round(tileY * (availableH / requestedH));
-            // tileX = Math.max(Math.min(tileX, lastMaskedCoverage[2]), lastMaskedCoverage[0]);
-            // tileY = Math.max(Math.min(tileY, lastMaskedCoverage[3]), lastMaskedCoverage[1]);
+            tileX = Math.max(Math.min(tileX, lastMaskedCoverage[2]), lastMaskedCoverage[0]);
+            tileY = Math.max(Math.min(tileY, lastMaskedCoverage[3]), lastMaskedCoverage[1]);
 
             level = maxMaskLevel;
         }

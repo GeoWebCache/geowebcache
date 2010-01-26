@@ -58,22 +58,21 @@ public class TileGridFilterMatrix {
 
     private final GridSubset gridSubset;
 
-    private long totalTilesSet;
-
     private final int maxMaskLevel;
 
     public TileGridFilterMatrix(final GridSubset gridSubset, final int maxMaskLevel) {
 
         this.gridSubset = gridSubset;
-        this.totalTilesSet = -1;// compute on demand
         this.maxMaskLevel = maxMaskLevel;
 
+        final int startLevel = getStartLevel();
         final int numLevels = gridSubset.getCoverages().length;
+        final int endLevel = numLevels - 1;
 
         byLevelMasks = new BufferedImage[numLevels];
         transformCache = new MathTransform[numLevels];
 
-        for (int level = 0; level < numLevels; level++) {
+        for (int level = startLevel; level <= endLevel; level++) {
             if (level > maxMaskLevel) {
                 byLevelMasks[level] = null;
             } else {
@@ -326,7 +325,7 @@ public class TileGridFilterMatrix {
      * @return
      */
     public BufferedImage[] getByLevelMasks() {
-        final int numMaskedLevels = Math.min(getNumLevels(), maxMaskLevel);
+        final int numMaskedLevels = Math.min(getNumLevels(), maxMaskLevel + 1);
         BufferedImage[] maskedLevels = new BufferedImage[numMaskedLevels];
         for (int level = 0; level < numMaskedLevels; level++) {
             maskedLevels[level] = byLevelMasks[level];
