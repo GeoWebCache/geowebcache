@@ -67,9 +67,10 @@ class GeoRSSReaderFactory {
      */
     private List<Entry> createFakeEntries() {
         Entry[] entries = {//
-        entry("POLYGON ((0 0, 0 -90, 180 -90, 180 0, 0 0))"),//
-                entry("POINT(0 45)"),//
-                entry("LINESTRING(-90 -45, 90 45)") };
+        entry("POLYGON ((-115 31, -115 37, -108 37, -108 31, -115 31))"),// around arizona
+                entry("POINT(-105 38)"),// mid colorado
+                entry("LINESTRING(-79 42, -73 44)") // amlmost croses NY
+        };
 
         return Arrays.asList(entries);
     }

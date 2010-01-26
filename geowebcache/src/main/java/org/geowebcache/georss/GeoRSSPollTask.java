@@ -1,7 +1,11 @@
 package org.geowebcache.georss;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+
+import javax.imageio.ImageIO;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,7 +36,7 @@ class GeoRSSPollTask implements Runnable {
         this.poll = poll;
         this.seedRestlet = seedRestlet;
     }
-    
+
     /**
      * Called by the thread executor when the poll def's interval has elapsed (or as soon as
      * possible after it elapsed).
@@ -77,7 +81,8 @@ class GeoRSSPollTask implements Runnable {
                 + layer.getName());
 
         final int maxMaskLevel = pollDef.getMaxMaskLevel();
-        final GeoRSSTileRangeBuilder matrixBuilder = new GeoRSSTileRangeBuilder(layer, gridSetId, maxMaskLevel);
+        final GeoRSSTileRangeBuilder matrixBuilder = new GeoRSSTileRangeBuilder(layer, gridSetId,
+                maxMaskLevel);
 
         logger.debug("Creating tile range mask based on GeoRSS feed's geometries from "
                 + feedUrl.toExternalForm() + " for " + layer.getName());
@@ -85,6 +90,7 @@ class GeoRSSPollTask implements Runnable {
         final TileGridFilterMatrix tileRangeMask = matrixBuilder.buildTileRangeMask(geoRSSReader);
         logger.debug("Created tile range mask based on GeoRSS geometry feed from " + pollDef
                 + " for " + layer.getName() + ". Calculating number of affected tiles...");
+        _logImagesToDisk(tileRangeMask);
 
         final long totalTilesSet = tileRangeMask.getTotalTilesSet();
         if (totalTilesSet > 0) {
@@ -102,45 +108,73 @@ class GeoRSSPollTask implements Runnable {
                 + " successfully launched.");
     }
 
+    /**
+     * For debug purposes only, writes down the bitmask images to the directory specified by the
+     * System property (ej, {@code -Dorg.geowebcache.georss.debugToDisk=target/})
+     * 
+     * @param tileRangeMask
+     */
+    private void _logImagesToDisk(final TileGridFilterMatrix matrix) {
+        if (null == System.getProperty("org.geowebcache.georss.debugToDisk")) {
+            return;
+        }
+        File target = new File(System.getProperty("org.geowebcache.georss.debugToDisk"));
+        if (!target.isDirectory() || !target.canWrite()) {
+            throw new IllegalStateException("Can't access debug directory for "
+                    + "dumping mask images: " + target.getAbsolutePath());
+        }
+
+        logger.warn("\n!!!!!!!!!!!\n REMEMBER NOT TO SET THE org.geowebcache.georss.debugToDisk"
+                + " SYSTEM PROPERTY ON A PRODUCTION ENVIRONMENT \n!!!!!!!!!!!");
+        BufferedImage[] byLevelMasks = matrix.getByLevelMasks();
+
+        for (int i = 0; i < byLevelMasks.length; i++) {
+            File output = new File(target, poll.getLayer().getName() + "_level_" + i + ".tiff");
+            System.out.println("--- writing " + output.getAbsolutePath() + "---");
+            try {
+                ImageIO.write(byLevelMasks[i], "TIFF", output);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void launchSeeding(final TileLayer layer, final GeoRSSFeedDefinition pollDef,
             final String gridSetId, final TileGridFilterMatrix tileRangeMask) {
-        
         GridSubset gridSub = layer.getGridSubset(gridSetId);
-        
+
         final String mimeFormat = pollDef.getMimeFormat();
-        
+
         MimeType mime = null;
         try {
             mime = MimeType.createFromFormat(mimeFormat);
         } catch (MimeException e) {
-            logger.error("MimeType "+mimeFormat+" not recognized, "
-                    +"aborting GeoRSS update! Check geowebcache.xml");
+            logger.error("MimeType " + mimeFormat + " not recognized, "
+                    + "aborting GeoRSS update! Check geowebcache.xml");
         }
-        
+
         long[][] coveredBounds = tileRangeMask.getCoveredBounds();
-        
+
         coveredBounds = gridSub.expandToMetaFactors(coveredBounds, layer.getMetaTilingFactors());
-        
+
         RasterMask rasterMask = new RasterMask(tileRangeMask.getByLevelMasks(), coveredBounds);
-        
-        DiscontinuousTileRange dtr = new DiscontinuousTileRange(
-                layer.getName(), gridSetId, 
-                gridSub.getZoomStart(), gridSub.getZoomStop(), 
-                rasterMask,
-                mime, null);
-                        
+
+        DiscontinuousTileRange dtr = new DiscontinuousTileRange(layer.getName(), gridSetId, gridSub
+                .getZoomStart(), gridSub.getZoomStop(), rasterMask, mime, null);
+
         GWCTask[] tasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.TRUNCATE, 1, false);
-        
+
         // We do the truncate synchronously
         try {
             tasks[0].doAction();
         } catch (GeoWebCacheException e) {
             logger.error("Problem truncating based on GeoRSS feed: " + e.getMessage());
         }
-        
+
         // Then we seed
-        tasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.SEED, pollDef.getSeedingThreads(), false);
-       
+        tasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.SEED, pollDef.getSeedingThreads(),
+                false);
+
         seedRestlet.dispatchTasks(tasks);
     }
 }

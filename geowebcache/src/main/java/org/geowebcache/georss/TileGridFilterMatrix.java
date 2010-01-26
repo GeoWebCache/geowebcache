@@ -7,7 +7,6 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,11 +26,6 @@ import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * An object that builds a mask of tiles affected by geometries
- * 
- * <p>
- * TODO: I need to figure out yet at what point (what zoom level?) to stop creating images and hence
- * use a downsampled one when the size of the cached images might be an issue
- * </p>
  * 
  * @author Gabriel Roldan (OpenGeo)
  * @see GeoRSSTileRangeBuilder
@@ -58,45 +52,43 @@ public class TileGridFilterMatrix {
 
     private long totalTilesSet;
 
+    private final int maxMaskLevel;
+
     public TileGridFilterMatrix(final GridSubset gridSubset, final int maxMaskLevel) {
 
         this.gridSubset = gridSubset;
         this.totalTilesSet = -1;// compute on demand
+        this.maxMaskLevel = maxMaskLevel;
 
         final int numLevels = gridSubset.getCoverages().length;
 
         byLevelMasks = new BufferedImage[numLevels];
-        maskBounds = new long[maxMaskLevel][];
-        transformCache = new MathTransform[maxMaskLevel];
+        maskBounds = new long[numLevels][];
+        transformCache = new MathTransform[numLevels];
 
-        for (int level = 0; level < maxMaskLevel; level++) {
-            final long[] levelBounds = gridSubset.getCoverage(level);
-            final long tilesX = (levelBounds[2] + 1) - levelBounds[0];
-            final long tilesY = (levelBounds[3] + 1) - levelBounds[1];
-            final long numTiles = tilesX * tilesY;
+        for (int level = 0; level < numLevels; level++) {
+            if (level > maxMaskLevel) {
+                byLevelMasks[level] = byLevelMasks[level - 1];
+            } else {
+                final long[] levelBounds = gridSubset.getCoverage(level);
+                final long tilesX = (levelBounds[2] + 1) - levelBounds[0];
+                final long tilesY = (levelBounds[3] + 1) - levelBounds[1];
+                final long numTiles = tilesX * tilesY;
 
-            if (tilesX >= Integer.MAX_VALUE || tilesY >= Integer.MAX_VALUE
-                    || numTiles >= Integer.MAX_VALUE) {
-                // image would be too large to fit into the image's sample model
-                if (level == 0) {
-                    throw new IllegalStateException("Level 0 shouldn't be that large!");
+                if (tilesX >= Integer.MAX_VALUE || tilesY >= Integer.MAX_VALUE
+                        || numTiles >= Integer.MAX_VALUE) {
+                    // this is so because the image's sample model can't cope up with more than
+                    // Integer.MAX_VALUE pixels
+                    throw new IllegalStateException("Masking level " + level
+                            + " would produce a backing image of too many tiles!"
+                            + " Consider setting a lower maxMaskLevel ");
                 }
-                // downsample
+
+                // BufferedImage with 1-bit per pixel sample model
+                BufferedImage mask = new BufferedImage((int) tilesX, (int) tilesY,
+                        BufferedImage.TYPE_BYTE_BINARY);
+                byLevelMasks[level] = mask;
             }
-            // BufferedImage with 1-bit per pixel sample model
-            BufferedImage mask = null;
-            
-            try  {
-                mask = new BufferedImage((int) tilesX, (int) tilesY,
-                    BufferedImage.TYPE_BYTE_BINARY);
-            } catch(OutOfMemoryError ooe) {
-                logger.error("Ran out of memory while creating "
-                        + "BufferedImage("+tilesX+","+tilesY+"), expected size: " + 
-                    ((tilesX*tilesY*1.0)/(8*1024*1024)) + " Mbytes"    
-                    );
-                ooe.printStackTrace();
-            }
-            byLevelMasks[level] = mask;
         }
     }
 
@@ -115,6 +107,9 @@ public class TileGridFilterMatrix {
 
         for (int level = startLevel; level <= endLevel; level++) {
             long[] levelBounds = getCoveredBounds(level);
+            if (levelBounds == null) {
+                continue;
+            }
             final Raster raster = byLevelMasks[level].getRaster();
             for (long y = levelBounds[1]; y <= levelBounds[3]; y++) {
                 for (long x = levelBounds[0]; x <= levelBounds[2]; x++) {
@@ -135,7 +130,10 @@ public class TileGridFilterMatrix {
      */
     void setMasksForGeometry(final Geometry geom) {
         final int startLevel = getStartLevel();
-        final int endLevel = startLevel + getNumLevels() - 1;
+        final int maxLevel = startLevel + getNumLevels() - 1;
+
+        // loop over only up to the configured max masking level
+        final int endLevel = Math.min(maxLevel, this.maxMaskLevel);
 
         if (logger.isDebugEnabled()) {
             logger.debug("Geom: " + geom);
@@ -197,7 +195,7 @@ public class TileGridFilterMatrix {
         final Envelope2D genvelope = new Envelope2D();
         {
             // genvelope.setCoordinateReferenceSystem(layerCrs);
-            double coords[] = coverageBounds.coords;
+            double coords[] = coverageBounds.coords.clone();
             double x = coords[0];
             double y = coords[1];
             double width = coords[2] - x;
@@ -273,6 +271,15 @@ public class TileGridFilterMatrix {
         return byLevelMasks.length;
     }
 
+    public synchronized long[][] getCoveredBounds() {
+        long[][] coveredBounds = new long[maskBounds.length][4];
+
+        for (int i = 0; i < coveredBounds.length; i++) {
+            coveredBounds[i] = calculateMaskBounds(i);
+        }
+        return coveredBounds;
+    }
+
     /**
      * Returns the tile range of the mask bounding box at a specific zoom level.
      * 
@@ -285,16 +292,7 @@ public class TileGridFilterMatrix {
             bounds = calculateMaskBounds(level);
             maskBounds[level] = bounds;
         }
-        return bounds.clone();
-    }
-    
-    public synchronized long[][] getCoveredBounds() {
-        long[][] coveredBounds = new long[maskBounds.length][4];
-            
-        for(int i=0; i< coveredBounds.length; i++) {
-            coveredBounds[i] = calculateMaskBounds(i);
-        }
-        return coveredBounds;
+        return bounds == null ? null : bounds.clone();
     }
 
     private long[] calculateMaskBounds(final int level) {
@@ -304,21 +302,27 @@ public class TileGridFilterMatrix {
 
     private long[] calculateMaskBounds(final Raster raster, final int level) {
         final long[] coverage = gridSubset.getCoverage(level);
-        final long deltaX = coverage[0];
-        final long deltaY = coverage[1];
 
         long minx = Long.MAX_VALUE;
         long miny = Long.MAX_VALUE;
         long maxx = Long.MIN_VALUE;
         long maxy = Long.MIN_VALUE;
 
-        final int width = raster.getWidth();
-        final int height = raster.getHeight();
+        final long minBoundedX = coverage[0];
+        final long minBoundedY = coverage[1];
+        final long maxBoundedX = coverage[2] - minBoundedX;
+        final long maxBoundedY = coverage[3] - minBoundedY;
+
         boolean tileSet;
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                tileSet = isTileSet(raster, x, y, level);
+        for (long y = minBoundedY; y <= maxBoundedY; y++) {
+            for (long x = minBoundedX; x <= maxBoundedX; x++) {
+                try {
+                    tileSet = isTileSet(raster, x, y, level);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    logger.fatal("AIOBE at " + x + ", " + y + ", " + level, e);
+                    throw e;
+                }
                 if (tileSet) {
                     minx = Math.min(minx, x);
                     miny = Math.min(miny, y);
@@ -330,15 +334,37 @@ public class TileGridFilterMatrix {
         if (minx == Long.MAX_VALUE) {
             return null;
         }
-        minx += deltaX;
-        miny += deltaY;
-        maxx += deltaX;
-        maxy += deltaY;
+
         return new long[] { minx, miny, maxx, maxy };
     }
 
-    private boolean isTileSet(final Raster raster, long tileX, long tileY, final int level) {
-        final long[] coverage = gridSubset.getCoverage(level);
+    private boolean isTileSet(final Raster raster, long tileX, long tileY, int level) {
+
+        long[] coverage = gridSubset.getCoverage(level);
+        if (tileX < coverage[0] || tileX > coverage[2] || tileY < coverage[1]
+                || tileY > coverage[3]) {
+            return false;
+        }
+
+        if (level > maxMaskLevel) {
+            // downsample
+            long[] requestedCoverage = gridSubset.getCoverage(level);
+            long[] lastMaskedCoverage = gridSubset.getCoverage(maxMaskLevel);
+
+            double requestedW = 1 + requestedCoverage[2] - requestedCoverage[0];
+            double requestedH = 1 + requestedCoverage[3] - requestedCoverage[1];
+
+            double availableW = 1 + lastMaskedCoverage[2] - lastMaskedCoverage[0];
+            double availableH = 1 + lastMaskedCoverage[3] - lastMaskedCoverage[1];
+
+            tileX = Math.round(tileX * (availableW / requestedW));
+            tileY = Math.round(tileY * (availableH / requestedH));
+            tileX = Math.max(Math.min(tileX, lastMaskedCoverage[2]), lastMaskedCoverage[0]);
+            tileY = Math.max(Math.min(tileY, lastMaskedCoverage[3]), lastMaskedCoverage[1]);
+
+            level = maxMaskLevel;
+            coverage = gridSubset.getCoverage(level);
+        }
         final long deltaX = coverage[0];
         final long deltaY = coverage[1];
         tileX -= deltaX;
@@ -350,30 +376,35 @@ public class TileGridFilterMatrix {
         // raster is rendered to Y axis is inverted
         int height = raster.getHeight();
         int y = height - 1 - (int) tileY;
-        raster.getPixel(x, y, buff);
+        try {
+            raster.getPixel(x, y, buff);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            logger.fatal("AIOBE at " + x + ", " + y + ", " + level, e);
+            throw e;
+        }
         int sample = buff[0];
         return sample == 1;
     }
 
-    private void setTiles(WritableRaster matrix, final long[] rect, final boolean active,
-            final int level) {
-        final long[] coverage = gridSubset.getCoverage(level);
-        final long deltaX = coverage[0];
-        final long deltaY = coverage[1];
-        final int minx = (int) (rect[0] - deltaX);
-        final int maxx = (int) (rect[2] - deltaX);
-
-        final int height = matrix.getHeight();
-        final int miny = height - 1 - (int) (rect[3] - deltaY);
-        final int maxy = height - 1 - (int) (rect[1] - deltaY);
-
-        int[] value = { active ? 1 : 0 };
-        for (int y = miny; y <= maxy; y++) {
-            for (int x = minx; x <= maxx; x++) {
-                matrix.setPixel(x, y, value);
-            }
-        }
-    }
+    // private void setTiles(WritableRaster matrix, final long[] rect, final boolean active,
+    // final int level) {
+    // final long[] coverage = gridSubset.getCoverage(level);
+    // final long deltaX = coverage[0];
+    // final long deltaY = coverage[1];
+    // final int minx = (int) (rect[0] - deltaX);
+    // final int maxx = (int) (rect[2] - deltaX);
+    //
+    // final int height = matrix.getHeight();
+    // final int miny = height - 1 - (int) (rect[3] - deltaY);
+    // final int maxy = height - 1 - (int) (rect[1] - deltaY);
+    //
+    // int[] value = { active ? 1 : 0 };
+    // for (int y = miny; y <= maxy; y++) {
+    // for (int x = minx; x <= maxx; x++) {
+    // matrix.setPixel(x, y, value);
+    // }
+    // }
+    // }
 
     // private void setTile(WritableRaster matrix, final boolean set, long tileX, long tileY,
     // final int level) {

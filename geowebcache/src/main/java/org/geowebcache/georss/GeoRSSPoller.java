@@ -19,25 +19,24 @@ import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.seed.SeedRestlet;
 
-
 /**
  * 
  * @author groldan
- * @version $Id: GeoRSSPoller.java 903 2010-01-26 00:25:22Z groldan $
+ * @version $Id$
  */
 public class GeoRSSPoller {
 
     private static final Log logger = LogFactory.getLog(GeoRSSPoller.class);
 
-    private TileLayerDispatcher layerDispatcher;
-    
-    private SeedRestlet seedRestlet;
+    private final TileLayerDispatcher layerDispatcher;
+
+    private final SeedRestlet seedRestlet;
+
+    private final ScheduledExecutorService schedulingPollExecutorService;
 
     private List<PollDef> scheduledPolls;
 
     private GeoRSSFeedDefinition runningPoll;
-
-    private final ScheduledExecutorService schedulingPollExecutorService;
 
     /**
      * Upon instantiation, spawns out a thread after #{@code startUpDelaySecs} seconds that
@@ -46,15 +45,16 @@ public class GeoRSSPoller {
      * process on the tiles affected by the change set.
      * 
      * @param layerDispatcher
-     * @param storageBroker
+     * @param seedRestlet
      * @param startUpDelaySecs
      *            seconds to wait before start polling the layers
      */
     @SuppressWarnings("unchecked")
-    public GeoRSSPoller(final TileLayerDispatcher layerDispatcher,
+    public GeoRSSPoller(final TileLayerDispatcher layerDispatcher, final SeedRestlet seedRestlet,
             final int startUpDelaySecs) {
 
         this.layerDispatcher = layerDispatcher;
+        this.seedRestlet = seedRestlet;
         this.scheduledPolls = new ArrayList<PollDef>();
 
         findEnabledPolls();
@@ -66,7 +66,7 @@ public class GeoRSSPoller {
             final TimeUnit seconds = TimeUnit.SECONDS;
             for (PollDef poll : this.scheduledPolls) {
                 GeoRSSPollTask command;
-                command = new GeoRSSPollTask(poll, seedRestlet);
+                command = new GeoRSSPollTask(poll, this.seedRestlet);
                 GeoRSSFeedDefinition pollDef = poll.getPollDef();
                 long period = pollDef.getPollInterval();
 
@@ -85,10 +85,6 @@ public class GeoRSSPoller {
             logger.info("No enabled GeoRSS feeds found, poller will not run.");
         }
     }
-    
-    public void setSeedRestlet(SeedRestlet seedRestlet) {
-        this.seedRestlet = seedRestlet;
-    }
 
     private void findEnabledPolls() {
         logger.info("Initializing GeoRSS poller...");
@@ -97,12 +93,6 @@ public class GeoRSSPoller {
         TileLayer layer;
         while (layers.hasNext()) {
             layer = layers.next();
-            List<UpdateSourceDefinition> updateSourceList = layer.getUpdateSources();
-            
-            if(updateSourceList == null) {
-                continue;
-            }
-            
             for (UpdateSourceDefinition usd : layer.getUpdateSources()) {
                 if (usd instanceof GeoRSSFeedDefinition) {
                     final GeoRSSFeedDefinition georssDef = (GeoRSSFeedDefinition) usd;
@@ -114,7 +104,6 @@ public class GeoRSSPoller {
                                 + " has no grid subset " + gridSetId
                                 + " as configured by its GeoRSS seeding feed " + georssDef);
                     }
-                    
                     final String mimeFormat = georssDef.getMimeFormat();
                     try {
                         MimeType.createFromFormat(mimeFormat);
@@ -129,8 +118,8 @@ public class GeoRSSPoller {
                                 + georssDef);
                         scheduledPolls.add(new PollDef(layer, georssDef));
                     } else {
-                        logger.info("Feed disabled for layer " + layer.getName() 
-                                + ", ignoring: " + georssDef);
+                        logger.info("Feed disabled for layer " + layer.getName() + ", ignoring: "
+                                + georssDef);
                     }
                 }
             }

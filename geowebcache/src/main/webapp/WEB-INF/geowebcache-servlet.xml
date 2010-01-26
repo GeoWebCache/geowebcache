@@ -196,8 +196,8 @@
   <!-- GeoRSS feeds poller for georss update sources on layers -->
   <bean id="gwcGeoRSSPoller" class="org.geowebcache.georss.GeoRSSPoller">
     <constructor-arg ref="gwcTLDispatcher" />
+    <constructor-arg ref="gwcSeedRestlet"/>
     <constructor-arg value="10" />
-    <property name="seedRestlet" ref="gwcSeedRestlet"/>
   </bean>
 
   <!-- Restlets -->

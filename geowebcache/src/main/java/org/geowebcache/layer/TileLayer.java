@@ -18,6 +18,7 @@ package org.geowebcache.layer;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -155,8 +156,17 @@ public abstract class TileLayer {
         return null;
     }
     
+    /**
+     * @return possibly empty list of update sources for this layer
+     */
     public List<UpdateSourceDefinition> getUpdateSources() {
-        return this.updateSources;
+        List<UpdateSourceDefinition> sources;
+        if (updateSources == null) {
+            sources = Collections.emptyList();
+        } else {
+            sources = new ArrayList<UpdateSourceDefinition>(updateSources);
+        }
+        return sources;
     }
     
     /**
