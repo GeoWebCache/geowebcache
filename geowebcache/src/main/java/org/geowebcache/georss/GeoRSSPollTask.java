@@ -155,8 +155,6 @@ class GeoRSSPollTask implements Runnable {
         long[][] fullCoverage = gridSub.getCoverages();
         long[][] coveredBounds = tileRangeMask.getCoveredBounds();
 
-        coveredBounds = gridSub.expandToMetaFactors(coveredBounds, layer.getMetaTilingFactors());
-
         BufferedImage[] byLevelMasks = tileRangeMask.getByLevelMasks();
         
         RasterMask rasterMask = new RasterMask(byLevelMasks, fullCoverage, coveredBounds);

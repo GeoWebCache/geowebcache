@@ -89,23 +89,33 @@ public class RasterMask {
         return lookup(idx[0], idx[1], (int) idx[2]);
     }
 
-    public boolean lookup(long tileX, long tileY, int level) {
+    public boolean lookup(final long x, final long y, final int z) {
+        long tileX = x;
+        long tileY = y;
+        int level = z;
+
+        long[] coverage = getGridCoverages()[level];
+        if (tileX < coverage[0] || tileX > coverage[2] || tileY < coverage[1]
+                || tileY > coverage[3]) {
+            return false;
+        }
+
         if (level > maxMaskLevel) {
             // downsample
             long[] requestedCoverage = fullCoverage[level];
 
             long[] lastMaskedCoverage = fullCoverage[maxMaskLevel];
 
-            double requestedW = 1 + requestedCoverage[2] - requestedCoverage[0];
-            double requestedH = 1 + requestedCoverage[3] - requestedCoverage[1];
+            double requestedW = requestedCoverage[2] - requestedCoverage[0];
+            double requestedH = requestedCoverage[3] - requestedCoverage[1];
 
-            double availableW = 1 + lastMaskedCoverage[2] - lastMaskedCoverage[0];
-            double availableH = 1 + lastMaskedCoverage[3] - lastMaskedCoverage[1];
+            double availableW = lastMaskedCoverage[2] - lastMaskedCoverage[0];
+            double availableH = lastMaskedCoverage[3] - lastMaskedCoverage[1];
 
             tileX = Math.round(tileX * (availableW / requestedW));
             tileY = Math.round(tileY * (availableH / requestedH));
-            tileX = Math.max(Math.min(tileX, lastMaskedCoverage[2]), lastMaskedCoverage[0]);
-            tileY = Math.max(Math.min(tileY, lastMaskedCoverage[3]), lastMaskedCoverage[1]);
+            // tileX = Math.max(Math.min(tileX, lastMaskedCoverage[2]), lastMaskedCoverage[0]);
+            // tileY = Math.max(Math.min(tileY, lastMaskedCoverage[3]), lastMaskedCoverage[1]);
 
             level = maxMaskLevel;
         }
@@ -129,6 +139,11 @@ public class RasterMask {
         // Changing index to top left hand origin
         long rasx = tileX;
         long rasy = (raster.getHeight() - 1) - tileY;
+
+        if (rasx < 0 || rasy < 0 || rasx >= raster.getWidth() || rasy >= raster.getHeight()) {
+            // coverage might include meta tiling factors but raster doesn't!
+            return false;
+        }
 
         int sample = raster.getSample((int) rasx, (int) rasy, 0);
 

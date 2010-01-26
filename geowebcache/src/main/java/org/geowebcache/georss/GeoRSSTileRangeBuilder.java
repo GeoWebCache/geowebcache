@@ -53,23 +53,13 @@ class GeoRSSTileRangeBuilder {
             throw new IllegalArgumentException("no grid subset " + gridSetId + " at "
                     + layer.getName());
         }
-
-        // final String srs = "EPSG:" + gridSubset.getSRS().getNumber();
-        // we're assuming the feed sends geometries in the appropriate crs here in order not to
-        // carry over the epsg database
-        // try {
-        // layerCrs = CRS.decode(srs);
-        // } catch (NoSuchAuthorityCodeException e) {
-        // throw new IllegalArgumentException("Can't get CRS for " + srs, e);
-        // } catch (FactoryException e) {
-        // throw new IllegalArgumentException("Can't get CRS for " + srs, e);
-        // }
     }
 
     public TileGridFilterMatrix buildTileRangeMask(final GeoRSSReader reader) throws IOException {
 
         final GridSubset gridSubset = layer.getGridSubset(gridSetId);
-        TileGridFilterMatrix matrix = new TileGridFilterMatrix(gridSubset, maxMaskLevel);
+        final int[] metaTilingFactors = layer.getMetaTilingFactors();
+        TileGridFilterMatrix matrix = new TileGridFilterMatrix(gridSubset, metaTilingFactors, maxMaskLevel);
 
         Entry entry;
         Geometry geom;
@@ -77,7 +67,7 @@ class GeoRSSTileRangeBuilder {
         matrix.createGraphics();
         try {
             while ((entry = reader.nextEntry()) != null) {
-                //crs = entry.getCRS();
+                // crs = entry.getCRS();
                 geom = entry.getWhere();
                 matrix.setMasksForGeometry(geom);
             }

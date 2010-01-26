@@ -60,9 +60,13 @@ public class TileGridFilterMatrix {
 
     private final int maxMaskLevel;
 
-    public TileGridFilterMatrix(final GridSubset gridSubset, final int maxMaskLevel) {
+    private int[] metaTilingFactors;
+
+    public TileGridFilterMatrix(final GridSubset gridSubset, final int[] metaTilingFactors,
+            final int maxMaskLevel) {
 
         this.gridSubset = gridSubset;
+        this.metaTilingFactors = metaTilingFactors;
         this.maxMaskLevel = maxMaskLevel;
 
         final int startLevel = getStartLevel();
@@ -76,7 +80,7 @@ public class TileGridFilterMatrix {
             if (level > maxMaskLevel) {
                 byLevelMasks[level] = null;
             } else {
-                final long[] levelBounds = gridSubset.getCoverage(level);
+                final long[] levelBounds = getGridCoverage(level);
                 final long tilesX = (levelBounds[2] + 1) - levelBounds[0];
                 final long tilesY = (levelBounds[3] + 1) - levelBounds[1];
                 final long numTiles = tilesX * tilesY;
@@ -96,6 +100,12 @@ public class TileGridFilterMatrix {
                 byLevelMasks[level] = mask;
             }
         }
+    }
+
+    private long[] getGridCoverage(final int level) {
+        long[][] coveredBounds = gridSubset.getCoverages();
+        coveredBounds = gridSubset.expandToMetaFactors(coveredBounds, metaTilingFactors);
+        return coveredBounds[level];
     }
 
     public boolean hasTilesSet() {
@@ -161,8 +171,8 @@ public class TileGridFilterMatrix {
     private Geometry transformToGridCrs(final Geometry geometryInLayerCrs, final int zoomLevel) {
         final MathTransform worldToGrid;
         if (transformCache[zoomLevel] == null) {
-            final BoundingBox coverageBounds = gridSubset.getCoverageBounds(zoomLevel);
-            final long[] coverage = gridSubset.getCoverage(zoomLevel);
+            final long[] coverage = getGridCoverage(zoomLevel);
+            final BoundingBox coverageBounds = gridSubset.boundsFromRectangle(coverage);
             worldToGrid = getWorldToGridTransform(coverageBounds, coverage);
             transformCache[zoomLevel] = worldToGrid;
         } else {
@@ -293,8 +303,8 @@ public class TileGridFilterMatrix {
         /*
          * Get the best fit for the level
          */
-        final long[] coverage = gridSubset.getCoverage(level);
-        final BoundingBox coverageBounds = gridSubset.getCoverageBounds(level);
+        final long[] coverage = getGridCoverage(level);
+        final BoundingBox coverageBounds = gridSubset.boundsFromRectangle(coverage);
         final MathTransform worldToGrid = getWorldToGridTransform(coverageBounds, coverage);
 
         BoundingBox expandedBounds;
