@@ -122,7 +122,7 @@ class StaxGeoRSSReader implements GeoRSSReader {
         try {
             return parseEntry();
         } catch (XMLStreamException e) {
-            throw new IOException(e);
+            throw new IOException(e.getMessage());
         }
     }
 
