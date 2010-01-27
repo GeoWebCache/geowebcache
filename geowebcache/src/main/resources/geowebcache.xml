@@ -47,6 +47,7 @@
         <maxMaskLevel>8</maxMaskLevel>
       </geoRssFeed>
     </updateSources>
+    <useETags>true</useETags>
     <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>
   </wmsLayer>
 </layers>

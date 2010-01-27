@@ -50,6 +50,7 @@ import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
+import org.restlet.data.Status;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
@@ -467,7 +468,22 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * Happy ending, sets the headers and writes the response back to the
      * client.
      */
-    private void writeData(ConveyorTile tile) throws IOException {  
+    private void writeData(ConveyorTile tile) throws IOException {
+        if(tile.getLayer().useETags()) {
+            String ifNoneMatch = tile.servletReq.getHeader("If-None-Match");
+            String hexTag = Long.toHexString(tile.getTSCreated());
+            
+            if(ifNoneMatch != null) {    
+                if(ifNoneMatch.equals(hexTag)) {
+                    tile.servletResp.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                    return;
+                }
+            }
+            
+            // If we get here, we want ETags but the client did not have the tile.
+            tile.servletResp.setHeader("ETag", hexTag);
+        } 
+        
         writeFixedResponse(tile.servletResp, 200, tile.getMimeType().getMimeType(), tile.getContent(), tile.getCacheResult());
     }
     
@@ -480,6 +496,16 @@ public class GeoWebCacheDispatcher extends AbstractController {
         TileLayer layer = tile.getLayer();
         if(layer != null) {
             layer.setExpirationHeader(tile.servletResp, (int) tile.getTileIndex()[2]);
+            
+            if(layer.useETags()) {
+                String ifNoneMatch = tile.servletReq.getHeader("If-None-Match");
+                if(ifNoneMatch.equals("gwc-blank-tile")) {
+                    tile.servletResp.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                    return;
+                } else {
+                    tile.servletResp.setHeader("ETag", "gwc-blank-tile");
+                }
+            }
         }
 
         writeFixedResponse(tile.servletResp, 200, ImageMime.png.getMimeType(), this.blankTile, CacheResult.OTHER);

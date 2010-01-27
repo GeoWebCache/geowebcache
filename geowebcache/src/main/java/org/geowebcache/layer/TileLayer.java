@@ -65,6 +65,8 @@ public abstract class TileLayer {
     protected List<RequestFilter> requestFilters;
 
     protected List<UpdateSourceDefinition> updateSources;
+    
+    protected Boolean useETags;
 
     protected transient List<MimeType> formats;
 
@@ -168,6 +170,7 @@ public abstract class TileLayer {
         }
         return sources;
     }
+    
 
     /**
      * Whether the layer supports the given format string
@@ -188,6 +191,20 @@ public abstract class TileLayer {
 
         throw new GeoWebCacheException("Format " + strFormat + " is not supported by "
                 + this.getName());
+    }
+    
+    
+    /**
+     * Whether to use ETags for this layer
+     * 
+     * @return
+     */
+    public boolean useETags() {
+        if(useETags != null && useETags) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**

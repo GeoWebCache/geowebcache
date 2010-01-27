@@ -576,9 +576,9 @@ class JDBCMBWrapper {
     throws SQLException, StorageException {
 
         String query = "MERGE INTO "
-                +"TILES(LAYER_ID,X,Y,Z,GRIDSET_ID,FORMAT_ID,PARAMETERS_ID,BLOB_SIZE,LOCK) "
+                +"TILES(LAYER_ID,X,Y,Z,GRIDSET_ID,FORMAT_ID,PARAMETERS_ID,BLOB_SIZE,LOCK,CREATED) "
                 +"KEY(LAYER_ID,X,Y,Z,GRIDSET_ID,FORMAT_ID,PARAMETERS_ID) "
-                +"VALUES(?,?,?,?,?,?,?,?,NOW())";
+                +"VALUES(?,?,?,?,?,?,?,?,NOW(),?)";
 
         long[] xyz = stObj.getXYZ();
 
@@ -598,7 +598,7 @@ class JDBCMBWrapper {
                 prep.setLong(7, stObj.getParametersId());
             }
             prep.setInt(8, stObj.getBlobSize());
-
+            prep.setLong(9, System.currentTimeMillis());
             Long insertId = wrappedInsert(prep);
 
             if (insertId == null) {
