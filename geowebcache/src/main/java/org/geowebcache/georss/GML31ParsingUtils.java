@@ -1,0 +1,500 @@
+/*
+ *    GeoTools - The Open Source Java GIS Toolkit
+ *    http://geotools.org
+ *
+ *    (C) 2008, Open Source Geospatial Foundation (OSGeo)
+ *
+ *    This library is free software; you can redistribute it and/or
+ *    modify it under the terms of the GNU Lesser General Public
+ *    License as published by the Free Software Foundation;
+ *    version 2.1 of the License.
+ *
+ *    This library is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *    Lesser General Public License for more details.
+ */
+package org.geowebcache.georss;
+
+import static javax.xml.stream.XMLStreamConstants.CHARACTERS;
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
+
+/**
+ * Utility class to parse GML 3.1 geometries out of an {@link XMLStreamReader}
+ * <p>
+ * Dislaimer: the code on this class was adapted from LGPL licensed GeoTools WFS module's {@code
+ * XmlSimpleFeatureParser} class available <a href="http://svn.osgeo.org/geotools/trunk/modules/unsupported/wfs/src/main/java/org/geotools/data/wfs/v1_1_0/parsers/XmlSimpleFeatureParser.java"
+ * >here</a>
+ * </p>
+ * 
+ * @author Gabriel Roldan (TOPP)
+ * @version $Id$
+ */
+@SuppressWarnings("nls")
+class GML31ParsingUtils {
+
+    private final GeometryFactory geomFac;
+
+    public static final class GML {
+
+        public static final String GML_NS_URI = "http://www.opengis.net/gml";
+
+        public static final QName Point = new QName(GML_NS_URI, "Point");
+
+        public static final QName LineString = new QName(GML_NS_URI, "LineString");
+
+        public static final QName Polygon = new QName(GML_NS_URI, "Polygon");
+
+        public static final QName MultiPoint = new QName(GML_NS_URI, "MultiPoint");
+
+        public static final QName MultiLineString = new QName(GML_NS_URI, "MultiLineString");
+
+        public static final QName MultiSurface = new QName(GML_NS_URI, "MultiSurface");
+
+        public static final QName MultiPolygon = new QName(GML_NS_URI, "MultiPolygon");
+
+        public static final QName pointMembers = new QName(GML_NS_URI, "pointMembers");
+
+        public static final QName pointMember = new QName(GML_NS_URI, "pointMember");
+
+        public static final QName lineStringMember = new QName(GML_NS_URI, "lineStringMember");
+
+        public static final QName surfaceMembers = new QName(GML_NS_URI, "surfaceMembers");
+
+        public static final QName surfaceMember = new QName(GML_NS_URI, "surfaceMember");
+
+        public static final QName polygonMember = new QName(GML_NS_URI, "polygonMember");
+
+        public static final QName exterior = new QName(GML_NS_URI, "exterior");
+
+        public static final QName interior = new QName(GML_NS_URI, "interior");
+
+        public static final QName LinearRing = new QName(GML_NS_URI, "LinearRing");
+
+        public static final QName pos = new QName(GML_NS_URI, "pos");
+
+        public static final QName posList = new QName(GML_NS_URI, "posList");
+
+    }
+
+    public GML31ParsingUtils() {
+        this(new GeometryFactory());
+    }
+
+    public GML31ParsingUtils(GeometryFactory gFac) {
+        this.geomFac = gFac;
+    }
+
+    /**
+     * <p>
+     * Precondition: reader cursor positioned on a geometry property (ej, {@code gml:Point}, etc)
+     * </p>
+     * <p>
+     * Postcondition: reader gets positioned at the end tag of the element it started parsing the
+     * geometry at
+     * </p>
+     * 
+     * @return
+     * @throws XMLStreamException
+     */
+    public Geometry parseGeometry(final XMLStreamReader reader) throws XMLStreamException {
+
+        reader.require(START_ELEMENT, GML.GML_NS_URI, null);
+
+        final QName startingGeometryTagName = reader.getName();
+        int dimension = crsDimension(reader, 2);
+
+        Geometry geom;
+        if (GML.Point.equals(startingGeometryTagName)) {
+            geom = parsePoint(reader, dimension);
+        } else if (GML.LineString.equals(startingGeometryTagName)) {
+            geom = parseLineString(reader, dimension);
+        } else if (GML.Polygon.equals(startingGeometryTagName)) {
+            geom = parsePolygon(reader, dimension);
+        } else if (GML.MultiPoint.equals(startingGeometryTagName)) {
+            geom = parseMultiPoint(reader, dimension);
+        } else if (GML.MultiLineString.equals(startingGeometryTagName)) {
+            geom = parseMultiLineString(reader, dimension);
+        } else if (GML.MultiSurface.equals(startingGeometryTagName)) {
+            geom = parseMultiSurface(reader, dimension);
+        } else if (GML.MultiPolygon.equals(startingGeometryTagName)) {
+            geom = parseMultiPolygon(reader, dimension);
+        } else {
+            throw new IllegalStateException("Unrecognized geometry element "
+                    + startingGeometryTagName);
+        }
+
+        reader.require(END_ELEMENT, startingGeometryTagName.getNamespaceURI(),
+                startingGeometryTagName.getLocalPart());
+
+        return geom;
+    }
+
+    /**
+     * Parses a MultiPoint.
+     * <p>
+     * Precondition: reader positioned at a {@link GML#MultiPoint MultiPoint} start tag
+     * </p>
+     * <p>
+     * Postcondition: reader positioned at the {@link GML#MultiPoint MultiPoint} end tag of the
+     * starting tag
+     * </p>
+     * 
+     * @throws XMLStreamException
+     */
+    private Geometry parseMultiPoint(XMLStreamReader reader, int dimension)
+            throws XMLStreamException {
+        Geometry geom;
+        reader.nextTag();
+        final QName memberTag = reader.getName();
+        List<Point> points = new ArrayList<Point>(4);
+        if (GML.pointMembers.equals(memberTag)) {
+            while (true) {
+                reader.nextTag();
+                if (END_ELEMENT == reader.getEventType()
+                        && GML.pointMembers.getLocalPart().equals(reader.getName())) {
+                    // we're done
+                    break;
+                }
+                Point p = parsePoint(reader, dimension);
+                points.add(p);
+            }
+            reader.nextTag();
+        } else if (GML.pointMember.equals(memberTag)) {
+            while (true) {
+                reader.nextTag();
+                reader.require(START_ELEMENT, GML.GML_NS_URI, GML.Point.getLocalPart());
+
+                Point p = parsePoint(reader, dimension);
+                points.add(p);
+                reader.nextTag();
+                reader.require(END_ELEMENT, GML.GML_NS_URI, GML.pointMember.getLocalPart());
+                reader.nextTag();
+                if (END_ELEMENT == reader.getEventType()
+                        && GML.MultiPoint.getLocalPart().equals(reader.getName())) {
+                    // we're done
+                    break;
+                }
+            }
+        }
+        reader.require(END_ELEMENT, GML.GML_NS_URI, GML.MultiPoint.getLocalPart());
+
+        geom = geomFac.createMultiPoint(points.toArray(new Point[points.size()]));
+        return geom;
+    }
+
+    /**
+     * Parses a MultiLineString.
+     * <p>
+     * Precondition: reader positioned at a {@link GML#MultiLineString MultiLineString} start tag
+     * </p>
+     * <p>
+     * Postcondition: reader positioned at the {@link GML#MultiLineString MultiLineString} end tag
+     * of the starting tag
+     * </p>
+     * 
+     * @throws XMLStreamException
+     */
+    private MultiLineString parseMultiLineString(XMLStreamReader reader, int dimension)
+            throws XMLStreamException {
+        MultiLineString geom;
+
+        reader.require(START_ELEMENT, GML.GML_NS_URI, GML.MultiLineString.getLocalPart());
+
+        List<LineString> lines = new ArrayList<LineString>(2);
+
+        while (true) {
+            reader.nextTag();
+            if (END_ELEMENT == reader.getEventType()
+                    && GML.MultiLineString.getLocalPart().equals(reader.getName())) {
+                // we're done
+                break;
+            }
+            reader.require(START_ELEMENT, GML.GML_NS_URI, GML.lineStringMember.getLocalPart());
+            reader.nextTag();
+            reader.require(START_ELEMENT, GML.GML_NS_URI, GML.LineString.getLocalPart());
+
+            LineString line = parseLineString(reader, dimension);
+            lines.add(line);
+            reader.nextTag();
+            reader.require(END_ELEMENT, GML.GML_NS_URI, GML.lineStringMember.getLocalPart());
+        }
+
+        reader.require(END_ELEMENT, GML.GML_NS_URI, GML.MultiLineString.getLocalPart());
+
+        geom = geomFac.createMultiLineString(lines.toArray(new LineString[lines.size()]));
+        return geom;
+    }
+
+    /**
+     * Parses a MultiPolygon out of a MultiSurface element (because our geometry model only supports
+     * MultiPolygon).
+     * <p>
+     * Precondition: reader positioned at a {@link GML#MultiSurface MultiSurface} start tag
+     * </p>
+     * <p>
+     * Postcondition: reader positioned at the {@link GML#MultiSurface MultiSurface} end tag of the
+     * starting tag
+     * </p>
+     * 
+     * @param reader
+     */
+    private Geometry parseMultiSurface(XMLStreamReader reader, int dimension)
+            throws XMLStreamException {
+        Geometry geom;
+        reader.nextTag();
+        final QName memberTag = reader.getName();
+        List<Polygon> polygons = new ArrayList<Polygon>(2);
+        if (GML.surfaceMembers.equals(memberTag)) {
+            while (true) {
+                reader.nextTag();
+                if (END_ELEMENT == reader.getEventType()
+                        && GML.surfaceMembers.getLocalPart().equals(reader.getName())) {
+                    // we're done
+                    break;
+                }
+                Polygon p = parsePolygon(reader, dimension);
+                polygons.add(p);
+            }
+            reader.nextTag();
+        } else if (GML.surfaceMember.equals(memberTag)) {
+            while (true) {
+                reader.nextTag();
+                Polygon p = parsePolygon(reader, dimension);
+                polygons.add(p);
+                reader.nextTag();
+                reader.require(END_ELEMENT, GML.GML_NS_URI, GML.surfaceMember.getLocalPart());
+                reader.nextTag();
+                if (END_ELEMENT == reader.getEventType()
+                        && GML.MultiSurface.getLocalPart().equals(reader.getName())) {
+                    // we're done
+                    break;
+                }
+            }
+        }
+        reader.require(END_ELEMENT, GML.GML_NS_URI, GML.MultiSurface.getLocalPart());
+
+        geom = geomFac.createMultiPolygon(polygons.toArray(new Polygon[polygons.size()]));
+        return geom;
+    }
+
+    private Geometry parseMultiPolygon(XMLStreamReader reader, int dimension)
+            throws XMLStreamException {
+        Geometry geom;
+        List<Polygon> polygons = new ArrayList<Polygon>(2);
+        reader.nextTag();
+        while (true) {
+            reader.require(START_ELEMENT, GML.GML_NS_URI, GML.polygonMember.getLocalPart());
+            reader.nextTag();
+            reader.require(START_ELEMENT, GML.GML_NS_URI, GML.Polygon.getLocalPart());
+            Polygon p = parsePolygon(reader, dimension);
+            polygons.add(p);
+            reader.nextTag();
+            reader.require(END_ELEMENT, GML.GML_NS_URI, GML.polygonMember.getLocalPart());
+            reader.nextTag();
+            if (END_ELEMENT == reader.getEventType()
+                    && GML.MultiPolygon.getLocalPart().equals(reader.getName())) {
+                // we're done
+                break;
+            }
+        }
+        reader.require(END_ELEMENT, GML.GML_NS_URI, GML.MultiPolygon.getLocalPart());
+
+        geom = geomFac.createMultiPolygon(polygons.toArray(new Polygon[polygons.size()]));
+        return geom;
+    }
+
+    /**
+     * Parses a polygon.
+     * <p>
+     * Precondition: reader positioned at a {@link GML#Polygon Polygon} start tag
+     * </p>
+     * <p>
+     * Postcondition: reader positioned at the {@link GML#Polygon Polygon} end tag of the starting
+     * tag
+     * </p>
+     * 
+     * @param reader
+     * 
+     * @param dimension
+     * @return
+     * @throws XMLStreamException
+     */
+    private Polygon parsePolygon(XMLStreamReader reader, int dimension) throws XMLStreamException {
+        Polygon geom;
+        LinearRing shell;
+        List<LinearRing> holes = null;
+
+        reader.nextTag();
+        reader.require(START_ELEMENT, GML.GML_NS_URI, GML.exterior.getLocalPart());
+        reader.nextTag();
+        shell = parseLinearRing(reader, dimension);
+        reader.nextTag();
+        reader.require(END_ELEMENT, GML.GML_NS_URI, GML.exterior.getLocalPart());
+        reader.nextTag();
+
+        if (GML.interior.equals(reader.getName())) {
+            // parse interior rings
+            holes = new ArrayList<LinearRing>(2);
+            while (true) {
+                reader.nextTag();
+                LinearRing hole = parseLinearRing(reader, dimension);
+                holes.add(hole);
+                reader.nextTag();
+                reader.require(END_ELEMENT, GML.GML_NS_URI, GML.interior.getLocalPart());
+                reader.nextTag();
+                if (END_ELEMENT == reader.getEventType()) {
+                    // we're done
+                    reader.require(END_ELEMENT, GML.GML_NS_URI, GML.Polygon.getLocalPart());
+                    break;
+                }
+            }
+        }
+
+        reader.require(END_ELEMENT, GML.GML_NS_URI, GML.Polygon.getLocalPart());
+
+        LinearRing[] holesArray = null;
+        if (holes != null) {
+            holesArray = holes.toArray(new LinearRing[holes.size()]);
+        }
+        geom = geomFac.createPolygon(shell, holesArray);
+
+        return geom;
+    }
+
+    private LinearRing parseLinearRing(final XMLStreamReader reader, final int dimension)
+            throws XMLStreamException {
+
+        reader.require(START_ELEMENT, GML.GML_NS_URI, GML.LinearRing.getLocalPart());
+        reader.nextTag();
+        String tagName = reader.getLocalName();
+        String ns = reader.getNamespaceURI();
+        Coordinate[] shellCoords;
+        if (GML.GML_NS_URI.equals(ns) && GML.pos.getLocalPart().equals(tagName)) {
+            Coordinate[] point;
+            List<Coordinate> coords = new ArrayList<Coordinate>();
+            int eventType;
+            do {
+                point = parseCoordList(reader, dimension);
+                coords.add(point[0]);
+                reader.nextTag();
+                tagName = reader.getLocalName();
+                eventType = reader.getEventType();
+            } while (eventType == START_ELEMENT && tagName == GML.pos.getLocalPart());
+
+            shellCoords = coords.toArray(new Coordinate[coords.size()]);
+
+        } else if (GML.GML_NS_URI.equals(ns) && GML.posList.getLocalPart().equals(tagName)) {
+            // reader.require(START_ELEMENT, GML.NAMESPACE,
+            // GML.posList.getLocalPart());
+            // crs = crs(reader, crs);
+            shellCoords = parseCoordList(reader, dimension);
+            reader.nextTag();
+        } else {
+            throw new IllegalStateException("Expected posList or pos inside LinearRing: " + tagName);
+        }
+        reader.require(END_ELEMENT, GML.GML_NS_URI, GML.LinearRing.getLocalPart());
+        LinearRing linearRing = geomFac.createLinearRing(shellCoords);
+        // linearRing.setUserData(crs);
+        return linearRing;
+    }
+
+    private LineString parseLineString(XMLStreamReader reader, int dimension)
+            throws XMLStreamException {
+        LineString geom;
+        reader.nextTag();
+        reader.require(START_ELEMENT, GML.GML_NS_URI, GML.posList.getLocalPart());
+        // crs = crs(reader, crs);
+        Coordinate[] coords = parseCoordList(reader, dimension);
+        geom = geomFac.createLineString(coords);
+        // geom.setUserData(crs);
+        reader.nextTag();
+        reader.require(END_ELEMENT, GML.GML_NS_URI, GML.LineString.getLocalPart());
+        return geom;
+    }
+
+    private Point parsePoint(XMLStreamReader reader, int dimension) throws XMLStreamException {
+
+        reader.require(START_ELEMENT, GML.GML_NS_URI, GML.Point.getLocalPart());
+
+        Point geom;
+        reader.nextTag();
+        reader.require(START_ELEMENT, GML.GML_NS_URI, GML.pos.getLocalPart());
+        // crs = crs(reader, crs);
+        Coordinate[] coords = parseCoordList(reader, dimension);
+        geom = geomFac.createPoint(coords[0]);
+        // geom.setUserData(crs);
+        reader.nextTag();
+
+        reader.require(END_ELEMENT, GML.GML_NS_URI, GML.Point.getLocalPart());
+        return geom;
+    }
+
+    private int crsDimension(final XMLStreamReader reader, final int defaultValue) {
+        String srsDimension = reader.getAttributeValue(null, "srsDimension");
+        if (srsDimension == null) {
+            return defaultValue;
+        }
+        int dimension = Integer.valueOf(srsDimension);
+        return dimension;
+    }
+
+    private Coordinate[] parseCoordList(final XMLStreamReader reader, int dimension)
+            throws XMLStreamException {
+        // we might be on a posList tag with srsDimension defined
+        dimension = crsDimension(reader, dimension);
+        reader.next();
+        reader.require(CHARACTERS, null, null);
+        String rawTextValue = reader.getText();
+        Coordinate[] coords = toCoordList(rawTextValue, dimension);
+        return coords;
+    }
+
+    private Coordinate[] toCoordList(String rawTextValue, final int dimension) {
+        rawTextValue = rawTextValue.trim();
+        rawTextValue = rawTextValue.replaceAll("\n", " ");
+        rawTextValue = rawTextValue.replaceAll("\r", " ");
+        String[] split = rawTextValue.trim().split(" +");
+        final int ordinatesLength = split.length;
+        if (ordinatesLength % dimension != 0) {
+            throw new IllegalArgumentException("Number of ordinates (" + ordinatesLength
+                    + ") does not match crs dimension: " + dimension);
+        }
+        final int nCoords = ordinatesLength / dimension;
+        Coordinate[] coords = new Coordinate[nCoords];
+        Coordinate coord;
+        int currCoordIdx = 0;
+        double x, y, z;
+        for (int i = 0; i < ordinatesLength; i += dimension) {
+            x = Double.valueOf(split[i]);
+            y = Double.valueOf(split[i + 1]);
+            if (dimension > 2) {
+                z = Double.valueOf(split[i + 2]);
+                coord = new Coordinate(x, y, z);
+            } else {
+                coord = new Coordinate(x, y);
+            }
+            coords[currCoordIdx] = coord;
+            currCoordIdx++;
+        }
+        return coords;
+    }
+
+}

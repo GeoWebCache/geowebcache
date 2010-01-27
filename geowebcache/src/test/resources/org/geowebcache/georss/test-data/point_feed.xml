@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:georss="http://www.georss.org/georss" xmlns:gml="http://www.opengis.net/gml">
+  <title>Earthquakes</title>
+  <subtitle>International earthquake observation labs</subtitle>
+  <link href="http://example.org/" />
+  <updated>2005-12-13T18:30:02Z</updated>
+  <author>
+    <name>Dr. E. Quake</name>
+    <email>eq@quakelab.example.com</email>
+  </author>
+  <id>urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af6</id>
+  <entry>
+    <title>Mid Texas</title>
+    <link href="http://example.org/2005/09/09/atom01" />
+    <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
+    <updated>2005-08-17T07:02:32Z</updated>
+    <summary>Mid Texas</summary>
+    <georss:where>
+      <gml:Point srsName="urn:x-ogc:def:crs:EPSG:6.11.2:4326">
+        <gml:pos>-98.67150 31.11915</gml:pos>
+      </gml:Point>
+    </georss:where>
+  </entry>
+  <entry>
+    <title>Mid Montana</title>
+    <link href="http://example.org/2005/09/09/atom01" />
+    <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6b</id>
+    <updated>2005-08-17T07:02:32Z</updated>
+    <summary>Mid Montana</summary>
+    <georss:where>
+      <gml:Point srsName="urn:x-ogc:def:crs:EPSG:6.11.2:4326">
+        <gml:pos>-108.47735 46.96970</gml:pos>
+      </gml:Point>
+    </georss:where>
+  </entry>
+  <entry>
+    <title>Mid NY</title>
+    <link href="http://example.org/2005/09/09/atom01" />
+    <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6c</id>
+    <updated>2005-08-17T07:02:32Z</updated>
+    <georss:where>
+      <gml:Point srsName="urn:x-ogc:def:crs:EPSG:6.11.2:4326">
+        <gml:pos>-74.89567 43.00706</gml:pos>
+      </gml:Point>
+    </georss:where>
+  </entry>
+</feed>
+ 
+

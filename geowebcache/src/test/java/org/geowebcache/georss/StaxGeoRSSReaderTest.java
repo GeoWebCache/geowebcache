@@ -17,9 +17,20 @@
  */
 package org.geowebcache.georss;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 import junit.framework.TestCase;
+
+import com.vividsolutions.jts.geom.Point;
 
 public class StaxGeoRSSReaderTest extends TestCase {
 
@@ -30,5 +41,54 @@ public class StaxGeoRSSReaderTest extends TestCase {
         } catch (IllegalArgumentException e) {
             assertTrue(true);
         }
+    }
+
+    public void testParsePointFeed() throws Exception {
+
+        Reader feed = reader("point_feed.xml");
+        StaxGeoRSSReader reader = new StaxGeoRSSReader(feed);
+
+        List<Entry> entries = read(reader);
+
+        assertEquals(3, entries.size());
+        assertRequiredMembers(entries);
+
+        assertTrue(entries.get(0).getWhere() instanceof Point);
+        assertTrue(entries.get(1).getWhere() instanceof Point);
+        assertTrue(entries.get(2).getWhere() instanceof Point);
+    }
+
+    private void assertRequiredMembers(List<Entry> entries) {
+        for (Entry e : entries) {
+            assertNotNull(e.getUpdated());
+            assertNotNull(e.getWhere());
+        }
+    }
+
+    private List<Entry> read(final StaxGeoRSSReader reader) throws IOException {
+        List<Entry> entries = new ArrayList<Entry>();
+        Entry e;
+        while ((e = reader.nextEntry()) != null) {
+            entries.add(e);
+        }
+        return entries;
+    }
+
+    /**
+     * @param fileName
+     *            file name to create the java.io.Reader for, located at {@code <this
+     *            package>/test-data/<fileName>}
+     * @return a reader over {@code test-data/fileName}
+     * @throws FileNotFoundException
+     * @throws UnsupportedEncodingException
+     */
+    private Reader reader(final String fileName) throws FileNotFoundException,
+            UnsupportedEncodingException {
+
+        InputStream stream = getClass().getResourceAsStream("test-data/" + fileName);
+        if (stream == null) {
+            throw new FileNotFoundException("test-data/" + fileName);
+        }
+        return new BufferedReader(new InputStreamReader(stream, "UTF-8"));
     }
 }
