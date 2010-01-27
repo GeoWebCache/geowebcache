@@ -18,6 +18,7 @@
 package org.geowebcache.georss;
 
 import java.io.IOException;
+import java.util.Date;
 
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
@@ -39,6 +40,11 @@ class GeoRSSTileRangeBuilder {
     private final String gridSetId;
 
     private final int maxMaskLevel;
+
+    /**
+     * Keeps track of the most current GeoRSS entry "updated" property
+     */
+    private long lastEntryUpdate;
 
     /**
      * 
@@ -64,6 +70,7 @@ class GeoRSSTileRangeBuilder {
         this.layer = layer;
         this.gridSetId = gridSetId;
         this.maxMaskLevel = maxMaskLevel;
+        this.lastEntryUpdate = Long.MIN_VALUE;
 
         final GridSubset gridSubset = layer.getGridSubset(gridSetId);
         if (gridSubset == null) {
@@ -76,7 +83,8 @@ class GeoRSSTileRangeBuilder {
 
         final GridSubset gridSubset = layer.getGridSubset(gridSetId);
         final int[] metaTilingFactors = layer.getMetaTilingFactors();
-        TileGridFilterMatrix matrix = new TileGridFilterMatrix(gridSubset, metaTilingFactors, maxMaskLevel);
+        TileGridFilterMatrix matrix = new TileGridFilterMatrix(gridSubset, metaTilingFactors,
+                maxMaskLevel);
 
         Entry entry;
         Geometry geom;
@@ -84,7 +92,11 @@ class GeoRSSTileRangeBuilder {
         matrix.createGraphics();
         try {
             while ((entry = reader.nextEntry()) != null) {
-                // crs = entry.getCRS();
+                Date updated = entry.getUpdated();
+                if (updated != null) {
+                    // record the most recent updated entry
+                    lastEntryUpdate = Math.max(lastEntryUpdate, updated.getTime());
+                }
                 geom = entry.getWhere();
                 matrix.setMasksForGeometry(geom);
             }
@@ -93,5 +105,15 @@ class GeoRSSTileRangeBuilder {
         }
 
         return matrix;
+    }
+
+    /**
+     * Returns the value of the most recent updated property value out of all the georss entries
+     * processed at {@link #buildTileRangeMask(GeoRSSReader)}
+     * 
+     * @return the latest georss updated value, or {@code null} if none was processed
+     */
+    public Date getLastEntryUpdate() {
+        return Long.MIN_VALUE == lastEntryUpdate ? null : new Date(lastEntryUpdate);
     }
 }

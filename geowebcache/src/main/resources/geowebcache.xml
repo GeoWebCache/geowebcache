@@ -39,12 +39,12 @@
     </gridSubsets>
     <updateSources>
       <geoRssFeed>
-        <feedUrl>http://localhost/testfeed.xml</feedUrl>
+        <feedUrl>file:src/test/resources/org/geowebcache/georss/test-data/mixedgeometries_feed.xml?updateSequence=${lastUpdate}</feedUrl>
         <gridSetId>EPSG:4326</gridSetId>
         <pollInterval>300</pollInterval>
         <mimeFormat>image/png</mimeFormat>
         <seedingThreads>2</seedingThreads>
-        <maxMaskLevel>8</maxMaskLevel>
+        <maxMaskLevel>11</maxMaskLevel>
       </geoRssFeed>
     </updateSources>
     <useETags>true</useETags>

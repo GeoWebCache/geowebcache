@@ -21,11 +21,13 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Date;
 
 import javax.imageio.ImageIO;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geotools.feature.type.DateUtil;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
@@ -39,15 +41,41 @@ import org.geowebcache.storage.DiscontinuousTileRange;
 
 /**
  * A task to run a GeoRSS feed poll and launch the seeding process
- * 
+ * <p>
+ * If a poll {@link GeoRSSFeedDefinition#getFeedUrl() URL} is configured with the
+ * <code>${lastUpdate}</code> then the formatted date and time for the last updated entry will be
+ * passed on to the URL.
+ * </p>
+ * <p>
+ * For example, if the URL is configured as
+ * <code>http://some.server.org/georss/gwcupdates?updateSequence=${lastUpdate}</code> and a previous
+ * poll for this resource determined that the most recent <code>updated</code> property of a GeoRSS
+ * entry was <code>2010-01-17T01:05:32Z</code>, the the resulting feed URL will be
+ * <code>http://some.server.org/georss/gwcupdates?updateSequence=2010-01-17T01:05:32Z</code> (or its
+ * equivalent in the server's time zone).
+ * </p>
+ * <p>
+ * By the other hand, if <code>${lastUpdate}</code> parameter is configured but this task is going
+ * to perform the first poll (hence there's no last update history), the parameter will be replaced
+ * by the empty string, resulting in something like
+ * <code>http://some.server.org/georss/gwcupdates?updateSequence=</code>
+ * </p>
  */
 class GeoRSSPollTask implements Runnable {
 
     private static final Log logger = LogFactory.getLog(GeoRSSPollTask.class);
 
+    private static final String LAST_UPDATE_URL_TEMPLATE = "${lastUpdate}";
+
     private final PollDef poll;
 
     private final SeedRestlet seedRestlet;
+
+    /**
+     * Date and time of the more recent GeoRSS entry updated property. To be used as parameter for
+     * the feed url
+     */
+    private Date lastUpdatedEntry;
 
     public GeoRSSPollTask(final PollDef poll, final SeedRestlet seedRestlet) {
         this.poll = poll;
@@ -88,7 +116,7 @@ class GeoRSSPollTask implements Runnable {
         logger.info("Polling GeoRSS feed for layer " + layer.getName() + ": " + pollDef.toString());
 
         final String gridSetId = pollDef.getGridSetId();
-        final URL feedUrl = new URL(pollDef.getFeedUrl());
+        final URL feedUrl = new URL(templateFeedUrl(pollDef.getFeedUrl()));
 
         logger.debug("Getting GeoRSS reader for " + feedUrl.toExternalForm());
         final GeoRSSReaderFactory geoRSSReaderFactory = new GeoRSSReaderFactory();
@@ -113,6 +141,8 @@ class GeoRSSPollTask implements Runnable {
                 + feedUrl.toExternalForm() + " for " + layer.getName());
 
         final TileGridFilterMatrix tileRangeMask = matrixBuilder.buildTileRangeMask(geoRSSReader);
+        this.lastUpdatedEntry = matrixBuilder.getLastEntryUpdate();
+
         logger.debug("Created tile range mask based on GeoRSS geometry feed from " + pollDef
                 + " for " + layer.getName() + ". Calculating number of affected tiles...");
         _logImagesToDisk(tileRangeMask);
@@ -130,6 +160,25 @@ class GeoRSSPollTask implements Runnable {
 
         logger.info("Seeding process for tiles affected by feed " + feedUrl.toExternalForm()
                 + " successfully launched.");
+    }
+
+    private String templateFeedUrl(final String feedUrl) {
+        if (feedUrl == null) {
+            throw new NullPointerException("feedUrl");
+        }
+
+        String url = feedUrl;
+        if (feedUrl.indexOf(LAST_UPDATE_URL_TEMPLATE) > -1) {
+            String serializeDateTime;
+            if (lastUpdatedEntry == null) {
+                serializeDateTime = "";
+            } else {
+                serializeDateTime = DateUtil.serializeDateTime(lastUpdatedEntry);
+            }
+            url = feedUrl.replace(LAST_UPDATE_URL_TEMPLATE, serializeDateTime);
+            logger.info("Feed URL templated as '" + url + "'");
+        }
+        return url;
     }
 
     /**
@@ -181,16 +230,15 @@ class GeoRSSPollTask implements Runnable {
         long[][] coveredBounds = tileRangeMask.getCoveredBounds();
 
         BufferedImage[] byLevelMasks = tileRangeMask.getByLevelMasks();
-        
+
         RasterMask rasterMask = new RasterMask(byLevelMasks, fullCoverage, coveredBounds);
 
         DiscontinuousTileRange dtr = new DiscontinuousTileRange(layer.getName(), gridSetId, gridSub
                 .getZoomStart(), gridSub.getZoomStop(), rasterMask, mime, null);
 
-        GWCTask[] tasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.TRUNCATE, 1, false);
-
         // We do the truncate synchronously
         try {
+            GWCTask[] tasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.TRUNCATE, 1, false);
             tasks[0].doAction();
         } catch (GeoWebCacheException e) {
             logger.error("Problem truncating based on GeoRSS feed: " + e.getMessage());
@@ -198,8 +246,8 @@ class GeoRSSPollTask implements Runnable {
 
         // Then we seed
         final int seedingThreads = pollDef.getSeedingThreads();
-        tasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.SEED, seedingThreads, false);
-
-        seedRestlet.dispatchTasks(tasks);
+        GWCTask[] seedTasks;
+        seedTasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.SEED, seedingThreads, false);
+        seedRestlet.dispatchTasks(seedTasks);
     }
 }

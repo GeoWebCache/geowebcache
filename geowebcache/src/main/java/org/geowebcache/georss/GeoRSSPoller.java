@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
@@ -51,9 +50,7 @@ public class GeoRSSPoller {
 
     private final ScheduledExecutorService schedulingPollExecutorService;
 
-    private List<PollDef> scheduledPolls;
-
-    private GeoRSSFeedDefinition runningPoll;
+    private final List<PollDef> scheduledPolls;
 
     /**
      * Upon instantiation, spawns out a thread after #{@code startUpDelaySecs} seconds that
@@ -66,7 +63,6 @@ public class GeoRSSPoller {
      * @param startUpDelaySecs
      *            seconds to wait before start polling the layers
      */
-    @SuppressWarnings("unchecked")
     public GeoRSSPoller(final TileLayerDispatcher layerDispatcher, final SeedRestlet seedRestlet,
             final int startUpDelaySecs) {
 
@@ -91,9 +87,8 @@ public class GeoRSSPoller {
                         + " to poll the GeoRSS feed " + pollDef.getFeedUrl() + " every "
                         + pollDef.getPollIntervalStr());
 
-                ScheduledFuture<GeoRSSPollTask> scheduledTask;
-                scheduledTask = (ScheduledFuture<GeoRSSPollTask>) schedulingPollExecutorService
-                        .scheduleAtFixedRate(command, startUpDelaySecs, period, seconds);
+                schedulingPollExecutorService.scheduleAtFixedRate(command, startUpDelaySecs,
+                        period, seconds);
             }
             logger.info("Will wait " + startUpDelaySecs + " seconds before launching the "
                     + pollCount() + " GeoRSS polls found");
@@ -150,7 +145,4 @@ public class GeoRSSPoller {
         return scheduledPolls.size();
     }
 
-    public synchronized GeoRSSFeedDefinition getRunningPoll() {
-        return runningPoll;
-    }
 }
