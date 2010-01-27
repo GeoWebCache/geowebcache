@@ -17,6 +17,8 @@
  */
 package org.geowebcache.georss;
 
+import static org.geowebcache.georss.GeoRSSParsingUtils.*;
+
 import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
@@ -36,7 +38,6 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geotools.feature.type.DateUtil;
 import org.geowebcache.georss.GML31ParsingUtils.GML;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -209,59 +210,12 @@ class StaxGeoRSSReader implements GeoRSSReader {
         reader.require(END_ELEMENT, memberName.getNamespaceURI(), memberName.getLocalPart());
     }
 
-    private QName nextTag(XMLStreamReader reader) throws XMLStreamException {
-
-        while (reader.next() != END_DOCUMENT) {
-            if (reader.isStartElement() || reader.isEndElement()) {
-                return reader.getName();
-            }
-        }
-
-        return null;
-    }
-
     private Geometry geometry(final XMLStreamReader reader) throws XMLStreamException {
         reader.require(START_ELEMENT, GML.GML_NS_URI, null);
         QName name = reader.getName();
         Geometry geometry = gmlParser.parseGeometry(reader);
         reader.require(END_ELEMENT, name.getNamespaceURI(), name.getLocalPart());
         return geometry;
-    }
-
-    private Date date(final String dateTimeStr) {
-        Date dateTime = DateUtil.deserializeDateTime(dateTimeStr);
-        if (logger.isDebugEnabled()) {
-            logger.debug("parsed date string " + dateTimeStr + " as '" + dateTime.toString());
-        }
-        return dateTime;
-    }
-
-    public static String text(XMLStreamReader reader) throws XMLStreamException {
-        reader.require(START_ELEMENT, null, null);
-        StringBuilder sb = new StringBuilder();
-
-        while (true) {
-            reader.next();
-            if (reader.isCharacters() || reader.isWhiteSpace()) {
-                sb.append(reader.getText());
-            } else if (reader.isEndElement()) {
-                break;
-            }
-        }
-        return sb.toString();
-    }
-
-    public static void consume(XMLStreamReader reader, QName tagName) throws XMLStreamException {
-
-        if (reader.getEventType() == END_ELEMENT && tagName.equals(reader.getName())) {
-            return;// already consumed
-        }
-
-        while (reader.next() != END_DOCUMENT) {
-            if (reader.isEndElement() && tagName.equals(reader.getName())) {
-                return;
-            }
-        }
     }
 
 }

@@ -30,7 +30,12 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.geom.MultiPoint;
+import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 
 public class StaxGeoRSSReaderTest extends TestCase {
 
@@ -56,6 +61,24 @@ public class StaxGeoRSSReaderTest extends TestCase {
         assertTrue(entries.get(0).getWhere() instanceof Point);
         assertTrue(entries.get(1).getWhere() instanceof Point);
         assertTrue(entries.get(2).getWhere() instanceof Point);
+    }
+
+    public void testMultiGeometryTypesFeed() throws Exception {
+
+        Reader feed = reader("mixedgeometries_feed.xml");
+        StaxGeoRSSReader reader = new StaxGeoRSSReader(feed);
+
+        List<Entry> entries = read(reader);
+
+        assertEquals(6, entries.size());
+        assertRequiredMembers(entries);
+
+        assertTrue(entries.get(0).getWhere() instanceof Point);
+        assertTrue(entries.get(1).getWhere() instanceof MultiPoint);
+        assertTrue(entries.get(2).getWhere() instanceof Polygon);
+        assertTrue(entries.get(3).getWhere() instanceof MultiPolygon);
+        assertTrue(entries.get(4).getWhere() instanceof LineString);
+        assertTrue(entries.get(5).getWhere() instanceof MultiLineString);
     }
 
     private void assertRequiredMembers(List<Entry> entries) {
