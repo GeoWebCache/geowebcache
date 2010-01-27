@@ -71,6 +71,7 @@ class GeoRSSPollTask implements Runnable {
                     + poll.getPollDef().getFeedUrl()
                     + ". Another attempt will be made after the poll interval of "
                     + poll.getPollDef().getPollIntervalStr(), e);
+            
         } catch (OutOfMemoryError error) {
             System.gc();
             logger.fatal("Out of memory error processing poll " + poll.getPollDef()
@@ -91,7 +92,14 @@ class GeoRSSPollTask implements Runnable {
 
         logger.debug("Getting GeoRSS reader for " + feedUrl.toExternalForm());
         final GeoRSSReaderFactory geoRSSReaderFactory = new GeoRSSReaderFactory();
-        final GeoRSSReader geoRSSReader = geoRSSReaderFactory.createReader(feedUrl);
+        
+        GeoRSSReader geoRSSReader = null;
+        try {
+            geoRSSReader = geoRSSReaderFactory.createReader(feedUrl);
+        } catch(IOException ioe) {
+            logger.error("Failed to fetch RSS feed from " + feedUrl + "\n" + ioe.getMessage());
+            return;
+        }
 
         logger.debug("Got reader for " + pollDef.getFeedUrl()
                 + ". Creating geometry filter matrix for gridset " + gridSetId + " on layer "
