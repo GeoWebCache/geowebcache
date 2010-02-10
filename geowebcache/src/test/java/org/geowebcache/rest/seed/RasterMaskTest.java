@@ -104,25 +104,15 @@ public class RasterMaskTest extends TestCase {
         assertEquals(true, tileRangeMask.lookup(32, 23, 5));// point location
 
         assertEquals(true, tileRangeMask.lookup(31, 23, 5));// point's left
-        // This one fails, and I think it is correct that it does, but our buffering seems wrong
-        // The raster is 64 wide, 32 pixels tall
-        // The position of the point is 0.0,45.0 , i.e.
-        // In the x direction, between the 31st and 32nd , so we need both
-        // In the y direction, between the 7th and the 8th pixel, so we need both
-        //
-        // We want essentially 4 pixels, but we get 7, and we miss one crucial one
-        //  Xy       
-        // xXX  , X,x = the ones we get , X,y = the ones we want (one missing) 
-        // xxx
-        //
-        //TODO assertEquals(true, tileRangeMask.lookup(33, 23, 5));// point's right
+        assertEquals(true, tileRangeMask.lookup(33, 23, 5));// point's right
+        
         assertEquals(true, tileRangeMask.lookup(32, 24, 5));// point's top
-        //TODO assertEquals(true, tileRangeMask.lookup(32, 22, 5));// point's bottom
+        assertEquals(true, tileRangeMask.lookup(32, 22, 5));// point's bottom
 
         assertEquals(true, tileRangeMask.lookup(31, 24, 5));// point's top left
-        //TODO assertEquals(true, tileRangeMask.lookup(33, 24, 5));// point's top right
-        //TODO assertEquals(true, tileRangeMask.lookup(31, 22, 5));// point's bottom left
-        //TODO assertEquals(true, tileRangeMask.lookup(33, 22, 5));// point's bottom right
+        assertEquals(true, tileRangeMask.lookup(33, 24, 5));// point's top right
+        assertEquals(true, tileRangeMask.lookup(31, 22, 5));// point's bottom left
+        assertEquals(true, tileRangeMask.lookup(33, 22, 5));// point's bottom right
     }
 
     /**

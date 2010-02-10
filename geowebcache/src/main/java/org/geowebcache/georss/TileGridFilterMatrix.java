@@ -20,6 +20,7 @@ package org.geowebcache.georss;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -180,6 +181,12 @@ public class TileGridFilterMatrix {
             Shape shape = new LiteShape(bufferedGeomInGridCrs, IDENTITY, generalize);
 
             Graphics2D graphics = getGraphics(level);
+            /*
+             * Disable antialiasing explicitly, otherwise the rendering will pick the platform's
+             * default potentially producing missing pixels
+             */
+            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_OFF);
             graphics.setColor(Color.WHITE);
             graphics.fill(shape);
         }
