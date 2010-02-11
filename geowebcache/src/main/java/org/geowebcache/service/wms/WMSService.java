@@ -18,6 +18,8 @@
 package org.geowebcache.service.wms;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,6 +35,7 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.layer.wms.WMSSourceHelper;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
@@ -191,6 +194,8 @@ public class WMSService extends Service {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
+            } else if(tile.getHint().equalsIgnoreCase("getfeatureinfo")) {
+                handleGetFeatureInfo(tile);
             } else {
                 WMSRequests.handleProxy(tld, tile);
             }
@@ -202,6 +207,70 @@ public class WMSService extends Service {
         }
     }
 
+    /**
+     * Handles a getfeatureinfo request
+     * 
+     * @param conv
+     */
+    private void handleGetFeatureInfo(ConveyorTile tile) 
+    throws GeoWebCacheException {
+        WMSLayer layer = null;
+        TileLayer tl = tld.getTileLayer(tile.getLayerId());
+        
+        if(tl == null) {
+            throw new GeoWebCacheException(tile.getLayerId() + " is unknown.");
+        }
+        
+        if (tl instanceof WMSLayer) {
+            layer = (WMSLayer) tl;
+        } else {
+            throw new GeoWebCacheException(tile.getLayerId()
+                    + " is not served by a WMS backend.");
+        }
+        
+        String[] keys = { "x","y","srs","info_format","bbox" };
+        String[] values = ServletUtils.selectedStringsFromMap(
+                tile.servletReq.getParameterMap(), tile.servletReq.getCharacterEncoding(), keys);
+        
+        //TODO Arent we missing some format stuff here?
+        GridSubset gridSubset =  tl.getGridSubsetForSRS(SRS.getSRS(values[2]));
+        
+        BoundingBox bbox = null;
+        try {
+            bbox = new BoundingBox(values[4]);    
+        } catch(NumberFormatException nfe) {
+            log.debug(nfe.getMessage());
+        }
+        
+        if (bbox == null || !bbox.isSane()) {
+            throw new ServiceException("The bounding box parameter ("+values[2]+") is missing or not sane");
+        }
+
+        long[] tileIndex = gridSubset.closestIndex(bbox);
+        
+        MimeType mimeType = MimeType.createFromFormat(values[3]);
+        
+        ConveyorTile gfiConv = new ConveyorTile(
+                sb, tl.getName(), gridSubset.getName(), tileIndex, mimeType, 
+                null, null, tile.servletReq, tile.servletResp);
+        gfiConv.setTileLayer(tl);
+        
+        WMSSourceHelper srcHelper = layer.getSourceHelper();
+
+        byte[] data = srcHelper.makeFeatureInfoRequest(gfiConv, 
+                Integer.parseInt(values[0]),
+                Integer.parseInt(values[1]));
+
+        try {
+            tile.servletResp.setContentType(mimeType.getMimeType());
+            tile.servletResp.getOutputStream().write(data);
+        } catch (IOException ioe) {
+            tile.servletResp.setStatus(500);
+            log.error(ioe.getMessage());
+        } 
+        
+    }
+    
     public void setFullWMS(String trueFalse) {
         this.fullWMS = Boolean.parseBoolean(trueFalse);
         if(this.fullWMS) {
