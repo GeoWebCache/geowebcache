@@ -22,6 +22,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -214,17 +217,8 @@ class GeoRSSPollTask implements Runnable {
 
     private void launchSeeding(final TileLayer layer, final GeoRSSFeedDefinition pollDef,
             final String gridSetId, final TileGridFilterMatrix tileRangeMask) {
+        
         GridSubset gridSub = layer.getGridSubset(gridSetId);
-
-        final String mimeFormat = pollDef.getMimeFormat();
-
-        MimeType mime = null;
-        try {
-            mime = MimeType.createFromFormat(mimeFormat);
-        } catch (MimeException e) {
-            logger.error("MimeType " + mimeFormat + " not recognized, "
-                    + "aborting GeoRSS update! Check geowebcache.xml");
-        }
 
         long[][] fullCoverage = gridSub.getCoverages();
         long[][] coveredBounds = tileRangeMask.getCoveredBounds();
@@ -232,22 +226,53 @@ class GeoRSSPollTask implements Runnable {
         BufferedImage[] byLevelMasks = tileRangeMask.getByLevelMasks();
 
         RasterMask rasterMask = new RasterMask(byLevelMasks, fullCoverage, coveredBounds);
-
-        DiscontinuousTileRange dtr = new DiscontinuousTileRange(layer.getName(), gridSetId, gridSub
-                .getZoomStart(), gridSub.getZoomStop(), rasterMask, mime, null);
-
-        // We do the truncate synchronously
-        try {
-            GWCTask[] tasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.TRUNCATE, 1, false);
-            tasks[0].doAction();
-        } catch (GeoWebCacheException e) {
-            logger.error("Problem truncating based on GeoRSS feed: " + e.getMessage());
+        
+        List<MimeType> mimeList = null;
+        
+        if(pollDef.getFormat() != null) {
+            MimeType mime;
+            try {
+                mime = MimeType.createFromFormat(pollDef.getFormat());
+                mimeList = new LinkedList<MimeType>();
+                mimeList.add(mime);
+            } catch (MimeException e) {
+                logger.error(e.getMessage());
+            }
         }
+        
+        if(mimeList == null) {
+            mimeList = layer.getMimeTypes();
+        }
+        
+        Iterator<MimeType> mimeIter = mimeList.iterator();
 
-        // Then we seed
-        final int seedingThreads = pollDef.getSeedingThreads();
-        GWCTask[] seedTasks;
-        seedTasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.SEED, seedingThreads, false);
-        seedRestlet.dispatchTasks(seedTasks);
+        // We do the truncate synchronously to get rid of stale data as quick as we can
+        while(mimeIter.hasNext()) {
+            DiscontinuousTileRange dtr = new DiscontinuousTileRange(layer.getName(), gridSetId, 
+                    gridSub.getZoomStart(), gridSub.getZoomStop(), rasterMask, mimeIter.next(), null);
+            try {
+                GWCTask[] tasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.TRUNCATE, 1, false);
+                tasks[0].doAction();
+            } catch (GeoWebCacheException e) {
+                logger.error("Problem truncating based on GeoRSS feed: " + e.getMessage());
+            }
+        }
+        
+        // If truncate was all that was needed, we can quit now
+        if(pollDef.getOperation() == GWCTask.TYPE.TRUNCATE) {
+            return;
+        }
+        
+        // ... else we seed
+        mimeIter = mimeList.iterator();
+        while(mimeIter.hasNext()) {
+            DiscontinuousTileRange dtr = new DiscontinuousTileRange(layer.getName(), gridSetId, 
+                    gridSub.getZoomStart(), gridSub.getZoomStop(), rasterMask, mimeIter.next(), null);
+            
+            final int seedingThreads = pollDef.getSeedingThreads();
+            GWCTask[] seedTasks;
+            seedTasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.SEED, seedingThreads, false);
+            seedRestlet.dispatchTasks(seedTasks);
+        }
     }
 }

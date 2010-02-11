@@ -16,6 +16,8 @@
  */
 package org.geowebcache.layer.updatesource;
 
+import org.geowebcache.rest.GWCTask;
+
 public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
 
     private String feedUrl;
@@ -24,7 +26,9 @@ public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
 
     private Integer pollInterval;
 
-    private String mimeFormat;
+    private String operation;
+    
+    private String format;
 
     private Integer seedingThreads;
 
@@ -44,12 +48,16 @@ public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
         this.maxMaskLevel = level;
     }
 
-    public String getMimeFormat() {
-        return mimeFormat;
-    }
-
-    void setMimeFormat(String mimeFormat) {
-        this.mimeFormat = mimeFormat;
+    public GWCTask.TYPE getOperation() {
+        if(operation == null || operation.equalsIgnoreCase("truncate")) {
+            return GWCTask.TYPE.TRUNCATE;
+        } else if(operation.equalsIgnoreCase("reseed")) {
+            return GWCTask.TYPE.RESEED;
+        } else if(operation.equalsIgnoreCase("seed")) {
+            return GWCTask.TYPE.SEED;
+        }
+        // Whatever...
+        return GWCTask.TYPE.TRUNCATE;
     }
 
     /**
@@ -62,10 +70,6 @@ public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
         return seedingThreads == null ? 1 : seedingThreads.intValue();
     }
 
-    void setSeedingThreads(int seedingThreads) {
-        this.seedingThreads = seedingThreads;
-    }
-
     /**
      * The URL to the feed. I think we should use templating for parameters, so in the initial
      * implementation we search the string for {lastEntryId} and replace any occurrences with the
@@ -76,9 +80,16 @@ public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
     public String getFeedUrl() {
         return feedUrl;
     }
-
-    void setFeedUrl(String url) {
-        this.feedUrl = url;
+    
+    
+    /**
+     * The format for which to truncate / reseed. If you omit this parameter all supported
+     * formats will be truncated / reseeded.
+     * 
+     * @return
+     */
+    public String getFormat() {
+       return format; 
     }
 
     /**
@@ -86,10 +97,6 @@ public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
      */
     public String getGridSetId() {
         return gridSetId;
-    }
-
-    void setGridSetId(String gridSetId) {
-        this.gridSetId = gridSetId;
     }
 
     /**
@@ -102,21 +109,13 @@ public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
         return pollInterval;
     }
 
-    void setPollInterval(int seconds) {
-        if (seconds <= 0) {
-            pollInterval = null;
-        } else {
-            pollInterval = seconds;
-        }
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("GeoRSS feed[");
         sb.append("gridSetId: ").append(gridSetId);
         sb.append(", poll interval: ").append(getPollIntervalStr());
         sb.append(", feed URL: '").append(feedUrl).append("'");
-        sb.append(", mime format: ").append(mimeFormat);
+        sb.append(", operation: ").append(operation);
         sb.append(", seeding threads: ").append(seedingThreads);
         sb.append(", max masking level: ").append(maxMaskLevel);
         return sb.append("]").toString();
