@@ -113,9 +113,11 @@ public class TileRangeIterator {
                 }
 
                 // Get ready for the next level
-                levelBounds = tr.rangeBounds[z + 1];
-                x = levelBounds[0];
-                y = levelBounds[1];
+                if (z < tr.zoomStop) {// but be careful not to go out of index
+                    levelBounds = tr.rangeBounds[z + 1];
+                    x = levelBounds[0];
+                    y = levelBounds[1];
+                }
             }
         } catch (RuntimeException e) {
             e.printStackTrace();
