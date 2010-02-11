@@ -20,6 +20,7 @@ package org.geowebcache.georss;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -101,7 +102,12 @@ public class GeoRSSPoller {
     private void findEnabledPolls() {
         logger.info("Initializing GeoRSS poller...");
 
-        final Iterator<TileLayer> layers = layerDispatcher.getLayers().values().iterator();
+        final Map<String, TileLayer> layerMap = layerDispatcher.getLayers();
+        if (layerMap == null || layerMap.size() == 0) {
+            logger.info("Found no layers configured, GeoRSS poller won't run");
+            return;
+        }
+        final Iterator<TileLayer> layers = layerMap.values().iterator();
         TileLayer layer;
         while (layers.hasNext()) {
             layer = layers.next();
