@@ -123,6 +123,12 @@
          this SRS and the bounds of your data.
        </xs:documentation></xs:annotation>
      </xs:element>
+     <xs:element name="updateSources" type="gwc:updateSources" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         Update sources provide information about when tiles should be expired
+         in GeoWebCache. As of 1.2.2, only GeoRSS is supported.
+       </xs:documentation></xs:annotation>
+     </xs:element>
      <xs:element name="requestFilters" type="gwc:requestFilters" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
          Request filters are applied to all requests and make it possible to apply
@@ -130,10 +136,22 @@
          in Java, though they can be made configurable through XML.
        </xs:documentation></xs:annotation>
      </xs:element>
-     <xs:element name="wmsUrl" type="gwc:wmsUrl">
+     <xs:element name="useETags" type="xs:boolean" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+       GeoWebCache can provide ETags based on the last time a tile was modified and
+       thus support conditional gets. Note that most clients only refer to this tag
+       once the data has expired, so set use small values for the client expiration.
+       This functionality is not available if the metastore is disabled.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <!-- WMS Specific stuff, some of which is not really WMS specific -->
+     <xs:element name="wmsUrl" type="gwc:wmsUrl" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
          A list of URLs to backend servers than can render tiles for this layer. They are used in a
          round robin fashion for load balancing and automatic failover.
+
+         The only time you can ommit this element is if you expect the layer to be merged
+         with that from another source.
        </xs:documentation></xs:annotation>
      </xs:element>
      <xs:element name="wmsLayers" type="xs:string" minOccurs="0">
@@ -890,4 +908,66 @@
      </xs:choice>
   </xs:sequence>
 </xs:complexType>
+
+<xs:complexType name="updateSources">
+  <xs:sequence>
+     <xs:choice minOccurs="0" maxOccurs="1">
+       <xs:element name="geoRssFeed" type="gwc:geoRssFeed" minOccurs="0" maxOccurs="unbounded" />
+     </xs:choice>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="geoRssFeed">
+  <xs:sequence>
+    <xs:element name="feedUrl" type="xs:string" minOccurs="1">
+      <xs:annotation><xs:documentation xml:lang="en">
+        A parameterized URL to a GeoRSS GML feed. If you insert updateSequence=${lastUpdate}, 
+        ${lastUpdate} will be replaced with the timestamp of the last processed update
+        from this source.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="gridSetId" type="xs:string" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The name of the grid set for which this feed applies. Note that the geometries
+        provided by the feed must be in the spatial reference system of the grid set.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="pollInterval" type="xs:integer" minOccurs="1">
+      <xs:annotation><xs:documentation xml:lang="en">
+        How often the GeoRSS source should be polled. Omitting this value or setting it
+        to -1 will disable this feed.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="operation" type="xs:string" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        If omitted the operation is "truncate" by default, alternatively it can be "reseed".
+        Note that even if you specify "seed", the affected area will first be truncated
+        before seeding starts, to get rid of stale data as quickly as possible. 
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="format" type="xs:string" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+       By default all tiles in the affected area will be refreshed. You may specify a 
+       single format (use the MIME type) so that only tiles of that type are updated, 
+       e.g. "image/png"
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="seedingThreads" type="xs:integer" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        This controls the number of threads to use while seeding, provided the
+        operation is reseed. Note that the truncate is synchronous and single threaded.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="maxMaskLevel" type="xs:integer" minOccurs="1">
+      <xs:annotation><xs:documentation xml:lang="en">
+        In order to determine what tiles are affected the geometries from the
+        feed are rendered onto canvases where every pixel represents a tile.
+        This number determines the max zoom level for which to create such a
+        raster. A higher number means a higher resolution image and thus less
+        tiles, but requires more memory. 11 is usually a good number.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
 </xs:schema>
