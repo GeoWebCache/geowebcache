@@ -260,6 +260,7 @@ class GeoRSSPollTask implements Runnable {
         
         // If truncate was all that was needed, we can quit now
         if(pollDef.getOperation() == GWCTask.TYPE.TRUNCATE) {
+            logger.info("Truncation succeeded, won't seed as stated by poll def: " + pollDef);
             return;
         }
         
