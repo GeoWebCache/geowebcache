@@ -110,7 +110,7 @@ public class Demo {
         
         String footer = "</table>\n"
             +"<br />"
-            +"<strong>These are just quick demos. GeoWebCache also suppports:</strong><br />\n"
+            +"<strong>These are just quick demos. GeoWebCache also supports:</strong><br />\n"
             +"<ul><li>WMTS, TMS, Virtual Earth and Google Maps</li>\n"
             +"<li>Proxying GetFeatureInfo, GetLegend and other WMS requests</li>\n"
             +"<li>Advanced request and parameter filters</li>\n"

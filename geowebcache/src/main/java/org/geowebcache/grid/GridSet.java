@@ -305,7 +305,7 @@ public class GridSet {
         } else if(0.02 > metersPerUnit && metersPerUnit > 0.005) {
             return "centimeters";
         } else if(0.002 > metersPerUnit && metersPerUnit > 0.0005) {
-            return "milimeters";
+            return "millimeters";
         } else {
             return "unknown";
         }
