@@ -120,14 +120,6 @@ public class GeoRSSPoller {
                                 + " has no grid subset " + gridSetId
                                 + " as configured by its GeoRSS seeding feed " + georssDef);
                     }
-                    //final String mimeFormat = georssDef.getMimeFormat();
-                    //try {
-                    //    MimeType.createFromFormat(mimeFormat);
-                    //} catch (MimeException e) {
-                    //    throw new IllegalStateException("Layer " + layer.getName()
-                    //            + " has an unidentifiable mime type for its GeoRSS feed "
-                    //            + georssDef.getFeedUrl(), e);
-                    //}
 
                     if (georssDef.getPollInterval() > 0) {
                         logger.info("Scheduling GeoRSS feed for layer " + layer.getName() + ":"
