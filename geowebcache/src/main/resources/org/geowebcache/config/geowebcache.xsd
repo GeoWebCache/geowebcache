@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
            xmlns:xml="http://www.w3.org/XML/1998/namespace"
-           targetNamespace="http://geowebcache.org/schema/1.2.1" 
-           xmlns:gwc="http://geowebcache.org/schema/1.2.1"
+           targetNamespace="http://geowebcache.org/schema/1.2.2" 
+           xmlns:gwc="http://geowebcache.org/schema/1.2.2"
            elementFormDefault="qualified">
 
 <xs:element name="gwcConfiguration">
@@ -125,7 +125,7 @@
      </xs:element>
      <xs:element name="updateSources" type="gwc:updateSources" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
-         Update sources provide information about when tiles should be expired
+         (1.2.2) Update sources provide information about when tiles should be expired
          in GeoWebCache. As of 1.2.2, only GeoRSS is supported.
        </xs:documentation></xs:annotation>
      </xs:element>
@@ -138,7 +138,7 @@
      </xs:element>
      <xs:element name="useETags" type="xs:boolean" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
-       GeoWebCache can provide ETags based on the last time a tile was modified and
+       (1.2.2) GeoWebCache can provide ETags based on the last time a tile was modified and
        thus support conditional gets. Note that most clients only refer to this tag
        once the data has expired, so set use small values for the client expiration.
        This functionality is not available if the metastore is disabled.
@@ -921,7 +921,7 @@
   <xs:sequence>
     <xs:element name="feedUrl" type="xs:string" minOccurs="1">
       <xs:annotation><xs:documentation xml:lang="en">
-        A parameterized URL to a GeoRSS GML feed. If you insert updateSequence=${lastUpdate}, 
+        A parameterized URL to a GeoRSS GML feed. If you insert someVariable=${lastUpdate}, 
         ${lastUpdate} will be replaced with the timestamp of the last processed update
         from this source.
       </xs:documentation></xs:annotation>

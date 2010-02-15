@@ -5,12 +5,15 @@ Complete List of Configuration Elements
 
 The example below uses all configuration directives that are currently available in GeoWebCache. Some of them a mutually exclusive, please check the XSD documentation. Additionally, certain global settings are controlled through the Spring context in geowebcache-servlet.xml.
 
+
+The configuration example below is for version 1.2.x. See parentheses at the beginning of the comment to see what version an element was introduced.
+
 .. code-block:: xml
 
    <?xml version="1.0" encoding="utf-8"?>
    <gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                     xsi:noNamespaceSchemaLocation="http://geowebcache.org/schema/1.2.0/geowebcache.xsd"
-                     xmlns="http://geowebcache.org/schema/1.2.1">
+                     xsi:noNamespaceSchemaLocation="http://geowebcache.org/schema/1.2.2/geowebcache.xsd"
+                     xmlns="http://geowebcache.org/schema/1.2.2">
 
      <!-- ============================== GLOBAL SETTINGS ======================================== -->
 
@@ -173,8 +176,42 @@ The example below uses all configuration directives that are currently available
              <zoomStop>25</zoomStop>
            </gridSubset>
          </gridSubsets>
+         <!-- OPTIONAL (1.2.2) Update sources are data feeds that tell GeoWebCache when to expire content -->
+         <updateSources>
+           <!-- A GeoRSS GML feed, see http://www.georss.org/gml -->
+           <geoRssFeed>
+             <!-- A parameterized URL to a GeoRSS GML feed. If you insert 
+	          ${lastUpdate} in the URL, ${lastUpdate} will be replaced with the timestamp 
+                  of the last processed update from this source. -->
+             <feedUrl>http://someserver/georss?layers=somelayer&amp;lastupdate=${lastUpdate}&amp;srs=EPSG:4326</feedUrl>
+             <!-- The grid set id. The geometries in the feed must be given in the same SRS
+                  as the grid set -->
+             <gridSetId>EPSG:4326</gridSetId>
+             <!-- How often to poll the source, in seconds -->
+             <pollInterval>600</pollInterval>
+             <!-- OPTIONAL The operation to perform, the default is truncate -->
+             <operation>reseed</operation>
+             <!-- OPTIONAL By default all formats supported by the layer are updated,
+                  but you can specify one specific one -->
+             <format>image/png</format>
+             <!-- OPTIONAL If the operation is not truncate, specify how many threads
+                  should run in parallel? Note that each format is done sequencially. -->
+             <seedingThreads>2</seedingThreads>
+             <!-- OPTIONAL GWC will render the geometries onto a bitmask and use that
+                  to determine which tiles are affected. Each pixel represents a tile,
+                  so one such bitmask must be created for every zoom level. This setting
+                  controls the maximum number of zoom levels and thus memory consumption.
+                  10 to 12 is usually a good compromise. Subsampling is used for levels
+                  not included here -->
+             <maxMaskLevel>11</maxMaskLevel>
+           </geoRssFeed>
+         </updateSources>
          <!-- OPTIONAL (TODO, see XSD documentation) -->
          <requestFilters></requestFilters>
+         <!-- OPTIONAL (1.2.2) Provide ETags based on when the tile was created.
+              Note that most browsers will only invoke this after the time defined by
+              expireClients[List] is exceeded. By default this feature is disabled. -->
+         <useETags>true</useETags>
          <!-- REQUIRED One or more URLs to the WMS service to be used as backend -->
          <wmsUrl><string>http://yourserver/path/wms-service</string></wmsUrl>
          <!-- OPTIONAL The LAYERS= value to be sent to the backend server.
