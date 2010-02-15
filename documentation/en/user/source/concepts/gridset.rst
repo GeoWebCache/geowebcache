@@ -8,7 +8,7 @@ A ``<gridSet>`` defines
  - a bounding box describing an extent. This should generally be the maximum extent for the reference system above
  - a set of scale denominators, resolutions or a range of zoom levels
  - tile dimensions in pixels (the same for all zoom levels)
- - to calculate scales, a notion of pixel size is required. The default is 0.28mm/pixel, corresponding to 90.72 DPI
+ - to calculate scales, a notion of pixel size is required. The default is 0.28mm/pixel, corresponding to 90.71428571428572 DPI
 
 A ``<gridSubset>`` is a hint to GWC that a layer uses a particular gridSet, it optionally defines
  - a bounding box contained by the gridSet bounding box

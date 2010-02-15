@@ -114,7 +114,7 @@ The configuration example below is for version 1.2.x. See parentheses at the beg
           -->
          <metersPerUnit>111226.31</metersPerUnit>
          <!-- OPTIONAL The size of a single pixel in meters. OGC standards such as WMS 1.3.0 and
-              WMTS assume 0.28mm per pixel, which corresponds to 90.72 DPI
+              WMTS assume 0.28mm per pixel, which corresponds to 90.71428571428572 DPI
           -->
          <pixelSize>0.00028</pixelSize>
          <!-- OPTIONAL Some protocols, such as WMTS, support named scales. If desired you
