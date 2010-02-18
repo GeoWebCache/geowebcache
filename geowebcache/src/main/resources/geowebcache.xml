@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-                  xsi:noNamespaceSchemaLocation="http://geowebcache.org/schema/1.2.1/geowebcache.xsd" 
-                  xmlns="http://geowebcache.org/schema/1.2.1">
-<version>1.2.1</version>
+                  xsi:noNamespaceSchemaLocation="http://geowebcache.org/schema/1.2.2/geowebcache.xsd" 
+                  xmlns="http://geowebcache.org/schema/1.2.2">
+<version>1.2.2</version>
 <backendTimeout>120</backendTimeout>
 <gridSets>
   <!-- Grid Set Example, 
        by default EPSG:900913 and EPSG:4326 are defined -->
   <gridSet>
-    <name>EPSG:2163 Grid Set</name>
+    <!-- This does not have to be an EPSG code, you can also 
+         have multiple gridSet elements per SRS -->
+    <name>EPSG:2163</name>
     <srs><number>2163</number></srs>
     <extent>
       <coords>
@@ -28,27 +30,56 @@
     <tileWidth>200</tileWidth>
   </gridSet>
 </gridSets>
+
 <layers>
+
   <wmsLayer>
     <name>topp:states</name>
-    <mimeFormats><string>image/png</string></mimeFormats>
+    <gridSubsets>
+      <gridSubset>
+        <gridSetName>EPSG:2163</gridSetName>
+      </gridSubset>
+    </gridSubsets>  
+    <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>
+  </wmsLayer>
+  
+  <wmsLayer>
+    <name>raster test layer</name>
+     <mimeFormats><string>image/jpeg</string></mimeFormats>
+    <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>
+    <wmsLayers>nurc:Img_Sample</wmsLayers>
+  </wmsLayer>
+  
+  <wmsLayer>
+    <name>img states</name>
+    <mimeFormats><string>image/gif</string></mimeFormats>
+    <!-- Grid Subset Example -->
     <gridSubsets>
       <gridSubset>
         <gridSetName>EPSG:4326</gridSetName>
+        <extent>
+          <coords>
+            <double>-129.6</double>
+            <double>3.45</double>
+            <double>-62.1</double>
+            <double>70.9</double>
+          </coords>
+        </extent>
       </gridSubset>
     </gridSubsets>
-    <updateSources>
-      <geoRssFeed>
-        <feedUrl>file:src/test/resources/org/geowebcache/georss/test-data/mixedgeometries_feed.xml?updateSequence=${lastUpdate}</feedUrl>
-        <gridSetId>EPSG:4326</gridSetId>
-        <pollInterval>300</pollInterval>
-        <mimeFormat>image/png</mimeFormat>
-        <seedingThreads>2</seedingThreads>
-        <maxMaskLevel>11</maxMaskLevel>
-      </geoRssFeed>
-    </updateSources>
-    <useETags>true</useETags>
-    <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>
+    <wmsUrl>
+      <string>http://atlas.openplans.org:8080/geoserver/wms</string>
+    </wmsUrl>
+    <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
+    <transparent>false</transparent>
+    <bgColor>0x0066FF</bgColor>
+    <expireCacheList>
+    	<expirationRule minZoom="0" expiration="60" />
+    </expireCacheList>
+    <expireClientsList>
+      <expirationRule minZoom="0" expiration="500" />
+    </expireClientsList>
   </wmsLayer>
+
 </layers>
 </gwcConfiguration>
