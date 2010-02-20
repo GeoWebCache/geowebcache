@@ -112,4 +112,8 @@ public abstract class GWCTask {
     public TYPE getType() {
         return type;
     }
+    
+    public STATE getState() {
+        return state;
+    }
 }

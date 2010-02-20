@@ -195,7 +195,10 @@ The configuration example below is for version 1.2.x. See parentheses at the beg
                   but you can specify one specific one -->
              <format>image/png</format>
              <!-- OPTIONAL If the operation is not truncate, specify how many threads
-                  should run in parallel? Note that each format is done sequencially. -->
+                  should run in parallel? Note that multiple formats are done in parallel,
+                  so if you say 2 threads and the layer has 3 formats (and the geoRSsFeed 
+                  does not specify a format), then the total number of threads will be 
+                  3x2 = 6 -->
              <seedingThreads>2</seedingThreads>
              <!-- OPTIONAL GWC will render the geometries onto a bitmask and use that
                   to determine which tiles are affected. Each pixel represents a tile,

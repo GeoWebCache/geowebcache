@@ -38,6 +38,7 @@ import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCTask;
+import org.geowebcache.rest.GWCTask.STATE;
 import org.geowebcache.rest.seed.RasterMask;
 import org.geowebcache.rest.seed.SeedRestlet;
 import org.geowebcache.storage.DiscontinuousTileRange;
@@ -73,6 +74,8 @@ class GeoRSSPollTask implements Runnable {
     private final PollDef poll;
 
     private final SeedRestlet seedRestlet;
+    
+    private LinkedList<GWCTask> seedTasks;
 
     /**
      * Date and time of the more recent GeoRSS entry updated property. To be used as parameter for
@@ -245,8 +248,11 @@ class GeoRSSPollTask implements Runnable {
         }
         
         Iterator<MimeType> mimeIter = mimeList.iterator();
+        
+        // Ask any existing seed jobs started by this feed to terminate
+        stopSeeding(true);
 
-        // We do the truncate synchronously to get rid of stale data as quick as we can
+        // We do the truncate synchronously to get rid of stale data as quickly as we can
         while(mimeIter.hasNext()) {
             DiscontinuousTileRange dtr = new DiscontinuousTileRange(layer.getName(), gridSetId, 
                     gridSub.getZoomStart(), gridSub.getZoomStop(), rasterMask, mimeIter.next(), null);
@@ -271,9 +277,52 @@ class GeoRSSPollTask implements Runnable {
                     gridSub.getZoomStart(), gridSub.getZoomStop(), rasterMask, mimeIter.next(), null);
             
             final int seedingThreads = pollDef.getSeedingThreads();
-            GWCTask[] seedTasks;
-            seedTasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.SEED, seedingThreads, false);
-            seedRestlet.dispatchTasks(seedTasks);
+            GWCTask[] tasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.SEED, seedingThreads, false);
+            seedRestlet.dispatchTasks(tasks);
+            
+            // Save the handles so we can stop them
+            for (GWCTask task : tasks) {
+                seedTasks.add(task);
+            }
+
+        }
+    }
+    
+    protected void stopSeeding(boolean checkLiveCount) {
+        if(this.seedTasks != null) {
+            int liveCount = 0;
+            for (GWCTask task : seedTasks) {
+                if(task.getState() != STATE.DEAD || task.getState() != STATE.DONE) {
+                    task.terminateNicely();
+                    liveCount++;
+                }
+            }
+            
+            try {
+                logger.debug("Found " + liveCount + " running seed threads. Waiting 3s for them to terminate.");
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            
+            if(! checkLiveCount) {
+                return;
+            }
+            
+            liveCount = 0;
+            Iterator<GWCTask> iter = seedTasks.iterator();
+            while(iter.hasNext()) {
+                GWCTask task = iter.next();
+                if(task.getState() != STATE.DEAD || task.getState() != STATE.DONE) {
+                    liveCount++;  
+                } else {
+                    iter.remove();
+                }
+            }
+            logger.debug(liveCount + " seed jobs are still waiting to terminate, proceeding anyway.");
+            
+        } else {
+            logger.debug("Found no running seed jobs");
         }
     }
 }

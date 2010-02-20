@@ -954,8 +954,11 @@
     </xs:element>
     <xs:element name="seedingThreads" type="xs:integer" minOccurs="0">
       <xs:annotation><xs:documentation xml:lang="en">
-        This controls the number of threads to use while seeding, provided the
-        operation is reseed. Note that the truncate is synchronous and single threaded.
+        This controls the number of threads to use per format while seeding, 
+        provided the operation is seed or reseed. (Truncate is synchronous 
+        and single threaded.) So if you write 2 threads here, and the layer 
+        supports 3 formats, and no format is specified above, then the total
+        number of threads will be 3x2 = 6
       </xs:documentation></xs:annotation>
     </xs:element>
     <xs:element name="maxMaskLevel" type="xs:integer" minOccurs="1">
