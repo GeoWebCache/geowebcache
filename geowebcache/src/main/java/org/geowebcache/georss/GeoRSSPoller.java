@@ -50,6 +50,8 @@ public class GeoRSSPoller {
     private final ScheduledExecutorService schedulingPollExecutorService;
 
     private final List<PollDef> scheduledPolls;
+    
+    private final List<GeoRSSPollTask> scheduledTasks;
 
     /**
      * Upon instantiation, spawns out a thread after #{@code startUpDelaySecs} seconds that
@@ -68,6 +70,7 @@ public class GeoRSSPoller {
         this.layerDispatcher = layerDispatcher;
         this.seedRestlet = seedRestlet;
         this.scheduledPolls = new ArrayList<PollDef>();
+        this.scheduledTasks = new ArrayList<GeoRSSPollTask>();
 
         findEnabledPolls();
 
@@ -77,8 +80,7 @@ public class GeoRSSPoller {
 
             final TimeUnit seconds = TimeUnit.SECONDS;
             for (PollDef poll : this.scheduledPolls) {
-                GeoRSSPollTask command;
-                command = new GeoRSSPollTask(poll, this.seedRestlet);
+                GeoRSSPollTask command = new GeoRSSPollTask(poll, this.seedRestlet);
                 GeoRSSFeedDefinition pollDef = poll.getPollDef();
                 long period = pollDef.getPollInterval();
 
@@ -88,6 +90,8 @@ public class GeoRSSPoller {
 
                 schedulingPollExecutorService.scheduleAtFixedRate(command, startUpDelaySecs,
                         period, seconds);
+                
+                scheduledTasks.add(command);
             }
             logger.info("Will wait " + startUpDelaySecs + " seconds before launching the "
                     + pollCount() + " GeoRSS polls found");
@@ -139,6 +143,19 @@ public class GeoRSSPoller {
      */
     public int pollCount() {
         return scheduledPolls.size();
+    }
+    
+    /**
+     * Destroy method for Spring
+     */
+    public void destroy() {
+        logger.info("destroy() invoked");
+        schedulingPollExecutorService.shutdown();
+        
+        for(GeoRSSPollTask task : scheduledTasks) {
+            task.stopSeeding(false);
+        }
+        // And that's all we can do...
     }
 
 }

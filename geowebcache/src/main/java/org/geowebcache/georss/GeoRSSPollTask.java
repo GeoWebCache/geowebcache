@@ -298,15 +298,23 @@ class GeoRSSPollTask implements Runnable {
                 }
             }
             
+            Thread.yield();
+
+            for (GWCTask task : seedTasks) {
+                if(task.getState() != STATE.DEAD || task.getState() != STATE.DONE) {
+                    liveCount++;
+                }
+            }
+            
+            if(! checkLiveCount) {
+                return;
+            }
+            
             try {
                 logger.debug("Found " + liveCount + " running seed threads. Waiting 3s for them to terminate.");
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
-            
-            if(! checkLiveCount) {
-                return;
             }
             
             liveCount = 0;
