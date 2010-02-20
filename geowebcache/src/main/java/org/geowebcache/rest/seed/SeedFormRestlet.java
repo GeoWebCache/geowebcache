@@ -174,7 +174,7 @@ public class SeedFormRestlet extends GWCRestlet {
         keysValues.put("Seed - generate missing tiles","seed");
         keysValues.put("Reseed - regenerate all tiles", "reseed");
 
-        makePullDown(doc, "type", keysValues, "seed");
+        makePullDown(doc, "type", keysValues, "Seed - generate missing tiles");
         doc.append("</td></tr>\n");
     }
 
