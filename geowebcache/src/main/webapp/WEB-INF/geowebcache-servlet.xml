@@ -170,6 +170,7 @@
 	class="org.geowebcache.service.tms.TMSConverter">
 	<constructor-arg ref="gwcStorageBroker"/>
 	<constructor-arg ref="gwcTLDispatcher"/>
+	<constructor-arg ref="gwcGridSetBroker"/>
   </bean>
   <bean id="gwcServiceWMTS"
 	class="org.geowebcache.service.wmts.WMTSService">
