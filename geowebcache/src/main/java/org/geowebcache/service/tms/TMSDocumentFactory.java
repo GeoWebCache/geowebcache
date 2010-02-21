@@ -23,6 +23,7 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.mime.MimeType;
 
 /**
@@ -51,9 +52,10 @@ public class TMSDocumentFactory {
         str.append("<TileMapService version=\"1.0.0\" services=\""+baseUrl+"\">\n");
         // TODO can have these set through Spring
         str.append("  <Title>Tile Map Service</Title>\n");
-        str.append("  <Abstract>A Tile Map Service running GeoWebCache</Abstract>\n");
+        str.append("  <Abstract>A Tile Map Service served by GeoWebCache</Abstract>\n");
         //TODO Optional stuff, note that there is some meta data stuff on the 
         // TileLayer object that we simply don't use yet
+        
         // <KeywordList>example tile service</KeywordList>
         // <ContactInformation>
         //   <ContactPersonPrimary>
@@ -89,7 +91,7 @@ public class TMSDocumentFactory {
             for(MimeType mimeType : layer.getMimeTypes()) {
                 // GridSubset gridSub = iter.next();
                 str.append("    <TileMap\n");
-                str.append("      title=\"").append(tileMapName(layer, gridSub, mimeType)).append("\"\n");
+                str.append("      title=\"").append(tileMapTitle(layer)).append("\"\n");
                 str.append("      srs=\"").append(gridSub.getSRS().toString()).append("\"\n");
                 str.append("      profile=\"");
                 str.append(profileForGridSet(gridSub.getGridSet()));
@@ -103,8 +105,8 @@ public class TMSDocumentFactory {
         StringBuilder str = new StringBuilder();
         str.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
         str.append("<TileMap version=\"1.0.0\" tilemapservice=\""+ baseUrl + "/service/tms/1.0.0\">\n");
-        str.append("  <Title>").append(tileMapName(layer, gridSub, mimeType)).append("</Title>\n");
-        str.append("  <Abstract></Abstract>\n");
+        str.append("  <Title>").append(tileMapTitle(layer)).append("</Title>\n");
+        str.append("  <Abstract>").append(tileMapDescription(layer)).append("</Abstract>\n");
        // <KeywordList></KeywordList>
        // <Metadata type="TC211" mime-type="text/xml" href="http://www.org" />
        // <Attribution>
@@ -168,5 +170,22 @@ public class TMSDocumentFactory {
     
     private String tileMapName(TileLayer tl, GridSubset gridSub, MimeType mimeType) {
         return tl.getName() + "@" + gridSub.getName() + "@" + mimeType.getFileExtension();
+    }
+    
+    private String tileMapTitle(TileLayer tl) {
+        LayerMetaInformation metaInfo = tl.getMetaInformation();
+        if(metaInfo != null && metaInfo.getTitle() != null) {
+            return metaInfo.getTitle();
+        }
+        
+        return tl.getName();
+    }
+    private String tileMapDescription(TileLayer tl) {
+        LayerMetaInformation metaInfo = tl.getMetaInformation();
+        if(metaInfo != null && metaInfo.getDescription() != null) {
+            return metaInfo.getDescription();
+        }
+        
+        return "";
     }
 }

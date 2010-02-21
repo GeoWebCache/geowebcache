@@ -97,6 +97,11 @@
          value of LAYERS= in WMS requests, and can contain commas. See wmsLayers
        </xs:documentation></xs:annotation>
      </xs:element>
+     <xs:element name="metaInformation" type="gwc:layerMetaInformation" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         Meta information like a title and description intended for human consumption 
+       </xs:documentation></xs:annotation>
+     </xs:element>
      <xs:element name="mimeFormats" type="gwc:mimeFormats" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
          List of formats to be supported. These must be known to GeoWebCache. Legal values are
@@ -968,6 +973,22 @@
         This number determines the max zoom level for which to create such a
         raster. A higher number means a higher resolution image and thus less
         tiles, but requires more memory. 11 is usually a good number.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+
+<xs:complexType name="layerMetaInformation">
+  <xs:sequence>
+    <xs:element name="title" type="xs:string" minOccurs="1">
+      <xs:annotation><xs:documentation xml:lang="en">
+        A human friendly title for the layer
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="description" type="xs:string" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        A description / abstract for the layer
       </xs:documentation></xs:annotation>
     </xs:element>
   </xs:sequence>

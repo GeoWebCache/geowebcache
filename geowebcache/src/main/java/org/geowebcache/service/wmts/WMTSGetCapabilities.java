@@ -241,8 +241,7 @@ public class WMTSGetCapabilities {
             appendTag(str, "    ", "ows:Title", layer.getName(), null);
         } else {
             appendTag(str, "    ", "ows:Title", layerMeta.getTitle(), null);
-            appendTag(str, "    ", "ows:Abstract", layerMeta.getDescription(),
-                    null);
+            appendTag(str, "    ", "ows:Abstract", layerMeta.getDescription(), null);
         }
 
         layerWGS84BoundingBox(str, layer);

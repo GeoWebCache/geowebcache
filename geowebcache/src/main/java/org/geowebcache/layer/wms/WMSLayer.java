@@ -50,6 +50,7 @@ import org.geowebcache.grid.XMLGridSubset;
 import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.layer.GridLocObj;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
@@ -1261,5 +1262,7 @@ public class WMSLayer extends TileLayer {
         //Not really needed at this point
         return this;
     }
+
+
 
 }

@@ -44,6 +44,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 
@@ -174,6 +175,14 @@ public class GetCapabilitiesConfiguration implements Configuration {
             String name = layer.getName();
             String stylesStr = "";
             
+            String title = layer.getTitle();
+            
+            String description = layer.get_abstract();
+            
+            LayerMetaInformation layerMetaInfo = null;
+            if(title != null || description != null) {
+                layerMetaInfo = new LayerMetaInformation(title, description, null, null);
+            }
             boolean queryable = layer.isQueryable();
             
             if (name != null) {
@@ -224,6 +233,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
                     // Finalize with some defaults
                     wmsLayer.setCacheBypassAllowed(allowCacheBypass);
                     wmsLayer.setBackendTimeout(120);
+                    
+                    wmsLayer.setMetaInformation(layerMetaInfo);
                     
                     if(urlVersion != null) {
                         wmsLayer.setVersion(urlVersion);

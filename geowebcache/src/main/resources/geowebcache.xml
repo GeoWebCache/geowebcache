@@ -52,6 +52,10 @@
   
   <wmsLayer>
     <name>img states</name>
+    <metaInformation>
+      <title>Nicer title for Image States</title>
+      <description>This is a description. Fascinating.</description>
+    </metaInformation>
     <mimeFormats><string>image/gif</string></mimeFormats>
     <!-- Grid Subset Example -->
     <gridSubsets>

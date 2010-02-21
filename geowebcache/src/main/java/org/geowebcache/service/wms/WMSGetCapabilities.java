@@ -34,6 +34,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
@@ -281,7 +282,7 @@ public class WMSGetCapabilities {
     private void capabilityLayerOuter(StringBuilder str) {
         str.append("  <Layer>\n");
         str.append("    <Title>GeoWebCache WMS</Title>\n");
-        str.append("    <Abstract>Note that GeoWebCache does not provide full WMS services.</Abstract>\n");
+        str.append("    <Abstract>Note that not all GeoWebCache instances provide a full WMS service.</Abstract>\n");
         str.append("    <LatLonBoundingBox minx=\"-180.0\" miny=\"-90.0\" maxx=\"180.0\" maxy=\"90.0\"/>\n");
         
         Iterator<TileLayer> layerIter = tld.getLayers().values().iterator();
@@ -305,7 +306,15 @@ public class WMSGetCapabilities {
         }
 
         str.append("      <Name>"+layer.getName()+"</Name>\n");
-        str.append("      <Title>"+layer.getName()+"</Title>\n");
+
+        
+        if(layer.getMetaInformation() != null) {
+            LayerMetaInformation metaInfo = layer.getMetaInformation();            
+            str.append("      <Title>"+metaInfo.getTitle()+"</Title>\n");
+            str.append("      <Abstract>"+metaInfo.getDescription()+"</Abstract>\n");
+        } else {
+            str.append("      <Title>"+layer.getName()+"</Title>\n");
+        }
         
         Iterator<GridSubset> gridSetIter = layer.getGridSubsets().values().iterator();
         TreeSet<SRS> srsSet = new TreeSet<SRS>();

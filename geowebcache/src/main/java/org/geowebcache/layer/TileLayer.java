@@ -51,7 +51,7 @@ public abstract class TileLayer {
 
     protected String name;
 
-    protected LayerMetaInformation layerMetaInfo;
+    protected LayerMetaInformation metaInformation;
 
     protected List<String> mimeFormats;
 
@@ -99,7 +99,12 @@ public abstract class TileLayer {
      * @return
      */
     public LayerMetaInformation getMetaInformation() {
-        return this.layerMetaInfo;
+        return this.metaInformation;
+    }
+    
+    
+    public void setMetaInformation(LayerMetaInformation metaInfo) {
+        this.metaInformation = metaInfo;
     }
 
     /**
