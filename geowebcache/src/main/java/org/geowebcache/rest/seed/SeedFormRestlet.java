@@ -374,7 +374,7 @@ public class SeedFormRestlet extends GWCRestlet {
             doc.append("<ul><li><i>none</i></li></ul>\n");
         } else {
             doc.append("<table border=\"0\" cellspacing=\"10\">");
-            doc.append("<tr style=\"font-weight: bold;\"><td>Id</td><td>Layer</td><td>Type</td><td>Tiles total</td>"
+            doc.append("<tr style=\"font-weight: bold;\"><td>Id</td><td>Layer</td><td>Type</td><td>Estimated number of tiles</td>"
                     +"<td>Tiles completed</td><td>Time remaining</td><td>Threads</td><td>&nbsp;</td><tr>");
             tasks = true;
         }
