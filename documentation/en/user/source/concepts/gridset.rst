@@ -6,7 +6,7 @@ Grid Sets and Grid Subsets
 A ``<gridSet>`` defines
  - a spatial reference system (EPSG code)
  - a bounding box describing an extent. This should generally be the maximum extent for the reference system above
- - a set of scale denominators, resolutions or a range of zoom levels
+ - a set of scale denominators, resolutions OR a range of zoom levels
  - tile dimensions in pixels (the same for all zoom levels)
  - to calculate scales, a notion of pixel size is required. The default is 0.28mm/pixel, corresponding to 90.71428571428572 DPI
 

@@ -27,6 +27,6 @@ Note that several backends also support a parameter to indicate that the client 
 Configuring Metatiling
 ----------------------
 
-Metatiling can be configured either on a per-layer basis, or for all layers from a getcapabilities document..
+Metatiling can be configured either on a per-layer basis, or for all layers from a getcapabilities document. The former is configured in geowebcache.xml, the latter in geowebcache-servlet.xml , it is the 4th constructor argument.
 
 Note that you can seed up to a certain zoomlevel and then reduce metatiling, to ensure adequate response times where the map has not been seeded.

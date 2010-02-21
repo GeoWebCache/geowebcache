@@ -87,4 +87,4 @@ Note: The reference to the grid set EPSG:4326 may be a bit mysterious. It is one
 
 Definining a Grid Set
 ---------------------
-The concept behind a grid set is documented in-depth separately. The example below just illustrates how to define a new grid set for a particular projection.
+The concept behind a grid set is documented in-depth separately.

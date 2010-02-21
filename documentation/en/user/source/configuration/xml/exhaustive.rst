@@ -181,7 +181,8 @@ The configuration example below is for version 1.2.x. See parentheses at the beg
              <zoomStop>25</zoomStop>
            </gridSubset>
          </gridSubsets>
-         <!-- OPTIONAL (1.2.2) Update sources are data feeds that tell GeoWebCache when to expire content -->
+         <!-- OPTIONAL (1.2.2) Update sources are data feeds that tell 
+              GeoWebCache when to expire content -->
          <updateSources>
            <!-- A GeoRSS GML feed, see http://www.georss.org/gml -->
            <geoRssFeed>
