@@ -139,9 +139,14 @@ The configuration example below is for version 1.2.x. See parentheses at the beg
          <!-- REQUIRED The name that clients should use to request this layer.
               Unlike WMS, it can contain commas, in case you want to combine a group -->
          <name>Some Layer</name>
+         <!-- OPTIONAL Meta information that describes the layer to humans -->
+         <metaInformation>
+           <title>A nice title for this layer</title>
+           <description>A description of what this data displays</description>
+         </metaInformation>
          <!-- OPTIONAL Specify the formats that are supported by this layer.
               By default, image/png and image/jpeg are supported. Other options include
-              image/png; mode=24bit, image/png24, image/png8, image/tiff, image/gif
+              image/png; mode=24bit, image/png24, image/png8, image/tiff, image/gif -->
          <mimeFormats><string>image/png</string><string>image/jpeg</string></mimeFormats>
          <!-- OPTIONAL See the global setting with the same name -->
          <formatModifiers>...</formatModifiers>
