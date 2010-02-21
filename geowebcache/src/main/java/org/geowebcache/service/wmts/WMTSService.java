@@ -33,6 +33,7 @@ import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.OWSException;
 import org.geowebcache.service.Service;
+import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
 
@@ -49,12 +50,15 @@ public class WMTSService extends Service {
     
     private GridSetBroker gsb;
     
-    public WMTSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb) {
+    private RuntimeStats stats;
+    
+    public WMTSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb, RuntimeStats stats) {
         super(SERVICE_WMTS);
         
         this.sb = sb;
         this.tld = tld;
         this.gsb = gsb;
+        this.stats = stats;
     }
 
     public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response) 
@@ -222,12 +226,12 @@ public class WMTSService extends Service {
         if (tile.getHint() != null) {
             if(tile.getHint().equals("getcapabilities")) {
                 WMTSGetCapabilities wmsGC = new WMTSGetCapabilities(tld, gsb, tile.servletReq);      
-                wmsGC.writeResponse(tile.servletResp);
+                wmsGC.writeResponse(tile.servletResp, stats);
                 
             } else if(tile.getHint().equals("getfeatureinfo")) {
                 ConveyorTile convTile = (ConveyorTile) conv;
                 WMTSGetFeatureInfo wmsGFI = new WMTSGetFeatureInfo(convTile);      
-                wmsGFI.writeResponse();
+                wmsGFI.writeResponse(stats);
             }
         }
     }

@@ -9,10 +9,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.service.OWSException;
+import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.util.ServletUtils;
 
 public class WMTSGetFeatureInfo {
@@ -51,7 +53,7 @@ public class WMTSGetFeatureInfo {
         this.convTile = convTile;
     }
     
-    protected void writeResponse() throws OWSException {
+    protected void writeResponse(RuntimeStats stats) throws OWSException {
         TileLayer layer = convTile.getLayer();
         
         WMSLayer wmsLayer = null;
@@ -80,6 +82,8 @@ public class WMTSGetFeatureInfo {
         convTile.servletResp.setContentType(convTile.getMimeType().getMimeType());
         convTile.servletResp.setContentLength(data.length);
 
+        stats.log(data.length, CacheResult.OTHER);
+        
         try {
             OutputStream os = convTile.servletResp.getOutputStream();
             os.write(data);

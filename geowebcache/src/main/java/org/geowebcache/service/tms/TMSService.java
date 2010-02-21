@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
@@ -32,6 +33,7 @@ import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
+import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
 
@@ -47,11 +49,14 @@ public class TMSService extends Service {
     
     private String baseUrl;
     
-    public TMSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb) {
+    private RuntimeStats stats;
+    
+    public TMSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb, RuntimeStats stats) {
         super(SERVICE_TMS);
         this.sb = sb;
         this.tld = tld;
         this.gsb = gsb;
+        this.stats = stats;
     }
     
     public void setBaseURL(String baseUrl) {
@@ -151,10 +156,13 @@ public class TMSService extends Service {
             ret = tdf.getTileMapDoc(tl, gridSub, gsb, mimeType);
         }
         
+        byte[] data = ret.getBytes();
+        stats.log(data.length, CacheResult.OTHER);
+        
         conv.servletResp.setStatus(200);
         conv.servletResp.setContentType("text/xml");
         try {
-            conv.servletResp.getOutputStream().write(ret.getBytes());
+            conv.servletResp.getOutputStream().write(data);
         } catch (IOException e) {
             // TODO log error
         }

@@ -171,6 +171,7 @@
 	<constructor-arg ref="gwcStorageBroker"/>
 	<constructor-arg ref="gwcTLDispatcher"/>
 	<constructor-arg ref="gwcGridSetBroker"/>
+	<constructor-arg ref="gwcRuntimeStats"/>
 	<!-- Optionally you can set the base URL for the service -->
 	<!-- <property name="baseURL" value="http://localhost:8080/geowebcache" /> -->
   </bean>
@@ -179,6 +180,7 @@
 	<constructor-arg ref="gwcStorageBroker"/>
 	<constructor-arg ref="gwcTLDispatcher"/>
 	<constructor-arg ref="gwcGridSetBroker"/>
+	<constructor-arg ref="gwcRuntimeStats"/>
   </bean>
    
   <!-- WFS based services -->

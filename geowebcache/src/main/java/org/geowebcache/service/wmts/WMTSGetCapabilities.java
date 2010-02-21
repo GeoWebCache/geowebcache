@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.meta.ServiceContact;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.config.meta.ServiceProvider;
+import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.grid.Grid;
 import org.geowebcache.grid.GridSet;
@@ -41,6 +42,7 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.util.ServletUtils;
 
 public class WMTSGetCapabilities {
@@ -69,13 +71,15 @@ public class WMTSGetCapabilities {
         }
     }
     
-    protected void writeResponse(HttpServletResponse response) {
+    protected void writeResponse(HttpServletResponse response, RuntimeStats stats) {
         byte[] data = generateGetCapabilities().getBytes();
 
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/vnd.ogc.wms_xml");
         response.setCharacterEncoding("UTF-8");
         response.setContentLength(data.length);
+        
+        stats.log(data.length, CacheResult.OTHER);
         
         try {
             OutputStream os = response.getOutputStream();
