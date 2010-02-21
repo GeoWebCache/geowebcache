@@ -48,4 +48,8 @@ public class XMLGridSubset {
         }
         return GridSubsetFactory.createGridSubSet(gridSet, extent, zoomStart, zoomStop);
     }
+    
+    public String getGridSetName() {
+        return gridSetName;
+    }
 }

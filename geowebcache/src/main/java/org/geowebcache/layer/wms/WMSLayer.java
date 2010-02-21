@@ -187,7 +187,7 @@ public class WMSLayer extends TileLayer {
     public boolean initialize(GridSetBroker gridSetBroker) {
         
         if(null == this.sourceHelper) {
-            log.error(this.name + " is configured without a source. This is a bug.");
+            log.warn(this.name + " is configured without a source, which is a bug unless you're running tests that don't care.");
         }
 
         curWmsURL = 0;
@@ -245,6 +245,7 @@ public class WMSLayer extends TileLayer {
             this.metaWidthHeight[1] = 3;
         }
 
+        
         if (subSets == null) {
             subSets = new Hashtable<String, GridSubset>();
         }
@@ -252,15 +253,19 @@ public class WMSLayer extends TileLayer {
         if (this.gridSubsets != null) {
             Iterator<XMLGridSubset> iter = gridSubsets.iterator();
             while (iter.hasNext()) {
-                XMLGridSubset xmlGridSubSet = iter.next();
-                GridSubset gridSubset = xmlGridSubSet.getGridSubSet(gridSetBroker);
-                subSets.put(gridSubset.getName(), gridSubset);
+                XMLGridSubset xmlGridSubset = iter.next();
+                GridSubset gridSubset = xmlGridSubset.getGridSubSet(gridSetBroker);
+               
+                if(gridSubset == null) {
+                    log.error(xmlGridSubset.getGridSetName() + " is not known by the GridSetBroker, skipping for layer " + name);
+                } else {
+                    subSets.put(gridSubset.getName(), gridSubset);
+                }
+                
             }
             
             this.gridSubsets = null;
         }
-        
-        
         
         // Convert version 1.1.x and 1.0.x grid objects
         if (grids != null && !grids.isEmpty()) {

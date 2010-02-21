@@ -16,10 +16,16 @@
  */
 package org.geowebcache.service.tms;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
@@ -27,6 +33,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.util.ServletUtils;
 
 public class TMSConverter extends Service {
 
@@ -35,15 +42,24 @@ public class TMSConverter extends Service {
     private StorageBroker sb;
 
     private TileLayerDispatcher tld;
-
-    public TMSConverter(StorageBroker sb, TileLayerDispatcher tld) {
+    
+    private GridSetBroker gsb;
+    
+    private String baseUrl;
+    
+    public TMSConverter(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb) {
         super(SERVICE_TMS);
         this.sb = sb;
         this.tld = tld;
+        this.gsb = gsb;
+    }
+    
+    public void setBaseURL(String baseUrl) {
+        this.baseUrl = baseUrl;
     }
 
     public ConveyorTile getConveyor(HttpServletRequest request,
-            HttpServletResponse response) throws ServiceException {
+            HttpServletResponse response) throws GeoWebCacheException {
 
         // get all elements of the pathInfo after the leading "/tms/1.0.0/" part.
         String[] params = request.getPathInfo().split("/");
@@ -51,7 +67,10 @@ public class TMSConverter extends Service {
         int paramsLength = params.length;
         
         if(params.length < 5) {
-            throw new ServiceException("Expected at least 5 parameters, found " + params.length);
+            // Not a tile request, lets pass it back out
+            ConveyorTile tile = new ConveyorTile(sb, null, request, response);
+            tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
+            return tile;
         }
         
         long[] gridLoc = new long[3];
@@ -66,19 +85,22 @@ public class TMSConverter extends Service {
             throw new ServiceException("Unable to parse number " + nfe.getMessage() + " from " + request.getPathInfo());
         }
 
-        String layerId = params[paramsLength - 4];
-        TileLayer tileLayer;
-        try {
-            tileLayer = tld.getTileLayer(layerId);
-        } catch (Exception ex) {
-            throw new ServiceException(ex);
+        String layerId;
+        String gridSetId;
+        
+        // For backwards compatibility, we'll look for @s and use defaults if not found
+        String layerAtSRSAtFormatExtension = params[paramsLength - 4];
+        String[] lsf = ServletUtils.URLDecode(params[3], request.getCharacterEncoding()).split("@");
+        if(lsf.length < 3) {
+            layerId = lsf[0];
+            TileLayer layer = tld.getTileLayer(layerId);
+            gridSetId = layer.getGridSubsets().values().iterator().next().getName();
+        } else {
+           layerId = lsf[0];
+           gridSetId = lsf[1];
+           // We don't actually care about the format, we'll pick it from the extension
         }
-        // TMS does not specify projection, simply choose the first available
-        // SRS for the layer.
-        String gridSubsetId = tileLayer.getGridSubsets().keySet().iterator().next();
 
-        // TMS specifies only the extension of the format, assume that the mime
-        // type is image/something
         MimeType mimeType = null;
         try {
             mimeType = MimeType.createFromExtension(yExt[1]);
@@ -86,8 +108,58 @@ public class TMSConverter extends Service {
             throw new ServiceException("Unable to determine requested format based on extension " + yExt[1]);
         }
 
-        ConveyorTile ret = new ConveyorTile(sb, layerId, gridSubsetId, gridLoc, mimeType, null, null, request, response);
+        ConveyorTile ret = new ConveyorTile(sb, layerId, gridSetId, gridLoc, mimeType, null, null, request, response);
+        
         return ret;
+    }
+    
+    public void handleRequest(Conveyor conv)
+    throws GeoWebCacheException {
+        // get all elements of the pathInfo after the leading "/tms/1.0.0/" part.
+        String[] params = conv.servletReq.getPathInfo().split("/");
+        // {"", tms, "1.0.0", "img states@EPSG:4326" } 
+        
+        int paramsLength = params.length;
+        
+        String base = this.baseUrl;
+        
+        if(base == null) {
+            String reqUrl = conv.servletReq.getRequestURL().toString();
+            int idx = reqUrl.indexOf("/service/tms/1.0.0");
+            base = reqUrl.substring(0, idx);
+        }
+        
+        TMSDocumentFactory tdf = new TMSDocumentFactory(tld,gsb, base);
+        
+        String ret = null;
+        
+        if(paramsLength < 3) {
+            throw new GeoWebCacheException("Path is too short to be a valid TMS path");
+        } else if(paramsLength == 3) {
+            if(! params[2].equals("1.0.0")) {
+                throw new GeoWebCacheException("Unknown version " + params[2] + ", only 1.0.0 is supported.");
+            } else {
+                ret = tdf.getTileMapServiceDoc();
+            }
+        } else {
+            String layerAtSRS = ServletUtils.URLDecode(params[3], conv.servletReq.getCharacterEncoding());
+            String[] layerSRSFormatExtension = layerAtSRS.split("@");
+            
+            TileLayer tl = tld.getTileLayer(layerSRSFormatExtension[0]);
+            GridSubset gridSub = tl.getGridSubset(layerSRSFormatExtension[1]);
+            MimeType mimeType =  MimeType.createFromExtension(layerSRSFormatExtension[2]);
+            ret = tdf.getTileMapDoc(tl, gridSub, gsb, mimeType);
+        }
+        
+        conv.servletResp.setStatus(200);
+        conv.servletResp.setContentType("text/xml");
+        try {
+            conv.servletResp.getOutputStream().write(ret.getBytes());
+        } catch (IOException e) {
+            // TODO log error
+        }
+        
+        
     }
 
 }

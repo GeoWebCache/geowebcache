@@ -429,6 +429,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         str.append("<h3>GetCapabilities:</h3>\n");
         str.append("<ul><li><a href=\""+baseUrl+"service/wmts?REQUEST=getcapabilities\">WMTS 1.0.0 GetCapabilities document</a></li>");
         str.append("<li><a href=\""+baseUrl+"service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities&TILED=true\">WMS 1.1.1 GetCapabilities document</a></li>");
+        str.append("<li><a href=\""+baseUrl+"service/tms/1.0.0\">TMS 1.0.0 document</a></li>");
         str.append("<li>Note that the latter will only work with clients that are ");
         str.append("<a href=\"http://wiki.osgeo.org/wiki/WMS_Tiling_Client_Recommendation\">WMS-C capable</a>.</li>\n");
         str.append("<li>Omitting tiled=true from the URL will omit the TileSet elements.</li></ul>\n");
