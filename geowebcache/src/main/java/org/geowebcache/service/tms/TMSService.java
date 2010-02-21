@@ -35,7 +35,7 @@ import org.geowebcache.service.ServiceException;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
 
-public class TMSConverter extends Service {
+public class TMSService extends Service {
 
     public static final String SERVICE_TMS = "tms";
 
@@ -47,7 +47,7 @@ public class TMSConverter extends Service {
     
     private String baseUrl;
     
-    public TMSConverter(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb) {
+    public TMSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb) {
         super(SERVICE_TMS);
         this.sb = sb;
         this.tld = tld;

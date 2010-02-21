@@ -167,10 +167,12 @@
 	<constructor-arg ref="gwcRuntimeStats"/>
   </bean>
   <bean id="gwcServiceTMS"
-	class="org.geowebcache.service.tms.TMSConverter">
+	class="org.geowebcache.service.tms.TMSService">
 	<constructor-arg ref="gwcStorageBroker"/>
 	<constructor-arg ref="gwcTLDispatcher"/>
 	<constructor-arg ref="gwcGridSetBroker"/>
+	<!-- Optionally you can set the base URL for the service -->
+	<!-- <property name="baseURL" value="http://localhost:8080/geowebcache" /> -->
   </bean>
   <bean id="gwcServiceWMTS"
 	class="org.geowebcache.service.wmts.WMTSService">
