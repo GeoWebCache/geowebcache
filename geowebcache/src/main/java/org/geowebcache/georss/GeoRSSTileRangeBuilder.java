@@ -93,7 +93,7 @@ class GeoRSSTileRangeBuilder {
 
         try {
             while ((entry = reader.nextEntry()) != null) {
-                if(entry.getUpdated().equals(previousEntryUpdate)) {
+                if(entry.getUpdated() != null && entry.getUpdated().equals(previousEntryUpdate)) {
                     logger.warn("Skipping entry with id " + entry.getId()+ " since it has the same date as our last feed update.");
                 } else {
                     if(matrix == null) {
