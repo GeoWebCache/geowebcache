@@ -195,10 +195,8 @@ class StaxGeoRSSReader implements GeoRSSReader {
 
             String upd = text(reader);
             if (upd != null && upd.length() > 0) {
-                Date updated = date(upd);
-                entry.setUpdated(updated);
+                entry.setUpdated(upd);
             }
-
         } else if (GEORSS.where.equals(memberName)) {
 
             QName nextTag = nextTag(reader);

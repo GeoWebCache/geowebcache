@@ -500,7 +500,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             
             if(layer.useETags()) {
                 String ifNoneMatch = tile.servletReq.getHeader("If-None-Match");
-                if(ifNoneMatch.equals("gwc-blank-tile")) {
+                if(ifNoneMatch != null && ifNoneMatch.equals("gwc-blank-tile")) {
                     tile.servletResp.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
                     return;
                 } else {

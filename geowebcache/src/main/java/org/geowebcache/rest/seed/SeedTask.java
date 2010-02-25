@@ -117,7 +117,7 @@ public class SeedTask extends GWCTask {
                 throw gwce;
             }
             
-            log.info("Thread " + threadOffset + " seeded " + Arrays.toString(gridLoc));
+            log.debug("Thread " + threadOffset + " seeded " + Arrays.toString(gridLoc));
             
             long totalTilesCompleted = trIter.getCountRendered() + trIter.getCountRendered();
             

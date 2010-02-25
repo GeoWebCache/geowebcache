@@ -928,12 +928,13 @@ class JDBCMBWrapper {
                     blobStore.delete(to);
                 } catch (StorageException e) {
                     log.debug("Error while deleting range: " + e.getMessage());
+                    e.printStackTrace();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 
                 if(deletedTiles != null) {
-                    deletedTiles[deletedIdx] = rs.getLong(0);
+                    deletedTiles[deletedIdx] = rs.getLong(1);
                     deletedIdx++;
                     
                     if(deletedIdx == deletedTiles.length) {
@@ -951,7 +952,7 @@ class JDBCMBWrapper {
             }
         } catch (SQLException e) {
             log.error("deleteRange failed: " + e.getMessage());
-            
+            e.printStackTrace();
             return false;
         } finally {
             try {

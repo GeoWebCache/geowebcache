@@ -32,7 +32,7 @@ class Entry {
 
     private String id;
 
-    private Date updated;
+    private String updated;
 
     private Geometry where;
 
@@ -70,12 +70,12 @@ class Entry {
         this.id = id;
     }
 
-    public Date getUpdated() {
+    public String getUpdated() {
         return updated;
     }
-
-    public void setUpdated(Date updated) {
-        this.updated = updated;
+    
+    public void setUpdated(String upd) {
+        this.updated = upd;
     }
 
     public Geometry getWhere() {
@@ -93,5 +93,4 @@ class Entry {
     public void setSRS(final String srsName) {
         SRS = srsName;
     }
-
 }

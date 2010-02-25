@@ -18,8 +18,9 @@
 package org.geowebcache.georss;
 
 import java.io.IOException;
-import java.util.Date;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 
@@ -34,6 +35,8 @@ import com.vividsolutions.jts.geom.Geometry;
  * </p>
  */
 class GeoRSSTileRangeBuilder {
+    
+    private static final Log logger = LogFactory.getLog(GeoRSSTileRangeBuilder.class);
 
     private final TileLayer layer;
 
@@ -44,7 +47,7 @@ class GeoRSSTileRangeBuilder {
     /**
      * Keeps track of the most current GeoRSS entry "updated" property
      */
-    private long lastEntryUpdate;
+    private String lastEntryUpdate;
 
     /**
      * 
@@ -70,7 +73,7 @@ class GeoRSSTileRangeBuilder {
         this.layer = layer;
         this.gridSetId = gridSetId;
         this.maxMaskLevel = maxMaskLevel;
-        this.lastEntryUpdate = Long.MIN_VALUE;
+        this.lastEntryUpdate = "";
 
         final GridSubset gridSubset = layer.getGridSubset(gridSetId);
         if (gridSubset == null) {
@@ -79,29 +82,36 @@ class GeoRSSTileRangeBuilder {
         }
     }
 
-    public TileGridFilterMatrix buildTileRangeMask(final GeoRSSReader reader) throws IOException {
+    public TileGridFilterMatrix buildTileRangeMask(final GeoRSSReader reader, String previousEntryUpdate) throws IOException {
 
         final GridSubset gridSubset = layer.getGridSubset(gridSetId);
         final int[] metaTilingFactors = layer.getMetaTilingFactors();
-        TileGridFilterMatrix matrix = new TileGridFilterMatrix(gridSubset, metaTilingFactors,
-                maxMaskLevel);
-
+        TileGridFilterMatrix matrix = null;
+        
         Entry entry;
         Geometry geom;
 
-        matrix.createGraphics();
         try {
             while ((entry = reader.nextEntry()) != null) {
-                Date updated = entry.getUpdated();
-                if (updated != null) {
+                if(entry.getUpdated().equals(previousEntryUpdate)) {
+                    logger.warn("Skipping entry with id " + entry.getId()+ " since it has the same date as our last feed update.");
+                } else {
+                    if(matrix == null) {
+                        matrix = new TileGridFilterMatrix(gridSubset, metaTilingFactors, maxMaskLevel);
+                        matrix.createGraphics();
+
+                    }
                     // record the most recent updated entry
-                    lastEntryUpdate = Math.max(lastEntryUpdate, updated.getTime());
+                    lastEntryUpdate = entry.getUpdated();
+                    
+                    geom = entry.getWhere();
+                    matrix.setMasksForGeometry(geom);
                 }
-                geom = entry.getWhere();
-                matrix.setMasksForGeometry(geom);
             }
         } finally {
-            matrix.disposeGraphics();
+            if(matrix != null) {
+                matrix.disposeGraphics();
+            }
         }
 
         return matrix;
@@ -113,7 +123,7 @@ class GeoRSSTileRangeBuilder {
      * 
      * @return the latest georss updated value, or {@code null} if none was processed
      */
-    public Date getLastEntryUpdate() {
-        return Long.MIN_VALUE == lastEntryUpdate ? null : new Date(lastEntryUpdate);
+    public String getLastEntryUpdate() {
+        return lastEntryUpdate;
     }
 }
