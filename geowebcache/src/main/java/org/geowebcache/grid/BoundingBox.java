@@ -138,7 +138,16 @@ public class BoundingBox {
         return buff.toString();
     }
 
-    public String toKML() {
+    public String toKMLLatLonBox() {
+        return "<LatLonBox>"
+        +"<north>"+Double.toString(coords[3])+"</north>"
+        +"<south>"+Double.toString(coords[1])+"</south>"
+        +"<east>"+Double.toString(coords[2])+"</east>"
+        +"<west>"+Double.toString(coords[0])+"</west>"
+        +"</LatLonBox>";
+    }
+    
+    public String toKMLLatLonAltBox() {
         return "<LatLonAltBox>"
         +"<north>"+Double.toString(coords[3])+"</north>"
         +"<south>"+Double.toString(coords[1])+"</south>"
