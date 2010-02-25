@@ -3,61 +3,85 @@
                   xsi:noNamespaceSchemaLocation="http://geowebcache.org/schema/1.2.2/geowebcache.xsd" 
                   xmlns="http://geowebcache.org/schema/1.2.2">
 <version>1.2.2</version>
+<backendTimeout>120</backendTimeout>
 <gridSets>
+  <!-- Grid Set Example, 
+       by default EPSG:900913 and EPSG:4326 are defined -->
   <gridSet>
-    <name>EPSG:25832</name>
-    <srs><number>25832</number></srs>
+    <!-- This does not have to be an EPSG code, you can also 
+         have multiple gridSet elements per SRS -->
+    <name>EPSG:2163</name>
+    <srs><number>2163</number></srs>
     <extent>
       <coords>
-        <double>100000</double>
-        <double>6000000</double>
-        <double>1000000</double>
-        <double>6400000</double>
+        <double>-2495667.977678598</double>
+        <double>-2223677.196231552</double>
+        <double>3291070.6104286816</double>
+        <double>959189.3312465074</double>
       </coords>
     </extent>
-    <resolutions>
-      <double>1024</double>
-      <double>512</double>
-      <double>256</double>
-      <double>128</double>
-      <double>64</double>
-      <double>32</double>
-      <double>16</double>
-      <double>8</double>
-      <double>4</double>
-      <double>2</double>
-      <double>1</double>
-      <double>0.5</double>
-    </resolutions>
-    <tileHeight>256</tileHeight>
-    <tileWidth>256</tileWidth>
+    <scaleDenominators>
+      <double>25000000</double>
+      <double>1000000</double>
+      <double>100000</double>
+      <double>25000</double>
+    </scaleDenominators>
+    <tileHeight>200</tileHeight>
+    <tileWidth>200</tileWidth>
   </gridSet>
 </gridSets>
+
 <layers>
 
   <wmsLayer>
-    <name>butikservice</name>
-    <mimeFormats><string>image/png</string></mimeFormats>
+    <name>topp:states</name>
     <gridSubsets>
       <gridSubset>
-        <gridSetName>EPSG:25832</gridSetName>
+        <gridSetName>EPSG:2163</gridSetName>
+      </gridSubset>
+    </gridSubsets>  
+    <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>
+  </wmsLayer>
+  
+  <wmsLayer>
+    <name>raster test layer</name>
+     <mimeFormats><string>image/jpeg</string></mimeFormats>
+    <wmsUrl><string>http://atlas.openplans.org:8080/geoserver/wms</string></wmsUrl>
+    <wmsLayers>nurc:Img_Sample</wmsLayers>
+  </wmsLayer>
+  
+  <wmsLayer>
+    <name>img states</name>
+    <metaInformation>
+      <title>Nicer title for Image States</title>
+      <description>This is a description. Fascinating.</description>
+    </metaInformation>
+    <mimeFormats><string>image/gif</string></mimeFormats>
+    <!-- Grid Subset Example -->
+    <gridSubsets>
+      <gridSubset>
+        <gridSetName>EPSG:4326</gridSetName>
+        <extent>
+          <coords>
+            <double>-129.6</double>
+            <double>3.45</double>
+            <double>-62.1</double>
+            <double>70.9</double>
+          </coords>
+        </extent>
       </gridSubset>
     </gridSubsets>
-    <updateSources>
-      <geoRssFeed>
-        <feedUrl>http://k259demorss.cbkort.dk/rss/rss?layername=butikservice&amp;updated=${lastUpdate}</feedUrl>
-        <gridSetId>EPSG:25832</gridSetId>
-        <pollInterval>600</pollInterval>
-        <operation>reseed</operation>
-        <format>image/png</format>
-        <seedingThreads>2</seedingThreads>
-        <maxMaskLevel>11</maxMaskLevel>
-      </geoRssFeed>
-    </updateSources>
-    <useETags>true</useETags>
-    <wmsUrl><string>http://k259demo.cbkort.dk/wms?profile=wmsprofil&amp;servicename=wms&amp;</string></wmsUrl>
+    <wmsUrl>
+      <string>http://atlas.openplans.org:8080/geoserver/wms</string>
+    </wmsUrl>
+    <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
+    <transparent>false</transparent>
+    <bgColor>0x0066FF</bgColor>
+    <expireCacheList>
+    	<expirationRule minZoom="0" expiration="60" />
+    </expireCacheList>
     <expireClientsList>
-      <expirationRule minZoom="0" expiration="-1" />
+      <expirationRule minZoom="0" expiration="500" />
     </expireClientsList>
   </wmsLayer>
 
