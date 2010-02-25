@@ -205,13 +205,11 @@
        The third argument is the number of seconds to delay before starting up.
        Useful if you depend on other servlets running in the same container.
   -->
-  <!--
   <bean id="gwcGeoRSSPoller" class="org.geowebcache.georss.GeoRSSPoller" destroy-method="destroy">
     <constructor-arg ref="gwcTLDispatcher" />
     <constructor-arg ref="gwcSeedRestlet"/>
     <constructor-arg value="10" />
   </bean>
-  -->
 
   <!-- Restlets -->
   <bean id="gwcSeedRestlet" class="org.geowebcache.rest.seed.SeedRestlet">

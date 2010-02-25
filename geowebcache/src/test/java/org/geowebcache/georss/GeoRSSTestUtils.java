@@ -56,7 +56,7 @@ public class GeoRSSTestUtils {
         final GeoRSSTileRangeBuilder builder = new GeoRSSTileRangeBuilder(layer, gridsetId,
                 maxMaskLevel);
 
-        TileGridFilterMatrix tileRangeMask = builder.buildTileRangeMask(reader);
+        TileGridFilterMatrix tileRangeMask = builder.buildTileRangeMask(reader, "");
 
         logImages(new File("target"), tileRangeMask);
 
