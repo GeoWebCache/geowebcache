@@ -24,9 +24,6 @@
   	<constructor-arg ref="gwcGridSetBroker"/>
     <!-- The URL to the WMS GetCapabilities document -->
     <constructor-arg value="http://localhost:8080/geoserver/wms"/>
-    <!-- constructor-arg value="http://geodaten.service24.rlp.de/cgi-bin/wms.cgi?request=getcapabilities" / -->
-    <!-- constructor-arg value="http://dk.nunagis.gl/wms?servicename=nuk0600_wms_g5&amp;version=1.1.0&amp;service=WMS&amp;request=getcapabilities"/ -->
-    <!-- constructor-arg value="http://www.nasa.network.com/elev?service=WMS&amp;request=GetCapabilities" /-->
     <!-- The formats to support for all layers read for the above document -->    
     <constructor-arg value="image/png,image/jpeg"/>
     <!-- Metatiling factors, 3x3 is usually a good compromise for vector data -->
@@ -205,11 +202,12 @@
        The third argument is the number of seconds to delay before starting up.
        Useful if you depend on other servlets running in the same container.
   -->
+  <!--
   <bean id="gwcGeoRSSPoller" class="org.geowebcache.georss.GeoRSSPoller" destroy-method="destroy">
     <constructor-arg ref="gwcTLDispatcher" />
     <constructor-arg ref="gwcSeedRestlet"/>
     <constructor-arg value="10" />
-  </bean>
+  </bean>-->
 
   <!-- Restlets -->
   <bean id="gwcSeedRestlet" class="org.geowebcache.rest.seed.SeedRestlet">
