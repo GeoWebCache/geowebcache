@@ -70,7 +70,7 @@ The configuration example below is for version 1.2.x. See parentheses at the beg
               method for services that do not specify the grid set. Currently only
               EPSG codes are allowed, so you specify the number.
                -->
-         <srs><number>4326</number</srs>
+         <srs><number>4326</number></srs>
          <!-- REQUIRED The bounding box for the grid set. See the Grid Set documentation
               regarding how this is interpreted and adjusted. You should set this to the 
               maximum values for which the given SRS is valid, you will limit it with 
