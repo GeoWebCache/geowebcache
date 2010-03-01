@@ -93,7 +93,7 @@ public class TileLayerDispatcher {
     public synchronized void reInit() throws GeoWebCacheException {
         synchronized (this) {
             this.layers = null;
-            this.layers = initialize();
+            this.layers = initialize(true);
         }
     }
     
@@ -111,7 +111,7 @@ public class TileLayerDispatcher {
         return ret;
     }
 
-    private HashMap<String, TileLayer> initialize() {
+    private HashMap<String, TileLayer> initialize(boolean reload) {
         log.debug("Thread initLayers(), initializing");
 
         HashMap<String, TileLayer> newLayers = new HashMap<String, TileLayer>();
@@ -238,7 +238,7 @@ public class TileLayerDispatcher {
                 }
                 log.info("ConfigurationLoader woke up, initializing");
                 
-                parent.layers = parent.initialize();
+                parent.layers = parent.initialize(false);
                 
                 log.info("ConfigurationLoader completed");
             }
