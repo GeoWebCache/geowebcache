@@ -49,7 +49,7 @@ public class GridSubset {
         return gridSet.boundsFromRectangle(rectangleExtent);
     }
     
-    public long[] closestIndex(BoundingBox tileBounds) {
+    public long[] closestIndex(BoundingBox tileBounds) throws GridMismatchException {
         return gridSet.closestIndex(tileBounds);
     }
     
@@ -76,6 +76,16 @@ public class GridSubset {
         }
 
         throw new OutsideCoverageException(index, firstLevel, gridCoverageLevels.length - 1);        
+    }
+    
+    public void checkTileDimensions(int width, int height) 
+    throws TileDimensionsMismatchException {
+    
+        if(width != gridSet.tileWidth || height != gridSet.tileHeight) {
+            throw new TileDimensionsMismatchException(
+                    width, height, 
+                    gridSet.tileWidth, gridSet.tileWidth);
+        }
     }
     
     public long[][] expandToMetaFactors(long[][] coverages, int[] metaFactors) {

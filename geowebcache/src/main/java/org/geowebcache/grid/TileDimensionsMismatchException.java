@@ -16,13 +16,11 @@
  */
 package org.geowebcache.grid;
 
-public class ResolutionMismatchException extends GridMismatchException {
+public class TileDimensionsMismatchException extends GridMismatchException {
 
-    public ResolutionMismatchException(double wRes, double bestResolution) {
-        super("Requested horizontal resolution: " + wRes 
-                + " , best match: " + bestResolution 
-                + " exceeds 10% threshold. Perhaps the client is configured "
-                + " with an incorrect set of scales (resolutions), "
-                + " or the DPI setting is off compared to the one in GWC ?");
+    public TileDimensionsMismatchException(int height, int width, int gsHeight, int gsWidth) {
+        super("The requested tile dimensions "+width+"x"+height
+                +" do not match those of the grid set (" + gsWidth +"x" + gsHeight+")");
     }
+
 }

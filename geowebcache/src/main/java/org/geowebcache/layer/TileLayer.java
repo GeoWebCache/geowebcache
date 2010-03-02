@@ -33,6 +33,7 @@ import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.filter.request.RequestFilterException;
 import org.geowebcache.grid.BoundingBox;
+import org.geowebcache.grid.GridMismatchException;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.OutsideCoverageException;
@@ -351,9 +352,10 @@ public abstract class TileLayer {
      * @return
      * @throws GeoWebCacheException
      * @throws GeoWebCacheException
+     * @throws GridMismatchException 
      */
     public abstract long[] indexFromBounds(String gridSetId, BoundingBox bounds)
-            throws BadTileException, GeoWebCacheException;
+            throws BadTileException, GeoWebCacheException, GridMismatchException;
 
     /**
      * 
