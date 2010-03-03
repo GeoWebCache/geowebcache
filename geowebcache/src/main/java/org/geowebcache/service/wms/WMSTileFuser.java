@@ -356,6 +356,12 @@ public class WMSTileFuser {
                     tileWidth = tileWidth + canvOfs[2];
                 }
                 
+                // TODO We should really ensure we can never get here
+                if(tileWidth == 0|| tileHeight == 0) {
+                    log.debug("tileWidth: " + tileWidth + " tileHeight: " + tileHeight);
+                    continue;
+                }
+                
                 // Cut down the tile to the part we want
                 if(tileWidth != gridSubset.getTileWidth() || tileHeight != gridSubset.getTileHeight()) {
                     log.debug("tileImg.getSubimage("+tilex+","+tiley+","+tileWidth+","+tileHeight+")");
