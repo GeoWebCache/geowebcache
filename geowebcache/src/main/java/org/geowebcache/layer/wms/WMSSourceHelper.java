@@ -22,6 +22,8 @@ import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileResponseReceiver;
+import org.geowebcache.mime.XMLMime;
+import org.geowebcache.util.ServletUtils;
 
 public abstract class WMSSourceHelper {
 
@@ -58,6 +60,13 @@ public abstract class WMSSourceHelper {
         strBuilder.append("&BBOX=").append(bbox);
 
         strBuilder.append(tile.getFullParameters());
+        
+        if(tile.getMimeType() == XMLMime.kml) {
+            // This is a hack for GeoServer to produce regionated KML, 
+            // but it is unlikely to do much harm, especially since nobody
+            // else appears to produce regionated KML at this point
+            strBuilder.append("&format_options=").append(ServletUtils.URLEncode("mode:superoverlay;overlaymode:auto")); 
+        }
 
         return makeRequest(tile, layer, strBuilder.toString(), tile.getMimeType().getMimeType());
     }
