@@ -82,10 +82,13 @@
   
   <bean id="gwcGridSetBroker" class="org.geowebcache.grid.GridSetBroker">
     <!-- Should we used EPSG:900913 instead of EPSG:3857 ? -->
-    <constructor-arg type="boolean" value="FALSE" />
+    <constructor-arg type="boolean" value="TRUE" />
     <!--
-      Should the default grids be named EPSG:4326 and EPSG:900913,
-      or use the new names? If you say no here, you have to manually
+      Should the default grids be named EPSG:4326 and EPSG:900913 (TRUE),
+      or (FALSE) use the new names similar to what WMTS suggests,
+      GlobalCRS84Geometric and GoogleMapsCompatible ? 
+      
+      If you say FALSE here, you have to manually
       rename the directories and entries in the H2 database.
      -->
      <constructor-arg type="boolean" value="TRUE" />
@@ -136,6 +139,7 @@
 	<!-- Set the next line to true to enable full WMS support,
 	     i.e. recombining tiles to serve arbitrary WMS requests -->
     <property name="fullWMS"><value>FALSE</value></property>
+    <!-- Proxy unknown requests -->
     <property name="proxyRequests"><value>TRUE</value></property>
   </bean>
   <bean id="gwcServiceGMaps"
