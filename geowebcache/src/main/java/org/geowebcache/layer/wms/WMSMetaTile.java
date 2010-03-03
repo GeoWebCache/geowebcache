@@ -168,7 +168,7 @@ public class WMSMetaTile extends MetaTile {
     }
 
     protected void setImageBytes(byte[] image) throws GeoWebCacheException {
-        if (image == null) {
+        if (image == null || image.length == 0) {
             throw new GeoWebCacheException("WMSMetaTile.setImageBytes() "
                     + " received null instead of byte[]");
         }
@@ -179,6 +179,9 @@ public class WMSMetaTile extends MetaTile {
         } catch (IOException ioe) {
             throw new GeoWebCacheException("WMSMetaTile.setImageBytes() "
                     + "failed on ImageIO.read(byte[" + image.length + "])");
+        }
+        if(img == null) {
+            throw new GeoWebCacheException("ImageIO.read(InputStream) returned null. Unable to read image.");
         }
     }
 

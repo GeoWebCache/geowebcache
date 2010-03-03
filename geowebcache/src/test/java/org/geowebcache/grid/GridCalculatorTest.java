@@ -198,16 +198,16 @@ public class GridCalculatorTest extends TestCase {
         
         boolean box1_comparison = box1.equals(new BoundingBox(-90.0,0.0,0.0,90.0));
         assertTrue(box1_comparison);
-        boolean box1_kml = box1.toKML().equals(
-        		"<LatLonAltBox><north>90.0</north><south>0.0</south>"
-        		+"<east>0.0</east><west>-90.0</west></LatLonAltBox>");
+        boolean box1_kml = box1.toKMLLatLonBox().equals(
+        		"<LatLonBox><north>90.0</north><south>0.0</south>"
+        		+"<east>0.0</east><west>-90.0</west></LatLonBox>");
         assertTrue(box1_kml);
         
         long[] gridLoc2 = {5, 1, 2};        
         BoundingBox box2 = grid.boundsFromIndex(gridLoc2);
         boolean box2_comparison = box2.equals(new BoundingBox(45.0,-45.0,90.0,0.0));
         assertTrue(box2_comparison);
-        boolean box2_kml = box2.toKML().equals(
+        boolean box2_kml = box2.toKMLLatLonAltBox().equals(
         		"<LatLonAltBox><north>0.0</north><south>-45.0</south>"
         		+"<east>90.0</east><west>45.0</west></LatLonAltBox>");
         assertTrue(box2_kml);

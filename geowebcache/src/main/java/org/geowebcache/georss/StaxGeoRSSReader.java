@@ -131,6 +131,8 @@ class StaxGeoRSSReader implements GeoRSSReader {
 
         Entry entry = new Entry();
 
+        logger.trace("Parsing GeoRSS entry...");
+
         while (true) {
             reader.next();
             if (reader.isStartElement()) {
@@ -142,6 +144,8 @@ class StaxGeoRSSReader implements GeoRSSReader {
                 }
             }
         }
+
+        logger.trace("Done parsing GeoRSS entry.");
 
         reader.require(END_ELEMENT, ATOM.NSURI, ATOM.entry.getLocalPart());
 
@@ -165,7 +169,6 @@ class StaxGeoRSSReader implements GeoRSSReader {
             final Entry entry) throws XMLStreamException {
 
         reader.require(START_ELEMENT, memberName.getNamespaceURI(), memberName.getLocalPart());
-
         if (ATOM.id.equals(memberName)) {
 
             String id = text(reader);
@@ -192,15 +195,16 @@ class StaxGeoRSSReader implements GeoRSSReader {
 
             String upd = text(reader);
             if (upd != null && upd.length() > 0) {
-                Date updated = date(upd);
-                entry.setUpdated(updated);
+                entry.setUpdated(upd);
             }
-
         } else if (GEORSS.where.equals(memberName)) {
 
             QName nextTag = nextTag(reader);
             if (reader.isStartElement() && GML_NS_URI.equals(nextTag.getNamespaceURI())) {
                 Geometry where = geometry(reader);
+                if(logger.isTraceEnabled()){
+                    logger.trace("Got geometry from feed: " + where);
+                }
                 entry.setWhere(where);
             }
         }

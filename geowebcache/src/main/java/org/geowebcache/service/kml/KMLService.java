@@ -348,7 +348,7 @@ public class KMLService extends Service {
     private static String superOverlayNetworLink(String superString, BoundingBox bbox, String url) {
         String xml = "\n<NetworkLink><name>Super-overlay: "+superString+"</name>"
         + "\n<Region>\n"
-        + bbox.toKML()
+        + bbox.toKMLLatLonAltBox()
         + "\n<Lod><minLodPixels>128</minLodPixels>"
         + "\n<maxLodPixels>-1</maxLodPixels></Lod>"
         + "\n</Region>"
@@ -592,7 +592,7 @@ public class KMLService extends Service {
         return  KMLHeader()
                 + "<Document>\n"
                 + "<Region>\n"
-                + bbox.toKML()
+                + bbox.toKMLLatLonAltBox()
                 + "<Lod><minLodPixels>128</minLodPixels>"
                 + "<maxLodPixels>"+Integer.toString(maxLodPixels)+"</maxLodPixels></Lod>\n"
                 + "</Region>\n";
@@ -617,7 +617,7 @@ public class KMLService extends Service {
                 + layer.getName()
                 + "</name>"
                 + "\n<Region>"
-                + bbox.toKML()
+                + bbox.toKMLLatLonAltBox()
                 + "\n<Lod><minLodPixels>128</minLodPixels>"
                 + "<maxLodPixels>"+Integer.toString(maxLodPixels)+"</maxLodPixels></Lod>\n"
                 + "</Region>" + "\n<Link>" 
@@ -646,14 +646,15 @@ public class KMLService extends Service {
         
         String xml = "\n<GroundOverlay>"
                 + "\n<drawOrder>"+gridLoc[2]+"</drawOrder>"
-                + "\n<altitudeMode>clampToGround</altitudeMode>"
+                
                 + "\n<Icon>" 
                 + "\n<href>" 
                 +  gridLocString(gridLoc) + "." + formatExtension 
                 + "</href>"
                 + refreshTags
                 + "\n</Icon>\n" 
-                + bbox.toKML()
+                + "\n<altitudeMode>clampToGround</altitudeMode>"
+                + bbox.toKMLLatLonBox()
                 + "\n</GroundOverlay>\n";
 
         return xml;

@@ -75,13 +75,13 @@ class GeoRSSPollTask implements Runnable {
 
     private final SeedRestlet seedRestlet;
     
-    private LinkedList<GWCTask> seedTasks;
+    private LinkedList<GWCTask> seedTasks = new LinkedList<GWCTask>();
 
     /**
      * Date and time of the more recent GeoRSS entry updated property. To be used as parameter for
      * the feed url
      */
-    private Date lastUpdatedEntry;
+    private String lastUpdatedEntry = "";
 
     public GeoRSSPollTask(final PollDef poll, final SeedRestlet seedRestlet) {
         this.poll = poll;
@@ -146,9 +146,15 @@ class GeoRSSPollTask implements Runnable {
         logger.debug("Creating tile range mask based on GeoRSS feed's geometries from "
                 + feedUrl.toExternalForm() + " for " + layer.getName());
 
-        final TileGridFilterMatrix tileRangeMask = matrixBuilder.buildTileRangeMask(geoRSSReader);
+        final TileGridFilterMatrix tileRangeMask = matrixBuilder.buildTileRangeMask(geoRSSReader, this.lastUpdatedEntry);
+      
+        if(tileRangeMask == null) {
+            logger.info("Did not create a tileRangeMask, presumably no new entries in feed.");
+            return;
+        }
+        
         this.lastUpdatedEntry = matrixBuilder.getLastEntryUpdate();
-
+        
         logger.debug("Created tile range mask based on GeoRSS geometry feed from " + pollDef
                 + " for " + layer.getName() + ". Calculating number of affected tiles...");
         _logImagesToDisk(tileRangeMask);
@@ -175,13 +181,7 @@ class GeoRSSPollTask implements Runnable {
 
         String url = feedUrl;
         if (feedUrl.indexOf(LAST_UPDATE_URL_TEMPLATE) > -1) {
-            String serializeDateTime;
-            if (lastUpdatedEntry == null) {
-                serializeDateTime = "";
-            } else {
-                serializeDateTime = DateUtil.serializeDateTime(lastUpdatedEntry);
-            }
-            url = feedUrl.replace(LAST_UPDATE_URL_TEMPLATE, serializeDateTime);
+            url = feedUrl.replace(LAST_UPDATE_URL_TEMPLATE, lastUpdatedEntry);
             logger.info("Feed URL templated as '" + url + "'");
         }
         return url;
@@ -292,7 +292,7 @@ class GeoRSSPollTask implements Runnable {
         if(this.seedTasks != null) {
             int liveCount = 0;
             for (GWCTask task : seedTasks) {
-                if(task.getState() != STATE.DEAD || task.getState() != STATE.DONE) {
+                if(task.getState() != STATE.DEAD && task.getState() != STATE.DONE) {
                     task.terminateNicely();
                     liveCount++;
                 }
@@ -301,12 +301,12 @@ class GeoRSSPollTask implements Runnable {
             Thread.yield();
 
             for (GWCTask task : seedTasks) {
-                if(task.getState() != STATE.DEAD || task.getState() != STATE.DONE) {
+                if(task.getState() != STATE.DEAD && task.getState() != STATE.DONE) {
                     liveCount++;
                 }
             }
             
-            if(! checkLiveCount) {
+            if(! checkLiveCount || liveCount == 0) {
                 return;
             }
             
@@ -321,14 +321,16 @@ class GeoRSSPollTask implements Runnable {
             Iterator<GWCTask> iter = seedTasks.iterator();
             while(iter.hasNext()) {
                 GWCTask task = iter.next();
-                if(task.getState() != STATE.DEAD || task.getState() != STATE.DONE) {
+                if(task.getState() != STATE.DEAD && task.getState() != STATE.DONE) {
                     liveCount++;  
                 } else {
                     iter.remove();
                 }
             }
-            logger.debug(liveCount + " seed jobs are still waiting to terminate, proceeding anyway.");
-            
+            if(liveCount > 0) {
+                logger.info(liveCount + " seed jobs are still waiting to terminate, proceeding anyway.");
+            }
+
         } else {
             logger.debug("Found no running seed jobs");
         }

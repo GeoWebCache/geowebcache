@@ -40,6 +40,7 @@ import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.grid.BoundingBox;
+import org.geowebcache.grid.GridMismatchException;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
@@ -914,7 +915,8 @@ public class WMSLayer extends TileLayer {
         return metaWidthHeight;
     }
 
-    public long[] indexFromBounds(String gridSetId, BoundingBox tileBounds) {
+    public long[] indexFromBounds(String gridSetId, BoundingBox tileBounds) 
+    throws GridMismatchException {
         return subSets.get(gridSetId).closestIndex(tileBounds);
     }
 

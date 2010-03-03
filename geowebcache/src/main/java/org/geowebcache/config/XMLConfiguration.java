@@ -128,12 +128,12 @@ public class XMLConfiguration implements Configuration {
                 return;
             }
             
-            loadConfiguration(xmlFile);            
+            loadConfiguration(xmlFile);
+            initialize();
+            
         } catch (GeoWebCacheException e) {
             e.printStackTrace();
         }
-        
-        initialize();
     }
     
     /**
@@ -237,6 +237,7 @@ public class XMLConfiguration implements Configuration {
         if (reload && ! mockConfiguration) {
             File xmlFile = findConfFile();
             loadConfiguration(xmlFile);
+            initialize();
         }
         
         if(gwcConfig != null) { 

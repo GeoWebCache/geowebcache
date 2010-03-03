@@ -96,11 +96,12 @@ public class GridSet {
         return rectangleBounds;
     }
     
-    protected long[] closestIndex(BoundingBox tileBounds) {       
+    protected long[] closestIndex(BoundingBox tileBounds) throws GridMismatchException {       
         double wRes = tileBounds.getWidth() / tileWidth;
         
         double bestError = Double.MAX_VALUE;
         int bestLevel = -1;
+        double bestResolution = -1.0;
         
         for(int i=0; i< gridLevels.length; i++) {
             Grid grid = gridLevels[i];
@@ -109,24 +110,38 @@ public class GridSet {
             
             if(error < bestError) {
                 bestError = error;
+                bestResolution = grid.resolution;
                 bestLevel = i;
             } else {
                 break;
             }
         }
+        
+        if(Math.abs(wRes - bestResolution) > (0.1*wRes)) {
+            throw new ResolutionMismatchException(wRes, bestResolution);
+        }
 
         return closestIndex(bestLevel, tileBounds);
     }
     
-    protected long[] closestIndex(int level, BoundingBox tileBounds) {
+    protected long[] closestIndex(int level, BoundingBox tileBounds) 
+    throws GridAlignmentMismatchException {
         Grid grid = gridLevels[level];
         
         double width = grid.resolution * tileWidth;
         double height = grid.resolution * tileHeight;
         
-        long posX = (long) Math.round((tileBounds.coords[0] - baseCoords[0]) / width);
+        double x = (tileBounds.coords[0] - baseCoords[0]) / width;
         
-        long posY = (long) Math.round((tileBounds.coords[1] - baseCoords[1]) / height);
+        double y = (tileBounds.coords[1] - baseCoords[1]) / height;
+            
+        long posX = (long) Math.round(x);
+        
+        long posY = (long) Math.round(y);
+        
+        if(x - posX > 0.1 || y - posY > 0.1) {
+            throw new GridAlignmentMismatchException(x,posX,y,posY);
+        }
         
         if(yBaseToggle) {
             posY = posY + grid.extent[1];
