@@ -18,7 +18,6 @@
 package org.geowebcache.georss;
 
 import java.net.URI;
-import java.util.Date;
 
 import com.vividsolutions.jts.geom.Geometry;
 

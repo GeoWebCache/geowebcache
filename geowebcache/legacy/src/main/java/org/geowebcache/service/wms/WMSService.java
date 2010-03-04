@@ -18,8 +18,6 @@
 package org.geowebcache.service.wms;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,7 +28,6 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridMismatchException;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;

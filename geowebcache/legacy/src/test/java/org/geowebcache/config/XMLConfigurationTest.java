@@ -7,7 +7,6 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;

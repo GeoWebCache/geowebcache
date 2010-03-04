@@ -19,7 +19,6 @@ package org.geowebcache.rest.reload;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.demo.Demo;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;

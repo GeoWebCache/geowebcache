@@ -50,7 +50,6 @@ import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
-import org.restlet.data.Status;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;

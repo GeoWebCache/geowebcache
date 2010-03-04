@@ -22,14 +22,14 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
-
-import junit.framework.TestCase;
 
 public class WMSTileFuserTest extends TestCase {
     GridSetBroker gridSetBroker = new GridSetBroker(false, false);

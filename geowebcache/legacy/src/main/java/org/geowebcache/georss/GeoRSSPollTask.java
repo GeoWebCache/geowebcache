@@ -21,7 +21,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,7 +29,6 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geotools.feature.type.DateUtil;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;

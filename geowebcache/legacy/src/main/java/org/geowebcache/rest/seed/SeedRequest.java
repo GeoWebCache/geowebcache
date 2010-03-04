@@ -18,13 +18,9 @@
 package org.geowebcache.rest.seed;
 
 import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
-import org.geowebcache.mime.MimeException;
-import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.rest.GWCTask.TYPE;
-import org.geowebcache.storage.TileRange;
 
 public class SeedRequest {
     private String name = null;

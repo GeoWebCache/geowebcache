@@ -17,18 +17,18 @@
  */
 package org.geowebcache.georss;
 
-import static org.geowebcache.georss.GeoRSSParsingUtils.*;
-
 import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.geowebcache.georss.GML31ParsingUtils.GML.GML_NS_URI;
+import static org.geowebcache.georss.GeoRSSParsingUtils.consume;
+import static org.geowebcache.georss.GeoRSSParsingUtils.nextTag;
+import static org.geowebcache.georss.GeoRSSParsingUtils.text;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Date;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.FactoryConfigurationError;

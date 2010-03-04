@@ -28,8 +28,6 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.GreenTileException;
 import org.geowebcache.filter.request.RequestFilterException;
-import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;

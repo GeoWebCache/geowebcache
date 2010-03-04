@@ -1,8 +1,6 @@
 package org.geowebcache.grid;
 
 
-import org.geowebcache.grid.BoundingBox;
-
 import junit.framework.TestCase;
 
 public class BoundingBoxTest extends TestCase {

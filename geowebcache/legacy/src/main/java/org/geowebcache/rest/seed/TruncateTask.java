@@ -26,7 +26,6 @@ import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.storage.StorageBroker;
-import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileRange;
 
 public class TruncateTask extends GWCTask {
