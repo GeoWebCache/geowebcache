@@ -495,6 +495,7 @@
     <module>wfs</module>
     <module>wms</module>
     <module>wmts</module>
+    <module>web</module>
   </modules>
 </project>
 
