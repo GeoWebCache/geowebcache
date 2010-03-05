@@ -15,7 +15,7 @@
  * @author Gabriel Roldan, OpenGeo, Copyright 2010
  * @author Arne Kepp, OpenGeo, Copyright 2010
  */
-package org.geowebcache.rest.seed;
+package org.geowebcache.storage;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;

@@ -18,7 +18,6 @@
 package org.geowebcache.storage;
 
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.rest.seed.RasterMask;
 
 /**
  * This class is a TileRange object with an additional filter

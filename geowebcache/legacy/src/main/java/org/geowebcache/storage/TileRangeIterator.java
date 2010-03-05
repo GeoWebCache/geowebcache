@@ -15,10 +15,8 @@
  * @author Arne OpenGeo 2010
  */
 
-package org.geowebcache.rest.seed;
+package org.geowebcache.storage;
 
-import org.geowebcache.storage.DiscontinuousTileRange;
-import org.geowebcache.storage.TileRange;
 
 public class TileRangeIterator {
     final private TileRange tr;

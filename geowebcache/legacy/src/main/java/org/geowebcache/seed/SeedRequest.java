@@ -15,12 +15,11 @@
  * @author Marius Suta / The Open Planning Project 2008
  * @author Arne Kepp / The Open Planning Project 2009 
  */
-package org.geowebcache.rest.seed;
+package org.geowebcache.seed;
 
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.SRS;
-import org.geowebcache.rest.GWCTask;
-import org.geowebcache.rest.GWCTask.TYPE;
+import org.geowebcache.seed.GWCTask.TYPE;
 
 public class SeedRequest {
     private String name = null;
@@ -61,7 +60,7 @@ public class SeedRequest {
      * @param format
      * @param type
      */
-    protected SeedRequest(String name, BoundingBox bounds, 
+    public SeedRequest(String name, BoundingBox bounds, 
             String gridSetId, int threadCount, int zoomStart, 
             int zoomStop, String format, GWCTask.TYPE type, String parameters) {
         this.name = name;

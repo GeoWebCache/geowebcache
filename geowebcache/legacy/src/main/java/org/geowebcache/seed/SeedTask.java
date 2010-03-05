@@ -15,7 +15,7 @@
  * @author Marius Suta / The Open Planning Project 2008
  * @author Arne Kepp / The Open Planning Project 2009 
  */
-package org.geowebcache.rest.seed;
+package org.geowebcache.seed;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -28,12 +28,12 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.rest.GWCTask;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileRange;
+import org.geowebcache.storage.TileRangeIterator;
 
-public class SeedTask extends GWCTask {
-    private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.SeedTask.class);
+class SeedTask extends GWCTask {
+    private static Log log = LogFactory.getLog(org.geowebcache.seed.SeedTask.class);
 
     private final TileRangeIterator trIter;
     

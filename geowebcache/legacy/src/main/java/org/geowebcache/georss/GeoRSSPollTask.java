@@ -35,11 +35,11 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.rest.GWCTask;
-import org.geowebcache.rest.GWCTask.STATE;
-import org.geowebcache.rest.seed.RasterMask;
+import org.geowebcache.seed.GWCTask;
 import org.geowebcache.seed.TileBreeder;
+import org.geowebcache.seed.GWCTask.STATE;
 import org.geowebcache.storage.DiscontinuousTileRange;
+import org.geowebcache.storage.RasterMask;
 
 /**
  * A task to run a GeoRSS feed poll and launch the seeding process

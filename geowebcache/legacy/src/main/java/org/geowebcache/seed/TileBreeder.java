@@ -31,16 +31,10 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.rest.GWCTask;
-import org.geowebcache.rest.GWCTask.TYPE;
-import org.geowebcache.rest.seed.MTSeeder;
-import org.geowebcache.rest.seed.SeedRequest;
-import org.geowebcache.rest.seed.SeedTask;
-import org.geowebcache.rest.seed.SeederThreadPoolExecutor;
-import org.geowebcache.rest.seed.TileRangeIterator;
-import org.geowebcache.rest.seed.TruncateTask;
+import org.geowebcache.seed.GWCTask.TYPE;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileRange;
+import org.geowebcache.storage.TileRangeIterator;
 
 /**
  * 

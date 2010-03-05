@@ -14,7 +14,7 @@
  * 
  * @author Gabriel Roldan, OpenGeo, Copyright 2010
  */
-package org.geowebcache.rest.seed;
+package org.geowebcache.seed;
 
 import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.capture;
@@ -45,11 +45,14 @@ import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.layer.wms.WMSMetaTile;
 import org.geowebcache.layer.wms.WMSSourceHelper;
-import org.geowebcache.rest.GWCTask.TYPE;
+import org.geowebcache.seed.SeedRequest;
+import org.geowebcache.seed.SeedTask;
 import org.geowebcache.seed.TileBreeder;
+import org.geowebcache.seed.GWCTask.TYPE;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
+import org.geowebcache.storage.TileRangeIterator;
 
 import com.vividsolutions.jts.geom.Coordinate;
 

@@ -14,7 +14,7 @@
  * 
  * @author Arne Kepp / The Open Planning Project 2008 
  */
-package org.geowebcache.rest.seed;
+package org.geowebcache.seed;
 
 import java.lang.reflect.Field;
 import java.util.Iterator;
@@ -25,7 +25,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.geowebcache.rest.GWCTask;
 
 public class SeederThreadPoolExecutor extends ThreadPoolExecutor {
     long currentId = 0;

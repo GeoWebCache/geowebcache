@@ -12,32 +12,21 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Marius Suta / The Open Planning Project 2008 
+ * @author Arne Kepp / The Open Planning Project 2008 
  */
-package org.geowebcache.rest.seed;
+package org.geowebcache.seed;
 
-import java.util.concurrent.Callable;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.rest.GWCTask;
 
-public class MTSeeder implements Callable<GWCTask> {
-    private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.MTSeeder.class);
-    
-    protected GWCTask task= null;
-    
-    public MTSeeder(GWCTask task){
-        this.task = task;
+public class SeederException extends GeoWebCacheException {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -4713157240817256500L;
+
+    public SeederException(String msg) {
+        super(msg);
     }
-    
-    public GWCTask call() {
-        try {
-            task.doAction();
-        } catch(GeoWebCacheException gwce) {
-            log.error(gwce.getMessage());
-        }
-        return task;
-    }
+
 }

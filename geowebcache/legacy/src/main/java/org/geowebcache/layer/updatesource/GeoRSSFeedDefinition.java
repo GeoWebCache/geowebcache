@@ -16,7 +16,7 @@
  */
 package org.geowebcache.layer.updatesource;
 
-import org.geowebcache.rest.GWCTask;
+import org.geowebcache.seed.GWCTask;
 
 public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
 

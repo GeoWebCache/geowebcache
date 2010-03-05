@@ -29,6 +29,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
+import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.seed.TileBreeder;
 import org.json.JSONException;
 import org.json.JSONObject;
