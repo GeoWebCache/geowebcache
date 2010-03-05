@@ -47,6 +47,10 @@ import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 
+/**
+ * Represents at the same time the configuration of a tiled layer and a way to access each
+ * stored tile
+ */
 public abstract class TileLayer {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayer.class);
 

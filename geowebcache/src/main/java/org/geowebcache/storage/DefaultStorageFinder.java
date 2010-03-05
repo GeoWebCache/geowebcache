@@ -27,6 +27,10 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.springframework.web.context.WebApplicationContext;
 
+/**
+ * Locates the position of the GeoWebCache file cache inspecting system variables,
+ * the servlet context and environment variables  
+ */
 public class DefaultStorageFinder {
     public final static String GWC_CACHE_DIR = "GEOWEBCACHE_CACHE_DIR";
 

@@ -18,7 +18,8 @@
 package org.geowebcache.storage;
 
 /**
- * Blobstores may assume that the StorageObjects passed
+ * Manages the persistence of the actual data contained in cacheable objects (tiles, WFS responses).
+ * <p>Blobstores may assume that the StorageObjects passed
  * to them are completely filled in except for the blob fields.
  */
 public interface BlobStore {

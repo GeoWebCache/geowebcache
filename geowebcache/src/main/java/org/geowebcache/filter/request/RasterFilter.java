@@ -32,6 +32,11 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 
 /**
+ * A raster filter allows to optimize data loading by avoiding the 
+ * generation of requests and the caching of empty tiles for tiles 
+ * that are inside the definition area of the layer but that are 
+ * known (via external information) to contain no data 
+ *
  * A raster filter uses multiple rasters, one for each zoom level,
  * as a lookup matrix. Each pixel on the raster corresponds to one
  * (256x256) tile, so the size of the matrix is 1 / 2^16.

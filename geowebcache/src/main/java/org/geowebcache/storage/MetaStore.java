@@ -17,6 +17,9 @@
  */
 package org.geowebcache.storage;
 
+/**
+ * A metastore manages all meta information related to cacheable objects
+ */
 public interface MetaStore {
     // Whether the metastore is actually enabled
     public boolean enabled();

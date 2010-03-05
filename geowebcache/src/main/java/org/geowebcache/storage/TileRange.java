@@ -19,6 +19,10 @@ package org.geowebcache.storage;
 
 import org.geowebcache.mime.MimeType;
 
+/**
+ * A 3 dimensional tile range inside a grid set, specified by a range of zooms for fast filtering
+ * and a set of (zoom level,xy bounds) specifications 
+ */
 public class TileRange {
     final public String layerName;
     

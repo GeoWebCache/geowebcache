@@ -17,6 +17,9 @@
  */
 package org.geowebcache.storage;
 
+/**
+ * A generic cacheable object
+ */
 public abstract class StorageObject {
     public static enum Status { UNSET, HIT, MISS, LOCK, EXPIRED_LOCK};
     

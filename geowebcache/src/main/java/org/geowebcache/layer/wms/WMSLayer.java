@@ -62,6 +62,9 @@ import org.geowebcache.storage.TileObject;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
 
+/**
+ * A tile layer backed by a WMS server
+ */
 public class WMSLayer extends TileLayer {
     public enum RequestType {MAP, FEATUREINFO};
     
