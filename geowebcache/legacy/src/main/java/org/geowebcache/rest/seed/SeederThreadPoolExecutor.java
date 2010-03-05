@@ -104,7 +104,7 @@ public class SeederThreadPoolExecutor extends ThreadPoolExecutor {
         return task;
     }
     
-    protected boolean terminateGWCTask(long id) {
+    public boolean terminateGWCTask(long id) {
         GWCTask task = this.currentPool.get(id);
         
         if(task != null && GWCTask.TYPE.TRUNCATE != task.getType()) {
@@ -115,7 +115,7 @@ public class SeederThreadPoolExecutor extends ThreadPoolExecutor {
         }
     }
     
-    protected Iterator<Entry<Long,GWCTask>> getRunningTasksIterator() {
+    public Iterator<Entry<Long,GWCTask>> getRunningTasksIterator() {
         return this.currentPool.entrySet().iterator();
     }
     

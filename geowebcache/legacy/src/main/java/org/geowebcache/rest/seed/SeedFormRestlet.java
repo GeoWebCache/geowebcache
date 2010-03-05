@@ -23,17 +23,17 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.rest.GWCTask.TYPE;
-import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.util.ServletUtils;
 import org.restlet.data.Form;
@@ -46,13 +46,7 @@ import org.restlet.data.Status;
 public class SeedFormRestlet extends GWCRestlet {
     //private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.SeedFormRestlet.class);
     
-    SeederThreadPoolExecutor threadPool;
-    
-    TileLayerDispatcher layerDispatcher;
-    
-    StorageBroker storageBroker;
-    
-    SeedRestlet seedRestlet;
+    private TileBreeder seeder;
 
     public void handle(Request request, Response response){
         Method met = request.getMethod();
@@ -77,7 +71,12 @@ public class SeedFormRestlet extends GWCRestlet {
             layerName = URLDecoder.decode((String) request.getAttributes().get("layer"), "UTF-8");
         } catch (UnsupportedEncodingException uee) { }
         
-        TileLayer tl = findTileLayer(layerName, layerDispatcher);
+        TileLayer tl;
+        try {
+            tl = seeder.findTileLayer(layerName);
+        } catch (GeoWebCacheException e) {
+            throw new RestletException(e.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
+        }
        
         response.setEntity(makeFormPage(tl), MediaType.TEXT_HTML);
     }
@@ -96,7 +95,12 @@ public class SeedFormRestlet extends GWCRestlet {
         
         //String layerName = form.getFirst("layerName").getValue();
         
-        TileLayer tl = findTileLayer(layerName, layerDispatcher);
+        TileLayer tl;
+        try {
+            tl = seeder.findTileLayer(layerName);
+        } catch (GeoWebCacheException e) {
+            throw new RestletException(e.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
+        }
         
         if (form != null && form.getFirst("kill_thread") != null) {
             handleKillThreadPost(form, tl, resp);
@@ -367,7 +371,7 @@ public class SeedFormRestlet extends GWCRestlet {
     private void makeTaskList(StringBuilder doc, TileLayer tl) {
         doc.append("<h4>List of currently executing tasks:</h4>\n");
         
-        Iterator<Entry<Long, GWCTask>> iter = threadPool.getRunningTasksIterator();
+        Iterator<Entry<Long, GWCTask>> iter = seeder.getRunningTasksIterator();
         
         boolean tasks = false;
         if(! iter.hasNext()) {
@@ -439,7 +443,7 @@ public class SeedFormRestlet extends GWCRestlet {
         
         makeHeader(doc);
         
-        if(threadPool.terminateGWCTask(Long.parseLong(id))) {
+        if(seeder.terminateGWCTask(Long.parseLong(id))) {
             doc.append("<ul><li>Requested to terminate task " + id + ".</li></ul>");
         } else {
             doc.append("<ul><li>Sorry, either task " + id 
@@ -477,12 +481,18 @@ public class SeedFormRestlet extends GWCRestlet {
         SeedRequest sr = new SeedRequest(tl.getName(), bounds, gridSetId,
                 threadCount, zoomStart, zoomStop, format, type, null);
         
-        TileRange tr = SeedRestlet.createTileRange(sr, tl);
+        TileRange tr = TileBreeder.createTileRange(sr, tl);
         
-        GWCTask[] tasks = seedRestlet.createTasks(tr, tl, sr.getType(), 
-                sr.getThreadCount(), sr.getFilterUpdate());
+        GWCTask[] tasks;
+        try {
+            tasks = seeder.createTasks(tr, tl, sr.getType(), sr.getThreadCount(), sr
+                    .getFilterUpdate());
+        } catch (GeoWebCacheException e) {
+            throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL);
+        }
         
-        seedRestlet.dispatchTasks(tasks);
+        
+        seeder.dispatchTasks(tasks);
 
         // Give the thread executor a chance to run
         try {
@@ -507,20 +517,8 @@ public class SeedFormRestlet extends GWCRestlet {
         }
     }
     
-    public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {
-        layerDispatcher = tileLayerDispatcher;
-    }
-    
-    public void setThreadPoolExecutor(SeederThreadPoolExecutor stpe) {
-        threadPool = stpe;
-    }
-    
-    public void setStorageBroker(StorageBroker sb) {
-        storageBroker = sb;
-    }
-    
-    public void setSeedRestlet(SeedRestlet sr) {
-        seedRestlet = sr;
+    public void setTileBreeder(TileBreeder seeder) {
+        this.seeder = seeder;
     }
     
 }

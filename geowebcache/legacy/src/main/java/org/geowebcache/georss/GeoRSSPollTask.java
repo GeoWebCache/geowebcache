@@ -38,7 +38,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCTask;
 import org.geowebcache.rest.GWCTask.STATE;
 import org.geowebcache.rest.seed.RasterMask;
-import org.geowebcache.rest.seed.SeedRestlet;
+import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.storage.DiscontinuousTileRange;
 
 /**
@@ -71,7 +71,7 @@ class GeoRSSPollTask implements Runnable {
 
     private final PollDef poll;
 
-    private final SeedRestlet seedRestlet;
+    private final TileBreeder seeder;
     
     private LinkedList<GWCTask> seedTasks = new LinkedList<GWCTask>();
 
@@ -81,9 +81,9 @@ class GeoRSSPollTask implements Runnable {
      */
     private String lastUpdatedEntry = "";
 
-    public GeoRSSPollTask(final PollDef poll, final SeedRestlet seedRestlet) {
+    public GeoRSSPollTask(final PollDef poll, final TileBreeder seeder) {
         this.poll = poll;
-        this.seedRestlet = seedRestlet;
+        this.seeder = seeder;
     }
 
     /**
@@ -255,7 +255,7 @@ class GeoRSSPollTask implements Runnable {
             DiscontinuousTileRange dtr = new DiscontinuousTileRange(layer.getName(), gridSetId, 
                     gridSub.getZoomStart(), gridSub.getZoomStop(), rasterMask, mimeIter.next(), null);
             try {
-                GWCTask[] tasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.TRUNCATE, 1, false);
+                GWCTask[] tasks = seeder.createTasks(dtr, layer, GWCTask.TYPE.TRUNCATE, 1, false);
                 tasks[0].doAction();
             } catch (GeoWebCacheException e) {
                 logger.error("Problem truncating based on GeoRSS feed: " + e.getMessage());
@@ -275,8 +275,13 @@ class GeoRSSPollTask implements Runnable {
                     gridSub.getZoomStart(), gridSub.getZoomStop(), rasterMask, mimeIter.next(), null);
             
             final int seedingThreads = pollDef.getSeedingThreads();
-            GWCTask[] tasks = seedRestlet.createTasks(dtr, layer, GWCTask.TYPE.SEED, seedingThreads, false);
-            seedRestlet.dispatchTasks(tasks);
+            GWCTask[] tasks;
+            try {
+                tasks = seeder.createTasks(dtr, layer, GWCTask.TYPE.SEED, seedingThreads, false);
+            } catch (GeoWebCacheException e) {
+                throw (RuntimeException) new RuntimeException(e.getMessage()).initCause(e);
+            }
+            seeder.dispatchTasks(tasks);
             
             // Save the handles so we can stop them
             for (GWCTask task : tasks) {

@@ -22,24 +22,14 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Iterator;
-import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLConfiguration;
-import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridSubset;
-import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.mime.MimeException;
-import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCRestlet;
-import org.geowebcache.rest.GWCTask;
 import org.geowebcache.rest.RestletException;
-import org.geowebcache.rest.GWCTask.TYPE;
-import org.geowebcache.storage.StorageBroker;
-import org.geowebcache.storage.TileRange;
+import org.geowebcache.seed.TileBreeder;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.restlet.data.MediaType;
@@ -63,12 +53,8 @@ import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 public class SeedRestlet extends GWCRestlet {
     private static Log log = LogFactory.getLog(SeedFormRestlet.class);
     
-    SeederThreadPoolExecutor threadPool;
-    
-    TileLayerDispatcher layerDispatcher;
-    
-    StorageBroker storageBroker;
-    
+    private TileBreeder seeder;
+
     public JSONObject myrequest; 
     
     
@@ -101,7 +87,8 @@ public class SeedRestlet extends GWCRestlet {
         try {
             XStream xs = new XStream(new JsonHierarchicalStreamDriver());
             JSONObject obj = null;
-            long[][] list = getStatusList();
+            long[][] list = seeder.getStatusList();
+            //GR: I bet synchronizing on list is unnecessary here...
             synchronized (list) {
                 obj = new JSONObject(xs.toXML(list));
             }
@@ -142,16 +129,18 @@ public class SeedRestlet extends GWCRestlet {
             layerName = URLDecoder.decode((String) req.getAttributes().get("layer"), "UTF-8");
         } catch (UnsupportedEncodingException uee) { }
         
-        TileLayer tl = findTileLayer(layerName, layerDispatcher);
         
-        TileRange tr = createTileRange(sr, tl);
-        
-        GWCTask[] tasks = createTasks(tr, tl, sr.getType(), 
-                sr.getThreadCount(), sr.getFilterUpdate());
-        
-        dispatchTasks(tasks);
+        try {
+            seeder.seed(layerName, sr);
+        }catch(IllegalArgumentException e){
+            throw new RestletException(e.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
+        } catch (GeoWebCacheException e) {
+            throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL);
+        }
+
     }
 
+    
     /**
      * Deserializing a json string is more complicated. 
      * 
@@ -178,139 +167,8 @@ public class SeedRestlet extends GWCRestlet {
         return writer.toString();
     }
     
-    public GWCTask[] createTasks(TileRange tr, TileLayer tl, GWCTask.TYPE type, 
-            int threadCount, boolean filterUpdate) throws RestletException {
-        
-        if(type == GWCTask.TYPE.TRUNCATE || threadCount < 1) {
-            log.debug("Forcing thread count to 1");
-            threadCount = 1;
-        }
-        
-        if(threadCount > threadPool.getMaximumPoolSize()) {
-            throw new RestletException("Asked to use " + threadCount + " threads," 
-                    +" but maximum is " + threadPool.getMaximumPoolSize(), 
-                    Status.SERVER_ERROR_INTERNAL);
-        }
-        
-        TileRangeIterator trIter = 
-            new TileRangeIterator(tr, tl.getMetaTilingFactors());
-        
-        GWCTask[] tasks = new GWCTask[threadCount];
-        
-        for(int i=0; i<threadCount; i++) {
-            tasks[i] = createTask(type, trIter, tl, filterUpdate);
-            tasks[i].setThreadInfo(threadCount, i);
-        }
-        
-        return tasks;
-    }
     
-    public void dispatchTasks(GWCTask[] tasks) throws RestletException {
-        for(int i=0; i<tasks.length; i++) {
-            threadPool.submit(new MTSeeder(tasks[i]));
-        }
-    }
-    
-    protected static TileRange createTileRange(SeedRequest req, TileLayer tl) {
-        int zoomStart = req.getZoomStart().intValue();
-        int zoomStop = req.getZoomStop().intValue();
-        
-        MimeType mimeType = null;
-        String format = req.getMimeFormat();
-        if (format == null) {
-            mimeType = tl.getMimeTypes().get(0);
-        } else {
-            try {
-                mimeType = MimeType.createFromFormat(format);
-            } catch (MimeException e4) {
-                e4.printStackTrace();
-            }
-        }
-        
-        String gridSetId = req.getGridSetId();
-        
-        if (gridSetId == null) {
-            gridSetId = tl.getGridSubsetForSRS(req.getSRS()).getName();
-        }
-        if(gridSetId == null) {
-            gridSetId = tl.getGridSubsets().entrySet().iterator().next().getKey();
-        }
-        
-        GridSubset gridSubset = tl.getGridSubset(gridSetId);
-
-        long[][] coveredGridLevels;
-        
-        BoundingBox bounds = req.getBounds();
-        if (bounds == null) {
-            coveredGridLevels = gridSubset.getCoverages();
-        } else {
-            coveredGridLevels = gridSubset.getCoverageIntersections(bounds);
-        }
-   
-        int[] metaTilingFactors = tl.getMetaTilingFactors();
-        
-        coveredGridLevels = gridSubset.expandToMetaFactors(coveredGridLevels, metaTilingFactors);
-        
-        // TODO Check the null
-        return new TileRange(
-                tl.getName(), gridSetId, 
-                zoomStart, zoomStop, 
-                coveredGridLevels, mimeType, null);
-    }
-    
-    
-    private GWCTask createTask(TYPE type, TileRangeIterator trIter, 
-            TileLayer tl, boolean doFilterUpdate) throws RestletException {
-       
-        switch (type) {
-        case SEED:
-            return new SeedTask(storageBroker, trIter, tl, false, doFilterUpdate);
-        case RESEED:
-            return new SeedTask(storageBroker, trIter, tl, true, doFilterUpdate);
-        case TRUNCATE:
-            return new TruncateTask(storageBroker, trIter.getTileRange(), tl, doFilterUpdate);
-        default:
-            throw new RestletException("Unknown request type " + type,
-                    Status.CLIENT_ERROR_BAD_REQUEST);
-        }
-    }
-    
-    /**
-     * Method returns List of Strings representing the status of the currently running threads
-     * @return
-     */
-    private long[][] getStatusList() {
-        Iterator<Entry<Long, GWCTask>> iter = threadPool.getRunningTasksIterator();
-        
-        long[][] ret = new long[threadPool.getMaximumPoolSize()][3];
-        int idx = 0;
-        
-        while(iter.hasNext()) {
-            Entry<Long, GWCTask> entry = iter.next();
-            GWCTask task = entry.getValue();
-        
-            ret[idx][0] = (int) task.getTilesDone();
-            
-            ret[idx][1] = (int) task.getTilesTotal();
-            
-            ret[idx][2] = task.getTimeRemaining();
-            
-            idx++;
-        }
-        
-        return ret;
-    }
-    
-    public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {
-        layerDispatcher = tileLayerDispatcher;
-    }
-    
-    public void setThreadPoolExecutor(SeederThreadPoolExecutor stpe) {
-        threadPool = stpe;
-        //statusArray = new int[threadPool.getMaximumPoolSize()][3];
-    }
-    
-    public void setStorageBroker(StorageBroker sb) {
-        storageBroker = sb;
+    public void setTileBreeder(TileBreeder seeder) {
+        this.seeder = seeder;
     }
 }

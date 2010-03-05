@@ -46,6 +46,7 @@ import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.layer.wms.WMSMetaTile;
 import org.geowebcache.layer.wms.WMSSourceHelper;
 import org.geowebcache.rest.GWCTask.TYPE;
+import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
@@ -105,7 +106,7 @@ public class SeedTaskTest extends TestCase {
         final int zoomLevel = 4;
         SeedRequest req = createRequest(tl, TYPE.SEED, zoomLevel, zoomLevel);
         
-        TileRange tr = SeedRestlet.createTileRange(req, tl);
+        TileRange tr = TileBreeder.createTileRange(req, tl);
         TileRangeIterator trIter = new TileRangeIterator(tr, tl.getMetaTilingFactors());
 
         /*
@@ -177,7 +178,7 @@ public class SeedTaskTest extends TestCase {
         expect(mockStorageBroker.get((TileObject) anyObject())).andReturn(false).anyTimes();
         replay(mockStorageBroker);
         
-        TileRange tr = SeedRestlet.createTileRange(req, tl);
+        TileRange tr = TileBreeder.createTileRange(req, tl);
         TileRangeIterator trIter = new TileRangeIterator(tr, tl.getMetaTilingFactors());
 
         boolean reseed = false;

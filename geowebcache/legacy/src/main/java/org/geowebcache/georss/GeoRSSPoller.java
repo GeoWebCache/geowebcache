@@ -33,6 +33,7 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
 import org.geowebcache.layer.updatesource.UpdateSourceDefinition;
 import org.geowebcache.rest.seed.SeedRestlet;
+import org.geowebcache.seed.TileBreeder;
 
 /**
  * 
@@ -43,9 +44,7 @@ public class GeoRSSPoller {
 
     private static final Log logger = LogFactory.getLog(GeoRSSPoller.class);
 
-    private final TileLayerDispatcher layerDispatcher;
-
-    private final SeedRestlet seedRestlet;
+    private final TileBreeder seeder;
 
     private final ScheduledExecutorService schedulingPollExecutorService;
 
@@ -59,16 +58,13 @@ public class GeoRSSPoller {
      * interval} polls the layers feed for change sets and if changes are found spawns a reseed
      * process on the tiles affected by the change set.
      * 
-     * @param layerDispatcher
-     * @param seedRestlet
+     * @param seeder
      * @param startUpDelaySecs
      *            seconds to wait before start polling the layers
      */
-    public GeoRSSPoller(final TileLayerDispatcher layerDispatcher, final SeedRestlet seedRestlet,
-            final int startUpDelaySecs) {
+    public GeoRSSPoller(final TileBreeder seeder, final int startUpDelaySecs) {
 
-        this.layerDispatcher = layerDispatcher;
-        this.seedRestlet = seedRestlet;
+        this.seeder = seeder;
         this.scheduledPolls = new ArrayList<PollDef>();
         this.scheduledTasks = new ArrayList<GeoRSSPollTask>();
 
@@ -80,7 +76,7 @@ public class GeoRSSPoller {
 
             final TimeUnit seconds = TimeUnit.SECONDS;
             for (PollDef poll : this.scheduledPolls) {
-                GeoRSSPollTask command = new GeoRSSPollTask(poll, this.seedRestlet);
+                GeoRSSPollTask command = new GeoRSSPollTask(poll, this.seeder);
                 GeoRSSFeedDefinition pollDef = poll.getPollDef();
                 long period = pollDef.getPollInterval();
 
@@ -104,7 +100,7 @@ public class GeoRSSPoller {
     private void findEnabledPolls() {
         logger.info("Initializing GeoRSS poller...");
 
-        final Map<String, TileLayer> layerMap = layerDispatcher.getLayers();
+        final Map<String, TileLayer> layerMap = seeder.getLayers();
         if (layerMap == null || layerMap.size() == 0) {
             logger.info("Found no layers configured, GeoRSS poller won't run");
             return;
