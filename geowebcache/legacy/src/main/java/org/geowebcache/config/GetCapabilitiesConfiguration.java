@@ -358,4 +358,11 @@ public class GetCapabilitiesConfiguration implements Configuration {
         double tmp = Math.PI/4.0 + y/2.0; 
         return 20037508.34 * Math.log(Math.tan(tmp)) / Math.PI;
     }
+
+    /**
+     * @see org.geowebcache.config.Configuration#isRuntimeStatsEnabled()
+     */
+    public boolean isRuntimeStatsEnabled() {
+        return false;
+    }
 }

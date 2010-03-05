@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.storage.GeometryRasterMaskBuilder;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -82,11 +83,11 @@ class GeoRSSTileRangeBuilder {
         }
     }
 
-    public TileGridFilterMatrix buildTileRangeMask(final GeoRSSReader reader, String previousEntryUpdate) throws IOException {
+    public GeometryRasterMaskBuilder buildTileRangeMask(final GeoRSSReader reader, String previousEntryUpdate) throws IOException {
 
         final GridSubset gridSubset = layer.getGridSubset(gridSetId);
         final int[] metaTilingFactors = layer.getMetaTilingFactors();
-        TileGridFilterMatrix matrix = null;
+        GeometryRasterMaskBuilder matrix = null;
         
         Entry entry;
         Geometry geom;
@@ -97,9 +98,7 @@ class GeoRSSTileRangeBuilder {
                     logger.warn("Skipping entry with id " + entry.getId()+ " since it has the same date as our last feed update.");
                 } else {
                     if(matrix == null) {
-                        matrix = new TileGridFilterMatrix(gridSubset, metaTilingFactors, maxMaskLevel);
-                        matrix.createGraphics();
-
+                        matrix = new GeometryRasterMaskBuilder(gridSubset, metaTilingFactors, maxMaskLevel);
                     }
                     // record the most recent updated entry
                     lastEntryUpdate = entry.getUpdated();

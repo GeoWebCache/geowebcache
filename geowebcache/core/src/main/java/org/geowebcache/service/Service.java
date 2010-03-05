@@ -17,7 +17,6 @@
 package org.geowebcache.service;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,9 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
-import org.geowebcache.conveyor.ConveyorKMLTile;
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.conveyor.ConveyorWFS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.util.ServletUtils;
@@ -93,15 +90,20 @@ public abstract class Service {
     }
     
     protected static void writeTileResponse(ConveyorTile conv, boolean writeExpiration) {
-        writeTileResponse(conv, writeExpiration, null);
+        writeTileResponse(conv, writeExpiration, null, null);
     }
     
-    protected static void writeTileResponse(ConveyorTile conv, boolean writeExpiration, RuntimeStats stats) {
+    protected static void writeTileResponse(ConveyorTile conv, boolean writeExpiration, RuntimeStats stats, String mimeTypeOverride) {
         HttpServletResponse response = conv.servletResp;
         byte[] data = conv.getContent();
 
-        String mimeStr = conv.getMimeType().getMimeType();
-
+        String mimeStr;
+        if(mimeTypeOverride == null){
+            mimeStr = conv.getMimeType().getMimeType();
+        }else{
+            mimeStr = mimeTypeOverride;
+        }
+        
         response.setCharacterEncoding("utf-8");
 
         response.setStatus((int) conv.getStatus());
@@ -113,13 +115,6 @@ public abstract class Service {
 
         if (writeExpiration) {
             conv.getLayer().setExpirationHeader(response, (int) conv.getTileIndex()[2]);
-        }
-
-        if (conv instanceof ConveyorKMLTile) {
-            ConveyorKMLTile kmlTile = (ConveyorKMLTile) conv;
-            if (kmlTile.getWrapperMimeType() != null) {
-                mimeStr = kmlTile.getWrapperMimeType().getMimeType();
-            }
         }
 
         response.setContentType(mimeStr);
@@ -138,37 +133,5 @@ public abstract class Service {
         }
     }
     
-    protected static void writeWFSResponse(ConveyorWFS conv,
-            boolean writeExpiration) {
-        HttpServletResponse response = conv.servletResp;
-        
-        String mimeStr = ((ConveyorWFS) conv).getMimeTypeString();
-
-        response.setCharacterEncoding("utf-8");
-
-        response.setContentType(mimeStr);
-
-        InputStream is = null;
-        OutputStream os = null;
-        try {
-            is = conv.getInputStream();
-            os = response.getOutputStream();
-
-            byte[] buffer = new byte[2048];
-            int read = 0;
-
-            while (read != -1) {
-                read = is.read(buffer);
-                if(read != -1) {
-                    os.write(buffer, 0, read);
-                }
-            }
-        } catch (IOException ioe) {
-            // Do nothing...
-        } finally {
-            try{ if(is != null) is.close(); } catch (IOException ioe) {   }
-            try{ if(os != null) os.close(); } catch (IOException ioe) {   }
-        }
-    }
     
 }

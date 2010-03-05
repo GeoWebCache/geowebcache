@@ -289,7 +289,7 @@ public class WMTSGetCapabilities {
          String defStyle = layer.getStyles();
          if(filters == null) {
              str.append("    <Style isDefault=\"true\">\n");
-             str.append("      <ows:Identifier>"+WMTSService.encodeDimensionValue(defStyle)+"</ows:Identifier>\n");
+             str.append("      <ows:Identifier>"+WMSLayer.encodeDimensionValue(defStyle)+"</ows:Identifier>\n");
              str.append("    </Style>\n");
          } else {
              ParameterFilter stylesFilter = null;
@@ -319,7 +319,7 @@ public class WMTSGetCapabilities {
                          } else {
                              str.append("    <Style>\n");
                          }
-                         str.append("      <ows:Identifier>"+WMTSService.encodeDimensionValue(value)+"</ows:Identifier>\n");
+                         str.append("      <ows:Identifier>"+WMSLayer.encodeDimensionValue(value)+"</ows:Identifier>\n");
                          str.append("    </Style>\n");
                  }
              }
@@ -368,12 +368,12 @@ public class WMTSGetCapabilities {
      private void dimensionDescription(StringBuilder str, ParameterFilter filter, List<String> values) {
          str.append("    <Dimension>");
          str.append("      <Identifier>"+filter.key+"</Identifier>");
-         String defaultStr = WMTSService.encodeDimensionValue(filter.defaultValue);
+         String defaultStr = WMSLayer.encodeDimensionValue(filter.defaultValue);
          str.append("      <Default>"+encodeXmlChars(defaultStr)+"</Default>");
          
          Iterator<String> iter = values.iterator();
          while(iter.hasNext()) {
-             String value = WMTSService.encodeDimensionValue(iter.next());
+             String value = WMSLayer.encodeDimensionValue(iter.next());
              str.append("      <Value>"+encodeXmlChars(value)+"</Value>");
          }
          str.append("    </Dimension>");

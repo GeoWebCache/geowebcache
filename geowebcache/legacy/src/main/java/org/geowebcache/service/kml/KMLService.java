@@ -218,7 +218,8 @@ public class KMLService extends Service {
                     e.printStackTrace();
                 }
                 
-                writeTileResponse(tile, false, stats);
+                String mimeStr = getMimeTypeOverride(tile);
+                writeTileResponse(tile, false, stats, mimeStr);
                 return;
             }
         } else if (tile.getHint() == HINT_SITEMAP_GLOBAL) {
@@ -334,7 +335,8 @@ public class KMLService extends Service {
         tile.setContent(xml.getBytes());
         tile.setMimeType(XMLMime.kml);
         tile.setStatus(200);
-        writeTileResponse(tile, true, stats);
+        String mimeStr = getMimeTypeOverride(tile);
+        writeTileResponse(tile, true, stats, mimeStr);
     }
 
     /**
@@ -457,7 +459,17 @@ public class KMLService extends Service {
 
         }
 
-        writeTileResponse(tile, true, stats);
+        String mimeStr = getMimeTypeOverride(tile);
+
+        writeTileResponse(tile, true, stats, mimeStr);
+    }
+
+    private String getMimeTypeOverride(ConveyorKMLTile tile) {
+        String mimeStr = null;
+        if (tile.getWrapperMimeType() != null) {
+            mimeStr = tile.getWrapperMimeType().getMimeType();
+        }
+        return mimeStr;
     }
     
     /**

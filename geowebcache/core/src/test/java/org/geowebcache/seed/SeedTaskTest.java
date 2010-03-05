@@ -25,6 +25,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
@@ -45,16 +46,11 @@ import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.layer.wms.WMSMetaTile;
 import org.geowebcache.layer.wms.WMSSourceHelper;
-import org.geowebcache.seed.SeedRequest;
-import org.geowebcache.seed.SeedTask;
-import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.seed.GWCTask.TYPE;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
-
-import com.vividsolutions.jts.geom.Coordinate;
 
 /**
  * Unit test suite for {@link SeedTask}
@@ -108,7 +104,7 @@ public class SeedTaskTest extends TestCase {
 
         final int zoomLevel = 4;
         SeedRequest req = createRequest(tl, TYPE.SEED, zoomLevel, zoomLevel);
-        
+
         TileRange tr = TileBreeder.createTileRange(req, tl);
         TileRangeIterator trIter = new TileRangeIterator(tr, tl.getMetaTilingFactors());
 
@@ -180,7 +176,7 @@ public class SeedTaskTest extends TestCase {
         expect(mockStorageBroker.put(capture(storedObjects))).andReturn(true).anyTimes();
         expect(mockStorageBroker.get((TileObject) anyObject())).andReturn(false).anyTimes();
         replay(mockStorageBroker);
-        
+
         TileRange tr = TileBreeder.createTileRange(req, tl);
         TileRangeIterator trIter = new TileRangeIterator(tr, tl.getMetaTilingFactors());
 
@@ -221,16 +217,15 @@ public class SeedTaskTest extends TestCase {
 
         assertEquals(expectedSavedTileCount, seededTileCount);
 
-        // abuse the jts Coordinate construct as tile keys to assert the correct ones were stored
-        Set<Coordinate> tileKeys = new TreeSet<Coordinate>();
-        Set<Coordinate> expectedTiles = new TreeSet<Coordinate>();
+        Set<Tuple<Long>> tileKeys = new TreeSet<Tuple<Long>>();
+        Set<Tuple<Long>> expectedTiles = new TreeSet<Tuple<Long>>();
         for (long x = startx; x <= coveredGridLevels[2]; x++) {
             for (long y = starty; y <= coveredGridLevels[3]; y++) {
-                expectedTiles.add(new Coordinate(x, y, zoomLevel));
+                expectedTiles.add(new Tuple<Long>(x, y, (long) zoomLevel));
             }
         }
         for (TileObject obj : storedTiles) {
-            tileKeys.add(new Coordinate(obj.getXYZ()[0], obj.getXYZ()[1], obj.getXYZ()[2]));
+            tileKeys.add(new Tuple<Long>(obj.getXYZ()[0], obj.getXYZ()[1], obj.getXYZ()[2]));
         }
 
         assertEquals(expectedTiles, tileKeys);
@@ -283,4 +278,54 @@ public class SeedTaskTest extends TestCase {
         ImageIO.write(image, formatName, out);
         return out.toByteArray();
     }
+
+    private static class Tuple<T extends Comparable<T>> implements Comparable<Tuple<T>> {
+
+        private T[] members;
+
+        public Tuple(T... members) {
+            this.members = members;
+        }
+
+        public int compareTo(Tuple<T> o) {
+            if (members == null) {
+                if (o.members == null) {
+                    return 0;
+                } else {
+                    return -1;
+                }
+            }
+            if (o.members == null) {
+                return 1;
+            }
+            if (members.length == 0 && o.members.length == 0) {
+                return 0;
+            }
+            if (members.length != o.members.length) {
+                throw new IllegalArgumentException("Tuples shall be of the same dimension");
+            }
+            int comparedVal;
+            for (int i = 0; i < members.length; i++) {
+                comparedVal = members[i].compareTo(o.members[i]);
+                if (comparedVal != 0) {
+                    break;
+                }
+            }
+            return 0;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof Tuple)) {
+                return false;
+            }
+            return 0 == compareTo((Tuple<T>) o);
+        }
+
+        public int hashCode() {
+            return 17 * Arrays.hashCode(members);
+        }
+    }
+
 }

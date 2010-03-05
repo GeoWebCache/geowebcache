@@ -1,4 +1,4 @@
-package org.geowebcache.cache.file;
+package org.geowebcache.blobstore.file;
 
 import junit.framework.TestCase;
 

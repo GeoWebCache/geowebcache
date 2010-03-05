@@ -40,6 +40,7 @@ import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.seed.GWCTask.STATE;
 import org.geowebcache.storage.DiscontinuousTileRange;
 import org.geowebcache.storage.RasterMask;
+import org.geowebcache.storage.GeometryRasterMaskBuilder;
 
 /**
  * A task to run a GeoRSS feed poll and launch the seeding process
@@ -144,7 +145,7 @@ class GeoRSSPollTask implements Runnable {
         logger.debug("Creating tile range mask based on GeoRSS feed's geometries from "
                 + feedUrl.toExternalForm() + " for " + layer.getName());
 
-        final TileGridFilterMatrix tileRangeMask = matrixBuilder.buildTileRangeMask(geoRSSReader, this.lastUpdatedEntry);
+        final GeometryRasterMaskBuilder tileRangeMask = matrixBuilder.buildTileRangeMask(geoRSSReader, this.lastUpdatedEntry);
       
         if(tileRangeMask == null) {
             logger.info("Did not create a tileRangeMask, presumably no new entries in feed.");
@@ -191,7 +192,7 @@ class GeoRSSPollTask implements Runnable {
      * 
      * @param tileRangeMask
      */
-    private void _logImagesToDisk(final TileGridFilterMatrix matrix) {
+    private void _logImagesToDisk(final GeometryRasterMaskBuilder matrix) {
         if (null == System.getProperty("org.geowebcache.georss.debugToDisk")) {
             return;
         }
@@ -217,7 +218,7 @@ class GeoRSSPollTask implements Runnable {
     }
 
     private void launchSeeding(final TileLayer layer, final GeoRSSFeedDefinition pollDef,
-            final String gridSetId, final TileGridFilterMatrix tileRangeMask) {
+            final String gridSetId, final GeometryRasterMaskBuilder tileRangeMask) {
         
         GridSubset gridSub = layer.getGridSubset(gridSetId);
 

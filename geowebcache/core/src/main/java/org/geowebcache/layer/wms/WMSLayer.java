@@ -56,7 +56,6 @@ import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
-import org.geowebcache.service.wmts.WMTSService;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
@@ -1216,7 +1215,7 @@ public class WMSLayer extends TileLayer {
         StringBuilder strFull = new StringBuilder();
         
         for(int i = 0; i<values.length; i++) {
-            String value = WMTSService.decodeDimensionValue(values[i]);
+            String value = decodeDimensionValue(values[i]);
             ParameterFilter modParam = this.sortedModParams[i];
             
             
@@ -1265,5 +1264,28 @@ public class WMSLayer extends TileLayer {
     }
 
 
+    public static String decodeDimensionValue(String value) {
+        if(value != null && value.startsWith("_")) {
+            if(value.equals("_null")) {
+                return null;
+            } else if( value.equals("_empty")) {
+                return "";
+            } else {
+                return value;
+            }
+        } else {
+            return value;
+        }
+    }
+    
+    public static String encodeDimensionValue(String value) {
+        if(value == null) {
+            return "_null";
+        } else if(value.length() == 0) {
+            return "_empty";
+        } else {
+            return value;
+        }
+    }
 
 }

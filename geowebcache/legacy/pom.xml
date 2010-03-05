@@ -87,6 +87,13 @@
       <artifactId>mockrunner</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.geowebcache</groupId>
+      <artifactId>gwc-core</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
 
     <!-- Java Advanced Imaging (JAI) -->
     <dependency>

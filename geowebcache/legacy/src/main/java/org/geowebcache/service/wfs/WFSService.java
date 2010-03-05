@@ -19,6 +19,7 @@ package org.geowebcache.service.wfs;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -166,7 +167,7 @@ public class WFSService extends Service {
                     }
                 }
             }
-            super.writeWFSResponse(conv, false);
+            writeWFSResponse(conv, false);
             
         } finally {
             InputStream is = conv.getInputStream();
@@ -177,6 +178,39 @@ public class WFSService extends Service {
                     throw new GeoWebCacheException(e.getMessage());
                 }
             }
+        }
+    }
+
+    private static void writeWFSResponse(ConveyorWFS conv,
+            boolean writeExpiration) {
+        HttpServletResponse response = conv.servletResp;
+        
+        String mimeStr = conv.getMimeTypeString();
+
+        response.setCharacterEncoding("utf-8");
+
+        response.setContentType(mimeStr);
+
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            is = conv.getInputStream();
+            os = response.getOutputStream();
+
+            byte[] buffer = new byte[2048];
+            int read = 0;
+
+            while (read != -1) {
+                read = is.read(buffer);
+                if(read != -1) {
+                    os.write(buffer, 0, read);
+                }
+            }
+        } catch (IOException ioe) {
+            // Do nothing...
+        } finally {
+            try{ if(is != null) is.close(); } catch (IOException ioe) {   }
+            try{ if(os != null) os.close(); } catch (IOException ioe) {   }
         }
     }
 

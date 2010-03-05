@@ -234,29 +234,5 @@ public class WMTSService extends Service {
                 wmsGFI.writeResponse(stats);
             }
         }
-    }
-    
-    public static String decodeDimensionValue(String value) {
-        if(value != null && value.startsWith("_")) {
-            if(value.equals("_null")) {
-                return null;
-            } else if( value.equals("_empty")) {
-                return "";
-            } else {
-                return value;
-            }
-        } else {
-            return value;
-        }
-    }
-    
-    public static String encodeDimensionValue(String value) {
-        if(value == null) {
-            return "_null";
-        } else if(value.length() == 0) {
-            return "_empty";
-        } else {
-            return value;
-        }
-    }
+    }    
 }

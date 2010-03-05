@@ -17,12 +17,14 @@
  */
 package org.geowebcache.georss;
 
-import static org.geowebcache.georss.GeoRSSTestUtils.buildSampleFilterMatrix;
+import static org.geowebcache.storage.RasterMaskTestUtils.buildSampleFilterMatrix;
 import junit.framework.TestCase;
 
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.storage.RasterMaskTestUtils;
+import org.geowebcache.storage.GeometryRasterMaskBuilder;
 import org.geowebcache.util.TestUtils;
 
 public class GeoRSSTileRangeBuilderTest extends TestCase {
@@ -38,7 +40,7 @@ public class GeoRSSTileRangeBuilderTest extends TestCase {
     private String gridsetId;
 
     public void setUp() {
-        GeoRSSTestUtils.debugToDisk = debugToDisk;
+        RasterMaskTestUtils.debugToDisk = debugToDisk;
         layer = TestUtils.createWMSLayer("image/png", new GridSetBroker(false, false), 3, 3,
                 new BoundingBox(-180, -90, 180, 90));
         gridsetId = layer.getGridSubsets().keySet().iterator().next();
@@ -46,7 +48,7 @@ public class GeoRSSTileRangeBuilderTest extends TestCase {
 
     public void testBuildTileRangeMask() throws Exception {
 
-        TileGridFilterMatrix tileRangeMask = buildSampleFilterMatrix(layer, gridsetId);
+        GeometryRasterMaskBuilder tileRangeMask = buildSampleFilterMatrix(layer, gridsetId);
 
         assertNotNull(tileRangeMask);
         assertEquals(0, tileRangeMask.getStartLevel());
@@ -57,12 +59,12 @@ public class GeoRSSTileRangeBuilderTest extends TestCase {
     }
 
     /**
-     * Test for {@link TileGridFilterMatrix#getCoveredBounds(int)}
+     * Test for {@link GeometryRasterMaskBuilder#getCoveredBounds(int)}
      * 
      * @throws Exception
      */
     public void testCoveredBounds() throws Exception {
-        TileGridFilterMatrix tileRangeMask = buildSampleFilterMatrix(layer, gridsetId);
+        GeometryRasterMaskBuilder tileRangeMask = buildSampleFilterMatrix(layer, gridsetId);
 
         long[][] coverages = layer.getGridSubset(gridsetId).getCoverages();
         long[][] expectedGridCoverages = {// just as a reminder

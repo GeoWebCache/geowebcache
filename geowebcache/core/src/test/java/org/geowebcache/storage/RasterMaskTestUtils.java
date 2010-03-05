@@ -15,11 +15,7 @@
  * @author Gabriel Roldan (OpenGeo) 2010
  *  
  */
-package org.geowebcache.georss;
-
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.verify;
-import static org.easymock.classextension.EasyMock.replay;
+package org.geowebcache.storage;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -27,44 +23,48 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import org.easymock.classextension.EasyMock;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.storage.GeometryRasterMaskBuilder;
 
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
-public class GeoRSSTestUtils {
+public class RasterMaskTestUtils {
 
     public static boolean debugToDisk;
 
-    public static TileGridFilterMatrix buildSampleFilterMatrix(final TileLayer layer,
+    public static GeometryRasterMaskBuilder buildSampleFilterMatrix(final TileLayer layer,
             final String gridsetId) throws Exception {
         return buildSampleFilterMatrix(layer, gridsetId, 10);
     }
 
-    public static TileGridFilterMatrix buildSampleFilterMatrix(final TileLayer layer,
+    public static GeometryRasterMaskBuilder buildSampleFilterMatrix(final TileLayer layer,
             final String gridsetId, final int maxMaskLevel) throws Exception {
 
-        final Entry entries[] = createSampleEntries();
-        final GeoRSSReader reader = EasyMock.createMock(GeoRSSReader.class);
-        expect(reader.nextEntry()).andReturn(entries[0]);
-        expect(reader.nextEntry()).andReturn(entries[1]);
-        expect(reader.nextEntry()).andReturn(entries[2]);
-        expect(reader.nextEntry()).andReturn(null);
-        replay(reader);
+        final Geometry entries[] = createSampleEntries();
 
-        final GeoRSSTileRangeBuilder builder = new GeoRSSTileRangeBuilder(layer, gridsetId,
-                maxMaskLevel);
+        final GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().keySet()
+                .iterator().next());
+        final int[] metaTilingFactors = layer.getMetaTilingFactors();
+        GeometryRasterMaskBuilder matrix = new GeometryRasterMaskBuilder(gridSubset,
+                metaTilingFactors, maxMaskLevel);
 
-        TileGridFilterMatrix tileRangeMask = builder.buildTileRangeMask(reader, "");
+        try {
+            for (Geometry geom : entries) {
+                matrix.setMasksForGeometry(geom);
+            }
+        } finally {
+            matrix.disposeGraphics();
+        }
 
-        logImages(new File("target"), tileRangeMask);
+        logImages(new File("target"), matrix);
 
-        verify(reader);
-        return tileRangeMask;
+        return matrix;
     }
 
-    public static void logImages(final File target, final TileGridFilterMatrix matrix)
+    public static void logImages(final File target, final GeometryRasterMaskBuilder matrix)
             throws IOException {
         if (debugToDisk) {
             BufferedImage[] byLevelMasks = matrix.getByLevelMasks();
@@ -89,19 +89,17 @@ public class GeoRSSTestUtils {
      * 
      * @return
      */
-    private static Entry[] createSampleEntries() throws Exception {
-        Entry[] entries = {//
+    private static Geometry[] createSampleEntries() throws Exception {
+        Geometry[] entries = {//
         entry("POLYGON ((0 0, 0 -90, 180 -90, 180 0, 0 0))"),//
                 entry("POINT(0 45)"),//
                 entry("LINESTRING(-90 -45, 90 45)") };
         return entries;
     }
 
-    private static Entry entry(final String wkt) throws ParseException {
-        Entry entry = new Entry();
-        // entry.setSRS(crs);
-        entry.setWhere(new WKTReader().read(wkt));
-        return entry;
+    private static Geometry entry(final String wkt) throws ParseException {
+        Geometry geometry = new WKTReader().read(wkt);
+        return geometry;
     }
 
 }

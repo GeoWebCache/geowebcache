@@ -17,15 +17,11 @@
  */
 package org.geowebcache.storage;
 
-import static org.geowebcache.georss.GeoRSSTestUtils.buildSampleFilterMatrix;
 import junit.framework.TestCase;
 
-import org.geowebcache.georss.GeoRSSTestUtils;
-import org.geowebcache.georss.TileGridFilterMatrix;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.storage.RasterMask;
 import org.geowebcache.util.TestUtils;
 
 public class RasterMaskTest extends TestCase {
@@ -42,7 +38,7 @@ public class RasterMaskTest extends TestCase {
     private long[][] fullCoverage;
 
     public void setUp() {
-        GeoRSSTestUtils.debugToDisk = debugToDisk;
+        RasterMaskTestUtils.debugToDisk = debugToDisk;
         layer = TestUtils.createWMSLayer("image/png", new GridSetBroker(false, false), 3, 3,
                 new BoundingBox(-180, -90, 180, 90));
         gridsetId = layer.getGridSubsets().keySet().iterator().next();
@@ -56,7 +52,7 @@ public class RasterMaskTest extends TestCase {
      * @throws Exception
      */
     public void testTileIsPresent() throws Exception {
-        TileGridFilterMatrix mask = buildSampleFilterMatrix(layer, gridsetId);
+        GeometryRasterMaskBuilder mask = RasterMaskTestUtils.buildSampleFilterMatrix(layer, gridsetId);
         RasterMask tileRangeMask = new RasterMask(mask.getByLevelMasks(), fullCoverage, mask
                 .getCoveredBounds());
 
@@ -65,8 +61,8 @@ public class RasterMaskTest extends TestCase {
         assertEquals(true, tileRangeMask.lookup(1, 0, 0));
 
         // level 1
-        //TODO commented out by arneke
-        //assertEquals(false, tileRangeMask.lookup(0, 1, 1));
+        // TODO commented out by arneke
+        // assertEquals(false, tileRangeMask.lookup(0, 1, 1));
         assertEquals(true, tileRangeMask.lookup(1, 1, 1));
         assertEquals(true, tileRangeMask.lookup(1, 0, 1));
 
@@ -96,7 +92,7 @@ public class RasterMaskTest extends TestCase {
 
     public void testTileIsPresentBuffering() throws Exception {
 
-        TileGridFilterMatrix mask = buildSampleFilterMatrix(layer, gridsetId);
+        GeometryRasterMaskBuilder mask = RasterMaskTestUtils.buildSampleFilterMatrix(layer, gridsetId);
         RasterMask tileRangeMask = new RasterMask(mask.getByLevelMasks(), fullCoverage, mask
                 .getCoveredBounds());
 
@@ -105,36 +101,36 @@ public class RasterMaskTest extends TestCase {
         /**
          * 2010-02-15 , arneke:
          * 
-         * The raster is 64 pixels wide, 32 pixels tall. The feature is at 0deg,45deg,
-         * which on the 360,180 canvas should correspond to 4 tiles (smack in the middle)
-         * which means 31,32 in the X direction, 23,24 in the Y direction
+         * The raster is 64 pixels wide, 32 pixels tall. The feature is at 0deg,45deg, which on the
+         * 360,180 canvas should correspond to 4 tiles (smack in the middle) which means 31,32 in
+         * the X direction, 23,24 in the Y direction
          * 
-         * We only guarantee one tile buffering, so I'm not sure why we are testing
-         * all the tests below, some of which fail. I've just commented them out to get
-         * the build back to normal. 
+         * We only guarantee one tile buffering, so I'm not sure why we are testing all the tests
+         * below, some of which fail. I've just commented them out to get the build back to normal.
          */
         assertEquals(true, tileRangeMask.lookup(32, 23, 5));// point location
 
         assertEquals(true, tileRangeMask.lookup(31, 23, 5));// point's left
-        //assertEquals(true, tileRangeMask.lookup(33, 23, 5));// point's right
-        
+        // assertEquals(true, tileRangeMask.lookup(33, 23, 5));// point's right
+
         assertEquals(true, tileRangeMask.lookup(32, 24, 5));// point's top
-        //assertEquals(true, tileRangeMask.lookup(32, 22, 5));// point's bottom
+        // assertEquals(true, tileRangeMask.lookup(32, 22, 5));// point's bottom
 
         assertEquals(true, tileRangeMask.lookup(31, 24, 5));// point's top left
-        //assertEquals(true, tileRangeMask.lookup(33, 24, 5));// point's top right
-        //assertEquals(true, tileRangeMask.lookup(31, 22, 5));// point's bottom left
-        //assertEquals(true, tileRangeMask.lookup(33, 22, 5));// point's bottom right
+        // assertEquals(true, tileRangeMask.lookup(33, 24, 5));// point's top right
+        // assertEquals(true, tileRangeMask.lookup(31, 22, 5));// point's bottom left
+        // assertEquals(true, tileRangeMask.lookup(33, 22, 5));// point's bottom right
     }
 
     /**
      * maxMaskLevel is lower then max zoom level, then downsampling needs to be applied to
-     * {@link TileGridFilterMatrix#lookup(long, long, int)}
+     * {@link GeometryRasterMaskBuilder#lookup(long, long, int)}
      */
     public void testTileIsPresentWithSubSampling() throws Exception {
 
         final int maxMaskLevel = 3;
-        TileGridFilterMatrix mask = buildSampleFilterMatrix(layer, gridsetId, maxMaskLevel);
+        GeometryRasterMaskBuilder mask = RasterMaskTestUtils.buildSampleFilterMatrix(layer, gridsetId,
+                maxMaskLevel);
         RasterMask tileRangeMask = new RasterMask(mask.getByLevelMasks(), fullCoverage, mask
                 .getCoveredBounds());
 

@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.config.Configuration;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
@@ -74,7 +74,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     
     private StorageBroker storageBroker;
     
-    private XMLConfiguration mainConfiguration;
+    private Configuration mainConfiguration;
     
     private RuntimeStats runtimeStats;
     
@@ -94,7 +94,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
      */
     public GeoWebCacheDispatcher(TileLayerDispatcher tileLayerDispatcher, 
             GridSetBroker gridSetBroker, StorageBroker storageBroker,
-            XMLConfiguration mainConfiguration, RuntimeStats runtimeStats) {
+            Configuration mainConfiguration, RuntimeStats runtimeStats) {
         super();
         this.tileLayerDispatcher = tileLayerDispatcher;
         this.gridSetBroker = gridSetBroker;

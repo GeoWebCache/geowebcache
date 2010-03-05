@@ -15,7 +15,7 @@
  * @author Gabriel Roldan (OpenGeo) 2010
  *  
  */
-package org.geowebcache.georss;
+package org.geowebcache.storage;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -48,13 +48,13 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author Gabriel Roldan (OpenGeo)
  * @see GeoRSSTileRangeBuilder
  */
-public class TileGridFilterMatrix {
+public class GeometryRasterMaskBuilder {
 
     private static final double TILE_BUFFER_RATIO = 1.5;
 
     private static final double ENVELOPE_BUFFER_RATIO = 1;
 
-    private static final Log logger = LogFactory.getLog(TileGridFilterMatrix.class);
+    private static final Log logger = LogFactory.getLog(GeometryRasterMaskBuilder.class);
 
     private static final AffineTransform IDENTITY = new AffineTransform();
 
@@ -80,7 +80,7 @@ public class TileGridFilterMatrix {
 
     private int[] metaTilingFactors;
 
-    public TileGridFilterMatrix(final GridSubset gridSubset, final int[] metaTilingFactors,
+    public GeometryRasterMaskBuilder(final GridSubset gridSubset, final int[] metaTilingFactors,
             final int maxMaskLevel) {
 
         this.gridSubset = gridSubset;
@@ -118,6 +118,7 @@ public class TileGridFilterMatrix {
                 byLevelMasks[level] = mask;
             }
         }
+        createGraphics();
     }
 
     private long[] getGridCoverage(final int level) {
@@ -142,7 +143,7 @@ public class TileGridFilterMatrix {
      *            a geometry to mask the affected tiles for, in this matrix's gridSubSet coordinate
      *            reference system
      */
-    void setMasksForGeometry(final Geometry geom) {
+    public void setMasksForGeometry(final Geometry geom) {
         if (geom == null || geom.isEmpty()) {
             return;
         }
@@ -271,7 +272,7 @@ public class TileGridFilterMatrix {
         return graphics[level];
     }
 
-    void disposeGraphics() {
+    public void disposeGraphics() {
         if (graphics == null) {
             return;
         }
@@ -284,7 +285,7 @@ public class TileGridFilterMatrix {
         graphics = null;
     }
 
-    void createGraphics() {
+    public void createGraphics() {
         final int numLevels = getNumLevels();
         graphics = new Graphics2D[numLevels];
         for (int level = 0; level < numLevels; level++) {
