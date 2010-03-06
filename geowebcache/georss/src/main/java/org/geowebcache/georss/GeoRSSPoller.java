@@ -29,10 +29,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
 import org.geowebcache.layer.updatesource.UpdateSourceDefinition;
-import org.geowebcache.rest.seed.SeedRestlet;
 import org.geowebcache.seed.TileBreeder;
 
 /**
