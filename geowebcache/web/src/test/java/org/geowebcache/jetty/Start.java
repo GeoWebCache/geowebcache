@@ -1,3 +1,4 @@
+package org.geowebcache.jetty;
 import java.io.File;
 
 import org.apache.commons.logging.Log;

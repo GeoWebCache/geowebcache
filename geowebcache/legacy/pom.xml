@@ -1,7 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <!-- mvn -Dtest=StorageBrokerTest -Dmaven.test.jvmargs='-XX:+HeapDumpOnOutOfMemoryError -Xms32m -Xmx32m' test -->  
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <!-- mvn -Dtest=StorageBrokerTest -Dmaven.test.jvmargs='-XX:+HeapDumpOnOutOfMemoryError -Xms32m -Xmx32m' test -->
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.geowebcache</groupId>
@@ -25,42 +24,30 @@
       <groupId>org.geotools</groupId>
       <artifactId>gt-wms</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
       <exclusions>
-	<exclusion>
-	  <groupId>avalon-framework</groupId>
-	  <artifactId>avalon-framework</artifactId>
-	</exclusion>
+        <exclusion>
+          <groupId>avalon-framework</groupId>
+          <artifactId>avalon-framework</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
-    
-    <!-- dependency>
-      <groupId>jcs</groupId>
-      <artifactId>jcs</artifactId>
-      <exclusions>
-	<exclusion>
-	  <groupId>mysql</groupId>
-	  <artifactId>mysql-connector-java</artifactId>
-	</exclusion>
-	<exclusion>
-	  <groupId>berkeleydb</groupId>
-	  <artifactId>berkeleydb</artifactId>
-	</exclusion>
-	<exclusion>
-	  <groupId>hsqldb</groupId>
-	  <artifactId>hsqldb</artifactId>
-	</exclusion>
-      </exclusions>
-    </dependency -->
-    
+
+    <!--
+      dependency> <groupId>jcs</groupId> <artifactId>jcs</artifactId> <exclusions> <exclusion> <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId> </exclusion> <exclusion> <groupId>berkeleydb</groupId>
+      <artifactId>berkeleydb</artifactId> </exclusion> <exclusion> <groupId>hsqldb</groupId>
+      <artifactId>hsqldb</artifactId> </exclusion> </exclusions> </dependency
+    -->
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -105,23 +92,17 @@
       <groupId>javax.media</groupId>
       <artifactId>jai_codec</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>javax.media</groupId>
       <artifactId>jai_imageio</artifactId>
     </dependency>
-    
-    <!-- dependency>
-	 <groupId>jdom</groupId>
-	 <artifactId>jdom</artifactId>
-	 <exclusions>
-	   <exclusion>
-	     <groupId>xerces</groupId>
-	     <artifactId>xerces</artifactId>
-	   </exclusion>
-	 </exclusions>
-    </dependency -->
-    
+
+    <!--
+      dependency> <groupId>jdom</groupId> <artifactId>jdom</artifactId> <exclusions> <exclusion>
+      <groupId>xerces</groupId> <artifactId>xerces</artifactId> </exclusion> </exclusions> </dependency
+    -->
+
     <!-- Spring dependencies -->
     <dependency>
       <groupId>org.springframework</groupId>
@@ -146,7 +127,7 @@
       <artifactId>spring-jdbc</artifactId>
       <!-- optional>true</optional -->
     </dependency>
-   
+
     <!--  Jetty starter dependencies -->
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
@@ -159,18 +140,18 @@
       <type>pom</type>
       <scope>test</scope>
       <exclusions>
-	<exclusion>
-	  <groupId>org.slf4j</groupId>
-	  <artifactId>slf4j-simple</artifactId>
-	</exclusion>
-	<exclusion>
-	  <groupId>org.slf4j</groupId>
-	  <artifactId>jcl104-over-slf4j</artifactId>
-	</exclusion>
-	<exclusion>
-	  <groupId>org.slf4j</groupId>
-	  <artifactId>slf4j-api</artifactId>
-	</exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-simple</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>jcl104-over-slf4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -179,73 +160,72 @@
       <groupId>org.restlet</groupId>
       <artifactId>org.restlet</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>com.noelios.restlet</groupId>
       <artifactId>com.noelios.restlet</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>com.noelios.restlet</groupId>
       <artifactId>com.noelios.restlet.ext.simple</artifactId>
     </dependency>
-    
-    <!-- dependency>
-      <groupId>org.restlet</groupId>
-      <artifactId>org.restlet.ext.freemarker</artifactId>
-    </dependency -->
-    
+
+    <!--
+      dependency> <groupId>org.restlet</groupId> <artifactId>org.restlet.ext.freemarker</artifactId> </dependency
+    -->
+
     <dependency>
       <groupId>org.restlet</groupId>
       <artifactId>org.restlet.ext.spring</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.restlet</groupId>
       <artifactId>org.restlet.ext.json</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>com.noelios.restlet</groupId>
       <artifactId>com.noelios.restlet.ext.servlet</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>net.sf.json-lib</groupId>
       <artifactId>json-lib</artifactId>
       <classifier>jdk13</classifier>
     </dependency>
-    
+
     <dependency>
       <groupId>com.thoughtworks.xstream</groupId>
       <artifactId>xstream</artifactId>
     </dependency>
-    
+
     <!-- acegi dependencies -->
     <dependency>
       <groupId>org.acegisecurity</groupId>
       <artifactId>acegi-security</artifactId>
       <exclusions>
-	<exclusion>
-	  <groupId>org.springframework</groupId>
-	  <artifactId>spring-remoting</artifactId>
-	</exclusion>
-	<exclusion>
-	  <groupId>org.springframework</groupId>
-	  <artifactId>spring-jdbc</artifactId>
-	</exclusion>
-	<exclusion>
-	  <groupId>org.springframework</groupId>
-	  <artifactId>spring-support</artifactId>
-	</exclusion>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-remoting</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-jdbc</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-support</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
-    
+
     <dependency>
       <groupId>org.codehaus.jettison</groupId>
       <artifactId>jettison</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>stax</groupId>
       <artifactId>stax-api</artifactId>
@@ -281,65 +261,57 @@
   <build>
     <plugins>
       <plugin>
-	<groupId>org.codehaus.mojo</groupId>
-	<artifactId>tomcat-maven-plugin</artifactId>
-	<configuration>
-	  <url>http://localhost:8080/manager</url>
-	  <server>localhost</server>
-	</configuration>
-      </plugin>
-      
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-compiler-plugin</artifactId>
-	<configuration>
-	  <source>1.5</source>
-	  <target>1.5</target>
-	</configuration>
-      </plugin>
-      
-      <plugin>
-	<groupId>org.mortbay.jetty</groupId>
-	<artifactId>maven-jetty-plugin</artifactId>
-	<configuration>
-	  <scanIntervalSeconds>10</scanIntervalSeconds>
-	  <connectors>
-	    <connector
-	       implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-	      <port>8080</port>
-	      <maxIdleTime>60000</maxIdleTime>
-	    </connector>
-	  </connectors>
-	</configuration>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>tomcat-maven-plugin</artifactId>
+        <configuration>
+          <url>http://localhost:8080/manager</url>
+          <server>localhost</server>
+        </configuration>
       </plugin>
 
-      <!-- WARplugin>
-	   <artifactId>maven-war-plugin</artifactId>
-	   <executions>
-	     <execution>
-	       <phase>install</phase>
-	       <goals>
-		 <goal>war</goal>
-	       </goals>
-	     </execution>
-	   </executions>
-      </pluginWAR -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
 
       <plugin>
-	<artifactId>maven-source-plugin</artifactId>
-	<configuration>
-	  <attach>true</attach>
-	</configuration>
-	<executions>
-	  <execution>
-	    <id>attach-sources</id>
-	    <goals>
-	      <goal>jar</goal>
-	    </goals>
-	  </execution>
-	</executions>
+        <groupId>org.mortbay.jetty</groupId>
+        <artifactId>maven-jetty-plugin</artifactId>
+        <configuration>
+          <scanIntervalSeconds>10</scanIntervalSeconds>
+          <connectors>
+            <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+              <port>8080</port>
+              <maxIdleTime>60000</maxIdleTime>
+            </connector>
+          </connectors>
+        </configuration>
       </plugin>
-      
+
+      <!--
+        WARplugin> <artifactId>maven-war-plugin</artifactId> <executions> <execution> <phase>install</phase> <goals>
+        <goal>war</goal> </goals> </execution> </executions> </pluginWAR
+      -->
+
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+        <configuration>
+          <attach>true</attach>
+        </configuration>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
