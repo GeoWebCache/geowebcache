@@ -6,6 +6,7 @@ Development Environment
 If you wish to contribute code to GeoWebCache, the first thing you need to set up if a development environment.
 
 You need the following:
+
 * Sun Java Developer Kit SE, version 1.5
 * Maven 2.x
 * Subversion 1.4.x or greater
