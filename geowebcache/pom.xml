@@ -467,7 +467,6 @@
     <module>georss</module>
     <module>gmaps</module>
     <module>kml</module>
-    <module>legacy</module>
     <module>rest</module>
     <module>tms</module>
     <module>ve</module>
