@@ -36,6 +36,11 @@
       <artifactId>gt-coverage</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.thoughtworks.xstream</groupId>
+      <artifactId>xstream</artifactId>
+    </dependency>
+
     <!-- Spring dependencies -->
     <dependency>
       <groupId>org.springframework</groupId>
