@@ -17,11 +17,6 @@
   <dependencies>
     <dependency>
       <groupId>org.geowebcache</groupId>
-      <artifactId>gwc-legacy</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.geowebcache</groupId>
       <artifactId>gwc-core</artifactId>
       <version>${project.version}</version>
     </dependency>
