@@ -29,6 +29,9 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.util.ServletUtils;
 
+/**
+ * One of the services exposed by GeoWebCache, for example TMS, WMTS, KML, ...
+ */
 public abstract class Service {
     
     private String pathName = null;

@@ -30,6 +30,9 @@ import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.WFSObject;
 import org.geowebcache.storage.StorageObject.Status;
 
+/**
+ * JDBC implementation of a {@link MetaStore}
+ */
 public class JDBCMetaBackend implements MetaStore {
     private static Log log = LogFactory.getLog(org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend.class);
     

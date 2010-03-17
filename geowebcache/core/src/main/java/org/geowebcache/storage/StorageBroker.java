@@ -22,6 +22,10 @@ import java.util.Arrays;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * Handles cacheable objects (tiles, wfs responses) both in terms of data storage and metadata
+ * storage, delegating to a {@link MetaStore} and a {@link BlobStore}
+ */
 public class StorageBroker {
     private static Log log = LogFactory.getLog(org.geowebcache.storage.StorageBroker.class);
     

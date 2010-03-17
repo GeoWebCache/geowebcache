@@ -23,6 +23,9 @@ import java.security.NoSuchAlgorithmException;
 
 import org.geowebcache.util.ServletUtils;
 
+/**
+ * Represents a cached WFS response
+ */
 public class WFSObject extends StorageObject {
     public static final String TYPE = "wfs";
     

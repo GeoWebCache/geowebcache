@@ -19,6 +19,11 @@ package org.geowebcache.storage;
 
 import java.util.Arrays;
 
+/**
+ * Represents a specific tile in a {@link GridSet}, identified by xyz. Normally the contents can be
+ * either an image or a regionated KML tile, the class is format agnostic and just holds an array of
+ * bytes.
+ */
 public class TileObject extends StorageObject {
     public static final String TYPE = "tile";
     

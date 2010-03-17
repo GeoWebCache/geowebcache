@@ -25,6 +25,11 @@ import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.util.ServletUtils;
 
+/**
+ * Builds WMS requests to gather a certain tile or meta tile. The actual communication with the
+ * server is delegated to subclasses (might be a real HTTP request, but also an in process one in
+ * the case of GeoServer)
+ */
 public abstract class WMSSourceHelper {
 
     abstract protected byte[] makeRequest(TileResponseReceiver tileRespRecv,
