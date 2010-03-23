@@ -1,0 +1,41 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <!-- mvn -Dtest=StorageBrokerTest -Dmaven.test.jvmargs='-XX:+HeapDumpOnOutOfMemoryError -Xms32m -Xmx32m' test -->
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.geowebcache</groupId>
+    <artifactId>geowebcache</artifactId>
+    <version>1.2-SNAPSHOT</version>
+  </parent>
+  <groupId>org.geowebcache</groupId>
+  <artifactId>gwc-wfs</artifactId>
+  <packaging>jar</packaging>
+  <version>1.2-SNAPSHOT</version>
+  <name>gwc-wfs</name>
+  <url>http://geowebcache.org</url>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.geowebcache</groupId>
+      <artifactId>gwc-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+    </dependency>
+
+    <!-- test dependencies -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+    </plugins>
+  </build>
+</project>
