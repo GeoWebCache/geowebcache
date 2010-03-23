@@ -337,7 +337,7 @@ public class WMSLayer extends TileLayer {
         if (this.sourceHelper instanceof WMSHttpHelper) {
             for (int i = 0; i < wmsUrl.length; i++) {
                 String url = wmsUrl[i];
-                if (!url.endsWith("?")) {
+                if (!url.contains("?")) {
                     wmsUrl[i] = url + "?";
                 }
             }
