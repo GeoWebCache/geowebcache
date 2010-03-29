@@ -38,6 +38,7 @@ import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.util.ServletUtils;
 
 public class WMSGetCapabilities {
     
@@ -53,10 +54,11 @@ public class WMSGetCapabilities {
         this.tld = tld;
         urlStr = servReq.getRequestURL().toString() + "?SERVICE=WMS&amp;";
         
-        String tiledValue = servReq.getParameter("tiled");
+        String[] tiledKey = {"tiled"};
+        String[] tiledValue = ServletUtils.selectedStringsFromMap(servReq.getParameterMap(), servReq.getCharacterEncoding(), tiledKey);
         
-        if(tiledValue != null) {
-            includeVendorSpecific  = Boolean.parseBoolean(tiledValue);
+        if(tiledValue != null && tiledValue.length > 0) {
+            includeVendorSpecific  = Boolean.parseBoolean(tiledValue[0]);
         }
     }
     
