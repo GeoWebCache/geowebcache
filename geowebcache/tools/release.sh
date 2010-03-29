@@ -1,6 +1,8 @@
 #!/bin/bash
 VERSION=$1
 
+exit 0
+
 if [ $# -eq 0 ] 
 then
   exit 0
