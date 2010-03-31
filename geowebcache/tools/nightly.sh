@@ -1,15 +1,24 @@
 #!/bin/bash
 echo "This script is very purpose-specific, please edit the source to enable it for your particular environment"
-exit 0
+#exit 0
 
-cd /home/ak/nightly
+TARGET_DIR=$HOME/nightly
+
+if [ -d $TARGET_DIR ]; then
+	echo "build directory is $TARGET_DIR"
+else 
+	echo "creating target directory $TARGET_DIR"
+        mkdir -p $TARGET_DIR
+fi 
+
+cd $TARGET_DIR
 
 DATE=`date +%Y%m%d`
 NICEDATE=`date +%Y-%m-%d`
-rm -Rf /home/ak/nightly/geowebcache-*
-svn export http://geowebcache.org/svn/trunk/geowebcache /home/ak/nightly/geowebcache-$DATE
-zip -r /home/ak/nightly/geowebcache-$DATE-SRC.zip geowebcache-$DATE
-cd /home/ak/nightly/geowebcache-$DATE
+rm -Rf $TARGET_DIR/geowebcache-*
+svn export http://geowebcache.org/svn/trunk/geowebcache $TARGET_DIR/geowebcache-$DATE
+zip -r $TARGET_DIR/geowebcache-$DATE-SRC.zip geowebcache-$DATE
+cd $TARGET_DIR/geowebcache-$DATE
 #echo "Enabling WAR build"
 #sed -i s/'WAR -->'/'>'/g pom.xml
 #sed -i s/'<!-- WAR'/'<'/g pom.xml
@@ -21,8 +30,8 @@ echo "Done"
 mvn clean install -Dmaven.test.skip=true
 cp LICENSE.txt web/target
 cd web/target
-zip /home/ak/nightly/geowebcache-$DATE-WAR.zip LICENSE.txt geowebcache.war
-cd /home/ak/nightly
+zip $TARGET_DIR/geowebcache-$DATE-WAR.zip LICENSE.txt geowebcache.war
+cd $TARGET_DIR
 cp *.zip /var/www/html/geowebcache
 echo cleaning up
 find /var/www/html/geowebcache -type f -name 'geowebcache-*.zip' -mtime +5 -exec rm {} \;
