@@ -54,6 +54,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
     private GridSetBroker gridSetBroker;
     
     private String url = null;
+    
+    private int backendTimeout = 120;
 
     private String mimeTypes = null;
 
@@ -91,6 +93,14 @@ public class GetCapabilitiesConfiguration implements Configuration {
             this.allowCacheBypass = true;
         }
         log.info("Constructing from url " + url);
+    }
+    
+    /**
+     * Optionally used by Spring
+     * @param backendTimeout
+     */
+    public void setBackendTimeout(int backendTimeout) {
+        this.backendTimeout = backendTimeout;
     }
 
     /**
@@ -232,7 +242,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 if (wmsLayer != null) {
                     // Finalize with some defaults
                     wmsLayer.setCacheBypassAllowed(allowCacheBypass);
-                    wmsLayer.setBackendTimeout(120);
+                    wmsLayer.setBackendTimeout(backendTimeout);
                     
                     wmsLayer.setMetaInformation(layerMetaInfo);
                     
