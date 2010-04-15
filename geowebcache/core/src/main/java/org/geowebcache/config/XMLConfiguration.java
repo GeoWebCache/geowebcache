@@ -111,6 +111,55 @@ public class XMLConfiguration implements Configuration {
 
     private GeoWebCacheConfiguration gwcConfig = null;
     
+    
+    /**
+     * Constructor that will accept an absolute
+     * or relative path for finding geowebcache.xml
+     * 
+     * @param appCtx
+     * @param gridSetBroker
+     * @param defaultStorage
+     * @param filePath
+     */
+    public XMLConfiguration(
+            ApplicationContextProvider appCtx, 
+            GridSetBroker gridSetBroker,
+            DefaultStorageFinder defaultStorage,
+            String filePath) {
+
+        context = appCtx.getApplicationContext();
+        this.gridSetBroker = gridSetBroker;
+        defStoreFind = defaultStorage;
+               
+        if(filePath.startsWith("/") || filePath.contains(":\\")) {
+            this.absPath = filePath;
+        } else {
+            this.relPath = filePath;
+        }
+        
+        log.info("Will look for geowebcache.xml in " + filePath);
+        
+        try {
+            File xmlFile = findConfFile();
+            if(xmlFile == null) {
+                return;
+            }
+            
+            loadConfiguration(xmlFile);
+            initialize();
+            
+        } catch (GeoWebCacheException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Constructor that will just search for geowebcache.xml
+     * 
+     * @param appCtx
+     * @param gridSetBroker
+     * @param defaultStorage
+     */
     public XMLConfiguration(
             ApplicationContextProvider appCtx, 
             GridSetBroker gridSetBroker,
@@ -119,8 +168,7 @@ public class XMLConfiguration implements Configuration {
         context = appCtx.getApplicationContext();
         this.gridSetBroker = gridSetBroker;
         defStoreFind = defaultStorage;
-        
-
+       
         try {
             File xmlFile = findConfFile();
             if(xmlFile == null) {
@@ -669,11 +717,13 @@ public class XMLConfiguration implements Configuration {
     }
 
     public void setRelativePath(String relPath) {
-        this.relPath = relPath;
+        log.error("Specifying the relative path as a property is deprecated. "
+                +"Please pass it as the 4th argument to the constructor.");
     }
 
     public void setAbsolutePath(String absPath) {
-        this.absPath = absPath;
+        log.error("Specifying the absolute path as a property is deprecated. "
+                +"Please pass it as the 4th argument to the constructor.");
     }
     
     public void debugPrint(Node node) {

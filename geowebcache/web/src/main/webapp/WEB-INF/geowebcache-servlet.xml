@@ -10,10 +10,9 @@
     <constructor-arg ref="gwcAppCtx" />
     <constructor-arg ref="gwcGridSetBroker"/>
     <constructor-arg ref="gwcDefaultStorageFinder" />
-    <!-- Other examples: -->
-    <!--property name="relativePath"><value>../resources</value></property -->
-    <!--property name="relativePath"><value>/WEB-INF/classes</value></property-->
-    <!--property name="absolutePath"><value>/etc/geowebcache/conf</value></property-->
+    <!-- By default GWC will look for geowebcache.xml in WEB-INF/classes,
+         alternatively you can specify an absolute or relative path to a directory -->
+    <!-- constructor-arg value="/etc/geowebcache" / -->
   </bean>
   
   <!-- If you like to automatically configure GWC from a WMS Getcapabilities document,
