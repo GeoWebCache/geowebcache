@@ -25,6 +25,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -265,7 +266,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
     private WMSLayer getLayer(String name, String[] wmsurl, 
             BoundingBox bounds4326, BoundingBox bounds3785, String stylesStr, 
-            boolean queryable, HashMap<Object, CRSEnvelope> additionalBounds)
+            boolean queryable, Map<String, CRSEnvelope> additionalBounds)
             throws GeoWebCacheException {
         
         Hashtable<String,GridSubset> grids = new Hashtable<String,GridSubset>(2);
