@@ -11,7 +11,6 @@
   <url>http://geowebcache.org</url>
 
   <properties>
-    <!-- gs.version>1.6.4</gs.version -->
     <gt.version>2.5.5</gt.version>
     <jts.version>1.9</jts.version>
     <spring.version>2.5.5</spring.version>
@@ -78,25 +77,6 @@
       <version>${project.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.vividsolutions</groupId>
-      <artifactId>jts</artifactId>
-      <version>${jts.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-coverage</artifactId>
-      <version>${gt.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-wms</artifactId>
-      <version>${gt.version}</version>
-      <!-- optional>true</optional -->
     </dependency>
     
     <dependency>

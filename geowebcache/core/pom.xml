@@ -36,11 +36,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-coverage</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>com.thoughtworks.xstream</groupId>
       <artifactId>xstream</artifactId>
     </dependency>
