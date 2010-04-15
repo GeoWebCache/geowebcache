@@ -28,6 +28,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
+import org.geowebcache.grid.GridMismatchException;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
@@ -152,26 +153,35 @@ public class WMSService extends Service {
         if (bbox == null || !bbox.isSane()) {
             throw new ServiceException("The bounding box parameter ("+paramValues[2]+") is missing or not sane");
         }
-
-        long[] tileIndex = gridSubset.closestIndex(bbox);
         
         int tileWidth = Integer.parseInt(values[5]);
         int tileHeight = Integer.parseInt(values[6]);
         
-        // If we support full WMS we need to do a few tests to determine whether
-        // this is a request that requires us to recombine tiles to respond.
-        if (this.fullWMS &&
-                ( gridSubset.getTileWidth() != tileWidth
-                || gridSubset.getTileHeight() != tileHeight
-                || ! bbox.equals(gridSubset.boundsFromIndex(tileIndex), 0.05)
-                )) {
-            log.debug("Recombinining tiles to respond to WMS request");
-            ConveyorTile tile = new ConveyorTile(sb, layers, request, response);
-            tile.setHint("getmap");
-            tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
-            return tile;
+        if(fullWMS) {
+            // If we support full WMS we need to do a few tests to determine whether
+            // this is a request that requires us to recombine tiles to respond.
+            long[] tileIndex = null;
+            try {
+                tileIndex = gridSubset.closestIndex(bbox);
+            } catch(GridMismatchException gme) {
+                // Do nothing, the null is info enough
+            }
+            
+            if(tileIndex == null 
+                    || gridSubset.getTileWidth() != tileWidth
+                    || gridSubset.getTileHeight() != tileHeight
+                    || ! bbox.equals(gridSubset.boundsFromIndex(tileIndex), 0.02)
+                    ) {
+                log.debug("Recombinining tiles to respond to WMS request");
+                ConveyorTile tile = new ConveyorTile(sb, layers, request, response);
+                tile.setHint("getmap");
+                tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
+                return tile;
+            }
         }
-
+        
+        long[] tileIndex = gridSubset.closestIndex(bbox);
+        
         gridSubset.checkTileDimensions(tileWidth,tileHeight);
         
         return new ConveyorTile(
