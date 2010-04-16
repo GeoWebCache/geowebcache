@@ -27,7 +27,7 @@ sed -i s/{GWC_VERSION}/NIGHTLY/g core/src/main/java/org/geowebcache/GeoWebCacheD
 echo "Replacing GWC_BUILD_DATE"
 sed -i s/{GWC_BUILD_DATE}/${NICEDATE}/g core/src/main/java/org/geowebcache/GeoWebCacheDispatcher.java
 echo "Done"
-mvn clean install -Dmaven.test.skip=true
+mvn clean install -DskipTests
 cp LICENSE.txt web/target
 cd web/target
 zip $TARGET_DIR/geowebcache-$DATE-WAR.zip LICENSE.txt geowebcache.war
