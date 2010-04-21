@@ -28,8 +28,10 @@ import junit.framework.TestCase;
 
 public class H2Test extends TestCase {
     
-    public static long INSERT_COUNT = 1000;
+    public static long INSERT_COUNT = 2000;
     
+    public static long OPEN_CLOSE_COUNT = 500;
+
     public static String JDBC_STRING = "jdbc:h2:file:/tmp/h2test;TRACE_LEVEL_FILE=0";
     
     public static int ITERATIONS = 3;
@@ -91,6 +93,7 @@ public class H2Test extends TestCase {
         }
         
         System.out.println("Inserting rows for test.");
+        long start = System.currentTimeMillis();
         for(int i=0; i<INSERT_COUNT; i++) {
             try {
                 Statement st = conn.createStatement();
@@ -101,9 +104,9 @@ public class H2Test extends TestCase {
                 e.printStackTrace();
             }
         }
-        
+        long stop = System.currentTimeMillis();        
         conn.close();
-        System.out.println("Done setting up.");
+        System.out.println("Done setting up, inserting " + INSERT_COUNT + " took " + (stop-start) + " ms");
     }
     
     private boolean doSelect(long x, long y, long z) throws Exception {        
@@ -176,7 +179,7 @@ public class H2Test extends TestCase {
         long start = System.currentTimeMillis();
         long cumulativeOpen = 0;
         long cumulativeClose = 0;
-        for(int i=0; i<INSERT_COUNT; i++) {
+        for(int i=0; i<OPEN_CLOSE_COUNT; i++) {
             long startOpen = System.nanoTime(); 
             Connection conn = getConnection();
             cumulativeOpen += System.nanoTime() - startOpen;
@@ -191,8 +194,8 @@ public class H2Test extends TestCase {
         
         long stop = System.currentTimeMillis();
         System.out.println("Opening and closing H2 connection: " + (stop - start) + "ms for "
-                + INSERT_COUNT + " = " 
-                + (INSERT_COUNT * 1000)/ (stop - start) + " /s");
+                + OPEN_CLOSE_COUNT + " = " 
+                + (OPEN_CLOSE_COUNT * 1000)/ (stop - start) + " /s");
         //connHolder.close();
     }
     
