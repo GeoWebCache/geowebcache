@@ -256,7 +256,7 @@ public class SeedTaskTest extends TestCase {
         int[] metaWidthHeight = { 3, 3 };
 
         WMSLayer layer = new WMSLayer("test:layer", urls, "aStyle", "test:layer", formatList,
-                grids, metaWidthHeight, "vendorparam=true", false);
+                grids, null, metaWidthHeight, "vendorparam=true", false);
 
         layer.initialize(gridSetBroker);
 

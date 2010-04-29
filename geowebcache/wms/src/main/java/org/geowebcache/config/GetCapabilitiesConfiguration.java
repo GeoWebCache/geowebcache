@@ -34,9 +34,13 @@ import org.geotools.data.ows.Layer;
 import org.geotools.data.ows.StyleImpl;
 import org.geotools.data.ows.WMSCapabilities;
 import org.geotools.data.wms.WebMapServer;
+import org.geotools.data.wms.xml.Dimension;
+import org.geotools.data.wms.xml.Extent;
 import org.geotools.ows.ServiceException;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.meta.ServiceInformation;
+import org.geowebcache.filter.parameters.NaiveWMSDimensionFilter;
+import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -231,16 +235,25 @@ public class GetCapabilitiesConfiguration implements Configuration {
                
                 String[] wmsUrls = {wmsUrl};
                 
+                LinkedList<ParameterFilter> paramFilters = new LinkedList<ParameterFilter>();
+                for (Dimension dimension : layer.getDimensions().values()) {
+                    Extent dimExtent = layer.getExtent(dimension.getName());
+                    paramFilters.add(new NaiveWMSDimensionFilter(dimension, dimExtent));
+                }
+                
                 WMSLayer wmsLayer = null;
                 try {
                     wmsLayer = getLayer(name, wmsUrls, bounds4326, 
-                            bounds3785, stylesStr, queryable, layer.getBoundingBoxes());
+                            bounds3785, stylesStr, queryable, 
+                            layer.getBoundingBoxes(), paramFilters);
                 } catch (GeoWebCacheException gwc) {
                     log.error("Error creating " + layer.getName() + ": "
                             + gwc.getMessage());
                 }
 
                 if (wmsLayer != null) {
+
+                    
                     // Finalize with some defaults
                     wmsLayer.setCacheBypassAllowed(allowCacheBypass);
                     wmsLayer.setBackendTimeout(backendTimeout);
@@ -266,7 +279,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
     private WMSLayer getLayer(String name, String[] wmsurl, 
             BoundingBox bounds4326, BoundingBox bounds3785, String stylesStr, 
-            boolean queryable, Map<String, CRSEnvelope> additionalBounds)
+            boolean queryable, Map<String, CRSEnvelope> additionalBounds,
+            List<ParameterFilter> paramFilters)
             throws GeoWebCacheException {
         
         Hashtable<String,GridSubset> grids = new Hashtable<String,GridSubset>(2);
@@ -320,7 +334,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
         int[] metaWidthHeight = { Integer.parseInt(metaStrings[0]), Integer.parseInt(metaStrings[1])};
         
         return new WMSLayer(name,
-                wmsurl, stylesStr, name, mimeFormats, grids, 
+                wmsurl, stylesStr, name, mimeFormats, grids, paramFilters,
                 metaWidthHeight, this.vendorParameters, queryable);
     }
 

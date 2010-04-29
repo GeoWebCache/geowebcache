@@ -106,7 +106,7 @@ public class WMSTileFuserTest extends TestCase {
         grids.put(grid.getName(), grid);
         int[] metaWidthHeight = {3,3};
         
-        WMSLayer layer = new WMSLayer("test:layer", urls, "aStyle", "test:layer", formatList, grids, metaWidthHeight, "vendorparam=true", false);
+        WMSLayer layer = new WMSLayer("test:layer", urls, "aStyle", "test:layer", formatList, grids, null, metaWidthHeight, "vendorparam=true", false);
         
         layer.initialize(gridSetBroker);
         

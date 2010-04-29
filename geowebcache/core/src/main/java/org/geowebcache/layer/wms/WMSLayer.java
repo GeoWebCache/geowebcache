@@ -170,8 +170,9 @@ public class WMSLayer extends TileLayer {
      */
     public WMSLayer(String layerName,
             String[] wmsURL, String wmsStyles, String wmsLayers, 
-            List<String> mimeFormats, Hashtable<String,GridSubset> subSets, 
-            int[] metaWidthHeight, String vendorParams, boolean queryable) {
+            List<String> mimeFormats, Hashtable<String,GridSubset> subSets,
+            List<ParameterFilter> parameterFilters, int[] metaWidthHeight, 
+            String vendorParams, boolean queryable) {
      
         name = layerName;
         this.wmsUrl = wmsURL;
@@ -179,6 +180,7 @@ public class WMSLayer extends TileLayer {
         this.wmsStyles = wmsStyles;
         this.mimeFormats = mimeFormats;
         this.subSets = subSets;
+        this.parameterFilters = parameterFilters;
         this.metaWidthHeight = metaWidthHeight;
         this.vendorParameters = vendorParams;
         this.transparent = true;
@@ -1290,5 +1292,4 @@ public class WMSLayer extends TileLayer {
             return value;
         }
     }
-
 }

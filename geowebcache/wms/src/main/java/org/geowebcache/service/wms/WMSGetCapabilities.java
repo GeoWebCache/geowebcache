@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,6 +30,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.filter.parameters.ParameterFilter;
+import org.geowebcache.filter.parameters.WMSDimensionProvider;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
@@ -309,13 +312,21 @@ public class WMSGetCapabilities {
 
         str.append("      <Name>"+layer.getName()+"</Name>\n");
 
-        
         if(layer.getMetaInformation() != null) {
             LayerMetaInformation metaInfo = layer.getMetaInformation();            
             str.append("      <Title>"+metaInfo.getTitle()+"</Title>\n");
             str.append("      <Abstract>"+metaInfo.getDescription()+"</Abstract>\n");
         } else {
             str.append("      <Title>"+layer.getName()+"</Title>\n");
+        }
+        
+        // WMS 1.1 Dimensions
+        if(layer instanceof WMSLayer) {
+            for(ParameterFilter parameterFilter : ((WMSLayer) layer).getParameterFilters()) {
+                if(parameterFilter instanceof WMSDimensionProvider) {
+                    ((WMSDimensionProvider) parameterFilter).appendElements(str,"      ");
+                }
+            }
         }
         
         Iterator<GridSubset> gridSetIter = layer.getGridSubsets().values().iterator();
