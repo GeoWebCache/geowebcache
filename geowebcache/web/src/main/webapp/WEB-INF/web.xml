@@ -5,7 +5,6 @@
   <!-- pick up all spring application contexts -->
   <context-param>
     <param-name>contextConfigLocation</param-name>
-    <!--param-value>classpath*:/applicationContext.xml classpath*:/applicationSecurityContext.xml</param-value -->
     <param-value>/WEB-INF/acegi-config.xml</param-value>
   </context-param>
   

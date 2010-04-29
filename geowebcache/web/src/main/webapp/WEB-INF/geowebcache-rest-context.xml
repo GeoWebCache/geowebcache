@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+  <description>
+    Bean configuration file for the gwc-rest module
+  </description>
+
+  <!-- Restlets -->
+  <bean id="gwcSeedRestlet" class="org.geowebcache.rest.seed.SeedRestlet">
+    <property name="tileBreeder" ref="gwcTileBreeder"/>
+  </bean>
+
+  <bean id="gwcSeedFormRestlet" class="org.geowebcache.rest.seed.SeedFormRestlet">
+    <property name="tileBreeder" ref="gwcTileBreeder"/>
+  </bean>
+  <bean id="gwcReloadRestlet" class="org.geowebcache.rest.reload.ReloadRestlet">
+    <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
+  </bean>
+  <bean id="gwcTileLayerRestlet" class="org.geowebcache.rest.layers.TileLayerRestlet">
+    <property name="XMLConfiguration" ref="gwcXmlConfig"/>
+    <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
+  </bean>
+  <bean id="gwcBoundsRestlet" class="org.geowebcache.rest.bounds.BoundsRestlet">
+    <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
+  </bean>
+  <bean id="gwcFilterUpdateRestlet" class="org.geowebcache.rest.filter.FilterUpdateRestlet">
+    <constructor-arg  ref="gwcTLDispatcher"/>
+  </bean>
+  <bean id="gwcByteStreamerRestlet" class="org.geowebcache.rest.webresources.ByteStreamerRestlet" />
+  
+  <!-- REST Dispatcher -->
+  <bean id="gwcRestDispatcher" class="org.geowebcache.rest.RESTDispatcher">
+    <constructor-arg type="java.util.Map">
+      <map>
+        <entry>
+          <key><value>/seed/{layer}.{extension}</value></key>
+          <ref bean="gwcSeedRestlet" />
+        </entry>
+        <entry>
+          <key><value>/seed/{layer}</value></key>
+          <ref bean="gwcSeedFormRestlet" />
+        </entry>
+        <entry>
+          <key><value>/reload</value></key>
+          <ref bean="gwcReloadRestlet" />
+        </entry>
+        <entry>
+          <key><value>/layers/{layer}.{extension}</value></key>
+          <ref bean="gwcTileLayerRestlet" />
+        </entry>
+        <entry>
+          <key><value>/bounds/{layer}/{srs}/{type}</value></key>
+          <ref bean="gwcBoundsRestlet" />
+        </entry>
+        <entry>
+          <key><value>/filter/{filterName}/update/{updateType}</value></key>
+          <ref bean="gwcFilterUpdateRestlet" />
+        </entry>
+        <entry>
+          <key><value>/web/{filename}</value></key>
+          <ref bean="gwcByteStreamerRestlet" />
+        </entry>
+      </map>
+    </constructor-arg>
+  </bean>
+  
+  <bean id="gwcRESTUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+    <property name="alwaysUseFullPath" value="true"/>
+    <property name="mappings">
+      <props> 
+        <prop key="/rest/**">gwcRestDispatcher</prop>        
+      </props>
+    </property>
+  </bean>
+
+</beans>
