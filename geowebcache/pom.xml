@@ -66,6 +66,7 @@
       <id>opengeo</id>
       <name>opengeo</name>
       <url>dav:http://repo.opengeo.org</url>
+      <uniqueVersion>false</uniqueVersion>
     </repository>
   </distributionManagement>
 
