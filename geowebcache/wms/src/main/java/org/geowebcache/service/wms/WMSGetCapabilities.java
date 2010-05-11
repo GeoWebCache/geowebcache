@@ -347,19 +347,19 @@ public class WMSGetCapabilities {
         str.append(boundingBoxStr);
         
         // WMS 1.1 Dimensions
-        if(layer instanceof WMSLayer && ((WMSLayer) layer).getParameterFilters() != null) {
-        	StringBuilder dims = new StringBuilder();
-        	StringBuilder extents = new StringBuilder();
-            for(ParameterFilter parameterFilter : ((WMSLayer) layer).getParameterFilters()) {
-                if(parameterFilter instanceof WMSDimensionProvider) {
-                	((WMSDimensionProvider) parameterFilter).appendDimensionElement(dims,"      ");
-                    ((WMSDimensionProvider) parameterFilter).appendExtentElement(extents,"      ");
+        if (layer instanceof WMSLayer && ((WMSLayer) layer).getParameterFilters() != null) {
+            StringBuilder dims = new StringBuilder();
+            StringBuilder extents = new StringBuilder();
+            for (ParameterFilter parameterFilter : ((WMSLayer) layer).getParameterFilters()) {
+                if (parameterFilter instanceof WMSDimensionProvider) {
+                    ((WMSDimensionProvider) parameterFilter).appendDimensionElement(dims, "      ");
+                    ((WMSDimensionProvider) parameterFilter).appendExtentElement(extents, "      ");
                 }
             }
-            
-            if(dims.length() > 0 && extents.length() > 0) {
-            	str.append(dims);
-            	str.append(extents);
+
+            if (dims.length() > 0 && extents.length() > 0) {
+                str.append(dims);
+                str.append(extents);
             }
         }
         
