@@ -59,20 +59,21 @@ implements WMSDimensionProvider {
         return null;
     }
 
-    public void appendElements(StringBuilder str, String indent) {
+    public void appendDimensionElement(StringBuilder str, String indent) {
         str.append(indent).append("<Dimension name=\"").append(dimension.getName());
         str.append("\" units=\"").append(dimension.getUnits()).append("\"></Dimension>\n");
-        
-        str.append(indent).append("<Extent name=\"" + extent.getName() +"\"");
+    }
+
+    public void appendExtentElement(StringBuilder str, String indent) {
+        str.append(indent).append("<Extent name=\"" + extent.getName() + "\"");
         if (extent.getDefaultValue() != null) {
             str.append(" default=\"" + extent.getDefaultValue() + "\"");
         }
         str.append(">");
-        
-        
+
         if (extent.getValue() != null) {
             str.append(extent.getValue());
         }
-        str.append("</Extent>\n");      
-     }
+        str.append("</Extent>\n");
+    }
 }

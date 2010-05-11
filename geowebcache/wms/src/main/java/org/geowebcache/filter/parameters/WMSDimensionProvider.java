@@ -17,5 +17,6 @@
 package org.geowebcache.filter.parameters;
 
 public interface WMSDimensionProvider {
-    public void appendElements(StringBuilder str, String indent);
+    public void appendDimensionElement(StringBuilder str, String indent);
+    public void appendExtentElement(StringBuilder str, String indent);
 }

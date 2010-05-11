@@ -320,15 +320,6 @@ public class WMSGetCapabilities {
             str.append("      <Title>"+layer.getName()+"</Title>\n");
         }
         
-        // WMS 1.1 Dimensions
-        if(layer instanceof WMSLayer) {
-            for(ParameterFilter parameterFilter : ((WMSLayer) layer).getParameterFilters()) {
-                if(parameterFilter instanceof WMSDimensionProvider) {
-                    ((WMSDimensionProvider) parameterFilter).appendElements(str,"      ");
-                }
-            }
-        }
-        
         Iterator<GridSubset> gridSetIter = layer.getGridSubsets().values().iterator();
         TreeSet<SRS> srsSet = new TreeSet<SRS>();
         StringBuilder boundingBoxStr = new StringBuilder();
@@ -354,6 +345,23 @@ public class WMSGetCapabilities {
         
         // Bounding boxes gathered earlier
         str.append(boundingBoxStr);
+        
+        // WMS 1.1 Dimensions
+        if(layer instanceof WMSLayer && ((WMSLayer) layer).getParameterFilters() != null) {
+        	StringBuilder dims = new StringBuilder();
+        	StringBuilder extents = new StringBuilder();
+            for(ParameterFilter parameterFilter : ((WMSLayer) layer).getParameterFilters()) {
+                if(parameterFilter instanceof WMSDimensionProvider) {
+                	((WMSDimensionProvider) parameterFilter).appendDimensionElement(dims,"      ");
+                    ((WMSDimensionProvider) parameterFilter).appendExtentElement(extents,"      ");
+                }
+            }
+            
+            if(dims.length() > 0 && extents.length() > 0) {
+            	str.append(dims);
+            	str.append(extents);
+            }
+        }
         
         // TODO style?
         str.append("    </Layer>\n");
