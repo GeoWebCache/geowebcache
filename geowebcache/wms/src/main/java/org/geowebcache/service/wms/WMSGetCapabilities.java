@@ -21,7 +21,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -87,7 +86,19 @@ public class WMSGetCapabilities {
         StringBuilder str = new StringBuilder();
         
         str.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        str.append("<!DOCTYPE WMT_MS_Capabilities SYSTEM \"http://schemas.opengis.net/wms/1.1.1/capabilities_1_1_1.dtd\">\n");
+        str.append("<!DOCTYPE WMT_MS_Capabilities SYSTEM \"http://schemas.opengis.net/wms/1.1.1/capabilities_1_1_1.dtd\" ");
+        if(includeVendorSpecific) {
+            str.append("[\n");
+            str.append("<!ELEMENT VendorSpecificCapabilities (TileSet*) >\n");
+            str.append("<!ELEMENT TileSet (SRS, BoundingBox?, Resolutions, Width, Height, Format, Layers*, Styles*) >\n");
+            str.append("<!ELEMENT Resolutions (#PCDATA) >\n");
+            str.append("<!ELEMENT Width (#PCDATA) >\n");
+            str.append("<!ELEMENT Height (#PCDATA) >\n");
+            str.append("<!ELEMENT Layers (#PCDATA) >\n");
+            str.append("<!ELEMENT Styles (#PCDATA) >\n");
+            str.append("]");
+        }
+        str.append(">\n");
         str.append("<WMT_MS_Capabilities version=\"1.1.1\">\n");
         
         // The actual meat
@@ -273,7 +284,7 @@ public class WMSGetCapabilities {
         
         str.append("    <TileSet>\n");
         str.append("      <SRS>"+srsStr+"</SRS>\n");        
-        str.append("      <BoundingBox srs=\""+srsStr+"\" minx=\""+bs[0]+"\" miny=\""+bs[1]+"\"  maxx=\""+bs[2]+"\"  maxy=\""+bs[3]+"\" />\n");        
+        str.append("      <BoundingBox SRS=\""+srsStr+"\" minx=\""+bs[0]+"\" miny=\""+bs[1]+"\"  maxx=\""+bs[2]+"\"  maxy=\""+bs[3]+"\" />\n");        
         str.append("      <Resolutions>"+resolutionsStr.toString()+"</Resolutions>\n");
         str.append("      <Width>"+grid.getTileWidth()+"</Width>\n");
         str.append("      <Height>"+grid.getTileHeight()+"</Height>\n");
