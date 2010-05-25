@@ -13,7 +13,7 @@
     <title>Mid Texas</title>
     <link href="http://example.org/2005/09/09/atom01" />
     <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
-    <updated>2005-08-17T07:02:32Z</updated>
+    <updated>2005-08-17T07:02:33Z</updated>
     <summary>Mid Texas</summary>
     <georss:where>
       <gml:Point srsName="urn:x-ogc:def:crs:EPSG:6.11.2:4326">
@@ -25,7 +25,7 @@
     <title>Mid Montana</title>
     <link href="http://example.org/2005/09/09/atom01" />
     <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6b</id>
-    <updated>2005-08-17T07:02:32Z</updated>
+    <updated>2005-08-17T07:02:34Z</updated>
     <summary>Mid Montana</summary>
     <georss:where>
       <gml:Point srsName="urn:x-ogc:def:crs:EPSG:6.11.2:4326">

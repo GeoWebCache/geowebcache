@@ -40,7 +40,7 @@
     <title>Polygon sample</title>
     <link href="http://www.georss.org/example" />
     <id>uno</id>
-    <updated>2009-08-17T07:02:32Z</updated>
+    <updated>2010-08-17T07:02:32Z</updated>
     <content>a sample geometry</content>
     <georss:where>
       <gml:Polygon>

@@ -100,9 +100,17 @@ class GeoRSSTileRangeBuilder {
                     if(matrix == null) {
                         matrix = new GeometryRasterMaskBuilder(gridSubset, metaTilingFactors, maxMaskLevel);
                     }
-                    // record the most recent updated entry
-                    lastEntryUpdate = entry.getUpdated();
-                    
+
+                    // Record the most recent updated entry. Date comparison
+                    // done on the String as the format is like
+                    // "2010-03-02T15:51:55Z" with the most significant part
+                    // first.
+                    if ((entry.getUpdated() != null)
+                            && ((lastEntryUpdate == null) || (lastEntryUpdate
+                                    .compareTo(entry.getUpdated()) < 0))) {
+                        lastEntryUpdate = entry.getUpdated();
+                    }
+
                     geom = entry.getWhere();
                     matrix.setMasksForGeometry(geom);
                 }
