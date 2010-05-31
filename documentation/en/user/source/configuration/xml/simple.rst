@@ -71,11 +71,11 @@ A simple, but more realistic configuration would be to say that we want
              </extent>
            </gridSubset>
          </gridSubsets>
-         <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
          <wmsUrl>
            <string>http://atlas.openplans.org:8080/geoserver/wms</string>
            <string>http://geo.openplans.org:8080/geoserver/wms</string>
          </wmsUrl>
+         <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
          <bgColor>0x0066FF</bgColor>
          <palette>popshade</palette>
        </wmsLayer>
