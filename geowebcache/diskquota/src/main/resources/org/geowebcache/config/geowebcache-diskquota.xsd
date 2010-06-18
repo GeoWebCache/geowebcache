@@ -34,13 +34,6 @@
           </xs:annotation>
         </xs:element>
 
-        <xs:element name="defaultQuota" type="gwc:DiskQuotaType" minOccurs="0">
-          <xs:annotation>
-            <xs:documentation xml:lang="en">Optional, quota that applies to all layers that have not a specifically set quota
-            </xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
         <xs:element name="layerQuotas" minOccurs="0">
           <xs:annotation>
             <xs:documentation xml:lang="en">
@@ -52,10 +45,33 @@
               <xs:element name="LayerQuota" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element name="layer" type="xs:string"></xs:element>
-                    <xs:element name="quota" type="gwc:DiskQuotaType">
+                    <xs:element name="layer" type="xs:string">
+                      <xs:annotation>
+                        <xs:documentation>Name of the layer to apply the quota to</xs:documentation>
+                      </xs:annotation>
                     </xs:element>
-                    <xs:element name="usedQuota" type="gwc:DiskQuotaType" minOccurs="0"></xs:element>
+                    <xs:element name="expirationPolicyName" type="gwc:ExpirationPolicyType">
+                      <xs:annotation>
+                        <xs:documentation>Name of the cache expiration policy strategy</xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                    <xs:element name="quota" type="gwc:DiskQuotaType">
+                      <xs:annotation>
+                        <xs:documentation>Soft limit applied to the storage size of the layer cache</xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                    <xs:element name="usedQuota" type="gwc:DiskQuotaType" minOccurs="0">
+                      <xs:annotation>
+                        <xs:documentation>Optional, current size of the layer's cache.
+                          This value will be automatically updated (presumably
+                          upon normal application shutdown).
+                          If not present, the layer cache size will be computed upon application startup,
+                          which may take a long while. A good way of avoiding it is to configure the usedQuota element with the output of
+                          the Unix du -sk command, that returns the number of kilobytes used by the argument directory. For example du -sk
+                          &lt;path to cache root&gt;/layerName; and then configure the usedQuota with that number and KB as unit
+                        </xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
                   </xs:sequence>
                 </xs:complexType>
               </xs:element>
@@ -71,9 +87,8 @@
       <xs:documentation xml:lang="en"></xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="limit" type="xs:double"></xs:element>
+      <xs:element name="value" type="xs:double"></xs:element>
       <xs:element name="units" type="gwc:StorageUnitType" default="MB" />
-      <xs:element name="expirationPolicy" type="gwc:ExpirationPolicyType"></xs:element>
     </xs:sequence>
   </xs:complexType>
 

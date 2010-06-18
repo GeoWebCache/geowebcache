@@ -6,7 +6,31 @@ public class LayerQuota {
 
     private Quota quota;
 
+    private String expirationPolicyName;
+
     private Quota usedQuota;
+
+    private transient LayerQuotaExpirationPolicy expirationPolicy;
+
+    public String getExpirationPolicyName() {
+        return expirationPolicyName;
+    }
+
+    public void setExpirationPolicyName(String expirationPolicyName) {
+        this.expirationPolicyName = expirationPolicyName;
+    }
+
+    public LayerQuotaExpirationPolicy getExpirationPolicy() {
+        return expirationPolicy;
+    }
+
+    public void setExpirationPolicy(LayerQuotaExpirationPolicy expirationPolicy) {
+        this.expirationPolicy = expirationPolicy;
+    }
+
+    public void setUsedQuota(Quota usedQuota) {
+        this.usedQuota = usedQuota;
+    }
 
     public String getLayer() {
         return layer;
@@ -27,6 +51,7 @@ public class LayerQuota {
     @Override
     public String toString() {
         return new StringBuilder(getClass().getSimpleName()).append("[layer: ").append(layer)
+                .append("Expiration policy: '").append(expirationPolicyName).append("', quota:")
                 .append(quota).append("]").toString();
     }
 
@@ -39,7 +64,7 @@ public class LayerQuota {
 
     public void setUsedQuota(double cacheSize, StorageUnit units) {
         Quota usedQuota = new Quota();
-        usedQuota.setLimit(cacheSize);
+        usedQuota.setValue(cacheSize);
         usedQuota.setUnits(units);
         this.usedQuota = usedQuota;
     }

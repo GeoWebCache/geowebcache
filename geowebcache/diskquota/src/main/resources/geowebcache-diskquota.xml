@@ -7,28 +7,27 @@
   <cacheCleanUpFrequency>10</cacheCleanUpFrequency>
   <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
 
-  <defaultQuota>
-    <limit>10</limit>
-    <units>GB</units>
-    <expirationPolicy>LRU</expirationPolicy>
-  </defaultQuota>
-
   <layerQuotas>
     <LayerQuota>
       <layer>topp:states</layer>
+      <expirationPolicyName>LRU</expirationPolicyName>
       <quota>
-        <limit>10</limit>
+        <value>10</value>
         <units>MB</units>
-        <expirationPolicy>LRU</expirationPolicy>
       </quota>
     </LayerQuota>
+
     <LayerQuota>
       <layer>raster test layer</layer>
+      <expirationPolicyName>LRU</expirationPolicyName>
       <quota>
-        <limit>512</limit>
+        <value>512</value>
         <units>MB</units>
-        <expirationPolicy>LRU</expirationPolicy>
       </quota>
+      <usedQuota>
+        <value>2799152</value>
+        <units>KB</units>
+      </usedQuota>
     </LayerQuota>
   </layerQuotas>
 </gwcQuotaConfiguration>

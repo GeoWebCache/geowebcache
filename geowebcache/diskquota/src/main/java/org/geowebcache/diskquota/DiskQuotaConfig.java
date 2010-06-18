@@ -21,8 +21,6 @@ public class DiskQuotaConfig {
 
     private TimeUnit cacheCleanUpUnits;
 
-    private Quota defaultQuota;
-
     private List<LayerQuota> layerQuotas;
 
     private transient Map<String, LayerQuota> layerQuotasMap;
@@ -61,14 +59,6 @@ public class DiskQuotaConfig {
             throw new IllegalArgumentException("cacheCleanUpUnits can't be null");
         }
         this.cacheCleanUpUnits = cacheCleanUpUnit;
-    }
-
-    public Quota getDefaultQuota() {
-        return defaultQuota;
-    }
-
-    public void setDefaultQuota(Quota quota) {
-        defaultQuota = quota;
     }
 
     @SuppressWarnings("unchecked")
@@ -125,9 +115,9 @@ public class DiskQuotaConfig {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append("[default: ").append(defaultQuota);
+        sb.append("[");
         for (LayerQuota lq : getLayerQuotas()) {
-            sb.append("\n").append(lq);
+            sb.append("\n\t").append(lq);
         }
         sb.append("]");
         return sb.toString();

@@ -1,5 +1,6 @@
 package org.geowebcache.diskquota;
 
+import static org.geowebcache.diskquota.StorageUnit.B;
 import static org.geowebcache.diskquota.StorageUnit.GB;
 import static org.geowebcache.diskquota.StorageUnit.MB;
 
@@ -7,6 +8,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,6 +22,7 @@ import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 /**
  * Monitors the layers cache size given each one's assigned {@link Quota} and call's the exceeded
@@ -39,44 +45,65 @@ public class DiskQuotaMonitor implements DisposableBean {
 
     private final TileLayerDispatcher tileLayerDispatcher;
 
-    private final Map<String, LayerQuotaExpirationPolicy> layerPolicies;
-
     private final StorageBroker storageBroker;
 
     private DiskQuotaConfig quotaConfig;
+
+    /**
+     * Executor service for the periodic clean up of layers caches that exceed its quota
+     * 
+     * @see #setUpScheduledCleanUp()
+     * @see #destroy()
+     */
+    private ScheduledExecutorService cleanUpScheduledExecutor;
 
     public DiskQuotaMonitor(ConfigLoader configLoader, TileLayerDispatcher tld, StorageBroker sb)
             throws IOException, ConfigurationException {
 
         this.storageBroker = sb;
         this.tileLayerDispatcher = tld;
-        this.layerPolicies = new HashMap<String, LayerQuotaExpirationPolicy>();
 
         this.quotaConfig = configLoader.loadConfig();
 
         registerConfiguredLayers(configLoader);
 
-        if (quotaConfig.getNumLayers() == 0 && quotaConfig.getDefaultQuota() == null) {
-            log.info("No layer quotas defined nor default quota. Disk quota monitor is disabled.");
+        if (quotaConfig.getNumLayers() == 0) {
+            log.info("No layer quotas defined. Disk quota monitor is disabled.");
         } else {
 
-            final MonitoringBlobListener blobListener = new MonitoringBlobListener(layerPolicies,
-                    quotaConfig);
+            final MonitoringBlobListener blobListener = new MonitoringBlobListener(quotaConfig);
 
             storageBroker.addBlobStoreListener(blobListener);
 
+            setUpScheduledCleanUp();
+
             int totalLayers = tileLayerDispatcher.getLayers().size();
             int quotaLayers = quotaConfig.getNumLayers();
-            log.info(quotaLayers + " layers configured with their own quotas. "
-                    + (totalLayers - quotaLayers) + " subject to default quota: "
-                    + quotaConfig.getDefaultQuota());
+            log.info(quotaLayers + " out of " + totalLayers
+                    + " layers configured with their own quotas.");
         }
     }
 
+    private void setUpScheduledCleanUp() {
+        ThreadFactory tf = new CustomizableThreadFactory("gwc.DiskQuotaCleanUpThread");
+        cleanUpScheduledExecutor = Executors.newScheduledThreadPool(1, tf);
+        Runnable command = new CacheCleaner();
+        long initialDelay = quotaConfig.getCacheCleanUpFrequency();
+        long period = quotaConfig.getCacheCleanUpFrequency();
+        TimeUnit unit = quotaConfig.getCacheCleanUpUnits();
+        cleanUpScheduledExecutor.scheduleAtFixedRate(command, initialDelay, period, unit);
+    }
+
     /**
+     * Called when the framework destroys this bean (e.g. due to web app shutdown), stops any
+     * running scheduled clean up and gracefuly shuts down
+     * 
      * @see org.springframework.beans.factory.DisposableBean#destroy()
      */
     public void destroy() throws Exception {
+        if (this.cleanUpScheduledExecutor != null) {
+            this.cleanUpScheduledExecutor.shutdown();
+        }
     }
 
     private void registerConfiguredLayers(final ConfigLoader configLoader) {
@@ -89,16 +116,17 @@ public class DiskQuotaMonitor implements DisposableBean {
 
             final String layerName = layerQuota.getLayer();
             Quota quota = layerQuota.getQuota();
-            final String policyName = quota.getExpirationPolicy();
+            final String policyName = layerQuota.getExpirationPolicyName();
 
             log.info("Attaching layer " + layerName + " to quota " + quota);
 
             final LayerQuotaExpirationPolicy expirationPolicy;
             expirationPolicy = configLoader.getExpirationPolicy(policyName);
+            layerQuota.setExpirationPolicy(expirationPolicy);
+
             TileLayer tileLayer = layers.get(layerName);
             expirationPolicy.attach(tileLayer, layerQuota);
             layers.remove(layerName);
-            layerPolicies.put(layerName, expirationPolicy);
 
             if (null == layerQuota.getUsedQuota()) {
                 log.info("Calculating cache size for layer '" + layerName + "'");
@@ -110,40 +138,19 @@ public class DiskQuotaMonitor implements DisposableBean {
                 } catch (StorageException e) {
                     e.printStackTrace();
                 }
-            }
-        }
-
-        // now set default quota to non explicitly configured layers
-        Quota defaultQuota = quotaConfig.getDefaultQuota();
-        if (defaultQuota != null) {
-            log.info("Attaching remaining layers to DEFAULT quota " + defaultQuota);
-            String policyName = defaultQuota.getExpirationPolicy();
-            LayerQuotaExpirationPolicy expirationPolicy;
-            expirationPolicy = configLoader.getExpirationPolicy(policyName);
-            for (TileLayer layer : layers.values()) {
-                String layerName = layer.getName();
-                log.info("Attaching layer " + layerName + " to DEFAULT quota");
-                LayerQuota lq = new LayerQuota();
-                lq.setLayer(layerName);
-                lq.setQuota(defaultQuota);
-
-                this.quotaConfig.setLayerQuota(layerName, lq);
-
-                expirationPolicy.attach(layer, lq);
-                layerPolicies.put(layerName, expirationPolicy);
+            } else {
+                log
+                        .info("Used quota for layer '" + layerName + "' is "
+                                + layerQuota.getUsedQuota());
             }
         }
     }
 
     private static class MonitoringBlobListener implements BlobStoreListener {
 
-        private final Map<String, LayerQuotaExpirationPolicy> layerPolicies;
-
         private final DiskQuotaConfig quotaConfig;
 
-        public MonitoringBlobListener(final Map<String, LayerQuotaExpirationPolicy> layerPolicies,
-                final DiskQuotaConfig quotaConfig) {
-            this.layerPolicies = layerPolicies;
+        public MonitoringBlobListener(final DiskQuotaConfig quotaConfig) {
             this.quotaConfig = quotaConfig;
         }
 
@@ -157,12 +164,12 @@ public class DiskQuotaMonitor implements DisposableBean {
 
             int blockSize = quotaConfig.getDiskBlockSize();
 
-            long actuallyUsedStorage = 1 + blobSize / blockSize;
+            long actuallyUsedStorage = blockSize * (1 + blobSize / blockSize);
 
             LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
             Quota usedQuota = layerQuota.getUsedQuota();
 
-            usedQuota.add(actuallyUsedStorage, StorageUnit.B);
+            usedQuota.add(actuallyUsedStorage, B);
 
             if (log.isDebugEnabled()) {
                 log.debug("Used quota increased for " + layerName + ": " + usedQuota);
@@ -179,12 +186,12 @@ public class DiskQuotaMonitor implements DisposableBean {
 
             int blockSize = quotaConfig.getDiskBlockSize();
 
-            long actuallyUsedStorage = 1 + blobSize / blockSize;
+            long actuallyUsedStorage = blockSize * (1 + blobSize / blockSize);
 
             LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
             Quota usedQuota = layerQuota.getUsedQuota();
 
-            usedQuota.substract(actuallyUsedStorage, StorageUnit.B);
+            usedQuota.substract(actuallyUsedStorage, B);
 
             if (log.isDebugEnabled()) {
                 log.debug("Used quota decreased for " + layerName + ": " + usedQuota);
@@ -200,9 +207,21 @@ public class DiskQuotaMonitor implements DisposableBean {
             quotaConfig.remove(quotaConfig.getLayerQuota(layerName));
         }
 
-        private LayerQuotaExpirationPolicy getPolicyFor(String layerName) {
-            return layerPolicies.get(layerName);
+        private LayerQuotaExpirationPolicy getPolicyFor(final String layerName) {
+            LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
+            LayerQuotaExpirationPolicy expirationPolicy = layerQuota.getExpirationPolicy();
+            return expirationPolicy;
         }
     }
 
+    private static class CacheCleaner implements Runnable {
+
+        // private Map<String, LayerQuotaExpirationPolicy> layerPolicies;
+        //
+        // private DiskQuotaConfig quotaConfig;
+
+        public void run() {
+        }
+
+    }
 }

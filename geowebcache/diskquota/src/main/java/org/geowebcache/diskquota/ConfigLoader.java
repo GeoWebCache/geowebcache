@@ -101,22 +101,13 @@ class ConfigLoader {
     }
 
     private void validateConfig(DiskQuotaConfig quotaConfig) throws ConfigurationException {
-        Quota defaultQuota = quotaConfig.getDefaultQuota();
-        if (defaultQuota != null) {
-            try {
-                validateQuota(defaultQuota);
-            } catch (IllegalArgumentException e) {
-                log.error("Default disk quota configuration error: " + e.getMessage());
-                throw e;
-            }
-        }
-
         for (LayerQuota lq : new ArrayList<LayerQuota>(quotaConfig.getLayerQuotas())) {
             validateLayerQuota(quotaConfig, lq);
         }
     }
 
-    private void validateLayerQuota(DiskQuotaConfig quotaConfig, LayerQuota lq) {
+    private void validateLayerQuota(DiskQuotaConfig quotaConfig, LayerQuota lq)
+            throws ConfigurationException {
         String layer = lq.getLayer();
         try {
             tileLayerDispatcher.getTileLayer(layer);
@@ -124,6 +115,16 @@ class ConfigLoader {
             log.error("LayerQuota configuration error: layer " + layer
                     + " does not exist. Removing quota from runtime configuration.", e);
             quotaConfig.remove(lq);
+        }
+
+        String expirationPolicyName = lq.getExpirationPolicyName();
+        if (expirationPolicyName == null) {
+            throw new ConfigurationException("No expiration policy specified: " + lq);
+        }
+        try {
+            getExpirationPolicy(expirationPolicyName);
+        } catch (NoSuchElementException e) {
+            throw new ConfigurationException(e.getMessage());
         }
 
         Quota quota = lq.getQuota();
@@ -140,22 +141,13 @@ class ConfigLoader {
         if (quota == null) {
             throw new IllegalArgumentException("No quota defined");
         }
-        double limit = quota.getLimit();
+        double limit = quota.getValue();
         if (limit < 0) {
             throw new ConfigurationException("Limit shall be >= 0: " + limit + ". " + quota);
         }
         StorageUnit units = quota.getUnits();
         if (units == null) {
             throw new ConfigurationException("No storage units specified: " + quota);
-        }
-        String expirationPolicyName = quota.getExpirationPolicy();
-        if (expirationPolicyName == null) {
-            throw new ConfigurationException("No expiration policy specified: " + quota);
-        }
-        try {
-            getExpirationPolicy(expirationPolicyName);
-        } catch (NoSuchElementException e) {
-            throw new ConfigurationException(e.getMessage());
         }
         log.debug("Quota validated: " + quota);
     }
