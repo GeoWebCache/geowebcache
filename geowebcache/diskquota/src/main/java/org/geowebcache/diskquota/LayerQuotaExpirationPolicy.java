@@ -46,7 +46,7 @@ public interface LayerQuotaExpirationPolicy {
 
     void expireTiles(String layerName) throws GeoWebCacheException;
 
-    void save(LayerQuota lq);
+    void save(String layerName);
 
     /**
      * Makes sure stats information for the given (existing) tile exists

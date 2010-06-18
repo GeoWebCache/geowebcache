@@ -8,6 +8,7 @@ import org.geowebcache.diskquota.ConfigLoader;
 import org.geowebcache.diskquota.DiskQuotaMonitor;
 import org.geowebcache.diskquota.Quota;
 import org.geowebcache.diskquota.paging.AbstractPagedExpirationPolicy;
+import org.geowebcache.diskquota.paging.PageStore;
 import org.geowebcache.diskquota.paging.TilePage;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.seed.TileBreeder;
@@ -29,8 +30,8 @@ public class ExpirationPolicyLRU extends AbstractPagedExpirationPolicy {
      * @param tileBreeder
      *            used to truncate expired pages of tiles
      */
-    public ExpirationPolicyLRU(final TileBreeder tileBreeder, final ConfigLoader configLoader) {
-        super(tileBreeder, configLoader);
+    public ExpirationPolicyLRU(final TileBreeder tileBreeder, final PageStore pageStore) {
+        super(tileBreeder, pageStore);
     }
 
     @Override

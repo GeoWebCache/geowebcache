@@ -327,7 +327,7 @@ public class DiskQuotaMonitor implements DisposableBean {
                 final Quota quota = lq.getQuota();
                 final Quota usedQuota = lq.getUsedQuota();
                 LayerQuotaExpirationPolicy expirationPolicy = lq.getExpirationPolicy();
-                expirationPolicy.save(lq);
+                expirationPolicy.save(layerName);
 
                 Quota excedent = usedQuota.difference(quota);
                 if (excedent.getValue() > 0) {

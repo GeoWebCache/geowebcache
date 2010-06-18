@@ -336,7 +336,7 @@ public class ConfigLoader {
      * @throws IOException
      *             if {@code fileName} doesn't exist
      */
-    public InputStream getStorageInputStream(String fileName) throws IOException, IOException {
+    public InputStream getStorageInputStream(String fileName) throws IOException {
         File rootCacheDir = getRootCacheDir();
         File configFile = new File(rootCacheDir, fileName);
         return new FileInputStream(configFile);
