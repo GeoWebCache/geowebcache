@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.geowebcache.diskquota.ConfigLoader;
 import org.geowebcache.diskquota.DiskQuotaMonitor;
 import org.geowebcache.diskquota.Quota;
 import org.geowebcache.diskquota.paging.AbstractPagedExpirationPolicy;

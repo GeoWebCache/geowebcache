@@ -245,13 +245,15 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
         // mock up a truncate task that somehow changes the layer quota comsumption
         class MockGWCTask extends GWCTask {
             public boolean called;
+
             @Override
             public void doAction() throws GeoWebCacheException {
                 called = true;
                 layerQuota.getUsedQuota().setValue(0.5);
             }
 
-        };
+        }
+        ;
         GWCTask truncateTask = new MockGWCTask();
         GWCTask[] truncateTasks = { truncateTask };
 
@@ -268,7 +270,7 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
 
         EasyMock.verify(layer);
         EasyMock.verify(tileBreeder);
-        assertTrue(((MockGWCTask)truncateTask).called);
+        assertTrue(((MockGWCTask) truncateTask).called);
     }
 
 }

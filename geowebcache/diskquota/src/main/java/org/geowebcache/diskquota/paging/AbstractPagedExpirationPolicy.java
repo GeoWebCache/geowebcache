@@ -2,8 +2,6 @@ package org.geowebcache.diskquota.paging;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,9 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.diskquota.ConfigLoader;
 import org.geowebcache.diskquota.DiskQuotaMonitor;
 import org.geowebcache.diskquota.LayerQuota;
 import org.geowebcache.diskquota.LayerQuotaExpirationPolicy;

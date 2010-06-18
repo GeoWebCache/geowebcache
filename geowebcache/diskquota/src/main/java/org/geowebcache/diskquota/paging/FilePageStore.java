@@ -1,6 +1,5 @@
 package org.geowebcache.diskquota.paging;
 
-import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;

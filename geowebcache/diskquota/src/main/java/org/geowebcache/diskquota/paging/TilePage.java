@@ -14,9 +14,11 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 public class TilePage implements Serializable {
 
     /**
-     * 
+     * Do not change if don't know what you're doing. Used in the custom
+     * {@link #writeObject(java.io.ObjectOutputStream)} and
+     * {@link #readObject(java.io.ObjectInputStream)} methods
      */
-    private static final long serialVersionUID = -17011977L;
+    private static final long serialVersionUID = 1L;
 
     /**
      * Current time with near-minute precision, meaning we can hold values up till year 2115
@@ -47,6 +49,8 @@ public class TilePage implements Serializable {
 
     private AtomicLong numTilesInPage;
 
+    private transient int hashCode;
+
     /**
      * Last access time, with near-minute precision
      */
@@ -63,6 +67,8 @@ public class TilePage implements Serializable {
         this.numHits = new AtomicLong(numHits);
         this.accessTimeMinutes = 0;// not accessed yet
         this.numTilesInPage = new AtomicLong(numTilesInPage);
+
+        this.hashCode = 17 * (zyxIndex[0] + zyxIndex[1] ^ 2 + zyxIndex[2] ^ 3);
     }
 
     public void markHit() {
@@ -105,7 +111,7 @@ public class TilePage implements Serializable {
 
     @Override
     public int hashCode() {
-        return 17 * (zyxIndex[0] + zyxIndex[1] ^ 2 + zyxIndex[2] ^ 3);
+        return hashCode;
     }
 
     @Override
