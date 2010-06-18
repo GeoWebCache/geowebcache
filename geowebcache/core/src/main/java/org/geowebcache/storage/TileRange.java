@@ -51,14 +51,18 @@ public class TileRange {
     }
     
     public boolean contains(long[] idx) {
-        if(idx[2] >= zoomStart && idx[2] <= zoomStop) {
+        return contains(idx[0], idx[1], (int)idx[2]);
+    }
+
+    public boolean contains(long x, long y, int z){ 
+        if(z >= zoomStart && z <= zoomStop) {
             
-            long[] rB = rangeBounds[(int) idx[2]];
+            long[] rB = rangeBounds[(int) z];
             
-            if(rB[0] <= idx[0] 
-                    && rB[2] >= idx[0] 
-                    && rB[1] <= idx[1] 
-                    && rB[3] >= idx[1]) {
+            if(rB[0] <= x 
+                    && rB[2] >= x 
+                    && rB[1] <= y 
+                    && rB[3] >= y) {
                 return true;
             }
         }

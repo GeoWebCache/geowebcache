@@ -40,11 +40,16 @@ public class DiscontinuousTileRange extends TileRange {
         this.rasterMask = rasterMask;
     }
     
-    public boolean contains(long[] idx) {
-        if(super.contains(idx)) {
-            return rasterMask.lookup(idx);
-        }
-        
+    @Override
+    public boolean contains(long x, long y, int z) {
+        if(super.contains(x, y, z)) {
+            return rasterMask.lookup(x, y, z);
+        }        
         return false;
+    }
+    
+    @Override
+    public boolean contains(long[] idx) {
+        return contains(idx[0], idx[1], (int) idx[2]);
     }
 }
