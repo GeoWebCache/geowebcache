@@ -19,14 +19,30 @@ public interface LayerQuotaExpirationPolicy {
     String getName();
 
     /**
-     * Registers a layer's quota to be managed by this expiration policy
+     * Registers a layer's quota to be managed by this expiration policy, meaning this expiration
+     * policy will listen to request events on the layer and maintain a persistent record of its
+     * usage statistics in order to be able of expiring tiles for the layer when
+     * {@link #expireTiles(String)} is called.
      * 
      * @param tileLayer
+     *            the tile layer to attach to this tile expiration policy
      * @param layerQuota
+     *            the disk usage quota to enforce for the layer when expiring tiles as a result of
+     *            {@link #expireTiles(String)} being called.
      */
     void attach(TileLayer tileLayer, LayerQuota layerQuota);
 
-    void dettach(String layerName);
+    /**
+     * Detaches the {@link TileLayer} given by {@code layerName} from this expiration policy,
+     * meaning this policy will no longer listen to the layer's events and hence won't collect and
+     * save usage statistics for it any more.
+     * 
+     * @param layerName
+     *            the name of the layer to detach from this expiration policy
+     * @return {@code true} if the layer was attached to this expiration policy at the time this
+     *         method was called
+     */
+    boolean dettach(String layerName);
 
     void expireTiles(String layerName) throws GeoWebCacheException;
 

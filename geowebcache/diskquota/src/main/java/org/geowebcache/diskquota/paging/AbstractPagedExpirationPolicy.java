@@ -9,10 +9,12 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,6 +52,8 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
 
     private final Map<String, TilePageCalculator> attachedLayers;
 
+    private final Map<String, PagingStatsCollector> statsCollectors;
+
     private final TileBreeder tileBreeder;
 
     private final ConfigLoader configLoader;
@@ -63,7 +67,8 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
             final ConfigLoader configLoader) {
         this.tileBreeder = tileBreeder;
         this.configLoader = configLoader;
-        attachedLayers = new HashMap<String, TilePageCalculator>();
+        attachedLayers = new ConcurrentHashMap<String, TilePageCalculator>();
+        statsCollectors = new ConcurrentHashMap<String, PagingStatsCollector>();
     }
 
     /**
@@ -82,25 +87,36 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
         TilePageCalculator calc = new TilePageCalculator(tileLayer, layerQuota);
         loadPages(calc);
 
-        TileLayerListener statsCollector = new PagingStatsCollector(calc);
+        PagingStatsCollector statsCollector = new PagingStatsCollector(calc);
         tileLayer.addLayerListener(statsCollector);
 
         this.attachedLayers.put(tileLayer.getName(), calc);
+        this.statsCollectors.put(tileLayer.getName(), statsCollector);
     }
 
     /**
      * @see org.geowebcache.diskquota.LayerQuotaExpirationPolicy#dettach(java.lang.String)
      */
-    public void dettach(String layerName) {
-        this.attachedLayers.remove(layerName);
+    public synchronized boolean dettach(String layerName) {
+        TilePageCalculator pageCalc = this.attachedLayers.remove(layerName);
+        if (pageCalc != null) {
+            PagingStatsCollector statsCollector = this.statsCollectors.remove(layerName);
+            TileLayer layer = pageCalc.getTileLayer();
+            return layer.removeLayerListener(statsCollector);
+        }
+        return false;
     }
 
     /**
      * @see org.springframework.beans.factory.DisposableBean#destroy()
      */
     public void destroy() throws Exception {
+        Set<String> layerNames = new HashSet<String>(this.attachedLayers.keySet());
         for (TilePageCalculator calc : this.attachedLayers.values()) {
             savePages(calc);
+        }
+        for(String layerName : layerNames){
+            dettach(layerName);
         }
     }
 

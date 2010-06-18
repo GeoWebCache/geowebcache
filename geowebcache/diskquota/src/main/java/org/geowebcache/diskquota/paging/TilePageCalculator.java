@@ -38,7 +38,9 @@ public class TilePageCalculator {
         Hashtable<String, GridSubset> gridSubsets = tileLayer.getGridSubsets();
 
         for (GridSubset gs : gridSubsets.values()) {
-            pageRangesPerGridSubset.put(gs.getName(), new PagePyramid(gs));
+            String name = gs.getName();
+            PagePyramid pagePyramid = new PagePyramid(gs);
+            pageRangesPerGridSubset.put(name, pagePyramid);
         }
     }
 
