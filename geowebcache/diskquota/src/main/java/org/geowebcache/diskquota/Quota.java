@@ -1,5 +1,6 @@
 package org.geowebcache.diskquota;
 
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 
 public class Quota {
@@ -10,13 +11,12 @@ public class Quota {
         NICE_FORMATTER.setMaximumFractionDigits(3);
     }
 
-    private double value;
+    private BigDecimal value;
 
     private StorageUnit units;
 
     public Quota() {
-        value = 0;
-        units = StorageUnit.B;
+        this(BigDecimal.ZERO, StorageUnit.B);
     }
 
     public Quota(Quota quota) {
@@ -25,15 +25,23 @@ public class Quota {
     }
 
     public Quota(double value, StorageUnit units) {
+        this(BigDecimal.valueOf(value), units);
+    }
+
+    public Quota(BigDecimal value, StorageUnit units) {
         this.value = value;
         this.units = units;
     }
 
-    public double getValue() {
+    public BigDecimal getValue() {
         return value;
     }
 
     public void setValue(double limit) {
+        setValue(BigDecimal.valueOf(limit));
+    }
+
+    public void setValue(BigDecimal limit) {
         this.value = limit;
     }
 
@@ -54,41 +62,24 @@ public class Quota {
 
     public synchronized void add(double amount, StorageUnit units) {
 
-        this.value += units.convertTo(amount, this.units);
+        BigDecimal sum = units.convertTo(amount, this.units).add(this.value);
 
-        if (value > 1024) {
-            switch (this.units) {
-            case B:
-                this.value /= 1024;
-                this.units = StorageUnit.KB;
-                break;
-            case KB:
-                this.value /= 1024;
-                this.units = StorageUnit.MB;
-                break;
-            case MB:
-                this.value /= 1024;
-                this.units = StorageUnit.GB;
-                break;
-            case GB:
-                this.value /= 1024;
-                this.units = StorageUnit.TB;
-                break;
-            case TB:
-                // nothing to do, so far StorageUnit handles no units larger than TB?
-                break;
-            default:
-                throw new IllegalStateException();
-            }
+        if (sum.min(BigDecimal.valueOf(1024)) != sum) {
+            // i.e. if added > 1024
+            StorageUnit newUnit = StorageUnit.closest(sum, this.units);
+            sum = this.units.convertTo(sum, newUnit);
+            this.units = newUnit;
         }
+        this.value = sum;
     }
 
-    public void substract(final double amount, final StorageUnit units) {
-        this.value -= units.convertTo(amount, this.units);
-    }
-
-    public double getValue(final StorageUnit targetUnits) {
-        return this.units.convertTo(value, targetUnits);
+    public synchronized void substract(final double amount, final StorageUnit units) {
+        this.value = units.convertTo(amount, this.units).subtract(this.value);
+        if (this.value.min(BigDecimal.valueOf(1024)) == this.value) {
+            StorageUnit newUnit = StorageUnit.closest(this.value, this.units);
+            this.value = this.units.convertTo(this.value, newUnit);
+            this.units = newUnit;
+        }
     }
 
     /**
@@ -98,12 +89,11 @@ public class Quota {
      * @return
      */
     public Quota difference(Quota quota) {
-        StorageUnit thisUnits = getUnits();
-        double thisValue = getValue();
 
-        double value = quota.getUnits().convertTo(quota.getValue(), thisUnits);
-        double difference = thisValue - value;
-        return new Quota(difference, thisUnits);
+        BigDecimal difference = this.value.subtract(quota.getUnits().convertTo(quota.getValue(),
+                this.units));
+
+        return new Quota(difference, this.units);
     }
 
     /**

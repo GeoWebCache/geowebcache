@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -194,8 +195,8 @@ public class ConfigLoader {
         if (quota == null) {
             throw new IllegalArgumentException("No quota defined");
         }
-        double limit = quota.getValue();
-        if (limit < 0) {
+        BigDecimal limit = quota.getValue();
+        if (limit.compareTo(BigDecimal.ZERO) < 0) {
             throw new ConfigurationException("Limit shall be >= 0: " + limit + ". " + quota);
         }
         StorageUnit units = quota.getUnits();

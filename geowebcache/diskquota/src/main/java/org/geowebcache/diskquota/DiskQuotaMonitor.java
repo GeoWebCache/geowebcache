@@ -4,6 +4,7 @@ import static org.geowebcache.diskquota.StorageUnit.B;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -330,7 +331,7 @@ public class DiskQuotaMonitor implements DisposableBean {
                 expirationPolicy.save(layerName);
 
                 Quota excedent = usedQuota.difference(quota);
-                if (excedent.getValue() > 0) {
+                if (excedent.getValue().compareTo(BigDecimal.ZERO) > 0) {
                     log.info("Layer '" + lq.getLayer() + "' exceeds its quota of "
                             + quota.toNiceString() + " by " + excedent.toNiceString()
                             + ". Currently used: " + usedQuota.toNiceString()

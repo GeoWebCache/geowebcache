@@ -2,6 +2,7 @@ package org.geowebcache.diskquota.paging;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -221,7 +222,7 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
         final LayerQuota layerQuota = tilePageCalculator.getLayerQuota();
         final Quota quotaLimit = layerQuota.getQuota();
         final Quota usedQuota = layerQuota.getUsedQuota();
-        if (usedQuota.getValue() == 0D) {
+        if (usedQuota.getValue().equals(BigDecimal.ZERO)) {
             return;
         }
 
@@ -250,12 +251,13 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
 
                     // how much storage space did we freed up?
                     Quota difference = exceededQuota.difference(usedQuota);
-                    if (difference.getValue() > 0) {
+                    BigDecimal dif = difference.getValue();
+                    if (dif.max(BigDecimal.ZERO) == dif) {// difference > 0?
                         // did we reach the layer's quota?
                         Quota newExcedent = usedQuota.difference(quotaLimit);
-                        double excedentValue = newExcedent.getValue();
+                        BigDecimal excedentValue = newExcedent.getValue();
 
-                        if (excedentValue <= 0) {
+                        if (excedentValue.compareTo(BigDecimal.ZERO) <= 0) {
                             log.info("Storage space for layer '" + layerName + "' reduced by "
                                     + newExcedent + " and reached its quota limit of: "
                                     + quotaLimit + ". Current usage: " + usedQuota);
@@ -269,7 +271,7 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
                             }
                         }
 
-                    } else if (difference.getValue() == 0) {
+                    } else if (difference.getValue().equals(BigDecimal.ZERO)) {
                         if (log.isTraceEnabled()) {
                             log.trace("Truncation of tile page " + page + "/" + gridSetId
                                     + " produced no reduction in storage for layer " + layerName);

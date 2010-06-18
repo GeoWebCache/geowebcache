@@ -237,10 +237,10 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
         final LayerQuota layerQuota = new LayerQuota(layerName, policy.getName());
         layerQuota.setExpirationPolicy(policy);
         layerQuota.getQuota().setValue(1024);
-        layerQuota.getQuota().setUnits(StorageUnit.KB);
+        layerQuota.getQuota().setUnits(StorageUnit.KiB);
         // used quota exceeds allowed quota
         layerQuota.getUsedQuota().setValue(2);
-        layerQuota.getUsedQuota().setUnits(StorageUnit.MB);
+        layerQuota.getUsedQuota().setUnits(StorageUnit.MiB);
 
         // mock up a truncate task that somehow changes the layer quota comsumption
         class MockGWCTask extends GWCTask {
