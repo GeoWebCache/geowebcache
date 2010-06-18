@@ -1,5 +1,6 @@
 package org.geowebcache.diskquota;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -21,8 +22,9 @@ public class DiskQuotaConfig {
         defaultQuota = quota;
     }
 
+    @SuppressWarnings("unchecked")
     public List<LayerQuota> getLayerQuotas() {
-        return layerQuotas;
+        return layerQuotas == null ? Collections.EMPTY_LIST : layerQuotas;
     }
 
     public void setLayerQuotas(List<LayerQuota> quotas) {

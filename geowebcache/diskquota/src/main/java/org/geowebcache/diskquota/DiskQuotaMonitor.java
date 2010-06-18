@@ -131,13 +131,13 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
             TileLayer tileLayer = layers.get(layerName);
             expirationPolicy.attach(tileLayer, quota);
             layers.remove(layerName);
-            
+
             log.info("Calculating cache size for layer " + layerName);
             try {
                 storageBroker.calculateCacheSize(layerName);
             } catch (StorageException e) {
                 e.printStackTrace();
-            }            
+            }
         }
 
         // now set default quota to non explicitly configured layers
@@ -149,7 +149,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
             for (TileLayer layer : layers.values()) {
                 String layerName = layer.getName();
                 log.info("Attaching layer " + layerName + " to DEFAULT quota");
-                expirationPolicy.attach(layer, defaultQuota);                
+                expirationPolicy.attach(layer, defaultQuota);
             }
         }
     }
@@ -191,10 +191,8 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
             }
         }
 
-        if (quotaConfig.getLayerQuotas() != null) {
-            for (LayerQuota lq : new ArrayList<LayerQuota>(quotaConfig.getLayerQuotas())) {
-                validateLayerQuota(lq);
-            }
+        for (LayerQuota lq : new ArrayList<LayerQuota>(quotaConfig.getLayerQuotas())) {
+            validateLayerQuota(lq);
         }
     }
 
