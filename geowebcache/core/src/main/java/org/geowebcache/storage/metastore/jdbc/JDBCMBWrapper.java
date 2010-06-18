@@ -72,7 +72,7 @@ class JDBCMBWrapper {
     /** Timeout for locked objects, 60 seconds by default **/
     protected long lockTimeout = 60000;
 
-    public boolean USE_CONNECTION_POOLING = false;
+    public boolean USE_CONNECTION_POOLING = true;
 
     private JdbcConnectionPool connPool;
     
