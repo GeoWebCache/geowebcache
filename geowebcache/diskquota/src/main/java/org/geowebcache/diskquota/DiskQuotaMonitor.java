@@ -222,11 +222,15 @@ public class DiskQuotaMonitor implements DisposableBean {
                 final String blobFormat, final String parameters, final long x, final long y,
                 final int z, final long blobSize) {
 
+            final LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
+            if(layerQuota == null){
+            	//there's no quota defined for the layer
+            	return;
+            }
             final int blockSize = quotaConfig.getDiskBlockSize();
 
             long actuallyUsedStorage = blockSize * (int) Math.ceil((double) blobSize / blockSize);
 
-            LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
             Quota usedQuota = layerQuota.getUsedQuota();
 
             usedQuota.add(actuallyUsedStorage, B);
