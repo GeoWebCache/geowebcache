@@ -157,9 +157,10 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy {
 
             for (TilePage page : allPages) {
                 for (MimeType mimeType : tileLayer.getMimeTypes()) {
-                    log.info("Expiring page " + page + " for MIME type " + mimeType.getFormat());
+                    log.trace("Expiring page " + page + "/" + mimeType.getFormat());
 
-                    final long[][] pageGridCoverage = tilePageCalculator.toGridCoverage(page, gridSetId);
+                    final long[][] pageGridCoverage = tilePageCalculator.toGridCoverage(page,
+                            gridSetId);
                     final int zoomLevel = page.getZ();
                     GWCTask truncateTask = createTruncateTaskForPage(tileLayer, gridSetId,
                             zoomLevel, pageGridCoverage, mimeType);
@@ -180,23 +181,27 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy {
                                     + quotaLimit + ". Current usage: " + usedQuota);
                             return;
                         } else {
-                            log.info("After truncating page " + page + "/" + gridSetId
-                                    + " for layer '" + layerName
-                                    + "' its quota is still exceeded by " + newExcedent
-                                    + ". Truncating more pages.");
+                            if (log.isTraceEnabled()) {
+                                log.trace("After truncating page " + page + "/" + gridSetId
+                                        + " for layer '" + layerName
+                                        + "' its quota is still exceeded by " + newExcedent
+                                        + ". Truncating more pages.");
+                            }
                         }
 
                     } else if (difference.getValue() == 0) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Truncation of tile page " + page + "/" + gridSetId
+                        if (log.isTraceEnabled()) {
+                            log.trace("Truncation of tile page " + page + "/" + gridSetId
                                     + " produced no reduction in storage for layer " + layerName);
                         }
                     } else {
-                        log.info("Storage space for layer '" + layerName + "' increased by "
-                                + difference.getValue() + difference.getUnits()
-                                + " after truncating " + page
-                                + ". Other client requests or seeding "
-                                + "tasks might be interferring.");
+                        if (log.isDebugEnabled()) {
+                            log.debug("Storage space for layer '" + layerName + "' increased by "
+                                    + difference.getValue() + difference.getUnits()
+                                    + " after truncating " + page
+                                    + ". Other client requests or seeding "
+                                    + "tasks might be interferring.");
+                        }
                     }
                 }
             }
