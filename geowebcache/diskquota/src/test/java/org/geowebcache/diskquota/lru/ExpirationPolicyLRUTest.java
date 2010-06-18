@@ -12,24 +12,10 @@ public class ExpirationPolicyLRUTest extends TestCase {
     @SuppressWarnings("serial")
     public void testSortPagesForExpiration() {
         List<TilePage> pages = new ArrayList<TilePage>();
-        TilePage mostRecentlyUsed = new TilePage(1, 1, 1, 1, 10) {
-            @Override
-            public int getLastAccessTimeMinutes() {
-                return 1000;
-            }
-        };
-        TilePage leastRecentlyUsed = new TilePage(0, 0, 0, 1, 100) {
-            @Override
-            public int getLastAccessTimeMinutes() {
-                return 100;
-            }
-        };
-        TilePage moreOrLessRecentlyUsed = new TilePage(0, 0, 1, 1, 100) {
-            @Override
-            public int getLastAccessTimeMinutes() {
-                return 500;
-            }
-        };
+
+        TilePage mostRecentlyUsed = new TilePage(1, 1, 1, 1, 10, 1000);
+        TilePage leastRecentlyUsed = new TilePage(0, 0, 0, 1, 100, 100);
+        TilePage moreOrLessRecentlyUsed = new TilePage(0, 0, 1, 1, 100, 500);
 
         mostRecentlyUsed.markHit();
 

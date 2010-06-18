@@ -24,13 +24,13 @@ public class ExpirationPolicyLFUTest extends TestCase {
     public void testSortPagesForExpiration() {
         List<TilePage> pages = new ArrayList<TilePage>();
         long numHits = 1000;
-        TilePage mostUsed = new TilePage(1, 1, 1, numHits, 10);
+        TilePage mostUsed = new TilePage(1, 1, 1, numHits, 10, 0);
 
         numHits = 10;
-        TilePage leastUsed = new TilePage(0, 0, 0, numHits, 100);
+        TilePage leastUsed = new TilePage(0, 0, 0, numHits, 100, 0);
 
         numHits = 100;
-        TilePage moreOrLessUsed = new TilePage(0, 0, 1, numHits, 100);
+        TilePage moreOrLessUsed = new TilePage(0, 0, 1, numHits, 100, 0);
 
         pages.add(mostUsed);
         pages.add(leastUsed);
@@ -51,8 +51,8 @@ public class ExpirationPolicyLFUTest extends TestCase {
      */
     public void testSortPagesForExpirationSameAccessTime() {
         List<TilePage> pages = new ArrayList<TilePage>();
-        TilePage lowerZoomLevel = new TilePage(1, 1, 1, 1000, 1);
-        TilePage higherZoomLevel = new TilePage(1, 1, 2, 1000, 1);
+        TilePage lowerZoomLevel = new TilePage(1, 1, 1, 1000, 1, 0);
+        TilePage higherZoomLevel = new TilePage(1, 1, 2, 1000, 1, 0);
 
         pages.add(lowerZoomLevel);
         pages.add(higherZoomLevel);

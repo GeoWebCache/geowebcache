@@ -57,15 +57,15 @@ public class TilePage implements Serializable {
     private int accessTimeMinutes;
 
     public TilePage(final int x, final int y, final int z) {
-        this(x, y, z, 0L, 0L);
+        this(x, y, z, 0L, 0L, 0);
     }
 
     public TilePage(final int x, final int y, final int z, final long numHits,
-            final long numTilesInPage) {
+            final long numTilesInPage, final int lastAccessTimeMinutes) {
 
         this.zyxIndex = new int[] { z, y, x };
         this.numHits = new AtomicLong(numHits);
-        this.accessTimeMinutes = 0;// not accessed yet
+        this.accessTimeMinutes = lastAccessTimeMinutes;
         this.numTilesInPage = new AtomicLong(numTilesInPage);
 
         this.hashCode = 17 * (zyxIndex[0] + zyxIndex[1] ^ 2 + zyxIndex[2] ^ 3);

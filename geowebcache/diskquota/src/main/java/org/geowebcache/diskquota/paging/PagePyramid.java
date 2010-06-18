@@ -198,7 +198,8 @@ class PagePyramid {
                         allPages.put(pageIndex.clone(), new TilePage(pageX, pageY, level));
                     } else {
                         allPages.put(pageIndex.clone(), new TilePage(pageX, pageY, level, tilePage
-                                .getNumHits(), tilePage.getNumTilesInPage()));
+                                .getNumHits(), tilePage.getNumTilesInPage(), tilePage
+                                .getLastAccessTimeMinutes()));
                     }
                 }
             }
