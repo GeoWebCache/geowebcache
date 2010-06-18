@@ -138,15 +138,14 @@ public class DiskQuotaMonitor implements DisposableBean {
             expirationPolicy.attach(tileLayer, quota);
             layers.remove(layerName);
 
-            log.info("Calculating cache size for layer " + layerName);
-            try {
-                double cacheSize = storageBroker.calculateCacheSize(layerName);
-                double cacheGB = MB.convertTo(cacheSize, GB);
-                log.info("Cache size for " + layerName + " is " + cacheGB
-                        + "GB " + cacheSize);
-            } catch (StorageException e) {
-                e.printStackTrace();
-            }
+//            log.info("Calculating cache size for layer " + layerName);
+//            try {
+//                double cacheSize = storageBroker.calculateCacheSize(layerName);
+//                double cacheGB = MB.convertTo(cacheSize, GB);
+//                log.info("Cache size for " + layerName + " is " + cacheGB + "GB.");
+//            } catch (StorageException e) {
+//                e.printStackTrace();
+//            }
         }
 
         // now set default quota to non explicitly configured layers

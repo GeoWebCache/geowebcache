@@ -42,7 +42,7 @@
     <constructor-arg ref="gwcGridSetBroker"/>
     <constructor-arg>
       <list>
-	    <ref bean="gwcWMSConfig" />
+	    <!--ref bean="gwcWMSConfig" /-->
 	    <ref bean="gwcXmlConfig" />
       </list>
     </constructor-arg>
