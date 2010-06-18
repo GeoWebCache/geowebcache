@@ -81,9 +81,10 @@ public interface BlobStore {
      * </p>
      * 
      * @param layerName
+     * @param blockSize 
      * @return
      */
-    public double calculateCacheSize(String layerName) throws StorageException;
+    public double calculateCacheSize(String layerName, int blockSize) throws StorageException;
     public void addListener(BlobStoreListener listener);
     public boolean removeListener(BlobStoreListener listener);
     

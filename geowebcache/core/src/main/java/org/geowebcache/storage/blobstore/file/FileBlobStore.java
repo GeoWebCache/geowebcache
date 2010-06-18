@@ -465,7 +465,7 @@ public class FileBlobStore implements BlobStore {
     /**
      * @see org.geowebcache.storage.BlobStore#calculateCacheSize(java.lang.String)
      */
-    public double calculateCacheSize(String layerName) throws StorageException {
+    public double calculateCacheSize(String layerName, int blockSize) throws StorageException {
         File layerPath = getLayerPath(layerName);
 
         if (!layerPath.exists()) {
@@ -480,17 +480,17 @@ public class FileBlobStore implements BlobStore {
 
         StopWatch sw = new StopWatch();
         sw.start();
-        LayerCacheSizeCalculator visitor = new LayerCacheSizeCalculator(layerName);
+        LayerCacheSizeCalculator visitor = new LayerCacheSizeCalculator(layerName, blockSize);
         FileUtils.traverseDepth(layerPath, visitor);
         sw.stop();
-        
+
         long numTiles = visitor.getNumTiles();
         double aggregateSizeMB = visitor.getAggregateSizeMB();
         log.info("Calculated cache size for layer " + layerName + " in " + sw.getTotalTimeSeconds()
                 + " seconds. Cache size: " + aggregateSizeMB + "MB. Num tiles: " + numTiles);
         return aggregateSizeMB;
     }
-    
+
     private static class LayerCacheSizeCalculator implements FileFilter {
 
         private static final double MB = 1024 * 1024;
@@ -501,8 +501,11 @@ public class FileBlobStore implements BlobStore {
 
         private String layerName;
 
-        public LayerCacheSizeCalculator(final String layerName) {
+        private int blockSize;
+
+        public LayerCacheSizeCalculator(final String layerName, int blockSize) {
             this.layerName = layerName;
+            this.blockSize = blockSize;
         }
 
         public boolean accept(final File pathname) {
@@ -512,7 +515,8 @@ public class FileBlobStore implements BlobStore {
 
             // no problem is the file does not exist because it was deleted on our back, length()
             // returns zero.
-            double length = pathname.length();
+            double length = blockSize * (1 + pathname.length() / blockSize);
+            
             aggregateSizeMB += length / MB;
 
             count++;
@@ -542,27 +546,4 @@ public class FileBlobStore implements BlobStore {
     public boolean removeListener(BlobStoreListener listener) {
         return listeners.removeListener(listener);
     }
-
-//    public boolean isReady() {
-//        File fh = new File(path + File.separator + "version");
-//        if(fh.isFile() && fh.canRead()) {
-//            try {
-//                FileInputStream fis = new FileInputStream(fh);
-//                byte[] ret = ServletUtils.readStream(fis, 10, 10);
-//                
-//                int ver = Integer.parseInt(new String(ret));
-//                
-//                if(ver == 120) {
-//                    return true;
-//                }
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            return true;
-//        }
-//        log.error("Could not find " + fh.getAbsolutePath() + ", upgrade required.");
-//        return false;
-//    }
 }

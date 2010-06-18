@@ -82,11 +82,12 @@ public class StorageBroker {
      * </p>
      * 
      * @param layerName
+     * @param blockSize 
      * @return
      */
-    public double calculateCacheSize(String layerName) throws StorageException {
+    public double calculateCacheSize(String layerName, int blockSize) throws StorageException {
         // TODO: if metastoreEnabled calculate with metastore?
-        return blobStore.calculateCacheSize(layerName);
+        return blobStore.calculateCacheSize(layerName, blockSize);
     }
     
     public void setVerifyFileSize(boolean verifyFileSize) {
