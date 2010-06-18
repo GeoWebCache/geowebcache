@@ -19,11 +19,10 @@ public class TilePage implements Serializable {
     private static final long serialVersionUID = -17011977L;
 
     /**
-     * Current time with near-minute precision, meaning we can hold values up till January 1, 2115
-     * UTC
+     * Current time with near-minute precision, meaning we can hold values up till year 2115
      */
-    private static final AtomicInteger currentTime = new AtomicInteger((int) System
-            .currentTimeMillis() / 1000 / 1000);
+    private static final AtomicInteger currentTime = new AtomicInteger((int) (System
+            .currentTimeMillis() / 1000L / 60L));
     static {
         CustomizableThreadFactory tf = new CustomizableThreadFactory("Minute-Timer");
         tf.setDaemon(true);
@@ -31,7 +30,7 @@ public class TilePage implements Serializable {
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1, tf);
         Runnable command = new Runnable() {
             public void run() {
-                int minutesSinceJan1_1970 = (int) (System.currentTimeMillis() / 1000L / 1000L);
+                int minutesSinceJan1_1970 = (int) (System.currentTimeMillis() / 1000L / 60L);
                 TilePage.currentTime.set(minutesSinceJan1_1970);
             }
         };
