@@ -436,6 +436,7 @@
     <module>wms</module>
     <module>wmts</module>
     <module>web</module>
+    <module>diskquota</module>
   </modules>
 </project>
 
