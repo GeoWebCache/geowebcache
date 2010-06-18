@@ -14,14 +14,18 @@
     <constructor-arg ref="gwcStorageBroker" />
   </bean>
 
+  <bean id="pageStore" class="org.geowebcache.diskquota.paging.FilePageStore">
+    <constructor-arg ref="DiskQuotaConfigLoader" />
+  </bean>
+
   <bean id="ExpirationPolicyLRU" class="org.geowebcache.diskquota.lru.ExpirationPolicyLRU">
     <constructor-arg ref="gwcTileBreeder" />
-    <constructor-arg ref="DiskQuotaConfigLoader" />
+    <constructor-arg ref="pageStore" />
   </bean>
   
   <bean id="ExpirationPolicyLFU" class="org.geowebcache.diskquota.lfu.ExpirationPolicyLFU">
     <constructor-arg ref="gwcTileBreeder" />
-    <constructor-arg ref="DiskQuotaConfigLoader" />
+    <constructor-arg ref="pageStore" />
   </bean>
 
   <!-- bean id="mockWMSSource" class="org.geowebcache.diskquota.MockWMSLayerSource">

@@ -2,8 +2,6 @@ package org.geowebcache.diskquota.paging;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -56,17 +54,16 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
 
     private final TileBreeder tileBreeder;
 
-    private final ConfigLoader configLoader;
+    private final PageStore pageStore;
 
     /**
      * 
      * @param tileBreeder
      *            used to truncate expired pages of tiles
      */
-    public AbstractPagedExpirationPolicy(final TileBreeder tileBreeder,
-            final ConfigLoader configLoader) {
+    public AbstractPagedExpirationPolicy(final TileBreeder tileBreeder, final PageStore pageStore) {
         this.tileBreeder = tileBreeder;
-        this.configLoader = configLoader;
+        this.pageStore = pageStore;
         attachedLayers = new ConcurrentHashMap<String, TilePageCalculator>();
         statsCollectors = new ConcurrentHashMap<String, PagingStatsCollector>();
     }
@@ -115,59 +112,46 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
         for (TilePageCalculator calc : this.attachedLayers.values()) {
             savePages(calc);
         }
-        for(String layerName : layerNames){
+        for (String layerName : layerNames) {
             dettach(layerName);
         }
     }
 
     /**
-     * @see org.geowebcache.diskquota.LayerQuotaExpirationPolicy#save(org.geowebcache.diskquota.LayerQuota)
+     * @see org.geowebcache.diskquota.LayerQuotaExpirationPolicy#save
      */
-    public void save(LayerQuota lq) {
-        TilePageCalculator calc = this.attachedLayers.get(lq.getLayer());
+    public void save(final String layer) {
+        TilePageCalculator calc = this.attachedLayers.get(layer);
+        if (calc == null) {
+            throw new IllegalArgumentException("No layer named '" + layer
+                    + "' is attached to this expiration policy");
+        }
         try {
             savePages(calc);
-        } catch (ConfigurationException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e);
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void loadPages(TilePageCalculator calc) {
         final TileLayer tileLayer = calc.getTileLayer();
         final String layerName = FilePathGenerator.filteredLayerName(tileLayer.getName());
         final Hashtable<String, GridSubset> gridSubsets = tileLayer.getGridSubsets();
         log.info("Loading stats pages for layer '" + layerName + "'");
 
+        List<TilePage> pages;
         for (String gridSetId : gridSubsets.keySet()) {
-            String fileName = layerName + "." + FilePathGenerator.filteredGridSetId(gridSetId)
-                    + ".pages";
-            InputStream pagesStateIn;
             try {
-                pagesStateIn = configLoader.getStorageInputStream(fileName);
-            } catch (Exception e) {
+                pages = pageStore.getPages(layerName, gridSetId);
+            } catch (IOException e) {
                 log.debug(e.getMessage());
                 continue;
             }
-
-            try {
-                ObjectInputStream in = new ObjectInputStream(pagesStateIn);
-                List<TilePage> pages = (List<TilePage>) in.readObject();
-                calc.setPages(gridSetId, pages);
-                log
-                        .info("Paged state for layer '" + layerName + "'" + "/" + gridSetId
-                                + " loaded.");
-            } catch (Exception e) {
-                log.debug(e.getMessage());
-                continue;
-            }
+            calc.setPages(gridSetId, pages);
         }
     }
 
-    private synchronized void savePages(final TilePageCalculator calc)
-            throws ConfigurationException, IOException {
+    private synchronized void savePages(final TilePageCalculator calc) throws IOException {
 
         final TileLayer tileLayer = calc.getTileLayer();
         final String layerName = FilePathGenerator.filteredLayerName(tileLayer.getName());
@@ -176,19 +160,11 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
 
         for (String gridSetId : gridSubsets.keySet()) {
             ArrayList<TilePage> availablePages = calc.getPages(gridSetId);
-            if (availablePages.size() == 0) {
-                continue;
-            }
-            String fileName = layerName + "." + FilePathGenerator.filteredGridSetId(gridSetId)
-                    + ".pages";
-            log.debug("Saving paged state for " + layerName + "/" + gridSetId + " containing "
-                    + availablePages.size() + " pages.");
-            OutputStream fileOut = configLoader.getStorageOutputStream(fileName);
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
             try {
-                out.writeObject(availablePages);
-            } finally {
-                out.close();
+                pageStore.savePages(layerName, gridSetId, availablePages);
+            } catch (IOException e) {
+                log.info(e);
+                continue;
             }
         }
         log.debug("Paged state for layer '" + layerName + "' saved.");
