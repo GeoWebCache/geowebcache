@@ -2,36 +2,11 @@ package org.geowebcache.diskquota;
 
 public enum StorageUnit {
 
-    B(1) {
-        @Override
-        public double convertTo(double value, StorageUnit target) {
-            return 0;
-        }
-    },
-    KB(1024) {
-        @Override
-        public double convertTo(double value, StorageUnit target) {
-            return 0;
-        }
-    },
-    MB(1024 * 1024) {
-        @Override
-        public double convertTo(double value, StorageUnit target) {
-            return 0;
-         }
-    },
-    GB(1024 * 1024 * 1024) {
-        @Override
-        public double convertTo(double value, StorageUnit target) {
-            return 0;
-        }
-    },
-    TB(1024 * 1024 * 1024 * 1024) {
-        @Override
-        public double convertTo(double value, StorageUnit target) {
-            return 0;
-        }
-    };
+    B(1), //
+    KB(1024), //
+    MB(1024 * 1024), //
+    GB(1024 * 1024 * 1024), //
+    TB(1024 * 1024 * 1024 * 1024);
 
     protected final long bytes;
 
@@ -47,7 +22,7 @@ public enum StorageUnit {
         return value / (double) bytes;
     }
 
-    public double convertTo(double value, StorageUnit target) {
+    public final double convertTo(double value, StorageUnit target) {
         return target.fromBytes(toBytes(value));
     }
 }
