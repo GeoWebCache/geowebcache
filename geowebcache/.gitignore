@@ -3,3 +3,4 @@
 **/.settings
 **/target
 target
+web/trace.db
