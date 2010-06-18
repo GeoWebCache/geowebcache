@@ -22,7 +22,28 @@ import java.io.File;
 import org.geowebcache.mime.MimeType;
 
 public class FilePathGenerator {
-    protected static String[] tilePath(String prefix, String layerName, long[] tileIndex, 
+
+    /**
+     * Builds the storage path for a tile and returns it as two components, the directory path and
+     * the tile file name.
+     * <p>
+     * </p>
+     * 
+     * @param prefix
+     *            the cache root directory path
+     * @param layerName
+     *            name of the layer the tile belongs to
+     * @param tileIndex
+     *            the [x,y,z] index for the tile
+     * @param gridSetId
+     *            the name of the gridset for the tile inside layer
+     * @param mimeType
+     *            the storage mime type
+     * @param parameters_id
+     *            the parameters identifier
+     * @return {@code [directoryName, fileName]}
+     */
+    protected static String[] tilePath(String prefix, String layerName, long[] tileIndex,
             String gridSetId, MimeType mimeType, long parameters_id) {
         long x = tileIndex[0];
         long y = tileIndex[1];
@@ -62,7 +83,6 @@ public class FilePathGenerator {
         return ret;
     }
     
-
     /**
      * Silly way to pad numbers with leading zeros, since I don't know a fast
      * way of doing this in Java.
@@ -89,7 +109,7 @@ public class FilePathGenerator {
             StringBuilder padding = new StringBuilder(diffOrder);
             
             while (diffOrder > 0) {
-                padding.append("0");
+                padding.append('0');
                 diffOrder--;
             }
             return padding.toString() + Long.toString(number);
