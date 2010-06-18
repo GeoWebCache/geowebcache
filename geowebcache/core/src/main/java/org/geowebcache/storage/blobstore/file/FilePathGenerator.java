@@ -51,7 +51,6 @@ public class FilePathGenerator {
         
         //System.out.println("x: " + x + " y: " + y + " z: " + z);
         
-        String gridSetStr = filteredGridSetId(gridSetId);
         String layerStr = filteredLayerName(layerName);
         
         String paramStr = "";
@@ -71,11 +70,13 @@ public class FilePathGenerator {
         String fileExtension = mimeType.getFileExtension();
         
         String[] ret = new String[2];
-        
+
+        String gridsetZoomLevelDirName = gridsetZoomLevelDir(gridSetId, z);
+
         ret[0] = new StringBuilder(prefix).append(File.separator).append(layerStr).append(
-                File.separator).append(gridSetStr).append('_').append(zeroPadder(z, 2)).append(
-                paramStr).append(File.separator).append(zeroPadder(halfx, digits)).append('_')
-                .append(zeroPadder(halfy, digits)).toString();
+                File.separator).append(gridsetZoomLevelDirName).append(paramStr).append(
+                File.separator).append(zeroPadder(halfx, digits)).append('_').append(
+                zeroPadder(halfy, digits)).toString();
         
         ret[1] = new StringBuilder(zeroPadder(x, 2 * digits)).append('_').append(
                 zeroPadder(y, 2 * digits)).append('.').append(fileExtension).toString();
@@ -83,6 +84,12 @@ public class FilePathGenerator {
         return ret;
     }
     
+    public static String gridsetZoomLevelDir(String gridSetId, long zoomLevel) {
+        String gridSetStr = filteredGridSetId(gridSetId);
+        StringBuilder sb = new StringBuilder(gridSetStr);
+        return sb.append('_').append(zeroPadder(zoomLevel, 2)).toString();
+    }
+
     /**
      * Silly way to pad numbers with leading zeros, since I don't know a fast
      * way of doing this in Java.
