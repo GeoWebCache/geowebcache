@@ -40,4 +40,16 @@ public class Quota {
         sb.append(", expirationPolicy: ").append(expirationPolicy).append(']');
         return sb.toString();
     }
+
+    public synchronized void add(double amount, StorageUnit units) {
+        this.limit += units.convertTo(amount, this.units);
+        if (this.units != StorageUnit.TB && limit / 1024 > 1) {
+            this.limit = this.units.convertTo(this.limit, StorageUnit.GB);
+            this.units = StorageUnit.GB;
+        }
+    }
+
+    public void substract(final double amount, final StorageUnit units) {
+        this.limit -= units.convertTo(amount, this.units);
+    }
 }

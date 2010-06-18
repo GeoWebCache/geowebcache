@@ -19,16 +19,10 @@ public interface LayerQuotaExpirationPolicy {
      * Registers a layer's quota to be managed by this expiration policy
      * 
      * @param tileLayer
-     * @param quota
+     * @param layerQuota
      */
-    void attach(TileLayer tileLayer, Quota quota);
+    void attach(TileLayer tileLayer, LayerQuota layerQuota);
 
     void dettach(String layerName);
-
-    void recordTile(String layerName, String gridSetId, String blobFormat, String parameters,
-            long x, long y, int z, long blobSize);
-
-    void removeTile(String layerName, String gridSetId, String blobFormat, String parameters,
-            long x, long y, int z, long blobSize);
 
 }

@@ -12,7 +12,7 @@ public class DiskQuotaConfig {
 
     private List<LayerQuota> layerQuotas;
 
-    private transient Map<String, LayerQuota> layerQuotasMap = new HashMap<String, LayerQuota>();
+    private transient Map<String, LayerQuota> layerQuotasMap;
 
     public Quota getDefaultQuota() {
         return defaultQuota;
@@ -29,31 +29,29 @@ public class DiskQuotaConfig {
 
     public void setLayerQuotas(List<LayerQuota> quotas) {
         this.layerQuotas = quotas;
-        buildMap(quotas);
+        this.layerQuotasMap = null;
     }
 
-    public Quota getLayerQuota(final String layerName) {
-        if (layerQuotasMap.isEmpty()) {
-            buildMap(layerQuotas);
-        }
-        LayerQuota quota = layerQuotasMap.get(layerName);
-        if (quota != null) {
-            return quota.getQuota();
-        }
-        return defaultQuota;// may be null
+    public void setLayerQuota(String layerName, LayerQuota lq) {
+        getLayerQuotasMap().put(layerName, lq);
     }
 
-    private void buildMap(List<LayerQuota> quotas) {
-        layerQuotasMap.clear();
-        if (quotas == null) {
-            return;
+    public LayerQuota getLayerQuota(final String layerName) {
+        LayerQuota quota = getLayerQuotasMap().get(layerName);
+        return quota;
+    }
+
+    private Map<String, LayerQuota> getLayerQuotasMap() {
+        if (layerQuotasMap == null) {
+            layerQuotasMap = new HashMap<String, LayerQuota>();
+
+            if (layerQuotas != null) {
+                for (LayerQuota lq : layerQuotas) {
+                    layerQuotasMap.put(lq.getLayer(), lq);
+                }
+            }
         }
-        if (quotas == null || quotas.size() == 0) {
-            return;
-        }
-        for (LayerQuota lq : quotas) {
-            layerQuotasMap.put(lq.getLayer(), lq);
-        }
+        return layerQuotasMap;
     }
 
     public void remove(LayerQuota lq) {
@@ -61,7 +59,7 @@ public class DiskQuotaConfig {
             LayerQuota quota = it.next();
             if (quota.getLayer().equals(lq.getLayer())) {
                 it.remove();
-                layerQuotasMap.remove(lq.getLayer());
+                getLayerQuotasMap().remove(lq.getLayer());
                 break;
             }
         }
@@ -85,4 +83,5 @@ public class DiskQuotaConfig {
         sb.append("]");
         return sb.toString();
     }
+
 }

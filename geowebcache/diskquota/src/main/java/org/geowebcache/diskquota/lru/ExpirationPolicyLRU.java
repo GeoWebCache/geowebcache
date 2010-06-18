@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.diskquota.LayerQuota;
 import org.geowebcache.diskquota.LayerQuotaExpirationPolicy;
 import org.geowebcache.diskquota.Quota;
 import org.geowebcache.grid.GridSubset;
@@ -38,18 +39,22 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy {
 
     /**
      * @see org.geowebcache.diskquota.LayerQuotaExpirationPolicy#attach(org.geowebcache.layer.TileLayer,
-     *      org.geowebcache.diskquota.Quota)
+     *      org.geowebcache.diskquota.LayerQuota)
      */
-    public void attach(final TileLayer tileLayer, final Quota quota) {
+    public void attach(final TileLayer tileLayer, LayerQuota layerQuota) {
         log.info("Attaching layer '" + tileLayer.getName() + "' to cache expiration policy "
                 + getName());
-        
+
         TilePageCalculator calc = new TilePageCalculator(tileLayer.getGridSubsets());
 
         logLevels(tileLayer, calc);
 
         TileLayerListener statsCollector = new LRUStatsCollector(calc);
         tileLayer.addLayerListener(statsCollector);
+
+        if (layerQuota.getUsedQuota() == null) {
+
+        }
     }
 
     private void logLevels(TileLayer tileLayer, TilePageCalculator calc) {
@@ -67,14 +72,6 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy {
     }
 
     public void dettach(String layerName) {
-    }
-
-    public void recordTile(String layerName, String gridSetId, String blobFormat,
-            String parameters, long x, long y, int z, long blobSize) {
-    }
-
-    public void removeTile(String layerName, String gridSetId, String blobFormat,
-            String parameters, long x, long y, int z, long blobSize) {
     }
 
     /**
@@ -102,8 +99,8 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy {
         public void tileRequested(TileLayer layer, ConveyorTile tile) {
             long[] tileXYZ = tile.getTileIndex();
             String gridSetId = tile.getGridSetId();
-//            String parameters = tile.getParameters();
-//            String storageFormat = tile.getMimeType().getFormat();
+            // String parameters = tile.getParameters();
+            // String storageFormat = tile.getMimeType().getFormat();
             // TODO: discriminate by parameters Id? format?
             TilePage page = pageCalculator.pageFor(tileXYZ, gridSetId);
             page.markHit();
