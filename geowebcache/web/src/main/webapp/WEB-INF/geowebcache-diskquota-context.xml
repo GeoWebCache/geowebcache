@@ -2,11 +2,16 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 
-  <bean id="DiskQuotaMonitor" class="org.geowebcache.diskquota.DiskQuotaMonitor">
+  <bean id="DiskQuotaConfigLoader" class="org.geowebcache.diskquota.ConfigLoader">
     <constructor-arg ref="gwcDefaultStorageFinder" />
     <constructor-arg ref="gwcAppCtx" />
     <constructor-arg ref="gwcTLDispatcher" />
-    <constructor-arg ref="gwcStorageBroker"></constructor-arg>
+  </bean>
+
+  <bean id="DiskQuotaMonitor" class="org.geowebcache.diskquota.DiskQuotaMonitor">
+    <constructor-arg ref="DiskQuotaConfigLoader" />
+    <constructor-arg ref="gwcTLDispatcher" />
+    <constructor-arg ref="gwcStorageBroker" />
   </bean>
 
   <bean id="ExpirationPolicyLRU" class="org.geowebcache.diskquota.ExpirationPolicyLRU">
