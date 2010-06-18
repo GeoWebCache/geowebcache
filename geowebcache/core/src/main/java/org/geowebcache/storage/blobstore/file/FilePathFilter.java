@@ -36,7 +36,7 @@ public class FilePathFilter implements FilenameFilter {
             throw new StorageException("Specifying the grid set id is currently mandatory.");
         }
        
-        gridSetPrefix = tr.gridSetId;
+        gridSetPrefix = FilePathGenerator.filteredGridSetId(tr.gridSetId);
 
         if(tr.mimeType != null) {
             mimeExtension = tr.mimeType.getFileExtension();
@@ -126,20 +126,12 @@ public class FilePathFilter implements FilenameFilter {
             String[] coords = parts[0].split("_");
 
             int zoomLevel = findZoomLevel(dir.getParentFile().getName());
-
-            long x = Integer.parseInt(coords[0]);
-            long y = Integer.parseInt(coords[1]);
-
-            long[] box = tr.rangeBounds[zoomLevel];
-
+            long x = Long.parseLong(coords[0]);
+            long y = Long.parseLong(coords[1]);
             
-            if (x < box[0] || x > box[2]) {
-                return false;
-            }
-
-            if (y < box[1] || y > box[3]) {
-                return false;
-            }
+            boolean contains = tr.contains(x, y, zoomLevel);
+            
+            return contains;
         }
         
         //System.out.println(dir.getAbsolutePath() + " " + name);
@@ -153,7 +145,7 @@ public class FilePathFilter implements FilenameFilter {
      * @param dirName
      * @return
      */
-    private int findZoomLevel(String dirName) {
-        return Integer.parseInt(dirName.substring(gridSetPrefix.length() +1));
+    static int findZoomLevel(String dirName) {
+        return Integer.parseInt(dirName.substring(dirName.lastIndexOf('_') + 1));
     }
 }
