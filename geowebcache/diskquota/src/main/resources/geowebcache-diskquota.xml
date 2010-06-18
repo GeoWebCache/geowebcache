@@ -7,6 +7,8 @@
   <cacheCleanUpFrequency>10</cacheCleanUpFrequency>
   <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
 
+  <maxConcurrentCleanUps>3</maxConcurrentCleanUps>
+
   <layerQuotas>
     <LayerQuota>
       <layer>topp:states</layer>
@@ -21,13 +23,13 @@
       <layer>raster test layer</layer>
       <expirationPolicyName>LRU</expirationPolicyName>
       <quota>
-        <value>512</value>
-        <units>MB</units>
+        <value>0.9</value>
+        <units>GB</units>
       </quota>
-      <usedQuota>
+      <!--usedQuota>
         <value>2799152</value>
         <units>KB</units>
-      </usedQuota>
+      </usedQuota-->
     </LayerQuota>
   </layerQuotas>
 </gwcQuotaConfiguration>

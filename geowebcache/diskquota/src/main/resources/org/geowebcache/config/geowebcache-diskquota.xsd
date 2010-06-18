@@ -34,6 +34,12 @@
           </xs:annotation>
         </xs:element>
 
+        <xs:element name="maxConcurrentCleanUps" type="xs:int" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>Maximum number of concurrent quota enforcement tasks to run. Defaults to 2.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
         <xs:element name="layerQuotas" minOccurs="0">
           <xs:annotation>
             <xs:documentation xml:lang="en">

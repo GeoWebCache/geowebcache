@@ -44,6 +44,7 @@ public class TilePage {
         return zyxIndex[0];
     }
 
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof TilePage)) {
             return false;
@@ -51,7 +52,15 @@ public class TilePage {
         return Arrays.equals(zyxIndex, ((TilePage) o).zyxIndex);
     }
 
+    @Override
     public int hashCode() {
         return 17 * (zyxIndex[0] + zyxIndex[1] ^ 2 + zyxIndex[2] ^ 3);
+    }
+
+    @Override
+    public String toString() {
+        return new StringBuilder(getClass().getSimpleName()).append("[").append(zyxIndex[2])
+                .append(',').append(zyxIndex[1]).append(',').append(zyxIndex[0]).append(". Hits: ")
+                .append(getNumHits()).append(']').toString();
     }
 }

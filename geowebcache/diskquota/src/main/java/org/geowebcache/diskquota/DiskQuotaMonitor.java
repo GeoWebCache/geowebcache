@@ -8,7 +8,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +58,7 @@ public class DiskQuotaMonitor implements DisposableBean {
      * @see #setUpScheduledCleanUp()
      * @see #destroy()
      */
-    private ScheduledExecutorService cleanUpScheduledExecutor;
+    private ScheduledExecutorService cleanUpExecutorService;
 
     public DiskQuotaMonitor(ConfigLoader configLoader, TileLayerDispatcher tld, StorageBroker sb)
             throws IOException, ConfigurationException {
@@ -64,7 +67,6 @@ public class DiskQuotaMonitor implements DisposableBean {
         this.tileLayerDispatcher = tld;
 
         this.quotaConfig = configLoader.loadConfig();
-
         registerConfiguredLayers(configLoader);
 
         if (quotaConfig.getNumLayers() == 0) {
@@ -85,13 +87,18 @@ public class DiskQuotaMonitor implements DisposableBean {
     }
 
     private void setUpScheduledCleanUp() {
+        log.info("Setting up disk quota periodic enforcement task");
         ThreadFactory tf = new CustomizableThreadFactory("gwc.DiskQuotaCleanUpThread");
-        cleanUpScheduledExecutor = Executors.newScheduledThreadPool(1, tf);
-        Runnable command = new CacheCleaner();
+
+        int numCleaningThreads = quotaConfig.getMaxConcurrentCleanUps();
+
+        cleanUpExecutorService = Executors.newScheduledThreadPool(numCleaningThreads, tf);
+        Runnable command = new CacheCleaner(quotaConfig, cleanUpExecutorService);
         long initialDelay = quotaConfig.getCacheCleanUpFrequency();
         long period = quotaConfig.getCacheCleanUpFrequency();
         TimeUnit unit = quotaConfig.getCacheCleanUpUnits();
-        cleanUpScheduledExecutor.scheduleAtFixedRate(command, initialDelay, period, unit);
+        cleanUpExecutorService.scheduleAtFixedRate(command, initialDelay, period, unit);
+        log.info("Disk quota periodic enforcement task set up every " + period + " " + unit);
     }
 
     /**
@@ -101,8 +108,8 @@ public class DiskQuotaMonitor implements DisposableBean {
      * @see org.springframework.beans.factory.DisposableBean#destroy()
      */
     public void destroy() throws Exception {
-        if (this.cleanUpScheduledExecutor != null) {
-            this.cleanUpScheduledExecutor.shutdown();
+        if (this.cleanUpExecutorService != null) {
+            this.cleanUpExecutorService.shutdown();
         }
     }
 
@@ -131,7 +138,8 @@ public class DiskQuotaMonitor implements DisposableBean {
             if (null == layerQuota.getUsedQuota()) {
                 log.info("Calculating cache size for layer '" + layerName + "'");
                 try {
-                    double cacheSize = storageBroker.calculateCacheSize(layerName);
+                    int blockSize = quotaConfig.getDiskBlockSize();
+                    double cacheSize = storageBroker.calculateCacheSize(layerName, blockSize);
                     layerQuota.setUsedQuota(cacheSize, MB);
                     double cacheGB = MB.convertTo(cacheSize, GB);
                     log.info("Cache size for " + layerName + " is " + cacheGB + "GB.");
@@ -216,12 +224,66 @@ public class DiskQuotaMonitor implements DisposableBean {
 
     private static class CacheCleaner implements Runnable {
 
-        // private Map<String, LayerQuotaExpirationPolicy> layerPolicies;
-        //
-        // private DiskQuotaConfig quotaConfig;
+        private final DiskQuotaConfig quotaConfig;
 
-        public void run() {
+        private final ExecutorService cleanUpExecutorService;
+
+        private final Map<String, Future<?>> perLayerRunningCleanUps;
+
+        public CacheCleaner(final DiskQuotaConfig config, final ExecutorService executor) {
+            this.quotaConfig = config;
+            this.cleanUpExecutorService = executor;
+            this.perLayerRunningCleanUps = new HashMap<String, Future<?>>();
         }
 
+        public void run() {
+
+            for (LayerQuota lq : quotaConfig.getLayerQuotas()) {
+
+                final String layerName = lq.getLayer();
+                Future<?> runningCleanup = perLayerRunningCleanUps.get(layerName);
+                if (runningCleanup != null && !runningCleanup.isDone()) {
+                    log.info("Cache clean up task still running for layer '" + layerName
+                            + "'. Ignoring it for this run.");
+                    continue;
+                }
+
+                final Quota quota = lq.getQuota();
+                final Quota usedQuota = lq.getUsedQuota();
+
+                if (usedQuota != null) {
+                    final double maxGigs = quota.getValue(StorageUnit.GB);
+                    final double usedGigs = usedQuota.getValue(StorageUnit.GB);
+                    if (usedGigs > maxGigs) {
+                        log.info("Layer '" + lq.getLayer() + "' exceeds its quota. Quota: "
+                                + maxGigs + "GB. Currently used: " + usedGigs
+                                + "GB. Clean up task is gonna be performed"
+                                + " using expiration policy " + lq.getExpirationPolicyName());
+
+                        LayerQuotaEnforcementTask task;
+                        task = new LayerQuotaEnforcementTask(lq);
+                        Future<Object> future = this.cleanUpExecutorService.submit(task);
+                        perLayerRunningCleanUps.put(layerName, future);
+                    }
+                }
+            }
+        }
+    }
+
+    private static class LayerQuotaEnforcementTask implements Callable<Object> {
+
+        private final LayerQuota layerQuota;
+
+        public LayerQuotaEnforcementTask(final LayerQuota layerQuota) {
+            this.layerQuota = layerQuota;
+        }
+
+        public Object call() throws Exception {
+            final String layerName = layerQuota.getLayer();
+            LayerQuotaExpirationPolicy expirationPolicy = layerQuota.getExpirationPolicy();
+            expirationPolicy.expireTiles(layerName);
+
+            return null;
+        }
     }
 }

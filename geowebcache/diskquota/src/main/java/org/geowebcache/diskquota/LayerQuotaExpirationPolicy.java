@@ -1,5 +1,6 @@
 package org.geowebcache.diskquota;
 
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayer;
 
 public interface LayerQuotaExpirationPolicy {
@@ -24,5 +25,7 @@ public interface LayerQuotaExpirationPolicy {
     void attach(TileLayer tileLayer, LayerQuota layerQuota);
 
     void dettach(String layerName);
+
+    void expireTiles(String layerName) throws GeoWebCacheException;
 
 }

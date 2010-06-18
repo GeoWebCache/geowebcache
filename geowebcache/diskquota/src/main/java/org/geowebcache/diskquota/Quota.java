@@ -6,6 +6,21 @@ public class Quota {
 
     private StorageUnit units;
 
+    public Quota() {
+        value = 0;
+        units = StorageUnit.B;
+    }
+
+    public Quota(Quota quota) {
+        value = quota.getValue();
+        units = quota.getUnits();
+    }
+
+    public Quota(double value, StorageUnit units) {
+        this.value = value;
+        this.units = units;
+    }
+
     public double getValue() {
         return value;
     }
@@ -39,5 +54,24 @@ public class Quota {
 
     public void substract(final double amount, final StorageUnit units) {
         this.value -= units.convertTo(amount, this.units);
+    }
+
+    public double getValue(final StorageUnit targetUnits) {
+        return this.units.convertTo(value, targetUnits);
+    }
+
+    /**
+     * Returns the difference between this quota and the argument one, in this quota's units
+     * 
+     * @param quota
+     * @return
+     */
+    public Quota difference(Quota quota) {
+        StorageUnit thisUnits = getUnits();
+        double thisValue = getValue();
+
+        double value = quota.getUnits().convertTo(quota.getValue(), thisUnits);
+        double difference = thisValue - value;
+        return new Quota(difference, thisUnits);
     }
 }

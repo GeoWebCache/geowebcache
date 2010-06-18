@@ -25,6 +25,8 @@ public class DiskQuotaConfig {
 
     private transient Map<String, LayerQuota> layerQuotasMap;
 
+    private int maxConcurrentCleanUps;
+
     public int getDiskBlockSize() {
         if (diskBlockSize == 0) {
             diskBlockSize = DEFAULT_DISK_BLOCK_SIZE;
@@ -121,6 +123,14 @@ public class DiskQuotaConfig {
         }
         sb.append("]");
         return sb.toString();
+    }
+
+    public int getMaxConcurrentCleanUps() {
+        return maxConcurrentCleanUps == 0 ? 2 : maxConcurrentCleanUps;
+    }
+
+    public void setMaxConcurrentCleanUps(int nThreads) {
+        this.maxConcurrentCleanUps = nThreads;
     }
 
 }
