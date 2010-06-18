@@ -414,16 +414,19 @@ public class WMSLayer extends TileLayer {
         // Final preflight check, throws exception if necessary
         getGridSubset(tileGridSetId).checkCoverage(gridLoc);
         
-        if (tryCacheFetch(tile)) {
-            return finalizeTile(tile);
-        }
+        ConveyorTile returnTile;
 
-        // Okay, so we need to go to the backend
-        if (mime.supportsTiling()) {
-            return getMetatilingReponse(tile, true);
+        if (tryCacheFetch(tile)) {
+            returnTile = finalizeTile(tile);
+        }else if (mime.supportsTiling()) { // Okay, so we need to go to the backend
+            returnTile = getMetatilingReponse(tile, true);
         } else {
-            return getNonMetatilingReponse(tile, true);
+            returnTile = getNonMetatilingReponse(tile, true);
         }
+        
+        sendTileRequested(returnTile);
+        
+        return returnTile;
     }
     
     
@@ -431,11 +434,13 @@ public class WMSLayer extends TileLayer {
      * Used for seeding
      */
     public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException, IOException {     
+        ConveyorTile returnTile;
         if (tile.getMimeType().supportsTiling()) {
-            getMetatilingReponse(tile, tryCache);
+            returnTile = getMetatilingReponse(tile, tryCache);
         } else {
-            getNonMetatilingReponse(tile, tryCache);
+            returnTile = getNonMetatilingReponse(tile, tryCache);
         }
+        sendTileSeeded(returnTile);
     }
 
     /**

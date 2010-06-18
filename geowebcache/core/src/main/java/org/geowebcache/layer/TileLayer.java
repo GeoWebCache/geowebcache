@@ -70,14 +70,44 @@ public abstract class TileLayer {
     protected List<RequestFilter> requestFilters;
 
     protected List<UpdateSourceDefinition> updateSources;
-    
+
     protected Boolean useETags;
 
     protected transient List<MimeType> formats;
 
     protected transient Hashtable<String, GridSubset> subSets;
 
+    private transient final LayerListenerList listeners = new LayerListenerList();
+
     // Styles?
+
+    /**
+     * Registers a layer listener to be notified of layer events
+     * 
+     * @see #getTile(ConveyorTile)
+     * @see #seedTile(ConveyorTile, boolean)
+     */
+    public void addLayerListener(TileLayerListener listener) {
+        listeners.addListener(listener);
+    }
+
+    /**
+     * Removes a layer listener from this layer's set of listeners
+     * 
+     * @param listener
+     * @return
+     */
+    public boolean removeLayerListener(TileLayerListener listener) {
+        return listeners.removeListener(listener);
+    }
+
+    protected final void sendTileRequested(ConveyorTile tile) {
+        listeners.sendTileSeeded(this, tile);
+    }
+
+    protected final void sendTileSeeded(ConveyorTile tile) {
+        listeners.sendTileSeeded(this, tile);
+    }
 
     /**
      * Sets the layer name
@@ -106,8 +136,7 @@ public abstract class TileLayer {
     public LayerMetaInformation getMetaInformation() {
         return this.metaInformation;
     }
-    
-    
+
     public void setMetaInformation(LayerMetaInformation metaInfo) {
         this.metaInformation = metaInfo;
     }
@@ -180,7 +209,6 @@ public abstract class TileLayer {
         }
         return sources;
     }
-    
 
     /**
      * Whether the layer supports the given format string
@@ -202,15 +230,14 @@ public abstract class TileLayer {
         throw new GeoWebCacheException("Format " + strFormat + " is not supported by "
                 + this.getName());
     }
-    
-    
+
     /**
      * Whether to use ETags for this layer
      * 
      * @return
      */
     public boolean useETags() {
-        if(useETags != null && useETags) {
+        if (useETags != null && useETags) {
             return true;
         } else {
             return false;
@@ -356,7 +383,7 @@ public abstract class TileLayer {
      * @return
      * @throws GeoWebCacheException
      * @throws GeoWebCacheException
-     * @throws GridMismatchException 
+     * @throws GridMismatchException
      */
     public abstract long[] indexFromBounds(String gridSetId, BoundingBox bounds)
             throws BadTileException, GeoWebCacheException, GridMismatchException;
