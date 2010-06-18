@@ -172,66 +172,6 @@ public class FileBlobStore implements BlobStore {
     }
     
     public boolean delete(TileRange trObj) throws StorageException {
-
-        {
-            String prefix = path + File.separator
-                    + FilePathGenerator.filteredLayerName(trObj.layerName);
-
-            File layerPath = new File(prefix);
-
-            if (!layerPath.exists() || !layerPath.canWrite()) {
-                throw new StorageException(prefix + " does not exist or is not writable.");
-            }
-        }
-
-        int count = 0;
-
-        // {zoom}{minx,miny,maxx,maxy}
-        final long[][] rangeBounds = trObj.rangeBounds;
-
-        final String layerName = trObj.layerName;
-        final String gridSetId = trObj.gridSetId;
-        final MimeType mimeType = trObj.mimeType;
-        final String blobFormat = mimeType.getFormat();
-        final String parameters = trObj.parameters;
-        final long parameters_id = -1;// TODO: how do I get it from trObj.parameters?
-
-        long[] tileIndex = new long[3];
-        String[] paths;
-        File tilePath;
-        long length;
-        for (int level = trObj.zoomStop; level >= trObj.zoomStart; level--) {
-            long[] levelBounds = rangeBounds[level];
-            tileIndex[2] = level;
-            for (long y = levelBounds[1]; y <= levelBounds[3]; y++) {
-                tileIndex[1] = y;
-                for (long x = levelBounds[0]; x <= levelBounds[2]; x++) {
-                    tileIndex[0] = x;
-                    if (!trObj.contains(tileIndex)) {
-                        continue;
-                    }
-                    paths = FilePathGenerator.tilePath(path, layerName, tileIndex, gridSetId,
-                            mimeType, parameters_id);
-                    tilePath = new File(paths[0] + File.separator + paths[1]);
-                    if (tilePath.exists()) {
-                        length = tilePath.length();
-                        tilePath.delete();
-                        count++;
-                        listeners.sendTileDeleted(layerName, gridSetId, blobFormat, parameters, x,
-                                y, level, length);
-                        File parent = tilePath.getParentFile();
-                        parent.delete();// it will happen only if it was empty
-                    }
-                }
-            }
-        }
-
-        log.info("Truncated " + count + " tiles");
-
-        return true;
-    }
-
-    public boolean deleteOld(TileRange trObj) throws StorageException {
         int count = 0;
 
         String prefix = path + File.separator 
@@ -245,17 +185,32 @@ public class FileBlobStore implements BlobStore {
         }
         FilePathFilter fpf = new FilePathFilter(trObj);
 
+        final String layerName = trObj.layerName;
+        final String gridSetId = trObj.gridSetId;
+        final String blobFormat = trObj.mimeType.getFormat();
+        final String parameters = trObj.parameters;
+
         File[] srsZoomDirs = layerPath.listFiles(fpf);
 
         for (File srsZoom : srsZoomDirs) {
+            int zoomLevel = FilePathFilter.findZoomLevel(srsZoom.getName());
             File[] intermediates = srsZoom.listFiles(fpf);
 
             for (File imd : intermediates) {
                 File[] tiles = imd.listFiles(fpf);
+                long length;
 
                 for (File tile : tiles) {
-                    tile.delete();
-                    count++;
+                    length = tile.length();
+                    boolean deleted = tile.delete();
+                    if (deleted) {
+                        String[] coords = tile.getName().split("\\.")[0].split("_");
+                        long x = Long.parseLong(coords[0]);
+                        long y = Long.parseLong(coords[1]);
+                        listeners.sendTileDeleted(layerName, gridSetId, blobFormat, parameters, x,
+                                y, zoomLevel, length);
+                        count++;
+                    }
                 }
 
                 String[] chk = imd.list();
