@@ -1,5 +1,7 @@
 package org.geowebcache.diskquota;
 
+import org.geowebcache.layer.TileLayer;
+
 public interface LayerQuotaExpirationPolicy {
 
     /**
@@ -12,5 +14,13 @@ public interface LayerQuotaExpirationPolicy {
      * @return an identifier for this quota expiration policy strategy
      */
     String getName();
+
+    /**
+     * Registers a layer's quota to be managed by this expiration policy
+     * 
+     * @param tileLayer
+     * @param quota
+     */
+    void attach(TileLayer tileLayer, Quota quota);
 
 }

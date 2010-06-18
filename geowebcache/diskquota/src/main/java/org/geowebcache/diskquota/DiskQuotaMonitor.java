@@ -6,15 +6,22 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
+import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.StorageBrokerListener;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.TileObject;
+import org.geowebcache.storage.TileRange;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -28,22 +35,53 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
     private static final String[] CONFIGURATION_REL_PATHS = { "/WEB-INF/classes", "/../resources" };
 
-    private WebApplicationContext context;
+    private final WebApplicationContext context;
+
+    private final TileLayerDispatcher tileLayerDispatcher;
+
+    private final DefaultStorageFinder storageFinder;
+
+    private final Map<String, LayerQuotaExpirationPolicy> enabledPolicies;
+
+    private final StorageBroker storageBroker;
 
     private URL configFile;
 
     private DiskQuotaConfig quotaConfig;
 
-    private TileLayerDispatcher tileLayerDispatcher;
-
-    private DefaultStorageFinder storageFinder;
-
     public DiskQuotaMonitor(DefaultStorageFinder storageFinder,
-            ApplicationContextProvider contextProvider, TileLayerDispatcher tld) throws IOException {
+            ApplicationContextProvider contextProvider, TileLayerDispatcher tld, StorageBroker sb)
+            throws IOException {
 
         this.storageFinder = storageFinder;
+        this.storageBroker = sb;
         this.context = contextProvider.getApplicationContext();
         this.tileLayerDispatcher = tld;
+        this.enabledPolicies = new HashMap<String, LayerQuotaExpirationPolicy>();
+
+        storageBroker.addStorageBrokerListener(new StorageBrokerListener() {
+
+            public void tileRangeExpired(TileRange tileRange) {
+            }
+
+            public void tileRangeDeleted(TileRange tileRange) {
+            }
+
+            public void tileCached(TileObject tileObj) {
+            }
+
+            public void shutDown() {
+            }
+
+            public void layerDeleted(String layerName) {
+            }
+
+            public void cacheMiss(TileObject tileObj) {
+            }
+
+            public void cacheHit(TileObject tileObj) {
+            }
+        });
     }
 
     /**
@@ -52,6 +90,71 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
     public void afterPropertiesSet() throws Exception {
+
+        loadConfig();
+
+        validateConfig();
+
+        registerConfiguredLayers();
+
+        if (quotaConfig.getNumLayers() == 0 && quotaConfig.getDefaultQuota() == null) {
+            log.info("No layer quotas defined nor default quota. Disk quota monitor is disabled.");
+        } else {
+            int totalLayers = tileLayerDispatcher.getLayers().size();
+            int quotaLayers = quotaConfig.getNumLayers();
+            log.info(quotaLayers + " layers configured with their own quotas. "
+                    + (totalLayers - quotaLayers) + " subject to default quota: "
+                    + quotaConfig.getDefaultQuota());
+        }
+    }
+
+    /**
+     * @see org.springframework.beans.factory.DisposableBean#destroy()
+     */
+    public void destroy() throws Exception {
+    }
+
+    private void registerConfiguredLayers() {
+
+        Map<String, TileLayer> layers;
+        layers = new HashMap<String, TileLayer>(tileLayerDispatcher.getLayers());
+        List<LayerQuota> layerQuotas = quotaConfig.getLayerQuotas();
+
+        LayerQuotaExpirationPolicy expirationPolicy;
+
+        for (LayerQuota lq : layerQuotas) {
+            String layerName = lq.getLayer();
+            Quota quota = lq.getQuota();
+            String policyName = quota.getExpirationPolicy();
+            log.info("Attaching layer " + layerName + " to quota " + quota);
+            expirationPolicy = getExpirationPolicy(policyName);
+            TileLayer tileLayer = layers.get(layerName);
+            expirationPolicy.attach(tileLayer, quota);
+            layers.remove(layerName);
+            
+            log.info("Calculating cache size for layer " + layerName);
+            try {
+                storageBroker.calculateCacheSize(layerName);
+            } catch (StorageException e) {
+                e.printStackTrace();
+            }            
+        }
+
+        // now set default quota to non explicitly configured layers
+        Quota defaultQuota = quotaConfig.getDefaultQuota();
+        if (defaultQuota != null) {
+            log.info("Attaching remaining layers to DEFAULT quota " + defaultQuota);
+            String policyName = defaultQuota.getExpirationPolicy();
+            expirationPolicy = getExpirationPolicy(policyName);
+            for (TileLayer layer : layers.values()) {
+                String layerName = layer.getName();
+                log.info("Attaching layer " + layerName + " to DEFAULT quota");
+                expirationPolicy.attach(layer, defaultQuota);                
+            }
+        }
+    }
+
+    private void loadConfig() throws IOException {
         String cachePath;
         try {
             cachePath = storageFinder.getDefaultPath();
@@ -75,24 +178,6 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         } finally {
             configIn.close();
         }
-
-        validateConfig();
-
-        if (quotaConfig.getNumLayers() == 0 && quotaConfig.getDefaultQuota() == null) {
-            log.info("No layer quotas defined nor default quota. Disk quota monitor is disabled.");
-        } else {
-            int totalLayers = tileLayerDispatcher.getLayers().size();
-            int quotaLayers = quotaConfig.getNumLayers();
-            log.info(quotaLayers + " layers configured with their own quotas. "
-                    + (totalLayers - quotaLayers) + " subject to default quota: "
-                    + quotaConfig.getDefaultQuota());
-        }
-    }
-
-    /**
-     * @see org.springframework.beans.factory.DisposableBean#destroy()
-     */
-    public void destroy() throws Exception {
     }
 
     private void validateConfig() {
@@ -158,13 +243,21 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     }
 
     @SuppressWarnings("unchecked")
-    private LayerQuotaExpirationPolicy getExpirationPolicy(String expirationPolicyName) {
-        Map<String, LayerQuotaExpirationPolicy> expirationPolicies;
-        expirationPolicies = context.getBeansOfType(LayerQuotaExpirationPolicy.class);
-        for (LayerQuotaExpirationPolicy policy : expirationPolicies.values()) {
-            if (policy.getName().equals(expirationPolicyName)) {
-                return policy;
+    private LayerQuotaExpirationPolicy getExpirationPolicy(final String expirationPolicyName) {
+
+        LayerQuotaExpirationPolicy policy = this.enabledPolicies.get(expirationPolicyName);
+
+        if (policy == null) {
+            Map<String, LayerQuotaExpirationPolicy> expirationPolicies;
+            expirationPolicies = context.getBeansOfType(LayerQuotaExpirationPolicy.class);
+            for (LayerQuotaExpirationPolicy p : expirationPolicies.values()) {
+                if (p.getName().equals(expirationPolicyName)) {
+                    enabledPolicies.put(p.getName(), p);
+                    return policy;
+                }
             }
+        } else {
+            return policy;
         }
         throw new NoSuchElementException("No " + LayerQuotaExpirationPolicy.class.getName()
                 + " found named '" + expirationPolicyName

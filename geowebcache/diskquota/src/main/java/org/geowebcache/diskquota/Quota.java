@@ -37,7 +37,7 @@ public class Quota {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append("[limit: ").append(limit);
         sb.append(", units: ").append(units);
-        sb.append(", expirationPolicy: ").append(expirationPolicy);
+        sb.append(", expirationPolicy: ").append(expirationPolicy).append(']');
         return sb.toString();
     }
 }
