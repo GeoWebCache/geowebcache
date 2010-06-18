@@ -3,23 +3,27 @@
  */
 package org.geowebcache.diskquota.paging;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 
 import junit.framework.TestCase;
 
 import org.easymock.classextension.EasyMock;
-import org.geowebcache.diskquota.ConfigLoader;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.diskquota.LayerQuota;
-import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridSet;
+import org.geowebcache.diskquota.StorageUnit;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerListener;
+import org.geowebcache.mime.MimeType;
+import org.geowebcache.seed.GWCTask;
 import org.geowebcache.seed.TileBreeder;
-import org.geowebcache.util.TestUtils;
+import org.geowebcache.storage.TileRange;
 
 /**
  * @author groldan
@@ -27,41 +31,50 @@ import org.geowebcache.util.TestUtils;
  */
 public class AbstractPagedExpirationPolicyTest extends TestCase {
 
+    private static final class MockPagedExipirationPolicy extends AbstractPagedExpirationPolicy {
+
+        private MockPagedExipirationPolicy(TileBreeder tileBreeder, PageStore pageStore) {
+            super(tileBreeder, pageStore);
+        }
+
+        @Override
+        protected List<TilePage> sortPagesForExpiration(List<TilePage> allPages) {
+            return allPages;
+        }
+
+        @Override
+        public String getName() {
+            return "MockPolicy";
+        }
+    }
+
+    private Hashtable<String, GridSubset> gridSubsets;
+
     private TileBreeder tileBreeder;
 
-    private ConfigLoader configLoader;
+    private PageStore pageStore;
 
     private AbstractPagedExpirationPolicy policy;
 
     @Override
     protected void setUp() throws Exception {
+        gridSubsets = new Hashtable<String, GridSubset>();
+        GridSubset gridSubSet = GridSubsetFactory
+                .createGridSubSet(new GridSetBroker(false, false).WORLD_EPSG4326);
+        gridSubsets.put(gridSubSet.getName(), gridSubSet);
+
         tileBreeder = EasyMock.createNiceMock(TileBreeder.class);
-        configLoader = EasyMock.createNiceMock(ConfigLoader.class);
-        policy = new AbstractPagedExpirationPolicy(tileBreeder, configLoader) {
-
-            @Override
-            protected List<TilePage> sortPagesForExpiration(List<TilePage> allPages) {
-                return allPages;
-            }
-
-            @Override
-            public String getName() {
-                return "MockPolicy";
-            }
-        };
+        pageStore = EasyMock.createNiceMock(PageStore.class);
+        EasyMock.expect(
+                pageStore.getPages((String) EasyMock.anyObject(), (String) EasyMock.anyObject()))
+                .andReturn(Collections.EMPTY_LIST).anyTimes();
+        EasyMock.replay(pageStore);
+        policy = new MockPagedExipirationPolicy(tileBreeder, pageStore);
     }
 
     @Override
     protected void tearDown() throws Exception {
         // not much to do
-    }
-
-    /**
-     * Test method for
-     * {@link org.geowebcache.diskquota.paging.AbstractPagedExpirationPolicy#getName()}.
-     */
-    public final void testGetName() {
-        assertEquals("MockPolicy", policy.getName());
     }
 
     /**
@@ -72,9 +85,6 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
     public final void testAttach() {
         TileLayer layer = EasyMock.createMock(TileLayer.class);
         EasyMock.expect(layer.getName()).andReturn("MockLayer").anyTimes();
-        Hashtable<String, GridSubset> gridSubsets = new Hashtable<String, GridSubset>();
-        gridSubsets.put("fakeGridSubset", GridSubsetFactory.createGridSubSet(new GridSetBroker(
-                false, false).WORLD_EPSG4326));
         EasyMock.expect(layer.getGridSubsets()).andReturn(gridSubsets).anyTimes();
 
         // this is the call we're interested in
@@ -97,9 +107,6 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
 
         TileLayer layer = EasyMock.createMock(TileLayer.class);
         EasyMock.expect(layer.getName()).andReturn("MockLayer").anyTimes();
-        Hashtable<String, GridSubset> gridSubsets = new Hashtable<String, GridSubset>();
-        gridSubsets.put("fakeGridSubset", GridSubsetFactory.createGridSubSet(new GridSetBroker(
-                false, false).WORLD_EPSG4326));
         EasyMock.expect(layer.getGridSubsets()).andReturn(gridSubsets).anyTimes();
 
         layer.addLayerListener((TileLayerListener) EasyMock.anyObject());
@@ -121,36 +128,147 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
     /**
      * Test method for
      * {@link org.geowebcache.diskquota.paging.AbstractPagedExpirationPolicy#destroy()}.
+     * 
+     * @throws Exception
      */
-    public final void testDestroy() {
-        fail("Not yet implemented"); // TODO
+    @SuppressWarnings("unchecked")
+    public final void testDestroy() throws Exception {
+        pageStore = EasyMock.createNiceMock(PageStore.class);
+        EasyMock.expect(
+                pageStore.getPages((String) EasyMock.anyObject(), (String) EasyMock.anyObject()))
+                .andReturn(Collections.EMPTY_LIST).anyTimes();
+
+        // this is one call we're interested in
+        pageStore.savePages(EasyMock.eq("MockLayer"), EasyMock.eq(gridSubsets.keySet().iterator()
+                .next()), (ArrayList<TilePage>) EasyMock.eq(Collections.EMPTY_LIST));
+        EasyMock.replay(pageStore);
+
+        TileLayer layer = EasyMock.createMock(TileLayer.class);
+        EasyMock.expect(layer.getName()).andReturn("MockLayer").anyTimes();
+        EasyMock.expect(layer.getGridSubsets()).andReturn(gridSubsets).anyTimes();
+
+        layer.addLayerListener((TileLayerListener) EasyMock.anyObject());
+
+        // this is the other call we're interested in
+        EasyMock.expect(layer.removeLayerListener((TileLayerListener) EasyMock.anyObject()))
+                .andReturn(Boolean.TRUE);
+        EasyMock.replay(layer);
+
+        policy = new MockPagedExipirationPolicy(tileBreeder, pageStore);
+
+        LayerQuota layerQuota = new LayerQuota(layer.getName(), policy.getName());
+        // attach it
+        policy.attach(layer, layerQuota);
+
+        policy.destroy();
+        EasyMock.verify(pageStore);
+        EasyMock.verify(layer);
     }
 
     /**
      * Test method for
      * {@link org.geowebcache.diskquota.paging.AbstractPagedExpirationPolicy#save(org.geowebcache.diskquota.LayerQuota)}
      * .
+     * 
+     * @throws IOException
      */
-    public final void testSave() {
-        fail("Not yet implemented"); // TODO
+    @SuppressWarnings("unchecked")
+    public final void testSave() throws IOException {
+        try {
+            policy.save("nonAttachedLayer");
+            fail("Expected IAE");
+        } catch (IllegalArgumentException e) {
+            assertTrue(true);
+        }
+        pageStore = EasyMock.createNiceMock(PageStore.class);
+        EasyMock.expect(
+                pageStore.getPages((String) EasyMock.anyObject(), (String) EasyMock.anyObject()))
+                .andReturn(Collections.EMPTY_LIST).anyTimes();
+
+        // this is one call we're interested in
+        final String gridsetId = gridSubsets.keySet().iterator().next();
+        pageStore.savePages(EasyMock.eq("MockLayer"), EasyMock.eq(gridsetId),
+                (ArrayList<TilePage>) EasyMock.eq(Collections.EMPTY_LIST));
+        EasyMock.replay(pageStore);
+
+        TileLayer layer = EasyMock.createMock(TileLayer.class);
+        EasyMock.expect(layer.getName()).andReturn("MockLayer").anyTimes();
+        EasyMock.expect(layer.getGridSubsets()).andReturn(gridSubsets).anyTimes();
+
+        layer.addLayerListener((TileLayerListener) EasyMock.anyObject());
+
+        EasyMock.replay(layer);
+
+        policy = new MockPagedExipirationPolicy(tileBreeder, pageStore);
+
+        String layerName = layer.getName();
+
+        LayerQuota layerQuota = new LayerQuota(layerName, policy.getName());
+        // attach it
+        policy.attach(layer, layerQuota);
+
+        policy.save(layerName);
+        EasyMock.verify(pageStore);
+        EasyMock.verify(layer);
     }
 
     /**
      * Test method for
      * {@link org.geowebcache.diskquota.paging.AbstractPagedExpirationPolicy#expireTiles(java.lang.String)}
      * .
+     * 
+     * @throws GeoWebCacheException
      */
-    public final void testExpireTiles() {
-        fail("Not yet implemented"); // TODO
-    }
+    public final void testExpireTiles() throws GeoWebCacheException {
+        // mock a layer
+        TileLayer layer = EasyMock.createMock(TileLayer.class);
+        EasyMock.expect(layer.getName()).andReturn("MockLayer").anyTimes();
+        EasyMock.expect(layer.getGridSubsets()).andReturn(gridSubsets).anyTimes();
+        EasyMock.expect(layer.getMimeTypes()).andReturn(
+                Collections.singletonList(MimeType.createFromFormat("image/png"))).anyTimes();
 
-    /**
-     * Test method for
-     * {@link org.geowebcache.diskquota.paging.AbstractPagedExpirationPolicy#createInfoFor(org.geowebcache.diskquota.LayerQuota, java.lang.String, long[], java.io.File)}
-     * .
-     */
-    public final void testCreateInfoFor() {
-        fail("Not yet implemented"); // TODO
+        layer.addLayerListener((TileLayerListener) EasyMock.anyObject());
+        // finish recording the expected method calls on the layer
+        EasyMock.replay(layer);
+
+        String layerName = layer.getName();
+
+        // Mock up a layer quota that exceeded in its allowed quota
+        final LayerQuota layerQuota = new LayerQuota(layerName, policy.getName());
+        layerQuota.setExpirationPolicy(policy);
+        layerQuota.getQuota().setValue(1024);
+        layerQuota.getQuota().setUnits(StorageUnit.KB);
+        // used quota exceeds allowed quota
+        layerQuota.getUsedQuota().setValue(2);
+        layerQuota.getUsedQuota().setUnits(StorageUnit.MB);
+
+        // mock up a truncate task that somehow changes the layer quota comsumption
+        class MockGWCTask extends GWCTask {
+            public boolean called;
+            @Override
+            public void doAction() throws GeoWebCacheException {
+                called = true;
+                layerQuota.getUsedQuota().setValue(0.5);
+            }
+
+        };
+        GWCTask truncateTask = new MockGWCTask();
+        GWCTask[] truncateTasks = { truncateTask };
+
+        tileBreeder = EasyMock.createNiceMock(TileBreeder.class);
+        EasyMock.expect(
+                tileBreeder.createTasks((TileRange) EasyMock.anyObject(), (TileLayer) EasyMock
+                        .anyObject(), EasyMock.eq(GWCTask.TYPE.TRUNCATE), EasyMock.eq(1), EasyMock
+                        .eq(false))).andReturn(truncateTasks);
+        EasyMock.replay(tileBreeder);
+        policy = new MockPagedExipirationPolicy(tileBreeder, pageStore);
+
+        policy.attach(layer, layerQuota);
+        policy.expireTiles(layerName);
+
+        EasyMock.verify(layer);
+        EasyMock.verify(tileBreeder);
+        assertTrue(((MockGWCTask)truncateTask).called);
     }
 
 }
