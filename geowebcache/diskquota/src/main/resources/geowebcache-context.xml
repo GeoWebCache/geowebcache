@@ -5,5 +5,9 @@
   <bean id="DiskQuotaMonitor" class="org.geowebcache.diskquota.DiskQuotaMonitor">
     <constructor-arg ref="gwcDefaultStorageFinder" />
     <constructor-arg ref="gwcAppCtx" />
+    <constructor-arg ref="gwcTLDispatcher" />
+  </bean>
+
+  <bean id="ExpirationPolicyLRU" class="org.geowebcache.diskquota.ExpirationPolicyLRU">
   </bean>
 </beans>

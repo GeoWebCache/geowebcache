@@ -2,17 +2,17 @@ package org.geowebcache.diskquota;
 
 public class Quota {
 
-    private long limit;
+    private double limit;
 
     private StorageUnit units;
 
     private String expirationPolicy;
 
-    public long getLimit() {
+    public double getLimit() {
         return limit;
     }
 
-    public void setLimit(long limit) {
+    public void setLimit(double limit) {
         this.limit = limit;
     }
 
@@ -32,4 +32,12 @@ public class Quota {
         this.expirationPolicy = expirationPolicy;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("[limit: ").append(limit);
+        sb.append(", units: ").append(units);
+        sb.append(", expirationPolicy: ").append(expirationPolicy);
+        return sb.toString();
+    }
 }

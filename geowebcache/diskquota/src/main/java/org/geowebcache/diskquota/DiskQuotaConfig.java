@@ -1,6 +1,7 @@
 package org.geowebcache.diskquota;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +52,25 @@ public class DiskQuotaConfig {
         for (LayerQuota lq : quotas) {
             layerQuotasMap.put(lq.getLayer(), lq);
         }
+    }
+
+    public void remove(LayerQuota lq) {
+        for (Iterator<LayerQuota> it = layerQuotas.iterator(); it.hasNext();) {
+            LayerQuota quota = it.next();
+            if (quota.getLayer().equals(lq.getLayer())) {
+                it.remove();
+                layerQuotasMap.remove(lq.getLayer());
+                break;
+            }
+        }
+    }
+
+    /**
+     * @return number of explicitly configured layers (ie, not affected by
+     *         {@link #getDefaultQuota() default quota})
+     */
+    public int getNumLayers() {
+        return layerQuotas == null ? 0 : layerQuotas.size();
     }
 
 }
