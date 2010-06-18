@@ -57,7 +57,7 @@ class ExtensionFileLister implements FilenameFilter {
 
     public ExtensionFileLister(String prefix, String extension) {
         this.prefix = prefix;
-        this.extension = extension;
+        this.extension = extension == null? null : "." + extension;
     }
 
     public boolean accept(File directory, String filename) {
@@ -65,8 +65,8 @@ class ExtensionFileLister implements FilenameFilter {
             return false;
         }
         
-        if(extension != null && ! filename.endsWith('.' + extension)) {
-            return false;
+        if(extension != null) {
+            return filename.endsWith(extension);
         }
         
         return true;
