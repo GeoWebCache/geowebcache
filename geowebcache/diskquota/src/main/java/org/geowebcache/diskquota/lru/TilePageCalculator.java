@@ -15,7 +15,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.storage.TileRange;
 
-public class TilePageCalculator {
+class TilePageCalculator {
 
     private static final Log log = LogFactory.getLog(TilePageCalculator.class);
 
@@ -116,5 +116,4 @@ public class TilePageCalculator {
         long[][] gridCoverage = pageRange.toGridCoverage(page);
         return gridCoverage;
     }
-
 }

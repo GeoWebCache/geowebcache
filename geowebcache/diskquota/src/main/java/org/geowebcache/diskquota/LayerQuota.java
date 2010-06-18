@@ -1,6 +1,6 @@
 package org.geowebcache.diskquota;
 
-public class LayerQuota {
+public final class LayerQuota {
 
     private String layer;
 
@@ -8,16 +8,34 @@ public class LayerQuota {
 
     private String expirationPolicyName;
 
-    private Quota usedQuota;
+    private Quota usedQuota = new Quota();
 
     private transient LayerQuotaExpirationPolicy expirationPolicy;
 
-    public String getExpirationPolicyName() {
-        return expirationPolicyName;
+    public LayerQuota(final String layer, final String expirationPolicyName) {
+        this.layer = layer;
+        this.expirationPolicyName = expirationPolicyName;
+        readResolve();
     }
 
-    public void setExpirationPolicyName(String expirationPolicyName) {
-        this.expirationPolicyName = expirationPolicyName;
+    /**
+     * Supports initialization of instance variables during XStream deserialization
+     * 
+     * @return
+     */
+    private Object readResolve() {
+        if (quota == null) {
+            quota = new Quota();
+        }
+        if (usedQuota == null) {
+            usedQuota = new Quota();
+        }
+
+        return this;
+    }
+
+    public String getExpirationPolicyName() {
+        return expirationPolicyName;
     }
 
     public LayerQuotaExpirationPolicy getExpirationPolicy() {
@@ -28,44 +46,30 @@ public class LayerQuota {
         this.expirationPolicy = expirationPolicy;
     }
 
-    public void setUsedQuota(Quota usedQuota) {
-        this.usedQuota = usedQuota;
-    }
-
     public String getLayer() {
         return layer;
     }
 
-    public void setLayer(String layer) {
-        this.layer = layer;
-    }
-
+    /**
+     * The layer's disk quota
+     * 
+     * @return
+     */
     public Quota getQuota() {
         return quota;
     }
 
-    public void setQuota(Quota quota) {
-        this.quota = quota;
-    }
-
-    @Override
-    public String toString() {
-        return new StringBuilder(getClass().getSimpleName()).append("[layer: ").append(layer)
-                .append("Expiration policy: '").append(expirationPolicyName).append("', quota:")
-                .append(quota).append("]").toString();
-    }
-
     /**
-     * @return the cache usage for the layer,or {@code null} if unknown
+     * @return the cache usage for the layer. Non null, but a zero value might mean unknown
      */
     public Quota getUsedQuota() {
         return usedQuota;
     }
 
-    public void setUsedQuota(double cacheSize, StorageUnit units) {
-        Quota usedQuota = new Quota();
-        usedQuota.setValue(cacheSize);
-        usedQuota.setUnits(units);
-        this.usedQuota = usedQuota;
+    @Override
+    public String toString() {
+        return new StringBuilder(getClass().getSimpleName()).append("[layer: ").append(layer)
+                .append(", Expiration policy: '").append(expirationPolicyName).append("', quota:")
+                .append(quota).append("]").toString();
     }
 }

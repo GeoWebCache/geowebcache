@@ -1,5 +1,7 @@
 package org.geowebcache.diskquota;
 
+import java.io.File;
+
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayer;
 
@@ -29,5 +31,7 @@ public interface LayerQuotaExpirationPolicy {
     void expireTiles(String layerName) throws GeoWebCacheException;
 
     void save(LayerQuota lq);
+
+    void createInfoFor(LayerQuota layerQuota, String gridSetId, long[] tileXYZ, File file);
 
 }

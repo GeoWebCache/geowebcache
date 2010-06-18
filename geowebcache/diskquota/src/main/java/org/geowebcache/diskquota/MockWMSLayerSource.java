@@ -1,5 +1,6 @@
 package org.geowebcache.diskquota;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -92,24 +93,28 @@ public class MockWMSLayerSource {
                 synchronized (images) {
                     if ((result = images.get(wh)) == null) {
                         BufferedImage img;
-                        img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+                        img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
                         Graphics2D graphics = img.createGraphics();
                         graphics.setColor(Color.LIGHT_GRAY);
                         graphics.fillRect(0, 0, width, height);
+
                         // graphics.setColor(Color.BLACK);
                         // graphics.setFont(font);
-                        // int tileN = 0;
-                        // for (int y = 0; y < tilesY; y++) {
-                        // for (int x = 0; x < tilesX; x++) {
-                        // long[] t = tiles[tileN];
-                        // tileN++;
-                        // int gx = x * tileW;
-                        // int gy = y * tileH;
-                        // gx += 15;
-                        // gy += tileH / 2;
-                        // graphics.drawString(Arrays.toString(t), gx, gy);
-                        // }
-                        // }
+                        int tileN = 0;
+                        for (int y = 0; y < tilesY; y++) {
+                            for (int x = 0; x < tilesX; x++) {
+                                long[] t = tiles[tileN];
+                                tileN++;
+                                int gx = x * tileW;
+                                int gy = y * tileH;
+                                // gx += 15;
+                                // gy += tileH / 2;
+                                // graphics.drawString(Arrays.toString(t), gx, gy);
+                                graphics.setColor(Color.RED);
+                                graphics.setStroke(new BasicStroke(2));
+                                graphics.drawRect(gx + 1, gy + 1, tileW - 2, tileH - 2);
+                            }
+                        }
                         graphics.dispose();
                         ByteArrayOutputStream output = new ByteArrayOutputStream();
                         try {

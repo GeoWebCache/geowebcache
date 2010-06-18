@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -104,7 +105,7 @@ public class ConfigLoader {
         validateConfig(quotaConfig);
 
         XStream xstream = getConfiguredXStream();
-        log.info("Quota config is: ");
+        log.info("Quota config is: " + configFile.toExternalForm());
         xstream.toXML(quotaConfig, System.out);
 
         return quotaConfig;
@@ -132,6 +133,27 @@ public class ConfigLoader {
     }
 
     private void validateConfig(DiskQuotaConfig quotaConfig) throws ConfigurationException {
+        int cacheCleanUpFrequency = quotaConfig.getCacheCleanUpFrequency();
+        if (cacheCleanUpFrequency <= 0) {
+            throw new ConfigurationException("cacheCleanUpFrequency shall be a positive integer");
+        }
+        TimeUnit cacheCleanUpUnits = quotaConfig.getCacheCleanUpUnits();
+        if (cacheCleanUpUnits == null) {
+            throw new ConfigurationException(
+                    "cacheCleanUpUnits shall be specified. Expected one of SECONDS, MINUTES, HOURS, DAYS. Got null");
+        }
+        int diskBlockSize = quotaConfig.getDiskBlockSize();
+        if (diskBlockSize <= 0) {
+            throw new ConfigurationException(
+                    "Disk block size shall be specified and be a positive integer");
+        }
+
+        int maxConcurrentCleanUps = quotaConfig.getMaxConcurrentCleanUps();
+        if (maxConcurrentCleanUps <= 0) {
+            throw new ConfigurationException(
+                    "maxConcurrentCleanUps shall be specified as a positive integer");
+        }
+
         for (LayerQuota lq : new ArrayList<LayerQuota>(quotaConfig.getLayerQuotas())) {
             validateLayerQuota(quotaConfig, lq);
         }
@@ -153,7 +175,7 @@ public class ConfigLoader {
             throw new ConfigurationException("No expiration policy specified: " + lq);
         }
         try {
-            getExpirationPolicy(expirationPolicyName);
+            findExpirationPolicy(expirationPolicyName);
         } catch (NoSuchElementException e) {
             throw new ConfigurationException(e.getMessage());
         }
@@ -184,7 +206,7 @@ public class ConfigLoader {
     }
 
     @SuppressWarnings("unchecked")
-    public LayerQuotaExpirationPolicy getExpirationPolicy(final String expirationPolicyName) {
+    public LayerQuotaExpirationPolicy findExpirationPolicy(final String expirationPolicyName) {
 
         LayerQuotaExpirationPolicy policy = this.enabledPolicies.get(expirationPolicyName);
 
@@ -217,7 +239,7 @@ public class ConfigLoader {
             File xmlFile = null;
             xmlFile = new File(configDir.getAbsolutePath() + File.separator
                     + CONFIGURATION_FILE_NAME);
-            log.info("Found configuration file in " + configDir.getAbsolutePath());
+            log.debug("Found configuration file in " + configDir.getAbsolutePath());
             try {
                 resource = xmlFile.toURI().toURL();
             } catch (MalformedURLException e) {
@@ -316,5 +338,9 @@ public class ConfigLoader {
             throw new FileNotFoundException(path);
         }
         return new FileInputStream(configFile);
+    }
+
+    public File getRootCacheDir() throws StorageException {
+        return new File(storageFinder.getDefaultPath());
     }
 }

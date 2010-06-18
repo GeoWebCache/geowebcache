@@ -45,24 +45,33 @@ public class TilePage implements Serializable {
 
     private AtomicLong numHits;
 
+    private AtomicLong numTilesInPage;
+
     /**
      * Last access time, with near-minute precision
      */
     private int accessTimeMinutes;
 
     public TilePage(final int x, final int y, final int z) {
-        this(x, y, z, 0);
+        this(x, y, z, 0L, 0L);
     }
 
-    public TilePage(final int x, final int y, final int z, final long numHits) {
+    public TilePage(final int x, final int y, final int z, final long numHits,
+            final long numTilesInPage) {
+
         this.zyxIndex = new int[] { z, y, x };
         this.numHits = new AtomicLong(numHits);
         this.accessTimeMinutes = 0;// not accessed yet
+        this.numTilesInPage = new AtomicLong(numTilesInPage);
     }
 
     public void markHit() {
         numHits.addAndGet(1L);
         accessTimeMinutes = currentTime.get();
+    }
+
+    public long getNumTilesInPage() {
+        return this.numTilesInPage.get();
     }
 
     public long getNumHits() {
@@ -114,6 +123,7 @@ public class TilePage implements Serializable {
         out.writeInt(zyxIndex[0]);
         out.writeInt(accessTimeMinutes);
         out.writeLong(numHits.get());
+        out.writeLong(numTilesInPage.get());
     }
 
     private void readObject(java.io.ObjectInputStream in) throws IOException,
@@ -129,6 +139,23 @@ public class TilePage implements Serializable {
         zyxIndex[0] = in.readInt();
         accessTimeMinutes = in.readInt();
         numHits = new AtomicLong(in.readLong());
+        numTilesInPage = new AtomicLong(in.readLong());
+    }
+
+    /**
+     * Increments by one the counter of available tiles for the page and returns the new value for
+     * the counter
+     */
+    public long addTile() {
+        return this.numTilesInPage.incrementAndGet();
+    }
+
+    /**
+     * Decrements by one the counter of available tiles for the page and returns the new value for
+     * the counter
+     */
+    public long removeTile() {
+        return this.numTilesInPage.decrementAndGet();
     }
 
 }

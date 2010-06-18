@@ -1,5 +1,6 @@
 package org.geowebcache.diskquota.lru;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -21,6 +22,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.diskquota.ConfigLoader;
+import org.geowebcache.diskquota.DiskQuotaMonitor;
 import org.geowebcache.diskquota.LayerQuota;
 import org.geowebcache.diskquota.LayerQuotaExpirationPolicy;
 import org.geowebcache.diskquota.Quota;
@@ -36,11 +38,11 @@ import org.springframework.beans.factory.DisposableBean;
 
 /**
  * Singleton bean that expects {@link Quota}s to be {@link #attach(TileLayer, Quota) attached} for
- * all monitored {@link TileLayer layers} and whips out pages of tiles when a layer exceeds its
- * quota, based on a Least Recently Used algorithm.
+ * all monitored {@link TileLayer layers} and whips out pages of tiles - based on a sort of Least
+ * Recently Used algorithm - when requested through {@link #expireTiles(String)}.
  * 
  * @author groldan
- * 
+ * @see DiskQuotaMonitor
  */
 public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy, DisposableBean {
 
@@ -85,11 +87,6 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy, Disposab
 
         TileLayerListener statsCollector = new LRUStatsCollector(calc);
         tileLayer.addLayerListener(statsCollector);
-
-        if (layerQuota.getUsedQuota() == null) {
-            // TODO: traverse cache and find out which pages are available? might be too resource
-            // intensive...
-        }
 
         this.attachedLayers.put(tileLayer.getName(), calc);
     }
@@ -151,8 +148,8 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy, Disposab
         }
     }
 
-    private void savePages(final TilePageCalculator calc) throws ConfigurationException,
-            IOException {
+    private synchronized void savePages(final TilePageCalculator calc)
+            throws ConfigurationException, IOException {
 
         final TileLayer tileLayer = calc.getTileLayer();
         final String layerName = FilePathGenerator.filteredLayerName(tileLayer.getName());
@@ -166,7 +163,7 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy, Disposab
             }
             String fileName = layerName + "." + FilePathGenerator.filteredGridSetId(gridSetId)
                     + ".lru";
-            log.info("Saving LRU state for " + layerName + "/" + gridSetId + " containing "
+            log.debug("Saving LRU state for " + layerName + "/" + gridSetId + " containing "
                     + availablePages.size() + " pages.");
             OutputStream fileOut = configLoader.getOutputStream(fileName);
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
@@ -176,7 +173,7 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy, Disposab
                 out.close();
             }
         }
-        log.info("LRU state for layer '" + layerName + "' saved.");
+        log.debug("LRU state for layer '" + layerName + "' saved.");
     }
 
     /**
@@ -234,7 +231,7 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy, Disposab
         final LayerQuota layerQuota = tilePageCalculator.getLayerQuota();
         final Quota quotaLimit = layerQuota.getQuota();
         final Quota usedQuota = layerQuota.getUsedQuota();
-        if (usedQuota == null) {
+        if (usedQuota.getValue() == 0D) {
             return;
         }
 
@@ -336,5 +333,12 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy, Disposab
             return d;
         }
     };
+
+    public void createInfoFor(final LayerQuota layerQuota, final String gridSetId,
+            final long[] tileXYZ, final File file) {
+        TilePageCalculator pages = this.attachedLayers.get(layerQuota.getLayer());
+        TilePage page = pages.pageFor(tileXYZ, gridSetId);
+        page.addTile();
+    }
 
 }

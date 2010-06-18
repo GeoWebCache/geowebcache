@@ -53,10 +53,33 @@ public class Quota {
     }
 
     public synchronized void add(double amount, StorageUnit units) {
+        
         this.value += units.convertTo(amount, this.units);
-        if (this.units != StorageUnit.TB && value / 1024 > 1) {
-            this.value = this.units.convertTo(this.value, StorageUnit.GB);
-            this.units = StorageUnit.GB;
+        
+        if (value > 1024) {
+            switch (this.units) {
+            case B:
+                this.value /= 1024;
+                this.units = StorageUnit.KB;
+                break;
+            case KB:
+                this.value /= 1024;
+                this.units = StorageUnit.MB;
+                break;
+            case MB:
+                this.value /= 1024;
+                this.units = StorageUnit.GB;
+                break;
+            case GB:
+                this.value /= 1024;
+                this.units = StorageUnit.TB;
+                break;
+            case TB:
+                // nothing to do, so far StorageUnit handles no units larger than TB?
+                break;
+            default:
+                throw new IllegalStateException();
+            }
         }
     }
 

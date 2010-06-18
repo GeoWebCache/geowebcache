@@ -23,7 +23,7 @@
       <layer>raster test layer</layer>
       <expirationPolicyName>LRU</expirationPolicyName>
       <quota>
-        <value>0.9</value>
+        <value>30</value>
         <units>GB</units>
       </quota>
       <!--usedQuota>
