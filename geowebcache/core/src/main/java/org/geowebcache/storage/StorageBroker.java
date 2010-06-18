@@ -17,13 +17,10 @@
  */
 package org.geowebcache.storage;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.util.FileUtils;
 
 /**
  * Handles cacheable objects (tiles, wfs responses) both in terms of data storage and metadata
