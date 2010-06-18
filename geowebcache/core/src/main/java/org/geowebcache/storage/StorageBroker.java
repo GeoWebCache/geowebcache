@@ -42,8 +42,6 @@ public class StorageBroker {
     
     private boolean isReady = false;
     
-    private StorageBrokerListenerList listeners;
-    
     public StorageBroker(MetaStore metaStore, BlobStore blobStore) {
         this.metaStore = metaStore;
         this.blobStore = blobStore;
@@ -53,20 +51,14 @@ public class StorageBroker {
         } else {
             metaStoreEnabled = false;
         }
-        
-        listeners = new StorageBrokerListenerList();
     }
 
-    public void addStorageBrokerListener(StorageBrokerListener listener) {
-        listeners.addListener(listener);
-    }
-
-    public boolean removeStorageBrokerListener(StorageBrokerListener listener) {
-        return listeners.removeListener(listener);
-    }
-    
     public void addBlobStoreListener(BlobStoreListener listener){
         blobStore.addListener(listener);
+    }
+    
+    public boolean removeBlobStoreListener(BlobStoreListener listener){
+        return blobStore.removeListener(listener);
     }
     
     /**
@@ -100,9 +92,6 @@ public class StorageBroker {
             ret = metaStore.delete(layerName);
         }
         ret = (ret && blobStore.delete(layerName));
-        if (ret) {
-            listeners.sendLayerDeleted(layerName);
-        }
         return ret;
     }
     
@@ -118,9 +107,6 @@ public class StorageBroker {
             }
             deleted = blobStore.delete(trObj);
         }
-        if (deleted) {
-            listeners.setTileRangeDeleted(trObj);
-        }
         return deleted;
     }
     
@@ -129,9 +115,6 @@ public class StorageBroker {
         if(metaStoreEnabled) {
             expired = metaStore.expire(trObj);
         }
-        if (expired) {
-            listeners.sendTileRangeExpired(trObj);
-        }
         return expired;
     }
     
@@ -139,16 +122,10 @@ public class StorageBroker {
     public boolean get(TileObject tileObj) throws StorageException {
         if(! metaStoreEnabled) {
             boolean found = getBlobOnly(tileObj);
-            if (found) {
-                listeners.sendCacheHit(tileObj);
-            } else {
-                listeners.sendCacheMiss(tileObj);
-            }
             return found;
         }
         
         if(! metaStore.get(tileObj)) {
-            listeners.sendCacheMiss(tileObj);
             return false;
         }
         
@@ -171,7 +148,6 @@ public class StorageBroker {
                 
             tileObj.blob = blob;
         }
-        listeners.sendCacheHit(tileObj);
         return true;
     }
     
@@ -212,7 +188,6 @@ public class StorageBroker {
     public boolean put(TileObject tileObj) throws StorageException {
         if(! metaStoreEnabled) {
             boolean stored = putBlobOnly(tileObj);
-            listeners.sendTileCached(tileObj);
             return stored;
         }
         
@@ -224,7 +199,6 @@ public class StorageBroker {
             //System.out.println("Pre unlock put: " + Arrays.toString(tileObj.xyz));
             metaStore.unlock(tileObj);
 
-            listeners.sendTileCached(tileObj);
             return true;
             
         } catch (StorageException se) {
@@ -274,6 +248,5 @@ public class StorageBroker {
      */
     public void destroy() {
         log.info("Destroying StorageBroker");
-        listeners.sendShutDownEvent();
     }
 }
