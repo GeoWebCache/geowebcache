@@ -15,6 +15,7 @@
   </bean>
 
   <bean id="ExpirationPolicyLRU" class="org.geowebcache.diskquota.lru.ExpirationPolicyLRU">
+    <constructor-arg ref="gwcTileBreeder" />
   </bean>
 
   <bean id="mockWMSSource" class="org.geowebcache.diskquota.MockWMSLayerSource">
