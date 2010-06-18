@@ -1,6 +1,7 @@
 package org.geowebcache.diskquota;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -46,7 +47,7 @@ import com.thoughtworks.xstream.XStream;
  * @author Gabriel Roldan
  * 
  */
-class ConfigLoader {
+public class ConfigLoader {
 
     private static final Log log = LogFactory.getLog(ConfigLoader.class);
 
@@ -289,5 +290,31 @@ class ConfigLoader {
         xs.alias("LayerQuota", LayerQuota.class);
         xs.alias("Quota", Quota.class);
         return xs;
+    }
+
+    public OutputStream getOutputStream(String fileName) throws ConfigurationException, IOException {
+        URL configResource = getConfigResource();
+        if (!"file".equals(configResource.getProtocol())) {
+            throw new ConfigurationException("Config resource shall be a file to be replaced: "
+                    + configResource.toExternalForm());
+        }
+        String path = configResource.getPath();
+        File configFile = new File(new File(path).getParent(), fileName);
+        return new FileOutputStream(configFile);
+    }
+
+    public InputStream getInputStream(String fileName) throws FileNotFoundException,
+            ConfigurationException {
+        URL configResource = getConfigResource();
+        if (!"file".equals(configResource.getProtocol())) {
+            throw new ConfigurationException("Config resource shall be a file to be replaced: "
+                    + configResource.toExternalForm());
+        }
+        String path = configResource.getPath();
+        File configFile = new File(new File(path).getParent(), fileName);
+        if (!configFile.exists()) {
+            throw new FileNotFoundException(path);
+        }
+        return new FileInputStream(configFile);
     }
 }

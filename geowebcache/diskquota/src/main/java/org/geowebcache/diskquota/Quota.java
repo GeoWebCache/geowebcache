@@ -1,6 +1,14 @@
 package org.geowebcache.diskquota;
 
+import java.text.NumberFormat;
+
 public class Quota {
+
+    private static final NumberFormat NICE_FORMATTER = NumberFormat.getNumberInstance();
+    static {
+        NICE_FORMATTER.setMinimumFractionDigits(1);
+        NICE_FORMATTER.setMaximumFractionDigits(3);
+    }
 
     private double value;
 
@@ -73,5 +81,14 @@ public class Quota {
         double value = quota.getUnits().convertTo(quota.getValue(), thisUnits);
         double difference = thisValue - value;
         return new Quota(difference, thisUnits);
+    }
+
+    /**
+     * Returns a more user friendly string representation of this quota, like in 1.1GB, 0.75MB, etc.
+     * 
+     * @return
+     */
+    public String toNiceString() {
+        return NICE_FORMATTER.format(value) + units;
     }
 }

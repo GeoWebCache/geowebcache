@@ -21,6 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
@@ -50,8 +51,6 @@ public class DiskQuotaMonitor implements DisposableBean {
 
     private final StorageBroker storageBroker;
 
-    private DiskQuotaConfig quotaConfig;
-
     /**
      * Executor service for the periodic clean up of layers caches that exceed its quota
      * 
@@ -60,10 +59,30 @@ public class DiskQuotaMonitor implements DisposableBean {
      */
     private ScheduledExecutorService cleanUpExecutorService;
 
+    /**
+     * Disk quota config object loaded and saved by {@link #configLoader}
+     */
+    private final DiskQuotaConfig quotaConfig;
+
+    /**
+     * Loads and saves quota limits and quota usage status for configured layers
+     */
     private final ConfigLoader configLoader;
 
-    public DiskQuotaMonitor(ConfigLoader configLoader, TileLayerDispatcher tld, StorageBroker sb)
-            throws IOException, ConfigurationException {
+    /**
+     * 
+     * @param configLoader
+     *            loads and saves the layers quota config and usage status
+     * @param tld
+     *            provides access to the layers configured for disk quota insurance
+     * @param sb
+     *            provides a mean to listen to {@link BlobStore} events to keep track of layers disk
+     *            quota usage
+     * @throws IOException
+     * @throws ConfigurationException
+     */
+    public DiskQuotaMonitor(final ConfigLoader configLoader, final TileLayerDispatcher tld,
+            final StorageBroker sb) throws IOException, ConfigurationException {
 
         this.configLoader = configLoader;
         this.storageBroker = sb;
@@ -267,21 +286,23 @@ public class DiskQuotaMonitor implements DisposableBean {
                 final String layerName = lq.getLayer();
                 Future<?> runningCleanup = perLayerRunningCleanUps.get(layerName);
                 if (runningCleanup != null && !runningCleanup.isDone()) {
-                    log.info("Cache clean up task still running for layer '" + layerName
+                    log.debug("Cache clean up task still running for layer '" + layerName
                             + "'. Ignoring it for this run.");
                     continue;
                 }
 
                 final Quota quota = lq.getQuota();
                 final Quota usedQuota = lq.getUsedQuota();
+                LayerQuotaExpirationPolicy expirationPolicy = lq.getExpirationPolicy();
+                expirationPolicy.save(lq);
 
                 if (usedQuota != null) {
-                    final double maxGigs = quota.getValue(StorageUnit.GB);
-                    final double usedGigs = usedQuota.getValue(StorageUnit.GB);
-                    if (usedGigs > maxGigs) {
-                        log.info("Layer '" + lq.getLayer() + "' exceeds its quota. Quota: "
-                                + maxGigs + "GB. Currently used: " + usedGigs
-                                + "GB. Clean up task is gonna be performed"
+                    Quota excedent = usedQuota.difference(quota);
+                    if (excedent.getValue() > 0) {
+                        log.info("Layer '" + lq.getLayer() + "' exceeds its quota of "
+                                + quota.toNiceString() + " by " + excedent.toNiceString()
+                                + ". Currently used: " + usedQuota.toNiceString()
+                                + ". Clean up task is gonna be performed"
                                 + " using expiration policy " + lq.getExpirationPolicyName());
 
                         LayerQuotaEnforcementTask task;

@@ -28,4 +28,6 @@ public interface LayerQuotaExpirationPolicy {
 
     void expireTiles(String layerName) throws GeoWebCacheException;
 
+    void save(LayerQuota lq);
+
 }

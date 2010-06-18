@@ -1,7 +1,10 @@
 package org.geowebcache.diskquota.lru;
 
+import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -71,10 +74,18 @@ class PagePyramid {
 
         int[][] pageSizes = new int[numLevels][];
 
+        BigInteger totalTiles = BigInteger.valueOf(0);
+        long totalPages = 0;
+
         log.info("Calculating page sizes for grid subset " + gs.getName());
         for (int level = 0; level < numLevels; level++) {
             pageSizes[level] = calculatePageInfo(coverages[level]);
+            int pages = pageSizes[level][2] * pageSizes[level][3];
+            totalTiles = totalTiles.add(BigInteger.valueOf((long) pageSizes[level][0]
+                    * (long) pageSizes[level][1] * pages));
+            totalPages += pages;
         }
+        log.info("----- Total tiles: " + totalTiles + ". Total pages: " + totalPages);
         return pageSizes;
     }
 
@@ -227,5 +238,18 @@ class PagePyramid {
         long[][] allLevelsCoverage = new long[numLevels][];
         allLevelsCoverage[level] = pageCoverage;
         return allLevelsCoverage;
+    }
+
+    public Collection<TilePage> getPages() {
+        return this.pages.values();
+    }
+
+    public void setPages(List<TilePage> pages) {
+        int[] key;
+
+        for (TilePage page : pages) {
+            key = new int[] { page.getX(), page.getY(), page.getZ() };
+            this.pages.put(key, page);
+        }
     }
 }

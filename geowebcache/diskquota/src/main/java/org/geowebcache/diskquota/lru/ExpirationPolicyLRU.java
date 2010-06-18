@@ -1,17 +1,26 @@
 package org.geowebcache.diskquota.lru;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.diskquota.ConfigLoader;
 import org.geowebcache.diskquota.LayerQuota;
 import org.geowebcache.diskquota.LayerQuotaExpirationPolicy;
 import org.geowebcache.diskquota.Quota;
@@ -22,6 +31,8 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.seed.GWCTask;
 import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.storage.TileRange;
+import org.geowebcache.storage.blobstore.file.FilePathGenerator;
+import org.springframework.beans.factory.DisposableBean;
 
 /**
  * Singleton bean that expects {@link Quota}s to be {@link #attach(TileLayer, Quota) attached} for
@@ -31,7 +42,7 @@ import org.geowebcache.storage.TileRange;
  * @author groldan
  * 
  */
-public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy {
+public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy, DisposableBean {
 
     private static final Log log = LogFactory.getLog(ExpirationPolicyLRU.class);
 
@@ -41,13 +52,16 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy {
 
     private final TileBreeder tileBreeder;
 
+    private final ConfigLoader configLoader;
+
     /**
      * 
      * @param tileBreeder
      *            used to truncate expired pages of tiles
      */
-    public ExpirationPolicyLRU(final TileBreeder tileBreeder) {
+    public ExpirationPolicyLRU(final TileBreeder tileBreeder, final ConfigLoader configLoader) {
         this.tileBreeder = tileBreeder;
+        this.configLoader = configLoader;
         attachedLayers = new HashMap<String, TilePageCalculator>();
     }
 
@@ -67,6 +81,7 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy {
                 + getName());
 
         TilePageCalculator calc = new TilePageCalculator(tileLayer, layerQuota);
+        loadPages(calc);
 
         TileLayerListener statsCollector = new LRUStatsCollector(calc);
         tileLayer.addLayerListener(statsCollector);
@@ -84,6 +99,84 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy {
      */
     public void dettach(String layerName) {
         this.attachedLayers.remove(layerName);
+    }
+
+    /**
+     * @see org.springframework.beans.factory.DisposableBean#destroy()
+     */
+    public void destroy() throws Exception {
+        for (TilePageCalculator calc : this.attachedLayers.values()) {
+            savePages(calc);
+        }
+    }
+
+    public void save(LayerQuota lq) {
+        TilePageCalculator calc = this.attachedLayers.get(lq.getLayer());
+        try {
+            savePages(calc);
+        } catch (ConfigurationException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void loadPages(TilePageCalculator calc) {
+        final TileLayer tileLayer = calc.getTileLayer();
+        final String layerName = FilePathGenerator.filteredLayerName(tileLayer.getName());
+        final Hashtable<String, GridSubset> gridSubsets = tileLayer.getGridSubsets();
+        log.info("Loading LRU state for layer '" + layerName + "'");
+
+        for (String gridSetId : gridSubsets.keySet()) {
+            String fileName = layerName + "." + FilePathGenerator.filteredGridSetId(gridSetId)
+                    + ".lru";
+            InputStream lruStateIn;
+            try {
+                lruStateIn = configLoader.getInputStream(fileName);
+            } catch (Exception e) {
+                log.debug(e.getMessage());
+                continue;
+            }
+
+            try {
+                ObjectInputStream in = new ObjectInputStream(lruStateIn);
+                List<TilePage> pages = (List<TilePage>) in.readObject();
+                calc.setPages(gridSetId, pages);
+                log.info("LRU state for layer '" + layerName + "'" + "/" + gridSetId + " loaded.");
+            } catch (Exception e) {
+                log.debug(e.getMessage());
+                continue;
+            }
+        }
+    }
+
+    private void savePages(final TilePageCalculator calc) throws ConfigurationException,
+            IOException {
+
+        final TileLayer tileLayer = calc.getTileLayer();
+        final String layerName = FilePathGenerator.filteredLayerName(tileLayer.getName());
+        final Hashtable<String, GridSubset> gridSubsets = tileLayer.getGridSubsets();
+        log.debug("Saving LRU state for layer '" + layerName + "'");
+
+        for (String gridSetId : gridSubsets.keySet()) {
+            ArrayList<TilePage> availablePages = calc.getPages(gridSetId);
+            if (availablePages.size() == 0) {
+                continue;
+            }
+            String fileName = layerName + "." + FilePathGenerator.filteredGridSetId(gridSetId)
+                    + ".lru";
+            log.info("Saving LRU state for " + layerName + "/" + gridSetId + " containing "
+                    + availablePages.size() + " pages.");
+            OutputStream fileOut = configLoader.getOutputStream(fileName);
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            try {
+                out.writeObject(availablePages);
+            } finally {
+                out.close();
+            }
+        }
+        log.info("LRU state for layer '" + layerName + "' saved.");
     }
 
     /**
@@ -237,10 +330,11 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy {
         public int compare(TilePage p1, TilePage p2) {
             // we use p1 - p2 for reverse order (ie, less hits first)
             int d = (int) (p1.getNumHits() - p2.getNumHits());
-            if (d == 0) {
-                d = p1.getZ() - p2.getZ();
-            }
+            // if (d == 0) {
+            // d = p1.getZ() - p2.getZ();
+            // }
             return d;
         }
     };
+
 }

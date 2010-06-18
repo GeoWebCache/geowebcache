@@ -84,6 +84,23 @@ public class TilePageCalculator {
         return allPages;
     }
 
+    public ArrayList<TilePage> getPages(String gridSetId) {
+        ArrayList<TilePage> pages;
+        pagesLock.writeLock().lock();
+        try {
+            PagePyramid pageRange = this.pageRangesPerGridSubset.get(gridSetId);
+            pages = new ArrayList<TilePage>(pageRange.getPages());
+        } finally {
+            pagesLock.writeLock().unlock();
+        }
+        return pages;
+    }
+
+    public void setPages(final String gridSetId, final List<TilePage> pages) {
+        PagePyramid pageRange = this.pageRangesPerGridSubset.get(gridSetId);
+        pageRange.setPages(pages);
+    }
+
     /**
      * Returns a grid subset coverage range suitable for {@link TileRange}
      * 
@@ -99,4 +116,5 @@ public class TilePageCalculator {
         long[][] gridCoverage = pageRange.toGridCoverage(page);
         return gridCoverage;
     }
+
 }
