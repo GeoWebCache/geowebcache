@@ -75,4 +75,14 @@ public class DiskQuotaConfig {
         return layerQuotas == null ? 0 : layerQuotas.size();
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("[default: ").append(defaultQuota);
+        for (LayerQuota lq : getLayerQuotas()) {
+            sb.append("\n").append(lq);
+        }
+        sb.append("]");
+        return sb.toString();
+    }
 }

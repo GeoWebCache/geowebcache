@@ -2,6 +2,10 @@ package org.geowebcache.diskquota;
 
 public class LayerQuota {
 
+    private String layer;
+
+    private Quota quota;
+
     public String getLayer() {
         return layer;
     }
@@ -18,7 +22,9 @@ public class LayerQuota {
         this.quota = quota;
     }
 
-    private String layer;
-
-    private Quota quota;
+    @Override
+    public String toString() {
+        return new StringBuilder(getClass().getSimpleName()).append("[layer: ").append(layer)
+                .append(quota).append("]").toString();
+    }
 }
