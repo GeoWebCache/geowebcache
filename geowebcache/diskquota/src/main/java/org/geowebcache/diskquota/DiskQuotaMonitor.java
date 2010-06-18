@@ -60,9 +60,12 @@ public class DiskQuotaMonitor implements DisposableBean {
      */
     private ScheduledExecutorService cleanUpExecutorService;
 
+    private final ConfigLoader configLoader;
+
     public DiskQuotaMonitor(ConfigLoader configLoader, TileLayerDispatcher tld, StorageBroker sb)
             throws IOException, ConfigurationException {
 
+        this.configLoader = configLoader;
         this.storageBroker = sb;
         this.tileLayerDispatcher = tld;
 
@@ -113,6 +116,13 @@ public class DiskQuotaMonitor implements DisposableBean {
     public void destroy() throws Exception {
         if (this.cleanUpExecutorService != null) {
             this.cleanUpExecutorService.shutdown();
+        }
+        try {
+            log.info("Disk quota monitor shutting down, saving configuration");
+            configLoader.saveConfig(quotaConfig);
+            log.info("Disk quota configuration saved.");
+        } catch (Exception e) {
+            log.error("Error saving disk quota config: " + e.getMessage(), e);
         }
     }
 
@@ -251,7 +261,7 @@ public class DiskQuotaMonitor implements DisposableBean {
             } catch (Exception e) {
                 log.error("Error saving disk quota config", e);
             }
-            
+
             for (LayerQuota lq : quotaConfig.getLayerQuotas()) {
 
                 final String layerName = lq.getLayer();
