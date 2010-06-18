@@ -105,7 +105,9 @@ public abstract class TileLayer {
     }
 
     protected final void sendTileRequestedEvent(ConveyorTile tile) {
-        listeners.sendTileRequested(this, tile);
+        if (listeners != null) {
+            listeners.sendTileRequested(this, tile);
+        }
     }
 
     /**
