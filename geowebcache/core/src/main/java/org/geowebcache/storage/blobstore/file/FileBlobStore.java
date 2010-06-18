@@ -18,7 +18,6 @@
 package org.geowebcache.storage.blobstore.file;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -37,9 +36,7 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.WFSObject;
-import org.geowebcache.util.FileUtils;
 import org.geowebcache.util.ServletUtils;
-import org.springframework.util.StopWatch;
 
 /**
  * See BlobStore interface description for details
@@ -415,83 +412,6 @@ public class FileBlobStore implements BlobStore {
      */
     public void destroy() {
        // Do nothing 
-    }
-
-    /**
-     * @see org.geowebcache.storage.BlobStore#calculateCacheSize(java.lang.String)
-     */
-    public double calculateCacheSize(String layerName, int blockSize) throws StorageException {
-        File layerPath = getLayerPath(layerName);
-
-        if (!layerPath.exists()) {
-            log.debug("No cache directory for layer " + layerName
-                    + " yet. Returning zero size for calculateCacheSize");
-            return 0D;
-        }
-
-        if (!layerPath.canRead()) {
-            throw new StorageException(layerPath.getAbsolutePath() + " can't be read.");
-        }
-
-        StopWatch sw = new StopWatch();
-        sw.start();
-        LayerCacheSizeCalculator visitor = new LayerCacheSizeCalculator(layerName, blockSize);
-        FileUtils.traverseDepth(layerPath, visitor);
-        sw.stop();
-
-        long numTiles = visitor.getNumTiles();
-        double aggregateSizeMB = visitor.getAggregateSizeMB();
-        log.info("Calculated cache size for layer " + layerName + " in " + sw.getTotalTimeSeconds()
-                + " seconds. Cache size: " + aggregateSizeMB + "MB. Num tiles: " + numTiles);
-        return aggregateSizeMB;
-    }
-
-    private static class LayerCacheSizeCalculator implements FileFilter {
-
-        private static final double MB = 1024 * 1024;
-
-        private double aggregateSizeMB;
-
-        private long count;
-
-        private String layerName;
-
-        private int blockSize;
-
-        public LayerCacheSizeCalculator(final String layerName, int blockSize) {
-            this.layerName = layerName;
-            this.blockSize = blockSize;
-        }
-
-        public boolean accept(final File pathname) {
-            if (pathname.isDirectory()) {
-                return true;
-            }
-
-            // no problem is the file does not exist because it was deleted on our back, length()
-            // returns zero.
-            double length = blockSize * (1 + pathname.length() / blockSize);
-            
-            aggregateSizeMB += length / MB;
-
-            count++;
-
-            if (log.isDebugEnabled()) {
-                if (count % 1000 == 0) {
-                    log.debug("Count " + count + " tile sizes for layer " + layerName
-                            + " so far for a total of " + aggregateSizeMB + "MB");
-                }
-            }
-            return false;
-        }
-
-        public long getNumTiles() {
-            return count;
-        }
-
-        public double getAggregateSizeMB() {
-            return aggregateSizeMB;
-        }
     }
 
     public void addListener(BlobStoreListener listener) {

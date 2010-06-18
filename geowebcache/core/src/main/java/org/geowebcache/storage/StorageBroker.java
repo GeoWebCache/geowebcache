@@ -58,27 +58,6 @@ public class StorageBroker {
         return blobStore.removeListener(listener);
     }
     
-    /**
-     * Calculates the cache size in MB for the given layer
-     * <p>
-     * This method is potentially (and most probably) resource intensive, and thread safe; so feel
-     * free to call it from a worker/background/separate thread so the it does not blocks normal
-     * program flow.
-     * </p>
-     * <p>
-     * Also, this method does not guarantee to return an exact result if the cache is modified by
-     * another thread while it is running, so beware.
-     * </p>
-     * 
-     * @param layerName
-     * @param blockSize 
-     * @return
-     */
-    public double calculateCacheSize(String layerName, int blockSize) throws StorageException {
-        // TODO: if metastoreEnabled calculate with metastore?
-        return blobStore.calculateCacheSize(layerName, blockSize);
-    }
-    
     public void setVerifyFileSize(boolean verifyFileSize) {
         this.verifyFileSize = verifyFileSize;
     }
