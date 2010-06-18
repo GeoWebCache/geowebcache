@@ -40,6 +40,10 @@ public class ExpirationPolicyLRU extends AbstractPagedExpirationPolicy {
 
     @Override
     protected List<TilePage> sortPagesForExpiration(List<TilePage> allPages) {
+        return sortPages(allPages);
+    }
+
+    static List<TilePage> sortPages(List<TilePage> allPages) {
         Collections.sort(allPages, LRUSorter);
         return allPages;
     }
@@ -70,7 +74,8 @@ public class ExpirationPolicyLRU extends AbstractPagedExpirationPolicy {
             // we use p1 - p2 for reverse ordering (ie, least recently used first)
             int delta = p1AccessTime - p2AccessTime;
             if (delta == 0) {
-                delta = p1.getZ() - p2.getZ();
+                // now use p2 - p1 so the higher zoom level goes first
+                delta = p2.getZ() - p1.getZ();
             }
 
             return delta;
