@@ -38,7 +38,7 @@ public enum StorageUnit {
     /**
      * Yobibyte (2<sup>80</sup> Bytes)
      */
-    YiB(EiB.bytes.multiply(BigDecimal.valueOf(1024)));
+    YiB(ZiB.bytes.multiply(BigDecimal.valueOf(1024)));
 
     private final BigDecimal bytes;
 
@@ -69,30 +69,43 @@ public enum StorageUnit {
      * @param units
      * @return
      */
+    public static StorageUnit closest(double value, StorageUnit units) {
+        return closest(BigDecimal.valueOf(value), units);
+    }
+
+    /**
+     * Returns the most appropriate storage unit to represent the given amount
+     * 
+     * @param value
+     * @param units
+     * @return
+     */
     public static StorageUnit closest(BigDecimal value, StorageUnit units) {
         BigDecimal bytes = units.convertTo(value, B);
-        if (bytes.min(YiB.bytes) == YiB.bytes) {
+        // use compareTo because BigDecimal.equals does not consider 1.0 and 1.00 to be equal, so
+        // can't do, for example, bytes.min(TiB.bytes).equals(YiB.bytes)
+        if (bytes.compareTo(YiB.bytes) >= 0) {
             return YiB;
         }
-        if (bytes.min(ZiB.bytes) == ZiB.bytes) {
+        if (bytes.compareTo(ZiB.bytes) >= 0) {
             return ZiB;
         }
-        if (bytes.min(EiB.bytes) == EiB.bytes) {
+        if (bytes.compareTo(EiB.bytes) >= 0) {
             return EiB;
         }
-        if (bytes.min(PiB.bytes) == PiB.bytes) {
+        if (bytes.compareTo(PiB.bytes) >= 0) {
             return PiB;
         }
-        if (bytes.min(TiB.bytes) == TiB.bytes) {
+        if (bytes.compareTo(TiB.bytes) >= 0) {
             return TiB;
         }
-        if (bytes.min(GiB.bytes) == GiB.bytes) {
+        if (bytes.compareTo(GiB.bytes) >= 0) {
             return GiB;
         }
-        if (bytes.min(MiB.bytes) == MiB.bytes) {
+        if (bytes.compareTo(MiB.bytes) >= 0) {
             return MiB;
         }
-        if (bytes.min(KiB.bytes) == KiB.bytes) {
+        if (bytes.compareTo(KiB.bytes) >= 0) {
             return KiB;
         }
 
