@@ -24,7 +24,7 @@ import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.layer.TileLayer;
 
 public interface Configuration {
-	public List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException;
+    public List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException;
 	public String getIdentifier() throws GeoWebCacheException;
 	public ServiceInformation getServiceInformation() throws GeoWebCacheException;
     public boolean isRuntimeStatsEnabled();
