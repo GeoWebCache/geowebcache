@@ -48,7 +48,7 @@ public abstract class WMSSourceHelper {
     public byte[] makeRequest(ConveyorTile tile) throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
 
-        GridSubset gridSubset = tile.getGridSubset();
+        GridSubset gridSubset = layer.getGridSubset(tile.getGridSetId());
 
         String wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(), WMSLayer.RequestType.MAP);
 
