@@ -23,4 +23,12 @@ public interface LayerQuotaExpirationPolicy {
      */
     void attach(TileLayer tileLayer, Quota quota);
 
+    void dettach(String layerName);
+
+    void recordTile(String layerName, String gridSetId, String blobFormat, String parameters,
+            long x, long y, int z, long blobSize);
+
+    void removeTile(String layerName, String gridSetId, String blobFormat, String parameters,
+            long x, long y, int z, long blobSize);
+
 }

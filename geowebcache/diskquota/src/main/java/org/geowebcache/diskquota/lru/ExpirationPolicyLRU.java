@@ -1,9 +1,6 @@
 package org.geowebcache.diskquota.lru;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,10 +25,8 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy {
 
     private static final String POLICY_NAME = "LRU";
 
-    private TileLayerListener statsCollector;
-
     public ExpirationPolicyLRU() {
-        // this.statsCollector = new LRUStatsCollector(new TilePageCalculator());
+
     }
 
     /**
@@ -46,28 +41,40 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy {
      *      org.geowebcache.diskquota.Quota)
      */
     public void attach(final TileLayer tileLayer, final Quota quota) {
+        log.info("Attaching layer '" + tileLayer.getName() + "' to cache expiration policy "
+                + getName());
+        
+        TilePageCalculator calc = new TilePageCalculator(tileLayer.getGridSubsets());
 
-        Hashtable<String, GridSubset> gridSubsets = tileLayer.getGridSubsets();
-        Map<String, TilePageCalculator> pageSizesPerGridSubset = new HashMap<String, TilePageCalculator>();
+        logLevels(tileLayer, calc);
 
-        for (GridSubset gs : gridSubsets.values()) {
-            TilePageCalculator calc = new TilePageCalculator();
-            int[][] pageSizes = calc.getPageSizes(gs);
-            logLevels(tileLayer, pageSizes);
-            pageSizesPerGridSubset.put(gs.getName(), calc);
-        }
-        tileLayer.addLayerListener(this.statsCollector);
+        TileLayerListener statsCollector = new LRUStatsCollector(calc);
+        tileLayer.addLayerListener(statsCollector);
     }
 
-    private void logLevels(TileLayer tileLayer, int[][] pageSizes) {
+    private void logLevels(TileLayer tileLayer, TilePageCalculator calc) {
         if (log.isInfoEnabled()) {
-            StringBuilder sb = new StringBuilder();
-            for (int level = 0; level < pageSizes.length; level++) {
-                sb.append("level ").append(level).append(": ").append(
-                        Arrays.toString(pageSizes[level])).append(", ");
+            for (GridSubset gs : tileLayer.getGridSubsets().values()) {
+                int[][] pageSizes = calc.getPageSizes(gs);
+                StringBuilder sb = new StringBuilder();
+                for (int level = 0; level < pageSizes.length; level++) {
+                    sb.append("level ").append(level).append(": ").append(
+                            Arrays.toString(pageSizes[level])).append(", ");
+                }
+                log.info("PageSizes for '" + tileLayer.getName() + "': " + sb.toString());
             }
-            log.info("PageSizes for '" + tileLayer.getName() + "': " + sb.toString());
         }
+    }
+
+    public void dettach(String layerName) {
+    }
+
+    public void recordTile(String layerName, String gridSetId, String blobFormat,
+            String parameters, long x, long y, int z, long blobSize) {
+    }
+
+    public void removeTile(String layerName, String gridSetId, String blobFormat,
+            String parameters, long x, long y, int z, long blobSize) {
     }
 
     /**
@@ -78,16 +85,13 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy {
      */
     private static class LRUStatsCollector implements TileLayerListener {
 
-        private final TileLayer layer;
-
         private final TilePageCalculator pageCalculator;
 
         /**
          * 
          * @param pageCalculator
          */
-        public LRUStatsCollector(final TileLayer layer, final TilePageCalculator pageCalculator) {
-            this.layer = layer;
+        public LRUStatsCollector(final TilePageCalculator pageCalculator) {
             this.pageCalculator = pageCalculator;
         }
 
@@ -98,16 +102,15 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy {
         public void tileRequested(TileLayer layer, ConveyorTile tile) {
             long[] tileXYZ = tile.getTileIndex();
             String gridSetId = tile.getGridSetId();
+            String parameters = tile.getParameters();
+            String storageFormat = tile.getMimeType().getFormat();
             // TODO: discriminate by parameters Id? format?
-            long[] pageForTile = pageCalculator.pageFor(tileXYZ, gridSetId);
+            TilePage page = pageCalculator.pageFor(tileXYZ, gridSetId);
+            page.markHit();
             if (log.isTraceEnabled()) {
                 log.trace("Tile requested: " + Arrays.toString(tile.getTileIndex()) + " page: "
-                        + Arrays.asList(pageForTile));
+                        + page);
             }
-        }
-
-        public void tileSeeded(TileLayer layer, ConveyorTile tile) {
-            System.out.println("Tile seeded: " + Arrays.toString(tile.getTileIndex()));
         }
 
     }

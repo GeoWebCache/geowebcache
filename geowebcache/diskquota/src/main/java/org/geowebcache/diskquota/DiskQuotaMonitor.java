@@ -13,11 +13,9 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.StorageBroker;
-import org.geowebcache.storage.StorageBrokerListener;
 import org.geowebcache.storage.StorageException;
-import org.geowebcache.storage.TileObject;
-import org.geowebcache.storage.TileRange;
 import org.springframework.beans.factory.DisposableBean;
 
 /**
@@ -41,7 +39,7 @@ public class DiskQuotaMonitor implements DisposableBean {
 
     private final TileLayerDispatcher tileLayerDispatcher;
 
-    private final Map<String, LayerQuotaExpirationPolicy> enabledPolicies;
+    private final Map<String, LayerQuotaExpirationPolicy> layerPolicies;
 
     private final StorageBroker storageBroker;
 
@@ -52,7 +50,7 @@ public class DiskQuotaMonitor implements DisposableBean {
 
         this.storageBroker = sb;
         this.tileLayerDispatcher = tld;
-        this.enabledPolicies = new HashMap<String, LayerQuotaExpirationPolicy>();
+        this.layerPolicies = new HashMap<String, LayerQuotaExpirationPolicy>();
 
         this.quotaConfig = configLoader.loadConfig();
 
@@ -61,57 +59,17 @@ public class DiskQuotaMonitor implements DisposableBean {
         if (quotaConfig.getNumLayers() == 0 && quotaConfig.getDefaultQuota() == null) {
             log.info("No layer quotas defined nor default quota. Disk quota monitor is disabled.");
         } else {
+
+            final MonitoringBlobListener blobListener = new MonitoringBlobListener(layerPolicies);
+
+            storageBroker.addBlobStoreListener(blobListener);
+
             int totalLayers = tileLayerDispatcher.getLayers().size();
             int quotaLayers = quotaConfig.getNumLayers();
             log.info(quotaLayers + " layers configured with their own quotas. "
                     + (totalLayers - quotaLayers) + " subject to default quota: "
                     + quotaConfig.getDefaultQuota());
         }
-        storageBroker.addStorageBrokerListener(new StorageBrokerListener() {
-
-            /**
-             * @see org.geowebcache.storage.StorageBrokerListener#tileRangeExpired(org.geowebcache.storage.TileRange)
-             */
-            public void tileRangeExpired(TileRange tileRange) {
-
-            }
-
-            /**
-             * @see org.geowebcache.storage.StorageBrokerListener#tileRangeDeleted(org.geowebcache.storage.TileRange)
-             */
-            public void tileRangeDeleted(TileRange tileRange) {
-            }
-
-            /**
-             * @see org.geowebcache.storage.StorageBrokerListener#tileCached(org.geowebcache.storage.TileObject)
-             */
-            public void tileCached(TileObject tileObj) {
-            }
-
-            /**
-             * @see org.geowebcache.storage.StorageBrokerListener#shutDown()
-             */
-            public void shutDown() {
-            }
-
-            /**
-             * @see org.geowebcache.storage.StorageBrokerListener#layerDeleted(java.lang.String)
-             */
-            public void layerDeleted(String layerName) {
-            }
-
-            /**
-             * @see org.geowebcache.storage.StorageBrokerListener#cacheMiss(org.geowebcache.storage.TileObject)
-             */
-            public void cacheMiss(TileObject tileObj) {
-            }
-
-            /**
-             * @see org.geowebcache.storage.StorageBrokerListener#cacheHit(org.geowebcache.storage.TileObject)
-             */
-            public void cacheHit(TileObject tileObj) {
-            }
-        });
     }
 
     /**
@@ -120,7 +78,7 @@ public class DiskQuotaMonitor implements DisposableBean {
     public void destroy() throws Exception {
     }
 
-    private void registerConfiguredLayers(ConfigLoader configLoader) {
+    private void registerConfiguredLayers(final ConfigLoader configLoader) {
 
         Map<String, TileLayer> layers;
         layers = new HashMap<String, TileLayer>(tileLayerDispatcher.getLayers());
@@ -129,6 +87,7 @@ public class DiskQuotaMonitor implements DisposableBean {
         LayerQuotaExpirationPolicy expirationPolicy;
 
         for (LayerQuota lq : layerQuotas) {
+
             String layerName = lq.getLayer();
             Quota quota = lq.getQuota();
             String policyName = quota.getExpirationPolicy();
@@ -137,15 +96,19 @@ public class DiskQuotaMonitor implements DisposableBean {
             TileLayer tileLayer = layers.get(layerName);
             expirationPolicy.attach(tileLayer, quota);
             layers.remove(layerName);
+            layerPolicies.put(layerName, expirationPolicy);
 
-//            log.info("Calculating cache size for layer " + layerName);
-//            try {
-//                double cacheSize = storageBroker.calculateCacheSize(layerName);
-//                double cacheGB = MB.convertTo(cacheSize, GB);
-//                log.info("Cache size for " + layerName + " is " + cacheGB + "GB.");
-//            } catch (StorageException e) {
-//                e.printStackTrace();
-//            }
+            if (null == lq.getUsedQuota()) {
+                log.info("Calculating cache size for layer '" + layerName + "'");
+                try {
+                    double cacheSize = storageBroker.calculateCacheSize(layerName);
+                    lq.setUsedQuota(cacheSize, MB);
+                    double cacheGB = MB.convertTo(cacheSize, GB);
+                    log.info("Cache size for " + layerName + " is " + cacheGB + "GB.");
+                } catch (StorageException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         // now set default quota to non explicitly configured layers
@@ -158,7 +121,56 @@ public class DiskQuotaMonitor implements DisposableBean {
                 String layerName = layer.getName();
                 log.info("Attaching layer " + layerName + " to DEFAULT quota");
                 expirationPolicy.attach(layer, defaultQuota);
+                layerPolicies.put(layerName, expirationPolicy);
             }
         }
     }
+
+    private static class MonitoringBlobListener implements BlobStoreListener {
+
+        private final Map<String, LayerQuotaExpirationPolicy> layerPolicies;
+
+        public MonitoringBlobListener(final Map<String, LayerQuotaExpirationPolicy> layerPolicies) {
+            this.layerPolicies = layerPolicies;
+        }
+
+        /**
+         * @see org.geowebcache.storage.BlobStoreListener#tileStored(java.lang.String,
+         *      java.lang.String, java.lang.String, java.lang.String, long, long, int, long)
+         */
+        public void tileStored(final String layerName, final String gridSetId,
+                final String blobFormat, final String parameters, final long x, final long y,
+                final int z, final long blobSize) {
+
+            LayerQuotaExpirationPolicy layerQuotaPolicy = getPolicyFor(layerName);
+            layerQuotaPolicy.recordTile(layerName, gridSetId, blobFormat, parameters, x, y, z,
+                    blobSize);
+        }
+
+        /**
+         * @see org.geowebcache.storage.BlobStoreListener#tileDeleted(java.lang.String,
+         *      java.lang.String, java.lang.String, java.lang.String, long, long, int, long)
+         */
+        public void tileDeleted(final String layerName, final String gridSetId,
+                final String blobFormat, final String parameters, final long x, final long y,
+                final int z, final long blobSize) {
+
+            LayerQuotaExpirationPolicy layerQuotaPolicy = getPolicyFor(layerName);
+            layerQuotaPolicy.removeTile(layerName, gridSetId, blobFormat, parameters, x, y, z,
+                    blobSize);
+        }
+
+        /**
+         * @see org.geowebcache.storage.BlobStoreListener#layerDeleted(java.lang.String)
+         */
+        public void layerDeleted(final String layerName) {
+            LayerQuotaExpirationPolicy layerQuotaPolicy = getPolicyFor(layerName);
+            layerQuotaPolicy.dettach(layerName);
+        }
+
+        private LayerQuotaExpirationPolicy getPolicyFor(String layerName) {
+            return layerPolicies.get(layerName);
+        }
+    }
+
 }
