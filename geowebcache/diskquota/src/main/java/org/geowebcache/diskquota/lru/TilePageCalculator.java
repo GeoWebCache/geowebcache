@@ -1,6 +1,7 @@
 package org.geowebcache.diskquota.lru;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -14,17 +15,34 @@ public class TilePageCalculator {
 
     private static final Log log = LogFactory.getLog(TilePageCalculator.class);
 
+    /**
+     * Pyramid of tile pages for a given {@link GridSubset}
+     * 
+     * @author groldan
+     */
     private static class PageRange {
 
         private final long[][] gridSubsetCoverages;
 
         private final int[][] pageSizes;
 
-        private final TreeMap<int[], TilePage> pages = new TreeMap<int[], TilePage>();
+        /**
+         * Key is a page index {x, y, z}, value is the TilePage itself
+         */
+        private final TreeMap<int[], TilePage> pages = new TreeMap<int[], TilePage>(
+                new Comparator<int[]>() {
+                    public int compare(int[] p1, int[] p2) {
+                        int d = 0;
+                        for (int axis = 2; axis >= 0 && d == 0; axis--) {
+                            d = p2[axis] - p1[axis];
+                        }
+                        return d;
+                    }
+                });
 
         public PageRange(final GridSubset gs) {
             this.gridSubsetCoverages = gs.getCoverages();
-            this.pageSizes = getPageSizes(gs);
+            this.pageSizes = calculatePageSizes(gs);
         }
 
         /**
@@ -33,7 +51,7 @@ public class TilePageCalculator {
          * @param gs
          * @return
          */
-        public int[][] getPageSizes(final GridSubset gs) {
+        private int[][] calculatePageSizes(final GridSubset gs) {
 
             final long[][] coverages = gs.getCoverages();
             final int numLevels = coverages.length;
@@ -93,16 +111,34 @@ public class TilePageCalculator {
              */
             final double logBase = 1.3;
             // Calculate log base <logBase>
-            final double log2W = (Math.log(numTilesInAxis) / Math.log(logBase));
+            final double log = (Math.log(numTilesInAxis) / Math.log(logBase));
 
             // log(1) == 0, so be careful
-            final int pageSize = numTilesInAxis == 1 ? 1 : (int) Math
-                    .ceil((numTilesInAxis / log2W));
+            final int pageSize = numTilesInAxis == 1 ? 1 : (int) Math.ceil((numTilesInAxis / log));
             return pageSize;
         }
 
-        public TilePage pageFor(long x, long y, long z) {
-            return null;
+        public TilePage pageFor(long[] tileXYZ) {
+            final int level = (int) tileXYZ[2];
+            final int tilesPerPageX = pageSizes[level][0];
+            final int tilesPerPageY = pageSizes[level][1];
+
+            int[] pageIndex = { (int) (tileXYZ[0] / tilesPerPageX), // pageX
+                    (int) (tileXYZ[1] / tilesPerPageY), // pageY
+                    level };
+
+            TilePage tilePage = pages.get(pageIndex);
+            if (tilePage == null) {
+                synchronized (pages) {
+                    tilePage = pages.get(pageIndex);
+                    if (tilePage == null) {
+                        tilePage = new TilePage(pageIndex[0], pageIndex[1], pageIndex[2]);
+                        pages.put(pageIndex, tilePage);
+                    }
+                }
+            }
+
+            return tilePage;
         }
     }
 
@@ -119,16 +155,20 @@ public class TilePageCalculator {
 
     public TilePage pageFor(long[] tileXYZ, String gridSetId) {
         PageRange pageRange = pageRangesPerGridSubset.get(gridSetId);
-        return pageRange.pageFor(tileXYZ[0], tileXYZ[1], tileXYZ[2]);
+        return pageRange.pageFor(tileXYZ);
     }
 
     /**
-     * Calculates the page size for each grid subset level (in number of tiles on axes x and y)
+     * Returns the page size for each grid subset level (in number of tiles on axes x and y)
      * 
-     * @param gs
      * @return
      */
-    public int[][] getPageSizes(final GridSubset gs) {
-        return this.pageRangesPerGridSubset.get(gs.getName()).pageSizes;
+    public int[][] getPageSizes(final String gridSubsetId) {
+        int[][] pageSizes = this.pageRangesPerGridSubset.get(gridSubsetId).pageSizes;
+        int[][] copy = new int[pageSizes.length][];
+        for (int i = 0; i < pageSizes.length; i++) {
+            copy[i] = pageSizes[i].clone();
+        }
+        return copy;
     }
 }

@@ -100,14 +100,14 @@ public class DiskQuotaMonitor implements DisposableBean {
 
             if (null == lq.getUsedQuota()) {
                 log.info("Calculating cache size for layer '" + layerName + "'");
-                try {
-                    double cacheSize = storageBroker.calculateCacheSize(layerName);
-                    lq.setUsedQuota(cacheSize, MB);
-                    double cacheGB = MB.convertTo(cacheSize, GB);
-                    log.info("Cache size for " + layerName + " is " + cacheGB + "GB.");
-                } catch (StorageException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    double cacheSize = storageBroker.calculateCacheSize(layerName);
+//                    lq.setUsedQuota(cacheSize, MB);
+//                    double cacheGB = MB.convertTo(cacheSize, GB);
+//                    log.info("Cache size for " + layerName + " is " + cacheGB + "GB.");
+//                } catch (StorageException e) {
+//                    e.printStackTrace();
+//                }
             }
         }
 

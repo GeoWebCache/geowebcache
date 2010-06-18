@@ -55,7 +55,7 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy {
     private void logLevels(TileLayer tileLayer, TilePageCalculator calc) {
         if (log.isInfoEnabled()) {
             for (GridSubset gs : tileLayer.getGridSubsets().values()) {
-                int[][] pageSizes = calc.getPageSizes(gs);
+                int[][] pageSizes = calc.getPageSizes(gs.getName());
                 StringBuilder sb = new StringBuilder();
                 for (int level = 0; level < pageSizes.length; level++) {
                     sb.append("level ").append(level).append(": ").append(
@@ -102,8 +102,8 @@ public class ExpirationPolicyLRU implements LayerQuotaExpirationPolicy {
         public void tileRequested(TileLayer layer, ConveyorTile tile) {
             long[] tileXYZ = tile.getTileIndex();
             String gridSetId = tile.getGridSetId();
-            String parameters = tile.getParameters();
-            String storageFormat = tile.getMimeType().getFormat();
+//            String parameters = tile.getParameters();
+//            String storageFormat = tile.getMimeType().getFormat();
             // TODO: discriminate by parameters Id? format?
             TilePage page = pageCalculator.pageFor(tileXYZ, gridSetId);
             page.markHit();
