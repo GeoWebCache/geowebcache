@@ -424,7 +424,7 @@ public class WMSLayer extends TileLayer {
             returnTile = getNonMetatilingReponse(tile, true);
         }
         
-        sendTileRequested(returnTile);
+        sendTileRequestedEvent(returnTile);
         
         return returnTile;
     }
@@ -440,7 +440,7 @@ public class WMSLayer extends TileLayer {
         } else {
             returnTile = getNonMetatilingReponse(tile, tryCache);
         }
-        sendTileSeeded(returnTile);
+        sendTileSeededEvent(returnTile);
     }
 
     /**

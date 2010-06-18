@@ -77,7 +77,7 @@ public abstract class TileLayer {
 
     protected transient Hashtable<String, GridSubset> subSets;
 
-    private transient final LayerListenerList listeners = new LayerListenerList();
+    private transient LayerListenerList listeners;
 
     // Styles?
 
@@ -88,6 +88,9 @@ public abstract class TileLayer {
      * @see #seedTile(ConveyorTile, boolean)
      */
     public void addLayerListener(TileLayerListener listener) {
+        if (listeners == null) {
+            listeners = new LayerListenerList();
+        }
         listeners.addListener(listener);
     }
 
@@ -98,14 +101,14 @@ public abstract class TileLayer {
      * @return
      */
     public boolean removeLayerListener(TileLayerListener listener) {
-        return listeners.removeListener(listener);
+        return listeners == null ? false : listeners.removeListener(listener);
     }
 
-    protected final void sendTileRequested(ConveyorTile tile) {
-        listeners.sendTileSeeded(this, tile);
+    protected final void sendTileRequestedEvent(ConveyorTile tile) {
+        listeners.sendTileRequested(this, tile);
     }
 
-    protected final void sendTileSeeded(ConveyorTile tile) {
+    protected final void sendTileSeededEvent(ConveyorTile tile) {
         listeners.sendTileSeeded(this, tile);
     }
 
