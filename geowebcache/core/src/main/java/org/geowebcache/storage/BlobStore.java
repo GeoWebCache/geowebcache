@@ -84,6 +84,8 @@ public interface BlobStore {
      * @return
      */
     public double calculateCacheSize(String layerName) throws StorageException;
+    public void addListener(BlobStoreListener listener);
+    public boolean removeListener(BlobStoreListener listener);
     
     ///** 
     // * Test to see whether the blobstore is ready or not

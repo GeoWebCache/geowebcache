@@ -8,5 +8,4 @@ public interface TileLayerListener extends EventListener {
 
     void tileRequested(TileLayer layer, ConveyorTile tile);
 
-    void tileSeeded(TileLayer layer, ConveyorTile tile);
 }

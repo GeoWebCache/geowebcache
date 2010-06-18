@@ -434,14 +434,13 @@ public class WMSLayer extends TileLayer {
     /**
      * Used for seeding
      */
-    public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException, IOException {     
-        ConveyorTile returnTile;
+    public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException,
+            IOException {
         if (tile.getMimeType().supportsTiling()) {
-            returnTile = getMetatilingReponse(tile, tryCache);
+            getMetatilingReponse(tile, tryCache);
         } else {
-            returnTile = getNonMetatilingReponse(tile, tryCache);
+            getNonMetatilingReponse(tile, tryCache);
         }
-        sendTileSeededEvent(returnTile);
     }
 
     /**

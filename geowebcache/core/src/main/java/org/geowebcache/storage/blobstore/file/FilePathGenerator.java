@@ -51,12 +51,13 @@ public class FilePathGenerator {
         
         String[] ret = new String[2];
         
-        ret[0] = prefix + File.separator + layerStr + File.separator
-                + gridSetStr + "_" + zeroPadder(z, 2) + paramStr + File.separator 
-                + zeroPadder(halfx, digits) + "_" 
-                + zeroPadder(halfy, digits);
+        ret[0] = new StringBuilder(prefix).append(File.separator).append(layerStr).append(
+                File.separator).append(gridSetStr).append('_').append(zeroPadder(z, 2)).append(
+                paramStr).append(File.separator).append(zeroPadder(halfx, digits)).append('_')
+                .append(zeroPadder(halfy, digits)).toString();
         
-        ret[1] = zeroPadder(x, 2 * digits) + "_" + zeroPadder(y, 2 * digits) + "." + fileExtension;
+        ret[1] = new StringBuilder(zeroPadder(x, 2 * digits)).append('_').append(
+                zeroPadder(y, 2 * digits)).append('.').append(fileExtension).toString();
         
         return ret;
     }

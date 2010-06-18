@@ -11,6 +11,7 @@ final class StorageBrokerListenerList {
         if (listener != null) {
             List<StorageBrokerListener> tmp;
             tmp = new ArrayList<StorageBrokerListener>(listeners.size() + 1);
+            tmp.addAll(listeners);
             tmp.add(listener);
             listeners = tmp;
         }

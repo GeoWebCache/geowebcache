@@ -108,10 +108,6 @@ public abstract class TileLayer {
         listeners.sendTileRequested(this, tile);
     }
 
-    protected final void sendTileSeededEvent(ConveyorTile tile) {
-        listeners.sendTileSeeded(this, tile);
-    }
-
     /**
      * Sets the layer name
      * 

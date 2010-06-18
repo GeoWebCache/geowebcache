@@ -30,6 +30,8 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.BlobStore;
+import org.geowebcache.storage.BlobStoreListener;
+import org.geowebcache.storage.BlobStoreListenerList;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
@@ -50,6 +52,7 @@ public class FileBlobStore implements BlobStore {
     
     private final String path;
     
+    private final BlobStoreListenerList listeners = new BlobStoreListenerList();
     
     public FileBlobStore(DefaultStorageFinder defStoreFinder) throws StorageException {
         path = defStoreFinder.getDefaultPath();
@@ -105,6 +108,7 @@ public class FileBlobStore implements BlobStore {
             layerPath.delete();
         }
         
+        listeners.sendLayerDeleted(layerName);
         
         log.info("Truncated " + count + " tiles from " + layerPath);
         return true;
@@ -125,12 +129,16 @@ public class FileBlobStore implements BlobStore {
 
         //System.out.println("Deleting " + fh.getAbsolutePath());
         
+        final long length = fh.length();
         if (!fh.delete()) {
             throw new StorageException("Unable to delete "
                     + fh.getAbsolutePath());
         }
-        
-        File parentDir = new File(fh.getParent());
+        long[] xyz = stObj.getXYZ();
+        listeners.sendTileDeleted(stObj.getLayerName(), stObj.getGridSetId(),
+                stObj.getBlobFormat(), stObj.getParameters(), xyz[0], xyz[1], (int) xyz[2], length);
+       
+        File parentDir = fh.getParentFile();
         
         // TODO This could potentially be very slow
         if(parentDir.isDirectory() && parentDir.canWrite() && parentDir.list().length == 0) {
@@ -164,6 +172,66 @@ public class FileBlobStore implements BlobStore {
     }
     
     public boolean delete(TileRange trObj) throws StorageException {
+
+        {
+            String prefix = path + File.separator
+                    + FilePathGenerator.filteredLayerName(trObj.layerName);
+
+            File layerPath = new File(prefix);
+
+            if (!layerPath.exists() || !layerPath.canWrite()) {
+                throw new StorageException(prefix + " does not exist or is not writable.");
+            }
+        }
+
+        int count = 0;
+
+        // {zoom}{minx,miny,maxx,maxy}
+        final long[][] rangeBounds = trObj.rangeBounds;
+
+        final String layerName = trObj.layerName;
+        final String gridSetId = trObj.gridSetId;
+        final MimeType mimeType = trObj.mimeType;
+        final String blobFormat = mimeType.getFormat();
+        final String parameters = trObj.parameters;
+        final long parameters_id = -1;// TODO: how do I get it from trObj.parameters?
+
+        long[] tileIndex = new long[3];
+        String[] paths;
+        File tilePath;
+        long length;
+        for (int level = trObj.zoomStop; level >= trObj.zoomStart; level--) {
+            long[] levelBounds = rangeBounds[level];
+            tileIndex[2] = level;
+            for (long y = levelBounds[1]; y <= levelBounds[3]; y++) {
+                tileIndex[1] = y;
+                for (long x = levelBounds[0]; x <= levelBounds[2]; x++) {
+                    tileIndex[0] = x;
+                    if (!trObj.contains(tileIndex)) {
+                        continue;
+                    }
+                    paths = FilePathGenerator.tilePath(path, layerName, tileIndex, gridSetId,
+                            mimeType, parameters_id);
+                    tilePath = new File(paths[0] + File.separator + paths[1]);
+                    if (tilePath.exists()) {
+                        length = tilePath.length();
+                        tilePath.delete();
+                        count++;
+                        listeners.sendTileDeleted(layerName, gridSetId, blobFormat, parameters, x,
+                                y, level, length);
+                        File parent = tilePath.getParentFile();
+                        parent.delete();// it will happen only if it was empty
+                    }
+                }
+            }
+        }
+
+        log.info("Truncated " + count + " tiles");
+
+        return true;
+    }
+
+    public boolean deleteOld(TileRange trObj) throws StorageException {
         int count = 0;
 
         String prefix = path + File.separator 
@@ -228,6 +296,7 @@ public class FileBlobStore implements BlobStore {
     public void put(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, true);
         writeFile(fh,stObj.getBlob());
+        listeners.sendTileStored(stObj);
     }
     
     public void put(WFSObject stObj) throws StorageException {
@@ -464,6 +533,14 @@ public class FileBlobStore implements BlobStore {
         public double getAggregateSizeMB() {
             return aggregateSizeMB;
         }
+    }
+
+    public void addListener(BlobStoreListener listener) {
+        listeners.addListener(listener);
+    }
+
+    public boolean removeListener(BlobStoreListener listener) {
+        return listeners.removeListener(listener);
     }
 
 //    public boolean isReady() {

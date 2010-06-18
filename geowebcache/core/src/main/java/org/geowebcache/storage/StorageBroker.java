@@ -65,6 +65,10 @@ public class StorageBroker {
         return listeners.removeListener(listener);
     }
     
+    public void addBlobStoreListener(BlobStoreListener listener){
+        blobStore.addListener(listener);
+    }
+    
     /**
      * Calculates the cache size in MB for the given layer
      * <p>
