@@ -21,11 +21,12 @@ public class DiskQuotaConfig {
 
     private TimeUnit cacheCleanUpUnits;
 
+    private int maxConcurrentCleanUps;
+
     private List<LayerQuota> layerQuotas;
 
     private transient Map<String, LayerQuota> layerQuotasMap;
 
-    private int maxConcurrentCleanUps;
 
     public int getDiskBlockSize() {
         if (diskBlockSize == 0) {

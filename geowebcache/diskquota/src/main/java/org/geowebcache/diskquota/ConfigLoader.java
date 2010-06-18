@@ -2,8 +2,10 @@ package org.geowebcache.diskquota;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -69,7 +71,45 @@ class ConfigLoader {
         this.enabledPolicies = new HashMap<String, LayerQuotaExpirationPolicy>();
     }
 
+    public void saveConfig(DiskQuotaConfig config) throws IOException, ConfigurationException {
+        URL configResource = getConfigResource();
+        if (!"file".equals(configResource.getProtocol())) {
+            throw new ConfigurationException("Config resource shall be a file to be replaced: "
+                    + configResource.toExternalForm());
+        }
+        XStream xStream = getConfiguredXStream();
+        String path = configResource.getPath();
+        log.debug("Saving disk quota config to " + path);
+        File configFile = new File(path);
+        OutputStream configOut = new FileOutputStream(configFile);
+        try {
+            xStream.toXML(config, configOut);
+        } finally {
+            configOut.close();
+        }
+    }
+
     public DiskQuotaConfig loadConfig() throws IOException, ConfigurationException {
+        URL configFile = getConfigResource();
+
+        InputStream configIn = configFile.openStream();
+        DiskQuotaConfig quotaConfig;
+        try {
+            quotaConfig = loadConfiguration(configIn);
+        } finally {
+            configIn.close();
+        }
+
+        validateConfig(quotaConfig);
+
+        XStream xstream = getConfiguredXStream();
+        log.info("Quota config is: ");
+        xstream.toXML(quotaConfig, System.out);
+
+        return quotaConfig;
+    }
+
+    private URL getConfigResource() throws ConfigurationException, FileNotFoundException {
         String cachePath;
         try {
             cachePath = storageFinder.getDefaultPath();
@@ -87,17 +127,7 @@ class ConfigLoader {
             throw new FileNotFoundException("Found no " + CONFIGURATION_FILE_NAME
                     + " file. Disk Quota is disabled.");
         }
-
-        InputStream configIn = configFile.openStream();
-        DiskQuotaConfig quotaConfig;
-        try {
-            quotaConfig = loadConfiguration(configIn);
-        } finally {
-            configIn.close();
-        }
-
-        validateConfig(quotaConfig);
-        return quotaConfig;
+        return configFile;
     }
 
     private void validateConfig(DiskQuotaConfig quotaConfig) throws ConfigurationException {
@@ -233,11 +263,7 @@ class ConfigLoader {
                 }
             }
         }
-        if (configH == null) {
-            log.info("Failed to find " + CONFIGURATION_FILE_NAME
-                    + ". This is not a problem unless you are trying "
-                    + "to use a custom XML configuration file.");
-        } else {
+        if (configH != null) {
             log.debug("Configuration directory set to: " + configH.getAbsolutePath());
 
             if (!configH.exists() || !configH.canRead()) {
@@ -249,12 +275,12 @@ class ConfigLoader {
     }
 
     private DiskQuotaConfig loadConfiguration(final InputStream configStream) {
-        XStream xstream = getConfiguredXStram();
+        XStream xstream = getConfiguredXStream();
         DiskQuotaConfig fromXML = (DiskQuotaConfig) xstream.fromXML(configStream);
         return fromXML;
     }
 
-    private static XStream getConfiguredXStram() {
+    private static XStream getConfiguredXStream() {
         XStream xs = new XStream();
         xs.setMode(XStream.NO_REFERENCES);
 

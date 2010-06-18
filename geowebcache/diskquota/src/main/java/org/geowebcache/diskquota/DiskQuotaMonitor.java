@@ -77,7 +77,7 @@ public class DiskQuotaMonitor implements DisposableBean {
 
             storageBroker.addBlobStoreListener(blobListener);
 
-            setUpScheduledCleanUp();
+            setUpScheduledCleanUp(configLoader);
 
             int totalLayers = tileLayerDispatcher.getLayers().size();
             int quotaLayers = quotaConfig.getNumLayers();
@@ -86,14 +86,17 @@ public class DiskQuotaMonitor implements DisposableBean {
         }
     }
 
-    private void setUpScheduledCleanUp() {
+    private void setUpScheduledCleanUp(final ConfigLoader configLoader) {
+
         log.info("Setting up disk quota periodic enforcement task");
         ThreadFactory tf = new CustomizableThreadFactory("gwc.DiskQuotaCleanUpThread");
 
         int numCleaningThreads = quotaConfig.getMaxConcurrentCleanUps();
 
         cleanUpExecutorService = Executors.newScheduledThreadPool(numCleaningThreads, tf);
-        Runnable command = new CacheCleaner(quotaConfig, cleanUpExecutorService);
+
+        Runnable command = new CacheCleaner(configLoader, quotaConfig, cleanUpExecutorService);
+
         long initialDelay = quotaConfig.getCacheCleanUpFrequency();
         long period = quotaConfig.getCacheCleanUpFrequency();
         TimeUnit unit = quotaConfig.getCacheCleanUpUnits();
@@ -230,14 +233,25 @@ public class DiskQuotaMonitor implements DisposableBean {
 
         private final Map<String, Future<?>> perLayerRunningCleanUps;
 
-        public CacheCleaner(final DiskQuotaConfig config, final ExecutorService executor) {
+        private final ConfigLoader configLoader;
+
+        public CacheCleaner(final ConfigLoader configLoader, final DiskQuotaConfig config,
+                final ExecutorService executor) {
+
+            this.configLoader = configLoader;
             this.quotaConfig = config;
             this.cleanUpExecutorService = executor;
             this.perLayerRunningCleanUps = new HashMap<String, Future<?>>();
         }
 
         public void run() {
-
+            // first, save the config to account for changes in used quotas
+            try {
+                configLoader.saveConfig(quotaConfig);
+            } catch (Exception e) {
+                log.error("Error saving disk quota config", e);
+            }
+            
             for (LayerQuota lq : quotaConfig.getLayerQuotas()) {
 
                 final String layerName = lq.getLayer();
