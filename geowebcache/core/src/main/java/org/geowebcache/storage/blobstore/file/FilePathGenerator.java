@@ -125,4 +125,14 @@ public class FilePathGenerator {
     public static String filteredLayerName(String layerName) {
         return layerName.replace(':', '_').replace(' ', '_');
     }
+
+    /**
+     * Extracts the zoomLevel from something like EPSG_2163_01
+     * 
+     * @param dirName
+     * @return
+     */
+    public static int findZoomLevel(String dirName) {
+        return Integer.parseInt(dirName.substring(dirName.lastIndexOf('_') + 1));
+    }
 }

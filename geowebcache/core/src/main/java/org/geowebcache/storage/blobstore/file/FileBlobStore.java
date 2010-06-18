@@ -193,7 +193,7 @@ public class FileBlobStore implements BlobStore {
         File[] srsZoomDirs = layerPath.listFiles(fpf);
 
         for (File srsZoom : srsZoomDirs) {
-            int zoomLevel = FilePathFilter.findZoomLevel(srsZoom.getName());
+            int zoomLevel = FilePathGenerator.findZoomLevel(srsZoom.getName());
             File[] intermediates = srsZoom.listFiles(fpf);
 
             for (File imd : intermediates) {

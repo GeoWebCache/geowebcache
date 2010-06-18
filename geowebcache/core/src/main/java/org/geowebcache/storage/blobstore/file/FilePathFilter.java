@@ -78,7 +78,7 @@ public class FilePathFilter implements FilenameFilter {
         if(tr.zoomStart == -1 && tr.zoomStop == -1) {
             // All zoomlevels
         } else {
-            int tmp = findZoomLevel(name);
+            int tmp = FilePathGenerator.findZoomLevel(name);
             if(tmp < tr.zoomStart || tmp > tr.zoomStop) {
                 return false;
             }
@@ -125,7 +125,7 @@ public class FilePathFilter implements FilenameFilter {
         if (tr.rangeBounds != null) {
             String[] coords = parts[0].split("_");
 
-            int zoomLevel = findZoomLevel(dir.getParentFile().getName());
+            int zoomLevel = FilePathGenerator.findZoomLevel(dir.getParentFile().getName());
             long x = Long.parseLong(coords[0]);
             long y = Long.parseLong(coords[1]);
             
@@ -137,15 +137,5 @@ public class FilePathFilter implements FilenameFilter {
         //System.out.println(dir.getAbsolutePath() + " " + name);
         
         return true;
-    }
-    
-    /**
-     * Extracts the zoomLevel from something like EPSG_2163_01
-     * 
-     * @param dirName
-     * @return
-     */
-    static int findZoomLevel(String dirName) {
-        return Integer.parseInt(dirName.substring(dirName.lastIndexOf('_') + 1));
     }
 }
