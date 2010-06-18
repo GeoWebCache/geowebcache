@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -46,7 +45,7 @@ public class FilePageStore implements PageStore {
         }
     }
 
-    public void savePages(String layerName, String gridSetId, ArrayList<TilePage> availablePages)
+    public void savePages(String layerName, String gridSetId, List<TilePage> availablePages)
             throws IOException {
 
         String fileName = fileName(layerName, gridSetId);
