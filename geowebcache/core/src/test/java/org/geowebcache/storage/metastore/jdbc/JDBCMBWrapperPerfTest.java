@@ -67,6 +67,13 @@ public class JDBCMBWrapperPerfTest extends TestCase {
         putTiles();
     }
 
+    public void testSingleThreadOldStyleWithPooling() throws Exception {
+        USE_CONNECTION_POOLING = true;
+        USE_DELETE_PUT_UNLOCK = true;
+        NUM_THREADS = 1;
+        putTiles();
+    }
+
     public void testSingleThreadNewStyle() throws Exception {
         USE_CONNECTION_POOLING = true;
         USE_DELETE_PUT_UNLOCK = false;
@@ -76,6 +83,13 @@ public class JDBCMBWrapperPerfTest extends TestCase {
 
     public void testMultiThreadOldStyle() throws Exception {
         USE_CONNECTION_POOLING = false;
+        USE_DELETE_PUT_UNLOCK = true;
+        NUM_THREADS = 5;
+        putTiles();
+    }
+
+    public void testMultiThreadOldStyleWithPooling() throws Exception {
+        USE_CONNECTION_POOLING = true;
         USE_DELETE_PUT_UNLOCK = true;
         NUM_THREADS = 5;
         putTiles();
@@ -116,9 +130,9 @@ public class JDBCMBWrapperPerfTest extends TestCase {
         for (int i = 0; i < numThreads; i++) {
             tasks.add(new InsertTask(NUM_TILES_PER_THREAD, i * NUM_TILES_PER_THREAD));
         }
-        System.out.println("\nInserting " + NUM_TILES_PER_THREAD * numThreads + " tiles spread over "
-                + numThreads + " threads. Connection pooling: " + USE_CONNECTION_POOLING
-                + ". Old style put: " + USE_DELETE_PUT_UNLOCK);
+        System.out.println("\nInserting " + NUM_TILES_PER_THREAD * numThreads
+                + " tiles spread over " + numThreads + " threads.\nConnection pooling: "
+                + USE_CONNECTION_POOLING + ". Old style put: " + USE_DELETE_PUT_UNLOCK);
 
         List<Future<Long>> results = executorService.invokeAll(tasks);
 

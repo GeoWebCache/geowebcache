@@ -18,6 +18,7 @@
 package org.geowebcache.util;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FilenameFilter;
 
 import org.apache.commons.logging.Log;
@@ -25,22 +26,22 @@ import org.apache.commons.logging.LogFactory;
 
 public class FileUtils {
     private static Log log = LogFactory.getLog(org.geowebcache.util.FileUtils.class);
-    
+
     static public boolean rmFileCacheDir(File path, ExtensionFileLister extfl) {
         if (path.exists()) {
             File[] files = null;
-            
-            if(extfl != null) {
+
+            if (extfl != null) {
                 files = path.listFiles(extfl);
             } else {
                 files = path.listFiles();
             }
-            
+
             for (int i = 0; i < files.length; i++) {
                 if (files[i].isDirectory()) {
                     rmFileCacheDir(files[i], extfl);
                 } else {
-                    if(! files[i].delete()) {
+                    if (!files[i].delete()) {
                         log.error("Unable to delete " + files[i].getAbsolutePath());
                     }
                 }
@@ -48,27 +49,41 @@ public class FileUtils {
         }
         return (path.delete());
     }
-}
 
-class ExtensionFileLister implements FilenameFilter {
-    private String prefix;
+    public static void traverseDepth(final File path, final FileFilter filter) {
+        if (path.exists()) {
+            File[] files = null;
 
-    private String extension;
+            files = path.listFiles(filter);
 
-    public ExtensionFileLister(String prefix, String extension) {
-        this.prefix = prefix;
-        this.extension = extension == null? null : "." + extension;
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].isDirectory()) {
+                    traverseDepth(files[i], filter);
+                }
+            }
+        }
     }
 
-    public boolean accept(File directory, String filename) {
-        if (prefix != null && ! filename.startsWith(prefix)) {
-            return false;
+    public static class ExtensionFileLister implements FilenameFilter {
+        private String prefix;
+
+        private String extension;
+
+        public ExtensionFileLister(String prefix, String extension) {
+            this.prefix = prefix;
+            this.extension = extension == null ? null : "." + extension;
         }
-        
-        if(extension != null) {
-            return filename.endsWith(extension);
+
+        public boolean accept(File directory, String filename) {
+            if (prefix != null && !filename.startsWith(prefix)) {
+                return false;
+            }
+
+            if (extension != null) {
+                return filename.endsWith(extension);
+            }
+
+            return true;
         }
-        
-        return true;
     }
 }

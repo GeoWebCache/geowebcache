@@ -56,6 +56,7 @@ import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
+import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
@@ -652,7 +653,11 @@ public class WMSLayer extends TileLayer {
             TileObject tile = TileObject.createCompleteTileObject(this.getName(), idx, tileProto.getGridSetId(), 
                     tileProto.getMimeType().getFormat(), tileProto.getParameters(), out.toByteArray());
             
-            tileProto.getStorageBroker().put(tile);
+            try {
+                tileProto.getStorageBroker().put(tile);
+            } catch (StorageException e) {
+                throw new GeoWebCacheException(e);
+            }
             //ConveyorTile tile = new ConveyorTile(storageBroker,this, tileProto.getSRS(), gridPos,
             //        tileProto.getMimeType(), metaTile.getStatus(), out.toByteArray());
             //tile.setTileLayer(this);

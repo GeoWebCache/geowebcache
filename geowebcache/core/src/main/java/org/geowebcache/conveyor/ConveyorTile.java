@@ -154,7 +154,11 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     }
     
     public boolean persist() throws GeoWebCacheException {
-        return storageBroker.put((TileObject) stObj);
+        try {
+            return storageBroker.put((TileObject) stObj);
+        } catch (StorageException e) {
+            throw new GeoWebCacheException(e);
+        }
     }
 
     public boolean retrieve(long maxAge) throws GeoWebCacheException {

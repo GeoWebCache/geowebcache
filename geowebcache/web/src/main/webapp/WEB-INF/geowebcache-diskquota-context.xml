@@ -11,4 +11,10 @@
 
   <bean id="ExpirationPolicyLRU" class="org.geowebcache.diskquota.ExpirationPolicyLRU">
   </bean>
+
+  <bean id="mockWMSSource" class="org.geowebcache.diskquota.MockWMSLayerSource">
+    <description>REMOVE THIS, it's a fake WMS source for all layers!!!</description>
+    <constructor-arg ref="gwcTLDispatcher" />
+  </bean>
+
 </beans>

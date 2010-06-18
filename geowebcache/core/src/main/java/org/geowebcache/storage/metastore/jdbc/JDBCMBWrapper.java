@@ -37,6 +37,7 @@ import org.geowebcache.storage.StorageObject;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.WFSObject;
+import org.h2.jdbcx.JdbcConnectionPool;
 
 /**
  * Wrapper class for the JDBC object, used by JDBCMetaBackend
@@ -70,6 +71,10 @@ class JDBCMBWrapper {
     
     /** Timeout for locked objects, 60 seconds by default **/
     protected long lockTimeout = 60000;
+
+    public boolean USE_CONNECTION_POOLING = false;
+
+    private JdbcConnectionPool connPool;
     
     protected JDBCMBWrapper(String driverClass, String jdbcString, String username, String password)
     throws StorageException,SQLException {
@@ -138,8 +143,18 @@ class JDBCMBWrapper {
     }
 
     protected Connection getConnection() throws SQLException {
-        if(! closing) {
-            Connection conn = DriverManager.getConnection(jdbcString,username,password);
+        if (!closing) {
+            Connection conn;
+            if (USE_CONNECTION_POOLING) {
+                if (connPool == null) {
+                    connPool = JdbcConnectionPool.create(jdbcString, username,
+                            password == null ? "" : password);
+                    connPool.setMaxConnections(15);
+                }
+                conn = connPool.getConnection();
+            } else {
+                conn = DriverManager.getConnection(jdbcString, username, password);
+            }
             conn.setAutoCommit(true);
             return conn;
         } else {

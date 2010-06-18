@@ -17,10 +17,13 @@
  */
 package org.geowebcache.storage;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.util.FileUtils;
 
 /**
  * Handles cacheable objects (tiles, wfs responses) both in terms of data storage and metadata
@@ -39,6 +42,8 @@ public class StorageBroker {
     
     private boolean isReady = false;
     
+    private StorageBrokerListenerList listeners;
+    
     public StorageBroker(MetaStore metaStore, BlobStore blobStore) {
         this.metaStore = metaStore;
         this.blobStore = blobStore;
@@ -48,6 +53,36 @@ public class StorageBroker {
         } else {
             metaStoreEnabled = false;
         }
+        
+        listeners = new StorageBrokerListenerList();
+    }
+
+    public void addStorageBrokerListener(StorageBrokerListener listener) {
+        listeners.addListener(listener);
+    }
+
+    public boolean removeStorageBrokerListener(StorageBrokerListener listener) {
+        return listeners.removeListener(listener);
+    }
+    
+    /**
+     * Calculates the cache size in MB for the given layer
+     * <p>
+     * This method is potentially (and most probably) resource intensive, and thread safe; so feel
+     * free to call it from a worker/background/separate thread so the it does not blocks normal
+     * program flow.
+     * </p>
+     * <p>
+     * Also, this method does not guarantee to return an exact result if the cache is modified by
+     * another thread while it is running, so beware.
+     * </p>
+     * 
+     * @param layerName
+     * @return
+     */
+    public double calculateCacheSize(String layerName) throws StorageException {
+        // TODO: if metastoreEnabled calculate with metastore?
+        return blobStore.calculateCacheSize(layerName);
     }
     
     public void setVerifyFileSize(boolean verifyFileSize) {
@@ -59,36 +94,56 @@ public class StorageBroker {
         if(metaStoreEnabled) {
             ret = metaStore.delete(layerName);
         }
-        return (ret && blobStore.delete(layerName));
+        ret = (ret && blobStore.delete(layerName));
+        if (ret) {
+            listeners.sendLayerDeleted(layerName);
+        }
+        return ret;
     }
     
     public boolean delete(TileRange trObj) throws StorageException {
+        boolean deleted;
         if(metaStoreEnabled) {
-            return metaStore.delete(blobStore, trObj);
+            deleted = metaStore.delete(blobStore, trObj);
         } else {
             if(trObj instanceof DiscontinuousTileRange) {
                 throw new StorageException(
                         "DiscontinuousTileRange currently requries a metastore."
                         );
             }
-            return blobStore.delete(trObj);
+            deleted = blobStore.delete(trObj);
         }
+        if (deleted) {
+            listeners.setTileRangeDeleted(trObj);
+        }
+        return deleted;
     }
     
     public boolean expire(TileRange trObj) throws StorageException {
+        boolean expired = false;
         if(metaStoreEnabled) {
-            return metaStore.expire(trObj);
+            expired = metaStore.expire(trObj);
         }
-        return false;
+        if (expired) {
+            listeners.sendTileRangeExpired(trObj);
+        }
+        return expired;
     }
     
     
     public boolean get(TileObject tileObj) throws StorageException {
         if(! metaStoreEnabled) {
-            return getBlobOnly(tileObj);
+            boolean found = getBlobOnly(tileObj);
+            if (found) {
+                listeners.sendCacheHit(tileObj);
+            } else {
+                listeners.sendCacheMiss(tileObj);
+            }
+            return found;
         }
         
         if(! metaStore.get(tileObj)) {
+            listeners.sendCacheMiss(tileObj);
             return false;
         }
         
@@ -111,7 +166,7 @@ public class StorageBroker {
                 
             tileObj.blob = blob;
         }
-        
+        listeners.sendCacheHit(tileObj);
         return true;
     }
     
@@ -149,9 +204,11 @@ public class StorageBroker {
         return true;
     }
     
-    public boolean put(TileObject tileObj) {
+    public boolean put(TileObject tileObj) throws StorageException {
         if(! metaStoreEnabled) {
-            return putBlobOnly(tileObj);
+            boolean stored = putBlobOnly(tileObj);
+            listeners.sendTileCached(tileObj);
+            return stored;
         }
         
         try {
@@ -161,6 +218,8 @@ public class StorageBroker {
             blobStore.put(tileObj);
             //System.out.println("Pre unlock put: " + Arrays.toString(tileObj.xyz));
             metaStore.unlock(tileObj);
+
+            listeners.sendTileCached(tileObj);
             return true;
             
         } catch (StorageException se) {
@@ -210,5 +269,6 @@ public class StorageBroker {
      */
     public void destroy() {
         log.info("Destroying StorageBroker");
+        listeners.sendShutDownEvent();
     }
 }

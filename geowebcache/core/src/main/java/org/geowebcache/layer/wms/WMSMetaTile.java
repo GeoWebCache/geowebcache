@@ -291,6 +291,7 @@ public class WMSMetaTile extends MetaTile {
             
             
             // TODO should we recycle the writers ? 
+            // GR: it'd be only a 2% perf gain according to profiler
             ImageWriter writer = javax.imageio.ImageIO.getImageWritersByFormatName(format).next();
             ImageWriteParam param  = writer.getDefaultWriteParam();
             
