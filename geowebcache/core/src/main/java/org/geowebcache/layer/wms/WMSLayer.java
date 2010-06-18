@@ -436,7 +436,7 @@ public class WMSLayer extends TileLayer {
      */
     public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException,
             IOException {
-        if (tile.getMimeType().supportsTiling()) {
+        if (tile.getMimeType().supportsTiling() && (metaWidthHeight[0] > 1 || metaWidthHeight[1] > 1)) {
             getMetatilingReponse(tile, tryCache);
         } else {
             getNonMetatilingReponse(tile, tryCache);
@@ -703,6 +703,7 @@ public class WMSLayer extends TileLayer {
     }
 
     public ConveyorTile doNonMetatilingRequest(ConveyorTile tile) throws GeoWebCacheException {
+        tile.setTileLayer(this);
         byte[] response = sourceHelper.makeRequest(tile);
 
         if (tile.getError() || response == null) {
