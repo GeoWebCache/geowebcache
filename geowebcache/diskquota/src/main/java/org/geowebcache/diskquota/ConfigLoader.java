@@ -314,29 +314,31 @@ public class ConfigLoader {
         return xs;
     }
 
-    public OutputStream getOutputStream(String fileName) throws ConfigurationException, IOException {
-        URL configResource = getConfigResource();
-        if (!"file".equals(configResource.getProtocol())) {
-            throw new ConfigurationException("Config resource shall be a file to be replaced: "
-                    + configResource.toExternalForm());
-        }
-        String path = configResource.getPath();
-        File configFile = new File(new File(path).getParent(), fileName);
+    /**
+     * Opens an output stream for a file relative to the cache storage folder
+     * 
+     * @param fileName
+     * @return
+     * @throws IOException
+     */
+    public OutputStream getStorageOutputStream(String fileName) throws IOException {
+        File rootCacheDir = getRootCacheDir();
+        File configFile = new File(rootCacheDir, fileName);
         return new FileOutputStream(configFile);
     }
 
-    public InputStream getInputStream(String fileName) throws FileNotFoundException,
-            ConfigurationException {
-        URL configResource = getConfigResource();
-        if (!"file".equals(configResource.getProtocol())) {
-            throw new ConfigurationException("Config resource shall be a file to be replaced: "
-                    + configResource.toExternalForm());
-        }
-        String path = configResource.getPath();
-        File configFile = new File(new File(path).getParent(), fileName);
-        if (!configFile.exists()) {
-            throw new FileNotFoundException(path);
-        }
+    /**
+     * Opens a stream over an existing file relative to the cache storage folder
+     * 
+     * @param fileName
+     *            the file name relative to the cache storage folder to open
+     * @return
+     * @throws IOException
+     *             if {@code fileName} doesn't exist
+     */
+    public InputStream getStorageInputStream(String fileName) throws IOException, IOException {
+        File rootCacheDir = getRootCacheDir();
+        File configFile = new File(rootCacheDir, fileName);
         return new FileInputStream(configFile);
     }
 

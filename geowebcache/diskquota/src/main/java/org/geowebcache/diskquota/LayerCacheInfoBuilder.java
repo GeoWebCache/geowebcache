@@ -13,7 +13,7 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.diskquota.lru.TilePage;
+import org.geowebcache.diskquota.paging.TilePage;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;

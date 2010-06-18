@@ -1,4 +1,4 @@
-package org.geowebcache.diskquota.lru;
+package org.geowebcache.diskquota.paging;
 
 import java.io.IOException;
 import java.io.Serializable;

@@ -1,4 +1,4 @@
-package org.geowebcache.diskquota.lru;
+package org.geowebcache.diskquota.lfu;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,16 +20,16 @@ import org.geowebcache.seed.TileBreeder;
  * @author groldan
  * @see DiskQuotaMonitor
  */
-public class ExpirationPolicyLRU extends AbstractPagedExpirationPolicy {
+public class ExpirationPolicyLFU extends AbstractPagedExpirationPolicy {
 
-    private static final String POLICY_NAME = "LRU";
+    private static final String POLICY_NAME = "LFU";
 
     /**
      * 
      * @param tileBreeder
      *            used to truncate expired pages of tiles
      */
-    public ExpirationPolicyLRU(final TileBreeder tileBreeder, final ConfigLoader configLoader) {
+    public ExpirationPolicyLFU(final TileBreeder tileBreeder, final ConfigLoader configLoader) {
         super(tileBreeder, configLoader);
     }
 
@@ -40,24 +40,23 @@ public class ExpirationPolicyLRU extends AbstractPagedExpirationPolicy {
 
     @Override
     protected List<TilePage> sortPagesForExpiration(List<TilePage> allPages) {
-        Collections.sort(allPages, LRUSorter);
+        Collections.sort(allPages, LFUSorter);
         return allPages;
     }
 
     /**
-     * Comparator used to sort {@link TilePage}s in Least Recently Used order
+     * Comparator used to sort {@link TilePage}s in a Least Frequently Used order
      * 
-     * @see TilePage#getLastAccessTimeMinutes()
+     * @see TilePage#getNumHits()
      */
-    private static final Comparator<TilePage> LRUSorter = new Comparator<TilePage>() {
+    private static final Comparator<TilePage> LFUSorter = new Comparator<TilePage>() {
 
         /**
-         * Compares the two TilePages last access time such that the one with a more recent access
-         * time is ordered after the one with a less recent access time.
+         * Compares the two TilePages last access time such that the one with more hits is ordered
+         * after the one with less hits.
          * <p>
-         * In the event that both pages have the same access time (with minute precission) the one
-         * at the higher zoom level will take precedence, so that we remove tiles at higher zoom
-         * levels first.
+         * In the event that both pages have the same number of hits the one at the higher zoom
+         * level will take precedence, so that we remove tiles at higher zoom levels first.
          * </p>
          * 
          * @param p1
@@ -65,16 +64,15 @@ public class ExpirationPolicyLRU extends AbstractPagedExpirationPolicy {
          * @return
          */
         public int compare(TilePage p1, TilePage p2) {
-            int p1AccessTime = p1.getLastAccessTimeMinutes();
-            int p2AccessTime = p2.getLastAccessTimeMinutes();
-            // we use p1 - p2 for reverse ordering (ie, least recently used first)
-            int delta = p1AccessTime - p2AccessTime;
+            long p1Hits = p1.getNumHits();
+            long p2Hits = p2.getNumHits();
+            // we use p1 - p2 for reverse ordering (ie, least frequently used first)
+            long delta = p1Hits - p2Hits;
             if (delta == 0) {
                 delta = p1.getZ() - p2.getZ();
             }
-
-            return delta;
+            // be cautious of the (improbable?) case of delta overflowing int
+            return delta > 0 ? 1 : delta < 0 ? -1 : 0;
         }
     };
-
 }

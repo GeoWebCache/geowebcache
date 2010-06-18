@@ -27,7 +27,6 @@ public class DiskQuotaConfig {
 
     private transient Map<String, LayerQuota> layerQuotasMap;
 
-
     public int getDiskBlockSize() {
         if (diskBlockSize == 0) {
             diskBlockSize = DEFAULT_DISK_BLOCK_SIZE;

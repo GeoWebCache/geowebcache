@@ -12,7 +12,7 @@
   <layerQuotas>
     <LayerQuota>
       <layer>topp:states</layer>
-      <expirationPolicyName>LRU</expirationPolicyName>
+      <expirationPolicyName>LFU</expirationPolicyName>
       <quota>
         <value>10</value>
         <units>MB</units>

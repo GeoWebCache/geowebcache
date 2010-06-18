@@ -32,6 +32,14 @@ public interface LayerQuotaExpirationPolicy {
 
     void save(LayerQuota lq);
 
+    /**
+     * Makes sure stats information for the given (existing) tile exists
+     * 
+     * @param layerQuota
+     * @param gridSetId
+     * @param tileXYZ
+     * @param file
+     */
     void createInfoFor(LayerQuota layerQuota, String gridSetId, long[] tileXYZ, File file);
 
 }

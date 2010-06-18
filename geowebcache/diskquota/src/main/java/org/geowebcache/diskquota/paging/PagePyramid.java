@@ -1,4 +1,4 @@
-package org.geowebcache.diskquota.lru;
+package org.geowebcache.diskquota.paging;
 
 import java.math.BigInteger;
 import java.util.Arrays;

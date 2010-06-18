@@ -53,9 +53,9 @@ public class Quota {
     }
 
     public synchronized void add(double amount, StorageUnit units) {
-        
+
         this.value += units.convertTo(amount, this.units);
-        
+
         if (value > 1024) {
             switch (this.units) {
             case B:

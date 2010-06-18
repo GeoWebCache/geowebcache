@@ -1,4 +1,4 @@
-package org.geowebcache.diskquota.lru;
+package org.geowebcache.diskquota.paging;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +15,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.storage.TileRange;
 
-class TilePageCalculator {
+public class TilePageCalculator {
 
     private static final Log log = LogFactory.getLog(TilePageCalculator.class);
 

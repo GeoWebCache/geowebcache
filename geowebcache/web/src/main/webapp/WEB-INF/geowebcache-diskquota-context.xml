@@ -18,6 +18,11 @@
     <constructor-arg ref="gwcTileBreeder" />
     <constructor-arg ref="DiskQuotaConfigLoader" />
   </bean>
+  
+  <bean id="ExpirationPolicyLFU" class="org.geowebcache.diskquota.lfu.ExpirationPolicyLFU">
+    <constructor-arg ref="gwcTileBreeder" />
+    <constructor-arg ref="DiskQuotaConfigLoader" />
+  </bean>
 
   <!-- bean id="mockWMSSource" class="org.geowebcache.diskquota.MockWMSLayerSource">
     <description>REMOVE THIS, it's a fake WMS source for all layers!!!</description>
