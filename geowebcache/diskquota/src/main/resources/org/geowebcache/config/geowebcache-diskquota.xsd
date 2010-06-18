@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xml="http://www.w3.org/XML/1998/namespace" targetNamespace="http://geowebcache.org/schema/1.2.2/diskquota"
+  xmlns:gwc="http://geowebcache.org/schema/1.2.2/diskquota" elementFormDefault="qualified">
+
+  <xs:element name="gwcQuotaConfiguration">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">Wrapper element for XStream. Make sure it has the correct namespace</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="defaultQuota" type="gwc:DiskQuotaType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">Optional, quota that applies to all layers that have not a specifically set quota
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="layerQuotas" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              Specify per layer quotas
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="LayerQuota" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="layer" type="xs:string"></xs:element>
+                    <xs:element name="quota" type="gwc:DiskQuotaType">
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="DiskQuotaType">
+    <xs:annotation>
+      <xs:documentation xml:lang="en"></xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="limit" type="xs:double"></xs:element>
+      <xs:element name="units" type="gwc:UnitType" default="MB" />
+      <xs:element name="expirationPolicy" type="gwc:ExpirationPolicyType"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="UnitType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="B"></xs:enumeration>
+      <xs:enumeration value="KB"></xs:enumeration>
+      <xs:enumeration value="MB"></xs:enumeration>
+      <xs:enumeration value="GB"></xs:enumeration>
+      <xs:enumeration value="TB"></xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ExpirationPolicyType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="LRU"></xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

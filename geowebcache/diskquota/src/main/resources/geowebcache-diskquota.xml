@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gwcQuotaConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://geowebcache.org/schema/1.2.2/diskquota org/geowebcache/config/geowebcache-diskquota.xsd" xmlns="http://geowebcache.org/schema/1.2.2/diskquota">
+
+  <defaultQuota>
+    <limit>10</limit>
+    <units>GB</units>
+    <expirationPolicy>LRU</expirationPolicy>
+  </defaultQuota>
+
+  <layerQuotas>
+    <LayerQuota>
+      <layer>topp:states</layer>
+      <quota>
+        <limit>10</limit>
+        <units>MB</units>
+        <expirationPolicy>LRU</expirationPolicy>
+      </quota>
+    </LayerQuota>
+    <LayerQuota>
+      <layer>raster test layer</layer>
+      <quota>
+        <limit>1024</limit>
+        <units>KB</units>
+        <expirationPolicy>LRU</expirationPolicy>
+      </quota>
+    </LayerQuota>
+  </layerQuotas>
+</gwcQuotaConfiguration>
