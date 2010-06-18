@@ -155,9 +155,15 @@ public class DiskQuotaMonitor implements DisposableBean {
                 final String blobFormat, final String parameters, final long x, final long y,
                 final int z, final long blobSize) {
 
+            int blockSize = quotaConfig.getDiskBlockSize();
+
+            long actuallyUsedStorage = 1 + blobSize / blockSize;
+
             LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
             Quota usedQuota = layerQuota.getUsedQuota();
-            usedQuota.add(blobSize, StorageUnit.B);
+
+            usedQuota.add(actuallyUsedStorage, StorageUnit.B);
+
             if (log.isDebugEnabled()) {
                 log.debug("Used quota increased for " + layerName + ": " + usedQuota);
             }
@@ -171,9 +177,15 @@ public class DiskQuotaMonitor implements DisposableBean {
                 final String blobFormat, final String parameters, final long x, final long y,
                 final int z, final long blobSize) {
 
+            int blockSize = quotaConfig.getDiskBlockSize();
+
+            long actuallyUsedStorage = 1 + blobSize / blockSize;
+
             LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
             Quota usedQuota = layerQuota.getUsedQuota();
-            usedQuota.substract(blobSize, StorageUnit.B);
+
+            usedQuota.substract(actuallyUsedStorage, StorageUnit.B);
+
             if (log.isDebugEnabled()) {
                 log.debug("Used quota decreased for " + layerName + ": " + usedQuota);
             }

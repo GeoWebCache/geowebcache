@@ -2,6 +2,11 @@
 <gwcQuotaConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://geowebcache.org/schema/1.2.2/diskquota org/geowebcache/config/geowebcache-diskquota.xsd" xmlns="http://geowebcache.org/schema/1.2.2/diskquota">
 
+  <diskBlockSize>4096</diskBlockSize>
+
+  <cacheCleanUpFrequency>10</cacheCleanUpFrequency>
+  <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
+
   <defaultQuota>
     <limit>10</limit>
     <units>GB</units>
@@ -20,8 +25,8 @@
     <LayerQuota>
       <layer>raster test layer</layer>
       <quota>
-        <limit>1024</limit>
-        <units>KB</units>
+        <limit>512</limit>
+        <units>MB</units>
         <expirationPolicy>LRU</expirationPolicy>
       </quota>
     </LayerQuota>

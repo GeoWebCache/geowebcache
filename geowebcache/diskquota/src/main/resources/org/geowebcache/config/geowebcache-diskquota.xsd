@@ -8,6 +8,32 @@
     </xs:annotation>
     <xs:complexType>
       <xs:sequence>
+
+        <xs:element name="diskBlockSize" type="xs:int">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">Cache's file system block size, in bytes. Usually 4096, 8192, etc.
+              There's no way in
+              the Java5 API to guess the filesystem block size. This parameter
+              tells the disk quota monitor what the block size is si itcan
+              make better computations with regard to the
+              actual disk usage for the cache</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="cacheCleanUpFrequency" type="xs:int">
+          <xs:annotation>
+            <xs:documentation>Frequency in minutes for the quota monitor to run the clean up process for those layers
+              that exceed its quota
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="cacheCleanUpUnits" type="gwc:TimeUnitType">
+          <xs:annotation>
+            <xs:documentation>Time unit for the cache update frequency. One of [SECONDS, MINUTES, HOURS, DAYS]</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
         <xs:element name="defaultQuota" type="gwc:DiskQuotaType" minOccurs="0">
           <xs:annotation>
             <xs:documentation xml:lang="en">Optional, quota that applies to all layers that have not a specifically set quota
@@ -29,6 +55,7 @@
                     <xs:element name="layer" type="xs:string"></xs:element>
                     <xs:element name="quota" type="gwc:DiskQuotaType">
                     </xs:element>
+                    <xs:element name="usedQuota" type="gwc:DiskQuotaType" minOccurs="0"></xs:element>
                   </xs:sequence>
                 </xs:complexType>
               </xs:element>
@@ -45,18 +72,27 @@
     </xs:annotation>
     <xs:sequence>
       <xs:element name="limit" type="xs:double"></xs:element>
-      <xs:element name="units" type="gwc:UnitType" default="MB" />
+      <xs:element name="units" type="gwc:StorageUnitType" default="MB" />
       <xs:element name="expirationPolicy" type="gwc:ExpirationPolicyType"></xs:element>
     </xs:sequence>
   </xs:complexType>
 
-  <xs:simpleType name="UnitType">
+  <xs:simpleType name="StorageUnitType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="B"></xs:enumeration>
       <xs:enumeration value="KB"></xs:enumeration>
       <xs:enumeration value="MB"></xs:enumeration>
       <xs:enumeration value="GB"></xs:enumeration>
       <xs:enumeration value="TB"></xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="TimeUnitType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SECONDS"></xs:enumeration>
+      <xs:enumeration value="MINUTES"></xs:enumeration>
+      <xs:enumeration value="HOURS"></xs:enumeration>
+      <xs:enumeration value="DAYS"></xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
 
