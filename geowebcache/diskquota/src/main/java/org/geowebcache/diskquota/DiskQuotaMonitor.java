@@ -256,7 +256,7 @@ public class DiskQuotaMonitor implements DisposableBean {
             LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
             Quota usedQuota = layerQuota.getUsedQuota();
 
-            usedQuota.substract(actuallyUsedStorage, B);
+            usedQuota.subtract(actuallyUsedStorage, B);
 
             if (log.isDebugEnabled()) {
                 log.debug("Used quota decreased for " + layerName + ": " + usedQuota);

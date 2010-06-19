@@ -64,7 +64,7 @@ public class Quota {
 
         BigDecimal sum = units.convertTo(amount, this.units).add(this.value);
 
-        if (sum.min(BigDecimal.valueOf(1024)) != sum) {
+        if (sum.compareTo(BigDecimal.valueOf(1024)) > 0) {
             // i.e. if added > 1024
             StorageUnit newUnit = StorageUnit.closest(sum, this.units);
             sum = this.units.convertTo(sum, newUnit);
@@ -73,10 +73,15 @@ public class Quota {
         this.value = sum;
     }
 
-    public synchronized void substract(final double amount, final StorageUnit units) {
-        this.value = units.convertTo(amount, this.units).subtract(this.value);
-        if (this.value.min(BigDecimal.valueOf(1024)) == this.value) {
-            StorageUnit newUnit = StorageUnit.closest(this.value, this.units);
+    public synchronized void subtract(final double amount, final StorageUnit units) {
+        subtract(BigDecimal.valueOf(amount), units);
+    }
+
+    public synchronized void subtract(final BigDecimal amount, final StorageUnit units) {
+        this.value = this.value.subtract(units.convertTo(amount, this.units));
+        BigDecimal abs = this.value.abs();
+        if (abs.compareTo(BigDecimal.ONE) < 0 || abs.compareTo(BigDecimal.valueOf(1024)) > 0) {
+            StorageUnit newUnit = StorageUnit.closest(abs, this.units);
             this.value = this.units.convertTo(this.value, newUnit);
             this.units = newUnit;
         }
@@ -90,10 +95,10 @@ public class Quota {
      */
     public Quota difference(Quota quota) {
 
-        BigDecimal difference = this.value.subtract(quota.getUnits().convertTo(quota.getValue(),
-                this.units));
+        Quota difference = new Quota(this);
+        difference.subtract(quota.getValue(), quota.getUnits());
 
-        return new Quota(difference, this.units);
+        return difference;
     }
 
     /**
