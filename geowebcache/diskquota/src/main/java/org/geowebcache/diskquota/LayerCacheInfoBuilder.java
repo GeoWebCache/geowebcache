@@ -121,7 +121,7 @@ final class LayerCacheInfoBuilder {
 
         private final String gridSetId;
 
-        private long[] tileXYZ;
+        private int tileZ;
 
         private final File zoomLevelPath;
 
@@ -147,7 +147,7 @@ final class LayerCacheInfoBuilder {
             this.gridSetId = gridsetId;
             this.layerQuota = layerQuota;
             this.blockSize = blockSize;
-            this.tileXYZ = new long[] { 0, 0, zoomLevel };
+            this.tileZ = zoomLevel;
             this.policy = layerQuota.getExpirationPolicy();
             this.stats = new Stats();
         }
@@ -156,9 +156,8 @@ final class LayerCacheInfoBuilder {
          * @see java.util.concurrent.Callable#call()
          */
         public Stats call() throws Exception {
-            String zLevelKey;
+            final String zLevelKey = layerQuota.getLayer() + "'/" + gridSetId + "/" + tileZ;
             try {
-                zLevelKey = layerQuota.getLayer() + "'/" + gridSetId + "/" + tileXYZ[2];
                 log.debug("Gathering cache information for '" + zLevelKey);
                 stats.collectedQuota.setValue(0);
                 stats.numTiles = 0L;
@@ -167,6 +166,9 @@ final class LayerCacheInfoBuilder {
                 FileUtils.traverseDepth(zoomLevelPath, this);
                 runTime = System.currentTimeMillis() - runTime;
                 stats.runTimeMillis = runTime;
+            } catch (TraversalCanceledException cancel) {
+                log.debug("Gathering cache information for " + zLevelKey + " was canceled.");
+                return null;
             } catch (Exception e) {
                 e.printStackTrace();
                 throw (e);
@@ -181,6 +183,9 @@ final class LayerCacheInfoBuilder {
          * @see java.io.FileFilter#accept(java.io.File)
          */
         public boolean accept(final File file) {
+            if (Thread.interrupted()) {
+                throw new TraversalCanceledException();
+            }
             if (file.isDirectory()) {
                 log.trace("Processing files in " + file.getAbsolutePath());
                 return true;
@@ -198,14 +203,26 @@ final class LayerCacheInfoBuilder {
             final int coordSepIdx = path.lastIndexOf('_');
             final int dotIdx = path.lastIndexOf('.');
 
-            tileXYZ[0] = Long.valueOf(path.substring(fileNameIdx, coordSepIdx));
-            tileXYZ[1] = Long.valueOf(path.substring(1 + coordSepIdx, dotIdx));
+            final long x = Long.valueOf(path.substring(fileNameIdx, coordSepIdx));
+            final long y = Long.valueOf(path.substring(1 + coordSepIdx, dotIdx));
 
-            policy.createInfoFor(layerQuota, gridSetId, tileXYZ, file);
+            policy.createInfoFor(layerQuota, gridSetId, x, y, tileZ);
 
             stats.numTiles++;
             stats.collectedQuota.add(fileSize, StorageUnit.B);
             return true;
+        }
+
+        /**
+         * Used to brute-force cancel a cache inspection (as InterruptedException is checked and
+         * hence can't use it in accept(File) above
+         * 
+         * @author groldan
+         * 
+         */
+        private static class TraversalCanceledException extends RuntimeException {
+            private static final long serialVersionUID = 1L;
+            // doesn't need a body
         }
     }
 
@@ -238,5 +255,9 @@ final class LayerCacheInfoBuilder {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public void shutDown() {
+        this.threadPool.shutdownNow();
     }
 }
