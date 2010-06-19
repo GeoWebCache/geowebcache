@@ -7,15 +7,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Holds the quota configuration for all the registered layers as well as the instance wide settings
+ * such as cache disk block size, maximum number of concurrent cache clean ups, etc.
+ * 
+ * @author groldan
+ * 
+ */
 public class DiskQuotaConfig {
 
-    private static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
+    static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
 
-    private static final int DEFAULT_CLEANUP_FREQUENCY = 10;
+    static final int DEFAULT_CLEANUP_FREQUENCY = 10;
 
-    private static final TimeUnit DEFAULT_CLEANUP_UNITS = TimeUnit.MINUTES;
+    static final TimeUnit DEFAULT_CLEANUP_UNITS = TimeUnit.MINUTES;
 
-    private static final int DEFAULT_MAX_CONCURRENT_CLEANUPS = 2;
+    static final int DEFAULT_MAX_CONCURRENT_CLEANUPS = 2;
 
     private int diskBlockSize;
 
@@ -51,6 +58,9 @@ public class DiskQuotaConfig {
         if (maxConcurrentCleanUps == 0) {
             maxConcurrentCleanUps = DEFAULT_MAX_CONCURRENT_CLEANUPS;
         }
+        if (cacheCleanUpUnits == null) {
+            cacheCleanUpUnits = DEFAULT_CLEANUP_UNITS;
+        }
         return this;
     }
 
@@ -71,13 +81,13 @@ public class DiskQuotaConfig {
 
     public void setCacheCleanUpFrequency(int cacheCleanUpFrequency) {
         if (cacheCleanUpFrequency < 0) {
-            throw new IllegalAccessError("cacheCleanUpFrequency shall be a positive integer");
+            throw new IllegalArgumentException("cacheCleanUpFrequency shall be a positive integer");
         }
         this.cacheCleanUpFrequency = cacheCleanUpFrequency;
     }
 
     public TimeUnit getCacheCleanUpUnits() {
-        return cacheCleanUpUnits == null ? DEFAULT_CLEANUP_UNITS : cacheCleanUpUnits;
+        return cacheCleanUpUnits;
     }
 
     public void setCacheCleanUpUnits(TimeUnit cacheCleanUpUnit) {
@@ -92,12 +102,8 @@ public class DiskQuotaConfig {
     }
 
     public synchronized void setLayerQuotas(List<LayerQuota> quotas) {
-        this.layerQuotas = quotas;
+        this.layerQuotas = quotas == null ? new ArrayList<LayerQuota>(2) : quotas;
         this.layerQuotasMap = null;
-    }
-
-    public void setLayerQuota(String layerName, LayerQuota lq) {
-        getLayerQuotasMap().put(layerName, lq);
     }
 
     public LayerQuota getLayerQuota(final String layerName) {
@@ -153,6 +159,9 @@ public class DiskQuotaConfig {
     }
 
     public void setMaxConcurrentCleanUps(int nThreads) {
+        if (nThreads <= 0) {
+            throw new IllegalArgumentException("nThreads shall be a positive integer: " + nThreads);
+        }
         this.maxConcurrentCleanUps = nThreads;
     }
 
