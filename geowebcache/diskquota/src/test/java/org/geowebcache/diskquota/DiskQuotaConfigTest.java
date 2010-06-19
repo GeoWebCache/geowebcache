@@ -55,8 +55,8 @@ public class DiskQuotaConfigTest extends TestCase {
             assertTrue(true);
         }
 
-        config.setCacheCleanUpUnits(TimeUnit.DAYS);
-        assertEquals(TimeUnit.DAYS, config.getCacheCleanUpUnits());
+        config.setCacheCleanUpUnits(TimeUnit.MILLISECONDS);
+        assertEquals(TimeUnit.MILLISECONDS, config.getCacheCleanUpUnits());
     }
 
     public void testSetLayerQuotas() {

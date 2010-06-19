@@ -18,9 +18,9 @@ public class DiskQuotaConfig {
 
     static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
 
-    static final int DEFAULT_CLEANUP_FREQUENCY = 10;
+    static final int DEFAULT_CLEANUP_FREQUENCY = 10 * 60;
 
-    static final TimeUnit DEFAULT_CLEANUP_UNITS = TimeUnit.MINUTES;
+    static final TimeUnit DEFAULT_CLEANUP_UNITS = TimeUnit.SECONDS;
 
     static final int DEFAULT_MAX_CONCURRENT_CLEANUPS = 2;
 
