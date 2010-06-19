@@ -1,22 +1,27 @@
 <?xml version="1.0"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xml="http://www.w3.org/XML/1998/namespace" targetNamespace="http://geowebcache.org/schema/1.2.2/diskquota"
-  xmlns:gwc="http://geowebcache.org/schema/1.2.2/diskquota" elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xml="http://www.w3.org/XML/1998/namespace"
+  targetNamespace="http://geowebcache.org/schema/1.2.2/diskquota" xmlns:gwc="http://geowebcache.org/schema/1.2.2/diskquota"
+  elementFormDefault="qualified">
 
   <xs:element name="gwcQuotaConfiguration">
     <xs:annotation>
-      <xs:documentation xml:lang="en">Wrapper element for XStream. Make sure it has the correct namespace</xs:documentation>
+      <xs:documentation xml:lang="en">Wrapper element for XStream. Make sure it has the correct namespace
+      </xs:documentation>
     </xs:annotation>
     <xs:complexType>
       <xs:sequence>
 
         <xs:element name="diskBlockSize" type="xs:int">
           <xs:annotation>
-            <xs:documentation xml:lang="en">Cache's file system block size, in bytes. Usually 4096, 8192, etc.
+            <xs:documentation xml:lang="en">Cache's file system block size, in bytes. Usually 4096, 8192,
+              etc.
               There's no way in
               the Java5 API to guess the filesystem block size. This parameter
-              tells the disk quota monitor what the block size is si itcan
+              tells the disk quota
+              monitor what the block size is si itcan
               make better computations with regard to the
-              actual disk usage for the cache</xs:documentation>
+              actual disk usage for
+              the cache</xs:documentation>
           </xs:annotation>
         </xs:element>
 
@@ -30,13 +35,15 @@
 
         <xs:element name="cacheCleanUpUnits" type="gwc:TimeUnitType">
           <xs:annotation>
-            <xs:documentation>Time unit for the cache update frequency. One of [SECONDS, MINUTES, HOURS, DAYS]</xs:documentation>
+            <xs:documentation>Time unit for the cache update frequency. One of [SECONDS, MINUTES, HOURS, DAYS]
+            </xs:documentation>
           </xs:annotation>
         </xs:element>
 
         <xs:element name="maxConcurrentCleanUps" type="xs:int" minOccurs="0">
           <xs:annotation>
-            <xs:documentation>Maximum number of concurrent quota enforcement tasks to run. Defaults to 2.</xs:documentation>
+            <xs:documentation>Maximum number of concurrent quota enforcement tasks to run. Defaults to 2.
+            </xs:documentation>
           </xs:annotation>
         </xs:element>
 
@@ -69,12 +76,17 @@
                     <xs:element name="usedQuota" type="gwc:DiskQuotaType" minOccurs="0">
                       <xs:annotation>
                         <xs:documentation>Optional, current size of the layer's cache.
-                          This value will be automatically updated (presumably
+                          This value will be automatically
+                          updated (presumably
                           upon normal application shutdown).
-                          If not present, the layer cache size will be computed upon application startup,
-                          which may take a long while. A good way of avoiding it is to configure the usedQuota element with the output of
-                          the Unix du -sk command, that returns the number of kilobytes used by the argument directory. For example du -sk
-                          &lt;path to cache root&gt;/layerName; and then configure the usedQuota with that number and KB as unit
+                          If not present, the layer cache size will
+                          be computed upon application startup,
+                          which may take a long while. A good way of avoiding it is
+                          to configure the usedQuota element with the output of
+                          the Unix du -sk command, that returns the
+                          number of kilobytes used by the argument directory. For example du -sk
+                          &lt;path to cache
+                          root&gt;/layerName; and then configure the usedQuota with that number and KB as unit
                         </xs:documentation>
                       </xs:annotation>
                     </xs:element>
@@ -100,11 +112,59 @@
 
   <xs:simpleType name="StorageUnitType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="B"></xs:enumeration>
-      <xs:enumeration value="KB"></xs:enumeration>
-      <xs:enumeration value="MB"></xs:enumeration>
-      <xs:enumeration value="GB"></xs:enumeration>
-      <xs:enumeration value="TB"></xs:enumeration>
+      <xs:enumeration value="B">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Bytes</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="KiB">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Kibibytes (1024 bytes. Different than KB, which is just 1000B)
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="MiB">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Mebibytes (1024 KiB. Different than MB, which is just 1000KB)
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="GiB">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Gibibytes (1024 MiB. Different than GB, which is just 1000MB)
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="TiB">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Tebibytes (1024 GiB. Different than TB, which is just 1000GB)
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="PiB">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Pebibytes (1024 TiB. Different than PB, which is just 1000TB)
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="EiB">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Exibytes (1024 PiB. Different than EB, which is just 1000PB)
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="ZiB">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Zebibytes (1024 EiB. Different than ZB -Zettabyte-, which is just
+            1000EB)</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="YiB">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Yobibytes (1024 ZiB. Different than YB -Yottabyte-, which is just
+            1000ZB)</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
 

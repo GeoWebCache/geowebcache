@@ -21,6 +21,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ConfigurationException;
+import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageException;
@@ -65,8 +66,22 @@ public class ConfigLoader {
 
     private final Map<String, LayerQuotaExpirationPolicy> enabledPolicies;
 
-    public ConfigLoader(DefaultStorageFinder storageFinder,
-            ApplicationContextProvider contextProvider, TileLayerDispatcher tld) throws IOException {
+    /**
+     * 
+     * @param storageFinder
+     *            used to get the location of the cache directory
+     * @param contextProvider
+     *            used to look up registered instances of {@link LayerQuotaExpirationPolicy} and to
+     *            aid in determining the location of the {@code geowebcache-diskquota.xml}
+     *            configuration file
+     * @param tld
+     *            used only to validate the presence of a layer at {@link #loadConfig()} and ignore
+     *            the layer quota definition if the {@link TileLayer} does not exist
+     * @throws IOException
+     */
+    public ConfigLoader(final DefaultStorageFinder storageFinder,
+            final ApplicationContextProvider contextProvider, final TileLayerDispatcher tld)
+            throws IOException {
 
         this.storageFinder = storageFinder;
         this.context = contextProvider.getApplicationContext();
@@ -74,16 +89,18 @@ public class ConfigLoader {
         this.enabledPolicies = new HashMap<String, LayerQuotaExpirationPolicy>();
     }
 
+    /**
+     * Saves the configuration to the root cache directory
+     * 
+     * @param config
+     * @throws IOException
+     * @throws ConfigurationException
+     */
     public void saveConfig(DiskQuotaConfig config) throws IOException, ConfigurationException {
-        URL configResource = getConfigResource();
-        if (!"file".equals(configResource.getProtocol())) {
-            throw new ConfigurationException("Config resource shall be a file to be replaced: "
-                    + configResource.toExternalForm());
-        }
+        File rootCacheDir = getRootCacheDir();
         XStream xStream = getConfiguredXStream();
-        String path = configResource.getPath();
-        log.debug("Saving disk quota config to " + path);
-        File configFile = new File(path);
+        File configFile = new File(rootCacheDir, CONFIGURATION_FILE_NAME);
+        log.debug("Saving disk quota config to " + configFile.getAbsolutePath());
         OutputStream configOut = new FileOutputStream(configFile);
         try {
             xStream.toXML(config, configOut);
@@ -217,7 +234,7 @@ public class ConfigLoader {
             for (LayerQuotaExpirationPolicy p : expirationPolicies.values()) {
                 if (p.getName().equals(expirationPolicyName)) {
                     enabledPolicies.put(p.getName(), p);
-                    return policy;
+                    return p;
                 }
             }
         } else {
