@@ -212,7 +212,6 @@ public class FileBlobStore implements BlobStore {
                 String[] chk = imd.list();
                 if (chk == null || chk.length == 0) {
                     imd.delete();
-                    count++;
                 }
             }
 
