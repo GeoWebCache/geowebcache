@@ -23,7 +23,7 @@ public class QuotaTest extends TestCase {
         Quota q1 = new Quota();
         q1.setValue(512.0);
         q1.setUnits(StorageUnit.GiB);
-        
+
         q1.subtract(1, StorageUnit.GiB);
         assertEquals(StorageUnit.GiB, q1.getUnits());
         assertEquals(511, q1.getValue().doubleValue(), 1e-6);

@@ -52,11 +52,11 @@ public class TilePageCalculator {
         return this.layerQuota;
     }
 
-    public TilePage pageFor(long[] tileXYZ, String gridSetId) {
+    public TilePage pageFor(long x, long y, int z, String gridSetId) {
         pagesLock.readLock().lock();
         try {
             PagePyramid pageRange = pageRangesPerGridSubset.get(gridSetId);
-            return pageRange.pageFor(tileXYZ);
+            return pageRange.pageFor(x, y, z);
         } finally {
             pagesLock.readLock().unlock();
         }

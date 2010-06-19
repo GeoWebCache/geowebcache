@@ -144,13 +144,12 @@ class PagePyramid {
         return numTilesPerPage;
     }
 
-    public TilePage pageFor(long[] tileXYZ) {
-        final int level = (int) tileXYZ[2];
+    public TilePage pageFor(long x, long y, int level) {
         final int tilesPerPageX = pageInfo[level][0];
         final int tilesPerPageY = pageInfo[level][1];
 
-        int[] pageIndex = { (int) (tileXYZ[0] / tilesPerPageX), // pageX
-                (int) (tileXYZ[1] / tilesPerPageY), // pageY
+        int[] pageIndex = { (int) (x / tilesPerPageX), // pageX
+                (int) (y / tilesPerPageY), // pageY
                 level };
 
         TilePage tilePage = pages.get(pageIndex);

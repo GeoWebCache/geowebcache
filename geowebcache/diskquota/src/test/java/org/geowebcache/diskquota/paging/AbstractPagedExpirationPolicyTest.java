@@ -3,7 +3,6 @@
  */
 package org.geowebcache.diskquota.paging;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -269,7 +268,7 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
         policy.attach(layer, layerQuota);
         // for expireTiles to work, there must be tile pages, so lets create a couple ones
         final String gridsetId = gridSubsets.keySet().iterator().next();
-        policy.createInfoFor(layerQuota, gridsetId, new long[] { 0, 1, 2 }, new File("fake.png"));
+        policy.createInfoFor(layerQuota, gridsetId, 0, 1, 2);
         policy.expireTiles(layerName);
 
         EasyMock.verify(layer);

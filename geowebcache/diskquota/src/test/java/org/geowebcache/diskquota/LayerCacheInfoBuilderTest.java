@@ -81,8 +81,8 @@ public class LayerCacheInfoBuilderTest extends TestCase {
         LayerQuotaExpirationPolicy mockPolicy = EasyMock
                 .createMock(LayerQuotaExpirationPolicy.class);
 
-        mockPolicy.createInfoFor(EasyMock.eq(layerQuota), EasyMock.eq(gridSetId), (long[]) EasyMock
-                .anyObject(), (File) EasyMock.anyObject());
+        mockPolicy.createInfoFor(EasyMock.eq(layerQuota), EasyMock.eq(gridSetId), EasyMock
+                .anyLong(), EasyMock.anyLong(), EasyMock.anyInt());
         EasyMock.expectLastCall().times(numFiles);
         EasyMock.replay(mockPolicy);
 
