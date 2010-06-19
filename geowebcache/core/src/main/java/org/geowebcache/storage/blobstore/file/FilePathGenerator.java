@@ -43,7 +43,7 @@ public class FilePathGenerator {
      *            the parameters identifier
      * @return {@code [directoryName, fileName]}
      */
-    protected static String[] tilePath(String prefix, String layerName, long[] tileIndex,
+    public static String[] tilePath(String prefix, String layerName, long[] tileIndex,
             String gridSetId, MimeType mimeType, long parameters_id) {
         long x = tileIndex[0];
         long y = tileIndex[1];
