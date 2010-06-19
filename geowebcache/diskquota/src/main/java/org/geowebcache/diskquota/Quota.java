@@ -33,6 +33,21 @@ public class Quota {
         this.units = units;
     }
 
+    /**
+     * Supports initialization of instance variables during XStream deserialization
+     * 
+     * @return
+     */
+    private Object readResolve() {
+        if (this.value == null) {
+            this.value = BigDecimal.ZERO;
+        }
+        if (this.units == null) {
+            this.units = StorageUnit.B;
+        }
+        return this;
+    }
+
     public BigDecimal getValue() {
         return value;
     }

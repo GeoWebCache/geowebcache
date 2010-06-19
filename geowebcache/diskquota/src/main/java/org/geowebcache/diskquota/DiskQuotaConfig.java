@@ -1,6 +1,6 @@
 package org.geowebcache.diskquota;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -15,6 +15,8 @@ public class DiskQuotaConfig {
 
     private static final TimeUnit DEFAULT_CLEANUP_UNITS = TimeUnit.MINUTES;
 
+    private static final int DEFAULT_MAX_CONCURRENT_CLEANUPS = 2;
+
     private int diskBlockSize;
 
     private int cacheCleanUpFrequency;
@@ -27,10 +29,32 @@ public class DiskQuotaConfig {
 
     private transient Map<String, LayerQuota> layerQuotasMap;
 
-    public int getDiskBlockSize() {
+    public DiskQuotaConfig() {
+        readResolve();
+    }
+
+    /**
+     * Supports initialization of instance variables during XStream deserialization
+     * 
+     * @return
+     */
+    private Object readResolve() {
         if (diskBlockSize == 0) {
             diskBlockSize = DEFAULT_DISK_BLOCK_SIZE;
         }
+        if (cacheCleanUpFrequency == 0) {
+            cacheCleanUpFrequency = DEFAULT_CLEANUP_FREQUENCY;
+        }
+        if (layerQuotas == null) {
+            layerQuotas = new ArrayList<LayerQuota>(2);
+        }
+        if (maxConcurrentCleanUps == 0) {
+            maxConcurrentCleanUps = DEFAULT_MAX_CONCURRENT_CLEANUPS;
+        }
+        return this;
+    }
+
+    public int getDiskBlockSize() {
         return diskBlockSize;
     }
 
@@ -42,7 +66,7 @@ public class DiskQuotaConfig {
     }
 
     public int getCacheCleanUpFrequency() {
-        return cacheCleanUpFrequency == 0 ? DEFAULT_CLEANUP_FREQUENCY : cacheCleanUpFrequency;
+        return cacheCleanUpFrequency;
     }
 
     public void setCacheCleanUpFrequency(int cacheCleanUpFrequency) {
@@ -63,12 +87,11 @@ public class DiskQuotaConfig {
         this.cacheCleanUpUnits = cacheCleanUpUnit;
     }
 
-    @SuppressWarnings("unchecked")
     public List<LayerQuota> getLayerQuotas() {
-        return layerQuotas == null ? Collections.EMPTY_LIST : layerQuotas;
+        return layerQuotas;
     }
 
-    public void setLayerQuotas(List<LayerQuota> quotas) {
+    public synchronized void setLayerQuotas(List<LayerQuota> quotas) {
         this.layerQuotas = quotas;
         this.layerQuotasMap = null;
     }
@@ -82,7 +105,7 @@ public class DiskQuotaConfig {
         return quota;
     }
 
-    private Map<String, LayerQuota> getLayerQuotasMap() {
+    private synchronized Map<String, LayerQuota> getLayerQuotasMap() {
         if (layerQuotasMap == null) {
             layerQuotasMap = new HashMap<String, LayerQuota>();
 
@@ -95,7 +118,7 @@ public class DiskQuotaConfig {
         return layerQuotasMap;
     }
 
-    public void remove(LayerQuota lq) {
+    public synchronized void remove(LayerQuota lq) {
         for (Iterator<LayerQuota> it = layerQuotas.iterator(); it.hasNext();) {
             LayerQuota quota = it.next();
             if (quota.getLayer().equals(lq.getLayer())) {
@@ -111,7 +134,7 @@ public class DiskQuotaConfig {
      *         {@link #getDefaultQuota() default quota})
      */
     public int getNumLayers() {
-        return layerQuotas == null ? 0 : layerQuotas.size();
+        return layerQuotas.size();
     }
 
     @Override
@@ -126,7 +149,7 @@ public class DiskQuotaConfig {
     }
 
     public int getMaxConcurrentCleanUps() {
-        return maxConcurrentCleanUps == 0 ? 2 : maxConcurrentCleanUps;
+        return maxConcurrentCleanUps;
     }
 
     public void setMaxConcurrentCleanUps(int nThreads) {
