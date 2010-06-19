@@ -132,8 +132,7 @@ public class FileBlobStore implements BlobStore {
                     + fh.getAbsolutePath());
         }
         long[] xyz = stObj.getXYZ();
-        listeners.sendTileDeleted(stObj.getLayerName(), stObj.getGridSetId(),
-                stObj.getBlobFormat(), stObj.getParameters(), xyz[0], xyz[1], (int) xyz[2], length);
+        listeners.sendTileDeleted(stObj);
        
         File parentDir = fh.getParentFile();
         
@@ -246,8 +245,15 @@ public class FileBlobStore implements BlobStore {
     }
     
     public void put(TileObject stObj) throws StorageException {
-        File fh = getFileHandleTile(stObj, true);
-        writeFile(fh,stObj.getBlob());
+        final File fh = getFileHandleTile(stObj, true);
+        final boolean existed = fh.exists();
+        writeFile(fh, stObj.getBlob());
+        /*
+         * This is important because listeners may be tracking tile existence
+         */
+        if (existed) {
+            listeners.sendTileDeleted(stObj);
+        }
         listeners.sendTileStored(stObj);
     }
     

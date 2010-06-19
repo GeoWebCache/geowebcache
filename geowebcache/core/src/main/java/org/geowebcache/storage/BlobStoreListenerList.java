@@ -40,16 +40,31 @@ public final class BlobStoreListenerList {
         }
     }
 
-    public void sendTileStored(TileObject stObj) {
+    public void sendTileDeleted(final TileObject stObj) {
         if (listeners.size() > 0) {
-            
+
             final long[] xyz = stObj.getXYZ();
             final String layerName = stObj.getLayerName();
             final String gridSetId = stObj.getGridSetId();
             final String blobFormat = stObj.getBlobFormat();
             final String parameters = stObj.getParameters();
             final int blobSize = stObj.getBlobSize();
-            
+
+            sendTileDeleted(layerName, gridSetId, blobFormat, parameters, xyz[0], xyz[1],
+                    (int) xyz[2], blobSize);
+        }
+    }
+
+    public void sendTileStored(TileObject stObj) {
+        if (listeners.size() > 0) {
+
+            final long[] xyz = stObj.getXYZ();
+            final String layerName = stObj.getLayerName();
+            final String gridSetId = stObj.getGridSetId();
+            final String blobFormat = stObj.getBlobFormat();
+            final String parameters = stObj.getParameters();
+            final int blobSize = stObj.getBlobSize();
+
             for (int i = 0; i < listeners.size(); i++) {
                 listeners.get(i).tileStored(layerName, gridSetId, blobFormat, parameters, xyz[0],
                         xyz[1], (int) xyz[2], blobSize);
