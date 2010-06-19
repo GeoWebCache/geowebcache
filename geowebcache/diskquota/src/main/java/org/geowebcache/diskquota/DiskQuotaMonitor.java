@@ -124,6 +124,9 @@ public class DiskQuotaMonitor implements DisposableBean {
         if (this.cleanUpExecutorService != null) {
             this.cleanUpExecutorService.shutdown();
         }
+        if(this.cacheInfoBuilder != null){
+            this.cacheInfoBuilder.shutDown();
+        }
         try {
             log.info("Disk quota monitor shutting down, saving configuration");
             configLoader.saveConfig(quotaConfig);
@@ -236,6 +239,10 @@ public class DiskQuotaMonitor implements DisposableBean {
 
             usedQuota.add(actuallyUsedStorage, B);
 
+            // inform the layer policy the tile has been added, in case it needs that information
+            LayerQuotaExpirationPolicy policy = layerQuota.getExpirationPolicy();
+            policy.createInfoFor(layerQuota, gridSetId, x, y, z);
+
             // mark the config as dirty so its saved when appropriate
             quotaConfig.setDirty(true);
             layerQuota.setDirty(true);
@@ -259,16 +266,21 @@ public class DiskQuotaMonitor implements DisposableBean {
             }
             int blockSize = quotaConfig.getDiskBlockSize();
 
-            long actuallyUsedStorage = blockSize * (int) Math.ceil((double) blobSize / blockSize);
+            long actualTileSizeOnDisk = blockSize * (int) Math.ceil((double) blobSize / blockSize);
 
             Quota usedQuota = layerQuota.getUsedQuota();
 
-            usedQuota.subtract(actuallyUsedStorage, B);
+            usedQuota.subtract(actualTileSizeOnDisk, B);
+
+            // inform the layer policy the tile has been deleted, in case it needs that information
+            LayerQuotaExpirationPolicy policy = layerQuota.getExpirationPolicy();
+            policy.removeInfoFor(layerQuota, gridSetId, x, y, z);
+
             // mark the config as dirty so its saved when appropriate
             quotaConfig.setDirty(true);
             layerQuota.setDirty(true);
-            if (log.isDebugEnabled()) {
-                log.debug("Used quota decreased for " + layerName + ": " + usedQuota);
+            if (log.isTraceEnabled()) {
+                log.trace("Used quota decreased for " + layerName + ": " + usedQuota);
             }
         }
 
