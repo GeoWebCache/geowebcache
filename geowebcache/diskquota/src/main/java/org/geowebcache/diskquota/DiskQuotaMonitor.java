@@ -236,6 +236,9 @@ public class DiskQuotaMonitor implements DisposableBean {
 
             usedQuota.add(actuallyUsedStorage, B);
 
+            // mark the config as dirty so its saved when appropriate
+            quotaConfig.setDirty(true);
+            layerQuota.setDirty(true);
             if (log.isDebugEnabled()) {
                 log.debug("Used quota increased for " + layerName + ": " + usedQuota);
             }
@@ -249,15 +252,21 @@ public class DiskQuotaMonitor implements DisposableBean {
                 final String blobFormat, final String parameters, final long x, final long y,
                 final int z, final long blobSize) {
 
+            final LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
+            if (layerQuota == null) {
+                // there's no quota defined for the layer
+                return;
+            }
             int blockSize = quotaConfig.getDiskBlockSize();
 
             long actuallyUsedStorage = blockSize * (int) Math.ceil((double) blobSize / blockSize);
 
-            LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
             Quota usedQuota = layerQuota.getUsedQuota();
 
             usedQuota.subtract(actuallyUsedStorage, B);
-
+            // mark the config as dirty so its saved when appropriate
+            quotaConfig.setDirty(true);
+            layerQuota.setDirty(true);
             if (log.isDebugEnabled()) {
                 log.debug("Used quota decreased for " + layerName + ": " + usedQuota);
             }
@@ -267,15 +276,16 @@ public class DiskQuotaMonitor implements DisposableBean {
          * @see org.geowebcache.storage.BlobStoreListener#layerDeleted(java.lang.String)
          */
         public void layerDeleted(final String layerName) {
-            LayerQuotaExpirationPolicy layerQuotaPolicy = getPolicyFor(layerName);
-            layerQuotaPolicy.dettach(layerName);
-            quotaConfig.remove(quotaConfig.getLayerQuota(layerName));
-        }
-
-        private LayerQuotaExpirationPolicy getPolicyFor(final String layerName) {
-            LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
+            final LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
+            if (layerQuota == null) {
+                // there's no quota defined for the layer
+                return;
+            }
             LayerQuotaExpirationPolicy expirationPolicy = layerQuota.getExpirationPolicy();
-            return expirationPolicy;
+            expirationPolicy.dettach(layerName);
+            quotaConfig.remove(quotaConfig.getLayerQuota(layerName));
+            // mark the config as dirty so its saved when appropriate
+            quotaConfig.setDirty(true);
         }
     }
 
@@ -303,10 +313,13 @@ public class DiskQuotaMonitor implements DisposableBean {
 
         public void run() {
             // first, save the config to account for changes in used quotas
-            try {
-                configLoader.saveConfig(quotaConfig);
-            } catch (Exception e) {
-                log.error("Error saving disk quota config", e);
+            if (quotaConfig.isDirty()) {
+                try {
+                    configLoader.saveConfig(quotaConfig);
+                    quotaConfig.setDirty(false);
+                } catch (Exception e) {
+                    log.error("Error saving disk quota config", e);
+                }
             }
 
             for (LayerQuota lq : quotaConfig.getLayerQuotas()) {
@@ -328,7 +341,10 @@ public class DiskQuotaMonitor implements DisposableBean {
                 final Quota quota = lq.getQuota();
                 final Quota usedQuota = lq.getUsedQuota();
                 LayerQuotaExpirationPolicy expirationPolicy = lq.getExpirationPolicy();
-                expirationPolicy.save(layerName);
+                if (lq.isDirty()) {
+                    expirationPolicy.save(layerName);
+                    lq.setDirty(false);
+                }
 
                 Quota excedent = usedQuota.difference(quota);
                 if (excedent.getValue().compareTo(BigDecimal.ZERO) > 0) {

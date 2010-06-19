@@ -3,6 +3,7 @@
  */
 package org.geowebcache.diskquota.paging;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -242,7 +243,7 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
         layerQuota.getUsedQuota().setValue(2);
         layerQuota.getUsedQuota().setUnits(StorageUnit.MiB);
 
-        // mock up a truncate task that somehow changes the layer quota comsumption
+        // mock up a truncate task that somehow changes the layer quota consumption
         class MockGWCTask extends GWCTask {
             public boolean called;
 
@@ -266,6 +267,9 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
         policy = new MockPagedExipirationPolicy(tileBreeder, pageStore);
 
         policy.attach(layer, layerQuota);
+        // for expireTiles to work, there must be tile pages, so lets create a couple ones
+        final String gridsetId = gridSubsets.keySet().iterator().next();
+        policy.createInfoFor(layerQuota, gridsetId, new long[] { 0, 1, 2 }, new File("fake.png"));
         policy.expireTiles(layerName);
 
         EasyMock.verify(layer);

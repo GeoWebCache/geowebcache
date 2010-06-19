@@ -12,6 +12,8 @@ public final class LayerQuota {
 
     private transient LayerQuotaExpirationPolicy expirationPolicy;
 
+    private transient boolean dirty;
+
     public LayerQuota(final String layer, final String expirationPolicyName) {
         this.layer = layer;
         this.expirationPolicyName = expirationPolicyName;
@@ -71,5 +73,13 @@ public final class LayerQuota {
         return new StringBuilder(getClass().getSimpleName()).append("[layer: ").append(layer)
                 .append(", Expiration policy: '").append(expirationPolicyName).append("', quota:")
                 .append(quota).append("]").toString();
+    }
+
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+
+    public boolean isDirty() {
+        return this.dirty;
     }
 }

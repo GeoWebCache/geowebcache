@@ -116,10 +116,16 @@ public class TilePage implements Serializable {
 
     @Override
     public String toString() {
-        return new StringBuilder(getClass().getSimpleName()).append("[").append(zyxIndex[2])
-                .append(',').append(zyxIndex[1]).append(',').append(zyxIndex[0]).append(". Hits: ")
-                .append(getNumHits()).append(". Access: ").append(
-                        currentTime.get() - accessTimeMinutes).append("m ago.]").toString();
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append("[").append(
+                zyxIndex[2]).append(',').append(zyxIndex[1]).append(',').append(zyxIndex[0])
+                .append(". Hits: ").append(getNumHits()).append(". Access: ");
+        if (accessTimeMinutes == 0) {
+            sb.append("never");
+        } else {
+            sb.append(currentTime.get() - accessTimeMinutes).append("m ago.");
+        }
+        sb.append(']');
+        return sb.toString();
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {

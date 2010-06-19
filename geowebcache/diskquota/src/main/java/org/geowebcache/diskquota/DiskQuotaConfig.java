@@ -36,6 +36,8 @@ public class DiskQuotaConfig {
 
     private transient Map<String, LayerQuota> layerQuotasMap;
 
+    private transient boolean dirty;
+
     public DiskQuotaConfig() {
         readResolve();
     }
@@ -165,4 +167,11 @@ public class DiskQuotaConfig {
         this.maxConcurrentCleanUps = nThreads;
     }
 
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+
+    public boolean isDirty() {
+        return this.dirty;
+    }
 }

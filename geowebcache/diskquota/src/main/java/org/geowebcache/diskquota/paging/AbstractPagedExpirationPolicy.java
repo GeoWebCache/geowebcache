@@ -222,7 +222,7 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
         final LayerQuota layerQuota = tilePageCalculator.getLayerQuota();
         final Quota quotaLimit = layerQuota.getQuota();
         final Quota usedQuota = layerQuota.getUsedQuota();
-        if (usedQuota.getValue().equals(BigDecimal.ZERO)) {
+        if (usedQuota.getValue().compareTo(BigDecimal.ZERO) == 0) {
             return;
         }
 
@@ -233,7 +233,7 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
 
         for (GridSubset gridSubSet : gridSubsets) {
             String gridSetId = gridSubSet.getName();
-            List<TilePage> allPages = tilePageCalculator.getAllPages(gridSetId);
+            List<TilePage> allPages = tilePageCalculator.getPages(gridSetId);
             allPages = sortPagesForExpiration(allPages);
 
             for (TilePage page : allPages) {
@@ -252,7 +252,7 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
                     // how much storage space did we freed up?
                     Quota difference = exceededQuota.difference(usedQuota);
                     BigDecimal dif = difference.getValue();
-                    if (dif.max(BigDecimal.ZERO) == dif) {// difference > 0?
+                    if (dif.compareTo(BigDecimal.ZERO) > 0) {// difference > 0?
                         // did we reach the layer's quota?
                         Quota newExcedent = usedQuota.difference(quotaLimit);
                         BigDecimal excedentValue = newExcedent.getValue();
@@ -271,7 +271,7 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
                             }
                         }
 
-                    } else if (difference.getValue().equals(BigDecimal.ZERO)) {
+                    } else if (difference.getValue().compareTo(BigDecimal.ZERO) == 0) {
                         if (log.isTraceEnabled()) {
                             log.trace("Truncation of tile page " + page + "/" + gridSetId
                                     + " produced no reduction in storage for layer " + layerName);
