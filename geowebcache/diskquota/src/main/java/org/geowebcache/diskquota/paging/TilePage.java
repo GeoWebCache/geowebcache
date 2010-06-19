@@ -36,7 +36,7 @@ public class TilePage implements Serializable {
                 TilePage.currentTime.set(minutesSinceJan1_1970);
             }
         };
-        executorService.scheduleAtFixedRate(command, 1L, 1L, TimeUnit.MINUTES);
+        executorService.scheduleAtFixedRate(command, 60, 60, TimeUnit.SECONDS);
     }
 
     /**
