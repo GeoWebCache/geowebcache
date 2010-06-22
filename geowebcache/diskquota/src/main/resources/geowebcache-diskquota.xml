@@ -14,8 +14,8 @@
       <layer>topp:states</layer>
       <expirationPolicyName>LFU</expirationPolicyName>
       <quota>
-        <value>10</value>
-        <units>MB</units>
+        <value>100</value>
+        <units>MiB</units>
       </quota>
     </LayerQuota>
 
@@ -23,13 +23,9 @@
       <layer>raster test layer</layer>
       <expirationPolicyName>LRU</expirationPolicyName>
       <quota>
-        <value>30</value>
-        <units>GB</units>
+        <value>3</value>
+        <units>GiB</units>
       </quota>
-      <!--usedQuota>
-        <value>2799152</value>
-        <units>KB</units>
-      </usedQuota-->
     </LayerQuota>
   </layerQuotas>
 </gwcQuotaConfiguration>
