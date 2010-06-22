@@ -65,43 +65,56 @@ class JDBCMBWrapper {
         
     final String driverClass;
     
-    final Connection persistentConnection;
+    /**
+     * H2 would close all the file handles to the database once you closed the last connection.
+     * Reopening from scratch can take almost a second, so keeping one connection around in the
+     * background ensures that this doesn't happen.
+     * <p>
+     * It _really_ makes a difference if connection pooling is disabled!
+     * </p>
+     */
+    private Connection persistentConnection;
     
     boolean closing = false;
     
     /** Timeout for locked objects, 60 seconds by default **/
     protected long lockTimeout = 60000;
 
-    public boolean USE_CONNECTION_POOLING = true;
+    private boolean useConnectionPooling;
 
+    private int maxConnections;
+    
     private JdbcConnectionPool connPool;
     
-    protected JDBCMBWrapper(String driverClass, String jdbcString, String username, String password)
+    protected JDBCMBWrapper(String driverClass, String jdbcString, String username, String password, boolean useConnectionPooling, int maxConnections)
     throws StorageException,SQLException {
         this.jdbcString = jdbcString;
         this.username = username;
         this.password = password;
         this.driverClass = driverClass;
-        
+        this.useConnectionPooling = useConnectionPooling;
+        this.maxConnections = maxConnections;
         try {
             Class.forName(driverClass);
         } catch(ClassNotFoundException cnfe) {
             throw new StorageException("Class not found: " + cnfe.getMessage());
         }
         
-        persistentConnection = getConnection();
+        if(!useConnectionPooling){
+            persistentConnection = getConnection();
+        }
         
         checkTables();
-        
-        //System.out.println("\n\n\nAUTO: " + persistentConnection.getAutoCommit() + "\n\n\n");
     }
     
-    public JDBCMBWrapper(DefaultStorageFinder defStoreFind) throws StorageException,SQLException {
+    public JDBCMBWrapper(DefaultStorageFinder defStoreFind, boolean useConnectionPooling,
+            int maxConnections) throws StorageException, SQLException {
         String envStrUsername = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_USERNAME);
         String envStrPassword = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_PASSWORD);
         String envStrJdbcUrl = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_JDBC_URL);
         String envStrDriver = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_DRIVER_CLASS);
-        
+        this.useConnectionPooling = useConnectionPooling;
+        this.maxConnections = maxConnections;
         if(envStrUsername != null) {
             username = envStrUsername;
         } else {
@@ -137,7 +150,9 @@ class JDBCMBWrapper {
             throw new StorageException("Class not found: " + cnfe.getMessage());
         }
         
-        persistentConnection = getConnection();
+        if (!useConnectionPooling) {
+            persistentConnection = getConnection();
+        }
         
         checkTables();
     }
@@ -145,11 +160,11 @@ class JDBCMBWrapper {
     protected Connection getConnection() throws SQLException {
         if (!closing) {
             Connection conn;
-            if (USE_CONNECTION_POOLING) {
+            if (useConnectionPooling) {
                 if (connPool == null) {
                     connPool = JdbcConnectionPool.create(jdbcString, username,
                             password == null ? "" : password);
-                    connPool.setMaxConnections(15);
+                    connPool.setMaxConnections(maxConnections);
                 }
                 conn = connPool.getConnection();
             } else {
@@ -796,15 +811,17 @@ class JDBCMBWrapper {
     
     protected void destroy() {
         this.closing = true;
-        try {
-            persistentConnection.createStatement().execute("SHUTDOWN");
-        } catch (SQLException se) {
-            log.warn("SHUTDOWN call to JDBC resulted in: " + se.getMessage());
-        } finally {
+        if (persistentConnection != null) {
             try {
-                persistentConnection.close();
+                persistentConnection.createStatement().execute("SHUTDOWN");
             } catch (SQLException se) {
-                log.warn(se.getMessage());
+                log.warn("SHUTDOWN call to JDBC resulted in: " + se.getMessage());
+            } finally {
+                try {
+                    persistentConnection.close();
+                } catch (SQLException se) {
+                    log.warn(se.getMessage());
+                }
             }
         }
 

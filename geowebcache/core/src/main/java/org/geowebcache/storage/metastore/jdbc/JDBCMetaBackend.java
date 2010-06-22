@@ -49,8 +49,29 @@ public class JDBCMetaBackend implements MetaStore {
     
     public JDBCMetaBackend(String driverClass, String jdbcString, 
             String username, String password) throws StorageException {
+        this(driverClass, jdbcString, username, password, false, -1);
+    }
+
+    /**
+     * 
+     * @param driverClass
+     * @param jdbcString
+     * @param username
+     * @param password
+     * @param useConnectionPooling Maximun number of connections in the pool iif useConnectionPooling
+     * @param maxConnections Whether to use JDBC connection pooling
+     * @throws StorageException
+     */
+    public JDBCMetaBackend(String driverClass, String jdbcString, String username, String password,
+            boolean useConnectionPooling, int maxConnections) throws StorageException {
+        if (useConnectionPooling && maxConnections <= 0) {
+            throw new IllegalArgumentException(
+                    "If connection pooling is enabled maxConnections shall be a positive integer: "
+                            + maxConnections);
+        }
         try {
-            wrpr = new JDBCMBWrapper(driverClass, jdbcString, username, password);
+            wrpr = new JDBCMBWrapper(driverClass, jdbcString, username, password,
+                    useConnectionPooling, maxConnections);
         } catch(SQLException se) {
             enabled = false;
             throw new StorageException(se.getMessage());
@@ -64,6 +85,16 @@ public class JDBCMetaBackend implements MetaStore {
     }
     
     public JDBCMetaBackend(DefaultStorageFinder defStoreFind) throws StorageException {
+        this(defStoreFind, false, -1);
+    }
+
+    public JDBCMetaBackend(DefaultStorageFinder defStoreFind, boolean useConnectionPooling,
+            int maxConnections) throws StorageException {
+        if (useConnectionPooling && maxConnections <= 0) {
+            throw new IllegalArgumentException(
+                    "If connection pooling is enabled maxConnections shall be a positive integer: "
+                            + maxConnections);
+        }
         // Check whether we want a meta store at all, or whether GS just gave us a dummy
         String metaStoreDisabled = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_DISABLED);
         if (metaStoreDisabled != null && Boolean.parseBoolean(metaStoreDisabled)) {
@@ -72,7 +103,7 @@ public class JDBCMetaBackend implements MetaStore {
             idCache = null;
         } else {
             try {
-                wrpr = new JDBCMBWrapper(defStoreFind);
+                wrpr = new JDBCMBWrapper(defStoreFind, useConnectionPooling, maxConnections);
             } catch (SQLException se) {
                 log.error("Failed to start JDBC metastore: " + se.getMessage());
                 log.warn("Disabling JDBC metastore, not all functionality will be available!");

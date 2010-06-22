@@ -1,7 +1,6 @@
 package org.geowebcache.storage.metastore.jdbc;
 
 import java.io.File;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -12,7 +11,6 @@ import java.util.concurrent.Future;
 
 import junit.framework.TestCase;
 
-import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.util.FileUtils;
 
@@ -47,17 +45,26 @@ public class JDBCMBWrapperPerfTest extends TestCase {
             FileUtils.rmFileCacheDir(directory, null);
         }
         directory.mkdir();
-        File db = new File(directory, "h2db");
-        String dbFileLocStr = db.toURI().toURL().toExternalForm();
-        String jdbcURL = "jdbc:h2:" + dbFileLocStr;
-
-        jdbcWrapper = new JDBCMBWrapper("org.h2.Driver", jdbcURL, "sa", null);
     }
 
     @Override
     public void tearDown() {
-        jdbcWrapper.destroy();
+        if (jdbcWrapper != null) {
+            jdbcWrapper.destroy();
+        }
         FileUtils.rmFileCacheDir(directory, null);
+    }
+
+    private JDBCMBWrapper getJdbcWrapper() throws Exception {
+        if (jdbcWrapper == null) {
+            File db = new File(directory, "h2db");
+            String dbFileLocStr = db.toURI().toURL().toExternalForm();
+            String jdbcURL = "jdbc:h2:" + dbFileLocStr;
+
+            jdbcWrapper = new JDBCMBWrapper("org.h2.Driver", jdbcURL, "sa", null,
+                    USE_CONNECTION_POOLING, 15);
+        }
+        return jdbcWrapper;
     }
 
     public void testSingleThreadOldStyle() throws Exception {
@@ -146,8 +153,7 @@ public class JDBCMBWrapperPerfTest extends TestCase {
                 + " tiles/s)");
     }
 
-    private long insertTiles(final long numTiles, final int offset) throws SQLException,
-            StorageException {
+    private long insertTiles(final long numTiles, final int offset) throws Exception {
         long[] xyz;
         TileObject tileObject;
         long totalTime = 0;
@@ -160,17 +166,17 @@ public class JDBCMBWrapperPerfTest extends TestCase {
         return totalTime;
     }
 
-    private long insertTile(TileObject stObj) throws SQLException, StorageException {
+    private long insertTile(TileObject stObj) throws Exception {
         long t = System.currentTimeMillis();
-        jdbcWrapper.USE_CONNECTION_POOLING = USE_CONNECTION_POOLING;
+        JDBCMBWrapper wrapper = getJdbcWrapper();
         if (USE_DELETE_PUT_UNLOCK) {
-            jdbcWrapper.deleteTile(stObj);
+            wrapper.deleteTile(stObj);
         }
 
-        jdbcWrapper.putTile(stObj);
+        wrapper.putTile(stObj);
 
         if (USE_DELETE_PUT_UNLOCK) {
-            jdbcWrapper.unlockTile(stObj);
+            wrapper.unlockTile(stObj);
         }
         t = System.currentTimeMillis() - t;
         return t;

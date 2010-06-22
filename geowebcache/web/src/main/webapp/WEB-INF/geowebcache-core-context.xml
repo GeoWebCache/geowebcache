@@ -51,9 +51,17 @@
   <bean id="gwcDefaultStorageFinder" class="org.geowebcache.storage.DefaultStorageFinder">
   	<constructor-arg ref="gwcAppCtx" />
   </bean>
-  
+
   <bean id="gwcMetaStore" class="org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend" destroy-method="destroy">
     <constructor-arg ref="gwcDefaultStorageFinder" />
+    <constructor-arg>
+      <description>Enable connection pooling?</description>
+      <value>TRUE</value>
+    </constructor-arg>
+    <constructor-arg>
+      <description>Max number of connections in the pool</description>
+      <value>15</value>
+    </constructor-arg>
   </bean>
   
   <!-- Static definition of where to put the metastore. 
