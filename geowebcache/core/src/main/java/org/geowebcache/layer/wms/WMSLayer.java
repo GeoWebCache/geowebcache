@@ -1134,12 +1134,13 @@ public class WMSLayer extends TileLayer {
             retVal = list.get(0).getExpiration();
         } else {
             int i;
-            for(i = 1; i<=length; i++) {
+            for(i = 1; i<length; ) {
                 if(list.get(i).getMinZoom() > zoomLevel) {
                     break;
                 }
+                i++;
             }
-            retVal = list.get(i -1).getExpiration();
+            retVal = list.get(i-1).getExpiration();
         }
         
         if(retVal == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
