@@ -454,9 +454,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
      */
     private void writeError(HttpServletResponse response, int httpCode, String errorMsg) {
         log.debug(errorMsg);
-        // This will normally happen 
+        
+        
         errorMsg =  "<html>\n"+ServletUtils.gwcHtmlHeader("GWC Error") +"<body>\n" 
-        + ServletUtils.gwcHtmlLogoLink("../") + "<h4>"+httpCode+": "+errorMsg+"</h4>" + "</body></html>\n";
+        + ServletUtils.gwcHtmlLogoLink("../") + "<h4>"+httpCode+": "+ServletUtils.disableHTMLTags(errorMsg)+"</h4>" + "</body></html>\n";
         writePage(response, httpCode, errorMsg);
     }
         

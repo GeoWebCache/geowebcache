@@ -405,4 +405,15 @@ public class ServletUtils {
         
         return ret;
     }
+    
+    /**
+     * Replaces occurrences of &gt; and &lt; with HTML equivalents  
+     * 
+     * @param str
+     * @return
+     */
+    
+    public static String disableHTMLTags(String str) {
+        return str.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    }
 }
