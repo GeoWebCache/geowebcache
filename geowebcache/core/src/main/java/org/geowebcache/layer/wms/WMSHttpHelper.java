@@ -18,11 +18,24 @@
 package org.geowebcache.layer.wms;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ConnectException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.auth.CredentialsProvider;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.params.HttpClientParams;
+import org.apache.commons.httpclient.params.HttpConnectionParams;
+import org.apache.commons.httpclient.params.HttpParams;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -71,7 +84,8 @@ public class WMSHttpHelper extends WMSSourceHelper {
                         + requestUrl + " " + maue.getMessage());
             }
             
-            data = connectAndCheckHeaders(tileRespRecv, wmsBackendUrl, wmsParams, expectedMimeType, layer.backendTimeout);
+            data = connectAndCheckHeaders(tileRespRecv, wmsBackendUrl, wmsParams, expectedMimeType,
+                    layer.backendTimeout, layer.getHttpUsername(), layer.getHttpPassword());
 
             backendTries++;
         }
@@ -100,22 +114,19 @@ public class WMSHttpHelper extends WMSSourceHelper {
      */
     private byte[] connectAndCheckHeaders(
             TileResponseReceiver tileRespRecv, URL wmsBackendUrl,
-            String wmsParams, String requestMime, int backendTimeout) 
+            String wmsParams, String requestMime, int backendTimeout, String username, String password) 
     throws GeoWebCacheException {
         
         byte[] ret = null;
-        HttpURLConnection wmsBackendCon = null;
+        GetMethod getMethod = null;
         int responseCode = -1;
         int responseLength = -1;
 
         try { // finally
             try {
-                wmsBackendCon = (HttpURLConnection) wmsBackendUrl.openConnection();
-                wmsBackendCon.setConnectTimeout(backendTimeout * 1000);
-                wmsBackendCon.setReadTimeout(backendTimeout * 1000);
-                
-                responseCode = wmsBackendCon.getResponseCode();
-                responseLength = wmsBackendCon.getContentLength();
+                getMethod = executeRequest(wmsBackendUrl, username, password, backendTimeout);
+                responseCode = getMethod.getStatusCode();
+                responseLength = (int) getMethod.getResponseContentLength();
 
                 // Do not set error at this stage
             } catch (ConnectException ce) {
@@ -138,7 +149,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
             }
 
             // Check that we're not getting an error MIME back.
-            String responseMime = wmsBackendCon.getContentType();
+            String responseMime = getMethod.getResponseHeader("Content-Type").getValue();
             if (responseCode != 204
                     && responseMime != null
 	            && ! mimeStringCheck(requestMime,responseMime)) {
@@ -149,9 +160,10 @@ public class WMSHttpHelper extends WMSSourceHelper {
                     try {
                         int readLength = 0;
                         int readAccu = 0;
+                        InputStream inStream = getMethod.getResponseBodyAsStream();
                         while(readLength > -1 && readAccu < error.length) {
                             int left = error.length - readAccu;
-                            readLength = wmsBackendCon.getInputStream().read(error,readAccu, left);
+                            readLength = inStream.read(error,readAccu, left);
                             readAccu += readLength;
                         }
                     } catch (IOException ioe) {
@@ -169,7 +181,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
 
             // Everything looks okay, try to save expiration
             if (tileRespRecv.getExpiresHeader() == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
-                String expireValue = wmsBackendCon.getHeaderField("Expires");
+                String expireValue = getMethod.getResponseHeader("Expires").getValue();
                 long expire = ServletUtils.parseExpiresHeader(expireValue);
                 if(expire != -1) {
                     tileRespRecv.setExpiresHeader(expire / 1000);
@@ -180,14 +192,15 @@ public class WMSHttpHelper extends WMSSourceHelper {
             if (responseCode != 204) {
                 try {
                     if (responseLength < 1) {
-                        ret = ServletUtils.readStream(wmsBackendCon.getInputStream(), 16384, 2048);
+                        ret = ServletUtils.readStream(getMethod.getResponseBodyAsStream(), 16384, 2048);
                     } else {
                         ret = new byte[responseLength];
                         int readLength = 0;
                         int readAccu = 0;
+                        InputStream inStream = getMethod.getResponseBodyAsStream();
                         while(readLength > -1 && readAccu < responseLength) {
                             int left = responseLength - readAccu;
-                            readLength = wmsBackendCon.getInputStream().read(ret,readAccu,left);
+                            readLength = inStream.read(ret,readAccu,left);
                             readAccu += readLength;
                         }
                         if (readAccu != responseLength) {
@@ -208,11 +221,44 @@ public class WMSHttpHelper extends WMSSourceHelper {
             }
 
         } finally {
-            wmsBackendCon.disconnect();
+            if(getMethod!=null)
+                getMethod.releaseConnection();
         }
 
         return ret;
     }
     
+    /**
+     * sets up a HTTP GET request to a URL and configures authentication and timeouts if possible
+     * @param url endpoint to talk to
+     * @param username username to use for authentication
+     * @param password password to use for authentication
+     * @param backendTimeout timeout to use. Values <1 will be ignored.
+     * @return executed GetMethod (that has to be closed after reading the response!)
+     * @throws HttpException
+     * @throws IOException
+     */
+    public static GetMethod executeRequest(URL url, String username, String password,
+            int backendTimeout) throws HttpException, IOException  {
+        HttpClient httpClient = new HttpClient();
+        GetMethod getMethod = new GetMethod(url.toString());
+        
+        
+        if (backendTimeout > 0) {
+            HttpConnectionParams params = httpClient.getHttpConnectionManager().getParams();
+            params.setConnectionTimeout(backendTimeout * 1000);
+            params.setSoTimeout(backendTimeout * 1000);
+        }
 
+        if (username != null && password != null && !username.equals("")) {
+            AuthScope authscope = new AuthScope(url.getHost(), url.getPort());
+            UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
+            
+            httpClient.getState().setCredentials(authscope, credentials);
+            getMethod.setDoAuthentication(true);
+        }
+        httpClient.executeMethod(getMethod);
+        
+        return getMethod;
+    }
 }

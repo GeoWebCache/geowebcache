@@ -82,6 +82,10 @@ public class WMSLayer extends TileLayer {
     private String errorMime;
 
     private String wmsVersion;
+    
+    private String httpUsername;
+    
+    private String httpPassword;
 
     //Not used, should be removed through XSL
     @SuppressWarnings("unused")
@@ -1303,4 +1307,20 @@ public class WMSLayer extends TileLayer {
             return value;
         }
     }
+
+	public void setHttpPassword(String httpPassword) {
+		this.httpPassword = httpPassword;
+	}
+
+	public String getHttpPassword() {
+		return httpPassword;
+	}
+
+	public void setHttpUsername(String httpUsername) {
+		this.httpUsername = httpUsername;
+	}
+
+	public String getHttpUsername() {
+		return httpUsername;
+	}
 }

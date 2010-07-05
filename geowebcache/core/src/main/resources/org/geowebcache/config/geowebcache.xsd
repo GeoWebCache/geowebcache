@@ -200,6 +200,20 @@
          The default is 1.1.0
        </xs:documentation></xs:annotation>
      </xs:element>
+     <xs:element name="httpUsername" type="xs:string" minOccurs="0">
+        <xs:annotation><xs:documentation xml:lang="en">
+	      If you wish to have this WMS layer to use
+          HTTP Authentication set this to the username. You must then also
+          set httpPassword for it to take effect.
+        </xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="httpPassword" type="xs:string" minOccurs="0">
+        <xs:annotation><xs:documentation xml:lang="en">
+	      If you wish to have this WMS layer to use
+          HTTP Authentication set this to the username. You must then also
+          set httpUsername for it to take effect.
+        </xs:documentation></xs:annotation>
+      </xs:element>
      <xs:element name="tiled" type="xs:boolean" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
          The TILED parameter sent to the WMS backend. 

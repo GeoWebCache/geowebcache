@@ -18,17 +18,19 @@
 package org.geowebcache.service.wms;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
+import java.io.InputStream;
 import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 
 public class WMSRequests {
@@ -53,6 +55,7 @@ public class WMSRequests {
         String queryStr = tile.servletReq.getQueryString();
         String serverStr = layer.getWMSurl()[0];
 
+        GetMethod getMethod = null;
         try {
             URL url;
             if (serverStr.endsWith("?")) {
@@ -61,28 +64,30 @@ public class WMSRequests {
                 url = new URL(serverStr + "?" + queryStr);
             }
 
-            HttpURLConnection wmsBackendCon = (HttpURLConnection) url
-                    .openConnection();
+            getMethod = WMSHttpHelper.executeRequest(url, layer.getHttpUsername(), layer.getHttpPassword(),
+                    -1);
+            InputStream is = getMethod.getResponseBodyAsStream();
+
             HttpServletResponse response = tile.servletResp;
-
-            if (wmsBackendCon.getContentEncoding() != null) {
-                response.setCharacterEncoding(wmsBackendCon
-                        .getContentEncoding());
-            }
-
-            response.setContentType(wmsBackendCon.getContentType());
+            response.setCharacterEncoding(getMethod.getResponseCharSet());
 
             int read = 0;
             byte[] data = new byte[1024];
+            
             while (read > -1) {
-                read = wmsBackendCon.getInputStream().read(data);
+                read = is.read(data);
                 if (read > -1) {
                     response.getOutputStream().write(data, 0, read);
                 }
             }
+
         } catch (IOException ioe) {
             tile.servletResp.setStatus(500);
             log.error(ioe.getMessage());
+        } finally{
+            if(getMethod!=null)
+                getMethod.releaseConnection();
         }
     }
 }
+
