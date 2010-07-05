@@ -86,11 +86,6 @@
       <artifactId>mockrunner</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>com.mockrunner</groupId>
-      <artifactId>mockrunner</artifactId>
-      <scope>test</scope>
-    </dependency>
 
     <!--  Jetty starter dependencies -->
     <dependency>
