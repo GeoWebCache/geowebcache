@@ -414,6 +414,10 @@ public class ServletUtils {
      */
     
     public static String disableHTMLTags(String str) {
+        if(str == null) {
+            return "null";
+        }
+        
         return str.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
     }
 }
