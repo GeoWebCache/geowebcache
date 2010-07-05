@@ -1162,6 +1162,14 @@ public class WMSLayer extends TileLayer {
         return getExpiration(this.expireCacheList, zoomLevel);
     }
     
+    public String getHttpPassword() {
+        return httpPassword;
+    }
+
+    public String getHttpUsername() {
+        return httpUsername;
+    }
+    
     /**
      * Mandatory
      */
@@ -1307,20 +1315,4 @@ public class WMSLayer extends TileLayer {
             return value;
         }
     }
-
-	public void setHttpPassword(String httpPassword) {
-		this.httpPassword = httpPassword;
-	}
-
-	public String getHttpPassword() {
-		return httpPassword;
-	}
-
-	public void setHttpUsername(String httpUsername) {
-		this.httpUsername = httpUsername;
-	}
-
-	public String getHttpUsername() {
-		return httpUsername;
-	}
 }

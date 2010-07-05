@@ -21,21 +21,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.auth.CredentialsProvider;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
-import org.apache.commons.httpclient.params.HttpParams;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -230,35 +223,33 @@ public class WMSHttpHelper extends WMSSourceHelper {
     
     /**
      * sets up a HTTP GET request to a URL and configures authentication and timeouts if possible
+     * 
      * @param url endpoint to talk to
      * @param username username to use for authentication
      * @param password password to use for authentication
-     * @param backendTimeout timeout to use. Values <1 will be ignored.
+     * @param backendTimeout timeout to use in seconds
      * @return executed GetMethod (that has to be closed after reading the response!)
      * @throws HttpException
      * @throws IOException
      */
-    public static GetMethod executeRequest(URL url, String username, String password,
-            int backendTimeout) throws HttpException, IOException  {
+    public static GetMethod executeRequest(URL url, String username, String password, int backendTimeout) 
+    throws HttpException, IOException {
         HttpClient httpClient = new HttpClient();
         GetMethod getMethod = new GetMethod(url.toString());
         
-        
-        if (backendTimeout > 0) {
-            HttpConnectionParams params = httpClient.getHttpConnectionManager().getParams();
-            params.setConnectionTimeout(backendTimeout * 1000);
-            params.setSoTimeout(backendTimeout * 1000);
-        }
+        HttpConnectionParams params = httpClient.getHttpConnectionManager().getParams();
+        params.setConnectionTimeout(backendTimeout * 1000);
+        params.setSoTimeout(backendTimeout * 1000);
 
         if (username != null && password != null && !username.equals("")) {
             AuthScope authscope = new AuthScope(url.getHost(), url.getPort());
             UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
-            
+
             httpClient.getState().setCredentials(authscope, credentials);
             getMethod.setDoAuthentication(true);
         }
         httpClient.executeMethod(getMethod);
-        
+
         return getMethod;
     }
 }

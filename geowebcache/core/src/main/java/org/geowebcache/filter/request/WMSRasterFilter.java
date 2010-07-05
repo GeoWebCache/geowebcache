@@ -63,32 +63,38 @@ public class WMSRasterFilter extends RasterFilter {
 
         int timeout = -1;
         if(backendTimeout != null) {
-            timeout = backendTimeout * 1000;
+            timeout = backendTimeout;
         } else {
-            timeout = 120000;
+            timeout = 120;
         }
         
-        GetMethod getMethod = WMSHttpHelper.executeRequest(wmsUrl, layer.getHttpUsername(),
-                layer.getHttpPassword(), timeout);
+        GetMethod getMethod = null;
+        BufferedImage img = null;
         
-        if(getMethod.getStatusCode() != 200) {
-            getMethod.releaseConnection();
-            throw new GeoWebCacheException("Received response code " + getMethod.getStatusCode() + "\n");
+        try {
+            getMethod = WMSHttpHelper.executeRequest(wmsUrl, layer.getHttpUsername(),
+                    layer.getHttpPassword(), timeout);
+            
+            if(getMethod.getStatusCode() != 200) {
+                throw new GeoWebCacheException("Received response code " + getMethod.getStatusCode() + "\n");
+            }
+            
+            if(! getMethod.getResponseHeader("Content-Type").getValue().startsWith("image/")) {
+                throw new GeoWebCacheException("Unexpected response content type " + getMethod.getResponseHeader("Content-Type").getValue() + " , request was " + urlStr + "\n");
+            }
+            
+            byte[] ret = ServletUtils.readStream(getMethod.getResponseBodyAsStream(), 16384, 2048);
+            
+            InputStream is = new ByteArrayInputStream(ret);
+            
+            img = ImageIO.read(is);
+            
+        } finally {
+            if(getMethod != null) {
+                getMethod.releaseConnection();
+            }
         }
-        
-        if(! getMethod.getResponseHeader("Content-Type").getValue().startsWith("image/")) {
-            getMethod.releaseConnection();
-            throw new GeoWebCacheException("Unexpected response content type " + getMethod.getResponseHeader("Content-Type").getValue() + " , request was " + urlStr + "\n");
-        }
-        
-        byte[] ret = ServletUtils.readStream(getMethod.getResponseBodyAsStream(), 16384, 2048);
-        
-        InputStream is = new ByteArrayInputStream(ret);
-        
-        BufferedImage img = ImageIO.read(is);
-        
-        getMethod.releaseConnection();
-        
+
         if(img.getWidth() != widthHeight[0] || img.getHeight() != widthHeight[1]) {
             String msg = "WMS raster filter has dimensions " + img.getWidth() + "," + img.getHeight()
                     + ", expected " + widthHeight[0] + "," + widthHeight[1] + "\n";
