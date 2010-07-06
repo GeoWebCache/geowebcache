@@ -260,7 +260,12 @@ public class WMSService extends Service {
 
         long[] tileIndex = gridSubset.closestIndex(bbox);
         
-        MimeType mimeType = MimeType.createFromFormat(values[3]);
+        MimeType mimeType;
+        try {
+            mimeType = MimeType.createFromFormat(values[3]);
+        } catch (MimeException me) {
+            throw new GeoWebCacheException("The info_format parameter ("+values[3]+")is missing or not recognized.");
+        }
         
         ConveyorTile gfiConv = new ConveyorTile(
                 sb, tl.getName(), gridSubset.getName(), tileIndex, mimeType, 
@@ -268,10 +273,16 @@ public class WMSService extends Service {
         gfiConv.setTileLayer(tl);
         
         WMSSourceHelper srcHelper = layer.getSourceHelper();
+        
+        int x, y;
+        try {
+            x = Integer.parseInt(values[0]);
+            y = Integer.parseInt(values[1]);
+        } catch(NumberFormatException nfe) {
+            throw new GeoWebCacheException("The parameters for x and y must both be positive integers.");
+        }
 
-        byte[] data = srcHelper.makeFeatureInfoRequest(gfiConv, 
-                Integer.parseInt(values[0]),
-                Integer.parseInt(values[1]));
+        byte[] data = srcHelper.makeFeatureInfoRequest(gfiConv, x, y);
 
         try {
             tile.servletResp.setContentType(mimeType.getMimeType());

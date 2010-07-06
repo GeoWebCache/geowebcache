@@ -122,13 +122,15 @@ class GeoRSSPollTask implements Runnable {
 
         final String gridSetId = pollDef.getGridSetId();
         final URL feedUrl = new URL(templateFeedUrl(pollDef.getFeedUrl()));
-
+        final String httpUsername = pollDef.getHttpUsername();
+        final String httpPassword = pollDef.getHttpUsername();
+        
         logger.debug("Getting GeoRSS reader for " + feedUrl.toExternalForm());
         final GeoRSSReaderFactory geoRSSReaderFactory = new GeoRSSReaderFactory();
         
         GeoRSSReader geoRSSReader = null;
         try {
-            geoRSSReader = geoRSSReaderFactory.createReader(feedUrl);
+            geoRSSReader = geoRSSReaderFactory.createReader(feedUrl, httpUsername, httpPassword);
         } catch(IOException ioe) {
             logger.error("Failed to fetch RSS feed from " + feedUrl + "\n" + ioe.getMessage());
             return;

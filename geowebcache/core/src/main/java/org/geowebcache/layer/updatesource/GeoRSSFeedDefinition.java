@@ -21,7 +21,11 @@ import org.geowebcache.seed.GWCTask;
 public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
 
     private String feedUrl;
-
+    
+    private String httpUsername;
+    
+    private String httpPassword;
+    
     private String gridSetId;
 
     private Integer pollInterval;
@@ -97,6 +101,20 @@ public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
      */
     public String getGridSetId() {
         return gridSetId;
+    }
+    
+    /**
+     * @return Optional password to use for HTTP authentication
+     */
+    public String getHttpPassword() {
+        return httpPassword;
+    }
+    
+    /**
+     * @return Optional username to use for HTTP authentication
+     */
+    public String getHttpUsername() {
+        return httpUsername;
     }
 
     /**

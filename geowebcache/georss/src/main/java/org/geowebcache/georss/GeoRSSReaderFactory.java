@@ -23,21 +23,44 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
-import java.net.URLConnection;
 
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.params.HttpConnectionParams;
+
 class GeoRSSReaderFactory {
 
-    public GeoRSSReader createReader(final URL feedUrl) throws IOException {
-        // return createFakeReader();
-        URLConnection conn = feedUrl.openConnection();
-        String contentEncoding = conn.getContentEncoding();
+    public GeoRSSReader createReader(final URL url, final String username, final String password) 
+    throws IOException {
+        
+        HttpClient httpClient = new HttpClient();
+        GetMethod getMethod = new GetMethod(url.toString());
+        
+        if(username != null) {
+            AuthScope authscope = new AuthScope(url.getHost(), url.getPort());
+            UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
+            
+            httpClient.getState().setCredentials(authscope, credentials);
+            getMethod.setDoAuthentication(true);
+        }
+
+        HttpConnectionParams params = httpClient.getHttpConnectionManager().getParams();
+        params.setConnectionTimeout(120 * 1000);
+        params.setSoTimeout(120 * 1000);
+        
+        httpClient.executeMethod(getMethod);
+
+        String contentEncoding = getMethod.getResponseCharSet();
         if (contentEncoding == null) {
             contentEncoding = "UTF-8";
         }
-        InputStream in = conn.getInputStream();
+        
+        InputStream in = getMethod.getResponseBodyAsStream();
         Reader reader = new BufferedReader(new InputStreamReader(in, contentEncoding));
         return createReader(reader);
     }

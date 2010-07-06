@@ -47,8 +47,19 @@ import org.geowebcache.util.ServletUtils;
 public class WMSHttpHelper extends WMSSourceHelper {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSHttpHelper.class);
     
+    private final AuthScope authscope;
+    
+    private final UsernamePasswordCredentials credentials;
+    
     public WMSHttpHelper() {
-        
+        authscope = null;
+        credentials = null;
+    }
+    
+    public WMSHttpHelper(String username, String password) {
+        // Let the authentication be valid for any host
+        authscope = new AuthScope(null, -1);
+        credentials = new UsernamePasswordCredentials(username, password);
     }
     
     /**
@@ -117,7 +128,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
 
         try { // finally
             try {
-                getMethod = executeRequest(wmsBackendUrl, username, password, backendTimeout);
+                getMethod = executeRequest(wmsBackendUrl, backendTimeout);
                 responseCode = getMethod.getStatusCode();
                 responseLength = (int) getMethod.getResponseContentLength();
 
@@ -225,14 +236,12 @@ public class WMSHttpHelper extends WMSSourceHelper {
      * sets up a HTTP GET request to a URL and configures authentication and timeouts if possible
      * 
      * @param url endpoint to talk to
-     * @param username username to use for authentication
-     * @param password password to use for authentication
      * @param backendTimeout timeout to use in seconds
      * @return executed GetMethod (that has to be closed after reading the response!)
      * @throws HttpException
      * @throws IOException
      */
-    public static GetMethod executeRequest(URL url, String username, String password, int backendTimeout) 
+    public GetMethod executeRequest(URL url, int backendTimeout) 
     throws HttpException, IOException {
         HttpClient httpClient = new HttpClient();
         GetMethod getMethod = new GetMethod(url.toString());
@@ -241,13 +250,11 @@ public class WMSHttpHelper extends WMSSourceHelper {
         params.setConnectionTimeout(backendTimeout * 1000);
         params.setSoTimeout(backendTimeout * 1000);
 
-        if (username != null && password != null && !username.equals("")) {
-            AuthScope authscope = new AuthScope(url.getHost(), url.getPort());
-            UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
-
+        if (authscope != null) {
             httpClient.getState().setCredentials(authscope, credentials);
             getMethod.setDoAuthentication(true);
         }
+        
         httpClient.executeMethod(getMethod);
 
         return getMethod;

@@ -220,33 +220,15 @@ public class XMLConfiguration implements Configuration {
                 gridSetBroker.put(gridSet);
             }
         }
-        
-        // Loop over the old layers
+
+        // Loop over the layers and set appropriate values
         if(gwcConfig.layers != null) {
             Iterator<TileLayer> iter = gwcConfig.layers.iterator();
-            WMSHttpHelper sourceHelper = new WMSHttpHelper();
+            
             while(iter.hasNext()) {
                 TileLayer layer = iter.next();
-                setDefaultValues(layer, sourceHelper);
+                setDefaultValues(layer);
             }
-        }
-        
-        if (gwcConfig.httpUsername != null && gwcConfig.httpUsername.length() > 0) {
-            if (gwcConfig.httpPassword != null && gwcConfig.httpPassword.length() > 0) {
-                log.info("Authenticating globally with " + gwcConfig.httpUsername
-                        + " and password ********");
-                
-                final String login = gwcConfig.httpUsername;
-                final String password = gwcConfig.httpPassword;
-
-                Authenticator.setDefault(new Authenticator() {
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(login, password.toCharArray());
-                    }
-                });
-            }
-        } else {
-            log.debug("Not using global HTTP authentication.");
         }
     }
     
@@ -313,7 +295,7 @@ public class XMLConfiguration implements Configuration {
         return gwcConfig.serviceInformation;
     }
     
-    private void setDefaultValues(TileLayer layer, WMSHttpHelper sourceHelper) {
+    private void setDefaultValues(TileLayer layer) { 
         //Additional values that can have defaults set
         if(layer.isCacheBypassAllowed() == null) {
             if(gwcConfig.cacheBypassAllowed !=  null) {
@@ -338,7 +320,22 @@ public class XMLConfiguration implements Configuration {
         }
         
         if(layer instanceof WMSLayer) {
-            ((WMSLayer) layer).setSourceHelper(sourceHelper);
+            WMSLayer wl = (WMSLayer) layer;
+            
+            final WMSHttpHelper sourceHelper;  
+            if(wl.getHttpUsername() != null) {
+               sourceHelper = new WMSHttpHelper(wl.getHttpUsername(), wl.getHttpPassword());
+               log.debug("Using per-layer HTTP credentials for " + wl.getName() + ", "
+                       + "username " + wl.getHttpUsername());
+            } else if(gwcConfig.httpUsername != null) {
+                sourceHelper = new WMSHttpHelper(gwcConfig.httpUsername, gwcConfig.httpPassword);
+                log.debug("Using global HTTP credentials for " + wl.getName());
+            } else {
+                sourceHelper = new WMSHttpHelper();
+                log.debug("Not using HTTP credentials for " + wl.getName());
+            }
+            
+            wl.setSourceHelper(sourceHelper);
         }
     }
     

@@ -32,6 +32,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.layer.wms.WMSSourceHelper;
 
 public class WMSRequests {
     private static Log log = LogFactory.getLog(org.geowebcache.service.wms.WMSRequests.class);
@@ -58,19 +59,24 @@ public class WMSRequests {
         GetMethod getMethod = null;
         try {
             URL url;
-            if (serverStr.endsWith("?")) {
-                url = new URL(serverStr + queryStr);
+            if (serverStr.contains("?")) {
+                url = new URL(serverStr + "&" + queryStr);
             } else {
-                url = new URL(serverStr + "?" + queryStr);
+                url = new URL(serverStr + queryStr);
+            }
+            
+            WMSSourceHelper helper = layer.getSourceHelper();
+            if(! (helper instanceof WMSHttpHelper)) {
+               throw new GeoWebCacheException("Can only proxy if WMS Layer is backed by an HTTP backend"); 
             }
 
-            getMethod = WMSHttpHelper.executeRequest(url, layer.getHttpUsername(), layer.getHttpPassword(),
-                    -1);
+            getMethod = ((WMSHttpHelper) helper).executeRequest(url, layer.getBackendTimeout());
             InputStream is = getMethod.getResponseBodyAsStream();
 
             HttpServletResponse response = tile.servletResp;
             response.setCharacterEncoding(getMethod.getResponseCharSet());
-
+            response.setContentType(getMethod.getRequestHeader("Content-Type").getValue());
+            
             int read = 0;
             byte[] data = new byte[1024];
             

@@ -46,10 +46,18 @@ public class WMSRasterFilter extends RasterFilter {
     public Integer backendTimeout;
     
     protected BufferedImage loadMatrix(TileLayer tlayer, String gridSetId, int z) throws IOException, GeoWebCacheException {
-        if(! (tlayer instanceof WMSLayer))
+        if(! (tlayer instanceof WMSLayer)) {
+            log.error("WMSRasterFilter can only be used with WMS layers.");
             return null;
+        }
         
         WMSLayer layer = (WMSLayer) tlayer;
+        
+        if(! (layer.getSourceHelper() instanceof WMSHttpHelper)) {
+            log.error("WMSRasterFilter can only be used with WMS layers.");
+        }
+        
+        WMSHttpHelper srcHelper = (WMSHttpHelper) layer.getSourceHelper();
         
         GridSubset gridSet = layer.getGridSubset(gridSetId);
         
@@ -61,19 +69,15 @@ public class WMSRasterFilter extends RasterFilter {
         
         URL wmsUrl = new URL(urlStr);
 
-        int timeout = -1;
-        if(backendTimeout != null) {
-            timeout = backendTimeout;
-        } else {
-            timeout = 120;
+        if(backendTimeout == null) {
+            backendTimeout = 120;
         }
         
         GetMethod getMethod = null;
         BufferedImage img = null;
         
         try {
-            getMethod = WMSHttpHelper.executeRequest(wmsUrl, layer.getHttpUsername(),
-                    layer.getHttpPassword(), timeout);
+            getMethod = srcHelper.executeRequest(wmsUrl, backendTimeout); //.WMSHttpHelper.executeRequest(wmsUrl, timeout);
             
             if(getMethod.getStatusCode() != 200) {
                 throw new GeoWebCacheException("Received response code " + getMethod.getStatusCode() + "\n");
