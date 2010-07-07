@@ -99,9 +99,9 @@ public class WMTSGetCapabilities {
         str.append("xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n");
         str.append("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
         str.append("xmlns:gml=\"http://www.opengis.net/gml\" ");
-        // TODO This is temporary, the original schema contradicts itself
-        //str.append("xsi:schemaLocation=\"http://www.opengis.net/wmts/1.0 http://schemas.opengis.net/wmts/1.0.0/wmtsGetCapabilities_response.xsd\"\n"); 
-        str.append("xsi:schemaLocation=\"http://www.opengis.net/wmts/1.0 http://geowebcache.org/schema/opengis/wmts/1.0.0/wmtsGetCapabilities_response.xsd\"\n"); 
+        str.append("xsi:schemaLocation=\"http://www.opengis.net/wmts/1.0 http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd\"\n"); 
+        // There were some contradictions in the draft schema, haven't checked whether they've fixed those
+        //str.append("xsi:schemaLocation=\"http://www.opengis.net/wmts/1.0 http://geowebcache.org/schema/opengis/wmts/1.0.0/wmtsGetCapabilities_response.xsd\"\n"); 
         str.append("version=\"1.0.0\">\n");
         
         serviceIdentification(str);
@@ -417,20 +417,20 @@ public class WMTSGetCapabilities {
          // TODO detect these str.append("    <WellKnownScaleSet>urn:ogc:def:wkss:GlobalCRS84Pixel</WellKnownScaleSet>\n");
          Grid[] grids = gridSet.getGrids();
          for(int i=0; i<grids.length; i++) {
-             double[] leftTop = gridSet.getLeftTopCorner(i);
-             tileMatrix(str, grids[i], leftTop[1], leftTop[0], gridSet.getTileWidth(), gridSet.getTileHeight(), gridSet.getScaleWarning());
+             double[] tlCoordinates = gridSet.getOrderedTopLeftCorner(i);
+             tileMatrix(str, grids[i], tlCoordinates, gridSet.getTileWidth(), gridSet.getTileHeight(), gridSet.getScaleWarning());
          }
          str.append("  </TileMatrixSet>\n");
      }
      
-     private void tileMatrix(StringBuilder str, Grid grid, double top, double left, int tileWidth, int tileHeight, boolean scaleWarning) {
+     private void tileMatrix(StringBuilder str, Grid grid, double[] tlCoordinates, int tileWidth, int tileHeight, boolean scaleWarning) {
          str.append("    <TileMatrix>\n");
          if(scaleWarning) {
              str.append("      <ows:Abstract>The grid was not well-defined, the scale therefore assumes 1m per map unit.</ows:Abstract>");
          }
          str.append("      <ows:Identifier>"+grid.getName()+"</ows:Identifier>\n");
          str.append("      <ScaleDenominator>"+grid.getScaleDenominator()+"</ScaleDenominator>\n");
-         str.append("      <TopLeftCorner>"+ top +" "+ left +"</TopLeftCorner>\n");
+         str.append("      <TopLeftCorner>"+ tlCoordinates[0] +" "+ tlCoordinates[1] +"</TopLeftCorner>\n");
          str.append("      <TileWidth>"+tileWidth+"</TileWidth>\n");    
          str.append("      <TileHeight>"+tileHeight+"</TileHeight>\n");      
          str.append("      <MatrixWidth>"+grid.getExtent()[0]+"</MatrixWidth>\n");    

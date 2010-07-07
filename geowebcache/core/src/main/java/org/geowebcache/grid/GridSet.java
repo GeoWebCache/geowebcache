@@ -36,6 +36,12 @@ public class GridSet {
      */
     protected boolean yBaseToggle = false;
     
+    /**
+     * By default the coordinates are {x,y},
+     * this flag reverses the output for WMTS getcapabilities
+     */
+    protected boolean yCoordinateFirst = false;
+    
     protected boolean scaleWarning = false;
        
     protected double metersPerUnit;
@@ -260,30 +266,47 @@ public class GridSet {
         return gridLevels;
     }
     
-    public double[] getLeftTopCorner(int gridIndex) {
+    /**
+     * Returns the top left corner of the grid in the 
+     * order used by the coordinate system. (Bad idea)
+     * 
+     * Used for WMTS GetCapabilities
+     * 
+     * @param gridIndex
+     * @return
+     */
+    public double[] getOrderedTopLeftCorner(int gridIndex) {
+        // First we will find the x,y pair, then we'll flip it if necessary
+        double[] leftTop = new double[2];
+        
         if(yBaseToggle) {
-            double[] ret = {baseCoords[0], baseCoords[1]}; 
-            return ret;
+            leftTop[0] = baseCoords[0];
+            leftTop[1] = baseCoords[1]; 
+        } else {
+            // We don't actually store the top coordinate, need to calculate it
+            Grid grid = gridLevels[gridIndex];
+            
+            double dTileHeight = tileHeight;
+            double dGridExtent = grid.extent[1];
+            
+            double top = baseCoords[1] + dTileHeight * grid.resolution * dGridExtent;
+            
+            // Round off if we are within 0.5% of an integer value
+            if(Math.abs(top - Math.round(top)) < (top / 200)) {
+                top = Math.round(top);
+            }
+            
+            leftTop[0] = baseCoords[0];
+            leftTop[1] = top;
         }
         
-        Grid grid = gridLevels[gridIndex];
-        
-        double dTileHeight = tileHeight;
-        double dGridExtent = grid.extent[1];
-        
-        double top = baseCoords[1] + dTileHeight * grid.resolution * dGridExtent;
-        
-        // Round off if we are within 0.5% of an integer value
-        if(Math.abs(top - Math.round(top)) < (top / 200)) {
-            top = Math.round(top);
+        // Y coordinate first?
+        if(yCoordinateFirst) {
+           double[] ret =  {leftTop[1], leftTop[0]};
+           return ret;
         }
         
-        double[] ret = {
-                baseCoords[0],
-                top 
-                };
-                
-        return ret;
+        return leftTop;
     }
     
     public String getName() {

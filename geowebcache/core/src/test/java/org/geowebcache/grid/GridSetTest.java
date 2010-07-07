@@ -9,10 +9,10 @@ public class GridSetTest extends TestCase {
     GridSetBroker gridSetBroker = new GridSetBroker(false, false);
     
     // Top left
-    GridSet gridSetTL = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), BoundingBox.WORLD4326, true, 10, null, 0.00028, 256, 256);
+    GridSet gridSetTL = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), BoundingBox.WORLD4326, true, 10, null, 0.00028, 256, 256, false);
     
     // Bottom left
-    GridSet gridSetBL = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), BoundingBox.WORLD4326, false, 10, null, 0.00028, 256, 256);
+    GridSet gridSetBL = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), BoundingBox.WORLD4326, false, 10, null, 0.00028, 256, 256, false);
     
     
     public void testBoundsFromIndex() throws Exception {
@@ -64,8 +64,8 @@ public class GridSetTest extends TestCase {
     }
     
     public void testGetLeftTopCorner() throws Exception {
-        double[] tlTL = gridSetTL.getLeftTopCorner(1);
-        double[] tlBL = gridSetBL.getLeftTopCorner(1);
+        double[] tlTL = gridSetTL.getOrderedTopLeftCorner(1);
+        double[] tlBL = gridSetBL.getOrderedTopLeftCorner(1);
         
         assertTrue(Math.abs(tlBL[1] - 90.0) < 0.01);
         assertTrue(Math.abs(tlTL[1] - 90.0) < 0.01);

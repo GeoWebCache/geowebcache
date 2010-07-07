@@ -237,7 +237,7 @@ public class GridCalculatorTest extends TestCase {
         BoundingBox bbox = new BoundingBox(-4.0,-4.0,4.0,4.0);
         double[] resolutions = {8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
         
-        GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(0), bbox, false, resolutions, null, null, 0.00028, null, 256, 256);        
+        GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(0), bbox, false, resolutions, null, null, 0.00028, null, 256, 256, false);        
         GridSubset gridSubset = GridSubsetFactory.createGridSubSet(gridSet);
         
         BoundingBox tileBounds = createApproximateTileBounds(gridSubset, bbox, 5.04, 256, 256);
@@ -268,7 +268,7 @@ public class GridCalculatorTest extends TestCase {
         BoundingBox gridBase = new BoundingBox(587334.20625, 4912451.9275, 611635.54375,
                 4936753.265000001);
         
-        GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(26713), gridBase, false, 30, null, 0.00028, 256, 256);
+        GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(26713), gridBase, false, 30, null, 0.00028, 256, 256, false);
         GridSubset gridSubset = GridSubsetFactory.createGridSubSet(gridSet, bbox, 0, 20);
 
         // Test the basic algorithm for calculating appropriate resolutions
@@ -293,7 +293,7 @@ public class GridCalculatorTest extends TestCase {
         BoundingBox bbox = new BoundingBox(-180.0,-90.0,180.0,90.0);
         BoundingBox gridBase = new BoundingBox(-180.0,-90.0,180.0,90.0);
         
-        GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(4326), gridBase, true, 30, null, 0.00028, 256, 256);
+        GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(4326), gridBase, true, 30, null, 0.00028, 256, 256, false);
         GridSubset gridSubset = GridSubsetFactory.createGridSubSet(gridSet, bbox, 0, 20);
 
         // Check the actual max bounds
@@ -319,7 +319,7 @@ public class GridCalculatorTest extends TestCase {
         BoundingBox gridBase = new BoundingBox(587334.20625, 4912451.9275, 611635.54375,
                 4936753.265000001);
         
-        GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(26713), gridBase, true, 30, null, 0.00028, 256, 256);
+        GridSet gridSet = GridSetFactory.createGridSet("bogus", SRS.getSRS(26713), gridBase, true, 30, null, 0.00028, 256, 256, false);
         GridSubset gridSubset = GridSubsetFactory.createGridSubSet(gridSet, bbox, 0, 20);
 
         // Test the basic algorithm for calculating appropriate resolutions

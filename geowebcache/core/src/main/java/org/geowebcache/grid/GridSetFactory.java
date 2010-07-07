@@ -51,12 +51,14 @@ public class GridSetFactory {
      * @param tileWidth
      * @param tileHeight
      * @param pixelSize 
+     * @param yCoordinateFirst 
      * @return
      */
     public static GridSet createGridSet( 
             String name, SRS srs, BoundingBox extent, 
-            boolean alignTopLeft, double[] resolutions, double[] scaleDenoms, Double metersPerUnit, 
-            double pixelSize, String[] scaleNames, int tileWidth, int tileHeight) {
+            boolean alignTopLeft, double[] resolutions, double[] scaleDenoms, 
+            Double metersPerUnit, double pixelSize, String[] scaleNames, 
+            int tileWidth, int tileHeight, boolean yCoordinateFirst) {
         
         GridSet gridSet = baseGridSet(name, srs, tileWidth, tileHeight);
         
@@ -72,6 +74,8 @@ public class GridSetFactory {
             gridSet.baseCoords[0] = extent.coords[0];
             gridSet.baseCoords[1] = extent.coords[1];
         }
+        
+        gridSet.yCoordinateFirst = yCoordinateFirst;
         
         gridSet.originalExtent = extent;
         
@@ -135,10 +139,12 @@ public class GridSetFactory {
     /**
      * This covers the case where a number of zoom levels has been specified, but no resolutions / scale
      * @param pixelSize 
+     * @param yCoordinateFirst 
      */
     public static GridSet createGridSet(
             String name, SRS srs, BoundingBox extent, boolean alignTopLeft,
-            int levels, Double metersPerUnit, double pixelSize, int tileWidth, int tileHeight) {
+            int levels, Double metersPerUnit, double pixelSize, 
+            int tileWidth, int tileHeight, boolean yCoordinateFirst) {
         
         double[] resolutions = new double[levels];
         
@@ -189,6 +195,7 @@ public class GridSetFactory {
             resolutions[i] = resolutions[i - 1] / 2;
         }
         
-        return createGridSet(name, srs, extent, alignTopLeft, resolutions, null, metersPerUnit, pixelSize, null, tileWidth, tileHeight);
+        return createGridSet(name, srs, extent, alignTopLeft, resolutions, null, 
+                metersPerUnit, pixelSize, null, tileWidth, tileHeight, yCoordinateFirst);
     }
 }

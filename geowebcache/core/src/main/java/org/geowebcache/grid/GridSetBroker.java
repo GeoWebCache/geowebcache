@@ -54,7 +54,8 @@ public class GridSetBroker {
                 null,
                 0.00028,
                 256,
-                256 );
+                256,
+                false );
         gridSets.put(WORLD_EPSG4326.name, WORLD_EPSG4326);
         
         if(useEPSG900913) {
@@ -69,7 +70,8 @@ public class GridSetBroker {
                     null,
                     0.00028,
                     256,
-                    256 );
+                    256,
+                    false );
         } else {
             log.debug("Adding EPSG:3857 grid set for Spherical Mercator / GoogleMapsCompatible");
             
@@ -82,7 +84,8 @@ public class GridSetBroker {
                     null,
                     0.00028,
                     256,
-                    256 );
+                    256,
+                    false );
         }
         gridSets.put(WORLD_EPSG3857.name, WORLD_EPSG3857);
         
@@ -98,7 +101,8 @@ public class GridSetBroker {
                 0.00028,
                 null,
                 256,
-                256 );
+                256,
+                false );
         
         gridSets.put(GlobalCRS84Pixel.name, GlobalCRS84Pixel);
         
@@ -114,7 +118,8 @@ public class GridSetBroker {
                 0.00028,
                 null,
                 256,
-                256 );
+                256,
+                false );
         
         gridSets.put(GlobalCRS84Scale.name, GlobalCRS84Scale);
     }

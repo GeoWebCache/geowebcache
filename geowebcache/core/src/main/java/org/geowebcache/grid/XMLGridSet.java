@@ -41,6 +41,8 @@ public class XMLGridSet {
     
     Integer tileWidth;
     
+    Boolean yCoordinateFirst;
+    
     public String getName() {
         return name;
     }
@@ -61,14 +63,18 @@ public class XMLGridSet {
             pixelSize = 0.00028;
         }
         
+        if(yCoordinateFirst == null) {
+            yCoordinateFirst = false;
+        }
+        
         if(resolutions != null || scaleDenominators != null) {
-            return GridSetFactory.createGridSet(name, srs, extent, alignTopLeft, resolutions, scaleDenominators, metersPerUnit, pixelSize, scaleNames, tileWidth, tileHeight);
+            return GridSetFactory.createGridSet(name, srs, extent, alignTopLeft, resolutions, scaleDenominators, metersPerUnit, pixelSize, scaleNames, tileWidth, tileHeight, yCoordinateFirst);
         } else {
             if(levels == null) {
                 levels = 30;
             }
             
-            return GridSetFactory.createGridSet(name, srs, extent, alignTopLeft, levels, metersPerUnit, pixelSize, tileWidth, tileHeight);
+            return GridSetFactory.createGridSet(name, srs, extent, alignTopLeft, levels, metersPerUnit, pixelSize, tileWidth, tileHeight, yCoordinateFirst);
         }
     }
 }

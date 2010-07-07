@@ -306,7 +306,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
                     String gridSetName = name + ":" + srs.toString();
                     BoundingBox extent = new BoundingBox(env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY());
                     
-                    GridSet gridSet = GridSetFactory.createGridSet(gridSetName, srs, extent, false, 25, null, 0.00028, 256, 256);
+                    GridSet gridSet = GridSetFactory.createGridSet(gridSetName, srs, extent, false, 25, null, 0.00028, 256, 256, false);
                     grids.put(gridSetName, GridSubsetFactory.createGridSubSet(gridSet));
                 }
             }
