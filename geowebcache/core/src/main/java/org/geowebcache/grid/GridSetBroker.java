@@ -55,7 +55,7 @@ public class GridSetBroker {
                 0.00028,
                 256,
                 256,
-                false );
+                true );
         gridSets.put(WORLD_EPSG4326.name, WORLD_EPSG4326);
         
         if(useEPSG900913) {
@@ -102,7 +102,7 @@ public class GridSetBroker {
                 null,
                 256,
                 256,
-                false );
+                true );
         
         gridSets.put(GlobalCRS84Pixel.name, GlobalCRS84Pixel);
         
@@ -119,7 +119,7 @@ public class GridSetBroker {
                 null,
                 256,
                 256,
-                false );
+                true );
         
         gridSets.put(GlobalCRS84Scale.name, GlobalCRS84Scale);
     }
