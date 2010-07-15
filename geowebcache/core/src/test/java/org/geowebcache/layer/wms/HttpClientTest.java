@@ -61,6 +61,7 @@ public class HttpClientTest extends TestCase {
 
                 hc.getState().setCredentials(authscope, credentials);
                 getMethod.setDoAuthentication(true);
+                hc.getParams().setAuthenticationPreemptive(true);
                 
                 if(hc.getPort() == 0) {
                     // Dummy

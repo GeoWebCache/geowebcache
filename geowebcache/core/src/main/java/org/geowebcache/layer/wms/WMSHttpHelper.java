@@ -253,6 +253,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
         if (authscope != null) {
             httpClient.getState().setCredentials(authscope, credentials);
             getMethod.setDoAuthentication(true);
+            httpClient.getParams().setAuthenticationPreemptive(true);
         }
         
         httpClient.executeMethod(getMethod);
