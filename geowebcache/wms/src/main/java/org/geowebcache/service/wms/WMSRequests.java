@@ -75,7 +75,7 @@ public class WMSRequests {
 
             HttpServletResponse response = tile.servletResp;
             response.setCharacterEncoding(getMethod.getResponseCharSet());
-            response.setContentType(getMethod.getRequestHeader("Content-Type").getValue());
+            response.setContentType(getMethod.getResponseHeader("Content-Type").getValue());
             
             int read = 0;
             byte[] data = new byte[1024];

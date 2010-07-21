@@ -25,7 +25,7 @@
   <bean id="gwcWMSConfig" class="org.geowebcache.config.GetCapabilitiesConfiguration">
   	<constructor-arg ref="gwcGridSetBroker"/>
     <!-- The URL to the WMS GetCapabilities document -->
-    <constructor-arg value="http://localhost:8080/geoserver/wms"/>
+    <constructor-arg value="http://demo.opengeo.org/geoserver/wms?request=getcapabilities&amp;version=1.1.0&amp;service=wms"/>
     <!-- The formats to support for all layers read for the above document -->    
     <constructor-arg value="image/png,image/jpeg"/>
     <!-- Metatiling factors, 3x3 is usually a good compromise for vector data -->
@@ -42,7 +42,7 @@
     <constructor-arg ref="gwcGridSetBroker"/>
     <constructor-arg>
       <list>
-	    <!--ref bean="gwcWMSConfig" /-->
+	    <ref bean="gwcWMSConfig" />
 	    <ref bean="gwcXmlConfig" />
       </list>
     </constructor-arg>
