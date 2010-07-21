@@ -28,31 +28,24 @@ import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpConnectionParams;
+import org.geowebcache.util.HttpClientBuilder;
 
 class GeoRSSReaderFactory {
 
     public GeoRSSReader createReader(final URL url, final String username, final String password) 
     throws IOException {
         
-        HttpClient httpClient = new HttpClient();
-        GetMethod getMethod = new GetMethod(url.toString());
+        HttpClientBuilder builder = new HttpClientBuilder();
+        builder.setHttpCredentials(username, password, url);
+        builder.setBackendTimeout(120*1000);
         
-        if(username != null) {
-            AuthScope authscope = new AuthScope(url.getHost(), url.getPort());
-            UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
-            
-            httpClient.getState().setCredentials(authscope, credentials);
+        HttpClient httpClient = builder.buildClient();
+        GetMethod getMethod = new GetMethod(url.toString());
+        if(builder.isDoAuthentication()) {
             getMethod.setDoAuthentication(true);
             httpClient.getParams().setAuthenticationPreemptive(true);
         }
-
-        HttpConnectionParams params = httpClient.getHttpConnectionManager().getParams();
-        params.setConnectionTimeout(120 * 1000);
-        params.setSoTimeout(120 * 1000);
         
         httpClient.executeMethod(getMethod);
 

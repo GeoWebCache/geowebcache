@@ -87,6 +87,8 @@ public class WMSLayer extends TileLayer {
     
     private String httpPassword;
 
+    private String proxyUrl;
+
     //Not used, should be removed through XSL
     @SuppressWarnings("unused")
     private Boolean tiled;
@@ -194,6 +196,7 @@ public class WMSLayer extends TileLayer {
         this.queryable = queryable;
     }
 
+    
     public boolean initialize(GridSetBroker gridSetBroker) {
         
         if(null == this.sourceHelper) {
@@ -767,8 +770,8 @@ public class WMSLayer extends TileLayer {
             }
         }
         if(formats.size() == 0) {
-            formats.add(0, ImageMime.createFromFormat("image/png"));
-            formats.add(1, ImageMime.createFromFormat("image/jpeg"));
+            formats.add(0, MimeType.createFromFormat("image/png"));
+            formats.add(1, MimeType.createFromFormat("image/jpeg"));
         }
     }
 
@@ -1063,6 +1066,7 @@ public class WMSLayer extends TileLayer {
         return parameterFilters;
     }
     
+
     public String getStyles() {
         return wmsStyles;
     }
@@ -1170,6 +1174,10 @@ public class WMSLayer extends TileLayer {
         return httpUsername;
     }
     
+    public String getProxyUrl() {
+        return proxyUrl;
+    }
+
     /**
      * Mandatory
      */

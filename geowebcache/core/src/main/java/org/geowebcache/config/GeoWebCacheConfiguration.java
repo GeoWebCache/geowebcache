@@ -54,6 +54,8 @@ public class GeoWebCacheConfiguration {
     
     String httpPassword;
     
+    String proxyUrl;
+    
     ServiceInformation serviceInformation;
     
     protected List<FormatModifier> formatModifiers;

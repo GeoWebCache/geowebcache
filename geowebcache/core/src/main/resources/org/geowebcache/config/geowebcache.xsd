@@ -49,12 +49,13 @@
       <xs:element name="httpPassword" type="xs:string" minOccurs="0">
         <xs:annotation><xs:documentation xml:lang="en">
 	  If you wish to have every connection to HTTP backends use
-          HTTP Authentication set this to the username. You must then also
+          HTTP Authentication set this to the password. You must then also
           set httpUsername for it to take effect.
 
           This feature should be considered experimental in 1.2.0.
         </xs:documentation></xs:annotation>
       </xs:element>
+      <xs:element name="proxyUrl" type="xs:string"" minOccurs="0" />
       <xs:element name="formatModifiers" type="gwc:formatModifiers" minOccurs="0">
         <xs:annotation><xs:documentation xml:lang="en">
           These are the global format modifiers that apply to all layers in this
@@ -214,6 +215,7 @@
           set httpUsername for it to take effect.
         </xs:documentation></xs:annotation>
       </xs:element>
+      <xs:element name="proxyUrl" type="xs:string"" minOccurs="0"/>
      <xs:element name="tiled" type="xs:boolean" minOccurs="0">
        <xs:annotation><xs:documentation xml:lang="en">
          The TILED parameter sent to the WMS backend. 

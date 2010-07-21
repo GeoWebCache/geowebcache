@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -322,16 +322,33 @@ public class XMLConfiguration implements Configuration {
         if(layer instanceof WMSLayer) {
             WMSLayer wl = (WMSLayer) layer;
             
-            final WMSHttpHelper sourceHelper;  
+            URL proxyUrl = null;
+            try {
+                if (gwcConfig.proxyUrl != null) {
+                    proxyUrl = new URL(gwcConfig.proxyUrl);
+                    log.debug("Using proxy " + proxyUrl.getHost() + ":" + proxyUrl.getPort());
+                } else if (wl.getProxyUrl() != null) {
+                    proxyUrl = new URL(wl.getProxyUrl());
+                    log.debug("Using proxy " + proxyUrl.getHost() + ":" + proxyUrl.getPort());
+                }
+            } catch (MalformedURLException e) {
+                log.error("could not parse proxy URL " + wl.getProxyUrl()
+                        + " ! continuing WITHOUT proxy!", e);
+            }
+            
+            final WMSHttpHelper sourceHelper;
+
             if(wl.getHttpUsername() != null) {
-               sourceHelper = new WMSHttpHelper(wl.getHttpUsername(), wl.getHttpPassword());
+                sourceHelper = new WMSHttpHelper(wl.getHttpUsername(), wl.getHttpPassword(),
+                        proxyUrl);
                log.debug("Using per-layer HTTP credentials for " + wl.getName() + ", "
                        + "username " + wl.getHttpUsername());
             } else if(gwcConfig.httpUsername != null) {
-                sourceHelper = new WMSHttpHelper(gwcConfig.httpUsername, gwcConfig.httpPassword);
+                sourceHelper = new WMSHttpHelper(gwcConfig.httpUsername, gwcConfig.httpPassword,
+                        proxyUrl);
                 log.debug("Using global HTTP credentials for " + wl.getName());
             } else {
-                sourceHelper = new WMSHttpHelper();
+                sourceHelper = new WMSHttpHelper(null, null, proxyUrl);
                 log.debug("Not using HTTP credentials for " + wl.getName());
             }
             

@@ -25,10 +25,7 @@ import java.net.URL;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -36,30 +33,33 @@ import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.ErrorMime;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.util.GWCVars;
+import org.geowebcache.util.HttpClientBuilder;
 import org.geowebcache.util.ServletUtils;
 
 /**
  * This class is a wrapper for HTTP interaction with WMS backend
- * 
+ *
  * All methods in this class MUST be written as if they were static
- * 
+ *
  */
 public class WMSHttpHelper extends WMSSourceHelper {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSHttpHelper.class);
     
-    private final AuthScope authscope;
+    private final URL proxyUrl;
+
+    private final String httpUsername;
     
-    private final UsernamePasswordCredentials credentials;
+    private final String httpPassword;
     
     public WMSHttpHelper() {
-        authscope = null;
-        credentials = null;
+        this(null, null, null);
     }
-    
-    public WMSHttpHelper(String username, String password) {
-        // Let the authentication be valid for any host
-        authscope = new AuthScope(null, -1);
-        credentials = new UsernamePasswordCredentials(username, password);
+
+    public WMSHttpHelper(String httpUsername, String httpPassword, URL proxyUrl) {
+        super();
+        this.httpUsername = httpUsername;
+        this.httpPassword = httpPassword;
+        this.proxyUrl = proxyUrl;
     }
     
     /**
@@ -71,9 +71,9 @@ public class WMSHttpHelper extends WMSSourceHelper {
      * @return
      * @throws GeoWebCacheException
      */
-    protected byte[] makeRequest(TileResponseReceiver tileRespRecv, 
-            WMSLayer layer, String wmsParams, String expectedMimeType)
-            throws GeoWebCacheException {
+    @Override
+    protected byte[] makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer,
+            String wmsParams, String expectedMimeType) throws GeoWebCacheException {
         byte[] data = null;
         URL wmsBackendUrl = null;
 
@@ -89,7 +89,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
             }
             
             data = connectAndCheckHeaders(tileRespRecv, wmsBackendUrl, wmsParams, expectedMimeType,
-                    layer.backendTimeout, layer.getHttpUsername(), layer.getHttpPassword());
+                    layer.getBackendTimeout());
 
             backendTries++;
         }
@@ -116,11 +116,10 @@ public class WMSHttpHelper extends WMSSourceHelper {
      * @return
      * @throws GeoWebCacheException
      */
-    private byte[] connectAndCheckHeaders(
-            TileResponseReceiver tileRespRecv, URL wmsBackendUrl,
-            String wmsParams, String requestMime, int backendTimeout, String username, String password) 
-    throws GeoWebCacheException {
-        
+    private byte[] connectAndCheckHeaders(TileResponseReceiver tileRespRecv, URL wmsBackendUrl,
+            String wmsParams, String requestMime, Integer backendTimeout)
+            throws GeoWebCacheException {
+
         byte[] ret = null;
         GetMethod getMethod = null;
         int responseCode = -1;
@@ -210,8 +209,8 @@ public class WMSHttpHelper extends WMSSourceHelper {
                         if (readAccu != responseLength) {
                             tileRespRecv.setError();
                             throw new GeoWebCacheException(
-                                    "Responseheader advertised "+ responseLength
-                                    + " bytes, but only received " + readLength 
+                                    "Responseheader advertised " + responseLength 
+                                    + " bytes, but only received " + readLength
                                     + " from " + wmsBackendUrl.toString());
                         }
                     }
@@ -225,39 +224,34 @@ public class WMSHttpHelper extends WMSSourceHelper {
             }
 
         } finally {
-            if(getMethod!=null)
+            if (getMethod!=null)
                 getMethod.releaseConnection();
         }
 
         return ret;
     }
-    
+
     /**
-     * sets up a HTTP GET request to a URL and configures authentication and timeouts if possible
+     * sets up a HTTP GET request to a URL and configures authentication.
      * 
-     * @param url endpoint to talk to
-     * @param backendTimeout timeout to use in seconds
+     * @param url
+     *            endpoint to talk to
+     * @param backendTimeout
+     *            timeout to use in seconds
      * @return executed GetMethod (that has to be closed after reading the response!)
      * @throws HttpException
      * @throws IOException
      */
-    public GetMethod executeRequest(URL url, int backendTimeout) 
-    throws HttpException, IOException {
-        HttpClient httpClient = new HttpClient();
+    public GetMethod executeRequest(URL url, Integer backendTimeout) throws HttpException,
+            IOException {
+        HttpClientBuilder builder = new HttpClientBuilder(url, backendTimeout, httpUsername,
+                httpPassword, proxyUrl);
+        HttpClient httpClient = builder.buildClient();
+
         GetMethod getMethod = new GetMethod(url.toString());
-        
-        HttpConnectionParams params = httpClient.getHttpConnectionManager().getParams();
-        params.setConnectionTimeout(backendTimeout * 1000);
-        params.setSoTimeout(backendTimeout * 1000);
+        getMethod.setDoAuthentication(builder.isDoAuthentication());
 
-        if (authscope != null) {
-            httpClient.getState().setCredentials(authscope, credentials);
-            getMethod.setDoAuthentication(true);
-            httpClient.getParams().setAuthenticationPreemptive(true);
-        }
-        
         httpClient.executeMethod(getMethod);
-
         return getMethod;
     }
 }
