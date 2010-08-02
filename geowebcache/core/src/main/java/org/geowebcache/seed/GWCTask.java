@@ -37,7 +37,7 @@ public abstract class GWCTask {
     
     long taskId = -1;
     
-    protected TYPE type = TYPE.UNSET;
+    protected TYPE parsedType = TYPE.UNSET;
     
     protected STATE state = STATE.UNSET;
     
@@ -110,7 +110,7 @@ public abstract class GWCTask {
     }
     
     public TYPE getType() {
-        return type;
+        return parsedType;
     }
     
     public STATE getState() {

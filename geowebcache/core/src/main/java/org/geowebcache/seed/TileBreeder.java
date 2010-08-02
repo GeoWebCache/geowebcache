@@ -92,7 +92,8 @@ public class TileBreeder {
         }
     }
 
-    public static TileRange createTileRange(SeedRequest req, TileLayer tl) {
+    public static TileRange createTileRange(SeedRequest req, TileLayer tl) 
+    throws GeoWebCacheException {
         int zoomStart = req.getZoomStart().intValue();
         int zoomStop = req.getZoomStop().intValue();
 
@@ -118,6 +119,10 @@ public class TileBreeder {
         }
 
         GridSubset gridSubset = tl.getGridSubset(gridSetId);
+        
+        if(gridSubset == null) {
+            throw new GeoWebCacheException("Unknown grid set " + gridSetId);
+        }
 
         long[][] coveredGridLevels;
 

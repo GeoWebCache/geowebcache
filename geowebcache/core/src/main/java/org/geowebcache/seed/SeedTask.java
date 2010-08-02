@@ -60,9 +60,9 @@ class SeedTask extends GWCTask {
         this.doFilterUpdate = doFilterUpdate;
         
         if(reseed) {
-            super.type = GWCTask.TYPE.RESEED;
+            super.parsedType = GWCTask.TYPE.RESEED;
         } else {
-            super.type = GWCTask.TYPE.SEED;
+            super.parsedType = GWCTask.TYPE.SEED;
         }
         super.layerName = tl.getName();
         

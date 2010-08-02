@@ -17,11 +17,15 @@
  */
 package org.geowebcache.seed;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.seed.GWCTask.TYPE;
 
 public class SeedRequest {
+    private static Log log = LogFactory.getLog(org.geowebcache.seed.SeedRequest.class);
+    
     private String name = null;
 
     private BoundingBox bounds = null;
@@ -38,7 +42,9 @@ public class SeedRequest {
 
     private String format = null;
     
-    private TYPE type = null;
+    private String type = null;
+    
+    private TYPE enumType = null;
     
     private String parameters = null;
     
@@ -46,6 +52,7 @@ public class SeedRequest {
     
     public SeedRequest() {
         //do nothing, i guess
+        System.out.println("New SeedRequest");
     }
 
     /** 
@@ -70,7 +77,7 @@ public class SeedRequest {
         this.zoomStart = zoomStart;
         this.zoomStop = zoomStop;
         this.format = format;
-        this.type = type;
+        this.enumType = type;
         this.parameters = parameters;
     }
     
@@ -157,7 +164,18 @@ public class SeedRequest {
      * @return type of seed
      */
     public TYPE getType() {
-        return type;
+        if(enumType == null) {
+            if(type == null || type.equalsIgnoreCase("seed")) {
+                return TYPE.SEED;
+            } else if(type.equalsIgnoreCase("reseed")) {
+                return TYPE.RESEED;
+            } else {
+                log.warn("Unknown type \""+type+"\", assuming seed");
+                return TYPE.SEED;
+            }
+        }
+        
+        return enumType;
     }
     
     /**

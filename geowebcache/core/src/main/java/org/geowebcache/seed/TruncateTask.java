@@ -45,7 +45,7 @@ class TruncateTask extends GWCTask {
         this.tl = tl;
         this.doFilterUpdate = doFilterUpdate;
         
-        super.type = GWCTask.TYPE.TRUNCATE;
+        super.parsedType = GWCTask.TYPE.TRUNCATE;
         super.layerName = tl.getName();
     }
     

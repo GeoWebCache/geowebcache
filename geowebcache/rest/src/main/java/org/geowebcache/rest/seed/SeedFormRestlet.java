@@ -55,7 +55,11 @@ public class SeedFormRestlet extends GWCRestlet {
             if (met.equals(Method.GET)) {
                 doGet(request, response);
             } else if(met.equals(Method.POST)) {
-                doPost(request, response);
+                try {
+                    doPost(request, response);
+                } catch (GeoWebCacheException e) {
+                    throw new RestletException(e.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
+                }
             } else {
                 throw new RestletException("Method not allowed", Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
             }
@@ -82,7 +86,8 @@ public class SeedFormRestlet extends GWCRestlet {
         response.setEntity(makeFormPage(tl), MediaType.TEXT_HTML);
     }
     
-    public void doPost(Request req, Response resp) throws RestletException {
+    public void doPost(Request req, Response resp) 
+    throws RestletException, GeoWebCacheException {
         String layerName = null;
         try {
             layerName = URLDecoder.decode((String) req.getAttributes().get("layer"), "UTF-8");
@@ -458,7 +463,7 @@ public class SeedFormRestlet extends GWCRestlet {
     
 
     private void handleDoSeedPost(Form form, TileLayer tl, Response resp)
-            throws RestletException {
+            throws RestletException, GeoWebCacheException {
         BoundingBox bounds = null;
         
         if (form.getFirst("minX").getValue() != null) {
