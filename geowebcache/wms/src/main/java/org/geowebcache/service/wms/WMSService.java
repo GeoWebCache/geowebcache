@@ -258,7 +258,7 @@ public class WMSService extends Service {
             throw new ServiceException("The bounding box parameter ("+values[2]+") is missing or not sane");
         }
 
-        long[] tileIndex = gridSubset.closestIndex(bbox);
+        //long[] tileIndex = gridSubset.closestIndex(bbox);
         
         MimeType mimeType;
         try {
@@ -268,7 +268,7 @@ public class WMSService extends Service {
         }
         
         ConveyorTile gfiConv = new ConveyorTile(
-                sb, tl.getName(), gridSubset.getName(), tileIndex, mimeType, 
+                sb, tl.getName(), gridSubset.getName(), null, mimeType, 
                 null, null, tile.servletReq, tile.servletResp);
         gfiConv.setTileLayer(tl);
         
@@ -282,7 +282,7 @@ public class WMSService extends Service {
             throw new GeoWebCacheException("The parameters for x and y must both be positive integers.");
         }
 
-        byte[] data = srcHelper.makeFeatureInfoRequest(gfiConv, x, y);
+        byte[] data = srcHelper.makeFeatureInfoRequest(gfiConv, bbox, x, y);
 
         try {
             tile.servletResp.setContentType(mimeType.getMimeType());

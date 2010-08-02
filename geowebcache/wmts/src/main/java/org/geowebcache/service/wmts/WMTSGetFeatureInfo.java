@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -73,7 +74,8 @@ public class WMTSGetFeatureInfo {
 
         byte[] data = null;
         try {
-            data = wmsLayer.getFeatureInfo(convTile, i, j);
+            BoundingBox bbox = convTile.getGridSubset().boundsFromIndex(convTile.getTileIndex());
+            data = wmsLayer.getFeatureInfo(convTile,bbox,i, j);
         } catch (GeoWebCacheException e) {
             throw new OWSException(500, "NoApplicableCode", "", e.getMessage()); 
         }
