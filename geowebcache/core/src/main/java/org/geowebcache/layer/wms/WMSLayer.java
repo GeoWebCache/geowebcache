@@ -385,9 +385,9 @@ public class WMSLayer extends TileLayer {
         return true;
     }
     
-    public byte[] getFeatureInfo(ConveyorTile convTile, BoundingBox bbox, int x, int y)
+    public byte[] getFeatureInfo(ConveyorTile convTile, BoundingBox bbox, int height, int width, int x, int y)
     throws GeoWebCacheException {        
-        return  sourceHelper.makeFeatureInfoRequest(convTile,bbox,x,y);
+        return  sourceHelper.makeFeatureInfoRequest(convTile,bbox,height, width, x,y);
     }   
 
     /**

@@ -75,7 +75,11 @@ public class WMTSGetFeatureInfo {
         byte[] data = null;
         try {
             BoundingBox bbox = convTile.getGridSubset().boundsFromIndex(convTile.getTileIndex());
-            data = wmsLayer.getFeatureInfo(convTile,bbox,i, j);
+            data = wmsLayer.getFeatureInfo(
+                    convTile,bbox,
+                    convTile.getGridSubset().getTileHeight(),
+                    convTile.getGridSubset().getTileWidth(), 
+                    i, j);
         } catch (GeoWebCacheException e) {
             throw new OWSException(500, "NoApplicableCode", "", e.getMessage()); 
         }

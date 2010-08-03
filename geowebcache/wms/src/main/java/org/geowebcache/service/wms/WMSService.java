@@ -240,7 +240,7 @@ public class WMSService extends Service {
                     + " is not served by a WMS backend.");
         }
         
-        String[] keys = { "x","y","srs","info_format","bbox" };
+        String[] keys = { "x","y","srs","info_format","bbox","height","width" };
         String[] values = ServletUtils.selectedStringsFromMap(
                 tile.servletReq.getParameterMap(), tile.servletReq.getCharacterEncoding(), keys);
         
@@ -281,8 +281,16 @@ public class WMSService extends Service {
         } catch(NumberFormatException nfe) {
             throw new GeoWebCacheException("The parameters for x and y must both be positive integers.");
         }
+        
+        int height, width;
+        try {
+            height = Integer.parseInt(values[5]);
+            width = Integer.parseInt(values[6]);
+        } catch(NumberFormatException nfe) {
+            throw new GeoWebCacheException("The parameters for height and width must both be positive integers.");
+        }
 
-        byte[] data = srcHelper.makeFeatureInfoRequest(gfiConv, bbox, x, y);
+        byte[] data = srcHelper.makeFeatureInfoRequest(gfiConv, bbox, height, width, x, y);
 
         try {
             tile.servletResp.setContentType(mimeType.getMimeType());
