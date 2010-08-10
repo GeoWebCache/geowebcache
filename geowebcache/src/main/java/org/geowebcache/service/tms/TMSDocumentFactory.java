@@ -104,7 +104,7 @@ public class TMSDocumentFactory {
     protected String getTileMapDoc(TileLayer layer, GridSubset gridSub, GridSetBroker gsb, MimeType mimeType) {
         StringBuilder str = new StringBuilder();
         str.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-        str.append("<TileMap version=\"1.0.0\" tilemapservice=\""+ baseUrl + "/service/tms/1.0.0\">\n");
+        str.append("<TileMap version=\"1.0.0\" tilemapservice=\""+ baseUrl + "\">\n");
         str.append("  <Title>").append(tileMapTitle(layer)).append("</Title>\n");
         str.append("  <Abstract>").append(tileMapDescription(layer)).append("</Abstract>\n");
        // <KeywordList></KeywordList>
@@ -161,7 +161,7 @@ public class TMSDocumentFactory {
     
     private String tileMapUrl(TileLayer tl, GridSubset gridSub, MimeType mimeType) {
         // TODO add XML escaping
-        return baseUrl + "/service/tms/1.0.0/" + tileMapName(tl,gridSub,mimeType);
+        return baseUrl + "/" + tileMapName(tl,gridSub,mimeType);
     }
     
     private String tileMapUrl(TileLayer tl, GridSubset gridSub, MimeType mimeType, int z) {

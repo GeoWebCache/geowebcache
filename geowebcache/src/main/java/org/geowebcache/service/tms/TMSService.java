@@ -66,12 +66,19 @@ public class TMSService extends Service {
     public ConveyorTile getConveyor(HttpServletRequest request,
             HttpServletResponse response) throws GeoWebCacheException {
 
+        String reqUrl = request.getRequestURL().toString();
+        int idx = reqUrl.indexOf("tms/1.0.0");
+        if(idx == -1) {
+            throw new GeoWebCacheException("Path must contain at least tms/1.0.0");
+        }
+        String base = reqUrl.substring(0, idx + "tms/1.0.0".length());
+        String toParse = reqUrl.substring(base.length());
+        
         // get all elements of the pathInfo after the leading "/tms/1.0.0/" part.
-        String[] params = request.getPathInfo().split("/");
+        String[] params = toParse.split("/");
+        // {"img states@EPSG:4326",z,x,y.format} 
         
-        int paramsLength = params.length;
-        
-        if(params.length < 5) {
+        if(params.length < 3) {
             // Not a tile request, lets pass it back out
             ConveyorTile tile = new ConveyorTile(sb, null, request, response);
             tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
@@ -80,12 +87,12 @@ public class TMSService extends Service {
         
         long[] gridLoc = new long[3];
         
-        String[] yExt = params[paramsLength - 1].split("\\.");
+        String[] yExt = params[params.length - 1].split("\\.");
         
         try {
-            gridLoc[0] = Integer.parseInt(params[paramsLength - 2]);
+            gridLoc[0] = Integer.parseInt(params[params.length - 2]);
             gridLoc[1] = Integer.parseInt(yExt[0]);
-            gridLoc[2] = Integer.parseInt(params[paramsLength - 3]);
+            gridLoc[2] = Integer.parseInt(params[params.length - 3]);
         } catch (NumberFormatException nfe) {
             throw new ServiceException("Unable to parse number " + nfe.getMessage() + " from " + request.getPathInfo());
         }
@@ -94,8 +101,8 @@ public class TMSService extends Service {
         String gridSetId;
         
         // For backwards compatibility, we'll look for @s and use defaults if not found
-        String layerAtSRSAtFormatExtension = params[paramsLength - 4];
-        String[] lsf = ServletUtils.URLDecode(params[3], request.getCharacterEncoding()).split("@");
+        String layerAtSRSAtFormatExtension = params[params.length - 4];
+        String[] lsf = ServletUtils.URLDecode(layerAtSRSAtFormatExtension, request.getCharacterEncoding()).split("@");
         if(lsf.length < 3) {
             layerId = lsf[0];
             TileLayer layer = tld.getTileLayer(layerId);
@@ -110,6 +117,10 @@ public class TMSService extends Service {
         try {
             mimeType = MimeType.createFromExtension(yExt[1]);
         } catch (MimeException me) {
+            // Do nothing here, see below
+        }
+        
+        if(mimeType == null) {
             throw new ServiceException("Unable to determine requested format based on extension " + yExt[1]);
         }
 
@@ -120,34 +131,24 @@ public class TMSService extends Service {
     
     public void handleRequest(Conveyor conv)
     throws GeoWebCacheException {
+        
+        String reqUrl = conv.servletReq.getRequestURL().toString();
+        int idx = reqUrl.indexOf("tms/1.0.0");
+        String base = reqUrl.substring(0, idx + "tms/1.0.0".length());
+        String toParse = reqUrl.substring(base.length());
+        
         // get all elements of the pathInfo after the leading "/tms/1.0.0/" part.
-        String[] params = conv.servletReq.getPathInfo().split("/");
-        // {"", tms, "1.0.0", "img states@EPSG:4326" } 
-        
-        int paramsLength = params.length;
-        
-        String base = this.baseUrl;
-        
-        if(base == null) {
-            String reqUrl = conv.servletReq.getRequestURL().toString();
-            int idx = reqUrl.indexOf("/service/tms/1.0.0");
-            base = reqUrl.substring(0, idx);
-        }
+        String[] params = toParse.split("/");
+        // {"img states@EPSG:4326"} 
         
         TMSDocumentFactory tdf = new TMSDocumentFactory(tld,gsb, base);
         
         String ret = null;
         
-        if(paramsLength < 3) {
-            throw new GeoWebCacheException("Path is too short to be a valid TMS path");
-        } else if(paramsLength == 3) {
-            if(! params[2].equals("1.0.0")) {
-                throw new GeoWebCacheException("Unknown version " + params[2] + ", only 1.0.0 is supported.");
-            } else {
-                ret = tdf.getTileMapServiceDoc();
-            }
+        if(params.length == 0 || (params.length == 1 && params[0].length() == 0)) {
+            ret = tdf.getTileMapServiceDoc();
         } else {
-            String layerAtSRS = ServletUtils.URLDecode(params[3], conv.servletReq.getCharacterEncoding());
+            String layerAtSRS = ServletUtils.URLDecode(params[1], conv.servletReq.getCharacterEncoding());
             String[] layerSRSFormatExtension = layerAtSRS.split("@");
             
             TileLayer tl = tld.getTileLayer(layerSRSFormatExtension[0]);
