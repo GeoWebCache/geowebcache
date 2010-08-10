@@ -29,6 +29,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.filter.parameters.ParameterFilter;
+//import org.geowebcache.filter.parameters.WMSDimensionProvider;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
@@ -38,6 +40,7 @@ import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.util.ServletUtils;
 
 public class WMSGetCapabilities {
     
@@ -53,10 +56,11 @@ public class WMSGetCapabilities {
         this.tld = tld;
         urlStr = servReq.getRequestURL().toString() + "?SERVICE=WMS&amp;";
         
-        String tiledValue = servReq.getParameter("tiled");
+        String[] tiledKey = {"tiled"};
+        String[] tiledValue = ServletUtils.selectedStringsFromMap(servReq.getParameterMap(), servReq.getCharacterEncoding(), tiledKey);
         
-        if(tiledValue != null) {
-            includeVendorSpecific  = Boolean.parseBoolean(tiledValue);
+        if(tiledValue != null && tiledValue.length > 0) {
+            includeVendorSpecific  = Boolean.parseBoolean(tiledValue[0]);
         }
     }
     
@@ -82,7 +86,19 @@ public class WMSGetCapabilities {
         StringBuilder str = new StringBuilder();
         
         str.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        str.append("<!DOCTYPE WMT_MS_Capabilities SYSTEM \"http://schemas.opengis.net/wms/1.1.1/capabilities_1_1_1.dtd\">\n");
+        str.append("<!DOCTYPE WMT_MS_Capabilities SYSTEM \"http://schemas.opengis.net/wms/1.1.1/capabilities_1_1_1.dtd\" ");
+        if(includeVendorSpecific) {
+            str.append("[\n");
+            str.append("<!ELEMENT VendorSpecificCapabilities (TileSet*) >\n");
+            str.append("<!ELEMENT TileSet (SRS, BoundingBox?, Resolutions, Width, Height, Format, Layers*, Styles*) >\n");
+            str.append("<!ELEMENT Resolutions (#PCDATA) >\n");
+            str.append("<!ELEMENT Width (#PCDATA) >\n");
+            str.append("<!ELEMENT Height (#PCDATA) >\n");
+            str.append("<!ELEMENT Layers (#PCDATA) >\n");
+            str.append("<!ELEMENT Styles (#PCDATA) >\n");
+            str.append("]");
+        }
+        str.append(">\n");
         str.append("<WMT_MS_Capabilities version=\"1.1.1\">\n");
         
         // The actual meat
@@ -268,7 +284,7 @@ public class WMSGetCapabilities {
         
         str.append("    <TileSet>\n");
         str.append("      <SRS>"+srsStr+"</SRS>\n");        
-        str.append("      <BoundingBox srs=\""+srsStr+"\" minx=\""+bs[0]+"\" miny=\""+bs[1]+"\"  maxx=\""+bs[2]+"\"  maxy=\""+bs[3]+"\" />\n");        
+        str.append("      <BoundingBox SRS=\""+srsStr+"\" minx=\""+bs[0]+"\" miny=\""+bs[1]+"\"  maxx=\""+bs[2]+"\"  maxy=\""+bs[3]+"\" />\n");        
         str.append("      <Resolutions>"+resolutionsStr.toString()+"</Resolutions>\n");
         str.append("      <Width>"+grid.getTileWidth()+"</Width>\n");
         str.append("      <Height>"+grid.getTileHeight()+"</Height>\n");
@@ -307,7 +323,6 @@ public class WMSGetCapabilities {
 
         str.append("      <Name>"+layer.getName()+"</Name>\n");
 
-        
         if(layer.getMetaInformation() != null) {
             LayerMetaInformation metaInfo = layer.getMetaInformation();            
             str.append("      <Title>"+metaInfo.getTitle()+"</Title>\n");
@@ -341,6 +356,25 @@ public class WMSGetCapabilities {
         
         // Bounding boxes gathered earlier
         str.append(boundingBoxStr);
+        
+        // WMS 1.1 Dimensions
+        /*
+        if (layer instanceof WMSLayer && ((WMSLayer) layer).getParameterFilters() != null) {
+            StringBuilder dims = new StringBuilder();
+            StringBuilder extents = new StringBuilder();
+            for (ParameterFilter parameterFilter : ((WMSLayer) layer).getParameterFilters()) {
+                if (parameterFilter instanceof WMSDimensionProvider) {
+                    ((WMSDimensionProvider) parameterFilter).appendDimensionElement(dims, "      ");
+                    ((WMSDimensionProvider) parameterFilter).appendExtentElement(extents, "      ");
+                }
+            }
+
+            if (dims.length() > 0 && extents.length() > 0) {
+                str.append(dims);
+                str.append(extents);
+            }
+        }
+        */
         
         // TODO style?
         str.append("    </Layer>\n");
