@@ -150,7 +150,7 @@ public class TileLayerDispatcher {
                     log.error("Failed to add layers from " + configIdent);
                 }
 
-                log.info("Adding layers from " + configIdent);
+                log.trace("Adding layers from " + configIdent);
                 if (configLayers != null && configLayers.size() > 0) {
                     Iterator<TileLayer> iter = configLayers.iterator();
                     
@@ -168,7 +168,7 @@ public class TileLayerDispatcher {
                         add(layer, newLayers);
                     }
                 } else {
-                    log.error("Configuration " + configIdent
+                    log.trace("Configuration " + configIdent
                             + " contained no layers.");
                 }
                 
@@ -259,7 +259,7 @@ public class TileLayerDispatcher {
                 log.info("ConfigurationLoader acquired lock, sleeping " + loadDelay + " seconds");
                 try {
                     Thread.sleep(loadDelay * 1000);
-                    log.info("ConfigurationLoader woke up, initializing");
+                    log.trace("ConfigurationLoader woke up, initializing");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     throw new RuntimeException("Configuration loader thread interrupted", e);
@@ -268,7 +268,7 @@ public class TileLayerDispatcher {
             
             parent.layers = parent.initialize(false);
             
-            log.info("ConfigurationLoader completed");
+            log.trace("ConfigurationLoader completed");
         }
         
     }

@@ -212,21 +212,14 @@ public class XMLConfiguration implements Configuration {
         
         if (configH != null) {
             xmlFile = new File(configH.getAbsolutePath() + File.separator + CONFIGURATION_FILE_NAME);
-        } else {
-            log.debug("Unable to determine configuration directory."+
-                    " If you are running GWC in GeoServer this is probably not an issue.");
-            
-            return null;
         }
 
-        if (xmlFile != null) {
+        if (xmlFile != null && xmlFile.exists()) {
             log.info("Found configuration file in "+ configH.getAbsolutePath());
-        } else {
-            log.info("Found no configuration file in "+ configH.getAbsolutePath()+
-            		" If you are running GWC in GeoServer this is probably not an issue.");
+            return xmlFile;
         }
         
-        return xmlFile;
+        return null;
     }
 
     /**
@@ -236,8 +229,10 @@ public class XMLConfiguration implements Configuration {
     public synchronized List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
         if (reload && ! mockConfiguration) {
             File xmlFile = findConfFile();
-            loadConfiguration(xmlFile);
-            initialize();
+            if(xmlFile != null){
+                loadConfiguration(xmlFile);
+                initialize();
+            }
         }
         
         if(gwcConfig != null) { 
@@ -258,12 +253,13 @@ public class XMLConfiguration implements Configuration {
     
     public synchronized ServiceInformation getServiceInformation() 
     throws GeoWebCacheException {
-        if( ! mockConfiguration && this.gwcConfig == null) {
-            File xmlFile = findConfFile();
-            loadConfiguration(xmlFile);
-        }
+        //if( ! mockConfiguration && this.gwcConfig == null) {
+        //    File xmlFile = findConfFile();
+        //    loadConfiguration(xmlFile);
+        //}
         
-        return gwcConfig.serviceInformation;
+        //return gwcConfig.serviceInformation;
+        return null;
     }
     
     private void setDefaultValues(TileLayer layer, WMSHttpHelper sourceHelper) {
@@ -631,12 +627,10 @@ public class XMLConfiguration implements Configuration {
                         relPath = relPath.replace("/", "\\");
                     }
 
-                    File tmpPath = new File(baseDir + relPath + File.separator
-                            + CONFIGURATION_FILE_NAME);
+                    File tmpPath = new File(baseDir + relPath + File.separator + CONFIGURATION_FILE_NAME);
 
                     if (tmpPath.exists() && tmpPath.canRead()) {
-                        log.info("No configuration directory was specified, using "
-                                        + tmpPath.getAbsolutePath());
+                        log.info("No configuration directory was specified, using " + tmpPath.getAbsolutePath());
                         configH = new File(baseDir + relPath);
                     }
                 }
@@ -649,7 +643,7 @@ public class XMLConfiguration implements Configuration {
             log.debug("Configuration directory set to: "+ configH.getAbsolutePath());
         
             if (!configH.exists() || !configH.canRead()) {
-                log.error("Configuration file cannot be read or does not exist!");
+                log.trace("Configuration file cannot be read or does not exist!");
             }
         }
     }
