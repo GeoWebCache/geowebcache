@@ -416,21 +416,34 @@ public class WMTSGetCapabilities {
          str.append("    <ows:SupportedCRS>urn:ogc:def:crs:EPSG::"+gridSet.getSRS().getNumber()+"</ows:SupportedCRS>\n");
          // TODO detect these str.append("    <WellKnownScaleSet>urn:ogc:def:wkss:GlobalCRS84Pixel</WellKnownScaleSet>\n");
          Grid[] grids = gridSet.getGrids();
+         boolean latLon = false;
+         if(gridSet.getSRS().equals(SRS.getEPSG4326()) || gridSet.guessMapUnits().equals("degrees")) {
+             latLon = true;
+         }
          for(int i=0; i<grids.length; i++) {
              double[] leftTop = gridSet.getLeftTopCorner(i);
-             tileMatrix(str, grids[i], leftTop[1], leftTop[0], gridSet.getTileWidth(), gridSet.getTileHeight(), gridSet.getScaleWarning());
+             double first,second;
+             if(latLon) {
+                 first = leftTop[1];
+                 second = leftTop[0];
+             } else {
+                 first = leftTop[0];
+                 second = leftTop[1];
+             }
+             
+             tileMatrix(str, grids[i], first, second, gridSet.getTileWidth(), gridSet.getTileHeight(), gridSet.getScaleWarning());
          }
          str.append("  </TileMatrixSet>\n");
      }
      
-     private void tileMatrix(StringBuilder str, Grid grid, double top, double left, int tileWidth, int tileHeight, boolean scaleWarning) {
+     private void tileMatrix(StringBuilder str, Grid grid, double first, double second, int tileWidth, int tileHeight, boolean scaleWarning) {
          str.append("    <TileMatrix>\n");
          if(scaleWarning) {
              str.append("      <ows:Abstract>The grid was not well-defined, the scale therefore assumes 1m per map unit.</ows:Abstract>");
          }
          str.append("      <ows:Identifier>"+grid.getName()+"</ows:Identifier>\n");
          str.append("      <ScaleDenominator>"+grid.getScaleDenominator()+"</ScaleDenominator>\n");
-         str.append("      <TopLeftCorner>"+ top +" "+ left +"</TopLeftCorner>\n");
+         str.append("      <TopLeftCorner>"+ first +" "+ second +"</TopLeftCorner>\n");
          str.append("      <TileWidth>"+tileWidth+"</TileWidth>\n");    
          str.append("      <TileHeight>"+tileHeight+"</TileHeight>\n");      
          str.append("      <MatrixWidth>"+grid.getExtent()[0]+"</MatrixWidth>\n");    
