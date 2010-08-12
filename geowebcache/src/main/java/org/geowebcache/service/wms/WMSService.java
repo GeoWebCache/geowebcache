@@ -233,7 +233,7 @@ public class WMSService extends Service {
                     + " is not served by a WMS backend.");
         }
         
-        String[] keys = { "x","y","srs","info_format","bbox" };
+        String[] keys = { "x","y","srs","info_format","bbox","height","width" };
         String[] values = ServletUtils.selectedStringsFromMap(
                 tile.servletReq.getParameterMap(), tile.servletReq.getCharacterEncoding(), keys);
         
@@ -251,21 +251,37 @@ public class WMSService extends Service {
             throw new ServiceException("The bounding box parameter ("+values[2]+") is missing or not sane");
         }
 
-        long[] tileIndex = gridSubset.closestIndex(bbox);
+        //long[] tileIndex = gridSubset.closestIndex(bbox);
         
         MimeType mimeType = MimeType.createFromFormat(values[3]);
         
         ConveyorTile gfiConv = new ConveyorTile(
-                sb, tl.getName(), gridSubset.getName(), tileIndex, mimeType, 
+                sb, tl.getName(), gridSubset.getName(), null, mimeType, 
                 null, null, tile.servletReq, tile.servletResp);
         gfiConv.setTileLayer(tl);
         
         WMSSourceHelper srcHelper = layer.getSourceHelper();
+        
+        int x,y;
+        try {
+            x = Integer.parseInt(values[0]);
+            y = Integer.parseInt(values[1]);
+        } catch (NumberFormatException nfe) {
+            throw new GeoWebCacheException(
+                    "The parameters for x and y must both be positive integers.");
+        }
 
-        byte[] data = srcHelper.makeFeatureInfoRequest(gfiConv, 
-                Integer.parseInt(values[0]),
-                Integer.parseInt(values[1]));
+        int height, width;
+        try {
+            height = Integer.parseInt(values[5]);
+            width = Integer.parseInt(values[6]);
+        } catch (NumberFormatException nfe) {
+            throw new GeoWebCacheException(
+                    "The parameters for height and width must both be positive integers.");
+        }
 
+        byte[] data = srcHelper.makeFeatureInfoRequest(gfiConv, bbox, height, width, x, y);
+        
         try {
             tile.servletResp.setContentType(mimeType.getMimeType());
             tile.servletResp.getOutputStream().write(data);

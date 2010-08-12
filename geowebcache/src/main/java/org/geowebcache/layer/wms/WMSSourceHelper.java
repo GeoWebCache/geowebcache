@@ -72,7 +72,7 @@ public abstract class WMSSourceHelper {
     }
 
     
-    public byte[] makeFeatureInfoRequest(ConveyorTile tile, int x, int y)
+    public byte[] makeFeatureInfoRequest(ConveyorTile tile, BoundingBox bbox, int height, int width, int x, int y)
             throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
 
@@ -84,10 +84,8 @@ public abstract class WMSSourceHelper {
         strBuilder.append("&INFO_FORMAT=").append(tile.getMimeType().getFormat());
         strBuilder.append("&FORMAT=").append(tile.getMimeType().getFormat());
         strBuilder.append("&SRS=").append(layer.backendSRSOverride(gridSubset.getSRS()));
-        strBuilder.append("&HEIGHT=").append(gridSubset.getTileHeight());
-        strBuilder.append("&WIDTH=").append(gridSubset.getTileWidth());
-
-        BoundingBox bbox = gridSubset.boundsFromIndex(tile.getTileIndex());
+        strBuilder.append("&HEIGHT=").append(height);
+        strBuilder.append("&WIDTH=").append(width);
 
         strBuilder.append("&BBOX=").append(bbox);
 
