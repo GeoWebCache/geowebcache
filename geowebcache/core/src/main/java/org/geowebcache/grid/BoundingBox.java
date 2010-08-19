@@ -210,26 +210,37 @@ public class BoundingBox {
                 ^ Float.floatToIntBits((float) coords[1]);
     }
 
+    public boolean intersects(BoundingBox other) {
+        double width = getWidth();
+        double height = getHeight();
+        if (width <= 0 || height <= 0 || other.getWidth() <= 0 || other.getHeight() <= 0) {
+            return false;
+        }
+
+        return (other.coords[0] + other.getWidth() > coords[0]
+                && other.coords[1] + other.getHeight() > coords[1]
+                && other.coords[0] < coords[0] + width && other.coords[1] < coords[1] + height);
+    }
     
     public static BoundingBox intersection(BoundingBox bboxA, BoundingBox bboxB) {
-        BoundingBox retBbox = new BoundingBox(0,0,0,0);
+        BoundingBox retBbox = new BoundingBox(0, 0, 0, 0);
+        if (bboxA.intersects(bboxB)) {
+            for (int i = 0; i < 2; i++) {
+                if (bboxA.coords[i] > bboxB.coords[i]) {
+                    retBbox.coords[i] = bboxA.coords[i];
+                } else {
+                    retBbox.coords[i] = bboxB.coords[i];
+                }
+            }
 
-        for(int i=0; i<2; i++) {
-            if(bboxA.coords[i] > bboxB.coords[i]) {
-                retBbox.coords[i] = bboxA.coords[i];
-            } else {
-                retBbox.coords[i] = bboxB.coords[i];
+            for (int i = 2; i < 4; i++) {
+                if (bboxA.coords[i] < bboxB.coords[i]) {
+                    retBbox.coords[i] = bboxA.coords[i];
+                } else {
+                    retBbox.coords[i] = bboxB.coords[i];
+                }
             }
         }
-        
-        for(int i=2; i<4; i++) {
-            if(bboxA.coords[i] < bboxB.coords[i]) {
-                retBbox.coords[i] = bboxA.coords[i];
-            } else {
-                retBbox.coords[i] = bboxB.coords[i];
-            }
-        }
-        
         return retBbox;
     }
     
