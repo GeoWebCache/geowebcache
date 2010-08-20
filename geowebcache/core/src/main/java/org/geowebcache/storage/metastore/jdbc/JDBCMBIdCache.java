@@ -29,73 +29,78 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.storage.StorageException;
 
 class JDBCMBIdCache {
-    private static Log log = LogFactory.getLog(org.geowebcache.storage.metastore.jdbc.JDBCMBIdCache.class);
-    
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.storage.metastore.jdbc.JDBCMBIdCache.class);
+
     public static int MAX_FORMATS = 50;
+
     public static int MAX_LAYERS = 100;
+
     public static int MAX_PARAMETERS = 100;
+
     public static int MAX_GRIDSETS = 50;
-    
-    private final Map<String,Long> formatsCache;
-    private final Map<String,Long> layersCache;
-    private final Map<String,Long> parametersCache;
-    private final Map<String,Long> gridSetsCache;
-    
+
+    private final Map<String, Long> formatsCache;
+
+    private final Map<String, Long> layersCache;
+
+    private final Map<String, Long> parametersCache;
+
+    private final Map<String, Long> gridSetsCache;
+
     private final JDBCMBWrapper wrpr;
-    
+
     protected JDBCMBIdCache(JDBCMBWrapper wrpr) {
-        formatsCache = new HashMap<String,Long>();
-        layersCache = new HashMap<String,Long>();
-        parametersCache = new HashMap<String,Long>();
-        gridSetsCache = new HashMap<String,Long>();
-        
+        formatsCache = new HashMap<String, Long>();
+        layersCache = new HashMap<String, Long>();
+        parametersCache = new HashMap<String, Long>();
+        gridSetsCache = new HashMap<String, Long>();
+
         this.wrpr = wrpr;
     }
-    
-    private Long getOrInsert(String key, Map<String, Long> map, int maxSize, String table) 
-    throws StorageException {
-        if(key.length() > 254) {
-            throw new StorageException(
-                    "Value is too big for table " + table + ":" + key );
+
+    private Long getOrInsert(String key, Map<String, Long> map, int maxSize, String table)
+            throws StorageException {
+        if (key.length() > 254) {
+            throw new StorageException("Value is too big for table " + table + ":" + key);
         }
-        
+
         Long res = null;
         try {
             res = doSelect(table, key);
-        
-            if(res == null)
-                res = doInsert(table,key);
-        } catch(SQLException se) {
+
+            if (res == null)
+                res = doInsert(table, key);
+        } catch (SQLException se) {
             log.error("Error on Select or Insert: " + se.getMessage());
         }
-        
+
         /** Keep the result for later */
-        if(res != null) {
-            if(map.size() > maxSize) 
+        if (res != null) {
+            if (map.size() > maxSize)
                 map.clear();
-        
+
             map.put(key, res);
         }
-        
+
         return res;
     }
-    
+
     /** Ask the database for next auto increment */
     private Long doInsert(String table, String key) {
         Long res = null;
-        
+
         try {
             String query = "INSERT INTO " + table + " (value) VALUES (?)";
-            
-            PreparedStatement prep = wrpr.getConnection().prepareStatement(
-                    query, 
-                    Statement.RETURN_GENERATED_KEYS );
-            
+
+            PreparedStatement prep = wrpr.getConnection().prepareStatement(query,
+                    Statement.RETURN_GENERATED_KEYS);
+
             prep.setString(1, key);
-            
+
             prep.executeUpdate();
             ResultSet rs = null;
-            
+
             rs = prep.getGeneratedKeys();
             rs.first();
             res = Long.valueOf(rs.getLong(1));
@@ -104,39 +109,37 @@ class JDBCMBIdCache {
         } catch (SQLException se) {
             log.error(se.getMessage());
         }
-        
+
         return res;
     }
-    
+
     /** See whether the database knows anything */
-    private Long doSelect(String table, String key) 
-    throws SQLException {
+    private Long doSelect(String table, String key) throws SQLException {
         PreparedStatement prep = null;
         ResultSet rs = null;
-        
+
         try {
             String query = "SELECT ID FROM " + table + " WHERE VALUE LIKE ? LIMIT 1";
-            
+
             prep = wrpr.getConnection().prepareStatement(query);
             prep.setString(1, key);
-            
+
             rs = prep.executeQuery();
-            
-            if(rs.first()) {
+
+            if (rs.first()) {
                 return Long.valueOf(rs.getLong(1));
             }
         } catch (SQLException se) {
             log.error(se.getMessage());
         } finally {
-            if(prep != null)
+            if (prep != null)
                 prep.close();
-            if(rs != null)
+            if (rs != null)
                 rs.close();
         }
         return null;
     }
 
-    
     protected Long getFormatId(String format) throws StorageException {
         synchronized (this.formatsCache) {
             Long ret = formatsCache.get(format);
@@ -146,7 +149,7 @@ class JDBCMBIdCache {
             return ret;
         }
     }
-    
+
     protected Long getLayerId(String layer) throws StorageException {
         synchronized (this.layersCache) {
             Long ret = layersCache.get(layer);
@@ -156,22 +159,22 @@ class JDBCMBIdCache {
             return ret;
         }
     }
-    
+
     protected Long getParametersId(String parameters) throws StorageException {
         synchronized (this.parametersCache) {
             Long ret = parametersCache.get(parameters);
             if (ret == null)
-                ret = getOrInsert(parameters, parametersCache, MAX_PARAMETERS,"PARAMETERS");
+                ret = getOrInsert(parameters, parametersCache, MAX_PARAMETERS, "PARAMETERS");
 
             return ret;
         }
     }
-    
+
     protected Long getGridSetsId(String gridSetId) throws StorageException {
         synchronized (this.gridSetsCache) {
             Long ret = gridSetsCache.get(gridSetId);
             if (ret == null)
-                ret = getOrInsert(gridSetId, gridSetsCache, MAX_GRIDSETS,"GRIDSETS");
+                ret = getOrInsert(gridSetId, gridSetsCache, MAX_GRIDSETS, "GRIDSETS");
 
             return ret;
         }
