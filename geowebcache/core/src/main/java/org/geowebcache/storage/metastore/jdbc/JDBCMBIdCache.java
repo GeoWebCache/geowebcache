@@ -17,9 +17,6 @@
  */
 package org.geowebcache.storage.metastore.jdbc;
 
-import static org.geowebcache.storage.metastore.jdbc.JDBCUtils.close;
-
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -89,35 +86,28 @@ class JDBCMBIdCache {
         return res;
     }
 
-    /**
-     * Ask the database for next auto increment
-     * 
-     * @throws SQLException
-     */
-    private Long doInsert(String table, String key) throws SQLException {
+    /** Ask the database for next auto increment */
+    private Long doInsert(String table, String key) {
         Long res = null;
 
-        final Connection connection = wrpr.getConnection();
-        PreparedStatement prep = null;
-        ResultSet rs = null;
         try {
             String query = "INSERT INTO " + table + " (value) VALUES (?)";
 
-            prep = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement prep = wrpr.getConnection().prepareStatement(query,
+                    Statement.RETURN_GENERATED_KEYS);
 
             prep.setString(1, key);
 
             prep.executeUpdate();
+            ResultSet rs = null;
 
             rs = prep.getGeneratedKeys();
             rs.first();
             res = Long.valueOf(rs.getLong(1));
+            rs.close();
+            prep.close();
         } catch (SQLException se) {
             log.error(se.getMessage());
-        } finally {
-            close(rs);
-            close(prep);
-            close(connection);
         }
 
         return res;
@@ -128,11 +118,10 @@ class JDBCMBIdCache {
         PreparedStatement prep = null;
         ResultSet rs = null;
 
-        final Connection connection = wrpr.getConnection();
         try {
             String query = "SELECT ID FROM " + table + " WHERE VALUE LIKE ? LIMIT 1";
 
-            prep = connection.prepareStatement(query);
+            prep = wrpr.getConnection().prepareStatement(query);
             prep.setString(1, key);
 
             rs = prep.executeQuery();
@@ -143,9 +132,10 @@ class JDBCMBIdCache {
         } catch (SQLException se) {
             log.error(se.getMessage());
         } finally {
-            close(rs);
-            close(prep);
-            close(connection);
+            if (prep != null)
+                prep.close();
+            if (rs != null)
+                rs.close();
         }
         return null;
     }
