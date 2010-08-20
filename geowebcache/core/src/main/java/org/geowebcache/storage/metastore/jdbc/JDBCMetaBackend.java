@@ -25,10 +25,10 @@ import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.MetaStore;
 import org.geowebcache.storage.StorageException;
-import org.geowebcache.storage.StorageObject.Status;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.WFSObject;
+import org.geowebcache.storage.StorageObject.Status;
 
 /**
  * JDBC implementation of a {@link MetaStore}

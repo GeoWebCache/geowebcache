@@ -17,6 +17,8 @@
  */
 package org.geowebcache.storage.metastore.jdbc;
 
+import static org.geowebcache.storage.metastore.jdbc.JDBCUtils.close;
+
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -185,9 +187,8 @@ class JDBCMBWrapper {
     }
 
     private void checkTables() throws StorageException, SQLException {
-        Connection conn = null;
+        final Connection conn = getConnection();
         try {
-            conn = getConnection();
 
             /** Easy ones */
             condCreate(conn, "LAYERS",
@@ -219,8 +220,7 @@ class JDBCMBWrapper {
             checkWFSTable(conn);
             checkTilesTable(conn);
         } finally {
-            if (conn != null)
-                conn.close();
+            close(conn);
         }
     }
 
@@ -256,10 +256,8 @@ class JDBCMBWrapper {
                 return JDBCMBWrapper.DB_VERSION;
             }
         } finally {
-            if (rs != null)
-                rs.close();
-            if (st != null)
-                st.close();
+            close(rs);
+            close(st);
         }
     }
 
@@ -295,8 +293,7 @@ class JDBCMBWrapper {
                         + " (" + index2Columns + ")");
             }
         } finally {
-            if (st != null)
-                st.close();
+            close(st);
         }
 
     }
@@ -314,20 +311,29 @@ class JDBCMBWrapper {
                 // We start with this one to block other instances
                 String query = "UPDATE VARIABLES SET VALUE = ? WHERE KEY = ?";
                 PreparedStatement prep = conn.prepareStatement(query);
-                prep.setString(1, "111");
-                prep.setString(2, "db_version");
-                prep.execute();
-                prep.close();
+                try {
+                    prep.setString(1, "111");
+                    prep.setString(2, "db_version");
+                    prep.execute();
+                } finally {
+                    close(prep);
+                }
 
                 query = "ALTER TABLE TILES ADD LOCK TIMESTAMP";
                 Statement st = conn.createStatement();
-                st.execute(query);
-                st.close();
+                try {
+                    st.execute(query);
+                } finally {
+                    close(st);
+                }
 
                 query = "ALTER TABLE WFS ADD LOCK TIMESTAMP";
                 st = conn.createStatement();
-                st.execute(query);
-                st.close();
+                try {
+                    st.execute(query);
+                } finally {
+                    close(st);
+                }
                 log.info("Database upgrade from 110 to 111 completed");
             } catch (SQLException se) {
                 log.error("110 to 111 upgrade failed: " + se.getMessage());
@@ -340,34 +346,45 @@ class JDBCMBWrapper {
                 // We start with this one to block other instances
                 String query = "UPDATE VARIABLES SET VALUE = ? WHERE KEY = ?";
                 PreparedStatement prep = conn.prepareStatement(query);
-                prep.setString(1, "120");
-                prep.setString(2, "db_version");
-                prep.execute();
-                prep.close();
-
+                try {
+                    prep.setString(1, "120");
+                    prep.setString(2, "db_version");
+                    prep.execute();
+                } finally {
+                    close(prep);
+                }
                 query = "ALTER TABLE TILES ALTER COLUMN SRS_ID RENAME TO GRIDSET_ID";
                 Statement st = conn.createStatement();
-                st.execute(query);
-                st.close();
-
+                try {
+                    st.execute(query);
+                } finally {
+                    close(st);
+                }
                 // Now add the existing grids to the IdCache, so that the old stuff
                 // continues working: EPSG:4326 -> 4326 , which is what the SRS_ID used to be
                 query = "SELECT GRIDSET_ID FROM TILES GROUP BY GRIDSET_ID";
                 st = conn.createStatement();
-                ResultSet rs = st.executeQuery(query);
-                while (rs.next()) {
-                    int val = rs.getInt(1);
-                    query = "INSERT INTO GRIDSETS (ID, VALUE) VALUES (?,?)";
-                    prep = getConnection().prepareStatement(query);
-
-                    prep.setLong(1, val);
-                    prep.setString(2, "EPSG:" + val);
-
-                    prep.executeUpdate();
-                    prep.close();
+                try {
+                    ResultSet rs = st.executeQuery(query);
+                    try {
+                        while (rs.next()) {
+                            int val = rs.getInt(1);
+                            query = "INSERT INTO GRIDSETS (ID, VALUE) VALUES (?,?)";
+                            prep = conn.prepareStatement(query);
+                            try {
+                                prep.setLong(1, val);
+                                prep.setString(2, "EPSG:" + val);
+                                prep.executeUpdate();
+                            } finally {
+                                close(prep);
+                            }
+                        }
+                    } finally {
+                        close(rs);
+                    }
+                } finally {
+                    close(st);
                 }
-                rs.close();
-                st.close();
 
                 log.info("Database upgrade from 111 to 120 completed");
             } catch (SQLException se) {
@@ -378,6 +395,15 @@ class JDBCMBWrapper {
     }
 
     protected void deleteTile(TileObject stObj) throws SQLException {
+        final Connection conn = getConnection();
+        try {
+            deleteTile(conn, stObj);
+        } finally {
+            close(conn);
+        }
+    }
+
+    protected void deleteTile(Connection conn, TileObject stObj) throws SQLException {
 
         String query;
         if (stObj.getParametersId() == -1L) {
@@ -391,55 +417,55 @@ class JDBCMBWrapper {
         }
         long[] xyz = stObj.getXYZ();
 
-        Connection conn = getConnection();
-
         PreparedStatement prep = conn.prepareStatement(query);
-        prep.setLong(1, stObj.getLayerId());
-        prep.setLong(2, xyz[0]);
-        prep.setLong(3, xyz[1]);
-        prep.setLong(4, xyz[2]);
-        prep.setLong(5, stObj.getGridSetIdId());
-        prep.setLong(6, stObj.getFormatId());
-
-        if (stObj.getParametersId() != -1L) {
-            prep.setLong(7, stObj.getParametersId());
-        }
-
         try {
-            prep.execute();
+            prep.setLong(1, stObj.getLayerId());
+            prep.setLong(2, xyz[0]);
+            prep.setLong(3, xyz[1]);
+            prep.setLong(4, xyz[2]);
+            prep.setLong(5, stObj.getGridSetIdId());
+            prep.setLong(6, stObj.getFormatId());
 
+            if (stObj.getParametersId() != -1L) {
+                prep.setLong(7, stObj.getParametersId());
+            }
+
+            prep.execute();
         } finally {
-            prep.close();
-            conn.close();
+            close(prep);
         }
     }
 
     protected void deleteWFS(Long parameters, WFSObject wfsObj) throws SQLException {
+        final Connection conn = getConnection();
+        try {
+            deleteWFS(conn, parameters, wfsObj);
+        } finally {
+            close(conn);
+        }
+    }
+
+    protected void deleteWFS(final Connection conn, Long parameters, WFSObject wfsObj)
+            throws SQLException {
         String query = null;
         PreparedStatement prep = null;
-        Connection conn = getConnection();
-
-        if (parameters != null) {
-            query = "DELETE FROM WFS WHERE " + " PARAMETERS_ID = ?";
-
-            prep = conn.prepareStatement(query);
-            prep.setLong(1, parameters);
-        } else {
-            query = "DELETE FROM WFS WHERE " + " QUERY_BLOB_MD5 LIKE ? AND QUERY_BLOB_SIZE = ?";
-
-            prep = conn.prepareStatement(query);
-            prep.setString(1, wfsObj.getQueryBlobMd5());
-            prep.setInt(2, wfsObj.getQueryBlobSize());
-        }
 
         try {
+            if (parameters != null) {
+                query = "DELETE FROM WFS WHERE " + " PARAMETERS_ID = ?";
+                prep = conn.prepareStatement(query);
+                prep.setLong(1, parameters);
+            } else {
+                query = "DELETE FROM WFS WHERE " + " QUERY_BLOB_MD5 LIKE ? AND QUERY_BLOB_SIZE = ?";
+                prep = conn.prepareStatement(query);
+                prep.setString(1, wfsObj.getQueryBlobMd5());
+                prep.setInt(2, wfsObj.getQueryBlobSize());
+            }
+
             prep.execute();
 
         } finally {
-            if (prep != null)
-                prep.close();
-
-            conn.close();
+            close(prep);
         }
     }
 
@@ -456,128 +482,120 @@ class JDBCMBWrapper {
         }
         long[] xyz = stObj.getXYZ();
 
-        Connection conn = getConnection();
-
-        PreparedStatement prep = conn.prepareStatement(query);
-        prep.setLong(1, stObj.getLayerId());
-        prep.setLong(2, xyz[0]);
-        prep.setLong(3, xyz[1]);
-        prep.setLong(4, xyz[2]);
-        prep.setLong(5, stObj.getGridSetIdId());
-        prep.setLong(6, stObj.getFormatId());
-
-        if (stObj.getParametersId() != -1L) {
-            prep.setLong(7, stObj.getParametersId());
-        }
-
-        ResultSet rs = null;
-
+        final Connection conn = getConnection();
+        PreparedStatement prep = null;
         try {
-            rs = prep.executeQuery();
+            prep = conn.prepareStatement(query);
+            prep.setLong(1, stObj.getLayerId());
+            prep.setLong(2, xyz[0]);
+            prep.setLong(3, xyz[1]);
+            prep.setLong(4, xyz[2]);
+            prep.setLong(5, stObj.getGridSetIdId());
+            prep.setLong(6, stObj.getFormatId());
 
-            if (rs.first()) {
-                Timestamp lock = rs.getTimestamp(4);
+            if (stObj.getParametersId() != -1L) {
+                prep.setLong(7, stObj.getParametersId());
+            }
 
-                // This tile is locked
-                if (lock != null) {
-                    Timestamp now = rs.getTimestamp(5);
-                    long diff = now.getTime() - lock.getTime();
-                    // System.out.println(now.getTime() + " " + System.currentTimeMillis());
-                    if (diff > lockTimeout) {
-                        log.warn("Database lock exceeded (" + diff + "ms , " + lock.toString()
-                                + ") for " + stObj.toString() + ", clearing tile.");
-                        deleteTile(stObj);
-                        stObj.setStatus(StorageObject.Status.EXPIRED_LOCK);
-                    } else {
-                        stObj.setStatus(StorageObject.Status.LOCK);
+            ResultSet rs = prep.executeQuery();
+            try {
+                if (rs.first()) {
+                    Timestamp lock = rs.getTimestamp(4);
+
+                    // This tile is locked
+                    if (lock != null) {
+                        Timestamp now = rs.getTimestamp(5);
+                        long diff = now.getTime() - lock.getTime();
+                        // System.out.println(now.getTime() + " " + System.currentTimeMillis());
+                        if (diff > lockTimeout) {
+                            log.warn("Database lock exceeded (" + diff + "ms , " + lock.toString()
+                                    + ") for " + stObj.toString() + ", clearing tile.");
+                            deleteTile(conn, stObj);
+                            stObj.setStatus(StorageObject.Status.EXPIRED_LOCK);
+                        } else {
+                            stObj.setStatus(StorageObject.Status.LOCK);
+                        }
+
+                        // This puts the request back in the queue
+                        return false;
                     }
 
-                    // This puts the request back in the queue
+                    stObj.setId(rs.getLong(1));
+                    stObj.setBlobSize(rs.getInt(2));
+                    stObj.setCreated(rs.getLong(3));
+                    stObj.setStatus(StorageObject.Status.HIT);
+                    return true;
+                } else {
+                    stObj.setStatus(StorageObject.Status.MISS);
                     return false;
                 }
-
-                stObj.setId(rs.getLong(1));
-                stObj.setBlobSize(rs.getInt(2));
-                stObj.setCreated(rs.getLong(3));
-                stObj.setStatus(StorageObject.Status.HIT);
-                return true;
-            } else {
-                stObj.setStatus(StorageObject.Status.MISS);
-                return false;
+            } finally {
+                close(rs);
             }
         } finally {
-            if (rs != null)
-                rs.close();
-
-            if (prep != null)
-                prep.close();
-
-            conn.close();
+            close(prep);
+            close(conn);
         }
     }
 
     protected boolean getWFS(Long parameters, WFSObject wfsObj) throws SQLException {
         String query = null;
         PreparedStatement prep = null;
-        Connection conn = getConnection();
-
-        if (parameters != null) {
-            query = "SELECT WFS_ID,BLOB_SIZE,CREATED,LOCK,NOW() FROM WFS WHERE "
-                    + " PARAMETERS_ID = ? LIMIT 1 ";
-
-            prep = conn.prepareStatement(query);
-            prep.setLong(1, parameters);
-        } else {
-            query = "SELECT WFS_ID,BLOB_SIZE,CREATED,LOCK,NOW() FROM WFS WHERE "
-                    + " QUERY_BLOB_MD5 LIKE ? AND QUERY_BLOB_SIZE = ? LIMIT 1";
-
-            prep = conn.prepareStatement(query);
-            prep.setString(1, wfsObj.getQueryBlobMd5());
-            prep.setInt(2, wfsObj.getQueryBlobSize());
-        }
-
-        ResultSet rs = null;
+        final Connection conn = getConnection();
 
         try {
-            rs = prep.executeQuery();
+            if (parameters != null) {
+                query = "SELECT WFS_ID,BLOB_SIZE,CREATED,LOCK,NOW() FROM WFS WHERE "
+                        + " PARAMETERS_ID = ? LIMIT 1 ";
 
-            if (rs.next()) {
-                Timestamp lock = rs.getTimestamp(4);
+                prep = conn.prepareStatement(query);
+                prep.setLong(1, parameters);
+            } else {
+                query = "SELECT WFS_ID,BLOB_SIZE,CREATED,LOCK,NOW() FROM WFS WHERE "
+                        + " QUERY_BLOB_MD5 LIKE ? AND QUERY_BLOB_SIZE = ? LIMIT 1";
 
-                // This tile is locked
-                if (lock != null) {
-                    Timestamp now = rs.getTimestamp(5);
-                    if (now.getTime() - lock.getTime() > lockTimeout) {
-                        log.warn("Database lock exceeded for " + wfsObj.toString()
-                                + ", clearing WFS object.");
-                        deleteWFS(parameters, wfsObj);
-                        wfsObj.setStatus(StorageObject.Status.EXPIRED_LOCK);
-                    } else {
-                        wfsObj.setStatus(StorageObject.Status.LOCK);
+                prep = conn.prepareStatement(query);
+                prep.setString(1, wfsObj.getQueryBlobMd5());
+                prep.setInt(2, wfsObj.getQueryBlobSize());
+            }
+
+            ResultSet rs = prep.executeQuery();
+            try {
+                if (rs.next()) {
+                    Timestamp lock = rs.getTimestamp(4);
+
+                    // This tile is locked
+                    if (lock != null) {
+                        Timestamp now = rs.getTimestamp(5);
+                        if (now.getTime() - lock.getTime() > lockTimeout) {
+                            log.warn("Database lock exceeded for " + wfsObj.toString()
+                                    + ", clearing WFS object.");
+                            deleteWFS(conn, parameters, wfsObj);
+                            wfsObj.setStatus(StorageObject.Status.EXPIRED_LOCK);
+                        } else {
+                            wfsObj.setStatus(StorageObject.Status.LOCK);
+                        }
+
+                        // This puts the request back in the queue
+                        return false;
                     }
 
-                    // This puts the request back in the queue
+                    wfsObj.setId(rs.getLong(1));
+                    wfsObj.setBlobSize(rs.getInt(2));
+                    wfsObj.setCreated(rs.getLong(3));
+
+                    wfsObj.setStatus(StorageObject.Status.HIT);
+                    return true;
+                } else {
+                    wfsObj.setStatus(StorageObject.Status.MISS);
                     return false;
                 }
-
-                wfsObj.setId(rs.getLong(1));
-                wfsObj.setBlobSize(rs.getInt(2));
-                wfsObj.setCreated(rs.getLong(3));
-
-                wfsObj.setStatus(StorageObject.Status.HIT);
-                return true;
-            } else {
-                wfsObj.setStatus(StorageObject.Status.MISS);
-                return false;
+            } finally {
+                close(rs);
             }
         } finally {
-            if (rs != null)
-                rs.close();
-
-            if (prep != null)
-                prep.close();
-
-            conn.close();
+            close(prep);
+            close(conn);
         }
     }
 
@@ -590,30 +608,35 @@ class JDBCMBWrapper {
 
         long[] xyz = stObj.getXYZ();
 
-        Connection conn = getConnection();
+        final Connection conn = getConnection();
 
         try {
+            Long insertId;
             PreparedStatement prep = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            prep.setLong(1, stObj.getLayerId());
-            prep.setLong(2, xyz[0]);
-            prep.setLong(3, xyz[1]);
-            prep.setLong(4, xyz[2]);
-            prep.setLong(5, stObj.getGridSetIdId());
-            prep.setLong(6, stObj.getFormatId());
-            if (stObj.getParametersId() == -1L) {
-                prep.setNull(7, java.sql.Types.BIGINT);
-            } else {
-                prep.setLong(7, stObj.getParametersId());
+            try {
+                prep.setLong(1, stObj.getLayerId());
+                prep.setLong(2, xyz[0]);
+                prep.setLong(3, xyz[1]);
+                prep.setLong(4, xyz[2]);
+                prep.setLong(5, stObj.getGridSetIdId());
+                prep.setLong(6, stObj.getFormatId());
+                if (stObj.getParametersId() == -1L) {
+                    prep.setNull(7, java.sql.Types.BIGINT);
+                } else {
+                    prep.setLong(7, stObj.getParametersId());
+                }
+                prep.setInt(8, stObj.getBlobSize());
+                prep.setLong(9, System.currentTimeMillis());
+                insertId = wrappedInsert(prep);
+            } finally {
+                close(prep);
             }
-            prep.setInt(8, stObj.getBlobSize());
-            prep.setLong(9, System.currentTimeMillis());
-            Long insertId = wrappedInsert(prep);
-
             if (insertId == null) {
                 log.error("Did not receive a id for " + query);
             } else {
                 stObj.setId(insertId.longValue());
             }
+
         } finally {
             conn.close();
         }
@@ -622,34 +645,39 @@ class JDBCMBWrapper {
 
     public void putWFS(Long parameters, WFSObject stObj) throws SQLException, StorageException {
 
-        PreparedStatement prep = null;
         String query = null;
-        Connection conn = getConnection();
+        final Connection conn = getConnection();
 
         try {
-            if (parameters != null) {
-                query = "MERGE INTO " + "WFS(PARAMETERS_ID,BLOB_SIZE,CREATED,LOCK) "
-                        + "KEY(PARAMETERS_ID) " + "VALUES(?,?,?,NOW())";
+            Long insertId;
+            PreparedStatement prep = null;
+            try {
+                if (parameters != null) {
+                    query = "MERGE INTO " + "WFS(PARAMETERS_ID,BLOB_SIZE,CREATED,LOCK) "
+                            + "KEY(PARAMETERS_ID) " + "VALUES(?,?,?,NOW())";
 
-                prep = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-                prep.setLong(1, parameters);
-                prep.setInt(2, stObj.getBlobSize());
-                prep.setLong(3, stObj.getCreated());
+                    prep = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                    prep.setLong(1, parameters);
+                    prep.setInt(2, stObj.getBlobSize());
+                    prep.setLong(3, stObj.getCreated());
 
-            } else {
-                query = "MERGE INTO "
-                        + "WFS(QUERY_BLOB_MD5, QUERY_BLOB_SIZE,BLOB_SIZE,CREATED,LOCK) "
-                        + "KEY(QUERY_BLOB_MD5, QUERY_BLOB_SIZE) " + "VALUES(?,?,?,?,NOW())";
+                } else {
+                    query = "MERGE INTO "
+                            + "WFS(QUERY_BLOB_MD5, QUERY_BLOB_SIZE,BLOB_SIZE,CREATED,LOCK) "
+                            + "KEY(QUERY_BLOB_MD5, QUERY_BLOB_SIZE) " + "VALUES(?,?,?,?,NOW())";
 
-                prep = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                    prep = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 
-                prep.setString(1, stObj.getQueryBlobMd5());
-                prep.setInt(2, stObj.getQueryBlobSize());
-                prep.setInt(3, stObj.getBlobSize());
-                prep.setLong(4, stObj.getCreated());
+                    prep.setString(1, stObj.getQueryBlobMd5());
+                    prep.setInt(2, stObj.getQueryBlobSize());
+                    prep.setInt(3, stObj.getBlobSize());
+                    prep.setLong(4, stObj.getCreated());
+                }
+
+                insertId = wrappedInsert(prep);
+            } finally {
+                close(prep);
             }
-
-            Long insertId = wrappedInsert(prep);
 
             if (insertId == null) {
                 log.error("Did not receive a id for " + query);
@@ -662,7 +690,7 @@ class JDBCMBWrapper {
                 }
             }
         } finally {
-            conn.close();
+            close(conn);
         }
     }
 
@@ -682,7 +710,7 @@ class JDBCMBWrapper {
 
         long[] xyz = stObj.getXYZ();
 
-        Connection conn = getConnection();
+        final Connection conn = getConnection();
 
         PreparedStatement prep = null;
 
@@ -707,10 +735,8 @@ class JDBCMBWrapper {
                 return false;
             }
         } finally {
-            if (prep != null)
-                prep.close();
-
-            conn.close();
+            close(prep);
+            close(conn);
         }
 
     }
@@ -720,7 +746,7 @@ class JDBCMBWrapper {
 
         PreparedStatement prep = null;
         String query = null;
-        Connection conn = getConnection();
+        final Connection conn = getConnection();
 
         try {
             if (parameters != null) {
@@ -746,10 +772,8 @@ class JDBCMBWrapper {
                 return false;
             }
         } finally {
-            if (prep != null)
-                prep.close();
-
-            conn.close();
+            close(prep);
+            close(conn);
         }
     }
 
@@ -767,11 +791,7 @@ class JDBCMBWrapper {
             return null;
 
         } finally {
-            if (rs != null)
-                rs.close();
-
-            if (st != null)
-                st.close();
+            close(rs);
         }
     }
 
@@ -805,8 +825,8 @@ class JDBCMBWrapper {
         System.gc();
     }
 
-    private ResultSet getTileSet(long layerId, long formatId, long parametersId, long zoomLevel,
-            long[] bounds, long srsNumber) throws SQLException {
+    private PreparedStatement getTileSet(final Connection conn, long layerId, long formatId,
+            long parametersId, long zoomLevel, long[] bounds, long srsNumber) throws SQLException {
         String query;
 
         if (parametersId == -1L) {
@@ -818,8 +838,6 @@ class JDBCMBWrapper {
                     + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND GRIDSET_ID = ? "
                     + " AND FORMAT_ID = ? AND PARAMETERS_ID = ?";
         }
-
-        Connection conn = getConnection();
 
         PreparedStatement prep = conn.prepareStatement(query);
         prep.setLong(1, layerId);
@@ -834,12 +852,11 @@ class JDBCMBWrapper {
         if (parametersId != -1L) {
             prep.setLong(9, parametersId);
         }
-
-        return prep.executeQuery();
+        return prep;
     }
 
-    private void deleteRange(long layerId, long formatId, long parametersId, int zoomLevel,
-            long[] bounds, long gridSetIdId) throws SQLException {
+    private void deleteRange(final Connection conn, long layerId, long formatId, long parametersId,
+            int zoomLevel, long[] bounds, long gridSetIdId) throws SQLException {
         String query;
 
         if (parametersId == -1L) {
@@ -852,35 +869,44 @@ class JDBCMBWrapper {
                     + " AND FORMAT_ID = ? AND PARAMETERS_ID = ?";
         }
 
-        Connection conn = getConnection();
-
         PreparedStatement prep = conn.prepareStatement(query);
-        prep.setLong(1, layerId);
-        prep.setLong(2, bounds[0]);
-        prep.setLong(3, bounds[2]);
-        prep.setLong(4, bounds[1]);
-        prep.setLong(5, bounds[3]);
-        prep.setLong(6, zoomLevel);
-        prep.setLong(7, gridSetIdId);
-        prep.setLong(8, formatId);
+        try {
+            prep.setLong(1, layerId);
+            prep.setLong(2, bounds[0]);
+            prep.setLong(3, bounds[2]);
+            prep.setLong(4, bounds[1]);
+            prep.setLong(5, bounds[3]);
+            prep.setLong(6, zoomLevel);
+            prep.setLong(7, gridSetIdId);
+            prep.setLong(8, formatId);
 
-        if (parametersId != -1L) {
-            prep.setLong(9, parametersId);
+            if (parametersId != -1L) {
+                prep.setLong(9, parametersId);
+            }
+
+            prep.execute();
+        } finally {
+            close(prep);
         }
 
-        prep.execute();
     }
 
     public void deleteLayer(long layerId) throws SQLException {
 
         String query = "DELETE FROM TILES WHERE LAYER_ID = ?";
 
-        Connection conn = getConnection();
-
-        PreparedStatement prep = conn.prepareStatement(query);
-        prep.setLong(1, layerId);
-
-        prep.execute();
+        final Connection conn = getConnection();
+        try {
+            PreparedStatement prep = conn.prepareStatement(query);
+            try {
+                prep.setLong(1, layerId);
+                prep.execute();
+            } finally {
+                close(prep);
+            }
+        } finally {
+            close(conn);
+        }
 
     }
 
@@ -897,9 +923,20 @@ class JDBCMBWrapper {
 
         long[] bounds = trObj.rangeBounds[zoomLevel];
 
+        final Connection conn;
+        try {
+            conn = getConnection();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        PreparedStatement tileSetQuery = null;
         ResultSet rs = null;
         try {
-            rs = getTileSet(layerId, formatId, parametersId, zoomLevel, bounds, gridSetIdId);
+            tileSetQuery = getTileSet(conn, layerId, formatId, parametersId, zoomLevel, bounds,
+                    gridSetIdId);
+
+            rs = tileSetQuery.executeQuery();
+
             int deletedIdx = 0;
 
             while (rs.next()) {
@@ -932,7 +969,7 @@ class JDBCMBWrapper {
                     deletedIdx++;
 
                     if (deletedIdx == deletedTiles.length) {
-                        deleteTileSet(deletedTiles, deletedIdx);
+                        deleteTileSet(conn, deletedTiles, deletedIdx);
                         deletedIdx = 0;
                     }
                 }
@@ -940,20 +977,18 @@ class JDBCMBWrapper {
 
             // Now remove the tiles from the database
             if (deletedTiles != null) {
-                deleteTileSet(deletedTiles, deletedIdx);
+                deleteTileSet(conn, deletedTiles, deletedIdx);
             } else {
-                deleteRange(layerId, formatId, parametersId, zoomLevel, bounds, gridSetIdId);
+                deleteRange(conn, layerId, formatId, parametersId, zoomLevel, bounds, gridSetIdId);
             }
         } catch (SQLException e) {
             log.error("deleteRange failed: " + e.getMessage());
             e.printStackTrace();
             return false;
         } finally {
-            try {
-                rs.close();
-            } catch (SQLException e) {
-                log.debug(e.getMessage());
-            }
+            close(rs);
+            close(tileSetQuery);
+            close(conn);
         }
 
         return true;
@@ -964,8 +999,10 @@ class JDBCMBWrapper {
      * 
      * @param tileIds
      * @param stopIdx
+     * @throws SQLException
      */
-    private void deleteTileSet(long[] tileIds, int stopIdx) {
+    private void deleteTileSet(final Connection conn, long[] tileIds, int stopIdx)
+            throws SQLException {
         if (stopIdx == 0) {
             return;
         }
@@ -979,22 +1016,11 @@ class JDBCMBWrapper {
         }
         sb.append(")");
 
-        Connection conn = null;
+        PreparedStatement prepDel = conn.prepareStatement(sb.toString());
         try {
-            conn = getConnection();
-            PreparedStatement prepDel = conn.prepareStatement(sb.toString());
             prepDel.execute();
-
-        } catch (SQLException se) {
-            log.error("Error deleting tile set: " + se.getMessage());
         } finally {
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException se) {
-                log.error("Error closing connection: " + se.getMessage());
-            }
+            close(prepDel);
         }
 
         log.debug("Deleted " + Arrays.toString(tileIds));
@@ -1017,23 +1043,30 @@ class JDBCMBWrapper {
                     + " AND FORMAT_ID = ? AND PARAMETERS_ID = ?";
         }
 
-        Connection conn = getConnection();
+        final Connection conn = getConnection();
+        try {
+            PreparedStatement prep = conn.prepareStatement(query);
+            try {
+                prep.setLong(1, layerId);
+                prep.setLong(2, bounds[0]);
+                prep.setLong(3, bounds[2]);
+                prep.setLong(4, bounds[1]);
+                prep.setLong(5, bounds[3]);
+                prep.setLong(6, zoomLevel);
+                prep.setLong(7, gridSetIdId);
+                prep.setLong(8, formatId);
 
-        PreparedStatement prep = conn.prepareStatement(query);
-        prep.setLong(1, layerId);
-        prep.setLong(2, bounds[0]);
-        prep.setLong(3, bounds[2]);
-        prep.setLong(4, bounds[1]);
-        prep.setLong(5, bounds[3]);
-        prep.setLong(6, zoomLevel);
-        prep.setLong(7, gridSetIdId);
-        prep.setLong(8, formatId);
+                if (parametersId != -1L) {
+                    prep.setLong(9, parametersId);
+                }
 
-        if (parametersId != -1L) {
-            prep.setLong(9, parametersId);
+                prep.execute();
+            } finally {
+                close(prep);
+            }
+        } finally {
+            close(conn);
         }
-
-        prep.execute();
     }
 
 }
