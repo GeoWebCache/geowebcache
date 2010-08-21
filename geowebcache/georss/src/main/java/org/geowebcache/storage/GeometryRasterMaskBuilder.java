@@ -343,8 +343,8 @@ public class GeometryRasterMaskBuilder {
             MathTransform gridToWorld = worldToGrid.inverse();
             Envelope bufferedEnvelope = JTS.transform(coveredLevelEnvelope, gridToWorld);
             expandedBounds = new BoundingBox(bufferedEnvelope.getMinX(),
-                    bufferedEnvelope.getMinY(), bufferedEnvelope.getMaxX(), bufferedEnvelope
-                            .getMaxY());
+                    bufferedEnvelope.getMinY(), bufferedEnvelope.getMaxX(),
+                    bufferedEnvelope.getMaxY());
         } catch (TransformException e) {
             throw new RuntimeException(e);
         }

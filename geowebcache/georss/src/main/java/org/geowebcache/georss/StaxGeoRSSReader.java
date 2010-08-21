@@ -202,7 +202,7 @@ class StaxGeoRSSReader implements GeoRSSReader {
             QName nextTag = nextTag(reader);
             if (reader.isStartElement() && GML_NS_URI.equals(nextTag.getNamespaceURI())) {
                 Geometry where = geometry(reader);
-                if(logger.isTraceEnabled()){
+                if (logger.isTraceEnabled()) {
                     logger.trace("Got geometry from feed: " + where);
                 }
                 entry.setWhere(where);

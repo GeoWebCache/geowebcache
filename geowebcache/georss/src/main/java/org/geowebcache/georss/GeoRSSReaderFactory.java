@@ -33,27 +33,27 @@ import org.geowebcache.util.HttpClientBuilder;
 
 class GeoRSSReaderFactory {
 
-    public GeoRSSReader createReader(final URL url, final String username, final String password) 
-    throws IOException {
-        
+    public GeoRSSReader createReader(final URL url, final String username, final String password)
+            throws IOException {
+
         HttpClientBuilder builder = new HttpClientBuilder();
         builder.setHttpCredentials(username, password, url);
-        builder.setBackendTimeout(120*1000);
-        
+        builder.setBackendTimeout(120 * 1000);
+
         HttpClient httpClient = builder.buildClient();
         GetMethod getMethod = new GetMethod(url.toString());
-        if(builder.isDoAuthentication()) {
+        if (builder.isDoAuthentication()) {
             getMethod.setDoAuthentication(true);
             httpClient.getParams().setAuthenticationPreemptive(true);
         }
-        
+
         httpClient.executeMethod(getMethod);
 
         String contentEncoding = getMethod.getResponseCharSet();
         if (contentEncoding == null) {
             contentEncoding = "UTF-8";
         }
-        
+
         InputStream in = getMethod.getResponseBodyAsStream();
         Reader reader = new BufferedReader(new InputStreamReader(in, contentEncoding));
         return createReader(reader);

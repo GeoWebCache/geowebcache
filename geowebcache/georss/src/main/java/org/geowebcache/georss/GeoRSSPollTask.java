@@ -36,11 +36,11 @@ import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.seed.GWCTask;
-import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.seed.GWCTask.STATE;
+import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.storage.DiscontinuousTileRange;
-import org.geowebcache.storage.RasterMask;
 import org.geowebcache.storage.GeometryRasterMaskBuilder;
+import org.geowebcache.storage.RasterMask;
 
 /**
  * A task to run a GeoRSS feed poll and launch the seeding process
@@ -73,7 +73,7 @@ class GeoRSSPollTask implements Runnable {
     private final PollDef poll;
 
     private final TileBreeder seeder;
-    
+
     private LinkedList<GWCTask> seedTasks = new LinkedList<GWCTask>();
 
     /**
@@ -104,7 +104,7 @@ class GeoRSSPollTask implements Runnable {
                     + poll.getPollDef().getFeedUrl()
                     + ". Another attempt will be made after the poll interval of "
                     + poll.getPollDef().getPollIntervalStr(), e);
-            
+
         } catch (OutOfMemoryError error) {
             System.gc();
             logger.fatal("Out of memory error processing poll " + poll.getPollDef()
@@ -124,14 +124,14 @@ class GeoRSSPollTask implements Runnable {
         final URL feedUrl = new URL(templateFeedUrl(pollDef.getFeedUrl()));
         final String httpUsername = pollDef.getHttpUsername();
         final String httpPassword = pollDef.getHttpUsername();
-        
+
         logger.debug("Getting GeoRSS reader for " + feedUrl.toExternalForm());
         final GeoRSSReaderFactory geoRSSReaderFactory = new GeoRSSReaderFactory();
-        
+
         GeoRSSReader geoRSSReader = null;
         try {
             geoRSSReader = geoRSSReaderFactory.createReader(feedUrl, httpUsername, httpPassword);
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             logger.error("Failed to fetch RSS feed from " + feedUrl + "\n" + ioe.getMessage());
             return;
         }
@@ -147,15 +147,16 @@ class GeoRSSPollTask implements Runnable {
         logger.debug("Creating tile range mask based on GeoRSS feed's geometries from "
                 + feedUrl.toExternalForm() + " for " + layer.getName());
 
-        final GeometryRasterMaskBuilder tileRangeMask = matrixBuilder.buildTileRangeMask(geoRSSReader, this.lastUpdatedEntry);
-      
-        if(tileRangeMask == null) {
+        final GeometryRasterMaskBuilder tileRangeMask = matrixBuilder.buildTileRangeMask(
+                geoRSSReader, this.lastUpdatedEntry);
+
+        if (tileRangeMask == null) {
             logger.info("Did not create a tileRangeMask, presumably no new entries in feed.");
             return;
         }
-        
+
         this.lastUpdatedEntry = matrixBuilder.getLastEntryUpdate();
-        
+
         logger.debug("Created tile range mask based on GeoRSS geometry feed from " + pollDef
                 + " for " + layer.getName() + ". Calculating number of affected tiles...");
         _logImagesToDisk(tileRangeMask);
@@ -221,7 +222,7 @@ class GeoRSSPollTask implements Runnable {
 
     private void launchSeeding(final TileLayer layer, final GeoRSSFeedDefinition pollDef,
             final String gridSetId, final GeometryRasterMaskBuilder tileRangeMask) {
-        
+
         GridSubset gridSub = layer.getGridSubset(gridSetId);
 
         long[][] fullCoverage = gridSub.getCoverages();
@@ -230,10 +231,10 @@ class GeoRSSPollTask implements Runnable {
         BufferedImage[] byLevelMasks = tileRangeMask.getByLevelMasks();
 
         RasterMask rasterMask = new RasterMask(byLevelMasks, fullCoverage, coveredBounds);
-        
+
         List<MimeType> mimeList = null;
-        
-        if(pollDef.getFormat() != null) {
+
+        if (pollDef.getFormat() != null) {
             MimeType mime;
             try {
                 mime = MimeType.createFromFormat(pollDef.getFormat());
@@ -243,20 +244,21 @@ class GeoRSSPollTask implements Runnable {
                 logger.error(e.getMessage());
             }
         }
-        
-        if(mimeList == null) {
+
+        if (mimeList == null) {
             mimeList = layer.getMimeTypes();
         }
-        
+
         Iterator<MimeType> mimeIter = mimeList.iterator();
-        
+
         // Ask any existing seed jobs started by this feed to terminate
         stopSeeding(true);
 
         // We do the truncate synchronously to get rid of stale data as quickly as we can
-        while(mimeIter.hasNext()) {
-            DiscontinuousTileRange dtr = new DiscontinuousTileRange(layer.getName(), gridSetId, 
-                    gridSub.getZoomStart(), gridSub.getZoomStop(), rasterMask, mimeIter.next(), null);
+        while (mimeIter.hasNext()) {
+            DiscontinuousTileRange dtr = new DiscontinuousTileRange(layer.getName(), gridSetId,
+                    gridSub.getZoomStart(), gridSub.getZoomStop(), rasterMask, mimeIter.next(),
+                    null);
             try {
                 GWCTask[] tasks = seeder.createTasks(dtr, layer, GWCTask.TYPE.TRUNCATE, 1, false);
                 tasks[0].doAction();
@@ -264,19 +266,20 @@ class GeoRSSPollTask implements Runnable {
                 logger.error("Problem truncating based on GeoRSS feed: " + e.getMessage());
             }
         }
-        
+
         // If truncate was all that was needed, we can quit now
-        if(pollDef.getOperation() == GWCTask.TYPE.TRUNCATE) {
+        if (pollDef.getOperation() == GWCTask.TYPE.TRUNCATE) {
             logger.info("Truncation succeeded, won't seed as stated by poll def: " + pollDef);
             return;
         }
-        
+
         // ... else we seed
         mimeIter = mimeList.iterator();
-        while(mimeIter.hasNext()) {
-            DiscontinuousTileRange dtr = new DiscontinuousTileRange(layer.getName(), gridSetId, 
-                    gridSub.getZoomStart(), gridSub.getZoomStop(), rasterMask, mimeIter.next(), null);
-            
+        while (mimeIter.hasNext()) {
+            DiscontinuousTileRange dtr = new DiscontinuousTileRange(layer.getName(), gridSetId,
+                    gridSub.getZoomStart(), gridSub.getZoomStop(), rasterMask, mimeIter.next(),
+                    null);
+
             final int seedingThreads = pollDef.getSeedingThreads();
             GWCTask[] tasks;
             try {
@@ -285,7 +288,7 @@ class GeoRSSPollTask implements Runnable {
                 throw (RuntimeException) new RuntimeException(e.getMessage()).initCause(e);
             }
             seeder.dispatchTasks(tasks);
-            
+
             // Save the handles so we can stop them
             for (GWCTask task : tasks) {
                 seedTasks.add(task);
@@ -293,48 +296,50 @@ class GeoRSSPollTask implements Runnable {
 
         }
     }
-    
+
     protected void stopSeeding(boolean checkLiveCount) {
-        if(this.seedTasks != null) {
+        if (this.seedTasks != null) {
             int liveCount = 0;
             for (GWCTask task : seedTasks) {
-                if(task.getState() != STATE.DEAD && task.getState() != STATE.DONE) {
+                if (task.getState() != STATE.DEAD && task.getState() != STATE.DONE) {
                     task.terminateNicely();
                     liveCount++;
                 }
             }
-            
+
             Thread.yield();
 
             for (GWCTask task : seedTasks) {
-                if(task.getState() != STATE.DEAD && task.getState() != STATE.DONE) {
+                if (task.getState() != STATE.DEAD && task.getState() != STATE.DONE) {
                     liveCount++;
                 }
             }
-            
-            if(! checkLiveCount || liveCount == 0) {
+
+            if (!checkLiveCount || liveCount == 0) {
                 return;
             }
-            
+
             try {
-                logger.debug("Found " + liveCount + " running seed threads. Waiting 3s for them to terminate.");
+                logger.debug("Found " + liveCount
+                        + " running seed threads. Waiting 3s for them to terminate.");
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            
+
             liveCount = 0;
             Iterator<GWCTask> iter = seedTasks.iterator();
-            while(iter.hasNext()) {
+            while (iter.hasNext()) {
                 GWCTask task = iter.next();
-                if(task.getState() != STATE.DEAD && task.getState() != STATE.DONE) {
-                    liveCount++;  
+                if (task.getState() != STATE.DEAD && task.getState() != STATE.DONE) {
+                    liveCount++;
                 } else {
                     iter.remove();
                 }
             }
-            if(liveCount > 0) {
-                logger.info(liveCount + " seed jobs are still waiting to terminate, proceeding anyway.");
+            if (liveCount > 0) {
+                logger.info(liveCount
+                        + " seed jobs are still waiting to terminate, proceeding anyway.");
             }
 
         } else {

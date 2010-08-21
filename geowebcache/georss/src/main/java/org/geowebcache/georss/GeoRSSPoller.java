@@ -47,7 +47,7 @@ public class GeoRSSPoller {
     private final ScheduledExecutorService schedulingPollExecutorService;
 
     private final List<PollDef> scheduledPolls;
-    
+
     private final List<GeoRSSPollTask> scheduledTasks;
 
     /**
@@ -84,7 +84,7 @@ public class GeoRSSPoller {
 
                 schedulingPollExecutorService.scheduleAtFixedRate(command, startUpDelaySecs,
                         period, seconds);
-                
+
                 scheduledTasks.add(command);
             }
             logger.info("Will wait " + startUpDelaySecs + " seconds before launching the "
@@ -138,15 +138,15 @@ public class GeoRSSPoller {
     public int pollCount() {
         return scheduledPolls.size();
     }
-    
+
     /**
      * Destroy method for Spring
      */
     public void destroy() {
         logger.info("destroy() invoked");
         schedulingPollExecutorService.shutdown();
-        
-        for(GeoRSSPollTask task : scheduledTasks) {
+
+        for (GeoRSSPollTask task : scheduledTasks) {
             task.stopSeeding(false);
         }
         // And that's all we can do...

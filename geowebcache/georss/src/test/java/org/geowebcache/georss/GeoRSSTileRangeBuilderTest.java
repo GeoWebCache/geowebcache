@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
@@ -35,8 +34,8 @@ import junit.framework.TestCase;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.storage.RasterMaskTestUtils;
 import org.geowebcache.storage.GeometryRasterMaskBuilder;
+import org.geowebcache.storage.RasterMaskTestUtils;
 import org.geowebcache.util.TestUtils;
 
 public class GeoRSSTileRangeBuilderTest extends TestCase {
@@ -65,8 +64,8 @@ public class GeoRSSTileRangeBuilderTest extends TestCase {
         assertNotNull(tileRangeMask);
         assertEquals(0, tileRangeMask.getStartLevel());
         assertEquals(11, tileRangeMask.getNumLevels());
-        assertEquals(layer.getGridSubset(gridsetId).getCoverages().length, tileRangeMask
-                .getNumLevels());
+        assertEquals(layer.getGridSubset(gridsetId).getCoverages().length,
+                tileRangeMask.getNumLevels());
 
     }
 
@@ -102,31 +101,33 @@ public class GeoRSSTileRangeBuilderTest extends TestCase {
         TestUtils.assertEquals(new long[] { 15, 0, 63, 24, 5 }, tileRangeMask.getCoveredBounds(5));
         TestUtils.assertEquals(new long[] { 31, 0, 127, 48, 6 }, tileRangeMask.getCoveredBounds(6));
         TestUtils.assertEquals(new long[] { 63, 0, 255, 96, 7 }, tileRangeMask.getCoveredBounds(7));
-        TestUtils.assertEquals(new long[] { 127, 0, 511, 192, 8 }, tileRangeMask
-                .getCoveredBounds(8));
-        TestUtils.assertEquals(new long[] { 255, 0, 1023, 384, 9 }, tileRangeMask
-                .getCoveredBounds(9));
-        TestUtils.assertEquals(new long[] { 511, 0, 2047, 768, 10 }, tileRangeMask
-                .getCoveredBounds(10));
+        TestUtils.assertEquals(new long[] { 127, 0, 511, 192, 8 },
+                tileRangeMask.getCoveredBounds(8));
+        TestUtils.assertEquals(new long[] { 255, 0, 1023, 384, 9 },
+                tileRangeMask.getCoveredBounds(9));
+        TestUtils.assertEquals(new long[] { 511, 0, 2047, 768, 10 },
+                tileRangeMask.getCoveredBounds(10));
     }
-    
-    public void testLatestUpdate() throws IOException, XMLStreamException, FactoryConfigurationError {
+
+    public void testLatestUpdate() throws IOException, XMLStreamException,
+            FactoryConfigurationError {
         assertLatestUpdate("2005-08-17T07:02:34Z", "point_feed.xml");
         assertLatestUpdate("2010-08-17T07:02:32Z", "mixedgeometries_feed.xml");
     }
-    
-    private void assertLatestUpdate(String expected, String fileName) throws IOException, XMLStreamException, FactoryConfigurationError {
-        
+
+    private void assertLatestUpdate(String expected, String fileName) throws IOException,
+            XMLStreamException, FactoryConfigurationError {
+
         InputStream stream = getClass().getResourceAsStream("test-data/" + fileName);
         if (stream == null) {
             throw new FileNotFoundException("test-data/" + fileName);
         }
         Reader feed = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-        
+
         StaxGeoRSSReader reader = new StaxGeoRSSReader(feed);
         GeoRSSTileRangeBuilder b = new GeoRSSTileRangeBuilder(layer, gridsetId, 10);
         b.buildTileRangeMask(reader, null);
         assertEquals(expected, b.getLastEntryUpdate());
     }
-    
+
 }

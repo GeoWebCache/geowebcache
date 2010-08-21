@@ -72,7 +72,7 @@ class Entry {
     public String getUpdated() {
         return updated;
     }
-    
+
     public void setUpdated(String upd) {
         this.updated = upd;
     }

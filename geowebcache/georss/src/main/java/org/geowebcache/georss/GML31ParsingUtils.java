@@ -41,8 +41,9 @@ import com.vividsolutions.jts.geom.Polygon;
 /**
  * Utility class to parse GML 3.1 geometries out of an {@link XMLStreamReader}
  * <p>
- * Dislaimer: the code on this class was adapted from LGPL licensed GeoTools WFS module's {@code
- * XmlSimpleFeatureParser} class available <a href="http://svn.osgeo.org/geotools/trunk/modules/unsupported/wfs/src/main/java/org/geotools/data/wfs/v1_1_0/parsers/XmlSimpleFeatureParser.java"
+ * Dislaimer: the code on this class was adapted from LGPL licensed GeoTools WFS module's
+ * {@code XmlSimpleFeatureParser} class available <a href=
+ * "http://svn.osgeo.org/geotools/trunk/modules/unsupported/wfs/src/main/java/org/geotools/data/wfs/v1_1_0/parsers/XmlSimpleFeatureParser.java"
  * >here</a>
  * </p>
  * 

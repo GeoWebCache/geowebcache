@@ -25,7 +25,6 @@ import javax.imageio.ImageIO;
 
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.storage.GeometryRasterMaskBuilder;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;

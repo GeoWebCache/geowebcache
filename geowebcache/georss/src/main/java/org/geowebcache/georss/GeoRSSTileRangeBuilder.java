@@ -36,7 +36,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * </p>
  */
 class GeoRSSTileRangeBuilder {
-    
+
     private static final Log logger = LogFactory.getLog(GeoRSSTileRangeBuilder.class);
 
     private final TileLayer layer;
@@ -83,22 +83,25 @@ class GeoRSSTileRangeBuilder {
         }
     }
 
-    public GeometryRasterMaskBuilder buildTileRangeMask(final GeoRSSReader reader, String previousEntryUpdate) throws IOException {
+    public GeometryRasterMaskBuilder buildTileRangeMask(final GeoRSSReader reader,
+            String previousEntryUpdate) throws IOException {
 
         final GridSubset gridSubset = layer.getGridSubset(gridSetId);
         final int[] metaTilingFactors = layer.getMetaTilingFactors();
         GeometryRasterMaskBuilder matrix = null;
-        
+
         Entry entry;
         Geometry geom;
 
         try {
             while ((entry = reader.nextEntry()) != null) {
-                if(entry.getUpdated() != null && entry.getUpdated().equals(previousEntryUpdate)) {
-                    logger.warn("Skipping entry with id " + entry.getId()+ " since it has the same date as our last feed update.");
+                if (entry.getUpdated() != null && entry.getUpdated().equals(previousEntryUpdate)) {
+                    logger.warn("Skipping entry with id " + entry.getId()
+                            + " since it has the same date as our last feed update.");
                 } else {
-                    if(matrix == null) {
-                        matrix = new GeometryRasterMaskBuilder(gridSubset, metaTilingFactors, maxMaskLevel);
+                    if (matrix == null) {
+                        matrix = new GeometryRasterMaskBuilder(gridSubset, metaTilingFactors,
+                                maxMaskLevel);
                     }
 
                     // Record the most recent updated entry. Date comparison
@@ -106,8 +109,8 @@ class GeoRSSTileRangeBuilder {
                     // "2010-03-02T15:51:55Z" with the most significant part
                     // first.
                     if ((entry.getUpdated() != null)
-                            && ((lastEntryUpdate == null) || (lastEntryUpdate
-                                    .compareTo(entry.getUpdated()) < 0))) {
+                            && ((lastEntryUpdate == null) || (lastEntryUpdate.compareTo(entry
+                                    .getUpdated()) < 0))) {
                         lastEntryUpdate = entry.getUpdated();
                     }
 
@@ -116,7 +119,7 @@ class GeoRSSTileRangeBuilder {
                 }
             }
         } finally {
-            if(matrix != null) {
+            if (matrix != null) {
                 matrix.disposeGraphics();
             }
         }

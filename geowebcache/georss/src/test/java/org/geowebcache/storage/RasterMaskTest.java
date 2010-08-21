@@ -52,9 +52,10 @@ public class RasterMaskTest extends TestCase {
      * @throws Exception
      */
     public void testTileIsPresent() throws Exception {
-        GeometryRasterMaskBuilder mask = RasterMaskTestUtils.buildSampleFilterMatrix(layer, gridsetId);
-        RasterMask tileRangeMask = new RasterMask(mask.getByLevelMasks(), fullCoverage, mask
-                .getCoveredBounds());
+        GeometryRasterMaskBuilder mask = RasterMaskTestUtils.buildSampleFilterMatrix(layer,
+                gridsetId);
+        RasterMask tileRangeMask = new RasterMask(mask.getByLevelMasks(), fullCoverage,
+                mask.getCoveredBounds());
 
         // level 0
         assertEquals(true, tileRangeMask.lookup(0, 0, 0));
@@ -92,9 +93,10 @@ public class RasterMaskTest extends TestCase {
 
     public void testTileIsPresentBuffering() throws Exception {
 
-        GeometryRasterMaskBuilder mask = RasterMaskTestUtils.buildSampleFilterMatrix(layer, gridsetId);
-        RasterMask tileRangeMask = new RasterMask(mask.getByLevelMasks(), fullCoverage, mask
-                .getCoveredBounds());
+        GeometryRasterMaskBuilder mask = RasterMaskTestUtils.buildSampleFilterMatrix(layer,
+                gridsetId);
+        RasterMask tileRangeMask = new RasterMask(mask.getByLevelMasks(), fullCoverage,
+                mask.getCoveredBounds());
 
         // level 5 (coverage is 0, 0, 63, 31)
 
@@ -129,10 +131,10 @@ public class RasterMaskTest extends TestCase {
     public void testTileIsPresentWithSubSampling() throws Exception {
 
         final int maxMaskLevel = 3;
-        GeometryRasterMaskBuilder mask = RasterMaskTestUtils.buildSampleFilterMatrix(layer, gridsetId,
-                maxMaskLevel);
-        RasterMask tileRangeMask = new RasterMask(mask.getByLevelMasks(), fullCoverage, mask
-                .getCoveredBounds());
+        GeometryRasterMaskBuilder mask = RasterMaskTestUtils.buildSampleFilterMatrix(layer,
+                gridsetId, maxMaskLevel);
+        RasterMask tileRangeMask = new RasterMask(mask.getByLevelMasks(), fullCoverage,
+                mask.getCoveredBounds());
 
         // level 5 (coverage is 0, 0, 63, 31)
 
