@@ -19,6 +19,8 @@ package org.geowebcache.layer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,29 +36,36 @@ import org.geowebcache.grid.GridSetBroker;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 /**
- * Note that the constructor starts the thread to load configurations, making this class unsuitable for subclassing
+ * Note that the constructor starts the thread to load configurations, making this class unsuitable
+ * for subclassing
  */
 public class TileLayerDispatcher {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayerDispatcher.class);
 
-    private HashMap<String, TileLayer> layers = null;
+    /**
+     * Configured layers. Not to be accessed directly. Call {@link #checkConfigurationLoaded()} to
+     * get them
+     */
+    private Map<String, TileLayer> configuredLayers = null;
 
     private List<Configuration> configs = null;
 
     private GridSetBroker gridSetBroker = null;
-    
+
     private ServiceInformation serviceInformation = null;
-    
+
     private ExecutorService configLoadService;
-    private Future<?> configurationLoadTask;
+
+    private Future<Map<String, TileLayer>> configurationLoadTask;
 
     public TileLayerDispatcher(GridSetBroker gridSetBroker, List<Configuration> configs) {
         this(gridSetBroker, configs, 2);
     }
-    
-    public TileLayerDispatcher(GridSetBroker gridSetBroker, List<Configuration> configs, int loadDelay) {
+
+    public TileLayerDispatcher(GridSetBroker gridSetBroker, List<Configuration> configs,
+            int loadDelay) {
         this.gridSetBroker = gridSetBroker;
-        
+
         this.configs = configs;
 
         ThreadFactory tfac = new CustomizableThreadFactory("GWC Configuration loader thread");
@@ -65,61 +74,74 @@ public class TileLayerDispatcher {
         configurationLoadTask = configLoadService.submit(loader);
     }
 
-    public TileLayer getTileLayer(String layerIdent)
-            throws GeoWebCacheException {
+    public TileLayer getTileLayer(String layerIdent) throws GeoWebCacheException {
 
-        checkConfigurationLoaded();
-        
+        final Map<String, TileLayer> layers = checkConfigurationLoaded();
+
         TileLayer layer = layers.get(layerIdent);
-        
+
         if (layer == null) {
-            throw new GeoWebCacheException("Thread " + Thread.currentThread().getId() + " Unknown layer " + layerIdent
-                    + ". Check the logfiles,"
+            throw new GeoWebCacheException("Thread " + Thread.currentThread().getId()
+                    + " Unknown layer " + layerIdent + ". Check the logfiles,"
                     + " it may not have loaded properly.");
         }
 
         return layer;
     }
 
-    private void checkConfigurationLoaded() throws GeoWebCacheException {
-        try {
-            configurationLoadTask.get();
-        } catch (InterruptedException e) {
-            throw new GeoWebCacheException(e);
-        } catch (ExecutionException e) {
-            throw new GeoWebCacheException(e);
+    /**
+     * Returns the configured layers, potentially waiting for the layer load task to finish
+     * 
+     * @return
+     * @throws GeoWebCacheException
+     */
+    private Map<String, TileLayer> checkConfigurationLoaded() throws GeoWebCacheException {
+        Map<String, TileLayer> layers = this.configuredLayers;
+        if (layers == null) {
+            try {
+                layers = configurationLoadTask.get();
+                this.configuredLayers = layers;
+            } catch (InterruptedException e) {
+                throw new GeoWebCacheException(e);
+            } catch (ExecutionException e) {
+                throw new GeoWebCacheException(e);
+            }
         }
+        return layers;
     }
 
     /***
-     * Reinitialization is tricky, because we can't really just lock all the
-     * layers, because this would cause people to queue on something that we may
-     * not want to exist post reinit.
+     * Reinitialization is tricky, because we can't really just lock all the layers, because this
+     * would cause people to queue on something that we may not want to exist post reinit.
      * 
-     * So we'll just set the current layer set free, ready for garbage
-     * collection, and generate a new one.
+     * So we'll just set the current layer set free, ready for garbage collection, and generate a
+     * new one.
      * 
      * @throws GeoWebCacheException
      */
-    public  void reInit() throws GeoWebCacheException {
+    public void reInit() throws GeoWebCacheException {
+        // this should wait for the current running config load task to finish if it still didn't
         checkConfigurationLoaded();
+        // now mark config not loaded by setting layers to null
+        this.configuredLayers = null;
+        // and let a new task to perform the config load
         configurationLoadTask = configLoadService.submit(new ConfigurationLoader(this, 0));
     }
-    
+
     /**
-     * Returns a list of all the layers. The consumer may still have to
-     * initialize each layer!
+     * Returns a list of all the layers. The consumer may still have to initialize each layer!
      * 
      * @return
      */
-    public HashMap<String, TileLayer> getLayers() {
+    public Map<String, TileLayer> getLayers() {
+        final Map<String, TileLayer> layers;
         try {
-            checkConfigurationLoaded();
+            layers = checkConfigurationLoaded();
         } catch (GeoWebCacheException e) {
             throw new IllegalStateException(e);
         }
 
-        return this.layers;
+        return layers;
     }
 
     private HashMap<String, TileLayer> initialize(boolean reload) {
@@ -128,19 +150,19 @@ public class TileLayerDispatcher {
         HashMap<String, TileLayer> newLayers = new HashMap<String, TileLayer>();
 
         Iterator<Configuration> configIter = configs.iterator();
-        
+
         while (configIter.hasNext()) {
             List<TileLayer> configLayers = null;
 
             Configuration config = configIter.next();
 
             String configIdent = null;
-            try { 
+            try {
                 configIdent = config.getIdentifier();
             } catch (GeoWebCacheException gwce) {
                 log.error(gwce.getMessage());
             }
-            
+
             if (configIdent != null) {
                 try {
                     // This is used by reload as well
@@ -153,31 +175,31 @@ public class TileLayerDispatcher {
                 log.info("Adding layers from " + configIdent);
                 if (configLayers != null && configLayers.size() > 0) {
                     Iterator<TileLayer> iter = configLayers.iterator();
-                    
+
                     while (iter.hasNext()) {
                         TileLayer layer = iter.next();
-                        
-                        if(layer == null) {
+
+                        if (layer == null) {
                             log.error("layer was null");
                             continue;
                         }
                         log.info("Adding: " + layer.getName());
-                        
+
                         layer.initialize(gridSetBroker);
-                        
+
                         add(layer, newLayers);
                     }
                 } else {
-                    log.error("Configuration " + configIdent
-                            + " contained no layers.");
+                    log.error("Configuration " + configIdent + " contained no layers.");
                 }
-                
+
                 // Check whether there is any general service information
-                if(this.serviceInformation == null) {
+                if (this.serviceInformation == null) {
                     try {
                         this.serviceInformation = config.getServiceInformation();
                     } catch (GeoWebCacheException e) {
-                        log.error("Error reading service information from "+ configIdent +": " + e.getMessage());
+                        log.error("Error reading service information from " + configIdent + ": "
+                                + e.getMessage());
                     }
                 }
             }
@@ -185,54 +207,59 @@ public class TileLayerDispatcher {
 
         return newLayers;
     }
-    
+
     public ServiceInformation getServiceInformation() {
         return this.serviceInformation;
     }
-    
+
     public synchronized void update(TileLayer layer) {
+
+        final Map<String, TileLayer> layers;
         try {
-            checkConfigurationLoaded();
+            layers = checkConfigurationLoaded();
         } catch (GeoWebCacheException e) {
             throw new IllegalStateException(e);
         }
         TileLayer oldLayer = layers.get(layer.getName());
-        
+
         // Updates from GeoServer ultimately come as changes,
         // so we can't assume this layer actually existed
-        if(oldLayer != null) {
+        if (oldLayer != null) {
             oldLayer.acquireLayerLock();
             layers.remove(layer.getName());
             oldLayer.releaseLayerLock();
         }
         layers.put(layer.getName(), layer);
     }
-    
+
     public synchronized void remove(String layerName) {
+
+        final Map<String, TileLayer> layers;
         try {
-            checkConfigurationLoaded();
+            layers = checkConfigurationLoaded();
         } catch (GeoWebCacheException e) {
             throw new IllegalStateException(e);
         }
         TileLayer layer = layers.get(layerName);
-        if(layer != null) {
+        if (layer != null) {
             layer.acquireLayerLock();
             layers.remove(layerName);
             layer.releaseLayerLock();
         }
     }
-    
-    public void add(TileLayer layer) {        
+
+    public void add(TileLayer layer) {
+        final Map<String, TileLayer> layers;
         try {
-            checkConfigurationLoaded();
+            layers = checkConfigurationLoaded();
         } catch (GeoWebCacheException e) {
             throw new IllegalStateException(e);
         }
-        add(layer, this.layers);
+        add(layer, layers);
     }
-    
-    private void add(TileLayer layer, HashMap<String, TileLayer> layerMap) {        
-        if(layerMap.containsKey(layer.getName())) {
+
+    private void add(TileLayer layer, Map<String, TileLayer> layerMap) {
+        if (layerMap.containsKey(layer.getName())) {
             try {
                 layerMap.get(layer.getName()).mergeWith(layer);
             } catch (GeoWebCacheException gwce) {
@@ -242,19 +269,19 @@ public class TileLayerDispatcher {
             layerMap.put(layer.getName(), layer);
         }
     }
-    
-    private class ConfigurationLoader implements Runnable {
-        
+
+    private class ConfigurationLoader implements Callable<Map<String, TileLayer>> {
+
         TileLayerDispatcher parent;
-        
+
         int loadDelay;
-        
+
         private ConfigurationLoader(TileLayerDispatcher parent, int loadDelay) {
             this.parent = parent;
             this.loadDelay = loadDelay;
         }
-        
-        public void run() {
+
+        public Map<String, TileLayer> call() throws Exception {
             if (loadDelay > 0) {
                 log.info("ConfigurationLoader acquired lock, sleeping " + loadDelay + " seconds");
                 try {
@@ -265,11 +292,11 @@ public class TileLayerDispatcher {
                     throw new RuntimeException("Configuration loader thread interrupted", e);
                 }
             }
-            
-            parent.layers = parent.initialize(false);
-            
+
+            HashMap<String, TileLayer> newLayers = parent.initialize(false);
             log.info("ConfigurationLoader completed");
+            return newLayers;
         }
-        
+
     }
 }
