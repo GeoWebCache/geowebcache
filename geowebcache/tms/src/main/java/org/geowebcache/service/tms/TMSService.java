@@ -67,11 +67,14 @@ public class TMSService extends Service {
             HttpServletResponse response) throws GeoWebCacheException {
 
         // get all elements of the pathInfo after the leading "/tms/1.0.0/" part.
-        String[] params = request.getPathInfo().split("/");
+        String pathInfo = request.getPathInfo();
+        pathInfo = pathInfo.substring(pathInfo.indexOf("tms/1.0.0"));
+        String[] params = pathInfo.split("/");
+        // {"tms", "1.0.0", "img states@EPSG:4326", ... } 
         
         int paramsLength = params.length;
         
-        if(params.length < 5) {
+        if(params.length < 4) {
             // Not a tile request, lets pass it back out
             ConveyorTile tile = new ConveyorTile(sb, null, request, response);
             tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
@@ -87,15 +90,15 @@ public class TMSService extends Service {
             gridLoc[1] = Integer.parseInt(yExt[0]);
             gridLoc[2] = Integer.parseInt(params[paramsLength - 3]);
         } catch (NumberFormatException nfe) {
-            throw new ServiceException("Unable to parse number " + nfe.getMessage() + " from " + request.getPathInfo());
+            throw new ServiceException("Unable to parse number " + nfe.getMessage() + " from " + pathInfo);
         }
 
         String layerId;
         String gridSetId;
         
         // For backwards compatibility, we'll look for @s and use defaults if not found
-        String layerAtSRSAtFormatExtension = params[paramsLength - 4];
-        String[] lsf = ServletUtils.URLDecode(params[3], request.getCharacterEncoding()).split("@");
+        String layerNameAndSRS = params[2];
+        String[] lsf = ServletUtils.URLDecode(layerNameAndSRS, request.getCharacterEncoding()).split("@");
         if(lsf.length < 3) {
             layerId = lsf[0];
             TileLayer layer = tld.getTileLayer(layerId);
@@ -121,8 +124,10 @@ public class TMSService extends Service {
     public void handleRequest(Conveyor conv)
     throws GeoWebCacheException {
         // get all elements of the pathInfo after the leading "/tms/1.0.0/" part.
-        String[] params = conv.servletReq.getPathInfo().split("/");
-        // {"", tms, "1.0.0", "img states@EPSG:4326" } 
+        String pathInfo = conv.servletReq.getPathInfo();
+        pathInfo = pathInfo.substring(pathInfo.indexOf("tms/1.0.0"));
+        String[] params = pathInfo.split("/");
+        // {"tms", "1.0.0", "img states@EPSG:4326" } 
         
         int paramsLength = params.length;
         
@@ -138,16 +143,18 @@ public class TMSService extends Service {
         
         String ret = null;
         
-        if(paramsLength < 3) {
+        if(paramsLength < 2) {
             throw new GeoWebCacheException("Path is too short to be a valid TMS path");
-        } else if(paramsLength == 3) {
-            if(! params[2].equals("1.0.0")) {
-                throw new GeoWebCacheException("Unknown version " + params[2] + ", only 1.0.0 is supported.");
+        } else if(paramsLength == 2) {
+            String version = params[1];
+            if(! version.equals("1.0.0")) {
+                throw new GeoWebCacheException("Unknown version " + version + ", only 1.0.0 is supported.");
             } else {
                 ret = tdf.getTileMapServiceDoc();
             }
         } else {
-            String layerAtSRS = ServletUtils.URLDecode(params[3], conv.servletReq.getCharacterEncoding());
+            String layerNameAndSRS = params[2];
+            String layerAtSRS = ServletUtils.URLDecode(layerNameAndSRS, conv.servletReq.getCharacterEncoding());
             String[] layerSRSFormatExtension = layerAtSRS.split("@");
             
             TileLayer tl = tld.getTileLayer(layerSRSFormatExtension[0]);

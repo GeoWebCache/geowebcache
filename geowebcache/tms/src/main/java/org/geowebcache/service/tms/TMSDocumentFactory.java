@@ -16,6 +16,8 @@
  */
 package org.geowebcache.service.tms;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Iterator;
 
 import org.geowebcache.grid.GridSet;
@@ -169,7 +171,13 @@ public class TMSDocumentFactory {
     }
     
     private String tileMapName(TileLayer tl, GridSubset gridSub, MimeType mimeType) {
-        return tl.getName() + "@" + gridSub.getName() + "@" + mimeType.getFileExtension();
+        try {
+            String name = URLEncoder.encode(tl.getName(), "UTF-8");
+            String gridSubset = URLEncoder.encode(gridSub.getName(), "UTF-8");
+            return name + "@" + gridSubset + "@" + mimeType.getFileExtension();
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
     
     private String tileMapTitle(TileLayer tl) {
