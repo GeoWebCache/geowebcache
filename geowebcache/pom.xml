@@ -261,7 +261,7 @@
     <dependency>
       <groupId>org.restlet</groupId>
       <artifactId>org.restlet.ext.json</artifactId>
-      <version>1.0.1</version>
+      <version>${restlet.version}</version>
     </dependency>
     
     <dependency>
