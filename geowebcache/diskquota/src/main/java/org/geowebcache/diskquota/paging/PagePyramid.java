@@ -136,7 +136,7 @@ class PagePyramid {
 
         // pageInfo = { tilesPerPageX, tilesPerPageY, numPagesX, numPagesY };
 
-        log.info("Calculating page sizes for grid subset " + gridSubsetId);
+        log.debug("Calculating page sizes for grid subset " + gridSubsetId);
         for (int level = 0; level < numLevels; level++) {
             pageSizes[level] = calculatePageInfo(coverages[level]);
             int pages = pageSizes[level].pagesX * pageSizes[level].pagesY;
@@ -144,7 +144,7 @@ class PagePyramid {
                     * (long) pageSizes[level].tilesPerPageY * pages));
             totalPages += pages;
         }
-        log.info("----- Total tiles: " + totalTiles + ". Total pages: " + totalPages);
+        log.debug("----- Total tiles: " + totalTiles + ". Total pages: " + totalPages);
         return pageSizes;
     }
 
@@ -175,7 +175,7 @@ class PagePyramid {
         PageLevelInfo pli = new PageLevelInfo(level, numPagesX, numPagesY, tilesPerPageX,
                 tilesPerPageY, coverageMinX, coverageMinY, coverageMaxX, coverageMaxY);
 
-        log.info("Coverage: " + Arrays.toString(coverage) + " (" + coverageTilesWide + "x"
+        log.debug("Coverage: " + Arrays.toString(coverage) + " (" + coverageTilesWide + "x"
                 + coverageTilesHigh + ") tiles. Tiles perpage: " + tilesPerPageX + " x "
                 + tilesPerPageY + " for a total of " + numPagesX + " x " + numPagesY
                 + " pages and " + (tilesPerPageX * (long) tilesPerPageY) + " tiles per page");

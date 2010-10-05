@@ -37,6 +37,7 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
+import org.springframework.util.Assert;
 
 /**
  * Monitors the layers cache size given each one's assigned {@link Quota} and call's the exceeded
@@ -111,11 +112,6 @@ public class DiskQuotaMonitor implements DisposableBean {
         storageBroker.addBlobStoreListener(blobListener);
 
         setUpScheduledCleanUp();
-
-        int totalLayers = tileLayerDispatcher.getLayers().size();
-        int quotaLayers = quotaConfig.getNumLayers();
-        log.info(quotaLayers + " out of " + totalLayers
-                + " layers configured with their own quotas.");
     }
 
     /**
@@ -192,28 +188,43 @@ public class DiskQuotaMonitor implements DisposableBean {
      */
     private void attachConfiguredLayers() {
 
-        Map<String, TileLayer> layers;
-        layers = new HashMap<String, TileLayer>(tileLayerDispatcher.getLayers());
-        List<LayerQuota> layerQuotas = quotaConfig.getLayerQuotas();
+        final Map<String, TileLayer> layers = new HashMap<String, TileLayer>(
+                tileLayerDispatcher.getLayers());
+        
+        final List<LayerQuota> layerQuotas = quotaConfig.getLayerQuotas();
+        
+        Assert.isTrue(layers.size() == layerQuotas.size());
+
+        final ExpirationPolicy globalExpirationPolicy = quotaConfig.getGlobalExpirationPolicy();
+        final Quota globalQuota = quotaConfig.getGlobalQuota();
+
+        int explicitConfigs = 0;
+        int globallyConfigured = 0;
 
         for (LayerQuota layerQuota : layerQuotas) {
-
             final String layerName = layerQuota.getLayer();
-            Quota quota = layerQuota.getQuota();
+            final TileLayer tileLayer = layers.get(layerName);
             final String policyName = layerQuota.getExpirationPolicyName();
-            final ExpirationPolicy expirationPolicy;
             if (policyName == null) {
-                // not a configured layer. The global expiration policy will take care of it
-                expirationPolicy = quotaConfig.getGlobalExpirationPolicy();
+                if (globalExpirationPolicy != null) {
+                    // not a configured layer. The global expiration policy will take care of it
+                    globallyConfigured++;
+                    log.trace("Attaching layer " + layerName + " to global quota " + globalQuota);
+                    layerQuota.setExpirationPolicy(globalExpirationPolicy);
+                    globalExpirationPolicy.attach(tileLayer, layerQuota);
+                }
             } else {
-                expirationPolicy = configLoader.findExpirationPolicy(policyName);
+                final Quota quota = layerQuota.getQuota();
+                final ExpirationPolicy expirationPolicy = configLoader
+                        .findExpirationPolicy(policyName);
+                explicitConfigs++;
+                layerQuota.setExpirationPolicy(expirationPolicy);
+                expirationPolicy.attach(tileLayer, layerQuota);
+                log.trace("Attaching layer " + layerName + " to quota " + quota);
             }
-            log.info("Attaching layer " + layerName + " to quota " + quota);
-            layerQuota.setExpirationPolicy(expirationPolicy);
-
-            TileLayer tileLayer = layers.get(layerName);
-            expirationPolicy.attach(tileLayer, layerQuota);
-            layers.remove(layerName);
         }
+        log.info(explicitConfigs + " layers configured with their own quotas. "
+                + globallyConfigured + " layers attached to global quota " + globalQuota);
+
     }
 }
