@@ -23,7 +23,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
@@ -59,15 +58,15 @@ public class TilePage implements Serializable {
      * x, y, z index for this page, in reverse order (z, y, x) to aid in a more efficient short
      * circuit comparison at {@link #equals(Object)}
      */
-    private int[] zyxIndex;
+    private final int[] zyxIndex;
 
-    private AtomicLong numHits;
+    private volatile long numHits;
 
-    private AtomicLong numTilesInPage;
+    private volatile long numTilesInPage;
 
     private transient int hashCode;
 
-    private String gridsetId;
+    private final String gridsetId;
 
     /**
      * Last access time, with near-minute precision
@@ -87,15 +86,15 @@ public class TilePage implements Serializable {
         this.layerName = layerName;
         this.gridsetId = gridSetId;
         this.zyxIndex = new int[] { z, y, x };
-        this.numHits = new AtomicLong(numHits);
+        this.numHits = numHits;
         this.accessTimeMinutes = lastAccessTimeMinutes;
-        this.numTilesInPage = new AtomicLong(numTilesInPage);
+        this.numTilesInPage = numTilesInPage;
 
         this.hashCode = 17 * (zyxIndex[0] + zyxIndex[1] ^ 2 + zyxIndex[2] ^ 3);
     }
 
-    public void markHit() {
-        numHits.addAndGet(1L);
+    public synchronized void markHit() {
+        numHits++;
         accessTimeMinutes = currentTime.get();
     }
 
@@ -103,16 +102,15 @@ public class TilePage implements Serializable {
         return gridsetId;
     }
 
-    public long getNumTilesInPage() {
-        return this.numTilesInPage.get();
+    public synchronized long getNumTilesInPage() {
+        return this.numTilesInPage;
     }
 
-    public long getNumHits() {
-        long hits = numHits.get();
-        return hits;
+    public synchronized long getNumHits() {
+        return numHits;
     }
 
-    public int getLastAccessTimeMinutes() {
+    public synchronized int getLastAccessTimeMinutes() {
         return accessTimeMinutes;
     }
 
@@ -164,16 +162,19 @@ public class TilePage implements Serializable {
      * Increments by one the counter of available tiles for the page and returns the new value for
      * the counter
      */
-    public long addTile() {
-        return this.numTilesInPage.incrementAndGet();
+    public synchronized long addTile() {
+        return this.numTilesInPage++;
     }
 
     /**
      * Decrements by one the counter of available tiles for the page and returns the new value for
      * the counter
      */
-    public long removeTile() {
-        return this.numTilesInPage.decrementAndGet();
+    public synchronized long removeTile() {
+        if (numTilesInPage == 0) {
+            return 0L;
+        }
+        return this.numTilesInPage--;
     }
 
     public String getLayerName() {
