@@ -26,6 +26,8 @@ public class DiskQuotaConfig {
 
     static String DEFAULT_GLOBAL_POLICY_NAME = "LFU";
 
+    private Boolean enabled;
+
     private int diskBlockSize;
 
     private int cacheCleanUpFrequency;
@@ -56,6 +58,9 @@ public class DiskQuotaConfig {
      * @return
      */
     private Object readResolve() {
+        if (enabled == null) {
+            enabled = Boolean.TRUE;
+        }
         if (diskBlockSize == 0) {
             diskBlockSize = DEFAULT_DISK_BLOCK_SIZE;
         }
@@ -75,6 +80,10 @@ public class DiskQuotaConfig {
             globalExpirationPolicyName = DEFAULT_GLOBAL_POLICY_NAME;
         }
         return this;
+    }
+
+    public boolean isEnabled() {
+        return enabled.booleanValue();
     }
 
     public int getDiskBlockSize() {
