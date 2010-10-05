@@ -63,6 +63,21 @@ class CacheCleanerTask implements Runnable {
         this.perLayerRunningCleanUps = new HashMap<String, Future<?>>();
     }
 
+    /**
+     * Runs the cache enforcement tasks asynchronously using the {@link ExecutorService} provided in
+     * the constructor.
+     * <p>
+     * Exceptions are catched and logged, not propagated, in order to allow this runnable to be used
+     * as a timer so even if one run fails the next runs are still called
+     * </p>
+     * <p>
+     * The process submits one cache cleanup execution task per layer that exceeds it's configured
+     * quota, and a single global cache enforcement task for the layers that have no explicitly
+     * configured quota limit.
+     * </p>
+     * 
+     * @see java.lang.Runnable#run()
+     */
     public void run() {
         try {
             innerRun();
@@ -140,7 +155,7 @@ class CacheCleanerTask implements Runnable {
         }
         if (globallyManagedQuotas.size() > 0) {
             if (globalCleanUpTask != null && !globalCleanUpTask.isDone()) {
-                log.info("Global cache quota enforcement task still running, avoiding issueing a new one...");
+                log.debug("Global cache quota enforcement task still running, avoiding issueing a new one...");
                 return;
             }
             Quota globalQuota = quotaConfig.getGlobalQuota();
@@ -152,8 +167,11 @@ class CacheCleanerTask implements Runnable {
                 task = new GlobalQuotaEnforcementTask(quotaConfig, globallyManagedQuotas);
                 this.globalCleanUpTask = this.cleanUpExecutorService.submit(task);
             } else {
-                log.info("Global quota not reached, there are still " + excedent.toNiceString()
-                        + " to go.");
+                if (log.isTraceEnabled()) {
+                    log.trace("Won't launch global quota enforcement task, "
+                            + globalUsedQuota.toNiceString() + " used out of "
+                            + globalQuota.toNiceString() + " configured for the whole cache size.");
+                }
             }
         }
     }

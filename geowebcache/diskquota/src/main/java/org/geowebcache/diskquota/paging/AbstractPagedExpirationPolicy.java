@@ -337,7 +337,7 @@ public abstract class AbstractPagedExpirationPolicy implements ExpirationPolicy,
             }
             expirePage(page);
             // Quota difference = limit.difference(usedQuota);
-            log.info("Page tiles: " + numTilesInPage + ", after truncate: "
+            log.trace("Page tiles: " + numTilesInPage + ", after truncate: "
                     + page.getNumTilesInPage());
             final int comparison = usedQuota.compareTo(limit);
             if (comparison <= 0) {

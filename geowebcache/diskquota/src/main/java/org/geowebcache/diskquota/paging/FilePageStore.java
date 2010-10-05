@@ -35,6 +35,8 @@ public class FilePageStore implements PageStore {
 
     private static final Log log = LogFactory.getLog(FilePageStore.class);
 
+    private static final String PAGE_STORE_DIR = "diskquota_pagestore";
+
     private final ConfigLoader configLoader;
 
     static final byte tilePageSerialVersionId = 1;
@@ -53,7 +55,7 @@ public class FilePageStore implements PageStore {
         final String fileName = fileName(layerFileName, gridSetId);
         InputStream pagesStateIn;
 
-        pagesStateIn = configLoader.getStorageInputStream(fileName);
+        pagesStateIn = configLoader.getStorageInputStream(PAGE_STORE_DIR, fileName);
 
         DataInputStream in = new DataInputStream(pagesStateIn);
         try {
@@ -97,7 +99,7 @@ public class FilePageStore implements PageStore {
         final String fileName = fileName(layerFileName, gridSetId);
         log.debug("Saving paged state for " + layerName + "/" + gridSetId + " containing "
                 + availablePages.size() + " pages.");
-        OutputStream fileOut = configLoader.getStorageOutputStream(fileName);
+        OutputStream fileOut = configLoader.getStorageOutputStream(PAGE_STORE_DIR, fileName);
         DataOutputStream out = new DataOutputStream(fileOut);
         try {
             for (TilePage page : availablePages) {

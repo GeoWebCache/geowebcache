@@ -212,9 +212,9 @@ class PagePyramid {
 
     public TilePage pageFor(long x, long y, int level) {
         final PageLevelInfo levelInfo = pageInfo[level];
-
         final int tilePageX = (int) ((x - levelInfo.coverageMinX) / levelInfo.tilesPerPageX);
         final int tilePageY = (int) ((y - levelInfo.coverageMinY) / levelInfo.tilesPerPageY);
+
         final int[] pageIndex = { tilePageX, tilePageY, level };
 
         TilePage tilePage = pages.get(pageIndex);
