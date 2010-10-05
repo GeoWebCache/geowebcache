@@ -642,6 +642,13 @@ public class WMSLayer extends TileLayer {
             ConveyorTile tileProto) throws GeoWebCacheException {
 
         for (int i = 0; i < gridPositions.length; i++) {
+            final long[] gridPos = gridPositions[i];
+            final GridSubset gridSubset = getGridSubset(tileProto.getGridSetId());
+            if (!gridSubset.covers(gridPos)) {
+                // edge tile outside coverage, do not store it
+                continue;
+            }
+            
             ByteArrayOutputStream out = new ByteArrayOutputStream();
 
             try {
@@ -655,7 +662,7 @@ public class WMSLayer extends TileLayer {
                 ioe.printStackTrace();
             }
 
-            long[] idx = {gridPositions[i][0],gridPositions[i][1],gridPositions[i][2]};
+            long[] idx = {gridPos[0],gridPos[1],gridPos[2]};
             TileObject tile = TileObject.createCompleteTileObject(this.getName(), idx, tileProto.getGridSetId(), 
                     tileProto.getMimeType().getFormat(), tileProto.getParameters(), out.toByteArray());
             
