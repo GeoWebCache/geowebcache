@@ -24,6 +24,8 @@ public class DiskQuotaConfig {
 
     static final int DEFAULT_MAX_CONCURRENT_CLEANUPS = 2;
 
+    static String DEFAULT_GLOBAL_POLICY_NAME = "LFU";
+
     private int diskBlockSize;
 
     private int cacheCleanUpFrequency;
@@ -32,9 +34,15 @@ public class DiskQuotaConfig {
 
     private int maxConcurrentCleanUps;
 
+    private Quota globalQuota;
+
+    private String globalExpirationPolicyName;
+
     private List<LayerQuota> layerQuotas;
 
     private transient Map<String, LayerQuota> layerQuotasMap;
+
+    private transient LayerQuotaExpirationPolicy expirationPolicy;
 
     private transient boolean dirty;
 
@@ -62,6 +70,9 @@ public class DiskQuotaConfig {
         }
         if (cacheCleanUpUnits == null) {
             cacheCleanUpUnits = DEFAULT_CLEANUP_UNITS;
+        }
+        if (globalQuota != null && globalExpirationPolicyName == null) {
+            globalExpirationPolicyName = DEFAULT_GLOBAL_POLICY_NAME;
         }
         return this;
     }
@@ -165,6 +176,22 @@ public class DiskQuotaConfig {
             throw new IllegalArgumentException("nThreads shall be a positive integer: " + nThreads);
         }
         this.maxConcurrentCleanUps = nThreads;
+    }
+
+    public Quota getGlobalQuota() {
+        return this.globalQuota;
+    }
+
+    public LayerQuotaExpirationPolicy getGlobalExpirationPolicy() {
+        return this.expirationPolicy;
+    }
+
+    public String getGlobalExpirationPolicyName() {
+        return this.globalExpirationPolicyName;
+    }
+
+    void setGlobalExpirationPolicy(LayerQuotaExpirationPolicy policy) {
+        this.expirationPolicy = policy;
     }
 
     public void setDirty(boolean dirty) {
