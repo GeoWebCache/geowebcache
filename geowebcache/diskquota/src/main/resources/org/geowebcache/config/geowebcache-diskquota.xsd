@@ -9,7 +9,11 @@
     </xs:annotation>
     <xs:complexType>
       <xs:sequence>
-
+        <xs:element name="enabled" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>Whether the diskquota monitor is enabled or not</xs:documentation>
+          </xs:annotation>
+        </xs:element>
         <xs:element name="diskBlockSize" type="xs:int">
           <xs:annotation>
             <xs:documentation xml:lang="en">Cache's file system block size, in bytes. Usually 4096, 8192,
@@ -47,8 +51,8 @@
 
         <xs:element name="globalExpirationPolicyName" type="gwc:ExpirationPolicyType">
           <xs:annotation>
-            <xs:documentation>Name of the cache expiration policy strategy for the whole Cache. Expiration policies set explicity for layers
-              override this global value. If unset, this global setting default to the LFU policy.</xs:documentation>
+            <xs:documentation>Name of the cache expiration policy strategy for the whole Cache. Expiration policies set explicitly for layers
+              override this global value. If unset, this global setting defaults to the LFU policy.</xs:documentation>
           </xs:annotation>
         </xs:element>
         <xs:element name="globalQuota" type="gwc:DiskQuotaType">
@@ -194,7 +198,12 @@
 
   <xs:simpleType name="ExpirationPolicyType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="LRU"></xs:enumeration>
+      <xs:enumeration value="LRU">
+        <xs:annotation><xs:documentation>Least Recently Used expiration policy</xs:documentation></xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="LFU">
+        <xs:annotation><xs:documentation>Least Frequently Used expiration policy</xs:documentation></xs:annotation>
+      </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>

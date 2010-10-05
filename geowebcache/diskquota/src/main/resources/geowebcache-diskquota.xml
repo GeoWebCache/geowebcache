@@ -2,6 +2,7 @@
 <gwcQuotaConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://geowebcache.org/schema/1.2.2/diskquota org/geowebcache/config/geowebcache-diskquota.xsd" xmlns="http://geowebcache.org/schema/1.2.2/diskquota">
 
+  <enabled>false</enabled>
   <diskBlockSize>4096</diskBlockSize>
 
   <cacheCleanUpFrequency>10</cacheCleanUpFrequency>
@@ -9,6 +10,12 @@
 
   <maxConcurrentCleanUps>3</maxConcurrentCleanUps>
 
+  <globalExpirationPolicyName>LFU</globalExpirationPolicyName>
+  <globalQuota>
+    <value>100</value>
+    <units>TiB</units>
+  </globalQuota>
+  
   <layerQuotas>
     <LayerQuota>
       <layer>topp:states</layer>
