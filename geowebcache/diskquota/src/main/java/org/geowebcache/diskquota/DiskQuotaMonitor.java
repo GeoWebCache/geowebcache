@@ -126,7 +126,7 @@ public class DiskQuotaMonitor implements DisposableBean {
      */
     public void destroy() throws Exception {
         if (this.cleanUpExecutorService != null) {
-            this.cleanUpExecutorService.shutdown();
+            this.cleanUpExecutorService.shutdownNow();
         }
         if (this.cacheInfoBuilder != null) {
             this.cacheInfoBuilder.shutDown();

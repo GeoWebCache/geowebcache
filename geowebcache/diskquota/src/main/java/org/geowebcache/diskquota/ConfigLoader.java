@@ -383,12 +383,13 @@ public class ConfigLoader {
     /**
      * Opens an output stream for a file relative to the cache storage folder
      * 
-     * @param fileName
+     * @param fileNameRelPath
      * @return
      * @throws IOException
      */
-    public OutputStream getStorageOutputStream(String fileName) throws IOException {
-        File rootCacheDir = getRootCacheDir();
+    public OutputStream getStorageOutputStream(String... fileNameRelPath) throws IOException {
+        File rootCacheDir = getFileStorageDir(fileNameRelPath);
+        String fileName = fileNameRelPath[fileNameRelPath.length - 1];
         File configFile = new File(rootCacheDir, fileName);
         return new FileOutputStream(configFile);
     }
@@ -396,16 +397,33 @@ public class ConfigLoader {
     /**
      * Opens a stream over an existing file relative to the cache storage folder
      * 
-     * @param fileName
+     * @param fileNameRelPath
      *            the file name relative to the cache storage folder to open
      * @return
      * @throws IOException
      *             if {@code fileName} doesn't exist
      */
-    public InputStream getStorageInputStream(String fileName) throws IOException {
-        File rootCacheDir = getRootCacheDir();
+    public InputStream getStorageInputStream(String... fileNameRelPath) throws IOException {
+        File rootCacheDir = getFileStorageDir(fileNameRelPath);
+        String fileName = fileNameRelPath[fileNameRelPath.length - 1];
         File configFile = new File(rootCacheDir, fileName);
         return new FileInputStream(configFile);
+    }
+
+    /**
+     * @param fileNameRelPath
+     *            file path relative to the cache storage directory, where the last entry is the
+     *            file name and any previous one directory names
+     * @return
+     * @throws StorageException
+     */
+    private File getFileStorageDir(String[] fileNameRelPath) throws StorageException {
+        File parentDir = getRootCacheDir();
+        for (int i = 0; i < fileNameRelPath.length - 1; i++) {
+            parentDir = new File(parentDir, fileNameRelPath[i]);
+        }
+        parentDir.mkdirs();
+        return parentDir;
     }
 
     public File getRootCacheDir() throws StorageException {
