@@ -74,6 +74,11 @@ public class ConfigLoaderTest extends TestCase {
                 .anyTimes();
         EasyMock.expect(tld.getTileLayer(EasyMock.eq("raster test layer"))).andReturn(raster)
                 .anyTimes();
+
+        Map<String, TileLayer> tileLayers = new HashMap<String, TileLayer>();
+        tileLayers.put(toppStates.getName(), toppStates);
+        tileLayers.put(raster.getName(), raster);
+        EasyMock.expect(tld.getLayers()).andReturn(tileLayers).anyTimes();
         EasyMock.replay(tld);
 
         loader = new ConfigLoader(storageFinder, contextProvider, tld);
@@ -96,6 +101,7 @@ public class ConfigLoaderTest extends TestCase {
 
     private TileLayer createMockLayer(String name) {
         TileLayer layer = EasyMock.createMock(TileLayer.class);
+        EasyMock.expect(layer.getName()).andReturn(name).anyTimes();
         EasyMock.replay(layer);
         return layer;
     }
@@ -107,14 +113,14 @@ public class ConfigLoaderTest extends TestCase {
         assertEquals(10, config.getCacheCleanUpFrequency());
         assertEquals(TimeUnit.SECONDS, config.getCacheCleanUpUnits());
         assertEquals(3, config.getMaxConcurrentCleanUps());
-        
+
         assertEquals("LFU", config.getGlobalExpirationPolicyName());
         assertNotNull(config.getGlobalExpirationPolicy());
 
         assertNotNull(config.getGlobalQuota());
         assertEquals(100, config.getGlobalQuota().getValue().longValue());
         assertEquals(StorageUnit.GiB, config.getGlobalQuota().getUnits());
-        
+
         assertNotNull(config.getLayerQuotas());
         assertEquals(2, config.getLayerQuotas().size());
 
@@ -134,9 +140,7 @@ public class ConfigLoaderTest extends TestCase {
     public void testSaveConfig() throws ConfigurationException, IOException {
         DiskQuotaConfig config = new DiskQuotaConfig();
         List<LayerQuota> quotas = new ArrayList<LayerQuota>();
-        LayerQuota lq = new LayerQuota("topp:states", "LRU");
-        lq.getQuota().setValue(10);
-        lq.getQuota().setUnits(StorageUnit.MiB);
+        LayerQuota lq = new LayerQuota("topp:states", "LRU", new Quota(10, StorageUnit.MiB));
         lq.getUsedQuota().setValue(100);
         lq.getUsedQuota().setUnits(StorageUnit.KiB);
         quotas.add(lq);

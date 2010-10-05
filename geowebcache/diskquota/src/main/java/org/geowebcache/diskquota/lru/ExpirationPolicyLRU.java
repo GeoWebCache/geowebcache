@@ -39,13 +39,8 @@ public class ExpirationPolicyLRU extends AbstractPagedExpirationPolicy {
     }
 
     @Override
-    protected List<TilePage> sortPagesForExpiration(List<TilePage> allPages) {
-        return sortPages(allPages);
-    }
-
-    static List<TilePage> sortPages(List<TilePage> allPages) {
-        Collections.sort(allPages, LRUSorter);
-        return allPages;
+    protected Comparator<TilePage> getExpirationComparator() {
+        return LRUSorter;
     }
 
     /**
@@ -53,7 +48,7 @@ public class ExpirationPolicyLRU extends AbstractPagedExpirationPolicy {
      * 
      * @see TilePage#getLastAccessTimeMinutes()
      */
-    private static final Comparator<TilePage> LRUSorter = new Comparator<TilePage>() {
+    static final Comparator<TilePage> LRUSorter = new Comparator<TilePage>() {
 
         /**
          * Compares the two TilePages last access time such that the one with a more recent access

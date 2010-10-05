@@ -3,7 +3,7 @@ package org.geowebcache.diskquota;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 
-public class Quota {
+public class Quota implements Comparable<Quota> {
 
     private static final NumberFormat NICE_FORMATTER = NumberFormat.getNumberInstance();
     static {
@@ -151,4 +151,17 @@ public class Quota {
         return value.min(other) == value ? this : quota;
     }
 
+    /**
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    public int compareTo(Quota o) {
+        if (o == null) {
+            throw new NullPointerException("Can't compare against null");
+        }
+        if (units.equals(o.units)) {
+            return value.compareTo(o.getValue());
+        }
+        BigDecimal converted = o.getUnits().convertTo(o.getValue(), this.units);
+        return value.compareTo(converted);
+    }
 }

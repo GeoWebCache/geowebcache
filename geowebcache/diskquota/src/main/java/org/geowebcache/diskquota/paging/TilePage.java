@@ -1,6 +1,5 @@
 package org.geowebcache.diskquota.paging;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.concurrent.Executors;
@@ -51,20 +50,25 @@ public class TilePage implements Serializable {
 
     private transient int hashCode;
 
-    private transient String gridsetId;
+    private String gridsetId;
 
     /**
      * Last access time, with near-minute precision
      */
     private int accessTimeMinutes;
 
-    public TilePage(final int x, final int y, final int z) {
-        this(x, y, z, 0L, 0L, 0);
+    private final String layerName;
+
+    public TilePage(final String layerName, final String gridsetId, final int x, final int y,
+            final int z) {
+        this(layerName, gridsetId, x, y, z, 0L, 0L, 0);
     }
 
-    public TilePage(final int x, final int y, final int z, final long numHits,
-            final long numTilesInPage, final int lastAccessTimeMinutes) {
-
+    public TilePage(final String layerName, final String gridSetId, final int x, final int y,
+            final int z, final long numHits, final long numTilesInPage,
+            final int lastAccessTimeMinutes) {
+        this.layerName = layerName;
+        this.gridsetId = gridSetId;
         this.zyxIndex = new int[] { z, y, x };
         this.numHits = new AtomicLong(numHits);
         this.accessTimeMinutes = lastAccessTimeMinutes;
@@ -76,6 +80,10 @@ public class TilePage implements Serializable {
     public void markHit() {
         numHits.addAndGet(1L);
         accessTimeMinutes = currentTime.get();
+    }
+
+    public String getGridsetId() {
+        return gridsetId;
     }
 
     public long getNumTilesInPage() {
@@ -108,7 +116,10 @@ public class TilePage implements Serializable {
         if (!(o instanceof TilePage)) {
             return false;
         }
-        return Arrays.equals(zyxIndex, ((TilePage) o).zyxIndex);
+        TilePage p = (TilePage) o;
+        boolean equals = Arrays.equals(zyxIndex, p.zyxIndex);
+        equals &= layerName.equals(p.layerName) && gridsetId.equals(p.gridsetId);
+        return equals;
     }
 
     @Override
@@ -118,42 +129,18 @@ public class TilePage implements Serializable {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append("[")
-                .append(zyxIndex[2]).append(',').append(zyxIndex[1]).append(',')
-                .append(zyxIndex[0]).append(". Hits: ").append(getNumHits()).append(". Access: ");
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append("[").append('\'')
+                .append(layerName).append('/').append(gridsetId).append("', [").append(zyxIndex[2])
+                .append(',').append(zyxIndex[1]).append(',').append(zyxIndex[0])
+                .append("]. Hits: ").append(getNumHits()).append(". Access: ");
         if (accessTimeMinutes == 0) {
             sb.append("never");
         } else {
             sb.append(currentTime.get() - accessTimeMinutes).append("m ago.");
         }
+        sb.append(", tiles: ").append(numTilesInPage);
         sb.append(']');
         return sb.toString();
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        out.writeInt((int) TilePage.serialVersionUID);
-        out.writeInt(zyxIndex[2]);
-        out.writeInt(zyxIndex[1]);
-        out.writeInt(zyxIndex[0]);
-        out.writeInt(accessTimeMinutes);
-        out.writeLong(numHits.get());
-        out.writeLong(numTilesInPage.get());
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws IOException,
-            ClassNotFoundException {
-        long magic = in.readInt();
-        if (TilePage.serialVersionUID != magic) {
-            throw new IOException("Object stream does not start with TilePage magic number: "
-                    + magic);
-        }
-        zyxIndex = new int[3];
-        zyxIndex[2] = in.readInt();
-        zyxIndex[1] = in.readInt();
-        zyxIndex[0] = in.readInt();
-        accessTimeMinutes = in.readInt();
-        numHits = new AtomicLong(in.readLong());
-        numTilesInPage = new AtomicLong(in.readLong());
     }
 
     /**
@@ -172,4 +159,7 @@ public class TilePage implements Serializable {
         return this.numTilesInPage.decrementAndGet();
     }
 
+    public String getLayerName() {
+        return layerName;
+    }
 }
