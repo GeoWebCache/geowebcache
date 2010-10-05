@@ -139,8 +139,9 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
                 .andReturn(Collections.EMPTY_LIST).anyTimes();
 
         // this is one call we're interested in
-        pageStore.savePages(EasyMock.eq("MockLayer"), EasyMock.eq(gridSubsets.keySet().iterator()
-                .next()), (ArrayList<TilePage>) EasyMock.eq(Collections.EMPTY_LIST));
+        pageStore.savePages(EasyMock.eq("MockLayer"),
+                EasyMock.eq(gridSubsets.keySet().iterator().next()),
+                (ArrayList<TilePage>) EasyMock.eq(Collections.EMPTY_LIST));
         EasyMock.replay(pageStore);
 
         TileLayer layer = EasyMock.createMock(TileLayer.class);
@@ -224,8 +225,9 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
         TileLayer layer = EasyMock.createMock(TileLayer.class);
         EasyMock.expect(layer.getName()).andReturn("MockLayer").anyTimes();
         EasyMock.expect(layer.getGridSubsets()).andReturn(gridSubsets).anyTimes();
-        EasyMock.expect(layer.getMimeTypes()).andReturn(
-                Collections.singletonList(MimeType.createFromFormat("image/png"))).anyTimes();
+        EasyMock.expect(layer.getMimeTypes())
+                .andReturn(Collections.singletonList(MimeType.createFromFormat("image/png")))
+                .anyTimes();
 
         layer.addLayerListener((TileLayerListener) EasyMock.anyObject());
         // finish recording the expected method calls on the layer
@@ -259,9 +261,9 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
 
         tileBreeder = EasyMock.createNiceMock(TileBreeder.class);
         EasyMock.expect(
-                tileBreeder.createTasks((TileRange) EasyMock.anyObject(), (TileLayer) EasyMock
-                        .anyObject(), EasyMock.eq(GWCTask.TYPE.TRUNCATE), EasyMock.eq(1), EasyMock
-                        .eq(false))).andReturn(truncateTasks);
+                tileBreeder.createTasks((TileRange) EasyMock.anyObject(),
+                        (TileLayer) EasyMock.anyObject(), EasyMock.eq(GWCTask.TYPE.TRUNCATE),
+                        EasyMock.eq(1), EasyMock.eq(false))).andReturn(truncateTasks);
         EasyMock.replay(tileBreeder);
         policy = new MockPagedExipirationPolicy(tileBreeder, pageStore);
 

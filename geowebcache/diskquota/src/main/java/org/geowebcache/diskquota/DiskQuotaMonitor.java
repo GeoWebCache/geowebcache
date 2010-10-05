@@ -30,13 +30,13 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 /**
  * Monitors the layers cache size given each one's assigned {@link Quota} and call's the exceeded
- * layer's {@link LayerQuotaExpirationPolicy expiration policy} for cache clean up.
+ * layer's {@link ExpirationPolicy expiration policy} for cache clean up.
  * <p>
  * This monitor only cares about checking layers do not exceed their configured cache disk quota.
  * </p>
  * <p>
- * When a layer exceeds its quota, the {@link LayerQuotaExpirationPolicy} it is attached to is
- * called to {@link LayerQuotaExpirationPolicy#expireTiles(String) whip out} storage space.
+ * When a layer exceeds its quota, the {@link ExpirationPolicy} it is attached to is called to
+ * {@link ExpirationPolicy#expireTiles(String) whip out} storage space.
  * </p>
  * 
  * @author Gabriel Roldan
@@ -124,7 +124,7 @@ public class DiskQuotaMonitor implements DisposableBean {
         if (this.cleanUpExecutorService != null) {
             this.cleanUpExecutorService.shutdown();
         }
-        if(this.cacheInfoBuilder != null){
+        if (this.cacheInfoBuilder != null) {
             this.cacheInfoBuilder.shutDown();
         }
         try {
@@ -182,9 +182,9 @@ public class DiskQuotaMonitor implements DisposableBean {
     }
 
     /**
-     * Attaches each {@link LayerQuota} to its {@link LayerQuotaExpirationPolicy} by first looking
-     * for the layer's declared expiration policy implementation and then calling
-     * {@link LayerQuotaExpirationPolicy#attach(TileLayer, LayerQuota)}
+     * Attaches each {@link LayerQuota} to its {@link ExpirationPolicy} by first looking for the
+     * layer's declared expiration policy implementation and then calling
+     * {@link ExpirationPolicy#attach(TileLayer, LayerQuota)}
      */
     private void attachConfiguredLayers() {
 
@@ -200,7 +200,7 @@ public class DiskQuotaMonitor implements DisposableBean {
 
             log.info("Attaching layer " + layerName + " to quota " + quota);
 
-            final LayerQuotaExpirationPolicy expirationPolicy;
+            final ExpirationPolicy expirationPolicy;
             expirationPolicy = configLoader.findExpirationPolicy(policyName);
             layerQuota.setExpirationPolicy(expirationPolicy);
 
@@ -240,7 +240,7 @@ public class DiskQuotaMonitor implements DisposableBean {
             usedQuota.add(actuallyUsedStorage, B);
 
             // inform the layer policy the tile has been added, in case it needs that information
-            LayerQuotaExpirationPolicy policy = layerQuota.getExpirationPolicy();
+            ExpirationPolicy policy = layerQuota.getExpirationPolicy();
             policy.createInfoFor(layerQuota, gridSetId, x, y, z);
 
             // mark the config as dirty so its saved when appropriate
@@ -273,7 +273,7 @@ public class DiskQuotaMonitor implements DisposableBean {
             usedQuota.subtract(actualTileSizeOnDisk, B);
 
             // inform the layer policy the tile has been deleted, in case it needs that information
-            LayerQuotaExpirationPolicy policy = layerQuota.getExpirationPolicy();
+            ExpirationPolicy policy = layerQuota.getExpirationPolicy();
             policy.removeInfoFor(layerQuota, gridSetId, x, y, z);
 
             // mark the config as dirty so its saved when appropriate
@@ -293,7 +293,7 @@ public class DiskQuotaMonitor implements DisposableBean {
                 // there's no quota defined for the layer
                 return;
             }
-            LayerQuotaExpirationPolicy expirationPolicy = layerQuota.getExpirationPolicy();
+            ExpirationPolicy expirationPolicy = layerQuota.getExpirationPolicy();
             expirationPolicy.dettach(layerName);
             quotaConfig.remove(quotaConfig.getLayerQuota(layerName));
             // mark the config as dirty so its saved when appropriate
@@ -352,7 +352,7 @@ public class DiskQuotaMonitor implements DisposableBean {
 
                 final Quota quota = lq.getQuota();
                 final Quota usedQuota = lq.getUsedQuota();
-                LayerQuotaExpirationPolicy expirationPolicy = lq.getExpirationPolicy();
+                ExpirationPolicy expirationPolicy = lq.getExpirationPolicy();
                 if (lq.isDirty()) {
                     expirationPolicy.save(layerName);
                     lq.setDirty(false);
@@ -386,7 +386,7 @@ public class DiskQuotaMonitor implements DisposableBean {
         public Object call() throws Exception {
             try {
                 final String layerName = layerQuota.getLayer();
-                LayerQuotaExpirationPolicy expirationPolicy = layerQuota.getExpirationPolicy();
+                ExpirationPolicy expirationPolicy = layerQuota.getExpirationPolicy();
                 expirationPolicy.expireTiles(layerName);
             } catch (Exception e) {
                 e.printStackTrace();

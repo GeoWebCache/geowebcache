@@ -42,7 +42,7 @@ public class DiskQuotaConfig {
 
     private transient Map<String, LayerQuota> layerQuotasMap;
 
-    private transient LayerQuotaExpirationPolicy expirationPolicy;
+    private transient ExpirationPolicy expirationPolicy;
 
     private transient boolean dirty;
 
@@ -182,7 +182,7 @@ public class DiskQuotaConfig {
         return this.globalQuota;
     }
 
-    public LayerQuotaExpirationPolicy getGlobalExpirationPolicy() {
+    public ExpirationPolicy getGlobalExpirationPolicy() {
         return this.expirationPolicy;
     }
 
@@ -190,7 +190,7 @@ public class DiskQuotaConfig {
         return this.globalExpirationPolicyName;
     }
 
-    void setGlobalExpirationPolicy(LayerQuotaExpirationPolicy policy) {
+    void setGlobalExpirationPolicy(ExpirationPolicy policy) {
         this.expirationPolicy = policy;
     }
 

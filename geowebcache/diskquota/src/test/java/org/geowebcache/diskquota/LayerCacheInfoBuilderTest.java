@@ -68,9 +68,10 @@ public class LayerCacheInfoBuilderTest extends TestCase {
         EasyMock.expect(mockLayer.getName()).andReturn(layerName).anyTimes();
         GridSet gridSet = new GridSetBroker(false, false).WORLD_EPSG4326;
         GridSubset gridSubset = GridSubsetFactory.createGridSubSet(gridSet);
-        EasyMock.expect(mockLayer.getGridSubsets()).andReturn(
-                new Hashtable<String, GridSubset>(Collections.singletonMap(gridSubset.getName(),
-                        gridSubset))).anyTimes();
+        EasyMock.expect(mockLayer.getGridSubsets())
+                .andReturn(
+                        new Hashtable<String, GridSubset>(Collections.singletonMap(
+                                gridSubset.getName(), gridSubset))).anyTimes();
         EasyMock.replay(mockLayer);
 
         final String gridSetId = gridSubset.getName();
@@ -78,11 +79,10 @@ public class LayerCacheInfoBuilderTest extends TestCase {
         final int numFiles = 10;
         final int fileSize = this.blockSize + 1;
 
-        LayerQuotaExpirationPolicy mockPolicy = EasyMock
-                .createMock(LayerQuotaExpirationPolicy.class);
+        ExpirationPolicy mockPolicy = EasyMock.createMock(ExpirationPolicy.class);
 
-        mockPolicy.createInfoFor(EasyMock.eq(layerQuota), EasyMock.eq(gridSetId), EasyMock
-                .anyLong(), EasyMock.anyLong(), EasyMock.anyInt());
+        mockPolicy.createInfoFor(EasyMock.eq(layerQuota), EasyMock.eq(gridSetId),
+                EasyMock.anyLong(), EasyMock.anyLong(), EasyMock.anyInt());
         EasyMock.expectLastCall().times(numFiles);
         EasyMock.replay(mockPolicy);
 
