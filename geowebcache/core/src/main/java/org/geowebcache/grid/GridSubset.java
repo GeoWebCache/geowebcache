@@ -56,30 +56,40 @@ public class GridSubset {
     public long[] closestRectangle(BoundingBox rectangleBounds) {
         return gridSet.closestRectangle(rectangleBounds);
     }
-    
-    public void checkCoverage(long[] index) throws OutsideCoverageException {
-        if(index[2] >= firstLevel &&
-                index[2] < gridCoverageLevels.length) {
+
+    /**
+     * Indicates whether this gridsubset coverage contains the given tile
+     * @param index the tile index to check for coverage inclusion
+     * @return {@code true} if {@code index} is inside this grid subset's coverage, {@code false} otherwise
+     */
+    public boolean covers(long[] index) {
+        if (index[2] >= firstLevel && index[2] < gridCoverageLevels.length) {
             long[] coverage = gridCoverageLevels[(int) index[2]].coverage;
-            
-            if(index[0] >= coverage[0] &&
-                    index[0] <= coverage[2]) {
-                
-                if(index[1] >= coverage[1] &&
-                        index[1] <= coverage[3]) {
+
+            if (index[0] >= coverage[0] && index[0] <= coverage[2]) {
+
+                if (index[1] >= coverage[1] && index[1] <= coverage[3]) {
                     // Everything is good
-                    return;
+                    return true;
                 }
             }
+        }
+        return false;
+    }
 
-            throw new OutsideCoverageException(index, coverage);            
+    public void checkCoverage(long[] index) throws OutsideCoverageException {
+        if (covers(index)) {
+            return;
         }
 
-        throw new OutsideCoverageException(index, firstLevel, gridCoverageLevels.length - 1);        
+        if (index[2] < firstLevel || index[2] >= gridCoverageLevels.length) {
+            throw new OutsideCoverageException(index, firstLevel, gridCoverageLevels.length - 1);
+        }
+        long[] coverage = gridCoverageLevels[(int) index[2]].coverage;
+        throw new OutsideCoverageException(index, coverage);
     }
     
-    public void checkTileDimensions(int width, int height) 
-    throws TileDimensionsMismatchException {
+    public void checkTileDimensions(int width, int height) throws TileDimensionsMismatchException {
     
         if(width != gridSet.tileWidth || height != gridSet.tileHeight) {
             throw new TileDimensionsMismatchException(
