@@ -34,9 +34,9 @@ public class DiskQuotaConfig {
 
     private int maxConcurrentCleanUps;
 
-    private Quota globalQuota;
-
     private String globalExpirationPolicyName;
+
+    private Quota globalQuota;
 
     private List<LayerQuota> layerQuotas;
 
