@@ -3,7 +3,7 @@ package org.geowebcache.diskquota;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayer;
 
-public interface LayerQuotaExpirationPolicy {
+public interface ExpirationPolicy {
 
     /**
      * Returns the unique name for this expiration policy

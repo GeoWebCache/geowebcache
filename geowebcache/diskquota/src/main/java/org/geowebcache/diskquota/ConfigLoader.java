@@ -64,16 +64,16 @@ public class ConfigLoader {
 
     private final DefaultStorageFinder storageFinder;
 
-    private final Map<String, LayerQuotaExpirationPolicy> enabledPolicies;
+    private final Map<String, ExpirationPolicy> enabledPolicies;
 
     /**
      * 
      * @param storageFinder
      *            used to get the location of the cache directory
      * @param contextProvider
-     *            used to look up registered instances of {@link LayerQuotaExpirationPolicy} and to
-     *            aid in determining the location of the {@code geowebcache-diskquota.xml}
-     *            configuration file
+     *            used to look up registered instances of {@link ExpirationPolicy} and to aid in
+     *            determining the location of the {@code geowebcache-diskquota.xml} configuration
+     *            file
      * @param tld
      *            used only to validate the presence of a layer at {@link #loadConfig()} and ignore
      *            the layer quota definition if the {@link TileLayer} does not exist
@@ -86,7 +86,7 @@ public class ConfigLoader {
         this.storageFinder = storageFinder;
         this.context = contextProvider.getApplicationContext();
         this.tileLayerDispatcher = tld;
-        this.enabledPolicies = new HashMap<String, LayerQuotaExpirationPolicy>();
+        this.enabledPolicies = new HashMap<String, ExpirationPolicy>();
     }
 
     /**
@@ -224,14 +224,14 @@ public class ConfigLoader {
     }
 
     @SuppressWarnings("unchecked")
-    public LayerQuotaExpirationPolicy findExpirationPolicy(final String expirationPolicyName) {
+    public ExpirationPolicy findExpirationPolicy(final String expirationPolicyName) {
 
-        LayerQuotaExpirationPolicy policy = this.enabledPolicies.get(expirationPolicyName);
+        ExpirationPolicy policy = this.enabledPolicies.get(expirationPolicyName);
 
         if (policy == null) {
-            Map<String, LayerQuotaExpirationPolicy> expirationPolicies;
-            expirationPolicies = context.getBeansOfType(LayerQuotaExpirationPolicy.class);
-            for (LayerQuotaExpirationPolicy p : expirationPolicies.values()) {
+            Map<String, ExpirationPolicy> expirationPolicies;
+            expirationPolicies = context.getBeansOfType(ExpirationPolicy.class);
+            for (ExpirationPolicy p : expirationPolicies.values()) {
                 if (p.getName().equals(expirationPolicyName)) {
                     enabledPolicies.put(p.getName(), p);
                     return p;
@@ -240,7 +240,7 @@ public class ConfigLoader {
         } else {
             return policy;
         }
-        throw new NoSuchElementException("No " + LayerQuotaExpirationPolicy.class.getName()
+        throw new NoSuchElementException("No " + ExpirationPolicy.class.getName()
                 + " found named '" + expirationPolicyName + "' in app context.");
     }
 

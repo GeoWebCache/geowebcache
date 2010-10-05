@@ -60,7 +60,7 @@ public class ConfigLoaderTest extends TestCase {
         WebApplicationContext appContext = EasyMock.createMock(WebApplicationContext.class);
         EasyMock.expect(appContext.getServletContext()).andReturn(mockServletCtx).anyTimes();
         Map mockPolicies = createMockPolicies();
-        EasyMock.expect(appContext.getBeansOfType(EasyMock.eq(LayerQuotaExpirationPolicy.class)))
+        EasyMock.expect(appContext.getBeansOfType(EasyMock.eq(ExpirationPolicy.class)))
                 .andReturn(mockPolicies).anyTimes();
         EasyMock.replay(appContext);
 

@@ -18,8 +18,8 @@ public class DiskQuotaConfigTest extends TestCase {
     public void testDiskQuotaConfig() {
         assertEquals(DiskQuotaConfig.DEFAULT_CLEANUP_FREQUENCY, config.getCacheCleanUpFrequency());
         assertEquals(DiskQuotaConfig.DEFAULT_DISK_BLOCK_SIZE, config.getDiskBlockSize());
-        assertEquals(DiskQuotaConfig.DEFAULT_MAX_CONCURRENT_CLEANUPS, config
-                .getMaxConcurrentCleanUps());
+        assertEquals(DiskQuotaConfig.DEFAULT_MAX_CONCURRENT_CLEANUPS,
+                config.getMaxConcurrentCleanUps());
         assertEquals(DiskQuotaConfig.DEFAULT_CLEANUP_UNITS, config.getCacheCleanUpUnits());
     }
 

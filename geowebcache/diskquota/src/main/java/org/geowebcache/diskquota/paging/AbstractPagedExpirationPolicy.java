@@ -17,8 +17,8 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.diskquota.DiskQuotaMonitor;
+import org.geowebcache.diskquota.ExpirationPolicy;
 import org.geowebcache.diskquota.LayerQuota;
-import org.geowebcache.diskquota.LayerQuotaExpirationPolicy;
 import org.geowebcache.diskquota.Quota;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
@@ -39,8 +39,7 @@ import org.springframework.beans.factory.DisposableBean;
  * @author groldan
  * @see DiskQuotaMonitor
  */
-public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirationPolicy,
-        DisposableBean {
+public abstract class AbstractPagedExpirationPolicy implements ExpirationPolicy, DisposableBean {
 
     private static final Log log = LogFactory.getLog(AbstractPagedExpirationPolicy.class);
 
@@ -65,12 +64,12 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
     }
 
     /**
-     * @see org.geowebcache.diskquota.LayerQuotaExpirationPolicy#getName()
+     * @see org.geowebcache.diskquota.ExpirationPolicy#getName()
      */
     public abstract String getName();
 
     /**
-     * @see org.geowebcache.diskquota.LayerQuotaExpirationPolicy#attach(org.geowebcache.layer.TileLayer,
+     * @see org.geowebcache.diskquota.ExpirationPolicy#attach(org.geowebcache.layer.TileLayer,
      *      org.geowebcache.diskquota.LayerQuota)
      */
     public void attach(final TileLayer tileLayer, LayerQuota layerQuota) {
@@ -88,7 +87,7 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
     }
 
     /**
-     * @see org.geowebcache.diskquota.LayerQuotaExpirationPolicy#dettach(java.lang.String)
+     * @see org.geowebcache.diskquota.ExpirationPolicy#dettach(java.lang.String)
      */
     public synchronized boolean dettach(String layerName) {
         TilePageCalculator pageCalc = this.attachedLayers.remove(layerName);
@@ -114,7 +113,7 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
     }
 
     /**
-     * @see org.geowebcache.diskquota.LayerQuotaExpirationPolicy#save
+     * @see org.geowebcache.diskquota.ExpirationPolicy#save
      */
     public void save(final String layer) {
         TilePageCalculator calc = this.attachedLayers.get(layer);
@@ -207,7 +206,7 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
 
     /**
      * @throws GeoWebCacheException
-     * @see org.geowebcache.diskquota.LayerQuotaExpirationPolicy#expireTiles(java.lang.String,
+     * @see org.geowebcache.diskquota.ExpirationPolicy#expireTiles(java.lang.String,
      *      org.geowebcache.diskquota.Quota, org.geowebcache.diskquota.Quota)
      */
     public void expireTiles(final String layerName) throws GeoWebCacheException {
@@ -328,7 +327,7 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
     }
 
     /**
-     * @see LayerQuotaExpirationPolicy#createInfoFor
+     * @see ExpirationPolicy#createInfoFor
      */
     public void createInfoFor(final LayerQuota layerQuota, final String gridSetId, final long x,
             final long y, final int z) {

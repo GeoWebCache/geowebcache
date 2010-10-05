@@ -23,8 +23,8 @@ public class TilePage implements Serializable {
     /**
      * Current time with near-minute precision, meaning we can hold values up till year 2115
      */
-    private static final AtomicInteger currentTime = new AtomicInteger((int) (System
-            .currentTimeMillis() / 1000L / 60L));
+    private static final AtomicInteger currentTime = new AtomicInteger(
+            (int) (System.currentTimeMillis() / 1000L / 60L));
     static {
         CustomizableThreadFactory tf = new CustomizableThreadFactory("Minute-Timer");
         tf.setDaemon(true);
@@ -116,9 +116,9 @@ public class TilePage implements Serializable {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append("[").append(
-                zyxIndex[2]).append(',').append(zyxIndex[1]).append(',').append(zyxIndex[0])
-                .append(". Hits: ").append(getNumHits()).append(". Access: ");
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append("[")
+                .append(zyxIndex[2]).append(',').append(zyxIndex[1]).append(',')
+                .append(zyxIndex[0]).append(". Hits: ").append(getNumHits()).append(". Access: ");
         if (accessTimeMinutes == 0) {
             sb.append("never");
         } else {

@@ -53,9 +53,9 @@ final class LayerCacheInfoBuilder {
      * </p>
      * <p>
      * In addition to collecting the cache usage information for the layer, the {@code layerQuota}'s
-     * {@link LayerQuotaExpirationPolicy expiration policy} will be given the opportunity to gather
-     * any additional information by calling the
-     * {@link LayerQuotaExpirationPolicy#createInfoFor(LayerQuota, String, long[], File)
+     * {@link ExpirationPolicy expiration policy} will be given the opportunity to gather any
+     * additional information by calling the
+     * {@link ExpirationPolicy#createInfoFor(LayerQuota, String, long[], File)
      * createInforFor(layerQuota, gridSetId, tileXYZ, file)} method for each available tile on the
      * layer's cache.
      * </p>
@@ -127,7 +127,7 @@ final class LayerCacheInfoBuilder {
 
         private final LayerQuota layerQuota;
 
-        private final LayerQuotaExpirationPolicy policy;
+        private final ExpirationPolicy policy;
 
         private final int blockSize;
 
@@ -227,8 +227,8 @@ final class LayerCacheInfoBuilder {
     }
 
     /**
-     * Returns whether cache information is still being gathered for the layer named after {@code
-     * layerName}.
+     * Returns whether cache information is still being gathered for the layer named after
+     * {@code layerName}.
      * 
      * @param layerName
      * @return {@code true} if the cache information gathering for {@code layerName} is not finished

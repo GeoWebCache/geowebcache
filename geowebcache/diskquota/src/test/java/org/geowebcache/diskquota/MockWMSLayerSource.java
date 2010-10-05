@@ -38,10 +38,9 @@ public class MockWMSLayerSource {
     private static final Log log = LogFactory.getLog(MockWMSLayerSource.class);
 
     public MockWMSLayerSource(TileLayerDispatcher tld) {
-        log
-                .info("'\n---------------------------------------------------------------------------------\n"
-                        + "Replacing all WMS layer backend helpers by a mock one, don't forget to remove this\n"
-                        + "---------------------------------------------------------------------------------");
+        log.info("'\n---------------------------------------------------------------------------------\n"
+                + "Replacing all WMS layer backend helpers by a mock one, don't forget to remove this\n"
+                + "---------------------------------------------------------------------------------");
 
         for (TileLayer layer : tld.getLayers().values()) {
             if (layer instanceof WMSLayer) {

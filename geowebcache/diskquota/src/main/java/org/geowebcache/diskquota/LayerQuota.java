@@ -10,7 +10,7 @@ public final class LayerQuota {
 
     private Quota usedQuota = new Quota();
 
-    private transient LayerQuotaExpirationPolicy expirationPolicy;
+    private transient ExpirationPolicy expirationPolicy;
 
     private transient boolean dirty;
 
@@ -40,11 +40,11 @@ public final class LayerQuota {
         return expirationPolicyName;
     }
 
-    public LayerQuotaExpirationPolicy getExpirationPolicy() {
+    public ExpirationPolicy getExpirationPolicy() {
         return expirationPolicy;
     }
 
-    public void setExpirationPolicy(LayerQuotaExpirationPolicy expirationPolicy) {
+    public void setExpirationPolicy(ExpirationPolicy expirationPolicy) {
         this.expirationPolicy = expirationPolicy;
     }
 
