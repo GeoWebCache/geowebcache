@@ -126,6 +126,7 @@ public class ConfigLoaderTest extends TestCase {
     public void testLoadConfig() throws ConfigurationException, IOException {
         DiskQuotaConfig config = loader.loadConfig();
         assertNotNull(config);
+        assertFalse(config.isEnabled());
         assertEquals(4096, config.getDiskBlockSize());
         assertEquals(10, config.getCacheCleanUpFrequency());
         assertEquals(TimeUnit.SECONDS, config.getCacheCleanUpUnits());
@@ -135,7 +136,7 @@ public class ConfigLoaderTest extends TestCase {
         assertNotNull(config.getGlobalExpirationPolicy());
 
         assertNotNull(config.getGlobalQuota());
-        assertEquals(100, config.getGlobalQuota().getValue().longValue());
+        assertEquals(200, config.getGlobalQuota().getValue().longValue());
         assertEquals(StorageUnit.GiB, config.getGlobalQuota().getUnits());
 
         assertNotNull(config.getLayerQuotas());
@@ -145,13 +146,13 @@ public class ConfigLoaderTest extends TestCase {
         assertNotNull(states);
         assertEquals("LFU", states.getExpirationPolicyName());
         assertEquals(0, states.getUsedQuota().getValue().longValue());
-        assertEquals(10, states.getQuota().getValue().longValue());
+        assertEquals(100, states.getQuota().getValue().longValue());
         assertEquals(StorageUnit.MiB, states.getQuota().getUnits());
 
         LayerQuota raster = config.getLayerQuota("raster test layer");
         assertNotNull(raster);
-        assertEquals(27, raster.getUsedQuota().getValue().longValue());
-        assertEquals(StorageUnit.GiB, raster.getUsedQuota().getUnits());
+        assertEquals(0, raster.getUsedQuota().getValue().longValue());
+        assertEquals(StorageUnit.B, raster.getUsedQuota().getUnits());
     }
 
     public void testSaveConfig() throws ConfigurationException, IOException {
