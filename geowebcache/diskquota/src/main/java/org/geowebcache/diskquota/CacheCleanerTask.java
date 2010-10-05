@@ -90,7 +90,13 @@ class CacheCleanerTask implements Runnable {
             // quota and hence the layer's usage must be treated with all the globally managed ones
             final Quota quota = lq.getQuota();
             if (quota == null) {
-                globallyManagedQuotas.add(lq);
+                if (quotaConfig.getGlobalQuota() != null) {
+                    if (lq.isDirty()) {
+                        quotaConfig.getGlobalExpirationPolicy().save(layerName);
+                        lq.setDirty(false);
+                    }
+                    globallyManagedQuotas.add(lq);
+                }
                 continue;
             }
             // never null
@@ -168,7 +174,7 @@ class CacheCleanerTask implements Runnable {
      * </p>
      * 
      * @author Gabriel Roldan
-     * 
+     * @see ExpirationPolicy#expireTiles(List, Quota, Quota)
      */
     private static class GlobalQuotaEnforcementTask implements Callable<Object> {
 
@@ -182,14 +188,23 @@ class CacheCleanerTask implements Runnable {
             this.globallyManagedQuotas = globallyManagedQuotas;
         }
 
+        /**
+         * Calls the global expiration policy's
+         * {@link ExpirationPolicy#expireTiles(List, Quota, Quota) expireTiles(List, Quota, Quota)}
+         * method with the list of globally managed layer names, the global quota limit and the
+         * current global quota usage.
+         * 
+         * @see java.util.concurrent.Callable#call()
+         */
         public Object call() throws Exception {
             ExpirationPolicy globalExpirationPolicy = quotaConfig.getGlobalExpirationPolicy();
+            List<String> layerNames = new ArrayList<String>();
             for (LayerQuota lq : globallyManagedQuotas) {
-
-                String layerName = lq.getLayer();
-                // TODO:
-                // globalExpirationPolicy.expireTiles(globallyManagedQuotas);
+                layerNames.add(lq.getLayer());
             }
+            Quota globalLimit = quotaConfig.getGlobalQuota();
+            Quota globalUsage = quotaConfig.getGlobalUsedQuota();
+            globalExpirationPolicy.expireTiles(layerNames, globalLimit, globalUsage);
             return null;
         }
     }

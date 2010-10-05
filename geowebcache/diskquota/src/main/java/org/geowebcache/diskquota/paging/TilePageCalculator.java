@@ -1,6 +1,7 @@
 package org.geowebcache.diskquota.paging;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -39,7 +40,8 @@ public class TilePageCalculator {
 
         for (GridSubset gs : gridSubsets.values()) {
             String name = gs.getName();
-            PagePyramid pagePyramid = new PagePyramid(gs);
+            PagePyramid pagePyramid = new PagePyramid(tileLayer.getName(), gs.getName(),
+                    gs.getCoverages());
             pageRangesPerGridSubset.put(name, pagePyramid);
         }
     }
@@ -50,6 +52,16 @@ public class TilePageCalculator {
 
     public LayerQuota getLayerQuota() {
         return this.layerQuota;
+    }
+
+    public void removeTileInfo(long x, long y, int z, String gridSetId) {
+        TilePage page = pageFor(x, y, z, gridSetId);
+        page.removeTile();
+    }
+
+    public void createTileInfo(long x, long y, int z, String gridSetId) {
+        TilePage page = pageFor(x, y, z, gridSetId);
+        page.addTile();
     }
 
     public TilePage pageFor(long x, long y, int z, String gridSetId) {
@@ -68,6 +80,20 @@ public class TilePageCalculator {
         try {
             PagePyramid pageRange = this.pageRangesPerGridSubset.get(gridSetId);
             pages = new ArrayList<TilePage>(pageRange.getPages());
+        } finally {
+            pagesLock.writeLock().unlock();
+        }
+        return pages;
+    }
+
+    public List<TilePage> getPages() {
+        ArrayList<TilePage> pages = new ArrayList<TilePage>();
+        pagesLock.writeLock().lock();
+        try {
+            Collection<PagePyramid> pagePyramids = this.pageRangesPerGridSubset.values();
+            for (PagePyramid srsPyramid : pagePyramids) {
+                pages.addAll(srsPyramid.getPages());
+            }
         } finally {
             pagesLock.writeLock().unlock();
         }
@@ -94,4 +120,5 @@ public class TilePageCalculator {
         long[][] gridCoverage = pageRange.toGridCoverage(page);
         return gridCoverage;
     }
+
 }

@@ -6,8 +6,8 @@ package org.geowebcache.diskquota.paging;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Hashtable;
-import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -38,13 +38,18 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
         }
 
         @Override
-        protected List<TilePage> sortPagesForExpiration(List<TilePage> allPages) {
-            return allPages;
+        public String getName() {
+            return "MockPolicy";
         }
 
         @Override
-        public String getName() {
-            return "MockPolicy";
+        protected Comparator<TilePage> getExpirationComparator() {
+            return new Comparator<TilePage>() {
+                public int compare(TilePage o1, TilePage o2) {
+                    return o1.getNumHits() > o2.getNumHits() ? 1 : o1.getNumHits() == o2
+                            .getNumHits() ? 0 : -1;
+                }
+            };
         }
     }
 
@@ -270,7 +275,7 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
         policy.attach(layer, layerQuota);
         // for expireTiles to work, there must be tile pages, so lets create a couple ones
         final String gridsetId = gridSubsets.keySet().iterator().next();
-        policy.createInfoFor(layerQuota, gridsetId, 0, 1, 2);
+        policy.createTileInfo(layerQuota, gridsetId, 0, 1, 2);
         policy.expireTiles(layerName);
 
         EasyMock.verify(layer);

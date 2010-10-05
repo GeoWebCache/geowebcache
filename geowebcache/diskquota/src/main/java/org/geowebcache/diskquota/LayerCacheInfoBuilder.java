@@ -206,7 +206,7 @@ final class LayerCacheInfoBuilder {
             final long x = Long.valueOf(path.substring(fileNameIdx, coordSepIdx));
             final long y = Long.valueOf(path.substring(1 + coordSepIdx, dotIdx));
 
-            policy.createInfoFor(layerQuota, gridSetId, x, y, tileZ);
+            policy.createTileInfo(layerQuota, gridSetId, x, y, tileZ);
 
             stats.numTiles++;
             stats.collectedQuota.add(fileSize, StorageUnit.B);

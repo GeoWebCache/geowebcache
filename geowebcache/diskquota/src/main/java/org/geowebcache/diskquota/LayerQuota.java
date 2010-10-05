@@ -15,8 +15,13 @@ public final class LayerQuota {
     private transient boolean dirty;
 
     public LayerQuota(final String layer, final String expirationPolicyName) {
+        this(layer, expirationPolicyName, new Quota());
+    }
+
+    public LayerQuota(final String layer, final String expirationPolicyName, Quota quota) {
         this.layer = layer;
         this.expirationPolicyName = expirationPolicyName;
+        this.quota = quota;
         readResolve();
     }
 

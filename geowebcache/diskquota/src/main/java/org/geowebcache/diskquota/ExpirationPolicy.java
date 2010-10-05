@@ -53,18 +53,8 @@ public interface ExpirationPolicy {
      */
     void expireTiles(String layerName) throws GeoWebCacheException;
 
-    /**
-     * Expires tiles from the layer until the amount of freed disk space reaches
-     * {@code truncateLimit}, if {@code truncateLimit} is lower than the layers
-     * {@link LayerQuota#getUsedQuota() used quota}, or the layer gets empty.
-     * 
-     * @param layerName
-     *            name of the layer to truncate from based on this expiration policy
-     * @param truncateLimit
-     *            amount of diskspace to try to freed from the layer's cache
-     * @throws GeoWebCacheException
-     */
-    void expireTiles(final String layerName, final Quota truncateLimit) throws GeoWebCacheException;
+    void expireTiles(List<String> layerNames, Quota limit, Quota usedQuota)
+            throws GeoWebCacheException;
 
     void save(String layerName);
 
@@ -77,7 +67,17 @@ public interface ExpirationPolicy {
      * @param y
      * @param z
      */
-    void createInfoFor(LayerQuota layerQuota, String gridSetId, long x, long y, int z);
+    void createTileInfo(LayerQuota layerQuota, String gridSetId, long x, long y, int z);
 
-    void removeInfoFor(LayerQuota layerQuota, String gridSetId, long x, long y, int z);
+    /**
+     * Removes any held information for the tile given by the {@code x, y, z} ordinates
+     * 
+     * @param layerQuota
+     * @param gridSetId
+     * @param x
+     * @param y
+     * @param z
+     */
+    void removeTileInfo(LayerQuota layerQuota, String gridSetId, long x, long y, int z);
+
 }

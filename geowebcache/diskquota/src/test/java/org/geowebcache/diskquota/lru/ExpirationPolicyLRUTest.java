@@ -1,6 +1,7 @@
 package org.geowebcache.diskquota.lru;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -13,9 +14,9 @@ public class ExpirationPolicyLRUTest extends TestCase {
     public void testSortPagesForExpiration() {
         List<TilePage> pages = new ArrayList<TilePage>();
 
-        TilePage mostRecentlyUsed = new TilePage(1, 1, 1, 1, 10, 1000);
-        TilePage leastRecentlyUsed = new TilePage(0, 0, 0, 1, 100, 100);
-        TilePage moreOrLessRecentlyUsed = new TilePage(0, 0, 1, 1, 100, 500);
+        TilePage mostRecentlyUsed = new TilePage("testLayer", "EPSG:4326", 1, 1, 1, 1, 10, 1000);
+        TilePage leastRecentlyUsed = new TilePage("testLayer", "EPSG:4326", 0, 0, 0, 1, 100, 100);
+        TilePage moreOrLessRecentlyUsed = new TilePage("testLayer", "EPSG:4326", 0, 0, 1, 1, 100, 500);
 
         mostRecentlyUsed.markHit();
 
@@ -23,13 +24,13 @@ public class ExpirationPolicyLRUTest extends TestCase {
         pages.add(leastRecentlyUsed);
         pages.add(moreOrLessRecentlyUsed);
 
-        List<TilePage> sortPages = ExpirationPolicyLRU.sortPages(pages);
-        assertNotNull(sortPages);
-        assertEquals(3, sortPages.size());
-        assertSame(pages, sortPages);
-        assertSame(leastRecentlyUsed, sortPages.get(0));
-        assertSame(moreOrLessRecentlyUsed, sortPages.get(1));
-        assertSame(mostRecentlyUsed, sortPages.get(2));
+        Collections.sort(pages, ExpirationPolicyLRU.LRUSorter);
+        assertNotNull(pages);
+        assertEquals(3, pages.size());
+        assertSame(pages, pages);
+        assertSame(leastRecentlyUsed, pages.get(0));
+        assertSame(moreOrLessRecentlyUsed, pages.get(1));
+        assertSame(mostRecentlyUsed, pages.get(2));
     }
 
     /**
@@ -39,13 +40,13 @@ public class ExpirationPolicyLRUTest extends TestCase {
     @SuppressWarnings("serial")
     public void testSortPagesForExpirationSameAccessTime() {
         List<TilePage> pages = new ArrayList<TilePage>();
-        TilePage lowerZoomLevel = new TilePage(1, 1, 1) {
+        TilePage lowerZoomLevel = new TilePage("testLayer", "EPSG:4326", 1, 1, 1) {
             @Override
             public int getLastAccessTimeMinutes() {
                 return 1;
             }
         };
-        TilePage higherZoomLevel = new TilePage(1, 1, 2) {
+        TilePage higherZoomLevel = new TilePage("testLayer", "EPSG:4326", 1, 1, 2) {
             @Override
             public int getLastAccessTimeMinutes() {
                 return 1;
@@ -55,11 +56,11 @@ public class ExpirationPolicyLRUTest extends TestCase {
         pages.add(lowerZoomLevel);
         pages.add(higherZoomLevel);
 
-        List<TilePage> sortPages = ExpirationPolicyLRU.sortPages(pages);
-        assertNotNull(sortPages);
-        assertEquals(2, sortPages.size());
-        assertSame(pages, sortPages);
-        assertSame(higherZoomLevel, sortPages.get(0));
-        assertSame(lowerZoomLevel, sortPages.get(1));
+        Collections.sort(pages, ExpirationPolicyLRU.LRUSorter);
+        assertNotNull(pages);
+        assertEquals(2, pages.size());
+        assertSame(pages, pages);
+        assertSame(higherZoomLevel, pages.get(0));
+        assertSame(lowerZoomLevel, pages.get(1));
     }
 }

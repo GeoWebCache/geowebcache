@@ -41,7 +41,7 @@ class MonitoringBlobListener implements BlobStoreListener {
         // inform the layer policy the tile has been added, in case it needs that information
         ExpirationPolicy policy = layerQuota.getExpirationPolicy();
         if(policy != null){
-        policy.createInfoFor(layerQuota, gridSetId, x, y, z);
+        policy.createTileInfo(layerQuota, gridSetId, x, y, z);
         }
 
         // mark the config as dirty so its saved when appropriate
@@ -77,7 +77,7 @@ class MonitoringBlobListener implements BlobStoreListener {
 
         // inform the layer policy the tile has been deleted, in case it needs that information
         ExpirationPolicy policy = layerQuota.getExpirationPolicy();
-        policy.removeInfoFor(layerQuota, gridSetId, x, y, z);
+        policy.removeTileInfo(layerQuota, gridSetId, x, y, z);
 
         // mark the config as dirty so its saved when appropriate
         quotaConfig.setDirty(true);

@@ -1,10 +1,12 @@
 package org.geowebcache.diskquota.paging;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -18,25 +20,47 @@ public class FilePageStore implements PageStore {
 
     private final ConfigLoader configLoader;
 
+    static final byte tilePageSerialVersionId = 1;
+
     public FilePageStore(final ConfigLoader configLoader) {
         this.configLoader = configLoader;
     }
 
-    @SuppressWarnings("unchecked")
-    public List<TilePage> getPages(String layerName, String gridSetId) throws IOException {
+    /**
+     * @see org.geowebcache.diskquota.paging.PageStore#getPages(java.lang.String, java.lang.String)
+     */
+    public List<TilePage> getPages(final String layerName, final String gridSetId)
+            throws IOException {
 
-        String fileName = fileName(layerName, gridSetId);
+        final String layerFileName = FilePathGenerator.filteredLayerName(layerName);
+        final String fileName = fileName(layerFileName, gridSetId);
         InputStream pagesStateIn;
 
         pagesStateIn = configLoader.getStorageInputStream(fileName);
 
-        ObjectInputStream in = new ObjectInputStream(pagesStateIn);
+        DataInputStream in = new DataInputStream(pagesStateIn);
         try {
-            List<TilePage> pages;
-            try {
-                pages = (List<TilePage>) in.readObject();
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
+            List<TilePage> pages = new ArrayList<TilePage>();
+            int magic;
+            while (true) {
+                try {
+                    magic = in.readByte();
+                } catch (EOFException e) {
+                    break;
+                }
+                if (tilePageSerialVersionId != magic) {
+                    throw new IOException(
+                            "Object stream does not start with TilePage magic number: " + magic);
+                }
+                int x = in.readInt();
+                int y = in.readInt();
+                int z = in.readInt();
+                int accessTimeMinutes = in.readInt();
+                long numHits = in.readLong();
+                long numTilesInPage = in.readLong();
+                TilePage page = new TilePage(layerName, gridSetId, x, y, z, numHits,
+                        numTilesInPage, accessTimeMinutes);
+                pages.add(page);
             }
             log.info("Paged state for layer '" + layerName + "'/" + gridSetId + " loaded.");
             return pages;
@@ -45,16 +69,30 @@ public class FilePageStore implements PageStore {
         }
     }
 
+    /**
+     * @see org.geowebcache.diskquota.paging.PageStore#savePages(java.lang.String, java.lang.String,
+     *      java.util.List)
+     */
     public void savePages(String layerName, String gridSetId, List<TilePage> availablePages)
             throws IOException {
 
-        String fileName = fileName(layerName, gridSetId);
+        final String layerFileName = FilePathGenerator.filteredLayerName(layerName);
+        final String fileName = fileName(layerFileName, gridSetId);
         log.debug("Saving paged state for " + layerName + "/" + gridSetId + " containing "
                 + availablePages.size() + " pages.");
         OutputStream fileOut = configLoader.getStorageOutputStream(fileName);
-        ObjectOutputStream out = new ObjectOutputStream(fileOut);
+        DataOutputStream out = new DataOutputStream(fileOut);
         try {
-            out.writeObject(availablePages);
+            for (TilePage page : availablePages) {
+                out.writeByte(tilePageSerialVersionId);
+                out.writeInt(page.getX());
+                out.writeInt(page.getY());
+                out.writeInt(page.getZ());
+                out.writeInt(page.getLastAccessTimeMinutes());
+                out.writeLong(page.getNumHits());
+                out.writeLong(page.getNumTilesInPage());
+            }
+            out.flush();
         } finally {
             out.close();
         }
