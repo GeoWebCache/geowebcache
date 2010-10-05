@@ -53,6 +53,16 @@ class CacheCleanerTask implements Runnable {
 
     private final ConfigLoader configLoader;
 
+    /**
+     * 
+     * @param configLoader
+     * @param config
+     * @param cacheInfoBuilder
+     *            helps in avoiding launching a quota enforcement task when the cache information is
+     *            still being gathered for a given layer
+     * @param executor
+     *            ExecutorService used to launch quota enforcement tasks
+     */
     public CacheCleanerTask(final ConfigLoader configLoader, final DiskQuotaConfig config,
             final LayerCacheInfoBuilder cacheInfoBuilder, final ExecutorService executor) {
 

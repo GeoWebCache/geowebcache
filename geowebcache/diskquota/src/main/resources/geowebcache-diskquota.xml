@@ -12,8 +12,8 @@
 
   <globalExpirationPolicyName>LFU</globalExpirationPolicyName>
   <globalQuota>
-    <value>100</value>
-    <units>TiB</units>
+    <value>200</value>
+    <units>GiB</units>
   </globalQuota>
   
   <layerQuotas>
