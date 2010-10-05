@@ -19,14 +19,17 @@ package org.geowebcache.diskquota.paging;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.easymock.classextension.EasyMock;
 import org.geowebcache.diskquota.ConfigLoader;
+import org.geowebcache.util.ApplicationContextProvider;
 
 /**
  * @author groldan
@@ -58,30 +61,34 @@ public class FilePageStoreTest extends TestCase {
      * {@link org.geowebcache.diskquota.paging.FilePageStore#savePages(java.lang.String, java.lang.String, java.util.ArrayList)}
      */
     public void testSaveAndGetPages() throws Exception {
-        final String expectedFileName = layerName + "." + gridSetId + ".pages";
+        final String[] expectedFileName = { "diskquota_pagestore",
+                layerName + "." + gridSetId + ".pages" };
 
-        mockConfigLoader = EasyMock.createMock(ConfigLoader.class);
-        store = new FilePageStore(mockConfigLoader);
         final ByteArrayOutputStream mockOut = new ByteArrayOutputStream();
-        EasyMock.expect(mockConfigLoader.getStorageOutputStream(EasyMock.eq(expectedFileName)))
-                .andReturn(mockOut);
-        EasyMock.replay(mockConfigLoader);
+        mockConfigLoader = new ConfigLoader(null, new ApplicationContextProvider(), null) {
+            @Override
+            public OutputStream getStorageOutputStream(String... fileNameRelPath)
+                    throws IOException {
+                assertTrue(Arrays.equals(expectedFileName, fileNameRelPath));
+                return mockOut;
+            }
+        };
+        store = new FilePageStore(mockConfigLoader);
 
         store.savePages(layerName, gridSetId, pages);
 
-        EasyMock.verify(mockConfigLoader);
-
-        mockConfigLoader = EasyMock.createMock(ConfigLoader.class);
+        final InputStream mockInputStream = new ByteArrayInputStream(mockOut.toByteArray());
+        mockConfigLoader = new ConfigLoader(null, new ApplicationContextProvider(), null) {
+            @Override
+            public InputStream getStorageInputStream(String... fileNameRelPath) throws IOException {
+                assertTrue(Arrays.equals(expectedFileName, fileNameRelPath));
+                return mockInputStream;
+            }
+        };
         store = new FilePageStore(mockConfigLoader);
-        InputStream mockInputStream = new ByteArrayInputStream(mockOut.toByteArray());
-        EasyMock.expect(mockConfigLoader.getStorageInputStream(EasyMock.eq(expectedFileName)))
-                .andReturn(mockInputStream);
-        EasyMock.replay(mockConfigLoader);
 
         List<TilePage> deserialized = store.getPages(layerName, gridSetId);
 
-        EasyMock.verify(mockConfigLoader);
         assertEquals(pages, deserialized);
     }
-
 }
