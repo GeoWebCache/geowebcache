@@ -97,10 +97,6 @@ class CacheCleanerTask implements Runnable {
     }
 
     private void innerRun() {
-        if (!quotaConfig.isEnabled()) {
-            log.debug("DiskQuota disabled, ignoring run...");
-            return;
-        }
         // first, save the config to account for changes in used quotas
         if (quotaConfig.isDirty()) {
             try {
@@ -109,6 +105,10 @@ class CacheCleanerTask implements Runnable {
             } catch (Exception e) {
                 log.error("Error saving disk quota config", e);
             }
+        }
+        if (!quotaConfig.isEnabled()) {
+            log.debug("DiskQuota disabled, ignoring run...");
+            return;
         }
 
         final List<LayerQuota> globallyManagedQuotas = new ArrayList<LayerQuota>();
