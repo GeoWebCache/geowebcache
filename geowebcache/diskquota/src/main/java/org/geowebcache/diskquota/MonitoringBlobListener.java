@@ -17,12 +17,11 @@ class MonitoringBlobListener implements BlobStoreListener {
     }
 
     /**
-     * @see org.geowebcache.storage.BlobStoreListener#tileStored(java.lang.String,
-     *      java.lang.String, java.lang.String, java.lang.String, long, long, int, long)
+     * @see org.geowebcache.storage.BlobStoreListener#tileStored(java.lang.String, java.lang.String,
+     *      java.lang.String, java.lang.String, long, long, int, long)
      */
-    public void tileStored(final String layerName, final String gridSetId,
-            final String blobFormat, final String parameters, final long x, final long y,
-            final int z, final long blobSize) {
+    public void tileStored(final String layerName, final String gridSetId, final String blobFormat,
+            final String parameters, final long x, final long y, final int z, final long blobSize) {
 
         final LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
         if (layerQuota == null) {
@@ -33,19 +32,23 @@ class MonitoringBlobListener implements BlobStoreListener {
 
         long actuallyUsedStorage = blockSize * (int) Math.ceil((double) blobSize / blockSize);
 
+        Quota globalUsedQuota = quotaConfig.getGlobalUsedQuota();
         Quota usedQuota = layerQuota.getUsedQuota();
 
+        globalUsedQuota.add(actuallyUsedStorage, B);
         usedQuota.add(actuallyUsedStorage, B);
 
         // inform the layer policy the tile has been added, in case it needs that information
         ExpirationPolicy policy = layerQuota.getExpirationPolicy();
+        if(policy != null){
         policy.createInfoFor(layerQuota, gridSetId, x, y, z);
+        }
 
         // mark the config as dirty so its saved when appropriate
         quotaConfig.setDirty(true);
         layerQuota.setDirty(true);
         if (log.isDebugEnabled()) {
-            log.debug("Used quota increased for " + layerName + ": " + usedQuota);
+            log.trace("Used quota increased for " + layerName + ": " + usedQuota);
         }
     }
 
@@ -66,8 +69,10 @@ class MonitoringBlobListener implements BlobStoreListener {
 
         long actualTileSizeOnDisk = blockSize * (int) Math.ceil((double) blobSize / blockSize);
 
+        Quota globalUsedQuota = quotaConfig.getGlobalUsedQuota();
         Quota usedQuota = layerQuota.getUsedQuota();
 
+        globalUsedQuota.subtract(actualTileSizeOnDisk, B);
         usedQuota.subtract(actualTileSizeOnDisk, B);
 
         // inform the layer policy the tile has been deleted, in case it needs that information
@@ -93,7 +98,7 @@ class MonitoringBlobListener implements BlobStoreListener {
         }
         ExpirationPolicy expirationPolicy = layerQuota.getExpirationPolicy();
         expirationPolicy.dettach(layerName);
-        quotaConfig.remove(quotaConfig.getLayerQuota(layerName));
+        quotaConfig.remove(layerQuota);
         // mark the config as dirty so its saved when appropriate
         quotaConfig.setDirty(true);
     }

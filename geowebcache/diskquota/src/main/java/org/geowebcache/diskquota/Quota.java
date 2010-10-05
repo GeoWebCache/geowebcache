@@ -88,6 +88,22 @@ public class Quota {
         this.value = sum;
     }
 
+    public synchronized void add(final Quota quota) {
+        BigDecimal convertedValue = quota.getUnits().convertTo(quota.value, this.units);
+        BigDecimal sum = this.value.add(convertedValue);
+        if (sum.compareTo(BigDecimal.valueOf(1024)) > 0) {
+            // i.e. if added > 1024
+            StorageUnit newUnit = StorageUnit.closest(sum, this.units);
+            sum = this.units.convertTo(sum, newUnit);
+            this.units = newUnit;
+        }
+        this.value = sum;
+    }
+
+    public void subtract(final Quota quota) {
+        subtract(quota.getValue(), quota.getUnits());
+    }
+
     public synchronized void subtract(final double amount, final StorageUnit units) {
         subtract(BigDecimal.valueOf(amount), units);
     }
@@ -124,4 +140,15 @@ public class Quota {
     public String toNiceString() {
         return NICE_FORMATTER.format(value) + units;
     }
+
+    /**
+     * @param quota
+     *            quota to be compared against this one
+     * @return {@code this} or {@code quota}, the one that represents a lower amount
+     */
+    public Quota min(Quota quota) {
+        BigDecimal other = quota.getUnits().convertTo(quota.getValue(), this.units);
+        return value.min(other) == value ? this : quota;
+    }
+
 }

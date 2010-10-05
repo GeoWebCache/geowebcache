@@ -1,5 +1,7 @@
 package org.geowebcache.diskquota;
 
+import java.util.List;
+
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayer;
 
@@ -42,7 +44,27 @@ public interface ExpirationPolicy {
      */
     boolean dettach(String layerName);
 
+    /**
+     * Expires tiles from the layer until it reaches its configured {@link LayerQuota#getQuota()
+     * quota}
+     * 
+     * @param layerName
+     * @throws GeoWebCacheException
+     */
     void expireTiles(String layerName) throws GeoWebCacheException;
+
+    /**
+     * Expires tiles from the layer until the amount of freed disk space reaches
+     * {@code truncateLimit}, if {@code truncateLimit} is lower than the layers
+     * {@link LayerQuota#getUsedQuota() used quota}, or the layer gets empty.
+     * 
+     * @param layerName
+     *            name of the layer to truncate from based on this expiration policy
+     * @param truncateLimit
+     *            amount of diskspace to try to freed from the layer's cache
+     * @throws GeoWebCacheException
+     */
+    void expireTiles(final String layerName, final Quota truncateLimit) throws GeoWebCacheException;
 
     void save(String layerName);
 
@@ -58,5 +80,4 @@ public interface ExpirationPolicy {
     void createInfoFor(LayerQuota layerQuota, String gridSetId, long x, long y, int z);
 
     void removeInfoFor(LayerQuota layerQuota, String gridSetId, long x, long y, int z);
-
 }
