@@ -119,6 +119,13 @@ public class ConfigLoader {
         } finally {
             configIn.close();
         }
+        
+        //find out the global expiration policy, if set
+        if(null != quotaConfig.getGlobalExpirationPolicyName()){
+            String expirationPolicyName = quotaConfig.getGlobalExpirationPolicyName();
+            ExpirationPolicy policy = findExpirationPolicy(expirationPolicyName);
+            quotaConfig.setGlobalExpirationPolicy(policy);
+        }
 
         validateConfig(quotaConfig);
 

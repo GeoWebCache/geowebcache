@@ -107,7 +107,14 @@ public class ConfigLoaderTest extends TestCase {
         assertEquals(10, config.getCacheCleanUpFrequency());
         assertEquals(TimeUnit.SECONDS, config.getCacheCleanUpUnits());
         assertEquals(3, config.getMaxConcurrentCleanUps());
+        
+        assertEquals("LFU", config.getGlobalExpirationPolicyName());
+        assertNotNull(config.getGlobalExpirationPolicy());
 
+        assertNotNull(config.getGlobalQuota());
+        assertEquals(100, config.getGlobalQuota().getValue().longValue());
+        assertEquals(StorageUnit.GiB, config.getGlobalQuota().getUnits());
+        
         assertNotNull(config.getLayerQuotas());
         assertEquals(2, config.getLayerQuotas().size());
 
