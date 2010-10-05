@@ -49,7 +49,7 @@ If possible, turn off File System's last access time (atime) as it avoids writin
 
 File System Block Size
 ++++++++++++++++++++++
-Since the Tile Cache stores thousands or even millions of files, the File System block size is of great importance for optimizing the actually used storage space for the cache. If that could be an issue, consider tuning your File System block size. Modern file systems usually have a default block size of 16K, which should be fine for most situations. If your avergate tile is a small 8-bit png you may want to use a 8K block size. If its a large JPEG you may want to increase the block size to 64K.
+Since the Tile Cache stores thousands or even millions of files, the File System block size is of great importance for optimizing the actually used storage space for the cache. If that could be an issue, consider tuning your File System block size. Modern file systems usually have a default block size of 16K, which should be fine for most situations. If your average tile is a small 8-bit png you may want to use a 8K block size. If its a large JPEG you may want to increase the block size to 64K.
 
 If the block size is too large, it's more likely that more disk space is gonna be wasted (since a tile file will use an integral number of blocks on disk, as for any file in your file system).
 If the block size is too small, performance will probably degrade as more I/O operations will be needed to read a single file.
