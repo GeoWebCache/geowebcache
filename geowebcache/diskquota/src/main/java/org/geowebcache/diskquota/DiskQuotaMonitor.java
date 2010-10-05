@@ -1,17 +1,11 @@
 package org.geowebcache.diskquota;
 
-import static org.geowebcache.diskquota.StorageUnit.B;
-
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -22,7 +16,6 @@ import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.BlobStore;
-import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.springframework.beans.factory.DisposableBean;
@@ -44,7 +37,7 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
  */
 public class DiskQuotaMonitor implements DisposableBean {
 
-    private static final Log log = LogFactory.getLog(DiskQuotaMonitor.class);
+    static final Log log = LogFactory.getLog(DiskQuotaMonitor.class);
 
     private final TileLayerDispatcher tileLayerDispatcher;
 
@@ -171,7 +164,7 @@ public class DiskQuotaMonitor implements DisposableBean {
 
     private void setUpScheduledCleanUp() {
 
-        Runnable command = new CacheCleaner(configLoader, quotaConfig, cacheInfoBuilder,
+        Runnable command = new CacheCleanerTask(configLoader, quotaConfig, cacheInfoBuilder,
                 cleanUpExecutorService);
 
         long initialDelay = quotaConfig.getCacheCleanUpFrequency();
@@ -207,192 +200,6 @@ public class DiskQuotaMonitor implements DisposableBean {
             TileLayer tileLayer = layers.get(layerName);
             expirationPolicy.attach(tileLayer, layerQuota);
             layers.remove(layerName);
-        }
-    }
-
-    private static class MonitoringBlobListener implements BlobStoreListener {
-
-        private final DiskQuotaConfig quotaConfig;
-
-        public MonitoringBlobListener(final DiskQuotaConfig quotaConfig) {
-            this.quotaConfig = quotaConfig;
-        }
-
-        /**
-         * @see org.geowebcache.storage.BlobStoreListener#tileStored(java.lang.String,
-         *      java.lang.String, java.lang.String, java.lang.String, long, long, int, long)
-         */
-        public void tileStored(final String layerName, final String gridSetId,
-                final String blobFormat, final String parameters, final long x, final long y,
-                final int z, final long blobSize) {
-
-            final LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
-            if (layerQuota == null) {
-                // there's no quota defined for the layer
-                return;
-            }
-            final int blockSize = quotaConfig.getDiskBlockSize();
-
-            long actuallyUsedStorage = blockSize * (int) Math.ceil((double) blobSize / blockSize);
-
-            Quota usedQuota = layerQuota.getUsedQuota();
-
-            usedQuota.add(actuallyUsedStorage, B);
-
-            // inform the layer policy the tile has been added, in case it needs that information
-            ExpirationPolicy policy = layerQuota.getExpirationPolicy();
-            policy.createInfoFor(layerQuota, gridSetId, x, y, z);
-
-            // mark the config as dirty so its saved when appropriate
-            quotaConfig.setDirty(true);
-            layerQuota.setDirty(true);
-            if (log.isDebugEnabled()) {
-                log.debug("Used quota increased for " + layerName + ": " + usedQuota);
-            }
-        }
-
-        /**
-         * @see org.geowebcache.storage.BlobStoreListener#tileDeleted(java.lang.String,
-         *      java.lang.String, java.lang.String, java.lang.String, long, long, int, long)
-         */
-        public void tileDeleted(final String layerName, final String gridSetId,
-                final String blobFormat, final String parameters, final long x, final long y,
-                final int z, final long blobSize) {
-
-            final LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
-            if (layerQuota == null) {
-                // there's no quota defined for the layer
-                return;
-            }
-            int blockSize = quotaConfig.getDiskBlockSize();
-
-            long actualTileSizeOnDisk = blockSize * (int) Math.ceil((double) blobSize / blockSize);
-
-            Quota usedQuota = layerQuota.getUsedQuota();
-
-            usedQuota.subtract(actualTileSizeOnDisk, B);
-
-            // inform the layer policy the tile has been deleted, in case it needs that information
-            ExpirationPolicy policy = layerQuota.getExpirationPolicy();
-            policy.removeInfoFor(layerQuota, gridSetId, x, y, z);
-
-            // mark the config as dirty so its saved when appropriate
-            quotaConfig.setDirty(true);
-            layerQuota.setDirty(true);
-            if (log.isTraceEnabled()) {
-                log.trace("Used quota decreased for " + layerName + ": " + usedQuota);
-            }
-        }
-
-        /**
-         * @see org.geowebcache.storage.BlobStoreListener#layerDeleted(java.lang.String)
-         */
-        public void layerDeleted(final String layerName) {
-            final LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
-            if (layerQuota == null) {
-                // there's no quota defined for the layer
-                return;
-            }
-            ExpirationPolicy expirationPolicy = layerQuota.getExpirationPolicy();
-            expirationPolicy.dettach(layerName);
-            quotaConfig.remove(quotaConfig.getLayerQuota(layerName));
-            // mark the config as dirty so its saved when appropriate
-            quotaConfig.setDirty(true);
-        }
-    }
-
-    private static class CacheCleaner implements Runnable {
-
-        private final DiskQuotaConfig quotaConfig;
-
-        private final ExecutorService cleanUpExecutorService;
-
-        private final Map<String, Future<?>> perLayerRunningCleanUps;
-
-        private final LayerCacheInfoBuilder cacheInfoBuilder;
-
-        private final ConfigLoader configLoader;
-
-        public CacheCleaner(final ConfigLoader configLoader, final DiskQuotaConfig config,
-                final LayerCacheInfoBuilder cacheInfoBuilder, final ExecutorService executor) {
-
-            this.configLoader = configLoader;
-            this.quotaConfig = config;
-            this.cleanUpExecutorService = executor;
-            this.cacheInfoBuilder = cacheInfoBuilder;
-            this.perLayerRunningCleanUps = new HashMap<String, Future<?>>();
-        }
-
-        public void run() {
-            // first, save the config to account for changes in used quotas
-            if (quotaConfig.isDirty()) {
-                try {
-                    configLoader.saveConfig(quotaConfig);
-                    quotaConfig.setDirty(false);
-                } catch (Exception e) {
-                    log.error("Error saving disk quota config", e);
-                }
-            }
-
-            for (LayerQuota lq : quotaConfig.getLayerQuotas()) {
-                final String layerName = lq.getLayer();
-
-                if (cacheInfoBuilder.isRunning(layerName)) {
-                    log.info("Cache information is still being gathered for layer '" + layerName
-                            + "'. Skipping quota enforcement task for this layer.");
-                    continue;
-                }
-
-                Future<?> runningCleanup = perLayerRunningCleanUps.get(layerName);
-                if (runningCleanup != null && !runningCleanup.isDone()) {
-                    log.debug("Cache clean up task still running for layer '" + layerName
-                            + "'. Ignoring it for this run.");
-                    continue;
-                }
-
-                final Quota quota = lq.getQuota();
-                final Quota usedQuota = lq.getUsedQuota();
-                ExpirationPolicy expirationPolicy = lq.getExpirationPolicy();
-                if (lq.isDirty()) {
-                    expirationPolicy.save(layerName);
-                    lq.setDirty(false);
-                }
-
-                Quota excedent = usedQuota.difference(quota);
-                if (excedent.getValue().compareTo(BigDecimal.ZERO) > 0) {
-                    log.info("Layer '" + lq.getLayer() + "' exceeds its quota of "
-                            + quota.toNiceString() + " by " + excedent.toNiceString()
-                            + ". Currently used: " + usedQuota.toNiceString()
-                            + ". Clean up task is gonna be performed" + " using expiration policy "
-                            + lq.getExpirationPolicyName());
-
-                    LayerQuotaEnforcementTask task;
-                    task = new LayerQuotaEnforcementTask(lq);
-                    Future<Object> future = this.cleanUpExecutorService.submit(task);
-                    perLayerRunningCleanUps.put(layerName, future);
-                }
-            }
-        }
-    }
-
-    private static class LayerQuotaEnforcementTask implements Callable<Object> {
-
-        private final LayerQuota layerQuota;
-
-        public LayerQuotaEnforcementTask(final LayerQuota layerQuota) {
-            this.layerQuota = layerQuota;
-        }
-
-        public Object call() throws Exception {
-            try {
-                final String layerName = layerQuota.getLayer();
-                ExpirationPolicy expirationPolicy = layerQuota.getExpirationPolicy();
-                expirationPolicy.expireTiles(layerName);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw e;
-            }
-            return null;
         }
     }
 }
