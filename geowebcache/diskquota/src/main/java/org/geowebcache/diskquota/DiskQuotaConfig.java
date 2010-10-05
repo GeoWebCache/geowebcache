@@ -48,6 +48,8 @@ public class DiskQuotaConfig {
 
     private transient boolean dirty;
 
+    private transient Quota globalUsedQuota;
+
     public DiskQuotaConfig() {
         readResolve();
     }
@@ -146,12 +148,15 @@ public class DiskQuotaConfig {
         return layerQuotasMap;
     }
 
-    public synchronized void remove(LayerQuota lq) {
+    public synchronized void remove(final LayerQuota lq) {
         for (Iterator<LayerQuota> it = layerQuotas.iterator(); it.hasNext();) {
             LayerQuota quota = it.next();
             if (quota.getLayer().equals(lq.getLayer())) {
                 it.remove();
                 getLayerQuotasMap().remove(lq.getLayer());
+                if(this.globalUsedQuota != null){
+                    this.globalUsedQuota.subtract(quota.getUsedQuota());
+                }
                 break;
             }
         }
@@ -209,5 +214,15 @@ public class DiskQuotaConfig {
 
     public boolean isDirty() {
         return this.dirty;
+    }
+
+    public synchronized Quota getGlobalUsedQuota() {
+        if (this.globalUsedQuota == null) {
+            this.globalUsedQuota = new Quota();
+            for (LayerQuota lq : getLayerQuotas()) {
+                globalUsedQuota.add(lq.getUsedQuota());
+            }
+        }
+        return globalUsedQuota;
     }
 }

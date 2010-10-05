@@ -211,18 +211,19 @@ public abstract class AbstractPagedExpirationPolicy implements ExpirationPolicy,
      */
     public void expireTiles(final String layerName) throws GeoWebCacheException {
 
-        TilePageCalculator tilePageCalculator = this.attachedLayers.get(layerName);
+        final TilePageCalculator tilePageCalculator = this.attachedLayers.get(layerName);
 
         if (tilePageCalculator == null) {
             throw new GeoWebCacheException(layerName + " is not attached to expiration policy "
                     + getName());
         }
 
+        Quota exceededQuota;
         final LayerQuota layerQuota = tilePageCalculator.getLayerQuota();
         final Quota quotaLimit = layerQuota.getQuota();
         final Quota usedQuota = layerQuota.getUsedQuota();
 
-        Quota exceededQuota = usedQuota.difference(quotaLimit);
+        exceededQuota = usedQuota.difference(quotaLimit);
         if (exceededQuota.getValue().compareTo(BigDecimal.ZERO) <= 0) {
             return;
         }
@@ -286,6 +287,93 @@ public abstract class AbstractPagedExpirationPolicy implements ExpirationPolicy,
         }
         log.debug("Quota for layer '" + layerName + "' reached. Using " + usedQuota
                 + " out of a limit of " + quotaLimit);
+    }
+
+    /**
+     * Truncates at least {@code truncateLimit} from the given layer
+     * 
+     * @param layerName
+     *            the layer to truncate from
+     * @param truncateLimit
+     *            the amount to truncate
+     * @throws GeoWebCacheException
+     */
+    public void expireTiles(final String layerName, final Quota truncateLimit)
+            throws GeoWebCacheException {
+
+        final TilePageCalculator tilePageCalculator = this.attachedLayers.get(layerName);
+
+        if (tilePageCalculator == null) {
+            throw new GeoWebCacheException(layerName + " is not attached to expiration policy "
+                    + getName());
+        }
+
+        Quota exceededQuota;
+        final LayerQuota layerQuota = tilePageCalculator.getLayerQuota();
+        final Quota usedQuota = layerQuota.getUsedQuota();
+
+        exceededQuota = usedQuota.min(truncateLimit);
+        final Quota initialUsage = new Quota(usedQuota);
+        if (exceededQuota.getValue().compareTo(BigDecimal.ZERO) <= 0) {
+            return;
+        }
+
+        final TileLayer tileLayer = tilePageCalculator.getTileLayer();
+        final Collection<GridSubset> gridSubsets = tileLayer.getGridSubsets().values();
+
+        /*
+         * Keep in mind that a seeding process might be ongoing while we try to enforce the layer's
+         * quota and the two processes may compete. We can't just ask for and sort the list of pages
+         * once as they might be changing under our feet.
+         */
+        while (exceededQuota.getValue().compareTo(BigDecimal.ZERO) > 0) {
+            // make a one-page-cleanup per gridSubset so the clean up is sort of evenly spread over
+            // the different gridsets instead of whiping out too much of one and nothing of the
+            // other
+            for (GridSubset gridSubSet : gridSubsets) {
+                final String gridSetId = gridSubSet.getName();
+                List<TilePage> gsPages = tilePageCalculator.getPages(gridSetId);
+                gsPages = sortPagesForExpiration(gsPages);
+
+                TilePage tilePage = null;
+                long numTilesInPage = 0;
+                for (TilePage page : gsPages) {
+                    numTilesInPage = page.getNumTilesInPage();
+                    if (numTilesInPage > 0) {
+                        tilePage = page;
+                        break;
+                    }
+                }
+                if (numTilesInPage == 0) {
+                    log.warn("Didn't find a page with tiles to truncate for '" + layerName
+                            + "' whilst it reports having a quota excedednt of " + exceededQuota);
+                    break;
+                }
+
+                final int zoomLevel = tilePage.getZ();
+                final long[][] pageGridCoverage;
+                pageGridCoverage = tilePageCalculator.toGridCoverage(tilePage, gridSetId);
+                for (MimeType mimeType : tileLayer.getMimeTypes()) {
+                    log.trace("Expiring page " + tilePage + "/" + mimeType.getFormat());
+
+                    GWCTask truncateTask = createTruncateTaskForPage(tileLayer, gridSetId,
+                            zoomLevel, pageGridCoverage, mimeType);
+
+                    // truncate synchronously. We're already inside the interested thread
+                    truncateTask.doAction();
+
+                    // usedQuota changed dynamically as tiles are added/removed from the layer,
+                    // initialUsage is our static reference point
+                    exceededQuota = usedQuota.difference(initialUsage);
+
+                    if (0 == tilePage.getNumTilesInPage()) {
+                        // already truncated the tiles for the page at all available mime types
+                        break;
+                    }
+                }
+
+            }
+        }
     }
 
     private Quota logDifference(final String layerName, final Quota quotaLimit,

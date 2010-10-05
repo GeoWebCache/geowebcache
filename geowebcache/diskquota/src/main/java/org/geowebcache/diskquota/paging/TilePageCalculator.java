@@ -62,30 +62,6 @@ public class TilePageCalculator {
         }
     }
 
-    /**
-     * Returns a the list of {@link TilePage}s per gridsubset at the time of calling.
-     * <p>
-     * Note the returned pagea are a deep copy (i.e. internal {@link TilePage}s are copies too).
-     * This is so that the stats collector can continue gathering usage data on pages without
-     * affecting the result of this method.
-     * </p>
-     * 
-     * @return
-     */
-    public List<TilePage> getAllPages(final String gridSubset) {
-        Map<int[], TilePage> allPagesMap;
-        pagesLock.writeLock().lock();
-        try {
-            PagePyramid pageRange = this.pageRangesPerGridSubset.get(gridSubset);
-            allPagesMap = pageRange.getAllPages();
-        } finally {
-            pagesLock.writeLock().unlock();
-        }
-
-        List<TilePage> allPages = new ArrayList<TilePage>(allPagesMap.values());
-        return allPages;
-    }
-
     public ArrayList<TilePage> getPages(String gridSetId) {
         ArrayList<TilePage> pages;
         pagesLock.writeLock().lock();

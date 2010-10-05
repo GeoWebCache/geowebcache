@@ -37,7 +37,7 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
  */
 public class DiskQuotaMonitor implements DisposableBean {
 
-    static final Log log = LogFactory.getLog(DiskQuotaMonitor.class);
+    private static final Log log = LogFactory.getLog(DiskQuotaMonitor.class);
 
     private final TileLayerDispatcher tileLayerDispatcher;
 
@@ -84,27 +84,21 @@ public class DiskQuotaMonitor implements DisposableBean {
 
         this.quotaConfig = configLoader.loadConfig();
 
-        if (quotaConfig.getNumLayers() == 0) {
-            this.cleanUpExecutorService = null;
-            this.cacheInfoBuilder = null;
-            log.info("No layer quotas defined. Disk quota monitor is disabled.");
-        } else {
-            this.cleanUpExecutorService = createCleanUpExecutor();
+        this.cleanUpExecutorService = createCleanUpExecutor();
 
-            attachConfiguredLayers();
+        attachConfiguredLayers();
 
-            this.cacheInfoBuilder = launchCacheInfoGatheringThreads();
+        this.cacheInfoBuilder = launchCacheInfoGatheringThreads();
 
-            final MonitoringBlobListener blobListener = new MonitoringBlobListener(quotaConfig);
-            storageBroker.addBlobStoreListener(blobListener);
+        final MonitoringBlobListener blobListener = new MonitoringBlobListener(quotaConfig);
+        storageBroker.addBlobStoreListener(blobListener);
 
-            setUpScheduledCleanUp();
+        setUpScheduledCleanUp();
 
-            int totalLayers = tileLayerDispatcher.getLayers().size();
-            int quotaLayers = quotaConfig.getNumLayers();
-            log.info(quotaLayers + " out of " + totalLayers
-                    + " layers configured with their own quotas.");
-        }
+        int totalLayers = tileLayerDispatcher.getLayers().size();
+        int quotaLayers = quotaConfig.getNumLayers();
+        log.info(quotaLayers + " out of " + totalLayers
+                + " layers configured with their own quotas.");
     }
 
     /**
@@ -190,11 +184,14 @@ public class DiskQuotaMonitor implements DisposableBean {
             final String layerName = layerQuota.getLayer();
             Quota quota = layerQuota.getQuota();
             final String policyName = layerQuota.getExpirationPolicyName();
-
-            log.info("Attaching layer " + layerName + " to quota " + quota);
-
             final ExpirationPolicy expirationPolicy;
-            expirationPolicy = configLoader.findExpirationPolicy(policyName);
+            if (policyName == null) {
+                // not a configured layer. The global expiration policy will take care of it
+                expirationPolicy = quotaConfig.getGlobalExpirationPolicy();
+            } else {
+                expirationPolicy = configLoader.findExpirationPolicy(policyName);
+            }
+            log.info("Attaching layer " + layerName + " to quota " + quota);
             layerQuota.setExpirationPolicy(expirationPolicy);
 
             TileLayer tileLayer = layers.get(layerName);

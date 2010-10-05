@@ -119,9 +119,9 @@ public class ConfigLoader {
         } finally {
             configIn.close();
         }
-        
-        //find out the global expiration policy, if set
-        if(null != quotaConfig.getGlobalExpirationPolicyName()){
+
+        // find out the global expiration policy, if set
+        if (null != quotaConfig.getGlobalExpirationPolicyName()) {
             String expirationPolicyName = quotaConfig.getGlobalExpirationPolicyName();
             ExpirationPolicy policy = findExpirationPolicy(expirationPolicyName);
             quotaConfig.setGlobalExpirationPolicy(policy);
@@ -129,11 +129,28 @@ public class ConfigLoader {
 
         validateConfig(quotaConfig);
 
+        addUnconfiguredLayerQuotas(quotaConfig);
+
         XStream xstream = getConfiguredXStream();
         log.info("Quota config is: " + configFile.toExternalForm());
         xstream.toXML(quotaConfig, System.out);
 
         return quotaConfig;
+    }
+
+    private void addUnconfiguredLayerQuotas(DiskQuotaConfig quotaConfig) {
+        final List<LayerQuota> configured = new ArrayList<LayerQuota>(quotaConfig.getLayerQuotas());
+
+        Map<String, TileLayer> tileLayers = tileLayerDispatcher.getLayers();
+
+        for (Map.Entry<String, TileLayer> entry : tileLayers.entrySet()) {
+            String layerName = entry.getKey();
+            if (null == quotaConfig.getLayerQuota(layerName)) {
+                LayerQuota layerQuota = new LayerQuota(layerName, null);
+                configured.add(layerQuota);
+            }
+        }
+        quotaConfig.setLayerQuotas(configured);
     }
 
     private URL getConfigResource() throws ConfigurationException, FileNotFoundException {
@@ -195,9 +212,16 @@ public class ConfigLoader {
             quotaConfig.remove(lq);
         }
 
-        String expirationPolicyName = lq.getExpirationPolicyName();
+        final String expirationPolicyName = lq.getExpirationPolicyName();
         if (expirationPolicyName == null) {
-            throw new ConfigurationException("No expiration policy specified: " + lq);
+            // if expiration policy is not defined, then there should be no quota definer neither,
+            // as it means the layer is managed by the global expiration policy, if any
+            if (lq.getQuota() != null) {
+                throw new ConfigurationException("Layer " + lq.getLayer()
+                        + " has no expiration policy, but does have a quota defined. "
+                        + "Either both or neither should be present");
+            }
+            return;
         }
         try {
             findExpirationPolicy(expirationPolicyName);

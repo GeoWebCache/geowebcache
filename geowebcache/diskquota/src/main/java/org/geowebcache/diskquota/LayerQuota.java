@@ -26,9 +26,6 @@ public final class LayerQuota {
      * @return
      */
     private Object readResolve() {
-        if (quota == null) {
-            quota = new Quota();
-        }
         if (usedQuota == null) {
             usedQuota = new Quota();
         }
@@ -53,9 +50,7 @@ public final class LayerQuota {
     }
 
     /**
-     * The layer's disk quota
-     * 
-     * @return
+     * @return The layer's configured disk quota, or {@code null} if it has no max quota set
      */
     public Quota getQuota() {
         return quota;

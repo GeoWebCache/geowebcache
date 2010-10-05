@@ -51,6 +51,8 @@ public class TilePage implements Serializable {
 
     private transient int hashCode;
 
+    private transient String gridsetId;
+
     /**
      * Last access time, with near-minute precision
      */
