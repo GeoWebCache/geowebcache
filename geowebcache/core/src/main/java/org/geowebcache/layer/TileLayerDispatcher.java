@@ -68,10 +68,20 @@ public class TileLayerDispatcher {
 
         this.configs = configs;
 
-        ThreadFactory tfac = new CustomizableThreadFactory("GWC Configuration loader thread");
-        configLoadService = Executors.newSingleThreadExecutor(tfac);
-        ConfigurationLoader loader = new ConfigurationLoader(this, loadDelay);
-        configurationLoadTask = configLoadService.submit(loader);
+        if (loadDelay > -1) {
+            ThreadFactory tfac = new CustomizableThreadFactory("GWC Configuration loader thread");
+            configLoadService = Executors.newSingleThreadExecutor(tfac);
+            ConfigurationLoader loader = new ConfigurationLoader(this, loadDelay);
+            configurationLoadTask = configLoadService.submit(loader);
+        }
+        else {
+            try {
+                configuredLayers = new ConfigurationLoader(this, loadDelay).call();
+            } 
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     public TileLayer getTileLayer(String layerIdent) throws GeoWebCacheException {
