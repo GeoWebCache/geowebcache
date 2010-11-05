@@ -231,7 +231,7 @@ public class ConfigLoader {
 
         final String expirationPolicyName = lq.getExpirationPolicyName();
         if (expirationPolicyName == null) {
-            // if expiration policy is not defined, then there should be no quota definer neither,
+            // if expiration policy is not defined, then there should be no quota defined either,
             // as it means the layer is managed by the global expiration policy, if any
             if (lq.getQuota() != null) {
                 throw new ConfigurationException("Layer " + lq.getLayer()
