@@ -32,7 +32,7 @@ public final class LayerQuota {
     private transient boolean dirty;
 
     public LayerQuota(final String layer, final String expirationPolicyName) {
-        this(layer, expirationPolicyName, new Quota());
+        this(layer, expirationPolicyName, null);
     }
 
     public LayerQuota(final String layer, final String expirationPolicyName, Quota quota) {
