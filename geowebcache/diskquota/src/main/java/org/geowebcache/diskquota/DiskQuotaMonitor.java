@@ -37,7 +37,6 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
-import org.springframework.util.Assert;
 
 /**
  * Monitors the layers cache size given each one's assigned {@link Quota} and call's the exceeded
@@ -193,8 +192,6 @@ public class DiskQuotaMonitor implements DisposableBean {
         
         final List<LayerQuota> layerQuotas = quotaConfig.getLayerQuotas();
         
-        Assert.isTrue(layers.size() == layerQuotas.size());
-
         final ExpirationPolicy globalExpirationPolicy = quotaConfig.getGlobalExpirationPolicy();
         final Quota globalQuota = quotaConfig.getGlobalQuota();
 

@@ -35,6 +35,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 import org.geowebcache.util.FileUtils;
+import org.springframework.util.Assert;
 
 /**
  * Gathers information about the cache of a layer, such as its size and available {@link TilePage}s.
@@ -86,6 +87,8 @@ final class LayerCacheInfoBuilder {
      * @param layerQuota
      */
     public void buildCacheInfo(final TileLayer tileLayer, final LayerQuota layerQuota) {
+
+        Assert.notNull(layerQuota.getExpirationPolicy(), "layerQuota.getExpirationPolicy() == null");
 
         final String layerName = layerQuota.getLayer();
         final String layerDirName = FilePathGenerator.filteredLayerName(layerName);

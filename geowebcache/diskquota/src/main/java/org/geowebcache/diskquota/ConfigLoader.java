@@ -138,14 +138,13 @@ public class ConfigLoader {
             String expirationPolicyName = quotaConfig.getGlobalExpirationPolicyName();
             ExpirationPolicy policy = findExpirationPolicy(expirationPolicyName);
             quotaConfig.setGlobalExpirationPolicy(policy);
+            addUnconfiguredLayerQuotas(quotaConfig);
         }
 
         validateConfig(quotaConfig);
 
-        addUnconfiguredLayerQuotas(quotaConfig);
-
-        //XStream xstream = getConfiguredXStream();
-        //xstream.toXML(quotaConfig, System.out);
+        // XStream xstream = getConfiguredXStream();
+        // xstream.toXML(quotaConfig, System.out);
 
         return quotaConfig;
     }
