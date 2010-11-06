@@ -28,6 +28,7 @@ import junit.framework.TestCase;
 import org.easymock.classextension.EasyMock;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.diskquota.LayerQuota;
+import org.geowebcache.diskquota.Quota;
 import org.geowebcache.diskquota.StorageUnit;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
@@ -255,10 +256,8 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
         String layerName = layer.getName();
 
         // Mock up a layer quota that exceeded in its allowed quota
-        final LayerQuota layerQuota = new LayerQuota(layerName, policy.getName());
+        final LayerQuota layerQuota = new LayerQuota(layerName, policy.getName(), new Quota(1024, StorageUnit.KiB));
         layerQuota.setExpirationPolicy(policy);
-        layerQuota.getQuota().setValue(1024);
-        layerQuota.getQuota().setUnits(StorageUnit.KiB);
         // used quota exceeds allowed quota
         layerQuota.getUsedQuota().setValue(2);
         layerQuota.getUsedQuota().setUnits(StorageUnit.MiB);
