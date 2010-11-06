@@ -78,7 +78,7 @@ public class DiskQuotaConfig {
      */
     private Object readResolve() {
         if (enabled == null) {
-            enabled = Boolean.TRUE;
+            enabled = Boolean.FALSE;
         }
         if (diskBlockSize == 0) {
             diskBlockSize = DEFAULT_DISK_BLOCK_SIZE;
@@ -171,7 +171,7 @@ public class DiskQuotaConfig {
             if (quota.getLayer().equals(lq.getLayer())) {
                 it.remove();
                 getLayerQuotasMap().remove(lq.getLayer());
-                if(this.globalUsedQuota != null){
+                if (this.globalUsedQuota != null) {
                     this.globalUsedQuota.subtract(quota.getUsedQuota());
                 }
                 break;

@@ -25,8 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,13 +53,9 @@ import com.thoughtworks.xstream.XStream;
  * </p>
  * <p>
  * When {@link #loadConfig()} is called, a file named {@code geowebcache-diskquota.xml} will be
- * looked up for in the following locations (in order):
- * <ul>
- * <li>Default path, as specified by {@link DefaultStorageFinder#getDefaultPath()}
- * <li>/WEB-INF/classes
- * <li>class path:/geowebcache-diskquota.xml
- * </ul>
- * The configuration file must adhere to the {@code geowebcache-diskquota.xsd} schema.
+ * looked up for in the cache directory as specified by
+ * {@link DefaultStorageFinder#getDefaultPath()}. The configuration file must adhere to the
+ * {@code geowebcache-diskquota.xsd} schema.
  * </p>
  * 
  * @author Gabriel Roldan
@@ -72,8 +66,6 @@ public class ConfigLoader {
     private static final Log log = LogFactory.getLog(ConfigLoader.class);
 
     private static final String CONFIGURATION_FILE_NAME = "geowebcache-diskquota.xml";
-
-    private static final String[] CONFIGURATION_REL_PATHS = { "/WEB-INF/classes", "/../resources" };
 
     private final WebApplicationContext context;
 
@@ -127,16 +119,20 @@ public class ConfigLoader {
     }
 
     public DiskQuotaConfig loadConfig() throws IOException, ConfigurationException {
-        URL configFile = getConfigResource();
-
-        InputStream configIn = configFile.openStream();
         DiskQuotaConfig quotaConfig;
-        try {
-            quotaConfig = loadConfiguration(configIn);
-        } finally {
-            configIn.close();
+        final File configFile = getConfigResource();
+        if (!configFile.exists()) {
+            log.info("DiskQuota configuration not found: " + configFile.getAbsolutePath());
+            quotaConfig = new DiskQuotaConfig();
+        } else {
+            log.info("Quota config is: " + configFile.getAbsolutePath());
+            InputStream configIn = new FileInputStream(configFile);
+            try {
+                quotaConfig = loadConfiguration(configIn);
+            } finally {
+                configIn.close();
+            }
         }
-
         // find out the global expiration policy, if set
         if (null != quotaConfig.getGlobalExpirationPolicyName()) {
             String expirationPolicyName = quotaConfig.getGlobalExpirationPolicyName();
@@ -148,9 +144,8 @@ public class ConfigLoader {
 
         addUnconfiguredLayerQuotas(quotaConfig);
 
-        XStream xstream = getConfiguredXStream();
-        log.info("Quota config is: " + configFile.toExternalForm());
-        xstream.toXML(quotaConfig, System.out);
+        //XStream xstream = getConfiguredXStream();
+        //xstream.toXML(quotaConfig, System.out);
 
         return quotaConfig;
     }
@@ -170,25 +165,17 @@ public class ConfigLoader {
         quotaConfig.setLayerQuotas(configured);
     }
 
-    private URL getConfigResource() throws ConfigurationException, FileNotFoundException {
+    private File getConfigResource() throws ConfigurationException, FileNotFoundException {
         String cachePath;
         try {
             cachePath = storageFinder.getDefaultPath();
         } catch (StorageException e) {
             throw new ConfigurationException(e.getMessage());
         }
-        URL configFile;
-        try {
-            configFile = findConfFile(cachePath);
-        } catch (GeoWebCacheException e) {
-            throw new RuntimeException(e);
-        }
 
-        if (configFile == null) {
-            throw new FileNotFoundException("Found no " + CONFIGURATION_FILE_NAME
-                    + " file. Disk Quota is disabled.");
-        }
-        return configFile;
+        File file = new File(cachePath, CONFIGURATION_FILE_NAME);
+
+        return file;
     }
 
     private void validateConfig(DiskQuotaConfig quotaConfig) throws ConfigurationException {
@@ -290,77 +277,6 @@ public class ConfigLoader {
         }
         throw new NoSuchElementException("No " + ExpirationPolicy.class.getName()
                 + " found named '" + expirationPolicyName + "' in app context.");
-    }
-
-    private URL findConfFile(String cachePath) throws GeoWebCacheException {
-        File configDir = determineConfigDir(cachePath);
-
-        URL resource = null;
-
-        if (configDir == null) {
-
-            resource = getClass().getResource("/" + CONFIGURATION_FILE_NAME);
-
-        } else {
-            File xmlFile = null;
-            xmlFile = new File(configDir.getAbsolutePath() + File.separator
-                    + CONFIGURATION_FILE_NAME);
-            log.debug("Found configuration file in " + configDir.getAbsolutePath());
-            try {
-                resource = xmlFile.toURI().toURL();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (resource == null) {
-            log.debug("Unable to determine location of " + CONFIGURATION_FILE_NAME + ".");
-        }
-
-        return resource;
-    }
-
-    private File determineConfigDir(String defaultPath) {
-        String baseDir = context.getServletContext().getRealPath("");
-
-        File configH = null;
-        /*
-         * Try 1) environment variables 2) standard paths 3) class path /geowebcache-diskquota.xml
-         */
-        if (defaultPath != null) {
-            File tmpPath = new File(defaultPath + File.separator + CONFIGURATION_FILE_NAME);
-            if (tmpPath.exists()) {
-                configH = new File(tmpPath.getParent());
-            }
-        }
-
-        // Finally, try "standard" paths if we have to.
-        if (configH == null) {
-            for (int i = 0; i < CONFIGURATION_REL_PATHS.length; i++) {
-                String relPath = CONFIGURATION_REL_PATHS[i];
-                if (File.separator.equals("\\")) {
-                    relPath = relPath.replace("/", "\\");
-                }
-
-                File tmpPath = new File(baseDir + relPath + File.separator
-                        + CONFIGURATION_FILE_NAME);
-
-                if (tmpPath.exists() && tmpPath.canRead()) {
-                    log.info("No configuration directory was specified, using "
-                            + tmpPath.getAbsolutePath());
-                    configH = new File(baseDir + relPath);
-                }
-            }
-        }
-        if (configH != null) {
-            log.debug("Configuration directory set to: " + configH.getAbsolutePath());
-
-            if (!configH.exists() || !configH.canRead()) {
-                log.error("Configuration file cannot be read or does not exist!");
-            }
-        }
-
-        return configH;
     }
 
     private DiskQuotaConfig loadConfiguration(final InputStream configStream) {

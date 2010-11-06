@@ -18,7 +18,9 @@
 package org.geowebcache.diskquota;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,7 +65,18 @@ public class ConfigLoaderTest extends TestCase {
         }
         FileUtils.rmFileCacheDir(cacheDir, null);
         cacheDir.mkdirs();
-
+        // copy configuration file to cache directory
+        {
+            InputStream in = getClass().getResourceAsStream("/geowebcache-diskquota.xml");
+            FileOutputStream out = new FileOutputStream(new File(cacheDir,
+                    "geowebcache-diskquota.xml"));
+            int c;
+            while ((c = in.read()) != -1) {
+                out.write(c);
+            }
+            in.close();
+            out.close();
+        }
         storageFinder = EasyMock.createMock(DefaultStorageFinder.class);
         EasyMock.expect(storageFinder.getDefaultPath()).andReturn(cacheDir.getAbsolutePath())
                 .anyTimes();
@@ -165,8 +178,9 @@ public class ConfigLoaderTest extends TestCase {
         config.setLayerQuotas(quotas);
 
         File configFile = new File(cacheDir, "geowebcache-diskquota.xml");
-        assertFalse(configFile.exists());
-
+        if (configFile.exists()) {
+            configFile.delete();
+        }
         loader.saveConfig(config);
         assertTrue(configFile.exists());
 
