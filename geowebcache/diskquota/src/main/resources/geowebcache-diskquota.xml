@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <gwcQuotaConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://geowebcache.org/schema/1.2.2/diskquota org/geowebcache/config/geowebcache-diskquota.xsd" xmlns="http://geowebcache.org/schema/1.2.2/diskquota">
+  xsi:schemaLocation="http://geowebcache.org/diskquota org/geowebcache/config/geowebcache-diskquota.xsd" xmlns="http://geowebcache.org/diskquota">
 
   <enabled>false</enabled>
   <diskBlockSize>4096</diskBlockSize>
