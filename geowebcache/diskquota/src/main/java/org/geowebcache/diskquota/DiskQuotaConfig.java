@@ -95,7 +95,7 @@ public class DiskQuotaConfig {
         if (cacheCleanUpUnits == null) {
             cacheCleanUpUnits = DEFAULT_CLEANUP_UNITS;
         }
-        if (globalQuota != null && globalExpirationPolicyName == null) {
+        if (globalExpirationPolicyName == null) {
             globalExpirationPolicyName = DEFAULT_GLOBAL_POLICY_NAME;
         }
         return this;
