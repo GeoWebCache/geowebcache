@@ -169,6 +169,8 @@ public class SeedRequest {
                 return TYPE.SEED;
             } else if(type.equalsIgnoreCase("reseed")) {
                 return TYPE.RESEED;
+            }else if(type.equalsIgnoreCase("truncate")){
+                return TYPE.TRUNCATE;
             } else {
                 log.warn("Unknown type \""+type+"\", assuming seed");
                 return TYPE.SEED;
