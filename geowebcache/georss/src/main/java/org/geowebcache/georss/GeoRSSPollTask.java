@@ -264,6 +264,9 @@ class GeoRSSPollTask implements Runnable {
                 tasks[0].doAction();
             } catch (GeoWebCacheException e) {
                 logger.error("Problem truncating based on GeoRSS feed: " + e.getMessage());
+            } catch (InterruptedException e) {
+                logger.info("Task abruptly interrupted.");
+                return;
             }
         }
 

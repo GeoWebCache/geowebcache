@@ -167,23 +167,22 @@ class JDBCMBWrapper {
     }
 
     protected Connection getConnection() throws SQLException {
-        if (!closing) {
-            Connection conn;
-            if (useConnectionPooling) {
-                if (connPool == null) {
-                    connPool = JdbcConnectionPool.create(jdbcString, username,
-                            password == null ? "" : password);
-                    connPool.setMaxConnections(maxConnections);
-                }
-                conn = connPool.getConnection();
-            } else {
-                conn = DriverManager.getConnection(jdbcString, username, password);
-            }
-            conn.setAutoCommit(true);
-            return conn;
-        } else {
-            return null;
+        if (closing) {
+            throw new IllegalStateException(getClass().getSimpleName() + " is being shut down");
         }
+        Connection conn;
+        if (useConnectionPooling) {
+            if (connPool == null) {
+                connPool = JdbcConnectionPool.create(jdbcString, username, password == null ? ""
+                        : password);
+                connPool.setMaxConnections(maxConnections);
+            }
+            conn = connPool.getConnection();
+        } else {
+            conn = DriverManager.getConnection(jdbcString, username, password);
+        }
+        conn.setAutoCommit(true);
+        return conn;
     }
 
     private void checkTables() throws StorageException, SQLException {
@@ -795,18 +794,29 @@ class JDBCMBWrapper {
         }
     }
 
-    protected void destroy() {
-        this.closing = true;
-        if (persistentConnection != null) {
+    public void destroy() {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            this.closing = true;
             try {
-                persistentConnection.createStatement().execute("SHUTDOWN");
+                conn.createStatement().execute("SHUTDOWN");
             } catch (SQLException se) {
                 log.warn("SHUTDOWN call to JDBC resulted in: " + se.getMessage());
-            } finally {
+            }
+        } catch (SQLException e) {
+            log.error("Couldn't obtain JDBC Connection to perform database shut down", e);
+        } finally {
+            if (conn != null) {
+                // should be already closed after SHUTDOWN
+                boolean closed = false;
                 try {
-                    persistentConnection.close();
-                } catch (SQLException se) {
-                    log.warn(se.getMessage());
+                    closed = conn.isClosed();
+                } catch (SQLException e) {
+                    log.error(e);
+                }
+                if (!closed) {
+                    close(conn);
                 }
             }
         }

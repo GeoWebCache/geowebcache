@@ -50,8 +50,9 @@ class TruncateTask extends GWCTask {
     }
     
 
-    public void doAction() throws GeoWebCacheException {
+    public void doAction() throws GeoWebCacheException, InterruptedException {
         super.state = GWCTask.STATE.RUNNING;
+        checkInterrupted();
         try {
             storageBroker.delete(tr);
         } catch (Exception e) {
@@ -60,6 +61,7 @@ class TruncateTask extends GWCTask {
             log.error("During truncate request: " + e.getMessage());
         }
         
+        checkInterrupted();
         if(doFilterUpdate) {
             runFilterUpdates();
         }

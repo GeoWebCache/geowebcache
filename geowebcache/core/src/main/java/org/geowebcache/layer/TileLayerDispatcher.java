@@ -33,13 +33,14 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.GridSetBroker;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 /**
  * Note that the constructor starts the thread to load configurations, making this class unsuitable
  * for subclassing
  */
-public class TileLayerDispatcher {
+public class TileLayerDispatcher implements DisposableBean {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayerDispatcher.class);
 
     /**
@@ -69,16 +70,15 @@ public class TileLayerDispatcher {
         this.configs = configs;
 
         if (loadDelay > -1) {
-            ThreadFactory tfac = new CustomizableThreadFactory("GWC Configuration loader thread");
+            ThreadFactory tfac = new CustomizableThreadFactory("GWC Configuration loader thread-");
+            ((CustomizableThreadFactory) tfac).setDaemon(true);
             configLoadService = Executors.newSingleThreadExecutor(tfac);
             ConfigurationLoader loader = new ConfigurationLoader(this, loadDelay);
             configurationLoadTask = configLoadService.submit(loader);
-        }
-        else {
+        } else {
             try {
                 configuredLayers = new ConfigurationLoader(this, loadDelay).call();
-            } 
-            catch (Exception e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -308,5 +308,14 @@ public class TileLayerDispatcher {
             return newLayers;
         }
 
+    }
+
+    /**
+     * @see org.springframework.beans.factory.DisposableBean#destroy()
+     */
+    public void destroy() throws Exception {
+        if (configLoadService != null) {
+            configLoadService.shutdownNow();
+        }
     }
 }

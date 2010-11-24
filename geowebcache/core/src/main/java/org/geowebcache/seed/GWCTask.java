@@ -22,98 +22,105 @@ import org.geowebcache.GeoWebCacheException;
  * 
  */
 public abstract class GWCTask {
-    
+
     public static enum TYPE {
         UNSET, SEED, RESEED, TRUNCATE
     };
-    
+
     public static enum STATE {
         UNSET, READY, RUNNING, DONE, DEAD
     };
-    
+
     protected int threadCount = 1;
-    
+
     protected int threadOffset = 0;
-    
+
     long taskId = -1;
-    
+
     protected TYPE parsedType = TYPE.UNSET;
-    
+
     protected STATE state = STATE.UNSET;
-    
+
     protected String layerName = null;
-    
+
     protected long timeSpent = -1;
-    
-    protected long timeRemaining  = -1;
-    
+
+    protected long timeRemaining = -1;
+
     protected long tilesDone = -1;
-    
+
     protected long tilesTotal = -1;
-    
+
     protected boolean terminate = false;
-        
-    public abstract void doAction() throws GeoWebCacheException;
+
+    public abstract void doAction() throws GeoWebCacheException, InterruptedException;
 
     public void setThreadInfo(int threadCount, int threadOffset) {
         this.threadCount = threadCount;
         this.threadOffset = threadOffset;
     }
-    
+
     public void setTaskId(long taskId) {
         this.taskId = taskId;
     }
-    
+
     public long getTaskId() {
         return taskId;
     }
-    
+
     public int getThreadCount() {
         return threadCount;
     }
-    
+
     public int getThreadOffset() {
         return threadOffset;
     }
-    
+
     public String getLayerName() {
         return layerName;
     }
-    
+
     public long getTilesTotal() {
         return tilesTotal;
     }
-    
+
     public String getTilesTotalStr() {
-        if(tilesTotal > 0) {
+        if (tilesTotal > 0) {
             return Long.toString(tilesTotal);
         } else {
             return "Too many to count";
         }
-        
+
     }
-    
+
     public long getTilesDone() {
         return tilesDone;
     }
-    
+
     public long getTimeRemaining() {
-        if(tilesTotal > 0) {
+        if (tilesTotal > 0) {
             return timeRemaining;
         } else {
             return -2;
-        }   
+        }
     }
-    
+
     public void terminateNicely() {
         this.terminate = true;
     }
-    
+
     public TYPE getType() {
         return parsedType;
     }
-    
+
     public STATE getState() {
         return state;
+    }
+
+    protected void checkInterrupted() throws InterruptedException {
+        if (Thread.interrupted()) {
+            this.state = STATE.DEAD;
+            throw new InterruptedException();
+        }
     }
 }

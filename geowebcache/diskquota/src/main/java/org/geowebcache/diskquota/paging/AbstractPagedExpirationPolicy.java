@@ -270,7 +270,11 @@ public abstract class AbstractPagedExpirationPolicy implements LayerQuotaExpirat
                             zoomLevel, pageGridCoverage, mimeType);
 
                     // truncate synchronously. We're already inside the interested thread
-                    truncateTask.doAction();
+                    try {
+                        truncateTask.doAction();
+                    } catch (InterruptedException e) {
+                        return;
+                    }
 
                     Quota newExcedent = logDifference(layerName, quotaLimit, usedQuota,
                             exceededQuota, tilePage, numTilesInPage);

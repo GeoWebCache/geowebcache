@@ -24,18 +24,20 @@ import org.geowebcache.GeoWebCacheException;
 
 class MTSeeder implements Callable<GWCTask> {
     private static Log log = LogFactory.getLog(org.geowebcache.seed.MTSeeder.class);
-    
-    protected GWCTask task= null;
-    
-    public MTSeeder(GWCTask task){
+
+    protected GWCTask task = null;
+
+    public MTSeeder(GWCTask task) {
         this.task = task;
     }
-    
+
     public GWCTask call() {
         try {
             task.doAction();
-        } catch(GeoWebCacheException gwce) {
+        } catch (GeoWebCacheException gwce) {
             log.error(gwce.getMessage());
+        } catch (InterruptedException e) {
+            log.info(task.getType() + " task #" + task.getTaskId() + " has been interrupted");
         }
         return task;
     }
