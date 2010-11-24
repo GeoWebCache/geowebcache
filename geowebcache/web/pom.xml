@@ -151,6 +151,8 @@
         <configuration>
           <contextPath>geowebcache</contextPath>
           <scanIntervalSeconds>10</scanIntervalSeconds>
+          <stopPort>9966</stopPort>
+          <stopKey>foo</stopKey>
           <connectors>
             <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
               <port>8080</port>
