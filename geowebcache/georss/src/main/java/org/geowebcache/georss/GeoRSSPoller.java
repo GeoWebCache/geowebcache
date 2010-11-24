@@ -144,7 +144,9 @@ public class GeoRSSPoller {
      */
     public void destroy() {
         logger.info("destroy() invoked");
-        schedulingPollExecutorService.shutdown();
+        if (schedulingPollExecutorService != null) {
+            schedulingPollExecutorService.shutdown();
+        }
 
         for (GeoRSSPollTask task : scheduledTasks) {
             task.stopSeeding(false);
