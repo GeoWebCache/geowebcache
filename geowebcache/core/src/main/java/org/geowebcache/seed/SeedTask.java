@@ -84,9 +84,7 @@ class SeedTask extends GWCTask {
         // approximate thread creation time
         long START_TIME = System.currentTimeMillis();
 
-        log.info("Thread " + threadOffset + " begins seeding layer : " + tl.getName());
-
-        int arrayIndex = getCurrentThreadArrayIndex();
+        log.info(Thread.currentThread().getName() + " begins seeding layer : " + tl.getName());
 
         TileRange tr = trIter.getTileRange();
 
@@ -121,22 +119,24 @@ class SeedTask extends GWCTask {
                 throw gwce;
             }
 
-            log.debug("Thread " + threadOffset + " seeded " + Arrays.toString(gridLoc));
+            if (log.isDebugEnabled()) {
+                log.debug(Thread.currentThread().getName() + " seeded " + Arrays.toString(gridLoc));
+            }
 
             long totalTilesCompleted = trIter.getCountRendered() + trIter.getCountRendered();
 
-            updateStatusInfo(arrayIndex, tl, totalTilesCompleted, START_TIME);
+            updateStatusInfo(tl, totalTilesCompleted, START_TIME);
 
             checkInterrupted();
             gridLoc = trIter.nextMetaGridLocation();
         }
 
         if (this.terminate) {
-            log.info("Thread " + threadOffset + " was terminated after " + this.tilesDone
-                    + " tiles");
+            log.info("Job on " + Thread.currentThread().getName() + " was terminated after "
+                    + this.tilesDone + " tiles");
         } else {
-            log.info("Thread " + threadOffset + " completed (re)seeding layer " + tl.getName()
-                    + " after " + this.tilesDone + " tiles.");
+            log.info(Thread.currentThread().getName() + " completed (re)seeding layer "
+                    + tl.getName() + " after " + this.tilesDone + " tiles.");
         }
 
         checkInterrupted();
@@ -175,24 +175,8 @@ class SeedTask extends GWCTask {
     }
 
     /**
-     * Helper method to get an index into the status array for the current thread. Assumes the
-     * default name for the threads in the threadpool, i.e. "pool-#-thread-#" where # is an integer.
-     * The index in the array will be the number of the thread, i.e. # in thread-# minus 1, since
-     * arrays are zero indexed an thread counting begins at 1.
-     * 
-     * @return
-     */
-    private int getCurrentThreadArrayIndex() {
-        String tn = Thread.currentThread().getName();
-        int indexOfnumber = tn.lastIndexOf('-') + 1;
-        String tmp = tn.substring(indexOfnumber);
-        return Integer.parseInt(tmp) - 1;
-    }
-
-    /**
      * Helper method to report status of thread progress.
      * 
-     * @param arrayIndex
      * @param layer
      * @param zoomStart
      * @param zoomStop
@@ -200,7 +184,7 @@ class SeedTask extends GWCTask {
      * @param gridBounds
      * @return
      */
-    private void updateStatusInfo(int arrayIndex, TileLayer layer, long tilesCount, long start_time) {
+    private void updateStatusInfo(TileLayer layer, long tilesCount, long start_time) {
 
         // working on tile
         this.tilesDone = tilesCount;
