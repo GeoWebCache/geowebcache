@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -315,7 +316,17 @@ public class TileLayerDispatcher implements DisposableBean {
      */
     public void destroy() throws Exception {
         if (configLoadService != null) {
+            log.info("Shutting down config load service thread...");
             configLoadService.shutdownNow();
+            int timeout = 10;
+            boolean terminated = configLoadService.awaitTermination(timeout, TimeUnit.SECONDS);
+            if (terminated) {
+                log.info("Config load service shut down.");
+            } else {
+                log.warn("Config load service didn't terminate after "
+                        + timeout
+                        + " seconds. This may prevent the server container to properly shut down!!!");
+            }
         }
     }
 }
