@@ -10,13 +10,14 @@ After each change, be sure to reload the configuration and check http://localhos
 .. toctree::
    :maxdepth: 3
 
-   quickstart.rst
    access_control.rst
    xml/index
    storage.rst
-   troubleshooting/index
-
-
+   gridsets.rst
+   layers.rst
+   projections.rst
+   services.rst
+   staticcaps.rst
 
 
 Note: GeoWebCache is looking for funding to build a JavaScript client, based on GeoExt, to provide a graphical web interface and ease configuration.

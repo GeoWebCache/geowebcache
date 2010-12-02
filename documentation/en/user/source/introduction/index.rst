@@ -3,10 +3,11 @@
 Introduction
 ============
 
-This section describes what GeoWebCache is and how it works
+This section introduces GeoWebCache, what it is, how it works, and its community of users.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   how_it_works.rst
+   whatis.rst
    architecture.rst
+   community.rst
