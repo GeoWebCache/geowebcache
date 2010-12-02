@@ -10,6 +10,8 @@ Homepage
 
 The homepage for GeoWebCache is `<http://geowebcache.org>`_.  This page has the latest information about GeoWebCache, as well as links to documentation, downloads, developer information, issue tracking, and other up-to-the-minute information.
 
+.. _mailinglists:
+
 Mailing Lists
 -------------
 
