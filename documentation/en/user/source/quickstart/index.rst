@@ -3,63 +3,154 @@
 Quickstart
 ==========
 
-This section describes how you can quickly get started with GeoWebCache without knowing much about the configuration.
+This section describes how to get started quickly with GeoWebCache without knowing much about the :ref:`configuration`.
 
-All servers that conform to the OGC Web Map Service specification must publish what is known as a GetCapabilities document. This is an XML file that describes every layer every layer that is available to the user. GeoWebCache can use this information to configure itself automatically.
+All servers that conform to the `OGC Web Map Service specification <http://www.opengeospatial.org/standards/wms>`_ must publish what is known as a **capabilities document** (sometimes also known as a GetCapabilities document after the request used to fetch it). This is an XML file that describes every layer that is available to the user. GeoWebCache can use this information to configure itself automatically.
 
-Using WMS GetCapabilities
+.. _quickstart.xml:
+
+View preconfigured layers
 -------------------------
 
-``geowebcache-servlet.xml`` is a configuration file that controls how the application is loaded. It is located inside the WEB-INF folder, typically ``/opt/apache-tomcat-6.0.20/webapps/geowebcache/WEB-INF/`` or ``C:\Program Files\Apache Software Foundation\Tomcat 6.0.20\webapps\geowebcache\WEB-INF``. If you use Windows I highly recommend Notepad++ or jEdit over regular Notepad.
+GeoWebCache comes preconfigured with three layers.  To view them, navigate to your GeoWebCache demo page at ``http://GEOWEBCACHE_URL/demo`` (often this is ``http://localhost:8080/geowebcache/demo``).  Click on any of the links next to the :guilabel:`OpenLayers` column.
 
-1. Open geowebcache-servlet.xml in a text editor. Find ``<bean id="gwcWMSConfig" ...`` , on the second line you will see a URL pointing to localhost 
+These layers are all served from the WMS available at ``http://demo.opengeo.org/geoserver/``.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 50 50 
+
+   * - Layer Name (Title)
+     - WMS layer(s)
+   * - **img states**
+     - nurc:Img_Sample,topp:states
+   * - **raster test layer**
+     - nurc:Img_Sample
+   * - **topp:states**
+     - topp:states
+
+.. note:: This information is set in the :file:`geowebcache.xml` file, which is typically available at :file:`opt/apache-tomcat-6.0.29/webapps/geowebcache/WEB-INF/classes` or :file:`C:\\Program Files\\Apache Software Foundation\\Tomcat 6.0.29\\webapps\\geowebcache\\WEB-INF\\classes`.  See the section on :ref:`configuration.layers` for more information on customizing this file.
+
+.. _quickstart.wms:
+
+Using WMS capabilities document
+-------------------------------
+
+The file :file:`geowebcache-core-context.xml` is a configuration file that controls how the application is loaded. It is located inside the WEB-INF folder, typically :file:`/opt/apache-tomcat-6.0.29/webapps/geowebcache/WEB-INF/` or :file:`C:\\Program Files\\Apache Software Foundation\\Tomcat 6.0.29\\webapps\\geowebcache\\WEB-INF` along with many other configuration files.
+
+#. Open :file:`geowebcache-core-context.xml` in a text editor.
+
+   .. note:: If using Windows, it is recommended to use an enhanced text editor such as `Notepad++ <http://notepad-plus-plus.org/>`_ or `jEdit <http://www.jedit.org>`_ instead of the standard Windows Notepad. 
+
+#. Find the block beginning with:
 
    .. code-block:: xml
 
-      <constructor-arg value="http://localhost:8080/geoserver/wms?service=wms&amp;request=getcapabilities&amp;version=1.1.0" />
+      <bean id="gwcWMSConfig" class="org.geowebcache.config.GetCapabilitiesConfiguration">
 
- 
-2. Replace this string with a valid URL to a 1.0.x or 1.1.x WMS GetCapabilities document, for instance
+   On the second line you will see a value that contains a URL: 
 
    .. code-block:: xml
 
-      <constructor-arg value="http://yourserver.net/wmsserver/ows?service=wms&amp;request=getcapabilities&amp;version=1.1.0" />
+      <constructor-arg value="http://localhost:8282/geoserver/wms?request=getcapabilities&amp;version=1.1.0&amp;service=wms" />
 
+#. Replace the value with a URL pointing to a valid WMS capabilities document, such as:
 
-   *Note:* ``&`` has to be written as ``&amp;`` in XML files. Omit the line breaks.
+   .. code-block:: xml
+
+      <constructor-arg value="http://demo.opengeo.org/geoserver/ows?service=WMS&amp;request=GetCapabilities&amp;version=1.1.0" />
+
+   .. warning::  The ampersand sign, ``&`` has to be written out as ``&amp;`` in XML files. Also, make sure to omit the line breaks.
+
+#. Since GeoWebCache is not configured to look to a WMS by default, we need to enable this.  Find the block beginning with:
+
+   .. code-block:: xml
+
+      <bean id="gwcTLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
+
+#. Inside the ``constructor-arg`` ``<list>`` locate the line that says:
  
+   .. code-block:: xml
 
-3. Save the configuration file and reload the servlet using Tomcat's Manager, or restart the servlet container.
+      <!-- ref bean="gwcWMSConfig" / -->
 
+   and uncomment the line
 
-4. Try it! Go to http://localhost:8080/geowebcache/demo and try out the OpenLayers applications.
+   .. code-block:: xml
+
+      <ref bean="gwcWMSConfig" />
+
+   .. note:: The line immediately underneath this, ``<ref bean="gwcXmlConfig" />``, is what loads the three layers as mentioned in the :ref:`quickstart.xml` section.  Commenting this line out will remove those layers from the layer list.
+
+#. Save the file and reload the servlet using Tomcat's Manager, or by restarting the servlet container.
+
+#. Navigate to or reload your GeoWebCache demo page.  You should see the list of layers as advertised in the WMS capabilities document.
 
 Special Cases
 -------------
 
-5. If your WMS server requires additional parameters to be passed with every request, such as MapServer's ``map`` argument, set this as the value on the fifth line:
+The following are some extra parameters may need or want to add to get your WMS layers loading properly in GeoWebCache.
+
+Map vendor parameters
+~~~~~~~~~~~~~~~~~~~~~
+
+If your WMS server requires additional vendor parameters to be passed with every request, such as MapServer's ``map`` argument, set this in the fifth ``constructor-arg`` value.  Replace:
 
    .. code-block:: xml
 
-      <constructor-arg value="map=somemap&amp;otherkey=othervalue"/><!-- vendor parameters -->
+      <constructor-arg value=""/>
 
-6. Also note that to get 24 bit PNGs (image/png; mode=24bit") from MapServer (or image/png24 from ArcIMS), you should specify those as output formats:
+   with:
 
    .. code-block:: xml
 
-      <constructor-arg value="image/png; mode=24bit,image/jpeg,image/png24"/>
+      <constructor-arg value="map=name&amp;otherkey=othervalue"/>
 
-7. It is possible to change the metatiling factors by changing the fourth element. This will affect all layers derived from this document.
+Other image formats
+~~~~~~~~~~~~~~~~~~~
 
+To get 24 bit PNGs from MapServer or ArcIMS (``image/png; mode=24bit`` and ``image/png24`` respectively), or any other image format, you will need to specify those as output formats.  This is set in the fourth ``constructor-arg`` value.  Replace:
 
-8. GeoWebCache can be configured from multiple getcapabilities documents. Simply duplicate the bean, change the id and add it to the list of the ``gwcTLDispatcher``.
+   .. code-block:: xml
 
+      <constructor-arg value="image/png,image/jpeg"/>
+
+with
+
+   .. code-block:: xml
+
+      <constructor-arg value="image/png; mode=24bit,image/png24,image/jpeg"/>
+
+Other MIME types can be specified here as well.
+
+Metatile factor
+~~~~~~~~~~~~~~~
+
+It is possible to change the metatiling factor by changing the third ``constructor-arg`` value.  This will affect all layers derived from this document.  See the :ref:`metatile` section for more information.
+
+Multiple capabilities documents
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GeoWebCache can be configured from multiple capabilities documents.  To do this, you can duplicate the ``gwcWMSConfig`` bean, change the id, and add it to the list inside the ``gwcTLDispatcher`` bean, for example:
+
+   .. code-block:: xml
+
+      <bean id="gwcTLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
+        <constructor-arg ref="gwcGridSetBroker"/>
+        <constructor-arg>
+          <list>
+            <ref bean="gwcWMSConfig"/>
+            <ref bean="gwcWMSConfig2"/>
+            <ref bean="gwcWMSConfig3"/>
+          </list>
+        </constructor-arg>
+      </bean>
 
 Additional Information
 ----------------------
 
-All layers on the server should be available on the demo page, along with automatically configured OpenLayers clients. The KML demos, for Google Earth, use the same sets of tiles as the OpenLayers EPSG:4326 client.
+All layers known to GeoWebCache should be available on the demo page, along with automatically configured OpenLayers clients. The KML demos use the same sets of tiles as the OpenLayers EPSG:4326 demo.
 
-According to the standard, the GetCapabilities document is only guaranteed to contain the WGS84 (lat/lon) bounds for a layer, hence EPSG:4326, though in rare cases the WMS server will not be able to provide responses for this projection. If the getcapabilities document contains bounding boxes for additional projections, often the native reference system for the data, then these will be included as well. Finally, GeoWebCache will convert the EPSG:4326 bounding box to spherical mercator (EPSG:900913, now officially known as EPSG:3857). Again, this does not guarantee that the WMS server can actuall provide such tiles.
+According to the WMS standard, the capabilities document is only guaranteed to contain the WGS84 (lat/lon) bounds for a layer, hence EPSG:4326, though in rare cases the WMS server will not be able to provide responses for this projection. If the capabilities document contains bounding boxes for additional projections, often the native reference system for the data, then these will be included as well. Finally, GeoWebCache will convert the EPSG:4326 bounding box to spherical mercator (EPSG:900913, now officially known as EPSG:3857).  That said, the WMS server isn't guaranteed to be able to provide a successful response to these requests.
 
-If you need to support other projections you can do so by defining grid sets manually and adding them to these layers. The same is true for supporting specific resolutions, output formats or tile sizes.
+If you need to support other projections, you can do so by defining grid sets manually and adding them to these layers. The same is true for supporting specific resolutions, output formats or tile sizes.  See the :ref:`configuration` section for more information.
