@@ -33,8 +33,8 @@ These layers are all served from the WMS available at ``http://demo.opengeo.org/
 
 .. _quickstart.wms:
 
-Using WMS capabilities document
--------------------------------
+View layers from a WMS
+----------------------
 
 The file :file:`geowebcache-core-context.xml` is a configuration file that controls how the application is loaded. It is located inside the WEB-INF folder, typically :file:`/opt/apache-tomcat-6.0.29/webapps/geowebcache/WEB-INF/` or :file:`C:\\Program Files\\Apache Software Foundation\\Tomcat 6.0.29\\webapps\\geowebcache\\WEB-INF` along with many other configuration files.
 
@@ -86,7 +86,7 @@ The file :file:`geowebcache-core-context.xml` is a configuration file that contr
 
 #. Navigate to or reload your GeoWebCache demo page.  You should see the list of layers as advertised in the WMS capabilities document.
 
-Special Cases
+Special cases
 -------------
 
 The following are some extra parameters may need or want to add to get your WMS layers loading properly in GeoWebCache.
@@ -126,7 +126,7 @@ Other MIME types can be specified here as well.
 Metatile factor
 ~~~~~~~~~~~~~~~
 
-It is possible to change the metatiling factor by changing the third ``constructor-arg`` value.  This will affect all layers derived from this document.  See the :ref:`metatile` section for more information.
+It is possible to change the metatiling factor by changing the third ``constructor-arg`` value.  This will affect all layers derived from this document.  See the :ref:`concepts.metatiles` section for more information.
 
 Multiple capabilities documents
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -146,7 +146,7 @@ GeoWebCache can be configured from multiple capabilities documents.  To do this,
         </constructor-arg>
       </bean>
 
-Additional Information
+Additional information
 ----------------------
 
 All layers known to GeoWebCache should be available on the demo page, along with automatically configured OpenLayers clients. The KML demos use the same sets of tiles as the OpenLayers EPSG:4326 demo.
