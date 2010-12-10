@@ -1,0 +1,55 @@
+.. _configuration.layers.howto:
+
+How to configure layers
+=======================
+
+The main configuration file for GeoWebCache is :file:`geowebcache.xml`. It is located inside the the main GeoWebCache application directory at :file:`WEB-INF/classes/geowebcache.xml`.
+
+Unless specified, all configuration in this section will be accomplished by editing :file:`geowebcache.xml`.
+
+Changing the location of geowebcache.xml
+----------------------------------------
+
+The location of the configuration file is set in :file:`WEB-INF/geowebcache-core-context.xml`.  If you wish to move the configuration file to a different location, open :file:`geowebcache-core-context.xml` and look for the ``<bean>`` tag referencing ``gwcXmlConfig``:
+
+.. code-block: xml
+
+   <bean id="gwcXmlConfig" class="org.geowebcache.config.XMLConfiguration">
+     <constructor-arg ref="gwcAppCtx" />
+     <constructor-arg ref="gwcGridSetBroker"/>
+     <constructor-arg ref="gwcDefaultStorageFinder" />
+     <!-- constructor-arg value="/etc/geowebcache" / -->
+   </bean>
+
+Uncomment the bottom ``<constructor-arg value= ...>`` tag and specify the location where you would like to place :file:`geowebcache.xml`.
+
+Tips for editing XML
+--------------------
+
+Editing the configuration file by hand can be tricky, since even a small typo may cause GeoWebCache to stop functioning.  **The order of the XML elements is crucial!** 
+
+It is recommended to use a special XML editing tool or at the very least a text editor with syntax highlighting.  The advantage of using an editor with XML schema validation is that it can tell you right away if you are missing a tag or have placed elements out of order.
+
+Two recommended free editors, both of which have support for XML validation, are:
+
+* `jEdit <http://www.jedit.org/>`_ (cross platform)
+* `Notepad++ <http://notepad-plus-plus.org/>`_ (Windows only)
+
+It is also possible to validate an XML document outside of a text editor environment.
+
+* The `W3C Markup Validation Service <http://validator.w3.org/>`_ allows you to upload an XML file for validation.  Another such service is the `Validome XML Validator <http://www.validome.org/xml/>`_.
+* ``xmllint`` application (UNIX/Linux only)
+
+GeoWebCache validates the XML file against the schema during startup and will report errors, so be sure to check the servlet container logs if the layers do not behave as expected.
+
+Schema
+------
+
+All configuration options and parameters are ultimately located in the XML schema.  While the documentation you are reading now is designed to translate and interpret the schema to make GeoWebCache configuration simpler, expert users can look to the schema to determine all details, including variable types, ordering of elements, and much more.
+
+* GeoWebCache schema - ``http://geowebcache.org/schema/<version>/geowebcache.xsd``
+* GeoWebCache schema docs - ``http://geowebcache.org/schema/docs/<version>/``
+
+Make sure to replace the <version> with the current version number.
+
+

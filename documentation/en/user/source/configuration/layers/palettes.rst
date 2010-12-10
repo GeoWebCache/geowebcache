@@ -1,0 +1,4 @@
+.. configuration.layers.palette:
+
+Palettes
+========
