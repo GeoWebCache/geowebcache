@@ -1,7 +1,7 @@
-.. _access_control:
+.. _configuration.security:
 
-Access Control
---------------
+Security
+--------
 
 GeoWebCache requires authentication to perform certain operations, such as reconfiguration or seeding. By default ``WEB-INF\users.properties`` looks like this:
 
