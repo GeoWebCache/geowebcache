@@ -10,13 +10,13 @@ This section describes the many configuration options available in GeoWebCache. 
 .. toctree::
    :maxdepth: 2
 
-   reload
+
    layers/index
    security
    storage
    services
-   diskquota
-
+   diskquotas
+   reload
 
 
 

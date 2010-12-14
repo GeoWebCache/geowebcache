@@ -17,9 +17,6 @@ If a request does not comply with the allowed values of the set parameter, the r
 
    400: <value> violates filter for parameter <key>
 
-.. note:: Parameter filters are not compatible with the demos on the demo page.  You will need to test standard WMS requests in order to utilize parameter filters.
-
-
 String filter
 -------------
 
@@ -110,13 +107,17 @@ For example, given a parameter called "year" (assuming this was recognized by th
      </floatParameterFilter>
    </parameterFilters>
 
-Note also the above example sets a threshold of 1.  A value that is within the threshold of any of the allowed values will still proceed, albeit rounded to one of the allowed values\.  So in this example, a value of "1997" would be successfully requested as "1996", but a value of "2002" will fail.
+Note also the above example sets a threshold of 1.  A value that is within the threshold of any of the allowed values will still proceed, albeit rounded to one of the allowed values.  So in this example, a value of "1997" would be successfully requested as "1996", but a value of "2002" will fail.
+
+Thresholds are also valuable when managing possible floating point rounding errors.  For example, if your data has accuracy down to the sixth decimal place, you may want to use a threshold of ``1e-6`` to ensure proper matching.
 
 
 Regular expression filter
 -------------------------
 
-For more fine control of parameter values, GeoWebCache can recognize regular expressions for the value in a  filter.  If a requested value matches the pattern in the regular expression, the request will proceed.
+For more fine control of parameter values, GeoWebCache can recognize regular expressions for the value in a filter.  If a requested value matches the pattern in the regular expression, the request will proceed.
+
+.. note:: GeoWebCache uses standard Java regular expressions.  For more information, please see the regular expression pattern documentation at:  `<http://download.oracle.com/javase/1.5.0/docs/api/java/util/regex/Pattern.html>`_.
 
 When specifying a regular expression filter, three pieces of information are required:
 

@@ -5,10 +5,10 @@ Reloading Configuration
 
 After making a change to the GeoWebCache configuration, it is necessary to reload it for the changes to take effect.  There are three ways to do this.
 
-Reload the servlet
-------------------
+Reload the application
+----------------------
 
-The simplest way to reload the GeoWebCache configuration is to just reload the servlet from your servlet container.  In Tomcat's application manager, you can click the "Reload" link next to your GeoWebCache instance.
+The simplest way to reload the GeoWebCache configuration is to just reload the application from your container.  In Tomcat's application manager, you can click the "Reload" link next to your GeoWebCache instance.
 
 Reload via the web interface
 ----------------------------
