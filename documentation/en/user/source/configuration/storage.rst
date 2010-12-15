@@ -5,8 +5,11 @@ Storage
 
 The storage subsystem of GeoWebCache is made up of two components.  The first is a storage mechanism for tiles, called the **cache**. The second is an (optional) storage mechanism for information about those tiles, such as when each tile was created and what its size is, called the **metastore**.
 
+
 Cache
 -----
+
+.. note:: The cache is sometimes referred to as the "blobstore".
 
 The cache is a directory structure consisting of various image files organized by layer and zoom level.  By default, the cache is stored in the temporary storage folder specified by the web application conatiner.  (For Tomcat, this is the :file:`temp` directory inside the root.)   The driectory created will be called :file:`geowebcache`.  If this directory is not available, GeoWebCache will attempt to create a new :file:`geowebcache` directory in the location specified by the ``TEMP`` system environment variable.
 
