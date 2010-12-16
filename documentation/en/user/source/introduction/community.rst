@@ -30,15 +30,15 @@ GeoWebCache, because of its connection and shared resources with `GeoServer <htt
 
 As this is a channel not specifically aimed at GeoWebCache, please mention it explicitly when asking questions.
 
-Issue tracking
---------------
-
-The GeoWebCache issue tracker is integrated with the homepage, and is available at `<http://geowebcache.org/trac>`_.
-
 Source Code
 -----------
 
 The GeoWebCache source code is available on GitHub at `<https://github.com/GeoWebCache/geowebcache>`_.  To check out the code, you will need a `Git <http://git-scm.com/>`_ client.
+
+Issue tracking
+--------------
+
+The GeoWebCache issue tracker is integrated with GitHub repository, and is available at `<https://github.com/GeoWebCache/geowebcache/issues>`_.
 
 .. _license:
  

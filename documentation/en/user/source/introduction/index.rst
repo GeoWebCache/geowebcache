@@ -11,3 +11,4 @@ This section introduces GeoWebCache, what it is, how it works, and its community
    whatis.rst
    architecture.rst
    community.rst
+   whichgwc.rst
