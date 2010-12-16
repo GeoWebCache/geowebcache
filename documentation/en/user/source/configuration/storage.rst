@@ -34,7 +34,7 @@ To set as a servlet context parameter, edit the GeoWebCache :file:`web.xml` file
 
 where ``PATH`` is the location of the cache directory.
 
-To set as an operating system environment variable, run one of the the following commands::
+To set as an operating system environment variable, run one of the the following commands:
 
 Windows::
 
