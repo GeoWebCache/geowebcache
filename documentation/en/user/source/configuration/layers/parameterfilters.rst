@@ -1,4 +1,4 @@
-.. _configuration.parameterfilter:
+.. _configuration.layers.parameterfilters:
 
 Parameter Filters
 =================

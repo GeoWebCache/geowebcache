@@ -18,7 +18,7 @@ GeoWebCache has a :ref:`webinterface` which contains a demo page.  On the bottom
 Reload via a POST request with cURL
 -----------------------------------
 
-The :guilabel:`Reload Configuration` button in the web interface merely makes a POST request to the GeoWebCache :ref:`rest` interface to reload the configuration.  Below is an example of this POST request executed using the command line utility `cURL <http://curl.haxx.se/>`_
+The :guilabel:`Reload Configuration` button in the web interface merely makes a POST request to the GeoWebCache :ref:`rest` interface to reload the configuration.  Below is an example of this POST request executed using the command line utility `cURL <http://curl.haxx.se/>`_::
 
   curl -u <admin>:<password> -d "reload" http://<GEOWEBCACHE_URL>/rest/
 

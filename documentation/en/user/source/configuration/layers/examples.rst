@@ -94,4 +94,4 @@ The resulting configuration would look like:
      </layers>
    </gwcConfiguration>
 
-.. note:: The reference to the gridset EPSG:4326 may be a bit mysterious.  It is one of only two gridsets (the other being EPSG:900913) that is automatically defined inside GeoWebCache.  Other gridsets will need to be manually configured.  (Learn more about :ref:`concepts.gridsets` and :ref:`configuration.gridsets`.)
+.. note:: The reference to the gridset EPSG:4326 may be a bit mysterious.  It is one of only two gridsets (the other being EPSG:900913) that is automatically defined inside GeoWebCache.  Other gridsets will need to be manually configured.  (Learn more about :ref:`concepts.gridsets` and :ref:`configuration.layers.gridsets`.)

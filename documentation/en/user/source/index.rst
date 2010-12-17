@@ -1,7 +1,7 @@
 GeoWebCache |release|
 =====================
 
-GeoWebCache is a J2EE web application used to cache map tiles coming from a variety of sources such as OGC Web Map Server (WMS). It implements various service interfaces (such as WMS-C, WMTS, TMS, Google Maps KML, Virtual Earth) in order to accelerate and optimize map image delivery.  It can also recombine tiles to work with regular WMS clients.
+GeoWebCache is a Java web application used to cache map tiles coming from a variety of sources such as OGC Web Map Server (WMS). It implements various service interfaces (such as WMS-C, WMTS, TMS, Google Maps KML, Virtual Earth) in order to accelerate and optimize map image delivery.  It can also recombine tiles to work with regular WMS clients.
 
 This User Manual is a guide to the most common aspects of GeoWebCache.
 
@@ -17,6 +17,6 @@ This User Manual is a guide to the most common aspects of GeoWebCache.
    tiles/index
    services/index
    rest/index
-   troubleshooting/index
    production/index
+   troubleshooting/index
    development/index

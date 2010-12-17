@@ -1,4 +1,4 @@
-.. _configuration.gridsets:
+.. _configuration.layers.gridsets:
 
 Gridsets and Gridsubsets
 ========================
