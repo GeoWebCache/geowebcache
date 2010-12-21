@@ -12,13 +12,7 @@ The URL format for the Seed pages are::
 Starting a seed task
 --------------------
 
-The interface can start one of three operations:
-
-* Seed
-* Reseed
-* Truncate
-
-The **seed** operation will generate any tiles not already saved in the cache.  If tiles are in the cache, they will be preserved.  The **reseed** operation will regenerate all tiles, even if already saved in the cache.  The **truncate** operation will remove/delete tiles from the cache.
+The interface can start one of the three :ref:`concepts.operations`:  **seed**, **reseed**, or **truncate**.
 
 To create a new seed task, fill out the form with the following information:
 
