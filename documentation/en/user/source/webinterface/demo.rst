@@ -34,4 +34,4 @@ For each layer listed, there is a link to :guilabel:`Seed this layer`.  Clicking
 Reload configuration
 --------------------
 
-There is also a button for :ref:`configuration.reload`.  Click this to make any configuration changes known to GeoWebCache.  You will have to :ref:`authenticate <configuration.security>` as an administrator first.
+There is also a button to :ref:`Reload Configuration <configuration.reload>`.  Click this to make any configuration changes known to GeoWebCache.  You will have to :ref:`authenticate <configuration.security>` as an administrator first.
