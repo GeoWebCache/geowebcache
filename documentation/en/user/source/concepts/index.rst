@@ -12,4 +12,5 @@ This section explains some general concepts used when tiling, as well as special
    gridsets
    metatiles
    stores
+   operations
 
