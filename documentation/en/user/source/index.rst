@@ -14,7 +14,6 @@ This User Manual is a guide to the most common aspects of GeoWebCache.
    concepts/index
    configuration/index
    webinterface/index
-   tiles/index
    services/index
    rest/index
    production/index
