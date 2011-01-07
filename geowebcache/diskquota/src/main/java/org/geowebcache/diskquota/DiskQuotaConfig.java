@@ -105,6 +105,10 @@ public class DiskQuotaConfig {
         return enabled.booleanValue();
     }
 
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
     public int getDiskBlockSize() {
         return diskBlockSize;
     }
@@ -209,8 +213,23 @@ public class DiskQuotaConfig {
         this.maxConcurrentCleanUps = nThreads;
     }
 
+    /**
+     * @return the global quota, or {@code null} if not set
+     */
     public Quota getGlobalQuota() {
         return this.globalQuota;
+    }
+
+    /**
+     * @param newQuota
+     *            the new global quota, or {@code null} to unset
+     */
+    public void setGlobalQuota(final Quota newQuota) {
+        if (newQuota == null) {
+            this.globalQuota = null;
+        } else {
+            this.globalQuota = new Quota(newQuota);
+        }
     }
 
     public ExpirationPolicy getGlobalExpirationPolicy() {
@@ -221,8 +240,13 @@ public class DiskQuotaConfig {
         return this.globalExpirationPolicyName;
     }
 
-    void setGlobalExpirationPolicy(ExpirationPolicy policy) {
+    public void setGlobalExpirationPolicy(ExpirationPolicy policy) {
         this.expirationPolicy = policy;
+        if (policy == null) {
+            this.globalExpirationPolicyName = null;
+        } else {
+            this.globalExpirationPolicyName = policy.getName();
+        }
     }
 
     public void setDirty(boolean dirty) {

@@ -135,6 +135,24 @@ public class DiskQuotaMonitor implements DisposableBean {
         }
     }
 
+    public DiskQuotaConfig getConfig() {
+        return this.quotaConfig;
+    }
+
+    public void saveConfig() {
+        try {
+            configLoader.saveConfig(quotaConfig);
+        } catch (ConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ExpirationPolicy findExpirationPolicy(final String name) {
+        return configLoader.findExpirationPolicy(name);
+    }
+
     private LayerCacheInfoBuilder launchCacheInfoGatheringThreads() throws StorageException {
 
         final File rootCacheDir = configLoader.getRootCacheDir();
@@ -189,9 +207,9 @@ public class DiskQuotaMonitor implements DisposableBean {
 
         final Map<String, TileLayer> layers = new HashMap<String, TileLayer>(
                 tileLayerDispatcher.getLayers());
-        
+
         final List<LayerQuota> layerQuotas = quotaConfig.getLayerQuotas();
-        
+
         final ExpirationPolicy globalExpirationPolicy = quotaConfig.getGlobalExpirationPolicy();
         final Quota globalQuota = quotaConfig.getGlobalQuota();
 
