@@ -1,19 +1,34 @@
 /**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
+ * @author Gabriel Roldan (OpenGeo) 2010
+ *  
  */
 package org.geowebcache.diskquota.paging;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Hashtable;
-import java.util.List;
 
 import junit.framework.TestCase;
 
 import org.easymock.classextension.EasyMock;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.diskquota.LayerQuota;
+import org.geowebcache.diskquota.Quota;
 import org.geowebcache.diskquota.StorageUnit;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
@@ -38,13 +53,18 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
         }
 
         @Override
-        protected List<TilePage> sortPagesForExpiration(List<TilePage> allPages) {
-            return allPages;
+        public String getName() {
+            return "MockPolicy";
         }
 
         @Override
-        public String getName() {
-            return "MockPolicy";
+        protected Comparator<TilePage> getExpirationComparator() {
+            return new Comparator<TilePage>() {
+                public int compare(TilePage o1, TilePage o2) {
+                    return o1.getNumHits() > o2.getNumHits() ? 1 : o1.getNumHits() == o2
+                            .getNumHits() ? 0 : -1;
+                }
+            };
         }
     }
 
@@ -139,8 +159,9 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
                 .andReturn(Collections.EMPTY_LIST).anyTimes();
 
         // this is one call we're interested in
-        pageStore.savePages(EasyMock.eq("MockLayer"), EasyMock.eq(gridSubsets.keySet().iterator()
-                .next()), (ArrayList<TilePage>) EasyMock.eq(Collections.EMPTY_LIST));
+        pageStore.savePages(EasyMock.eq("MockLayer"),
+                EasyMock.eq(gridSubsets.keySet().iterator().next()),
+                (ArrayList<TilePage>) EasyMock.eq(Collections.EMPTY_LIST));
         EasyMock.replay(pageStore);
 
         TileLayer layer = EasyMock.createMock(TileLayer.class);
@@ -224,8 +245,9 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
         TileLayer layer = EasyMock.createMock(TileLayer.class);
         EasyMock.expect(layer.getName()).andReturn("MockLayer").anyTimes();
         EasyMock.expect(layer.getGridSubsets()).andReturn(gridSubsets).anyTimes();
-        EasyMock.expect(layer.getMimeTypes()).andReturn(
-                Collections.singletonList(MimeType.createFromFormat("image/png"))).anyTimes();
+        EasyMock.expect(layer.getMimeTypes())
+                .andReturn(Collections.singletonList(MimeType.createFromFormat("image/png")))
+                .anyTimes();
 
         layer.addLayerListener((TileLayerListener) EasyMock.anyObject());
         // finish recording the expected method calls on the layer
@@ -234,10 +256,8 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
         String layerName = layer.getName();
 
         // Mock up a layer quota that exceeded in its allowed quota
-        final LayerQuota layerQuota = new LayerQuota(layerName, policy.getName());
+        final LayerQuota layerQuota = new LayerQuota(layerName, policy.getName(), new Quota(1024, StorageUnit.KiB));
         layerQuota.setExpirationPolicy(policy);
-        layerQuota.getQuota().setValue(1024);
-        layerQuota.getQuota().setUnits(StorageUnit.KiB);
         // used quota exceeds allowed quota
         layerQuota.getUsedQuota().setValue(2);
         layerQuota.getUsedQuota().setUnits(StorageUnit.MiB);
@@ -259,16 +279,16 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
 
         tileBreeder = EasyMock.createNiceMock(TileBreeder.class);
         EasyMock.expect(
-                tileBreeder.createTasks((TileRange) EasyMock.anyObject(), (TileLayer) EasyMock
-                        .anyObject(), EasyMock.eq(GWCTask.TYPE.TRUNCATE), EasyMock.eq(1), EasyMock
-                        .eq(false))).andReturn(truncateTasks);
+                tileBreeder.createTasks((TileRange) EasyMock.anyObject(),
+                        (TileLayer) EasyMock.anyObject(), EasyMock.eq(GWCTask.TYPE.TRUNCATE),
+                        EasyMock.eq(1), EasyMock.eq(false))).andReturn(truncateTasks);
         EasyMock.replay(tileBreeder);
         policy = new MockPagedExipirationPolicy(tileBreeder, pageStore);
 
         policy.attach(layer, layerQuota);
         // for expireTiles to work, there must be tile pages, so lets create a couple ones
         final String gridsetId = gridSubsets.keySet().iterator().next();
-        policy.createInfoFor(layerQuota, gridsetId, 0, 1, 2);
+        policy.createTileInfo(layerQuota, gridsetId, 0, 1, 2);
         policy.expireTiles(layerName);
 
         EasyMock.verify(layer);

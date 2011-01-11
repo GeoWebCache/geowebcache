@@ -1,3 +1,20 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Gabriel Roldan (OpenGeo) 2010
+ *  
+ */
 package org.geowebcache.diskquota;
 
 import java.io.File;
@@ -68,9 +85,10 @@ public class LayerCacheInfoBuilderTest extends TestCase {
         EasyMock.expect(mockLayer.getName()).andReturn(layerName).anyTimes();
         GridSet gridSet = new GridSetBroker(false, false).WORLD_EPSG4326;
         GridSubset gridSubset = GridSubsetFactory.createGridSubSet(gridSet);
-        EasyMock.expect(mockLayer.getGridSubsets()).andReturn(
-                new Hashtable<String, GridSubset>(Collections.singletonMap(gridSubset.getName(),
-                        gridSubset))).anyTimes();
+        EasyMock.expect(mockLayer.getGridSubsets())
+                .andReturn(
+                        new Hashtable<String, GridSubset>(Collections.singletonMap(
+                                gridSubset.getName(), gridSubset))).anyTimes();
         EasyMock.replay(mockLayer);
 
         final String gridSetId = gridSubset.getName();
@@ -78,11 +96,10 @@ public class LayerCacheInfoBuilderTest extends TestCase {
         final int numFiles = 10;
         final int fileSize = this.blockSize + 1;
 
-        LayerQuotaExpirationPolicy mockPolicy = EasyMock
-                .createMock(LayerQuotaExpirationPolicy.class);
+        ExpirationPolicy mockPolicy = EasyMock.createMock(ExpirationPolicy.class);
 
-        mockPolicy.createInfoFor(EasyMock.eq(layerQuota), EasyMock.eq(gridSetId), EasyMock
-                .anyLong(), EasyMock.anyLong(), EasyMock.anyInt());
+        mockPolicy.createTileInfo(EasyMock.eq(layerQuota), EasyMock.eq(gridSetId),
+                EasyMock.anyLong(), EasyMock.anyLong(), EasyMock.anyInt());
         EasyMock.expectLastCall().times(numFiles);
         EasyMock.replay(mockPolicy);
 

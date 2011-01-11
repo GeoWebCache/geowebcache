@@ -1,17 +1,28 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Gabriel Roldan (OpenGeo) 2010
+ *  
+ */
 package org.geowebcache.diskquota;
-
-import static org.geowebcache.diskquota.StorageUnit.B;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -22,7 +33,6 @@ import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.BlobStore;
-import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.springframework.beans.factory.DisposableBean;
@@ -30,13 +40,13 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 /**
  * Monitors the layers cache size given each one's assigned {@link Quota} and call's the exceeded
- * layer's {@link LayerQuotaExpirationPolicy expiration policy} for cache clean up.
+ * layer's {@link ExpirationPolicy expiration policy} for cache clean up.
  * <p>
  * This monitor only cares about checking layers do not exceed their configured cache disk quota.
  * </p>
  * <p>
- * When a layer exceeds its quota, the {@link LayerQuotaExpirationPolicy} it is attached to is
- * called to {@link LayerQuotaExpirationPolicy#expireTiles(String) whip out} storage space.
+ * When a layer exceeds its quota, the {@link ExpirationPolicy} it is attached to is called to
+ * {@link ExpirationPolicy#expireTiles(String) whip out} storage space.
  * </p>
  * 
  * @author Gabriel Roldan
@@ -56,7 +66,7 @@ public class DiskQuotaMonitor implements DisposableBean {
      * @see #setUpScheduledCleanUp()
      * @see #destroy()
      */
-    private final ScheduledExecutorService cleanUpExecutorService;
+    private ScheduledExecutorService cleanUpExecutorService;
 
     /**
      * Disk quota config object loaded and saved by {@link #configLoader}
@@ -68,7 +78,9 @@ public class DiskQuotaMonitor implements DisposableBean {
      */
     private final ConfigLoader configLoader;
 
-    private final LayerCacheInfoBuilder cacheInfoBuilder;
+    private LayerCacheInfoBuilder cacheInfoBuilder;
+
+    private MonitoringBlobListener blobListener;
 
     /**
      * 
@@ -91,27 +103,30 @@ public class DiskQuotaMonitor implements DisposableBean {
 
         this.quotaConfig = configLoader.loadConfig();
 
-        if (quotaConfig.getNumLayers() == 0) {
-            this.cleanUpExecutorService = null;
-            this.cacheInfoBuilder = null;
-            log.info("No layer quotas defined. Disk quota monitor is disabled.");
-        } else {
-            this.cleanUpExecutorService = createCleanUpExecutor();
+        applyConfig();
+    }
 
-            attachConfiguredLayers();
-
-            this.cacheInfoBuilder = launchCacheInfoGatheringThreads();
-
-            final MonitoringBlobListener blobListener = new MonitoringBlobListener(quotaConfig);
-            storageBroker.addBlobStoreListener(blobListener);
-
-            setUpScheduledCleanUp();
-
-            int totalLayers = tileLayerDispatcher.getLayers().size();
-            int quotaLayers = quotaConfig.getNumLayers();
-            log.info(quotaLayers + " out of " + totalLayers
-                    + " layers configured with their own quotas.");
+    private void applyConfig() throws StorageException {
+        if (cacheInfoBuilder != null) {
+            log.info("Shutting down cache info builder...");
+            cacheInfoBuilder.shutDown();
         }
+
+        if (cleanUpExecutorService != null) {
+            log.info("Shutting down clean up executor service...");
+            cleanUpExecutorService.shutdownNow();
+        }
+
+        this.cleanUpExecutorService = createCleanUpExecutor();
+        attachConfiguredLayers();
+        this.cacheInfoBuilder = launchCacheInfoGatheringThreads();
+
+        if (blobListener != null) {
+            storageBroker.removeBlobStoreListener(blobListener);
+        }
+        blobListener = new MonitoringBlobListener(quotaConfig);
+        storageBroker.addBlobStoreListener(blobListener);
+        setUpScheduledCleanUp();
     }
 
     /**
@@ -122,9 +137,9 @@ public class DiskQuotaMonitor implements DisposableBean {
      */
     public void destroy() throws Exception {
         if (this.cleanUpExecutorService != null) {
-            this.cleanUpExecutorService.shutdown();
+            this.cleanUpExecutorService.shutdownNow();
         }
-        if(this.cacheInfoBuilder != null){
+        if (this.cacheInfoBuilder != null) {
             this.cacheInfoBuilder.shutDown();
         }
         try {
@@ -136,6 +151,32 @@ public class DiskQuotaMonitor implements DisposableBean {
         }
     }
 
+    public DiskQuotaConfig getConfig() {
+        return this.quotaConfig;
+    }
+
+    public void saveConfig() {
+        try {
+            applyConfig();
+            configLoader.saveConfig(quotaConfig);
+        } catch (ConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ExpirationPolicy findExpirationPolicy(final String name) {
+        return configLoader.findExpirationPolicy(name);
+    }
+
+    /**
+     * Launches a background task to traverse the cache and compute the disk usage of each layer
+     * that has no {@link LayerQuota#getUsedQuota() used quota} already loaded.
+     * 
+     * @return
+     * @throws StorageException
+     */
     private LayerCacheInfoBuilder launchCacheInfoGatheringThreads() throws StorageException {
 
         final File rootCacheDir = configLoader.getRootCacheDir();
@@ -152,7 +193,16 @@ public class DiskQuotaMonitor implements DisposableBean {
             } catch (GeoWebCacheException e) {
                 throw new RuntimeException(e);
             }
-            cacheInfoBuilder.buildCacheInfo(tileLayer, layerQuota);
+
+            Quota usedQuota = layerQuota.getUsedQuota();
+            if (usedQuota.getValue().doubleValue() > 0) {
+                log.debug("Using saved quota information for layer " + layerQuota.getLayer() + ": "
+                        + usedQuota.toNiceString());
+            } else {
+                log.debug(layerQuota.getLayer() + " has no saved used quota information,"
+                        + "traversing layer cache to compute its disk usage.");
+                cacheInfoBuilder.buildCacheInfo(tileLayer, layerQuota);
+            }
         }
         return cacheInfoBuilder;
     }
@@ -166,233 +216,69 @@ public class DiskQuotaMonitor implements DisposableBean {
 
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(
                 numCleaningThreads, tf);
+
         return executorService;
     }
 
     private void setUpScheduledCleanUp() {
 
-        Runnable command = new CacheCleaner(configLoader, quotaConfig, cacheInfoBuilder,
+        Runnable command = new CacheCleanerTask(configLoader, quotaConfig, cacheInfoBuilder,
                 cleanUpExecutorService);
 
         long initialDelay = quotaConfig.getCacheCleanUpFrequency();
         long period = quotaConfig.getCacheCleanUpFrequency();
         TimeUnit unit = quotaConfig.getCacheCleanUpUnits();
         cleanUpExecutorService.scheduleAtFixedRate(command, initialDelay, period, unit);
+
         log.info("Disk quota periodic enforcement task set up every " + period + " " + unit);
     }
 
     /**
-     * Attaches each {@link LayerQuota} to its {@link LayerQuotaExpirationPolicy} by first looking
-     * for the layer's declared expiration policy implementation and then calling
-     * {@link LayerQuotaExpirationPolicy#attach(TileLayer, LayerQuota)}
+     * Attaches each {@link LayerQuota} to its {@link ExpirationPolicy} by first looking for the
+     * layer's declared expiration policy implementation and then calling
+     * {@link ExpirationPolicy#attach(TileLayer, LayerQuota)}
      */
     private void attachConfiguredLayers() {
 
-        Map<String, TileLayer> layers;
-        layers = new HashMap<String, TileLayer>(tileLayerDispatcher.getLayers());
-        List<LayerQuota> layerQuotas = quotaConfig.getLayerQuotas();
+        final Map<String, TileLayer> layers = new HashMap<String, TileLayer>(
+                tileLayerDispatcher.getLayers());
+
+        final List<LayerQuota> layerQuotas = quotaConfig.getLayerQuotas();
+
+        for (ExpirationPolicy p : configLoader.getExpirationPolicies().values()) {
+            p.dettachAll();
+        }
+
+        final ExpirationPolicy globalExpirationPolicy = quotaConfig.getGlobalExpirationPolicy();
+        final Quota globalQuota = quotaConfig.getGlobalQuota();
+
+        int explicitConfigs = 0;
+        int globallyConfigured = 0;
 
         for (LayerQuota layerQuota : layerQuotas) {
-
             final String layerName = layerQuota.getLayer();
-            Quota quota = layerQuota.getQuota();
+            final TileLayer tileLayer = layers.get(layerName);
             final String policyName = layerQuota.getExpirationPolicyName();
-
-            log.info("Attaching layer " + layerName + " to quota " + quota);
-
-            final LayerQuotaExpirationPolicy expirationPolicy;
-            expirationPolicy = configLoader.findExpirationPolicy(policyName);
-            layerQuota.setExpirationPolicy(expirationPolicy);
-
-            TileLayer tileLayer = layers.get(layerName);
-            expirationPolicy.attach(tileLayer, layerQuota);
-            layers.remove(layerName);
-        }
-    }
-
-    private static class MonitoringBlobListener implements BlobStoreListener {
-
-        private final DiskQuotaConfig quotaConfig;
-
-        public MonitoringBlobListener(final DiskQuotaConfig quotaConfig) {
-            this.quotaConfig = quotaConfig;
-        }
-
-        /**
-         * @see org.geowebcache.storage.BlobStoreListener#tileStored(java.lang.String,
-         *      java.lang.String, java.lang.String, java.lang.String, long, long, int, long)
-         */
-        public void tileStored(final String layerName, final String gridSetId,
-                final String blobFormat, final String parameters, final long x, final long y,
-                final int z, final long blobSize) {
-
-            final LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
-            if (layerQuota == null) {
-                // there's no quota defined for the layer
-                return;
-            }
-            final int blockSize = quotaConfig.getDiskBlockSize();
-
-            long actuallyUsedStorage = blockSize * (int) Math.ceil((double) blobSize / blockSize);
-
-            Quota usedQuota = layerQuota.getUsedQuota();
-
-            usedQuota.add(actuallyUsedStorage, B);
-
-            // inform the layer policy the tile has been added, in case it needs that information
-            LayerQuotaExpirationPolicy policy = layerQuota.getExpirationPolicy();
-            policy.createInfoFor(layerQuota, gridSetId, x, y, z);
-
-            // mark the config as dirty so its saved when appropriate
-            quotaConfig.setDirty(true);
-            layerQuota.setDirty(true);
-            if (log.isDebugEnabled()) {
-                log.debug("Used quota increased for " + layerName + ": " + usedQuota);
-            }
-        }
-
-        /**
-         * @see org.geowebcache.storage.BlobStoreListener#tileDeleted(java.lang.String,
-         *      java.lang.String, java.lang.String, java.lang.String, long, long, int, long)
-         */
-        public void tileDeleted(final String layerName, final String gridSetId,
-                final String blobFormat, final String parameters, final long x, final long y,
-                final int z, final long blobSize) {
-
-            final LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
-            if (layerQuota == null) {
-                // there's no quota defined for the layer
-                return;
-            }
-            int blockSize = quotaConfig.getDiskBlockSize();
-
-            long actualTileSizeOnDisk = blockSize * (int) Math.ceil((double) blobSize / blockSize);
-
-            Quota usedQuota = layerQuota.getUsedQuota();
-
-            usedQuota.subtract(actualTileSizeOnDisk, B);
-
-            // inform the layer policy the tile has been deleted, in case it needs that information
-            LayerQuotaExpirationPolicy policy = layerQuota.getExpirationPolicy();
-            policy.removeInfoFor(layerQuota, gridSetId, x, y, z);
-
-            // mark the config as dirty so its saved when appropriate
-            quotaConfig.setDirty(true);
-            layerQuota.setDirty(true);
-            if (log.isTraceEnabled()) {
-                log.trace("Used quota decreased for " + layerName + ": " + usedQuota);
-            }
-        }
-
-        /**
-         * @see org.geowebcache.storage.BlobStoreListener#layerDeleted(java.lang.String)
-         */
-        public void layerDeleted(final String layerName) {
-            final LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
-            if (layerQuota == null) {
-                // there's no quota defined for the layer
-                return;
-            }
-            LayerQuotaExpirationPolicy expirationPolicy = layerQuota.getExpirationPolicy();
-            expirationPolicy.dettach(layerName);
-            quotaConfig.remove(quotaConfig.getLayerQuota(layerName));
-            // mark the config as dirty so its saved when appropriate
-            quotaConfig.setDirty(true);
-        }
-    }
-
-    private static class CacheCleaner implements Runnable {
-
-        private final DiskQuotaConfig quotaConfig;
-
-        private final ExecutorService cleanUpExecutorService;
-
-        private final Map<String, Future<?>> perLayerRunningCleanUps;
-
-        private final LayerCacheInfoBuilder cacheInfoBuilder;
-
-        private final ConfigLoader configLoader;
-
-        public CacheCleaner(final ConfigLoader configLoader, final DiskQuotaConfig config,
-                final LayerCacheInfoBuilder cacheInfoBuilder, final ExecutorService executor) {
-
-            this.configLoader = configLoader;
-            this.quotaConfig = config;
-            this.cleanUpExecutorService = executor;
-            this.cacheInfoBuilder = cacheInfoBuilder;
-            this.perLayerRunningCleanUps = new HashMap<String, Future<?>>();
-        }
-
-        public void run() {
-            // first, save the config to account for changes in used quotas
-            if (quotaConfig.isDirty()) {
-                try {
-                    configLoader.saveConfig(quotaConfig);
-                    quotaConfig.setDirty(false);
-                } catch (Exception e) {
-                    log.error("Error saving disk quota config", e);
+            if (policyName == null) {
+                if (globalExpirationPolicy != null) {
+                    // not a configured layer. The global expiration policy will take care of it
+                    globallyConfigured++;
+                    log.trace("Attaching layer " + layerName + " to global quota " + globalQuota);
+                    layerQuota.setExpirationPolicy(globalExpirationPolicy);
+                    globalExpirationPolicy.attach(tileLayer, layerQuota);
                 }
-            }
-
-            for (LayerQuota lq : quotaConfig.getLayerQuotas()) {
-                final String layerName = lq.getLayer();
-
-                if (cacheInfoBuilder.isRunning(layerName)) {
-                    log.info("Cache information is still being gathered for layer '" + layerName
-                            + "'. Skipping quota enforcement task for this layer.");
-                    continue;
-                }
-
-                Future<?> runningCleanup = perLayerRunningCleanUps.get(layerName);
-                if (runningCleanup != null && !runningCleanup.isDone()) {
-                    log.debug("Cache clean up task still running for layer '" + layerName
-                            + "'. Ignoring it for this run.");
-                    continue;
-                }
-
-                final Quota quota = lq.getQuota();
-                final Quota usedQuota = lq.getUsedQuota();
-                LayerQuotaExpirationPolicy expirationPolicy = lq.getExpirationPolicy();
-                if (lq.isDirty()) {
-                    expirationPolicy.save(layerName);
-                    lq.setDirty(false);
-                }
-
-                Quota excedent = usedQuota.difference(quota);
-                if (excedent.getValue().compareTo(BigDecimal.ZERO) > 0) {
-                    log.info("Layer '" + lq.getLayer() + "' exceeds its quota of "
-                            + quota.toNiceString() + " by " + excedent.toNiceString()
-                            + ". Currently used: " + usedQuota.toNiceString()
-                            + ". Clean up task is gonna be performed" + " using expiration policy "
-                            + lq.getExpirationPolicyName());
-
-                    LayerQuotaEnforcementTask task;
-                    task = new LayerQuotaEnforcementTask(lq);
-                    Future<Object> future = this.cleanUpExecutorService.submit(task);
-                    perLayerRunningCleanUps.put(layerName, future);
-                }
+            } else {
+                final Quota quota = layerQuota.getQuota();
+                final ExpirationPolicy expirationPolicy = configLoader
+                        .findExpirationPolicy(policyName);
+                explicitConfigs++;
+                layerQuota.setExpirationPolicy(expirationPolicy);
+                expirationPolicy.attach(tileLayer, layerQuota);
+                log.trace("Attaching layer " + layerName + " to quota " + quota);
             }
         }
-    }
+        log.info(explicitConfigs + " layers configured with their own quotas. "
+                + globallyConfigured + " layers attached to global quota " + globalQuota);
 
-    private static class LayerQuotaEnforcementTask implements Callable<Object> {
-
-        private final LayerQuota layerQuota;
-
-        public LayerQuotaEnforcementTask(final LayerQuota layerQuota) {
-            this.layerQuota = layerQuota;
-        }
-
-        public Object call() throws Exception {
-            try {
-                final String layerName = layerQuota.getLayer();
-                LayerQuotaExpirationPolicy expirationPolicy = layerQuota.getExpirationPolicy();
-                expirationPolicy.expireTiles(layerName);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw e;
-            }
-            return null;
-        }
     }
 }

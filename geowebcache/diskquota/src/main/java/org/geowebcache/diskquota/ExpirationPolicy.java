@@ -1,9 +1,28 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Gabriel Roldan (OpenGeo) 2010
+ *  
+ */
 package org.geowebcache.diskquota;
+
+import java.util.List;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayer;
 
-public interface LayerQuotaExpirationPolicy {
+public interface ExpirationPolicy {
 
     /**
      * Returns the unique name for this expiration policy
@@ -42,7 +61,17 @@ public interface LayerQuotaExpirationPolicy {
      */
     boolean dettach(String layerName);
 
+    /**
+     * Expires tiles from the layer until it reaches its configured {@link LayerQuota#getQuota()
+     * quota}
+     * 
+     * @param layerName
+     * @throws GeoWebCacheException
+     */
     void expireTiles(String layerName) throws GeoWebCacheException;
+
+    void expireTiles(List<String> layerNames, Quota limit, Quota usedQuota)
+            throws GeoWebCacheException;
 
     void save(String layerName);
 
@@ -55,8 +84,19 @@ public interface LayerQuotaExpirationPolicy {
      * @param y
      * @param z
      */
-    void createInfoFor(LayerQuota layerQuota, String gridSetId, long x, long y, int z);
+    void createTileInfo(LayerQuota layerQuota, String gridSetId, long x, long y, int z);
 
-    void removeInfoFor(LayerQuota layerQuota, String gridSetId, long x, long y, int z);
+    /**
+     * Removes any held information for the tile given by the {@code x, y, z} ordinates
+     * 
+     * @param layerQuota
+     * @param gridSetId
+     * @param x
+     * @param y
+     * @param z
+     */
+    void removeTileInfo(LayerQuota layerQuota, String gridSetId, long x, long y, int z);
+
+    void dettachAll();
 
 }

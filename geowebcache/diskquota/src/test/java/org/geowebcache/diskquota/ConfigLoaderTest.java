@@ -1,7 +1,26 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Gabriel Roldan (OpenGeo) 2010
+ *  
+ */
 package org.geowebcache.diskquota;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +65,18 @@ public class ConfigLoaderTest extends TestCase {
         }
         FileUtils.rmFileCacheDir(cacheDir, null);
         cacheDir.mkdirs();
-
+        // copy configuration file to cache directory
+        {
+            InputStream in = getClass().getResourceAsStream("/geowebcache-diskquota.xml");
+            FileOutputStream out = new FileOutputStream(new File(cacheDir,
+                    "geowebcache-diskquota.xml"));
+            int c;
+            while ((c = in.read()) != -1) {
+                out.write(c);
+            }
+            in.close();
+            out.close();
+        }
         storageFinder = EasyMock.createMock(DefaultStorageFinder.class);
         EasyMock.expect(storageFinder.getDefaultPath()).andReturn(cacheDir.getAbsolutePath())
                 .anyTimes();
@@ -60,7 +90,7 @@ public class ConfigLoaderTest extends TestCase {
         WebApplicationContext appContext = EasyMock.createMock(WebApplicationContext.class);
         EasyMock.expect(appContext.getServletContext()).andReturn(mockServletCtx).anyTimes();
         Map mockPolicies = createMockPolicies();
-        EasyMock.expect(appContext.getBeansOfType(EasyMock.eq(LayerQuotaExpirationPolicy.class)))
+        EasyMock.expect(appContext.getBeansOfType(EasyMock.eq(ExpirationPolicy.class)))
                 .andReturn(mockPolicies).anyTimes();
         EasyMock.replay(appContext);
 
@@ -74,6 +104,11 @@ public class ConfigLoaderTest extends TestCase {
                 .anyTimes();
         EasyMock.expect(tld.getTileLayer(EasyMock.eq("raster test layer"))).andReturn(raster)
                 .anyTimes();
+
+        Map<String, TileLayer> tileLayers = new HashMap<String, TileLayer>();
+        tileLayers.put(toppStates.getName(), toppStates);
+        tileLayers.put(raster.getName(), raster);
+        EasyMock.expect(tld.getLayers()).andReturn(tileLayers).anyTimes();
         EasyMock.replay(tld);
 
         loader = new ConfigLoader(storageFinder, contextProvider, tld);
@@ -96,6 +131,7 @@ public class ConfigLoaderTest extends TestCase {
 
     private TileLayer createMockLayer(String name) {
         TileLayer layer = EasyMock.createMock(TileLayer.class);
+        EasyMock.expect(layer.getName()).andReturn(name).anyTimes();
         EasyMock.replay(layer);
         return layer;
     }
@@ -103,10 +139,18 @@ public class ConfigLoaderTest extends TestCase {
     public void testLoadConfig() throws ConfigurationException, IOException {
         DiskQuotaConfig config = loader.loadConfig();
         assertNotNull(config);
+        assertFalse(config.isEnabled());
         assertEquals(4096, config.getDiskBlockSize());
         assertEquals(10, config.getCacheCleanUpFrequency());
         assertEquals(TimeUnit.SECONDS, config.getCacheCleanUpUnits());
         assertEquals(3, config.getMaxConcurrentCleanUps());
+
+        assertEquals("LFU", config.getGlobalExpirationPolicyName());
+        assertNotNull(config.getGlobalExpirationPolicy());
+
+        assertNotNull(config.getGlobalQuota());
+        assertEquals(200, config.getGlobalQuota().getValue().longValue());
+        assertEquals(StorageUnit.GiB, config.getGlobalQuota().getUnits());
 
         assertNotNull(config.getLayerQuotas());
         assertEquals(2, config.getLayerQuotas().size());
@@ -115,29 +159,28 @@ public class ConfigLoaderTest extends TestCase {
         assertNotNull(states);
         assertEquals("LFU", states.getExpirationPolicyName());
         assertEquals(0, states.getUsedQuota().getValue().longValue());
-        assertEquals(10, states.getQuota().getValue().longValue());
+        assertEquals(100, states.getQuota().getValue().longValue());
         assertEquals(StorageUnit.MiB, states.getQuota().getUnits());
 
         LayerQuota raster = config.getLayerQuota("raster test layer");
         assertNotNull(raster);
-        assertEquals(27, raster.getUsedQuota().getValue().longValue());
-        assertEquals(StorageUnit.GiB, raster.getUsedQuota().getUnits());
+        assertEquals(0, raster.getUsedQuota().getValue().longValue());
+        assertEquals(StorageUnit.B, raster.getUsedQuota().getUnits());
     }
 
     public void testSaveConfig() throws ConfigurationException, IOException {
         DiskQuotaConfig config = new DiskQuotaConfig();
         List<LayerQuota> quotas = new ArrayList<LayerQuota>();
-        LayerQuota lq = new LayerQuota("topp:states", "LRU");
-        lq.getQuota().setValue(10);
-        lq.getQuota().setUnits(StorageUnit.MiB);
+        LayerQuota lq = new LayerQuota("topp:states", "LRU", new Quota(10, StorageUnit.MiB));
         lq.getUsedQuota().setValue(100);
         lq.getUsedQuota().setUnits(StorageUnit.KiB);
         quotas.add(lq);
         config.setLayerQuotas(quotas);
 
         File configFile = new File(cacheDir, "geowebcache-diskquota.xml");
-        assertFalse(configFile.exists());
-
+        if (configFile.exists()) {
+            configFile.delete();
+        }
         loader.saveConfig(config);
         assertTrue(configFile.exists());
 

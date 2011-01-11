@@ -202,12 +202,11 @@ public class SeedTaskTest extends TestCase {
         final long expectedSavedTileCount;
 
         final long[] coveredGridLevels = gridSubset.getCoverage(zoomLevel);
-        final int[] metaTilingFactors = tl.getMetaTilingFactors();
 
-        // Round down to the closes meta-tile boundary before starting
-        long starty = coveredGridLevels[1] - (coveredGridLevels[1] % metaTilingFactors[1]);
-        // Round down to the closest meta-tile boundary before starting
-        long startx = coveredGridLevels[0] - (coveredGridLevels[0] % metaTilingFactors[0]);
+        // seeding should not include edge tiles produced by the meta tiling that don't fall into
+        // the gridsubset's coverage
+        long starty = coveredGridLevels[1];
+        long startx = coveredGridLevels[0];
 
         expectedSavedTileCount = (coveredGridLevels[2] - startx + 1)
                 * (coveredGridLevels[3] - starty + 1);

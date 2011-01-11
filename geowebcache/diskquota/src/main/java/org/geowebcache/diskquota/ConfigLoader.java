@@ -1,3 +1,20 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Gabriel Roldan (OpenGeo) 2010
+ *  
+ */
 package org.geowebcache.diskquota;
 
 import java.io.File;
@@ -8,8 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,13 +53,9 @@ import com.thoughtworks.xstream.XStream;
  * </p>
  * <p>
  * When {@link #loadConfig()} is called, a file named {@code geowebcache-diskquota.xml} will be
- * looked up for in the following locations (in order):
- * <ul>
- * <li>Default path, as specified by {@link DefaultStorageFinder#getDefaultPath()}
- * <li>/WEB-INF/classes
- * <li>class path:/geowebcache-diskquota.xml
- * </ul>
- * The configuration file must adhere to the {@code geowebcache-diskquota.xsd} schema.
+ * looked up for in the cache directory as specified by
+ * {@link DefaultStorageFinder#getDefaultPath()}. The configuration file must adhere to the
+ * {@code geowebcache-diskquota.xsd} schema.
  * </p>
  * 
  * @author Gabriel Roldan
@@ -56,24 +67,22 @@ public class ConfigLoader {
 
     private static final String CONFIGURATION_FILE_NAME = "geowebcache-diskquota.xml";
 
-    private static final String[] CONFIGURATION_REL_PATHS = { "/WEB-INF/classes", "/../resources" };
-
     private final WebApplicationContext context;
 
     private final TileLayerDispatcher tileLayerDispatcher;
 
     private final DefaultStorageFinder storageFinder;
 
-    private final Map<String, LayerQuotaExpirationPolicy> enabledPolicies;
+    private final Map<String, ExpirationPolicy> expirationPolicyCache;
 
     /**
      * 
      * @param storageFinder
      *            used to get the location of the cache directory
      * @param contextProvider
-     *            used to look up registered instances of {@link LayerQuotaExpirationPolicy} and to
-     *            aid in determining the location of the {@code geowebcache-diskquota.xml}
-     *            configuration file
+     *            used to look up registered instances of {@link ExpirationPolicy} and to aid in
+     *            determining the location of the {@code geowebcache-diskquota.xml} configuration
+     *            file
      * @param tld
      *            used only to validate the presence of a layer at {@link #loadConfig()} and ignore
      *            the layer quota definition if the {@link TileLayer} does not exist
@@ -86,7 +95,7 @@ public class ConfigLoader {
         this.storageFinder = storageFinder;
         this.context = contextProvider.getApplicationContext();
         this.tileLayerDispatcher = tld;
-        this.enabledPolicies = new HashMap<String, LayerQuotaExpirationPolicy>();
+        this.expirationPolicyCache = new HashMap<String, ExpirationPolicy>();
     }
 
     /**
@@ -110,44 +119,62 @@ public class ConfigLoader {
     }
 
     public DiskQuotaConfig loadConfig() throws IOException, ConfigurationException {
-        URL configFile = getConfigResource();
-
-        InputStream configIn = configFile.openStream();
         DiskQuotaConfig quotaConfig;
-        try {
-            quotaConfig = loadConfiguration(configIn);
-        } finally {
-            configIn.close();
+        final File configFile = getConfigResource();
+        if (!configFile.exists()) {
+            log.info("DiskQuota configuration not found: " + configFile.getAbsolutePath());
+            quotaConfig = new DiskQuotaConfig();
+        } else {
+            log.info("Quota config is: " + configFile.getAbsolutePath());
+            InputStream configIn = new FileInputStream(configFile);
+            try {
+                quotaConfig = loadConfiguration(configIn);
+            } finally {
+                configIn.close();
+            }
+        }
+        // find out the global expiration policy, if set
+        if (null != quotaConfig.getGlobalExpirationPolicyName()) {
+            String expirationPolicyName = quotaConfig.getGlobalExpirationPolicyName();
+            ExpirationPolicy policy = findExpirationPolicy(expirationPolicyName);
+            quotaConfig.setGlobalExpirationPolicy(policy);
+            addUnconfiguredLayerQuotas(quotaConfig);
         }
 
         validateConfig(quotaConfig);
 
-        XStream xstream = getConfiguredXStream();
-        log.info("Quota config is: " + configFile.toExternalForm());
-        xstream.toXML(quotaConfig, System.out);
+        // XStream xstream = getConfiguredXStream();
+        // xstream.toXML(quotaConfig, System.out);
 
         return quotaConfig;
     }
 
-    private URL getConfigResource() throws ConfigurationException, FileNotFoundException {
+    private void addUnconfiguredLayerQuotas(DiskQuotaConfig quotaConfig) {
+        final List<LayerQuota> configured = new ArrayList<LayerQuota>(quotaConfig.getLayerQuotas());
+
+        Map<String, TileLayer> tileLayers = tileLayerDispatcher.getLayers();
+
+        for (Map.Entry<String, TileLayer> entry : tileLayers.entrySet()) {
+            String layerName = entry.getKey();
+            if (null == quotaConfig.getLayerQuota(layerName)) {
+                LayerQuota layerQuota = new LayerQuota(layerName, null);
+                configured.add(layerQuota);
+            }
+        }
+        quotaConfig.setLayerQuotas(configured);
+    }
+
+    private File getConfigResource() throws ConfigurationException, FileNotFoundException {
         String cachePath;
         try {
             cachePath = storageFinder.getDefaultPath();
         } catch (StorageException e) {
             throw new ConfigurationException(e.getMessage());
         }
-        URL configFile;
-        try {
-            configFile = findConfFile(cachePath);
-        } catch (GeoWebCacheException e) {
-            throw new RuntimeException(e);
-        }
 
-        if (configFile == null) {
-            throw new FileNotFoundException("Found no " + CONFIGURATION_FILE_NAME
-                    + " file. Disk Quota is disabled.");
-        }
-        return configFile;
+        File file = new File(cachePath, CONFIGURATION_FILE_NAME);
+
+        return file;
     }
 
     private void validateConfig(DiskQuotaConfig quotaConfig) throws ConfigurationException {
@@ -188,9 +215,16 @@ public class ConfigLoader {
             quotaConfig.remove(lq);
         }
 
-        String expirationPolicyName = lq.getExpirationPolicyName();
+        final String expirationPolicyName = lq.getExpirationPolicyName();
         if (expirationPolicyName == null) {
-            throw new ConfigurationException("No expiration policy specified: " + lq);
+            // if expiration policy is not defined, then there should be no quota defined either,
+            // as it means the layer is managed by the global expiration policy, if any
+            if (lq.getQuota() != null) {
+                throw new ConfigurationException("Layer " + lq.getLayer()
+                        + " has no expiration policy, but does have a quota defined. "
+                        + "Either both or neither should be present");
+            }
+            return;
         }
         try {
             findExpirationPolicy(expirationPolicyName);
@@ -223,96 +257,27 @@ public class ConfigLoader {
         log.debug("Quota validated: " + quota);
     }
 
-    @SuppressWarnings("unchecked")
-    public LayerQuotaExpirationPolicy findExpirationPolicy(final String expirationPolicyName) {
+    public ExpirationPolicy findExpirationPolicy(final String expirationPolicyName) {
 
-        LayerQuotaExpirationPolicy policy = this.enabledPolicies.get(expirationPolicyName);
+        ExpirationPolicy policy = getExpirationPolicies().get(expirationPolicyName);
 
         if (policy == null) {
-            Map<String, LayerQuotaExpirationPolicy> expirationPolicies;
-            expirationPolicies = context.getBeansOfType(LayerQuotaExpirationPolicy.class);
-            for (LayerQuotaExpirationPolicy p : expirationPolicies.values()) {
-                if (p.getName().equals(expirationPolicyName)) {
-                    enabledPolicies.put(p.getName(), p);
-                    return p;
-                }
-            }
-        } else {
-            return policy;
+            throw new NoSuchElementException("No " + ExpirationPolicy.class.getName()
+                    + " found named '" + expirationPolicyName + "' in app context.");
         }
-        throw new NoSuchElementException("No " + LayerQuotaExpirationPolicy.class.getName()
-                + " found named '" + expirationPolicyName + "' in app context.");
+        return policy;
     }
 
-    private URL findConfFile(String cachePath) throws GeoWebCacheException {
-        File configDir = determineConfigDir(cachePath);
-
-        URL resource = null;
-
-        if (configDir == null) {
-
-            resource = getClass().getResource("/" + CONFIGURATION_FILE_NAME);
-
-        } else {
-            File xmlFile = null;
-            xmlFile = new File(configDir.getAbsolutePath() + File.separator
-                    + CONFIGURATION_FILE_NAME);
-            log.debug("Found configuration file in " + configDir.getAbsolutePath());
-            try {
-                resource = xmlFile.toURI().toURL();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
+    @SuppressWarnings("unchecked")
+    public synchronized Map<String, ExpirationPolicy> getExpirationPolicies() {
+        if (expirationPolicyCache.isEmpty()) {
+            Map<String, ExpirationPolicy> expirationPolicies;
+            expirationPolicies = context.getBeansOfType(ExpirationPolicy.class);
+            for (ExpirationPolicy p : expirationPolicies.values()) {
+                expirationPolicyCache.put(p.getName(), p);
             }
         }
-
-        if (resource == null) {
-            log.debug("Unable to determine location of " + CONFIGURATION_FILE_NAME + ".");
-        }
-
-        return resource;
-    }
-
-    private File determineConfigDir(String defaultPath) {
-        String baseDir = context.getServletContext().getRealPath("");
-
-        File configH = null;
-        /*
-         * Try 1) environment variables 2) standard paths 3) class path /geowebcache-diskquota.xml
-         */
-        if (defaultPath != null) {
-            File tmpPath = new File(defaultPath + File.separator + CONFIGURATION_FILE_NAME);
-            if (tmpPath.exists()) {
-                configH = new File(tmpPath.getParent());
-            }
-        }
-
-        // Finally, try "standard" paths if we have to.
-        if (configH == null) {
-            for (int i = 0; i < CONFIGURATION_REL_PATHS.length; i++) {
-                String relPath = CONFIGURATION_REL_PATHS[i];
-                if (File.separator.equals("\\")) {
-                    relPath = relPath.replace("/", "\\");
-                }
-
-                File tmpPath = new File(baseDir + relPath + File.separator
-                        + CONFIGURATION_FILE_NAME);
-
-                if (tmpPath.exists() && tmpPath.canRead()) {
-                    log.info("No configuration directory was specified, using "
-                            + tmpPath.getAbsolutePath());
-                    configH = new File(baseDir + relPath);
-                }
-            }
-        }
-        if (configH != null) {
-            log.debug("Configuration directory set to: " + configH.getAbsolutePath());
-
-            if (!configH.exists() || !configH.canRead()) {
-                log.error("Configuration file cannot be read or does not exist!");
-            }
-        }
-
-        return configH;
+        return new HashMap<String, ExpirationPolicy>(expirationPolicyCache);
     }
 
     private DiskQuotaConfig loadConfiguration(final InputStream configStream) {
@@ -335,12 +300,13 @@ public class ConfigLoader {
     /**
      * Opens an output stream for a file relative to the cache storage folder
      * 
-     * @param fileName
+     * @param fileNameRelPath
      * @return
      * @throws IOException
      */
-    public OutputStream getStorageOutputStream(String fileName) throws IOException {
-        File rootCacheDir = getRootCacheDir();
+    public OutputStream getStorageOutputStream(String... fileNameRelPath) throws IOException {
+        File rootCacheDir = getFileStorageDir(fileNameRelPath);
+        String fileName = fileNameRelPath[fileNameRelPath.length - 1];
         File configFile = new File(rootCacheDir, fileName);
         return new FileOutputStream(configFile);
     }
@@ -348,16 +314,33 @@ public class ConfigLoader {
     /**
      * Opens a stream over an existing file relative to the cache storage folder
      * 
-     * @param fileName
+     * @param fileNameRelPath
      *            the file name relative to the cache storage folder to open
      * @return
      * @throws IOException
      *             if {@code fileName} doesn't exist
      */
-    public InputStream getStorageInputStream(String fileName) throws IOException {
-        File rootCacheDir = getRootCacheDir();
+    public InputStream getStorageInputStream(String... fileNameRelPath) throws IOException {
+        File rootCacheDir = getFileStorageDir(fileNameRelPath);
+        String fileName = fileNameRelPath[fileNameRelPath.length - 1];
         File configFile = new File(rootCacheDir, fileName);
         return new FileInputStream(configFile);
+    }
+
+    /**
+     * @param fileNameRelPath
+     *            file path relative to the cache storage directory, where the last entry is the
+     *            file name and any previous one directory names
+     * @return
+     * @throws StorageException
+     */
+    private File getFileStorageDir(String[] fileNameRelPath) throws StorageException {
+        File parentDir = getRootCacheDir();
+        for (int i = 0; i < fileNameRelPath.length - 1; i++) {
+            parentDir = new File(parentDir, fileNameRelPath[i]);
+        }
+        parentDir.mkdirs();
+        return parentDir;
     }
 
     public File getRootCacheDir() throws StorageException {

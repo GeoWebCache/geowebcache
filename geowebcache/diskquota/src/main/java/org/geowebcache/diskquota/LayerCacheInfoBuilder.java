@@ -1,3 +1,20 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Gabriel Roldan (OpenGeo) 2010
+ *  
+ */
 package org.geowebcache.diskquota;
 
 import java.io.File;
@@ -18,6 +35,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 import org.geowebcache.util.FileUtils;
+import org.springframework.util.Assert;
 
 /**
  * Gathers information about the cache of a layer, such as its size and available {@link TilePage}s.
@@ -53,9 +71,9 @@ final class LayerCacheInfoBuilder {
      * </p>
      * <p>
      * In addition to collecting the cache usage information for the layer, the {@code layerQuota}'s
-     * {@link LayerQuotaExpirationPolicy expiration policy} will be given the opportunity to gather
-     * any additional information by calling the
-     * {@link LayerQuotaExpirationPolicy#createInfoFor(LayerQuota, String, long[], File)
+     * {@link ExpirationPolicy expiration policy} will be given the opportunity to gather any
+     * additional information by calling the
+     * {@link ExpirationPolicy#createInfoFor(LayerQuota, String, long[], File)
      * createInforFor(layerQuota, gridSetId, tileXYZ, file)} method for each available tile on the
      * layer's cache.
      * </p>
@@ -69,6 +87,8 @@ final class LayerCacheInfoBuilder {
      * @param layerQuota
      */
     public void buildCacheInfo(final TileLayer tileLayer, final LayerQuota layerQuota) {
+
+        Assert.notNull(layerQuota.getExpirationPolicy(), "layerQuota.getExpirationPolicy() == null");
 
         final String layerName = layerQuota.getLayer();
         final String layerDirName = FilePathGenerator.filteredLayerName(layerName);
@@ -102,8 +122,8 @@ final class LayerCacheInfoBuilder {
                         cacheTask = threadPool.submit(cacheInfoBuilder);
 
                         perLayerRunningTasks.get(layerName).add(cacheTask);
-                        log.info("Submitted background task to gather cache info for '" + layerName
-                                + "'/" + gridSetId + "/" + zoomLevel);
+                        log.debug("Submitted background task to gather cache info for '"
+                                + layerName + "'/" + gridSetId + "/" + zoomLevel);
                     }
                 }
             }
@@ -127,7 +147,7 @@ final class LayerCacheInfoBuilder {
 
         private final LayerQuota layerQuota;
 
-        private final LayerQuotaExpirationPolicy policy;
+        private final ExpirationPolicy policy;
 
         private final int blockSize;
 
@@ -173,7 +193,7 @@ final class LayerCacheInfoBuilder {
                 e.printStackTrace();
                 throw (e);
             }
-            log.info("Cache information for " + zLevelKey + " collected in " + stats.runTimeMillis
+            log.debug("Cache information for " + zLevelKey + " collected in " + stats.runTimeMillis
                     / 1000D + "s. Counted " + stats.numTiles + " tiles for a storage space of "
                     + stats.collectedQuota.toNiceString());
             return stats;
@@ -206,7 +226,7 @@ final class LayerCacheInfoBuilder {
             final long x = Long.valueOf(path.substring(fileNameIdx, coordSepIdx));
             final long y = Long.valueOf(path.substring(1 + coordSepIdx, dotIdx));
 
-            policy.createInfoFor(layerQuota, gridSetId, x, y, tileZ);
+            policy.createTileInfo(layerQuota, gridSetId, x, y, tileZ);
 
             stats.numTiles++;
             stats.collectedQuota.add(fileSize, StorageUnit.B);
@@ -227,8 +247,8 @@ final class LayerCacheInfoBuilder {
     }
 
     /**
-     * Returns whether cache information is still being gathered for the layer named after {@code
-     * layerName}.
+     * Returns whether cache information is still being gathered for the layer named after
+     * {@code layerName}.
      * 
      * @param layerName
      * @return {@code true} if the cache information gathering for {@code layerName} is not finished

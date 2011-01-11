@@ -1,6 +1,24 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Gabriel Roldan (OpenGeo) 2010
+ *  
+ */
 package org.geowebcache.diskquota;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +42,10 @@ public class DiskQuotaConfig {
 
     static final int DEFAULT_MAX_CONCURRENT_CLEANUPS = 2;
 
+    static String DEFAULT_GLOBAL_POLICY_NAME = "LFU";
+
+    private Boolean enabled;
+
     private int diskBlockSize;
 
     private int cacheCleanUpFrequency;
@@ -32,11 +54,21 @@ public class DiskQuotaConfig {
 
     private int maxConcurrentCleanUps;
 
+    private String globalExpirationPolicyName;
+
+    private Quota globalQuota;
+
     private List<LayerQuota> layerQuotas;
 
     private transient Map<String, LayerQuota> layerQuotasMap;
 
+    private transient ExpirationPolicy expirationPolicy;
+
     private transient boolean dirty;
+
+    private transient Quota globalUsedQuota;
+
+    private transient Date lastCleanUpTime;
 
     public DiskQuotaConfig() {
         readResolve();
@@ -48,6 +80,9 @@ public class DiskQuotaConfig {
      * @return
      */
     private Object readResolve() {
+        if (enabled == null) {
+            enabled = Boolean.FALSE;
+        }
         if (diskBlockSize == 0) {
             diskBlockSize = DEFAULT_DISK_BLOCK_SIZE;
         }
@@ -63,7 +98,18 @@ public class DiskQuotaConfig {
         if (cacheCleanUpUnits == null) {
             cacheCleanUpUnits = DEFAULT_CLEANUP_UNITS;
         }
+        if (globalExpirationPolicyName == null) {
+            globalExpirationPolicyName = DEFAULT_GLOBAL_POLICY_NAME;
+        }
         return this;
+    }
+
+    public boolean isEnabled() {
+        return enabled.booleanValue();
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 
     public int getDiskBlockSize() {
@@ -126,12 +172,15 @@ public class DiskQuotaConfig {
         return layerQuotasMap;
     }
 
-    public synchronized void remove(LayerQuota lq) {
+    public synchronized void remove(final LayerQuota lq) {
         for (Iterator<LayerQuota> it = layerQuotas.iterator(); it.hasNext();) {
             LayerQuota quota = it.next();
             if (quota.getLayer().equals(lq.getLayer())) {
                 it.remove();
                 getLayerQuotasMap().remove(lq.getLayer());
+                if (this.globalUsedQuota != null) {
+                    this.globalUsedQuota.subtract(quota.getUsedQuota());
+                }
                 break;
             }
         }
@@ -167,11 +216,65 @@ public class DiskQuotaConfig {
         this.maxConcurrentCleanUps = nThreads;
     }
 
+    /**
+     * @return the global quota, or {@code null} if not set
+     */
+    public Quota getGlobalQuota() {
+        return this.globalQuota;
+    }
+
+    /**
+     * @param newQuota
+     *            the new global quota, or {@code null} to unset
+     */
+    public void setGlobalQuota(final Quota newQuota) {
+        if (newQuota == null) {
+            this.globalQuota = null;
+        } else {
+            this.globalQuota = new Quota(newQuota);
+        }
+    }
+
+    public ExpirationPolicy getGlobalExpirationPolicy() {
+        return this.expirationPolicy;
+    }
+
+    public String getGlobalExpirationPolicyName() {
+        return this.globalExpirationPolicyName;
+    }
+
+    public void setGlobalExpirationPolicy(ExpirationPolicy policy) {
+        this.expirationPolicy = policy;
+        if (policy == null) {
+            this.globalExpirationPolicyName = null;
+        } else {
+            this.globalExpirationPolicyName = policy.getName();
+        }
+    }
+
     public void setDirty(boolean dirty) {
         this.dirty = dirty;
     }
 
     public boolean isDirty() {
         return this.dirty;
+    }
+
+    public synchronized Quota getGlobalUsedQuota() {
+        if (this.globalUsedQuota == null) {
+            this.globalUsedQuota = new Quota();
+            for (LayerQuota lq : getLayerQuotas()) {
+                globalUsedQuota.add(lq.getUsedQuota());
+            }
+        }
+        return globalUsedQuota;
+    }
+
+    public void setLastCleanUpTime(Date date) {
+        this.lastCleanUpTime = date;
+    }
+    
+    public Date getLastCleanUpTime(){
+        return this.lastCleanUpTime;
     }
 }

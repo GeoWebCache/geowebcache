@@ -1,9 +1,26 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Gabriel Roldan (OpenGeo) 2010
+ *  
+ */
 package org.geowebcache.diskquota;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 
-public class Quota {
+public class Quota implements Comparable<Quota> {
 
     private static final NumberFormat NICE_FORMATTER = NumberFormat.getNumberInstance();
     static {
@@ -88,6 +105,22 @@ public class Quota {
         this.value = sum;
     }
 
+    public synchronized void add(final Quota quota) {
+        BigDecimal convertedValue = quota.getUnits().convertTo(quota.value, this.units);
+        BigDecimal sum = this.value.add(convertedValue);
+        if (sum.compareTo(BigDecimal.valueOf(1024)) > 0) {
+            // i.e. if added > 1024
+            StorageUnit newUnit = StorageUnit.closest(sum, this.units);
+            sum = this.units.convertTo(sum, newUnit);
+            this.units = newUnit;
+        }
+        this.value = sum;
+    }
+
+    public void subtract(final Quota quota) {
+        subtract(quota.getValue(), quota.getUnits());
+    }
+
     public synchronized void subtract(final double amount, final StorageUnit units) {
         subtract(BigDecimal.valueOf(amount), units);
     }
@@ -123,5 +156,29 @@ public class Quota {
      */
     public String toNiceString() {
         return NICE_FORMATTER.format(value) + units;
+    }
+
+    /**
+     * @param quota
+     *            quota to be compared against this one
+     * @return {@code this} or {@code quota}, the one that represents a lower amount
+     */
+    public Quota min(Quota quota) {
+        BigDecimal other = quota.getUnits().convertTo(quota.getValue(), this.units);
+        return value.min(other) == value ? this : quota;
+    }
+
+    /**
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    public int compareTo(Quota o) {
+        if (o == null) {
+            throw new NullPointerException("Can't compare against null");
+        }
+        if (units.equals(o.units)) {
+            return value.compareTo(o.getValue());
+        }
+        BigDecimal converted = o.getUnits().convertTo(o.getValue(), this.units);
+        return value.compareTo(converted);
     }
 }

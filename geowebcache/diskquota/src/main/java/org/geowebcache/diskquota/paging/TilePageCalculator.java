@@ -1,6 +1,24 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Gabriel Roldan (OpenGeo) 2010
+ *  
+ */
 package org.geowebcache.diskquota.paging;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -39,7 +57,8 @@ public class TilePageCalculator {
 
         for (GridSubset gs : gridSubsets.values()) {
             String name = gs.getName();
-            PagePyramid pagePyramid = new PagePyramid(gs);
+            PagePyramid pagePyramid = new PagePyramid(tileLayer.getName(), gs.getName(),
+                    gs.getCoverages());
             pageRangesPerGridSubset.put(name, pagePyramid);
         }
     }
@@ -52,6 +71,16 @@ public class TilePageCalculator {
         return this.layerQuota;
     }
 
+    public void removeTileInfo(long x, long y, int z, String gridSetId) {
+        TilePage page = pageFor(x, y, z, gridSetId);
+        page.removeTile();
+    }
+
+    public void createTileInfo(long x, long y, int z, String gridSetId) {
+        TilePage page = pageFor(x, y, z, gridSetId);
+        page.addTile();
+    }
+
     public TilePage pageFor(long x, long y, int z, String gridSetId) {
         pagesLock.readLock().lock();
         try {
@@ -62,36 +91,26 @@ public class TilePageCalculator {
         }
     }
 
-    /**
-     * Returns a the list of {@link TilePage}s per gridsubset at the time of calling.
-     * <p>
-     * Note the returned pagea are a deep copy (i.e. internal {@link TilePage}s are copies too).
-     * This is so that the stats collector can continue gathering usage data on pages without
-     * affecting the result of this method.
-     * </p>
-     * 
-     * @return
-     */
-    public List<TilePage> getAllPages(final String gridSubset) {
-        Map<int[], TilePage> allPagesMap;
-        pagesLock.writeLock().lock();
-        try {
-            PagePyramid pageRange = this.pageRangesPerGridSubset.get(gridSubset);
-            allPagesMap = pageRange.getAllPages();
-        } finally {
-            pagesLock.writeLock().unlock();
-        }
-
-        List<TilePage> allPages = new ArrayList<TilePage>(allPagesMap.values());
-        return allPages;
-    }
-
     public ArrayList<TilePage> getPages(String gridSetId) {
         ArrayList<TilePage> pages;
         pagesLock.writeLock().lock();
         try {
             PagePyramid pageRange = this.pageRangesPerGridSubset.get(gridSetId);
             pages = new ArrayList<TilePage>(pageRange.getPages());
+        } finally {
+            pagesLock.writeLock().unlock();
+        }
+        return pages;
+    }
+
+    public List<TilePage> getPages() {
+        ArrayList<TilePage> pages = new ArrayList<TilePage>();
+        pagesLock.writeLock().lock();
+        try {
+            Collection<PagePyramid> pagePyramids = this.pageRangesPerGridSubset.values();
+            for (PagePyramid srsPyramid : pagePyramids) {
+                pages.addAll(srsPyramid.getPages());
+            }
         } finally {
             pagesLock.writeLock().unlock();
         }
@@ -118,4 +137,5 @@ public class TilePageCalculator {
         long[][] gridCoverage = pageRange.toGridCoverage(page);
         return gridCoverage;
     }
+
 }

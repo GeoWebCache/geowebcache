@@ -1,5 +1,19 @@
 /**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
+ * @author Gabriel Roldan (OpenGeo) 2010
+ *  
  */
 package org.geowebcache.diskquota.paging;
 
@@ -26,7 +40,7 @@ public class TilePageTest extends TestCase {
      * Test method for {@link org.geowebcache.diskquota.paging.TilePage#TilePage(int, int, int)}.
      */
     public void testSimpleConstructor() {
-        TilePage page = new TilePage(0, 1, 2);
+        TilePage page = new TilePage("testLayer", "EPSG:4326", 0, 1, 2);
         assertEquals(0, page.getX());
         assertEquals(1, page.getY());
         assertEquals(2, page.getZ());
@@ -41,7 +55,7 @@ public class TilePageTest extends TestCase {
 
      */
     public void testFullConstructor() {
-        TilePage page = new TilePage(0, 1, 2, 3, 4, 5);
+        TilePage page = new TilePage("testLayer", "EPSG:4326", 0, 1, 2, 3, 4, 5);
         assertEquals(0, page.getX());
         assertEquals(1, page.getY());
         assertEquals(2, page.getZ());
@@ -55,7 +69,7 @@ public class TilePageTest extends TestCase {
      * {@link TilePage#getNumHits()}
      */
     public void testkHits() {
-        TilePage page = new TilePage(0, 1, 2);
+        TilePage page = new TilePage("testLayer", "EPSG:4326", 0, 1, 2);
         page.markHit();
         assertEquals(1, page.getNumHits());
         page.markHit();
@@ -66,7 +80,7 @@ public class TilePageTest extends TestCase {
      * Test method for {@link org.geowebcache.diskquota.paging.TilePage#getNumTilesInPage()}.
      */
     public void testNumTilesInPage() {
-        TilePage page = new TilePage(0, 1, 2);
+        TilePage page = new TilePage("testLayer", "EPSG:4326", 0, 1, 2);
         page.addTile();
         assertEquals(1, page.getNumTilesInPage());
         page.addTile();
@@ -79,14 +93,14 @@ public class TilePageTest extends TestCase {
      * Test method for {@link org.geowebcache.diskquota.paging.TilePage#getLastAccessTimeMinutes()}.
      */
     public void testGetLastAccessTimeMinutes() {
-        TilePage page = new TilePage(0, 1, 2);
+        TilePage page = new TilePage("testLayer", "EPSG:4326", 0, 1, 2);
         assertEquals(0, page.getLastAccessTimeMinutes());
         page.markHit();
         assertTrue(page.getLastAccessTimeMinutes() > 0);
     }
 
     public void testSerialization() throws IOException, ClassNotFoundException {
-        TilePage page = new TilePage(0, 1, 2, 3, 4, 5);
+        TilePage page = new TilePage("testLayer", "EPSG:4326", 0, 1, 2, 3, 4, 5);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ObjectOutputStream oout = new ObjectOutputStream(out);
         oout.writeObject(page);

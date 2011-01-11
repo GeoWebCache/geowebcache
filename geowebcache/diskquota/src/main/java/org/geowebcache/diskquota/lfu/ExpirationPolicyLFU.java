@@ -1,8 +1,23 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Gabriel Roldan (OpenGeo) 2010
+ *  
+ */
 package org.geowebcache.diskquota.lfu;
 
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 import org.geowebcache.diskquota.DiskQuotaMonitor;
 import org.geowebcache.diskquota.Quota;
@@ -39,13 +54,8 @@ public class ExpirationPolicyLFU extends AbstractPagedExpirationPolicy {
     }
 
     @Override
-    protected List<TilePage> sortPagesForExpiration(List<TilePage> allPages) {
-        return sortPages(allPages);
-    }
-
-    static List<TilePage> sortPages(List<TilePage> allPages) {
-        Collections.sort(allPages, LFUSorter);
-        return allPages;
+    protected Comparator<TilePage> getExpirationComparator() {
+        return LFUSorter;
     }
 
     /**
@@ -53,7 +63,7 @@ public class ExpirationPolicyLFU extends AbstractPagedExpirationPolicy {
      * 
      * @see TilePage#getNumHits()
      */
-    private static final Comparator<TilePage> LFUSorter = new Comparator<TilePage>() {
+    static final Comparator<TilePage> LFUSorter = new Comparator<TilePage>() {
 
         /**
          * Compares the two TilePages last access time such that the one with more hits is ordered
@@ -71,11 +81,19 @@ public class ExpirationPolicyLFU extends AbstractPagedExpirationPolicy {
             long p1Hits = p1.getNumHits();
             long p2Hits = p2.getNumHits();
             // we use p1 - p2 for reverse ordering (ie, least frequently used first)
-            long delta = p1Hits - p2Hits;
+            long delta;
+            delta = p1.getLayerName().compareTo(p2.getLayerName());
+            if (delta == 0) {
+                delta = p1.getGridsetId().compareTo(p2.getGridsetId());
+            }
+            if (delta == 0) {
+                delta = p1Hits - p2Hits;
+            }
             if (delta == 0) {
                 // now use p2 - p1 so the higher zoom level goes first
                 delta = p2.getZ() - p1.getZ();
             }
+
             // be cautious of the (improbable?) case of delta overflowing int
             return delta > 0 ? 1 : delta < 0 ? -1 : 0;
         }

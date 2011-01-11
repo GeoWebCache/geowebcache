@@ -64,6 +64,11 @@
       <artifactId>gwc-wmts</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.geowebcache</groupId>
+      <artifactId>gwc-diskquota</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- This is for Acegi -->
     <dependency>
@@ -180,18 +185,5 @@
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>diskquota</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.geowebcache</groupId>
-          <artifactId>gwc-diskquota</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-      </dependencies>
-    </profile>
-  </profiles>
 
 </project>
