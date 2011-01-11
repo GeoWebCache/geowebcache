@@ -131,7 +131,7 @@ public class FileBlobStore implements BlobStore {
             throw new StorageException("Unable to delete "
                     + fh.getAbsolutePath());
         }
-        long[] xyz = stObj.getXYZ();
+        stObj.setBlobSize((int) length);
         listeners.sendTileDeleted(stObj);
        
         File parentDir = fh.getParentFile();
