@@ -97,4 +97,6 @@ public interface ExpirationPolicy {
      */
     void removeTileInfo(LayerQuota layerQuota, String gridSetId, long x, long y, int z);
 
+    void dettachAll();
+
 }

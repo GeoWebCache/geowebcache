@@ -66,7 +66,7 @@ public class DiskQuotaMonitor implements DisposableBean {
      * @see #setUpScheduledCleanUp()
      * @see #destroy()
      */
-    private final ScheduledExecutorService cleanUpExecutorService;
+    private ScheduledExecutorService cleanUpExecutorService;
 
     /**
      * Disk quota config object loaded and saved by {@link #configLoader}
@@ -78,7 +78,9 @@ public class DiskQuotaMonitor implements DisposableBean {
      */
     private final ConfigLoader configLoader;
 
-    private final LayerCacheInfoBuilder cacheInfoBuilder;
+    private LayerCacheInfoBuilder cacheInfoBuilder;
+
+    private MonitoringBlobListener blobListener;
 
     /**
      * 
@@ -101,15 +103,29 @@ public class DiskQuotaMonitor implements DisposableBean {
 
         this.quotaConfig = configLoader.loadConfig();
 
+        applyConfig();
+    }
+
+    private void applyConfig() throws StorageException {
+        if (cacheInfoBuilder != null) {
+            log.info("Shutting down cache info builder...");
+            cacheInfoBuilder.shutDown();
+        }
+
+        if (cleanUpExecutorService != null) {
+            log.info("Shutting down clean up executor service...");
+            cleanUpExecutorService.shutdownNow();
+        }
+
         this.cleanUpExecutorService = createCleanUpExecutor();
-
         attachConfiguredLayers();
-
         this.cacheInfoBuilder = launchCacheInfoGatheringThreads();
 
-        final MonitoringBlobListener blobListener = new MonitoringBlobListener(quotaConfig);
+        if (blobListener != null) {
+            storageBroker.removeBlobStoreListener(blobListener);
+        }
+        blobListener = new MonitoringBlobListener(quotaConfig);
         storageBroker.addBlobStoreListener(blobListener);
-
         setUpScheduledCleanUp();
     }
 
@@ -141,6 +157,7 @@ public class DiskQuotaMonitor implements DisposableBean {
 
     public void saveConfig() {
         try {
+            applyConfig();
             configLoader.saveConfig(quotaConfig);
         } catch (ConfigurationException e) {
             throw new RuntimeException(e);
@@ -183,6 +200,7 @@ public class DiskQuotaMonitor implements DisposableBean {
 
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(
                 numCleaningThreads, tf);
+
         return executorService;
     }
 
@@ -195,6 +213,7 @@ public class DiskQuotaMonitor implements DisposableBean {
         long period = quotaConfig.getCacheCleanUpFrequency();
         TimeUnit unit = quotaConfig.getCacheCleanUpUnits();
         cleanUpExecutorService.scheduleAtFixedRate(command, initialDelay, period, unit);
+
         log.info("Disk quota periodic enforcement task set up every " + period + " " + unit);
     }
 
@@ -209,6 +228,10 @@ public class DiskQuotaMonitor implements DisposableBean {
                 tileLayerDispatcher.getLayers());
 
         final List<LayerQuota> layerQuotas = quotaConfig.getLayerQuotas();
+
+        for (ExpirationPolicy p : configLoader.getExpirationPolicies().values()) {
+            p.dettachAll();
+        }
 
         final ExpirationPolicy globalExpirationPolicy = quotaConfig.getGlobalExpirationPolicy();
         final Quota globalQuota = quotaConfig.getGlobalQuota();

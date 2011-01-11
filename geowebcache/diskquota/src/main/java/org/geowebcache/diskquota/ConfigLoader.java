@@ -73,7 +73,7 @@ public class ConfigLoader {
 
     private final DefaultStorageFinder storageFinder;
 
-    private final Map<String, ExpirationPolicy> enabledPolicies;
+    private final Map<String, ExpirationPolicy> expirationPolicyCache;
 
     /**
      * 
@@ -95,7 +95,7 @@ public class ConfigLoader {
         this.storageFinder = storageFinder;
         this.context = contextProvider.getApplicationContext();
         this.tileLayerDispatcher = tld;
-        this.enabledPolicies = new HashMap<String, ExpirationPolicy>();
+        this.expirationPolicyCache = new HashMap<String, ExpirationPolicy>();
     }
 
     /**
@@ -257,25 +257,27 @@ public class ConfigLoader {
         log.debug("Quota validated: " + quota);
     }
 
-    @SuppressWarnings("unchecked")
     public ExpirationPolicy findExpirationPolicy(final String expirationPolicyName) {
 
-        ExpirationPolicy policy = this.enabledPolicies.get(expirationPolicyName);
+        ExpirationPolicy policy = getExpirationPolicies().get(expirationPolicyName);
 
         if (policy == null) {
+            throw new NoSuchElementException("No " + ExpirationPolicy.class.getName()
+                    + " found named '" + expirationPolicyName + "' in app context.");
+        }
+        return policy;
+    }
+
+    @SuppressWarnings("unchecked")
+    public synchronized Map<String, ExpirationPolicy> getExpirationPolicies() {
+        if (expirationPolicyCache.isEmpty()) {
             Map<String, ExpirationPolicy> expirationPolicies;
             expirationPolicies = context.getBeansOfType(ExpirationPolicy.class);
             for (ExpirationPolicy p : expirationPolicies.values()) {
-                if (p.getName().equals(expirationPolicyName)) {
-                    enabledPolicies.put(p.getName(), p);
-                    return p;
-                }
+                expirationPolicyCache.put(p.getName(), p);
             }
-        } else {
-            return policy;
         }
-        throw new NoSuchElementException("No " + ExpirationPolicy.class.getName()
-                + " found named '" + expirationPolicyName + "' in app context.");
+        return new HashMap<String, ExpirationPolicy>(expirationPolicyCache);
     }
 
     private DiskQuotaConfig loadConfiguration(final InputStream configStream) {

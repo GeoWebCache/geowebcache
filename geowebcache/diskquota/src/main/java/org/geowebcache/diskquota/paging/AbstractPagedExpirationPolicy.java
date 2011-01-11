@@ -117,6 +117,13 @@ public abstract class AbstractPagedExpirationPolicy implements ExpirationPolicy,
         return false;
     }
 
+    public synchronized void dettachAll() {
+        Set<String> layerNames = new HashSet<String>(this.attachedLayers.keySet());
+        for (String layerName : layerNames) {
+            dettach(layerName);
+        }
+    }
+
     /**
      * @see org.springframework.beans.factory.DisposableBean#destroy()
      */
@@ -326,7 +333,11 @@ public abstract class AbstractPagedExpirationPolicy implements ExpirationPolicy,
         for (String layerName : layerNames) {
             TilePageCalculator pageCalculator = this.attachedLayers.get(layerName);
             List<TilePage> layerPages = pageCalculator.getPages();
-            orderedPages.addAll(layerPages);
+            for (TilePage p : layerPages) {
+                if (p.getNumTilesInPage() > 0) {
+                    orderedPages.add(p);
+                }
+            }
         }
         Collections.sort(orderedPages, strategyComparator);
         final Quota initialUsage = new Quota(usedQuota);
