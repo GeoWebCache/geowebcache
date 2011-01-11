@@ -170,6 +170,13 @@ public class DiskQuotaMonitor implements DisposableBean {
         return configLoader.findExpirationPolicy(name);
     }
 
+    /**
+     * Launches a background task to traverse the cache and compute the disk usage of each layer
+     * that has no {@link LayerQuota#getUsedQuota() used quota} already loaded.
+     * 
+     * @return
+     * @throws StorageException
+     */
     private LayerCacheInfoBuilder launchCacheInfoGatheringThreads() throws StorageException {
 
         final File rootCacheDir = configLoader.getRootCacheDir();
@@ -186,7 +193,16 @@ public class DiskQuotaMonitor implements DisposableBean {
             } catch (GeoWebCacheException e) {
                 throw new RuntimeException(e);
             }
-            cacheInfoBuilder.buildCacheInfo(tileLayer, layerQuota);
+
+            Quota usedQuota = layerQuota.getUsedQuota();
+            if (usedQuota.getValue().doubleValue() > 0) {
+                log.debug("Using saved quota information for layer " + layerQuota.getLayer() + ": "
+                        + usedQuota.toNiceString());
+            } else {
+                log.debug(layerQuota.getLayer() + " has no saved used quota information,"
+                        + "traversing layer cache to compute its disk usage.");
+                cacheInfoBuilder.buildCacheInfo(tileLayer, layerQuota);
+            }
         }
         return cacheInfoBuilder;
     }

@@ -122,8 +122,8 @@ final class LayerCacheInfoBuilder {
                         cacheTask = threadPool.submit(cacheInfoBuilder);
 
                         perLayerRunningTasks.get(layerName).add(cacheTask);
-                        log.info("Submitted background task to gather cache info for '" + layerName
-                                + "'/" + gridSetId + "/" + zoomLevel);
+                        log.debug("Submitted background task to gather cache info for '"
+                                + layerName + "'/" + gridSetId + "/" + zoomLevel);
                     }
                 }
             }
@@ -193,7 +193,7 @@ final class LayerCacheInfoBuilder {
                 e.printStackTrace();
                 throw (e);
             }
-            log.info("Cache information for " + zLevelKey + " collected in " + stats.runTimeMillis
+            log.debug("Cache information for " + zLevelKey + " collected in " + stats.runTimeMillis
                     / 1000D + "s. Counted " + stats.numTiles + " tiles for a storage space of "
                     + stats.collectedQuota.toNiceString());
             return stats;

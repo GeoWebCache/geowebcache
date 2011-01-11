@@ -91,7 +91,7 @@ public abstract class AbstractPagedExpirationPolicy implements ExpirationPolicy,
      *      org.geowebcache.diskquota.LayerQuota)
      */
     public void attach(final TileLayer tileLayer, LayerQuota layerQuota) {
-        log.info("Attaching layer '" + tileLayer.getName() + "' to cache expiration policy "
+        log.debug("Attaching layer '" + tileLayer.getName() + "' to cache expiration policy "
                 + getName());
 
         TilePageCalculator calc = new TilePageCalculator(tileLayer, layerQuota);
@@ -157,7 +157,7 @@ public abstract class AbstractPagedExpirationPolicy implements ExpirationPolicy,
         final TileLayer tileLayer = calc.getTileLayer();
         final String layerName = tileLayer.getName();
         final Hashtable<String, GridSubset> gridSubsets = tileLayer.getGridSubsets();
-        log.info("Loading stats pages for layer '" + layerName + "'");
+        log.debug("Loading stats pages for layer '" + layerName + "'");
 
         List<TilePage> pages;
         for (String gridSetId : gridSubsets.keySet()) {
