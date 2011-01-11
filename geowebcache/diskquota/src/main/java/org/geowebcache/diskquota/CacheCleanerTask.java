@@ -19,6 +19,7 @@ package org.geowebcache.diskquota;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,6 +111,8 @@ class CacheCleanerTask implements Runnable {
             log.debug("DiskQuota disabled, ignoring run...");
             return;
         }
+
+        quotaConfig.setLastCleanUpTime(new Date());
 
         final List<LayerQuota> globallyManagedQuotas = new ArrayList<LayerQuota>();
         for (LayerQuota lq : quotaConfig.getLayerQuotas()) {

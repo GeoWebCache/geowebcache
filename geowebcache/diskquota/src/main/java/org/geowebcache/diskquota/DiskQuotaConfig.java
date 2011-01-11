@@ -18,6 +18,7 @@
 package org.geowebcache.diskquota;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -66,6 +67,8 @@ public class DiskQuotaConfig {
     private transient boolean dirty;
 
     private transient Quota globalUsedQuota;
+
+    private transient Date lastCleanUpTime;
 
     public DiskQuotaConfig() {
         readResolve();
@@ -265,5 +268,13 @@ public class DiskQuotaConfig {
             }
         }
         return globalUsedQuota;
+    }
+
+    public void setLastCleanUpTime(Date date) {
+        this.lastCleanUpTime = date;
+    }
+    
+    public Date getLastCleanUpTime(){
+        return this.lastCleanUpTime;
     }
 }
