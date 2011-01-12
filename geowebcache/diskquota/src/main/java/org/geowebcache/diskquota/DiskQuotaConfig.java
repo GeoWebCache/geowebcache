@@ -36,7 +36,7 @@ public class DiskQuotaConfig {
 
     static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
 
-    static final int DEFAULT_CLEANUP_FREQUENCY = 10 * 60;
+    static final int DEFAULT_CLEANUP_FREQUENCY = 10;
 
     static final TimeUnit DEFAULT_CLEANUP_UNITS = TimeUnit.SECONDS;
 
@@ -273,8 +273,8 @@ public class DiskQuotaConfig {
     public void setLastCleanUpTime(Date date) {
         this.lastCleanUpTime = date;
     }
-    
-    public Date getLastCleanUpTime(){
+
+    public Date getLastCleanUpTime() {
         return this.lastCleanUpTime;
     }
 }
