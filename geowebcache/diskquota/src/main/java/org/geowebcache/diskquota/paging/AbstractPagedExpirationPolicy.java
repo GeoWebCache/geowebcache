@@ -120,6 +120,7 @@ public abstract class AbstractPagedExpirationPolicy implements ExpirationPolicy,
     public synchronized void dettachAll() {
         Set<String> layerNames = new HashSet<String>(this.attachedLayers.keySet());
         for (String layerName : layerNames) {
+            save(layerName);
             dettach(layerName);
         }
     }
@@ -382,7 +383,12 @@ public abstract class AbstractPagedExpirationPolicy implements ExpirationPolicy,
                     pageGridCoverage, mimeType);
 
             // truncate synchronously. We're already inside the interested thread
-            truncateTask.doAction();
+            try {
+                truncateTask.doAction();
+            } catch (InterruptedException e) {
+                log.debug("Truncate task interrupted");
+                return;
+            }
 
             if (0 == tilePage.getNumTilesInPage()) {
                 // already truncated the tiles for the page at all available mime types
