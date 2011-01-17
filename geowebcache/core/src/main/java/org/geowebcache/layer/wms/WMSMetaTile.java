@@ -123,16 +123,14 @@ public class WMSMetaTile extends MetaTile {
         
         BoundingBox metaBbox = gridSubset.boundsFromRectangle(metaGridCov);
         
-        double[] metaCoords = metaBbox.coords;
-        
         long pixelWidth = metaX * gridSubset.getTileWidth();
         long pixelHeight = metaY * gridSubset.getTileHeight();
         
         double widthRelDelta = ((1.0 * pixelWidth + wmsLayer.gutter) / pixelWidth ) - 1.0;
         double heightRelDelta = ((1.0 * pixelHeight + wmsLayer.gutter) / pixelHeight ) - 1.0;
         
-        double coordWidth = metaCoords[2] - metaCoords[0];
-        double coordHeight = metaCoords[3] - metaCoords[1];
+        double coordWidth = metaBbox.getWidth();
+        double coordHeight = metaBbox.getHeight();
         
         double coordWidthDelta = coordWidth * widthRelDelta;
         double coordHeightDelta = coordHeight * heightRelDelta;
@@ -140,22 +138,22 @@ public class WMSMetaTile extends MetaTile {
         if(layerCov[0] < metaGridCov[0]) {
             pixelWidth += wmsLayer.gutter;
             gutter[0] = wmsLayer.gutter;
-            metaCoords[0] -= coordWidthDelta;
+            metaBbox.setMinX(metaBbox.getMinX() - coordWidthDelta);
         }
         if(layerCov[1] < metaGridCov[1]) {
             pixelHeight += wmsLayer.gutter;
             gutter[1] = wmsLayer.gutter;
-            metaCoords[1] -= coordHeightDelta;
+            metaBbox.setMinY(metaBbox.getMinY() - coordHeightDelta);
         }
         if(layerCov[2] > metaGridCov[2]) {
             pixelWidth += wmsLayer.gutter;
             gutter[2] = wmsLayer.gutter;
-            metaCoords[2] += coordWidthDelta;
+            metaBbox.setMaxX(metaBbox.getMaxX() + coordWidthDelta);
         }
         if(layerCov[3] > metaGridCov[3]) {
             pixelHeight += wmsLayer.gutter;
             gutter[3] = wmsLayer.gutter;
-            metaCoords[3] += coordHeightDelta;
+            metaBbox.setMaxY(metaBbox.getMaxY() + coordHeightDelta);
         }
         
         strBuilder.append("&WIDTH=").append(pixelWidth);

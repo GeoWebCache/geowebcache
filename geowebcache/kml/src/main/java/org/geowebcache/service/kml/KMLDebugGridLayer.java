@@ -126,15 +126,15 @@ public class KMLDebugGridLayer extends TileLayer {
                 +"<LabelStyle id=\"name\"><color>ffffffff</color><colorMode>normal</colorMode><scale>1.0</scale></LabelStyle>\n"
                 +"</Style>\n"
                 +"<MultiGeometry>\n"
-                +"<Point><coordinates>"+((bbox.coords[0]+bbox.coords[2])/2) 
-                +","+ ((bbox.coords[1]+bbox.coords[3])/2) 
+                +"<Point><coordinates>"+((bbox.getMinX()+bbox.getMaxX())/2) 
+                +","+ ((bbox.getMinY()+bbox.getMaxY())/2) 
                 +",0</coordinates></Point>\n"
                 +"<Polygon><outerBoundaryIs><LinearRing>\n"
                 +"<coordinates decimal=\".\" cs=\",\" ts=\" \">\n"
-                + bbox.coords[0] +","+ bbox.coords[1] + " "
-                + bbox.coords[2] +","+ bbox.coords[1] + " "
-                + bbox.coords[2] +","+ bbox.coords[3] + " "
-                + bbox.coords[0] +","+ bbox.coords[3]
+                + bbox.getMinX() +","+ bbox.getMinY() + " "
+                + bbox.getMaxX() +","+ bbox.getMinY() + " "
+                + bbox.getMaxX() +","+ bbox.getMaxY() + " "
+                + bbox.getMinX() +","+ bbox.getMaxY()
                 +"</coordinates>\n"
                 +"</LinearRing></outerBoundaryIs></Polygon>\n"
                 +"</MultiGeometry>\n"

@@ -37,7 +37,7 @@ public class BoundingBox {
         new BoundingBox(-20037508.34,-20037508.34,20037508.34,20037508.34);
     
     // minx, miny, maxx, maxy
-    public double[] coords = new double[4];
+    private double[] coords = new double[4];
 
     public BoundingBox(BoundingBox bbox) {
         coords[0] = bbox.coords[0];
@@ -69,6 +69,45 @@ public class BoundingBox {
         if (log.isTraceEnabled()) {
             log.trace("Created BBOX: " + getReadableString());
         }
+    }
+    
+    public double getMinX(){
+        return coords[0];
+    }
+    
+    public void setMinX(double minx) {
+        coords[0] = minx;
+    }
+
+    public double getMinY(){
+        return coords[1];
+    }
+    
+    public void setMinY(double miny) {
+        coords[1] = miny;
+    }
+
+    public double getMaxX(){
+        return coords[2];
+    }
+
+    public void setMaxX(double maxx) {
+        coords[2] = maxx;
+    }
+    
+    public double getMaxY(){
+        return coords[3];
+    }
+    
+    public void setMaxY(double maxy) {
+        coords[3] = maxy;
+    }
+
+    /**
+     * @return [minx, miny, maxx, maxy]
+     */
+    public double[] getCoords(){
+        return coords.clone();
     }
     
     public double getWidth() {

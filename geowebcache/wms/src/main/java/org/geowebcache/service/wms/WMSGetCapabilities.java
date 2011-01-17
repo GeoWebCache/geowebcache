@@ -380,10 +380,10 @@ public class WMSGetCapabilities {
     
     String[] boundsPrep(BoundingBox bbox) {
         String[] bs = { 
-                Double.toString(bbox.coords[0]), 
-                Double.toString(bbox.coords[1]), 
-                Double.toString(bbox.coords[2]), 
-                Double.toString(bbox.coords[3]) };
+                Double.toString(bbox.getMinX()), 
+                Double.toString(bbox.getMinY()), 
+                Double.toString(bbox.getMaxX()), 
+                Double.toString(bbox.getMaxY()) };
         return bs;
     }
 }

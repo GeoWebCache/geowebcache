@@ -302,9 +302,9 @@ public class KMLService extends Service {
             long[] gridLocEast = {1,0,0};
             
             BoundingBox bboxWest = new BoundingBox(
-                    bbox.coords[0], bbox.coords[1], 0.0, bbox.coords[3] );
+                    bbox.getMinX(), bbox.getMinY(), 0.0, bbox.getMaxY() );
             BoundingBox bboxEast = new BoundingBox(
-                    0.0, bbox.coords[1], bbox.coords[2], bbox.coords[3] );
+                    0.0, bbox.getMinY(), bbox.getMaxX(), bbox.getMaxY() );
             
             networkLinks = 
                 superOverlayNetworLink(
@@ -673,10 +673,10 @@ public class KMLService extends Service {
     }
     
     private static String getLookAt(BoundingBox bbox) {
-        double lon1 = bbox.coords[0];
-        double lat1 = bbox.coords[1];
-        double lon2 = bbox.coords[2];
-        double lat2 = bbox.coords[3];
+        double lon1 = bbox.getMinX();
+        double lat1 = bbox.getMinY();
+        double lon2 = bbox.getMaxX();
+        double lat2 = bbox.getMaxY();
 
         double R_EARTH = 6.371 * 1000000; // meters
         //double VIEWER_WIDTH = 22 * Math.PI / 180; // The field of view of the

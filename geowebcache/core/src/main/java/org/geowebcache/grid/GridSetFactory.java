@@ -67,12 +67,12 @@ public class GridSetFactory {
         gridSet.pixelSize = pixelSize;
         
         if(alignTopLeft) {
-            gridSet.baseCoords[0] = extent.coords[0];
-            gridSet.baseCoords[1] = extent.coords[3];
+            gridSet.baseCoords[0] = extent.getMinX();
+            gridSet.baseCoords[1] = extent.getMaxY();
             gridSet.yBaseToggle = true;
         } else {
-            gridSet.baseCoords[0] = extent.coords[0];
-            gridSet.baseCoords[1] = extent.coords[1];
+            gridSet.baseCoords[0] = extent.getMinX();
+            gridSet.baseCoords[1] = extent.getMinY();
         }
         
         gridSet.yCoordinateFirst = yCoordinateFirst;
@@ -169,7 +169,7 @@ public class GridSetFactory {
             }
             relWidth +=  (ratio * relHeight - relWidth);
             
-            extent.coords[2] = (relWidth * tileWidth) + extent.coords[0];
+            extent.setMaxX((relWidth * tileWidth) + extent.getMinX());
         
             resolutions[0] = (extent.getWidth() / ratio) / tileWidth;
         } else {
@@ -183,9 +183,9 @@ public class GridSetFactory {
             
             // Do we keep the top or the bottom fixed?
             if(alignTopLeft) {
-                extent.coords[1] = extent.coords[3] - (relHeight * tileHeight);
+                extent.setMinY(extent.getMaxY() - (relHeight * tileHeight));
             } else {
-                extent.coords[3] = (relHeight * tileHeight) + extent.coords[1];
+                extent.setMaxY((relHeight * tileHeight) + extent.getMinY());
             }
             
             resolutions[0] = (extent.getWidth() / ratio) / tileWidth;

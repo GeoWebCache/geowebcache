@@ -307,9 +307,9 @@ public class GridCalculatorTest extends TestCase {
         
         long[] t1 = {0,0,1}; // 90x90 degrees
         BoundingBox test1 = gridSubset.boundsFromIndex(t1);
-        assertTrue(Math.abs(test1.coords[0] + 180.0) < 0.01);
-        assertTrue(Math.abs(test1.coords[1] + 90.0) < 0.01);
-        assertTrue(Math.abs(test1.coords[3]) < 0.01);
+        assertTrue(Math.abs(test1.getMinX() + 180.0) < 0.01);
+        assertTrue(Math.abs(test1.getMinY() + 90.0) < 0.01);
+        assertTrue(Math.abs(test1.getMaxY()) < 0.01);
     }
     
     public void testCustomSRSGridTopLeft() throws Exception {
@@ -348,10 +348,10 @@ public class GridCalculatorTest extends TestCase {
         double height = tileHeight * resolution;
         
         BoundingBox ret = new BoundingBox(
-                bbox.coords[0] + width,
-                bbox.coords[1] + height,
-                bbox.coords[0] + width * 2,
-                bbox.coords[1] + height * 2 );
+                bbox.getMinX() + width,
+                bbox.getMinY() + height,
+                bbox.getMinX() + width * 2,
+                bbox.getMinY() + height * 2 );
                 
         return ret;
     } 

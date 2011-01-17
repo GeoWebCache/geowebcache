@@ -137,9 +137,9 @@ public class GridSet {
         double width = grid.resolution * tileWidth;
         double height = grid.resolution * tileHeight;
         
-        double x = (tileBounds.coords[0] - baseCoords[0]) / width;
+        double x = (tileBounds.getMinX() - baseCoords[0]) / width;
         
-        double y = (tileBounds.coords[1] - baseCoords[1]) / height;
+        double y = (tileBounds.getMinY() - baseCoords[1]) / height;
             
         long posX = (long) Math.round(x);
         
@@ -194,10 +194,10 @@ public class GridSet {
         double height = grid.resolution * tileHeight;
         
         
-        long minX = (long) Math.floor((rectangeBounds.coords[0] - baseCoords[0]) / width);
-        long minY = (long) Math.floor((rectangeBounds.coords[1] - baseCoords[1])/ height);
-        long maxX = (long) Math.ceil(((rectangeBounds.coords[2] - baseCoords[0]) / width));
-        long maxY = (long) Math.ceil(((rectangeBounds.coords[3] - baseCoords[1]) / height));
+        long minX = (long) Math.floor((rectangeBounds.getMinX() - baseCoords[0]) / width);
+        long minY = (long) Math.floor((rectangeBounds.getMinY() - baseCoords[1])/ height);
+        long maxX = (long) Math.ceil(((rectangeBounds.getMaxX() - baseCoords[0]) / width));
+        long maxY = (long) Math.ceil(((rectangeBounds.getMaxY() - baseCoords[1]) / height));
         
         if(yBaseToggle) {
             minY = minY + grid.extent[1];
@@ -347,5 +347,9 @@ public class GridSet {
         } else {
             return "unknown";
         }
+    }
+
+    public boolean isTopLeftAligned() {
+        return this.yBaseToggle;
     }
 }

@@ -227,11 +227,10 @@ public class GeometryRasterMaskBuilder {
         final Envelope2D genvelope = new Envelope2D();
         {
             // genvelope.setCoordinateReferenceSystem(layerCrs);
-            double coords[] = coverageBounds.coords.clone();
-            double x = coords[0];
-            double y = coords[1];
-            double width = coords[2] - x;
-            double height = coords[3] - y;
+            double x = coverageBounds.getMinX();
+            double y = coverageBounds.getMinY();
+            double width = coverageBounds.getWidth();
+            double height = coverageBounds.getHeight();
             genvelope.setFrame(x, y, width, height);
         }
         final Rectangle paintArea = new Rectangle();

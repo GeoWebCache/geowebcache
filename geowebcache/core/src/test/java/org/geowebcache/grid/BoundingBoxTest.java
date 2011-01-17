@@ -52,7 +52,7 @@ public class BoundingBoxTest extends TestCase {
         assertEquals(5D, intersection.getWidth());
         assertEquals(5D, intersection.getHeight());
         assertTrue(intersection.isSane());
-        assertTrue(Arrays.equals(new double[] { 5, 5, 10, 10 }, intersection.coords));
+        assertTrue(Arrays.equals(new double[] { 5, 5, 10, 10 }, intersection.getCoords()));
     }
 
     /**

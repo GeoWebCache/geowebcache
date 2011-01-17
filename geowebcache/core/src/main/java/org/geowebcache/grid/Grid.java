@@ -19,7 +19,7 @@ package org.geowebcache.grid;
 import java.util.Arrays;
 
 public class Grid {    
-    // maxX and maxY
+    // numTilesWide and numTilesHigh (ie, maxX exclusive, maxY exclusive)
     protected long[] extent = new long[2];
     
     protected double resolution;

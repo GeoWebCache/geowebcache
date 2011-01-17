@@ -215,10 +215,10 @@ public class WMSTileFuser {
         //We now have the complete area, lets figure out our offsets
         //Positive means that there is blank space to the first tile,
         //negative means we will not use the entire tile
-        boundOfs[0] = srcBounds.coords[0] - reqBounds.coords[0];
-        boundOfs[1] = srcBounds.coords[1] - reqBounds.coords[1];
-        boundOfs[2] = reqBounds.coords[2] - srcBounds.coords[2];
-        boundOfs[3] = reqBounds.coords[3] - srcBounds.coords[3];
+        boundOfs[0] = srcBounds.getMinX() - reqBounds.getMinX();
+        boundOfs[1] = srcBounds.getMinY() - reqBounds.getMinY();
+        boundOfs[2] = reqBounds.getMaxX() - srcBounds.getMaxX();
+        boundOfs[3] = reqBounds.getMaxY() - srcBounds.getMaxY();
         
         canvasSize[0] = (int) Math.round(reqBounds.getWidth() / this.srcResolution);
         canvasSize[1] = (int) Math.round(reqBounds.getHeight() / this.srcResolution);

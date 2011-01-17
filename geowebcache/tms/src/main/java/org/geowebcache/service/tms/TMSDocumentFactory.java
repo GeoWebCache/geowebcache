@@ -121,7 +121,7 @@ public class TMSDocumentFactory {
         // Check with tschaub whether we actually have to provide this as OSGEO:40041
         // No.
         str.append("  <SRS>").append(gridSub.getSRS().toString()).append("</SRS>\n");
-        double[] coords = gridSub.getCoverageBestFitBounds().coords;
+        double[] coords = gridSub.getCoverageBestFitBounds().getCoords();
         str.append("  <BoundingBox minx=\"").append(coords[0]);
         str.append("\" miny=\"").append(coords[1]);
         str.append("\" maxx=\"").append(coords[2]);
