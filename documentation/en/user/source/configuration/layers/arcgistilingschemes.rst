@@ -80,4 +80,5 @@ To set up an OpenLayers WMS layer that access an ArcGIS cache through the GeoWeb
 
 And make sure the 'tileOrigin' property matches the tile origin defined in :file:`conf.xml`.
 
+.. note:: The OpenLayers tileOrigin property is new and available since revision #11033 in svn. This new functionality will be available in OpenLayers 2.11, which at the time of writing is not yet released. The OpenLayers version that comes with GeoWebCache already contains the needed patch.
 
