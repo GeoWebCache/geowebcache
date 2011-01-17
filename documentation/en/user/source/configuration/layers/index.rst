@@ -15,6 +15,7 @@ This section will describe how to manually configure layers in GeoWebCache, as w
    palettes
    parameterfilters
    requestfilters
+   arcgistilingschemes
    staticcaps
    georss
    examples
