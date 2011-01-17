@@ -56,8 +56,9 @@ public class SeedRestlet extends GWCRestlet {
     
     private TileBreeder seeder;
 
-    public JSONObject myrequest; 
-    
+    public JSONObject myrequest;
+
+    private XMLConfiguration xmlConfig; 
     
     public void handle(Request request, Response response){
         Method met = request.getMethod();
@@ -113,7 +114,7 @@ public class SeedRestlet extends GWCRestlet {
         
         SeedRequest sr = null;
         
-        XStream xs = XMLConfiguration.getConfiguredXStream(new XStream(new DomDriver()));
+        XStream xs = xmlConfig.getConfiguredXStream(new XStream(new DomDriver()));
         
         if(formatExtension.equalsIgnoreCase("xml")) {
             sr = (SeedRequest) xs.fromXML(req.getEntity().getStream());
@@ -168,6 +169,10 @@ public class SeedRestlet extends GWCRestlet {
         return writer.toString();
     }
     
+    
+    public void setXmlConfig(XMLConfiguration xmlConfig){
+        this.xmlConfig = xmlConfig;
+    }
     
     public void setTileBreeder(TileBreeder seeder) {
         this.seeder = seeder;
