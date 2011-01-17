@@ -449,5 +449,6 @@
     <module>wmts</module>
     <module>web</module>
     <module>diskquota</module>
+    <module>arcgiscache</module>
   </modules>
 </project>

@@ -277,7 +277,7 @@ public class WMTSGetCapabilities {
     private void layerWGS84BoundingBox(StringBuilder str, TileLayer layer) {
         GridSubset subset = layer.getGridSubsetForSRS(SRS.getEPSG4326());
         if(subset != null) {
-            double[] coords = subset.getOriginalExtent().coords;
+            double[] coords = subset.getOriginalExtent().getCoords();
             str.append("    <ows:WGS84BoundingBox>\n");
             str.append("      <ows:LowerCorner>"+coords[0]+" "+coords[1]+"</ows:LowerCorner>\n");
             str.append("      <ows:UpperCorner>"+coords[2]+" "+coords[3]+"</ows:UpperCorner>\n");

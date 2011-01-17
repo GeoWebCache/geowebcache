@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
@@ -239,7 +240,6 @@ public class Demo {
             openLayersPath = "../openlayers/OpenLayers.js";
         }
         
-        
         String page =
             "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n"
             +"<meta http-equiv=\"imagetoolbar\" content=\"no\">\n"
@@ -274,8 +274,20 @@ public class Demo {
             +"var demolayer = new OpenLayers.Layer.WMS(\n"
             +"\""+layerName+"\",\"../service/wms\",\n"
             +"{layers: '"+layerName+"', format: '"+formatStr+"' },\n"
-            +"{ tileSize: new OpenLayers.Size("+gridSubset.getTileWidth()+","+gridSubset.getTileHeight()+") }\n"	
-            + ");\n"
+            +"{ tileSize: new OpenLayers.Size("+gridSubset.getTileWidth()+","+gridSubset.getTileHeight()+")";
+        
+            /*
+             * If the gridset has a top left tile origin, lets tell that to open layers. Otherwise it'll
+             * calculate tile bounds based on the bbox bottom left corner, leading to misaligned
+             * requests.
+             */
+            GridSet gridSet = gridSubset.getGridSet();
+            if (gridSet.isTopLeftAligned()) {
+                page += ",\n tileOrigin: new OpenLayers.LonLat(" + bbox.getMinX() + ", "
+                        + bbox.getMaxY() + ")";
+            }
+           
+            page += "});\n"
             +"map.addLayer(demolayer);\n"
             +"map.zoomToExtent(new OpenLayers.Bounds("+zoomBounds.toString()+"));\n"
             +"// The following is just for GetFeatureInfo, which is not cached. Most people do not need this \n"

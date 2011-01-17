@@ -108,7 +108,7 @@ class CacheCleanerTask implements Runnable {
             }
         }
         if (!quotaConfig.isEnabled()) {
-            log.debug("DiskQuota disabled, ignoring run...");
+            log.trace("DiskQuota disabled, ignoring run...");
             return;
         }
 

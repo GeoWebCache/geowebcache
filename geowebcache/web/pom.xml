@@ -69,6 +69,11 @@
       <artifactId>gwc-diskquota</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.geowebcache</groupId>
+      <artifactId>gwc-arcgiscache</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- This is for Acegi -->
     <dependency>
