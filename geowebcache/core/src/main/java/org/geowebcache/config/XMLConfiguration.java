@@ -26,8 +26,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -373,7 +375,8 @@ public class XMLConfiguration implements Configuration {
         persistToFile(xmlFile);
     }
 
-    public static XStream getConfiguredXStream(XStream xs) {
+    @SuppressWarnings("unchecked")
+    public XStream getConfiguredXStream(XStream xs) {
         //XStream xs = xstream;
         xs.setMode(XStream.NO_REFERENCES);
         
@@ -420,6 +423,18 @@ public class XMLConfiguration implements Configuration {
         xs.alias("metaInformation", LayerMetaInformation.class);
         
         xs.alias("contactInformation", ContactInformation.class);
+
+        if (this.context != null) {
+            /*
+             * Look up XMLConfigurationProvider extension points and let them contribute to the
+             * configuration
+             */
+            Collection<XMLConfigurationProvider> configExtensions;
+            configExtensions = this.context.getBeansOfType(XMLConfigurationProvider.class).values();
+            for (XMLConfigurationProvider extension : configExtensions) {
+                xs = extension.getConfiguredXStream(xs);
+            }
+        }
         return xs;
     }
 
