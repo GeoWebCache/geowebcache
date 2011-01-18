@@ -38,4 +38,6 @@ public class ServiceContact {
     
     public String addressEmail;
     
+    public String addressType;
+    
 }

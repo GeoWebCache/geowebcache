@@ -27,7 +27,7 @@ public class ServiceInformation {
     
     public String fees;
     
-    public String accesConstraints;
+    public String accessConstraints;
     
     public String providerName;
     

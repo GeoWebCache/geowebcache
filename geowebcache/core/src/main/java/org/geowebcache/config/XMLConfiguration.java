@@ -49,6 +49,7 @@ import javax.xml.validation.Validator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.meta.ServiceContact;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -387,6 +388,7 @@ public class XMLConfiguration implements Configuration {
         xs.aliasField("xsi:noNamespaceSchemaLocation", GeoWebCacheConfiguration.class, "xsi_noNamespaceSchemaLocation");
         xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
         
+        xs.alias("keyword", String.class);
         xs.alias("layers", List.class);
         xs.alias("wmsLayer", WMSLayer.class);
         

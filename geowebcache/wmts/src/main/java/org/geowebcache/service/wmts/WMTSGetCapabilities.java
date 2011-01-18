@@ -140,7 +140,7 @@ public class WMTSGetCapabilities {
         
         if (servInfo != null) {
             appendTag(str, "  ", "ows:Fees", servInfo.fees, null);
-            appendTag(str, "  ", "ows:AccessConstraints", servInfo.accesConstraints, null);
+            appendTag(str, "  ", "ows:AccessConstraints", servInfo.accessConstraints, null);
         }
 
         str.append("</ows:ServiceIdentification>\n");

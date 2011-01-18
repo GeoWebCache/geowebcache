@@ -29,6 +29,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.meta.ServiceContact;
+import org.geowebcache.config.meta.ServiceInformation;
+import org.geowebcache.config.meta.ServiceProvider;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.WMSDimensionProvider;
 import org.geowebcache.grid.BoundingBox;
@@ -111,12 +114,75 @@ public class WMSGetCapabilities {
     }
         
     private void service(StringBuilder str) {
+        ServiceInformation servInfo = tld.getServiceInformation();
         str.append("<Service>\n");
         str.append("  <Name>OGC:WMS</Name>\n");
-        str.append("  <Title>GeoWebCache</Title>\n");
+        
+        if (servInfo == null) {
+            str.append("  <Title>Web Map Service - GeoWebCache</Title>\n");
+        } else {
+            str.append("  <Title>" + servInfo.title + "</Title>\n");
+            str.append("  <Abstract>" + servInfo.description + "</Abstract>\n");
+            
+            if (servInfo.keywords != null) {
+                str.append("  <KeywordList>\n");
+                Iterator<String> keywordIter = servInfo.keywords.iterator();
+                while(keywordIter.hasNext()) {
+                    str.append("    <Keyword>" + keywordIter.next() + "</Keyword>\n");
+                }
+                str.append("  </KeywordList>\n");
+            }
+        }
         
         str.append("  <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""+urlStr+"\"/>\n");
+        
+        serviceContact(str);
+        
+        if (servInfo != null) {
+            str.append("  <Fees>" + servInfo.fees + "</Fees>\n");
+            str.append("  <AccessConstraints>" + servInfo.accessConstraints + "</AccessConstraints>\n");
+        }
+        
         str.append("</Service>\n");
+    }
+    
+    private void serviceContact(StringBuilder str){
+        ServiceInformation servInfo = tld.getServiceInformation();
+        ServiceProvider servProv = null;
+        ServiceContact servCont = null;
+        
+        if(servInfo != null) {
+            servProv = servInfo.serviceProvider;
+        
+            if(servProv != null) {
+                servCont = servProv.serviceContact;
+            }
+            
+            str.append("  <ContactInformation>\n");
+            
+            if (servProv.providerName != null || servCont != null){
+                str.append("    <ContactPersonPrimary>\n");
+                if (servCont != null){
+                    str.append("      <ContactPerson>" + servCont.individualName + "</ContactPerson>\n");
+                }
+                str.append("      <ContactOrganisation>" + servProv.providerName + "</ContactOrganisation>\n");
+                str.append("    </ContactPersonPrimary>\n");
+                
+                str.append("    <ContactPosition>" + servCont.positionName + "</ContactPosition>\n");
+                str.append("    <ContactAddress>\n");
+                str.append("      <AddressType>" + servCont.addressType + "</AddressType>\n");
+                str.append("      <Address>" + servCont.addressStreet + "</Address>\n");
+                str.append("      <City>" + servCont.addressCity + "</City>\n");
+                str.append("      <StateOrProvince>" + servCont.addressAdministrativeArea + "</StateOrProvince>\n");
+                str.append("      <PostCode>" + servCont.addressPostalCode + "</PostCode>\n");
+                str.append("      <Country>" + servCont.addressCountry + "</Country>\n");
+                str.append("    </ContactAddress>\n");
+                str.append("    <ContactVoiceTelephone>" + servCont.phoneNumber + "</ContactVoiceTelephone>\n");
+                str.append("    <ContactFacsimileTelephone/>" + servCont.faxNumber + "<ContactFacsimileTelephone/>\n");
+                str.append("    <ContactElectronicMailAddress>" + servCont.addressEmail + "</ContactElectronicMailAddress>\n");
+                str.append("  </ContactInformation>\n");
+            }
+        }
     }
     
     private void capability(StringBuilder str) {
