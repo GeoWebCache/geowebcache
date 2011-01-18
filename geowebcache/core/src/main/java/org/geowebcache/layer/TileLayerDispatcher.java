@@ -16,8 +16,8 @@
  */
 package org.geowebcache.layer;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -155,10 +155,10 @@ public class TileLayerDispatcher implements DisposableBean {
         return layers;
     }
 
-    private HashMap<String, TileLayer> initialize(boolean reload) {
+    private LinkedHashMap<String, TileLayer> initialize(boolean reload) {
         log.debug("Thread initLayers(), initializing");
 
-        HashMap<String, TileLayer> newLayers = new HashMap<String, TileLayer>();
+        LinkedHashMap<String, TileLayer> newLayers = new LinkedHashMap<String, TileLayer>();
 
         Iterator<Configuration> configIter = configs.iterator();
 
@@ -207,6 +207,7 @@ public class TileLayerDispatcher implements DisposableBean {
                 // Check whether there is any general service information
                 if (this.serviceInformation == null) {
                     try {
+                        log.debug("Reading service information.");
                         this.serviceInformation = config.getServiceInformation();
                     } catch (GeoWebCacheException e) {
                         log.error("Error reading service information from " + configIdent + ": "
@@ -304,7 +305,7 @@ public class TileLayerDispatcher implements DisposableBean {
                 }
             }
 
-            HashMap<String, TileLayer> newLayers = parent.initialize(false);
+            LinkedHashMap<String, TileLayer> newLayers = parent.initialize(false);
             log.info("ConfigurationLoader completed");
             return newLayers;
         }
