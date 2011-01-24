@@ -1,0 +1,90 @@
+GWC Release Guide
+=================
+
+- Online schema files
+Copy geowebcache.xsd to http://geowebcache.org/schemas/<version>/geowebcache.xsd
+
+
+On a clone of the main GWC repo, if don't already have it:
+$ git clone git@github.com:GeoWebCache/geowebcache.git 
+
+- Build docs
+$ cd <project root>/documentation/en/user
+$ make clean html
+
+- Update project version
+Set project version in pom.xml files:
+$ cd <project root>/geowebcache
+$ find . -name pom.xml -exec sed -i 's/1\.2\-SNAPSHOT/1\.2\.4/g' {} \;
+$ find release -name *.xml -exec sed -i 's/1\.2\-SNAPSHOT/1\.2\.4/g' {} \;
+
+(replace 1\.2\.4 by the actual version number keeping the '\' scape characters)
+
+- Build version
+$ cd <project root>/geowebcache
+$ mvn clean install
+
+- Package up release artifacts
+$ mvn assembly:attached
+
+The following files should be at <project root>/target/release:
+ - geowebcache-<VERSION>-doc.zip
+ - geowebcache-<VERSION>-src.zip
+ - geowebcache-<VERSION>-war.zip
+
+- Test the project artifact
+$ cd target/release
+$ unzip geowebcache-<VERSION>-src.zip
+$ cd geowebcache-<VERSION>
+$ mvn clean install
+
+If project builds ok then proceed, otherwise check what's missing/incorrect. Fix and restart the release.
+
+- Test the war artifact
+
+$ cd <project root>/target
+$ unzip geowebcache-<VERSION>-war.zip
+$ less LICENSE.txt //check license is copied ok
+$ cp geowebcache.war <tomcat dir>/webapps
+$ cd <tomcat dir>
+$ rm -rf temp/geowebcache (in case you had an older gwc version in there)
+$ bin/startup.sh
+
+Go to http://localhost:8080/geowebcache and check the app works as expected. Make sure the front page contains the
+version number and build date. Test the demo pages
+
+- Build schema docs
+Make sure you have xsddoc installed: <http://sourceforge.net/projects/xframe/files/xsddoc/>. If not, download xsddoc.zip and:
+$ unzip xsddoc.zip
+$ cd xsddoc/bin
+$ dos2unix xsddoc
+$ chmod +x xsddoc
+$ alias xsddoc=`pwd`/xsddoc
+
+Now build the schema docs:
+
+$ cd <project root>/geowebcache
+$ mkdir -p target/release/geowebcache-$VERSION/schema
+$ xsddoc -o target/release/geowebcache-$VERSION/schema -t "GeoWebCache $VERSION Configuration Schema" core/src/main/resources/org/geowebcache/config/geowebcache.xsd
+
+Check the generated docs:
+$ cd target/release
+$ firefox geowebcache-$VERSION/schema/index.html
+
+Package up the docs:
+$ zip -r geowebcache-$VERSION-xsddoc.zip geowebcache-$VERSION
+$ rm -rf geowebcache-$VERSION
+
+- Deploy
+$ cd <project root>/geowebcache
+$ mvn deploy
+
+- Tag the release
+$ cd <project root>/geowebcache
+$ git add .
+$ git commit -m "Tagging release $VERSION"
+$ git tag -a $VERSION
+
+- Reset version info
+
+

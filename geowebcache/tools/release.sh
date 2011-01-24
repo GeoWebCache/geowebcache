@@ -1,4 +1,5 @@
 #!/bin/bash
+#NOTE this script is deprecated by the release process described in ../release/RELEASE_GUIDE.txt
 VERSION=$1
 
 exit 0
