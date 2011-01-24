@@ -40,26 +40,12 @@ $ mvn clean install
 
 If project builds ok then proceed, otherwise check what's missing/incorrect. Fix and restart the release.
 
-- Test the src artifact
-
-$ cd <project root>/geowebcache/target/release
-$ unzip geowebcache-<VERSION>-src.zip
-$ mvn clean install
-$ cd web
-$ mvn jetty:run
-Go to http://localhost:8080/geowebcache and check the app works as expected. Make sure the front page contains the
-version number and build date. Test the demo pages
-$ CTRL+C
-$ cd ../..
-$ rm -rf geowebcache-<VERSION>
-
 - Test the war artifact
 
-$ cd <project root>/geowebcache/target/release
+$ cd <project root>/target
 $ unzip geowebcache-<VERSION>-war.zip
 $ less LICENSE.txt //check license is copied ok
-$ rm LICENSE.txt
-$ mv geowebcache.war <tomcat dir>/webapps
+$ cp geowebcache.war <tomcat dir>/webapps
 $ cd <tomcat dir>
 $ rm -rf temp/geowebcache (in case you had an older gwc version in there)
 $ bin/startup.sh
@@ -78,7 +64,6 @@ $ alias xsddoc=`pwd`/xsddoc
 Now build the schema docs:
 
 $ cd <project root>/geowebcache
-$ export VERSION=<VERSION>
 $ mkdir -p target/release/geowebcache-$VERSION/schema
 $ xsddoc -o target/release/geowebcache-$VERSION/schema -t "GeoWebCache $VERSION Configuration Schema" core/src/main/resources/org/geowebcache/config/geowebcache.xsd
 
