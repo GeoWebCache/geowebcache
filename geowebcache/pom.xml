@@ -343,24 +343,62 @@
           </formats>
         </configuration>
       </plugin>
+     <!-- javadoc -->
+     <plugin>
+      <artifactId>maven-javadoc-plugin</artifactId>
+      <configuration>
+       <source>1.5</source>
+       <version>false</version>
+       <noqualifier>all</noqualifier>
+       <maxmemory>256M</maxmemory>
+       <encoding>ISO-8859-1</encoding>
+       <additionalparam>-keywords</additionalparam>
+       <tags>
+        <tag>
+         <name>todo</name>
+         <placement>tfmc</placement>
+         <head>TODO:</head>
+        </tag>
+        <tag>
+         <name>task</name>
+         <placement>tfmc</placement>
+         <head>TODO:</head>
+        </tag>
+        <tag>
+         <name>revisit</name>
+         <placement>tfmc</placement>
+         <head>TODO:</head>
+        </tag>
+       </tags>
+       <links>
+        <link>http://java.sun.com/j2se/1.5/docs/api</link>
+        <link>http://docs.geotools.org/stable/javadocs/</link>
+       </links>
+      </configuration>
+     </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.2</version>
         <configuration>
-          <descriptorRefs>
+          <!--descriptorRefs>
             <descriptorRef>project</descriptorRef>
-          </descriptorRefs>
+          </descriptorRefs-->
           <descriptors>
+            <descriptor>release/src.xml</descriptor>
             <descriptor>release/war.xml</descriptor>
+            <descriptor>release/doc.xml</descriptor>
           </descriptors>
+          <finalName>geowebcache-1.2-SNAPSHOT</finalName>
+          <outputDirectory>${project.build.directory}/release</outputDirectory>
         </configuration>
       </plugin>
+
     </plugins>
   </reporting>
 
+ 
   <build>
     <plugins>
- 
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>buildnumber-maven-plugin</artifactId>
