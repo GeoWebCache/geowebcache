@@ -7,7 +7,7 @@
 	<fileSets>
 		<fileSet>
 			<directory>../documentation/en/user/build/html</directory>
-			<outputDirectory>geowebcache-1.2-SNAPSHOT/doc</outputDirectory>
+			<outputDirectory>geowebcache-1.2.4/doc</outputDirectory>
 			<includes>
 				<include>**/*</include>
 			</includes>
