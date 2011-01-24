@@ -362,6 +362,28 @@
     <plugins>
  
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+        <version>1.0-beta-3</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>create</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <format>{0,date,yyyy-MM-dd HH:mm:ss}</format>
+          <items>
+            <item>timestamp</item>
+          </items>
+          <doCheck>false</doCheck>
+          <doUpdate>false</doUpdate>
+        </configuration>
+      </plugin>
+
+      <plugin>
         <artifactId>maven-jar-plugin</artifactId>
         <executions>
           <execution>
@@ -371,6 +393,22 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <archive>
+            <index>true</index>
+            <manifest>
+              <addClasspath>false</addClasspath>
+            </manifest>
+            <manifestEntries>
+              <Specification-Title>org.geowebcache</Specification-Title>
+              <Specification-Version>${project.version}</Specification-Version>
+              <Specification-Vendor>${pom.url}</Specification-Vendor>
+              <Implementation-Title>org.geowebcache</Implementation-Title>
+              <Implementation-Version>${buildNumber}</Implementation-Version>
+              <Implementation-Vendor>${pom.url}</Implementation-Vendor>
+            </manifestEntries>
+          </archive>
+        </configuration>
       </plugin>
 
      <plugin>

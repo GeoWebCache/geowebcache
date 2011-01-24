@@ -34,8 +34,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.conveyor.Conveyor;
-import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.demo.Demo;
 import org.geowebcache.filter.request.RequestFilterException;
 import org.geowebcache.grid.GridSetBroker;
@@ -419,8 +419,18 @@ public class GeoWebCacheDispatcher extends AbstractController {
         
         StringBuilder str = new StringBuilder();
         
+        Package versionInfo = Package.getPackage("org.geowebcache");
+        String version = versionInfo.getSpecificationVersion();
+        String build = versionInfo.getImplementationVersion();
+        if(version == null){
+            version = "{NO VERSION INFO IN MANIFEST}";
+        }
+        if(build == null){
+            build = "{NO BUILD INFO IN MANIFEST}";
+        }
+        
         str.append("<html>\n"+ServletUtils.gwcHtmlHeader("GWC Home") +"<body>\n" + ServletUtils.gwcHtmlLogoLink(baseUrl));
-        str.append("<h3>Welcome to GeoWebCache version {GWC_VERSION}, built {GWC_BUILD_DATE}</h3>\n");
+        str.append("<h3>Welcome to GeoWebCache version "+ version +", built "+ build +"</h3>\n");
         str.append("<p><a href=\"http://geowebcache.org\">GeoWebCache</a> is an advanced tile cache for WMS servers.");
         str.append("It supports a large variety of protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</p>");
         str.append("<h3>Automatically Generated Demos:</h3>\n");
