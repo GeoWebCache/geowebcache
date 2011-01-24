@@ -23,7 +23,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,6 +48,7 @@ import org.geowebcache.util.ApplicationContextProvider;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.XStreamException;
 
 /**
  * Utility class to load the disk quota configuration
@@ -108,13 +113,22 @@ public class ConfigLoader {
     public void saveConfig(DiskQuotaConfig config) throws IOException, ConfigurationException {
         File rootCacheDir = getRootCacheDir();
         XStream xStream = getConfiguredXStream();
-        File configFile = new File(rootCacheDir, CONFIGURATION_FILE_NAME);
+        final File configFile = new File(rootCacheDir, CONFIGURATION_FILE_NAME);
+        final File tmpConfigFile = new File(rootCacheDir, CONFIGURATION_FILE_NAME + ".tmp");
         log.debug("Saving disk quota config to " + configFile.getAbsolutePath());
-        OutputStream configOut = new FileOutputStream(configFile);
+        OutputStream configOut = new FileOutputStream(tmpConfigFile);
         try {
-            xStream.toXML(config, configOut);
+            xStream.toXML(config, new OutputStreamWriter(configOut, "UTF-8"));
+        } catch (RuntimeException e) {
+            log.error("Error saving DiskQuota config to temp file :"
+                    + tmpConfigFile.getAbsolutePath());
         } finally {
             configOut.close();
+        }
+        configFile.delete();
+        if (!tmpConfigFile.renameTo(configFile)) {
+            throw new ConfigurationException("Couldn't save disk quota config file "
+                    + configFile.getAbsolutePath());
         }
     }
 
@@ -129,6 +143,12 @@ public class ConfigLoader {
             InputStream configIn = new FileInputStream(configFile);
             try {
                 quotaConfig = loadConfiguration(configIn);
+            } catch (RuntimeException e) {
+                log.error(
+                        "Error loading DiskQuota configuration from "
+                                + configFile.getAbsolutePath() + ": " + e.getMessage()
+                                + ". Deferring to a default (disabled) configuration", e);
+                quotaConfig = new DiskQuotaConfig();
             } finally {
                 configIn.close();
             }
@@ -280,9 +300,16 @@ public class ConfigLoader {
         return new HashMap<String, ExpirationPolicy>(expirationPolicyCache);
     }
 
-    private DiskQuotaConfig loadConfiguration(final InputStream configStream) {
+    private DiskQuotaConfig loadConfiguration(final InputStream configStream)
+            throws XStreamException {
         XStream xstream = getConfiguredXStream();
-        DiskQuotaConfig fromXML = (DiskQuotaConfig) xstream.fromXML(configStream);
+        Reader reader;
+        try {
+            reader = new InputStreamReader(configStream, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        DiskQuotaConfig fromXML = (DiskQuotaConfig) xstream.fromXML(reader);
         return fromXML;
     }
 
