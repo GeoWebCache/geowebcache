@@ -13,6 +13,13 @@
         <exclude>**/${project.build.directory}/**</exclude>
         <exclude>target</exclude>
         <exclude>**/target/**</exclude>
+        <exclude>.settings</exclude>
+        <exclude>**/.settings/**</exclude>
+        <exclude>**/.settings</exclude>
+        <exclude>.project</exclude>
+        <exclude>**/.project</exclude>
+        <exclude>.classpath</exclude>
+        <exclude>**/.classpath</exclude>
       </excludes>
     </fileSet>
   </fileSets>
