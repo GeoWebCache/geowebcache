@@ -25,10 +25,9 @@ import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.MetaStore;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.StorageObject.Status;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
-import org.geowebcache.storage.WFSObject;
-import org.geowebcache.storage.StorageObject.Status;
 
 /**
  * JDBC implementation of a {@link MetaStore}
@@ -155,24 +154,7 @@ public class JDBCMetaBackend implements MetaStore {
 
         return false;
     }
-
-    public boolean delete(WFSObject stObj) throws StorageException {
-        Long parameters_id = null;
-
-        if (stObj.getParameters() != null && stObj.getParameters().length() != 0) {
-            parameters_id = idCache.getParametersId(stObj.getParameters());
-        }
-
-        try {
-            wrpr.deleteWFS(parameters_id, stObj);
-            return true;
-        } catch (SQLException se) {
-            log.error("Failed to delete WFS object: " + se.getMessage());
-        }
-
-        return false;
-    }
-
+    
     public boolean delete(BlobStore blobStore, TileRange trObj) throws StorageException {
         long layerId = idCache.getLayerId(trObj.layerName);
         long formatId = idCache.getFormatId(trObj.mimeType.getFormat());
@@ -245,34 +227,6 @@ public class JDBCMetaBackend implements MetaStore {
         return false;
     }
 
-    public boolean get(WFSObject stObj) throws StorageException {
-        Long parameters_id = null;
-
-        if (stObj.getParameters() != null && stObj.getParameters().length() != 0) {
-            parameters_id = idCache.getParametersId(stObj.getParameters());
-        }
-
-        try {
-            boolean response = wrpr.getWFS(parameters_id, stObj);
-            while (stObj.getStatus().equals(Status.LOCK)) {
-                try {
-                    Thread.sleep(lockRetryDelay);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                response = wrpr.getWFS(parameters_id, stObj);
-            }
-
-            return response;
-
-        } catch (SQLException se) {
-            log.error("Failed to get WFS object: " + se.getMessage());
-        }
-
-        return false;
-    }
-
     public void put(TileObject stObj) throws StorageException {
         stObj.setLayerId(idCache.getLayerId(stObj.getLayerName()));
         stObj.setFormatId(idCache.getFormatId(stObj.getBlobFormat()));
@@ -294,48 +248,11 @@ public class JDBCMetaBackend implements MetaStore {
         }
     }
 
-    public void put(WFSObject stObj) throws StorageException {
-        Long parameters_id = null;
-
-        if (stObj.getParameters() != null && stObj.getParameters().length() != 0) {
-            parameters_id = idCache.getParametersId(stObj.getParameters());
-        }
-
-        try {
-            wrpr.deleteWFS(parameters_id, stObj);
-        } catch (SQLException se) {
-            log.error("Failed to delete WFS object: " + se.getMessage());
-        }
-
-        try {
-            wrpr.putWFS(parameters_id, stObj);
-        } catch (SQLException se) {
-            log.error("Failed to put WFS object: " + se.getMessage());
-        }
-
-    }
-
     public boolean unlock(TileObject stObj) throws StorageException {
         try {
             return wrpr.unlockTile(stObj);
         } catch (SQLException se) {
             log.error("Failed to unlock tile: " + se.getMessage());
-        }
-
-        return false;
-    }
-
-    public boolean unlock(WFSObject stObj) throws StorageException {
-        Long parameters_id = null;
-
-        if (stObj.getParameters() != null && stObj.getParameters().length() != 0) {
-            parameters_id = idCache.getParametersId(stObj.getParameters());
-        }
-
-        try {
-            return wrpr.unlockWFS(parameters_id, stObj);
-        } catch (SQLException se) {
-            log.error("Failed to unlock WFS object: " + se.getMessage());
         }
 
         return false;

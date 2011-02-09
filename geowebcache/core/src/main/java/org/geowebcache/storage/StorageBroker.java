@@ -142,24 +142,6 @@ public class StorageBroker {
             return false;
         }
     }
-
-    public boolean get(WFSObject wfsObj) throws StorageException {
-        if (!metaStore.get(wfsObj)) {
-            log.error("Cannot use WFS objects if metastore is disabled!");
-            return false;
-        }
-
-        if (wfsObj.getId() == -1) {
-            throw new StorageException(
-                    "metaStore.get() returned true, but did not set an id on the object");
-        }
-
-        if(blobStore.get(wfsObj) == 0) {
-            throw new StorageException("The blob for WFS " + Long.toString(wfsObj.getId()) + " was of size 0");
-        }
-        
-        return true;
-    }
     
     public boolean put(TileObject tileObj) throws StorageException {
         if(! metaStoreEnabled) {
@@ -198,25 +180,6 @@ public class StorageBroker {
             log.debug("Cannot save tile with parameters if metastore is disabled!");
             return false;
         }
-    }
-
-    public boolean put(WFSObject wfsObj) {
-        if(! metaStoreEnabled) {
-            log.debug("Cannot use WFS objects if metastore is disabled!");
-            return false;
-        }
-        
-        try {
-            metaStore.put(wfsObj);
-            blobStore.put(wfsObj);
-            metaStore.unlock(wfsObj);
-            return true;
-            
-        } catch (StorageException se) {
-            log.error(se.getMessage());
-        }
-
-        return false;
     }
     
     /** 

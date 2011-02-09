@@ -12,7 +12,6 @@
   <import resource="geowebcache-rest-context.xml"/>
   <import resource="geowebcache-tmsservice-context.xml"/>
   <import resource="geowebcache-virtualearth-context.xml"/>
-  <import resource="geowebcache-wfsclient-context.xml"/>
   <import resource="geowebcache-wmsservice-context.xml"/>
   <import resource="geowebcache-wmtsservice-context.xml"/>
 

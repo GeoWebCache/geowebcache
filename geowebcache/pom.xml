@@ -520,7 +520,6 @@
     <module>rest</module>
     <module>tms</module>
     <module>ve</module>
-    <module>wfs</module>
     <module>wms</module>
     <module>wmts</module>
     <module>web</module>

@@ -51,11 +51,6 @@
     </dependency>
     <dependency>
       <groupId>org.geowebcache</groupId>
-      <artifactId>gwc-wfs</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.geowebcache</groupId>
       <artifactId>gwc-wms</artifactId>
       <version>${project.version}</version>
     </dependency>

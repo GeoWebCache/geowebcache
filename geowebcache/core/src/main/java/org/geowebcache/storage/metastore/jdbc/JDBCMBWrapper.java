@@ -38,7 +38,6 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.StorageObject;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
-import org.geowebcache.storage.WFSObject;
 import org.h2.jdbcx.JdbcConnectionPool;
 
 /**
@@ -434,40 +433,7 @@ class JDBCMBWrapper {
             close(prep);
         }
     }
-
-    protected void deleteWFS(Long parameters, WFSObject wfsObj) throws SQLException {
-        final Connection conn = getConnection();
-        try {
-            deleteWFS(conn, parameters, wfsObj);
-        } finally {
-            close(conn);
-        }
-    }
-
-    protected void deleteWFS(final Connection conn, Long parameters, WFSObject wfsObj)
-            throws SQLException {
-        String query = null;
-        PreparedStatement prep = null;
-
-        try {
-            if (parameters != null) {
-                query = "DELETE FROM WFS WHERE " + " PARAMETERS_ID = ?";
-                prep = conn.prepareStatement(query);
-                prep.setLong(1, parameters);
-            } else {
-                query = "DELETE FROM WFS WHERE " + " QUERY_BLOB_MD5 LIKE ? AND QUERY_BLOB_SIZE = ?";
-                prep = conn.prepareStatement(query);
-                prep.setString(1, wfsObj.getQueryBlobMd5());
-                prep.setInt(2, wfsObj.getQueryBlobSize());
-            }
-
-            prep.execute();
-
-        } finally {
-            close(prep);
-        }
-    }
-
+    
     protected boolean getTile(TileObject stObj) throws SQLException {
         String query;
         if (stObj.getParametersId() == -1L) {
@@ -536,68 +502,7 @@ class JDBCMBWrapper {
             close(conn);
         }
     }
-
-    protected boolean getWFS(Long parameters, WFSObject wfsObj) throws SQLException {
-        String query = null;
-        PreparedStatement prep = null;
-        final Connection conn = getConnection();
-
-        try {
-            if (parameters != null) {
-                query = "SELECT WFS_ID,BLOB_SIZE,CREATED,LOCK,NOW() FROM WFS WHERE "
-                        + " PARAMETERS_ID = ? LIMIT 1 ";
-
-                prep = conn.prepareStatement(query);
-                prep.setLong(1, parameters);
-            } else {
-                query = "SELECT WFS_ID,BLOB_SIZE,CREATED,LOCK,NOW() FROM WFS WHERE "
-                        + " QUERY_BLOB_MD5 LIKE ? AND QUERY_BLOB_SIZE = ? LIMIT 1";
-
-                prep = conn.prepareStatement(query);
-                prep.setString(1, wfsObj.getQueryBlobMd5());
-                prep.setInt(2, wfsObj.getQueryBlobSize());
-            }
-
-            ResultSet rs = prep.executeQuery();
-            try {
-                if (rs.next()) {
-                    Timestamp lock = rs.getTimestamp(4);
-
-                    // This tile is locked
-                    if (lock != null) {
-                        Timestamp now = rs.getTimestamp(5);
-                        if (now.getTime() - lock.getTime() > lockTimeout) {
-                            log.warn("Database lock exceeded for " + wfsObj.toString()
-                                    + ", clearing WFS object.");
-                            deleteWFS(conn, parameters, wfsObj);
-                            wfsObj.setStatus(StorageObject.Status.EXPIRED_LOCK);
-                        } else {
-                            wfsObj.setStatus(StorageObject.Status.LOCK);
-                        }
-
-                        // This puts the request back in the queue
-                        return false;
-                    }
-
-                    wfsObj.setId(rs.getLong(1));
-                    wfsObj.setBlobSize(rs.getInt(2));
-                    wfsObj.setCreated(rs.getLong(3));
-
-                    wfsObj.setStatus(StorageObject.Status.HIT);
-                    return true;
-                } else {
-                    wfsObj.setStatus(StorageObject.Status.MISS);
-                    return false;
-                }
-            } finally {
-                close(rs);
-            }
-        } finally {
-            close(prep);
-            close(conn);
-        }
-    }
-
+    
     public void putTile(TileObject stObj) throws SQLException, StorageException {
 
         String query = "MERGE INTO "
@@ -641,58 +546,7 @@ class JDBCMBWrapper {
         }
 
     }
-
-    public void putWFS(Long parameters, WFSObject stObj) throws SQLException, StorageException {
-
-        String query = null;
-        final Connection conn = getConnection();
-
-        try {
-            Long insertId;
-            PreparedStatement prep = null;
-            try {
-                if (parameters != null) {
-                    query = "MERGE INTO " + "WFS(PARAMETERS_ID,BLOB_SIZE,CREATED,LOCK) "
-                            + "KEY(PARAMETERS_ID) " + "VALUES(?,?,?,NOW())";
-
-                    prep = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-                    prep.setLong(1, parameters);
-                    prep.setInt(2, stObj.getBlobSize());
-                    prep.setLong(3, stObj.getCreated());
-
-                } else {
-                    query = "MERGE INTO "
-                            + "WFS(QUERY_BLOB_MD5, QUERY_BLOB_SIZE,BLOB_SIZE,CREATED,LOCK) "
-                            + "KEY(QUERY_BLOB_MD5, QUERY_BLOB_SIZE) " + "VALUES(?,?,?,?,NOW())";
-
-                    prep = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-
-                    prep.setString(1, stObj.getQueryBlobMd5());
-                    prep.setInt(2, stObj.getQueryBlobSize());
-                    prep.setInt(3, stObj.getBlobSize());
-                    prep.setLong(4, stObj.getCreated());
-                }
-
-                insertId = wrappedInsert(prep);
-            } finally {
-                close(prep);
-            }
-
-            if (insertId == null) {
-                log.error("Did not receive a id for " + query);
-            } else {
-                if (insertId.longValue() == 0) {
-                    // This was an update due to merge, so we do a get to pick up the id
-                    this.getWFS(parameters, stObj);
-                } else {
-                    stObj.setId(insertId.longValue());
-                }
-            }
-        } finally {
-            close(conn);
-        }
-    }
-
+    
     public boolean unlockTile(TileObject stObj) throws SQLException, StorageException {
 
         String query = null;
@@ -739,43 +593,7 @@ class JDBCMBWrapper {
         }
 
     }
-
-    public boolean unlockWFS(Long parameters, WFSObject stObj) throws SQLException,
-            StorageException {
-
-        PreparedStatement prep = null;
-        String query = null;
-        final Connection conn = getConnection();
-
-        try {
-            if (parameters != null) {
-                query = "UPDATE WFS SET LOCK = NULL WHERE PARAMETERS_ID = ? ";
-
-                prep = conn.prepareStatement(query);
-                prep.setLong(1, parameters);
-            } else {
-                query = "UPDATE WFS SET LOCK = NULL WHERE QUERY_BLOB_MD5 = ? AND QUERY_BLOB_SIZE = ?";
-
-                prep = conn.prepareStatement(query);
-
-                prep.setString(1, stObj.getQueryBlobMd5());
-                prep.setInt(2, stObj.getQueryBlobSize());
-            }
-
-            int affected = prep.executeUpdate();
-            // System.out.println("Affected: " + affected);
-            if (affected == 1) {
-                return true;
-            } else {
-                log.error("Expected to clear lock on one row, but got " + affected);
-                return false;
-            }
-        } finally {
-            close(prep);
-            close(conn);
-        }
-    }
-
+    
     protected Long wrappedInsert(PreparedStatement st) throws SQLException {
         ResultSet rs = null;
 

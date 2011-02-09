@@ -26,20 +26,16 @@ public interface MetaStore {
     
     public boolean delete(String layerName) throws StorageException;
     public boolean delete(TileObject stObj) throws StorageException;
-    public boolean delete(WFSObject stObj) throws StorageException;
     public boolean delete(BlobStore blobStore, TileRange trObj) throws StorageException;
    
     public boolean expire(TileRange trObj) throws StorageException;
     
     // If lock is encountered, wait inside function until available
     public boolean get(TileObject obj) throws StorageException;
-    public boolean get(WFSObject obj) throws StorageException;
     
     public void put(TileObject stObj) throws StorageException;
-    public void put(WFSObject stObj) throws StorageException;
     
     public boolean unlock(TileObject stObj) throws StorageException;
-    public boolean unlock(WFSObject stObj) throws StorageException;
     
     
     /**

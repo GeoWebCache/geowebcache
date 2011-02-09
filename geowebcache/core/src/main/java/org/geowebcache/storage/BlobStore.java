@@ -33,7 +33,6 @@ public interface BlobStore {
      */
     public boolean delete(String layerName) throws StorageException;
     public boolean delete(TileObject obj) throws StorageException;
-    public boolean delete(WFSObject obj) throws StorageException;
     public boolean delete(TileRange obj) throws StorageException;
     
     /**
@@ -44,7 +43,6 @@ public interface BlobStore {
      * @throws StorageException
      */
     public byte[] get(TileObject obj) throws StorageException;
-    public long get(WFSObject obj) throws StorageException;
     
     /**
      * Store blob. Calls getBlob() on passed object, does not modify the object.
@@ -54,7 +52,6 @@ public interface BlobStore {
      * @throws StorageException
      */
     public void put(TileObject obj) throws StorageException;
-    public void put(WFSObject obj) throws StorageException;
 
     /**
      * Wipes the entire storage. Should only be invoked during testing.

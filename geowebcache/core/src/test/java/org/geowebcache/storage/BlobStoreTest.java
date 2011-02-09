@@ -17,9 +17,7 @@
  */
 package org.geowebcache.storage;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.util.Arrays;
 
 import junit.framework.TestCase;
@@ -52,75 +50,6 @@ public class BlobStoreTest extends TestCase {
         assertEquals(to.getBlobFormat(), to2.getBlobFormat());
         assertTrue(Arrays.equals(to.getBlob(), to2.getBlob()));
     }
-    
-    public void testWFSParam() throws Exception {
-        FileBlobStore fbs = setup();
-        
-        byte[] bytes = "1 2 3 Test".getBytes();
-        WFSObject wo = WFSObject.createCompleteWFSObject("a=æ&å=Ø");
-        wo.setInputStream(new ByteArrayInputStream(bytes));
-        wo.setId(123123123);
-        
-        fbs.put(wo);
-        
-        WFSObject wo2 = WFSObject.createQueryWFSObject("a=æ&å=Ø");
-        wo2.setId(123123123);
-        
-        fbs.get(wo2);
-        
-        InputStream is = new ByteArrayInputStream(bytes);
-        InputStream is2 = wo2.getInputStream();
-        
-        int read1 = 0;
-        int read2 = 0;
-        byte[] tmp1 = new byte[1];
-        byte[] tmp2 = new byte[1];
-        while(read1 != -1 && read2 != -1){
-            read1 = is.read(tmp1);
-            read2 = is2.read(tmp2);
-            
-            if(read1 != -1)
-                assertEquals(tmp1[0],tmp2[0]);
-        }
-        
-        assertEquals(read1,read2);
-    }
-    
-    public void testWFSBlob() throws Exception {
-        FileBlobStore fbs = setup();
-        
-        byte[] bytes = "1 2 3 Test".getBytes();
-        byte[] queryBlob = "'ad;wer0sv234".getBytes();
-        
-        WFSObject wo = WFSObject.createCompleteWFSObject(queryBlob);
-        wo.setInputStream(new ByteArrayInputStream(bytes));
-        wo.setId(123123123);
-        
-        fbs.put(wo);
-        
-        WFSObject wo2 = WFSObject.createQueryWFSObject(queryBlob);
-        wo2.setId(123123123);
-        
-        fbs.get(wo2);
-        
-        InputStream is = new ByteArrayInputStream(bytes);
-        InputStream is2 = wo2.getInputStream();
-        
-        int read1 = 0;
-        int read2 = 0;
-        byte[] tmp1 = new byte[1];
-        byte[] tmp2 = new byte[1];
-        while(read1 != -1 && read2 != -1){
-            read1 = is.read(tmp1);
-            read2 = is2.read(tmp2);
-            
-            if(read1 != -1)
-                assertEquals(tmp1[0],tmp2[0]);
-        }
-        
-        assertEquals(read1,read2);
-    }
-    
     
     public void testTileDelete() throws Exception {
         FileBlobStore fbs = setup();

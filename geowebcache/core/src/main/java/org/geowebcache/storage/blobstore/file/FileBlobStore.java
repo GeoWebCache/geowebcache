@@ -35,7 +35,6 @@ import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
-import org.geowebcache.storage.WFSObject;
 import org.geowebcache.util.ServletUtils;
 
 /**
@@ -143,29 +142,6 @@ public class FileBlobStore implements BlobStore {
 
         return true;
     }
-
-    
-    public boolean delete(WFSObject stObj) throws StorageException {
-        if(stObj.getQueryBlobSize() != -1) {
-            File fh = getFileHandleWFS(stObj, true, false);
-
-            if (fh.exists() && !fh.delete()) {
-                throw new StorageException("Unable to delete "
-                        + fh.getAbsolutePath());
-            }
-        }
-        
-        File fh = getFileHandleWFS(stObj, false, false);
-        if (!fh.exists())
-            return false;
-
-        if (!fh.delete()) {
-            throw new StorageException("Unable to delete "
-                    + fh.getAbsolutePath());
-        }
-
-        return true;
-    }
     
     public boolean delete(TileRange trObj) throws StorageException {
         int count = 0;
@@ -232,16 +208,6 @@ public class FileBlobStore implements BlobStore {
         File fh = getFileHandleTile(stObj, false);
         return readFile(fh);
     }
-
-    public long get(WFSObject stObj) throws StorageException {
-        // Should we check and compare the blobs?
-        File fh = getFileHandleWFS(stObj, false, false);
-        //return readFile(fh);
-        
-        stObj.setInputStream(getFileInputStream(fh));
-        
-        return fh.length();
-    }
     
     public void put(TileObject stObj) throws StorageException {
         final File fh = getFileHandleTile(stObj, true);
@@ -255,21 +221,7 @@ public class FileBlobStore implements BlobStore {
         }
         listeners.sendTileStored(stObj);
     }
-    
-    public void put(WFSObject stObj) throws StorageException {
-        if(stObj.getQueryBlobSize() != -1) {
-            File queryfh = getFileHandleWFS(stObj,true, true);
-            writeFile(queryfh, stObj.getQueryBlob());
-        }
         
-        File responsefh = getFileHandleWFS(stObj, false, true);
-        writeFile(responsefh,stObj.getInputStream());
-        
-        InputStream is = getFileInputStream(responsefh);
-
-        stObj.setInputStream(is);
-    }
-    
     private File getFileHandleTile(TileObject stObj, boolean create) {
         String[] paths = null;
         try {
@@ -289,24 +241,6 @@ public class FileBlobStore implements BlobStore {
 
         return new File(paths[0] + File.separator + paths[1]);
     }
-    
-    private File getFileHandleWFS(WFSObject stObj, boolean query, boolean create) {
-        String parentPath;
-        
-        if(query) {
-            parentPath = path +File.separator+ "wfs" + File.separator + "query";
-        } else {
-            parentPath = path +File.separator+ "wfs" + File.separator + "response";
-        }
-        
-        if(create) {
-            File dir = new File(parentPath);
-            dir.mkdirs();
-        }
-        
-        return new File(parentPath + File.separator + stObj.getId());
-    }
-    
     
     private byte[] readFile(File fh) throws StorageException {
         byte[] blob = null;
