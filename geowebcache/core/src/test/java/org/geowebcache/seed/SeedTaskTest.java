@@ -118,7 +118,7 @@ public class SeedTaskTest extends TestCase {
         boolean reseed = false;
         SeedTask seedTask = new SeedTask(mockStorageBroker, trIter, tl, reseed, false);
         seedTask.setTaskId(1L);
-        seedTask.setThreadInfo(1, 0);
+        seedTask.setThreadInfo(new AtomicInteger(), 0);
         /*
          * HACK: avoid SeedTask.getCurrentThreadArrayIndex failure.
          */
@@ -192,7 +192,7 @@ public class SeedTaskTest extends TestCase {
         boolean reseed = false;
         SeedTask seedTask = new SeedTask(mockStorageBroker, trIter, tl, reseed, false);
         seedTask.setTaskId(1L);
-        seedTask.setThreadInfo(1, 0);
+        seedTask.setThreadInfo(new AtomicInteger(), 0);
         
         int tileFailureRetryCount = 1;
         long tileFailureRetryWaitTime = 10;
@@ -260,7 +260,7 @@ public class SeedTaskTest extends TestCase {
         boolean reseed = false;
         SeedTask task = new SeedTask(mockStorageBroker, trIter, tl, reseed, false);
         task.setTaskId(1L);
-        task.setThreadInfo(1, 0);
+        task.setThreadInfo(new AtomicInteger(), 0);
         /*
          * HACK: avoid SeedTask.getCurrentThreadArrayIndex failure.
          */

@@ -18,7 +18,9 @@ package org.geowebcache.rest.seed;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.text.NumberFormat;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
@@ -389,23 +391,26 @@ public class SeedFormRestlet extends GWCRestlet {
             tasks = true;
         }
         
+        NumberFormat nf = NumberFormat.getNumberInstance(Locale.ENGLISH);
+        nf.setMaximumFractionDigits(1);
+        
         while(iter.hasNext()) {
             Entry<Long, GWCTask> entry = iter.next();
             GWCTask task = entry.getValue();
             
             String timeRemaining;
-            long time = task.getTimeRemaining();
+            double time = task.getTimeRemaining();
             
             if(task.getTilesDone() < 50) {
                 timeRemaining= " Estimating...";
             } else if(time == -2 && task.getTilesDone() < task.getTilesTotal()) {
                 timeRemaining= " A decade or three.";
             } else if(time > (60*60*24)) {
-                timeRemaining= "" + (time / (60*60*24)) + " day(s)";
+                timeRemaining= "" + nf.format(time / (60*60*24)) + " day(s)";
             } else if(time > 60*60) {
-                timeRemaining = "" + (time / (60*60)) + " hour(s)";
+                timeRemaining = "" + nf.format(time / (60*60)) + " hour(s)";
             } else if(time > 60) {
-                timeRemaining = "" +(time / 60) + " minute(s)";
+                timeRemaining = "" + nf.format(time / 60) + " minute(s)";
             } else {
                 timeRemaining = "" +(time) + " second(s)";
             }

@@ -16,6 +16,8 @@
  */
 package org.geowebcache.seed;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.geowebcache.GeoWebCacheException;
 
 /**
@@ -31,7 +33,11 @@ public abstract class GWCTask {
         UNSET, READY, RUNNING, DONE, DEAD
     };
 
-    protected int threadCount = 1;
+    /**
+     * Value shared between all the threads in the group, is incremented each time a task starts
+     * working and decremented each time one task finishes (either normally or abnormally)
+     */
+    protected AtomicInteger sharedThreadCount = new AtomicInteger();
 
     protected int threadOffset = 0;
 
@@ -53,10 +59,19 @@ public abstract class GWCTask {
 
     protected boolean terminate = false;
 
-    public abstract void doAction() throws GeoWebCacheException, InterruptedException;
+    public final void doAction() throws GeoWebCacheException, InterruptedException {
+        this.sharedThreadCount.incrementAndGet();
+        try {
+            doActionInternal();
+        } finally {
+            this.sharedThreadCount.decrementAndGet();
+        }
+    }
 
-    public void setThreadInfo(int threadCount, int threadOffset) {
-        this.threadCount = threadCount;
+    protected abstract void doActionInternal() throws GeoWebCacheException, InterruptedException;
+
+    public void setThreadInfo(AtomicInteger sharedThreadCount, int threadOffset) {
+        this.sharedThreadCount = sharedThreadCount;
         this.threadOffset = threadOffset;
     }
 
@@ -69,7 +84,7 @@ public abstract class GWCTask {
     }
 
     public int getThreadCount() {
-        return threadCount;
+        return sharedThreadCount.get();
     }
 
     public int getThreadOffset() {

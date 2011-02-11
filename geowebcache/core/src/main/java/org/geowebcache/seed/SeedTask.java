@@ -67,7 +67,7 @@ class SeedTask extends GWCTask {
         this.reseed = reseed;
         this.doFilterUpdate = doFilterUpdate;
 
-        tileFailureRetryCount = 1;
+        tileFailureRetryCount = 0;
         tileFailureRetryWaitTime = 100;
         totalFailuresBeforeAborting = 10000;
         sharedFailureCounter = new AtomicLong();
@@ -82,10 +82,8 @@ class SeedTask extends GWCTask {
         super.state = GWCTask.STATE.READY;
     }
 
-    /**
-     * Method doAction(). this is where all the actual work is being done to seed a tile layer.
-     */
-    public void doAction() throws GeoWebCacheException, InterruptedException {
+    @Override
+    protected void doActionInternal() throws GeoWebCacheException, InterruptedException {
         super.state = GWCTask.STATE.RUNNING;
 
         // Lower the priority of the thread
@@ -95,7 +93,7 @@ class SeedTask extends GWCTask {
         checkInterrupted();
 
         // approximate thread creation time
-        long START_TIME = System.currentTimeMillis();
+        final long START_TIME = System.currentTimeMillis();
 
         log.info(Thread.currentThread().getName() + " begins seeding layer : " + tl.getName());
 
@@ -105,11 +103,15 @@ class SeedTask extends GWCTask {
         // TODO move to TileRange object, or distinguish between thread and task
         super.tilesTotal = tileCount(tr.rangeBounds, tr.zoomStart, tr.zoomStop);
 
+        final int metaTilingFactorX = tl.getMetaTilingFactors()[0];
+        final int metaTilingFactorY = tl.getMetaTilingFactors()[1];
+
         final boolean tryCache = !reseed;
 
         checkInterrupted();
         long[] gridLoc = trIter.nextMetaGridLocation();
 
+        long seedCalls = 0;
         while (gridLoc != null && this.terminate == false) {
 
             checkInterrupted();
@@ -161,11 +163,14 @@ class SeedTask extends GWCTask {
                 log.trace(Thread.currentThread().getName() + " seeded " + Arrays.toString(gridLoc));
             }
 
-            long totalTilesCompleted = trIter.getCountRendered() + trIter.getCountRendered();
+            // final long totalTilesCompleted = trIter.getTilesProcessed();
+            final long tilesCompletedByThisThread = seedCalls * metaTilingFactorX
+                    * metaTilingFactorY;
 
-            updateStatusInfo(tl, totalTilesCompleted, START_TIME);
+            updateStatusInfo(tl, tilesCompletedByThisThread, START_TIME);
 
             checkInterrupted();
+            seedCalls++;
             gridLoc = trIter.nextMetaGridLocation();
         }
 
@@ -228,12 +233,13 @@ class SeedTask extends GWCTask {
         this.tilesDone = tilesCount;
 
         // estimated time of completion in seconds, use a moving average over the last
-        timeSpent = (int) (System.currentTimeMillis() - start_time) / 1000;
+        this.timeSpent = (int) (System.currentTimeMillis() - start_time) / 1000;
 
+        int threadCount = sharedThreadCount.get();
         long timeTotal = Math.round((double) timeSpent
-                * ((double) tilesTotal / (double) tilesCount));
+                * (((double) tilesTotal / threadCount) / (double) tilesCount));
 
-        timeRemaining = (int) (timeTotal - timeSpent);
+        this.timeRemaining = (int) (timeTotal - timeSpent);
     }
 
     /**

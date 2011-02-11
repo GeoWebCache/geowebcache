@@ -21,6 +21,7 @@ package org.geowebcache.seed;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.logging.Log;
@@ -189,6 +190,7 @@ public class TileBreeder implements ApplicationContextAware {
         GWCTask[] tasks = new GWCTask[threadCount];
 
         AtomicLong failureCounter = new AtomicLong();
+        AtomicInteger sharedThreadCount = new AtomicInteger();
         for (int i = 0; i < threadCount; i++) {
             if (type == TYPE.TRUNCATE) {
                 tasks[i] = createTruncateTask(trIter, tl, filterUpdate);
@@ -198,7 +200,7 @@ public class TileBreeder implements ApplicationContextAware {
                         totalFailuresBeforeAborting, failureCounter);
                 tasks[i] = task;
             }
-            tasks[i].setThreadInfo(threadCount, i);
+            tasks[i].setThreadInfo(sharedThreadCount, i);
         }
 
         return tasks;

@@ -29,28 +29,27 @@ import org.geowebcache.storage.TileRange;
 
 class TruncateTask extends GWCTask {
     private static Log log = LogFactory.getLog(TruncateTask.class);
-    
+
     private final TileRange tr;
-    
+
     private final TileLayer tl;
-    
+
     private final boolean doFilterUpdate;
-    
+
     private final StorageBroker storageBroker;
-        
-    public TruncateTask(StorageBroker sb, TileRange tr, 
-            TileLayer tl, boolean doFilterUpdate) {
+
+    public TruncateTask(StorageBroker sb, TileRange tr, TileLayer tl, boolean doFilterUpdate) {
         this.storageBroker = sb;
         this.tr = tr;
         this.tl = tl;
         this.doFilterUpdate = doFilterUpdate;
-        
+
         super.parsedType = GWCTask.TYPE.TRUNCATE;
         super.layerName = tl.getName();
     }
-    
 
-    public void doAction() throws GeoWebCacheException, InterruptedException {
+    @Override
+    protected void doActionInternal() throws GeoWebCacheException, InterruptedException {
         super.state = GWCTask.STATE.RUNNING;
         checkInterrupted();
         try {
@@ -60,18 +59,18 @@ class TruncateTask extends GWCTask {
             super.state = GWCTask.STATE.DEAD;
             log.error("During truncate request: " + e.getMessage());
         }
-        
+
         checkInterrupted();
-        if(doFilterUpdate) {
+        if (doFilterUpdate) {
             runFilterUpdates();
         }
-        
-        if(super.state != GWCTask.STATE.DEAD) {
+
+        if (super.state != GWCTask.STATE.DEAD) {
             super.state = GWCTask.STATE.DONE;
             log.info("Completed truncate request.");
         }
     }
-    
+
     /**
      * Updates any request filters
      */
