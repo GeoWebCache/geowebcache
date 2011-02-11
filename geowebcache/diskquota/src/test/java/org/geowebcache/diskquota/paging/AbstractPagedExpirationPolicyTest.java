@@ -267,7 +267,7 @@ public class AbstractPagedExpirationPolicyTest extends TestCase {
             public boolean called;
 
             @Override
-            public void doAction() throws GeoWebCacheException {
+            protected void doActionInternal() throws GeoWebCacheException {
                 called = true;
                 layerQuota.getUsedQuota().setValue(0.5);
             }
