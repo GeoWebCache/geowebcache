@@ -191,7 +191,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     
     public String toString() {
         StringBuilder str = new StringBuilder();
-        str.append("ConveyorTile ) ");
+        str.append("ConveyorTile[");
         long[] idx = stObj.getXYZ();
         
         if (idx != null && idx.length == 3) {
@@ -209,6 +209,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         if (this.mimeType != null) {
             str.append(this.mimeType.getFormat());
         }
+        str.append(']');
         return str.toString();
     }
     

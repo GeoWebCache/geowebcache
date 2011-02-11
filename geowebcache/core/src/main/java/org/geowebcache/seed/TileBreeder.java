@@ -21,6 +21,7 @@ package org.geowebcache.seed;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,12 +36,61 @@ import org.geowebcache.seed.GWCTask.TYPE;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
+import org.geowebcache.util.GWCVars;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
+ * Class in charge of dispatching seed/truncate tasks.
+ * <p>
+ * As of version 1.2.4a+, it is possible to control how GWC behaves in the event that a backend (WMS
+ * for example) request fails during seeding, using the following environment variables:
+ * <ul>
+ * <li>{@code GWC_SEED_RETRY_COUNT}: specifies how many times to retry a failed request for each
+ * tile being seeded. Use {@code 0} for no retries, or any higher number. Defaults to {@code 0}
+ * retry meaning no retries are performed. It also means that the defaults to the other two
+ * variables do not apply at least you specify a higher value for GWC_SEED_RETRY_COUNT;
+ * <li>{@code GWC_SEED_RETRY_WAIT}: specifies how much to wait before each retry upon a failure to
+ * seed a tile, in milliseconds. Defaults to {@code 100ms};
+ * <li>{@code GWC_SEED_ABORT_LIMIT}: specifies the aggregated number of failures that a group of
+ * seeding threads should reach before aborting the seeding operation as a whole. This value is
+ * shared by all the threads launched as a single thread group; so if the value is {@code 10} and
+ * you launch a seed task with four threads, when {@code 10} failures are reached by all or any of
+ * those four threads the four threads will abort the seeding task. The default is {@code 1000}.
+ * </ul>
+ * These environment variables can be established by any of the following ways, in order of
+ * precedence:
+ * <ol>
+ * <li>As a Java environment variable: for example {@code java -DGWC_SEED_RETRY_COUNT=5 ...};
+ * <li>As a Servlet context parameter: for example
+ * 
+ * <pre>
+ * <code>
+ *   &lt;context-param&gt;
+ *    &lt;!-- milliseconds between each retry upon a backend request failure --&gt;
+ *    &lt;param-name&gt;GWC_SEED_RETRY_WAIT&lt;/param-name&gt;
+ *    &lt;param-value&gt;500&lt;/param-value&gt;
+ *   &lt;/context-param&gt;
+ * </code>
+ * </pre>
+ * 
+ * In the web application's {@code WEB-INF/web.xml} configuration file;
+ * <li>As a System environment variable:
+ * {@code export GWC_SEED_ABORT_LIMIT=2000; <your usual command to run GWC here>}
+ * </ol>
+ * </p>
  * 
  * @author Gabriel Roldan, based on Marius Suta's and Arne Kepp's SeedRestlet
  */
-public class TileBreeder {
+public class TileBreeder implements ApplicationContextAware {
+    private static final String GWC_SEED_ABORT_LIMIT = "GWC_SEED_ABORT_LIMIT";
+
+    private static final String GWC_SEED_RETRY_WAIT = "GWC_SEED_RETRY_WAIT";
+
+    private static final String GWC_SEED_RETRY_COUNT = "GWC_SEED_RETRY_COUNT";
+
     private static Log log = LogFactory.getLog(TileBreeder.class);
 
     private SeederThreadPoolExecutor threadPool;
@@ -49,14 +99,74 @@ public class TileBreeder {
 
     private StorageBroker storageBroker;
 
+    /**
+     * How many retries per failed tile. 0 = don't retry, 1 = retry once if failed, etc
+     */
+    private int tileFailureRetryCount = 0;
+
+    /**
+     * How much (in milliseconds) to wait before trying again a failed tile
+     */
+    private long tileFailureRetryWaitTime = 100;
+
+    /**
+     * How many failures to tolerate before aborting the seed task. Value is shared between all the
+     * threads of the same run.
+     */
+    private long totalFailuresBeforeAborting = 1000;
+
+    /**
+     * Initializes the seed task failure control variables either with the provided environment
+     * variable values or their defaults.
+     * 
+     * @see {@link TileBreeder class' javadocs} for more information
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        String retryCount = GWCVars.findEnvVar(applicationContext, GWC_SEED_RETRY_COUNT);
+        String retryWait = GWCVars.findEnvVar(applicationContext, GWC_SEED_RETRY_WAIT);
+        String abortLimit = GWCVars.findEnvVar(applicationContext, GWC_SEED_ABORT_LIMIT);
+
+        tileFailureRetryCount = (int) toLong(GWC_SEED_RETRY_COUNT, retryCount, 0);
+        tileFailureRetryWaitTime = toLong(GWC_SEED_RETRY_WAIT, retryWait, 100);
+        totalFailuresBeforeAborting = toLong(GWC_SEED_ABORT_LIMIT, abortLimit, 1000);
+
+        checkPositive(tileFailureRetryCount, GWC_SEED_RETRY_COUNT);
+        checkPositive(tileFailureRetryWaitTime, GWC_SEED_RETRY_WAIT);
+        checkPositive(totalFailuresBeforeAborting, GWC_SEED_ABORT_LIMIT);
+    }
+
+    @SuppressWarnings("serial")
+    private void checkPositive(long value, String variable) {
+        if (value < 0) {
+            throw new BeanInitializationException(
+                    "Invalid configuration value for environment variable " + variable
+                            + ". It should be a positive integer.") {
+            };
+        }
+    }
+
+    private long toLong(String varName, String paramVal, long defaultVal) {
+        if (paramVal == null) {
+            return defaultVal;
+        }
+        try {
+            return Long.valueOf(paramVal);
+        } catch (NumberFormatException e) {
+            log.warn("Invalid environment parameter for " + varName + ": '" + paramVal
+                    + "'. Using default value: " + defaultVal);
+        }
+        return defaultVal;
+    }
+
     public void seed(final String layerName, final SeedRequest sr) throws GeoWebCacheException {
 
         TileLayer tl = findTileLayer(layerName);
 
         TileRange tr = createTileRange(sr, tl);
 
-        GWCTask[] tasks = createTasks(tr, tl, sr.getType(), sr.getThreadCount(), sr
-                .getFilterUpdate());
+        GWCTask[] tasks = createTasks(tr, tl, sr.getType(), sr.getThreadCount(),
+                sr.getFilterUpdate());
 
         dispatchTasks(tasks);
     }
@@ -78,8 +188,16 @@ public class TileBreeder {
 
         GWCTask[] tasks = new GWCTask[threadCount];
 
+        AtomicLong failureCounter = new AtomicLong();
         for (int i = 0; i < threadCount; i++) {
-            tasks[i] = createTask(type, trIter, tl, filterUpdate);
+            if (type == TYPE.TRUNCATE) {
+                tasks[i] = createTruncateTask(trIter, tl, filterUpdate);
+            } else {
+                SeedTask task = (SeedTask) createSeedTask(type, trIter, tl, filterUpdate);
+                task.setFailurePolicy(tileFailureRetryCount, tileFailureRetryWaitTime,
+                        totalFailuresBeforeAborting, failureCounter);
+                tasks[i] = task;
+            }
             tasks[i].setThreadInfo(threadCount, i);
         }
 
@@ -92,8 +210,8 @@ public class TileBreeder {
         }
     }
 
-    public static TileRange createTileRange(SeedRequest req, TileLayer tl) 
-    throws GeoWebCacheException {
+    public static TileRange createTileRange(SeedRequest req, TileLayer tl)
+            throws GeoWebCacheException {
         int zoomStart = req.getZoomStart().intValue();
         int zoomStop = req.getZoomStop().intValue();
 
@@ -119,8 +237,8 @@ public class TileBreeder {
         }
 
         GridSubset gridSubset = tl.getGridSubset(gridSetId);
-        
-        if(gridSubset == null) {
+
+        if (gridSubset == null) {
             throw new GeoWebCacheException("Unknown grid set " + gridSetId);
         }
 
@@ -151,7 +269,7 @@ public class TileBreeder {
      * @return
      * @throws IllegalArgumentException
      */
-    private GWCTask createTask(TYPE type, TileRangeIterator trIter, TileLayer tl,
+    private GWCTask createSeedTask(TYPE type, TileRangeIterator trIter, TileLayer tl,
             boolean doFilterUpdate) throws IllegalArgumentException {
 
         switch (type) {
@@ -159,11 +277,15 @@ public class TileBreeder {
             return new SeedTask(storageBroker, trIter, tl, false, doFilterUpdate);
         case RESEED:
             return new SeedTask(storageBroker, trIter, tl, true, doFilterUpdate);
-        case TRUNCATE:
-            return new TruncateTask(storageBroker, trIter.getTileRange(), tl, doFilterUpdate);
         default:
             throw new IllegalArgumentException("Unknown request type " + type);
         }
+    }
+
+    private GWCTask createTruncateTask(TileRangeIterator trIter, TileLayer tl,
+            boolean doFilterUpdate) {
+
+        return new TruncateTask(storageBroker, trIter.getTileRange(), tl, doFilterUpdate);
     }
 
     /**
@@ -229,4 +351,5 @@ public class TileBreeder {
     public Map<String, TileLayer> getLayers() {
         return this.layerDispatcher.getLayers();
     }
+
 }

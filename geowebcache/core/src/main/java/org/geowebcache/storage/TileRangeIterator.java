@@ -174,4 +174,8 @@ public class TileRangeIterator {
     public synchronized long getCountRendered() {
         return tilesRenderedCount;
     }
+
+    public synchronized long getTilesProcessed() {
+        return tilesSkippedCount + tilesRenderedCount;
+    }
 }

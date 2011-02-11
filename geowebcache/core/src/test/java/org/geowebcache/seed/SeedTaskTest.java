@@ -16,10 +16,7 @@
  */
 package org.geowebcache.seed;
 
-import static org.easymock.EasyMock.anyObject;
-import static org.easymock.EasyMock.capture;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.classextension.EasyMock.replay;
+import static org.easymock.classextension.EasyMock.*;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -32,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.imageio.ImageIO;
 
@@ -39,6 +37,7 @@ import junit.framework.TestCase;
 
 import org.easymock.Capture;
 import org.easymock.classextension.EasyMock;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
@@ -133,6 +132,84 @@ public class SeedTaskTest extends TestCase {
         final long expectedWmsRequestsCount = 3; // due to metatiling
         final long wmsRequestCount = wmsRequestsCounter.get();
         assertEquals(expectedWmsRequestsCount, wmsRequestCount);
+    }
+
+    /**
+     * For a metatiled seed request over a given zoom level, make sure the correct wms calls are
+     * issued
+     * 
+     * @throws Exception
+     */
+    @SuppressWarnings("serial")
+    public void testSeedRetries() throws Exception {
+        WMSLayer tl = createWMSLayer("image/png");
+
+        // create an image to be returned by the mock WMSSourceHelper
+        final byte[] fakeWMSResponse = createFakeSourceImage(tl);
+
+        // WMSSourceHelper that on makeRequest() returns always the saqme fake image
+        WMSSourceHelper mockSourceHelper = EasyMock.createMock(WMSSourceHelper.class);
+
+        final AtomicInteger wmsRequestsCounter = new AtomicInteger();
+        Capture<WMSMetaTile> wmsRequestsCapturer = new Capture<WMSMetaTile>() {
+            /**
+             * Override because setValue with anyTimes() resets the list of values
+             */
+            @Override
+            public void setValue(WMSMetaTile o) {
+                wmsRequestsCounter.incrementAndGet();
+            }
+        };
+        expect(mockSourceHelper.makeRequest(capture(wmsRequestsCapturer))).andThrow(
+                new GeoWebCacheException("test exception"));
+        expect(mockSourceHelper.makeRequest(capture(wmsRequestsCapturer))).andThrow(
+                new RuntimeException("test unexpected exception"));
+        expect(mockSourceHelper.makeRequest(capture(wmsRequestsCapturer))).andThrow(
+                new GeoWebCacheException("second test exception"));
+        expect(mockSourceHelper.makeRequest(capture(wmsRequestsCapturer))).andThrow(
+                new RuntimeException("second test unexpected exception"));
+        expect(mockSourceHelper.makeRequest(capture(wmsRequestsCapturer))).andReturn(
+                fakeWMSResponse).anyTimes();
+
+        replay(mockSourceHelper);
+
+        tl.setSourceHelper(mockSourceHelper);
+
+        final int zoomLevel = 4;
+        SeedRequest req = createRequest(tl, TYPE.SEED, zoomLevel, zoomLevel);
+        
+        TileRange tr = TileBreeder.createTileRange(req, tl);
+        TileRangeIterator trIter = new TileRangeIterator(tr, tl.getMetaTilingFactors());
+
+        /*
+         * Create a mock storage broker that does nothing
+         */
+        final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
+        expect(mockStorageBroker.put((TileObject) anyObject())).andReturn(true).anyTimes();
+        expect(mockStorageBroker.get((TileObject) anyObject())).andReturn(false).anyTimes();
+        replay(mockStorageBroker);
+
+        boolean reseed = false;
+        SeedTask seedTask = new SeedTask(mockStorageBroker, trIter, tl, reseed, false);
+        seedTask.setTaskId(1L);
+        seedTask.setThreadInfo(1, 0);
+        
+        int tileFailureRetryCount = 1;
+        long tileFailureRetryWaitTime = 10;
+        long totalFailuresBeforeAborting = 4;
+        AtomicLong sharedFailureCounter = new AtomicLong();
+        seedTask.setFailurePolicy(tileFailureRetryCount, tileFailureRetryWaitTime, totalFailuresBeforeAborting, sharedFailureCounter);
+        /*
+         * HACK: avoid SeedTask.getCurrentThreadArrayIndex failure.
+         */
+        Thread.currentThread().setName("pool-fake-thread-1");
+
+        /*
+         * Call the seed process
+         */
+        seedTask.doAction();
+        assertEquals(totalFailuresBeforeAborting, sharedFailureCounter.get());
+        verify(mockSourceHelper);
     }
 
     /**

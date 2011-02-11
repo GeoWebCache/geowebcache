@@ -25,6 +25,7 @@ import javax.servlet.ServletContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.util.ApplicationContextProvider;
+import org.geowebcache.util.GWCVars;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
@@ -71,40 +72,9 @@ public class DefaultStorageFinder {
     }
     
     public String findEnvVar(String varStr) {
-        ServletContext serlvCtx = context.getServletContext();
-
-        final String[] typeStrs = { "Java environment variable ",
-                "servlet context parameter ", "system environment variable " };
-        
-        String value = null;
-
-        for (int j = 0; j < typeStrs.length && value == null; j++) {
-            String typeStr = typeStrs[j];
-
-            switch (j) {
-            case 0:
-                value = System.getProperty(varStr);
-                break;
-            case 1:
-                value = serlvCtx.getInitParameter(varStr);
-                break;
-            case 2:
-                value = System.getenv(varStr);
-                break;
-            }
-            
-            if(value != null) {
-                if(varStr.equals(GWC_METASTORE_PASSWORD)) {
-                    log.info("Found " + typeStr + " for " + varStr + " set to <hidden>");
-                } else {
-                    log.info("Found " + typeStr + " for " + varStr + " set to " + value);
-                }
-            }
-        }
-        
-        return value;
+        return GWCVars.findEnvVar(context, varStr);
     }
-
+    
     /**
      * Looks for <br>
      * 1) GEOWEBCACHE_CACHE_DIR<br>

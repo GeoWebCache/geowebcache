@@ -17,10 +17,10 @@
  */
 package org.geowebcache.seed;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,6 +45,14 @@ class SeedTask extends GWCTask {
 
     private StorageBroker storageBroker;
 
+    private int tileFailureRetryCount;
+
+    private long tileFailureRetryWaitTime;
+
+    private long totalFailuresBeforeAborting;
+
+    private AtomicLong sharedFailureCounter;
+
     /**
      * Constructs a SeedTask from a SeedRequest
      * 
@@ -58,6 +66,11 @@ class SeedTask extends GWCTask {
         this.tl = tl;
         this.reseed = reseed;
         this.doFilterUpdate = doFilterUpdate;
+
+        tileFailureRetryCount = 1;
+        tileFailureRetryWaitTime = 100;
+        totalFailuresBeforeAborting = 10000;
+        sharedFailureCounter = new AtomicLong();
 
         if (reseed) {
             super.parsedType = GWCTask.TYPE.RESEED;
@@ -103,24 +116,49 @@ class SeedTask extends GWCTask {
             ConveyorTile tile = new ConveyorTile(storageBroker, tl.getName(), tr.gridSetId,
                     gridLoc, tr.mimeType, null, null, null, null);
 
-            // Question is, how resilient should we be ?
-            try {
-                checkInterrupted();
-                tl.seedTile(tile, tryCache);
-            } catch (IOException ioe) {
-                log.error("Seed failed at " + tile.toString() + ",\n exception: "
-                        + ioe.getMessage());
-                super.state = GWCTask.STATE.DEAD;
-                throw new GeoWebCacheException(ioe.getMessage());
-            } catch (GeoWebCacheException gwce) {
-                log.error("Seed failed at " + tile.toString() + ",\n exception: "
-                        + gwce.getMessage());
-                super.state = GWCTask.STATE.DEAD;
-                throw gwce;
+            for (int fetchAttempt = 0; fetchAttempt <= tileFailureRetryCount; fetchAttempt++) {
+                try {
+                    checkInterrupted();
+                    tl.seedTile(tile, tryCache);
+                    break;// success, let it go
+                } catch (Exception e) {
+                    // if GWC_SEED_RETRY_COUNT was not set then none of the settings have effect, in
+                    // order to keep backwards compatibility with the old behaviour
+                    if (tileFailureRetryCount == 0) {
+                        if (e instanceof GeoWebCacheException) {
+                            throw (GeoWebCacheException) e;
+                        }
+                        throw new GeoWebCacheException(e);
+                    }
+
+                    long sharedFailureCount = sharedFailureCounter.incrementAndGet();
+                    if (sharedFailureCount >= totalFailuresBeforeAborting) {
+                        log.info("Aborting seed thread " + Thread.currentThread().getName()
+                                + ". Error count reached configured maximum of "
+                                + totalFailuresBeforeAborting);
+                        super.state = GWCTask.STATE.DEAD;
+                        return;
+                    }
+                    String logMsg = "Seed failed at " + tile.toString() + " after "
+                            + (fetchAttempt + 1) + " of " + (tileFailureRetryCount + 1)
+                            + " attempts.";
+                    if (fetchAttempt < tileFailureRetryCount) {
+                        log.debug(logMsg);
+                        if (tileFailureRetryWaitTime > 0) {
+                            log.trace("Waiting " + tileFailureRetryWaitTime
+                                    + " before trying again");
+                            Thread.sleep(tileFailureRetryCount);
+                        }
+                    } else {
+                        log.info(logMsg
+                                + " Skipping and continuing with next tile. Original error: "
+                                + e.getMessage());
+                    }
+                }
             }
 
-            if (log.isDebugEnabled()) {
-                log.debug(Thread.currentThread().getName() + " seeded " + Arrays.toString(gridLoc));
+            if (log.isTraceEnabled()) {
+                log.trace(Thread.currentThread().getName() + " seeded " + Arrays.toString(gridLoc));
             }
 
             long totalTilesCompleted = trIter.getCountRendered() + trIter.getCountRendered();
@@ -216,5 +254,13 @@ class SeedTask extends GWCTask {
                 }
             }
         }
+    }
+
+    public void setFailurePolicy(int tileFailureRetryCount, long tileFailureRetryWaitTime,
+            long totalFailuresBeforeAborting, AtomicLong sharedFailureCounter) {
+        this.tileFailureRetryCount = tileFailureRetryCount;
+        this.tileFailureRetryWaitTime = tileFailureRetryWaitTime;
+        this.totalFailuresBeforeAborting = totalFailuresBeforeAborting;
+        this.sharedFailureCounter = sharedFailureCounter;
     }
 }
