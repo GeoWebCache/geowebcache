@@ -26,6 +26,7 @@ import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
@@ -55,7 +56,7 @@ public class GMapsConverter extends Service {
     }
     
     public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response) 
-    throws ServiceException {
+    throws ServiceException,GeoWebCacheException {
         String layerId = super.getLayersParameter(request);
         
         String encoding = request.getCharacterEncoding();
@@ -71,6 +72,23 @@ public class GMapsConverter extends Service {
         long[] gridLoc = GMapsConverter.convert(Integer.parseInt(strZoom), 
                 Integer.parseInt(strX), Integer.parseInt(strY));
 
+        String layers = ServletUtils.stringFromMap(params, encoding, "layers");
+        if(layers == null || layers.length() == 0) {    
+            layers = ServletUtils.stringFromMap(params, encoding, "layer");
+        }
+        
+        
+        TileLayer tileLayer = tld.getTileLayer(layers);
+        String[] modStrs = null;
+        modStrs = ((WMSLayer) tileLayer).getModifiableParameters(params, encoding);
+         
+        if(modStrs == null) {
+            modStrs = new String[2];
+            modStrs[0] = null;
+            modStrs[1] = null;
+        }        
+        
+        
         MimeType mimeType = null;
         try {
             if (strFormat == null) {
