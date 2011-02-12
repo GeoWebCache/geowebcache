@@ -59,6 +59,10 @@ public abstract class GWCTask {
 
     protected boolean terminate = false;
 
+    /**
+     * Marks this task as active in the group by incrementing the shared counter, delegates to
+     * {@link #doActionInternal()}, and makes sure to remove this task from the group count.
+     */
     public final void doAction() throws GeoWebCacheException, InterruptedException {
         this.sharedThreadCount.incrementAndGet();
         try {
@@ -68,8 +72,18 @@ public abstract class GWCTask {
         }
     }
 
+    /**
+     * Extension point for subclasses to do what they do
+     */
     protected abstract void doActionInternal() throws GeoWebCacheException, InterruptedException;
 
+    /**
+     * @param sharedThreadCount
+     *            a counter of number of active tasks in the task group, incremented when this task
+     *            starts working and decremented when it stops
+     * @param threadOffset
+     *            REVISIT: may not be needed anymore. Just check if sharedThreadCount == 1?
+     */
     public void setThreadInfo(AtomicInteger sharedThreadCount, int threadOffset) {
         this.sharedThreadCount = sharedThreadCount;
         this.threadOffset = threadOffset;
@@ -95,29 +109,33 @@ public abstract class GWCTask {
         return layerName;
     }
 
+    /**
+     * @return total number of tiles (in the whole task group), or < 0 if too many to count
+     */
     public long getTilesTotal() {
         return tilesTotal;
-    }
-
-    public String getTilesTotalStr() {
-        if (tilesTotal > 0) {
-            return Long.toString(tilesTotal);
-        } else {
-            return "Too many to count";
-        }
-
     }
 
     public long getTilesDone() {
         return tilesDone;
     }
 
+    /**
+     * @return estimated remaining time in seconds, or {@code -2} if unknown
+     */
     public long getTimeRemaining() {
         if (tilesTotal > 0) {
             return timeRemaining;
         } else {
             return -2;
         }
+    }
+
+    /**
+     * @return task time spent in seconds
+     */
+    public long getTimeSpent(){
+        return timeSpent;
     }
 
     public void terminateNicely() {

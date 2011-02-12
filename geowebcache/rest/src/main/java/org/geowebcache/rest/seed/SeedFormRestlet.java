@@ -22,8 +22,8 @@ import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
@@ -34,9 +34,9 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.seed.GWCTask;
+import org.geowebcache.seed.GWCTask.TYPE;
 import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.seed.TileBreeder;
-import org.geowebcache.seed.GWCTask.TYPE;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.util.ServletUtils;
 import org.restlet.data.Form;
@@ -386,51 +386,82 @@ public class SeedFormRestlet extends GWCRestlet {
             doc.append("<ul><li><i>none</i></li></ul>\n");
         } else {
             doc.append("<table border=\"0\" cellspacing=\"10\">");
-            doc.append("<tr style=\"font-weight: bold;\"><td>Id</td><td>Layer</td><td>Type</td><td>Estimated number of tiles</td>"
-                    +"<td>Tiles completed</td><td>Time remaining</td><td>Threads</td><td>&nbsp;</td><tr>");
+            doc.append("<tr style=\"font-weight: bold;\"><td>Id</td><td>Layer</td><td>Type</td><td>Estimated # of tiles</td>"
+                    +"<td>Tiles completed</td><td>Time elapsed</td><td>Time remaining</td><td>Threads</td><td>&nbsp;</td><tr>");
             tasks = true;
         }
-        
-        NumberFormat nf = NumberFormat.getNumberInstance(Locale.ENGLISH);
-        nf.setMaximumFractionDigits(1);
         
         while(iter.hasNext()) {
             Entry<Long, GWCTask> entry = iter.next();
             GWCTask task = entry.getValue();
+
+            final long spent = task.getTimeSpent();
+            final long remining = task.getTimeRemaining();
+            final long tilesDone = task.getTilesDone();
+            final long tilesTotal = task.getTilesTotal();
             
-            String timeRemaining;
-            double time = task.getTimeRemaining();
-            
-            if(task.getTilesDone() < 50) {
-                timeRemaining= " Estimating...";
-            } else if(time == -2 && task.getTilesDone() < task.getTilesTotal()) {
-                timeRemaining= " A decade or three.";
-            } else if(time > (60*60*24)) {
-                timeRemaining= "" + nf.format(time / (60*60*24)) + " day(s)";
-            } else if(time > 60*60) {
-                timeRemaining = "" + nf.format(time / (60*60)) + " hour(s)";
-            } else if(time > 60) {
-                timeRemaining = "" + nf.format(time / 60) + " minute(s)";
+            NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);
+            nf.setGroupingUsed(true);
+            final String tilesTotalStr;
+            if (tilesTotal < 0) {
+                tilesTotalStr = "Too many to count";
             } else {
-                timeRemaining = "" +(time) + " second(s)";
+                tilesTotalStr = nf.format(tilesTotal);
             }
+            final String tilesDoneStr = nf.format(task.getTilesDone());
+            String timeSpent = toTimeString(spent, tilesDone, tilesTotal);
+            String timeRemaining = toTimeString(remining, tilesDone, tilesTotal);
             
-            
-            doc.append("<tr>"
-                    + "<td>" + entry.getKey() + "</td>"
-                    + "<td>" + task.getLayerName() + "</td>"
-                    + "<td>" + task.getType() + "</td>"
-                    + "<td>" + task.getTilesTotalStr() + "</td>"
-                    + "<td>" + task.getTilesDone() + "</td>"
-                    + "<td>" + timeRemaining + "</td>"
-                    + "<td>(Thread " + (task.getThreadOffset()+1) + " of " + task.getThreadCount() + ") </td>"
-                    + "<td>" + makeThreadKillForm(entry.getKey(), tl) + "</td><tr>");
+            doc.append("<tr>");
+            doc.append("<td>").append(entry.getKey()).append("</td>");
+            doc.append("<td>").append(task.getLayerName()).append("</td>");
+            doc.append("<td>").append(task.getType()).append("</td>");
+            doc.append("<td>").append(tilesTotalStr).append("</td>");
+            doc.append("<td>").append(tilesDoneStr).append("</td>");
+            doc.append("<td>").append(timeSpent).append("</td>");
+            doc.append("<td>").append(timeRemaining).append("</td>");
+            doc.append("<td>(Thread ").append(task.getThreadOffset() + 1).append(" of ")
+                    .append(task.getThreadCount()).append(") </td>");
+            doc.append("<td>").append(makeThreadKillForm(entry.getKey(), tl)).append("</td><tr>");
         }
         
         if(tasks) {
             doc.append("</table>");
         }
         doc.append("<p><a href=\"./"+tl.getName()+"\">Refresh list</a></p>\n");
+    }
+
+    private String toTimeString(long timeSeconds, final long tilesDone, final long tilesTotal) {
+        String timeString;
+        if (tilesDone < 50) {
+            timeString = " Estimating...";
+        } else {
+            final int MINUTE_SECONDS = 60;
+            final int HOUR_SECONDS = MINUTE_SECONDS * 60;
+            final int DAY_SECONDS = HOUR_SECONDS * 24;
+
+            if (timeSeconds == -2 && tilesDone < tilesTotal) {
+                timeString = " A decade or three.";
+            } else {
+                if (timeSeconds > DAY_SECONDS) {
+                    timeString = (timeSeconds / DAY_SECONDS) + " day(s) ";
+                    timeString += ((timeSeconds % DAY_SECONDS) / HOUR_SECONDS) + "h)";
+                } else if (timeSeconds > HOUR_SECONDS) {
+                    long hours = timeSeconds / HOUR_SECONDS;
+                    long minutes = (timeSeconds % HOUR_SECONDS) / MINUTE_SECONDS;
+                    timeString = hours + " hour" + (hours > 1 ? "s " : " ");
+                    timeString += minutes == 0 ? "" : (minutes + " m");
+                } else if (timeSeconds > MINUTE_SECONDS) {
+                    long minutes = timeSeconds / MINUTE_SECONDS;
+                    long seconds = timeSeconds % MINUTE_SECONDS;
+                    timeString = minutes + " minute" + (minutes > 1 ? "s " : " ");
+                    timeString += seconds == 0 ? "" : seconds + " s";
+                } else {
+                    timeString = timeSeconds + " second" + (timeSeconds == 1 ? "" : "s");
+                }
+            }
+        }
+        return timeString;
     }
     
     private String makeThreadKillForm(Long key, TileLayer tl) {

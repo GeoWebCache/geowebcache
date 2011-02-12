@@ -179,7 +179,7 @@ class SeedTask extends GWCTask {
                     + this.tilesDone + " tiles");
         } else {
             log.info(Thread.currentThread().getName() + " completed (re)seeding layer "
-                    + tl.getName() + " after " + this.tilesDone + " tiles.");
+                    + tl.getName() + " after " + this.tilesDone + " tiles and " + this.timeSpent + " seconds.");
         }
 
         checkInterrupted();
