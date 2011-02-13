@@ -103,7 +103,7 @@ public class SeedFormRestlet extends GWCRestlet {
         
         //String layerName = form.getFirst("layerName").getValue();
         
-        TileLayer tl;
+        TileLayer tl = null;
         try {
             tl = seeder.findTileLayer(layerName);
         } catch (GeoWebCacheException e) {
@@ -112,6 +112,8 @@ public class SeedFormRestlet extends GWCRestlet {
         
         if (form != null && form.getFirst("kill_thread") != null) {
             handleKillThreadPost(form, tl, resp);
+        }else if (form != null && form.getFirst("kill_all") != null) {
+            handleKillAllThreadsPost(form, tl, resp);
         } else if (form != null && form.getFirst("minX") != null) {
             handleDoSeedPost(form, tl, resp);
         } else {
@@ -387,7 +389,9 @@ public class SeedFormRestlet extends GWCRestlet {
         } else {
             doc.append("<table border=\"0\" cellspacing=\"10\">");
             doc.append("<tr style=\"font-weight: bold;\"><td>Id</td><td>Layer</td><td>Type</td><td>Estimated # of tiles</td>"
-                    +"<td>Tiles completed</td><td>Time elapsed</td><td>Time remaining</td><td>Threads</td><td>&nbsp;</td><tr>");
+                    +"<td>Tiles completed</td><td>Time elapsed</td><td>Time remaining</td><td>Threads</td><td>&nbsp;</td>");
+            doc.append("<td>").append(makeKillallThreadsForm(tl)).append("</td>");
+            doc.append("</tr>");
             tasks = true;
         }
         
@@ -422,7 +426,8 @@ public class SeedFormRestlet extends GWCRestlet {
             doc.append("<td>").append(timeRemaining).append("</td>");
             doc.append("<td>(Thread ").append(task.getThreadOffset() + 1).append(" of ")
                     .append(task.getThreadCount()).append(") </td>");
-            doc.append("<td>").append(makeThreadKillForm(entry.getKey(), tl)).append("</td><tr>");
+            doc.append("<td>").append(makeThreadKillForm(entry.getKey(), tl)).append("</td>");
+            doc.append("<tr>");
         }
         
         if(tasks) {
@@ -474,8 +479,34 @@ public class SeedFormRestlet extends GWCRestlet {
         return ret;
     }
 
+    private String makeKillallThreadsForm(TileLayer tl) {
+        String ret =  "<form form id=\"kill\" action=\"./"+tl.getName()+"\" method=\"post\">"
+                + "<input type=\"hidden\" name=\"kill_all\"  value=\"1\" />"
+                + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Kill All Threads\"></span>"
+                + "</form>";
+                        
+        return ret;
+    }
+
     private void makeFooter(StringBuilder doc) {
         doc.append("</body></html>\n");
+    }
+    
+    private void handleKillAllThreadsPost(Form form, TileLayer tl, Response resp){
+        Iterator<Entry<Long, GWCTask>> runningTasks = seeder.getRunningTasksIterator();
+        while(runningTasks.hasNext()){
+            Entry<Long, GWCTask> next = runningTasks.next();
+            GWCTask task = next.getValue();
+            long taskId = task.getTaskId();
+            seeder.terminateGWCTask(taskId);
+        }
+        StringBuilder doc = new StringBuilder();
+        
+        makeHeader(doc);
+        doc.append("<ul><li>Requested to terminate all tasks.</li></ul>");
+        doc.append("<p><a href=\"./"+tl.getName()+"\">Go back</a></p>\n");
+        
+        resp.setEntity(doc.toString(), MediaType.TEXT_HTML);
     }
     
     private void handleKillThreadPost(Form form, TileLayer tl, Response resp) {
