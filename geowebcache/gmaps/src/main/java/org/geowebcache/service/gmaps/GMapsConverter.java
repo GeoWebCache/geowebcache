@@ -80,10 +80,14 @@ public class GMapsConverter extends Service {
         
         
         TileLayer tileLayer = tld.getTileLayer(layers);
-        String[] modStrs = new String[2];
+        String[] modStrs=null;
         if (tileLayer instanceof WMSLayer){
         	modStrs = ((WMSLayer) tileLayer).getModifiableParameters(params, encoding);
         }
+        if (modStrs==null){
+        	modStrs=new String[2];
+        }
+        
         
         MimeType mimeType = null;
         try {
