@@ -72,6 +72,7 @@ public class GMapsConverter extends Service {
         long[] gridLoc = GMapsConverter.convert(Integer.parseInt(strZoom), 
                 Integer.parseInt(strX), Integer.parseInt(strY));
 
+        
         String layers = ServletUtils.stringFromMap(params, encoding, "layers");
         if(layers == null || layers.length() == 0) {    
             layers = ServletUtils.stringFromMap(params, encoding, "layer");
@@ -79,15 +80,10 @@ public class GMapsConverter extends Service {
         
         
         TileLayer tileLayer = tld.getTileLayer(layers);
-        String[] modStrs = null;
-        modStrs = ((WMSLayer) tileLayer).getModifiableParameters(params, encoding);
-         
-        if(modStrs == null) {
-            modStrs = new String[2];
-            modStrs[0] = null;
-            modStrs[1] = null;
-        }        
-        
+        String[] modStrs = new String[2];
+        if (tileLayer instanceof WMSLayer){
+        	modStrs = ((WMSLayer) tileLayer).getModifiableParameters(params, encoding);
+        }
         
         MimeType mimeType = null;
         try {
@@ -99,7 +95,7 @@ public class GMapsConverter extends Service {
             throw new ServiceException("Unable to determine requested format, "+ strFormat);
         }
         
-        ConveyorTile ret = new ConveyorTile(sb, layerId, gsb.WORLD_EPSG3857.getName(), gridLoc, mimeType, null, null, request, response);
+        ConveyorTile ret = new ConveyorTile(sb, layerId, gsb.WORLD_EPSG3857.getName(), gridLoc, mimeType, modStrs[0], modStrs[1], request, response);
         
         if(strCached != null && ! Boolean.parseBoolean(strCached)) {
             ret.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
