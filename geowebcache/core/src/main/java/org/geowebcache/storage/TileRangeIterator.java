@@ -92,8 +92,8 @@ public class TileRangeIterator {
         try {
             // Loop over any remaining zoom levels
             for (; z <= tr.zoomStop; z++) {
-                for (; y < levelBounds[3]; y += metaY) {
-                    for (; x < levelBounds[2]; x += metaX) {
+                for (; y <= levelBounds[3]; y += metaY) {
+                    for (; x <= levelBounds[2]; x += metaX) {
 
                         long[] gridLoc = { x, y, z };
 
@@ -132,8 +132,10 @@ public class TileRangeIterator {
      * @return
      */
     private int tilesForLocation(long[] gridLoc, long[] levelBounds) {
-        return (int) Math.min(metaX, levelBounds[2] - gridLoc[0])
-                * (int) Math.min(metaY, levelBounds[3] - gridLoc[1]);
+        long boundsMaxX = levelBounds[2];
+        long boundsMaxY = levelBounds[3];
+        return (int) Math.min(metaX, 1 + (boundsMaxX - gridLoc[0]))
+                * (int) Math.min(metaY, 1 + (boundsMaxY - gridLoc[1]));
     }
 
     /**
