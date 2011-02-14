@@ -17,7 +17,6 @@
 
 package org.geowebcache.storage;
 
-
 public class TileRangeIterator {
     final private TileRange tr;
 
@@ -89,36 +88,32 @@ public class TileRangeIterator {
             y = lastGridLoc[1];
         }
 
-        try {
-            // Loop over any remaining zoom levels
-            for (; z <= tr.zoomStop; z++) {
-                for (; y <= levelBounds[3]; y += metaY) {
-                    for (; x <= levelBounds[2]; x += metaX) {
+        // Loop over any remaining zoom levels
+        for (; z <= tr.zoomStop; z++) {
+            for (; y <= levelBounds[3]; y += metaY) {
+                for (; x <= levelBounds[2]; x += metaX) {
 
-                        long[] gridLoc = { x, y, z };
+                    long[] gridLoc = { x, y, z };
 
-                        int tileCount = tilesForLocation(gridLoc, levelBounds);
+                    int tileCount = tilesForLocation(gridLoc, levelBounds);
 
-                        if (checkGridLocation(gridLoc)) {
-                            tilesRenderedCount += tileCount;
-                            lastGridLoc = gridLoc.clone();
-                            return gridLoc;
-                        }
-
-                        tilesSkippedCount += tileCount;
+                    if (checkGridLocation(gridLoc)) {
+                        tilesRenderedCount += tileCount;
+                        lastGridLoc = gridLoc.clone();
+                        return gridLoc;
                     }
-                    x = levelBounds[0];
-                }
 
-                // Get ready for the next level
-                if (z < tr.zoomStop) {// but be careful not to go out of index
-                    levelBounds = tr.rangeBounds[z + 1];
-                    x = levelBounds[0];
-                    y = levelBounds[1];
+                    tilesSkippedCount += tileCount;
                 }
+                x = levelBounds[0];
             }
-        } catch (RuntimeException e) {
-            e.printStackTrace();
+
+            // Get ready for the next level
+            if (z < tr.zoomStop) {// but be careful not to go out of index
+                levelBounds = tr.rangeBounds[z + 1];
+                x = levelBounds[0];
+                y = levelBounds[1];
+            }
         }
 
         return null;
