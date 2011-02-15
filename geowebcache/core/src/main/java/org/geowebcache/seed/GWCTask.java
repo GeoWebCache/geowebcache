@@ -18,12 +18,16 @@ package org.geowebcache.seed;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 
 /**
  * 
  */
 public abstract class GWCTask {
+
+    private static final Log log = LogFactory.getLog(GWCTask.class);
 
     public static enum TYPE {
         UNSET, SEED, RESEED, TRUNCATE
@@ -59,16 +63,24 @@ public abstract class GWCTask {
 
     protected boolean terminate = false;
 
+    private long groupStartTime;
+
     /**
      * Marks this task as active in the group by incrementing the shared counter, delegates to
      * {@link #doActionInternal()}, and makes sure to remove this task from the group count.
      */
     public final void doAction() throws GeoWebCacheException, InterruptedException {
         this.sharedThreadCount.incrementAndGet();
+        this.groupStartTime = System.currentTimeMillis();
         try {
             doActionInternal();
         } finally {
-            this.sharedThreadCount.decrementAndGet();
+            int membersRemaining = this.sharedThreadCount.decrementAndGet();
+            if (0 == membersRemaining) {
+                double groupTotalTimeSecs = (System.currentTimeMillis() - (double) groupStartTime) / 1000;
+                log.info("Thread group finished " + parsedType + " task after "
+                        + groupTotalTimeSecs + " seconds");
+            }
         }
     }
 
@@ -134,7 +146,7 @@ public abstract class GWCTask {
     /**
      * @return task time spent in seconds
      */
-    public long getTimeSpent(){
+    public long getTimeSpent() {
         return timeSpent;
     }
 
