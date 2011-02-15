@@ -26,6 +26,7 @@ import java.net.URL;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -140,19 +141,13 @@ public class WMSHttpHelper extends WMSSourceHelper {
                 responseLength = (int) getMethod.getResponseContentLength();
 
                 // Do not set error at this stage
-            } catch (ConnectException ce) {
+            } catch (IOException ce) {
                 if (log.isDebugEnabled()) {
                     String message = "Error forwarding request " + wmsBackendUrl.toString();
                     log.debug(message, ce);
                 }
                 throw new GeoWebCacheException(ce);
-            } catch (IOException ioe) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Error forwarding request " + wmsBackendUrl.toString(), ioe);
-                }
-                throw new GeoWebCacheException(ioe);
             }
-
             // Check that the response code is okay
             tileRespRecv.setStatus(responseCode);
             if (responseCode != 200 && responseCode != 204) {
@@ -181,12 +176,20 @@ public class WMSHttpHelper extends WMSSourceHelper {
                         // Do nothing
                     }
                     message = new String(error);
+                } else if (responseMime != null
+                        && responseMime.startsWith("application/vnd.ogc.se_xml")) {
+                    try {
+                        message = IOUtils.toString(getMethod.getResponseBodyAsStream());
+                    } catch (IOException e) {
+                        //
+                    }
                 }
                 String msg = "MimeType mismatch, expected " + requestMime + " but got "
-                        + responseMime + " from " + wmsBackendUrl.toString() + "\n\n" + message;
+                        + responseMime + " from " + wmsBackendUrl.toString()
+                        + (message == null ? "" : (":\n" + message));
                 tileRespRecv.setError();
                 tileRespRecv.setErrorMessage(msg);
-                log.error(msg);
+                log.warn(msg);
             }
 
             // Everything looks okay, try to save expiration
@@ -231,8 +234,9 @@ public class WMSHttpHelper extends WMSSourceHelper {
             }
 
         } finally {
-            if (getMethod != null)
+            if (getMethod != null){
                 getMethod.releaseConnection();
+            }
         }
 
         return ret;
