@@ -34,9 +34,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.BlobStoreListenerList;
-import org.geowebcache.storage.BlobStoreVisitor;
 import org.geowebcache.storage.DefaultStorageFinder;
-import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
@@ -465,13 +463,5 @@ public class FileBlobStore implements BlobStore {
 
     public boolean removeListener(BlobStoreListener listener) {
         return listeners.removeListener(listener);
-    }
-
-    /**
-     * @see StorageBroker#accept(BlobStoreVisitor)
-     */
-    public void accept(BlobStoreVisitor visitor) {
-        System.err.println(getClass().getSimpleName()
-                + ".accept(BlobStoreVisitor) not yet implemented!!!!");
     }
 }

@@ -67,7 +67,7 @@ class TruncateTask extends GWCTask {
 
         if (super.state != GWCTask.STATE.DEAD) {
             super.state = GWCTask.STATE.DONE;
-            log.info("Completed truncate request.");
+            log.debug("Completed truncate request.");
         }
     }
 
@@ -82,7 +82,7 @@ class TruncateTask extends GWCTask {
             while (iter.hasNext()) {
                 RequestFilter reqFilter = iter.next();
                 if (reqFilter.update(tl, tr.gridSetId)) {
-                    log.info("Updated request filter " + reqFilter.getName());
+                    log.debug("Updated request filter " + reqFilter.getName());
                 } else {
                     log.debug("Request filter " + reqFilter.getName()
                             + " returned false on update.");
