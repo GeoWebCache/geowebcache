@@ -147,7 +147,8 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long>, Serializable 
             sb.append(numAggregations).append(" aggregated updates, ");
             sb.append(tilePages.size()).append(" different pages, ");
             sb.append("accum quota diff: ").append(accumQuotaDiff.toNiceString());
-            sb.append(", created ").append((System.currentTimeMillis() - creationTime)).append("ms ago").append(']');
+            sb.append(", created ").append((System.currentTimeMillis() - creationTime))
+                    .append("ms ago").append(']');
             return sb.toString();
         }
     }

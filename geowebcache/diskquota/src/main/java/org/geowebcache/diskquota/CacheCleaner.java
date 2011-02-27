@@ -28,7 +28,6 @@ import org.geowebcache.diskquota.storage.LayerQuota;
 import org.geowebcache.diskquota.storage.Quota;
 import org.geowebcache.diskquota.storage.TilePage;
 import org.geowebcache.diskquota.storage.TileSet;
-import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.seed.GWCTask;
@@ -42,10 +41,6 @@ import org.springframework.beans.factory.DisposableBean;
  * @see DiskQuotaMonitor
  */
 public class CacheCleaner implements DisposableBean {
-
-    public enum ExpirationPolicy {
-        LRU, LFU;
-    }
 
     private static final Log log = LogFactory.getLog(CacheCleaner.class);
 

@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.ConfigurationException;
-import org.geowebcache.diskquota.CacheCleaner.ExpirationPolicy;
 import org.geowebcache.diskquota.CacheCleaner.GlobalQuotaResolver;
 import org.geowebcache.diskquota.CacheCleaner.LayerQuotaResolver;
 import org.geowebcache.diskquota.CacheCleaner.QuotaResolver;

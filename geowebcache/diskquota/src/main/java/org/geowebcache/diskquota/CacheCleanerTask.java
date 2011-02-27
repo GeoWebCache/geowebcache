@@ -30,7 +30,6 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.diskquota.CacheCleaner.ExpirationPolicy;
 import org.geowebcache.diskquota.CacheCleaner.QuotaResolver;
 import org.geowebcache.diskquota.storage.LayerQuota;
 import org.geowebcache.diskquota.storage.Quota;

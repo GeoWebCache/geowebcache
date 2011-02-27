@@ -198,9 +198,9 @@ final class LayerCacheInfoBuilder {
          * @see java.io.FileFilter#accept(java.io.File)
          */
         public boolean accept(final File file) {
-//            if (Thread.interrupted()) {
-//                throw new TraversalCanceledException();
-//            }
+            // if (Thread.interrupted()) {
+            // throw new TraversalCanceledException();
+            // }
             if (file.isDirectory()) {
                 log.trace("Processing files in " + file.getAbsolutePath());
                 return true;
@@ -226,8 +226,9 @@ final class LayerCacheInfoBuilder {
 
             // TODO:
             Long parametersId = null;
-            
-            this.quotaUsageMonitor.tileStored(layerName,gridSetId, blobFormat, parametersId, x, y, (int)tileZ, length);
+
+            this.quotaUsageMonitor.tileStored(layerName, gridSetId, blobFormat, parametersId, x, y,
+                    (int) tileZ, length);
             stats.numTiles++;
             stats.collectedQuota.addBytes(length);
             return true;
