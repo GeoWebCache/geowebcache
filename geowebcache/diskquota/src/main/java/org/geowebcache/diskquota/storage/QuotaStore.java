@@ -15,16 +15,9 @@
  * @author Gabriel Roldan (OpenGeo) 2010
  *  
  */
-package org.geowebcache.diskquota.paging;
+package org.geowebcache.diskquota.storage;
 
-import java.io.IOException;
-import java.util.List;
 
-public interface PageStore {
-
-    List<TilePage> getPages(String layerName, String gridSetId) throws IOException;
-
-    void savePages(String layerName, String gridSetId, List<TilePage> availablePages)
-            throws IOException;
+public interface QuotaStore {
 
 }

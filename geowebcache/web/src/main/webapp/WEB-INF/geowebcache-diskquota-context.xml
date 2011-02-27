@@ -9,23 +9,26 @@
   </bean>
 
   <bean id="DiskQuotaMonitor" class="org.geowebcache.diskquota.DiskQuotaMonitor">
+    <constructor-arg ref="gwcDefaultStorageFinder" />
     <constructor-arg ref="DiskQuotaConfigLoader" />
     <constructor-arg ref="gwcTLDispatcher" />
     <constructor-arg ref="gwcStorageBroker" />
+    <constructor-arg ref="DiskQuotaStore" />
+    <constructor-arg ref="gwcCacheCleaner" />
   </bean>
 
-  <bean id="pageStore" class="org.geowebcache.diskquota.paging.FilePageStore">
-    <constructor-arg ref="DiskQuotaConfigLoader" />
+  <bean id="gwcTilePageCalculator" class="org.geowebcache.diskquota.storage.TilePageCalculator">
+    <constructor-arg ref="gwcTLDispatcher" />
   </bean>
 
-  <bean id="ExpirationPolicyLRU" class="org.geowebcache.diskquota.lru.ExpirationPolicyLRU">
-    <constructor-arg ref="gwcTileBreeder" />
-    <constructor-arg ref="pageStore" />
+  <bean id="DiskQuotaStore" class="org.geowebcache.diskquota.storage.BDBQuotaStore">
+    <constructor-arg ref="gwcDefaultStorageFinder" />
+    <constructor-arg ref="gwcTilePageCalculator" />
   </bean>
-  
-  <bean id="ExpirationPolicyLFU" class="org.geowebcache.diskquota.lfu.ExpirationPolicyLFU">
+
+  <bean id="gwcCacheCleaner" class="org.geowebcache.diskquota.CacheCleaner">
     <constructor-arg ref="gwcTileBreeder" />
-    <constructor-arg ref="pageStore" />
+    <constructor-arg ref="DiskQuotaStore" />
   </bean>
 
   <!-- bean id="mockWMSSource" class="org.geowebcache.diskquota.MockWMSLayerSource">

@@ -15,19 +15,17 @@
  * @author Gabriel Roldan (OpenGeo) 2010
  *  
  */
-package org.geowebcache.diskquota.paging;
+package org.geowebcache.diskquota.storage;
 
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.TreeMap;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.storage.TileRange;
+import org.springframework.util.Assert;
 
 /**
  * Pyramid of tile pages for a given {@link GridSubset}
@@ -44,10 +42,15 @@ class PagePyramid {
     /**
      * {@code [level][numTilesPerPageX, numTilesPerPageY, numPagesX, numPagesY]}
      */
-    private final PageLevelInfo[] pageInfo;
+    private PageLevelInfo[] pageInfo;
 
-    private static final class PageLevelInfo {
-        public final int level;
+    private long[][] gridSubsetCoverages;
+
+    private final int zoomStart;
+
+    private final int zoomStop;
+
+    public static final class PageLevelInfo {
 
         public final int pagesX;
 
@@ -57,6 +60,8 @@ class PagePyramid {
 
         public final int tilesPerPageY;
 
+        public final BigInteger tilesPerPage;
+
         public final long coverageMinX;
 
         public final long coverageMinY;
@@ -65,58 +70,64 @@ class PagePyramid {
 
         public final long coverageMaxY;
 
-        public PageLevelInfo(int level, int pagesX, int pagesY, int tilesPerPageX,
-                int tilesPerPageY, long coverageMinX, long coverageMinY, long coverageMaxX,
-                long coverageMaxY) {
-            this.level = level;
+        public PageLevelInfo(int pagesX, int pagesY, int tilesPerPageX, int tilesPerPageY,
+                long coverageMinX, long coverageMinY, long coverageMaxX, long coverageMaxY) {
             this.pagesX = pagesX;
             this.pagesY = pagesY;
             this.tilesPerPageX = tilesPerPageX;
             this.tilesPerPageY = tilesPerPageY;
+            this.tilesPerPage = BigInteger.valueOf(tilesPerPageX).multiply(
+                    BigInteger.valueOf(tilesPerPageY));
             this.coverageMinX = coverageMinX;
             this.coverageMinY = coverageMinY;
             this.coverageMaxX = coverageMaxX;
             this.coverageMaxY = coverageMaxY;
         }
+
+        @Override
+        public String toString() {
+            NumberFormat nf = NumberFormat.getInstance(new Locale("es"));
+            nf.setGroupingUsed(true);
+
+            return "Pages: " + pagesX + " x " + pagesY + " (" + nf.format(pagesX * pagesY) + "), "
+                    + "tiles:" + tilesPerPageX + " x " + tilesPerPageY + " ("
+                    + nf.format(tilesPerPageX * (long) tilesPerPageY) + ")";
+        }
     }
 
     /**
-     * Comparator used to store TilePages in a {@link TreeMap} using the tile page {@code int[]}
-     * array as keys
-     */
-    private static final Comparator<int[]> TILEPAGE_KEY_COMPARATOR = new Comparator<int[]>() {
-        public int compare(int[] p1, int[] p2) {
-            int d = 0;
-            for (int axis = 2; axis >= 0 && d == 0; axis--) {
-                d = p2[axis] - p1[axis];
-            }
-            return d;
-        }
-    };
-
-    /**
-     * Key is a page index {x, y, z}, value is the TilePage itself
-     */
-    final TreeMap<int[], TilePage> pages = new TreeMap<int[], TilePage>(TILEPAGE_KEY_COMPARATOR);
-
-    private final String gridSubsetId;
-
-    private final String layerName;
-
-    /**
-     * 
-     * @param layerName
-     *            the name of the layer
-     * @param gridsetId
-     *            the name of the {@link GridSubset}
      * @param gridSubsetCoverages
      *            grid subset coverage per level, as per {@link GridSubset#getCoverages()}
+     * @param zoomStop
+     * @param zoomStart
      */
-    public PagePyramid(final String layerName, final String gridsetId,
-            final long[][] gridSubsetCoverages) {
-        this.layerName = layerName;
-        this.gridSubsetId = gridsetId;
-        this.pageInfo = calculatePageSizes(gridSubsetCoverages);
+    public PagePyramid(final long[][] gridSubsetCoverages, int zoomStart, int zoomStop) {
+        this.gridSubsetCoverages = gridSubsetCoverages;
+        this.zoomStart = zoomStart;
+        this.zoomStop = zoomStop;
+        this.pageInfo = new PageLevelInfo[gridSubsetCoverages.length];
+    }
+
+    public int getZoomStart() {
+        return zoomStart;
+    }
+
+    public int getZoomStop() {
+        return zoomStop;
+    }
+
+    public PageLevelInfo getPageInfo(final int zoomLevel) {
+        Assert.isTrue(zoomLevel >= zoomStart);
+        Assert.isTrue(zoomLevel <= zoomStop);
+
+        PageLevelInfo levelInfo = pageInfo[zoomLevel];
+        if (levelInfo == null) {
+            long[] coverage = this.gridSubsetCoverages[zoomLevel];
+            levelInfo = calculatePageInfo(coverage);
+            pageInfo[zoomLevel] = levelInfo;
+        }
+
+        return levelInfo;
     }
 
     /**
@@ -131,20 +142,9 @@ class PagePyramid {
 
         PageLevelInfo[] pageSizes = new PageLevelInfo[numLevels];
 
-        BigInteger totalTiles = BigInteger.valueOf(0);
-        long totalPages = 0;
-
-        // pageInfo = { tilesPerPageX, tilesPerPageY, numPagesX, numPagesY };
-
-        log.debug("Calculating page sizes for grid subset " + gridSubsetId);
         for (int level = 0; level < numLevels; level++) {
             pageSizes[level] = calculatePageInfo(coverages[level]);
-            int pages = pageSizes[level].pagesX * pageSizes[level].pagesY;
-            totalTiles = totalTiles.add(BigInteger.valueOf((long) pageSizes[level].tilesPerPageX
-                    * (long) pageSizes[level].tilesPerPageY * pages));
-            totalPages += pages;
         }
-        log.debug("----- Total tiles: " + totalTiles + ". Total pages: " + totalPages);
         return pageSizes;
     }
 
@@ -156,7 +156,7 @@ class PagePyramid {
      * @return {@code [numTilesPerPageX, numTilesPerPageY, numPagesX, numPagesY]} number of pages in
      *         both directions for the given coverage
      */
-    private PageLevelInfo calculatePageInfo(final long[] coverage) {
+    public PageLevelInfo calculatePageInfo(final long[] coverage) {
 
         final int level = (int) coverage[4];
         final long coverageMinX = coverage[0];
@@ -172,13 +172,15 @@ class PagePyramid {
         final int numPagesX = (int) Math.ceil((double) coverageTilesWide / tilesPerPageX);
         final int numPagesY = (int) Math.ceil((double) coverageTilesHigh / tilesPerPageY);
 
-        PageLevelInfo pli = new PageLevelInfo(level, numPagesX, numPagesY, tilesPerPageX,
-                tilesPerPageY, coverageMinX, coverageMinY, coverageMaxX, coverageMaxY);
+        PageLevelInfo pli = new PageLevelInfo(numPagesX, numPagesY, tilesPerPageX, tilesPerPageY,
+                coverageMinX, coverageMinY, coverageMaxX, coverageMaxY);
 
-        log.debug("Coverage: " + Arrays.toString(coverage) + " (" + coverageTilesWide + "x"
-                + coverageTilesHigh + ") tiles. Tiles perpage: " + tilesPerPageX + " x "
-                + tilesPerPageY + " for a total of " + numPagesX + " x " + numPagesY
-                + " pages and " + (tilesPerPageX * (long) tilesPerPageY) + " tiles per page");
+        // if (log.isDebugEnabled()) {
+        // log.debug("Coverage: " + Arrays.toString(coverage) + " (" + coverageTilesWide + "x"
+        // + coverageTilesHigh + ") tiles. Tiles perpage: " + tilesPerPageX + " x "
+        // + tilesPerPageY + " for a total of " + numPagesX + " x " + numPagesY
+        // + " pages and " + (tilesPerPageX * (long) tilesPerPageY) + " tiles per page");
+        // }
         return pli;
     }
 
@@ -200,7 +202,7 @@ class PagePyramid {
         /*
          * Found log base 1.3 gives a pretty decent progression of number of pages for zoom level
          */
-        final double logBase = 1.3;
+        final double logBase = 1.1;
         // Calculate log base <logBase>
         final double log = (Math.log(numTilesInAxis) / Math.log(logBase));
 
@@ -210,25 +212,16 @@ class PagePyramid {
         return numTilesPerPage;
     }
 
-    public TilePage pageFor(long x, long y, int level) {
-        final PageLevelInfo levelInfo = pageInfo[level];
+    public int[] pageIndexForTile(long x, long y, int level, int[] pageIndexTarget) {
+        PageLevelInfo levelInfo = getPageInfo(level);
         final int tilePageX = (int) ((x - levelInfo.coverageMinX) / levelInfo.tilesPerPageX);
         final int tilePageY = (int) ((y - levelInfo.coverageMinY) / levelInfo.tilesPerPageY);
 
-        final int[] pageIndex = { tilePageX, tilePageY, level };
+        pageIndexTarget[0] = tilePageX;
+        pageIndexTarget[1] = tilePageY;
+        pageIndexTarget[2] = level;
 
-        TilePage tilePage = pages.get(pageIndex);
-        if (tilePage == null) {
-            synchronized (pages) {
-                tilePage = pages.get(pageIndex);
-                if (tilePage == null) {
-                    tilePage = new TilePage(layerName, gridSubsetId, tilePageX, tilePageY, level);
-                    pages.put(pageIndex, tilePage);
-                }
-            }
-        }
-
-        return tilePage;
+        return pageIndexTarget;
     }
 
     /**
@@ -237,18 +230,14 @@ class PagePyramid {
      * @param page
      * @return {@code [minTileX, minTileY, maxTileX, maxTileY, zoomlevel]}
      */
-    public long[][] toGridCoverage(TilePage page) {
+    public long[][] toGridCoverage(int pageX, int pageY, int level) {
 
-        final int level = page.getZ();
-        final PageLevelInfo pageLevelInfo = this.pageInfo[level];
+        final PageLevelInfo pageLevelInfo = getPageInfo(level);
 
         final long coverageMinX = pageLevelInfo.coverageMinX;
         final long coverageMinY = pageLevelInfo.coverageMinY;
         final int numTilesPerPageX = pageLevelInfo.tilesPerPageX;
         final int numTilesPerPageY = pageLevelInfo.tilesPerPageY;
-
-        final int pageX = page.getX();
-        final int pageY = page.getY();
 
         long minTileX = coverageMinX + (long) pageX * numTilesPerPageX;
         long minTileY = coverageMinY + (long) pageY * numTilesPerPageY;
@@ -263,32 +252,19 @@ class PagePyramid {
         return allLevelsCoverage;
     }
 
-    public Collection<TilePage> getPages() {
-        return this.pages.values();
-    }
-
-    public void setPages(List<TilePage> pages) {
-        int[] key;
-
-        for (TilePage page : pages) {
-            key = new int[] { page.getX(), page.getY(), page.getZ() };
-            this.pages.put(key, page);
-        }
-    }
-
     public int getTilesPerPageX(int level) {
-        return pageInfo[level].tilesPerPageX;
+        return getPageInfo(level).tilesPerPageX;
     }
 
     public int getTilesPerPageY(int level) {
-        return pageInfo[level].tilesPerPageY;
+        return getPageInfo(level).tilesPerPageY;
     }
 
     public int getPagesPerLevelX(int level) {
-        return pageInfo[level].pagesX;
+        return getPageInfo(level).pagesX;
     }
 
     public int getPagesPerLevelY(int level) {
-        return pageInfo[level].pagesY;
+        return getPageInfo(level).pagesY;
     }
 }

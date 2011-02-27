@@ -29,26 +29,34 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ConfigurationException;
+import org.geowebcache.diskquota.CacheCleaner.ExpirationPolicy;
+import org.geowebcache.diskquota.storage.LayerQuota;
+import org.geowebcache.diskquota.storage.Quota;
+import org.geowebcache.diskquota.storage.StorageUnit;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.ApplicationContextProvider;
+import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.XStreamException;
+import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 
 /**
  * Utility class to load the disk quota configuration
@@ -78,8 +86,6 @@ public class ConfigLoader {
 
     private final DefaultStorageFinder storageFinder;
 
-    private final Map<String, ExpirationPolicy> expirationPolicyCache;
-
     /**
      * 
      * @param storageFinder
@@ -91,6 +97,8 @@ public class ConfigLoader {
      * @param tld
      *            used only to validate the presence of a layer at {@link #loadConfig()} and ignore
      *            the layer quota definition if the {@link TileLayer} does not exist
+     * @param quotaStore
+     *            storage for layer quota information and paged tiles statistics
      * @throws IOException
      */
     public ConfigLoader(final DefaultStorageFinder storageFinder,
@@ -100,7 +108,6 @@ public class ConfigLoader {
         this.storageFinder = storageFinder;
         this.context = contextProvider.getApplicationContext();
         this.tileLayerDispatcher = tld;
-        this.expirationPolicyCache = new HashMap<String, ExpirationPolicy>();
     }
 
     /**
@@ -153,35 +160,9 @@ public class ConfigLoader {
                 configIn.close();
             }
         }
-        // find out the global expiration policy, if set
-        if (null != quotaConfig.getGlobalExpirationPolicyName()) {
-            String expirationPolicyName = quotaConfig.getGlobalExpirationPolicyName();
-            ExpirationPolicy policy = findExpirationPolicy(expirationPolicyName);
-            quotaConfig.setGlobalExpirationPolicy(policy);
-            addUnconfiguredLayerQuotas(quotaConfig);
-        }
-
         validateConfig(quotaConfig);
 
-        // XStream xstream = getConfiguredXStream();
-        // xstream.toXML(quotaConfig, System.out);
-
         return quotaConfig;
-    }
-
-    private void addUnconfiguredLayerQuotas(DiskQuotaConfig quotaConfig) {
-        final List<LayerQuota> configured = new ArrayList<LayerQuota>(quotaConfig.getLayerQuotas());
-
-        Map<String, TileLayer> tileLayers = tileLayerDispatcher.getLayers();
-
-        for (Map.Entry<String, TileLayer> entry : tileLayers.entrySet()) {
-            String layerName = entry.getKey();
-            if (null == quotaConfig.getLayerQuota(layerName)) {
-                LayerQuota layerQuota = new LayerQuota(layerName, null);
-                configured.add(layerQuota);
-            }
-        }
-        quotaConfig.setLayerQuotas(configured);
     }
 
     private File getConfigResource() throws ConfigurationException, FileNotFoundException {
@@ -220,6 +201,13 @@ public class ConfigLoader {
         }
 
         for (LayerQuota lq : new ArrayList<LayerQuota>(quotaConfig.getLayerQuotas())) {
+            if (null == lq.getQuota()) {
+                log.info("Configured quota for layer " + lq.getLayer()
+                        + " is null. Discarding it to be attached to the global quota");
+                quotaConfig.remove(lq);
+                continue;
+            }
+
             validateLayerQuota(quotaConfig, lq);
         }
     }
@@ -235,7 +223,7 @@ public class ConfigLoader {
             quotaConfig.remove(lq);
         }
 
-        final String expirationPolicyName = lq.getExpirationPolicyName();
+        final ExpirationPolicy expirationPolicyName = lq.getExpirationPolicyName();
         if (expirationPolicyName == null) {
             // if expiration policy is not defined, then there should be no quota defined either,
             // as it means the layer is managed by the global expiration policy, if any
@@ -245,11 +233,6 @@ public class ConfigLoader {
                         + "Either both or neither should be present");
             }
             return;
-        }
-        try {
-            findExpirationPolicy(expirationPolicyName);
-        } catch (NoSuchElementException e) {
-            throw new ConfigurationException(e.getMessage());
         }
 
         Quota quota = lq.getQuota();
@@ -266,38 +249,12 @@ public class ConfigLoader {
         if (quota == null) {
             throw new IllegalArgumentException("No quota defined");
         }
-        BigDecimal limit = quota.getValue();
-        if (limit.compareTo(BigDecimal.ZERO) < 0) {
+        BigInteger limit = quota.getBytes();
+        if (limit.compareTo(BigInteger.ZERO) < 0) {
             throw new ConfigurationException("Limit shall be >= 0: " + limit + ". " + quota);
         }
-        StorageUnit units = quota.getUnits();
-        if (units == null) {
-            throw new ConfigurationException("No storage units specified: " + quota);
-        }
+
         log.debug("Quota validated: " + quota);
-    }
-
-    public ExpirationPolicy findExpirationPolicy(final String expirationPolicyName) {
-
-        ExpirationPolicy policy = getExpirationPolicies().get(expirationPolicyName);
-
-        if (policy == null) {
-            throw new NoSuchElementException("No " + ExpirationPolicy.class.getName()
-                    + " found named '" + expirationPolicyName + "' in app context.");
-        }
-        return policy;
-    }
-
-    @SuppressWarnings("unchecked")
-    public synchronized Map<String, ExpirationPolicy> getExpirationPolicies() {
-        if (expirationPolicyCache.isEmpty()) {
-            Map<String, ExpirationPolicy> expirationPolicies;
-            expirationPolicies = context.getBeansOfType(ExpirationPolicy.class);
-            for (ExpirationPolicy p : expirationPolicies.values()) {
-                expirationPolicyCache.put(p.getName(), p);
-            }
-        }
-        return new HashMap<String, ExpirationPolicy>(expirationPolicyCache);
     }
 
     private DiskQuotaConfig loadConfiguration(final InputStream configStream)
@@ -321,6 +278,7 @@ public class ConfigLoader {
         xs.alias("layerQuotas", List.class);
         xs.alias("LayerQuota", LayerQuota.class);
         xs.alias("Quota", Quota.class);
+        xs.registerConverter(new QuotaXSTreamConverter());
         return xs;
     }
 
@@ -372,5 +330,71 @@ public class ConfigLoader {
 
     public File getRootCacheDir() throws StorageException {
         return new File(storageFinder.getDefaultPath());
+    }
+
+    /**
+     * Handles XStream conversion of {@link Quota}s to persist them as
+     * {@code <value>value</value><units>StorageUnit</units>} instead of plain byte count.
+     * 
+     * @author groldan
+     * 
+     */
+    private static final class QuotaXSTreamConverter implements Converter {
+        /**
+         * @see com.thoughtworks.xstream.converters.ConverterMatcher#canConvert(java.lang.Class)
+         */
+        @SuppressWarnings("rawtypes")
+        public boolean canConvert(Class type) {
+            return Quota.class.equals(type);
+        }
+
+        /**
+         * @see com.thoughtworks.xstream.converters.Converter#unmarshal(com.thoughtworks.xstream.io.HierarchicalStreamReader,
+         *      com.thoughtworks.xstream.converters.UnmarshallingContext)
+         */
+        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+
+            Quota quota = new Quota();
+
+            reader.moveDown();
+            String nodeName = reader.getNodeName();
+            Assert.isTrue("value".equals(nodeName));
+
+            String nodevalue = reader.getValue();
+            double value = Double.parseDouble(nodevalue);
+            reader.moveUp();
+
+            reader.moveDown();
+            nodeName = reader.getNodeName();
+            Assert.isTrue("units".equals(nodeName));
+
+            nodevalue = reader.getValue();
+            StorageUnit unit = StorageUnit.valueOf(nodevalue);
+            reader.moveUp();
+
+            quota.setValue(value, unit);
+            return quota;
+        }
+
+        /**
+         * @see com.thoughtworks.xstream.converters.Converter#marshal(java.lang.Object,
+         *      com.thoughtworks.xstream.io.HierarchicalStreamWriter,
+         *      com.thoughtworks.xstream.converters.MarshallingContext)
+         */
+        public void marshal(Object source, HierarchicalStreamWriter writer,
+                MarshallingContext context) {
+            Quota quota = (Quota) source;
+            BigInteger bytes = quota.getBytes();
+            StorageUnit unit = StorageUnit.bestFit(bytes);
+            BigDecimal value = unit.fromBytes(bytes);
+
+            writer.startNode("value");
+            writer.setValue(value.toString());
+            writer.endNode();
+
+            writer.startNode("units");
+            writer.setValue(unit.toString());
+            writer.endNode();
+        }
     }
 }

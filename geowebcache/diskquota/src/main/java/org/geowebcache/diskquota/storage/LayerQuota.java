@@ -15,27 +15,44 @@
  * @author Gabriel Roldan (OpenGeo) 2010
  *  
  */
-package org.geowebcache.diskquota;
+package org.geowebcache.diskquota.storage;
 
+import org.geowebcache.diskquota.CacheCleaner.ExpirationPolicy;
+
+import com.sleepycat.persist.model.Entity;
+import com.sleepycat.persist.model.PrimaryKey;
+
+/**
+ * 
+ * @author groldan
+ * 
+ */
+@Entity
 public final class LayerQuota {
 
+    @PrimaryKey
     private String layer;
+
+    private ExpirationPolicy expirationPolicyName;
 
     private Quota quota;
 
-    private String expirationPolicyName;
+    /**
+     * @deprecated usage quota no longer tracked here but on the quota store. This field is
+     *             temporarily left here to avoid XStram parsing problems for older versions
+     */
+    @Deprecated
+    private transient Quota usedQuota;
 
-    private Quota usedQuota = new Quota();
+    LayerQuota() {
+        //
+    }
 
-    private transient ExpirationPolicy expirationPolicy;
-
-    private transient boolean dirty;
-
-    public LayerQuota(final String layer, final String expirationPolicyName) {
+    public LayerQuota(final String layer, final ExpirationPolicy expirationPolicyName) {
         this(layer, expirationPolicyName, null);
     }
 
-    public LayerQuota(final String layer, final String expirationPolicyName, Quota quota) {
+    public LayerQuota(final String layer, final ExpirationPolicy expirationPolicyName, Quota quota) {
         this.layer = layer;
         this.expirationPolicyName = expirationPolicyName;
         this.quota = quota;
@@ -48,23 +65,11 @@ public final class LayerQuota {
      * @return
      */
     private Object readResolve() {
-        if (usedQuota == null) {
-            usedQuota = new Quota();
-        }
-
         return this;
     }
 
-    public String getExpirationPolicyName() {
+    public ExpirationPolicy getExpirationPolicyName() {
         return expirationPolicyName;
-    }
-
-    public ExpirationPolicy getExpirationPolicy() {
-        return expirationPolicy;
-    }
-
-    public void setExpirationPolicy(ExpirationPolicy expirationPolicy) {
-        this.expirationPolicy = expirationPolicy;
     }
 
     public String getLayer() {
@@ -78,13 +83,6 @@ public final class LayerQuota {
         return quota;
     }
 
-    /**
-     * @return the cache usage for the layer. Non null, but a zero value might mean unknown
-     */
-    public Quota getUsedQuota() {
-        return usedQuota;
-    }
-
     @Override
     public String toString() {
         return new StringBuilder(getClass().getSimpleName()).append("[layer: ").append(layer)
@@ -92,11 +90,4 @@ public final class LayerQuota {
                 .append(quota).append("]").toString();
     }
 
-    public void setDirty(boolean dirty) {
-        this.dirty = dirty;
-    }
-
-    public boolean isDirty() {
-        return this.dirty;
-    }
 }

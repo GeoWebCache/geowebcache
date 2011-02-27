@@ -17,26 +17,27 @@
  */
 package org.geowebcache.diskquota;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.math.BigInteger;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.diskquota.CacheCleaner.ExpirationPolicy;
+import org.geowebcache.diskquota.CacheCleaner.QuotaResolver;
+import org.geowebcache.diskquota.storage.LayerQuota;
+import org.geowebcache.diskquota.storage.Quota;
 
 class CacheCleanerTask implements Runnable {
 
     static final Log log = LogFactory.getLog(CacheCleanerTask.class);
-
-    private final DiskQuotaConfig quotaConfig;
-
-    private final ExecutorService cleanUpExecutorService;
 
     /**
      * Maintains a set of per layer enforcement tasks, so that no enforcement task is spawn for a
@@ -50,27 +51,17 @@ class CacheCleanerTask implements Runnable {
      */
     private Future<?> globalCleanUpTask;
 
-    private final LayerCacheInfoBuilder cacheInfoBuilder;
+    private ExecutorService cleanUpExecutorService;
 
-    private final ConfigLoader configLoader;
+    private final DiskQuotaMonitor monitor;
 
     /**
-     * 
-     * @param configLoader
-     * @param config
-     * @param cacheInfoBuilder
-     *            helps in avoiding launching a quota enforcement task when the cache information is
-     *            still being gathered for a given layer
      * @param executor
      *            ExecutorService used to launch quota enforcement tasks
      */
-    public CacheCleanerTask(final ConfigLoader configLoader, final DiskQuotaConfig config,
-            final LayerCacheInfoBuilder cacheInfoBuilder, final ExecutorService executor) {
-
-        this.configLoader = configLoader;
-        this.quotaConfig = config;
+    public CacheCleanerTask(final DiskQuotaMonitor monitor, final ExecutorService executor) {
+        this.monitor = monitor;
         this.cleanUpExecutorService = executor;
-        this.cacheInfoBuilder = cacheInfoBuilder;
         this.perLayerRunningCleanUps = new HashMap<String, Future<?>>();
     }
 
@@ -92,21 +83,18 @@ class CacheCleanerTask implements Runnable {
     public void run() {
         try {
             innerRun();
+        } catch (InterruptedException e) {
+            log.info("CacheCleanerTask called for shut down", e);
+            e.printStackTrace();
         } catch (Exception e) {
             log.error("Error running cache diskquota enforcement task", e);
         }
     }
 
-    private void innerRun() {
+    private void innerRun() throws InterruptedException {
         // first, save the config to account for changes in used quotas
-        if (quotaConfig.isDirty()) {
-            try {
-                configLoader.saveConfig(quotaConfig);
-                quotaConfig.setDirty(false);
-            } catch (Exception e) {
-                log.error("Error saving disk quota config", e);
-            }
-        }
+
+        final DiskQuotaConfig quotaConfig = monitor.getConfig();
         if (!quotaConfig.isEnabled()) {
             log.trace("DiskQuota disabled, ignoring run...");
             return;
@@ -114,11 +102,15 @@ class CacheCleanerTask implements Runnable {
 
         quotaConfig.setLastCleanUpTime(new Date());
 
-        final List<LayerQuota> globallyManagedQuotas = new ArrayList<LayerQuota>();
-        for (LayerQuota lq : quotaConfig.getLayerQuotas()) {
-            final String layerName = lq.getLayer();
+        final Set<String> allLayerNames = monitor.getLayerNames();
+        final Set<String> configuredLayerNames = quotaConfig.getLayerNames();
+        final Set<String> globallyManagedLayerNames = new HashSet<String>(allLayerNames);
 
-            if (cacheInfoBuilder.isRunning(layerName)) {
+        globallyManagedLayerNames.removeAll(configuredLayerNames);
+
+        for (String layerName : configuredLayerNames) {
+
+            if (monitor.isCacheInfoBuilderRunning(layerName)) {
                 log.info("Cache information is still being gathered for layer '" + layerName
                         + "'. Skipping quota enforcement task for this layer.");
                 continue;
@@ -131,53 +123,57 @@ class CacheCleanerTask implements Runnable {
                 continue;
             }
 
-            // may be null, meaning there's no defined quota for the layer, but there's a global
-            // quota and hence the layer's usage must be treated with all the globally managed ones
-            final Quota quota = lq.getQuota();
-            if (quota == null) {
-                if (quotaConfig.getGlobalQuota() != null) {
-                    if (lq.isDirty()) {
-                        quotaConfig.getGlobalExpirationPolicy().save(layerName);
-                        lq.setDirty(false);
-                    }
-                    globallyManagedQuotas.add(lq);
-                }
-                continue;
-            }
-            // never null
-            final Quota usedQuota = lq.getUsedQuota();
-            ExpirationPolicy expirationPolicy = lq.getExpirationPolicy();
-            if (lq.isDirty()) {
-                expirationPolicy.save(layerName);
-                lq.setDirty(false);
-            }
+            final LayerQuota definedQuotaForLayer = quotaConfig.getLayerQuota(layerName);
+            final ExpirationPolicy policy = definedQuotaForLayer.getExpirationPolicyName();
+            final Quota quota = definedQuotaForLayer.getQuota();
+            final Quota usedQuota = monitor.getUsedQuotaByLayerName(layerName);
 
             Quota excedent = usedQuota.difference(quota);
-            if (excedent.getValue().compareTo(BigDecimal.ZERO) > 0) {
-                log.info("Layer '" + lq.getLayer() + "' exceeds its quota of "
-                        + quota.toNiceString() + " by " + excedent.toNiceString()
-                        + ". Currently used: " + usedQuota.toNiceString()
-                        + ". Clean up task is gonna be performed" + " using expiration policy "
-                        + lq.getExpirationPolicyName());
+            if (excedent.getBytes().compareTo(BigInteger.ZERO) > 0) {
+                log.info("Layer '" + layerName + "' exceeds its quota of " + quota.toNiceString()
+                        + " by " + excedent.toNiceString() + ". Currently used: "
+                        + usedQuota.toNiceString() + ". Clean up task will be performed"
+                        + " using expiration policy " + policy);
+
+                Set<String> layerNames = Collections.singleton(layerName);
+                QuotaResolver quotaResolver;
+                quotaResolver = monitor.newLayerQuotaResolver(layerName);
 
                 LayerQuotaEnforcementTask task;
-                task = new LayerQuotaEnforcementTask(lq);
+                task = new LayerQuotaEnforcementTask(layerNames, quotaResolver, monitor);
                 Future<Object> future = this.cleanUpExecutorService.submit(task);
                 perLayerRunningCleanUps.put(layerName, future);
             }
         }
-        if (globallyManagedQuotas.size() > 0) {
+
+        if (globallyManagedLayerNames.size() > 0) {
+            ExpirationPolicy globalExpirationPolicy = quotaConfig.getGlobalExpirationPolicyName();
+            if (globalExpirationPolicy == null) {
+                return;
+            }
+            final Quota globalQuota = quotaConfig.getGlobalQuota();
+            if (globalQuota == null) {
+                log.info("There's not a global disk quota configured. The following layers "
+                        + "will not be checked for excess of disk usage: "
+                        + globallyManagedLayerNames);
+                return;
+            }
+
             if (globalCleanUpTask != null && !globalCleanUpTask.isDone()) {
                 log.debug("Global cache quota enforcement task still running, avoiding issueing a new one...");
                 return;
             }
-            Quota globalQuota = quotaConfig.getGlobalQuota();
-            Quota globalUsedQuota = quotaConfig.getGlobalUsedQuota();
+
+            Quota globalUsedQuota = monitor.getGloballyUsedQuota();
             Quota excedent = globalUsedQuota.difference(globalQuota);
-            if (excedent.getValue().compareTo(BigDecimal.ZERO) > 0) {
+
+            if (excedent.getBytes().compareTo(BigInteger.ZERO) > 0) {
+
                 log.info("Submitting global cache quota enforcement task");
-                GlobalQuotaEnforcementTask task;
-                task = new GlobalQuotaEnforcementTask(quotaConfig, globallyManagedQuotas);
+                LayerQuotaEnforcementTask task;
+                QuotaResolver quotaResolver = monitor.newGlobalQuotaResolver();
+                task = new LayerQuotaEnforcementTask(globallyManagedLayerNames, quotaResolver,
+                        monitor);
                 this.globalCleanUpTask = this.cleanUpExecutorService.submit(task);
             } else {
                 if (log.isTraceEnabled()) {
@@ -195,66 +191,31 @@ class CacheCleanerTask implements Runnable {
      */
     private static class LayerQuotaEnforcementTask implements Callable<Object> {
 
-        private final LayerQuota layerQuota;
+        private final Set<String> layerNames;
 
-        public LayerQuotaEnforcementTask(final LayerQuota layerQuota) {
-            this.layerQuota = layerQuota;
+        private final QuotaResolver quotaResolver;
+
+        private final DiskQuotaMonitor monitor;
+
+        public LayerQuotaEnforcementTask(final Set<String> layerNames,
+                final QuotaResolver quotaResolver, final DiskQuotaMonitor monitor) {
+            this.layerNames = layerNames;
+            this.quotaResolver = quotaResolver;
+            this.monitor = monitor;
         }
 
         public Object call() throws Exception {
             try {
-                final String layerName = layerQuota.getLayer();
-                ExpirationPolicy expirationPolicy = layerQuota.getExpirationPolicy();
-                expirationPolicy.expireTiles(layerName);
+                monitor.expireByLayerNames(layerNames, quotaResolver);
+            } catch (InterruptedException e) {
+                log.info("Layer quota enforcement task terminated prematurely");
+                return null;
             } catch (Exception e) {
-                e.printStackTrace();
-                throw e;
+                throw new RuntimeException(e);
             }
             return null;
         }
-    }
 
-    /**
-     * Tries to expire tiles from all the globally managed layer quotas in a proportional way to the
-     * current layer's disk usage in relation to the global cache usage.
-     * <p>
-     * Proportionally meaning that
-     * </p>
-     * 
-     * @author Gabriel Roldan
-     * @see ExpirationPolicy#expireTiles(List, Quota, Quota)
-     */
-    private static class GlobalQuotaEnforcementTask implements Callable<Object> {
-
-        private final DiskQuotaConfig quotaConfig;
-
-        private final List<LayerQuota> globallyManagedQuotas;
-
-        public GlobalQuotaEnforcementTask(final DiskQuotaConfig quotaConfig,
-                final List<LayerQuota> globallyManagedQuotas) {
-            this.quotaConfig = quotaConfig;
-            this.globallyManagedQuotas = globallyManagedQuotas;
-        }
-
-        /**
-         * Calls the global expiration policy's
-         * {@link ExpirationPolicy#expireTiles(List, Quota, Quota) expireTiles(List, Quota, Quota)}
-         * method with the list of globally managed layer names, the global quota limit and the
-         * current global quota usage.
-         * 
-         * @see java.util.concurrent.Callable#call()
-         */
-        public Object call() throws Exception {
-            ExpirationPolicy globalExpirationPolicy = quotaConfig.getGlobalExpirationPolicy();
-            List<String> layerNames = new ArrayList<String>();
-            for (LayerQuota lq : globallyManagedQuotas) {
-                layerNames.add(lq.getLayer());
-            }
-            Quota globalLimit = quotaConfig.getGlobalQuota();
-            Quota globalUsage = quotaConfig.getGlobalUsedQuota();
-            globalExpirationPolicy.expireTiles(layerNames, globalLimit, globalUsage);
-            return null;
-        }
     }
 
 }

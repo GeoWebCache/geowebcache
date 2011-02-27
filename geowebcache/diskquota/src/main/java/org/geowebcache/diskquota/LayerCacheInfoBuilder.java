@@ -28,14 +28,18 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.diskquota.paging.TilePage;
+import org.geowebcache.diskquota.storage.LayerQuota;
+import org.geowebcache.diskquota.storage.Quota;
+import org.geowebcache.diskquota.storage.TilePage;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.mime.MimeException;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 import org.geowebcache.util.FileUtils;
-import org.springframework.util.Assert;
 
 /**
  * Gathers information about the cache of a layer, such as its size and available {@link TilePage}s.
@@ -50,15 +54,15 @@ final class LayerCacheInfoBuilder {
 
     private final ExecutorService threadPool;
 
-    private final int blockSize;
-
     private final Map<String, List<Future<ZoomLevelVisitor.Stats>>> perLayerRunningTasks;
 
+    private final QuotaUpdatesMonitor quotaUsageMonitor;
+
     public LayerCacheInfoBuilder(final File rootCacheDir, final ExecutorService threadPool,
-            final int blockSize) {
+            QuotaUpdatesMonitor quotaUsageMonitor) {
         this.rootCacheDir = rootCacheDir;
         this.threadPool = threadPool;
-        this.blockSize = blockSize;
+        this.quotaUsageMonitor = quotaUsageMonitor;
         this.perLayerRunningTasks = new HashMap<String, List<Future<ZoomLevelVisitor.Stats>>>();
     }
 
@@ -84,19 +88,13 @@ final class LayerCacheInfoBuilder {
      * </p>
      * 
      * @param tileLayer
-     * @param layerQuota
      */
-    public void buildCacheInfo(final TileLayer tileLayer, final LayerQuota layerQuota) {
+    public void buildCacheInfo(final TileLayer tileLayer) {
 
-        Assert.notNull(layerQuota.getExpirationPolicy(), "layerQuota.getExpirationPolicy() == null");
-
-        final String layerName = layerQuota.getLayer();
+        final String layerName = tileLayer.getName();
         final String layerDirName = FilePathGenerator.filteredLayerName(layerName);
 
         final File layerDir = new File(rootCacheDir, layerDirName);
-
-        // truncate the usage information before gathering the updated information
-        layerQuota.getUsedQuota().setValue(0);
 
         perLayerRunningTasks.put(layerName, new ArrayList<Future<ZoomLevelVisitor.Stats>>());
 
@@ -115,8 +113,8 @@ final class LayerCacheInfoBuilder {
 
                     if (gridsetZLevelDir.exists()) {
                         ZoomLevelVisitor cacheInfoBuilder;
-                        cacheInfoBuilder = new ZoomLevelVisitor(gridsetZLevelDir, gridSetId,
-                                zoomLevel, layerQuota, blockSize);
+                        cacheInfoBuilder = new ZoomLevelVisitor(layerName, gridsetZLevelDir,
+                                gridSetId, zoomLevel, quotaUsageMonitor);
 
                         Future<ZoomLevelVisitor.Stats> cacheTask;
                         cacheTask = threadPool.submit(cacheInfoBuilder);
@@ -145,13 +143,11 @@ final class LayerCacheInfoBuilder {
 
         private final File zoomLevelPath;
 
-        private final LayerQuota layerQuota;
-
-        private final ExpirationPolicy policy;
-
-        private final int blockSize;
-
         private Stats stats;
+
+        private final QuotaUpdatesMonitor quotaUsageMonitor;
+
+        private final String layerName;
 
         private static class Stats {
             long runTimeMillis;
@@ -161,14 +157,14 @@ final class LayerCacheInfoBuilder {
             Quota collectedQuota = new Quota();
         }
 
-        public ZoomLevelVisitor(final File zoomLevelPath, final String gridsetId,
-                final int zoomLevel, final LayerQuota layerQuota, final int blockSize) {
+        public ZoomLevelVisitor(final String layerName, final File zoomLevelPath,
+                final String gridsetId, final int zoomLevel,
+                final QuotaUpdatesMonitor quotaUsageMonitor) {
+            this.layerName = layerName;
             this.zoomLevelPath = zoomLevelPath;
             this.gridSetId = gridsetId;
-            this.layerQuota = layerQuota;
-            this.blockSize = blockSize;
+            this.quotaUsageMonitor = quotaUsageMonitor;
             this.tileZ = zoomLevel;
-            this.policy = layerQuota.getExpirationPolicy();
             this.stats = new Stats();
         }
 
@@ -176,10 +172,9 @@ final class LayerCacheInfoBuilder {
          * @see java.util.concurrent.Callable#call()
          */
         public Stats call() throws Exception {
-            final String zLevelKey = layerQuota.getLayer() + "'/" + gridSetId + "/" + tileZ;
+            final String zLevelKey = layerName + "'/" + gridSetId + "/" + tileZ;
             try {
                 log.debug("Gathering cache information for '" + zLevelKey);
-                stats.collectedQuota.setValue(0);
                 stats.numTiles = 0L;
                 stats.runTimeMillis = 0L;
                 long runTime = System.currentTimeMillis();
@@ -203,18 +198,15 @@ final class LayerCacheInfoBuilder {
          * @see java.io.FileFilter#accept(java.io.File)
          */
         public boolean accept(final File file) {
-            if (Thread.interrupted()) {
-                throw new TraversalCanceledException();
-            }
+//            if (Thread.interrupted()) {
+//                throw new TraversalCanceledException();
+//            }
             if (file.isDirectory()) {
                 log.trace("Processing files in " + file.getAbsolutePath());
                 return true;
             }
 
             final long length = file.length();
-            final double fileSize = blockSize * Math.ceil((double) length / blockSize);
-            final Quota usedQuota = layerQuota.getUsedQuota();
-            usedQuota.add(fileSize, StorageUnit.B);
 
             // we know path is a direct child of processingDir and represents a tile file...
             final String path = file.getPath();
@@ -222,14 +214,22 @@ final class LayerCacheInfoBuilder {
             final int fileNameIdx = 1 + path.lastIndexOf(File.separatorChar);
             final int coordSepIdx = path.lastIndexOf('_');
             final int dotIdx = path.lastIndexOf('.');
-
+            final String extension = FilenameUtils.getExtension(file.getName());
+            String blobFormat;
+            try {
+                blobFormat = MimeType.createFromExtension(extension).getFormat();
+            } catch (MimeException e) {
+                throw new RuntimeException(e);
+            }
             final long x = Long.valueOf(path.substring(fileNameIdx, coordSepIdx));
             final long y = Long.valueOf(path.substring(1 + coordSepIdx, dotIdx));
 
-            policy.createTileInfo(layerQuota, gridSetId, x, y, tileZ);
-
+            // TODO:
+            Long parametersId = null;
+            
+            this.quotaUsageMonitor.tileStored(layerName,gridSetId, blobFormat, parametersId, x, y, (int)tileZ, length);
             stats.numTiles++;
-            stats.collectedQuota.add(fileSize, StorageUnit.B);
+            stats.collectedQuota.addBytes(length);
             return true;
         }
 

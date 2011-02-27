@@ -15,9 +15,10 @@
  * @author Gabriel Roldan (OpenGeo) 2010
  *  
  */
-package org.geowebcache.diskquota;
+package org.geowebcache.diskquota.storage;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 public enum StorageUnit {
     /**
@@ -63,12 +64,17 @@ public enum StorageUnit {
         this.bytes = bytes;
     }
 
-    protected final BigDecimal toBytes(BigDecimal value) {
-        return bytes.multiply(value);
+    public final BigInteger toBytes(double value) {
+        return toBytes(BigDecimal.valueOf(value));
     }
 
-    protected final BigDecimal fromBytes(BigDecimal value) {
-        return value.divide(bytes);
+    public final BigInteger toBytes(BigDecimal value) {
+        BigDecimal toBytes = bytes.multiply(value);
+        return toBytes.toBigInteger();
+    }
+
+    public final BigDecimal fromBytes(BigInteger value) {
+        return new BigDecimal(value).divide(bytes);
     }
 
     public BigDecimal convertTo(double value, StorageUnit target) {
@@ -86,8 +92,8 @@ public enum StorageUnit {
      * @param units
      * @return
      */
-    public static StorageUnit closest(double value, StorageUnit units) {
-        return closest(BigDecimal.valueOf(value), units);
+    public static StorageUnit bestFit(double value, StorageUnit units) {
+        return bestFit(BigDecimal.valueOf(value), units);
     }
 
     /**
@@ -97,8 +103,8 @@ public enum StorageUnit {
      * @param units
      * @return
      */
-    public static StorageUnit closest(BigDecimal value, StorageUnit units) {
-        BigDecimal bytes = units.convertTo(value, B);
+    public static StorageUnit bestFit(BigDecimal value, StorageUnit units) {
+        BigDecimal bytes = new BigDecimal(units.toBytes(value));
         // use compareTo because BigDecimal.equals does not consider 1.0 and 1.00 to be equal, so
         // can't do, for example, bytes.min(TiB.bytes).equals(YiB.bytes)
         if (bytes.compareTo(YiB.bytes) >= 0) {
@@ -127,6 +133,10 @@ public enum StorageUnit {
         }
 
         return B;
+    }
+
+    public static StorageUnit bestFit(BigInteger bytes) {
+        return bestFit(new BigDecimal(bytes), B);
     }
 
 }

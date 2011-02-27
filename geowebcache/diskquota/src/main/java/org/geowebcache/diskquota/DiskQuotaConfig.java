@@ -19,11 +19,16 @@ package org.geowebcache.diskquota;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import org.geowebcache.diskquota.CacheCleaner.ExpirationPolicy;
+import org.geowebcache.diskquota.storage.LayerQuota;
+import org.geowebcache.diskquota.storage.Quota;
+import org.springframework.util.Assert;
 
 /**
  * Holds the quota configuration for all the registered layers as well as the instance wide settings
@@ -42,7 +47,7 @@ public class DiskQuotaConfig {
 
     static final int DEFAULT_MAX_CONCURRENT_CLEANUPS = 2;
 
-    static String DEFAULT_GLOBAL_POLICY_NAME = "LFU";
+    static ExpirationPolicy DEFAULT_GLOBAL_POLICY_NAME = ExpirationPolicy.LFU;
 
     private Boolean enabled;
 
@@ -54,21 +59,13 @@ public class DiskQuotaConfig {
 
     private int maxConcurrentCleanUps;
 
-    private String globalExpirationPolicyName;
+    private ExpirationPolicy globalExpirationPolicyName;
 
     private Quota globalQuota;
 
-    private List<LayerQuota> layerQuotas;
-
-    private transient Map<String, LayerQuota> layerQuotasMap;
-
-    private transient ExpirationPolicy expirationPolicy;
-
-    private transient boolean dirty;
-
-    private transient Quota globalUsedQuota;
-
     private transient Date lastCleanUpTime;
+
+    private List<LayerQuota> layerQuotas;
 
     public DiskQuotaConfig() {
         readResolve();
@@ -92,6 +89,7 @@ public class DiskQuotaConfig {
         if (layerQuotas == null) {
             layerQuotas = new ArrayList<LayerQuota>(2);
         }
+
         if (maxConcurrentCleanUps == 0) {
             maxConcurrentCleanUps = DEFAULT_MAX_CONCURRENT_CLEANUPS;
         }
@@ -145,53 +143,39 @@ public class DiskQuotaConfig {
         this.cacheCleanUpUnits = cacheCleanUpUnit;
     }
 
+    /**
+     * @return the configured layer quotas
+     */
     public List<LayerQuota> getLayerQuotas() {
-        return layerQuotas;
+        return new ArrayList<LayerQuota>(layerQuotas);
     }
 
-    public synchronized void setLayerQuotas(List<LayerQuota> quotas) {
-        this.layerQuotas = quotas == null ? new ArrayList<LayerQuota>(2) : quotas;
-        this.layerQuotasMap = null;
-    }
-
-    public LayerQuota getLayerQuota(final String layerName) {
-        LayerQuota quota = getLayerQuotasMap().get(layerName);
-        return quota;
-    }
-
-    private synchronized Map<String, LayerQuota> getLayerQuotasMap() {
-        if (layerQuotasMap == null) {
-            layerQuotasMap = new HashMap<String, LayerQuota>();
-
-            if (layerQuotas != null) {
-                for (LayerQuota lq : layerQuotas) {
-                    layerQuotasMap.put(lq.getLayer(), lq);
-                }
-            }
-        }
-        return layerQuotasMap;
-    }
-
-    public synchronized void remove(final LayerQuota lq) {
-        for (Iterator<LayerQuota> it = layerQuotas.iterator(); it.hasNext();) {
-            LayerQuota quota = it.next();
-            if (quota.getLayer().equals(lq.getLayer())) {
-                it.remove();
-                getLayerQuotasMap().remove(lq.getLayer());
-                if (this.globalUsedQuota != null) {
-                    this.globalUsedQuota.subtract(quota.getUsedQuota());
-                }
-                break;
-            }
-        }
+    public void addLayerQuota(LayerQuota quota) {
+        Assert.notNull(quota);
+        Assert.notNull(quota.getQuota());
+        this.layerQuotas.add(quota);
     }
 
     /**
-     * @return number of explicitly configured layers (ie, not affected by
-     *         {@link #getDefaultQuota() default quota})
+     * @return The layer quota for the given layer or {@code null} if no quota is being tracked for
+     *         that layer
      */
-    public int getNumLayers() {
-        return layerQuotas.size();
+    public LayerQuota getLayerQuota(final String layerName) {
+        for (LayerQuota lq : layerQuotas) {
+            if (lq.getLayer().equals(layerName)) {
+                return lq;
+            }
+        }
+
+        return null;
+    }
+
+    public void remove(final LayerQuota lq) {
+        for (Iterator<LayerQuota> it = layerQuotas.iterator(); it.hasNext();) {
+            if (it.next().getLayer().equals(lq.getLayer())) {
+                it.remove();
+            }
+        }
     }
 
     @Override
@@ -235,39 +219,12 @@ public class DiskQuotaConfig {
         }
     }
 
-    public ExpirationPolicy getGlobalExpirationPolicy() {
-        return this.expirationPolicy;
-    }
-
-    public String getGlobalExpirationPolicyName() {
+    public ExpirationPolicy getGlobalExpirationPolicyName() {
         return this.globalExpirationPolicyName;
     }
 
-    public void setGlobalExpirationPolicy(ExpirationPolicy policy) {
-        this.expirationPolicy = policy;
-        if (policy == null) {
-            this.globalExpirationPolicyName = null;
-        } else {
-            this.globalExpirationPolicyName = policy.getName();
-        }
-    }
-
-    public void setDirty(boolean dirty) {
-        this.dirty = dirty;
-    }
-
-    public boolean isDirty() {
-        return this.dirty;
-    }
-
-    public synchronized Quota getGlobalUsedQuota() {
-        if (this.globalUsedQuota == null) {
-            this.globalUsedQuota = new Quota();
-            for (LayerQuota lq : getLayerQuotas()) {
-                globalUsedQuota.add(lq.getUsedQuota());
-            }
-        }
-        return globalUsedQuota;
+    public void setGlobalExpirationPolicyName(ExpirationPolicy policy) {
+        this.globalExpirationPolicyName = policy;
     }
 
     public void setLastCleanUpTime(Date date) {
@@ -276,5 +233,13 @@ public class DiskQuotaConfig {
 
     public Date getLastCleanUpTime() {
         return this.lastCleanUpTime;
+    }
+
+    public Set<String> getLayerNames() {
+        Set<String> names = new HashSet<String>();
+        for (LayerQuota lq : getLayerQuotas()) {
+            names.add(lq.getLayer());
+        }
+        return names;
     }
 }
