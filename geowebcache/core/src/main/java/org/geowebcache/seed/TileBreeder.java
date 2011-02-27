@@ -172,11 +172,19 @@ public class TileBreeder implements ApplicationContextAware {
         dispatchTasks(tasks);
     }
 
+    public GWCTask[] createTasks(TileRange tr, GWCTask.TYPE type, int threadCount,
+            boolean filterUpdate) throws GeoWebCacheException {
+
+        String layerName = tr.layerName;
+        TileLayer tileLayer = layerDispatcher.getTileLayer(layerName);
+        return createTasks(tr, tileLayer, type, threadCount, filterUpdate);
+    }
+
     public GWCTask[] createTasks(TileRange tr, TileLayer tl, GWCTask.TYPE type, int threadCount,
             boolean filterUpdate) throws GeoWebCacheException {
 
         if (type == GWCTask.TYPE.TRUNCATE || threadCount < 1) {
-            log.debug("Forcing thread count to 1");
+            log.trace("Forcing thread count to 1");
             threadCount = 1;
         }
 
