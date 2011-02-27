@@ -30,12 +30,12 @@ public final class BlobStoreListenerList {
     }
 
     public void sendTileDeleted(String layerName, String gridSetId, String blobFormat,
-            String parameters, long x, long y, int z, long length) {
+            Long parametersId, long x, long y, int z, long length) {
 
         if (listeners.size() > 0) {
             for (int i = 0; i < listeners.size(); i++) {
-                listeners.get(i).tileDeleted(layerName, gridSetId, blobFormat, parameters, x, y, z,
-                        length);
+                listeners.get(i).tileDeleted(layerName, gridSetId, blobFormat, parametersId, x, y,
+                        z, length);
             }
         }
     }
@@ -47,10 +47,11 @@ public final class BlobStoreListenerList {
             final String layerName = stObj.getLayerName();
             final String gridSetId = stObj.getGridSetId();
             final String blobFormat = stObj.getBlobFormat();
-            final String parameters = stObj.getParameters();
+            final long parameters = stObj.getParametersId();
+            final Long paramsId = parameters == -1 ? null : Long.valueOf(parameters);
             final int blobSize = stObj.getBlobSize();
 
-            sendTileDeleted(layerName, gridSetId, blobFormat, parameters, xyz[0], xyz[1],
+            sendTileDeleted(layerName, gridSetId, blobFormat, paramsId, xyz[0], xyz[1],
                     (int) xyz[2], blobSize);
         }
     }
@@ -62,12 +63,33 @@ public final class BlobStoreListenerList {
             final String layerName = stObj.getLayerName();
             final String gridSetId = stObj.getGridSetId();
             final String blobFormat = stObj.getBlobFormat();
-            final String parameters = stObj.getParameters();
+            final long parameters = stObj.getParametersId();
+            final Long paramsId = parameters == -1 ? null : Long.valueOf(parameters);
+
             final int blobSize = stObj.getBlobSize();
 
             for (int i = 0; i < listeners.size(); i++) {
-                listeners.get(i).tileStored(layerName, gridSetId, blobFormat, parameters, xyz[0],
+                listeners.get(i).tileStored(layerName, gridSetId, blobFormat, paramsId, xyz[0],
                         xyz[1], (int) xyz[2], blobSize);
+
+            }
+        }
+    }
+
+    public void sendTileUpdated(TileObject stObj, final long oldSize) {
+        if (listeners.size() > 0) {
+            final long[] xyz = stObj.getXYZ();
+            final String layerName = stObj.getLayerName();
+            final String gridSetId = stObj.getGridSetId();
+            final String blobFormat = stObj.getBlobFormat();
+            final long parameters = stObj.getParametersId();
+            final Long paramsId = parameters == -1 ? null : Long.valueOf(parameters);
+
+            final int blobSize = stObj.getBlobSize();
+
+            for (int i = 0; i < listeners.size(); i++) {
+                listeners.get(i).tileUpdated(layerName, gridSetId, blobFormat, paramsId, xyz[0],
+                        xyz[1], (int) xyz[2], blobSize, oldSize);
 
             }
         }
