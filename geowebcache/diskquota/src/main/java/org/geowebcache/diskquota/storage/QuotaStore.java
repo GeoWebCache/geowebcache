@@ -17,7 +17,6 @@
  */
 package org.geowebcache.diskquota.storage;
 
-
 public interface QuotaStore {
 
 }

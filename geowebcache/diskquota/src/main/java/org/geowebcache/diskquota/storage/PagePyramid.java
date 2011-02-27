@@ -131,24 +131,6 @@ class PagePyramid {
     }
 
     /**
-     * Calculates the page size for each grid subset level (in number of tiles on axes x and y)
-     * 
-     * @param gridSubsetCoverages
-     * 
-     * @return
-     */
-    private PageLevelInfo[] calculatePageSizes(final long[][] coverages) {
-        final int numLevels = coverages.length;
-
-        PageLevelInfo[] pageSizes = new PageLevelInfo[numLevels];
-
-        for (int level = 0; level < numLevels; level++) {
-            pageSizes[level] = calculatePageInfo(coverages[level]);
-        }
-        return pageSizes;
-    }
-
-    /**
      * 
      * @param coverage
      *            {@code [minx, miny, maxx, maxy, zoomlevel]} gridsubset coverage for a given zoom
@@ -213,6 +195,9 @@ class PagePyramid {
     }
 
     public int[] pageIndexForTile(long x, long y, int level, int[] pageIndexTarget) {
+        Assert.notNull(pageIndexTarget);
+        Assert.isTrue(pageIndexTarget.length >= 3);
+
         PageLevelInfo levelInfo = getPageInfo(level);
         final int tilePageX = (int) ((x - levelInfo.coverageMinX) / levelInfo.tilesPerPageX);
         final int tilePageY = (int) ((y - levelInfo.coverageMinY) / levelInfo.tilesPerPageY);

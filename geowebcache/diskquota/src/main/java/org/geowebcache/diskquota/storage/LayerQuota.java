@@ -17,7 +17,7 @@
  */
 package org.geowebcache.diskquota.storage;
 
-import org.geowebcache.diskquota.CacheCleaner.ExpirationPolicy;
+import org.geowebcache.diskquota.ExpirationPolicy;
 
 import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.PrimaryKey;

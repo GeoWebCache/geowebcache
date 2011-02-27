@@ -17,11 +17,12 @@
  */
 package org.geowebcache.diskquota;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
+
+import org.geowebcache.diskquota.storage.LayerQuota;
+import org.geowebcache.diskquota.storage.Quota;
 
 public class DiskQuotaConfigTest extends TestCase {
 
@@ -77,17 +78,24 @@ public class DiskQuotaConfigTest extends TestCase {
     }
 
     public void testSetLayerQuotas() {
-        config.setLayerQuotas(null);
+        // config.setLayerQuotas(null);
         assertNotNull(config.getLayerQuotas());
         assertEquals(0, config.getLayerQuotas().size());
 
-        config.setLayerQuotas(Collections.singletonList(new LayerQuota("layer", "LRU")));
-        assertEquals(1, config.getLayerQuotas().size());
+        try {
+            config.addLayerQuota(new LayerQuota("layer", ExpirationPolicy.LRU));
+            fail("Expected IAE");
+        } catch (IllegalArgumentException e) {
+            assertTrue(true);
+        }
+        LayerQuota lq = new LayerQuota("layer", ExpirationPolicy.LFU, new Quota());
+        config.addLayerQuota(lq);
+        assertNotNull(config.getLayerQuota("layer"));
     }
 
     public void testRemove() {
-        LayerQuota lq = new LayerQuota("layer", "LFU");
-        config.setLayerQuotas(new ArrayList<LayerQuota>(Collections.singletonList(lq)));
+        LayerQuota lq = new LayerQuota("layer", ExpirationPolicy.LFU, new Quota());
+        config.addLayerQuota(lq);
         config.remove(lq);
         assertNull(config.getLayerQuota("layer"));
     }

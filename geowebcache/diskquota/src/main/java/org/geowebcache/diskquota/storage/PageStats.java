@@ -48,18 +48,29 @@ public class PageStats implements Serializable {
         this.pageId = Long.valueOf(pageId);
         // should be the same than the tile creation time as is used as a base to measure the
         // frequency of use of this page
-        this.lastAccessTimeMinutes = (int) (System.currentTimeMillis() / 1000 / 60);
+        this.lastAccessTimeMinutes = SystemUtils.get().currentTimeMinutes();
     }
 
     PageStats(TilePage page) {
-         this(page.getId());
+        this(page.getId());
     }
 
     public void addHits(long numHits) {
-        int now = (int) (System.currentTimeMillis() / 1000 / 60);
+        if (fillFactor <= 0f) {
+            // we're in trouble, how could this happen? well because somehow the hits are being
+            // recorded before the quota increase? it's not that tragic
+            fillFactor = Float.MIN_VALUE;
+        }
+        // how relevant is this number of hits in relation to the number of tiles present in the
+        // page?
+        float hitsFactor = numHits / fillFactor;
+
+        int now = SystemUtils.get().currentTimeMinutes();
         float diffMinutes = now - this.lastAccessTimeMinutes;
-        float averageAddedFrequency = diffMinutes == 0 ? numHits : numHits / diffMinutes;
-        float newAvgFreq = (this.frequencyOfUse + averageAddedFrequency) / 2f;
+        // float averageAddedFrequency = diffMinutes == 0 ? numHits : numHits / diffMinutes;
+        float averageAddedFrequency = diffMinutes == 0 ? hitsFactor : hitsFactor / diffMinutes;
+        float newAvgFreq = diffMinutes == 0 ? (this.frequencyOfUse + averageAddedFrequency)
+                : (this.frequencyOfUse + averageAddedFrequency) / 2f;
         this.frequencyOfUse = newAvgFreq;
         this.lastAccessTimeMinutes = now;
     }

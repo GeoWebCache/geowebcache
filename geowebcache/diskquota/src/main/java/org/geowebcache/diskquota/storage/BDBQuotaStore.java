@@ -93,6 +93,11 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
         transactionRunner = Executors.newFixedThreadPool(1, tf);
         try {
             configure(storeDirectory);
+
+            deleteStaleLayersAndCreateMissingTileSets();
+
+            log.info("Berkeley DB JE Disk Quota page store configured at "
+                    + storeDirectory.getAbsolutePath());
         } catch (RuntimeException e) {
             transactionRunner.shutdownNow();
             throw e;
@@ -140,10 +145,6 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
         pageStatsByPageId = entityStore.getSecondaryIndex(pageStatsById, Long.class,
                 "page_stats_by_page_id");
 
-        deleteStaleLayersAndCreateMissingTileSets();
-
-        log.info("Berkeley DB JE Disk Quota page store configured at "
-                + storeDirectory.getAbsolutePath());
     }
 
     private class StartUpInitializer implements Callable<Void> {
@@ -386,6 +387,10 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
         return gridCoverage;
     }
 
+    public Set<TileSet> getTileSets() {
+        return new HashSet<TileSet>(tileSetById.map().values());
+    }
+
     public TileSet getTileSetById(final String tileSetId) throws InterruptedException {
         return issueSync(new Callable<TileSet>() {
 
@@ -501,17 +506,16 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
      * {@link TilePage#getLastAccessTime()} values for the stored versions of the pages
      * 
      * @param statsUpdates
+     * @return
      */
-    public void addHitsAndSetAccesTime(final Collection<PageStatsPayload> statsUpdates) {
+    public Future<PageStats> addHitsAndSetAccesTime(final Collection<PageStatsPayload> statsUpdates) {
 
         Assert.notNull(statsUpdates);
 
-        if (statsUpdates.size() > 0) {
-            issue(new AddHitsAndSetAccesTime(statsUpdates));
-        }
+        return issue(new AddHitsAndSetAccesTime(statsUpdates));
     }
 
-    private class AddHitsAndSetAccesTime implements Callable<Void> {
+    private class AddHitsAndSetAccesTime implements Callable<PageStats> {
 
         private final Collection<PageStatsPayload> statsUpdates;
 
@@ -519,7 +523,8 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
             this.statsUpdates = statsUpdates;
         }
 
-        public Void call() throws Exception {
+        public PageStats call() throws Exception {
+            PageStats pageStats = null;
             final Transaction tx = entityStore.getEnvironment().beginTransaction(null, null);
             try {
                 for (PageStatsPayload payload : statsUpdates) {
@@ -533,7 +538,6 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
                     }
 
                     TilePage storedPage = pageByKey.get(tx, page.getKey(), null);
-                    PageStats pageStats;
 
                     if (storedPage == null) {
                         pageById.put(tx, page);
@@ -548,11 +552,11 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
                     pageStatsById.putNoReturn(tx, pageStats);
                 }
                 tx.commit();
+                return pageStats;
             } catch (RuntimeException e) {
                 tx.abort();
                 throw e;
             }
-            return null;
         }
     }
 
@@ -672,10 +676,5 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
             return null;
         }
 
-    }
-
-    public Set<String> getLayerNames() {
-        // TODO Auto-generated method stub
-        return null;
     }
 }

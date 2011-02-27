@@ -17,6 +17,12 @@
  */
 package org.geowebcache.diskquota;
 
+import static org.geowebcache.diskquota.ExpirationPolicy.LFU;
+import static org.geowebcache.diskquota.ExpirationPolicy.LRU;
+import static org.geowebcache.diskquota.storage.StorageUnit.B;
+import static org.geowebcache.diskquota.storage.StorageUnit.GiB;
+import static org.geowebcache.diskquota.storage.StorageUnit.MiB;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,7 +31,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletContext;
@@ -34,8 +39,9 @@ import junit.framework.TestCase;
 
 import org.easymock.classextension.EasyMock;
 import org.geowebcache.config.ConfigurationException;
-import org.geowebcache.diskquota.lfu.ExpirationPolicyLFU;
-import org.geowebcache.diskquota.lru.ExpirationPolicyLRU;
+import org.geowebcache.diskquota.storage.LayerQuota;
+import org.geowebcache.diskquota.storage.Quota;
+import org.geowebcache.diskquota.storage.StorageUnit;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
@@ -89,9 +95,6 @@ public class ConfigLoaderTest extends TestCase {
 
         WebApplicationContext appContext = EasyMock.createMock(WebApplicationContext.class);
         EasyMock.expect(appContext.getServletContext()).andReturn(mockServletCtx).anyTimes();
-        Map mockPolicies = createMockPolicies();
-        EasyMock.expect(appContext.getBeansOfType(EasyMock.eq(ExpirationPolicy.class)))
-                .andReturn(mockPolicies).anyTimes();
         EasyMock.replay(appContext);
 
         contextProvider = new ApplicationContextProvider();
@@ -121,14 +124,6 @@ public class ConfigLoaderTest extends TestCase {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private Map createMockPolicies() {
-        Map map = new HashMap();
-        map.put("lru", new ExpirationPolicyLRU(null, null));
-        map.put("lfu", new ExpirationPolicyLFU(null, null));
-        return map;
-    }
-
     private TileLayer createMockLayer(String name) {
         TileLayer layer = EasyMock.createMock(TileLayer.class);
         EasyMock.expect(layer.getName()).andReturn(name).anyTimes();
@@ -145,37 +140,31 @@ public class ConfigLoaderTest extends TestCase {
         assertEquals(TimeUnit.SECONDS, config.getCacheCleanUpUnits());
         assertEquals(3, config.getMaxConcurrentCleanUps());
 
-        assertEquals("LFU", config.getGlobalExpirationPolicyName());
-        assertNotNull(config.getGlobalExpirationPolicy());
+        assertEquals(LFU, config.getGlobalExpirationPolicyName());
+        assertNotNull(config.getGlobalExpirationPolicyName());
 
         assertNotNull(config.getGlobalQuota());
-        assertEquals(200, config.getGlobalQuota().getValue().longValue());
-        assertEquals(StorageUnit.GiB, config.getGlobalQuota().getUnits());
+        assertEquals(GiB.convertTo(200, B).longValue(), config.getGlobalQuota().getBytes()
+                .longValue());
 
         assertNotNull(config.getLayerQuotas());
         assertEquals(2, config.getLayerQuotas().size());
 
         LayerQuota states = config.getLayerQuota("topp:states");
         assertNotNull(states);
-        assertEquals("LFU", states.getExpirationPolicyName());
-        assertEquals(0, states.getUsedQuota().getValue().longValue());
-        assertEquals(100, states.getQuota().getValue().longValue());
-        assertEquals(StorageUnit.MiB, states.getQuota().getUnits());
+        assertEquals(LFU, states.getExpirationPolicyName());
+        assertEquals(MiB.convertTo(100, B).longValue(), states.getQuota().getBytes().longValue());
 
         LayerQuota raster = config.getLayerQuota("raster test layer");
         assertNotNull(raster);
-        assertEquals(0, raster.getUsedQuota().getValue().longValue());
-        assertEquals(StorageUnit.B, raster.getUsedQuota().getUnits());
     }
 
     public void testSaveConfig() throws ConfigurationException, IOException {
         DiskQuotaConfig config = new DiskQuotaConfig();
         List<LayerQuota> quotas = new ArrayList<LayerQuota>();
-        LayerQuota lq = new LayerQuota("topp:states", "LRU", new Quota(10, StorageUnit.MiB));
-        lq.getUsedQuota().setValue(100);
-        lq.getUsedQuota().setUnits(StorageUnit.KiB);
+        LayerQuota lq = new LayerQuota("topp:states", LRU, new Quota(10, StorageUnit.MiB));
         quotas.add(lq);
-        config.setLayerQuotas(quotas);
+        config.addLayerQuota(lq);
 
         File configFile = new File(cacheDir, "geowebcache-diskquota.xml");
         if (configFile.exists()) {
@@ -184,20 +173,9 @@ public class ConfigLoaderTest extends TestCase {
         loader.saveConfig(config);
         assertTrue(configFile.exists());
 
-        loader = new ConfigLoader(storageFinder, contextProvider, tld);
-        DiskQuotaConfig loadConfig = loader.loadConfig();
-        assertNotNull(loadConfig);
-    }
-
-    public void testFindExpirationPolicy() {
-        assertNotNull(loader.findExpirationPolicy("LRU"));
-        assertNotNull(loader.findExpirationPolicy("LFU"));
-        try {
-            loader.findExpirationPolicy("NonRegistered");
-            fail("Expected NoSuchElementException");
-        } catch (NoSuchElementException e) {
-            assertTrue(true);
-        }
+        // loader = new ConfigLoader(storageFinder, contextProvider, tld);
+        // DiskQuotaConfig loadConfig = loader.loadConfig();
+        // assertNotNull(loadConfig);
     }
 
     public void testGetRootCacheDir() throws StorageException {
