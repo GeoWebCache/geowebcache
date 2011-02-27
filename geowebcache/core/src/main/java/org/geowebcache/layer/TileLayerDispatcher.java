@@ -16,10 +16,13 @@
  */
 package org.geowebcache.layer;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -268,6 +271,7 @@ public class TileLayerDispatcher implements DisposableBean {
             throw new IllegalStateException(e);
         }
         add(layer, layers);
+        
     }
 
     private void add(TileLayer layer, Map<String, TileLayer> layerMap) {
@@ -329,5 +333,13 @@ public class TileLayerDispatcher implements DisposableBean {
                         + " seconds. This may prevent the server container to properly shut down!!!");
             }
         }
+    }
+
+    public Set<String> getLayerNames() {
+        return new HashSet<String>(getLayers().keySet());
+    }
+
+    public List<TileLayer> getLayerList() {
+        return new ArrayList<TileLayer>(getLayers().values());
     }
 }
