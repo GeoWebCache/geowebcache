@@ -23,6 +23,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -40,6 +45,8 @@ import org.geowebcache.demo.Demo;
 import org.geowebcache.filter.request.RequestFilterException;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.OutsideCoverageException;
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.Resource;
 import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -80,7 +87,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     
     private HashMap<String,Service> services = null;
     
-    private byte[] blankTile = null; 
+    private Resource blankTile = null; 
     
     private String servletPrefix = null;
 
@@ -162,32 +169,14 @@ public class GeoWebCacheDispatcher extends AbstractController {
             File fh = new File(blankTilePath);
             if(fh.exists() && fh.canRead() && fh.isFile()) {
                 long fileSize = fh.length();
-                blankTile = new byte[(int) fileSize];
-                
-                int total = 0;
-                FileInputStream fis = null;
+                blankTile = new ByteArrayResource(new byte[(int) fileSize]);
                 try {
-                    fis = new FileInputStream(fh);
-                    int read = 0;
-                    while(read != -1) {
-                        read = fis.read(blankTile, total, blankTile.length - total);
-                        
-                        if(read != -1)
-                            total += read;
-                    }
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                    loadBlankTile(blankTile, fh.toURI().toURL());
                 } catch (IOException e) {
                     e.printStackTrace();
-                } finally {
-                    try {
-                        fis.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                 }
                 
-                if(total == blankTile.length && total > 0) {
+                if(fileSize == blankTile.getSize()) {
                     log.info("Loaded blank tile from " + blankTilePath);
                 } else {
                     log.error("Failed to load blank tile from " + blankTilePath);
@@ -200,23 +189,27 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
         
         // Use the built-in one: 
-        InputStream is = null;   
         try {
-            is = GeoWebCacheDispatcher.class.getResourceAsStream("blank.png");
-            blankTile = new byte[425];
-            int ret = is.read(blankTile);
+            URL url = GeoWebCacheDispatcher.class.getResource("blank.png");
+            blankTile = new ByteArrayResource();
+            loadBlankTile(blankTile, url);
+            int ret = (int) blankTile.getSize();
             log.info("Read " + ret + " from blank PNG file (expected 425).");
         } catch (IOException ioe) {
             log.error(ioe.getMessage());
-        } finally {
-            try {
-                if(is != null) 
-                    is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
-        
+    }
+
+    private void loadBlankTile(Resource blankTile, URL source) throws IOException {
+        InputStream inputStream = source.openStream();
+        ReadableByteChannel ch = Channels.newChannel(inputStream);
+        try {
+            blankTile.transferFrom(ch);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            ch.close();
+        }
     }
     
     /**
@@ -472,7 +465,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
     }
         
     private void writePage(HttpServletResponse response, int httpCode, String message) {
-        writeFixedResponse(response, httpCode, "text/html", message.getBytes(), CacheResult.OTHER);      
+        Resource res = new ByteArrayResource(message.getBytes());
+        writeFixedResponse(response, httpCode, "text/html", res, CacheResult.OTHER);      
     }
 
     /**
@@ -495,7 +489,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             tile.servletResp.setHeader("ETag", hexTag);
         } 
         
-        writeFixedResponse(tile.servletResp, 200, tile.getMimeType().getMimeType(), tile.getContent(), tile.getCacheResult());
+        writeFixedResponse(tile.servletResp, 200, tile.getMimeType().getMimeType(), tile.getBlob(), tile.getCacheResult());
     }
     
     /**
@@ -522,18 +516,21 @@ public class GeoWebCacheDispatcher extends AbstractController {
         writeFixedResponse(tile.servletResp, 200, ImageMime.png.getMimeType(), this.blankTile, CacheResult.OTHER);
     }
     
-    private void writeFixedResponse(HttpServletResponse response, int httpCode, String contentType, byte[] data, CacheResult cacheRes) {
+    private void writeFixedResponse(HttpServletResponse response, int httpCode, String contentType, Resource resource, CacheResult cacheRes) {
         response.setStatus(httpCode);
         response.setContentType(contentType);
         
-        if(data != null) {
-            response.setContentLength(data.length);
+        if(resource != null) {
+            int size = (int) resource.getSize();
+            if (size > -1) {
+                response.setContentLength(size);
+            }
             
             try {
                 OutputStream os = response.getOutputStream();
-                os.write(data);
+                resource.transferTo(Channels.newChannel(os));
                 
-                runtimeStats.log(data.length, cacheRes);
+                runtimeStats.log(size, cacheRes);
                 
             } catch (IOException ioe) {
                 log.debug("Caught IOException: " + ioe.getMessage() + "\n\n" + ioe.toString());

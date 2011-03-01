@@ -18,11 +18,13 @@
 package org.geowebcache.storage;
 
 import java.io.File;
-import java.util.Arrays;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.io.IOUtils;
 import org.geowebcache.grid.SRS;
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.Resource;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
@@ -33,7 +35,7 @@ public class BlobStoreTest extends TestCase {
     public void testTile() throws Exception {
         FileBlobStore fbs = setup();
         
-        byte[] bytes = "1 2 3 4 5 6 test".getBytes();
+        Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
         long[] xyz = {1L,2L,3L};
         TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", "a=x&b=ø", bytes);
         to.setId(11231231);
@@ -43,18 +45,18 @@ public class BlobStoreTest extends TestCase {
         TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", "a=x&b=ø");
         to2.setId(11231231);
         
-        byte[] resp = fbs.get(to2);
+        Resource resp = fbs.get(to2);
         
         to2.setBlob(resp);
         
         assertEquals(to.getBlobFormat(), to2.getBlobFormat());
-        assertTrue(Arrays.equals(to.getBlob(), to2.getBlob()));
+        assertTrue(IOUtils.contentEquals(to.getBlob().getInputStream(), to2.getBlob().getInputStream()));
     }
     
     public void testTileDelete() throws Exception {
         FileBlobStore fbs = setup();
         
-        byte[] bytes = "1 2 3 4 5 6 test".getBytes();
+        Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
         long[] xyz = {5L,6L,7L};
         TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", "a=x&b=ø", bytes);
         to.setId(11231231);
@@ -64,11 +66,11 @@ public class BlobStoreTest extends TestCase {
         TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", "a=x&b=ø");
         to2.setId(11231231);
         
-        byte[] resp = fbs.get(to2);
+        Resource resp = fbs.get(to2);
         
         //to2.setBlob(resp);
 
-        assertTrue(Arrays.equals(resp, bytes));
+        assertTrue(IOUtils.contentEquals(resp.getInputStream(), bytes.getInputStream()));
         
         TileObject to3 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", "a=x&b=ø");
         fbs.delete(to3);
@@ -80,7 +82,7 @@ public class BlobStoreTest extends TestCase {
     public void testTilRangeDelete() throws Exception {
         FileBlobStore fbs = setup();
         
-        byte[] bytes = "1 2 3 4 5 6 test".getBytes();
+        Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
         String parameters = "a=x&b=ø";
         MimeType mime = ImageMime.png;
         SRS srs = SRS.getEPSG4326();
@@ -113,13 +115,13 @@ public class BlobStoreTest extends TestCase {
         
         // starting x and x + tos.length should have data, the remaining should not
         TileObject firstTO = TileObject.createQueryTileObject(layerName, tos[0].xyz, srs.toString(), mime.getFormat(), parameters);
-        assertTrue(Arrays.equals(fbs.get(firstTO), bytes));
+        assertTrue(IOUtils.contentEquals(fbs.get(firstTO).getInputStream(), bytes.getInputStream()));
         
         TileObject lastTO = TileObject.createQueryTileObject(layerName, tos[tos.length - 1].xyz, srs.toString(), mime.getFormat(), parameters);
-        assertTrue(Arrays.equals(fbs.get(lastTO), bytes));
+        assertTrue(IOUtils.contentEquals(fbs.get(lastTO).getInputStream(), bytes.getInputStream()));
         
         TileObject midTO =  TileObject.createQueryTileObject(layerName, tos[ (tos.length - 1) / 2].xyz, srs.toString(), mime.getFormat(), parameters);
-        byte[] res = fbs.get(midTO);
+        Resource res = fbs.get(midTO);
         
         assertNull(res);
     }

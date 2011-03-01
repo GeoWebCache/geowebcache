@@ -18,17 +18,17 @@
 package org.geowebcache.storage.blobstore.file;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.channels.FileChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.io.FileResource;
+import org.geowebcache.io.Resource;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.BlobStore;
@@ -38,7 +38,6 @@ import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
-import org.geowebcache.util.ServletUtils;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 /**
@@ -191,42 +190,6 @@ public class FileBlobStore implements BlobStore {
         deletePending(tmpFolder);
         this.listeners.sendLayerDeleted(layerName);
         return true;
-        // File[] srsZoomDirs = layerPath.listFiles();
-        //
-        // for (File srsZoom : srsZoomDirs) {
-        // File[] intermediates = srsZoom.listFiles();
-        //
-        // for (File imd : intermediates) {
-        // File[] tiles = imd.listFiles();
-        //
-        // for (File tile : tiles) {
-        // tile.delete();
-        // count++;
-        // }
-        //
-        // String[] chk = imd.list();
-        // if (chk == null || chk.length == 0) {
-        // imd.delete();
-        // count++;
-        // }
-        // }
-        //
-        // String[] chk = srsZoom.list();
-        // if (chk == null || chk.length == 0) {
-        // srsZoom.delete();
-        // count++;
-        // }
-        //
-        // }
-        //
-        // if (layerPath.exists()) {
-        // layerPath.delete();
-        // }
-        //
-        // listeners.sendLayerDeleted(layerName);
-        //
-        // log.info("Truncated " + count + " tiles from " + layerPath);
-        // return true;
     }
 
     private File getLayerPath(String layerName) {
@@ -322,7 +285,7 @@ public class FileBlobStore implements BlobStore {
         return true;
     }
 
-    public byte[] get(TileObject stObj) throws StorageException {
+    public Resource get(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, false);
         return readFile(fh);
     }
@@ -343,114 +306,58 @@ public class FileBlobStore implements BlobStore {
     }
 
     private File getFileHandleTile(TileObject stObj, boolean create) {
-        String[] paths = null;
+        final MimeType mimeType;
         try {
-            paths = FilePathGenerator.tilePath(path, stObj.getLayerName(), stObj.getXYZ(),
-                    stObj.getGridSetId(), MimeType.createFromFormat(stObj.getBlobFormat()),
-                    stObj.getParametersId());
+            mimeType = MimeType.createFromFormat(stObj.getBlobFormat());
         } catch (MimeException me) {
             log.error(me.getMessage());
+            throw new RuntimeException(me);
         }
 
+        final String layerName = stObj.getLayerName();
+        final long[] xyz = stObj.getXYZ();
+        final String gridSetId = stObj.getGridSetId();
+        final long parametersId = stObj.getParametersId();
+
+        final File tilePath = FilePathGenerator.tilePath(path, layerName, xyz, gridSetId, mimeType,
+                parametersId);
+
         if (create) {
-            File parent = new File(paths[0]);
+            File parent = tilePath.getParentFile();
             parent.mkdirs();
         }
 
-        return new File(paths[0] + File.separator + paths[1]);
+        return tilePath;
     }
 
-    private byte[] readFile(File fh) throws StorageException {
-        byte[] blob = null;
-
-        FileInputStream fis;
-        try {
-            fis = new FileInputStream(fh);
-        } catch (FileNotFoundException e) {
+    private Resource readFile(File fh) throws StorageException {
+        if (!fh.exists()) {
             return null;
         }
-
-        try {
-            blob = ServletUtils.readStream(fis, BUFFER_SIZE, BUFFER_SIZE);
-        } catch (IOException ioe) {
-            throw new StorageException(ioe.getMessage() + " for " + fh.getAbsolutePath());
-        } finally {
-            try {
-                fis.close();
-            } catch (IOException ioe) {
-                throw new StorageException(ioe.getMessage() + " for " + fh.getAbsolutePath());
-            }
-        }
-
-        return blob;
+        return new FileResource(fh);
     }
 
-    private InputStream getFileInputStream(File fh) throws StorageException {
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(fh);
-        } catch (FileNotFoundException e) {
-            return null;
-        }
-
-        return fis;
-    }
-
-    private void writeFile(File fh, byte[] blob) throws StorageException {
-        // Open the output stream
-        OutputStream fos;
-        try {
-            fos = new FileOutputStream(fh);
-        } catch (FileNotFoundException ioe) {
-            throw new StorageException(ioe.getMessage() + " for " + fh.getAbsolutePath());
-        }
-
-        // fos = new NullOutputStream();
-        // Write the stream
-        try {
-            fos.write(blob);
-        } catch (IOException ioe) {
-            throw new StorageException(ioe.getMessage() + " for " + fh.getAbsolutePath());
-        } finally {
-            try {
-                fos.close();
-            } catch (IOException ioe) {
-                throw new StorageException(ioe.getMessage() + " for " + fh.getAbsolutePath());
-            }
-        }
-    }
-
-    private int writeFile(File fh, InputStream is) throws StorageException {
+    private void writeFile(File target, Resource source) throws StorageException {
         // Open the output stream
         FileOutputStream fos;
         try {
-            fos = new FileOutputStream(fh);
+            fos = new FileOutputStream(target);
         } catch (FileNotFoundException ioe) {
-            throw new StorageException(ioe.getMessage() + " for " + fh.getAbsolutePath());
+            throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
         }
 
-        byte[] buffer = new byte[2048];
-        int read = 0;
-        int total = 0;
+        FileChannel channel = fos.getChannel();
         try {
-            while (read != -1) {
-                read = is.read(buffer);
-                if (read != -1) {
-                    fos.write(buffer, 0, read);
-                    total += read;
-                }
-            }
+            source.transferTo(channel);
         } catch (IOException ioe) {
-            throw new StorageException(ioe.getMessage() + " for " + fh.getAbsolutePath());
+            throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
         } finally {
             try {
-                fos.close();
-                is.close();
+                channel.close();
             } catch (IOException ioe) {
-                throw new StorageException(ioe.getMessage() + " for " + fh.getAbsolutePath());
+                throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
             }
         }
-        return read;
     }
 
     public void clear() throws StorageException {
@@ -464,4 +371,5 @@ public class FileBlobStore implements BlobStore {
     public boolean removeListener(BlobStoreListener listener) {
         return listeners.removeListener(listener);
     }
+
 }

@@ -17,6 +17,10 @@
  */
 package org.geowebcache.conveyor;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.channels.Channels;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -24,6 +28,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.MimeType;
@@ -144,13 +150,47 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     public void setGridSetId(String gridSetId) {
         this.gridSetId = gridSetId;
     }
-    
+
+    /**
+     * @deprecated as of 1.2.4a, use {@link #getBlob()}, keeping it for backwards compatibility as
+     *             there are geoserver builds pegged at a given geoserver revision but building gwc
+     *             from trunk. Ok to remove at 1.2.5
+     */
+    @Deprecated
     public byte[] getContent() {
+        Resource blob = getBlob();
+        if (blob instanceof ByteArrayResource) {
+            return ((ByteArrayResource) blob).getContents();
+        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream((int) blob.getSize());
+        try {
+            blob.transferTo(Channels.newChannel(out));
+            return out.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Resource getBlob() {
         return stObj.getBlob();
     }
     
+    /**
+     * @deprecated as of 1.2.4a, use {@link #setBlob(Resource)}, keeping it for backwards
+     *             compatibility as there are geoserver builds pegged at a given geoserver revision
+     *             but building gwc from trunk. Ok to remove at 1.2.5
+     */
+    @Deprecated
     public void setContent(byte[] payload) {
+        setBlob(new ByteArrayResource(payload));
+    }
+
+    public void setBlob(Resource payload) {
         stObj.setBlob(payload);
+    }
+    
+    public TileObject getStorageObject(){
+        return stObj;
     }
     
     public boolean persist() throws GeoWebCacheException {

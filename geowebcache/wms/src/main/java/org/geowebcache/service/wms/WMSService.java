@@ -18,7 +18,9 @@
 package org.geowebcache.service.wms;
 
 import java.io.IOException;
+import java.nio.channels.Channels;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -31,6 +33,7 @@ import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridMismatchException;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
+import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -290,11 +293,12 @@ public class WMSService extends Service {
             throw new GeoWebCacheException("The parameters for height and width must both be positive integers.");
         }
 
-        byte[] data = srcHelper.makeFeatureInfoRequest(gfiConv, bbox, height, width, x, y);
+        Resource data = srcHelper.makeFeatureInfoRequest(gfiConv, bbox, height, width, x, y);
 
         try {
             tile.servletResp.setContentType(mimeType.getMimeType());
-            tile.servletResp.getOutputStream().write(data);
+            ServletOutputStream outputStream = tile.servletResp.getOutputStream();
+            data.transferTo(Channels.newChannel(outputStream));
         } catch (IOException ioe) {
             tile.servletResp.setStatus(500);
             log.error(ioe.getMessage());

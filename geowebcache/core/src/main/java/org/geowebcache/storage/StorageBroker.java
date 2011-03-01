@@ -21,6 +21,7 @@ import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.io.Resource;
 
 /**
  * Handles cacheable objects (tiles, wfs responses) both in terms of data storage and metadata
@@ -111,15 +112,15 @@ public class StorageBroker {
         }
         
         if(tileObj.blob_size > 0) {
-            byte[] blob = blobStore.get(tileObj);
+            Resource blob = blobStore.get(tileObj);
             if(blob == null) {
                 throw new StorageException(
                         "Blob for "+Arrays.toString(tileObj.xyz)+" was expected to have size " 
                         + tileObj.blob_size + " but was null.");
-            } else if(verifyFileSize && blob.length != tileObj.blob_size) {
+            } else if(verifyFileSize && blob.getSize() != tileObj.blob_size) {
                 throw new StorageException(
                         "Blob was expected to have size " 
-                        + tileObj.blob_size + " but was " + blob.length);
+                        + tileObj.blob_size + " but was " + blob.getSize());
             }
                 
             tileObj.blob = blob;
@@ -130,7 +131,7 @@ public class StorageBroker {
     private boolean getBlobOnly(TileObject tileObj) throws StorageException {
         if(tileObj.getParameters() == null 
                 || tileObj.getParameters().length() == 0) {
-            byte[] blob = blobStore.get(tileObj);
+            Resource blob = blobStore.get(tileObj);
             if(blob == null) {
                 return false;
             } else {
@@ -188,4 +189,5 @@ public class StorageBroker {
     public void destroy() {
         log.info("Destroying StorageBroker");
     }
+
 }

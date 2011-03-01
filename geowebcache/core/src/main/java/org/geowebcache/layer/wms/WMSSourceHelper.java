@@ -21,6 +21,8 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.util.ServletUtils;
@@ -32,20 +34,21 @@ import org.geowebcache.util.ServletUtils;
  */
 public abstract class WMSSourceHelper {
 
-    abstract protected byte[] makeRequest(TileResponseReceiver tileRespRecv,
-            WMSLayer layer, String wmsParams, String expectedMimeType)
+    abstract protected void makeRequest(TileResponseReceiver tileRespRecv,
+            WMSLayer layer, String wmsParams, String expectedMimeType, Resource target)
             throws GeoWebCacheException;
 
     
-    public byte[] makeRequest(WMSMetaTile metaTile) throws GeoWebCacheException {
+    public void makeRequest(WMSMetaTile metaTile, Resource target) throws GeoWebCacheException {
 
         String wmsParams = metaTile.getWMSParams();
         WMSLayer layer = metaTile.getLayer();
-
-        return makeRequest(metaTile, layer, wmsParams, metaTile.getRequestFormat().getFormat());
+        String format = metaTile.getRequestFormat().getFormat();
+        
+        makeRequest(metaTile, layer, wmsParams, format, target);
     }
     
-    public byte[] makeRequest(ConveyorTile tile) throws GeoWebCacheException {
+    public void makeRequest(ConveyorTile tile, Resource target) throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
 
         GridSubset gridSubset = layer.getGridSubset(tile.getGridSetId());
@@ -73,11 +76,12 @@ public abstract class WMSSourceHelper {
             strBuilder.append("&format_options=").append(ServletUtils.URLEncode("mode:superoverlay;overlaymode:auto")); 
         }
 
-        return makeRequest(tile, layer, strBuilder.toString(), tile.getMimeType().getMimeType());
+        String mimeType = tile.getMimeType().getMimeType();
+        makeRequest(tile, layer, strBuilder.toString(), mimeType, target);
     }
 
     
-    public byte[] makeFeatureInfoRequest(ConveyorTile tile, BoundingBox bbox, int height, int width, int x, int y)
+    public Resource makeFeatureInfoRequest(ConveyorTile tile, BoundingBox bbox, int height, int width, int x, int y)
             throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
 
@@ -99,7 +103,10 @@ public abstract class WMSSourceHelper {
         strBuilder.append("&X=").append(x);
         strBuilder.append("&Y=").append(y);
 
-        return makeRequest(tile, layer, strBuilder.toString(), tile.getMimeType().getMimeType());
+        String mimeType = tile.getMimeType().getMimeType();
+        Resource target = new ByteArrayResource(2048); 
+        makeRequest(tile, layer, strBuilder.toString(), mimeType, target);
+        return target;
     }
     
     protected boolean mimeStringCheck(String requestMime, String responseMime) {

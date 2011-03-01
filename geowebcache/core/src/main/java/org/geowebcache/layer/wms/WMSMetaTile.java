@@ -17,40 +17,50 @@
  */
 package org.geowebcache.layer.wms;
 
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
 import java.awt.image.RenderedImage;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 import javax.media.jai.JAI;
 import javax.media.jai.operator.CropDescriptor;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.Resource;
 import org.geowebcache.layer.MetaTile;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
+import org.springframework.util.Assert;
 
 public class WMSMetaTile extends MetaTile {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSMetaTile.class);
 
     private BufferedImage img = null; // buffer for storing the metatile, if it is an image
-
-    private RenderedImage[] tiles = null; // array with tiles (after cropping)
 
     private final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
 
@@ -61,6 +71,8 @@ public class WMSMetaTile extends MetaTile {
     protected String fullParameters;
     
     protected int[] gutter = new int[4]; // L,B,R,T in pixels
+
+    private Rectangle[] tiles;
     
     /**
      * Used for requests by clients
@@ -165,21 +177,28 @@ public class WMSMetaTile extends MetaTile {
         return wmsLayer;
     }
 
-    protected void setImageBytes(byte[] image) throws GeoWebCacheException {
-        if (image == null || image.length == 0) {
-            throw new GeoWebCacheException("WMSMetaTile.setImageBytes() "
-                    + " received null instead of byte[]");
-        }
+    protected void setImageBytes(Resource buffer) throws GeoWebCacheException {
+        Assert.notNull(buffer, "WMSMetaTile.setImageBytes() received null");
+        Assert.isTrue(buffer.getSize() > 0, "WMSMetaTile.setImageBytes() received empty contents");
 
-        InputStream is = new ByteArrayInputStream(image);
+
         try {
-            this.img = ImageIO.read(is);
+            //InputStream inputStream = buffer.getInputStream();
+            // ImageInputStream imgStream = ImageInputStreamAdapter.getStream(inputStream);
+            ImageInputStream imgStream = new ResourceImageInputStream(((ByteArrayResource)buffer).getInputStream());// new MemoryCacheImageInputStream(inputStream);
+            try {
+                this.img = ImageIO.read(imgStream);
+            } finally {
+                //imgStream.close();
+                //IOUtils.closeQuietly(inputStream);
+            }
         } catch (IOException ioe) {
             throw new GeoWebCacheException("WMSMetaTile.setImageBytes() "
-                    + "failed on ImageIO.read(byte[" + image.length + "])");
+                    + "failed on ImageIO.read(byte[" + buffer.getSize() + "])");
         }
-        if(img == null) {
-            throw new GeoWebCacheException("ImageIO.read(InputStream) returned null. Unable to read image.");
+        if (img == null) {
+            throw new GeoWebCacheException(
+                    "ImageIO.read(InputStream) returned null. Unable to read image.");
         }
     }
 
@@ -193,22 +212,18 @@ public class WMSMetaTile extends MetaTile {
      * @param tileHeight
      *            height of each tile
      */
-    protected void createTiles(int tileHeight, int tileWidth, boolean useJAI) {
+    protected void createTiles(int tileHeight, int tileWidth) {
         int tileCount = metaX * metaY;
-        tiles = new RenderedImage[tileCount];
+        tiles = new Rectangle[tileCount];
 
-        if (tileCount > 1) {
-            for (int y = 0; y < metaY; y++) {
-                for (int x = 0; x < metaX; x++) {
-                    int i = x * tileWidth + gutter[0];
-                    int j = (metaY - 1 - y) * tileHeight + gutter[3];
+        for (int y = 0; y < metaY; y++) {
+            for (int x = 0; x < metaX; x++) {
+                int i = x * tileWidth + gutter[0];
+                int j = (metaY - 1 - y) * tileHeight + gutter[3];
 
-                    tiles[y * metaX + x] = createTile(i, j, tileWidth,
-                            tileHeight, useJAI);
-                }
+                //tiles[y * metaX + x] = createTile(i, j, tileWidth, tileHeight, useJAI);
+                tiles[y * metaX + x] = new Rectangle(i, j, tileWidth, tileHeight);
             }
-        } else {
-            tiles[0] = img;
         }
     }
 
@@ -266,6 +281,11 @@ public class WMSMetaTile extends MetaTile {
         return tile;
     }
 
+    private static BlockingQueue<Object> encodingQueue = new LinkedBlockingQueue<Object>(20);
+    
+    private static ExecutorService encodingExecutor = Executors.newFixedThreadPool(4);//TODO: == num cores?
+    
+    
     /**
      * Outputs one tile from the internal array of tiles to a provided stream
      * 
@@ -273,12 +293,12 @@ public class WMSMetaTile extends MetaTile {
      *            the index of the tile relative to the internal array
      * @param format
      *            the Java name for the format
-     * @param os
+     * @param resource
      *            the outputstream
      * @return true if no error was encountered
      * @throws IOException
      */
-    protected boolean writeTileToStream(int tileIdx, OutputStream os)
+    protected boolean writeTileToStream(int tileIdx, Resource target)
             throws IOException {
         if (tiles != null) {
             String format = super.responseFormat.getInternalName();
@@ -290,19 +310,36 @@ public class WMSMetaTile extends MetaTile {
             
             // TODO should we recycle the writers ? 
             // GR: it'd be only a 2% perf gain according to profiler
-            ImageWriter writer = javax.imageio.ImageIO.getImageWritersByFormatName(format).next();
+            Iterator<ImageWriter> imageWritersByFormatName = javax.imageio.ImageIO.getImageWritersByFormatName(format);
+            ImageWriter writer = imageWritersByFormatName.next();
             ImageWriteParam param  = writer.getDefaultWriteParam();
             
             if(this.formatModifier != null) {
                 param = formatModifier.adjustImageWriteParam(param);
             }
             
-            ImageOutputStream imgOut = new MemoryCacheImageOutputStream(os);
-            writer.setOutput(imgOut);
-            IIOImage image = new IIOImage(tiles[tileIdx], null, null);
-            writer.write(null, image, param);
-            imgOut.close();
-            writer.dispose();
+            Rectangle tileRegion = tiles[tileIdx];
+            param.setSourceRegion(tileRegion);
+//            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+//            param.setCompressionType(compressionType)
+//            param.setCompressionQuality(0.8f);
+//            float compressionQuality = param.getCompressionQuality();
+//            String compressionType = param.getCompressionType();
+            //TODO: setCompression, etc
+            
+            OutputStream outputStream = target.getOutputStream();
+            ImageOutputStream imgOut = new ImageOutputStreamAdapter(outputStream);
+            try {
+                writer.setOutput(imgOut);
+                try {
+                    IIOImage image = new IIOImage(this.img, null, null);
+                    writer.write(null, image, param);
+                } finally {
+                    writer.dispose();
+                }
+            } finally {
+                imgOut.close();
+            }
             
             return true;
         }
@@ -314,4 +351,5 @@ public class WMSMetaTile extends MetaTile {
         return " metaX: " + metaX + " metaY: " + metaY + " metaGridCov: "
                 + Arrays.toString(metaGridCov);
     }
+    
 }

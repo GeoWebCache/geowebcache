@@ -18,6 +18,8 @@ package org.geowebcache.filter.request;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.geowebcache.io.Resource;
+
 public class RequestFilterException extends Exception {
     private static final long serialVersionUID = -6790605482047043946L;
 
@@ -45,7 +47,7 @@ public class RequestFilterException extends Exception {
         return contentType;
     }
     
-    public byte[] getResponse() {
+    public Resource getResponse() {
         return null;
     }
 }

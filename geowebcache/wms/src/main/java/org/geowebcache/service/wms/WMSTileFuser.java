@@ -327,7 +327,7 @@ public class WMSTileFuser {
                 
                 layer.getTile(tile);
                 
-                BufferedImage tileImg = ImageIO.read(new ByteArrayInputStream(tile.getContent()));
+                BufferedImage tileImg = ImageIO.read(tile.getBlob().getInputStream());
                 
                 int tilex = 0;
                 int canvasx = (int) (gridx - startx)*gridSubset.getTileWidth();

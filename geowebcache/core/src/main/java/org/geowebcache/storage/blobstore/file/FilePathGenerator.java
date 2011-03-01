@@ -41,23 +41,16 @@ public class FilePathGenerator {
      *            the storage mime type
      * @param parameters_id
      *            the parameters identifier
-     * @return {@code [directoryName, fileName]}
+     * @return File pointer to the tile image
      */
-    public static String[] tilePath(String prefix, String layerName, long[] tileIndex,
+    public static File tilePath(String prefix, String layerName, long[] tileIndex,
             String gridSetId, MimeType mimeType, long parameters_id) {
         long x = tileIndex[0];
         long y = tileIndex[1];
         long z = tileIndex[2];
-        
-        //System.out.println("x: " + x + " y: " + y + " z: " + z);
-        
-        String layerStr = filteredLayerName(layerName);
-        
-        String paramStr = "";
-        if(parameters_id != -1L) {
-            paramStr = "_" + Long.toHexString(parameters_id);
-        }
-        
+
+        StringBuilder path = new StringBuilder(256);
+
         long shift = z / 2;
         long half = 2 << shift;
         int digits = 1;
@@ -68,28 +61,53 @@ public class FilePathGenerator {
         long halfy = y / half;
 
         String fileExtension = mimeType.getFileExtension();
-        
-        String[] ret = new String[2];
 
-        String gridsetZoomLevelDirName = gridsetZoomLevelDir(gridSetId, z);
+        path.append(prefix);
+        path.append(File.separatorChar);
+        appendFiltered(layerName, path);
+        path.append(File.separatorChar);
+        appendGridsetZoomLevelDir(gridSetId, z, path);
+        if (parameters_id != -1L) {
+            path.append('_');
+            path.append(Long.toHexString(parameters_id));
+        }
+        path.append(File.separatorChar);
+        zeroPadder(halfx, digits, path);
+        path.append('_');
+        zeroPadder(halfy, digits, path);
+        path.append(File.separatorChar);
 
-        ret[0] = new StringBuilder(prefix).append(File.separator).append(layerStr).append(
-                File.separator).append(gridsetZoomLevelDirName).append(paramStr).append(
-                File.separator).append(zeroPadder(halfx, digits)).append('_').append(
-                zeroPadder(halfy, digits)).toString();
-        
-        ret[1] = new StringBuilder(zeroPadder(x, 2 * digits)).append('_').append(
-                zeroPadder(y, 2 * digits)).append('.').append(fileExtension).toString();
-        
-        return ret;
+        zeroPadder(x, 2 * digits, path);
+        path.append('_');
+        zeroPadder(y, 2 * digits, path);
+        path.append('.');
+        path.append(fileExtension);
+
+        File tileFile = new File(path.toString());
+        return tileFile;
     }
-    
+
     public static String gridsetZoomLevelDir(String gridSetId, long zoomLevel) {
         String gridSetStr = filteredGridSetId(gridSetId);
         StringBuilder sb = new StringBuilder(gridSetStr);
-        return sb.append('_').append(zeroPadder(zoomLevel, 2)).toString();
+        sb.append('_');
+        zeroPadder(zoomLevel, 2, sb);
+        return sb.toString();
     }
 
+    private static void appendGridsetZoomLevelDir(String gridSetId, long z, StringBuilder path) {
+        appendFiltered(gridSetId, path);
+        path.append('_');
+        zeroPadder(z, 2, path);
+    }
+    
+    
+    public static String zeroPadder(long number, int order) {
+        StringBuilder sb = new StringBuilder();
+        zeroPadder(number, order, sb);
+        return sb.toString();
+    }
+    
     /**
      * Silly way to pad numbers with leading zeros, since I don't know a fast
      * way of doing this in Java.
@@ -98,7 +116,7 @@ public class FilePathGenerator {
      * @param order
      * @return
      */
-    public static String zeroPadder(long number, int order) {
+    private static void zeroPadder(long number, int order, StringBuilder padding) {
         int numberOrder = 1;
 
         if (number > 9) {
@@ -112,16 +130,14 @@ public class FilePathGenerator {
         int diffOrder = order - numberOrder;
         
         if(diffOrder > 0) {
-            //System.out.println("number: " + number + " order: " + order + " diff: " + diffOrder);
-            StringBuilder padding = new StringBuilder(diffOrder);
             
             while (diffOrder > 0) {
                 padding.append('0');
                 diffOrder--;
             }
-            return padding.toString() + Long.toString(number);
+            padding.append(number);// toString() + Long.toString(number);
         } else {
-            return Long.toString(number);
+            padding.append(number);
         }
     }
     
@@ -131,6 +147,17 @@ public class FilePathGenerator {
     
     public static String filteredLayerName(String layerName) {
         return layerName.replace(':', '_').replace(' ', '_');
+    }
+
+    private static void appendFiltered(String str, StringBuilder path) {
+        char c;
+        for (int i = 0; i < str.length(); i++) {
+            c = str.charAt(i);
+            if (':' == c || ' ' == c) {
+                c = '_';
+            }
+            path.append(c);
+        }
     }
 
     /**

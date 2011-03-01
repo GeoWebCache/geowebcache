@@ -33,6 +33,7 @@ import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.OutsideCoverageException;
+import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -332,7 +333,7 @@ public class KMLService extends Service {
                 + "\n</Folder>"
                 + "\n</kml>\n";
 
-        tile.setContent(xml.getBytes());
+        tile.setBlob(new ByteArrayResource(xml.getBytes()));
         tile.setMimeType(XMLMime.kml);
         tile.setStatus(200);
         String mimeStr = getMimeTypeOverride(tile);
@@ -425,7 +426,7 @@ public class KMLService extends Service {
         // Sigh.... 
         if(! packageData) {
                 String overlayXml = createOverlay(tile, false);
-                tile.setContent(overlayXml.getBytes());
+                tile.setBlob(new ByteArrayResource(overlayXml.getBytes()));
                 tile.setStatus(200);
                 //tileLayer.putTile(tile);
         } else {
@@ -451,9 +452,9 @@ public class KMLService extends Service {
             
             byte[] zip = KMZHelper.createZippedKML(
                     gridLocString(tile.getTileIndex()), tile.getMimeType().getFileExtension(), 
-                    overlayXml.getBytes(), tile.getContent());
+                    overlayXml.getBytes(), tile.getBlob());
             
-            tile.setContent(zip);
+            tile.setBlob(new ByteArrayResource(zip));
             tile.setStatus(200);
             //tileLayer.putTile(tile);
 

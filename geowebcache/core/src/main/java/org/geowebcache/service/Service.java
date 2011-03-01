@@ -18,6 +18,8 @@ package org.geowebcache.service;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.util.ServletUtils;
@@ -98,7 +101,7 @@ public abstract class Service {
     
     protected static void writeTileResponse(ConveyorTile conv, boolean writeExpiration, RuntimeStats stats, String mimeTypeOverride) {
         HttpServletResponse response = conv.servletResp;
-        byte[] data = conv.getContent();
+        Resource data = conv.getBlob();
 
         String mimeStr;
         if(mimeTypeOverride == null){
@@ -122,14 +125,16 @@ public abstract class Service {
 
         response.setContentType(mimeStr);
 
-        response.setContentLength(data.length);
+        int size = (int)data.getSize();
+        response.setContentLength(size);
 
         try {
             OutputStream os = response.getOutputStream();
-            os.write(data);
+            WritableByteChannel channel = Channels.newChannel(os);
+            data.transferTo(channel);
             
             if(stats != null) {
-                stats.log(data.length, conv.getCacheResult());
+                stats.log(size, conv.getCacheResult());
             }
         } catch (IOException ioe) {
             // Do nothing...

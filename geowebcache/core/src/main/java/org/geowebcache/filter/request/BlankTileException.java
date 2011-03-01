@@ -24,6 +24,8 @@ import java.io.InputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheDispatcher;
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.Resource;
 
 /**
  * Hardcoded to the built-in blank tile for now
@@ -38,13 +40,13 @@ public class BlankTileException extends RequestFilterException {
 
     private static Log log = LogFactory.getLog(org.geowebcache.filter.request.BlankTileException.class);
     
-    private volatile static byte[] blankTile;
+    private volatile static Resource blankTile;
     
     public BlankTileException(RequestFilter reqFilter) {
         super(reqFilter, 200, "image/png");
     }
 
-    private byte[] getBlankTile() {       
+    private Resource getBlankTile() {       
         // Use the built-in one: 
         InputStream is = null;   
         try {
@@ -53,7 +55,7 @@ public class BlankTileException extends RequestFilterException {
             int ret = is.read(blankTile);
             log.info("Read " + ret + " from blank PNG file (expected 425).");
             
-            return blankTile;
+            return new ByteArrayResource(blankTile);
         } catch (IOException ioe) {
             log.error(ioe.getMessage());
         } finally {
@@ -69,8 +71,8 @@ public class BlankTileException extends RequestFilterException {
     }
 
     
-    public byte[] getResponse() {
-        byte[] ret = BlankTileException.blankTile;
+    public Resource getResponse() {
+        Resource ret = BlankTileException.blankTile;
         if (ret == null) {
             synchronized (BlankTileException.class) {
                 ret = BlankTileException.blankTile;

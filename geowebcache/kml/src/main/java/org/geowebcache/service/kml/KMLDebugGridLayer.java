@@ -29,6 +29,7 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
+import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
@@ -142,7 +143,7 @@ public class KMLDebugGridLayer extends TileLayer {
                 + "</Document>\n"
                 + "</kml>";
         
-        tile.setContent(data.getBytes());
+        tile.setBlob(new ByteArrayResource(data.getBytes()));
         tile.setStatus(200);
         return tile;
     }

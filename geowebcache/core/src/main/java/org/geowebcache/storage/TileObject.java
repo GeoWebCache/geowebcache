@@ -19,6 +19,8 @@ package org.geowebcache.storage;
 
 import java.util.Arrays;
 
+import org.geowebcache.io.Resource;
+
 /**
  * Represents a specific tile in a {@link GridSet}, identified by xyz. Normally the contents can be
  * either an image or a regionated KML tile, the class is format agnostic and just holds an array of
@@ -29,7 +31,7 @@ public class TileObject extends StorageObject {
     
     long tile_id = -1L;
     
-    byte[] blob;
+    Resource blob;
     
     long parameters_id = -1L;
     
@@ -62,7 +64,7 @@ public class TileObject extends StorageObject {
     
     public static TileObject createCompleteTileObject(
             String layerName, long[] xyz, String gridSetId, String format, 
-            String parameters, byte[] blob) {
+            String parameters, Resource blob) {
         TileObject obj = new TileObject();
         
         obj.layer_name = layerName;
@@ -74,7 +76,7 @@ public class TileObject extends StorageObject {
         if(blob == null) {
             obj.blob_size = -1;
         } else {
-            obj.blob_size = blob.length;
+            obj.blob_size = (int) blob.getSize();
             obj.blob = blob;
         }
         
@@ -86,13 +88,13 @@ public class TileObject extends StorageObject {
         
     }
     
-    public byte[] getBlob() {
+    public Resource getBlob() {
         return blob;
     }
     
-    public void setBlob(byte[] blob) {
+    public void setBlob(Resource blob) {
         if(blob != null) {
-            this.blob_size = blob.length;
+            this.blob_size = (int) blob.getSize();
         } else {
             this.blob_size = -1;
         }

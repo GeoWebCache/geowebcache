@@ -4,6 +4,8 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.Resource;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 import org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend;
 import org.h2.tools.DeleteDbFiles;
@@ -89,7 +91,7 @@ public class StorageBrokerTest extends TestCase {
         StorageBroker sb = new StorageBroker(metaStore, blobStore);
         
         //long[] xyz = {1L,2L,3L};
-        byte[] blob = new byte[20*1024];
+        Resource blob = new ByteArrayResource(new byte[20*1024]);
 
         System.out.println("Inserting into database, " + TILE_PUT_COUNT + " tiles");
         

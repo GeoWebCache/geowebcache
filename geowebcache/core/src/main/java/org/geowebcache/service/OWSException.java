@@ -16,6 +16,9 @@
  */
 package org.geowebcache.service;
 
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.Resource;
+
 public class OWSException extends Exception {
     private static final long serialVersionUID = -8024005353689857211L;
 
@@ -42,8 +45,8 @@ public class OWSException extends Exception {
         return "text/xml";
     }
     
-    public byte[] getResponse() {
-        return this.toString().getBytes();
+    public Resource getResponse() {
+        return new ByteArrayResource(this.toString().getBytes());
     }
 
     public String toString() {

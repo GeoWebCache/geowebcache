@@ -14,16 +14,11 @@
  */
 package org.geowebcache.layer.wms;
 
-import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.classextension.EasyMock.replay;
 import static org.easymock.classextension.EasyMock.verify;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
@@ -45,6 +40,7 @@ import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileObject;
+import org.geowebcache.util.MockWMSSourceHelper;
 
 import com.mockrunner.mock.web.MockHttpServletRequest;
 import com.mockrunner.mock.web.MockHttpServletResponse;
@@ -62,10 +58,7 @@ public class WMSLayerTest extends TestCase {
     public void testSeedMetaTiled() throws Exception {
         WMSLayer layer = createWMSLayer("image/png");
 
-        WMSSourceHelper mockSourceHelper = EasyMock.createMock(WMSSourceHelper.class);
-        byte[] returnBytes = createFakeSourceImage(layer);
-        expect(mockSourceHelper.makeRequest((WMSMetaTile) anyObject())).andReturn(returnBytes);
-        replay(mockSourceHelper);
+        WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper();
 
         layer.setSourceHelper(mockSourceHelper);
 
@@ -93,27 +86,10 @@ public class WMSLayerTest extends TestCase {
         assertNotNull(value);
         assertEquals("image/png", value.getBlobFormat());
         assertNotNull(value.getBlob());
-        BufferedImage read = ImageIO.read(new ByteArrayInputStream(value.getBlob()));
+        BufferedImage read = ImageIO.read(value.getBlob().getInputStream());
         assertNotNull(read);
 
-        verify(mockSourceHelper);
         verify(mockStorageBroker);
-    }
-
-    private byte[] createFakeSourceImage(final WMSLayer layer) throws IOException {
-
-        int tileWidth = layer.getGridSubset(gridSetBroker.WORLD_EPSG4326.getName()).getGridSet()
-                .getTileWidth();
-        int tileHeight = layer.getGridSubset(gridSetBroker.WORLD_EPSG4326.getName()).getGridSet()
-                .getTileHeight();
-
-        int width = tileWidth * layer.getMetaTilingFactors()[0];
-        int height = tileHeight * layer.getMetaTilingFactors()[1];
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        RenderedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        String formatName = layer.getMimeTypes().get(0).getInternalName();
-        ImageIO.write(image, formatName, out);
-        return out.toByteArray();
     }
 
     private WMSLayer createWMSLayer(final String format) {

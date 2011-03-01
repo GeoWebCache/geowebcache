@@ -140,7 +140,7 @@ public class LayerCacheInfoBuilderTest extends TestCase {
                     .getZoomStart()) * Math.random()));
 
             String tileKey = null;
-            String[] tilePath;
+            File tilePath;
             do {
                 long[] coverage = gridSubset.getCoverage(level);// {minx,miny,maxx,maxy,z}
                 long x = (long) (coverage[0] + ((coverage[2] - coverage[0]) * Math.random()));
@@ -148,14 +148,13 @@ public class LayerCacheInfoBuilderTest extends TestCase {
                 tileIndex = new long[] { x, y, level };
                 tilePath = FilePathGenerator.tilePath(prefix, layerName, tileIndex, gridSetId,
                         mimeType, parameters_id);
-                tileKey = tilePath[0] + File.separator + tilePath[1];
+                tileKey = tilePath.getAbsolutePath();
             } while (addedTiles.contains(tileKey));
             addedTiles.add(tileKey);
 
-            File tileDir = new File(tilePath[0]);
+            File tileDir = tilePath.getParentFile();
             tileDir.mkdirs();
-            File tileFile = new File(tileDir, tilePath[1]);
-            FileOutputStream fout = new FileOutputStream(tileFile);
+            FileOutputStream fout = new FileOutputStream(tilePath);
             try {
                 fout.write(mockTileContents);
             } finally {

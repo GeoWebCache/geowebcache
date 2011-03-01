@@ -2,16 +2,18 @@ package org.geowebcache.service.wmts;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.channels.Channels;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
+import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.service.OWSException;
@@ -72,7 +74,7 @@ public class WMTSGetFeatureInfo {
             throw new OWSException(400, "PointIJOutOfRange", "I", "I was " + i + ", must be between 0 and " + gridSet.getTileWidth()); 
         }
 
-        byte[] data = null;
+        Resource data = null;
         try {
             BoundingBox bbox = convTile.getGridSubset().boundsFromIndex(convTile.getTileIndex());
             data = wmsLayer.getFeatureInfo(
@@ -86,13 +88,14 @@ public class WMTSGetFeatureInfo {
 
         convTile.servletResp.setStatus(HttpServletResponse.SC_OK);
         convTile.servletResp.setContentType(convTile.getMimeType().getMimeType());
-        convTile.servletResp.setContentLength(data.length);
+        int size = (int) data.getSize();
+        convTile.servletResp.setContentLength(size);
 
-        stats.log(data.length, CacheResult.OTHER);
+        stats.log(size, CacheResult.OTHER);
         
         try {
             OutputStream os = convTile.servletResp.getOutputStream();
-            os.write(data);
+            data.transferTo(Channels.newChannel(os));
             os.flush();
         } catch (IOException ioe) {
             log.debug("Caught IOException" + ioe.getMessage());

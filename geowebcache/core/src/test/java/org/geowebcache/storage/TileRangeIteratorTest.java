@@ -26,6 +26,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.mime.MimeType;
+import org.springframework.util.StopWatch;
 
 public class TileRangeIteratorTest extends TestCase {
 
@@ -52,7 +53,7 @@ public class TileRangeIteratorTest extends TestCase {
         gridSet = new GridSetBroker(true, false).WORLD_EPSG3857;
         BoundingBox extent = new BoundingBox(0, 0, 100, 100);
         boolean alignTopLeft = false;
-        int levels = 10;
+        int levels = 12;
         Double metersPerUnit = Double.valueOf(1);
         double pixelSize = 1;
         int tileWidth = 100;
@@ -66,6 +67,9 @@ public class TileRangeIteratorTest extends TestCase {
         gridCoverages = gridSubSet.getCoverages();
     }
 
+    /**
+     * 
+     */
     public void testTraverseIndividualZoomLevelsNoMetaTiling() throws Exception {
         int zoomStart = gridSubSet.getZoomStart();
         int zoomStop = gridSubSet.getZoomStop();
@@ -80,6 +84,31 @@ public class TileRangeIteratorTest extends TestCase {
         }
     }
 
+    /**
+     * 
+     */
+    public void testTraverseIndividualZoomLevelsNoMetaTilingMultiThreading() throws Exception {
+        int zoomStart = gridSubSet.getZoomStart();
+        int zoomStop = gridSubSet.getZoomStop();
+        int[] metaTilingFactors = { 1, 1 };
+
+        final int nThreads = 64;
+        StopWatch sw = new StopWatch();
+        sw.start();
+        //for (int zLevel = zoomStart; zLevel <= zoomStop; zLevel++) {
+            long tilesProcessed = traverseTileRangeIter(nThreads, gridCoverages, zoomStart, zoomStop,
+                    metaTilingFactors);
+            long expected = countMetaTiles(gridCoverages, zoomStart, zoomStop, metaTilingFactors);
+            assertEquals("Expected tile count mismatch at zoom level " + zoomStart, expected,
+                    tilesProcessed);
+        //}
+        sw.stop();
+        System.err.println(nThreads + " threads finished in " + sw.getTotalTimeMillis() + " to count " + expected);
+    }
+
+    /**
+     * 
+     */
     public void testTraverseIndividualZoomLevelsMetaTiling() throws Exception {
         int zoomStart = gridSubSet.getZoomStart();
         int zoomStop = gridSubSet.getZoomStop();
@@ -94,6 +123,9 @@ public class TileRangeIteratorTest extends TestCase {
         }
     }
 
+    /**
+     * 
+     */
     public void testWholeRangeMultiThreaded() throws Exception {
         int zoomStart = gridSubSet.getZoomStart();
         int zoomStop = gridSubSet.getZoomStop();
@@ -106,6 +138,9 @@ public class TileRangeIteratorTest extends TestCase {
         assertEquals(expected, tilesProcessed);
     }
 
+    /**
+     * 
+     */
     public void testWholeRangeMultiThreadedMetaTiling() throws Exception {
         int zoomStart = gridSubSet.getZoomStart();
         int zoomStop = gridSubSet.getZoomStop();
@@ -118,6 +153,9 @@ public class TileRangeIteratorTest extends TestCase {
         assertEquals(expected, tilesProcessed);
     }
 
+    /**
+     * 
+     */
     public void testDiscontinuousTileRange() throws Exception {
         rasterMask = createMock(RasterMask.class);
         expect(rasterMask.getGridCoverages()).andReturn(gridCoverages);
@@ -159,8 +197,7 @@ public class TileRangeIteratorTest extends TestCase {
                     rasterMask, mimeType, parameters);
         }
 
-        final TileRangeIterator tri = new TileRangeIterator(tileRange, metaTilingFactors);// ,
-                                                                                          // false);
+        final TileRangeIterator tri = new TileRangeIterator(tileRange, metaTilingFactors, true);
 
         Collection<Callable<Long>> tasks = new ArrayList<Callable<Long>>(nThreads);
         for (int taskN = 0; taskN < nThreads; taskN++) {
@@ -182,7 +219,8 @@ public class TileRangeIteratorTest extends TestCase {
             ExecutionException {
         long total = 0;
         for (Future<Long> value : values) {
-            total += value.get().longValue();
+            long countedByTask = value.get().longValue();
+            total += countedByTask;
         }
         return total;
     }
@@ -200,7 +238,8 @@ public class TileRangeIteratorTest extends TestCase {
 
         public Long call() throws Exception {
             long nprocessed = 0;
-            while (null != tri.nextMetaGridLocation()) {
+            long[] gridLoc = new long[3];
+            while (null != (gridLoc = tri.nextMetaGridLocation(gridLoc))) {
                 ++nprocessed;
             }
             return Long.valueOf(nprocessed);

@@ -19,6 +19,8 @@ package org.geowebcache.service.kml;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -28,6 +30,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.GreenTileException;
 import org.geowebcache.filter.request.RequestFilterException;
+import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
@@ -118,7 +121,7 @@ public class KMZHelper {
      */
     protected static byte[] createZippedKML(
             String namePfx , String formatExtension,
-            byte[] overlayXml, byte[] dataXml) 
+            byte[] overlayXml, Resource dataXml) 
     throws ServiceException {
         
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -145,7 +148,7 @@ public class KMZHelper {
      */
     private static void writeZippedKML(
             String namePfx, String formatExtension,
-            byte[] overlay, byte[] data, OutputStream out) 
+            byte[] overlay, Resource data, OutputStream out) 
     throws IOException {
 
         ZipOutputStream zipos = new ZipOutputStream(out);
@@ -161,7 +164,8 @@ public class KMZHelper {
         if(data != null) {
             ZipEntry zeData = new ZipEntry("data_" + namePfx+"."+formatExtension);
             zipos.putNextEntry(zeData);
-            zipos.write(data);
+            WritableByteChannel outch = Channels.newChannel(zipos);
+            data.transferTo(outch);
         }
         zipos.finish();
     }

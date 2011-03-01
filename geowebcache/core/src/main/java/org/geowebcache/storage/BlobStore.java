@@ -17,6 +17,8 @@
  */
 package org.geowebcache.storage;
 
+import org.geowebcache.io.Resource;
+
 /**
  * Manages the persistence of the actual data contained in cacheable objects (tiles, WFS responses).
  * <p>
@@ -42,7 +44,7 @@ public interface BlobStore {
      * @return data, byte[0] if the blob is empty, null if it did not exist
      * @throws StorageException
      */
-    public byte[] get(TileObject obj) throws StorageException;
+    public Resource get(TileObject obj) throws StorageException;
     
     /**
      * Store blob. Calls getBlob() on passed object, does not modify the object.

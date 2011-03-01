@@ -1,7 +1,6 @@
 package org.geowebcache.arcgis.layer;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -29,12 +28,13 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.OutsideCoverageException;
+import org.geowebcache.io.FileResource;
+import org.geowebcache.io.Resource;
 import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageException;
-import org.geowebcache.util.ServletUtils;
 
 /**
  * 
@@ -151,9 +151,9 @@ public class ArcGISCacheLayer extends TileLayer {
         File tileFile = new File(path);
 
         if (tileFile.exists()) {
-            byte[] tileContent = readFile(tileFile);
+            Resource tileContent = readFile(tileFile);
             tile.setCacheResult(CacheResult.HIT);
-            tile.setContent(tileContent);
+            tile.setBlob(tileContent);
         } else {
             tile.setCacheResult(CacheResult.MISS);
             if (!setLayerBlankTile(tile)) {
@@ -167,17 +167,17 @@ public class ArcGISCacheLayer extends TileLayer {
         // TODO cache result
         String layerPath = getLayerPath().append(File.separatorChar).toString();
         File png = new File(layerPath + "blank.png");
-        byte[] blank = null;
+        Resource blank = null;
         try {
             if (png.exists()) {
                 blank = readFile(png);
-                tile.setContent(blank);
+                tile.setBlob(blank);
                 tile.setMimeType(MimeType.createFromFormat("image/png"));
             } else {
                 File jpeg = new File(layerPath + "missing.jpg");
                 if (jpeg.exists()) {
                     blank = readFile(jpeg);
-                    tile.setContent(blank);
+                    tile.setBlob(blank);
                     tile.setMimeType(MimeType.createFromFormat("image/jpeg"));
                 }
             }
@@ -252,30 +252,12 @@ public class ArcGISCacheLayer extends TileLayer {
         return String.valueOf(data);
     }
 
-    private byte[] readFile(File fh) throws StorageException {
-        byte[] blob = null;
-
-        FileInputStream fis;
-        try {
-            fis = new FileInputStream(fh);
-        } catch (FileNotFoundException e) {
+    private Resource readFile(File fh) throws StorageException {
+        if (!fh.exists()) {
             return null;
         }
-
-        try {
-            int BUFFER_SIZE = 4096;
-            blob = ServletUtils.readStream(fis, BUFFER_SIZE, BUFFER_SIZE);
-        } catch (IOException ioe) {
-            throw new StorageException(ioe.getMessage() + " for " + fh.getAbsolutePath());
-        } finally {
-            try {
-                fis.close();
-            } catch (IOException ioe) {
-                throw new StorageException(ioe.getMessage() + " for " + fh.getAbsolutePath());
-            }
-        }
-
-        return blob;
+        Resource res = new FileResource(fh);
+        return res;
     }
 
     /**

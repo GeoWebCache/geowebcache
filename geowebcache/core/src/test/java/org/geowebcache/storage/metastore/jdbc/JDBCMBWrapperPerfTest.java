@@ -11,6 +11,8 @@ import java.util.concurrent.Future;
 
 import junit.framework.TestCase;
 
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.Resource;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.util.FileUtils;
 
@@ -22,7 +24,7 @@ public class JDBCMBWrapperPerfTest extends TestCase {
 
     private File directory;
 
-    final byte[] blob = new byte[4096];
+    final Resource blob = new ByteArrayResource(new byte[4096]);
 
     final String parameters = null;
 

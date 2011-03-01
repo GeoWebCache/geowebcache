@@ -109,7 +109,7 @@ class SeedTask extends GWCTask {
         final boolean tryCache = !reseed;
 
         checkInterrupted();
-        long[] gridLoc = trIter.nextMetaGridLocation();
+        long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
 
         long seedCalls = 0;
         while (gridLoc != null && this.terminate == false) {
@@ -117,13 +117,14 @@ class SeedTask extends GWCTask {
             checkInterrupted();
             ConveyorTile tile = new ConveyorTile(storageBroker, tl.getName(), tr.gridSetId,
                     gridLoc, tr.mimeType, null, null, null, null);
-
+            
             for (int fetchAttempt = 0; fetchAttempt <= tileFailureRetryCount; fetchAttempt++) {
                 try {
                     checkInterrupted();
                     tl.seedTile(tile, tryCache);
                     break;// success, let it go
                 } catch (Exception e) {
+                    e.printStackTrace();
                     // if GWC_SEED_RETRY_COUNT was not set then none of the settings have effect, in
                     // order to keep backwards compatibility with the old behaviour
                     if (tileFailureRetryCount == 0) {
@@ -164,6 +165,9 @@ class SeedTask extends GWCTask {
             }
 
             // final long totalTilesCompleted = trIter.getTilesProcessed();
+            // note: computing the # of tiles processed by this thread instead of by the whole group
+            // also reduces thread contention as the trIter methods are synchronized and profiler
+            // shows 16 threads block on synchronization about 40% the time
             final long tilesCompletedByThisThread = seedCalls * metaTilingFactorX
                     * metaTilingFactorY;
 
@@ -171,7 +175,8 @@ class SeedTask extends GWCTask {
 
             checkInterrupted();
             seedCalls++;
-            gridLoc = trIter.nextMetaGridLocation();
+            //gridLoc = trIter.nextMetaGridLocation();
+            gridLoc = trIter.nextMetaGridLocation(gridLoc);
         }
 
         if (this.terminate) {

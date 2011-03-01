@@ -21,20 +21,22 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.Resource;
 import org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend;
 
 public class MetaStoreTest extends TestCase {
     public static final String TEST_DB_NAME = "gwcTestMetaStore";
     
     public void testTile() throws Exception {
-        byte[] bytes = null;
+        Resource bytes = null;
         TileObject to2 = null;
         
         try {
             MetaStore ms = setup();
 
             long[] xyz = { 1L, 2L, 3L };
-            bytes = "Test 1 2 3".getBytes();
+            bytes = new ByteArrayResource("Test 1 2 3".getBytes());
             TileObject to = TileObject.createCompleteTileObject(
                     "test'Layer:æøå;", xyz, "hefty-gridSet:id", "jpeg", "a=x&b=y", bytes);
 
@@ -51,12 +53,12 @@ public class MetaStoreTest extends TestCase {
             System.out.println(se.getMessage());
             throw se;
         }
-        assertEquals(bytes.length,to2.getBlobSize());
+        assertEquals(bytes.getSize(),to2.getBlobSize());
         assertEquals(true, to2.getCreated() <= System.currentTimeMillis());
     }
     
     public void testTileDelete() throws Exception {
-        byte[] bytes = null;
+        Resource bytes = null;
         TileObject to2 = null;
         TileObject to3 = null;
         String layerName = "test'Layer:æøå;";
@@ -67,7 +69,7 @@ public class MetaStoreTest extends TestCase {
             MetaStore ms = setup();
 
             long[] xyz = { 1L, 2L, 3L };
-            bytes = "Test 1 2 3".getBytes();
+            bytes = new ByteArrayResource("Test 1 2 3".getBytes());
             TileObject to = TileObject.createCompleteTileObject(
                     layerName, xyz, "hefty-gridSet:id", format, parameters, bytes);
 
@@ -80,7 +82,7 @@ public class MetaStoreTest extends TestCase {
                     layerName, xyz2, "hefty-gridSet:id", format, parameters);
 
             assertTrue(ms.get(to2));
-            assertEquals(bytes.length,to2.getBlobSize());
+            assertEquals(bytes.getSize(),to2.getBlobSize());
             
             // Delete
             assertTrue(ms.delete(to));

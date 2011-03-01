@@ -23,6 +23,8 @@ import java.io.InputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.Resource;
 
 /**
  * Hardcoded to the built-in blank tile for now
@@ -37,13 +39,13 @@ public class GreenTileException extends RequestFilterException {
 
     private static Log log = LogFactory.getLog(GreenTileException.class);
     
-    private volatile static byte[] greenTile;
+    private volatile static Resource greenTile;
     
     public GreenTileException(RequestFilter reqFilter) {
         super(reqFilter, 200, "image/png");
     }
 
-    private byte[] getGreenTile() {
+    private Resource getGreenTile() {
         byte[] green = new byte[659];
         InputStream is = null;
        
@@ -61,12 +63,12 @@ public class GreenTileException extends RequestFilterException {
             }
         }
         
-        return green;
+        return new ByteArrayResource(green);
     }
 
     
-    public byte[] getResponse() {
-        byte[] ret = greenTile;
+    public Resource getResponse() {
+        Resource ret = greenTile;
         if (ret == null) {
             synchronized (GreenTileException.class) {
                 ret = greenTile;
