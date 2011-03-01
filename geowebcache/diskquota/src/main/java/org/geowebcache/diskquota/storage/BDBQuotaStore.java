@@ -2,8 +2,10 @@ package org.geowebcache.diskquota.storage;
 
 import java.io.File;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -232,7 +234,11 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
             throw e;
         } catch (ExecutionException e) {
             log.warn(e);
-            throw new RuntimeException(e.getCause());
+            Throwable cause = e.getCause();
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+            }
+            throw new RuntimeException(cause);
         }
     }
 
@@ -409,8 +415,8 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
     }
 
     /**
-     * Asynchronously adds the {@link TilePage#getNumPresentTilesInPage() number of tiles} present
-     * in each of the argument pages
+     * Adds the {@link TilePage#getNumPresentTilesInPage() number of tiles} present in each of the
+     * argument pages
      * 
      * @param quotaDiff
      * 
@@ -502,20 +508,28 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
     }
 
     /**
-     * Asynchronously updates (or set if not exists) the {@link TilePage#getNumHits() numHits} and
-     * {@link TilePage#getLastAccessTime()} values for the stored versions of the pages
+     * Asynchronously updates (or set if not exists) the
+     * {@link PageStats#getFrequencyOfUsePerMinute()} and
+     * {@link PageStats#getLastAccessTimeMinutes()} values for the stored versions of the page
+     * statistics using {@link PageStats#addHits(long)}; these values are influenced by the
+     * {@code PageStats}' {@link PageStats#getFillFactor() fillFactor}.
      * 
      * @param statsUpdates
      * @return
      */
-    public Future<PageStats> addHitsAndSetAccesTime(final Collection<PageStatsPayload> statsUpdates) {
+    public Future<List<PageStats>> addHitsAndSetAccesTime(
+            final Collection<PageStatsPayload> statsUpdates) {
 
         Assert.notNull(statsUpdates);
 
         return issue(new AddHitsAndSetAccesTime(statsUpdates));
     }
 
-    private class AddHitsAndSetAccesTime implements Callable<PageStats> {
+    /**
+     * 
+     * 
+     */
+    private class AddHitsAndSetAccesTime implements Callable<List<PageStats>> {
 
         private final Collection<PageStatsPayload> statsUpdates;
 
@@ -523,7 +537,8 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
             this.statsUpdates = statsUpdates;
         }
 
-        public PageStats call() throws Exception {
+        public List<PageStats> call() throws Exception {
+            List<PageStats> allStats = new ArrayList<PageStats>(statsUpdates.size());
             PageStats pageStats = null;
             final Transaction tx = entityStore.getEnvironment().beginTransaction(null, null);
             try {
@@ -544,15 +559,19 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
                         storedPage = page;
                         pageStats = new PageStats(storedPage.getId());
                     } else {
-                        pageStats = pageStatsByPageId.get(storedPage.getId());
+                        pageStats = pageStatsByPageId.get(tx, storedPage.getId(), null);
                     }
 
                     final int addedHits = payload.getNumHits();
-                    pageStats.addHits(addedHits);
+                    final int lastAccessTimeMinutes = (int) (payload.getLastAccessTime() / 1000 / 60);
+                    final int creationTimeMinutes = storedPage.getCreationTimeMinutes();
+                    pageStats.addHitsAndAccessTime(addedHits, lastAccessTimeMinutes,
+                            creationTimeMinutes);
                     pageStatsById.putNoReturn(tx, pageStats);
+                    allStats.add(pageStats);
                 }
                 tx.commit();
-                return pageStats;
+                return allStats;
             } catch (RuntimeException e) {
                 tx.abort();
                 throw e;
@@ -649,18 +668,18 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
         }
     }
 
-    public void setTruncated(final TilePage tilePage) throws InterruptedException {
-        issueSync(new TruncatePage(tilePage));
+    public PageStats setTruncated(final TilePage tilePage) throws InterruptedException {
+        return issueSync(new TruncatePage(tilePage));
     }
 
-    private class TruncatePage implements Callable<Void> {
+    private class TruncatePage implements Callable<PageStats> {
         private final TilePage tilePage;
 
         public TruncatePage(TilePage tilePage) {
             this.tilePage = tilePage;
         }
 
-        public Void call() throws Exception {
+        public PageStats call() throws Exception {
             Transaction tx = entityStore.getEnvironment().beginTransaction(null, null);
             try {
                 PageStats pageStats = pageStatsByPageId.get(tx, tilePage.getId(), null);
@@ -669,12 +688,11 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
                     pageStatsById.putNoReturn(tx, pageStats);
                 }
                 tx.commit();
+                return pageStats;
             } catch (Exception e) {
                 tx.abort();
                 throw e;
             }
-            return null;
         }
-
     }
 }

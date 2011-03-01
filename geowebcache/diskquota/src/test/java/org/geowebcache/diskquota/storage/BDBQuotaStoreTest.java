@@ -3,16 +3,20 @@ package org.geowebcache.diskquota.storage;
 import java.io.File;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 
 import junit.framework.TestCase;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.mutable.MutableInt;
 import org.easymock.classextension.EasyMock;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
@@ -143,15 +147,10 @@ public class BDBQuotaStoreTest extends TestCase {
      * @throws Exception
      */
     public void testPageStatsGathering() throws Exception {
-        final MutableInt baseTimeMinutes = new MutableInt(10000);
-
-        SystemUtils.set(new SystemUtils() {
-            @Override
-            public int currentTimeMinutes() {
-                return baseTimeMinutes.intValue();
-            }
-
-        });
+        final MockSystemUtils sysUtils = new MockSystemUtils();
+        sysUtils.setCurrentTimeMinutes(10);
+        sysUtils.setCurrentTimeMillis(10 * 60 * 1000);
+        SystemUtils.set(sysUtils);
 
         TileSet tileSet = testTileSet;
 
@@ -159,40 +158,43 @@ public class BDBQuotaStoreTest extends TestCase {
 
         PageStatsPayload payload = new PageStatsPayload(page);
         int numHits = 100;
-        payload.setLastAccessTime(baseTimeMinutes.intValue() - 100);
+        payload.setLastAccessTime(sysUtils.currentTimeMillis() - 1 * 60 * 1000);
         payload.setNumHits(numHits);
         payload.setNumTiles(1);
 
         store.addToQuotaAndTileCounts(tileSet, new Quota(1, StorageUnit.MiB),
                 Collections.singleton(payload));
 
-        Future<PageStats> result = store.addHitsAndSetAccesTime(Collections.singleton(payload));
-        PageStats stats = result.get();
+        Future<List<PageStats>> result = store.addHitsAndSetAccesTime(Collections
+                .singleton(payload));
+        List<PageStats> allStats = result.get();
+        PageStats stats = allStats.get(0);
         float fillFactor = stats.getFillFactor();
         assertEquals(1.0f, fillFactor, 1e-6);
 
         int lastAccessTimeMinutes = stats.getLastAccessTimeMinutes();
-        assertEquals(baseTimeMinutes.intValue(), lastAccessTimeMinutes);
+        assertEquals(sysUtils.currentTimeMinutes(), lastAccessTimeMinutes);
 
         float frequencyOfUsePerMinute = stats.getFrequencyOfUsePerMinute();
         assertEquals(100f, frequencyOfUsePerMinute);
 
         // now 1 minute later...
-        baseTimeMinutes.setValue(baseTimeMinutes.intValue() + 2);
+        sysUtils.setCurrentTimeMinutes(sysUtils.currentTimeMinutes() + 2);
+        sysUtils.setCurrentTimeMillis(sysUtils.currentTimeMillis() + 2 * 60 * 1000);
 
         numHits = 10;
-        payload.setLastAccessTime(baseTimeMinutes.intValue() - 100);
+        payload.setLastAccessTime(sysUtils.currentTimeMillis() - 1 * 60 * 1000);
         payload.setNumHits(numHits);
 
         result = store.addHitsAndSetAccesTime(Collections.singleton(payload));
-        stats = result.get();
+        allStats = result.get();
+        stats = allStats.get(0);
 
         lastAccessTimeMinutes = stats.getLastAccessTimeMinutes();
-        assertEquals(baseTimeMinutes.intValue(), lastAccessTimeMinutes);
+        assertEquals(11, lastAccessTimeMinutes);
 
         frequencyOfUsePerMinute = stats.getFrequencyOfUsePerMinute();
-        float expected = 52.5f;// the 100 previous + the 10 added now / the 2 minutes that elapsed,
-                               // all divided by 2
+        float expected = 55.0f;// the 100 previous + the 10 added now / the 2 minutes that elapsed
         assertEquals(expected, frequencyOfUsePerMinute, 1e-6f);
     }
 
@@ -249,32 +251,157 @@ public class BDBQuotaStoreTest extends TestCase {
         }
     }
 
-    public void testGetLeastFrequentlyUsedPage() {
-        System.err.println(getName() + " Not yet implemented");
+    public void testGetLeastFrequentlyUsedPage() throws Exception {
+        final String layerName = testTileSet.getLayerName();
+        Set<String> layerNames = Collections.singleton(layerName);
+
+        TilePage lfuPage;
+        lfuPage = store.getLeastFrequentlyUsedPage(layerNames);
+        assertNull(lfuPage);
+
+        TilePage page1 = new TilePage(testTileSet.getId(), 0, 1, 2);
+        TilePage page2 = new TilePage(testTileSet.getId(), 1, 1, 2);
+
+        PageStatsPayload payload1 = new PageStatsPayload(page1);
+        PageStatsPayload payload2 = new PageStatsPayload(page2);
+
+        payload1.setNumHits(100);
+        payload2.setNumHits(10);
+        Collection<PageStatsPayload> statsUpdates = Arrays.asList(payload1, payload2);
+        store.addHitsAndSetAccesTime(statsUpdates).get();
+
+        TilePage leastFrequentlyUsedPage = store.getLeastFrequentlyUsedPage(layerNames);
+        assertEquals(page2, leastFrequentlyUsedPage);
+
+        payload2.setNumHits(1000);
+        store.addHitsAndSetAccesTime(statsUpdates).get();
+
+        leastFrequentlyUsedPage = store.getLeastFrequentlyUsedPage(layerNames);
+        assertEquals(page1, leastFrequentlyUsedPage);
     }
 
-    public void getLeastRecentlyUsedPage() {
-        System.err.println(getName() + " Not yet implemented");
+    public void testGetLeastRecentlyUsedPage() throws Exception {
+        MockSystemUtils mockSystemUtils = new MockSystemUtils();
+        mockSystemUtils.setCurrentTimeMinutes(1000);
+        mockSystemUtils.setCurrentTimeMillis(mockSystemUtils.currentTimeMinutes() * 60 * 1000);
+        SystemUtils.set(mockSystemUtils);
+
+        final String layerName = testTileSet.getLayerName();
+        Set<String> layerNames = Collections.singleton(layerName);
+
+        TilePage leastRecentlyUsedPage;
+        leastRecentlyUsedPage = store.getLeastRecentlyUsedPage(layerNames);
+        assertNull(leastRecentlyUsedPage);
+
+        TilePage page1 = new TilePage(testTileSet.getId(), 0, 1, 2);
+        TilePage page2 = new TilePage(testTileSet.getId(), 1, 1, 2);
+
+        PageStatsPayload payload1 = new PageStatsPayload(page1);
+        PageStatsPayload payload2 = new PageStatsPayload(page2);
+
+        payload1.setLastAccessTime(mockSystemUtils.currentTimeMillis() + 1 * 60 * 1000);
+        payload2.setLastAccessTime(mockSystemUtils.currentTimeMillis() + 2 * 60 * 1000);
+
+        Collection<PageStatsPayload> statsUpdates = Arrays.asList(payload1, payload2);
+        store.addHitsAndSetAccesTime(statsUpdates).get();
+
+        leastRecentlyUsedPage = store.getLeastRecentlyUsedPage(layerNames);
+        assertEquals(page1, leastRecentlyUsedPage);
+
+        payload1.setLastAccessTime(mockSystemUtils.currentTimeMillis() + 10 * 60 * 1000);
+        store.addHitsAndSetAccesTime(statsUpdates).get();
+
+        leastRecentlyUsedPage = store.getLeastRecentlyUsedPage(layerNames);
+        assertEquals(page2, leastRecentlyUsedPage);
     }
 
-    public void testGetTileSetById() {
-        System.err.println(getName() + " Not yet implemented");
+    public void testGetTileSetById() throws Exception {
+
+        TileSet tileSet = store.getTileSetById(testTileSet.getId());
+        assertNotNull(tileSet);
+        assertEquals(testTileSet, tileSet);
+
+        try {
+            store.getTileSetById("NonExistentTileSetId");
+            fail("Expected IAE");
+        } catch (IllegalArgumentException e) {
+            assertTrue(true);
+        }
     }
 
-    public void testGetTilesForPage() {
-        System.err.println(getName() + " Not yet implemented");
+    public void testGetTilesForPage() throws Exception {
+        TilePage page = new TilePage(testTileSet.getId(), 0, 0, 0);
+
+        long[][] expected = tilePageCalculator.toGridCoverage(testTileSet, page);
+        long[][] tilesForPage = store.getTilesForPage(page);
+
+        assertTrue(Arrays.equals(expected[0], tilesForPage[0]));
+
+        page = new TilePage(testTileSet.getId(), 0, 0, 1);
+
+        expected = tilePageCalculator.toGridCoverage(testTileSet, page);
+        tilesForPage = store.getTilesForPage(page);
+
+        assertTrue(Arrays.equals(expected[1], tilesForPage[1]));
+
     }
 
-    public void testGetUsedQuotaByLayerName() {
-        System.err.println(getName() + " Not yet implemented");
+    @SuppressWarnings("unchecked")
+    public void testGetUsedQuotaByLayerName() throws Exception {
+        String layerName = "topp:states2";
+        List<TileSet> tileSets;
+        tileSets = new ArrayList<TileSet>(tilePageCalculator.getTileSetsFor(layerName));
+
+        Quota expected = new Quota();
+        for (TileSet tset : tileSets) {
+            Quota quotaDiff = new Quota(10, StorageUnit.MiB);
+            expected.add(quotaDiff);
+            store.addToQuotaAndTileCounts(tset, quotaDiff, Collections.EMPTY_SET);
+        }
+
+        Quota usedQuotaByLayerName = store.getUsedQuotaByLayerName(layerName);
+        assertEquals(expected.getBytes(), usedQuotaByLayerName.getBytes());
     }
 
-    public void testGetUsedQuotaByTileSetId() {
-        System.err.println(getName() + " Not yet implemented");
+    @SuppressWarnings("unchecked")
+    public void testGetUsedQuotaByTileSetId() throws Exception {
+        String layerName = "topp:states2";
+        List<TileSet> tileSets;
+        tileSets = new ArrayList<TileSet>(tilePageCalculator.getTileSetsFor(layerName));
+
+        Map<String, Quota> expectedById = new HashMap<String, Quota>();
+
+        for (TileSet tset : tileSets) {
+            Quota quotaDiff = new Quota(10D * Math.random(), StorageUnit.MiB);
+            store.addToQuotaAndTileCounts(tset, quotaDiff, Collections.EMPTY_SET);
+            store.addToQuotaAndTileCounts(tset, quotaDiff, Collections.EMPTY_SET);
+            Quota tsetQuota = new Quota(quotaDiff);
+            tsetQuota.add(quotaDiff);
+            expectedById.put(tset.getId(), tsetQuota);
+        }
+
+        for (Map.Entry<String, Quota> expected : expectedById.entrySet()) {
+            BigInteger expectedValaue = expected.getValue().getBytes();
+            String tsetId = expected.getKey();
+            assertEquals(expectedValaue, store.getUsedQuotaByTileSetId(tsetId).getBytes());
+        }
     }
 
-    public void testSetTruncated() {
-        System.err.println(getName() + " Not yet implemented");
+    public void testSetTruncated() throws Exception {
+        String tileSetId = testTileSet.getId();
+        TilePage page = new TilePage(tileSetId, 0, 0, 2);
+
+        PageStatsPayload payload = new PageStatsPayload(page);
+        int numHits = 100;
+        payload.setNumHits(numHits);
+        payload.setNumTiles(5);
+
+        store.addToQuotaAndTileCounts(testTileSet, new Quota(1, StorageUnit.MiB),
+                Collections.singleton(payload));
+        List<PageStats> stats = store.addHitsAndSetAccesTime(Collections.singleton(payload)).get();
+        assertTrue(stats.get(0).getFillFactor() > 0f);
+        PageStats pageStats = store.setTruncated(page);
+        assertEquals(0f, pageStats.getFillFactor());
     }
 
 }

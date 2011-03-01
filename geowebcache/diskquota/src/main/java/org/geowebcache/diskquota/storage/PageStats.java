@@ -27,9 +27,9 @@ public class PageStats implements Serializable {
 
     /**
      * Approximate average frequency of use of this page per minute, computed each time page
-     * {@link #addHits(long) hits } are added based on the previous frequency of use, the time
-     * elapsed since the last use ({@link #lastAccessTimeMinutes}), and the new number of hits added
-     * in that period of time.
+     * {@link #addHitsAndAccessTime hits } are added based on the previous frequency of use, the
+     * time elapsed since the last use ({@link #lastAccessTimeMinutes}), and the new number of hits
+     * added in that period of time.
      */
     @SecondaryKey(name = "LFU", relate = Relationship.MANY_TO_ONE)
     private float frequencyOfUse;
@@ -40,6 +40,8 @@ public class PageStats implements Serializable {
     @SecondaryKey(name = "fill_factor", relate = Relationship.MANY_TO_ONE)
     private float fillFactor;
 
+    private BigInteger numHits;
+
     PageStats() {
         //
     }
@@ -48,6 +50,7 @@ public class PageStats implements Serializable {
         this.pageId = Long.valueOf(pageId);
         // should be the same than the tile creation time as is used as a base to measure the
         // frequency of use of this page
+        this.numHits = BigInteger.ZERO;
         this.lastAccessTimeMinutes = SystemUtils.get().currentTimeMinutes();
     }
 
@@ -55,24 +58,26 @@ public class PageStats implements Serializable {
         this(page.getId());
     }
 
-    public void addHits(long numHits) {
+    public void addHitsAndAccessTime(final long addedHits, int lastAccessTimeMinutes,
+            final int creationTimeMinutes) {
+
+        if (lastAccessTimeMinutes < creationTimeMinutes) {
+            lastAccessTimeMinutes = creationTimeMinutes;
+        }
+
         if (fillFactor <= 0f) {
             // we're in trouble, how could this happen? well because somehow the hits are being
             // recorded before the quota increase? it's not that tragic
             fillFactor = Float.MIN_VALUE;
         }
-        // how relevant is this number of hits in relation to the number of tiles present in the
-        // page?
-        float hitsFactor = numHits / fillFactor;
 
-        int now = SystemUtils.get().currentTimeMinutes();
-        float diffMinutes = now - this.lastAccessTimeMinutes;
-        // float averageAddedFrequency = diffMinutes == 0 ? numHits : numHits / diffMinutes;
-        float averageAddedFrequency = diffMinutes == 0 ? hitsFactor : hitsFactor / diffMinutes;
-        float newAvgFreq = diffMinutes == 0 ? (this.frequencyOfUse + averageAddedFrequency)
-                : (this.frequencyOfUse + averageAddedFrequency) / 2f;
-        this.frequencyOfUse = newAvgFreq;
-        this.lastAccessTimeMinutes = now;
+        this.numHits = this.numHits.add(BigInteger.valueOf(addedHits));
+        BigDecimal age = new BigDecimal(1 + lastAccessTimeMinutes - creationTimeMinutes);
+
+        this.frequencyOfUse = new BigDecimal(this.numHits).divide(age, 7, RoundingMode.CEILING)
+                .multiply(new BigDecimal(fillFactor)).floatValue();
+
+        this.lastAccessTimeMinutes = lastAccessTimeMinutes;
     }
 
     public void addTiles(long numTiles, BigInteger maxTiles) {
@@ -128,4 +133,15 @@ public class PageStats implements Serializable {
         this.frequencyOfUse = lfuHotnes;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("[page: ").append(pageId);
+        sb.append(", fillFactor: ").append(fillFactor);
+        sb.append(", frequencyOfUse: ").append(frequencyOfUse);
+        sb.append(", last access: ")
+                .append(SystemUtils.get().currentTimeMinutes() - lastAccessTimeMinutes)
+                .append("m ago]");
+        return sb.toString();
+    }
 }

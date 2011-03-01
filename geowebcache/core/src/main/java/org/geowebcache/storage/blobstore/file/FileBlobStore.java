@@ -329,8 +329,8 @@ public class FileBlobStore implements BlobStore {
 
     public void put(TileObject stObj) throws StorageException {
         final File fh = getFileHandleTile(stObj, true);
-        final boolean existed = fh.exists();
-        final long oldSize = existed ? fh.length() : 0;
+        final long oldSize = fh.length();
+        final boolean existed = oldSize > 0;
         writeFile(fh, stObj.getBlob());
         /*
          * This is important because listeners may be tracking tile existence

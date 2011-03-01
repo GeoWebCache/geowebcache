@@ -24,6 +24,8 @@ public class TilePage {
 
     private int pageX;
 
+    private int creationTimeMinutes;
+
     public TilePage() {
     }
 
@@ -35,6 +37,7 @@ public class TilePage {
         StringBuilder sb = new StringBuilder(128);
         computeId(tileSetId, pageX, pageY, zoomLevel, sb);
         this.key = sb.toString();
+        this.creationTimeMinutes = SystemUtils.get().currentTimeMinutes();
     }
 
     public static void computeId(String tileSetId, int pageX, int pageY, int pageZ,
@@ -80,6 +83,10 @@ public class TilePage {
 
     public int getPageX() {
         return pageX;
+    }
+
+    public int getCreationTimeMinutes() {
+        return creationTimeMinutes;
     }
 
     public String toString() {
