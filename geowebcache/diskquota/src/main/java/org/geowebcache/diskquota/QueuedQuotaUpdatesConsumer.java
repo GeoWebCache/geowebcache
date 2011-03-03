@@ -268,7 +268,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long>, Serializable 
     }
 
     /**
-     * Makes sure the given cached updates are held for too long before synchronizing with the
+     * Makes sure the given cached updates are not held for too long before synchronizing with the
      * store, either because it's been held for too long, or because too many updates have happened
      * on it since the last time it was saved to the store.
      * 
