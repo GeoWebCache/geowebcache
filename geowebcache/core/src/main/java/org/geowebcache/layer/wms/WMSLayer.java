@@ -472,7 +472,8 @@ public class WMSLayer extends TileLayer {
 
         // GridCalculator gridCalc = getGrid(tile.getSRS()).getGridCalculator();
 
-        WMSMetaTile metaTile = new WMSMetaTile(this, gridSubset, tile.getMimeType(),
+        MimeType mimeType = tile.getMimeType();
+        WMSMetaTile metaTile = new WMSMetaTile(this, gridSubset, mimeType,
                 this.getFormatModifier(tile.getMimeType()), gridLoc, metaWidthHeight[0],
                 metaWidthHeight[1], tile.getFullParameters());
 
