@@ -175,7 +175,6 @@ class SeedTask extends GWCTask {
 
             checkInterrupted();
             seedCalls++;
-            //gridLoc = trIter.nextMetaGridLocation();
             gridLoc = trIter.nextMetaGridLocation(gridLoc);
         }
 

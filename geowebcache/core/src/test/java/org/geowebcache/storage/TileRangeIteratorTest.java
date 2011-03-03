@@ -197,11 +197,11 @@ public class TileRangeIteratorTest extends TestCase {
                     rasterMask, mimeType, parameters);
         }
 
-        final TileRangeIterator tri = new TileRangeIterator(tileRange, metaTilingFactors, true);
+        final TileRangeIterator tri = new TileRangeIterator(tileRange, metaTilingFactors);
 
         Collection<Callable<Long>> tasks = new ArrayList<Callable<Long>>(nThreads);
         for (int taskN = 0; taskN < nThreads; taskN++) {
-            tasks.add(new TileTangeIteratorConsumer(tri));
+            tasks.add(new TileRangeIteratorConsumer(tri));
         }
         List<Future<Long>> values = executorService.invokeAll(tasks);
         executorService.shutdown();
@@ -229,10 +229,10 @@ public class TileRangeIteratorTest extends TestCase {
      * Simple Callable that traverses a {@link TileRangeIterator} and returns the number of grid
      * locations processed
      */
-    private static final class TileTangeIteratorConsumer implements Callable<Long> {
+    private static final class TileRangeIteratorConsumer implements Callable<Long> {
         private final TileRangeIterator tri;
 
-        private TileTangeIteratorConsumer(TileRangeIterator tri) {
+        private TileRangeIteratorConsumer(TileRangeIterator tri) {
             this.tri = tri;
         }
 

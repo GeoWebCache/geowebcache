@@ -470,9 +470,9 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
                             pageById.put(tx, page);
                             storedPage = page;
                             pageStats = new PageStats(storedPage.getId());
-                            pageStatsById.put(tx, pageStats);
+                            //pageStatsById.put(tx, pageStats);
                         } else {
-                            pageStats = pageStatsByPageId.get(storedPage.getId());
+                            pageStats = pageStatsByPageId.get(tx, storedPage.getId(), null);
                         }
 
                         final byte level = page.getZoomLevel();
