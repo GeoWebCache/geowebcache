@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.geowebcache.diskquota.storage.LayerQuota;
 import org.geowebcache.diskquota.storage.Quota;
+import org.geowebcache.diskquota.storage.StorageUnit;
 import org.springframework.util.Assert;
 
 /**
@@ -97,6 +98,9 @@ public class DiskQuotaConfig {
         }
         if (globalExpirationPolicyName == null) {
             globalExpirationPolicyName = DEFAULT_GLOBAL_POLICY_NAME;
+        }
+        if (globalQuota == null) {
+            globalQuota = new Quota(500, StorageUnit.MiB);
         }
         return this;
     }
