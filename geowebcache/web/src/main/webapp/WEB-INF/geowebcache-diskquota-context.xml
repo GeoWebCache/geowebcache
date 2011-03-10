@@ -31,9 +31,9 @@
     <constructor-arg ref="DiskQuotaStore" />
   </bean>
 
-  <bean id="mockWMSSource" class="org.geowebcache.util.MockWMSLayerSource">
+  <!--bean id="mockWMSSource" class="org.geowebcache.util.MockWMSLayerSource">
     <description>REMOVE THIS, it's a fake WMS source for all layers!!!</description>
     <constructor-arg ref="gwcTLDispatcher" />
-  </bean>
+  </bean-->
 
 </beans>
