@@ -25,7 +25,7 @@ import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.layer.wms.WMSMetaTile;
 import org.geowebcache.layer.wms.WMSSourceHelper;
 
-public final class MockWMSSourceHelper extends WMSSourceHelper {
+public class MockWMSSourceHelper extends WMSSourceHelper {
     private Font font = Font.decode("Arial-BOLD-14");
 
     private Map<List<Integer>, byte[]> images = new HashMap<List<Integer>, byte[]>();

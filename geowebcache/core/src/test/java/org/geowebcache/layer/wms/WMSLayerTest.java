@@ -18,12 +18,10 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.classextension.EasyMock.replay;
 import static org.easymock.classextension.EasyMock.verify;
 
-import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -86,8 +84,7 @@ public class WMSLayerTest extends TestCase {
         assertNotNull(value);
         assertEquals("image/png", value.getBlobFormat());
         assertNotNull(value.getBlob());
-        BufferedImage read = ImageIO.read(value.getBlob().getInputStream());
-        assertNotNull(read);
+        assertTrue(value.getBlob().getSize() > 0);
 
         verify(mockStorageBroker);
     }

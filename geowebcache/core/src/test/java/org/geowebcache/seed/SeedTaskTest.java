@@ -16,12 +16,17 @@
  */
 package org.geowebcache.seed;
 
-import static org.easymock.classextension.EasyMock.*;
+import static org.easymock.EasyMock.anyObject;
+import static org.easymock.EasyMock.capture;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.classextension.EasyMock.replay;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.channels.Channels;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -42,6 +47,8 @@ import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
+import org.geowebcache.io.Resource;
+import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.layer.wms.WMSMetaTile;
 import org.geowebcache.layer.wms.WMSSourceHelper;
@@ -84,7 +91,7 @@ public class SeedTaskTest extends TestCase {
         final byte[] fakeWMSResponse = createFakeSourceImage(tl);
 
         // WMSSourceHelper that on makeRequest() returns always the saqme fake image
-        WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper();// EasyMock.createMock(WMSSourceHelper.class);
+        WMSSourceHelper mockSourceHelper = EasyMock.createMock(WMSSourceHelper.class);
 
         final AtomicInteger wmsRequestsCounter = new AtomicInteger();
         Capture<WMSMetaTile> wmsRequestsCapturer = new Capture<WMSMetaTile>() {
@@ -96,9 +103,21 @@ public class SeedTaskTest extends TestCase {
                 wmsRequestsCounter.incrementAndGet();
             }
         };
-//        expect(mockSourceHelper.makeRequest(capture(wmsRequestsCapturer))).andReturn(
-//                fakeWMSResponse).anyTimes();
-//        replay(mockSourceHelper);
+        Capture<Resource> resourceCapturer = new Capture<Resource>() {
+            @Override
+            public void setValue(Resource target) {
+                try {
+                    target.transferFrom(Channels.newChannel(new ByteArrayInputStream(
+                            fakeWMSResponse)));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+        mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
+        mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
+        mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
+        replay(mockSourceHelper);
 
         tl.setSourceHelper(mockSourceHelper);
 
@@ -146,39 +165,44 @@ public class SeedTaskTest extends TestCase {
         WMSLayer tl = createWMSLayer("image/png");
 
         // create an image to be returned by the mock WMSSourceHelper
-        ///final byte[] fakeWMSResponse = createFakeSourceImage(tl);
+        final byte[] fakeWMSResponse = createFakeSourceImage(tl);
 
         // WMSSourceHelper that on makeRequest() returns always the saqme fake image
-        WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper();/// EasyMock.createMock(WMSSourceHelper.class);
+        // WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper();///
+        // EasyMock.createMock(WMSSourceHelper.class);
+        WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper() {
+            private int numCalls;
 
-        final AtomicInteger wmsRequestsCounter = new AtomicInteger();
-        Capture<WMSMetaTile> wmsRequestsCapturer = new Capture<WMSMetaTile>() {
-            /**
-             * Override because setValue with anyTimes() resets the list of values
-             */
             @Override
-            public void setValue(WMSMetaTile o) {
-                wmsRequestsCounter.incrementAndGet();
+            protected void makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer,
+                    String wmsParams, String expectedMimeType, Resource target)
+                    throws GeoWebCacheException {
+                numCalls++;
+                switch (numCalls) {
+                case 1:
+                    throw new GeoWebCacheException("test exception");
+                case 2:
+                    throw new RuntimeException("test unexpected exception");
+                case 3:
+                    throw new GeoWebCacheException("second test exception");
+                case 4:
+                    throw new RuntimeException("second test unexpected exception");
+                default:
+                    try {
+                        target.transferFrom(Channels.newChannel(new ByteArrayInputStream(
+                                fakeWMSResponse)));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
         };
-//        expect(mockSourceHelper.makeRequest(capture(wmsRequestsCapturer))).andThrow(
-//                new GeoWebCacheException("test exception"));
-//        expect(mockSourceHelper.makeRequest(capture(wmsRequestsCapturer))).andThrow(
-//                new RuntimeException("test unexpected exception"));
-//        expect(mockSourceHelper.makeRequest(capture(wmsRequestsCapturer))).andThrow(
-//                new GeoWebCacheException("second test exception"));
-//        expect(mockSourceHelper.makeRequest(capture(wmsRequestsCapturer))).andThrow(
-//                new RuntimeException("second test unexpected exception"));
-//        expect(mockSourceHelper.makeRequest(capture(wmsRequestsCapturer))).andReturn(
-//                fakeWMSResponse).anyTimes();
-//
-//        replay(mockSourceHelper);
 
         tl.setSourceHelper(mockSourceHelper);
 
         final int zoomLevel = 4;
         SeedRequest req = createRequest(tl, TYPE.SEED, zoomLevel, zoomLevel);
-        
+
         TileRange tr = TileBreeder.createTileRange(req, tl);
         TileRangeIterator trIter = new TileRangeIterator(tr, tl.getMetaTilingFactors());
 
@@ -194,12 +218,13 @@ public class SeedTaskTest extends TestCase {
         SeedTask seedTask = new SeedTask(mockStorageBroker, trIter, tl, reseed, false);
         seedTask.setTaskId(1L);
         seedTask.setThreadInfo(new AtomicInteger(), 0);
-        
+
         int tileFailureRetryCount = 1;
         long tileFailureRetryWaitTime = 10;
         long totalFailuresBeforeAborting = 4;
         AtomicLong sharedFailureCounter = new AtomicLong();
-        seedTask.setFailurePolicy(tileFailureRetryCount, tileFailureRetryWaitTime, totalFailuresBeforeAborting, sharedFailureCounter);
+        seedTask.setFailurePolicy(tileFailureRetryCount, tileFailureRetryWaitTime,
+                totalFailuresBeforeAborting, sharedFailureCounter);
         /*
          * HACK: avoid SeedTask.getCurrentThreadArrayIndex failure.
          */
@@ -210,7 +235,6 @@ public class SeedTaskTest extends TestCase {
          */
         seedTask.doAction();
         assertEquals(totalFailuresBeforeAborting, sharedFailureCounter.get());
-        verify(mockSourceHelper);
     }
 
     /**
@@ -225,12 +249,13 @@ public class SeedTaskTest extends TestCase {
         WMSLayer tl = createWMSLayer("image/png");
 
         // create an image to be returned by the mock WMSSourceHelper
-///        final byte[] fakeWMSResponse = createFakeSourceImage(tl);
+        // / final byte[] fakeWMSResponse = createFakeSourceImage(tl);
         // WMSSourceHelper that on makeRequest() returns always the saqme fake image
         WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper();// EasyMock.createMock(WMSSourceHelper.class);
-//        expect(mockSourceHelper.makeRequest((WMSMetaTile) anyObject())).andReturn(fakeWMSResponse)
-//                .anyTimes();
-//        replay(mockSourceHelper);
+        // expect(mockSourceHelper.makeRequest((WMSMetaTile)
+        // anyObject())).andReturn(fakeWMSResponse)
+        // .anyTimes();
+        // replay(mockSourceHelper);
         tl.setSourceHelper(mockSourceHelper);
 
         final String gridSetId = tl.getGridSubsets().keySet().iterator().next();
