@@ -26,7 +26,6 @@ import java.nio.channels.ReadableByteChannel;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -50,16 +49,12 @@ import org.springframework.util.Assert;
 public class WMSHttpHelper extends WMSSourceHelper {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSHttpHelper.class);
 
-    private static MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
-    
     private final URL proxyUrl;
 
     private final String httpUsername;
 
     private final String httpPassword;
 
-    private final HttpClient httpClient;
-    
     public WMSHttpHelper() {
         this(null, null, null);
     }
@@ -69,13 +64,6 @@ public class WMSHttpHelper extends WMSSourceHelper {
         this.httpUsername = httpUsername;
         this.httpPassword = httpPassword;
         this.proxyUrl = proxyUrl;
-        
-        //TODO: make configurable
-        connectionManager.getParams().setMaxTotalConnections(32);
-        connectionManager.getParams().setDefaultMaxConnectionsPerHost(8);
-        connectionManager.getParams().setConnectionTimeout(3000);
-        connectionManager.getParams().setSoTimeout(10000);
-        httpClient = new HttpClient(connectionManager);
     }
 
     /**
@@ -252,6 +240,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
             }
         }
     }
+    
 
     /**
      * sets up a HTTP GET request to a URL and configures authentication.
@@ -266,12 +255,12 @@ public class WMSHttpHelper extends WMSSourceHelper {
      */
     public GetMethod executeRequest(URL url, Integer backendTimeout) throws HttpException,
             IOException {
-//        HttpClientBuilder builder = new HttpClientBuilder(url, backendTimeout, httpUsername,
-//                httpPassword, proxyUrl);
-//        HttpClient httpClient = builder.buildClient();
+        HttpClientBuilder builder = new HttpClientBuilder(url, backendTimeout, httpUsername,
+                httpPassword, proxyUrl);
+        HttpClient httpClient = builder.buildClient();
 
         GetMethod getMethod = new GetMethod(url.toString());
-//        getMethod.setDoAuthentication(builder.isDoAuthentication());
+        getMethod.setDoAuthentication(builder.isDoAuthentication());
 
         httpClient.executeMethod(getMethod);
         return getMethod;
