@@ -129,10 +129,10 @@ public class BoundingBox {
 
     public void setFromStringArray(String[] BBOX, int recWatch) {
         if (BBOX.length == 4) {
-            coords[0] = Double.valueOf(BBOX[0]).doubleValue();
-            coords[1] = Double.valueOf(BBOX[1]).doubleValue();
-            coords[2] = Double.valueOf(BBOX[2]).doubleValue();
-            coords[3] = Double.valueOf(BBOX[3]).doubleValue();
+            coords[0] = Double.parseDouble(BBOX[0]);
+            coords[1] = Double.parseDouble(BBOX[1]);
+            coords[2] = Double.parseDouble(BBOX[2]);
+            coords[3] = Double.parseDouble(BBOX[3]);
 
         } else if (recWatch < 4) {
             setFromBBOXString(BBOX[0], recWatch);
