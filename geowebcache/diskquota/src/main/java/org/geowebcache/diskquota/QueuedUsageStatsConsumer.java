@@ -32,13 +32,13 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
     /**
      * Default number of milliseconds before cached/aggregated quota update is saved to the store
      */
-    private static final long DEFAULT_SYNC_TIMEOUT = 2000;
+    private static final long DEFAULT_SYNC_TIMEOUT = 10000;
 
     /**
      * Default number of per TileSet aggregated quota updates before ensuring they're synchronized
      * back to the store, regardless of whether the timeout expired for the TileSet
      */
-    private static final int MAX_AGGREGATES_BEFORE_COMMIT = 1000;
+    private static final int MAX_AGGREGATES_BEFORE_COMMIT = 3000;
 
     private final BDBQuotaStore quotaStore;
 
