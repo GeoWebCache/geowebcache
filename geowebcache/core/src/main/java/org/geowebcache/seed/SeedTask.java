@@ -117,14 +117,13 @@ class SeedTask extends GWCTask {
             checkInterrupted();
             ConveyorTile tile = new ConveyorTile(storageBroker, tl.getName(), tr.gridSetId,
                     gridLoc, tr.mimeType, null, null, null, null);
-            
+
             for (int fetchAttempt = 0; fetchAttempt <= tileFailureRetryCount; fetchAttempt++) {
                 try {
                     checkInterrupted();
                     tl.seedTile(tile, tryCache);
                     break;// success, let it go
                 } catch (Exception e) {
-                    e.printStackTrace();
                     // if GWC_SEED_RETRY_COUNT was not set then none of the settings have effect, in
                     // order to keep backwards compatibility with the old behaviour
                     if (tileFailureRetryCount == 0) {
@@ -183,7 +182,8 @@ class SeedTask extends GWCTask {
                     + this.tilesDone + " tiles");
         } else {
             log.info(Thread.currentThread().getName() + " completed (re)seeding layer "
-                    + tl.getName() + " after " + this.tilesDone + " tiles and " + this.timeSpent + " seconds.");
+                    + tl.getName() + " after " + this.tilesDone + " tiles and " + this.timeSpent
+                    + " seconds.");
         }
 
         checkInterrupted();
