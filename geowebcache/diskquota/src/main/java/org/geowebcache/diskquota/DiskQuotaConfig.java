@@ -98,7 +98,7 @@ public class DiskQuotaConfig {
     }
 
     public Boolean isEnabled() {
-        return enabled.booleanValue();
+        return enabled;
     }
 
     public void setEnabled(Boolean enabled) {
@@ -203,7 +203,8 @@ public class DiskQuotaConfig {
 
     public void setMaxConcurrentCleanUps(int nThreads) {
         if (nThreads <= 0) {
-            throw new IllegalArgumentException("nThreads shall be a positive integer: " + nThreads);
+            throw new IllegalArgumentException(
+                    "maxConcurrentCleanUps shall be a positive integer: " + nThreads);
         }
         this.maxConcurrentCleanUps = nThreads;
     }
