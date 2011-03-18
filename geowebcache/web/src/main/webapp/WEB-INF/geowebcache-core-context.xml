@@ -5,6 +5,8 @@
    Bean configuration file for the gwc-core module
   </description>
 
+  <bean id="gwowebCacheExtensions" class="org.geowebcache.GeoWebCacheExtensions"/>
+  
   <bean id="gwcAppCtx" class="org.geowebcache.util.ApplicationContextProvider" />
   
   <!-- The location of a static configuration file for GeoWebCache. 
