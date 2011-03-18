@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.restlet.Restlet;
 import org.restlet.Router;
 import org.restlet.resource.StringRepresentation;
@@ -49,16 +50,22 @@ public class RESTDispatcher extends AbstractController {
     
     private Router myRouter = new Router();
 
-    public RESTDispatcher(Map<String,Object> map) {
+    public RESTDispatcher() {
         super();
         setSupportedMethods(new String[] {
                 METHOD_GET, METHOD_POST, METHOD_PUT, METHOD_DELETE, METHOD_HEAD
             });
-        addRoutes(map);
+        
+        int numRoutes = 0;
+        for (RESTMapping mapping : GeoWebCacheExtensions.extensions(RESTMapping.class)) {
+            Map<String, Object> routes = mapping.getRoutes();
+            addRoutes(routes);
+            numRoutes += routes.size();
+        }
         
         myRouter.attach("", new IndexRestlet(myRouter));
         
-        log.info("Created RESTDispatcher with " + map.size() + " paths");
+        log.info("Created RESTDispatcher with " + numRoutes + " paths");
     }
 
     protected void initApplicationContext() throws BeansException {
