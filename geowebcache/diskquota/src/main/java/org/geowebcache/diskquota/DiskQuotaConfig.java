@@ -76,14 +76,14 @@ public class DiskQuotaConfig {
         if (enabled == null) {
             enabled = Boolean.FALSE;
         }
-        if (diskBlockSize == 0) {
+        if (diskBlockSize == null) {
             diskBlockSize = DEFAULT_DISK_BLOCK_SIZE;
         }
-        if (cacheCleanUpFrequency == 0) {
+        if (cacheCleanUpFrequency == null) {
             cacheCleanUpFrequency = DEFAULT_CLEANUP_FREQUENCY;
         }
 
-        if (maxConcurrentCleanUps == 0) {
+        if (maxConcurrentCleanUps == null) {
             maxConcurrentCleanUps = DEFAULT_MAX_CONCURRENT_CLEANUPS;
         }
         if (cacheCleanUpUnits == null) {

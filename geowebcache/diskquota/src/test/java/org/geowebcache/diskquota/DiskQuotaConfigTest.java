@@ -31,6 +31,7 @@ public class DiskQuotaConfigTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         config = new DiskQuotaConfig();
+        config.setDefaults();
     }
 
     public void testDiskQuotaConfig() {
