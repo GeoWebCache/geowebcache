@@ -106,6 +106,7 @@ public class DiskQuotaConfigurationResource extends Resource {
             }
         } catch (Exception e) {
             response.setStatus(Status.CLIENT_ERROR_BAD_REQUEST, e.getMessage());
+            response.setEntity(e.getMessage(), MediaType.TEXT_PLAIN);
             return;
         }
 
