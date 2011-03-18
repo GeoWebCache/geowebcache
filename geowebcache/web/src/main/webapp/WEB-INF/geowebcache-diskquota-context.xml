@@ -31,9 +31,31 @@
     <constructor-arg ref="DiskQuotaStore" />
   </bean>
 
-  <!--bean id="mockWMSSource" class="org.geowebcache.util.MockWMSLayerSource">
-    <description>REMOVE THIS, it's a fake WMS source for all layers!!!</description>
-    <constructor-arg ref="gwcTLDispatcher" />
-  </bean-->
+  <!--bean id="mockWMSSource" class="org.geowebcache.util.MockWMSLayerSource"> <description>REMOVE THIS, it's a fake WMS 
+    source for all layers!!!</description> <constructor-arg ref="gwcTLDispatcher" /> </bean -->
 
+  <bean id="gwdDiskQuotaResourcetFinder" class="org.geowebcache.diskquota.rest.DiskQuotaFinder">
+    <constructor-arg ref="DiskQuotaMonitor" />
+  </bean>
+  
+  <bean id="gwcDiskQuotaRestDispatcher" class="org.geowebcache.rest.RESTMapping">
+    <property name="routes">
+      <map>
+        <entry>
+          <key>
+            <value>/diskquota/{layer}.{extension}"</value>
+          </key>
+          <ref bean="gwdDiskQuotaResourcetFinder" />
+        </entry>
+        <entry>
+          <key>
+            <value>/diskquota.{extension}</value>
+          </key>
+          <ref bean="gwdDiskQuotaResourcetFinder" />
+        </entry>
+      </map>
+    </property>
+  </bean>
+
+  
 </beans>

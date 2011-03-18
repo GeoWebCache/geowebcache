@@ -51,13 +51,13 @@ public class DiskQuotaConfig {
 
     private Boolean enabled;
 
-    private int diskBlockSize;
+    private Integer diskBlockSize;
 
-    private int cacheCleanUpFrequency;
+    private Integer cacheCleanUpFrequency;
 
     private TimeUnit cacheCleanUpUnits;
 
-    private int maxConcurrentCleanUps;
+    private Integer maxConcurrentCleanUps;
 
     private ExpirationPolicy globalExpirationPolicyName;
 
@@ -67,16 +67,12 @@ public class DiskQuotaConfig {
 
     private List<LayerQuota> layerQuotas;
 
-    public DiskQuotaConfig() {
-        readResolve();
-    }
-
     /**
      * Supports initialization of instance variables during XStream deserialization
      * 
      * @return
      */
-    private Object readResolve() {
+    void setDefaults() {
         if (enabled == null) {
             enabled = Boolean.FALSE;
         }
@@ -85,9 +81,6 @@ public class DiskQuotaConfig {
         }
         if (cacheCleanUpFrequency == 0) {
             cacheCleanUpFrequency = DEFAULT_CLEANUP_FREQUENCY;
-        }
-        if (layerQuotas == null) {
-            layerQuotas = new ArrayList<LayerQuota>(2);
         }
 
         if (maxConcurrentCleanUps == 0) {
@@ -102,10 +95,9 @@ public class DiskQuotaConfig {
         if (globalQuota == null) {
             globalQuota = new Quota(500, StorageUnit.MiB);
         }
-        return this;
     }
 
-    public boolean isEnabled() {
+    public Boolean isEnabled() {
         return enabled.booleanValue();
     }
 
@@ -113,7 +105,7 @@ public class DiskQuotaConfig {
         this.enabled = enabled;
     }
 
-    public int getDiskBlockSize() {
+    public Integer getDiskBlockSize() {
         return diskBlockSize;
     }
 
@@ -124,7 +116,7 @@ public class DiskQuotaConfig {
         this.diskBlockSize = blockSizeBytes;
     }
 
-    public int getCacheCleanUpFrequency() {
+    public Integer getCacheCleanUpFrequency() {
         return cacheCleanUpFrequency;
     }
 
@@ -147,15 +139,22 @@ public class DiskQuotaConfig {
     }
 
     /**
-     * @return the configured layer quotas
+     * @return the configured layer quotas, or {@code null} if not set
      */
     public List<LayerQuota> getLayerQuotas() {
-        return new ArrayList<LayerQuota>(layerQuotas);
+        return layerQuotas == null ? null : new ArrayList<LayerQuota>(layerQuotas);
+    }
+
+    public void setLayerQuotas(List<LayerQuota> layerQuotas) {
+        this.layerQuotas = layerQuotas == null ? null : new ArrayList<LayerQuota>(layerQuotas);
     }
 
     public void addLayerQuota(LayerQuota quota) {
         Assert.notNull(quota);
         Assert.notNull(quota.getQuota());
+        if (layerQuotas == null) {
+            layerQuotas = new ArrayList<LayerQuota>();
+        }
         this.layerQuotas.add(quota);
     }
 
@@ -163,10 +162,12 @@ public class DiskQuotaConfig {
      * @return The layer quota for the given layer or {@code null} if no quota is being tracked for
      *         that layer
      */
-    public LayerQuota getLayerQuota(final String layerName) {
-        for (LayerQuota lq : layerQuotas) {
-            if (lq.getLayer().equals(layerName)) {
-                return lq;
+    public LayerQuota layerQuota(final String layerName) {
+        if (layerQuotas != null) {
+            for (LayerQuota lq : layerQuotas) {
+                if (lq.getLayer().equals(layerName)) {
+                    return lq;
+                }
             }
         }
 
@@ -174,9 +175,11 @@ public class DiskQuotaConfig {
     }
 
     public void remove(final LayerQuota lq) {
-        for (Iterator<LayerQuota> it = layerQuotas.iterator(); it.hasNext();) {
-            if (it.next().getLayer().equals(lq.getLayer())) {
-                it.remove();
+        if (layerQuotas != null) {
+            for (Iterator<LayerQuota> it = layerQuotas.iterator(); it.hasNext();) {
+                if (it.next().getLayer().equals(lq.getLayer())) {
+                    it.remove();
+                }
             }
         }
     }
@@ -185,14 +188,16 @@ public class DiskQuotaConfig {
     public String toString() {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append("[");
-        for (LayerQuota lq : getLayerQuotas()) {
-            sb.append("\n\t").append(lq);
+        if (null != getLayerQuotas()) {
+            for (LayerQuota lq : getLayerQuotas()) {
+                sb.append("\n\t").append(lq);
+            }
         }
         sb.append("]");
         return sb.toString();
     }
 
-    public int getMaxConcurrentCleanUps() {
+    public Integer getMaxConcurrentCleanUps() {
         return maxConcurrentCleanUps;
     }
 
@@ -238,11 +243,14 @@ public class DiskQuotaConfig {
         return this.lastCleanUpTime;
     }
 
-    public Set<String> getLayerNames() {
+    public Set<String> layerNames() {
         Set<String> names = new HashSet<String>();
-        for (LayerQuota lq : getLayerQuotas()) {
-            names.add(lq.getLayer());
+        if (null != getLayerQuotas()) {
+            for (LayerQuota lq : getLayerQuotas()) {
+                names.add(lq.getLayer());
+            }
         }
         return names;
     }
+
 }

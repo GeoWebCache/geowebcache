@@ -118,7 +118,7 @@ public class ConfigLoader {
      */
     public void saveConfig(DiskQuotaConfig config) throws IOException, ConfigurationException {
         File rootCacheDir = getRootCacheDir();
-        XStream xStream = getConfiguredXStream();
+        XStream xStream = getConfiguredXStream(new XStream());
         final File configFile = new File(rootCacheDir, CONFIGURATION_FILE_NAME);
         final File tmpConfigFile = new File(rootCacheDir, CONFIGURATION_FILE_NAME + ".tmp");
         log.debug("Saving disk quota config to " + configFile.getAbsolutePath());
@@ -149,6 +149,10 @@ public class ConfigLoader {
             InputStream configIn = new FileInputStream(configFile);
             try {
                 quotaConfig = loadConfiguration(configIn);
+                if (null == quotaConfig) {
+                    throw new ConfigurationException("Couldn't parse configuration file "
+                            + configFile.getAbsolutePath());
+                }
             } catch (RuntimeException e) {
                 log.error(
                         "Error loading DiskQuota configuration from "
@@ -159,6 +163,9 @@ public class ConfigLoader {
                 configIn.close();
             }
         }
+        // set default values
+        quotaConfig.setDefaults();
+
         validateConfig(quotaConfig);
 
         return quotaConfig;
@@ -199,15 +206,17 @@ public class ConfigLoader {
                     "maxConcurrentCleanUps shall be specified as a positive integer");
         }
 
-        for (LayerQuota lq : new ArrayList<LayerQuota>(quotaConfig.getLayerQuotas())) {
-            if (null == lq.getQuota()) {
-                log.info("Configured quota for layer " + lq.getLayer()
-                        + " is null. Discarding it to be attached to the global quota");
-                quotaConfig.remove(lq);
-                continue;
-            }
+        if (null != quotaConfig.getLayerQuotas()) {
+            for (LayerQuota lq : new ArrayList<LayerQuota>(quotaConfig.getLayerQuotas())) {
+                if (null == lq.getQuota()) {
+                    log.info("Configured quota for layer " + lq.getLayer()
+                            + " is null. Discarding it to be attached to the global quota");
+                    quotaConfig.remove(lq);
+                    continue;
+                }
 
-            validateLayerQuota(quotaConfig, lq);
+                validateLayerQuota(quotaConfig, lq);
+            }
         }
     }
 
@@ -258,19 +267,24 @@ public class ConfigLoader {
 
     private DiskQuotaConfig loadConfiguration(final InputStream configStream)
             throws XStreamException {
-        XStream xstream = getConfiguredXStream();
+        XStream xstream = getConfiguredXStream(new XStream());
         Reader reader;
         try {
             reader = new InputStreamReader(configStream, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+
+        DiskQuotaConfig fromXML = loadConfiguration(reader, xstream);
+        return fromXML;
+    }
+
+    public static DiskQuotaConfig loadConfiguration(final Reader reader, XStream xstream) {
         DiskQuotaConfig fromXML = (DiskQuotaConfig) xstream.fromXML(reader);
         return fromXML;
     }
 
-    private static XStream getConfiguredXStream() {
-        XStream xs = new XStream();
+    public static XStream getConfiguredXStream(XStream xs) {
         xs.setMode(XStream.NO_REFERENCES);
 
         xs.alias("gwcQuotaConfiguration", DiskQuotaConfig.class);
