@@ -4,8 +4,10 @@ import java.io.File;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -157,6 +159,10 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
                 if (null == usedQuotaByTileSetId.get(transaction, GLOBAL_QUOTA_NAME,
                         LockMode.DEFAULT)) {
                     log.debug("First time run: creating global quota object");
+                    // need a global TileSet cause the Quota->TileSet relationship is enforced
+                    TileSet globalTileSet = new TileSet(GLOBAL_QUOTA_NAME);
+                    tileSetById.put(transaction, globalTileSet);
+
                     Quota globalQuota = new Quota();
                     globalQuota.setTileSetId(GLOBAL_QUOTA_NAME);
                     usedQuotaById.put(transaction, globalQuota);
@@ -394,7 +400,10 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
     }
 
     public Set<TileSet> getTileSets() {
-        return new HashSet<TileSet>(tileSetById.map().values());
+        Map<String, TileSet> map = new HashMap<String, TileSet>(tileSetById.map());
+        map.remove(GLOBAL_QUOTA_NAME);
+        HashSet<TileSet> hashSet = new HashSet<TileSet>(map.values());
+        return hashSet;
     }
 
     public TileSet getTileSetById(final String tileSetId) throws InterruptedException {
@@ -470,7 +479,7 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
                             pageById.put(tx, page);
                             storedPage = page;
                             pageStats = new PageStats(storedPage.getId());
-                            //pageStatsById.put(tx, pageStats);
+                            // pageStatsById.put(tx, pageStats);
                         } else {
                             pageStats = pageStatsByPageId.get(tx, storedPage.getId(), null);
                         }

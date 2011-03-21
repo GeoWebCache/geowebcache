@@ -87,11 +87,7 @@ public class TileSet implements Comparable<TileSet> {
             return false;
         }
         TileSet t = (TileSet) o;
-        boolean equals = layerName.equals(t.layerName)
-                && gridsetId.equals(t.gridsetId)
-                && blobFormat.equals(t.blobFormat)
-                && (parametersId == null ? t.parametersId == null : (parametersId
-                        .equals(t.parametersId)));
+        boolean equals = key.equals(t.getId());
 
         return equals;
     }
@@ -99,8 +95,7 @@ public class TileSet implements Comparable<TileSet> {
     @Override
     public int hashCode() {
         if (cachedHashCode == 0) {
-            cachedHashCode = 17 * layerName.hashCode() ^ gridsetId.hashCode()
-                    ^ blobFormat.hashCode() + (parametersId == null ? 0 : parametersId.intValue());
+            cachedHashCode = 17 * key.hashCode();
         }
         return cachedHashCode;
     }

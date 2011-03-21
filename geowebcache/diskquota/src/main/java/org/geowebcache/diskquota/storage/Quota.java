@@ -49,7 +49,7 @@ public class Quota implements Comparable<Quota> {
     @PrimaryKey(sequence = "quota_id")
     private int id;
 
-    @SecondaryKey(name = "tileset_id", relate = Relationship.ONE_TO_ONE, onRelatedEntityDelete = DeleteAction.CASCADE)
+    @SecondaryKey(name = "tileset_id", relatedEntity = TileSet.class, relate = Relationship.ONE_TO_ONE, onRelatedEntityDelete = DeleteAction.CASCADE)
     private String tileSetId;
 
     private BigInteger bytes;
