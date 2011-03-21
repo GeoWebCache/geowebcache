@@ -135,10 +135,10 @@ public class ConfigLoaderTest extends TestCase {
         DiskQuotaConfig config = loader.loadConfig();
         assertNotNull(config);
         assertFalse(config.isEnabled());
-        assertEquals(4096, config.getDiskBlockSize());
-        assertEquals(10, config.getCacheCleanUpFrequency());
+        assertEquals(4096, config.getDiskBlockSize().intValue());
+        assertEquals(10, config.getCacheCleanUpFrequency().intValue());
         assertEquals(TimeUnit.SECONDS, config.getCacheCleanUpUnits());
-        assertEquals(3, config.getMaxConcurrentCleanUps());
+        assertEquals(3, config.getMaxConcurrentCleanUps().intValue());
 
         assertEquals(LFU, config.getGlobalExpirationPolicyName());
         assertNotNull(config.getGlobalExpirationPolicyName());
@@ -150,12 +150,12 @@ public class ConfigLoaderTest extends TestCase {
         assertNotNull(config.getLayerQuotas());
         assertEquals(2, config.getLayerQuotas().size());
 
-        LayerQuota states = config.getLayerQuota("topp:states");
+        LayerQuota states = config.layerQuota("topp:states");
         assertNotNull(states);
         assertEquals(LFU, states.getExpirationPolicyName());
         assertEquals(MiB.convertTo(100, B).longValue(), states.getQuota().getBytes().longValue());
 
-        LayerQuota raster = config.getLayerQuota("raster test layer");
+        LayerQuota raster = config.layerQuota("raster test layer");
         assertNotNull(raster);
     }
 

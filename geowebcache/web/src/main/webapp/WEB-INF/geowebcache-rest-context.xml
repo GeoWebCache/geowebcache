@@ -30,8 +30,8 @@
   <bean id="gwcByteStreamerRestlet" class="org.geowebcache.rest.webresources.ByteStreamerRestlet" />
   
   <!-- REST Dispatcher -->
-  <bean id="gwcRestDispatcher" class="org.geowebcache.rest.RESTDispatcher">
-    <constructor-arg type="java.util.Map">
+  <bean id="gwcRestMappings" class="org.geowebcache.rest.RESTMapping">
+    <property name="routes">
       <map>
         <entry>
           <key><value>/seed/{layer}.{extension}</value></key>
@@ -62,8 +62,10 @@
           <ref bean="gwcByteStreamerRestlet" />
         </entry>
       </map>
-    </constructor-arg>
+    </property>
   </bean>
+  
+  <bean id="gwcRestDispatcher" class="org.geowebcache.rest.RESTDispatcher"/>
   
   <bean id="gwcRESTUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
     <property name="alwaysUseFullPath" value="true"/>

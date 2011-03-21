@@ -320,14 +320,16 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
         int explicitConfigs = 0;
 
-        for (LayerQuota layerQuota : layerQuotas) {
-            final String layerName = layerQuota.getLayer();
-            final ExpirationPolicy policyName = layerQuota.getExpirationPolicyName();
-            if (policyName != null) {
-                final Quota quota = layerQuota.getQuota();
-                explicitConfigs++;
-                log.trace("Attaching layer " + layerName + " to quota " + quota
-                        + " with expiration policy " + policyName);
+        if (layerQuotas != null) {
+            for (LayerQuota layerQuota : layerQuotas) {
+                final String layerName = layerQuota.getLayer();
+                final ExpirationPolicy policyName = layerQuota.getExpirationPolicyName();
+                if (policyName != null) {
+                    final Quota quota = layerQuota.getQuota();
+                    explicitConfigs++;
+                    log.trace("Attaching layer " + layerName + " to quota " + quota
+                            + " with expiration policy " + policyName);
+                }
             }
         }
         log.info(explicitConfigs + " layers configured with their own quotas. ");
@@ -340,7 +342,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     }
 
     public QuotaResolver newLayerQuotaResolver(final String layerName) {
-        LayerQuota layerQuota = quotaConfig.getLayerQuota(layerName);
+        LayerQuota layerQuota = quotaConfig.layerQuota(layerName);
         return new LayerQuotaResolver(layerQuota, quotaStore);
     }
 

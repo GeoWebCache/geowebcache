@@ -102,7 +102,7 @@ class CacheCleanerTask implements Runnable {
         quotaConfig.setLastCleanUpTime(new Date());
 
         final Set<String> allLayerNames = monitor.getLayerNames();
-        final Set<String> configuredLayerNames = quotaConfig.getLayerNames();
+        final Set<String> configuredLayerNames = quotaConfig.layerNames();
         final Set<String> globallyManagedLayerNames = new HashSet<String>(allLayerNames);
 
         globallyManagedLayerNames.removeAll(configuredLayerNames);
@@ -122,7 +122,7 @@ class CacheCleanerTask implements Runnable {
                 continue;
             }
 
-            final LayerQuota definedQuotaForLayer = quotaConfig.getLayerQuota(layerName);
+            final LayerQuota definedQuotaForLayer = quotaConfig.layerQuota(layerName);
             final ExpirationPolicy policy = definedQuotaForLayer.getExpirationPolicyName();
             final Quota quota = definedQuotaForLayer.getQuota();
             final Quota usedQuota = monitor.getUsedQuotaByLayerName(layerName);

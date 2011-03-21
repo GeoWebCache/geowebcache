@@ -31,13 +31,15 @@ public class DiskQuotaConfigTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         config = new DiskQuotaConfig();
+        config.setDefaults();
     }
 
     public void testDiskQuotaConfig() {
-        assertEquals(DiskQuotaConfig.DEFAULT_CLEANUP_FREQUENCY, config.getCacheCleanUpFrequency());
-        assertEquals(DiskQuotaConfig.DEFAULT_DISK_BLOCK_SIZE, config.getDiskBlockSize());
-        assertEquals(DiskQuotaConfig.DEFAULT_MAX_CONCURRENT_CLEANUPS,
-                config.getMaxConcurrentCleanUps());
+        assertEquals(DiskQuotaConfig.DEFAULT_CLEANUP_FREQUENCY, config.getCacheCleanUpFrequency()
+                .intValue());
+        assertEquals(DiskQuotaConfig.DEFAULT_DISK_BLOCK_SIZE, config.getDiskBlockSize().intValue());
+        assertEquals(DiskQuotaConfig.DEFAULT_MAX_CONCURRENT_CLEANUPS, config
+                .getMaxConcurrentCleanUps().intValue());
         assertEquals(DiskQuotaConfig.DEFAULT_CLEANUP_UNITS, config.getCacheCleanUpUnits());
     }
 
@@ -50,7 +52,7 @@ public class DiskQuotaConfigTest extends TestCase {
         }
 
         config.setDiskBlockSize(4096);
-        assertEquals(4096, config.getDiskBlockSize());
+        assertEquals(4096, config.getDiskBlockSize().intValue());
     }
 
     public void testSetCacheCleanUpFrequency() {
@@ -62,7 +64,7 @@ public class DiskQuotaConfigTest extends TestCase {
         }
 
         config.setCacheCleanUpFrequency(10);
-        assertEquals(10, config.getCacheCleanUpFrequency());
+        assertEquals(10, config.getCacheCleanUpFrequency().intValue());
     }
 
     public void testSetCacheCleanUpUnits() {
@@ -79,8 +81,7 @@ public class DiskQuotaConfigTest extends TestCase {
 
     public void testSetLayerQuotas() {
         // config.setLayerQuotas(null);
-        assertNotNull(config.getLayerQuotas());
-        assertEquals(0, config.getLayerQuotas().size());
+        assertNull(config.getLayerQuotas());
 
         try {
             config.addLayerQuota(new LayerQuota("layer", ExpirationPolicy.LRU));
@@ -90,14 +91,14 @@ public class DiskQuotaConfigTest extends TestCase {
         }
         LayerQuota lq = new LayerQuota("layer", ExpirationPolicy.LFU, new Quota());
         config.addLayerQuota(lq);
-        assertNotNull(config.getLayerQuota("layer"));
+        assertNotNull(config.layerQuota("layer"));
     }
 
     public void testRemove() {
         LayerQuota lq = new LayerQuota("layer", ExpirationPolicy.LFU, new Quota());
         config.addLayerQuota(lq);
         config.remove(lq);
-        assertNull(config.getLayerQuota("layer"));
+        assertNull(config.layerQuota("layer"));
     }
 
     public void testSetMaxConcurrentCleanUps() {
@@ -114,7 +115,7 @@ public class DiskQuotaConfigTest extends TestCase {
             assertTrue(true);
         }
         config.setMaxConcurrentCleanUps(10);
-        assertEquals(10, config.getMaxConcurrentCleanUps());
+        assertEquals(10, config.getMaxConcurrentCleanUps().intValue());
     }
 
 }

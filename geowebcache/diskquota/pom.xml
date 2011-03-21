@@ -36,6 +36,57 @@
       <artifactId>servlet-api</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+    </dependency>
+
+    <!-- restlet.org dependencies -->
+    <dependency>
+      <groupId>org.restlet</groupId>
+      <artifactId>org.restlet</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.noelios.restlet</groupId>
+      <artifactId>com.noelios.restlet</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.noelios.restlet</groupId>
+      <artifactId>com.noelios.restlet.ext.simple</artifactId>
+    </dependency>
+
+    <!--
+      dependency> <groupId>org.restlet</groupId> <artifactId>org.restlet.ext.freemarker</artifactId> </dependency
+    -->
+
+    <dependency>
+      <groupId>org.restlet</groupId>
+      <artifactId>org.restlet.ext.spring</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.restlet</groupId>
+      <artifactId>org.restlet.ext.json</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.noelios.restlet</groupId>
+      <artifactId>com.noelios.restlet.ext.servlet</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>net.sf.json-lib</groupId>
+      <artifactId>json-lib</artifactId>
+      <classifier>jdk13</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.jettison</groupId>
+      <artifactId>jettison</artifactId>
+    </dependency>
+
     <!-- test dependencies -->
     <dependency>
       <groupId>junit</groupId>
