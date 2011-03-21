@@ -191,14 +191,7 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
                 for (String layerName : layerNames) {
                     Set<TileSet> layerTileSets = tilePageCalculator.getTileSetsFor(layerName);
                     for (TileSet tset : layerTileSets) {
-                        String id = tset.getId();
-                        if (null == tileSetById.get(transaction, id, LockMode.DEFAULT)) {
-                            log.debug("Creating TileSet for quota tracking: " + tset);
-                            tileSetById.put(transaction, tset);
-                            Quota tileSetUsedQuota = new Quota();
-                            tileSetUsedQuota.setTileSetId(tset.getId());
-                            usedQuotaById.put(transaction, tileSetUsedQuota);
-                        }
+                        getOrCreateTileSet(transaction, tset);
                     }
                 }
                 transaction.commit();
@@ -208,6 +201,20 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
             }
             return null;
         }
+    }
+
+    private TileSet getOrCreateTileSet(final Transaction transaction, final TileSet tset) {
+        String id = tset.getId();
+        TileSet stored;
+        if (null == (stored = tileSetById.get(transaction, id, LockMode.DEFAULT))) {
+            log.debug("Creating TileSet for quota tracking: " + tset);
+            tileSetById.putNoReturn(transaction, tset);
+            stored = tset;
+            Quota tileSetUsedQuota = new Quota();
+            tileSetUsedQuota.setTileSetId(tset.getId());
+            usedQuotaById.putNoReturn(transaction, tileSetUsedQuota);
+        }
+        return stored;
     }
 
     /**
@@ -455,15 +462,9 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
         public Void call() throws Exception {
             final Transaction tx = entityStore.getEnvironment().beginTransaction(null, null);
             try {
-                TileSet storedTileset = tileSetById.get(tx, tileSet.getId(), LockMode.DEFAULT);
-                if (null == storedTileset) {
-                    log.info("Can't add to tileset used quota. TileSet does not exist. Was it deleted? "
-                            + tileSet);
-                    tx.abort();
-                    return null;
-                }
+                TileSet storedTileset = getOrCreateTileSet(tx, tileSet);
                 // increase the tileset used quota
-                addToUsedQuota(tx, tileSet, quotaDiff);
+                addToUsedQuota(tx, storedTileset, quotaDiff);
 
                 // and each page's fillFactor for lru/lfu expiration
                 if (tileCountDiffs.size() > 0) {
