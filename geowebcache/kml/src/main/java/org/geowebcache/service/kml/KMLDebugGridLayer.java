@@ -44,34 +44,31 @@ import org.springframework.context.ApplicationContext;
 public class KMLDebugGridLayer extends TileLayer {
 
     public static final String LAYERNAME = "debugGrid";
-    
+
     public static final int IS_KMZ = 100;
-    
-    //private static Log log = LogFactory.getLog(org.geowebcache.service.kml.KMLDebugGridLayer.class);
+
+    // private static Log log =
+    // LogFactory.getLog(org.geowebcache.service.kml.KMLDebugGridLayer.class);
 
     // This is completely isolated anyway
     private static GridSetBroker gridSetBroker = new GridSetBroker(false, false);
-    
+
     private static KMLDebugGridLayer instance;
 
     private KMLDebugGridLayer() {
-        super.subSets = new Hashtable<String,GridSubset>();
-        subSets.put(
-                gridSetBroker.WORLD_EPSG4326.getName(),
-                GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, BoundingBox.WORLD4326, 0, 3));
+        super.subSets = new Hashtable<String, GridSubset>();
+        subSets.put(gridSetBroker.WORLD_EPSG4326.getName(), GridSubsetFactory.createGridSubSet(
+                gridSetBroker.WORLD_EPSG4326, BoundingBox.WORLD4326, 0, 3));
     }
-    
+
     synchronized static public KMLDebugGridLayer getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new KMLDebugGridLayer();
         }
         return instance;
     }
-    
-    public void acquireLayerLock() {
-    }
 
-    public void destroy() {
+    public void acquireLayerLock() {
     }
 
     public ConveyorTile doNonMetatilingRequest(ConveyorTile tile) throws GeoWebCacheException {
@@ -90,7 +87,7 @@ public class KMLDebugGridLayer extends TileLayer {
         return null;
     }
 
-    public List <MimeType> getMimeTypes() {
+    public List<MimeType> getMimeTypes() {
         return null;
     }
 
@@ -107,42 +104,57 @@ public class KMLDebugGridLayer extends TileLayer {
         return null;
     }
 
-    public ConveyorTile getTile(ConveyorTile tile)
-    throws GeoWebCacheException, IOException {        
+    public ConveyorTile getTile(ConveyorTile tile) throws GeoWebCacheException, IOException {
         long[] gridLoc = tile.getTileIndex();
 
         BoundingBox bbox = tile.getGridSubset().boundsFromIndex(gridLoc);
-        
-        String data  = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
-                + "<Document>\n"
-                //+"<!-- Name>DocumentName</Name --->"
-                +"<Placemark id=\"PlaceMarkId\">\n"
-                //+"<styleUrl>#square</styleUrl>\n"
-                +"<name>"+gridLoc[0]+ ","+gridLoc[1]+","+gridLoc[2]+"</name>"
-                +"<Style id=\"square\">\n"
-                +"<PolyStyle><color>7fffffff</color><colorMode>random</colorMode>\n"  
-                +"</PolyStyle>\n"
-                +"<IconStyle><Icon><href>http://icons.opengeo.org/dynamic/circle/aaffaa_aaffaa_2.png</href></Icon></IconStyle>\n"
-                +"<LabelStyle id=\"name\"><color>ffffffff</color><colorMode>normal</colorMode><scale>1.0</scale></LabelStyle>\n"
-                +"</Style>\n"
-                +"<MultiGeometry>\n"
-                +"<Point><coordinates>"+((bbox.getMinX()+bbox.getMaxX())/2) 
-                +","+ ((bbox.getMinY()+bbox.getMaxY())/2) 
-                +",0</coordinates></Point>\n"
-                +"<Polygon><outerBoundaryIs><LinearRing>\n"
-                +"<coordinates decimal=\".\" cs=\",\" ts=\" \">\n"
-                + bbox.getMinX() +","+ bbox.getMinY() + " "
-                + bbox.getMaxX() +","+ bbox.getMinY() + " "
-                + bbox.getMaxX() +","+ bbox.getMaxY() + " "
-                + bbox.getMinX() +","+ bbox.getMaxY()
-                +"</coordinates>\n"
-                +"</LinearRing></outerBoundaryIs></Polygon>\n"
-                +"</MultiGeometry>\n"
-                +"</Placemark>\n"
-                + "</Document>\n"
-                + "</kml>";
-        
+
+        String data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n" + "<Document>\n"
+                // +"<!-- Name>DocumentName</Name --->"
+                + "<Placemark id=\"PlaceMarkId\">\n"
+                // +"<styleUrl>#square</styleUrl>\n"
+                + "<name>"
+                + gridLoc[0]
+                + ","
+                + gridLoc[1]
+                + ","
+                + gridLoc[2]
+                + "</name>"
+                + "<Style id=\"square\">\n"
+                + "<PolyStyle><color>7fffffff</color><colorMode>random</colorMode>\n"
+                + "</PolyStyle>\n"
+                + "<IconStyle><Icon><href>http://icons.opengeo.org/dynamic/circle/aaffaa_aaffaa_2.png</href></Icon></IconStyle>\n"
+                + "<LabelStyle id=\"name\"><color>ffffffff</color><colorMode>normal</colorMode><scale>1.0</scale></LabelStyle>\n"
+                + "</Style>\n"
+                + "<MultiGeometry>\n"
+                + "<Point><coordinates>"
+                + ((bbox.getMinX() + bbox.getMaxX()) / 2)
+                + ","
+                + ((bbox.getMinY() + bbox.getMaxY()) / 2)
+                + ",0</coordinates></Point>\n"
+                + "<Polygon><outerBoundaryIs><LinearRing>\n"
+                + "<coordinates decimal=\".\" cs=\",\" ts=\" \">\n"
+                + bbox.getMinX()
+                + ","
+                + bbox.getMinY()
+                + " "
+                + bbox.getMaxX()
+                + ","
+                + bbox.getMinY()
+                + " "
+                + bbox.getMaxX()
+                + ","
+                + bbox.getMaxY()
+                + " "
+                + bbox.getMinX()
+                + ","
+                + bbox.getMaxY()
+                + "</coordinates>\n"
+                + "</LinearRing></outerBoundaryIs></Polygon>\n"
+                + "</MultiGeometry>\n"
+                + "</Placemark>\n" + "</Document>\n" + "</kml>";
+
         tile.setBlob(new ByteArrayResource(data.getBytes()));
         tile.setStatus(200);
         return tile;
@@ -153,28 +165,28 @@ public class KMLDebugGridLayer extends TileLayer {
     }
 
     public int[][] getZoomInGridLoc(SRS srs, int[] gridLoc) {
-        //log.warn("done - getZoomInGridLoc(srsIdx, gridLoc)");
-        
+        // log.warn("done - getZoomInGridLoc(srsIdx, gridLoc)");
+
         int[][] retVal = new int[4][3];
-        
+
         int x = gridLoc[0] * 2;
         int y = gridLoc[1] * 2;
         int z = gridLoc[2] + 1;
-        
+
         // Don't link to tiles past the last zoomLevel
-        if(z > 25) {
+        if (z > 25) {
             z = -1;
         }
-        
+
         // Now adjust where appropriate
         retVal[0][0] = retVal[2][0] = x;
         retVal[1][0] = retVal[3][0] = x + 1;
-        
+
         retVal[0][1] = retVal[1][1] = y;
         retVal[2][1] = retVal[3][1] = y + 1;
 
         retVal[0][2] = retVal[1][2] = retVal[2][2] = retVal[3][2] = z;
-        
+
         return retVal;
     }
 
@@ -186,7 +198,7 @@ public class KMLDebugGridLayer extends TileLayer {
         return 25;
     }
 
-    public boolean initialize(GridSetBroker gridSetBroker) {
+    public boolean initializeInternal(GridSetBroker gridSetBroker) {
         return true;
     }
 
@@ -196,8 +208,7 @@ public class KMLDebugGridLayer extends TileLayer {
     public void setExpirationHeader(HttpServletResponse response, int zoomLevel) {
     }
 
-    public String supportsBbox(SRS srs, BoundingBox bounds)
-            throws GeoWebCacheException {
+    public String supportsBbox(SRS srs, BoundingBox bounds) throws GeoWebCacheException {
         return null;
     }
 
@@ -209,26 +220,25 @@ public class KMLDebugGridLayer extends TileLayer {
         return false;
     }
 
-    public void setApplicationContext(ApplicationContext arg0)
-            throws BeansException {
+    public void setApplicationContext(ApplicationContext arg0) throws BeansException {
 
-        
     }
-//
-//    public Object createKey(Tile tile) {
-//        Vector<Integer> lst = new Vector<Integer>();
-//        if(tile.getMimeType() == XMLMime.kmz) {
-//            lst.add(KMLDebugGridLayer.IS_KMZ);
-//        } else {
-//            lst.add(0);
-//        }
-//        int[] tileIndex = tile.getTileIndex();
-//        lst.add(tileIndex[0]);
-//        lst.add(tileIndex[1]);
-//        lst.add(tileIndex[2]);  
-//        
-//        return (Object) lst;
-//    }
+
+    //
+    // public Object createKey(Tile tile) {
+    // Vector<Integer> lst = new Vector<Integer>();
+    // if(tile.getMimeType() == XMLMime.kmz) {
+    // lst.add(KMLDebugGridLayer.IS_KMZ);
+    // } else {
+    // lst.add(0);
+    // }
+    // int[] tileIndex = tile.getTileIndex();
+    // lst.add(tileIndex[0]);
+    // lst.add(tileIndex[1]);
+    // lst.add(tileIndex[2]);
+    //
+    // return (Object) lst;
+    // }
 
     public int getType() {
 
@@ -237,18 +247,15 @@ public class KMLDebugGridLayer extends TileLayer {
 
     public void init() {
 
-        
     }
 
     public BoundingBox getBboxForGridLoc(SRS srs, int[] gridLoc) {
         double tileWidth = 180.0 / Math.pow(2, gridLoc[2]);
 
-        BoundingBox bbox = new BoundingBox(
-                     -180.0 + tileWidth * gridLoc[0],
-                     -90.0 + tileWidth * gridLoc[1],
-                     -180.0 + tileWidth * (gridLoc[0] + 1),
-                     -90.0 + tileWidth * (gridLoc[1] + 1));
-        
+        BoundingBox bbox = new BoundingBox(-180.0 + tileWidth * gridLoc[0], -90.0 + tileWidth
+                * gridLoc[1], -180.0 + tileWidth * (gridLoc[0] + 1), -90.0 + tileWidth
+                * (gridLoc[1] + 1));
+
         return bbox;
     }
 
@@ -256,8 +263,7 @@ public class KMLDebugGridLayer extends TileLayer {
         return null;
     }
 
-    public int[] getGridLocForBounds(SRS srs, BoundingBox bounds)
-            throws BadTileException {
+    public int[] getGridLocForBounds(SRS srs, BoundingBox bounds) throws BadTileException {
         return null;
     }
 
@@ -273,28 +279,13 @@ public class KMLDebugGridLayer extends TileLayer {
     }
 
     @Override
-    public BoundingBox boundsFromIndex(String gridSetId, long[] gridLoc)
-            throws GeoWebCacheException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public Integer getBackendTimeout() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ConveyorTile getNoncachedTile(ConveyorTile tile)
-            throws GeoWebCacheException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public long[] indexFromBounds(String gridSetId, BoundingBox bounds)
-            throws BadTileException, GeoWebCacheException {
+    public ConveyorTile getNoncachedTile(ConveyorTile tile) throws GeoWebCacheException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -306,27 +297,21 @@ public class KMLDebugGridLayer extends TileLayer {
     }
 
     @Override
-    public void putTile(ConveyorTile tile) throws GeoWebCacheException {
+    public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException,
+            IOException {
         // TODO Auto-generated method stub
-        
-    }
 
-    @Override
-    public void seedTile(ConveyorTile tile, boolean tryCache)
-            throws GeoWebCacheException, IOException {
-        // TODO Auto-generated method stub
-        
     }
 
     @Override
     public void setBackendTimeout(int seconds) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
     public void setCacheBypassAllowed(boolean allowed) {
         // TODO Auto-generated method stub
-        
+
     }
 }

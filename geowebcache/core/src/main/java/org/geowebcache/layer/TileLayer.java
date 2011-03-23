@@ -30,12 +30,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.filter.request.RequestFilterException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridMismatchException;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.grid.XMLGridSubset;
@@ -46,13 +48,18 @@ import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.util.GWCVars;
+import org.geowebcache.util.ServletUtils;
 
 /**
  * Represents at the same time the configuration of a tiled layer and a way to access each stored
  * tile
  */
 public abstract class TileLayer {
+
     private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayer.class);
+
+    private static final int[] DEFAULT_METATILING_FACTORS = { 1, 1 };
 
     protected String name;
 
@@ -64,6 +71,8 @@ public abstract class TileLayer {
 
     protected List<XMLGridSubset> gridSubsets;
 
+    protected List<ParameterFilter> parameterFilters;
+
     // 1.1.x compatibility
     protected Hashtable<SRS, XMLOldGrid> grids;
 
@@ -73,11 +82,31 @@ public abstract class TileLayer {
 
     protected Boolean useETags;
 
+    protected ArrayList<ExpirationRule> expireCacheList;
+
+    protected String expireClients;
+
+    protected ArrayList<ExpirationRule> expireClientsList;
+
+    protected String expireCache;
+
+    protected Boolean cacheBypassAllowed;
+
+    protected Boolean queryable;
+
+    protected int[] metaWidthHeight;
+
+    protected transient boolean saveExpirationHeaders;
+
     protected transient List<MimeType> formats;
 
     protected transient Hashtable<String, GridSubset> subSets;
 
     private transient LayerListenerList listeners;
+
+    protected Integer backendTimeout;
+
+    protected String wmsStyles = null;
 
     // Styles?
 
@@ -176,7 +205,102 @@ public abstract class TileLayer {
      * Initializes the layer, creating internal structures for calculating grid location and so
      * forth.
      */
-    public abstract boolean initialize(GridSetBroker gridSetBroker);
+    public final boolean initialize(GridSetBroker gridSetBroker) {
+
+        if (this.expireCacheList == null) {
+            this.expireCacheList = new ArrayList<ExpirationRule>(1);
+
+            if (this.expireCache == null) {
+                expireCacheList.add(new ExpirationRule(0, GWCVars.CACHE_NEVER_EXPIRE));
+            } else {
+                int expireCacheInt = Integer.parseInt(expireCache);
+                if (expireCacheInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+                    saveExpirationHeaders = true;
+                }
+                expireCacheList.add(new ExpirationRule(0, expireCacheInt));
+            }
+        }
+
+        if (this.expireClientsList == null) {
+            this.expireClientsList = new ArrayList<ExpirationRule>(1);
+
+            if (this.expireClients == null) {
+                expireClientsList.add(new ExpirationRule(0, 7200));
+            } else {
+                int expireClientsInt = Integer.parseInt(expireClients);
+
+                if (expireClientsInt == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+                    saveExpirationHeaders = true;
+                } else if (expireClientsInt == GWCVars.CACHE_NEVER_EXPIRE) {
+                    // One year should do
+                    expireClientsInt = 3600 * 24 * 365;
+                }
+                expireClientsList.add(new ExpirationRule(0, expireClientsInt));
+            }
+        }
+
+        try {
+            // mimetypes
+            this.formats = new ArrayList<MimeType>();
+            if (mimeFormats != null) {
+                for (String fmt : mimeFormats) {
+                    formats.add(MimeType.createFromFormat(fmt));
+                }
+            }
+            if (formats.size() == 0) {
+                formats.add(0, MimeType.createFromFormat("image/png"));
+                formats.add(1, MimeType.createFromFormat("image/jpeg"));
+            }
+        } catch (GeoWebCacheException gwce) {
+            log.error(gwce.getMessage());
+            gwce.printStackTrace();
+        }
+
+        if (subSets == null) {
+            subSets = new Hashtable<String, GridSubset>();
+        }
+
+        if (this.gridSubsets != null) {
+            Iterator<XMLGridSubset> iter = gridSubsets.iterator();
+            while (iter.hasNext()) {
+                XMLGridSubset xmlGridSubset = iter.next();
+                GridSubset gridSubset = xmlGridSubset.getGridSubSet(gridSetBroker);
+
+                if (gridSubset == null) {
+                    log.error(xmlGridSubset.getGridSetName()
+                            + " is not known by the GridSetBroker, skipping for layer " + name);
+                } else {
+                    subSets.put(gridSubset.getName(), gridSubset);
+                }
+
+            }
+
+            this.gridSubsets = null;
+        }
+
+        // Convert version 1.1.x and 1.0.x grid objects
+        if (grids != null && !grids.isEmpty()) {
+            Iterator<XMLOldGrid> iter = grids.values().iterator();
+            while (iter.hasNext()) {
+                GridSubset converted = iter.next().convertToGridSubset(gridSetBroker);
+                subSets.put(converted.getSRS().toString(), converted);
+            }
+
+            // Null it for the garbage collector
+            grids = null;
+        }
+
+        if (this.subSets.size() == 0) {
+            subSets.put(gridSetBroker.WORLD_EPSG4326.getName(),
+                    GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326));
+            subSets.put(gridSetBroker.WORLD_EPSG3857.getName(),
+                    GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857));
+        }
+
+        return initializeInternal(gridSetBroker);
+    }
+
+    protected abstract boolean initializeInternal(GridSetBroker gridSetBroker);
 
     /**
      * Whether the layer supports the given projection
@@ -333,46 +457,65 @@ public abstract class TileLayer {
      * 
      * @return the styles configured for the layer, may be null
      */
-    public abstract String getStyles();
+    public String getStyles() {
+        return wmsStyles;
+    }
 
     /**
      * 
      * @return the {x,y} metatiling factors
      */
-    public abstract int[] getMetaTilingFactors();
+    public int[] getMetaTilingFactors() {
+        return metaWidthHeight == null ? DEFAULT_METATILING_FACTORS : metaWidthHeight;
+    }
 
     /**
      * Whether clients may specify cache=false and go straight to source
      */
-    public abstract Boolean isCacheBypassAllowed();
+    public Boolean isCacheBypassAllowed() {
+        return cacheBypassAllowed;
+    }
 
-    public abstract void setCacheBypassAllowed(boolean allowed);
+    public void setCacheBypassAllowed(boolean allowed) {
+        cacheBypassAllowed = Boolean.valueOf(allowed);
+    }
+
+    public boolean isQueryable() {
+        if (queryable != null && queryable) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * The timeout used when querying the backend server. The same value is used for both the
      * connection and the data timeout, so in theory the timeout could be twice this value.
      */
-    public abstract Integer getBackendTimeout();
+    public Integer getBackendTimeout() {
+        return backendTimeout;
+    }
 
-    public abstract void setBackendTimeout(int seconds);
+    public void setBackendTimeout(int seconds) {
+        backendTimeout = seconds;
+    }
 
     /**
      * 
      * @return array with supported MIME types
      */
-    public abstract List<MimeType> getMimeTypes();
+    public List<MimeType> getMimeTypes() {
+        return formats;
+    }
 
     /**
      * The default MIME type is the first one in the configuration
      * 
      * @return
      */
-    public abstract MimeType getDefaultMimeType();
-
-    /**
-     * Used for reloading servlet
-     */
-    public abstract void destroy();
+    public MimeType getDefaultMimeType() {
+        return formats.get(0);
+    }
 
     /**
      * 
@@ -386,8 +529,10 @@ public abstract class TileLayer {
      * @throws GeoWebCacheException
      * @throws GridMismatchException
      */
-    public abstract long[] indexFromBounds(String gridSetId, BoundingBox bounds)
-            throws BadTileException, GeoWebCacheException, GridMismatchException;
+    public long[] indexFromBounds(String gridSetId, BoundingBox tileBounds)
+            throws GridMismatchException {
+        return subSets.get(gridSetId).closestIndex(tileBounds);
+    }
 
     /**
      * 
@@ -396,8 +541,9 @@ public abstract class TileLayer {
      * @return
      * @throws GeoWebCacheException
      */
-    public abstract BoundingBox boundsFromIndex(String gridSetId, long[] gridLoc)
-            throws GeoWebCacheException;
+    public BoundingBox boundsFromIndex(String gridSetId, long[] gridLoc) {
+        return subSets.get(gridSetId).boundsFromIndex(gridLoc);
+    }
 
     /**
      * Acquire the global lock for the layer, primarily used for truncating
@@ -412,17 +558,67 @@ public abstract class TileLayer {
     public abstract void releaseLayerLock();
 
     /**
-     * Backdoor to put stuff into the cache from services
+     * Uses the HTTP 1.1 spec to set expiration headers
      * 
-     * @param tile
-     * @param gridLoc
-     * @param srs
-     * @param mime
-     * @throws CacheException
+     * @param response
      */
-    public abstract void putTile(ConveyorTile tile) throws GeoWebCacheException;
+    public void setExpirationHeader(HttpServletResponse response, int zoomLevel) {
+        int expireValue = this.getExpireClients(zoomLevel);
 
-    public abstract void setExpirationHeader(HttpServletResponse response, int zoomLevel);
+        // Fixed value
+        if (expireValue == GWCVars.CACHE_VALUE_UNSET) {
+            return;
+        }
+
+        // TODO move to TileResponse
+        if (expireValue > 0) {
+            response.setHeader("Cache-Control", "max-age=" + expireValue + ", must-revalidate");
+            response.setHeader("Expires", ServletUtils.makeExpiresHeader(expireValue));
+        } else if (expireValue == GWCVars.CACHE_NEVER_EXPIRE) {
+            long oneYear = 3600 * 24 * 365;
+            response.setHeader("Cache-Control", "max-age=" + oneYear);
+            response.setHeader("Expires", ServletUtils.makeExpiresHeader((int) oneYear));
+        } else if (expireValue == GWCVars.CACHE_DISABLE_CACHE) {
+            response.setHeader("Cache-Control", "no-cache");
+        } else if (expireValue == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+            int seconds = 3600;
+            response.setHeader("geowebcache-error", "No real CacheControl information available");
+            response.setHeader("Cache-Control", "max-age=" + seconds);
+            response.setHeader("Expires", ServletUtils.makeExpiresHeader(seconds));
+        }
+    }
+
+    public int getExpireClients(int zoomLevel) {
+        return getExpiration(this.expireClientsList, zoomLevel);
+    }
+
+    public int getExpireCache(int zoomLevel) {
+        return getExpiration(this.expireCacheList, zoomLevel);
+    }
+
+    private int getExpiration(ArrayList<ExpirationRule> list, int zoomLevel) {
+        int retVal;
+
+        int length = list.size();
+        if (length == 1) {
+            retVal = list.get(0).getExpiration();
+        } else {
+            int i;
+            for (i = 1; i < length;) {
+                if (list.get(i).getMinZoom() > zoomLevel) {
+                    break;
+                }
+                i++;
+            }
+            retVal = list.get(i - 1).getExpiration();
+        }
+
+        if (retVal == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+            return 7200;
+        }
+
+        return retVal;
+    }
 
     /**
      * Merges the information of the the passed in layer into this layer. In cases where both layers
@@ -496,6 +692,10 @@ public abstract class TileLayer {
             RequestFilter filter = iter.next();
             filter.apply(convTile);
         }
+    }
+
+    public List<ParameterFilter> getParameterFilters() {
+        return parameterFilters;
     }
 
     public List<RequestFilter> getRequestFilters() {

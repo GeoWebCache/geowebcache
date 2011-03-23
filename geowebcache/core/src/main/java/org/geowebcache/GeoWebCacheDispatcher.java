@@ -18,15 +18,11 @@
 package org.geowebcache;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -346,7 +342,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
             try {
                 // A5) Ask the layer to provide the content for the tile
-                layer.getTile(convTile);
+                convTile = layer.getTile(convTile);
                 
                 // A6) Write response
                 writeData(convTile);

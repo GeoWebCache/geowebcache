@@ -22,7 +22,6 @@ import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.Grid;
-import org.geowebcache.grid.GridMismatchException;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
@@ -30,7 +29,6 @@ import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.io.FileResource;
 import org.geowebcache.io.Resource;
-import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
@@ -69,7 +67,7 @@ public class ArcGISCacheLayer extends TileLayer {
      *         checked anywhere
      */
     @Override
-    public boolean initialize(GridSetBroker gridSetBroker) {
+    protected boolean initializeInternal(GridSetBroker gridSetBroker) {
         if (this.tilingScheme == null) {
             throw new IllegalStateException(
                     "tilingScheme has not been set. It should point to the ArcGIS "
@@ -299,99 +297,6 @@ public class ArcGISCacheLayer extends TileLayer {
 
     /**
      * 
-     * @see org.geowebcache.layer.TileLayer#getMetaTilingFactors()
-     */
-    @Override
-    public int[] getMetaTilingFactors() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * 
-     * @see org.geowebcache.layer.TileLayer#isCacheBypassAllowed()
-     */
-    @Override
-    public Boolean isCacheBypassAllowed() {
-        return Boolean.FALSE;
-    }
-
-    /**
-     * 
-     * @see org.geowebcache.layer.TileLayer#setCacheBypassAllowed(boolean)
-     */
-    @Override
-    public void setCacheBypassAllowed(boolean allowed) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * 
-     * @see org.geowebcache.layer.TileLayer#getBackendTimeout()
-     */
-    @Override
-    public Integer getBackendTimeout() {
-        return Integer.valueOf(0);
-    }
-
-    /**
-     * 
-     * @see org.geowebcache.layer.TileLayer#setBackendTimeout(int)
-     */
-    @Override
-    public void setBackendTimeout(int seconds) {
-        // ignored, there's no backend to hit at all
-    }
-
-    /**
-     * 
-     * @see org.geowebcache.layer.TileLayer#getMimeTypes()
-     */
-    @Override
-    public List<MimeType> getMimeTypes() {
-        return super.formats;
-    }
-
-    /**
-     * 
-     * @see org.geowebcache.layer.TileLayer#getDefaultMimeType()
-     */
-    @Override
-    public MimeType getDefaultMimeType() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * 
-     * @see org.geowebcache.layer.TileLayer#destroy()
-     */
-    @Override
-    public void destroy() {
-        // TODO Auto-generated method stub
-    }
-
-    /**
-     * 
-     * @see org.geowebcache.layer.TileLayer#indexFromBounds(java.lang.String,
-     *      org.geowebcache.grid.BoundingBox)
-     */
-    @Override
-    public long[] indexFromBounds(String gridSetId, BoundingBox bounds) throws BadTileException,
-            GeoWebCacheException, GridMismatchException {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * 
-     * @see org.geowebcache.layer.TileLayer#boundsFromIndex(java.lang.String, long[])
-     */
-    @Override
-    public BoundingBox boundsFromIndex(String gridSetId, long[] gridLoc)
-            throws GeoWebCacheException {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * 
      * @see org.geowebcache.layer.TileLayer#acquireLayerLock()
      */
     @Override
@@ -405,15 +310,6 @@ public class ArcGISCacheLayer extends TileLayer {
      */
     @Override
     public void releaseLayerLock() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * 
-     * @see org.geowebcache.layer.TileLayer#putTile(org.geowebcache.conveyor.ConveyorTile)
-     */
-    @Override
-    public void putTile(ConveyorTile tile) throws GeoWebCacheException {
         throw new UnsupportedOperationException();
     }
 
