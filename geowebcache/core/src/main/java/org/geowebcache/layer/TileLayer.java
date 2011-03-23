@@ -18,6 +18,7 @@ package org.geowebcache.layer;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -42,12 +43,16 @@ import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.grid.XMLGridSubset;
 import org.geowebcache.grid.XMLOldGrid;
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.Resource;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.updatesource.UpdateSourceDefinition;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.TileObject;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
 
@@ -58,6 +63,10 @@ import org.geowebcache.util.ServletUtils;
 public abstract class TileLayer {
 
     private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayer.class);
+
+    protected static final ThreadLocal<ByteArrayResource> WMS_BUFFER = new ThreadLocal<ByteArrayResource>();
+
+    protected static final ThreadLocal<ByteArrayResource> WMS_BUFFER2 = new ThreadLocal<ByteArrayResource>();
 
     private static final int[] DEFAULT_METATILING_FACTORS = { 1, 1 };
 
@@ -705,4 +714,80 @@ public abstract class TileLayer {
     public GridSubset getGridSubset(String gridSetId) {
         return this.subSets.get(gridSetId);
     }
+    
+    protected ByteArrayResource getImageBuffer(ThreadLocal<ByteArrayResource> tl) {
+        ByteArrayResource buffer = tl.get();
+        if (buffer == null) {
+            buffer = new ByteArrayResource(16 * 1024);
+            tl.set(buffer);
+        }
+        buffer.truncate();
+        return buffer;
+    }
+
+    /**
+     * Loops over the gridPositions, generates cache keys and saves to cache
+     * 
+     * @param gridPositions
+     * @param metaTile
+     * @param imageFormat
+     */
+    protected void saveTiles(MetaTile metaTile, ConveyorTile tileProto) throws GeoWebCacheException {
+
+        final long[][] gridPositions = metaTile.getTilesGridPositions();
+        final long[] gridLoc = tileProto.getTileIndex();
+        final GridSubset gridSubset = getGridSubset(tileProto.getGridSetId());
+
+        final int zoomLevel = (int) gridLoc[2];
+        final boolean store = this.getExpireCache(zoomLevel) != GWCVars.CACHE_DISABLE_CACHE;
+
+        Resource resource;
+        boolean encode;
+        for (int i = 0; i < gridPositions.length; i++) {
+            final long[] gridPos = gridPositions[i];
+            if (Arrays.equals(gridLoc, gridPos)) {
+                // Is this the one we need to save? then don't use the buffer or it'll be overridden
+                // by the next tile
+                resource = getImageBuffer(WMS_BUFFER2);
+                tileProto.setBlob(resource);
+                encode = true;
+            } else {
+                resource = getImageBuffer(WMS_BUFFER);
+                encode = store;
+            }
+
+            if (encode) {
+                if (!gridSubset.covers(gridPos)) {
+                    // edge tile outside coverage, do not store it
+                    continue;
+                }
+
+                try {
+                    boolean completed = metaTile.writeTileToStream(i, resource);
+                    if (!completed) {
+                        log.error("metaTile.writeTileToStream returned false, no tiles saved");
+                    }
+                } catch (IOException ioe) {
+                    log.error("Unable to write image tile to " + "ByteArrayOutputStream: "
+                            + ioe.getMessage());
+                    ioe.printStackTrace();
+                }
+
+                if (store) {
+                    long[] idx = { gridPos[0], gridPos[1], gridPos[2] };
+
+                    TileObject tile = TileObject.createCompleteTileObject(this.getName(), idx,
+                            tileProto.getGridSetId(), tileProto.getMimeType().getFormat(),
+                            tileProto.getParameters(), resource);
+
+                    try {
+                        tileProto.getStorageBroker().put(tile);
+                    } catch (StorageException e) {
+                        throw new GeoWebCacheException(e);
+                    }
+                }
+            }
+        }
+    }
+
 }
