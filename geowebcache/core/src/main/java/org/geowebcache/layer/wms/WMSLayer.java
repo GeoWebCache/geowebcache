@@ -1358,4 +1358,9 @@ public class WMSLayer extends TileLayer {
             return value;
         }
     }
+
+    public void cleanUpThreadLocals() {
+        WMS_BUFFER.remove();
+        WMS_BUFFER2.remove();
+    }
 }

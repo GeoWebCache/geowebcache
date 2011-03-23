@@ -28,6 +28,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
@@ -272,5 +273,12 @@ class SeedTask extends GWCTask {
         this.tileFailureRetryWaitTime = tileFailureRetryWaitTime;
         this.totalFailuresBeforeAborting = totalFailuresBeforeAborting;
         this.sharedFailureCounter = sharedFailureCounter;
+    }
+
+    @Override
+    protected void dispose() {
+        if(tl instanceof WMSLayer){
+            ((WMSLayer)tl).cleanUpThreadLocals();
+        }
     }
 }

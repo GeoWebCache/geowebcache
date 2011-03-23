@@ -26,6 +26,7 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.util.Assert;
 
 import com.sleepycat.je.CursorConfig;
+import com.sleepycat.je.Environment;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.Transaction;
 import com.sleepycat.persist.EntityCursor;
@@ -123,7 +124,9 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
             log.error("Time out shutting down quota store write thread, trying to "
                     + "close the entity store as is.", ie);
         } finally {
+            Environment environment = entityStore.getEnvironment();
             entityStore.close();
+            environment.close();
         }
         log.info("Quota store closed.");
     }

@@ -75,6 +75,7 @@ public abstract class GWCTask {
         try {
             doActionInternal();
         } finally {
+            dispose();
             int membersRemaining = this.sharedThreadCount.decrementAndGet();
             if (0 == membersRemaining) {
                 double groupTotalTimeSecs = (System.currentTimeMillis() - (double) groupStartTime) / 1000;
@@ -83,6 +84,8 @@ public abstract class GWCTask {
             }
         }
     }
+
+    protected abstract void dispose();
 
     /**
      * Extension point for subclasses to do what they do

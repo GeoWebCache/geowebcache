@@ -91,4 +91,9 @@ class TruncateTask extends GWCTask {
         }
     }
 
+    @Override
+    protected void dispose() {
+        // do nothing
+    }
+
 }
