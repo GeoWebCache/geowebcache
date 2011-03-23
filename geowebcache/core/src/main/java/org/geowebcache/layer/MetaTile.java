@@ -55,12 +55,12 @@ public class MetaTile implements TileResponseReceiver {
 
     private final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
 
-    private RenderedImage metaTiledImage = null; // buffer for storing the metatile, if it is an
-                                                 // image
+    protected RenderedImage metaTiledImage = null; // buffer for storing the metatile, if it is an
+                                    // image
 
     protected int[] gutter = new int[4]; // L,B,R,T in pixels
 
-    private Rectangle[] tiles;
+    protected final Rectangle[] tiles;
 
     // minx,miny,maxx,maxy,zoomlevel
     protected long[] metaGridCov = null;
@@ -126,7 +126,7 @@ public class MetaTile implements TileResponseReceiver {
         calculateEdgeGutter();
         int tileHeight = gridSubset.getTileHeight();
         int tileWidth = gridSubset.getTileWidth();
-        createTiles(tileHeight, tileWidth);
+        this.tiles = createTiles(tileHeight, tileWidth);
     }
 
     /***
@@ -258,10 +258,11 @@ public class MetaTile implements TileResponseReceiver {
      *            width of each tile
      * @param tileHeight
      *            height of each tile
+     * @return
      */
-    private void createTiles(int tileHeight, int tileWidth) {
+    private Rectangle[] createTiles(int tileHeight, int tileWidth) {
         int tileCount = metaX * metaY;
-        tiles = new Rectangle[tileCount];
+        Rectangle[] tiles = new Rectangle[tileCount];
 
         for (int y = 0; y < metaY; y++) {
             for (int x = 0; x < metaX; x++) {
@@ -272,6 +273,7 @@ public class MetaTile implements TileResponseReceiver {
                 tiles[y * metaX + x] = new Rectangle(i, j, tileWidth, tileHeight);
             }
         }
+        return tiles;
     }
 
     /**
