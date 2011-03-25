@@ -114,14 +114,6 @@ public class WMSLayer extends TileLayer {
 
     private transient HashMap<GridLocObj, Boolean> procQueue;
 
-    private transient String encodedWMSLayers;
-
-    private transient String encodedWMSStyles;
-
-    private transient String encodedPalette;
-
-    private transient String encodedName;
-
     private transient WMSSourceHelper sourceHelper = null;
 
     private static transient Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
@@ -220,20 +212,6 @@ public class WMSLayer extends TileLayer {
                     log.error(e.getMessage());
                 }
             }
-        }
-
-        if (wmsLayers != null && wmsLayers.length() > 0) {
-            encodedWMSLayers = ServletUtils.URLEncode(wmsLayers);
-        } else {
-            encodedName = ServletUtils.URLEncode(name);
-        }
-
-        if (wmsStyles != null) {
-            encodedWMSStyles = ServletUtils.URLEncode(wmsStyles);
-        }
-
-        if (palette != null) {
-            encodedPalette = ServletUtils.URLEncode(palette);
         }
 
         return true;
@@ -577,9 +555,9 @@ public class WMSLayer extends TileLayer {
 
         String layers;
         if (this.wmsLayers != null && this.wmsLayers.length() != 0) {
-            layers = encodedWMSLayers;
+            layers = wmsLayers;
         } else {
-            layers = encodedName;
+            layers = getName();
         }
         params.put("LAYERS", layers);
 
@@ -597,7 +575,7 @@ public class WMSLayer extends TileLayer {
 
         String styles = "";
         if (wmsStyles != null && wmsStyles.length() != 0) {
-            styles = encodedWMSStyles;
+            styles = wmsStyles;
         }
         params.put("STYLES", styles);
 
@@ -623,7 +601,7 @@ public class WMSLayer extends TileLayer {
                 params.put("BGCOLOR", tmpBgColor);
             }
 
-            String tmpPalette = encodedPalette;
+            String tmpPalette = palette;
             if (mod != null && mod.getPalette() != null) {
                 tmpPalette = mod.getPalette();
             }

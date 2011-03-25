@@ -27,7 +27,6 @@ import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.XMLMime;
-import org.geowebcache.util.ServletUtils;
 
 /**
  * Builds WMS requests to gather a certain tile or meta tile. The actual communication with the
@@ -74,8 +73,7 @@ public abstract class WMSSourceHelper {
             // This is a hack for GeoServer to produce regionated KML,
             // but it is unlikely to do much harm, especially since nobody
             // else appears to produce regionated KML at this point
-            wmsParams.put("format_options",
-                    ServletUtils.URLEncode("mode:superoverlay;overlaymode:auto"));
+            wmsParams.put("format_options", "mode:superoverlay;overlaymode:auto");
         }
 
         String mimeType = tile.getMimeType().getMimeType();

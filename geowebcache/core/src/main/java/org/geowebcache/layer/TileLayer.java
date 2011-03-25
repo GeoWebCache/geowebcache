@@ -742,8 +742,7 @@ public abstract class TileLayer {
 
             if (value != null && value.length() > 0) {
                 String appliedValue = parameterFilter.apply(value);
-                String filteredValue = ServletUtils.URLEncode(appliedValue);
-                modifiedParams.put(key, filteredValue);
+                modifiedParams.put(key, appliedValue);
             }
         }
 
