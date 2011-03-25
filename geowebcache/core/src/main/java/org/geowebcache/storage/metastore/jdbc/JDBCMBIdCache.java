@@ -176,7 +176,7 @@ class JDBCMBIdCache {
     }
 
     protected long getParametersId(Map<String, String> parameteres) throws StorageException {
-        if (parameteres != null && parameteres.size() > 0) {
+        if (parameteres == null || parameteres.size() == 0) {
             return -1L;
         }
         synchronized (this.parametersCache) {
