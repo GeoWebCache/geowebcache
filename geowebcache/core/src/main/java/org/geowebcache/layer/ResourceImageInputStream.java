@@ -1,4 +1,4 @@
-package org.geowebcache.layer.wms;
+package org.geowebcache.layer;
 
 import java.io.IOException;
 

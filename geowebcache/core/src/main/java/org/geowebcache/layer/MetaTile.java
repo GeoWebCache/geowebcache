@@ -24,7 +24,6 @@ import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Iterator;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -32,6 +31,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 import javax.media.jai.JAI;
 import javax.media.jai.operator.CropDescriptor;
 
@@ -43,8 +43,6 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
-import org.geowebcache.layer.wms.ImageOutputStreamAdapter;
-import org.geowebcache.layer.wms.ResourceImageInputStream;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
 import org.springframework.util.Assert;
@@ -55,8 +53,8 @@ public class MetaTile implements TileResponseReceiver {
 
     private final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
 
-    protected RenderedImage metaTiledImage = null; // buffer for storing the metatile, if it is an
-                                    // image
+    // buffer for storing the metatile, if it is an image
+    protected RenderedImage metaTiledImage = null;
 
     protected int[] gutter = new int[4]; // L,B,R,T in pixels
 
@@ -340,51 +338,40 @@ public class MetaTile implements TileResponseReceiver {
      * @throws IOException
      */
     public boolean writeTileToStream(int tileIdx, Resource target) throws IOException {
-        if (tiles != null) {
-            String format = responseFormat.getInternalName();
+        if (tiles == null) {
+            return false;
+        }
+        String format = responseFormat.getInternalName();
 
-            if (log.isDebugEnabled()) {
-                log.debug("Thread: " + Thread.currentThread().getName() + " writing: " + tileIdx);
-            }
-
-            // TODO should we recycle the writers ?
-            // GR: it'd be only a 2% perf gain according to profiler
-            Iterator<ImageWriter> imageWritersByFormatName = javax.imageio.ImageIO
-                    .getImageWritersByFormatName(format);
-            ImageWriter writer = imageWritersByFormatName.next();
-            ImageWriteParam param = writer.getDefaultWriteParam();
-
-            if (this.formatModifier != null) {
-                param = formatModifier.adjustImageWriteParam(param);
-            }
-
-            Rectangle tileRegion = tiles[tileIdx];
-            param.setSourceRegion(tileRegion);
-            // param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            // param.setCompressionType(compressionType)
-            // param.setCompressionQuality(0.8f);
-            // float compressionQuality = param.getCompressionQuality();
-            // String compressionType = param.getCompressionType();
-            // TODO: setCompression, etc
-
-            OutputStream outputStream = target.getOutputStream();
-            ImageOutputStream imgOut = new ImageOutputStreamAdapter(outputStream);
-            try {
-                writer.setOutput(imgOut);
-                try {
-                    IIOImage image = new IIOImage(this.metaTiledImage, null, null);
-                    writer.write(null, image, param);
-                } finally {
-                    writer.dispose();
-                }
-            } finally {
-                imgOut.close();
-            }
-
-            return true;
+        if (log.isDebugEnabled()) {
+            log.debug("Thread: " + Thread.currentThread().getName() + " writing: " + tileIdx);
         }
 
-        return false;
+        // TODO should we recycle the writers ?
+        // GR: it'd be only a 2% perf gain according to profiler
+        ImageWriter writer = javax.imageio.ImageIO.getImageWritersByFormatName(format).next();
+        ImageWriteParam param = writer.getDefaultWriteParam();
+
+        if (this.formatModifier != null) {
+            param = formatModifier.adjustImageWriteParam(param);
+        }
+
+        Rectangle tileRegion = tiles[tileIdx];
+        RenderedImage tile = createTile(tileRegion.x, tileRegion.y, tileRegion.width,
+                tileRegion.height, true);
+
+        OutputStream outputStream = target.getOutputStream();
+        ImageOutputStream imgOut = new MemoryCacheImageOutputStream(outputStream);
+        writer.setOutput(imgOut);
+        IIOImage image = new IIOImage(tile, null, null);
+        try {
+            writer.write(null, image, param);
+        } finally {
+            imgOut.close();
+            writer.dispose();
+        }
+
+        return true;
     }
 
     public String debugString() {
