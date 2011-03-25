@@ -18,7 +18,9 @@
 package org.geowebcache.storage;
 
 import java.util.Arrays;
+import java.util.Map;
 
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.io.Resource;
 
 /**
@@ -28,84 +30,83 @@ import org.geowebcache.io.Resource;
  */
 public class TileObject extends StorageObject {
     public static final String TYPE = "tile";
-    
+
     long tile_id = -1L;
-    
+
     Resource blob;
-    
+
     long parameters_id = -1L;
-    
+
     long layer_id = -1L;
-    
+
     long format_id = -1L;
-    
+
     long gridset_id = -1L;
-    
+
     long[] xyz;
-    
+
     String layer_name;
-    
-    String parameters;
-    
+
+    Map<String, String> parameters;
+
     String gridSetId;
-        
-    public static TileObject createQueryTileObject(
-            String layerName, long[] xyz, String gridSetId, String format, String parameters) {
+
+    public static TileObject createQueryTileObject(String layerName, long[] xyz, String gridSetId,
+            String format, Map<String, String> parameters) {
         TileObject obj = new TileObject();
-        
+
         obj.layer_name = layerName;
         obj.xyz = xyz;
         obj.gridSetId = gridSetId;
         obj.blob_format = format;
         obj.parameters = parameters;
-        
+
         return obj;
     }
-    
-    public static TileObject createCompleteTileObject(
-            String layerName, long[] xyz, String gridSetId, String format, 
-            String parameters, Resource blob) {
+
+    public static TileObject createCompleteTileObject(String layerName, long[] xyz,
+            String gridSetId, String format, Map<String, String> parameters, Resource blob) {
         TileObject obj = new TileObject();
-        
+
         obj.layer_name = layerName;
         obj.xyz = xyz;
         obj.gridSetId = gridSetId;
         obj.blob_format = format;
         obj.parameters = parameters;
-        
-        if(blob == null) {
+
+        if (blob == null) {
             obj.blob_size = -1;
         } else {
             obj.blob_size = (int) blob.getSize();
             obj.blob = blob;
         }
-        
+
         obj.created = System.currentTimeMillis();
         return obj;
     }
-    
+
     private TileObject() {
-        
+
     }
-    
+
     public Resource getBlob() {
         return blob;
     }
-    
+
     public void setBlob(Resource blob) {
-        if(blob != null) {
+        if (blob != null) {
             this.blob_size = (int) blob.getSize();
         } else {
             this.blob_size = -1;
         }
-        
+
         this.blob = blob;
     }
-        
+
     public long getId() {
         return tile_id;
     }
-    
+
     public void setId(long tile_id) {
         this.tile_id = tile_id;
     }
@@ -113,11 +114,11 @@ public class TileObject extends StorageObject {
     public long getFormatId() {
         return this.format_id;
     }
-    
+
     public void setFormatId(long format_id) {
         this.format_id = format_id;
     }
-    
+
     public String getGridSetId() {
         return this.gridSetId;
     }
@@ -125,50 +126,48 @@ public class TileObject extends StorageObject {
     public long getLayerId() {
         return this.layer_id;
     }
-    
+
     public void setLayerId(long layer_id) {
         this.layer_id = layer_id;
     }
 
-    
     public long getParametersId() {
         return this.parameters_id;
     }
-    
+
     public void setParamtersId(long parameters_id) {
         this.parameters_id = parameters_id;
     }
 
-    
-    public long[] getXYZ() { 
+    public long[] getXYZ() {
         return xyz;
     }
-    
-    //public int getSrs() {
-    //    return srs;
-    //}
-    
+
+    // public int getSrs() {
+    // return srs;
+    // }
+
     public long getGridSetIdId() {
         return gridset_id;
     }
-    
+
     public void setGridSetIdId(long gridset_id) {
         this.gridset_id = gridset_id;
     }
-    
+
     public String getLayerName() {
         return layer_name;
     }
-    
-    public String getParameters() {
+
+    public Map<String, String> getParameters() {
         return parameters;
     }
-    
+
     public String getType() {
         return TYPE;
     }
-    
+
     public String toString() {
-        return "["+ layer_name+","+gridSetId+",{"+Arrays.toString(xyz)+"}]";
+        return "[" + layer_name + "," + gridSetId + ",{" + Arrays.toString(xyz) + "}]";
     }
 }

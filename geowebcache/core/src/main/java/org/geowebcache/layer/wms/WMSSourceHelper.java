@@ -17,6 +17,8 @@
  */
 package org.geowebcache.layer.wms;
 
+import java.util.Map;
+
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
@@ -34,88 +36,87 @@ import org.geowebcache.util.ServletUtils;
  */
 public abstract class WMSSourceHelper {
 
-    abstract protected void makeRequest(TileResponseReceiver tileRespRecv,
-            WMSLayer layer, String wmsParams, String expectedMimeType, Resource target)
+    abstract protected void makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer,
+            Map<String, String> wmsParams, String expectedMimeType, Resource target)
             throws GeoWebCacheException;
 
-    
     public void makeRequest(WMSMetaTile metaTile, Resource target) throws GeoWebCacheException {
 
-        String wmsParams = metaTile.getWMSParams();
+        Map<String, String> wmsParams = metaTile.getWMSParams();
         WMSLayer layer = metaTile.getLayer();
         String format = metaTile.getRequestFormat().getFormat();
-        
+
         makeRequest(metaTile, layer, wmsParams, format, target);
     }
-    
+
     public void makeRequest(ConveyorTile tile, Resource target) throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
 
         GridSubset gridSubset = layer.getGridSubset(tile.getGridSetId());
 
-        String wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(), WMSLayer.RequestType.MAP);
+        Map<String, String> wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(),
+                WMSLayer.RequestType.MAP);
 
-        StringBuilder strBuilder = new StringBuilder(wmsParams);
-
-        strBuilder.append("&FORMAT=").append(tile.getMimeType().getFormat());
-        strBuilder.append("&SRS=").append(layer.backendSRSOverride(gridSubset.getSRS()));
-        strBuilder.append("&HEIGHT=").append(gridSubset.getTileHeight());
-        strBuilder.append("&WIDTH=").append(gridSubset.getTileWidth());
+        wmsParams.put("FORMAT", tile.getMimeType().getFormat());
+        wmsParams.put("SRS", layer.backendSRSOverride(gridSubset.getSRS()));
+        wmsParams.put("HEIGHT", String.valueOf(gridSubset.getTileHeight()));
+        wmsParams.put("WIDTH", String.valueOf(gridSubset.getTileWidth()));
         // strBuilder.append("&TILED=").append(requestTiled);
 
         BoundingBox bbox = gridSubset.boundsFromIndex(tile.getTileIndex());
 
-        strBuilder.append("&BBOX=").append(bbox);
+        wmsParams.put("BBOX", bbox.toString());
 
-        strBuilder.append(tile.getFullParameters());
-        
-        if(tile.getMimeType() == XMLMime.kml) {
-            // This is a hack for GeoServer to produce regionated KML, 
+        Map<String, String> fullParameters = tile.getFullParameters();
+        wmsParams.putAll(fullParameters);
+
+        if (tile.getMimeType() == XMLMime.kml) {
+            // This is a hack for GeoServer to produce regionated KML,
             // but it is unlikely to do much harm, especially since nobody
             // else appears to produce regionated KML at this point
-            strBuilder.append("&format_options=").append(ServletUtils.URLEncode("mode:superoverlay;overlaymode:auto")); 
+            wmsParams.put("format_options",
+                    ServletUtils.URLEncode("mode:superoverlay;overlaymode:auto"));
         }
 
         String mimeType = tile.getMimeType().getMimeType();
-        makeRequest(tile, layer, strBuilder.toString(), mimeType, target);
+        makeRequest(tile, layer, wmsParams, mimeType, target);
     }
 
-    
-    public Resource makeFeatureInfoRequest(ConveyorTile tile, BoundingBox bbox, int height, int width, int x, int y)
-            throws GeoWebCacheException {
+    public Resource makeFeatureInfoRequest(ConveyorTile tile, BoundingBox bbox, int height,
+            int width, int x, int y) throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
 
         GridSubset gridSubset = tile.getGridSubset();
 
-        String wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(),WMSLayer.RequestType.FEATUREINFO);
+        Map<String, String> wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(),
+                WMSLayer.RequestType.FEATUREINFO);
 
-        StringBuilder strBuilder = new StringBuilder(wmsParams);
-        strBuilder.append("&INFO_FORMAT=").append(tile.getMimeType().getFormat());
-        strBuilder.append("&FORMAT=").append(tile.getMimeType().getFormat());
-        strBuilder.append("&SRS=").append(layer.backendSRSOverride(gridSubset.getSRS()));
-        strBuilder.append("&HEIGHT=").append(height);
-        strBuilder.append("&WIDTH=").append(width);
+        wmsParams.put("INFO_FORMAT", tile.getMimeType().getFormat());
+        wmsParams.put("FORMAT", tile.getMimeType().getFormat());
+        wmsParams.put("SRS", layer.backendSRSOverride(gridSubset.getSRS()));
+        wmsParams.put("HEIGHT", String.valueOf(height));
+        wmsParams.put("WIDTH", String.valueOf(width));
 
-        strBuilder.append("&BBOX=").append(bbox);
+        wmsParams.put("BBOX", bbox.toString());
 
-        strBuilder.append(tile.getFullParameters());
+        Map<String, String> fullParameters = tile.getFullParameters();
+        wmsParams.putAll(fullParameters);
 
-        strBuilder.append("&X=").append(x);
-        strBuilder.append("&Y=").append(y);
+        wmsParams.put("X", String.valueOf(x));
+        wmsParams.put("Y", String.valueOf(y));
 
         String mimeType = tile.getMimeType().getMimeType();
-        Resource target = new ByteArrayResource(2048); 
-        makeRequest(tile, layer, strBuilder.toString(), mimeType, target);
+        Resource target = new ByteArrayResource(2048);
+        makeRequest(tile, layer, wmsParams, mimeType, target);
         return target;
     }
-    
+
     protected boolean mimeStringCheck(String requestMime, String responseMime) {
         if (responseMime.equalsIgnoreCase(requestMime)) {
             return true;
         } else if (responseMime.startsWith(requestMime)) {
             return true;
-        } else if (requestMime.startsWith("image/png")
-                && responseMime.startsWith("image/png")) {
+        } else if (requestMime.startsWith("image/png") && responseMime.startsWith("image/png")) {
             return true;
         }
         return false;

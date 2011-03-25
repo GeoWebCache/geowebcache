@@ -1,9 +1,11 @@
 package org.geowebcache.layer.wms;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -38,7 +40,7 @@ public class MetaTileTest extends TestCase {
         //int[] gridBounds, int[] tileGridPosition, int metaX, int metaY
         WMSMetaTile mt = new WMSMetaTile(
                 null, grid, ImageMime.png, null,
-                gridPos, metaWidth, metaHeight, "&test=test1");
+                gridPos, metaWidth, metaHeight, Collections.singletonMap("test", "test1"));
 
         long[] solution = { 0, 0, 0, 0, 0 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
@@ -64,7 +66,7 @@ public class MetaTileTest extends TestCase {
         long[] gridPos = { 127, 63, 6 };
         WMSMetaTile mt = new WMSMetaTile(
                     null, grid, ImageMime.png, null,
-                    gridPos, metaWidth, metaHeight, "&test=test1");
+                    gridPos, metaWidth, metaHeight, Collections.singletonMap("test", "test1"));
 
         long[] solution = { 126, 63, 127, 63, 6 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
@@ -90,7 +92,7 @@ public class MetaTileTest extends TestCase {
         long[] gridPos = { 0, 0, 0 };
         WMSMetaTile mt = new WMSMetaTile(
                 null, grid, ImageMime.png, null, 
-                gridPos, metaWidth, metaHeight, "&test=test1");
+                gridPos, metaWidth, metaHeight, Collections.singletonMap("test", "test1"));
         
         long[] solution = { 0, 0, 0, 0, 0 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
@@ -118,7 +120,7 @@ public class MetaTileTest extends TestCase {
         long[] gridPos = { 70, 70, 6 };
         WMSMetaTile mt = new WMSMetaTile(
                 null, grid, ImageMime.png, null, 
-        	gridPos, metaWidth, metaHeight, "&test=test1");
+        	gridPos, metaWidth, metaHeight, Collections.singletonMap("test", "test1"));
         
         long[] solution = { 69, 69, 63, 63, 6 };
         boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
@@ -155,18 +157,16 @@ public class MetaTileTest extends TestCase {
         WMSMetaTile mt = new WMSMetaTile(
                     layer, grid, ImageMime.png, null, 
                     gridPos, layer.getMetaTilingFactors()[0], 
-                    layer.getMetaTilingFactors()[1], "&test=test1");
+                    layer.getMetaTilingFactors()[1], Collections.singletonMap("test", "test1"));
 
         // The actual gutter is calculated right at construction time
-        String wmsParams = mt.getWMSParams();
+        Map<String, String> wmsParams = mt.getWMSParams();
         assertEquals(layer.gutter.intValue(), mt.getGutter()[0]);
         assertEquals(layer.gutter.intValue(), mt.getGutter()[1]);
         assertEquals(0, mt.getGutter()[2]);
         assertEquals(0, mt.getGutter()[3]);
-        
-        int heightLoc = wmsParams.indexOf("HEIGHT=");
-        int heightEnd = wmsParams.indexOf("&",heightLoc);
-        int height = Integer.parseInt(wmsParams.substring(heightLoc + "HEIGHT=".length(), heightEnd));
+
+        int height = Integer.parseInt(wmsParams.get("HEIGHT"));
         
         //assertEquals(height, 256 + 50);
 
@@ -174,7 +174,7 @@ public class MetaTileTest extends TestCase {
         mt = new WMSMetaTile(
                     layer, grid, ImageMime.png, null, 
                     midGridPos, layer.getMetaTilingFactors()[0], 
-                    layer.getMetaTilingFactors()[1], "&test=test1");
+                    layer.getMetaTilingFactors()[1], Collections.singletonMap("test", "test1"));
 
         // The actual gutter is calculated right at construction time
         wmsParams = mt.getWMSParams();
@@ -183,16 +183,11 @@ public class MetaTileTest extends TestCase {
         assertTrue(mt.getGutter()[2] == layer.gutter);
         assertTrue(mt.getGutter()[3] == layer.gutter);
         
-        heightLoc = wmsParams.indexOf("HEIGHT=");
-        heightEnd = wmsParams.indexOf("&",heightLoc);
-        height = Integer.parseInt(wmsParams.substring(heightLoc + "HEIGHT=".length(), heightEnd));
+        height = Integer.parseInt(wmsParams.get("HEIGHT"));
         
         assertEquals(height, 768 + 2*50);
         
-        int bboxLoc = wmsParams.indexOf("BBOX=");
-        int bboxEnd = wmsParams.indexOf("&",bboxLoc);
-        
-        String[] coordStrs = wmsParams.substring(bboxLoc + "BBOX=".length(), bboxEnd).split(",");
+        String[] coordStrs = wmsParams.get("BBOX").split(",");
         
         // Lets check some specific coordinates too
         assertTrue(Math.abs( Double.parseDouble(coordStrs[0]) - 47.26318359375) < 0.001);   

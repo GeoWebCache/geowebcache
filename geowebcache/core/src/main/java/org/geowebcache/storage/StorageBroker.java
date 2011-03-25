@@ -130,7 +130,7 @@ public class StorageBroker {
     
     private boolean getBlobOnly(TileObject tileObj) throws StorageException {
         if(tileObj.getParameters() == null 
-                || tileObj.getParameters().length() == 0) {
+                || tileObj.getParameters().size() == 0) {
             Resource blob = blobStore.get(tileObj);
             if(blob == null) {
                 return false;
@@ -169,7 +169,7 @@ public class StorageBroker {
     
     private boolean putBlobOnly(TileObject tileObj) {
         if(tileObj.getParameters() == null 
-                || tileObj.getParameters().length() == 0) {
+                || tileObj.getParameters().size() == 0) {
             try {
                 blobStore.put(tileObj);
             } catch (StorageException se) {

@@ -17,53 +17,55 @@
  */
 package org.geowebcache.conveyor;
 
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
 
-
 public class ConveyorKMLTile extends ConveyorTile {
-    public ConveyorKMLTile(StorageBroker sb, String layerId, String gridSetId,
-            long[] tileIndex, MimeType mimeType, String fullParameters,
-            String modifiedParameters, HttpServletRequest servletReq,
+    public ConveyorKMLTile(StorageBroker sb, String layerId, String gridSetId, long[] tileIndex,
+            MimeType mimeType, Map<String, String> fullParameters,
+            Map<String, String> modifiedParameters, HttpServletRequest servletReq,
             HttpServletResponse servletResp) {
-        super(sb, layerId, gridSetId, tileIndex, mimeType, fullParameters,
-                modifiedParameters, servletReq, servletResp);
+
+        super(sb, layerId, gridSetId, tileIndex, mimeType, fullParameters, modifiedParameters,
+                servletReq, servletResp);
     }
-    
+
     String urlPrefix = null;
-    
+
     protected MimeType wrapperMimeType = null;
-    
+
     public void setUrlPrefix(String urlPrefix) {
         this.urlPrefix = urlPrefix;
     }
-    
+
     public String getUrlPrefix() {
         return urlPrefix;
     }
-    
+
     public MimeType getWrapperMimeType() {
         return wrapperMimeType;
     }
-    
+
     public void setWrapperMimeType(MimeType mimeType) {
         this.wrapperMimeType = mimeType;
     }
-    
+
     public void setError(String message) {
         this.error = true;
         this.errorMsg = message;
     }
-    
+
     public String getHint() {
         return hint;
     }
-    
+
     public void setHint(String hint) {
         this.hint = hint;
     }
-    
+
 }

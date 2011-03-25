@@ -24,25 +24,31 @@ import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.Map.Entry;
 
+import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class ServletUtils {
     private static Log log = LogFactory.getLog(org.geowebcache.util.ServletUtils.class);
-    
+
     // Calendar objects are unfortunately expensive and not thread safe :(
     static private Calendar calendar = new GregorianCalendar();
+
     static private TimeZone timeZone = TimeZone.getTimeZone("GMT");
+
     static private SimpleDateFormat format = null;
+
     static private long localOffset = TimeZone.getDefault().getRawOffset();
-    
+
     /**
      * Case insensitive lookup
      * 
@@ -52,22 +58,22 @@ public class ServletUtils {
      */
     public static String[] stringsFromMap(Map<String, String[]> map, String encoding, String key) {
         String[] strArray = (String[]) map.get(key);
-        
+
         if (strArray != null) {
             return strArray;
-        } else {            
+        } else {
             // In case there is a case mismatch
-            Iterator<Entry<String,String[]>> iter = map.entrySet().iterator();
+            Iterator<Entry<String, String[]>> iter = map.entrySet().iterator();
             while (iter.hasNext()) {
-                Entry<String,String[]> entry = iter.next();
-                if(entry.getKey().equalsIgnoreCase(key)) {
+                Entry<String, String[]> entry = iter.next();
+                if (entry.getKey().equalsIgnoreCase(key)) {
                     return URLDecode(entry.getValue(), encoding);
                 }
             }
         }
         return null;
     }
-    
+
     /**
      * Case insensitive lookup
      * 
@@ -77,124 +83,125 @@ public class ServletUtils {
      */
     public static String stringFromMap(Map<String, String[]> map, String encoding, String key) {
         String[] strArray = stringsFromMap(map, encoding, key);
-        if(strArray != null) {
+        if (strArray != null) {
             return strArray[0];
         }
         return null;
-      
+
     }
-    
+
     /**
-     * Case insensitive lookup for a couple of strings,
-     * drops everything else
+     * Case insensitive lookup for a couple of strings, drops everything else
      * 
      * @param map
      * @param keys
      * @return
      */
-    public static String[][] selectedStringArraysFromMap(Map<String, String[]> map, String encoding, String[] keys) {
+    public static String[][] selectedStringArraysFromMap(Map<String, String[]> map,
+            String encoding, String[] keys) {
         String[][] retAr = new String[keys.length][];
-        
-        Iterator<Entry<String,String[]>> iter = map.entrySet().iterator();
-        while(iter.hasNext()) {
-            Entry<String,String[]> entry = iter.next();
+
+        Iterator<Entry<String, String[]>> iter = map.entrySet().iterator();
+        while (iter.hasNext()) {
+            Entry<String, String[]> entry = iter.next();
             String key = entry.getKey();
-            
-            for(int i=0;i<keys.length;i++) {
-                if(key.equalsIgnoreCase(keys[i])) {
+
+            for (int i = 0; i < keys.length; i++) {
+                if (key.equalsIgnoreCase(keys[i])) {
                     retAr[i] = URLDecode(entry.getValue(), encoding);
                     continue;
                 }
             }
         }
-        
+
         return retAr;
     }
-    
+
     /**
-     * Case insensitive lookup for a couple of strings,
-     * drops everything else
+     * Case insensitive lookup for a couple of strings, drops everything else
      * 
      * @param map
      * @param keys
-     * @return
+     * @return {@link CaseInsensitiveMap map} subset containing (URL decoded) values for
+     *         {@code keys}
      */
-    public static String[] selectedStringsFromMap(Map<String,String[]> map, String encoding, String[] keys) {
-        String[] retAr = new String[keys.length];
-        
-        Iterator<Entry<String,String[]>> iter = map.entrySet().iterator();
-        while(iter.hasNext()) {
-            Entry<String,String[]> entry = iter.next();
-            String key = entry.getKey();
-            
-            for(int i=0;i<keys.length;i++) {
-                if(key.equalsIgnoreCase(keys[i])) {
-                    retAr[i] = URLDecode(entry.getValue()[0], encoding);
-                    break;
-                }
+    @SuppressWarnings("unchecked")
+    public static Map<String, String> selectedStringsFromMap(Map<String, String[]> map,
+            String encoding, String[] keys) {
+
+        map = new CaseInsensitiveMap(map);
+        Map<String, String> selected = new CaseInsensitiveMap();
+        for (String key : keys) {
+            String value[] = map.get(key);
+            if (value != null) {
+                selected.put(key.toUpperCase(), URLDecode(value[0], encoding));
             }
         }
-        
-        return retAr;
+        return selected;
     }
-    
+
     /**
      * Extracts the cache control header
      * 
      * @param cacheControlHeader
      * @return Long representing expiration time in seconds
      */
-//    public static Long extractHeaderMaxAge(URLConnection backendCon) {
-//        
-//        String cacheControlHeader = backendCon.getHeaderField("Cache-Control");
-//        
-//        if (cacheControlHeader == null) {
-//            return null;
-//        }
-//
-//        String expression = "max-age=([0-9]*)[ ,]";
-//        Pattern p = Pattern.compile(expression);
-//        Matcher m = p.matcher(cacheControlHeader.toLowerCase());
-//
-//        if (m.find()) {
-//            return Long.valueOf(m.group(1));
-//        } else {
-//            return null;
-//        }
-//    }
-    
+    // public static Long extractHeaderMaxAge(URLConnection backendCon) {
+    //
+    // String cacheControlHeader = backendCon.getHeaderField("Cache-Control");
+    //
+    // if (cacheControlHeader == null) {
+    // return null;
+    // }
+    //
+    // String expression = "max-age=([0-9]*)[ ,]";
+    // Pattern p = Pattern.compile(expression);
+    // Matcher m = p.matcher(cacheControlHeader.toLowerCase());
+    //
+    // if (m.find()) {
+    // return Long.valueOf(m.group(1));
+    // } else {
+    // return null;
+    // }
+    // }
+
     /**
      * Reads an inputstream and stores all the information in a buffer.
      * 
-     * @param is the inputstream
-     * @param bufferHint hint for the total buffer, -1 = 10240
-     * @param tmpBufferSize how many bytes to read at a time, -1 = 1024
+     * @param is
+     *            the inputstream
+     * @param bufferHint
+     *            hint for the total buffer, -1 = 10240
+     * @param tmpBufferSize
+     *            how many bytes to read at a time, -1 = 1024
      * 
      * @return a compacted buffer with all the data
      * @throws IOException
      */
-    public static byte[] readStream(InputStream is, int bufferHint, int tmpBufferSize) throws IOException {
+    public static byte[] readStream(InputStream is, int bufferHint, int tmpBufferSize)
+            throws IOException {
         return readStream(is, bufferHint, tmpBufferSize, true);
     }
-    
-    public static byte[] readStream(InputStream is, int bufferHint, int tmpBufferSize, boolean close) throws IOException {
+
+    public static byte[] readStream(InputStream is, int bufferHint, int tmpBufferSize, boolean close)
+            throws IOException {
         byte[] buffer = null;
-        if(bufferHint > 0) {
+        if (bufferHint > 0) {
             buffer = new byte[bufferHint];
         } else {
             buffer = new byte[10240];
         }
-        
+
         byte[] tmpBuffer = null;
-        if(tmpBufferSize > 0) {
+        if (tmpBufferSize > 0) {
             tmpBuffer = new byte[tmpBufferSize];
         } else {
             tmpBuffer = new byte[1024];
         }
-        
+
         int totalCount = 0;
         int c = is.read(tmpBuffer);
-        while(c != -1) {
+        while (c != -1) {
             if (c != 0) {
                 totalCount += c;
 
@@ -213,14 +220,14 @@ public class ServletUtils {
             }
             c = is.read(tmpBuffer);
         }
-        
-        if(close)
+
+        if (close)
             is.close();
-        
+
         // Compact buffer
         byte[] newBuffer = new byte[totalCount];
         System.arraycopy(buffer, 0, newBuffer, 0, totalCount);
-        
+
         return newBuffer;
     }
 
@@ -235,14 +242,12 @@ public class ServletUtils {
     public static String makeExpiresHeader(int seconds) {
         return formatTimestamp(System.currentTimeMillis() + seconds * 1000L);
     }
-    
-    
+
     public static String formatTimestamp(long timestamp) {
         String ret;
         synchronized (calendar) {
             if (ServletUtils.format == null) {
-                ServletUtils.format = new SimpleDateFormat(
-                        "EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+                ServletUtils.format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
                 ServletUtils.format.setTimeZone(ServletUtils.timeZone);
             }
 
@@ -251,7 +256,7 @@ public class ServletUtils {
         }
         return ret;
     }
-    
+
     /**
      * Returns the expiration time in milliseconds from now
      * 
@@ -259,43 +264,41 @@ public class ServletUtils {
      * @return
      */
     public static long parseExpiresHeader(String expiresHeader) {
-        if(expiresHeader == null) {
+        if (expiresHeader == null) {
             return -1;
         }
-        
+
         long ret;
-        
+
         synchronized (calendar) {
             if (ServletUtils.format == null) {
-                ServletUtils.format = new SimpleDateFormat(
-                        "EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+                ServletUtils.format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
                 ServletUtils.format.setTimeZone(ServletUtils.timeZone);
-                
+
             }
-            
-            try { 
+
+            try {
                 format.parse(expiresHeader);
             } catch (ParseException pe) {
                 log.debug("Cannot parse " + expiresHeader + ", " + pe.getMessage());
                 return -1;
             }
-            
+
             ret = calendar.getTimeInMillis() - System.currentTimeMillis() - localOffset;
         }
         return ret;
     }
-    
-    
+
     public static String hexOfBytes(byte[] bytes) {
         StringBuilder str = new StringBuilder(bytes.length * 2);
-        
-        for(int i=0; i<bytes.length; i++) {
+
+        for (int i = 0; i < bytes.length; i++) {
             str.append(hexOfByte(bytes[i]));
         }
-        
+
         return str.toString();
     }
-    
+
     /**
      * Converts a byte to a hex String
      * 
@@ -305,25 +308,37 @@ public class ServletUtils {
     public static String hexOfByte(byte aByte) {
         char[] str = new char[2];
 
-        for(int i=0; i<2; i++) {
+        for (int i = 0; i < 2; i++) {
             int temp = (int) aByte;
-            if(temp < 0) {
-                temp +=256;
+            if (temp < 0) {
+                temp += 256;
             }
-            if(i == 0) {
-                temp = temp/16;
+            if (i == 0) {
+                temp = temp / 16;
             } else {
-                temp = temp%16;
+                temp = temp % 16;
             }
 
-            if( temp > 9) {
-                switch(temp) {
-                case 10: str[i] = 'A'; break;
-                case 11: str[i] = 'B'; break;
-                case 12: str[i] = 'C'; break;
-                case 13: str[i] = 'D'; break;
-                case 14: str[i] = 'E'; break;
-                case 15: str[i] = 'F'; break;
+            if (temp > 9) {
+                switch (temp) {
+                case 10:
+                    str[i] = 'A';
+                    break;
+                case 11:
+                    str[i] = 'B';
+                    break;
+                case 12:
+                    str[i] = 'C';
+                    break;
+                case 13:
+                    str[i] = 'D';
+                    break;
+                case 14:
+                    str[i] = 'E';
+                    break;
+                case 15:
+                    str[i] = 'F';
+                    break;
                 }
             } else {
                 str[i] = (char) temp;
@@ -331,93 +346,99 @@ public class ServletUtils {
         }
         return new String(str);
     }
-    
+
     public static String URLEncode(String str) {
         String ret = null;
-        
+
         try {
-            ret = URLEncoder.encode(str,"UTF-8");
+            ret = URLEncoder.encode(str, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             log.debug(e.getMessage());
         }
-        
+
         return ret;
     }
-    
+
     public static String URLDecode(String str, String encoding) {
         String ret = null;
-        
-        if(encoding != null) {
-        try {
+
+        if (encoding != null) {
+            try {
                 ret = URLDecoder.decode(str, encoding);
             } catch (UnsupportedEncodingException e) {
                 log.debug(e.getMessage());
             }
         }
-        
+
         try {
-            ret = URLDecoder.decode(str,"UTF-8");   
+            ret = URLDecoder.decode(str, "UTF-8");
         } catch (UnsupportedEncodingException e1) {
             log.debug(e1.getMessage());
         }
-        
+
         return ret;
     }
-    
+
     private static String[] URLDecode(String[] values, String encoding) {
         String[] decodedValues = new String[values.length];
-        
-        for(int i=0; i<values.length; i++) {
+
+        for (int i = 0; i < values.length; i++) {
             decodedValues[i] = URLDecode(values[i], encoding);
         }
-        
+
         return decodedValues;
     }
-    
+
     public static String gwcHtmlHeader(String pageTitle) {
-        return 
-            "<head>\n"
-                + "<title>"
-                + pageTitle
-                + "</title>"
-                + "<style type=\"text/css\">\n"
+        return "<head>\n" + "<title>" + pageTitle + "</title>" + "<style type=\"text/css\">\n"
                 + "body, td {\n"
                 + "font-family: Verdana,Arial,\'Bitstream Vera Sans\',Helvetica,sans-serif;\n"
-                + "font-size: 0.85em;\n"
-                + "vertical-align: top;\n"
-                + "}\n"
-                + "</style>\n" 
+                + "font-size: 0.85em;\n" + "vertical-align: top;\n" + "}\n" + "</style>\n"
                 + "</head>\n";
     }
-    
+
     public static String gwcHtmlLogoLink(String relBasePath) {
-        return "<a id=\"logo\" href=\"" + relBasePath + "\">" 
-        +"<img src=\""+relBasePath+"rest/web/geowebcache_logo.png\""
-        +"height=\"70\" width=\"247\" border=\"0\"/>"
-        +"</a>\n";
+        return "<a id=\"logo\" href=\"" + relBasePath + "\">" + "<img src=\"" + relBasePath
+                + "rest/web/geowebcache_logo.png\"" + "height=\"70\" width=\"247\" border=\"0\"/>"
+                + "</a>\n";
     }
-    
+
     public static long[][] arrayDeepCopy(long[][] array) {
         long[][] ret = new long[array.length][array[0].length];
-        for(int i=0; i<array.length; i++) {
+        for (int i = 0; i < array.length; i++) {
             System.arraycopy(array[i], 0, ret[i], 0, array[i].length);
         }
-        
+
         return ret;
     }
-    
+
     /**
-     * Replaces occurrences of &gt; and &lt; with HTML equivalents  
+     * Replaces occurrences of &gt; and &lt; with HTML equivalents
      * 
      * @param str
      * @return
      */
-    
+
     public static String disableHTMLTags(String str) {
-        if(str == null) {
+        if (str == null) {
             return "null";
         }
-        
+
         return str.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    }
+
+    public static Map<String, String> queryStringToMap(String queryString) {
+        if (queryString == null || queryString.length() == 0) {
+            return Collections.emptyMap();
+        }
+        String[] params = queryString.split("&");
+        Map<String, String> ret = new HashMap<String, String>();
+        for (String kvp : params) {
+            String[] split = kvp.split("=");
+            if (split[0].length() > 0) {
+                ret.put(split[0], split[1]);
+            }
+        }
+        return ret;
     }
 }

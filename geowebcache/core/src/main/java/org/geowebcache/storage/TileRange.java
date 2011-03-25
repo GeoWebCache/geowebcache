@@ -17,7 +17,10 @@
  */
 package org.geowebcache.storage;
 
+import java.util.Map;
+
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.util.ServletUtils;
 
 /**
  * A 3 dimensional tile range inside a grid set, specified by a range of zooms for fast filtering
@@ -25,22 +28,31 @@ import org.geowebcache.mime.MimeType;
  */
 public class TileRange {
     final public String layerName;
-    
+
     final public String gridSetId;
-    
+
     final public int zoomStart;
-    
+
     final public int zoomStop;
-    
+
     // {zoom}{minx,miny,maxx,maxy}
     final public long[][] rangeBounds;
-    
+
     final public MimeType mimeType;
-    
-    final public String parameters;
-    
-    public TileRange(String layerName, String gridSetId, int zoomStart, 
-            int zoomStop, long[][] rangeBounds, MimeType mimeType, String parameters) {
+
+    final public Map<String, String> parameters;
+
+    /**
+     * @deprecated use {@link #TileRange(String, String, int, int, long[][], MimeType, Map)}
+     */
+    public TileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,
+            long[][] rangeBounds, MimeType mimeType, String parameters) {
+        this(layerName, gridSetId, zoomStart, zoomStop, rangeBounds, mimeType, ServletUtils
+                .queryStringToMap(parameters));
+    }
+
+    public TileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,
+            long[][] rangeBounds, MimeType mimeType, Map<String, String> parameters) {
         this.layerName = layerName;
         this.gridSetId = gridSetId;
         this.rangeBounds = rangeBounds;
@@ -49,20 +61,17 @@ public class TileRange {
         this.mimeType = mimeType;
         this.parameters = parameters;
     }
-    
+
     public boolean contains(long[] idx) {
-        return contains(idx[0], idx[1], (int)idx[2]);
+        return contains(idx[0], idx[1], (int) idx[2]);
     }
 
-    public boolean contains(long x, long y, int z){ 
-        if(z >= zoomStart && z <= zoomStop) {
-            
+    public boolean contains(long x, long y, int z) {
+        if (z >= zoomStart && z <= zoomStop) {
+
             long[] rB = rangeBounds[(int) z];
-            
-            if(rB[0] <= x 
-                    && rB[2] >= x 
-                    && rB[1] <= y 
-                    && rB[3] >= y) {
+
+            if (rB[0] <= x && rB[2] >= x && rB[1] <= y && rB[3] >= y) {
                 return true;
             }
         }

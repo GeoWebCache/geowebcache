@@ -24,7 +24,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -115,12 +114,6 @@ public class WMSLayer extends TileLayer {
 
     private transient HashMap<GridLocObj, Boolean> procQueue;
 
-    private transient ParameterFilter[] sortedModParams;
-
-    private transient String[] sortedModParamsKeys;
-
-    private transient boolean stylesIsModParam = false;
-
     private transient String encodedWMSLayers;
 
     private transient String encodedWMSStyles;
@@ -203,39 +196,6 @@ public class WMSLayer extends TileLayer {
 
         for (int i = 0; i < gridLocConds.length; i++) {
             gridLocConds[i] = layerLock.newCondition();
-        }
-
-        if (this.parameterFilters != null && this.parameterFilters.size() > 0) {
-            Iterator<ParameterFilter> iter = parameterFilters.iterator();
-            TreeMap<String, ParameterFilter> tree = new TreeMap<String, ParameterFilter>();
-
-            while (iter.hasNext()) {
-                ParameterFilter modParam = iter.next();
-                String key = modParam.getKey();
-
-                // STYLES is special because it is mandatory, so we need to make
-                // a special case
-                if (key.equalsIgnoreCase("STYLES")) {
-                    stylesIsModParam = true;
-                }
-                tree.put(modParam.getKey(), modParam);
-            }
-
-            // this.sortedModParams = new
-            // ModifiableParameter[this.modifiableParameters.size()];
-            int arSize = tree.values().size();
-            Iterator<ParameterFilter> sortedIter = tree.values().iterator();
-            this.sortedModParams = new ParameterFilter[arSize];
-            for (int i = 0; i < arSize; i++) {
-                sortedModParams[i] = sortedIter.next();
-            }
-
-            this.sortedModParamsKeys = new String[sortedModParams.length];
-
-            for (int i = 0; i < sortedModParams.length; i++) {
-                sortedModParamsKeys[i] = sortedModParams[i].getKey();
-            }
-
         }
 
         if (this.sourceHelper instanceof WMSHttpHelper) {
@@ -595,57 +555,51 @@ public class WMSLayer extends TileLayer {
         }
     }
 
-    public String getWMSRequestTemplate(MimeType responseFormat, RequestType reqType) {
+    public Map<String, String> getWMSRequestTemplate(MimeType responseFormat, RequestType reqType) {
+        Map<String, String> params = new HashMap<String, String>();
         FormatModifier mod = getFormatModifier(responseFormat);
 
-        StringBuilder strBuilder = new StringBuilder();
-        strBuilder.append("SERVICE=WMS");
+        params.put("SERVICE", "WMS");
 
-        strBuilder.append("&REQUEST=");
+        String request;
         if (reqType == RequestType.MAP) {
-            strBuilder.append("GetMap");
+            request = "GetMap";
         } else { // if(reqType == RequestType.FEATUREINFO) {
-            strBuilder.append("GetFeatureInfo");
+            request = "GetFeatureInfo";
         }
+        params.put("REQUEST", request);
 
-        strBuilder.append("&VERSION=");
-        if (wmsVersion != null) {
-            strBuilder.append(wmsVersion);
-        } else {
-            strBuilder.append("1.1.0");
+        String version = wmsVersion;
+        if (wmsVersion == null) {
+            version = "1.1.0";
         }
+        params.put("VERSION", version);
 
-        strBuilder.append("&LAYERS=");
-
+        String layers;
         if (this.wmsLayers != null && this.wmsLayers.length() != 0) {
-            strBuilder.append(encodedWMSLayers);
+            layers = encodedWMSLayers;
         } else {
-            strBuilder.append(encodedName);
+            layers = encodedName;
         }
+        params.put("LAYERS", layers);
 
         if (reqType == RequestType.FEATUREINFO) {
-            strBuilder.append("&QUERY_LAYERS=");
-
-            if (this.wmsLayers != null && this.wmsLayers.length() != 0) {
-                strBuilder.append(encodedWMSLayers);
-            } else {
-                strBuilder.append(encodedName);
-            }
+            params.put("QUERY_LAYERS", layers);
         }
 
-        strBuilder.append("&EXCEPTIONS=");
+        String exceptions;
         if (errorMime != null) {
-            strBuilder.append(errorMime);
+            exceptions = errorMime;
         } else {
-            strBuilder.append(XMLMime.ogcxml.getMimeType());
+            exceptions = XMLMime.ogcxml.getMimeType();
         }
+        params.put("EXCEPTIONS", exceptions);
 
-        if (!stylesIsModParam) {
-            strBuilder.append("&STYLES=");
-            if (wmsStyles != null && wmsStyles.length() != 0) {
-                strBuilder.append(encodedWMSStyles);
-            }
+        String styles = "";
+        if (wmsStyles != null && wmsStyles.length() != 0) {
+            styles = encodedWMSStyles;
         }
+        params.put("STYLES", styles);
 
         if (reqType == RequestType.MAP) {
             Boolean tmpTransparent = transparent;
@@ -655,9 +609,9 @@ public class WMSLayer extends TileLayer {
             }
 
             if (tmpTransparent == null || tmpTransparent) {
-                strBuilder.append("&TRANSPARENT=").append("TRUE");
+                params.put("TRANSPARENT", "TRUE");
             } else {
-                strBuilder.append("&TRANSPARENT=").append("FALSE");
+                params.put("TRANSPARENT", "FALSE");
             }
 
             String tmpBgColor = bgColor;
@@ -666,7 +620,7 @@ public class WMSLayer extends TileLayer {
             }
 
             if (tmpBgColor != null && tmpBgColor.length() != 0) {
-                strBuilder.append("&BGCOLOR=").append(tmpBgColor);
+                params.put("BGCOLOR", tmpBgColor);
             }
 
             String tmpPalette = encodedPalette;
@@ -675,18 +629,25 @@ public class WMSLayer extends TileLayer {
             }
 
             if (tmpPalette != null && tmpPalette.length() != 0) {
-                strBuilder.append("&PALETTE=").append(tmpPalette);
+                params.put("PALETTE", tmpPalette);
             }
         }
 
         if (vendorParameters != null && vendorParameters.length() != 0) {
-            if (!vendorParameters.startsWith("&"))
-                strBuilder.append("&");
-
-            strBuilder.append(vendorParameters);
+            String[] vparams = vendorParameters.split("&");
+            for (String vp : vparams) {
+                if (vp.length() > 0) {
+                    String[] split = vp.split("=");
+                    String key = split[0];
+                    String val = split[1];
+                    if (key.length() > 0) {
+                        params.put(key, val);
+                    }
+                }
+            }
         }
 
-        return strBuilder.toString();
+        return params;
     }
 
     /**
@@ -893,46 +854,6 @@ public class WMSLayer extends TileLayer {
         return tile;
     }
 
-    /**
-     * 
-     * @param map
-     * @return {full query string with default, query string with modifiers}
-     * @throws GeoWebCacheException
-     */
-    public String[] getModifiableParameters(Map<String, String[]> map, String encoding)
-            throws GeoWebCacheException {
-        String[] paramStrs = new String[2];
-
-        if (sortedModParamsKeys == null)
-            return null;
-
-        String[] values = ServletUtils.selectedStringsFromMap(map, encoding, sortedModParamsKeys);
-
-        StringBuilder strModifiers = new StringBuilder();
-        StringBuilder strFull = new StringBuilder();
-
-        for (int i = 0; i < values.length; i++) {
-            String value = decodeDimensionValue(values[i]);
-            ParameterFilter modParam = this.sortedModParams[i];
-
-            if (value == null || value.length() == 0) {
-                if (modParam.getDefaultValue() != null) {
-                    strFull.append("&").append(modParam.getKey()).append("=")
-                            .append(modParam.getDefaultValue());
-                }
-                // Otherwise we just omit it
-            } else {
-                String filteredValue = ServletUtils.URLEncode(modParam.apply(value));
-                strModifiers.append("&").append(modParam.getKey()).append("=")
-                        .append(filteredValue);
-            }
-        }
-
-        paramStrs[1] = strModifiers.toString();
-        paramStrs[0] = strFull.append(strModifiers).toString();
-
-        return paramStrs;
-    }
 
     public void mergeWith(WMSLayer otherLayer) throws GeoWebCacheException {
         if (otherLayer.parameterFilters != null) {
@@ -958,30 +879,6 @@ public class WMSLayer extends TileLayer {
     private Object readResolve() {
         // Not really needed at this point
         return this;
-    }
-
-    public static String decodeDimensionValue(String value) {
-        if (value != null && value.startsWith("_")) {
-            if (value.equals("_null")) {
-                return null;
-            } else if (value.equals("_empty")) {
-                return "";
-            } else {
-                return value;
-            }
-        } else {
-            return value;
-        }
-    }
-
-    public static String encodeDimensionValue(String value) {
-        if (value == null) {
-            return "_null";
-        } else if (value.length() == 0) {
-            return "_empty";
-        } else {
-            return value;
-        }
     }
 
     public void cleanUpThreadLocals() {

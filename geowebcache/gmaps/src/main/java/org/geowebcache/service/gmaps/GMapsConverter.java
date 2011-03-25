@@ -35,33 +35,32 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
 
 /**
- * Class to convert from Google Maps coordinates into the internal
- * representation of a tile.
+ * Class to convert from Google Maps coordinates into the internal representation of a tile.
  */
 public class GMapsConverter extends Service {
     public static final String SERVICE_GMAPS = "gmaps";
 
     private StorageBroker sb;
-    
+
     private TileLayerDispatcher tld;
-    
+
     private GridSetBroker gsb;
-    
+
     public GMapsConverter(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb) {
         super(SERVICE_GMAPS);
-        
+
         this.sb = sb;
         this.tld = tld;
         this.gsb = gsb;
     }
-    
-    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response) 
-    throws ServiceException,GeoWebCacheException {
+
+    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response)
+            throws ServiceException, GeoWebCacheException {
         String layerId = super.getLayersParameter(request);
-        
+
         String encoding = request.getCharacterEncoding();
 
-        Map<String,String[]> params = request.getParameterMap();
+        Map<String, String[]> params = request.getParameterMap();
         String strFormat = ServletUtils.stringFromMap(params, encoding, "format");
         String strZoom = ServletUtils.stringFromMap(params, encoding, "zoom");
         String strX = ServletUtils.stringFromMap(params, encoding, "x");
@@ -69,26 +68,26 @@ public class GMapsConverter extends Service {
         String strCached = ServletUtils.stringFromMap(params, encoding, "cached");
         String strMetaTiled = ServletUtils.stringFromMap(params, encoding, "metatiled");
 
-        long[] gridLoc = GMapsConverter.convert(Integer.parseInt(strZoom), 
-                Integer.parseInt(strX), Integer.parseInt(strY));
+        long[] gridLoc = GMapsConverter.convert(Integer.parseInt(strZoom), Integer.parseInt(strX),
+                Integer.parseInt(strY));
 
-        
         String layers = ServletUtils.stringFromMap(params, encoding, "layers");
-        if(layers == null || layers.length() == 0) {    
+        if (layers == null || layers.length() == 0) {
             layers = ServletUtils.stringFromMap(params, encoding, "layer");
         }
-        
-        
+
         TileLayer tileLayer = tld.getTileLayer(layers);
-        String[] modStrs=null;
-        if (tileLayer instanceof WMSLayer){
-        	modStrs = ((WMSLayer) tileLayer).getModifiableParameters(params, encoding);
+        Map<String, String> defaultParameters = null;
+        Map<String, String> modifiedParameters = null;
+        if (tileLayer instanceof WMSLayer) {
+            Map<String, String>[] modStrs = null;
+            modStrs = ((WMSLayer) tileLayer).getModifiableParameters(params, encoding);
+            if (modStrs != null) {
+                defaultParameters = modStrs[0];
+                modifiedParameters = modStrs[1];
+            }
         }
-        if (modStrs==null){
-        	modStrs=new String[2];
-        }
-        
-        
+
         MimeType mimeType = null;
         try {
             if (strFormat == null) {
@@ -96,52 +95,52 @@ public class GMapsConverter extends Service {
             }
             mimeType = MimeType.createFromFormat(strFormat);
         } catch (MimeException me) {
-            throw new ServiceException("Unable to determine requested format, "+ strFormat);
+            throw new ServiceException("Unable to determine requested format, " + strFormat);
         }
-        
-        ConveyorTile ret = new ConveyorTile(sb, layerId, gsb.WORLD_EPSG3857.getName(), gridLoc, mimeType, modStrs[0], modStrs[1], request, response);
-        
-        if(strCached != null && ! Boolean.parseBoolean(strCached)) {
+
+        ConveyorTile ret = new ConveyorTile(sb, layerId, gsb.WORLD_EPSG3857.getName(), gridLoc,
+                mimeType, defaultParameters, modifiedParameters, request, response);
+
+        if (strCached != null && !Boolean.parseBoolean(strCached)) {
             ret.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
-            
-            if(strMetaTiled != null && ! Boolean.parseBoolean(strMetaTiled)) {
+
+            if (strMetaTiled != null && !Boolean.parseBoolean(strMetaTiled)) {
                 ret.setHint("not_cached,not_metatiled");
             } else {
                 ret.setHint("not_cached");
             }
         }
-        
-        return ret; 
+
+        return ret;
     }
-    
-    /** 
+
+    /**
      * NB The following code is shared across Google Maps, Mobile Google Maps and Virtual Earth
      */
-    public void handleRequest(ConveyorTile tile)
-            throws GeoWebCacheException {
+    public void handleRequest(ConveyorTile tile) throws GeoWebCacheException {
         if (tile.getHint() != null) {
-            //boolean requestTiled = true;
-            
+            // boolean requestTiled = true;
+
             if (tile.getHint().equals("not_cached,not_metatiled")) {
-                //requestTiled = false;
+                // requestTiled = false;
             } else if (!tile.getHint().equals("not_cached")) {
                 throw new GeoWebCacheException("Hint " + tile.getHint() + " is not known.");
             }
 
             TileLayer tl = tld.getTileLayer(tile.getLayerId());
 
-            if(tl == null) {
+            if (tl == null) {
                 throw new GeoWebCacheException("Unknown layer " + tile.getLayerId());
             }
-            
-            if(! tl.isCacheBypassAllowed().booleanValue()) {
-                throw new GeoWebCacheException("Layer " + tile.getLayerId() 
+
+            if (!tl.isCacheBypassAllowed().booleanValue()) {
+                throw new GeoWebCacheException("Layer " + tile.getLayerId()
                         + " is not configured to allow bypassing the cache.");
             }
 
             tile.setTileLayer(tl);
             tl.getNoncachedTile(tile);
-            
+
             Service.writeTileResponse(tile, false);
         }
     }
@@ -149,14 +148,12 @@ public class GMapsConverter extends Service {
     /**
      * Convert Google's tiling coordinates into an {x,y,x}
      * 
-     * see
-     * http://code.google.com/apis/maps/documentation/overlays.html#Custom_Map_Types
+     * see http://code.google.com/apis/maps/documentation/overlays.html#Custom_Map_Types
      * 
      * @param quadKey
      * @return
      */
-    public static long[] convert(long zoomLevel, long x, long y) 
-    throws ServiceException {
+    public static long[] convert(long zoomLevel, long x, long y) throws ServiceException {
         // Extent is the total number of tiles in y direction
         long extent = (long) Math.pow(2, zoomLevel);
 

@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,7 +27,7 @@ public class JDBCMBWrapperPerfTest extends TestCase {
 
     final Resource blob = new ByteArrayResource(new byte[4096]);
 
-    final String parameters = null;
+    final Map<String, String> parameters = null;
 
     final String format = "image/jpeg";
 

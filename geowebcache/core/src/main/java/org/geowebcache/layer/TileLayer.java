@@ -20,9 +20,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletResponse;
@@ -707,6 +709,72 @@ public abstract class TileLayer {
         return parameterFilters;
     }
 
+    /**
+     * 
+     * @param map
+     * @return {full query string with default, query string with modifiers}
+     * @throws GeoWebCacheException
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, String>[] getModifiableParameters(Map<String, String[]> map, String encoding)
+            throws GeoWebCacheException {
+        if (parameterFilters == null) {
+            return null;
+        }
+
+        Map<String, String> defaultModParams = new HashMap<String, String>();
+        Map<String, String> modifiedParams = new HashMap<String, String>();
+
+        final String[] keys = new String[parameterFilters.size()];
+        for (int i = 0; i < keys.length; i++) {
+            ParameterFilter parameterFilter = parameterFilters.get(i);
+            keys[i] = parameterFilter.getKey();
+            String defaultValue = decodeDimensionValue(parameterFilter.getDefaultValue());
+            defaultModParams.put(keys[i], defaultValue);
+        }
+        final Map<String, String> requestValues;
+        requestValues = ServletUtils.selectedStringsFromMap(map, encoding, keys);
+
+        for (ParameterFilter parameterFilter : parameterFilters) {
+            String key = parameterFilter.getKey().toUpperCase();
+            String value = requestValues.get(key);
+            value = decodeDimensionValue(value);
+
+            if (value != null && value.length() > 0) {
+                String appliedValue = parameterFilter.apply(value);
+                String filteredValue = ServletUtils.URLEncode(appliedValue);
+                modifiedParams.put(key, filteredValue);
+            }
+        }
+
+        Map<String, String>[] ret = new Map[] { defaultModParams, modifiedParams };
+        return ret;
+    }
+
+    protected static String decodeDimensionValue(String value) {
+        if (value != null && value.startsWith("_")) {
+            if (value.equals("_null")) {
+                return null;
+            } else if (value.equals("_empty")) {
+                return "";
+            } else {
+                return value;
+            }
+        } else {
+            return value;
+        }
+    }
+
+    public static String encodeDimensionValue(String value) {
+        if (value == null) {
+            return "_null";
+        } else if (value.length() == 0) {
+            return "_empty";
+        } else {
+            return value;
+        }
+    }
+
     public List<RequestFilter> getRequestFilters() {
         return requestFilters;
     }
@@ -714,7 +782,7 @@ public abstract class TileLayer {
     public GridSubset getGridSubset(String gridSetId) {
         return this.subSets.get(gridSetId);
     }
-    
+
     protected ByteArrayResource getImageBuffer(ThreadLocal<ByteArrayResource> tl) {
         ByteArrayResource buffer = tl.get();
         if (buffer == null) {

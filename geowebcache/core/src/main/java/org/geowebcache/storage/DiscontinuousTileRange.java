@@ -17,7 +17,10 @@
  */
 package org.geowebcache.storage;
 
+import java.util.Map;
+
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.util.ServletUtils;
 
 /**
  * This class is a TileRange object with an additional filter
@@ -25,29 +28,34 @@ import org.geowebcache.mime.MimeType;
 public class DiscontinuousTileRange extends TileRange {
 
     final private RasterMask rasterMask;
-    
-    public DiscontinuousTileRange(
-            String layerName, String gridSetId, 
-            int zoomStart, int zoomStop, 
-            RasterMask rasterMask,
-            MimeType mimeType, String parameters) {
-        
-        super(layerName, gridSetId, 
-                zoomStart, zoomStop, 
-                rasterMask.getGridCoverages(), 
-                mimeType, parameters);
-        
+
+    /**
+     * @deprecated use
+     *             {@link #DiscontinuousTileRange(String, String, int, int, RasterMask, MimeType, Map)}
+     */
+    public DiscontinuousTileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,
+            RasterMask rasterMask, MimeType mimeType, String parameters) {
+        this(layerName, gridSetId, zoomStart, zoomStop, rasterMask, mimeType, ServletUtils
+                .queryStringToMap(parameters));
+    }
+
+    public DiscontinuousTileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,
+            RasterMask rasterMask, MimeType mimeType, Map<String, String> parameters) {
+
+        super(layerName, gridSetId, zoomStart, zoomStop, rasterMask.getGridCoverages(), mimeType,
+                parameters);
+
         this.rasterMask = rasterMask;
     }
-    
+
     @Override
     public boolean contains(long x, long y, int z) {
-        if(super.contains(x, y, z)) {
+        if (super.contains(x, y, z)) {
             return rasterMask.lookup(x, y, z);
-        }        
+        }
         return false;
     }
-    
+
     @Override
     public boolean contains(long[] idx) {
         return contains(idx[0], idx[1], (int) idx[2]);

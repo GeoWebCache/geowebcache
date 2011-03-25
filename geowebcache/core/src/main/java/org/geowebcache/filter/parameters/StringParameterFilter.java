@@ -21,7 +21,7 @@ import java.util.List;
 
 public class StringParameterFilter extends ParameterFilter {
 
-    List<String> values;
+    public List<String> values;
         
     public String apply(String str) throws ParameterException {
         if(str == null || str.length() == 0) {

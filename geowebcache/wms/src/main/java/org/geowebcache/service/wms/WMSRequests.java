@@ -70,7 +70,7 @@ public class WMSRequests {
                throw new GeoWebCacheException("Can only proxy if WMS Layer is backed by an HTTP backend"); 
             }
 
-            getMethod = ((WMSHttpHelper) helper).executeRequest(url, layer.getBackendTimeout());
+            getMethod = ((WMSHttpHelper) helper).executeRequest(url, null, layer.getBackendTimeout());
             InputStream is = getMethod.getResponseBodyAsStream();
 
             HttpServletResponse response = tile.servletResp;

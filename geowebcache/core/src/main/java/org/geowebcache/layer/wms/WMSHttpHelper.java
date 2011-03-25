@@ -23,9 +23,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Map;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -76,8 +78,9 @@ public class WMSHttpHelper extends WMSSourceHelper {
      * @throws GeoWebCacheException
      */
     @Override
-    protected void makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer, String wmsParams,
-            String expectedMimeType, Resource target) throws GeoWebCacheException {
+    protected void makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer,
+            Map<String, String> wmsParams, String expectedMimeType, Resource target)
+            throws GeoWebCacheException {
         Assert.notNull(target, "Target resource can't be null");
         Assert.isTrue(target.getSize() == 0, "Target resource is not empty");
 
@@ -87,7 +90,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
         int backendTries = 0; // keep track of how many backends we have tried
         GeoWebCacheException fetchException = null;
         while (target.getSize() == 0 && backendTries < layer.getWMSurl().length) {
-            String requestUrl = layer.nextWmsURL() + wmsParams;
+            String requestUrl = layer.nextWmsURL();
 
             try {
                 wmsBackendUrl = new URL(requestUrl);
@@ -132,8 +135,8 @@ public class WMSHttpHelper extends WMSSourceHelper {
      * @throws GeoWebCacheException
      */
     private void connectAndCheckHeaders(TileResponseReceiver tileRespRecv, URL wmsBackendUrl,
-            String wmsParams, String requestMime, Integer backendTimeout, Resource target)
-            throws GeoWebCacheException {
+            Map<String, String> wmsParams, String requestMime, Integer backendTimeout,
+            Resource target) throws GeoWebCacheException {
 
         GetMethod getMethod = null;
         final int responseCode;
@@ -141,7 +144,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
 
         try { // finally
             try {
-                getMethod = executeRequest(wmsBackendUrl, backendTimeout);
+                getMethod = executeRequest(wmsBackendUrl, wmsParams, backendTimeout);
                 responseCode = getMethod.getStatusCode();
                 responseLength = (int) getMethod.getResponseContentLength();
 
@@ -240,26 +243,37 @@ public class WMSHttpHelper extends WMSSourceHelper {
             }
         }
     }
-    
 
     /**
      * sets up a HTTP GET request to a URL and configures authentication.
      * 
      * @param url
      *            endpoint to talk to
+     * @param queryParams
+     *            parameters for the query string
      * @param backendTimeout
      *            timeout to use in seconds
      * @return executed GetMethod (that has to be closed after reading the response!)
      * @throws HttpException
      * @throws IOException
      */
-    public GetMethod executeRequest(URL url, Integer backendTimeout) throws HttpException,
-            IOException {
+    public GetMethod executeRequest(final URL url, final Map<String, String> queryParams,
+            final Integer backendTimeout) throws HttpException, IOException {
+
         HttpClientBuilder builder = new HttpClientBuilder(url, backendTimeout, httpUsername,
                 httpPassword, proxyUrl);
         HttpClient httpClient = builder.buildClient();
 
         GetMethod getMethod = new GetMethod(url.toString());
+        if (queryParams != null && queryParams.size() > 0) {
+            NameValuePair[] params = new NameValuePair[queryParams.size()];
+            int i = 0;
+            for (Map.Entry<String, String> e : queryParams.entrySet()) {
+                params[i] = new NameValuePair(e.getKey(), e.getValue());
+                i++;
+            }
+            getMethod.setQueryString(params);
+        }
         getMethod.setDoAuthentication(builder.isDoAuthentication());
 
         httpClient.executeMethod(getMethod);

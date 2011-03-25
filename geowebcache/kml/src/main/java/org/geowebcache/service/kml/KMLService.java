@@ -161,7 +161,7 @@ public class KMLService extends Service {
         }
         
         ConveyorKMLTile tile = new ConveyorKMLTile(sb, parsed[0], gsb.WORLD_EPSG4326.getName(),
-                gridLoc, MimeType.createFromExtension(parsed[2]), "", "", request, response);
+                gridLoc, MimeType.createFromExtension(parsed[2]), null, null, request, response);
         
         // Sitemap index ? kml/sitemap.xml 
         if(parsed[0].equalsIgnoreCase("sitemap") && parsed[2].equalsIgnoreCase("xml")) {

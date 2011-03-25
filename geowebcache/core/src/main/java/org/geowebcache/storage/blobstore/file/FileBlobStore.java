@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -240,7 +241,7 @@ public class FileBlobStore implements BlobStore {
         final String layerName = trObj.layerName;
         final String gridSetId = trObj.gridSetId;
         final String blobFormat = trObj.mimeType.getFormat();
-        final String parameters = trObj.parameters;
+        final Map<String, String> parameters = trObj.parameters;
         final Long parametersId = null;
 
         File[] srsZoomDirs = layerPath.listFiles(fpf);

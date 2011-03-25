@@ -24,6 +24,7 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
@@ -258,7 +259,7 @@ class GeoRSSPollTask implements Runnable {
         while (mimeIter.hasNext()) {
             DiscontinuousTileRange dtr = new DiscontinuousTileRange(layer.getName(), gridSetId,
                     gridSub.getZoomStart(), gridSub.getZoomStop(), rasterMask, mimeIter.next(),
-                    null);
+                    (Map<String, String>) null);
             try {
                 GWCTask[] tasks = seeder.createTasks(dtr, layer, GWCTask.TYPE.TRUNCATE, 1, false);
                 tasks[0].doAction();
@@ -281,7 +282,7 @@ class GeoRSSPollTask implements Runnable {
         while (mimeIter.hasNext()) {
             DiscontinuousTileRange dtr = new DiscontinuousTileRange(layer.getName(), gridSetId,
                     gridSub.getZoomStart(), gridSub.getZoomStop(), rasterMask, mimeIter.next(),
-                    null);
+                    (Map<String, String>) null);
 
             final int seedingThreads = pollDef.getSeedingThreads();
             GWCTask[] tasks;

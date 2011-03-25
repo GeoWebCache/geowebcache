@@ -17,6 +17,8 @@
  */
 package org.geowebcache.layer.wms;
 
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -32,7 +34,7 @@ public class WMSMetaTile extends MetaTile {
 
     protected boolean requestTiled = false;
 
-    protected String fullParameters;
+    protected Map<String, String> fullParameters;
 
     /**
      * Used for requests by clients
@@ -42,7 +44,7 @@ public class WMSMetaTile extends MetaTile {
      */
     protected WMSMetaTile(WMSLayer layer, GridSubset gridSubset, MimeType responseFormat,
             FormatModifier formatModifier, long[] tileGridPosition, int metaX, int metaY,
-            String fullParameters) {
+            Map<String, String> fullParameters) {
         super(gridSubset, responseFormat, formatModifier, tileGridPosition, metaX, metaY,
                 (layer == null ? null : layer.gutter));
         this.wmsLayer = layer;
@@ -51,26 +53,28 @@ public class WMSMetaTile extends MetaTile {
         // ImageUtilities.allowNativeCodec("png", ImageReaderSpi.class, false);
     }
 
-    protected String getWMSParams() throws GeoWebCacheException {
-        String baseParameters = wmsLayer.getWMSRequestTemplate(this.getResponseFormat(),
+    protected Map<String, String> getWMSParams() throws GeoWebCacheException {
+        Map<String, String> params = wmsLayer.getWMSRequestTemplate(this.getResponseFormat(),
                 WMSLayer.RequestType.MAP);
 
         // Fill in the blanks
-        StringBuilder strBuilder = new StringBuilder(baseParameters);
+        String format;
         if (formatModifier == null) {
-            strBuilder.append("&FORMAT=").append(responseFormat.getFormat());
+            format = responseFormat.getFormat();
         } else {
-            strBuilder.append("&FORMAT=").append(formatModifier.getRequestFormat().getFormat());
+            MimeType requestFormat = formatModifier.getRequestFormat();
+            format = requestFormat.getFormat();
         }
+        params.put("FORMAT", format);
 
-        strBuilder.append("&SRS=").append(wmsLayer.backendSRSOverride(gridSubset.getSRS()));
-        strBuilder.append("&WIDTH=").append(getMetaTileWidth());
-        strBuilder.append("&HEIGHT=").append(getMetaTileHeight());
-        strBuilder.append("&BBOX=").append(getMetaTileBounds());
+        params.put("SRS", wmsLayer.backendSRSOverride(gridSubset.getSRS()));
+        params.put("WIDTH", String.valueOf(getMetaTileWidth()));
+        params.put("HEIGHT", String.valueOf(getMetaTileHeight()));
+        params.put("BBOX", String.valueOf(getMetaTileBounds()));
 
-        strBuilder.append(fullParameters);
+        params.putAll(fullParameters);
 
-        return strBuilder.toString();
+        return params;
     }
 
     public int[] getGutter() {

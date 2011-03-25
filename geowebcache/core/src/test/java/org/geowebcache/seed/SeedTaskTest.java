@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -160,7 +161,6 @@ public class SeedTaskTest extends TestCase {
      * 
      * @throws Exception
      */
-    @SuppressWarnings("serial")
     public void testSeedRetries() throws Exception {
         WMSLayer tl = createWMSLayer("image/png");
 
@@ -175,7 +175,7 @@ public class SeedTaskTest extends TestCase {
 
             @Override
             protected void makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer,
-                    String wmsParams, String expectedMimeType, Resource target)
+                    Map<String, String> wmsParams, String expectedMimeType, Resource target)
                     throws GeoWebCacheException {
                 numCalls++;
                 switch (numCalls) {

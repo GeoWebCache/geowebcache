@@ -61,7 +61,8 @@ public class SRS implements Comparable {
     }
     
     public static SRS getSRS(String epsgStr) throws GeoWebCacheException {
-        if (epsgStr.substring(0, 5).equalsIgnoreCase("EPSG:")) {
+        final String crsAuthPrefix = "EPSG:";
+        if (epsgStr.substring(0, 5).equalsIgnoreCase(crsAuthPrefix)) {
             int epsgNumber = Integer.parseInt(epsgStr.substring(5, epsgStr.length()));
             return getSRS(epsgNumber);
         } else {

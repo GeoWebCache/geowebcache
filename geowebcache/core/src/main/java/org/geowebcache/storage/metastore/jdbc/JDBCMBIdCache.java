@@ -26,6 +26,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,7 +49,9 @@ class JDBCMBIdCache {
 
     private final Map<String, Long> layersCache;
 
-    private final Map<String, Long> parametersCache;
+    private final Map<String, Long> serializedParametersCache;
+
+    private final Map<Map<String, String>, Long> parametersCache;
 
     private final Map<String, Long> gridSetsCache;
 
@@ -56,7 +60,8 @@ class JDBCMBIdCache {
     protected JDBCMBIdCache(JDBCMBWrapper wrpr) {
         formatsCache = new HashMap<String, Long>();
         layersCache = new HashMap<String, Long>();
-        parametersCache = new HashMap<String, Long>();
+        parametersCache = new HashMap<Map<String, String>, Long>();
+        serializedParametersCache = new HashMap<String, Long>();
         gridSetsCache = new HashMap<String, Long>();
 
         this.wrpr = wrpr;
@@ -170,14 +175,31 @@ class JDBCMBIdCache {
         }
     }
 
-    protected Long getParametersId(String parameters) throws StorageException {
+    protected long getParametersId(Map<String, String> parameteres) throws StorageException {
+        if (parameteres != null && parameteres.size() > 0) {
+            return -1L;
+        }
         synchronized (this.parametersCache) {
-            Long ret = parametersCache.get(parameters);
-            if (ret == null)
-                ret = getOrInsert(parameters, parametersCache, MAX_PARAMETERS, "PARAMETERS");
+            Long ret = parametersCache.get(parameteres);
+            if (ret == null) {
+                String serializedParameters;
+                serializedParameters = marshall(parameteres);
+                ret = getOrInsert(serializedParameters, serializedParametersCache, MAX_PARAMETERS,
+                        "PARAMETERS");
+                parametersCache.put(new HashMap<String, String>(parameteres), ret);
+            }
 
             return ret;
         }
+    }
+
+    private String marshall(Map<String, String> parameters) {
+        StringBuilder sb = new StringBuilder();
+        SortedMap<String, String> sorted = new TreeMap<String, String>(parameters);
+        for (Map.Entry<String, String> e : sorted.entrySet()) {
+            sb.append('&').append(e.getKey()).append('=').append(e.getValue());
+        }
+        return sb.toString();
     }
 
     protected Long getGridSetsId(String gridSetId) throws StorageException {

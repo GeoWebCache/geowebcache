@@ -289,7 +289,7 @@ public class WMTSGetCapabilities {
          String defStyle = layer.getStyles();
          if(filters == null) {
              str.append("    <Style isDefault=\"true\">\n");
-             str.append("      <ows:Identifier>"+WMSLayer.encodeDimensionValue(defStyle)+"</ows:Identifier>\n");
+             str.append("      <ows:Identifier>"+TileLayer.encodeDimensionValue(defStyle)+"</ows:Identifier>\n");
              str.append("    </Style>\n");
          } else {
              ParameterFilter stylesFilter = null;

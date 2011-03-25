@@ -18,6 +18,8 @@
 package org.geowebcache.storage;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -37,15 +39,18 @@ public class MetaStoreTest extends TestCase {
 
             long[] xyz = { 1L, 2L, 3L };
             bytes = new ByteArrayResource("Test 1 2 3".getBytes());
+            Map<String, String> parameters = new HashMap<String, String>();
+            parameters.put("a", "x");
+            parameters.put("b", "y");
             TileObject to = TileObject.createCompleteTileObject(
-                    "test'Layer:æøå;", xyz, "hefty-gridSet:id", "jpeg", "a=x&b=y", bytes);
+                    "test'Layer:æøå;", xyz, "hefty-gridSet:id", "jpeg", parameters, bytes);
 
             ms.put(to);
             ms.unlock(to);
             
             long[] xyz2 = { 1L, 2L, 3L };
             to2 = TileObject.createQueryTileObject(
-                    "test'Layer:æøå;", xyz2, "hefty-gridSet:id", "jpeg", "a=x&b=y");
+                    "test'Layer:æøå;", xyz2, "hefty-gridSet:id", "jpeg", parameters);
 
             ms.get(to2);
 
@@ -63,7 +68,9 @@ public class MetaStoreTest extends TestCase {
         TileObject to3 = null;
         String layerName = "test'Layer:æøå;";
         String format = "jpeg";
-        String parameters = "a=x&b=y";
+        Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put("a", "x");
+        parameters.put("b", "y");
         
         try {
             MetaStore ms = setup();

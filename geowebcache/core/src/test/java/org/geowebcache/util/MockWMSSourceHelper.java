@@ -32,7 +32,7 @@ public class MockWMSSourceHelper extends WMSSourceHelper {
 
     @Override
     protected void makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer,
-            String wmsParams, String expectedMimeType, Resource target)
+            Map<String, String> wmsParams, String expectedMimeType, Resource target)
             throws GeoWebCacheException {
         long ts = System.currentTimeMillis();
         long[][] tiles;
@@ -55,9 +55,8 @@ public class MockWMSSourceHelper extends WMSSourceHelper {
             tileW = gridSubset.getTileWidth();
             tileH = gridSubset.getTileHeight();
         }
-        Map<String, String> params = toRequestMap(wmsParams);
-        int width = Integer.parseInt(params.get("WIDTH"));
-        int height = Integer.parseInt(params.get("HEIGHT"));
+        int width = Integer.parseInt(wmsParams.get("WIDTH"));
+        int height = Integer.parseInt(wmsParams.get("HEIGHT"));
         int tilesX = width / tileW;
         int tilesY = height / tileH;
 
@@ -112,15 +111,4 @@ public class MockWMSSourceHelper extends WMSSourceHelper {
         // System.err.println(tiles.length + " tiles generated in " + ts + "ms");
     }
 
-    private Map<String, String> toRequestMap(String wmsParams) {
-        String[] split = wmsParams.split("&");
-        Map<String, String> params = new HashMap<String, String>();
-        for (String s : split) {
-            int index = s.indexOf('=');
-            if (index > 0) {
-                params.put(s.substring(0, index), s.substring(index + 1));
-            }
-        }
-        return params;
-    }
 }

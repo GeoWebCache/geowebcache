@@ -20,6 +20,8 @@ package org.geowebcache.conveyor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
+import java.util.Collections;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,114 +41,120 @@ import org.geowebcache.storage.TileObject;
 
 public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     private static Log log = LogFactory.getLog(org.geowebcache.conveyor.ConveyorTile.class);
-    
+
     // Shared request information, this is stored by the cache key
-    //protected long[] tileIndex = null;
-    
+    // protected long[] tileIndex = null;
+
     protected String layerId = null;
-    //protected SRS srs = null;
+
+    // protected SRS srs = null;
     protected String gridSetId = null;
-    
+
     protected GridSubset gridSubset = null;
-    
+
     protected TileLayer tileLayer = null;
-    
+
     TileObject stObj = null;
-    
-    String fullParameters;
-    
-    public ConveyorTile(StorageBroker sb, String layerId, HttpServletRequest servletReq, HttpServletResponse servletResp) {
+
+    private Map<String, String> fullParameters;
+
+    public ConveyorTile(StorageBroker sb, String layerId, HttpServletRequest servletReq,
+            HttpServletResponse servletResp) {
         super(sb, servletReq, servletResp);
         this.layerId = layerId;
     }
-    
+
     /**
-     * This constructor is used for an incoming request, the data is
-     * then added by the cache
+     * This constructor is used for an incoming request, the data is then added by the cache
      */
-    public ConveyorTile(StorageBroker sb, String layerId, String gridSetId, long[] tileIndex, MimeType mimeType, 
-            String fullParameters, String modifiedParameters,
-            HttpServletRequest servletReq, HttpServletResponse servletResp) {
+    public ConveyorTile(StorageBroker sb, String layerId, String gridSetId, long[] tileIndex,
+            MimeType mimeType, Map<String, String> fullParameters,
+            Map<String, String> modifiedParameters, HttpServletRequest servletReq,
+            HttpServletResponse servletResp) {
+
         super(sb, servletReq, servletResp);
         this.layerId = layerId;
         this.gridSetId = gridSetId;
-        
+
         long[] idx = new long[3];
-        
-        if(tileIndex != null) {
-            idx[0] = tileIndex[0]; idx[1] = tileIndex[1]; idx[2] = tileIndex[2];
+
+        if (tileIndex != null) {
+            idx[0] = tileIndex[0];
+            idx[1] = tileIndex[1];
+            idx[2] = tileIndex[2];
         }
-        
+
         super.mimeType = mimeType;
-               
+
         this.fullParameters = fullParameters;
-        
-        stObj = TileObject.createQueryTileObject(layerId, idx, gridSetId, mimeType.getFormat(), modifiedParameters);
+
+        stObj = TileObject.createQueryTileObject(layerId, idx, gridSetId, mimeType.getFormat(),
+                modifiedParameters);
     }
-    
-    public String getFullParameters() {
-        if(this.fullParameters == null)
-            return "";
-            
+
+    public Map<String, String> getFullParameters() {
+        if (fullParameters == null) {
+            return Collections.emptyMap();
+        }
         return fullParameters;
     }
-    
+
     public String getLayerId() {
         return this.layerId;
     }
-    
+
     public TileLayer getLayer() {
         return this.tileLayer;
     }
-    
+
     public void setTileLayer(TileLayer layer) {
         this.tileLayer = layer;
     }
-    
+
     public TileLayer getTileLayer() {
         return tileLayer;
     }
-    
+
     public long getTSCreated() {
         return stObj.getCreated();
     }
-        
+
     public int getStatus() {
         return (int) status;
     }
-    
+
     public void setStatus(int status) {
-        this.status = (long) status ;
+        this.status = (long) status;
     }
-    
+
     public String getErrorMessage() {
         return this.errorMsg;
     }
-    
+
     public void setErrorMessage(String errorMessage) {
         this.errorMsg = errorMessage;
     }
-    
-    public String getParameters() {
+
+    public Map<String, String> getParameters() {
         return ((TileObject) stObj).getParameters();
     }
-    
+
     public long[] getTileIndex() {
         return stObj.getXYZ();
     }
-    
+
     public synchronized GridSubset getGridSubset() {
-        if(gridSubset == null) {
+        if (gridSubset == null) {
             gridSubset = tileLayer.getGridSubset(gridSetId);
         }
-        
+
         return gridSubset;
     }
-    
+
     public String getGridSetId() {
         return gridSetId;
     }
-    
+
     public void setGridSetId(String gridSetId) {
         this.gridSetId = gridSetId;
     }
@@ -174,7 +182,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     public Resource getBlob() {
         return stObj.getBlob();
     }
-    
+
     /**
      * @deprecated as of 1.2.4a, use {@link #setBlob(Resource)}, keeping it for backwards
      *             compatibility as there are geoserver builds pegged at a given geoserver revision
@@ -188,11 +196,11 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     public void setBlob(Resource payload) {
         stObj.setBlob(payload);
     }
-    
-    public TileObject getStorageObject(){
+
+    public TileObject getStorageObject() {
         return stObj;
     }
-    
+
     public boolean persist() throws GeoWebCacheException {
         try {
             return storageBroker.put((TileObject) stObj);
@@ -204,36 +212,35 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     public boolean retrieve(long maxAge) throws GeoWebCacheException {
         try {
             boolean ret = storageBroker.get((TileObject) stObj);
-            
+
             // Has the tile been explicitly marked as old?
-            if(ret && stObj.getCreated() == -1) {
+            if (ret && stObj.getCreated() == -1) {
                 ret = false;
             } else
             // Do we use expiration, and if so, is the tile recent enough ?
-            if(ret && maxAge > 0 
-                    && stObj.getCreated() + maxAge < System.currentTimeMillis()) {
+            if (ret && maxAge > 0 && stObj.getCreated() + maxAge < System.currentTimeMillis()) {
                 ret = false;
             }
-            
-            if(ret) {
+
+            if (ret) {
                 this.setCacheResult(CacheResult.HIT);
             } else {
                 this.setCacheResult(CacheResult.MISS);
             }
-            
+
             return ret;
-            
+
         } catch (StorageException se) {
             log.warn(se.getMessage());
             return false;
         }
     }
-    
+
     public String toString() {
         StringBuilder str = new StringBuilder();
         str.append("ConveyorTile[");
         long[] idx = stObj.getXYZ();
-        
+
         if (idx != null && idx.length == 3) {
             str.append("{" + idx[0] + "," + idx[1] + "," + idx[2] + "} ");
         }
@@ -256,5 +263,5 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     public long getParametersId() {
         return stObj.getParametersId();
     }
-    
+
 }

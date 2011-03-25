@@ -20,11 +20,12 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
@@ -34,8 +35,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.RequestFilterException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
@@ -60,105 +61,114 @@ import org.geowebcache.util.ServletUtils;
  */
 public class WMSTileFuser {
     private static Log log = LogFactory.getLog(WMSTileFuser.class);
-    
+
     final StorageBroker sb;
-    
+
     final GridSubset gridSubset;
-    
+
     final TileLayer layer;
-    
+
     final ImageMime outputFormat;
-    
+
     ImageMime srcFormat;
-    
+
     int reqHeight;
-    
+
     int reqWidth;
-    
+
     final BoundingBox reqBounds;
-    
-    String[] reqModStrs;
-    
-    //Boolean reqTransparent;
-    
-    //String reqBgColor;
-    
+
+    // Boolean reqTransparent;
+
+    // String reqBgColor;
+
     // For adjustment of final raster
     double xResolution;
-    
+
     double yResolution;
-    
+
     // The source resolution
     double srcResolution;
-    
+
     int srcIdx;
-    
+
     long[] srcRectangle;
-    
+
     BoundingBox srcBounds;
-    
+
     BoundingBox canvasBounds;
-    
+
     int[] canvasSize = new int[2];
-    
+
     // These are values before scaling
     int[] canvOfs = new int[4];
-    
+
     double[] boundOfs = new double[4];
-    
+
     BufferedImage canvas;
-    
+
     Graphics2D gfx;
-        
-    protected WMSTileFuser(TileLayerDispatcher tld, StorageBroker sb, HttpServletRequest servReq) 
-    throws GeoWebCacheException {
+
+    private Map<String, String> fullParameters;
+
+    private Map<String, String> modifiedParameters;
+
+    protected WMSTileFuser(TileLayerDispatcher tld, StorageBroker sb, HttpServletRequest servReq)
+            throws GeoWebCacheException {
         this.sb = sb;
-        
-        String[] keys = { "layers", "format","srs","bbox", "width", "height", "transparent", "bgcolor" };
-        
-        String[] values = ServletUtils.selectedStringsFromMap(servReq.getParameterMap(), servReq.getCharacterEncoding(), keys);
-        
+
+        String[] keys = { "layers", "format", "srs", "bbox", "width", "height", "transparent",
+                "bgcolor" };
+
+        Map<String, String> values = ServletUtils.selectedStringsFromMap(servReq.getParameterMap(),
+                servReq.getCharacterEncoding(), keys);
+
         // TODO Parameter filters?
-        
-        layer = tld.getTileLayer(values[0]);
-        
+
+        String layerName = values.get("layers");
+        layer = tld.getTileLayer(layerName);
+
         List<MimeType> ml = layer.getMimeTypes();
         Iterator<MimeType> iter = ml.iterator();
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             MimeType mt = iter.next();
-            if(mt.getInternalName().equalsIgnoreCase("png")) {
+            if (mt.getInternalName().equalsIgnoreCase("png")) {
                 this.srcFormat = (ImageMime) mt;
             }
         }
-        
-        gridSubset = layer.getGridSubsetForSRS(SRS.getSRS(values[2]));
-        
-        outputFormat = (ImageMime) ImageMime.createFromFormat(values[1]);
 
-        reqBounds = new BoundingBox(values[3]);
-        
-        reqWidth = Integer.valueOf(values[4]);
-        
-        reqHeight = Integer.valueOf(values[5]);        
-        
-        //if(values[6] != null) {
-        //    this.reqTransparent = Boolean.valueOf(values[6]);
-        //}
-        
-        //if(values[7] != null) {
-        //    this.reqBgColor = values[7];
-        //}
-        
-        if(layer instanceof WMSLayer) {
-            reqModStrs = ((WMSLayer) layer).getModifiableParameters(servReq.getParameterMap(), servReq.getCharacterEncoding());
+        gridSubset = layer.getGridSubsetForSRS(SRS.getSRS(values.get("srs")));
+
+        outputFormat = (ImageMime) ImageMime.createFromFormat(values.get("format"));
+
+        reqBounds = new BoundingBox(values.get("bbox"));
+
+        reqWidth = Integer.valueOf(values.get("width"));
+
+        reqHeight = Integer.valueOf(values.get("height"));
+
+        // if(values[6] != null) {
+        // this.reqTransparent = Boolean.valueOf(values[6]);
+        // }
+
+        // if(values[7] != null) {
+        // this.reqBgColor = values[7];
+        // }
+
+        Map<String, String>[] modparams = ((WMSLayer) layer).getModifiableParameters(
+                servReq.getParameterMap(), servReq.getCharacterEncoding());
+
+        if (modparams == null) {
+            this.fullParameters = Collections.emptyMap();
+            this.modifiedParameters = Collections.emptyMap();
+        } else {
+            this.fullParameters = modparams[0];
+            this.modifiedParameters = modparams[1];
         }
-        
-        if(reqModStrs == null){
-            reqModStrs = new String[2];        
-        }     
     }
-    
-    protected WMSTileFuser(TileLayer layer, GridSubset gridSubset, BoundingBox bounds, int width, int height) {
+
+    protected WMSTileFuser(TileLayer layer, GridSubset gridSubset, BoundingBox bounds, int width,
+            int height) {
         this.sb = null;
         this.outputFormat = ImageMime.png;
         this.layer = layer;
@@ -166,128 +176,127 @@ public class WMSTileFuser {
         this.reqBounds = bounds;
         this.reqWidth = width;
         this.reqHeight = height;
-        this.reqModStrs = new String[2];
+        this.fullParameters = Collections.emptyMap();
+        this.modifiedParameters = Collections.emptyMap();
     }
-    
+
     protected void determineSourceResolution() {
         xResolution = reqBounds.getWidth() / reqWidth;
         yResolution = reqBounds.getHeight() / reqHeight;
-        
+
         double tmpResolution;
         // We use the smallest one
-        if(yResolution < xResolution) {
+        if (yResolution < xResolution) {
             tmpResolution = yResolution;
         } else {
             tmpResolution = xResolution;
         }
-        
-        log.debug(
-                "x res: " + xResolution 
-                + " y res: " + yResolution
-                + " tmpResolution: " + tmpResolution
-        );
-        
+
+        log.debug("x res: " + xResolution + " y res: " + yResolution + " tmpResolution: "
+                + tmpResolution);
+
         // Cut ourselves 0.5% slack
-        double compResolution = 1.005*tmpResolution;
-        
+        double compResolution = 1.005 * tmpResolution;
+
         double[] resArray = gridSubset.getResolutions();
-        
-        for(srcIdx=0; srcIdx < resArray.length; srcIdx++) {
+
+        for (srcIdx = 0; srcIdx < resArray.length; srcIdx++) {
             srcResolution = resArray[srcIdx];
-            if(srcResolution < compResolution) {
+            if (srcResolution < compResolution) {
                 break;
             }
         }
-        
-        if(srcIdx >= resArray.length) {
+
+        if (srcIdx >= resArray.length) {
             srcIdx = resArray.length - 1;
         }
-        
-        log.debug("z: " + srcIdx + " , resolution: " + srcResolution + " ("+tmpResolution+")");
-        
+
+        log.debug("z: " + srcIdx + " , resolution: " + srcResolution + " (" + tmpResolution + ")");
+
         // At worst, we have the best resolution possible
     }
-    
+
     protected void determineCanvasLayout() {
         srcRectangle = gridSubset.getCoverageIntersection(srcIdx, reqBounds);
         srcBounds = gridSubset.boundsFromRectangle(srcRectangle);
-        
-        //We now have the complete area, lets figure out our offsets
-        //Positive means that there is blank space to the first tile,
-        //negative means we will not use the entire tile
+
+        // We now have the complete area, lets figure out our offsets
+        // Positive means that there is blank space to the first tile,
+        // negative means we will not use the entire tile
         boundOfs[0] = srcBounds.getMinX() - reqBounds.getMinX();
         boundOfs[1] = srcBounds.getMinY() - reqBounds.getMinY();
         boundOfs[2] = reqBounds.getMaxX() - srcBounds.getMaxX();
         boundOfs[3] = reqBounds.getMaxY() - srcBounds.getMaxY();
-        
+
         canvasSize[0] = (int) Math.round(reqBounds.getWidth() / this.srcResolution);
         canvasSize[1] = (int) Math.round(reqBounds.getHeight() / this.srcResolution);
-        
-        //Calculate the corresponding pixel offsets. We'll stick to sane,
+
+        // Calculate the corresponding pixel offsets. We'll stick to sane,
         // i.e. bottom left, coordinates at this point
-        for(int i=0; i<4; i++) {
+        for (int i = 0; i < 4; i++) {
             canvOfs[i] = (int) Math.round(boundOfs[i] / this.srcResolution);
         }
-        
-        if(log.isDebugEnabled()) {
+
+        if (log.isDebugEnabled()) {
             log.debug("intersection rectangle: " + Arrays.toString(srcRectangle));
-            log.debug("intersection bounds: " + srcBounds + " ("+reqBounds+")");
+            log.debug("intersection bounds: " + srcBounds + " (" + reqBounds + ")");
             log.debug("Bound offsets: " + Arrays.toString(boundOfs));
-            log.debug("Canvas size: " + Arrays.toString(canvasSize) + "("+reqWidth+","+reqHeight+")");
-            log.debug("Canvas offsets: " + Arrays.toString(canvOfs));               
-        }  
+            log.debug("Canvas size: " + Arrays.toString(canvasSize) + "(" + reqWidth + ","
+                    + reqHeight + ")");
+            log.debug("Canvas offsets: " + Arrays.toString(canvOfs));
+        }
     }
-    
-    protected void createCanvas() {        
+
+    protected void createCanvas() {
         // TODO take bgcolor and transparency from request into account
         // should move this into a separate function
-        
+
         Color bgColor = null;
         boolean transparent = true;
-        
-        if(layer instanceof WMSLayer) {
+
+        if (layer instanceof WMSLayer) {
             WMSLayer wmsLayer = (WMSLayer) layer;
             int[] colorAr = wmsLayer.getBackgroundColor();
-            
-            if(colorAr != null) {
+
+            if (colorAr != null) {
                 bgColor = new Color(colorAr[0], colorAr[1], colorAr[2]);
             }
             transparent = wmsLayer.getTransparent();
         }
-        
+
         int canvasType;
-        if(bgColor == null && transparent && 
-                (outputFormat.supportsAlphaBit() || outputFormat.supportsAlphaChannel())) {
+        if (bgColor == null && transparent
+                && (outputFormat.supportsAlphaBit() || outputFormat.supportsAlphaChannel())) {
             canvasType = BufferedImage.TYPE_INT_ARGB;
         } else {
             canvasType = BufferedImage.TYPE_INT_RGB;
-            if(bgColor == null) {
+            if (bgColor == null) {
                 bgColor = Color.WHITE;
-            }       
+            }
         }
-        
+
         // Create the actual canvas and graphics object
         canvas = new BufferedImage(canvasSize[0], canvasSize[1], canvasType);
         gfx = (Graphics2D) canvas.getGraphics();
-    
-        if(bgColor != null) {
+
+        if (bgColor != null) {
             gfx.setColor(bgColor);
-            gfx.fillRect(0,0,canvasSize[0], canvasSize[1]);
+            gfx.fillRect(0, 0, canvasSize[0], canvasSize[1]);
         }
     }
-    
-    protected void renderCanvas() 
-    throws OutsideCoverageException, GeoWebCacheException, IOException {
-        //Now we loop over all the relevant tiles and write them to the canvas,
-        //Starting at the bottom, moving to the right and up
+
+    protected void renderCanvas() throws OutsideCoverageException, GeoWebCacheException,
+            IOException {
+        // Now we loop over all the relevant tiles and write them to the canvas,
+        // Starting at the bottom, moving to the right and up
         long starty = srcRectangle[1];
         for (long gridy = starty; gridy <= srcRectangle[3]; gridy++) {
-            
+
             int tiley = 0;
-            int canvasy = (int) (srcRectangle[3] - gridy)*gridSubset.getTileHeight();
+            int canvasy = (int) (srcRectangle[3] - gridy) * gridSubset.getTileHeight();
             int tileHeight = gridSubset.getTileHeight();
-            
-            if(canvOfs[3] > 0) {
+
+            if (canvOfs[3] > 0) {
                 // Add padding
                 canvasy += canvOfs[3];
             } else {
@@ -302,21 +311,21 @@ public class WMSTileFuser {
                     canvasy += canvOfs[3];
                 }
             }
-            
-            if(gridy == srcRectangle[1] && canvOfs[1] < 0) {
+
+            if (gridy == srcRectangle[1] && canvOfs[1] < 0) {
                 // Check whether we only use part of the first tiles (bottom row)
                 // Offset is negative, slice the bottom off the tile
                 tileHeight += canvOfs[1];
             }
-                        
+
             long startx = srcRectangle[0];
             for (long gridx = startx; gridx <= srcRectangle[2]; gridx++) {
 
                 long[] gridLoc = { gridx, gridy, srcIdx };
-                
-                ConveyorTile tile = new ConveyorTile(sb, layer.getName(), gridSubset.getName(), 
-                        gridLoc, ImageMime.png, reqModStrs[0], reqModStrs[1], null, null);
-                
+
+                ConveyorTile tile = new ConveyorTile(sb, layer.getName(), gridSubset.getName(),
+                        gridLoc, ImageMime.png, fullParameters, modifiedParameters, null, null);
+
                 // Check whether this tile is to be rendered at all
                 try {
                     layer.applyRequestFilters(tile);
@@ -324,20 +333,20 @@ public class WMSTileFuser {
                     log.debug(e.getMessage());
                     continue;
                 }
-                
+
                 layer.getTile(tile);
-                
+
                 BufferedImage tileImg = ImageIO.read(tile.getBlob().getInputStream());
-                
+
                 int tilex = 0;
-                int canvasx = (int) (gridx - startx)*gridSubset.getTileWidth();
+                int canvasx = (int) (gridx - startx) * gridSubset.getTileWidth();
                 int tileWidth = gridSubset.getTileWidth();
-                
-                if(canvOfs[0] > 0) {
+
+                if (canvOfs[0] > 0) {
                     // Add padding
                     canvasx += canvOfs[0];
                 } else {
-                    //Leftmost tile is cut off
+                    // Leftmost tile is cut off
                     if (gridx == srcRectangle[0]) {
                         // This one starts to the left top, so canvasx remains 0
                         tileWidth = tileWidth + canvOfs[0];
@@ -348,89 +357,79 @@ public class WMSTileFuser {
                         canvasx += canvOfs[0];
                     }
                 }
-                
-                if(gridx == srcRectangle[2] && canvOfs[2] < 0) {
+
+                if (gridx == srcRectangle[2] && canvOfs[2] < 0) {
                     // Check whether we only use part of the first tiles (bottom row)
                     // Offset is negative, slice the bottom off the tile
                     tileWidth = tileWidth + canvOfs[2];
                 }
-                
+
                 // TODO We should really ensure we can never get here
-                if(tileWidth == 0|| tileHeight == 0) {
+                if (tileWidth == 0 || tileHeight == 0) {
                     log.debug("tileWidth: " + tileWidth + " tileHeight: " + tileHeight);
                     continue;
                 }
-                
+
                 // Cut down the tile to the part we want
-                if(tileWidth != gridSubset.getTileWidth() || tileHeight != gridSubset.getTileHeight()) {
-                    log.debug("tileImg.getSubimage("+tilex+","+tiley+","+tileWidth+","+tileHeight+")");
-                    tileImg = tileImg.getSubimage(
-                            tilex,
-                            tiley,
-                            tileWidth,
-                            tileHeight
-                            );
+                if (tileWidth != gridSubset.getTileWidth()
+                        || tileHeight != gridSubset.getTileHeight()) {
+                    log.debug("tileImg.getSubimage(" + tilex + "," + tiley + "," + tileWidth + ","
+                            + tileHeight + ")");
+                    tileImg = tileImg.getSubimage(tilex, tiley, tileWidth, tileHeight);
                 }
-                
+
                 // Render the tile on the big canvas
-                log.debug("drawImage(subtile,"+canvasx+","+canvasy+",null) " + Arrays.toString(gridLoc));                
-                gfx.drawImage(
-                        tileImg, 
-                        canvasx, 
-                        canvasy,
-                        null); // imageObserver
+                log.debug("drawImage(subtile," + canvasx + "," + canvasy + ",null) "
+                        + Arrays.toString(gridLoc));
+                gfx.drawImage(tileImg, canvasx, canvasy, null); // imageObserver
             }
         }
-        
+
         gfx.dispose();
     }
-    
+
     protected void scaleRaster() {
-        if(canvasSize[0] != reqWidth || canvasSize[1] != reqHeight) {
+        if (canvasSize[0] != reqWidth || canvasSize[1] != reqHeight) {
             BufferedImage preTransform = canvas;
-            
+
             canvas = new BufferedImage(reqWidth, reqHeight, preTransform.getType());
-            
+
             Graphics2D gfx = canvas.createGraphics();
-            AffineTransform affineTrans =
-                AffineTransform.getScaleInstance(
-                        ((double) reqWidth)/preTransform.getWidth(),
-                        ((double) reqHeight)/preTransform.getHeight() );
-            
-            log.debug("AffineTransform: " 
-                    + (((double) reqWidth)/preTransform.getWidth()) + "," + 
-                    + (((double) reqHeight)/preTransform.getHeight()) 
-            );
-            
-            gfx.drawRenderedImage(preTransform,affineTrans);
+            AffineTransform affineTrans = AffineTransform.getScaleInstance(((double) reqWidth)
+                    / preTransform.getWidth(), ((double) reqHeight) / preTransform.getHeight());
+
+            log.debug("AffineTransform: " + (((double) reqWidth) / preTransform.getWidth()) + ","
+                    + +(((double) reqHeight) / preTransform.getHeight()));
+
+            gfx.drawRenderedImage(preTransform, affineTrans);
             gfx.dispose();
         }
     }
-    
-    protected void writeResponse(HttpServletResponse response, RuntimeStats stats) 
-    throws IOException, OutsideCoverageException, GeoWebCacheException {
+
+    protected void writeResponse(HttpServletResponse response, RuntimeStats stats)
+            throws IOException, OutsideCoverageException, GeoWebCacheException {
         determineSourceResolution();
         determineCanvasLayout();
         createCanvas();
         renderCanvas();
         scaleRaster();
-        
+
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType(this.outputFormat.getMimeType());
         response.setCharacterEncoding("UTF-8");
 
         ServletOutputStream os = response.getOutputStream();
         AccountingOutputStream aos = new AccountingOutputStream(os);
-        
+
         try {
             ImageIO.write(canvas, outputFormat.getInternalName(), aos);
             aos.close();
         } catch (IOException ioe) {
             log.debug("IOException writing untiled response to client: " + ioe.getMessage());
         }
-        
+
         log.debug("WMS response size: " + aos.getCount() + "bytes.");
-        
+
         stats.log(aos.getCount(), CacheResult.WMS);
     }
 }
