@@ -124,8 +124,9 @@ public class StorageBroker {
             }
                 
             tileObj.blob = blob;
+            return true;
         }
-        return true;
+        return false;
     }
     
     private boolean getBlobOnly(TileObject tileObj) throws StorageException {
