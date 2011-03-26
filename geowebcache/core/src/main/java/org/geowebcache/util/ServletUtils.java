@@ -30,8 +30,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.Map.Entry;
+import java.util.TimeZone;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.logging.Log;
@@ -126,15 +126,17 @@ public class ServletUtils {
      *         {@code keys}
      */
     @SuppressWarnings("unchecked")
-    public static Map<String, String> selectedStringsFromMap(Map<String, String[]> map,
-            String encoding, String[] keys) {
+    public static Map<String, String> selectedStringsFromMap(Map<String, ?> map, String encoding,
+            String[] keys) {
 
         map = new CaseInsensitiveMap(map);
         Map<String, String> selected = new CaseInsensitiveMap();
         for (String key : keys) {
-            String value[] = map.get(key);
+            Object value = map.get(key);
             if (value != null) {
-                selected.put(key.toUpperCase(), URLDecode(value[0], encoding));
+                String sValue = value instanceof String[] ? ((String[]) value)[0] : String
+                        .valueOf(value);
+                selected.put(key.toUpperCase(), URLDecode(sValue, encoding));
             }
         }
         return selected;
