@@ -712,11 +712,13 @@ public abstract class TileLayer {
     /**
      * 
      * @param map
+     *            keys are parameter names, values are either a single string or an array of strings
+     *            as they come form httpservletrequest
      * @return {full query string with default, query string with modifiers}
      * @throws GeoWebCacheException
      */
     @SuppressWarnings("unchecked")
-    public Map<String, String>[] getModifiableParameters(Map<String, String[]> map, String encoding)
+    public Map<String, String>[] getModifiableParameters(Map<String, ?> map, String encoding)
             throws GeoWebCacheException {
         if (parameterFilters == null) {
             return null;
@@ -834,24 +836,24 @@ public abstract class TileLayer {
                     if (!completed) {
                         log.error("metaTile.writeTileToStream returned false, no tiles saved");
                     }
+
+                    if (store) {
+                        long[] idx = { gridPos[0], gridPos[1], gridPos[2] };
+
+                        TileObject tile = TileObject.createCompleteTileObject(this.getName(), idx,
+                                tileProto.getGridSetId(), tileProto.getMimeType().getFormat(),
+                                tileProto.getParameters(), resource);
+
+                        try {
+                            tileProto.getStorageBroker().put(tile);
+                        } catch (StorageException e) {
+                            throw new GeoWebCacheException(e);
+                        }
+                    }
                 } catch (IOException ioe) {
                     log.error("Unable to write image tile to " + "ByteArrayOutputStream: "
                             + ioe.getMessage());
                     ioe.printStackTrace();
-                }
-
-                if (store) {
-                    long[] idx = { gridPos[0], gridPos[1], gridPos[2] };
-
-                    TileObject tile = TileObject.createCompleteTileObject(this.getName(), idx,
-                            tileProto.getGridSetId(), tileProto.getMimeType().getFormat(),
-                            tileProto.getParameters(), resource);
-
-                    try {
-                        tileProto.getStorageBroker().put(tile);
-                    } catch (StorageException e) {
-                        throw new GeoWebCacheException(e);
-                    }
                 }
             }
         }
