@@ -310,6 +310,7 @@ public class WMSService extends Service {
             tile.servletResp.setContentType(mimeType.getMimeType());
             ServletOutputStream outputStream = tile.servletResp.getOutputStream();
             data.transferTo(Channels.newChannel(outputStream));
+            outputStream.flush();
         } catch (IOException ioe) {
             tile.servletResp.setStatus(500);
             log.error(ioe.getMessage());
