@@ -549,7 +549,7 @@ public class WMSLayer extends TileLayer {
 
         String version = wmsVersion;
         if (wmsVersion == null) {
-            version = "1.1.0";
+            version = "1.1.1";
         }
         params.put("VERSION", version);
 
