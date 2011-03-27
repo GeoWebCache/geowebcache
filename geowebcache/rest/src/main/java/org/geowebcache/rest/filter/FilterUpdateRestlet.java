@@ -62,7 +62,7 @@ public class FilterUpdateRestlet extends GWCRestlet {
         String filterName = (String) req.getAttributes().get("filterName");
         String updateType = (String) req.getAttributes().get("updateType");
 
-        Iterator<TileLayer> lIter = tld.getLayers().values().iterator();
+        Iterator<TileLayer> lIter = tld.getLayerList().iterator();
 
         RequestFilter filter = null;
 

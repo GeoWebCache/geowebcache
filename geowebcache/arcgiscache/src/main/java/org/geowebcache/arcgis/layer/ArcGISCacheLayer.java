@@ -47,12 +47,25 @@ public class ArcGISCacheLayer extends TileLayer {
      * configuration properties
      */
 
+    private Boolean enabled;
+
     private File tilingScheme;
 
     private transient CacheInfo cacheInfo;
 
     private transient BoundingBox layerBounds;
 
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+    
     public File getTilingScheme() {
         return tilingScheme;
     }
@@ -68,6 +81,9 @@ public class ArcGISCacheLayer extends TileLayer {
      */
     @Override
     protected boolean initializeInternal(GridSetBroker gridSetBroker) {
+        if (this.enabled == null) {
+            this.enabled = true;
+        }
         if (this.tilingScheme == null) {
             throw new IllegalStateException(
                     "tilingScheme has not been set. It should point to the ArcGIS "

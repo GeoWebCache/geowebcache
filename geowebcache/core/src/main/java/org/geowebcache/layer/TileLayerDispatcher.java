@@ -142,12 +142,33 @@ public class TileLayerDispatcher implements DisposableBean {
         configurationLoadTask = configLoadService.submit(new ConfigurationLoader(this, 0));
     }
 
+    public int getLayerCount() {
+        return getLayers().size();
+    }
+
+    public Set<String> getLayerNames() {
+        return new HashSet<String>(getLayers().keySet());
+    }
+
+    /**
+     * Returns a list of all the layers. The consumer may still have to initialize each layer!
+     * <p>
+     * Modifications to the returned layer do not change the internal list of layers, but layers ARE
+     * mutable.
+     * </p>
+     * 
+     * @return a list view of this tile layer dispatcher's internal layers
+     */
+    public List<TileLayer> getLayerList() {
+        return new ArrayList<TileLayer>(getLayers().values());
+    }
+
     /**
      * Returns a list of all the layers. The consumer may still have to initialize each layer!
      * 
      * @return
      */
-    public Map<String, TileLayer> getLayers() {
+    private Map<String, TileLayer> getLayers() {
         final Map<String, TileLayer> layers;
         try {
             layers = checkConfigurationLoaded();
@@ -271,7 +292,7 @@ public class TileLayerDispatcher implements DisposableBean {
             throw new IllegalStateException(e);
         }
         add(layer, layers);
-        
+
     }
 
     private void add(TileLayer layer, Map<String, TileLayer> layerMap) {
@@ -335,11 +356,4 @@ public class TileLayerDispatcher implements DisposableBean {
         }
     }
 
-    public Set<String> getLayerNames() {
-        return new HashSet<String>(getLayers().keySet());
-    }
-
-    public List<TileLayer> getLayerList() {
-        return new ArrayList<TileLayer>(getLayers().values());
-    }
 }

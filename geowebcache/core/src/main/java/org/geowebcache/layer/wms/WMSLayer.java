@@ -62,6 +62,8 @@ public class WMSLayer extends TileLayer {
         MAP, FEATUREINFO
     };
 
+    private Boolean enabled;
+
     private String[] wmsUrl = null;
 
     private Integer concurrency = null;
@@ -136,7 +138,8 @@ public class WMSLayer extends TileLayer {
             List<ParameterFilter> parameterFilters, int[] metaWidthHeight, String vendorParams,
             boolean queryable) {
 
-        name = layerName;
+        this.name = layerName;
+        this.enabled = Boolean.TRUE;
         this.wmsUrl = wmsURL;
         this.wmsLayers = wmsLayers;
         this.wmsStyles = wmsStyles;
@@ -156,7 +159,10 @@ public class WMSLayer extends TileLayer {
      */
     @Override
     protected boolean initializeInternal(GridSetBroker gridSetBroker) {
-
+        if (null == this.enabled) {
+            this.enabled = Boolean.TRUE;
+        }
+        
         if (null == this.sourceHelper) {
             log.warn(this.name
                     + " is configured without a source, which is a bug unless you're running tests that don't care.");
@@ -217,6 +223,26 @@ public class WMSLayer extends TileLayer {
         return true;
     }
 
+    @Override
+    public boolean isEnabled() {
+        return enabled.booleanValue();
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    /**
+     * @param convTile
+     * @param bbox
+     * @param height
+     * @param width
+     * @param x
+     * @param y
+     * @return
+     * @throws GeoWebCacheException
+     */
     public Resource getFeatureInfo(ConveyorTile convTile, BoundingBox bbox, int height, int width,
             int x, int y) throws GeoWebCacheException {
         return sourceHelper.makeFeatureInfoRequest(convTile, bbox, height, width, x, y);
@@ -831,7 +857,6 @@ public class WMSLayer extends TileLayer {
 
         return tile;
     }
-
 
     public void mergeWith(WMSLayer otherLayer) throws GeoWebCacheException {
         if (otherLayer.parameterFilters != null) {

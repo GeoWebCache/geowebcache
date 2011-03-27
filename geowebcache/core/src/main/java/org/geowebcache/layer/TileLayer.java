@@ -170,6 +170,17 @@ public abstract class TileLayer {
     }
 
     /**
+     * @return {@code true} if the layer is enabled, {@code false} otherwise
+     */
+    public abstract boolean isEnabled();
+
+    /**
+     * @param enabled
+     *            whether to enabled caching for this layer
+     */
+    public abstract void setEnabled(boolean enabled);
+
+    /**
      * Layer meta information
      * 
      * @return

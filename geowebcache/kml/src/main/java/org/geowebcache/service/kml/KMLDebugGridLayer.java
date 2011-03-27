@@ -314,4 +314,15 @@ public class KMLDebugGridLayer extends TileLayer {
         // TODO Auto-generated method stub
 
     }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        // TODO Auto-generated method stub
+        
+    }
 }

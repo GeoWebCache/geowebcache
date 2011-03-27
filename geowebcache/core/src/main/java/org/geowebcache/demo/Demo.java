@@ -3,7 +3,7 @@ package org.geowebcache.demo;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -101,6 +101,7 @@ public class Demo {
             +"<table>\n"
             +"<table cellspacing=\"10\" border=\"0\">\n"
             +"<tr><td><strong>Layer name:</strong></td>\n" 
+            +"<td><strong>Enabled:</strong></td>\n" 
             +"<td><strong>Grids Sets:</strong></td>\n"  
             +"</tr>\n";
             
@@ -135,16 +136,12 @@ public class Demo {
     throws GeoWebCacheException {
         StringBuffer buf = new StringBuffer();
         
-        Map<String,TileLayer> layerList = tileLayerDispatcher.getLayers();
-        TreeSet<String> keys = new TreeSet<String>(layerList.keySet());
-
-        Iterator<String> it = keys.iterator();
-        while(it.hasNext()) {
-            TileLayer layer = layerList.get(it.next());
-            
+        Set<String> layerList = new TreeSet<String>(tileLayerDispatcher.getLayerNames());
+        for(String layerName : layerList) {
+            TileLayer layer = tileLayerDispatcher.getTileLayer(layerName);
             buf.append("<tr><td style=\"min-width: 100px;\"><strong>"+layer.getName() + "</strong><br />\n");
             buf.append("<a href=\"rest/seed/"+layer.getName()+"\">Seed this layer</a>\n");
-            buf.append("</td>");
+            buf.append("</td><td>" + layer.isEnabled() + "</td>");
             buf.append("<td><table width=\"100%\">");
             
             int count = 0;

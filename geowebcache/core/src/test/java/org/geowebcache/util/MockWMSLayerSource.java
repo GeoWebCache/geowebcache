@@ -42,7 +42,7 @@ public class MockWMSLayerSource {
                 + "Replacing all WMS layer backend helpers by a mock one, don't forget to remove this\n"
                 + "---------------------------------------------------------------------------------");
 
-        for (TileLayer layer : tld.getLayers().values()) {
+        for (TileLayer layer : tld.getLayerList()) {
             if (layer instanceof WMSLayer) {
                 ((WMSLayer) layer).setSourceHelper(fakeWMSSource);
             }

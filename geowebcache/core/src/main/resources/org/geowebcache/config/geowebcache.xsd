@@ -136,6 +136,16 @@
 
   <xs:complexType name="wmsLayer">
     <xs:sequence>
+      <xs:element name="enabled" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+           Whether the layer is enabled or not. Defaults to true. If the Layer is not enabled
+           it will not be listed in capabilities documents, and any attempt to perform a request
+           against it will throw an exception. But a disabled layer CAN be seeded, as it's the
+           administrator's choice whether to temporarily disable or not a Layer to perform a long seed 
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="name" type="xs:string">
         <xs:annotation>
           <xs:documentation xml:lang="en">
@@ -457,6 +467,16 @@
     </xs:documentation>
     </xs:annotation>
     <xs:sequence>
+      <xs:element name="enabled" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+           Whether the layer is enabled or not. Defaults to true. If the Layer is not enabled
+           it will not be listed in capabilities documents, and any attempt to perform a request
+           against it will throw an exception. But a disabled layer CAN be seeded, as it's the
+           administrator's choice whether to temporarily disable or not a Layer to perform a long seed 
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="name" type="xs:string">
         <xs:annotation>
           <xs:documentation>

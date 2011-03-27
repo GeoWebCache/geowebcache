@@ -28,9 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletContext;
@@ -108,10 +106,10 @@ public class ConfigLoaderTest extends TestCase {
         EasyMock.expect(tld.getTileLayer(EasyMock.eq("raster test layer"))).andReturn(raster)
                 .anyTimes();
 
-        Map<String, TileLayer> tileLayers = new HashMap<String, TileLayer>();
-        tileLayers.put(toppStates.getName(), toppStates);
-        tileLayers.put(raster.getName(), raster);
-        EasyMock.expect(tld.getLayers()).andReturn(tileLayers).anyTimes();
+        List<TileLayer> tileLayers = new ArrayList<TileLayer>();
+        tileLayers.add(toppStates);
+        tileLayers.add(raster);
+        EasyMock.expect(tld.getLayerList()).andReturn(tileLayers).anyTimes();
         EasyMock.replay(tld);
 
         loader = new ConfigLoader(storageFinder, contextProvider, tld);

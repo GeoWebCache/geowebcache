@@ -224,10 +224,14 @@ public class WMTSGetCapabilities {
      
      private void contents(StringBuilder str) {
          str.append("<Contents>\n");
-         Iterator<TileLayer> iter = tld.getLayers().values().iterator();
-         while(iter.hasNext()) {
-             layer(str, iter.next(), baseUrl);
-         }
+         Iterator<TileLayer> iter = tld.getLayerList().iterator();
+        while (iter.hasNext()) {
+            TileLayer layer = iter.next();
+            if (!layer.isEnabled()) {
+                continue;
+            }
+            layer(str, layer, baseUrl);
+        }
          
          Iterator<GridSet> gridSetIter = gsb.getGridSets().values().iterator();
          while(gridSetIter.hasNext()) {

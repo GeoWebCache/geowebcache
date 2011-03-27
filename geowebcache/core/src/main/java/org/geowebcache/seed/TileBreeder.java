@@ -19,6 +19,7 @@
 package org.geowebcache.seed;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -360,8 +361,8 @@ public class TileBreeder implements ApplicationContextAware {
         return threadPool.terminateGWCTask(id);
     }
 
-    public Map<String, TileLayer> getLayers() {
-        return this.layerDispatcher.getLayers();
+    public List<TileLayer> getLayers() {
+        return this.layerDispatcher.getLayerList();
     }
 
 }

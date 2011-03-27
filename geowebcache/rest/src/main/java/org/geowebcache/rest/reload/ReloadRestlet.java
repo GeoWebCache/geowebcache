@@ -68,7 +68,7 @@ public class ReloadRestlet extends GWCRestlet {
         try {
             layerDispatcher.reInit();
             String info = "Configuration reloaded. Read "
-                + layerDispatcher.getLayers().size() 
+                + layerDispatcher.getLayerCount() 
                 + " layers from configuration resources.";
             
             log.info(info);

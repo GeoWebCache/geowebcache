@@ -78,9 +78,13 @@ public class TMSDocumentFactory {
         //   <ContactElectronicMailAddress>pramsey@refractions.net</ContactElectronicMailAddress>
         // </ContactInformation>
         str.append("  <TileMaps>\n");
-        Iterator<TileLayer> iter = tld.getLayers().values().iterator();
-        while(iter.hasNext()) {
-            tileMapsForLayer(str,iter.next());
+        Iterator<TileLayer> iter = tld.getLayerList().iterator();
+        while (iter.hasNext()) {
+            TileLayer layer = iter.next();
+            if(!layer.isEnabled()){
+                continue;
+            }
+            tileMapsForLayer(str, layer);
         }
         str.append("  </TileMaps>\n");
         str.append("</TileMapService>\n");

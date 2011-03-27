@@ -45,8 +45,6 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     // Shared request information, this is stored by the cache key
     // protected long[] tileIndex = null;
 
-    protected String layerId = null;
-
     // protected SRS srs = null;
     protected String gridSetId = null;
 
@@ -60,8 +58,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
 
     public ConveyorTile(StorageBroker sb, String layerId, HttpServletRequest servletReq,
             HttpServletResponse servletResp) {
-        super(sb, servletReq, servletResp);
-        this.layerId = layerId;
+        super(layerId, sb, servletReq, servletResp);
     }
 
     /**
@@ -72,8 +69,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
             Map<String, String> modifiedParameters, HttpServletRequest servletReq,
             HttpServletResponse servletResp) {
 
-        super(sb, servletReq, servletResp);
-        this.layerId = layerId;
+        super(layerId, sb, servletReq, servletResp);
         this.gridSetId = gridSetId;
 
         long[] idx = new long[3];
@@ -97,10 +93,6 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
             return Collections.emptyMap();
         }
         return fullParameters;
-    }
-
-    public String getLayerId() {
-        return this.layerId;
     }
 
     public TileLayer getLayer() {
@@ -245,8 +237,8 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
             str.append("{" + idx[0] + "," + idx[1] + "," + idx[2] + "} ");
         }
 
-        if (layerId != null) {
-            str.append(this.layerId).append(" ");
+        if (getLayer() != null) {
+            str.append(getLayerId()).append(" ");
         }
 
         if (this.gridSetId != null) {

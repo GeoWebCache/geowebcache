@@ -83,7 +83,7 @@ public class TilePageCalculator {
     }
 
     public Set<String> getLayerNames() {
-        return new HashSet<String>(tld.getLayers().keySet());
+        return tld.getLayerNames();
     }
 
     public Set<TileSet> getTileSetsFor(final String layerName) {

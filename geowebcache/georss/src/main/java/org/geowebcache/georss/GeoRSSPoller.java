@@ -18,9 +18,7 @@
 package org.geowebcache.georss;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -98,15 +96,19 @@ public class GeoRSSPoller {
     private void findEnabledPolls() {
         logger.info("Initializing GeoRSS poller...");
 
-        final Map<String, TileLayer> layerMap = seeder.getLayers();
-        if (layerMap == null || layerMap.size() == 0) {
+        final List<TileLayer> layers = seeder.getLayers();
+        if (layers.size() == 0) {
             logger.info("Found no layers configured, GeoRSS poller won't run");
             return;
         }
-        final Iterator<TileLayer> layers = layerMap.values().iterator();
-        TileLayer layer;
-        while (layers.hasNext()) {
-            layer = layers.next();
+        for (TileLayer layer : layers) {
+            if (layer.getUpdateSources().size() == 0) {
+                continue;
+            }
+            if (!layer.isEnabled()) {
+                logger.info("Ignoring polling GeoRSS update sources for layer '" + layer.getName()
+                        + "' as the layer is disabled");
+            }
             for (UpdateSourceDefinition usd : layer.getUpdateSources()) {
                 if (usd instanceof GeoRSSFeedDefinition) {
                     final GeoRSSFeedDefinition georssDef = (GeoRSSFeedDefinition) usd;

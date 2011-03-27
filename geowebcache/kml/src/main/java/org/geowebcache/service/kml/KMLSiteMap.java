@@ -75,11 +75,13 @@ public class KMLSiteMap {
         OutputStream os = tile.servletResp.getOutputStream();
         String urlPrefix = tile.getUrlPrefix();
         
-        Iterator<TileLayer> iter = tLD.getLayers().values().iterator();
+        Iterator<TileLayer> iter = tLD.getLayerList().iterator();
         
         while(iter.hasNext()) {
             TileLayer tl = iter.next();
-
+            if (!tl.isEnabled()) {
+                continue;
+            }
             Hashtable<String,GridSubset> grids = tl.getGridSubsets();
             List<MimeType> mimeTypes = tl.getMimeTypes();
             
