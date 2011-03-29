@@ -107,7 +107,8 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
         this.enabled = other.enabled;
         this.globalExpirationPolicyName = other.globalExpirationPolicyName;
         this.globalQuota = other.globalQuota;
-        this.layerQuotas = new ArrayList<LayerQuota>(other.layerQuotas);
+        this.layerQuotas = other.layerQuotas == null ? null : new ArrayList<LayerQuota>(
+                other.layerQuotas);
         this.maxConcurrentCleanUps = other.maxConcurrentCleanUps;
     }
 
@@ -277,8 +278,8 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
             throw new RuntimeException(e);
         }
         clone.lastCleanUpTime = lastCleanUpTime;
-        clone.globalQuota = new Quota(globalQuota);
-        clone.layerQuotas = new ArrayList<LayerQuota>(layerQuotas);
+        clone.globalQuota = globalQuota == null ? null : new Quota(globalQuota);
+        clone.layerQuotas = layerQuotas == null ? null : new ArrayList<LayerQuota>(layerQuotas);
         return clone;
     }
 }

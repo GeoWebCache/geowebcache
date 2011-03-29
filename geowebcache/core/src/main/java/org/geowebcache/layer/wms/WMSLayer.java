@@ -858,19 +858,6 @@ public class WMSLayer extends TileLayer {
         return tile;
     }
 
-    public void mergeWith(WMSLayer otherLayer) throws GeoWebCacheException {
-        if (otherLayer.parameterFilters != null) {
-            if (this.parameterFilters != null) {
-                Iterator<ParameterFilter> iter = otherLayer.parameterFilters.iterator();
-                while (iter.hasNext()) {
-                    this.parameterFilters.add(iter.next());
-                }
-            } else {
-                this.parameterFilters = otherLayer.parameterFilters;
-            }
-        }
-    }
-
     public String backendSRSOverride(SRS srs) {
         if (sphericalMercatorOverride != null && srs.equals(SRS.getEPSG3857())) {
             return sphericalMercatorOverride;

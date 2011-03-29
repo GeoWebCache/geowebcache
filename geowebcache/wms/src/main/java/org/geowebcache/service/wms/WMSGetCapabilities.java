@@ -41,7 +41,6 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.LayerMetaInformation;
-import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.ServletUtils;
@@ -407,7 +406,7 @@ public class WMSGetCapabilities {
 
     private void capabilityLayerInner(StringBuilder str, TileLayer layer)
             throws GeoWebCacheException {
-        if (layer instanceof WMSLayer && ((WMSLayer) layer).isQueryable()) {
+        if (layer.isQueryable()) {
             str.append("    <Layer queryable=\"1\">\n");
         } else {
             str.append("    <Layer>\n");
@@ -453,10 +452,10 @@ public class WMSGetCapabilities {
         str.append(boundingBoxStr);
 
         // WMS 1.1 Dimensions
-        if (layer instanceof WMSLayer && ((WMSLayer) layer).getParameterFilters() != null) {
+        if (layer.getParameterFilters() != null) {
             StringBuilder dims = new StringBuilder();
             StringBuilder extents = new StringBuilder();
-            for (ParameterFilter parameterFilter : ((WMSLayer) layer).getParameterFilters()) {
+            for (ParameterFilter parameterFilter : layer.getParameterFilters()) {
                 if (parameterFilter instanceof WMSDimensionProvider) {
                     ((WMSDimensionProvider) parameterFilter).appendDimensionElement(dims, "      ");
                     ((WMSDimensionProvider) parameterFilter).appendExtentElement(extents, "      ");

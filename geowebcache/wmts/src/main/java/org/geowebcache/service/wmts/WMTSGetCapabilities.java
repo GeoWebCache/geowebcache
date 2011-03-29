@@ -40,7 +40,6 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.LayerMetaInformation;
-import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.util.ServletUtils;
@@ -256,11 +255,7 @@ public class WMTSGetCapabilities {
         appendTag(str, "    ", "ows:Identifier", layer.getName(), null);
         
         // We need the filters for styles and dimensions
-        List<ParameterFilter> filters = null;
-        
-        if(! (layer instanceof WMSLayer)) {
-            filters = ((WMSLayer) layer).getParameterFilters();
-        }
+        List<ParameterFilter> filters = layer.getParameterFilters();
         
         layerStyles(str, layer, filters);
         
@@ -323,7 +318,7 @@ public class WMTSGetCapabilities {
                          } else {
                              str.append("    <Style>\n");
                          }
-                         str.append("      <ows:Identifier>"+WMSLayer.encodeDimensionValue(value)+"</ows:Identifier>\n");
+                         str.append("      <ows:Identifier>"+TileLayer.encodeDimensionValue(value)+"</ows:Identifier>\n");
                          str.append("    </Style>\n");
                  }
              }
@@ -339,12 +334,8 @@ public class WMTSGetCapabilities {
      }
      
      private void layerInfoFormats(StringBuilder str, TileLayer layer) {
-         if(! (layer instanceof WMSLayer)) {
-             return;
-         }
-         
          // TODO properly
-         if(((WMSLayer) layer).isQueryable()) {
+         if(layer.isQueryable()) {
              str.append("    <InfoFormat>text/plain</InfoFormat>\n");
              str.append("    <InfoFormat>text/html</InfoFormat>\n");
              str.append("    <InfoFormat>application/vnd.ogc.gml</InfoFormat>\n");
@@ -372,12 +363,12 @@ public class WMTSGetCapabilities {
      private void dimensionDescription(StringBuilder str, ParameterFilter filter, List<String> values) {
          str.append("    <Dimension>");
          str.append("      <Identifier>"+filter.key+"</Identifier>");
-         String defaultStr = WMSLayer.encodeDimensionValue(filter.defaultValue);
+         String defaultStr = TileLayer.encodeDimensionValue(filter.defaultValue);
          str.append("      <Default>"+encodeXmlChars(defaultStr)+"</Default>");
          
          Iterator<String> iter = values.iterator();
          while(iter.hasNext()) {
-             String value = WMSLayer.encodeDimensionValue(iter.next());
+             String value = TileLayer.encodeDimensionValue(iter.next());
              str.append("      <Value>"+encodeXmlChars(value)+"</Value>");
          }
          str.append("    </Dimension>");

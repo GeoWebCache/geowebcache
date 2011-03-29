@@ -49,7 +49,6 @@ import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.updatesource.UpdateSourceDefinition;
-import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
@@ -693,9 +692,15 @@ public abstract class TileLayer {
             }
         }
 
-        if (this instanceof WMSLayer) {
-            WMSLayer thisWMSLayer = (WMSLayer) this;
-            thisWMSLayer.mergeWith((WMSLayer) otherLayer);
+        if (otherLayer.parameterFilters != null) {
+            if (this.parameterFilters != null) {
+                Iterator<ParameterFilter> iter = otherLayer.parameterFilters.iterator();
+                while (iter.hasNext()) {
+                    this.parameterFilters.add(iter.next());
+                }
+            } else {
+                this.parameterFilters = otherLayer.parameterFilters;
+            }
         }
     }
 

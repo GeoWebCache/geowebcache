@@ -26,7 +26,6 @@ import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
@@ -79,9 +78,9 @@ public class GMapsConverter extends Service {
         TileLayer tileLayer = tld.getTileLayer(layers);
         Map<String, String> defaultParameters = null;
         Map<String, String> modifiedParameters = null;
-        if (tileLayer instanceof WMSLayer) {
+        {
             Map<String, String>[] modStrs = null;
-            modStrs = ((WMSLayer) tileLayer).getModifiableParameters(params, encoding);
+            modStrs = tileLayer.getModifiableParameters(params, encoding);
             if (modStrs != null) {
                 defaultParameters = modStrs[0];
                 modifiedParameters = modStrs[1];

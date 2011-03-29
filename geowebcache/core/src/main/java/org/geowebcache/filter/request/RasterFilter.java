@@ -29,7 +29,6 @@ import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.wms.WMSLayer;
 
 /**
  * A raster filter allows to optimize data loading by avoiding the generation of requests and the
@@ -104,7 +103,7 @@ public abstract class RasterFilter extends RequestFilter {
                 || matrices.get(gridSetId) == null 
                 || matrices.get(gridSetId)[(int) idx[2]] == null) {
             try {
-                setMatrix((WMSLayer) convTile.getLayer(), gridSetId, (int) idx[2], false);
+                setMatrix(convTile.getLayer(), gridSetId, (int) idx[2], false);
             } catch(Exception e) {
                 log.error("Failed to load matrix for " 
                         + this.name + ", " + gridSetId + ", " + idx[2] + " : "
@@ -146,10 +145,6 @@ public abstract class RasterFilter extends RequestFilter {
      * Loops over all the zoom levels and initializes the lookup images.
      */
     public void initialize(TileLayer layer) throws GeoWebCacheException {
-        if (!(layer instanceof WMSLayer)) {
-            throw new GeoWebCacheException("Unable to handle non-WMS layers for request filter init.");
-        }
-
         if (preload != null && preload) {
             Iterator<GridSubset> iter = layer.getGridSubsets().values().iterator();
             
