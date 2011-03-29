@@ -17,6 +17,7 @@
  */
 package org.geowebcache.diskquota.storage;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.NumberFormat;
@@ -38,7 +39,9 @@ import com.sleepycat.persist.model.SecondaryKey;
  * 
  */
 @Entity
-public class Quota implements Comparable<Quota> {
+public class Quota implements Cloneable, Comparable<Quota>, Serializable {
+
+    private static final long serialVersionUID = -3817255124248938529L;
 
     private static final NumberFormat NICE_FORMATTER = NumberFormat.getNumberInstance();
     static {
@@ -63,6 +66,8 @@ public class Quota implements Comparable<Quota> {
     }
 
     public Quota(Quota quota) {
+        id = quota.id;
+        tileSetId = quota.tileSetId;
         bytes = quota.getBytes();
     }
 
@@ -223,4 +228,8 @@ public class Quota implements Comparable<Quota> {
         setBytes(unit.convertTo(value, StorageUnit.B).toBigInteger());
     }
 
+    @Override
+    public Quota clone() {
+        return new Quota(this);
+    }
 }

@@ -17,6 +17,7 @@
  */
 package org.geowebcache.diskquota;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -37,7 +38,9 @@ import org.springframework.util.Assert;
  * @author groldan
  * 
  */
-public class DiskQuotaConfig {
+public class DiskQuotaConfig implements Cloneable, Serializable {
+
+    private static final long serialVersionUID = 4376471696761297546L;
 
     static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
 
@@ -95,6 +98,17 @@ public class DiskQuotaConfig {
         if (globalQuota == null) {
             globalQuota = new Quota(500, StorageUnit.MiB);
         }
+    }
+
+    void setFrom(DiskQuotaConfig other) {
+        this.cacheCleanUpFrequency = other.cacheCleanUpFrequency;
+        this.cacheCleanUpUnits = other.cacheCleanUpUnits;
+        this.diskBlockSize = other.diskBlockSize;
+        this.enabled = other.enabled;
+        this.globalExpirationPolicyName = other.globalExpirationPolicyName;
+        this.globalQuota = other.globalQuota;
+        this.layerQuotas = new ArrayList<LayerQuota>(other.layerQuotas);
+        this.maxConcurrentCleanUps = other.maxConcurrentCleanUps;
     }
 
     public Boolean isEnabled() {
@@ -254,4 +268,17 @@ public class DiskQuotaConfig {
         return names;
     }
 
+    @Override
+    public DiskQuotaConfig clone() {
+        DiskQuotaConfig clone;
+        try {
+            clone = (DiskQuotaConfig) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+        clone.lastCleanUpTime = lastCleanUpTime;
+        clone.globalQuota = new Quota(globalQuota);
+        clone.layerQuotas = new ArrayList<LayerQuota>(layerQuotas);
+        return clone;
+    }
 }

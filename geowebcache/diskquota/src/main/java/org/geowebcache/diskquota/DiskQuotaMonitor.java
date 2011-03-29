@@ -226,22 +226,21 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         return this.quotaConfig;
     }
 
-    public void saveConfig() {
+    public void saveConfig(DiskQuotaConfig config) {
         try {
-            // final boolean wasRunning = isRunning;
-            // shutDown(30);
-            configLoader.saveConfig(quotaConfig);
-            // if (wasRunning) {
-            // startUp();
-            // }
+            configLoader.saveConfig(config);
         } catch (ConfigurationException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        // catch (InterruptedException e) {
-        // log.info("Shutdown process interrupted while applying config. Sytem shutdown?", e);
-        // }
+        if (config != quotaConfig) {
+            this.quotaConfig.setFrom(config);
+        }
+    }
+
+    public void saveConfig() {
+        saveConfig(quotaConfig);
     }
 
     /**
