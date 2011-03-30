@@ -129,8 +129,10 @@ public class WMTSService extends Service {
             Map<String, String>[] modStrs = null;
             try {
                 modStrs = tileLayer.getModifiableParameters(request.getParameterMap(), encoding);
-                fullParameters = modStrs[0];
-                modifiedParameters = modStrs[1];
+                if(modStrs != null){
+                    fullParameters = modStrs[0];
+                    modifiedParameters = modStrs[1];
+                }
             } catch (GeoWebCacheException e) {
                 throw new OWSException(500, "NoApplicableCode", "", e.getMessage()
                         + " while fetching modifiable parameters for LAYER " + layer);
