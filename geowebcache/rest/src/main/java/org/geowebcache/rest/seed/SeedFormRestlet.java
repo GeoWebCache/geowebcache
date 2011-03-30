@@ -210,12 +210,10 @@ public class SeedFormRestlet extends GWCRestlet {
 
     private Map<String, String> makeParametersMap(String defaultValue, List<String> legalValues) {
         Map<String, String> map = new HashMap<String, String>();
-        map.put(defaultValue + " <default>", defaultValue);
         for (String s : legalValues) {
-            if (!defaultValue.equals(s)) {
-                map.put(s, s);
-            }
+            map.put(s, s);
         }
+        map.put(defaultValue, defaultValue);
         return map;
     }
 

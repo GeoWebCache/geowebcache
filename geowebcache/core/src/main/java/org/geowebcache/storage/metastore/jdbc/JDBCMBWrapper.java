@@ -782,6 +782,7 @@ class JDBCMBWrapper {
 
                 TileObject to = TileObject.createQueryTileObject(trObj.layerName, xyz,
                         trObj.gridSetId, trObj.mimeType.getFormat(), trObj.parameters);
+                to.setParamtersId(parametersId);
 
                 try {
                     blobStore.delete(to);
