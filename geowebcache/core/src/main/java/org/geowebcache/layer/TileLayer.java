@@ -405,6 +405,25 @@ public abstract class TileLayer {
     public abstract ConveyorTile getTile(ConveyorTile tile) throws GeoWebCacheException,
             IOException, OutsideCoverageException;
 
+
+    /**
+     * GetFeatureInfo template, throws exception, subclasses must override if supported.
+     * 
+     * @param convTile
+     * @param bbox
+     * @param height
+     * @param width
+     * @param x
+     * @param y
+     * @return
+     * @throws GeoWebCacheException
+     */
+    public Resource getFeatureInfo(ConveyorTile convTile, BoundingBox bbox, int height, int width,
+            int x, int y) throws GeoWebCacheException {
+        throw new GeoWebCacheException("GetFeatureInfo is not supported by this layer ("
+                + getName() + ")");
+    }
+
     /**
      * Makes a non-metatiled request to backend, bypassing the cache before and after
      * 

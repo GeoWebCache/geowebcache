@@ -226,17 +226,10 @@ public class WMSService extends Service {
      * @param conv
      */
     private void handleGetFeatureInfo(ConveyorTile tile) throws GeoWebCacheException {
-        WMSLayer layer = null;
         TileLayer tl = tld.getTileLayer(tile.getLayerId());
 
         if (tl == null) {
             throw new GeoWebCacheException(tile.getLayerId() + " is unknown.");
-        }
-
-        if (tl instanceof WMSLayer) {
-            layer = (WMSLayer) tl;
-        } else {
-            throw new GeoWebCacheException(tile.getLayerId() + " is not served by a WMS backend.");
         }
 
         String[] keys = { "x", "y", "srs", "info_format", "bbox", "height", "width" };
@@ -272,8 +265,6 @@ public class WMSService extends Service {
                 mimeType, null, tile.servletReq, tile.servletResp);
         gfiConv.setTileLayer(tl);
 
-        WMSSourceHelper srcHelper = layer.getSourceHelper();
-
         int x, y;
         try {
             x = Integer.parseInt(values.get("x"));
@@ -292,7 +283,7 @@ public class WMSService extends Service {
                     "The parameters for height and width must both be positive integers.");
         }
 
-        Resource data = srcHelper.makeFeatureInfoRequest(gfiConv, bbox, height, width, x, y);
+        Resource data = tl.getFeatureInfo(gfiConv, bbox, height, width, x, y);
 
         try {
             tile.servletResp.setContentType(mimeType.getMimeType());

@@ -16,7 +16,6 @@ import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.service.OWSException;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.util.ServletUtils;
@@ -57,12 +56,6 @@ public class WMTSGetFeatureInfo {
     protected void writeResponse(RuntimeStats stats) throws OWSException {
         TileLayer layer = convTile.getLayer();
 
-        WMSLayer wmsLayer = null;
-
-        if (layer instanceof WMSLayer) {
-            wmsLayer = (WMSLayer) layer;
-        }
-
         GridSet gridSet = convTile.getGridSubset().getGridSet();
         if (gridSet.getTileHeight() < j || j < 0) {
             throw new OWSException(400, "PointIJOutOfRange", "J", "J was " + j
@@ -77,9 +70,8 @@ public class WMTSGetFeatureInfo {
         Resource data = null;
         try {
             BoundingBox bbox = convTile.getGridSubset().boundsFromIndex(convTile.getTileIndex());
-            data = wmsLayer.getFeatureInfo(convTile, bbox,
-                    convTile.getGridSubset().getTileHeight(), convTile.getGridSubset()
-                            .getTileWidth(), i, j);
+            data = layer.getFeatureInfo(convTile, bbox, convTile.getGridSubset().getTileHeight(),
+                    convTile.getGridSubset().getTileWidth(), i, j);
         } catch (GeoWebCacheException e) {
             throw new OWSException(500, "NoApplicableCode", "", e.getMessage());
         }
