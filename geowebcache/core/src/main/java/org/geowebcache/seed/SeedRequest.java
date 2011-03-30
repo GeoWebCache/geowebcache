@@ -17,6 +17,8 @@
  */
 package org.geowebcache.seed;
 
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.grid.BoundingBox;
@@ -25,15 +27,15 @@ import org.geowebcache.seed.GWCTask.TYPE;
 
 public class SeedRequest {
     private static Log log = LogFactory.getLog(org.geowebcache.seed.SeedRequest.class);
-    
+
     private String name = null;
 
     private BoundingBox bounds = null;
 
     private String gridSetId;
-    
+
     private SRS srs;
-    
+
     private Integer threadCount = null;
 
     private Integer zoomStart = null;
@@ -41,21 +43,21 @@ public class SeedRequest {
     private Integer zoomStop = null;
 
     private String format = null;
-    
+
     private String type = null;
-    
+
     private TYPE enumType = null;
-    
-    private String parameters = null;
-    
+
+    private Map<String, String> parameters = null;
+
     private Boolean filterUpdate = null;
-    
+
     public SeedRequest() {
-        //do nothing, i guess
+        // do nothing, i guess
         System.out.println("New SeedRequest");
     }
 
-    /** 
+    /**
      * Used by SeedPageResource
      * 
      * @param name
@@ -67,9 +69,9 @@ public class SeedRequest {
      * @param format
      * @param type
      */
-    public SeedRequest(String name, BoundingBox bounds, 
-            String gridSetId, int threadCount, int zoomStart, 
-            int zoomStop, String format, GWCTask.TYPE type, String parameters) {
+    public SeedRequest(String name, BoundingBox bounds, String gridSetId, int threadCount,
+            int zoomStart, int zoomStop, String format, GWCTask.TYPE type,
+            Map<String, String> parameters) {
         this.name = name;
         this.bounds = bounds;
         this.gridSetId = gridSetId;
@@ -80,64 +82,77 @@ public class SeedRequest {
         this.enumType = type;
         this.parameters = parameters;
     }
-    
+
     /**
      * Method returns the name of the tileLayer that was requested
+     * 
      * @return name of the requested tile layer
      */
     public String getLayerName() {
         return this.name;
     }
+
     /**
      * Method gets the bounds for the requested region
-     * @return a BBOX 
+     * 
+     * @return a BBOX
      */
     public BoundingBox getBounds() {
         return this.bounds;
-    }   
+    }
+
     /**
-     * Whether any request filters should be updated after this seed request
-     * completes.
+     * Whether any request filters should be updated after this seed request completes.
+     * 
      * @return
      */
     public boolean getFilterUpdate() {
-        if(filterUpdate != null) {
+        if (filterUpdate != null) {
             return filterUpdate;
         } else {
             return false;
         }
     }
+
     /**
      * Method returns the grid set id for this request
+     * 
      * @return String
      */
     public String getGridSetId() {
         return this.gridSetId;
     }
+
     /**
      * Method returns the format requested
-     * @return the format in String form 
+     * 
+     * @return the format in String form
      */
     public String getMimeFormat() {
         return this.format;
     }
-    
+
     /**
      * Used to handle 1.1.x-style seed requests
+     * 
      * @return
      */
     public SRS getSRS() {
         return this.srs;
     }
+
     /**
      * Method returns the zoom start level for this seed request
+     * 
      * @return integer representing zoom start level
      */
     public Integer getZoomStart() {
         return this.zoomStart;
     }
+
     /**
      * Method returns the zoom stop level for this seed request
+     * 
      * @return integer representing zoom stop level
      */
     public Integer getZoomStop() {
@@ -145,14 +160,14 @@ public class SeedRequest {
     }
 
     /**
-     * Method returns the number of threads that should be used 
-     * for this seed request
+     * Method returns the number of threads that should be used for this seed request
+     * 
      * @return integer representing number of threads
      */
     public Integer getThreadCount() {
         return threadCount;
     }
-    
+
     /**
      * Method returns the type of seed, namely one of
      * <ul>
@@ -164,28 +179,28 @@ public class SeedRequest {
      * @return type of seed
      */
     public TYPE getType() {
-        if(enumType == null) {
-            if(type == null || type.equalsIgnoreCase("seed")) {
+        if (enumType == null) {
+            if (type == null || type.equalsIgnoreCase("seed")) {
                 return TYPE.SEED;
-            } else if(type.equalsIgnoreCase("reseed")) {
+            } else if (type.equalsIgnoreCase("reseed")) {
                 return TYPE.RESEED;
-            }else if(type.equalsIgnoreCase("truncate")){
+            } else if (type.equalsIgnoreCase("truncate")) {
                 return TYPE.TRUNCATE;
             } else {
-                log.warn("Unknown type \""+type+"\", assuming seed");
+                log.warn("Unknown type \"" + type + "\", assuming seed");
                 return TYPE.SEED;
             }
         }
-        
+
         return enumType;
     }
-    
+
     /**
      * The settings for the modifiable parameters
      * 
-     * @return String representing the modifiable parameters
+     * @return the modifiable parameters
      */
-    public String getParameters() {
+    public Map<String, String> getParameters() {
         return parameters;
     }
 }

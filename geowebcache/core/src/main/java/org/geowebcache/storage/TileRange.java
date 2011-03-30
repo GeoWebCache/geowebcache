@@ -42,6 +42,8 @@ public class TileRange {
 
     final public Map<String, String> parameters;
 
+    private Long parametersId;
+
     /**
      * @deprecated use {@link #TileRange(String, String, int, int, long[][], MimeType, Map)}
      */
@@ -60,6 +62,8 @@ public class TileRange {
         this.zoomStop = zoomStop;
         this.mimeType = mimeType;
         this.parameters = parameters;
+        //we don't know the params id yet, has to be set by the metastore
+        this.parametersId = null;
     }
 
     public boolean contains(long[] idx) {
@@ -76,5 +80,16 @@ public class TileRange {
             }
         }
         return false;
+    }
+
+    public void setParametersId(long parametersId) {
+        this.parametersId = parametersId;
+    }
+
+    /**
+     * @return the parameters id, or {@code null} if unset
+     */
+    public Long getParametersId() {
+        return parametersId;
     }
 }

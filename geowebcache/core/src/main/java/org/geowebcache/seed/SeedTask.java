@@ -20,6 +20,7 @@ package org.geowebcache.seed;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.logging.Log;
@@ -96,7 +97,8 @@ class SeedTask extends GWCTask {
         // approximate thread creation time
         final long START_TIME = System.currentTimeMillis();
 
-        log.info(Thread.currentThread().getName() + " begins seeding layer : " + tl.getName());
+        final String layerName = tl.getName();
+        log.info(Thread.currentThread().getName() + " begins seeding layer : " + layerName);
 
         TileRange tr = trIter.getTileRange();
 
@@ -116,8 +118,11 @@ class SeedTask extends GWCTask {
         while (gridLoc != null && this.terminate == false) {
 
             checkInterrupted();
-            ConveyorTile tile = new ConveyorTile(storageBroker, tl.getName(), tr.gridSetId,
-                    gridLoc, tr.mimeType, null, null, null, null);
+            Map<String, String> fullParameters = tr.parameters;
+            Map<String, String> modifiedParameters = tr.parameters;
+            
+            ConveyorTile tile = new ConveyorTile(storageBroker, layerName, tr.gridSetId, gridLoc,
+                    tr.mimeType, fullParameters, modifiedParameters, null, null);
 
             for (int fetchAttempt = 0; fetchAttempt <= tileFailureRetryCount; fetchAttempt++) {
                 try {
@@ -182,9 +187,8 @@ class SeedTask extends GWCTask {
             log.info("Job on " + Thread.currentThread().getName() + " was terminated after "
                     + this.tilesDone + " tiles");
         } else {
-            log.info(Thread.currentThread().getName() + " completed (re)seeding layer "
-                    + tl.getName() + " after " + this.tilesDone + " tiles and " + this.timeSpent
-                    + " seconds.");
+            log.info(Thread.currentThread().getName() + " completed (re)seeding layer " + layerName
+                    + " after " + this.tilesDone + " tiles and " + this.timeSpent + " seconds.");
         }
 
         checkInterrupted();
@@ -277,8 +281,8 @@ class SeedTask extends GWCTask {
 
     @Override
     protected void dispose() {
-        if(tl instanceof WMSLayer){
-            ((WMSLayer)tl).cleanUpThreadLocals();
+        if (tl instanceof WMSLayer) {
+            ((WMSLayer) tl).cleanUpThreadLocals();
         }
     }
 }

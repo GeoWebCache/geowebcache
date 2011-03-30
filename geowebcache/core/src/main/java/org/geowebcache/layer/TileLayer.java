@@ -740,15 +740,13 @@ public abstract class TileLayer {
             return null;
         }
 
-        Map<String, String> defaultModParams = new HashMap<String, String>();
+        Map<String, String> fullParameters = new HashMap<String, String>();
         Map<String, String> modifiedParams = new HashMap<String, String>();
 
         final String[] keys = new String[parameterFilters.size()];
-        for (int i = 0; i < keys.length; i++) {
+        for (int i = 0; i < parameterFilters.size(); i++) {
             ParameterFilter parameterFilter = parameterFilters.get(i);
             keys[i] = parameterFilter.getKey();
-            String defaultValue = decodeDimensionValue(parameterFilter.getDefaultValue());
-            defaultModParams.put(keys[i], defaultValue);
         }
         final Map<String, String> requestValues;
         requestValues = ServletUtils.selectedStringsFromMap(map, encoding, keys);
@@ -758,13 +756,17 @@ public abstract class TileLayer {
             String value = requestValues.get(key);
             value = decodeDimensionValue(value);
 
-            if (value != null && value.length() > 0) {
+            String defaultValue = decodeDimensionValue(parameterFilter.getDefaultValue());
+            if (value == null || defaultValue.equals(value)) {
+                fullParameters.put(key, defaultValue);
+            } else {
                 String appliedValue = parameterFilter.apply(value);
                 modifiedParams.put(key, appliedValue);
+                fullParameters.put(key, appliedValue);
             }
         }
 
-        Map<String, String>[] ret = new Map[] { defaultModParams, modifiedParams };
+        Map<String, String>[] ret = new Map[] { fullParameters, modifiedParams };
         return ret;
     }
 

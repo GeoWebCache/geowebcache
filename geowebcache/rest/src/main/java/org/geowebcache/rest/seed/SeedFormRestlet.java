@@ -19,13 +19,20 @@ package org.geowebcache.rest.seed;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.NumberFormat;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.filter.parameters.FloatParameterFilter;
+import org.geowebcache.filter.parameters.ParameterFilter;
+import org.geowebcache.filter.parameters.RegexParameterFilter;
+import org.geowebcache.filter.parameters.StringParameterFilter;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
@@ -45,147 +52,194 @@ import org.restlet.data.Method;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.data.Status;
+import org.springframework.util.Assert;
 
 public class SeedFormRestlet extends GWCRestlet {
-    //private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.SeedFormRestlet.class);
-    
+    // private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.SeedFormRestlet.class);
+
     private TileBreeder seeder;
 
-    public void handle(Request request, Response response){
+    public void handle(Request request, Response response) {
         Method met = request.getMethod();
         try {
             if (met.equals(Method.GET)) {
                 doGet(request, response);
-            } else if(met.equals(Method.POST)) {
+            } else if (met.equals(Method.POST)) {
                 try {
                     doPost(request, response);
                 } catch (GeoWebCacheException e) {
                     throw new RestletException(e.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
                 }
             } else {
-                throw new RestletException("Method not allowed", Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
+                throw new RestletException("Method not allowed",
+                        Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
             }
         } catch (RestletException re) {
             response.setEntity(re.getRepresentation());
             response.setStatus(re.getStatus());
         }
     }
-    
+
     public void doGet(Request request, Response response) throws RestletException {
-        //String layerName = (String) request.getAttributes().get("layer");
+        // String layerName = (String) request.getAttributes().get("layer");
         String layerName = null;
         try {
             layerName = URLDecoder.decode((String) request.getAttributes().get("layer"), "UTF-8");
-        } catch (UnsupportedEncodingException uee) { }
-        
+        } catch (UnsupportedEncodingException uee) {
+        }
+
         TileLayer tl;
         try {
             tl = seeder.findTileLayer(layerName);
         } catch (GeoWebCacheException e) {
             throw new RestletException(e.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
         }
-       
+
         response.setEntity(makeFormPage(tl), MediaType.TEXT_HTML);
     }
-    
-    public void doPost(Request req, Response resp) 
-    throws RestletException, GeoWebCacheException {
+
+    public void doPost(Request req, Response resp) throws RestletException, GeoWebCacheException {
         String layerName = null;
         try {
             layerName = URLDecoder.decode((String) req.getAttributes().get("layer"), "UTF-8");
-        } catch (UnsupportedEncodingException uee) { }
-        
+        } catch (UnsupportedEncodingException uee) {
+        }
+
         Form form = req.getEntityAsForm();
 
-        if(form == null) {
-            throw new RestletException("Unable to parse form result.", Status.CLIENT_ERROR_BAD_REQUEST);
+        if (form == null) {
+            throw new RestletException("Unable to parse form result.",
+                    Status.CLIENT_ERROR_BAD_REQUEST);
         }
-        
-        //String layerName = form.getFirst("layerName").getValue();
-        
+
+        // String layerName = form.getFirst("layerName").getValue();
+
         TileLayer tl = null;
         try {
             tl = seeder.findTileLayer(layerName);
         } catch (GeoWebCacheException e) {
             throw new RestletException(e.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
         }
-        
-        if (form != null && form.getFirst("kill_thread") != null) {
+
+        if (form.getFirst("kill_thread") != null) {
             handleKillThreadPost(form, tl, resp);
-        }else if (form != null && form.getFirst("kill_all") != null) {
+        } else if (form.getFirst("kill_all") != null) {
             handleKillAllThreadsPost(form, tl, resp);
-        } else if (form != null && form.getFirst("minX") != null) {
+        } else if (form.getFirst("minX") != null) {
             handleDoSeedPost(form, tl, resp);
         } else {
             throw new RestletException(
                     "Unknown or malformed request. Please try again, somtimes the form "
-                    +"is not properly received. This frequently happens on the first POST "
-                    +"after a restart. The POST was to " + req.getResourceRef().getPath(), 
-                    Status.CLIENT_ERROR_BAD_REQUEST );
+                            + "is not properly received. This frequently happens on the first POST "
+                            + "after a restart. The POST was to " + req.getResourceRef().getPath(),
+                    Status.CLIENT_ERROR_BAD_REQUEST);
         }
     }
-        
+
     private String makeFormPage(TileLayer tl) {
-        
+
         StringBuilder doc = new StringBuilder();
-        
+
         makeHeader(doc);
-        
+
         makeTaskList(doc, tl);
-        
+
         makeWarningsAndHints(doc, tl);
-        
+
         makeFormHeader(doc, tl);
-        
+
         makeThreadCountPullDown(doc);
-        
+
         makeTypePullDown(doc);
-        
+
         makeGridSetPulldown(doc, tl);
-        
+
         makeFormatPullDown(doc, tl);
-        
+
         makeZoomStartPullDown(doc, tl);
-        
+
         makeZoomStopPullDown(doc, tl);
-        
-        //TODO make list of modifiable parameter combos
-        
+
+        makeModifiableParameters(doc, tl);
+
         makeBboxFields(doc);
-        
+
         makeSubmit(doc);
-        
-        makeFormFooter(doc);  
-        
+
+        makeFormFooter(doc);
+
         makeFooter(doc);
-        
+
         return doc.toString();
     }
-    
+
+    private void makeModifiableParameters(StringBuilder doc, TileLayer tl) {
+        List<ParameterFilter> parameterFilters = tl.getParameterFilters();
+        if (parameterFilters == null || parameterFilters.size() == 0) {
+            return;
+        }
+        doc.append("<tr><td>Modifiable Parameters:</td><td>\n");
+        doc.append("<table>");
+        for (ParameterFilter pf : parameterFilters) {
+            Assert.notNull(pf);
+            String key = pf.getKey();
+            String defaultValue = pf.getDefaultValue();
+            List<String> legalValues = pf.getLegalValues();
+            doc.append("<tr><td>").append(key.toUpperCase()).append(": ").append("</td><td>");
+            String parameterId = "parameter_" + key;
+            if (pf instanceof StringParameterFilter) {
+                Map<String, String> keysValues = makeParametersMap(legalValues);
+                makePullDown(doc, parameterId, keysValues, defaultValue);
+            } else if (pf instanceof RegexParameterFilter) {
+                makeTextInput(doc, parameterId, 25);
+            } else if (pf instanceof FloatParameterFilter) {
+                Map<String, String> keysValues = makeParametersMap(legalValues);
+                makePullDown(doc, parameterId, keysValues, defaultValue);
+            } else if ("org.geowebcache.filter.parameters.NaiveWMSDimensionFilter".equals(pf
+                    .getClass().getName())) {
+                makeTextInput(doc, parameterId, 25);
+            } else {
+                throw new IllegalStateException("Unknown parameter filter type for layer '"
+                        + tl.getName() + "': " + pf.getClass().getName());
+            }
+            doc.append("</td></tr>");
+        }
+        doc.append("</table>");
+        doc.append("</td></tr>\n");
+    }
+
+    private Map<String, String> makeParametersMap(List<String> legalValues) {
+        Map<String, String> map = new HashMap<String, String>();
+        for (String s : legalValues) {
+            map.put(s, s);
+        }
+        return map;
+    }
+
     private String makeResponsePage(TileLayer tl) {
-        
+
         StringBuilder doc = new StringBuilder();
-        
+
         makeHeader(doc);
-        
+
         doc.append("<h3>Task submitted</h3>\n");
-        
+
         doc.append("<p>Below you can find a list of currently executing threads, take the numbers with a grain of salt");
         doc.append(" until the thread has had a chance to run for a few minutes. ");
-        
+
         makeTaskList(doc, tl);
-        
+
         makeFooter(doc);
-        
+
         return doc.toString();
     }
-    
+
     private void makeTypePullDown(StringBuilder doc) {
         doc.append("<tr><td>Type of operation:</td><td>\n");
-        Map<String,String> keysValues = new TreeMap<String,String>();
-        
-        keysValues.put("Truncate - remove tiles","truncate");
-        keysValues.put("Seed - generate missing tiles","seed");
+        Map<String, String> keysValues = new TreeMap<String, String>();
+
+        keysValues.put("Truncate - remove tiles", "truncate");
+        keysValues.put("Seed - generate missing tiles", "seed");
         keysValues.put("Reseed - regenerate all tiles", "reseed");
 
         makePullDown(doc, "type", keysValues, "Seed - generate missing tiles");
@@ -194,11 +248,11 @@ public class SeedFormRestlet extends GWCRestlet {
 
     private void makeThreadCountPullDown(StringBuilder doc) {
         doc.append("<tr><td>Number of threads to use:</td><td>\n");
-        Map<String,String> keysValues = new TreeMap<String,String>();
-        
-        for(int i=1; i<17; i++) {
-            if(i < 10) {
-                keysValues.put("0"+Integer.toString(i), "0"+Integer.toString(i));
+        Map<String, String> keysValues = new TreeMap<String, String>();
+
+        for (int i = 1; i < 17; i++) {
+            if (i < 10) {
+                keysValues.put("0" + Integer.toString(i), "0" + Integer.toString(i));
             } else {
                 keysValues.put(Integer.toString(i), Integer.toString(i));
             }
@@ -216,23 +270,23 @@ public class SeedFormRestlet extends GWCRestlet {
         doc.append("</br>These are optional, approximate values are fine.");
         doc.append("</td></tr>\n");
     }
-    
+
     private void makeBboxHints(StringBuilder doc, TileLayer tl) {
         Iterator<Entry<String, GridSubset>> iter = tl.getGridSubsets().entrySet().iterator();
-        
-        //int minStart = Integer.MAX_VALUE;
-        //int maxStop = Integer.MIN_VALUE;
-        
-        while(iter.hasNext()) {
+
+        // int minStart = Integer.MAX_VALUE;
+        // int maxStop = Integer.MIN_VALUE;
+
+        while (iter.hasNext()) {
             Entry<String, GridSubset> entry = iter.next();
-            doc.append("<li>"+entry.getKey().toString()
-                    +":   "+entry.getValue().getOriginalExtent().toString()+"</li>\n");
+            doc.append("<li>" + entry.getKey().toString() + ":   "
+                    + entry.getValue().getOriginalExtent().toString() + "</li>\n");
         }
-        
+
     }
 
     private void makeTextInput(StringBuilder doc, String id, int size) {
-        doc.append("<input name=\""+id+"\" type=\"text\" size=\""+size+"\" />\n");
+        doc.append("<input name=\"" + id + "\" type=\"text\" size=\"" + size + "\" />\n");
     }
 
     private void makeSubmit(StringBuilder doc) {
@@ -250,152 +304,156 @@ public class SeedFormRestlet extends GWCRestlet {
         makeZoomPullDown(doc, true, tl);
         doc.append("</td></tr>\n");
     }
-    
+
     private void makeZoomPullDown(StringBuilder doc, boolean isStart, TileLayer tl) {
-        Map<String,String> keysValues = new TreeMap<String,String>();
-        
+        Map<String, String> keysValues = new TreeMap<String, String>();
+
         Iterator<Entry<String, GridSubset>> iter = tl.getGridSubsets().entrySet().iterator();
-        
+
         int minStart = Integer.MAX_VALUE;
         int maxStop = Integer.MIN_VALUE;
-        
-        while(iter.hasNext()) {
+
+        while (iter.hasNext()) {
             Entry<String, GridSubset> entry = iter.next();
-            
+
             int start = entry.getValue().getZoomStart();
             int stop = entry.getValue().getZoomStop();
-            
-            if(start < minStart) {
+
+            if (start < minStart) {
                 minStart = start;
             }
-            if(stop > maxStop) {
+            if (stop > maxStop) {
                 maxStop = stop;
             }
         }
-        
-        for(int i=minStart; i<=maxStop; i++) {
-            if(i < 10) {
+
+        for (int i = minStart; i <= maxStop; i++) {
+            if (i < 10) {
                 keysValues.put("0" + Integer.toString(i), "0" + Integer.toString(i));
             } else {
                 keysValues.put(Integer.toString(i), Integer.toString(i));
             }
         }
-        
-        if(isStart) {
-            if(minStart < 10) {
-                makePullDown(doc, "zoomStart", keysValues, "0" + Integer.toString(minStart)); 
+
+        if (isStart) {
+            if (minStart < 10) {
+                makePullDown(doc, "zoomStart", keysValues, "0" + Integer.toString(minStart));
             } else {
                 makePullDown(doc, "zoomStart", keysValues, Integer.toString(minStart));
             }
-            
+
         } else {
-            int midStop = ( minStart + maxStop )/ 2;
-            if(midStop < 10) {
+            int midStop = (minStart + maxStop) / 2;
+            if (midStop < 10) {
                 makePullDown(doc, "zoomStop", keysValues, "0" + Integer.toString(midStop));
             } else {
-                makePullDown(doc, "zoomStop", keysValues, Integer.toString(midStop));  
+                makePullDown(doc, "zoomStop", keysValues, Integer.toString(midStop));
             }
         }
     }
 
     private void makeFormatPullDown(StringBuilder doc, TileLayer tl) {
         doc.append("<tr><td>Format:</td><td>\n");
-        Map<String,String> keysValues = new TreeMap<String,String>();
-        
+        Map<String, String> keysValues = new TreeMap<String, String>();
+
         Iterator<MimeType> iter = tl.getMimeTypes().iterator();
-        
-        while(iter.hasNext()) {
+
+        while (iter.hasNext()) {
             MimeType mime = iter.next();
             keysValues.put(mime.getFormat(), mime.getFormat());
         }
-        
+
         makePullDown(doc, "format", keysValues, ImageMime.png.getFormat());
         doc.append("</td></tr>\n");
     }
 
     private void makeGridSetPulldown(StringBuilder doc, TileLayer tl) {
         doc.append("<tr><td>Grid Set:</td><td>\n");
-        Map<String,String> keysValues = new TreeMap<String,String>();
-        
+        Map<String, String> keysValues = new TreeMap<String, String>();
+
         Iterator<String> iter = tl.getGridSubsets().keySet().iterator();
-        
+
         String firstGridSetId = null;
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             String gridSetId = iter.next();
-            if(firstGridSetId == null) {
+            if (firstGridSetId == null) {
                 firstGridSetId = gridSetId;
             }
-            keysValues.put(gridSetId,gridSetId);
+            keysValues.put(gridSetId, gridSetId);
         }
-        
+
         makePullDown(doc, "gridSetId", keysValues, firstGridSetId);
         doc.append("</td></tr>\n");
     }
 
-    private void makePullDown(StringBuilder doc, String id, Map<String,String> keysValues, String defaultKey) {
-        doc.append("<select name=\""+id+"\">\n");
-        
-        Iterator<Entry<String,String>> iter = keysValues.entrySet().iterator();
-        
-        while(iter.hasNext()) {
-            Entry<String,String> entry = iter.next();
-            if(entry.getKey().equals(defaultKey)) {
-                doc.append("<option value=\""+entry.getValue()+"\" selected=\"selected\">"+entry.getKey()+"</option>\n");
+    private void makePullDown(StringBuilder doc, String id, Map<String, String> keysValues,
+            String defaultKey) {
+        doc.append("<select name=\"" + id + "\">\n");
+
+        Iterator<Entry<String, String>> iter = keysValues.entrySet().iterator();
+
+        while (iter.hasNext()) {
+            Entry<String, String> entry = iter.next();
+            if (entry.getKey().equals(defaultKey)) {
+                doc.append("<option value=\"" + entry.getValue() + "\" selected=\"selected\">"
+                        + entry.getKey() + "</option>\n");
             } else {
-                doc.append("<option value=\""+entry.getValue()+"\">"+entry.getKey()+"</option>\n");
+                doc.append("<option value=\"" + entry.getValue() + "\">" + entry.getKey()
+                        + "</option>\n");
             }
         }
-        
+
         doc.append("</select>\n");
     }
-    
+
     private void makeFormHeader(StringBuilder doc, TileLayer tl) {
         doc.append("<h4>Create a new task:</h4>\n");
-        doc.append("<form id=\"seed\" action=\"./"+tl.getName()+"\" method=\"post\">\n");
+        doc.append("<form id=\"seed\" action=\"./" + tl.getName() + "\" method=\"post\">\n");
         doc.append("<table border=\"0\" cellspacing=\"10\">\n");
     }
-    
+
     private void makeFormFooter(StringBuilder doc) {
         doc.append("</table>\n");
         doc.append("</form>\n");
     }
-    
+
     private void makeHeader(StringBuilder doc) {
-        doc.append("<html>\n"+ServletUtils.gwcHtmlHeader("GWC Seed Form") +"<body>\n" + ServletUtils.gwcHtmlLogoLink("../../"));    
+        doc.append("<html>\n" + ServletUtils.gwcHtmlHeader("GWC Seed Form") + "<body>\n"
+                + ServletUtils.gwcHtmlLogoLink("../../"));
     }
-    
+
     private void makeWarningsAndHints(StringBuilder doc, TileLayer tl) {
         doc.append("<h4>Please note:</h4><ul>\n"
                 + "<li>This minimalistic interface does not check for correctness.</li>\n"
                 + "<li>Seeding past zoomlevel 20 is usually not recommended.</li>\n"
                 + "<li>Truncating KML will also truncate all KMZ archives.</li>\n"
-        	+ "<li>Please check the logs of the container to look for error messages and progress indicators.</li>\n"
-        	+ "</ul>\n");
-        
+                + "<li>Please check the logs of the container to look for error messages and progress indicators.</li>\n"
+                + "</ul>\n");
+
         doc.append("Here are the max bounds, if you do not specify bounds these will be used.\n");
         doc.append("<ul>\n");
         makeBboxHints(doc, tl);
         doc.append("</ul>\n");
     }
-        
+
     private void makeTaskList(StringBuilder doc, TileLayer tl) {
         doc.append("<h4>List of currently executing tasks:</h4>\n");
-        
+
         Iterator<Entry<Long, GWCTask>> iter = seeder.getRunningTasksIterator();
-        
+
         boolean tasks = false;
-        if(! iter.hasNext()) {
+        if (!iter.hasNext()) {
             doc.append("<ul><li><i>none</i></li></ul>\n");
         } else {
             doc.append("<table border=\"0\" cellspacing=\"10\">");
             doc.append("<tr style=\"font-weight: bold;\"><td>Id</td><td>Layer</td><td>Type</td><td>Estimated # of tiles</td>"
-                    +"<td>Tiles completed</td><td>Time elapsed</td><td>Time remaining</td><td>Threads</td><td>&nbsp;</td>");
+                    + "<td>Tiles completed</td><td>Time elapsed</td><td>Time remaining</td><td>Threads</td><td>&nbsp;</td>");
             doc.append("<td>").append(makeKillallThreadsForm(tl)).append("</td>");
             doc.append("</tr>");
             tasks = true;
         }
-        
-        while(iter.hasNext()) {
+
+        while (iter.hasNext()) {
             Entry<Long, GWCTask> entry = iter.next();
             GWCTask task = entry.getValue();
 
@@ -403,7 +461,7 @@ public class SeedFormRestlet extends GWCRestlet {
             final long remining = task.getTimeRemaining();
             final long tilesDone = task.getTilesDone();
             final long tilesTotal = task.getTilesTotal();
-            
+
             NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);
             nf.setGroupingUsed(true);
             final String tilesTotalStr;
@@ -415,7 +473,7 @@ public class SeedFormRestlet extends GWCRestlet {
             final String tilesDoneStr = nf.format(task.getTilesDone());
             String timeSpent = toTimeString(spent, tilesDone, tilesTotal);
             String timeRemaining = toTimeString(remining, tilesDone, tilesTotal);
-            
+
             doc.append("<tr>");
             doc.append("<td>").append(entry.getKey()).append("</td>");
             doc.append("<td>").append(task.getLayerName()).append("</td>");
@@ -429,11 +487,11 @@ public class SeedFormRestlet extends GWCRestlet {
             doc.append("<td>").append(makeThreadKillForm(entry.getKey(), tl)).append("</td>");
             doc.append("<tr>");
         }
-        
-        if(tasks) {
+
+        if (tasks) {
             doc.append("</table>");
         }
-        doc.append("<p><a href=\"./"+tl.getName()+"\">Refresh list</a></p>\n");
+        doc.append("<p><a href=\"./" + tl.getName() + "\">Refresh list</a></p>\n");
     }
 
     private String toTimeString(long timeSeconds, final long tilesDone, final long tilesTotal) {
@@ -468,103 +526,118 @@ public class SeedFormRestlet extends GWCRestlet {
         }
         return timeString;
     }
-    
+
     private String makeThreadKillForm(Long key, TileLayer tl) {
-        String ret =  "<form form id=\"kill\" action=\"./"+tl.getName()+"\" method=\"post\">"
-            	+ "<input type=\"hidden\" name=\"kill_thread\"  value=\"1\" />"
-                + "<input type=\"hidden\" name=\"thread_id\"  value=\""+key+"\" />"
+        String ret = "<form form id=\"kill\" action=\"./"
+                + tl.getName()
+                + "\" method=\"post\">"
+                + "<input type=\"hidden\" name=\"kill_thread\"  value=\"1\" />"
+                + "<input type=\"hidden\" name=\"thread_id\"  value=\""
+                + key
+                + "\" />"
                 + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Kill Thread\"></span>"
-            	+ "</form>";
-            		
+                + "</form>";
+
         return ret;
     }
 
     private String makeKillallThreadsForm(TileLayer tl) {
-        String ret =  "<form form id=\"kill\" action=\"./"+tl.getName()+"\" method=\"post\">"
+        String ret = "<form form id=\"kill\" action=\"./"
+                + tl.getName()
+                + "\" method=\"post\">"
                 + "<input type=\"hidden\" name=\"kill_all\"  value=\"1\" />"
                 + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Kill All Threads\"></span>"
                 + "</form>";
-                        
+
         return ret;
     }
 
     private void makeFooter(StringBuilder doc) {
         doc.append("</body></html>\n");
     }
-    
-    private void handleKillAllThreadsPost(Form form, TileLayer tl, Response resp){
+
+    private void handleKillAllThreadsPost(Form form, TileLayer tl, Response resp) {
         Iterator<Entry<Long, GWCTask>> runningTasks = seeder.getRunningTasksIterator();
-        while(runningTasks.hasNext()){
+        while (runningTasks.hasNext()) {
             Entry<Long, GWCTask> next = runningTasks.next();
             GWCTask task = next.getValue();
             long taskId = task.getTaskId();
             seeder.terminateGWCTask(taskId);
         }
         StringBuilder doc = new StringBuilder();
-        
+
         makeHeader(doc);
         doc.append("<ul><li>Requested to terminate all tasks.</li></ul>");
-        doc.append("<p><a href=\"./"+tl.getName()+"\">Go back</a></p>\n");
-        
+        doc.append("<p><a href=\"./" + tl.getName() + "\">Go back</a></p>\n");
+
         resp.setEntity(doc.toString(), MediaType.TEXT_HTML);
     }
-    
+
     private void handleKillThreadPost(Form form, TileLayer tl, Response resp) {
         String id = form.getFirstValue("thread_id");
-        
+
         StringBuilder doc = new StringBuilder();
-        
+
         makeHeader(doc);
-        
-        if(seeder.terminateGWCTask(Long.parseLong(id))) {
+
+        if (seeder.terminateGWCTask(Long.parseLong(id))) {
             doc.append("<ul><li>Requested to terminate task " + id + ".</li></ul>");
         } else {
-            doc.append("<ul><li>Sorry, either task " + id 
-                    + " has not started yet, or it is a truncate task that cannot be interrutped.</li></ul>");;
+            doc.append("<ul><li>Sorry, either task "
+                    + id
+                    + " has not started yet, or it is a truncate task that cannot be interrutped.</li></ul>");
+            ;
         }
-        
-        doc.append("<p><a href=\"./"+tl.getName()+"\">Go back</a></p>\n");
-        
+
+        doc.append("<p><a href=\"./" + tl.getName() + "\">Go back</a></p>\n");
+
         resp.setEntity(doc.toString(), MediaType.TEXT_HTML);
     }
-    
 
-    private void handleDoSeedPost(Form form, TileLayer tl, Response resp)
-            throws RestletException, GeoWebCacheException {
+    private void handleDoSeedPost(Form form, TileLayer tl, Response resp) throws RestletException,
+            GeoWebCacheException {
         BoundingBox bounds = null;
-        
+
         if (form.getFirst("minX").getValue() != null) {
-            bounds = new BoundingBox(
-                    parseDouble(form, "minX"), 
-                    parseDouble(form, "minY"), 
-                    parseDouble(form, "maxX"),
-                    parseDouble(form, "maxY"));
+            bounds = new BoundingBox(parseDouble(form, "minX"), parseDouble(form, "minY"),
+                    parseDouble(form, "maxX"), parseDouble(form, "maxY"));
         }
-        
+
         String gridSetId = form.getFirst("gridSetId").getValue();
 
         int threadCount = Integer.parseInt(form.getFirst("threadCount").getValue());
         int zoomStart = Integer.parseInt(form.getFirst("zoomStart").getValue());
         int zoomStop = Integer.parseInt(form.getFirst("zoomStop").getValue());
-
         String format = form.getFirst("format").getValue();
+        Map<String, String> modifiableParameters = new HashMap<String, String>();
+        {
+            Set<String> paramNames = form.getNames();
+            String prefix = "parameter_";
+            for (String name : paramNames) {
+                if (name.startsWith(prefix)) {
+                    String paramName = name.substring(prefix.length());
+                    String value = form.getFirstValue(name);
+                    modifiableParameters.put(paramName, value);
+                }
+            }
+        }
 
         TYPE type = GWCTask.TYPE.valueOf(form.getFirst("type").getValue().toUpperCase());
 
-        SeedRequest sr = new SeedRequest(tl.getName(), bounds, gridSetId,
-                threadCount, zoomStart, zoomStop, format, type, null);
-        
+        final String layerName = tl.getName();
+        SeedRequest sr = new SeedRequest(layerName, bounds, gridSetId, threadCount, zoomStart,
+                zoomStop, format, type, modifiableParameters);
+
         TileRange tr = TileBreeder.createTileRange(sr, tl);
-        
+
         GWCTask[] tasks;
         try {
-            tasks = seeder.createTasks(tr, tl, sr.getType(), sr.getThreadCount(), sr
-                    .getFilterUpdate());
+            tasks = seeder.createTasks(tr, tl, sr.getType(), sr.getThreadCount(),
+                    sr.getFilterUpdate());
         } catch (GeoWebCacheException e) {
             throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL);
         }
-        
-        
+
         seeder.dispatchTasks(tasks);
 
         // Give the thread executor a chance to run
@@ -576,22 +649,21 @@ public class SeedFormRestlet extends GWCRestlet {
 
         resp.setEntity(this.makeResponsePage(tl), MediaType.TEXT_HTML);
     }
-    
+
     private static double parseDouble(Form form, String key) throws RestletException {
         String value = form.getFirst(key).getValue();
-        if(value == null || value.length() == 0)
-            throw new RestletException("Missing value for " + key, 
-                    Status.CLIENT_ERROR_BAD_REQUEST);
+        if (value == null || value.length() == 0)
+            throw new RestletException("Missing value for " + key, Status.CLIENT_ERROR_BAD_REQUEST);
         try {
             return Double.parseDouble(value);
         } catch (NumberFormatException nfe) {
-            throw new  RestletException("Value for " + key + " is not a double", 
+            throw new RestletException("Value for " + key + " is not a double",
                     Status.CLIENT_ERROR_BAD_REQUEST);
         }
     }
-    
+
     public void setTileBreeder(TileBreeder seeder) {
         this.seeder = seeder;
     }
-    
+
 }

@@ -141,7 +141,8 @@ public class JDBCMetaBackend implements MetaStore {
     public boolean delete(TileObject stObj) throws StorageException {
         stObj.setLayerId(idCache.getLayerId(stObj.getLayerName()));
         stObj.setFormatId(idCache.getFormatId(stObj.getBlobFormat()));
-        stObj.setParamtersId(idCache.getParametersId(stObj.getParameters()));
+        long parametersId = idCache.getParametersId(stObj.getParameters());
+        stObj.setParamtersId(parametersId);
 
         try {
             wrpr.deleteTile(stObj);
@@ -157,7 +158,9 @@ public class JDBCMetaBackend implements MetaStore {
         long layerId = idCache.getLayerId(trObj.layerName);
         long formatId = idCache.getFormatId(trObj.mimeType.getFormat());
         long parametersId = idCache.getParametersId(trObj.parameters);
-
+        if(-1L != parametersId){
+            trObj.setParametersId(parametersId);
+        }
         long gridSetIdId = idCache.getGridSetsId(trObj.gridSetId);
 
         for (int zoomLevel = trObj.zoomStart; zoomLevel <= trObj.zoomStop; zoomLevel++) {
@@ -172,7 +175,9 @@ public class JDBCMetaBackend implements MetaStore {
         long layerId = idCache.getLayerId(trObj.layerName);
         long formatId = idCache.getFormatId(trObj.mimeType.getFormat());
         long parametersId = idCache.getParametersId(trObj.parameters);
-
+        if(-1L != parametersId){
+            trObj.setParametersId(parametersId);
+        }
         long gridSetIdId = idCache.getGridSetsId(trObj.gridSetId);
 
         for (int zoomLevel = trObj.zoomStart; zoomLevel <= trObj.zoomStop; zoomLevel++) {

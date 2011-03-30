@@ -267,8 +267,7 @@ public class TileBreeder implements ApplicationContextAware {
         coveredGridLevels = gridSubset.expandToMetaFactors(coveredGridLevels, metaTilingFactors);
 
         String layerName = tl.getName();
-        // TODO Check the null
-        Map<String, String> parameters = null;
+        Map<String, String> parameters = req.getParameters();
         return new TileRange(layerName, gridSetId, zoomStart, zoomStop, coveredGridLevels,
                 mimeType, parameters);
     }
