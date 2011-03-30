@@ -111,8 +111,6 @@ public class WMSTileFuser {
 
     private Map<String, String> fullParameters;
 
-    private Map<String, String> modifiedParameters;
-
     protected WMSTileFuser(TileLayerDispatcher tld, StorageBroker sb, HttpServletRequest servReq)
             throws GeoWebCacheException {
         this.sb = sb;
@@ -155,16 +153,8 @@ public class WMSTileFuser {
         // this.reqBgColor = values[7];
         // }
 
-        Map<String, String>[] modparams = ((WMSLayer) layer).getModifiableParameters(
-                servReq.getParameterMap(), servReq.getCharacterEncoding());
-
-        if (modparams == null) {
-            this.fullParameters = Collections.emptyMap();
-            this.modifiedParameters = Collections.emptyMap();
-        } else {
-            this.fullParameters = modparams[0];
-            this.modifiedParameters = modparams[1];
-        }
+        fullParameters = layer.getModifiableParameters(servReq.getParameterMap(),
+                servReq.getCharacterEncoding());
     }
 
     protected WMSTileFuser(TileLayer layer, GridSubset gridSubset, BoundingBox bounds, int width,
@@ -177,7 +167,6 @@ public class WMSTileFuser {
         this.reqWidth = width;
         this.reqHeight = height;
         this.fullParameters = Collections.emptyMap();
-        this.modifiedParameters = Collections.emptyMap();
     }
 
     protected void determineSourceResolution() {
@@ -324,7 +313,7 @@ public class WMSTileFuser {
                 long[] gridLoc = { gridx, gridy, srcIdx };
 
                 ConveyorTile tile = new ConveyorTile(sb, layer.getName(), gridSubset.getName(),
-                        gridLoc, ImageMime.png, fullParameters, modifiedParameters, null, null);
+                        gridLoc, ImageMime.png, fullParameters, null, null);
 
                 // Check whether this tile is to be rendered at all
                 try {

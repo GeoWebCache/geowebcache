@@ -119,20 +119,8 @@ public class WMSService extends Service {
         final Map<String, String> paramValues = ServletUtils.selectedStringsFromMap(
                 requestParameterMap, encoding, paramKeys);
 
-        final Map<String, String> fullParameters;
-        final Map<String, String> modifiedParameters;
-        {
-            Map<String, String>[] modStrs = null;
-            modStrs = tileLayer.getModifiableParameters(requestParameterMap, encoding);
-
-            if (modStrs == null) {
-                fullParameters = null;
-                modifiedParameters = null;
-            } else {
-                fullParameters = modStrs[0];
-                modifiedParameters = modStrs[1];
-            }
-        }
+        final Map<String, String> fullParameters = tileLayer.getModifiableParameters(
+                requestParameterMap, encoding);
 
         final MimeType mimeType;
         String format = paramValues.get("format");
@@ -201,7 +189,7 @@ public class WMSService extends Service {
         gridSubset.checkTileDimensions(tileWidth, tileHeight);
 
         return new ConveyorTile(sb, layers, gridSubset.getName(), tileIndex, mimeType,
-                fullParameters, modifiedParameters, request, response);
+                fullParameters, request, response);
     }
 
     public void handleRequest(Conveyor conv) throws GeoWebCacheException {
@@ -281,7 +269,7 @@ public class WMSService extends Service {
         }
 
         ConveyorTile gfiConv = new ConveyorTile(sb, tl.getName(), gridSubset.getName(), null,
-                mimeType, null, null, tile.servletReq, tile.servletResp);
+                mimeType, null, tile.servletReq, tile.servletResp);
         gfiConv.setTileLayer(tl);
 
         WMSSourceHelper srcHelper = layer.getSourceHelper();

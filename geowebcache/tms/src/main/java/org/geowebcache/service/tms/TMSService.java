@@ -116,7 +116,7 @@ public class TMSService extends Service {
             throw new ServiceException("Unable to determine requested format based on extension " + yExt[1]);
         }
 
-        ConveyorTile ret = new ConveyorTile(sb, layerId, gridSetId, gridLoc, mimeType, null, null, request, response);
+        ConveyorTile ret = new ConveyorTile(sb, layerId, gridSetId, gridLoc, mimeType, null, request, response);
         
         return ret;
     }

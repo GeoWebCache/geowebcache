@@ -76,16 +76,7 @@ public class GMapsConverter extends Service {
         }
 
         TileLayer tileLayer = tld.getTileLayer(layers);
-        Map<String, String> defaultParameters = null;
-        Map<String, String> modifiedParameters = null;
-        {
-            Map<String, String>[] modStrs = null;
-            modStrs = tileLayer.getModifiableParameters(params, encoding);
-            if (modStrs != null) {
-                defaultParameters = modStrs[0];
-                modifiedParameters = modStrs[1];
-            }
-        }
+        Map<String, String> filteringParameters = tileLayer.getModifiableParameters(params, encoding);
 
         MimeType mimeType = null;
         try {
@@ -98,7 +89,7 @@ public class GMapsConverter extends Service {
         }
 
         ConveyorTile ret = new ConveyorTile(sb, layerId, gsb.WORLD_EPSG3857.getName(), gridLoc,
-                mimeType, defaultParameters, modifiedParameters, request, response);
+                mimeType, filteringParameters, request, response);
 
         if (strCached != null && !Boolean.parseBoolean(strCached)) {
             ret.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);

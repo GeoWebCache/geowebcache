@@ -328,9 +328,13 @@ public class WMSLayer extends TileLayer {
         // GridCalculator gridCalc = getGrid(tile.getSRS()).getGridCalculator();
 
         MimeType mimeType = tile.getMimeType();
+        Map<String, String> fullParameters = tile.getFullParameters();
+        if(fullParameters.isEmpty()){
+            fullParameters = getDefaultParameterFilters();
+        }
         WMSMetaTile metaTile = new WMSMetaTile(this, gridSubset, mimeType,
                 this.getFormatModifier(tile.getMimeType()), gridLoc, metaWidthHeight[0],
-                metaWidthHeight[1], tile.getFullParameters());
+                metaWidthHeight[1], fullParameters);
 
         // Leave a hint to save expiration, if necessary
         if (saveExpirationHeaders) {

@@ -122,8 +122,8 @@ public class ServletUtils {
      * 
      * @param map
      * @param keys
-     * @return {@link CaseInsensitiveMap map} subset containing (URL decoded) values for
-     *         {@code keys}
+     * @return map subset containing (URL decoded) values for {@code keys}, with keys normalized to
+     *         upper case
      */
     @SuppressWarnings("unchecked")
     public static Map<String, String> selectedStringsFromMap(Map<String, ?> map, String encoding,

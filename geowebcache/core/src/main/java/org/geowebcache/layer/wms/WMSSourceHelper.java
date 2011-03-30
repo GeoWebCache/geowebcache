@@ -67,6 +67,9 @@ public abstract class WMSSourceHelper {
         wmsParams.put("BBOX", bbox.toString());
 
         Map<String, String> fullParameters = tile.getFullParameters();
+        if (fullParameters.isEmpty()) {
+            fullParameters = layer.getDefaultParameterFilters();
+        }
         wmsParams.putAll(fullParameters);
 
         if (tile.getMimeType() == XMLMime.kml) {
@@ -98,6 +101,9 @@ public abstract class WMSSourceHelper {
         wmsParams.put("BBOX", bbox.toString());
 
         Map<String, String> fullParameters = tile.getFullParameters();
+        if (fullParameters.isEmpty()) {
+            fullParameters = layer.getDefaultParameterFilters();
+        }
         wmsParams.putAll(fullParameters);
 
         wmsParams.put("X", String.valueOf(x));

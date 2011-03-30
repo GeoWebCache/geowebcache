@@ -725,49 +725,75 @@ public abstract class TileLayer {
         return parameterFilters;
     }
 
+    private transient Map<String, String> defaultParams;
+
+    /**
+     * @return default parameter filters, with keys normalized to upper case, or an empty map if no
+     *         parameter filters are defined
+     */
+    public synchronized Map<String, String> getDefaultParameterFilters() {
+        if (defaultParams == null) {
+            if (parameterFilters == null || parameterFilters.size() == 0) {
+                defaultParams = Collections.emptyMap();
+            } else {
+                Map<String, String> defaults = new HashMap<String, String>();
+                for (ParameterFilter parameterFilter : parameterFilters) {
+                    String key = parameterFilter.getKey().toUpperCase();
+                    String defaultValue = decodeDimensionValue(parameterFilter.getDefaultValue());
+                    defaults.put(key, defaultValue);
+                }
+                defaultParams = Collections.unmodifiableMap(defaults);
+            }
+        }
+        return defaultParams;
+    }
+
     /**
      * 
      * @param map
      *            keys are parameter names, values are either a single string or an array of strings
      *            as they come form httpservletrequest
-     * @return {full query string with default, query string with modifiers}
+     * @return Set of parameter filter keys and values, with keys normalized to upper case, or empty
+     *         map if they match the layer's parameter filters default values
      * @throws GeoWebCacheException
      */
-    @SuppressWarnings("unchecked")
-    public Map<String, String>[] getModifiableParameters(Map<String, ?> map, String encoding)
+    public Map<String, String> getModifiableParameters(Map<String, ?> map, String encoding)
             throws GeoWebCacheException {
         if (parameterFilters == null) {
-            return null;
+            return Collections.emptyMap();
         }
 
         Map<String, String> fullParameters = new HashMap<String, String>();
-        Map<String, String> modifiedParams = new HashMap<String, String>();
 
         final String[] keys = new String[parameterFilters.size()];
         for (int i = 0; i < parameterFilters.size(); i++) {
             ParameterFilter parameterFilter = parameterFilters.get(i);
             keys[i] = parameterFilter.getKey();
         }
+
         final Map<String, String> requestValues;
         requestValues = ServletUtils.selectedStringsFromMap(map, encoding, keys);
+
+        final Map<String, String> defaultValues = getDefaultParameterFilters();
 
         for (ParameterFilter parameterFilter : parameterFilters) {
             String key = parameterFilter.getKey().toUpperCase();
             String value = requestValues.get(key);
             value = decodeDimensionValue(value);
 
-            String defaultValue = decodeDimensionValue(parameterFilter.getDefaultValue());
-            if (value == null || (defaultValue != null && defaultValue.equals(value))) {
+            String defaultValue = defaultValues.get(key);
+            if (value == null || value.length() == 0
+                    || (defaultValue != null && defaultValue.equals(value))) {
                 fullParameters.put(key, defaultValue);
             } else {
                 String appliedValue = parameterFilter.apply(value);
-                modifiedParams.put(key, appliedValue);
                 fullParameters.put(key, appliedValue);
             }
         }
-
-        Map<String, String>[] ret = new Map[] { fullParameters, modifiedParams };
-        return ret;
+        if (defaultValues.equals(fullParameters)) {
+            return Collections.emptyMap();
+        }
+        return fullParameters;
     }
 
     protected static String decodeDimensionValue(String value) {

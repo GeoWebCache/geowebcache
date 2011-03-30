@@ -62,12 +62,25 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     }
 
     /**
-     * This constructor is used for an incoming request, the data is then added by the cache
+     * @deprecated as of 1.2.5, use
+     *             {@link #ConveyorTile(StorageBroker, String, String, long[], MimeType, Map, HttpServletRequest, HttpServletResponse)}
+     *             instead. This method just calls it with the provided {@code fullParameters} and
+     *             will be removed soon
      */
+    @Deprecated
     public ConveyorTile(StorageBroker sb, String layerId, String gridSetId, long[] tileIndex,
             MimeType mimeType, Map<String, String> fullParameters,
             Map<String, String> modifiedParameters, HttpServletRequest servletReq,
             HttpServletResponse servletResp) {
+        this(sb, layerId, gridSetId, tileIndex, mimeType, fullParameters, servletReq, servletResp);
+    }
+
+    /**
+     * This constructor is used for an incoming request, the data is then added by the cache
+     */
+    public ConveyorTile(StorageBroker sb, String layerId, String gridSetId, long[] tileIndex,
+            MimeType mimeType, Map<String, String> filteringParameters,
+            HttpServletRequest servletReq, HttpServletResponse servletResp) {
 
         super(layerId, sb, servletReq, servletResp);
         this.gridSetId = gridSetId;
@@ -82,10 +95,10 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
 
         super.mimeType = mimeType;
 
-        this.fullParameters = fullParameters;
+        this.fullParameters = filteringParameters;
 
         stObj = TileObject.createQueryTileObject(layerId, idx, gridSetId, mimeType.getFormat(),
-                modifiedParameters);
+                filteringParameters);
     }
 
     public Map<String, String> getFullParameters() {

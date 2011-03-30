@@ -123,20 +123,12 @@ public class WMTSService extends Service {
                     + " is not known.");
         }
 
-        Map<String, String> fullParameters = null;
-        Map<String, String> modifiedParameters = null;
-        {
-            Map<String, String>[] modStrs = null;
-            try {
-                modStrs = tileLayer.getModifiableParameters(request.getParameterMap(), encoding);
-                if(modStrs != null){
-                    fullParameters = modStrs[0];
-                    modifiedParameters = modStrs[1];
-                }
-            } catch (GeoWebCacheException e) {
-                throw new OWSException(500, "NoApplicableCode", "", e.getMessage()
-                        + " while fetching modifiable parameters for LAYER " + layer);
-            }
+        Map<String, String> fullParameters;
+        try {
+            fullParameters = tileLayer.getModifiableParameters(request.getParameterMap(), encoding);
+        } catch (GeoWebCacheException e) {
+            throw new OWSException(500, "NoApplicableCode", "", e.getMessage()
+                    + " while fetching modifiable parameters for LAYER " + layer);
         }
 
         MimeType mimeType = null;
@@ -228,7 +220,7 @@ public class WMTSService extends Service {
         }
 
         ConveyorTile convTile = new ConveyorTile(sb, layer, gridSubset.getName(), tileIndex,
-                mimeType, fullParameters, modifiedParameters, request, response);
+                mimeType, fullParameters, request, response);
 
         convTile.setTileLayer(tileLayer);
 

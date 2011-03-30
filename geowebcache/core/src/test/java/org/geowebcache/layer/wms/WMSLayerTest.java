@@ -74,7 +74,7 @@ public class WMSLayerTest extends TestCase {
         GridSet gridSet = gridSetBroker.WORLD_EPSG4326;
         String gridSetId = gridSet.getName();
         ConveyorTile tile = new ConveyorTile(mockStorageBroker, layerId, gridSetId, gridLoc,
-                mimeType, null, null, servletReq, servletResp);
+                mimeType, null, servletReq, servletResp);
 
         boolean tryCache = false;
         layer.seedTile(tile, tryCache);

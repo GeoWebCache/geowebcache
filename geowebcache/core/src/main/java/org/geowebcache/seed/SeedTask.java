@@ -119,10 +119,9 @@ class SeedTask extends GWCTask {
 
             checkInterrupted();
             Map<String, String> fullParameters = tr.parameters;
-            Map<String, String> modifiedParameters = tr.parameters;
             
             ConveyorTile tile = new ConveyorTile(storageBroker, layerName, tr.gridSetId, gridLoc,
-                    tr.mimeType, fullParameters, modifiedParameters, null, null);
+                    tr.mimeType, fullParameters, null, null);
 
             for (int fetchAttempt = 0; fetchAttempt <= tileFailureRetryCount; fetchAttempt++) {
                 try {

@@ -612,8 +612,7 @@ public class SeedFormRestlet extends GWCRestlet {
         int zoomStart = Integer.parseInt(form.getFirst("zoomStart").getValue());
         int zoomStop = Integer.parseInt(form.getFirst("zoomStop").getValue());
         String format = form.getFirst("format").getValue();
-        Map<String, String> fullParameters = null;
-        Map<String, String> modifiedParameters = null;
+        Map<String, String> fullParameters;
         {
             Map<String, String> parameters = new HashMap<String, String>();
             Set<String> paramNames = form.getNames();
@@ -625,12 +624,7 @@ public class SeedFormRestlet extends GWCRestlet {
                     parameters.put(paramName, value);
                 }
             }
-            Map<String, String>[] modifiableParameters = tl.getModifiableParameters(parameters,
-                    "UTF-8");
-            if (modifiableParameters != null) {
-                fullParameters = modifiableParameters[0];
-                modifiedParameters = modifiableParameters[1];
-            }
+            fullParameters = tl.getModifiableParameters(parameters, "UTF-8");
         }
 
         TYPE type = GWCTask.TYPE.valueOf(form.getFirst("type").getValue().toUpperCase());

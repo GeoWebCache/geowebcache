@@ -27,12 +27,10 @@ import org.geowebcache.storage.StorageBroker;
 
 public class ConveyorKMLTile extends ConveyorTile {
     public ConveyorKMLTile(StorageBroker sb, String layerId, String gridSetId, long[] tileIndex,
-            MimeType mimeType, Map<String, String> fullParameters,
-            Map<String, String> modifiedParameters, HttpServletRequest servletReq,
+            MimeType mimeType, Map<String, String> fullParameters, HttpServletRequest servletReq,
             HttpServletResponse servletResp) {
 
-        super(sb, layerId, gridSetId, tileIndex, mimeType, fullParameters, modifiedParameters,
-                servletReq, servletResp);
+        super(sb, layerId, gridSetId, tileIndex, mimeType, fullParameters, servletReq, servletResp);
     }
 
     String urlPrefix = null;
