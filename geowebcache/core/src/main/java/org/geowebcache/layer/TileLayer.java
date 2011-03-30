@@ -757,7 +757,7 @@ public abstract class TileLayer {
             value = decodeDimensionValue(value);
 
             String defaultValue = decodeDimensionValue(parameterFilter.getDefaultValue());
-            if (value == null || defaultValue.equals(value)) {
+            if (value == null || (defaultValue != null && defaultValue.equals(value))) {
                 fullParameters.put(key, defaultValue);
             } else {
                 String appliedValue = parameterFilter.apply(value);

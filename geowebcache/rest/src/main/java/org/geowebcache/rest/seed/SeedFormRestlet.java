@@ -188,12 +188,12 @@ public class SeedFormRestlet extends GWCRestlet {
             doc.append("<tr><td>").append(key.toUpperCase()).append(": ").append("</td><td>");
             String parameterId = "parameter_" + key;
             if (pf instanceof StringParameterFilter) {
-                Map<String, String> keysValues = makeParametersMap(legalValues);
+                Map<String, String> keysValues = makeParametersMap(defaultValue, legalValues);
                 makePullDown(doc, parameterId, keysValues, defaultValue);
             } else if (pf instanceof RegexParameterFilter) {
                 makeTextInput(doc, parameterId, 25);
             } else if (pf instanceof FloatParameterFilter) {
-                Map<String, String> keysValues = makeParametersMap(legalValues);
+                Map<String, String> keysValues = makeParametersMap(defaultValue, legalValues);
                 makePullDown(doc, parameterId, keysValues, defaultValue);
             } else if ("org.geowebcache.filter.parameters.NaiveWMSDimensionFilter".equals(pf
                     .getClass().getName())) {
@@ -208,10 +208,13 @@ public class SeedFormRestlet extends GWCRestlet {
         doc.append("</td></tr>\n");
     }
 
-    private Map<String, String> makeParametersMap(List<String> legalValues) {
+    private Map<String, String> makeParametersMap(String defaultValue, List<String> legalValues) {
         Map<String, String> map = new HashMap<String, String>();
+        map.put(defaultValue + " <default>", defaultValue);
         for (String s : legalValues) {
-            map.put(s, s);
+            if (!defaultValue.equals(s)) {
+                map.put(s, s);
+            }
         }
         return map;
     }
@@ -609,16 +612,24 @@ public class SeedFormRestlet extends GWCRestlet {
         int zoomStart = Integer.parseInt(form.getFirst("zoomStart").getValue());
         int zoomStop = Integer.parseInt(form.getFirst("zoomStop").getValue());
         String format = form.getFirst("format").getValue();
-        Map<String, String> modifiableParameters = new HashMap<String, String>();
+        Map<String, String> fullParameters = null;
+        Map<String, String> modifiedParameters = null;
         {
+            Map<String, String> parameters = new HashMap<String, String>();
             Set<String> paramNames = form.getNames();
             String prefix = "parameter_";
             for (String name : paramNames) {
                 if (name.startsWith(prefix)) {
                     String paramName = name.substring(prefix.length());
                     String value = form.getFirstValue(name);
-                    modifiableParameters.put(paramName, value);
+                    parameters.put(paramName, value);
                 }
+            }
+            Map<String, String>[] modifiableParameters = tl.getModifiableParameters(parameters,
+                    "UTF-8");
+            if (modifiableParameters != null) {
+                fullParameters = modifiableParameters[0];
+                modifiedParameters = modifiableParameters[1];
             }
         }
 
@@ -626,7 +637,7 @@ public class SeedFormRestlet extends GWCRestlet {
 
         final String layerName = tl.getName();
         SeedRequest sr = new SeedRequest(layerName, bounds, gridSetId, threadCount, zoomStart,
-                zoomStop, format, type, modifiableParameters);
+                zoomStop, format, type, fullParameters);
 
         TileRange tr = TileBreeder.createTileRange(sr, tl);
 
