@@ -21,6 +21,7 @@ import org.easymock.classextension.EasyMock;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationTest;
+import org.geowebcache.diskquota.DiskQuotaMonitor;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
@@ -48,6 +49,9 @@ public class BDBQuotaStoreTest extends TestCase {
         cacheDirFinder = EasyMock.createMock(DefaultStorageFinder.class);
         EasyMock.expect(cacheDirFinder.getDefaultPath()).andReturn(targetDir.getAbsolutePath())
                 .anyTimes();
+        EasyMock.expect(
+                cacheDirFinder.findEnvVar(EasyMock.eq(DiskQuotaMonitor.GWC_DISKQUOTA_DISABLED)))
+                .andReturn(null).anyTimes();
         EasyMock.replay(cacheDirFinder);
 
         XMLConfiguration xmlConfig = loadXMLConfig();

@@ -1,5 +1,7 @@
 package org.geowebcache.diskquota.storage;
 
+import static org.geowebcache.diskquota.DiskQuotaMonitor.GWC_DISKQUOTA_DISABLED;
+
 import java.io.File;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -70,6 +72,8 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
 
     private volatile boolean open;
 
+    private boolean diskQuotaEnabled;
+
     public BDBQuotaStore(final DefaultStorageFinder cacheDirFinder,
             TilePageCalculator tilePageCalculator) throws StorageException {
 
@@ -78,6 +82,14 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
 
         this.tilePageCalculator = tilePageCalculator;
         this.cacheRootDir = cacheDirFinder.getDefaultPath();
+
+        boolean disabled = Boolean.valueOf(cacheDirFinder.findEnvVar(GWC_DISKQUOTA_DISABLED))
+                .booleanValue();
+        if (disabled) {
+            log.warn(" -- Found environment variable " + GWC_DISKQUOTA_DISABLED
+                    + " set to true. DiskQuotaMonitor is disabled.");
+        }
+        this.diskQuotaEnabled = !disabled;
     }
 
     /**
@@ -91,6 +103,11 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
     }
 
     public void startUp() throws InterruptedException {
+        if (!diskQuotaEnabled) {
+            log.info(getClass().getName() + " won't start, got env variable "
+                    + GWC_DISKQUOTA_DISABLED + "=true");
+            return;
+        }
         open = true;
         File storeDirectory = new File(cacheRootDir, "diskquota_page_store");
         storeDirectory.mkdirs();
@@ -115,6 +132,9 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
      * @see org.springframework.beans.factory.DisposableBean#destroy()
      */
     public void destroy() throws Exception {
+        if (!diskQuotaEnabled) {
+            return;
+        }
         open = false;
         log.info("Requesting to close quota store...");
         transactionRunner.shutdown();
