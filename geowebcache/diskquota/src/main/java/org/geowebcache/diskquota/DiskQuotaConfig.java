@@ -70,12 +70,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
 
     private List<LayerQuota> layerQuotas;
 
-    /**
-     * Supports initialization of instance variables during XStream deserialization
-     * 
-     * @return
-     */
-    void setDefaults() {
+    public void setDefaults() {
         if (enabled == null) {
             enabled = Boolean.FALSE;
         }

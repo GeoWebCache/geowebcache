@@ -64,6 +64,13 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
     private static final Log log = LogFactory.getLog(DiskQuotaMonitor.class);
 
+    /**
+     * Name of the environment variable that if present disables completely the DiskQuotaMonitor,
+     * meaning that no tile access nor disk usage statistics will be gathered during the life time
+     * of the Java VM.
+     */
+    public static final String GWC_DISKQUOTA_DISABLED = "GWC_DISKQUOTA_DISABLED";
+
     private final TileLayerDispatcher tileLayerDispatcher;
 
     private final StorageBroker storageBroker;
@@ -100,6 +107,8 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
     private final DefaultStorageFinder storageFinder;
 
+    private boolean diskQuotaEnabled;
+
     /**
      * 
      * @param configLoader
@@ -117,6 +126,14 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
             BDBQuotaStore quotaStore, final CacheCleaner cacheCleaner) throws IOException,
             ConfigurationException {
 
+        boolean disabled = Boolean.valueOf(storageFinder.findEnvVar(GWC_DISKQUOTA_DISABLED))
+                .booleanValue();
+        if (disabled) {
+            log.warn(" -- Found environment variable " + GWC_DISKQUOTA_DISABLED
+                    + " set to true. DiskQuotaMonitor is disabled.");
+        }
+        this.diskQuotaEnabled = !disabled;
+        
         this.storageFinder = storageFinder;
         this.configLoader = configLoader;
         this.storageBroker = sb;
@@ -126,35 +143,82 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     }
 
     /**
+     * Returns whether the DiskQuotaMonitor is enabled.
+     * <p>
+     * It is always enabled at least the {@link #GWC_DISKQUOTA_DISABLED} environment variable has
+     * been set to {@code true}
+     * </p>
+     */
+    public boolean isEnabled() {
+        return diskQuotaEnabled;
+    }
+
+    public boolean isRunning() {
+        return isRunning;
+    }
+
+    /**
+     * Called when the framework calls this bean for initialization
+     * <p>
+     * Defers to {@link #startUp()}, or does nothing if {@code isEnabled() == false}
+     * </p>
+     * 
+     * @see #isEnabled()
      * @see #startUp()
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
     public void afterPropertiesSet() throws Exception {
+        if (!diskQuotaEnabled) {
+            return;
+        }
         startUp();
     }
 
     /**
      * Called when the framework destroys this bean (e.g. due to web app shutdown), stops any
-     * running scheduled clean up and gracefuly shuts down
+     * running scheduled clean up and gracefuly shuts down.
+     * <p>
+     * This method does nothing if {@code #isEnabled() == false}
+     * </p>
      * 
      * @see #shutDown()
      * @see org.springframework.beans.factory.DisposableBean#destroy()
      */
     public void destroy() throws Exception {
+        if (!diskQuotaEnabled) {
+            return;
+        }
         shutDown(30);
     }
 
+    /**
+     * Starts up the tile usage and disk usage monitors
+     * <p>
+     * <b>Preconditions:</b>
+     * <ul>
+     * <li> {@link #isEnabled() == true}
+     * <li> {@link #isRunning() == false}
+     * </ul>
+     * </p>
+     * <b>Postconditions:</b>
+     * <ul>
+     * <li> {@link #isRunning() == true}
+     * </ul>
+     * </p>
+     * 
+     * @throws ConfigurationException
+     * @see {@link #shutDown(int)}
+     */
     public void startUp() throws ConfigurationException {
-        if (isRunning) {
-            throw new IllegalStateException("DiskQuotaMonitor is already running");
-        }
+        Assert.isTrue(diskQuotaEnabled, "startUp called but DiskQuotaMonitor is disabled!");
+        Assert.isTrue(!isRunning, "DiskQuotaMonitor is already running");
 
         try {
             startUpInternal();
+            isRunning = true;
         } catch (InterruptedException e) {
             log.info("DiskQuotaMonitor startup process interrupted", e);
         }
-        isRunning = true;
     }
 
     private void startUpInternal() throws InterruptedException, ConfigurationException {
@@ -188,6 +252,14 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     }
 
     /**
+     * Shuts down the tile and disk space usage monitors.
+     * <p>
+     * <b>Preconditions</b>:
+     * <ul>
+     * <li> {@link #isEnabled() == true}
+     * <li> {@code timeOutSecs > 0}
+     * </ul>
+     * </p>
      * 
      * @param timeOutSecs
      *            time out in seconds to wait for the related services to shut down, must be a
@@ -195,8 +267,10 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      * @throws InterruptedException
      *             if some service failed to gracefully shut down within a reasonable amount of
      *             time, upon which it is safe to call this method again for a retry
+     * @see #startUp()
      */
     public void shutDown(final int timeOutSecs) throws InterruptedException {
+        Assert.isTrue(diskQuotaEnabled, "shutDown called but DiskQuotaMonitor is disabled!");
         Assert.isTrue(timeOutSecs > 0, "timeOut for shutdown must be > 0: " + timeOutSecs);
         try {
             log.info("Disk quota monitor shutting down...");
@@ -222,11 +296,34 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         }
     }
 
+    /**
+     * <p>
+     * <b>Preconditions:</b>
+     * <ul>
+     * <li> {@link #isEnabled() == true}
+     * </ul>
+     * </p>
+     * 
+     * @return the current configuration
+     */
     public DiskQuotaConfig getConfig() {
+        Assert.isTrue(diskQuotaEnabled, "called saveConfig but DiskQuota is disabled!");
         return this.quotaConfig;
     }
 
+    /**
+     * Saves and set the given configuration.
+     * <p>
+     * <b>Preconditions:</b>
+     * <ul>
+     * <li> {@link #isEnabled() == true}
+     * </ul>
+     * </p>
+     * 
+     * @param config
+     */
     public void saveConfig(DiskQuotaConfig config) {
+        Assert.isTrue(diskQuotaEnabled, "called saveConfig but DiskQuota is disabled!");
         try {
             configLoader.saveConfig(config);
         } catch (ConfigurationException e) {
@@ -239,6 +336,9 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         }
     }
 
+    /**
+     * @see #saveConfig(DiskQuotaConfig)
+     */
     public void saveConfig() {
         saveConfig(quotaConfig);
     }
@@ -378,6 +478,13 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     }
 
     /**
+     * <p>
+     * <b>Preconditions</b>:
+     * <ul>
+     * <li> {@link #isRunning() == true}
+     * </ul>
+     * </p>
+     * 
      * @see CacheCleaner#expireByLayerNames(Set, QuotaResolver)
      */
     public void expireByLayerNames(Set<String> layerNames, QuotaResolver quotaResolver)
