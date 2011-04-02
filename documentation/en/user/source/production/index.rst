@@ -58,9 +58,19 @@ If the block size is too small, performance will probably degrade as more I/O op
 Seeding and Truncating the Cache
 --------------------------------
 
-From the page that lists the demos there is a link for seeding each layer. Seeding and truncating layers with parameter filters is currently not supported, except for the default values.
+From the page that lists the demos there is a link for seeding each layer. This page presents a form with the seed/truncate options for the layer, as well as a summary of all the running tasks, if any.
+The following options can be set to submit a seed task:
+  * Number of threads to use
+  * Type of operation (seed|re-seed|truncate)
+  * Grid Set
+  * Image format
+  * Start and stop zoom levels
+  * Modifiable parameters (for any configured parameter filter)
+  * Bounding box
 
-There is also a "RESTful interface", which admittedly is not RESTful at all, for seeding: http://geowebcache.org/trac/wiki/GWC_seeder
+Seeding and truncating with parameter filters is supported since version 1.2.5. If a layer is configured with parameter filters a dynamically generated input will be presented for each parameter filter, with the parameter filter's default value.
+Every combination of different parameter filter values will generage a different tile set.
+
 
 Resource Allocation
 -------------------
