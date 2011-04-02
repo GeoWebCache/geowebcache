@@ -72,6 +72,31 @@ Seeding and truncating with parameter filters is supported since version 1.2.5. 
 Every combination of different parameter filter values will generage a different tile set.
 
 
+Seed Failure Tolerance
+++++++++++++++++++++++
+
+As of version 1.2.5, it is possible to control how GWC behaves in the event that a backend (WMS for example) request fails during seeding, by using the following environment variables:
+
+* ``GWC_SEED_RETRY_COUNT`` : specifies how many times to retry a failed request for each tile being seeded. Use ``0`` for no retries, or any higher number. Defaults to ``0``, meaning no retries are performed. It also means that the defaults to the other two variables do not apply at least you specify a higher value for ``GWC_SEED_RETRY_COUNT``.
+* ``GWC_SEED_RETRY_WAIT`` : specifies how much to wait before each retry upon a failure to seed a tile, in milliseconds. Defaults to ``100ms``
+* ``GWC_SEED_ABORT_LIMIT`` : specifies the aggregated number of failures that a group of seeding threads should reach before aborting the seeding operation as a whole. This value is shared by all the threads launched as a single thread group; so if the value is ``10`` and you launch a seed task with four threads, when ``10`` failures are reached by all or any of those four threads the four threads will abort the seeding task. The default is ``1000``.
+
+These environment variables can be established by any of the following ways, in order of precedence:
+
+- As a Java environment variable: for example `java -DGWC_SEED_RETRY_COUNT=5 ...`
+- As a Servlet context parameter in the web application's ``WEB-INF/web.xml`` configuration file. for example:
+ 
+.. code-block:: xml
+
+  <context-param>
+    <!-- milliseconds between each retry upon a backend request failure -->
+    <param-name>GWC_SEED_RETRY_WAIT</param-name>
+    <param-value>500</param-value>
+  </context-param>
+  
+- As a System environment variable: `export GWC_SEED_ABORT_LIMIT=2000; <your usual command to run GWC here>` (or for Tomcat, use the Tomcat's `CATALINA_OPTS` in Tomcat's `bin/catalina.sh` as this: `CATALINA_OPTS="GWC_SEED_ABORT_LIMIT=2000 GWC_SEED_RETRY_COUNT=2`
+
+
 Resource Allocation
 -------------------
 
