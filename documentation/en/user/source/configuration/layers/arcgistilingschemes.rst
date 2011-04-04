@@ -30,13 +30,14 @@ The :file:`conf.cdi` file is an accompanying XML file that defines the actual bo
 
 The structure of the "conf.cdi" file is as follows:
 
-.. code-block: xml
-<EnvelopeN>
- <XMin>-180</XMin>
- <YMin>-90</YMin>
- <XMax>180</XMax>
- <YMax>90</YMax>
-</EnvelopeN>
+.. code-block:: xml
+
+  <EnvelopeN>
+    <XMin>-180</XMin>
+    <YMin>-90</YMin>
+    <XMax>180</XMax>
+    <YMax>90</YMax>
+  </EnvelopeN>
 
 .. note:: GeoWebCache will need those two files to automatically create a GridSet and GridSubset for this Layer. If your cache doesn't come with a :file:`conf.cdi` file (ArcGIS Server versions prior to 10.0) you'll need to create one by hand and place it next to :file:`conf.xml`, so that GeoWebcache can map that to its internal representation of the gridded set of tiles.
 
@@ -46,22 +47,35 @@ An 'arcgisLayer' element needs to be created in :file:`geowebcache.xml` under th
 
 This is an example :file:`geowebcache.xml` fragment showing how to set up such a cached Layer:
 
-.. code-block: xml
-<gwcConfiguration ...>
-  <gridSets>
-  </gridSets>
-  <layers>
-    <wmsLayer></wmsLayer>
+.. code-block:: xml
+
+  <gwcConfiguration>
+    <gridSets>
+    </gridSets>
+    <layers>
+      <wmsLayer></wmsLayer>
   
-    <arcgisLayer>
-      <name>naturalearth</name>
-      <tilingScheme>C:\\arcgiscache\\naturalearth\\Layers\\conf.xml</tilingScheme>
-    </arcgisLayer>
-  </layers>
-</gwcConfiguration>
+      <arcgisLayer>
+        <name>naturalearth</name>
+        <tilingScheme>C:\\arcgiscache\\naturalearth\\Layers\\conf.xml</tilingScheme>
+      </arcgisLayer>
+    </layers>
+  </gwcConfiguration>
 
 The 'name' element is the Layer name GeoWebcache will publish the ArcGIS cache for that layer with.
 The 'tilingScheme' element expects the full path to the cache's :file:`conf.xml` file.
+
+Alternative cache directory
+---------------------------
+It is also possible to get rid of the standard tiling scheme layout and separate out the location of the `conf.xml` file and the directory that actually holds the tiles, by using the ``tileCacheDir`` property:
+
+.. code-block:: xml
+
+      <arcgisLayer>
+        <name>naturalearth</name>
+        <tilingScheme>C:\\arcgiscache\\naturalearth\\Layers\\conf.xml</tilingScheme>
+        <tileCacheDir>D:\\arcgistiles\\naturalearth\\</tileCacheDir>
+      </arcgisLayer>
 
 OpenLayers Configuration
 ------------------------
