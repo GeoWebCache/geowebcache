@@ -49,12 +49,21 @@ public class ArcGISCacheLayer extends TileLayer {
 
     private Boolean enabled;
 
+    /**
+     * The location of the conf.xml tiling scheme configuration file
+     */
     private File tilingScheme;
+
+    /**
+     * Optional, location of the actual tiles folder. If not provided defaults to the
+     * {@code _alllayers} directory at the same location than the {@link #getTilingScheme()
+     * conf.xml} tiling scheme.
+     */
+    private File tileCachePath;
 
     private transient CacheInfo cacheInfo;
 
     private transient BoundingBox layerBounds;
-
 
     @Override
     public boolean isEnabled() {
@@ -65,13 +74,31 @@ public class ArcGISCacheLayer extends TileLayer {
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
-    
+
     public File getTilingScheme() {
         return tilingScheme;
     }
 
     public void setTilingScheme(final File tilingScheme) {
         this.tilingScheme = tilingScheme;
+    }
+
+    /**
+     * Returns the location of the actual tiles folder, or {@code null} if not provided, in which
+     * case defaults internally to the {@code _alllayers} directory at the same location than the
+     * {@link #getTilingScheme() conf.xml} tiling scheme.
+     */
+    public File getTileCachePath() {
+        return tileCachePath;
+    }
+
+    /**
+     * Options, location of the actual tiles folder. If not provided defaults to the
+     * {@code _alllayers} directory at the same location than the {@link #getTilingScheme()
+     * conf.xml} tiling scheme.
+     */
+    public void setTileCachePath(File tileCachePath) {
+        this.tileCachePath = tileCachePath;
     }
 
     /**
@@ -89,7 +116,13 @@ public class ArcGISCacheLayer extends TileLayer {
                     "tilingScheme has not been set. It should point to the ArcGIS "
                             + "cache tiling scheme file for this layer (conf.xml)");
         }
-
+        if (tileCachePath != null) {
+            if (!tileCachePath.exists() || !tileCachePath.isDirectory() || !tileCachePath.canRead()) {
+                throw new IllegalStateException("tileCachePath property for layer '" + getName()
+                        + "' is set to '" + tileCachePath
+                        + "' but the directory either does not exist or is not readable");
+            }
+        }
         try {
             CacheInfoPersister tilingSchemeLoader = new CacheInfoPersister();
             cacheInfo = tilingSchemeLoader.load(new FileReader(tilingScheme));
@@ -246,10 +279,16 @@ public class ArcGISCacheLayer extends TileLayer {
     }
 
     private StringBuilder getLayerPath() {
-        StringBuilder path = new StringBuilder(this.tilingScheme.getParent());
-        // note we're assuming it's a "fused" tile cache. When it comes to support multiple layers
-        // tile caches we'll need to parametrize the layer's cache directory
-        path.append(File.separatorChar).append("_alllayers");
+        StringBuilder path;
+        if (tileCachePath == null) {
+            path = new StringBuilder(this.tilingScheme.getParent());
+            // note we're assuming it's a "fused" tile cache. When it comes to support multiple
+            // layers
+            // tile caches we'll need to parametrize the layer's cache directory
+            path.append(File.separatorChar).append("_alllayers");
+        } else {
+            path = new StringBuilder(tileCachePath.getAbsolutePath());
+        }
         return path;
     }
 
