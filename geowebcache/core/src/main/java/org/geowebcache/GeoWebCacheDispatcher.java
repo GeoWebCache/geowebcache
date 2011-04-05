@@ -24,8 +24,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -53,7 +52,6 @@ import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
 
@@ -77,11 +75,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
     private StorageBroker storageBroker;
 
-    private Configuration mainConfiguration;
-
     private RuntimeStats runtimeStats;
 
-    private HashMap<String, Service> services = null;
+    private Map<String, Service> services = null;
 
     private Resource blankTile = null;
 
@@ -99,7 +95,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
         super();
         this.tileLayerDispatcher = tileLayerDispatcher;
         this.gridSetBroker = gridSetBroker;
-        this.mainConfiguration = mainConfiguration;
         this.runtimeStats = runtimeStats;
         this.storageBroker = storageBroker;
 
@@ -139,22 +134,19 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * Services convert HTTP requests into the internal grid representation and specify what layer
      * the response should come from.
      * 
-     * The classpath is scanned for objects extending Service, thereby making it easy to add new
-     * services.
+     * The application context is scanned for objects extending Service, thereby making it easy to
+     * add new services.
+     * 
+     * @return
      */
-    @SuppressWarnings("unchecked")
-    private void loadServices() {
-        // Give all service objects direct access to the tileLayerDispatcher
-        WebApplicationContext context = (WebApplicationContext) getApplicationContext();
+    private Map<String, Service> loadServices() {
 
-        Map<String, Service> serviceBeans = (Map<String, Service>) context
-                .getBeansOfType(Service.class);
-        Iterator<Service> beanIter = serviceBeans.values().iterator();
-        services = new HashMap<String, Service>();
-        while (beanIter.hasNext()) {
-            Service aService = (Service) beanIter.next();
+        List<Service> plugins = GeoWebCacheExtensions.extensions(Service.class);
+        // Give all service objects direct access to the tileLayerDispatcher
+        for (Service aService : plugins) {
             services.put(aService.getPathName(), aService);
         }
+        return services;
     }
 
     private void loadBlankTile() {
@@ -323,7 +315,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         if (layerName != null && !tileLayerDispatcher.getTileLayer(layerName).isEnabled()) {
             throw new GeoWebCacheException("Layer '" + layerName + "' is disabled");
         }
-        
+
         // Check where this should be dispatched
         if (conv.reqHandler == Conveyor.RequestHandler.SERVICE) {
             // A3 The service object takes it from here
@@ -372,7 +364,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
      */
     private Service findService(String serviceStr) throws GeoWebCacheException {
         if (this.services == null) {
-            loadServices();
+            this.services = loadServices();
             loadBlankTile();
         }
 
