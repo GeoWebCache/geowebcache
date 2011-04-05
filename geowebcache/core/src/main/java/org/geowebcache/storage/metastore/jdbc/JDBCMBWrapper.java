@@ -112,13 +112,14 @@ class JDBCMBWrapper {
 
     public JDBCMBWrapper(DefaultStorageFinder defStoreFind, boolean useConnectionPooling,
             int maxConnections) throws StorageException, SQLException {
-        String envStrUsername = defStoreFind
-                .findEnvVar(DefaultStorageFinder.GWC_METASTORE_USERNAME);
-        String envStrPassword = defStoreFind
-                .findEnvVar(DefaultStorageFinder.GWC_METASTORE_PASSWORD);
-        String envStrJdbcUrl = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_JDBC_URL);
-        String envStrDriver = defStoreFind
-                .findEnvVar(DefaultStorageFinder.GWC_METASTORE_DRIVER_CLASS);
+        String envStrUsername;
+        String envStrPassword;
+        String envStrJdbcUrl;
+        String envStrDriver;
+        envStrUsername = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_USERNAME);
+        envStrPassword = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_PASSWORD);
+        envStrJdbcUrl = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_JDBC_URL);
+        envStrDriver = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_DRIVER_CLASS);
         this.useConnectionPooling = useConnectionPooling;
         this.maxConnections = maxConnections;
         if (envStrUsername != null) {
@@ -433,7 +434,7 @@ class JDBCMBWrapper {
             close(prep);
         }
     }
-    
+
     protected boolean getTile(TileObject stObj) throws SQLException {
         String query;
         if (stObj.getParametersId() == -1L) {
@@ -502,7 +503,7 @@ class JDBCMBWrapper {
             close(conn);
         }
     }
-    
+
     public void putTile(TileObject stObj) throws SQLException, StorageException {
 
         String query = "MERGE INTO "
@@ -546,7 +547,7 @@ class JDBCMBWrapper {
         }
 
     }
-    
+
     public boolean unlockTile(TileObject stObj) throws SQLException, StorageException {
 
         String query = null;
@@ -593,7 +594,7 @@ class JDBCMBWrapper {
         }
 
     }
-    
+
     protected Long wrappedInsert(PreparedStatement st) throws SQLException {
         ResultSet rs = null;
 
