@@ -212,10 +212,7 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
 
                 // add any missing tileset
                 for (String layerName : layerNames) {
-                    Set<TileSet> layerTileSets = tilePageCalculator.getTileSetsFor(layerName);
-                    for (TileSet tset : layerTileSets) {
-                        getOrCreateTileSet(transaction, tset);
-                    }
+                    createLayer(layerName, transaction);
                 }
                 transaction.commit();
             } catch (RuntimeException e) {
@@ -223,6 +220,31 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
                 throw e;
             }
             return null;
+        }
+
+    }
+
+    public void createLayer(final String layerName) throws InterruptedException {
+        issueSync(new Callable<Void>() {
+
+            public Void call() throws Exception {
+                final Transaction transaction = entityStore.getEnvironment().beginTransaction(null,
+                        null);
+                try {
+                    createLayer(layerName, transaction);
+                    transaction.commit();
+                } catch (RuntimeException e) {
+                    transaction.abort();
+                }
+                return null;
+            }
+        });
+    }
+
+    private void createLayer(String layerName, final Transaction transaction) {
+        Set<TileSet> layerTileSets = tilePageCalculator.getTileSetsFor(layerName);
+        for (TileSet tset : layerTileSets) {
+            getOrCreateTileSet(transaction, tset);
         }
     }
 
