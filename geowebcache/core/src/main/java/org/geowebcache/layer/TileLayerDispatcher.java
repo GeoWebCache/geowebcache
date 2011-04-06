@@ -187,7 +187,7 @@ public class TileLayerDispatcher implements DisposableBean {
         Iterator<Configuration> configIter = configs.iterator();
 
         while (configIter.hasNext()) {
-            List<TileLayer> configLayers = null;
+            List<? extends TileLayer> configLayers = null;
 
             Configuration config = configIter.next();
 
@@ -209,7 +209,7 @@ public class TileLayerDispatcher implements DisposableBean {
 
                 log.info("Adding layers from " + configIdent);
                 if (configLayers != null && configLayers.size() > 0) {
-                    Iterator<TileLayer> iter = configLayers.iterator();
+                    Iterator<? extends TileLayer> iter = configLayers.iterator();
 
                     while (iter.hasNext()) {
                         TileLayer layer = iter.next();
