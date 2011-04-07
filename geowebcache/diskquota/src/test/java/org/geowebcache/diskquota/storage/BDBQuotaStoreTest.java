@@ -247,12 +247,9 @@ public class BDBQuotaStoreTest extends TestCase {
 
         // cascade deleted?
         assertNull(store.getLeastRecentlyUsedPage(Collections.singleton(layerName)));
-        try {
-            store.getUsedQuotaByLayerName(layerName);
-            fail("Expected IAE");
-        } catch (RuntimeException e) {
-            assertTrue(true);
-        }
+        usedQuota = store.getUsedQuotaByLayerName(layerName);
+        assertNotNull(usedQuota);
+        assertEquals(0L, usedQuota.getBytes().longValue());
     }
 
     public void testGetLeastFrequentlyUsedPage() throws Exception {

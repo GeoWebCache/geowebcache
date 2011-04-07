@@ -343,8 +343,7 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
         public Quota call() throws Exception {
             Quota quota = usedQuotaByTileSetId.get(null, tileSetId, LockMode.READ_COMMITTED);
             if (quota == null) {
-                throw new IllegalArgumentException("Used quota for tileSet '" + tileSetId
-                        + "' does not exist");
+                quota = new Quota();
             }
             return quota;
         }
@@ -437,12 +436,11 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
                 layerTileSetsIds.close();
             }
             if (aggregated == null) {
-                throw new IllegalArgumentException("No such layer: '" + layerName + "'");
+                aggregated = new Quota();
             }
 
             return aggregated;
         }
-
     }
 
     public long[][] getTilesForPage(TilePage page) throws InterruptedException {
