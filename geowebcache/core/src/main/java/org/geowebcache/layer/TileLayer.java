@@ -83,6 +83,9 @@ public abstract class TileLayer {
 
     protected List<ParameterFilter> parameterFilters;
 
+    //cached default parameter filter values
+    private transient Map<String, String> defaultParams;
+
     // 1.1.x compatibility
     protected Hashtable<SRS, XMLOldGrid> grids;
 
@@ -743,8 +746,11 @@ public abstract class TileLayer {
     public List<ParameterFilter> getParameterFilters() {
         return parameterFilters;
     }
-
-    private transient Map<String, String> defaultParams;
+    
+    public void setParameterFilters(List<ParameterFilter> filters) {
+        this.parameterFilters = filters == null? null : new ArrayList<ParameterFilter>(filters);
+        this.defaultParams = null;
+    }
 
     /**
      * @return default parameter filters, with keys normalized to upper case, or an empty map if no
