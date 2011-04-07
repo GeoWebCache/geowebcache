@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -142,6 +143,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private Map<String, Service> loadServices() {
 
         List<Service> plugins = GeoWebCacheExtensions.extensions(Service.class);
+        Map<String, Service> services = new HashMap<String, Service>();
         // Give all service objects direct access to the tileLayerDispatcher
         for (Service aService : plugins) {
             services.put(aService.getPathName(), aService);
