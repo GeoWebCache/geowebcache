@@ -23,7 +23,9 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.easymock.classextension.EasyMock;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
@@ -149,9 +151,57 @@ public class BlobStoreTest extends TestCase {
         assertNull(res);
     }
 
+    public void testRenameLayer() throws Exception {
+        FileBlobStore fbs = setup();
+        Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
+        Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put("a", "x");
+        parameters.put("b", "ø");
+        MimeType mime = ImageMime.png;
+        SRS srs = SRS.getEPSG4326();
+        final String layerName = "test:123123 112";
+
+        int zoomLevel = 7;
+        int x = 25;
+        int y = 6;
+
+        // long[] origXYZ = {x,y,zoomLevel};
+
+        TileObject[] tos = new TileObject[6];
+
+        for (int i = 0; i < tos.length; i++) {
+            long[] xyz = { x + i - 1, y, zoomLevel };
+            tos[i] = TileObject.createCompleteTileObject(layerName, xyz, srs.toString(),
+                    mime.getFormat(), parameters, bytes);
+            fbs.put(tos[i]);
+        }
+
+        final String newLayerName = "modifiedLayerName";
+        BlobStoreListener listener = EasyMock.createNiceMock(BlobStoreListener.class);
+        listener.layerRenamed(EasyMock.eq(layerName), EasyMock.eq(newLayerName));
+        EasyMock.replay(listener);
+
+        fbs.addListener(listener);
+
+        boolean renamed = fbs.rename(layerName, newLayerName);
+        assertTrue(renamed);
+
+        EasyMock.verify(listener);
+
+        try {
+            fbs.rename(layerName, newLayerName);
+            fail("Expected StorageException, target dir already exists");
+        } catch (StorageException e) {
+            assertTrue(true);
+        }
+    }
+
     public FileBlobStore setup() throws Exception {
         File fh = new File(StorageBrokerTest.findTempDir() + File.separator + TEST_BLOB_DIR_NAME);
 
+        if (fh.exists()) {
+            FileUtils.deleteDirectory(fh);
+        }
         if (!fh.exists() && !fh.mkdirs()) {
             throw new StorageException("Unable to create " + fh.getAbsolutePath());
         }

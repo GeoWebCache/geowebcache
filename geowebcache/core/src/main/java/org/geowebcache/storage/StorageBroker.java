@@ -72,6 +72,15 @@ public class StorageBroker {
         return ret;
     }
     
+    public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
+        boolean ret = true;
+        if(metaStoreEnabled) {
+            ret = metaStore.rename(oldLayerName, newLayerName);
+        }
+        ret = (ret && blobStore.rename(oldLayerName, newLayerName));
+        return ret;
+    }
+
     public boolean delete(TileRange trObj) throws StorageException {
         boolean deleted;
         if(metaStoreEnabled) {

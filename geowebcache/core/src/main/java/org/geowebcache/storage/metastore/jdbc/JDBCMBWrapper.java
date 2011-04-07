@@ -736,7 +736,30 @@ class JDBCMBWrapper {
         } finally {
             close(conn);
         }
+    }
 
+    public void renameLayer(final long layerId, final String newLayerName) throws SQLException {
+        String statement = "UPDATE LAYERS SET VALUE = ? WHERE ID = ?";
+        final Connection conn = getConnection();
+        try {
+            PreparedStatement prep = conn.prepareStatement(statement);
+            try {
+                prep.setString(1, newLayerName);
+                prep.setLong(2, layerId);
+                prep.execute();
+                int updateCount = prep.getUpdateCount();
+                if (1 == updateCount) {
+                    log.info("Layer " + layerId + " successfully renamed to '" + newLayerName + "'");
+                } else {
+                    log.warn("Attempt to rename layer with id " + layerId + " as '" + newLayerName
+                            + "' did not produce any update on the database!");
+                }
+            } finally {
+                close(prep);
+            }
+        } finally {
+            close(conn);
+        }
     }
 
     public boolean deleteRange(BlobStore blobStore, TileRange trObj, int zoomLevel, long layerId,

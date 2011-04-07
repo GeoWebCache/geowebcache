@@ -23,37 +23,38 @@ package org.geowebcache.storage;
 public interface MetaStore {
     // Whether the metastore is actually enabled
     public boolean enabled();
-    
+
     public boolean delete(String layerName) throws StorageException;
+
     public boolean delete(TileObject stObj) throws StorageException;
+
     public boolean delete(BlobStore blobStore, TileRange trObj) throws StorageException;
-   
+
     public boolean expire(TileRange trObj) throws StorageException;
-    
+
     // If lock is encountered, wait inside function until available
     public boolean get(TileObject obj) throws StorageException;
-    
+
     public void put(TileObject stObj) throws StorageException;
-    
+
     public boolean unlock(TileObject stObj) throws StorageException;
-    
-    
+
     /**
      * Wipes the entire storage. Should only be invoked during testing.
      * 
      * @throws StorageException
      */
     public void clear() throws StorageException;
-    
-    /** 
+
+    /**
      * Destroy method for Spring
      */
     public void destroy();
 
-    
-    
-    ///** 
+    public boolean rename(String oldLayerName, String newLayerName) throws StorageException;
+
+    // /**
     // * Test to see whether the metastore is ready or not
     // */
-    //public boolean isReady();
+    // public boolean isReady();
 }

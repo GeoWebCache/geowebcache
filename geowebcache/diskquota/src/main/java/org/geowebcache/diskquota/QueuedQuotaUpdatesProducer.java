@@ -130,6 +130,14 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
         quotaStore.deleteLayer(layerName);
     }
 
+    public void layerRenamed(String oldLayerName, String newLayerName) {
+        try {
+            quotaStore.renameLayer(oldLayerName, newLayerName);
+        } catch (InterruptedException e) {
+            log.error("Can't rename " + oldLayerName + " to " + newLayerName + " in quota store", e);
+        }
+    }
+
     /**
      * Defers executing the update of the quota usage for the given tile set by adding a
      * {@link QuotaUpdate} payload to {@link #queuedUpdates} so that the consumer thread performs

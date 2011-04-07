@@ -52,15 +52,17 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
 
     private PrimaryIndex<String, TileSet> tileSetById;
 
+    private PrimaryIndex<Integer, Quota> usedQuotaById;
+
     private PrimaryIndex<Long, TilePage> pageById;
 
     private PrimaryIndex<Long, PageStats> pageStatsById;
 
-    private PrimaryIndex<Integer, Quota> usedQuotaById;
-
     private SecondaryIndex<String, String, TileSet> tileSetsByLayer;
 
     private SecondaryIndex<String, Long, TilePage> pageByKey;
+
+    private SecondaryIndex<String, Long, TilePage> pagesByTileSetId;
 
     private SecondaryIndex<Long, Long, PageStats> pageStatsByPageId;
 
@@ -164,6 +166,7 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
         usedQuotaById = entityStore.getPrimaryIndex(Integer.class, Quota.class);
 
         pageByKey = entityStore.getSecondaryIndex(pageById, String.class, "page_key");
+        pagesByTileSetId = entityStore.getSecondaryIndex(pageById, String.class, "tileset_id_fk");
         tileSetsByLayer = entityStore.getSecondaryIndex(tileSetById, String.class, "layer");
         pageStatsByLRU = entityStore.getSecondaryIndex(pageStatsById, Float.class, "LRU");
         pageStatsByLFU = entityStore.getSecondaryIndex(pageStatsById, Float.class, "LFU");
@@ -395,7 +398,97 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
     }
 
     public void deleteLayer(final String layerName) {
+        Assert.notNull(layerName);
         issue(new DeleteLayer(layerName));
+    }
+
+    public void renameLayer(String oldLayerName, String newLayerName) throws InterruptedException {
+        Assert.notNull(oldLayerName);
+        Assert.notNull(newLayerName);
+        issueSync(new RenameLayer(oldLayerName, newLayerName));
+    }
+
+    private class RenameLayer implements Callable<Void> {
+
+        private final String oldLayerName;
+
+        private final String newLayerName;
+
+        public RenameLayer(final String oldLayerName, final String newLayerName) {
+            this.oldLayerName = oldLayerName;
+            this.newLayerName = newLayerName;
+        }
+
+        /**
+         * Copy over old {@link TileSet}s, used {@link Quota}s and {@link TilePage}s from
+         * oldLayerName to newLayerName and delete the old ones
+         * 
+         * @see java.util.concurrent.Callable#call()
+         */
+        public Void call() throws Exception {
+            Transaction transaction = entityStore.getEnvironment().beginTransaction(null, null);
+            try {
+                copyTileSets(transaction);
+                DeleteLayer deleteCommand = new DeleteLayer(oldLayerName);
+                deleteCommand.call(transaction);
+                transaction.commit();
+            } catch (RuntimeException e) {
+                transaction.abort();
+                throw e;
+            }
+            return null;
+        }
+
+        private void copyTileSets(Transaction transaction) {
+            EntityCursor<TileSet> tileSets = tileSetsByLayer.entities(transaction, oldLayerName,
+                    true, oldLayerName, true, null);
+            try {
+                TileSet oldTileSet;
+                TileSet newTileSet;
+                Quota oldQuota;
+                Quota newQuota;
+                TilePage oldPage;
+                TilePage newPage;
+                while (null != (oldTileSet = tileSets.next())) {
+                    final String gridsetId = oldTileSet.getGridsetId();
+                    final String blobFormat = oldTileSet.getBlobFormat();
+                    final Long parametersId = oldTileSet.getParametersId();
+                    newTileSet = new TileSet(newLayerName, gridsetId, blobFormat, parametersId);
+                    // this creates the tileset's empty used Quota too
+                    newTileSet = getOrCreateTileSet(transaction, newTileSet);
+
+                    final String oldTileSetId = oldTileSet.getId();
+                    final String newTileSetId = newTileSet.getId();
+
+                    oldQuota = usedQuotaByTileSetId
+                            .get(transaction, oldTileSetId, LockMode.DEFAULT);
+                    newQuota = usedQuotaByTileSetId
+                            .get(transaction, newTileSetId, LockMode.DEFAULT);
+                    newQuota.setBytes(oldQuota.getBytes());
+                    usedQuotaById.putNoReturn(transaction, newQuota);
+
+                    EntityCursor<TilePage> oldPages = pagesByTileSetId.entities(transaction,
+                            oldTileSetId, true, oldTileSetId, true, CursorConfig.DEFAULT);
+                    try {
+                        while (null != (oldPage = oldPages.next())) {
+                            long oldPageId = oldPage.getId();
+                            newPage = new TilePage(newTileSetId, oldPage.getPageX(),
+                                    oldPage.getPageY(), oldPage.getZoomLevel());
+                            pageById.put(transaction, newPage);
+                            PageStats pageStats = pageStatsByPageId.get(oldPageId);
+                            if (pageStats != null) {
+                                pageStats.setPageId(newPage.getId());
+                                pageStatsById.putNoReturn(transaction, pageStats);
+                            }
+                        }
+                    } finally {
+                        oldPages.close();
+                    }
+                }
+            } finally {
+                tileSets.close();
+            }
+        }
     }
 
     /**
@@ -748,4 +841,5 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
             }
         }
     }
+
 }

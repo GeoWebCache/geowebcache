@@ -211,4 +211,12 @@ class JDBCMBIdCache {
             return ret;
         }
     }
+
+    public synchronized void clear() {
+        this.formatsCache.clear();
+        this.gridSetsCache.clear();
+        this.layersCache.clear();
+        this.parametersCache.clear();
+        this.serializedParametersCache.clear();
+    }
 }

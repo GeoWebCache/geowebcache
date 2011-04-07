@@ -29,6 +29,14 @@ public final class BlobStoreListenerList {
         }
     }
 
+    public void sendLayerRenamed(String oldLayerName, String newLayerName) {
+        if (listeners.size() > 0) {
+            for (int i = 0; i < listeners.size(); i++) {
+                listeners.get(i).layerRenamed(oldLayerName, newLayerName);
+            }
+        }
+    }
+
     public void sendTileDeleted(String layerName, String gridSetId, String blobFormat,
             Long parametersId, long x, long y, int z, long length) {
 
@@ -94,5 +102,4 @@ public final class BlobStoreListenerList {
             }
         }
     }
-
 }

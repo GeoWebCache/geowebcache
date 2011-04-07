@@ -34,9 +34,11 @@ public interface BlobStore {
      * @return true if succeeded, false if key did not exist
      */
     public boolean delete(String layerName) throws StorageException;
+
     public boolean delete(TileObject obj) throws StorageException;
+
     public boolean delete(TileRange obj) throws StorageException;
-    
+
     /**
      * Retrieve a blob from storage. Calls setBlob() on passed object.
      * 
@@ -45,7 +47,7 @@ public interface BlobStore {
      * @throws StorageException
      */
     public Resource get(TileObject obj) throws StorageException;
-    
+
     /**
      * Store blob. Calls getBlob() on passed object, does not modify the object.
      * 
@@ -61,17 +63,20 @@ public interface BlobStore {
      * @throws StorageException
      */
     public void clear() throws StorageException;
-    
-    /** 
+
+    /**
      * Destroy method for Spring
      */
     public void destroy();
-    
+
     public void addListener(BlobStoreListener listener);
+
     public boolean removeListener(BlobStoreListener listener);
-    
-    ///** 
+
+    public boolean rename(String oldLayerName, String newLayerName) throws StorageException;
+
+    // /**
     // * Test to see whether the blobstore is ready or not
     // */
-    //public boolean isReady();
+    // public boolean isReady();
 }

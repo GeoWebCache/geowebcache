@@ -252,6 +252,37 @@ public class BDBQuotaStoreTest extends TestCase {
         assertEquals(0L, usedQuota.getBytes().longValue());
     }
 
+    public void testRenameLayer() throws InterruptedException {
+        final String oldLayerName = tilePageCalculator.getLayerNames().iterator().next();
+        final String newLayerName = "renamed_layer";
+        
+        // make sure the layer is there and has stuff
+        Quota usedQuota = store.getUsedQuotaByLayerName(oldLayerName);
+        assertNotNull(usedQuota);
+
+        TileSet tileSet = tilePageCalculator.getTileSetsFor(oldLayerName).iterator().next();
+        TilePage page = new TilePage(tileSet.getId(), 0, 0, (byte) 0);
+        store.addHitsAndSetAccesTime(Collections.singleton(new PageStatsPayload(page)));
+        store.addToQuotaAndTileCounts(tileSet, new Quota(BigInteger.valueOf(1024)), Collections.EMPTY_LIST);
+        
+        Quota expectedQuota = store.getUsedQuotaByLayerName(oldLayerName);
+        assertEquals(1024L, expectedQuota.getBytes().longValue());
+
+        assertNotNull(store.getTileSetById(tileSet.getId()));
+
+        store.renameLayer(oldLayerName, newLayerName);
+
+        // cascade deleted old layer?
+        assertNull(store.getLeastRecentlyUsedPage(Collections.singleton(oldLayerName)));
+        usedQuota = store.getUsedQuotaByLayerName(oldLayerName);
+        assertNotNull(usedQuota);
+        assertEquals(0L, usedQuota.getBytes().longValue());
+
+        //created new layer?
+        Quota newLayerUsedQuota = store.getUsedQuotaByLayerName(newLayerName);
+        assertEquals(expectedQuota.getBytes(), newLayerUsedQuota.getBytes());
+    }
+
     public void testGetLeastFrequentlyUsedPage() throws Exception {
         final String layerName = testTileSet.getLayerName();
         Set<String> layerNames = Collections.singleton(layerName);

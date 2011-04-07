@@ -110,6 +110,51 @@ public class MetaStoreTest extends TestCase {
 
     }
 
+    public void testLayerRename() throws Exception {
+        Resource bytes = null;
+        String layerName = "test'Layer:æøå;";
+        String format = "jpeg";
+        Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put("a", "x");
+        parameters.put("b", "y");
+
+        try {
+            MetaStore ms = setup();
+
+            long[] xyz = { 1L, 2L, 3L };
+            bytes = new ByteArrayResource("Test 1 2 3".getBytes());
+            TileObject to = TileObject.createCompleteTileObject(layerName, xyz, "hefty-gridSet:id",
+                    format, parameters, bytes);
+
+            ms.put(to);
+            ms.unlock(to);
+            long layerId = to.getLayerId();
+            assertTrue(layerId > 0);
+            // make sure layer was created...
+            assertTrue(ms.get(to));
+
+            // rename it
+            String newLayerName = "modifiedLayerName";
+            assertTrue(ms.rename(layerName, newLayerName));
+            assertFalse(ms.rename(layerName, newLayerName));
+
+            // query old layer should fail
+            assertFalse(ms.get(to));
+            
+            // query new layer should succeed
+            to = TileObject.createCompleteTileObject(newLayerName, xyz, "hefty-gridSet:id",
+                    format, parameters, bytes);
+            assertTrue(ms.get(to));
+
+            //and layerId remain
+            assertEquals(layerId, to.getLayerId());
+        } catch (StorageException se) {
+            System.out.println(se.getMessage());
+            throw se;
+        }
+
+    }
+
     public MetaStore setup() throws Exception {
         StorageBrokerTest.deleteDb(TEST_DB_NAME);
         

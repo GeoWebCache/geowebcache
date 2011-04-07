@@ -28,6 +28,7 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.StorageObject.Status;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
+import org.springframework.util.Assert;
 
 /**
  * JDBC implementation of a {@link MetaStore}
@@ -132,7 +133,24 @@ public class JDBCMetaBackend implements MetaStore {
             wrpr.deleteLayer(layerId);
             return true;
         } catch (SQLException se) {
-            log.error("Failed to delete layer: " + se.getMessage());
+            log.error("Failed to delete layer '" + layerName + "'", se);
+        }
+
+        return false;
+    }
+
+    public boolean rename(final String oldLayerName, final String newLayerName)
+            throws StorageException {
+        Assert.notNull(oldLayerName, "old layer name");
+        Assert.notNull(newLayerName, "new layer name");
+
+        long layerId = idCache.getLayerId(oldLayerName);
+        try {
+            wrpr.renameLayer(layerId, newLayerName);
+            idCache.clear();
+            return true;
+        } catch (SQLException se) {
+            log.error("Failed to rename layer '" + oldLayerName + "' to '" + newLayerName + "'", se);
         }
 
         return false;
@@ -158,7 +176,7 @@ public class JDBCMetaBackend implements MetaStore {
         long layerId = idCache.getLayerId(trObj.layerName);
         long formatId = idCache.getFormatId(trObj.mimeType.getFormat());
         long parametersId = idCache.getParametersId(trObj.parameters);
-        if(-1L != parametersId){
+        if (-1L != parametersId) {
             trObj.setParametersId(parametersId);
         }
         long gridSetIdId = idCache.getGridSetsId(trObj.gridSetId);
@@ -175,7 +193,7 @@ public class JDBCMetaBackend implements MetaStore {
         long layerId = idCache.getLayerId(trObj.layerName);
         long formatId = idCache.getFormatId(trObj.mimeType.getFormat());
         long parametersId = idCache.getParametersId(trObj.parameters);
-        if(-1L != parametersId){
+        if (-1L != parametersId) {
             trObj.setParametersId(parametersId);
         }
         long gridSetIdId = idCache.getGridSetsId(trObj.gridSetId);
@@ -274,4 +292,5 @@ public class JDBCMetaBackend implements MetaStore {
     public void setLockRetryDelay(long lockRetryDelay) {
         this.lockRetryDelay = lockRetryDelay;
     }
+
 }

@@ -193,6 +193,43 @@ public class FileBlobStore implements BlobStore {
         return true;
     }
 
+    /**
+     * Renames the layer directory for layer {@code oldLayerName} to {@code newLayerName}
+     * 
+     * @return true if the directory for the layer was renamed, or the original directory didn't
+     *         exist in first place. {@code false} if the original directory exists but can't be
+     *         renamed to the target directory
+     * @throws StorageException
+     *             if the target directory already exists
+     * @see org.geowebcache.storage.BlobStore#rename
+     */
+    public boolean rename(final String oldLayerName, final String newLayerName)
+            throws StorageException {
+        final File oldLayerPath = getLayerPath(oldLayerName);
+        final File newLayerPath = getLayerPath(newLayerName);
+
+        if (newLayerPath.exists()) {
+            throw new StorageException("Can't rename layer directory " + oldLayerPath + " to "
+                    + newLayerPath + ". Target directory already exists");
+        }
+        if (!oldLayerPath.exists()) {
+            this.listeners.sendLayerRenamed(oldLayerName, newLayerName);
+            return true;
+        }
+        if (!oldLayerPath.canWrite()) {
+            log.info(oldLayerPath + " is not writable");
+            return false;
+        }
+        boolean renamed = oldLayerPath.renameTo(newLayerPath);
+        if (renamed) {
+            this.listeners.sendLayerRenamed(oldLayerName, newLayerName);
+        } else {
+            throw new StorageException("Couldn't rename layer directory " + oldLayerPath + " to "
+                    + newLayerPath);
+        }
+        return renamed;
+    }
+
     private File getLayerPath(String layerName) {
         String prefix = path + File.separator + FilePathGenerator.filteredLayerName(layerName);
 

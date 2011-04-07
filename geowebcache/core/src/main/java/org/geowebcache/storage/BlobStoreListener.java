@@ -13,4 +13,6 @@ public interface BlobStoreListener {
 
     void layerDeleted(String layerName);
 
+    void layerRenamed(String oldLayerName, String newLayerName);
+
 }
