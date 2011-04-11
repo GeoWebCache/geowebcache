@@ -60,6 +60,7 @@ public class SeedFormRestlet extends GWCRestlet {
     private TileBreeder seeder;
 
     public void handle(Request request, Response response) {
+        
         Method met = request.getMethod();
         try {
             if (met.equals(Method.GET)) {

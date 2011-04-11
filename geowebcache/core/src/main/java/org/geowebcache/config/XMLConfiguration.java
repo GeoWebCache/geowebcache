@@ -27,7 +27,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +52,6 @@ import javax.xml.validation.Validator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.meta.ServiceContact;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -112,6 +114,8 @@ public class XMLConfiguration implements Configuration {
     StorageBroker storageBroker = null;
 
     private GeoWebCacheConfiguration gwcConfig = null;
+
+    private transient Map<String, TileLayer> layers;
 
     /**
      * Constructor that will accept an absolute or relative path for finding geowebcache.xml
@@ -245,9 +249,6 @@ public class XMLConfiguration implements Configuration {
 
         if (xmlFile != null) {
             log.info("Found configuration file in " + configH.getAbsolutePath());
-        } else {
-            log.info("Found no configuration file in " + configH.getAbsolutePath()
-                    + " If you are running GWC in GeoServer this is probably not an issue.");
         }
 
         return xmlFile;
@@ -257,18 +258,23 @@ public class XMLConfiguration implements Configuration {
      * Method responsible for loading XML configuration file
      * 
      */
-    public synchronized List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
+    private synchronized List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
         if (reload && !mockConfiguration) {
             File xmlFile = findConfFile();
+            if (xmlFile != null && !xmlFile.exists()) {
+                log.info("Found no configuration file in " + configH.getAbsolutePath()
+                        + " If you are running GWC in GeoServer this is probably not an issue.");
+                return Collections.emptyList();
+            }
             loadConfiguration(xmlFile);
             initialize();
         }
 
-        if (gwcConfig != null) {
-            return gwcConfig.layers;
-        } else {
-            return null;
+        List<TileLayer> layers = Collections.emptyList();
+        if (gwcConfig != null && gwcConfig.layers != null) {
+            layers = gwcConfig.layers;
         }
+        return layers;
     }
 
     public boolean isRuntimeStatsEnabled() {
@@ -282,6 +288,9 @@ public class XMLConfiguration implements Configuration {
     public synchronized ServiceInformation getServiceInformation() throws GeoWebCacheException {
         if (!mockConfiguration && this.gwcConfig == null) {
             File xmlFile = findConfFile();
+            if (xmlFile == null || !xmlFile.exists()) {
+                return null;
+            }
             loadConfiguration(xmlFile);
         }
 
@@ -709,18 +718,22 @@ public class XMLConfiguration implements Configuration {
             log.debug("Configuration directory set to: " + configH.getAbsolutePath());
 
             if (!configH.exists() || !configH.canRead()) {
-                log.error("Configuration file cannot be read or does not exist!");
+                log.info("Configuration file cannot be read or does not exist!");
             }
         }
     }
 
-    public String getIdentifier() throws GeoWebCacheException {
+    public String getIdentifier() {
         if (mockConfiguration) {
             return "Mock configuration";
         }
 
         if (configH == null) {
-            this.findConfFile();
+            try {
+                this.findConfFile();
+            } catch (GeoWebCacheException e) {
+                throw new RuntimeException();
+            }
         }
 
         // Try again
@@ -757,5 +770,66 @@ public class XMLConfiguration implements Configuration {
         if (node != null) {
             System.out.println("3: " + node.getNodeName() + " " + node.getNamespaceURI());
         }
+    }
+
+    /**
+     * @see org.geowebcache.config.Configuration#initialize(org.geowebcache.grid.GridSetBroker)
+     */
+    public int initialize(GridSetBroker gridSetBroker) throws GeoWebCacheException {
+        // This is used by reload as well
+        this.layers = new HashMap<String, TileLayer>();
+        List<TileLayer> configLayers = getTileLayers(true);
+        log.info("Adding layers from " + getIdentifier());
+        for (TileLayer layer : configLayers) {
+            if (layer == null) {
+                log.error("layer was null");
+                continue;
+            }
+            log.info("Initializing TileLayer '" + layer.getName() + "'");
+            layer.initialize(gridSetBroker);
+            layers.put(layer.getName(), layer);
+        }
+        return getTileLayerCount();
+    }
+
+    /**
+     * @see org.geowebcache.config.Configuration#getTileLayers()
+     */
+    public List<TileLayer> getTileLayers() throws GeoWebCacheException {
+        return getTileLayers(false);
+    }
+
+    /**
+     * @see org.geowebcache.config.Configuration#getTileLayer(java.lang.String)
+     */
+    public TileLayer getTileLayer(String layerIdent) {
+        return layers.get(layerIdent);
+    }
+
+    /**
+     * @see org.geowebcache.config.Configuration#getTileLayerCount()
+     */
+    public int getTileLayerCount() {
+        return layers.size();
+    }
+
+    public boolean remove(String layerName) {
+        TileLayer tileLayer = getTileLayer(layerName);
+        if (tileLayer == null) {
+            return false;
+        }
+        boolean removed = false;
+        tileLayer.acquireLayerLock();
+        try {
+            removed = gwcConfig.removeLayer(tileLayer);
+            if (removed) {
+                Map<String, TileLayer> buff = new HashMap<String, TileLayer>(this.layers);
+                buff.remove(layerName);
+                this.layers = buff;
+            }
+        } finally {
+            tileLayer.releaseLayerLock();
+        }
+        return removed;
     }
 }

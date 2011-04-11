@@ -17,7 +17,7 @@ import org.geowebcache.mime.ImageMime;
 
 public class XMLConfigurationTest extends TestCase {
     
-    public static final String LATEST_FILENAME = "geowebcache_115.xml";
+    public static final String LATEST_FILENAME = "geowebcache_125.xml";
 
     @Override
     protected void setUp() throws Exception {
@@ -137,7 +137,7 @@ public class XMLConfigurationTest extends TestCase {
         
         GridSetBroker gsb = new GridSetBroker(false, false);
         
-        List<TileLayer> list = xmlConfig.getTileLayers(false);
+        List<TileLayer> list = xmlConfig.getTileLayers();
         
         Iterator<TileLayer> iter = list.iterator();
         while(iter.hasNext()) {

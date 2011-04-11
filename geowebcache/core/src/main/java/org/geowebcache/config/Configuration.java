@@ -21,15 +21,31 @@ import java.util.List;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.meta.ServiceInformation;
+import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
 
 public interface Configuration {
-    
-    public List<? extends TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException;
 
-    public String getIdentifier() throws GeoWebCacheException;
+    public int initialize(GridSetBroker gridSetBroker) throws GeoWebCacheException;
+
+    public List<? extends TileLayer> getTileLayers() throws GeoWebCacheException;
+
+    public String getIdentifier();
 
     public ServiceInformation getServiceInformation() throws GeoWebCacheException;
 
     public boolean isRuntimeStatsEnabled();
+
+    /**
+     * @param layerIdent
+     *            the layer name
+     * @return the layer named {@code layerIdent} or {@code null} if no such layer exists in this
+     *         configuration
+     */
+    public TileLayer getTileLayer(String layerIdent);
+
+    public int getTileLayerCount();
+
+    public boolean remove(String layerName);
+
 }

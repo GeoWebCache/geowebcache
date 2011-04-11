@@ -21,6 +21,7 @@ import java.util.LinkedList;
 
 import junit.framework.TestCase;
 
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationTest;
@@ -30,81 +31,84 @@ import org.geowebcache.rest.RestletException;
 import org.restlet.resource.Representation;
 
 /**
- *  Most of the work is done by XMLConfig and XStream, so this is fairly short
+ * Most of the work is done by XMLConfig and XStream, so this is fairly short
  */
 public class TileLayerRestletTest extends TestCase {
     // For the gets we'll use a shared one
-    TileLayerRestlet tlr = preparedTileLayerRestlet();
-        
+    TileLayerRestlet tlr;
+
     protected void setUp() throws Exception {
-        super.setUp();
+        tlr = preparedTileLayerRestlet();
     }
-    
-    //public void testBogus() throws Exception {
-	//assertTrue(true);
-    //}
-    
+
+    // public void testBogus() throws Exception {
+    // assertTrue(true);
+    // }
+
     public void testGetXml() throws Exception {
         Representation rep = tlr.doGetInternal("topp:states", "xml");
-        
+
         String str = rep.getText();
-        
+
         assertTrue(str.indexOf("<name>topp:states</name>") > 0);
         // TODO This needs to get back in
-        //assertTrue(str.indexOf("<double>49.371735</double>") > 0);
-        //assertTrue(str.indexOf("<wmsStyles>population</wmsStyles>") > 0);
+        // assertTrue(str.indexOf("<double>49.371735</double>") > 0);
+        // assertTrue(str.indexOf("<wmsStyles>population</wmsStyles>") > 0);
         assertTrue(str.indexOf("</wmsLayer>") > 0);
         assertTrue(str.indexOf("states2") == -1);
     }
 
     public void testGetJson() throws Exception {
-       Representation rep = tlr.doGetInternal("topp:states2", "json");
-       
-       String str = rep.getText();
-      
-       assertTrue(str.indexOf(",\"name\":\"topp:states2\",") > 0);
-       // TODO this needs to go back in
-       //assertTrue(str.indexOf("959189.3312465074]},") > 0);
-       assertTrue(str.indexOf("[\"image/png\",\"image/jpeg\"]") > 0);
-       assertTrue(str.indexOf("}}") > 0);      
+        Representation rep = tlr.doGetInternal("topp:states2", "json");
+
+        String str = rep.getText();
+
+        assertTrue(str.indexOf(",\"name\":\"topp:states2\",") > 0);
+        // TODO this needs to go back in
+        // assertTrue(str.indexOf("959189.3312465074]},") > 0);
+        assertTrue(str.indexOf("[\"image/png\",\"image/jpeg\"]") > 0);
+        assertTrue(str.indexOf("}}") > 0);
     }
-    
+
     public void testGetInvalid() throws Exception {
         Representation rep = null;
         try {
-         rep = tlr.doGetInternal("topp:states", "jpeg");
+            rep = tlr.doGetInternal("topp:states", "jpeg");
         } catch (RestletException re) {
             // Format should be invalid
             assertTrue(re.getRepresentation().getText().indexOf("format") > 0);
         }
         assertTrue(rep == null);
     }
-    
+
     private XMLConfiguration loadXMLConfig() {
-        InputStream is = XMLConfiguration.class.getResourceAsStream(XMLConfigurationTest.LATEST_FILENAME);
+        InputStream is = XMLConfiguration.class
+                .getResourceAsStream(XMLConfigurationTest.LATEST_FILENAME);
         XMLConfiguration xmlConfig = null;
         try {
             xmlConfig = new XMLConfiguration(is);
         } catch (Exception e) {
             // Do nothing
         }
-        
+
         return xmlConfig;
     }
-    
-    TileLayerRestlet preparedTileLayerRestlet() {
-        
+
+    TileLayerRestlet preparedTileLayerRestlet() throws GeoWebCacheException {
+
+        GridSetBroker gridSetBroker = new GridSetBroker(false, false);
         XMLConfiguration xmlConfig = loadXMLConfig();
+        xmlConfig.initialize(gridSetBroker);
         LinkedList<Configuration> configList = new LinkedList<Configuration>();
         configList.add(xmlConfig);
-        
-        TileLayerDispatcher layerDispatcher = new TileLayerDispatcher(new GridSetBroker(false, false), configList);
-        
+
+        TileLayerDispatcher layerDispatcher = new TileLayerDispatcher(gridSetBroker, configList);
+
         TileLayerRestlet tlr = new TileLayerRestlet();
         tlr.setXMLConfiguration(xmlConfig);
         tlr.setTileLayerDispatcher(layerDispatcher);
-        
+
         return tlr;
     }
-    
+
 }

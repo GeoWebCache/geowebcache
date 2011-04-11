@@ -78,7 +78,7 @@ public class ReloadRestlet extends GWCRestlet {
                     + " please reload the servlet if you run into any problems."
                     + " Also note that you must truncate the tiles of any layers that have changed.</p>");
 
-        } catch (GeoWebCacheException e) {
+        } catch (Exception e) {
             doc.append("<p>There was a problem reloading the configuration:<br>\n"
                     + e.getMessage()
                     + "\n<br>"

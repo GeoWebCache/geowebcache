@@ -54,54 +54,55 @@ import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 
 public class GetCapabilitiesConfiguration implements Configuration {
-    private static Log log = LogFactory.getLog(org.geowebcache.config.GetCapabilitiesConfiguration.class);
-    
+    private static Log log = LogFactory
+            .getLog(org.geowebcache.config.GetCapabilitiesConfiguration.class);
+
     private GridSetBroker gridSetBroker;
-    
+
     private String url = null;
-    
+
     private int backendTimeout = 120;
 
     private String mimeTypes = null;
 
     private String metaTiling = null;
-    
+
     private String vendorParameters = null;
-    
+
     private boolean allowCacheBypass = false;
 
-    public GetCapabilitiesConfiguration(
-            GridSetBroker gridSetBroker, String url,
-            String mimeTypes, String metaTiling, String allowCacheBypass) {
+    private final HashMap<String, TileLayer> layers;
+
+    public GetCapabilitiesConfiguration(GridSetBroker gridSetBroker, String url, String mimeTypes,
+            String metaTiling, String allowCacheBypass) {
         this.gridSetBroker = gridSetBroker;
         this.url = url;
         this.mimeTypes = mimeTypes;
         this.metaTiling = metaTiling;
-        
-        if(Boolean.parseBoolean(allowCacheBypass)) {
+        this.layers = new HashMap<String, TileLayer>();
+        if (Boolean.parseBoolean(allowCacheBypass)) {
             this.allowCacheBypass = true;
         }
         log.info("Constructing from url " + url);
     }
-    
-    public GetCapabilitiesConfiguration(
-            GridSetBroker gridSetBroker, String url,
-            String mimeTypes, String metaTiling, String vendorParameters, 
-            String allowCacheBypass) {
+
+    public GetCapabilitiesConfiguration(GridSetBroker gridSetBroker, String url, String mimeTypes,
+            String metaTiling, String vendorParameters, String allowCacheBypass) {
         this.gridSetBroker = gridSetBroker;
         this.url = url;
         this.mimeTypes = mimeTypes;
         this.metaTiling = metaTiling;
         this.vendorParameters = vendorParameters;
-        
-        if(Boolean.parseBoolean(allowCacheBypass)) {
+        this.layers = new HashMap<String, TileLayer>();
+        if (Boolean.parseBoolean(allowCacheBypass)) {
             this.allowCacheBypass = true;
         }
         log.info("Constructing from url " + url);
     }
-    
+
     /**
      * Optionally used by Spring
+     * 
      * @param backendTimeout
      */
     public void setBackendTimeout(int backendTimeout) {
@@ -122,7 +123,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
      * 
      * @return the layers described at the given URL
      */
-    public synchronized List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
+    private synchronized List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
         List<TileLayer> layers = null;
 
         WebMapServer wms = getWMS();
@@ -132,11 +133,11 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
         String wmsUrl = getWMSUrl(wms);
         log.info("Using " + wmsUrl + " to generate URLs for WMS requests");
-        
+
         String urlVersion = parseVersion(url);
 
         layers = getLayers(wms, wmsUrl, urlVersion);
-        
+
         if (layers == null || layers.size() < 1) {
             log.error("Unable to find any layers based on " + url);
         } else {
@@ -145,14 +146,14 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
         return layers;
     }
-    
+
     public ServiceInformation getServiceInformation() throws GeoWebCacheException {
         return null;
     }
 
     /**
-     * Finds URL to WMS service and attempts to slice away the service
-     * parameter, since we will add that anyway.
+     * Finds URL to WMS service and attempts to slice away the service parameter, since we will add
+     * that anyway.
      * 
      * @param wms
      * @return
@@ -174,41 +175,41 @@ public class GetCapabilitiesConfiguration implements Configuration {
     private List<TileLayer> getLayers(WebMapServer wms, String wmsUrl, String urlVersion)
             throws GeoWebCacheException {
         List<TileLayer> layers = new LinkedList<TileLayer>();
-        
+
         WMSCapabilities capabilities = wms.getCapabilities();
         if (capabilities == null) {
             throw new ConfigurationException("Unable to get capabitilies from " + wmsUrl);
         }
-        
+
         WMSHttpHelper sourceHelper = new WMSHttpHelper();
-        
+
         List<Layer> layerList = capabilities.getLayerList();
         Iterator<Layer> layerIter = layerList.iterator();
-        
+
         while (layerIter.hasNext()) {
             Layer layer = layerIter.next();
             String name = layer.getName();
             String stylesStr = "";
-            
+
             String title = layer.getTitle();
-            
+
             String description = layer.get_abstract();
-            
+
             LayerMetaInformation layerMetaInfo = null;
-            if(title != null || description != null) {
+            if (title != null || description != null) {
                 layerMetaInfo = new LayerMetaInformation(title, description, null, null);
             }
             boolean queryable = layer.isQueryable();
-            
+
             if (name != null) {
                 List<StyleImpl> styles = layer.getStyles();
-                
+
                 StringBuffer buf = new StringBuffer();
-                if(styles != null) {
+                if (styles != null) {
                     Iterator<StyleImpl> iter = styles.iterator();
                     boolean hasOne = false;
-                    while(iter.hasNext()) {
-                        if(hasOne) {
+                    while (iter.hasNext()) {
+                        if (hasOne) {
                             buf.append(",");
                         }
                         buf.append(iter.next().getName());
@@ -216,55 +217,50 @@ public class GetCapabilitiesConfiguration implements Configuration {
                     }
                     stylesStr = buf.toString();
                 }
-                
+
                 double minX = layer.getLatLonBoundingBox().getMinX();
                 double minY = layer.getLatLonBoundingBox().getMinY();
                 double maxX = layer.getLatLonBoundingBox().getMaxX();
                 double maxY = layer.getLatLonBoundingBox().getMaxY();
 
-                BoundingBox bounds4326 = new BoundingBox(minX,minY,maxX,maxY);
-                
-                log.info("Found layer: " + layer.getName()
-                        + " with LatLon bbox " + bounds4326.toString());
-                
-                BoundingBox bounds3785 = new BoundingBox(
-                        longToSphericalMercatorX(minX),
-                        latToSphericalMercatorY(minY),
-                        longToSphericalMercatorX(maxX),
+                BoundingBox bounds4326 = new BoundingBox(minX, minY, maxX, maxY);
+
+                log.info("Found layer: " + layer.getName() + " with LatLon bbox "
+                        + bounds4326.toString());
+
+                BoundingBox bounds3785 = new BoundingBox(longToSphericalMercatorX(minX),
+                        latToSphericalMercatorY(minY), longToSphericalMercatorX(maxX),
                         latToSphericalMercatorY(maxY));
-               
-                String[] wmsUrls = {wmsUrl};
-                
+
+                String[] wmsUrls = { wmsUrl };
+
                 LinkedList<ParameterFilter> paramFilters = new LinkedList<ParameterFilter>();
                 for (Dimension dimension : layer.getDimensions().values()) {
                     Extent dimExtent = layer.getExtent(dimension.getName());
                     paramFilters.add(new NaiveWMSDimensionFilter(dimension, dimExtent));
                 }
-                
+
                 WMSLayer wmsLayer = null;
                 try {
-                    wmsLayer = getLayer(name, wmsUrls, bounds4326, 
-                            bounds3785, stylesStr, queryable, 
-                            layer.getBoundingBoxes(), paramFilters);
+                    wmsLayer = getLayer(name, wmsUrls, bounds4326, bounds3785, stylesStr,
+                            queryable, layer.getBoundingBoxes(), paramFilters);
                 } catch (GeoWebCacheException gwc) {
-                    log.error("Error creating " + layer.getName() + ": "
-                            + gwc.getMessage());
+                    log.error("Error creating " + layer.getName() + ": " + gwc.getMessage());
                 }
 
                 if (wmsLayer != null) {
 
-                    
                     // Finalize with some defaults
                     wmsLayer.setCacheBypassAllowed(allowCacheBypass);
                     wmsLayer.setBackendTimeout(backendTimeout);
-                    
+
                     wmsLayer.setMetaInformation(layerMetaInfo);
-                    
-                    if(urlVersion != null) {
+
+                    if (urlVersion != null) {
                         wmsLayer.setVersion(urlVersion);
                     } else {
                         String wmsVersion = capabilities.getVersion();
-                        if(wmsVersion != null && wmsVersion.length() > 0) {
+                        if (wmsVersion != null && wmsVersion.length() > 0) {
                             wmsLayer.setVersion(wmsVersion);
                         }
                     }
@@ -277,64 +273,66 @@ public class GetCapabilitiesConfiguration implements Configuration {
         return layers;
     }
 
-    private WMSLayer getLayer(String name, String[] wmsurl, 
-            BoundingBox bounds4326, BoundingBox bounds3785, String stylesStr, 
-            boolean queryable, Map<String, CRSEnvelope> additionalBounds,
-            List<ParameterFilter> paramFilters)
+    private WMSLayer getLayer(String name, String[] wmsurl, BoundingBox bounds4326,
+            BoundingBox bounds3785, String stylesStr, boolean queryable,
+            Map<String, CRSEnvelope> additionalBounds, List<ParameterFilter> paramFilters)
             throws GeoWebCacheException {
-        
-        Hashtable<String,GridSubset> grids = new Hashtable<String,GridSubset>(2);
-        grids.put( gridSetBroker.WORLD_EPSG4326.getName(), 
-                GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bounds4326, 0, 30) );
-        grids.put( gridSetBroker.WORLD_EPSG3857.getName(),
+
+        Hashtable<String, GridSubset> grids = new Hashtable<String, GridSubset>(2);
+        grids.put(gridSetBroker.WORLD_EPSG4326.getName(),
+                GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bounds4326, 0, 30));
+        grids.put(gridSetBroker.WORLD_EPSG3857.getName(),
                 GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857, bounds3785, 0, 30));
-        
-        if(additionalBounds != null && additionalBounds.size() > 0) {
+
+        if (additionalBounds != null && additionalBounds.size() > 0) {
             Iterator<CRSEnvelope> iter = additionalBounds.values().iterator();
-            while(iter.hasNext()) {
+            while (iter.hasNext()) {
                 CRSEnvelope env = iter.next();
                 SRS srs = null;
-                if(env.getEPSGCode() != null) {
+                if (env.getEPSGCode() != null) {
                     srs = SRS.getSRS(env.getEPSGCode());
                 }
-                
-                if(srs == null) {
+
+                if (srs == null) {
                     log.error(env.toString() + " has no EPSG code");
-                } else if(srs.getNumber() == 4326 || srs.getNumber() == 900913 || srs.getNumber() == 3857) {
+                } else if (srs.getNumber() == 4326 || srs.getNumber() == 900913
+                        || srs.getNumber() == 3857) {
                     log.debug("Skipping " + srs.toString() + " for " + name);
                 } else {
                     String gridSetName = name + ":" + srs.toString();
-                    BoundingBox extent = new BoundingBox(env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY());
-                    
-                    GridSet gridSet = GridSetFactory.createGridSet(gridSetName, srs, extent, false, 25, null, 0.00028, 256, 256, false);
+                    BoundingBox extent = new BoundingBox(env.getMinX(), env.getMinY(),
+                            env.getMaxX(), env.getMaxY());
+
+                    GridSet gridSet = GridSetFactory.createGridSet(gridSetName, srs, extent, false,
+                            25, null, 0.00028, 256, 256, false);
                     grids.put(gridSetName, GridSubsetFactory.createGridSubSet(gridSet));
                 }
             }
-            
+
         }
-        
+
         List<String> mimeFormats = null;
-        if(this.mimeTypes != null) {
+        if (this.mimeTypes != null) {
             String[] mimeFormatArray = this.mimeTypes.split(",");
             mimeFormats = new ArrayList<String>(mimeFormatArray.length);
-            
+
             // This is stupid... but oh well, we're only doing it once
-            for(int i=0;i<mimeFormatArray.length;i++) {
+            for (int i = 0; i < mimeFormatArray.length; i++) {
                 mimeFormats.add(mimeFormatArray[i]);
             }
         } else {
             mimeFormats = new ArrayList<String>(3);
             mimeFormats.add("image/png");
             mimeFormats.add("image/png8");
-            mimeFormats.add("image/jpeg");  
+            mimeFormats.add("image/jpeg");
         }
-        
+
         String[] metaStrings = this.metaTiling.split("x");
-        
-        int[] metaWidthHeight = { Integer.parseInt(metaStrings[0]), Integer.parseInt(metaStrings[1])};
-        
-        return new WMSLayer(name,
-                wmsurl, stylesStr, name, mimeFormats, grids, paramFilters,
+
+        int[] metaWidthHeight = { Integer.parseInt(metaStrings[0]),
+                Integer.parseInt(metaStrings[1]) };
+
+        return new WMSLayer(name, wmsurl, stylesStr, name, mimeFormats, grids, paramFilters,
                 metaWidthHeight, this.vendorParameters, queryable);
     }
 
@@ -348,39 +346,39 @@ public class GetCapabilitiesConfiguration implements Configuration {
         }
         return null;
     }
-    
+
     private String parseVersion(String url) {
         String tmp = url.toLowerCase();
         int start = tmp.indexOf("version=");
-        if(start == -1) {
+        if (start == -1) {
             return null;
         }
-        
+
         start += "version=".length();
-        
-        int stop = tmp.indexOf("&",start);
-        if(stop > 0) {
+
+        int stop = tmp.indexOf("&", start);
+        if (stop > 0) {
             return tmp.substring(start, stop);
         } else {
             return tmp.substring(start);
-        }   
+        }
     }
-    
+
     private double longToSphericalMercatorX(double x) {
-        return (x/180.0)*20037508.34;
+        return (x / 180.0) * 20037508.34;
     }
-    
-    private double latToSphericalMercatorY(double y) {        
-        if(y > 85.05112) {
+
+    private double latToSphericalMercatorY(double y) {
+        if (y > 85.05112) {
             y = 85.05112;
         }
-        
-        if(y < -85.05112) {
+
+        if (y < -85.05112) {
             y = -85.05112;
         }
-        
-        y = (Math.PI/180.0)*y;
-        double tmp = Math.PI/4.0 + y/2.0; 
+
+        y = (Math.PI / 180.0) * y;
+        double tmp = Math.PI / 4.0 + y / 2.0;
         return 20037508.34 * Math.log(Math.tan(tmp)) / Math.PI;
     }
 
@@ -389,5 +387,41 @@ public class GetCapabilitiesConfiguration implements Configuration {
      */
     public boolean isRuntimeStatsEnabled() {
         return false;
+    }
+
+    /**
+     * @see org.geowebcache.config.Configuration#initialize(org.geowebcache.grid.GridSetBroker)
+     */
+    public int initialize(GridSetBroker gridSetBroker) throws GeoWebCacheException {
+        this.gridSetBroker = gridSetBroker;
+        List<TileLayer> tileLayers = getTileLayers(true);
+        this.layers.clear();
+        for (TileLayer layer : tileLayers) {
+            layer.initialize(gridSetBroker);
+            layers.put(layer.getName(), layer);
+        }
+        return tileLayers.size();
+    }
+
+    /**
+     * @see org.geowebcache.config.Configuration#getTileLayers()
+     */
+    public List<TileLayer> getTileLayers() throws GeoWebCacheException {
+        return new ArrayList<TileLayer>(layers.values());
+    }
+
+    /**
+     * @see org.geowebcache.config.Configuration#getTileLayer(java.lang.String)
+     */
+    public TileLayer getTileLayer(String layerIdent) {
+        return layers.get(layerIdent);
+    }
+
+    public int getTileLayerCount() {
+        return layers.size();
+    }
+
+    public boolean remove(String layerName) {
+        return layers.remove(layerName) != null;
     }
 }
