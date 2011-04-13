@@ -19,6 +19,7 @@ package org.geowebcache.layer.wms;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -57,6 +58,8 @@ public class WMSHttpHelper extends WMSSourceHelper {
 
     private final String httpPassword;
 
+    private static int retryInterval = 5;
+    
     public WMSHttpHelper() {
         this(null, null, null);
     }
@@ -149,12 +152,26 @@ public class WMSHttpHelper extends WMSSourceHelper {
                 responseLength = (int) getMethod.getResponseContentLength();
 
                 // Do not set error at this stage
-            } catch (IOException ce) {
-                if (log.isDebugEnabled()) {
-                    String message = "Error forwarding request " + wmsBackendUrl.toString();
-                    log.debug(message, ce);
+            } catch (ConnectException ce) {
+                log.error("Error forwarding request "
+                        + wmsBackendUrl.toString() + " " + ce.getMessage() + ", retry in " + retryInterval + " seconds");
+            	try {
+            		Thread.sleep(retryInterval * 1000);
                 }
-                throw new GeoWebCacheException(ce);
+            	catch (Exception e) {
+            		log.error(e.getClass().getName() + " occured: " + e.getMessage());
+            	}
+            	return;
+            } catch (IOException ioe) {
+                log.error("Error forwarding request "
+                        + wmsBackendUrl.toString() + " " + ioe.getMessage() + ", retry in " + retryInterval + " seconds");
+            	try {
+            		Thread.sleep(retryInterval * 1000);
+            	}
+            	catch (Exception e) {
+            		log.error(e.getClass().getName() + " occured: " + e.getMessage());
+            	}
+                return;
             }
             // Check that the response code is okay
             tileRespRecv.setStatus(responseCode);
