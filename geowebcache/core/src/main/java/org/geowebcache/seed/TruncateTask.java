@@ -36,8 +36,6 @@ class TruncateTask extends GWCTask {
 
     private final boolean doFilterUpdate;
 
-    private final StorageBroker storageBroker;
-
     public TruncateTask(StorageBroker sb, TileRange tr, TileLayer tl, boolean doFilterUpdate) {
         this.storageBroker = sb;
         this.tr = tr;
@@ -50,13 +48,13 @@ class TruncateTask extends GWCTask {
 
     @Override
     protected void doActionInternal() throws GeoWebCacheException, InterruptedException {
-        super.state = GWCTask.STATE.RUNNING;
+        super.setState(GWCTask.STATE.RUNNING);
         checkInterrupted();
         try {
             storageBroker.delete(tr);
         } catch (Exception e) {
             e.printStackTrace();
-            super.state = GWCTask.STATE.DEAD;
+            super.setState(GWCTask.STATE.DEAD);
             log.error("During truncate request: " + e.getMessage());
         }
 
@@ -65,8 +63,8 @@ class TruncateTask extends GWCTask {
             runFilterUpdates();
         }
 
-        if (super.state != GWCTask.STATE.DEAD) {
-            super.state = GWCTask.STATE.DONE;
+        if (super.getState() != GWCTask.STATE.DEAD) {
+            super.setState(GWCTask.STATE.DONE);
             log.debug("Completed truncate request.");
         }
     }

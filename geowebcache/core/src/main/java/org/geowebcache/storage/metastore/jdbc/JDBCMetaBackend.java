@@ -18,9 +18,12 @@
 package org.geowebcache.storage.metastore.jdbc;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.seed.GWCTask;
+import org.geowebcache.seed.GWCTaskStatus;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.MetaStore;
@@ -256,6 +259,33 @@ public class JDBCMetaBackend implements MetaStore {
             log.error("Failed to put tile: " + se.getMessage());
         }
     }
+
+    public void put(GWCTask stObj) throws StorageException {
+        try {
+            wrpr.putGWCTask(stObj);
+        } catch (SQLException se) {
+            log.error("Failed to put GWCTask object: " + se.getMessage());
+        }
+    }
+    
+    public void updateGWCTask(GWCTask stObj) throws StorageException {
+        try {
+            wrpr.updateGWCTask(stObj);
+        } catch (SQLException se) {
+            log.error("Failed to update task: " + se.getMessage());
+            throw new StorageException(se.getMessage());
+        }
+    }
+    
+    public void getTasks(String taskIds, ArrayList<GWCTaskStatus> tasks) throws StorageException {
+        try {
+            wrpr.getTasks(taskIds, tasks);
+        } catch (SQLException se) {
+            log.error("Failed to retrieve tasks with ids '" + taskIds + "' error: " + se.getMessage());
+            throw new StorageException(se.getMessage());
+        }    	
+    }
+    
 
     public boolean unlock(TileObject stObj) throws StorageException {
         try {

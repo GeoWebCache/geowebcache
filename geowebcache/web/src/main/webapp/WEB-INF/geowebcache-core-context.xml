@@ -17,7 +17,7 @@
     <constructor-arg ref="gwcDefaultStorageFinder" />
     <!-- By default GWC will look for geowebcache.xml in WEB-INF/classes,
          alternatively you can specify an absolute or relative path to a directory -->
-    <!-- constructor-arg value="/etc/geowebcache" / -->
+    <constructor-arg value="config" />
   </bean>
   
   <!-- If you like to automatically configure GWC from a WMS Getcapabilities document,
@@ -73,13 +73,24 @@
        Note that the directory is AUTOMATICALLY CREATED if it does not exist. -->
   <!-- bean id="gwcMetaStore" class="org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend" destroy-method="destroy">
     <constructor-arg value="org.h2.Driver" />
-    <constructor-arg value="jdbc:h2:file:/tmp/gwc_metastore/h2_metastore;TRACE_LEVEL_FILE=0" />
-    <constructor-arg value="username" />
-    <constructor-arg value="password" />
+    <constructor-arg value="jdbc:h2:tcp://localhost:9101/gwc_metastore" />
+    <constructor-arg value="sa" />
+    <constructor-arg value="" />
+    <constructor-arg>
+      <description>Enable connection pooling?</description>
+      <value>TRUE</value>
+    </constructor-arg>
+    <constructor-arg>
+      <description>Max number of connections in the pool</description>
+      <value>15</value>
+    </constructor-arg>
   </bean -->
   
+  <bean id="gwcFileConverter" class="org.geowebcache.storage.blobstore.file.Convert2Png8" destroy-method="destroy"/>
+
   <bean id="gwcBlobStore" class="org.geowebcache.storage.blobstore.file.FileBlobStore" destroy-method="destroy">
     <constructor-arg ref="gwcDefaultStorageFinder" />
+    <property name="fileConverter" ref="gwcFileConverter"/>
   </bean>
   
   <!-- Static definition of where to put the blobstore. 
@@ -91,7 +102,8 @@
   <bean id="gwcStorageBroker" class="org.geowebcache.storage.StorageBroker" destroy-method="destroy">
     <constructor-arg ref="gwcMetaStore" />
     <constructor-arg ref="gwcBlobStore" />
-    <property name="verifyFileSize" value="TRUE"/>
+    <constructor-arg ref="gwcTLDispatcher" />
+    <property name="verifyFileSize" value="FALSE"/>
   </bean>
   
   

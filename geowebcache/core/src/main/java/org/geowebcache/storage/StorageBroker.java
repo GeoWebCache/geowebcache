@@ -17,11 +17,17 @@
  */
 package org.geowebcache.storage;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.io.Resource;
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.seed.GWCTask;
+import org.geowebcache.seed.GWCTaskStatus;
 
 /**
  * Handles cacheable objects (tiles, wfs responses) both in terms of data storage and metadata
@@ -29,21 +35,24 @@ import org.geowebcache.io.Resource;
  */
 public class StorageBroker {
     private static Log log = LogFactory.getLog(org.geowebcache.storage.StorageBroker.class);
-    
+
     private BlobStore blobStore;
-    
+
     private MetaStore metaStore; 
-    
+
     private boolean metaStoreEnabled = true;
-    
+
     private boolean verifyFileSize = false;
-    
+
     private boolean isReady = false;
-    
-    public StorageBroker(MetaStore metaStore, BlobStore blobStore) {
+
+    private TileLayerDispatcher tileLayerDispatcher;
+
+    public StorageBroker(MetaStore metaStore, BlobStore blobStore, TileLayerDispatcher tileLayerDispatcher) {
         this.metaStore = metaStore;
         this.blobStore = blobStore;
-        
+        this.tileLayerDispatcher = tileLayerDispatcher; 
+
         if(metaStore != null) {
             metaStoreEnabled = metaStore.enabled();
         } else {
@@ -54,24 +63,30 @@ public class StorageBroker {
     public void addBlobStoreListener(BlobStoreListener listener){
         blobStore.addListener(listener);
     }
-    
+
     public boolean removeBlobStoreListener(BlobStoreListener listener){
         return blobStore.removeListener(listener);
     }
-    
+
     public void setVerifyFileSize(boolean verifyFileSize) {
         this.verifyFileSize = verifyFileSize;
     }
-    
+
     public boolean delete(String layerName) throws StorageException {
         boolean ret = true;
-        if(metaStoreEnabled) {
+        TileLayer layer = null;
+        try {
+            layer = tileLayerDispatcher.getTileLayer(layerName);
+        } catch (GeoWebCacheException e) {
+            throw new StorageException(e.getMessage());
+        }
+        if(metaStoreEnabled && layer.useMetaStore()) {
             ret = metaStore.delete(layerName);
         }
         ret = (ret && blobStore.delete(layerName));
         return ret;
     }
-    
+
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
         boolean ret = true;
         if(metaStoreEnabled) {
@@ -83,43 +98,62 @@ public class StorageBroker {
 
     public boolean delete(TileRange trObj) throws StorageException {
         boolean deleted;
-        if(metaStoreEnabled) {
+        TileLayer layer = null;
+        try {
+            layer = tileLayerDispatcher.getTileLayer(trObj.layerName);
+        } catch (GeoWebCacheException e) {
+            throw new StorageException(e.getMessage());
+        }
+        if(metaStoreEnabled && layer.useMetaStore()) {
             deleted = metaStore.delete(blobStore, trObj);
         } else {
             if(trObj instanceof DiscontinuousTileRange) {
                 throw new StorageException(
                         "DiscontinuousTileRange currently requries a metastore."
-                        );
+                );
             }
             deleted = blobStore.delete(trObj);
         }
         return deleted;
     }
-    
+
     public boolean expire(TileRange trObj) throws StorageException {
         boolean expired = false;
-        if(metaStoreEnabled) {
+        TileLayer layer = null;
+        try {
+            layer = tileLayerDispatcher.getTileLayer(trObj.layerName);
+        } catch (GeoWebCacheException e) {
+            throw new StorageException(e.getMessage());
+        }
+        if(metaStoreEnabled && layer.useMetaStore()) {
             expired = metaStore.expire(trObj);
         }
         return expired;
     }
-    
-    
+
+
     public boolean get(TileObject tileObj) throws StorageException {
-        if(! metaStoreEnabled) {
+        TileLayer layer = null;
+        try {
+            layer = tileLayerDispatcher.getTileLayer(tileObj.getLayerName());
+        } catch (GeoWebCacheException e) {
+            throw new StorageException(e.getMessage());
+        }
+        if(!metaStoreEnabled || !layer.useMetaStore()) {
             boolean found = getBlobOnly(tileObj);
             return found;
         }
-        
+
         if(! metaStore.get(tileObj)) {
+            log.debug("tile not found in metastore: " + tileObj.toString());
             return false;
         }
-        
+
         if(tileObj.getId() == -1) {
             throw new StorageException(
-                    "metaStore.get() returned true, but did not set an id on the object");
+            "metaStore.get() returned true, but did not set an id on the object");
         }
-        
+
         if(tileObj.blob_size > 0) {
             Resource blob = blobStore.get(tileObj);
             if(blob == null) {
@@ -131,13 +165,13 @@ public class StorageBroker {
                         "Blob was expected to have size " 
                         + tileObj.blob_size + " but was " + blob.getSize());
             }
-                
+
             tileObj.blob = blob;
             return true;
         }
         return false;
     }
-    
+
     private boolean getBlobOnly(TileObject tileObj) throws StorageException {
         if(tileObj.getParameters() == null 
                 || tileObj.getParameters().size() == 0) {
@@ -153,13 +187,17 @@ public class StorageBroker {
             return false;
         }
     }
-    
+
     public boolean put(TileObject tileObj) throws StorageException {
-        if(! metaStoreEnabled) {
+        TileLayer layer = null;
+        try {
+            layer = tileLayerDispatcher.getTileLayer(tileObj.getLayerName());
+        } catch (GeoWebCacheException e) {}
+        if(! metaStoreEnabled || !layer.useMetaStore()) {
             boolean stored = putBlobOnly(tileObj);
             return stored;
         }
-        
+
         try {
             //System.out.println("Pre metastore put: " + Arrays.toString(tileObj.xyz));
             metaStore.put(tileObj);
@@ -169,14 +207,14 @@ public class StorageBroker {
             metaStore.unlock(tileObj);
 
             return true;
-            
+
         } catch (StorageException se) {
             log.error(se.getMessage());
         }
 
         return false;
     }
-    
+
     private boolean putBlobOnly(TileObject tileObj) {
         if(tileObj.getParameters() == null 
                 || tileObj.getParameters().size() == 0) {
@@ -192,7 +230,60 @@ public class StorageBroker {
             return false;
         }
     }
-    
+
+
+    public boolean put(GWCTask tskObj) {
+        if(! metaStoreEnabled) {
+            log.info("Cannot use GWCTask objects if metastore is disabled!");
+            return false;
+        }
+
+        try {
+            metaStore.put(tskObj);
+            return true;
+
+        } catch (StorageException se) {
+            log.error(se.getMessage());
+        }
+
+        return false;
+    }
+
+
+    public void updateGWCTask(GWCTask tskObj) {
+        if(! metaStoreEnabled) {
+            log.info("Cannot use GWCTask objects if metastore is disabled!");
+            return ;
+        }
+
+        try {
+            metaStore.updateGWCTask(tskObj);
+            return ;
+
+        } catch (StorageException se) {
+            log.error(se.getMessage());
+        }
+
+        return ;
+    }
+
+    public void getTasks(String taskIds, ArrayList<GWCTaskStatus> tasks) {
+        if(!metaStoreEnabled) {
+            log.info("Cannot use GWCTask objects if metastore is disabled!");
+            return ;
+        }
+
+        try {
+            metaStore.getTasks(taskIds, tasks);
+            return ;
+
+        } catch (StorageException se) {
+            log.error(se.getMessage());
+        }
+
+        return ;
+    }
+
     /** 
      * Destroy method for Spring
      */

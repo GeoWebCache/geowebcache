@@ -336,6 +336,10 @@ public class TileBreeder implements ApplicationContextAware {
         // statusArray = new int[threadPool.getMaximumPoolSize()][3];
     }
 
+    public StorageBroker getStorageBroker() {
+        return storageBroker;
+    }
+    
     public void setStorageBroker(StorageBroker sb) {
         storageBroker = sb;
     }

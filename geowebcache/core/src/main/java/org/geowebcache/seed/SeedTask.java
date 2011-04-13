@@ -45,8 +45,6 @@ class SeedTask extends GWCTask {
 
     private boolean doFilterUpdate;
 
-    private StorageBroker storageBroker;
-
     private int tileFailureRetryCount;
 
     private long tileFailureRetryWaitTime;
@@ -81,12 +79,12 @@ class SeedTask extends GWCTask {
         }
         super.layerName = tl.getName();
 
-        super.state = GWCTask.STATE.READY;
+        super.setState(GWCTask.STATE.READY);
     }
 
     @Override
     protected void doActionInternal() throws GeoWebCacheException, InterruptedException {
-        super.state = GWCTask.STATE.RUNNING;
+        super.setState(GWCTask.STATE.RUNNING);
 
         // Lower the priority of the thread
         Thread.currentThread().setPriority(
@@ -143,7 +141,7 @@ class SeedTask extends GWCTask {
                         log.info("Aborting seed thread " + Thread.currentThread().getName()
                                 + ". Error count reached configured maximum of "
                                 + totalFailuresBeforeAborting);
-                        super.state = GWCTask.STATE.DEAD;
+                        super.setState(GWCTask.STATE.DEAD);
                         return;
                     }
                     String logMsg = "Seed failed at " + tile.toString() + " after "
@@ -195,7 +193,7 @@ class SeedTask extends GWCTask {
             runFilterUpdates(tr.gridSetId);
         }
 
-        super.state = GWCTask.STATE.DONE;
+        super.setState(GWCTask.STATE.DONE);
     }
 
     /**

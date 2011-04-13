@@ -27,10 +27,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.seed.GWCTask;
+import org.geowebcache.seed.GWCTaskStatus;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.DiscontinuousTileRange;
@@ -202,6 +205,14 @@ class JDBCMBWrapper {
 
             condCreate(conn, "GRIDSETS",
                     "ID BIGINT AUTO_INCREMENT PRIMARY KEY, VALUE VARCHAR(126) UNIQUE", "VALUE",
+                    null);
+
+            condCreate(conn, "GWCTASKS",
+                    "ID BIGINT AUTO_INCREMENT PRIMARY KEY, PARSEDTYPE VARCHAR(16), STATE VARCHAR(16), " +
+                    "LAYERNAME VARCHAR(126), TIMESPENT BIGINT, TIMEREMAINING BIGINT, " + 
+                    "TILESDONE BIGINT, TILESTOTAL BIGINT, TERMINATE VARCHAR(5)," +
+                    "TIMEINSERTED TIMESTAMP(23,10), TIMEUPDATED TIMESTAMP(23,10) ", 
+                    "LAYERNAME",
                     null);
 
             int fromVersion = getDbVersion(conn);
@@ -918,6 +929,114 @@ class JDBCMBWrapper {
                 close(prep);
             }
         } finally {
+            close(conn);
+        }
+    }
+
+    public void putGWCTask(GWCTask stObj) throws SQLException, StorageException {
+
+        String query = "INSERT INTO "
+                + "GWCTASKS (PARSEDTYPE, STATE, LAYERNAME, TIMEINSERTED)"
+                + "VALUES(?,?,?, NOW())";
+
+        final Connection conn = getConnection();
+
+        try {
+            Long insertId;
+            PreparedStatement prep = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            try {
+            	prep.setString(1, stObj.getType().toString());
+            	prep.setString(2, stObj.getState().toString());
+            	prep.setString(3, stObj.getLayerName());
+                insertId = wrappedInsert(prep);
+            } finally {
+                close(prep);
+            }
+            if (insertId == null) {
+                log.error("Did not receive a id for " + query);
+            } else {
+            	log.debug("received insertId: " + insertId);
+                stObj.setDbId(insertId.longValue());
+            }
+
+        } finally {
+            conn.close();
+        }
+
+    }
+
+    public boolean updateGWCTask(GWCTask stObj) throws SQLException {
+    	String query = "UPDATE GWCTASKS SET PARSEDTYPE = ?, STATE = ?, TIMESPENT = ?, " +
+                    "TIMEREMAINING = ?, TILESDONE = ?, TILESTOTAL = ?, TERMINATE = ?, TIMEUPDATED = NOW() " +
+    				" WHERE ID = ?";
+        final Connection conn = getConnection();
+
+        PreparedStatement prep = null;
+
+        try {
+            prep = conn.prepareStatement(query);
+            prep.setString(1, stObj.getType().toString());
+            prep.setString(2, stObj.getState().toString());
+            prep.setLong(3, stObj.getTimeSpent());
+            prep.setLong(4, stObj.getTimeRemaining());
+            prep.setLong(5, stObj.getTilesDone());
+            prep.setLong(6, stObj.getTilesTotal());
+            prep.setBoolean(7, stObj.getTerminate());
+            prep.setLong(8, stObj.getDbId());
+
+            int affected = prep.executeUpdate();
+            if (affected == 1) {
+                return true;
+            } else {
+                log.error("Expected to update task with id = " + stObj.getDbId() + ", but affected " + affected + " rows");
+                return false;
+            }
+        } finally {
+            close(prep);
+            close(conn);
+        }
+    }
+
+    protected boolean getTasks(String taskIds, ArrayList<GWCTaskStatus> tasks) throws SQLException {
+        String query = null;
+        PreparedStatement prep = null;
+        final Connection conn = getConnection();
+
+        try {
+            query = "SELECT ID, LAYERNAME, PARSEDTYPE, STATE, TIMESPENT, TIMEREMAINING," +
+            		"TILESDONE, TILESTOTAL, TERMINATE, TIMEINSERTED, TIMEUPDATED " +
+                    " FROM GWCTASKS WHERE "
+                    + " ID in (" + taskIds + ") ";
+
+            prep = conn.prepareStatement(query);
+
+            ResultSet rs = prep.executeQuery();
+            try {
+                while (rs.next()) {
+                	GWCTaskStatus taskStatus = new GWCTaskStatus();
+                	taskStatus.setDbId(rs.getLong(1));
+                	taskStatus.setLayerName(rs.getString(2));
+                	taskStatus.setTaskType(rs.getString(3));
+                	taskStatus.setTaskState(rs.getString(4));
+                	taskStatus.setTimeSpent(rs.getLong(5));
+                	taskStatus.setTimeRemaing(rs.getLong(6));
+                	taskStatus.setTilesDone(rs.getLong(7));
+                	taskStatus.setTilesTotal(rs.getLong(8));
+                	taskStatus.setTerminate(rs.getString(9));
+                	taskStatus.setTimeInserted(rs.getTimestamp(10));
+                	taskStatus.setTimeUpdated(rs.getTimestamp(11));
+                	tasks.add(taskStatus);
+                }
+                if (tasks.size() > 0) {
+                	return true;
+                } else {
+                	return false;
+                }
+            } finally {
+                close(rs);
+            }
+        } finally {
+            close(prep);
             close(conn);
         }
     }

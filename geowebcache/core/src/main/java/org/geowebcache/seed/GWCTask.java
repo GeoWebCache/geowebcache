@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.storage.StorageBroker;
 
 /**
  * 
@@ -47,9 +48,11 @@ public abstract class GWCTask {
 
     long taskId = -1;
 
+    long dbId = -1;
+    
     protected TYPE parsedType = TYPE.UNSET;
 
-    protected STATE state = STATE.UNSET;
+    private STATE state = STATE.UNSET;
 
     protected String layerName = null;
 
@@ -63,6 +66,8 @@ public abstract class GWCTask {
 
     protected boolean terminate = false;
 
+    protected StorageBroker storageBroker;
+    
     private long groupStartTime;
 
     /**
@@ -112,6 +117,14 @@ public abstract class GWCTask {
         return taskId;
     }
 
+    public void setDbId(long id) {
+    	this.dbId = id;
+    }
+    
+    public long getDbId() {
+    	return this.dbId;
+    }
+    
     public int getThreadCount() {
         return sharedThreadCount.get();
     }
@@ -157,12 +170,26 @@ public abstract class GWCTask {
         this.terminate = true;
     }
 
+    public boolean getTerminate() {
+    	return this.terminate;
+    }
+    
     public TYPE getType() {
         return parsedType;
     }
 
     public STATE getState() {
         return state;
+    }
+    
+    public void setState(STATE st) {
+        this.state = st;
+        log.debug("set task state to: " + st.toString());
+        if (this.dbId == -1) {
+            this.storageBroker.put(this);        
+        } else {
+            this.storageBroker.updateGWCTask(this);
+        }
     }
 
     protected void checkInterrupted() throws InterruptedException {

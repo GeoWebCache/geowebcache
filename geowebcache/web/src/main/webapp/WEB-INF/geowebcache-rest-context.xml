@@ -38,6 +38,14 @@
           <ref bean="gwcSeedRestlet" />
         </entry>
         <entry>
+          <key><value>/seedprogress/{taskids}</value></key>
+          <ref bean="gwcSeedRestlet" />
+        </entry>
+        <entry>
+          <key><value>/seedcancel/{taskids}</value></key>
+          <ref bean="gwcSeedRestlet" />
+        </entry>
+        <entry>
           <key><value>/seed/{layer}</value></key>
           <ref bean="gwcSeedFormRestlet" />
         </entry>

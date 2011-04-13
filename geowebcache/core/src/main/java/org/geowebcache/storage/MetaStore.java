@@ -17,6 +17,12 @@
  */
 package org.geowebcache.storage;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import org.geowebcache.seed.GWCTask;
+import org.geowebcache.seed.GWCTaskStatus;
+
 /**
  * A metastore manages all meta information related to cacheable objects
  */
@@ -36,6 +42,11 @@ public interface MetaStore {
     public boolean get(TileObject obj) throws StorageException;
 
     public void put(TileObject stObj) throws StorageException;
+    
+    public void put(GWCTask stObj) throws StorageException;
+	public void updateGWCTask(GWCTask tskObj) throws StorageException;
+    public void getTasks(String taskIds, ArrayList<GWCTaskStatus> tasks) throws StorageException;
+	
 
     public boolean unlock(TileObject stObj) throws StorageException;
 
