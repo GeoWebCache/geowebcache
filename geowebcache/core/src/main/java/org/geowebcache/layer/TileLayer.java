@@ -95,6 +95,8 @@ public abstract class TileLayer {
 
     protected Boolean useETags;
 
+    private Boolean useMetaStore = true;
+    
     protected ArrayList<ExpirationRule> expireCacheList;
 
     protected String expireClients;
@@ -851,6 +853,14 @@ public abstract class TileLayer {
 
     public GridSubset getGridSubset(String gridSetId) {
         return this.subSets.get(gridSetId);
+    }
+
+    public Boolean useMetaStore() {
+        if (this.useMetaStore == null) {
+                return true;  //default
+        } else {
+                return this.useMetaStore;
+        }
     }
 
     protected ByteArrayResource getImageBuffer(ThreadLocal<ByteArrayResource> tl) {

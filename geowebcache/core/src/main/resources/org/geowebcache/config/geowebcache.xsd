@@ -154,6 +154,14 @@
        </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="useMetaStore" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+           If this layer should use the metastore, default is true. The global variable GWC_METASTORE_DISABLED 
+           must be false or undefined. to use the metastore if useMetaStore = true
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="metaInformation" type="gwc:layerMetaInformation" minOccurs="0">
         <xs:annotation>
           <xs:documentation xml:lang="en">
