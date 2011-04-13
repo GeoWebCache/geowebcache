@@ -132,6 +132,7 @@ public class SeedTaskTest extends TestCase {
          * Create a mock storage broker that does nothing
          */
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
+        expect(mockStorageBroker.put((GWCTask) anyObject())).andReturn(true).anyTimes();
         expect(mockStorageBroker.put((TileObject) anyObject())).andReturn(true).anyTimes();
         expect(mockStorageBroker.get((TileObject) anyObject())).andReturn(false).anyTimes();
         replay(mockStorageBroker);
@@ -210,6 +211,7 @@ public class SeedTaskTest extends TestCase {
          * Create a mock storage broker that does nothing
          */
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
+        expect(mockStorageBroker.put((GWCTask) anyObject())).andReturn(true).anyTimes();
         expect(mockStorageBroker.put((TileObject) anyObject())).andReturn(true).anyTimes();
         expect(mockStorageBroker.get((TileObject) anyObject())).andReturn(false).anyTimes();
         replay(mockStorageBroker);
@@ -276,6 +278,7 @@ public class SeedTaskTest extends TestCase {
                 super.getValues().add(o);
             }
         };
+        expect(mockStorageBroker.put((GWCTask) anyObject())).andReturn(true).anyTimes();
         expect(mockStorageBroker.put(capture(storedObjects))).andReturn(true).anyTimes();
         expect(mockStorageBroker.get((TileObject) anyObject())).andReturn(false).anyTimes();
         replay(mockStorageBroker);
