@@ -86,7 +86,10 @@ public class MimeType {
         }
         
         // TODO Making a special exception, generalize later
-        if(! formatStr.equals("image/png; mode=24bit") && formatStr.contains(";")) {
+        if(! (formatStr.equals("image/png; mode=24bit") 
+        		|| formatStr.equals("image/png; mode=8bit")
+        		|| formatStr.equals("image/png;%20mode=8bit"))
+        		&& formatStr.contains(";")) {
             if(log.isDebugEnabled()) {
                 log.debug("Slicing off "+ formatStr.split(";")[1]);
             }

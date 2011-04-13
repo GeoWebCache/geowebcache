@@ -26,6 +26,9 @@ public class ErrorMime extends MimeType {
    public static final ErrorMime vnd_ogc_se_inimage  = new ErrorMime(
             "application/vnd.ogc.se_inimage");
     
+   public static final ErrorMime vnd_ogc_se_xml  = new ErrorMime(
+   "application/vnd.ogc.se_xml");
+
     private ErrorMime(String mimeType) {
         super(mimeType,null,null,mimeType,false);
     }
@@ -43,6 +46,8 @@ public class ErrorMime extends MimeType {
     public static ErrorMime createFromMimeType(String mimeType) throws MimeException {
         if (mimeType.equalsIgnoreCase("application/vnd.ogc.se_inimage")) {
             return vnd_ogc_se_inimage;
+        } else if (mimeType.equalsIgnoreCase("application/vnd.ogc.se_xml")) {
+                return vnd_ogc_se_xml;
         } else {
             log.error("Unsupported MIME type: " + mimeType + ", falling back to application/vnd.ogc.se_inimage.");
             return vnd_ogc_se_inimage;

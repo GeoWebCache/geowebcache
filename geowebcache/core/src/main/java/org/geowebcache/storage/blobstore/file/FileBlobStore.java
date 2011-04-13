@@ -57,17 +57,29 @@ public class FileBlobStore implements BlobStore {
 
     private final BlobStoreListenerList listeners = new BlobStoreListenerList();
 
+    private Boolean store_all_png_in_8bit = false;
+    
+    private FileConverter fileConverter;
+
     private static ExecutorService deleteExecutorService;
 
     public FileBlobStore(DefaultStorageFinder defStoreFinder) throws StorageException {
         path = defStoreFinder.getDefaultPath();
+        log.info("root folder FileBlobStore = " + path);
         stagingArea = new File(path, "_gwc_in_progress_deletes_");
         createDeleteExecutorService();
         issuePendingDeletes();
+        log.info("root folder FileBlobStore = " + path);
+        store_all_png_in_8bit = new Boolean(defStoreFinder.findEnvVar(DefaultStorageFinder.GWC_STORE_ALL_PNG_IN_8BIT));
+        if (store_all_png_in_8bit == null) {
+                store_all_png_in_8bit = false;
+        }
+//        convert2png8 = new Convert2Png8(); 
     }
 
     public FileBlobStore(String rootPath) throws StorageException {
         path = rootPath;
+        log.info("root folder FileBlobStore = " + path);
         File fh = new File(path);
 
         if (!fh.exists() || !fh.isDirectory() || !fh.canWrite()) {
@@ -76,6 +88,12 @@ public class FileBlobStore implements BlobStore {
         stagingArea = new File(path, "_gwc_in_progress_deletes_");
         createDeleteExecutorService();
         issuePendingDeletes();
+        // TODO determine store_all_png_in_8bit without a DefaultStorageFinder
+    }
+
+    public void setFileConverter(FileConverter fileConverter) {
+        this.fileConverter = fileConverter;
+        log.info("Fileconverter FileBlobStore = " + this.fileConverter);
     }
 
     private void issuePendingDeletes() {
@@ -333,6 +351,22 @@ public class FileBlobStore implements BlobStore {
         final long oldSize = fh.length();
         final boolean existed = oldSize > 0;
         writeFile(fh, stObj.getBlob());
+        try {
+            MimeType mtype = MimeType.createFromFormat(stObj.getBlobFormat()); 
+            if ((mtype.getInternalName().equals("png") &&
+                    store_all_png_in_8bit) || mtype.getMimeType().endsWith("8bit")) {
+                try {
+                    if (fileConverter!=null){
+                        fileConverter.convert(fh);
+                    }
+                } catch (StorageException se) {
+                    //ignore Exception in convert2png8, assuming original png file still exists
+                    //TODO handle situation if rename from org to bak and from png8 to org fail
+                }
+            }
+        } catch (MimeException e) {
+            log.error("MimeException: " + e.getMessage());
+        }
         /*
          * This is important because listeners may be tracking tile existence
          */

@@ -38,6 +38,9 @@ public class ImageMime extends MimeType {
     public static final ImageMime png8 = 
         new ImageMime("image/png", "png8", "png", "image/png8", true, false, true);
     
+    public static final ImageMime png_8 = 
+        new ImageMime("image/png; mode=8bit", "png_8", "png", "image/png; mode=8bit", true, true, true);
+    
     public static final ImageMime png24 = 
         new ImageMime("image/png", "png24", "png", "image/png24", true, true, true);
 
@@ -70,6 +73,10 @@ public class ImageMime extends MimeType {
             return tiff;
         } else if ( tmpStr.equalsIgnoreCase("png8")) {
             return png8;
+        } else if ( tmpStr.equalsIgnoreCase("png; mode=8bit")) {
+            return png_8;
+        } else if ( tmpStr.equalsIgnoreCase("png;%20mode=8bit")) {
+            return png_8;
         } else if ( tmpStr.equalsIgnoreCase("png24")) {
             return png24;
         } else if ( tmpStr.equalsIgnoreCase("png; mode=24bit")) {
@@ -103,6 +110,8 @@ public class ImageMime extends MimeType {
             return tiff;
         } else if (fileExtension.equalsIgnoreCase("png8")) {
             return png8;
+        } else if (fileExtension.equalsIgnoreCase("png_8")) {
+            return png_8;
         } else if (fileExtension.equalsIgnoreCase("png24")) {
             return png24;
         } else if (fileExtension.equalsIgnoreCase("png_24")) {

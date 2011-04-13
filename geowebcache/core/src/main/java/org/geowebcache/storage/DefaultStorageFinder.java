@@ -49,6 +49,8 @@ public class DefaultStorageFinder {
     
     public final static String GWC_BLANK_TILE_PATH = "GWC_BLANK_TILE_PATH";
     
+    public final static String GWC_STORE_ALL_PNG_IN_8BIT = "GWC_STORE_ALL_PNG_IN_8BIT";
+    
     private static Log log = LogFactory.getLog(org.geowebcache.storage.DefaultStorageFinder.class);
 
     private String defaultPrefix = null;
