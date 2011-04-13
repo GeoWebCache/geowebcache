@@ -30,6 +30,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
@@ -41,7 +42,7 @@ import org.springframework.context.ApplicationContext;
  * Creates a grid of tiles and puts the grid index on each of them
  * 
  */
-public class KMLDebugGridLayer extends TileLayer {
+public class KMLDebugGridLayer extends AbstractTileLayer {
 
     public static final String LAYERNAME = "debugGrid";
 

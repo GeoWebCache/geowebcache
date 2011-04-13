@@ -28,8 +28,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -43,26 +41,23 @@ import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
+import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.layer.GridLocObj;
-import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.mime.FormatModifier;
-import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.util.GWCVars;
-import org.geowebcache.util.ServletUtils;
 
 /**
  * A tile layer backed by a WMS server
  */
-public class WMSLayer extends TileLayer {
+public class WMSLayer extends AbstractTileLayer {
 
     public enum RequestType {
         MAP, FEATUREINFO
     };
-
-    private Boolean enabled;
 
     private String[] wmsUrl = null;
 
@@ -139,7 +134,6 @@ public class WMSLayer extends TileLayer {
             boolean queryable) {
 
         this.name = layerName;
-        this.enabled = Boolean.TRUE;
         this.wmsUrl = wmsURL;
         this.wmsLayers = wmsLayers;
         this.wmsStyles = wmsStyles;
@@ -221,16 +215,6 @@ public class WMSLayer extends TileLayer {
         }
 
         return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return enabled.booleanValue();
-    }
-
-    @Override
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
     }
 
     @Override
@@ -450,37 +434,6 @@ public class WMSLayer extends TileLayer {
         return false;
     }
 
-    /**
-     * Uses the HTTP 1.1 spec to set expiration headers
-     * 
-     * @param response
-     */
-    public void setExpirationHeader(HttpServletResponse response, int zoomLevel) {
-        int expireValue = this.getExpireClients(zoomLevel);
-
-        // Fixed value
-        if (expireValue == GWCVars.CACHE_VALUE_UNSET) {
-            return;
-        }
-
-        // TODO move to TileResponse
-        if (expireValue > 0) {
-            response.setHeader("Cache-Control", "max-age=" + expireValue + ", must-revalidate");
-            response.setHeader("Expires", ServletUtils.makeExpiresHeader(expireValue));
-        } else if (expireValue == GWCVars.CACHE_NEVER_EXPIRE) {
-            long oneYear = 3600 * 24 * 365;
-            response.setHeader("Cache-Control", "max-age=" + oneYear);
-            response.setHeader("Expires", ServletUtils.makeExpiresHeader((int) oneYear));
-        } else if (expireValue == GWCVars.CACHE_DISABLE_CACHE) {
-            response.setHeader("Cache-Control", "no-cache");
-        } else if (expireValue == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
-            int seconds = 3600;
-            response.setHeader("geowebcache-error", "No real CacheControl information available");
-            response.setHeader("Cache-Control", "max-age=" + seconds);
-            response.setHeader("Expires", ServletUtils.makeExpiresHeader(seconds));
-        }
-    }
-
     public void setTileIndexHeader(ConveyorTile tile) {
         tile.servletResp.addHeader("geowebcache-tile-index", Arrays.toString(tile.getTileIndex()));
     }
@@ -541,20 +494,6 @@ public class WMSLayer extends TileLayer {
             // Sometimes this doesn't work (network conditions?),
             // and it's really not worth getting caught up on it.
             e.printStackTrace();
-        }
-    }
-
-    /**
-     * Returns the default image format if strFormat is unset
-     * 
-     * @param strFormat
-     * @return ImageFormat equivalent, or default ImageFormat
-     */
-    public MimeType getImageFormat(String strFormat) throws MimeException {
-        if (strFormat == null) {
-            return this.formats.get(0);
-        } else {
-            return MimeType.createFromFormat(strFormat);
         }
     }
 
@@ -873,5 +812,9 @@ public class WMSLayer extends TileLayer {
     public void cleanUpThreadLocals() {
         WMS_BUFFER.remove();
         WMS_BUFFER2.remove();
+    }
+
+    public void setMetaInformation(LayerMetaInformation layerMetaInfo) {
+        this.metaInformation = layerMetaInfo;
     }
 }

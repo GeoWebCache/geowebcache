@@ -18,10 +18,10 @@ package org.geowebcache.service.kml;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorKMLTile;
@@ -82,7 +82,7 @@ public class KMLSiteMap {
             if (!tl.isEnabled()) {
                 continue;
             }
-            Hashtable<String,GridSubset> grids = tl.getGridSubsets();
+            Map<String, GridSubset> grids = tl.getGridSubsets();
             List<MimeType> mimeTypes = tl.getMimeTypes();
             
             if( grids != null && grids.containsKey(gridSetBroker.WORLD_EPSG4326.getName())

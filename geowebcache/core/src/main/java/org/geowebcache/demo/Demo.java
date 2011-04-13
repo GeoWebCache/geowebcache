@@ -44,7 +44,7 @@ public class Demo {
                 gridSetStr = request.getParameter("srs");
                 
                 if(gridSetStr == null) {
-                    gridSetStr = layer.getGridSubsets().keys().nextElement();
+                    gridSetStr = layer.getGridSubsets().keySet().iterator().next();
                 }
             }
             

@@ -29,7 +29,7 @@ import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.io.FileResource;
 import org.geowebcache.io.Resource;
-import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageException;
@@ -39,7 +39,7 @@ import org.geowebcache.storage.StorageException;
  * @author Gabriel Roldan
  * 
  */
-public class ArcGISCacheLayer extends TileLayer {
+public class ArcGISCacheLayer extends AbstractTileLayer {
 
     private static final Log log = LogFactory.getLog(ArcGISCacheLayer.class);
 
@@ -347,7 +347,7 @@ public class ArcGISCacheLayer extends TileLayer {
      */
     @Override
     public String getStyles() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     /**
