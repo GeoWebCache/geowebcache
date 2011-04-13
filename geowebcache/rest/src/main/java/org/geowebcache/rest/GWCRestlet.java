@@ -39,7 +39,7 @@ public class GWCRestlet extends Restlet {
         }
         
         if(layer == null) {
-            throw new RestletException("Uknown layer: " + layerName, 
+            throw new RestletException("Unknown layer: " + layerName, 
                     Status.CLIENT_ERROR_NOT_FOUND);
         }
         
