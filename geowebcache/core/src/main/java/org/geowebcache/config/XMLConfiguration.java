@@ -128,7 +128,7 @@ public class XMLConfiguration implements Configuration {
         this.gridSetBroker = gridSetBroker;
         defStoreFind = defaultStorage;
 
-        if (filePath.startsWith("/") || filePath.contains(":\\")) {
+        if(filePath.startsWith("/") || filePath.contains(":\\") || filePath.startsWith("\\\\") ) {
             this.absPath = filePath;
         } else {
             this.relPath = filePath;
@@ -666,7 +666,7 @@ public class XMLConfiguration implements Configuration {
         if (absPath != null) {
             configH = new File(absPath);
         } else if (relPath != null) {
-            configH = new File(baseDir + relPath);
+            configH = new File(baseDir + File.separator + relPath);
             log.debug("Configuration directory set to: " + configH.getAbsolutePath());
         } else if (relPath == null) {
             // Try env variables
