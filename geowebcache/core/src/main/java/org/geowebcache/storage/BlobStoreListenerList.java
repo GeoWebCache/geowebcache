@@ -1,19 +1,15 @@
 package org.geowebcache.storage;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class BlobStoreListenerList {
 
-    private List<BlobStoreListener> listeners = new ArrayList<BlobStoreListener>(1);
+    private List<BlobStoreListener> listeners = new CopyOnWriteArrayList<BlobStoreListener>();
 
     public synchronized void addListener(BlobStoreListener listener) {
-        if (listener != null) {
-            List<BlobStoreListener> tmp;
-            tmp = new ArrayList<BlobStoreListener>(listeners.size() + 1);
-            tmp.addAll(listeners);
-            tmp.add(listener);
-            listeners = tmp;
+        if (listener != null && !listeners.contains(listener)) {
+            listeners.add(listener);
         }
     }
 

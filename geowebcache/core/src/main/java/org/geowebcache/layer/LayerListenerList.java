@@ -1,8 +1,7 @@
 package org.geowebcache.layer;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.geowebcache.conveyor.ConveyorTile;
 
@@ -14,30 +13,25 @@ import org.geowebcache.conveyor.ConveyorTile;
  */
 public class LayerListenerList {
 
-    private List<TileLayerListener> listeners = Collections.emptyList();
+    private List<TileLayerListener> listeners = new CopyOnWriteArrayList<TileLayerListener>();
 
-    public void addListener(TileLayerListener listener) {
+    public synchronized void addListener(TileLayerListener listener) {
         if (listener != null) {
-            ArrayList<TileLayerListener> tmp;
-            tmp = new ArrayList<TileLayerListener>(listeners.size() + 1);
-            tmp.addAll(listeners);
-            tmp.add(listener);
-            listeners = tmp;
+            if (!listeners.contains(listener)) {
+                listeners.add(listener);
+            }
         }
     }
 
-    public boolean removeListener(TileLayerListener listener) {
+    public synchronized boolean removeListener(TileLayerListener listener) {
         return listeners.remove(listener);
     }
 
     public void sendTileRequested(TileLayer layer, ConveyorTile tile) {
-        if (listeners.size() == 0) {
-            return;
-        }
-        TileLayerListener listener;
-        for (int i = 0; i < listeners.size(); i++) {
-            listener = listeners.get(i);
-            listener.tileRequested(layer, tile);
+        if (listeners.size() > 0) {
+            for (int i = 0; i < listeners.size(); i++) {
+                listeners.get(i).tileRequested(layer, tile);
+            }
         }
     }
 }
