@@ -433,7 +433,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         }
         log.info(explicitConfigs + " layers configured with their own quotas. ");
         if (globalExpirationPolicy != null) {
-            int globallyConfigured = tileLayerDispatcher.getLayerList().size() - explicitConfigs;
+            int globallyConfigured = tileLayerDispatcher.getLayerCount() - explicitConfigs;
             log.info(globallyConfigured + " layers attached to global quota "
                     + globalQuota.toNiceString());
         }

@@ -76,7 +76,7 @@ public class UsageStatsMonitor {
         executorService.submit(usageStatsConsumer);
 
         usageStatsProducer = new QueuedUsageStatsProducer(sharedQueue);
-        List<TileLayer> allLayers = tileLayerDispatcher.getLayerList();
+        Iterable<TileLayer> allLayers = tileLayerDispatcher.getLayerList();
         for (TileLayer layer : allLayers) {
             layer.addLayerListener(usageStatsProducer);
         }
@@ -127,7 +127,7 @@ public class UsageStatsMonitor {
     }
 
     private void shutDown(final boolean cancel) {
-        List<TileLayer> allLayers = tileLayerDispatcher.getLayerList();
+        Iterable<TileLayer> allLayers = tileLayerDispatcher.getLayerList();
         for (TileLayer layer : allLayers) {
             try {
                 layer.removeLayerListener(usageStatsProducer);

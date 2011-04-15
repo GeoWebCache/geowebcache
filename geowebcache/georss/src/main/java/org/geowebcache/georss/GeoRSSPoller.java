@@ -96,11 +96,7 @@ public class GeoRSSPoller {
     private void findEnabledPolls() {
         logger.info("Initializing GeoRSS poller...");
 
-        final List<TileLayer> layers = seeder.getLayers();
-        if (layers.size() == 0) {
-            logger.info("Found no layers configured, GeoRSS poller won't run");
-            return;
-        }
+        final Iterable<TileLayer> layers = seeder.getLayers();
         for (TileLayer layer : layers) {
             if (layer.getUpdateSources().size() == 0) {
                 continue;

@@ -360,7 +360,7 @@ public class TileBreeder implements ApplicationContextAware {
         return threadPool.terminateGWCTask(id);
     }
 
-    public List<TileLayer> getLayers() {
+    public Iterable<TileLayer> getLayers() {
         return this.layerDispatcher.getLayerList();
     }
 

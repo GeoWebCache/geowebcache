@@ -133,7 +133,7 @@ public class TileLayerDispatcher implements DisposableBean {
      * 
      * @return a list view of this tile layer dispatcher's internal layers
      */
-    public List<TileLayer> getLayerList() {
+    public Iterable<TileLayer> getLayerList() {
         ArrayList<TileLayer> layers = new ArrayList<TileLayer>();
         for (int i = 0; i < configs.size(); i++) {
             Configuration configuration = configs.get(i);

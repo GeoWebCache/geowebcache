@@ -228,12 +228,11 @@ public class WMSGetCapabilities {
 
     private void capabilityRequestGetMap(StringBuilder str) {
         // Find all the formats we support
-        Iterator<TileLayer> layerIter = tld.getLayerList().iterator();
+        Iterable<TileLayer> layerIter = tld.getLayerList();
 
         HashSet<String> formats = new HashSet<String>();
 
-        while (layerIter.hasNext()) {
-            TileLayer layer = layerIter.next();
+        for (TileLayer layer : layerIter) {
             if (!layer.isEnabled()) {
                 continue;
             }
@@ -322,9 +321,8 @@ public class WMSGetCapabilities {
 
     private void capabilityVendorSpecific(StringBuilder str) {
         str.append("  <VendorSpecificCapabilities>\n");
-        Iterator<TileLayer> layerIter = tld.getLayerList().iterator();
-        while (layerIter.hasNext()) {
-            TileLayer layer = layerIter.next();
+        Iterable<TileLayer> layerIter = tld.getLayerList();
+        for (TileLayer layer : layerIter) {
             if (!layer.isEnabled()) {
                 continue;
             }
@@ -388,9 +386,8 @@ public class WMSGetCapabilities {
         str.append("    <Abstract>Note that not all GeoWebCache instances provide a full WMS service.</Abstract>\n");
         str.append("    <LatLonBoundingBox minx=\"-180.0\" miny=\"-90.0\" maxx=\"180.0\" maxy=\"90.0\"/>\n");
 
-        Iterator<TileLayer> layerIter = tld.getLayerList().iterator();
-        while (layerIter.hasNext()) {
-            TileLayer layer = layerIter.next();
+        Iterable<TileLayer> layerIter = tld.getLayerList();
+        for (TileLayer layer : layerIter) {
             if (!layer.isEnabled()) {
                 continue;
             }
