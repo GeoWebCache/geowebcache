@@ -66,7 +66,7 @@ public abstract class TileLayer {
     protected static final ThreadLocal<ByteArrayResource> WMS_BUFFER2 = new ThreadLocal<ByteArrayResource>();
 
     // cached default parameter filter values
-    private transient Map<String, String> defaultParams;
+    protected transient Map<String, String> defaultParameterFilterValues;
 
     /**
      * Registers a layer listener to be notified of layer events
@@ -423,10 +423,10 @@ public abstract class TileLayer {
      *         parameter filters are defined
      */
     public Map<String, String> getDefaultParameterFilters() {
-        if (defaultParams == null) {
+        if (defaultParameterFilterValues == null) {
             List<ParameterFilter> parameterFilters = getParameterFilters();
             if (parameterFilters == null || parameterFilters.size() == 0) {
-                defaultParams = Collections.emptyMap();
+                defaultParameterFilterValues = Collections.emptyMap();
             } else {
                 Map<String, String> defaults = new HashMap<String, String>();
                 for (ParameterFilter parameterFilter : parameterFilters) {
@@ -434,10 +434,10 @@ public abstract class TileLayer {
                     String defaultValue = decodeDimensionValue(parameterFilter.getDefaultValue());
                     defaults.put(key, defaultValue);
                 }
-                defaultParams = Collections.unmodifiableMap(defaults);
+                defaultParameterFilterValues = Collections.unmodifiableMap(defaults);
             }
         }
-        return defaultParams;
+        return defaultParameterFilterValues;
     }
 
     /**
