@@ -18,6 +18,7 @@
 package org.geowebcache.config;
 
 import java.util.List;
+import java.util.Set;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.meta.ServiceInformation;
@@ -46,6 +47,8 @@ public interface Configuration {
 
     public int getTileLayerCount();
 
+    public Set<String> getTileLayerNames();
+    
     public boolean remove(String layerName);
 
 }

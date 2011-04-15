@@ -111,15 +111,9 @@ public class TileLayerDispatcher implements DisposableBean {
 
     public Set<String> getLayerNames() {
         Set<String> names = new HashSet<String>();
-        try {
-            for (int i = 0; i < configs.size(); i++) {
-                Configuration configuration = configs.get(i);
-                for (TileLayer tl : configuration.getTileLayers()) {
-                    names.add(tl.getName());
-                }
-            }
-        } catch (GeoWebCacheException e) {
-            throw new RuntimeException(e);
+        for (int i = 0; i < configs.size(); i++) {
+            Configuration configuration = configs.get(i);
+            names.addAll(configuration.getTileLayerNames());
         }
         return names;
     }

@@ -29,10 +29,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -811,6 +812,21 @@ public class XMLConfiguration implements Configuration {
      */
     public int getTileLayerCount() {
         return layers.size();
+    }
+
+    /**
+     * @see org.geowebcache.config.Configuration#getTileLayerNames()
+     */
+    public Set<String> getTileLayerNames() {
+        Set<String> names = new HashSet<String>();
+        try {
+            for (TileLayer tl : getTileLayers()) {
+                names.add(tl.getName());
+            }
+        } catch (GeoWebCacheException e) {
+            throw new RuntimeException(e);
+        }
+        return names;
     }
 
     public boolean remove(String layerName) {

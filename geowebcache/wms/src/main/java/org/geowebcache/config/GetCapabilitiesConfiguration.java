@@ -21,11 +21,13 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -408,6 +410,13 @@ public class GetCapabilitiesConfiguration implements Configuration {
      */
     public List<TileLayer> getTileLayers() throws GeoWebCacheException {
         return new ArrayList<TileLayer>(layers.values());
+    }
+    
+    /**
+     * @see org.geowebcache.config.Configuration#getTileLayerNames()
+     */
+    public Set<String> getTileLayerNames() {
+        return new HashSet<String>(layers.keySet());
     }
 
     /**
