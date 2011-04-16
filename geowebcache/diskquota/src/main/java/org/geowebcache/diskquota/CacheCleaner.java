@@ -159,7 +159,7 @@ public class CacheCleaner implements DisposableBean {
             used = quotaResolver.getUsed();
             excess = used.difference(limit);
             if (excess.getBytes().compareTo(BigInteger.ZERO) <= 0) {
-                log.info("Reached back Quota: " + limit.toNiceString() + " for layers "
+                log.info("Reached back Quota: " + limit.toNiceString() + " (" + used.toNiceString() + ") for layers "
                         + layerNames);
                 return;
             }
@@ -210,6 +210,7 @@ public class CacheCleaner implements DisposableBean {
         final String layerName = tileSet.getLayerName();
         final String gridSetId = tileSet.getGridsetId();
         final String blobFormat = tileSet.getBlobFormat();
+        final Long parametersId = tileSet.getParametersId();
         final int zoomLevel = tilePage.getZoomLevel();
         final long[][] pageGridCoverage = pageStore.getTilesForPage(tilePage);
 
@@ -220,10 +221,15 @@ public class CacheCleaner implements DisposableBean {
             throw new RuntimeException(e);
         }
         if (log.isTraceEnabled()) {
-            log.trace("Expiring page " + tilePage + "/" + mimeType.getFormat());
+            if (parametersId != null) {
+                log.trace("Expiring page " + tilePage + "/" + mimeType.getFormat() 
+                    + "/" + Long.toHexString(parametersId));
+            } else {
+                log.trace("Expiring page " + tilePage + "/" + mimeType.getFormat());
+            }
         }
         GWCTask truncateTask = createTruncateTaskForPage(layerName, gridSetId, zoomLevel,
-                pageGridCoverage, mimeType);
+                pageGridCoverage, mimeType, parametersId);
 
         // truncate synchronously. We're already inside the interested thread
         try {
@@ -237,18 +243,17 @@ public class CacheCleaner implements DisposableBean {
         }
     }
 
+    // FRD , Long parameterId
     private GWCTask createTruncateTaskForPage(final String layerName, String gridSetId,
-            int zoomLevel, long[][] pageGridCoverage, MimeType mimeType) {
+            int zoomLevel, long[][] pageGridCoverage, MimeType mimeType, Long parametersId) {
         TileRange tileRange;
         {
             int zoomStart = zoomLevel;
             int zoomStop = zoomLevel;
 
-            String parameters = null;
-
-            // TODO: use parameters
+            // We only need the parametersId here.
             tileRange = new TileRange(layerName, gridSetId, zoomStart, zoomStop, pageGridCoverage,
-                    mimeType, parameters);
+                    mimeType, null, parametersId);
         }
 
         boolean filterUpdate = false;

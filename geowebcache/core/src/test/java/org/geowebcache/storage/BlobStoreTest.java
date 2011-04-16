@@ -18,6 +18,7 @@
 package org.geowebcache.storage;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,8 +60,14 @@ public class BlobStoreTest extends TestCase {
         to2.setBlob(resp);
 
         assertEquals(to.getBlobFormat(), to2.getBlobFormat());
-        assertTrue(IOUtils.contentEquals(to.getBlob().getInputStream(), to2.getBlob()
-                .getInputStream()));
+        InputStream is = to.getBlob().getInputStream();
+        InputStream is2 = to2.getBlob().getInputStream();
+        try {
+            assertTrue(IOUtils.contentEquals(is, is2));
+        } finally {
+            is.close();
+            is2.close();
+        }
     }
 
     public void testTileDelete() throws Exception {
@@ -86,8 +93,16 @@ public class BlobStoreTest extends TestCase {
 
         // to2.setBlob(resp);
 
-        assertTrue(IOUtils.contentEquals(resp.getInputStream(), bytes.getInputStream()));
+        InputStream is = resp.getInputStream();
+        InputStream is2 = bytes.getInputStream();
+        try {
+            assertTrue(IOUtils.contentEquals(is, is2));
+        } finally {
+            is.close();
+            is2.close();
+        }
 
+        
         TileObject to3 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326",
                 "image/jpeg", parameters);
         fbs.delete(to3);
@@ -138,11 +153,25 @@ public class BlobStoreTest extends TestCase {
         // starting x and x + tos.length should have data, the remaining should not
         TileObject firstTO = TileObject.createQueryTileObject(layerName, tos[0].xyz,
                 srs.toString(), mime.getFormat(), parameters);
-        assertTrue(IOUtils.contentEquals(fbs.get(firstTO).getInputStream(), bytes.getInputStream()));
+        InputStream is = fbs.get(firstTO).getInputStream();
+        InputStream is2 = bytes.getInputStream();
+        try {
+            assertTrue(IOUtils.contentEquals(is, is2));
+        } finally {
+            is.close();
+            is2.close();
+        }
 
         TileObject lastTO = TileObject.createQueryTileObject(layerName, tos[tos.length - 1].xyz,
                 srs.toString(), mime.getFormat(), parameters);
-        assertTrue(IOUtils.contentEquals(fbs.get(lastTO).getInputStream(), bytes.getInputStream()));
+        is = fbs.get(lastTO).getInputStream();
+        is2 = bytes.getInputStream();
+        try {
+            assertTrue(IOUtils.contentEquals(is, is2));
+        } finally {
+            is.close();
+            is2.close();
+        }
 
         TileObject midTO = TileObject.createQueryTileObject(layerName,
                 tos[(tos.length - 1) / 2].xyz, srs.toString(), mime.getFormat(), parameters);

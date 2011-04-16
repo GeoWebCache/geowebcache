@@ -55,6 +55,12 @@ public class TileRange {
 
     public TileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,
             long[][] rangeBounds, MimeType mimeType, Map<String, String> parameters) {
+        //we don't know the params id yet, has to be set by the metastore so we set it to null
+        this(layerName, gridSetId, zoomStart, zoomStop, rangeBounds, mimeType, parameters, null);
+    }
+
+    public TileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,
+            long[][] rangeBounds, MimeType mimeType, Map<String, String> parameters, Long parametersId) {
         this.layerName = layerName;
         this.gridSetId = gridSetId;
         this.rangeBounds = rangeBounds;
@@ -62,8 +68,7 @@ public class TileRange {
         this.zoomStop = zoomStop;
         this.mimeType = mimeType;
         this.parameters = parameters;
-        //we don't know the params id yet, has to be set by the metastore
-        this.parametersId = null;
+        this.parametersId = parametersId;
     }
 
     public boolean contains(long[] idx) {

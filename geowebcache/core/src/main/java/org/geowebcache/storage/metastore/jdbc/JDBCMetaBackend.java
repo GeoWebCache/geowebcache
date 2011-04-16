@@ -175,9 +175,15 @@ public class JDBCMetaBackend implements MetaStore {
     public boolean delete(BlobStore blobStore, TileRange trObj) throws StorageException {
         long layerId = idCache.getLayerId(trObj.layerName);
         long formatId = idCache.getFormatId(trObj.mimeType.getFormat());
-        long parametersId = idCache.getParametersId(trObj.parameters);
-        if (-1L != parametersId) {
-            trObj.setParametersId(parametersId);
+        // FRD Set the parameters ID
+        long parametersId = -1;
+        if (trObj.getParametersId() != null) {
+            parametersId = trObj.getParametersId();
+        } else if (trObj.parameters != null) {
+            parametersId = idCache.getParametersId(trObj.parameters);
+            if (-1L != parametersId) {
+                trObj.setParametersId(parametersId);
+            }
         }
         long gridSetIdId = idCache.getGridSetsId(trObj.gridSetId);
 
