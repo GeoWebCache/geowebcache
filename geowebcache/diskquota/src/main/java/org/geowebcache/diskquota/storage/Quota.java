@@ -118,9 +118,10 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append('[').append(bytes).append(" bytes").append(']');
-        return sb.toString();
+        return toNiceString();
+//        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+//        sb.append('[').append(bytes).append(" bytes").append(']');
+//        return sb.toString();
     }
 
     /**

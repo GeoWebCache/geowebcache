@@ -68,7 +68,7 @@ public class FilePathFilter implements FilenameFilter {
     }
         
     /**
-     * Example: EPSG_2163_01
+     * Example: EPSG_2163_01, EPSG_2163_01_7 (i.e. {@code <EPSG>_<code>_<zLevel>[_<parametersId>]})
      */
     private boolean acceptZoomLevelDir(String name) {
         if(! name.startsWith(gridSetPrefix)) {

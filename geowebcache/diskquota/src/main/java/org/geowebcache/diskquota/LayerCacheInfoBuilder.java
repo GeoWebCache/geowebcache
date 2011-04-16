@@ -21,9 +21,11 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -34,6 +36,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.diskquota.storage.LayerQuota;
 import org.geowebcache.diskquota.storage.Quota;
 import org.geowebcache.diskquota.storage.TilePage;
+import org.geowebcache.diskquota.storage.TileSet;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeException;
@@ -96,40 +99,86 @@ final class LayerCacheInfoBuilder {
 
         final File layerDir = new File(rootCacheDir, layerDirName);
 
+        if (!layerDir.exists()) {
+            return;
+        }
+
         perLayerRunningTasks.put(layerName, new ArrayList<Future<ZoomLevelVisitor.Stats>>());
 
-        if (layerDir.exists()) {
-            final Map<String, GridSubset> gridSubsets = tileLayer.getGridSubsets();
+        final Set<TileSet> onDiskTileSets = findOnDiskTileSets(tileLayer, layerDir);
 
-            for (GridSubset gs : gridSubsets.values()) {
-                final String gridSetId = gs.getName();
-                final int zoomStart = gs.getZoomStart();
-                final int zoomStop = gs.getZoomStop();
+        for (TileSet tileSet : onDiskTileSets) {
+            final String gridSetId = tileSet.getGridsetId();
+            // final String blobFormat = tileSet.getBlobFormat();
+            final Long parametersId = tileSet.getParametersId();
+            final GridSubset gs = tileLayer.getGridSubset(gridSetId);
+            final int zoomStart = gs.getZoomStart();
+            final int zoomStop = gs.getZoomStop();
 
-                for (int zoomLevel = zoomStart; zoomLevel <= zoomStop; zoomLevel++) {
-                    final String gridsetZLevelDirName = FilePathGenerator.gridsetZoomLevelDir(
-                            gridSetId, zoomLevel);
-                    final File gridsetZLevelDir = new File(layerDir, gridsetZLevelDirName);
+            for (int zoomLevel = zoomStart; zoomLevel <= zoomStop; zoomLevel++) {
+                String gridsetZLevelParamsDirName;
+                gridsetZLevelParamsDirName = FilePathGenerator.gridsetZoomLevelDir(gridSetId,
+                        zoomLevel);
+                if (parametersId != null) {
+                    gridsetZLevelParamsDirName += "_" + Long.toHexString(parametersId);
+                }
+                final File gridsetZLevelDir = new File(layerDir, gridsetZLevelParamsDirName);
 
-                    if (gridsetZLevelDir.exists()) {
-                        ZoomLevelVisitor cacheInfoBuilder;
-                        cacheInfoBuilder = new ZoomLevelVisitor(layerName, gridsetZLevelDir,
-                                gridSetId, zoomLevel, quotaUsageMonitor);
+                if (gridsetZLevelDir.exists()) {
+                    ZoomLevelVisitor cacheInfoBuilder;
+                    cacheInfoBuilder = new ZoomLevelVisitor(layerName, gridsetZLevelDir, gridSetId,
+                            zoomLevel, parametersId, quotaUsageMonitor);
 
-                        Future<ZoomLevelVisitor.Stats> cacheTask;
-                        cacheTask = threadPool.submit(cacheInfoBuilder);
+                    Future<ZoomLevelVisitor.Stats> cacheTask;
+                    cacheTask = threadPool.submit(cacheInfoBuilder);
 
-                        perLayerRunningTasks.get(layerName).add(cacheTask);
-                        log.debug("Submitted background task to gather cache info for '"
-                                + layerName + "'/" + gridSetId + "/" + zoomLevel);
-                    }
+                    perLayerRunningTasks.get(layerName).add(cacheTask);
+                    log.debug("Submitted background task to gather cache info for '" + layerName
+                            + "'/" + gridSetId + "/" + zoomLevel);
                 }
             }
         }
     }
 
+    private Set<TileSet> findOnDiskTileSets(final TileLayer tileLayer, final File layerDir) {
+
+        final String layerName = tileLayer.getName();
+        final Set<String> griSetNames = tileLayer.getGridSubsets().keySet();
+        Set<TileSet> foundTileSets = new HashSet<TileSet>();
+        for (String gridSetName : griSetNames) {
+            final String gridSetDirPrefix = FilePathGenerator.filteredGridSetId(gridSetName);
+            FileFilter prefixFilter = new FileFilter() {
+                public boolean accept(File pathname) {
+                    if (!pathname.isDirectory()) {
+                        return false;
+                    }
+                    return pathname.getName().startsWith(gridSetDirPrefix);
+                }
+            };
+            File[] thisGridSetDirs = layerDir.listFiles(prefixFilter);
+            for (File directory : thisGridSetDirs) {
+                // <EPSG_ID>_<zoomlevel>[_<parametersId>]
+                final String[] parts = directory.getName().split("_");
+                if (parts.length < 3) {
+                    log.warn("Unrecognized cache directory name format: " + directory.getName());
+                    continue;
+                }
+                String gridsetId = gridSetName;
+                // we don't care here.. format should be part of the top level directory name
+                String blobFormat = null;
+                Long parametersId = null;
+                if(parts.length == 4){
+                    parametersId = Long.parseLong(parts[3], 16);
+                }
+                TileSet tileSet = new TileSet(layerName, gridsetId, blobFormat, parametersId);
+                foundTileSets.add(tileSet);
+            }
+        }
+        return foundTileSets;
+    }
+
     /**
-     * Builds the cache information for a zingle zoom level/gridsetId/layer combo
+     * Builds the cache information for a single layer/gridsetId/parametersId/zoomLevel combo
      * 
      * @author groldan
      * 
@@ -149,6 +198,8 @@ final class LayerCacheInfoBuilder {
 
         private final String layerName;
 
+        private final Long parametersId;
+
         private static class Stats {
             long runTimeMillis;
 
@@ -158,11 +209,12 @@ final class LayerCacheInfoBuilder {
         }
 
         public ZoomLevelVisitor(final String layerName, final File zoomLevelPath,
-                final String gridsetId, final int zoomLevel,
+                final String gridsetId, final int zoomLevel, Long parametersId,
                 final QuotaUpdatesMonitor quotaUsageMonitor) {
             this.layerName = layerName;
             this.zoomLevelPath = zoomLevelPath;
             this.gridSetId = gridsetId;
+            this.parametersId = parametersId;
             this.quotaUsageMonitor = quotaUsageMonitor;
             this.tileZ = zoomLevel;
             this.stats = new Stats();
@@ -172,7 +224,7 @@ final class LayerCacheInfoBuilder {
          * @see java.util.concurrent.Callable#call()
          */
         public Stats call() throws Exception {
-            final String zLevelKey = layerName + "'/" + gridSetId + "/" + tileZ;
+            final String zLevelKey = layerName + "'/" + gridSetId + "/paramId:" + (parametersId == null? "default": parametersId) + "/zlevel:" + tileZ;
             try {
                 log.debug("Gathering cache information for '" + zLevelKey);
                 stats.numTiles = 0L;
@@ -223,9 +275,6 @@ final class LayerCacheInfoBuilder {
             }
             final long x = Long.valueOf(path.substring(fileNameIdx, coordSepIdx));
             final long y = Long.valueOf(path.substring(1 + coordSepIdx, dotIdx));
-
-            // TODO:
-            Long parametersId = null;
 
             this.quotaUsageMonitor.tileStored(layerName, gridSetId, blobFormat, parametersId, x, y,
                     (int) tileZ, length);
