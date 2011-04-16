@@ -100,17 +100,16 @@ public class FilePathGenerator {
         path.append('_');
         zeroPadder(z, 2, path);
     }
-    
-    
+
     public static String zeroPadder(long number, int order) {
         StringBuilder sb = new StringBuilder();
         zeroPadder(number, order, sb);
         return sb.toString();
     }
-    
+
     /**
-     * Silly way to pad numbers with leading zeros, since I don't know a fast
-     * way of doing this in Java.
+     * Silly way to pad numbers with leading zeros, since I don't know a fast way of doing this in
+     * Java.
      * 
      * @param number
      * @param order
@@ -120,7 +119,7 @@ public class FilePathGenerator {
         int numberOrder = 1;
 
         if (number > 9) {
-            if(number > 11) {
+            if (number > 11) {
                 numberOrder = (int) Math.ceil(Math.log10(number) - 0.001);
             } else {
                 numberOrder = 2;
@@ -128,9 +127,9 @@ public class FilePathGenerator {
         }
 
         int diffOrder = order - numberOrder;
-        
-        if(diffOrder > 0) {
-            
+
+        if (diffOrder > 0) {
+
             while (diffOrder > 0) {
                 padding.append('0');
                 diffOrder--;
@@ -140,11 +139,11 @@ public class FilePathGenerator {
             padding.append(number);
         }
     }
-    
+
     public static String filteredGridSetId(String gridSetId) {
         return gridSetId.replace(':', '_');
     }
-    
+
     public static String filteredLayerName(String layerName) {
         return layerName.replace(':', '_').replace(' ', '_');
     }
@@ -161,12 +160,14 @@ public class FilePathGenerator {
     }
 
     /**
-     * Extracts the zoomLevel from something like EPSG_2163_01
+     * Extracts the zoomLevel from something like EPSG_2163_01 or EPSG_2163_01_7 (i.e.
+     * {@code <EPSG>_<code>_<zLevel>[_<parametersId>]})
      * 
      * @param dirName
      * @return
      */
-    public static int findZoomLevel(String dirName) {
-        return Integer.parseInt(dirName.substring(dirName.lastIndexOf('_') + 1));
+    public static int findZoomLevel(final String dirName) {
+        String[] parts = dirName.split("_");
+        return Integer.parseInt(parts[2]);
     }
 }
