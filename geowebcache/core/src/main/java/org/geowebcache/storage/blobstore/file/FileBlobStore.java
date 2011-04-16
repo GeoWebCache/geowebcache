@@ -22,7 +22,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -240,41 +239,41 @@ public class FileBlobStore implements BlobStore {
     public boolean delete(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, false);
         boolean ret = false;
-        if (fh.exists()) {
-    
-            //System.out.println("Deleting " + fh.getAbsolutePath());
-            
-            final long length = fh.length();
+        // we call fh.length() here to check wthether the file exists and its length in a single
+        // operation cause lots of calls to exists() may raise the file system cache usage to the
+        // ceiling. File.length() returns 0 if the file does not exist anyway
+        final long length = fh.length();
+        final boolean exists = length > 0;
+        if (exists) {
             if (!fh.delete()) {
-                throw new StorageException("Unable to delete "
-                        + fh.getAbsolutePath());
+                throw new StorageException("Unable to delete " + fh.getAbsolutePath());
             }
             stObj.setBlobSize((int) length);
             listeners.sendTileDeleted(stObj);
-    
+
             ret = true;
         } else {
-            log.warn("delete unexistant file " + fh.toString());
+            log.trace("delete unexistant file " + fh.toString());
         }
 
         // Look at the parent directory to prune it if empty
         File parentDir = fh.getParentFile();
-        pruneEmptyDirs(parentDir, stObj);
-        
-        return true;
+        // Try deleting the directory (will not do it if the directory contains files)
+        parentDir.delete();
+
+        return ret;
     }
 
     public boolean delete(TileRange trObj) throws StorageException {
         int count = 0;
 
-        String prefix = path + File.separator 
-            + FilePathGenerator.filteredLayerName(trObj.layerName);
+        String prefix = path + File.separator
+                + FilePathGenerator.filteredLayerName(trObj.layerName);
 
         File layerPath = new File(prefix);
 
         if (!layerPath.exists() || !layerPath.canWrite()) {
-            throw new StorageException(prefix
-                    + " does not exist or is not writable.");
+            throw new StorageException(prefix + " does not exist or is not writable.");
         }
         FilePathFilter fpf = new FilePathFilter(trObj);
 
@@ -286,9 +285,9 @@ public class FileBlobStore implements BlobStore {
 
         File[] srsZoomDirs = layerPath.listFiles(fpf);
 
-        for (File srsZoom : srsZoomDirs) {
-            int zoomLevel = FilePathGenerator.findZoomLevel(srsZoom.getName());
-            File[] intermediates = srsZoom.listFiles(fpf);
+        for (File srsZoomParamId : srsZoomDirs) {
+            int zoomLevel = FilePathGenerator.findZoomLevel(srsZoomParamId.getName());
+            File[] intermediates = srsZoomParamId.listFiles(fpf);
 
             for (File imd : intermediates) {
                 File[] tiles = imd.listFiles(fpf);
@@ -301,7 +300,7 @@ public class FileBlobStore implements BlobStore {
                         String[] coords = tile.getName().split("\\.")[0].split("_");
                         long x = Long.parseLong(coords[0]);
                         long y = Long.parseLong(coords[1]);
-                        listeners.sendTileDeleted(layerName, gridSetId, blobFormat, parametersId, 
+                        listeners.sendTileDeleted(layerName, gridSetId, blobFormat, parametersId,
                                 x, y, zoomLevel, length);
                         count++;
                     }
@@ -309,14 +308,14 @@ public class FileBlobStore implements BlobStore {
 
                 // Try deleting the directory (will be done only if the directory is empty)
                 if (imd.delete()) {
-                    //listeners.sendDirectoryDeleted(layerName);
+                    // listeners.sendDirectoryDeleted(layerName);
                 }
             }
 
             // Try deleting the zoom directory (will be done only if the directory is empty)
-            if (srsZoom.delete()) {
+            if (srsZoomParamId.delete()) {
                 count++;
-                //listeners.sendDirectoryDeleted(layerName);
+                // listeners.sendDirectoryDeleted(layerName);
             }
         }
 
@@ -413,9 +412,9 @@ public class FileBlobStore implements BlobStore {
     }
 
     /**
-     * This method will recursively create the missing directories
-     * and call the listeners directoryCreated method for each 
-     * created directory.
+     * This method will recursively create the missing directories and call the listeners
+     * directoryCreated method for each created directory.
+     * 
      * @param path
      * @return
      */
@@ -426,7 +425,7 @@ public class FileBlobStore implements BlobStore {
         }
         /* If the receiver can be created, answer true */
         if (path.mkdir()) {
-            //listeners.sendDirectoryCreated(stObj);
+            // listeners.sendDirectoryCreated(stObj);
             return true;
         }
         String parentDir = path.getParent();
@@ -437,28 +436,10 @@ public class FileBlobStore implements BlobStore {
         /* Otherwise, try to create a parent directory and then this directory */
         mkdirs(new File(parentDir), stObj);
         if (path.mkdir()) {
-            //listeners.sendDirectoryCreated(stObj);
+            // listeners.sendDirectoryCreated(stObj);
             return true;
         }
         return false;
     }
-    
-    /**
-     * This method will recursively prune the empty directories
-     * @param path
-     */
-    private void pruneEmptyDirs(File path, TileObject stObj) {
-        // Try deleting the directory (will not do it if the directory contains files)
-        if (path != null && path.isDirectory() && path.canWrite()) {
-            if (path.delete()) {
-                if (log.isDebugEnabled()) {
-                    log.trace("deleted empty directory " + path.toString());
-                }
-                //listeners.sendDirectoryDeleted(layerName);
-                pruneEmptyDirs(path.getParentFile(), stObj);
-            }
-        }
 
-    }
-    
 }
