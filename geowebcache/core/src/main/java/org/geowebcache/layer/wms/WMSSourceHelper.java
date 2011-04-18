@@ -93,7 +93,7 @@ public abstract class WMSSourceHelper {
                 WMSLayer.RequestType.FEATUREINFO);
 
         wmsParams.put("INFO_FORMAT", tile.getMimeType().getFormat());
-        wmsParams.put("FORMAT", tile.getMimeType().getFormat());
+        wmsParams.put("FORMAT", layer.getDefaultMimeType().getMimeType());
         wmsParams.put("SRS", layer.backendSRSOverride(gridSubset.getSRS()));
         wmsParams.put("HEIGHT", String.valueOf(height));
         wmsParams.put("WIDTH", String.valueOf(width));
