@@ -115,10 +115,6 @@ public class WMTSService extends Service {
         try {
             tileLayer = tld.getTileLayer(layer);
         } catch (GeoWebCacheException e) {
-            throw new OWSException(500, "NoApplicableCode", "LAYER", e.getMessage()
-                    + " while fetching LAYER " + layer);
-        }
-        if (tileLayer == null) {
             throw new OWSException(400, "InvalidParameterValue", "LAYER", "LAYER " + layer
                     + " is not known.");
         }
@@ -147,11 +143,15 @@ public class WMTSService extends Service {
         } else {
             String infoFormat = ServletUtils.stringFromMap(request.getParameterMap(),
                     request.getCharacterEncoding(), "infoformat");
-
+            
+            if (infoFormat == null) {
+                throw new OWSException(400, "MissingParameterValue", "INFOFORMAT",
+                        "Parameter INFOFORMAT was not provided");
+            }
             try {
                 mimeType = MimeType.createFromFormat(infoFormat);
             } catch (MimeException me) {
-                throw new OWSException(400, "MissingParameterValue", "INFOFORMAT",
+                throw new OWSException(400, "InvalidParameterValue", "INFOFORMAT",
                         "Unable to determine requested INFOFORMAT, " + infoFormat);
             }
         }
@@ -207,7 +207,7 @@ public class WMTSService extends Service {
             long minRow = gridExtent[1] - gridCov[3] - 1;
             long maxRow = gridExtent[1] - gridCov[1] - 1;
 
-            throw new OWSException(400, "TileOutOfRange", "TILECOLUMN", "Row " + tileRow
+            throw new OWSException(400, "TileOutOfRange", "TILEROW", "Row " + tileRow
                     + " is out of range, min: " + minRow + " max:" + maxRow);
         }
 

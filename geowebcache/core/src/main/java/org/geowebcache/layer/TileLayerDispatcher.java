@@ -88,6 +88,12 @@ public class TileLayerDispatcher implements DisposableBean {
         }
     }
 
+    /**
+     * Returns the layer named after the {@code layerIdent} parameter.
+     * 
+     * @throws GeoWebCacheException
+     *             if no such layer exists
+     */
     public TileLayer getTileLayer(String layerIdent) throws GeoWebCacheException {
 
         final Map<String, TileLayer> layers = checkConfigurationLoaded();
