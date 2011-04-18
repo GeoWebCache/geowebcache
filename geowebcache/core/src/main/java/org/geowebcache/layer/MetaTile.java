@@ -34,6 +34,7 @@ import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 import javax.media.jai.JAI;
 import javax.media.jai.operator.CropDescriptor;
+import javax.media.jai.operator.TranslateDescriptor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -52,6 +53,20 @@ public class MetaTile implements TileResponseReceiver {
     private static Log log = LogFactory.getLog(MetaTile.class);
 
     private final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
+
+    private static final boolean NATIVE_JAI_AVAILABLE;
+    static {
+        // we directly access the Mlib Image class, if in the classpath it will tell us if
+        // the native extensions are available, if not, an Error will be thrown
+        boolean nativeJAIAvailable;
+        try {
+            Class image = Class.forName("com.sun.medialib.mlib.Image");
+            nativeJAIAvailable = (Boolean) image.getMethod("isAvailable").invoke(null);
+        } catch (Throwable e) {
+            nativeJAIAvailable = false;
+        }
+        NATIVE_JAI_AVAILABLE = nativeJAIAvailable;
+    }
 
     // buffer for storing the metatile, if it is an image
     protected RenderedImage metaTiledImage = null;
@@ -275,25 +290,35 @@ public class MetaTile implements TileResponseReceiver {
     }
 
     /**
-     * Extracts a single tile from the metatile. Handles JPEG
+     * Extracts a single tile from the metatile.
      * 
      * @param minX
+     *            left pixel index to crop the meta tile at
      * @param minY
+     *            top pixel index to crop the meta tile at
      * @param tileWidth
+     *            width of the tile
      * @param tileHeight
-     * @return
+     *            height of the tile
+     * @return a rendered image of the specified meta tile region
      */
-    public RenderedImage createTile(int minX, int minY, int tileWidth, int tileHeight,
-            boolean useJAI) {
+    public RenderedImage createTile(int minX, int minY, int tileWidth, int tileHeight) {
 
         RenderedImage tile = null;
-
-        // TODO JAI is messing up for JPEG, this is a hack, retest
-        if (useJAI || !(metaTiledImage instanceof BufferedImage)) {
+        boolean useJAI = true;
+        if (!(metaTiledImage instanceof BufferedImage)) {
+            useJAI = true;
+        } else if (responseFormat.getMimeType().startsWith("image/jpeg")) {
+            useJAI = NATIVE_JAI_AVAILABLE;
+        }
+        // JAI is messing up for JPEG with non native JAI
+        if (useJAI) {
             // Use JAI
             try {
                 tile = CropDescriptor.create(metaTiledImage, new Float(minX), new Float(minY),
                         new Float(tileWidth), new Float(tileHeight), no_cache);
+                tile = TranslateDescriptor.create(tile, new Float(-1f * minX),
+                        new Float(-1f * minY), null, null);
             } catch (IllegalArgumentException iae) {
                 log.error("Error cropping, image is " + metaTiledImage.getWidth() + "x"
                         + metaTiledImage.getHeight() + ", requesting a " + tileWidth + "x"
@@ -358,7 +383,7 @@ public class MetaTile implements TileResponseReceiver {
 
         Rectangle tileRegion = tiles[tileIdx];
         RenderedImage tile = createTile(tileRegion.x, tileRegion.y, tileRegion.width,
-                tileRegion.height, true);
+                tileRegion.height);
 
         OutputStream outputStream = target.getOutputStream();
         ImageOutputStream imgOut = new MemoryCacheImageOutputStream(outputStream);
