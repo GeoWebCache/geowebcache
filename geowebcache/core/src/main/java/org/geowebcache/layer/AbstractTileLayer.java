@@ -299,7 +299,7 @@ public abstract class AbstractTileLayer extends TileLayer {
      */
     @Override
     public boolean useETags() {
-        return Boolean.valueOf(useETags).booleanValue();
+        return useETags == null? false : useETags.booleanValue();
     }
 
     @Override
