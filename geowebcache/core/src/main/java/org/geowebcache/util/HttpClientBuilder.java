@@ -133,6 +133,7 @@ public class HttpClientBuilder {
 
         if (authscope != null && httpcredentials != null) {
             httpClient.getState().setCredentials(authscope, httpcredentials);
+            httpClient.getParams().setAuthenticationPreemptive(true);
         }
 
         if (proxyUrl != null) {
