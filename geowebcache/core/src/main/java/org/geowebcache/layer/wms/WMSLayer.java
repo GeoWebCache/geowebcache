@@ -273,12 +273,16 @@ public class WMSLayer extends TileLayer {
 
         ConveyorTile returnTile;
 
-        if (tryCacheFetch(tile)) {
-            returnTile = finalizeTile(tile);
-        } else if (mime.supportsTiling()) { // Okay, so we need to go to the backend
-            returnTile = getMetatilingReponse(tile, true);
-        } else {
-            returnTile = getNonMetatilingReponse(tile, true);
+        try {
+            if (tryCacheFetch(tile)) {
+                returnTile = finalizeTile(tile);
+            } else if (mime.supportsTiling()) { // Okay, so we need to go to the backend
+                returnTile = getMetatilingReponse(tile, true);
+            } else {
+                returnTile = getNonMetatilingReponse(tile, true);
+            }
+        } finally {
+            cleanUpThreadLocals();
         }
 
         sendTileRequestedEvent(returnTile);
