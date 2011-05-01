@@ -270,10 +270,13 @@ public class FileBlobStore implements BlobStore {
         String prefix = path + File.separator
                 + FilePathGenerator.filteredLayerName(trObj.layerName);
 
-        File layerPath = new File(prefix);
+        final File layerPath = new File(prefix);
 
-        if (!layerPath.exists() || !layerPath.canWrite()) {
-            throw new StorageException(prefix + " does not exist or is not writable.");
+        if (!layerPath.exists()) {
+            return true;
+        }
+        if (!layerPath.isDirectory() || !layerPath.canWrite()) {
+            throw new StorageException(prefix + " does is not a directory or is not writable.");
         }
         FilePathFilter fpf = new FilePathFilter(trObj);
 
