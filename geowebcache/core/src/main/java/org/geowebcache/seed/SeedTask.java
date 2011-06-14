@@ -62,11 +62,12 @@ class SeedTask extends GWCTask {
      *            - the SeedRequest
      */
     public SeedTask(StorageBroker sb, TileRangeIterator trIter, TileLayer tl, boolean reseed,
-            boolean doFilterUpdate) {
+            boolean doFilterUpdate, PRIORITY priority) {
         this.storageBroker = sb;
         this.trIter = trIter;
         this.tl = tl;
         this.reseed = reseed;
+        this.priority = priority;
         this.doFilterUpdate = doFilterUpdate;
 
         tileFailureRetryCount = 0;
@@ -88,9 +89,7 @@ class SeedTask extends GWCTask {
     protected void doActionInternal() throws GeoWebCacheException, InterruptedException {
         super.state = GWCTask.STATE.RUNNING;
 
-        // Lower the priority of the thread
-        Thread.currentThread().setPriority(
-                (java.lang.Thread.NORM_PRIORITY + java.lang.Thread.MIN_PRIORITY) / 2);
+        Thread.currentThread().setPriority(priority.getThreadPriority());
 
         checkInterrupted();
 

@@ -37,6 +37,32 @@ public abstract class GWCTask {
         UNSET, READY, RUNNING, DONE, DEAD
     };
 
+    private static final int PRIORITY_STEP = (java.lang.Thread.NORM_PRIORITY + java.lang.Thread.MIN_PRIORITY) / 2;
+    
+    public static enum PRIORITY {
+        MIN("Lowest", java.lang.Thread.MIN_PRIORITY), 
+        LOW("Low", PRIORITY_STEP), 
+        NORMAL("Normal", java.lang.Thread.NORM_PRIORITY), 
+        HIGH("High", java.lang.Thread.MAX_PRIORITY - PRIORITY_STEP), 
+        MAX("Highest", java.lang.Thread.MAX_PRIORITY);
+        
+        private String readableName;
+        private int threadPriority;
+        
+        private PRIORITY(String readableName, int threadPriority) {
+            this.readableName = readableName;
+            this.threadPriority = threadPriority;
+        }
+        
+        public String getReadableName() { return readableName; }
+        public int getThreadPriority() { return threadPriority; }
+        
+        public String toString() { return String.format("%02d - %s", threadPriority, readableName); }
+    };
+    
+    public static String NO_SCHEDULE = null;
+    public static int NO_THROUGHOUT_RESTRICTIONS = -1;
+
     /**
      * Value shared between all the threads in the group, is incremented each time a task starts
      * working and decremented each time one task finishes (either normally or abnormally)
@@ -52,7 +78,9 @@ public abstract class GWCTask {
     protected STATE state = STATE.UNSET;
 
     protected String layerName = null;
-
+    
+    protected PRIORITY priority = PRIORITY.LOW;
+    
     protected long timeSpent = -1;
 
     protected long timeRemaining = -1;
@@ -161,10 +189,18 @@ public abstract class GWCTask {
         return parsedType;
     }
 
+    /**
+     * Controls the priority of this GWCTask. Default is GWCTask.PRIORITY.LOW
+     * 
+     * @return Priority of this task as a PRIORITY enum value.
+     */
+    public GWCTask.PRIORITY getPriority() {
+        return priority;
+    }
+
     public STATE getState() {
         return state;
     }
-
     protected void checkInterrupted() throws InterruptedException {
         if (Thread.interrupted()) {
             this.state = STATE.DEAD;

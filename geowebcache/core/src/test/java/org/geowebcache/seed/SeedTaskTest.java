@@ -53,6 +53,7 @@ import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.layer.wms.WMSMetaTile;
 import org.geowebcache.layer.wms.WMSSourceHelper;
+import org.geowebcache.seed.GWCTask.PRIORITY;
 import org.geowebcache.seed.GWCTask.TYPE;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileObject;
@@ -137,7 +138,7 @@ public class SeedTaskTest extends TestCase {
         replay(mockStorageBroker);
 
         boolean reseed = false;
-        SeedTask seedTask = new SeedTask(mockStorageBroker, trIter, tl, reseed, false);
+        SeedTask seedTask = new SeedTask(mockStorageBroker, trIter, tl, reseed, false, PRIORITY.LOW);
         seedTask.setTaskId(1L);
         seedTask.setThreadInfo(new AtomicInteger(), 0);
         /*
@@ -215,7 +216,7 @@ public class SeedTaskTest extends TestCase {
         replay(mockStorageBroker);
 
         boolean reseed = false;
-        SeedTask seedTask = new SeedTask(mockStorageBroker, trIter, tl, reseed, false);
+        SeedTask seedTask = new SeedTask(mockStorageBroker, trIter, tl, reseed, false, PRIORITY.LOW);
         seedTask.setTaskId(1L);
         seedTask.setThreadInfo(new AtomicInteger(), 0);
 
@@ -284,7 +285,7 @@ public class SeedTaskTest extends TestCase {
         TileRangeIterator trIter = new TileRangeIterator(tr, tl.getMetaTilingFactors());
 
         boolean reseed = false;
-        SeedTask task = new SeedTask(mockStorageBroker, trIter, tl, reseed, false);
+        SeedTask task = new SeedTask(mockStorageBroker, trIter, tl, reseed, false, PRIORITY.LOW);
         task.setTaskId(1L);
         task.setThreadInfo(new AtomicInteger(), 0);
         /*
@@ -339,7 +340,7 @@ public class SeedTaskTest extends TestCase {
         int threadCount = 1;
         String format = tl.getMimeTypes().get(0).getFormat();
         SeedRequest req = new SeedRequest(tl.getName(), bounds, gridSet, threadCount, zoomStart,
-                zoomStop, format, type, null);
+                zoomStop, format, type, PRIORITY.LOW, null, -1, null);
         return req;
 
     }

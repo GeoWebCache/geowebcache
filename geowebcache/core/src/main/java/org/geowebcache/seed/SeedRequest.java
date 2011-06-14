@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.SRS;
+import org.geowebcache.seed.GWCTask.PRIORITY;
 import org.geowebcache.seed.GWCTask.TYPE;
 
 public class SeedRequest {
@@ -52,6 +53,12 @@ public class SeedRequest {
 
     private Boolean filterUpdate = null;
 
+    protected int maxThroughput = -1;
+
+    protected PRIORITY priority = PRIORITY.LOW;
+
+    protected String schedule = null;
+
     public SeedRequest() {
         // do nothing, i guess
         System.out.println("New SeedRequest");
@@ -71,6 +78,7 @@ public class SeedRequest {
      */
     public SeedRequest(String name, BoundingBox bounds, String gridSetId, int threadCount,
             int zoomStart, int zoomStop, String format, GWCTask.TYPE type,
+            PRIORITY priority, String schedule, int maxThroughput,
             Map<String, String> parameters) {
         this.name = name;
         this.bounds = bounds;
@@ -80,6 +88,9 @@ public class SeedRequest {
         this.zoomStop = zoomStop;
         this.format = format;
         this.enumType = type;
+        this.priority = priority;
+        this.schedule = schedule;
+        this.maxThroughput = maxThroughput;
         this.parameters = parameters;
     }
 
@@ -193,6 +204,36 @@ public class SeedRequest {
         }
 
         return enumType;
+    }
+
+    /**
+     * Schedule information for this task in the form of a CRON string. Tasks can be scheduled and
+     * will not execute immediately.
+     * 
+     * @return Valid CRON string or null for no schedule.
+     */
+    public String getSchedule() {
+        return schedule;
+    }
+
+    /**
+     * Maximum number of tiles per second allowed to seed / truncate. May not be honoured for
+     * truncation tasks.
+     * 
+     * @return Throughput throttling for tile seeding / truncating. -1 means no throughput
+     *         throttling.
+     */
+    public int getMaxThroughput() {
+        return maxThroughput;
+    }
+
+    /**
+     * Controls the priority of threads. Default is PRIORITY.LOW
+     * 
+     * @return Priority of this request as a PRIORITY enum value.
+     */
+    public PRIORITY getPriority() {
+        return priority;
     }
 
     /**

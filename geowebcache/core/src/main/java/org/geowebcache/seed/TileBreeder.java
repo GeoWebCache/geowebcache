@@ -19,7 +19,6 @@
 package org.geowebcache.seed;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,6 +33,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.seed.GWCTask.PRIORITY;
 import org.geowebcache.seed.GWCTask.TYPE;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileRange;
@@ -168,23 +168,23 @@ public class TileBreeder implements ApplicationContextAware {
         TileRange tr = createTileRange(sr, tl);
 
         GWCTask[] tasks = createTasks(tr, tl, sr.getType(), sr.getThreadCount(),
-                sr.getFilterUpdate());
+                sr.getFilterUpdate(), sr.priority);
 
         dispatchTasks(tasks);
     }
 
     public GWCTask[] createTasks(TileRange tr, GWCTask.TYPE type, int threadCount,
-            boolean filterUpdate) throws GeoWebCacheException {
+            boolean filterUpdate, PRIORITY priority) throws GeoWebCacheException {
 
         String layerName = tr.layerName;
         TileLayer tileLayer = layerDispatcher.getTileLayer(layerName);
-        return createTasks(tr, tileLayer, type, threadCount, filterUpdate);
+        return createTasks(tr, tileLayer, type, threadCount, filterUpdate, priority);
     }
 
-    public GWCTask[] createTasks(TileRange tr, TileLayer tl, GWCTask.TYPE type, int threadCount,
-            boolean filterUpdate) throws GeoWebCacheException {
+    public GWCTask[] createTasks(TileRange tr, TileLayer tl, TYPE type, int threadCount,
+            boolean filterUpdate, PRIORITY priority) throws GeoWebCacheException {
 
-        if (type == GWCTask.TYPE.TRUNCATE || threadCount < 1) {
+        if (type == TYPE.TRUNCATE || threadCount < 1) {
             log.trace("Forcing thread count to 1");
             threadCount = 1;
         }
@@ -202,9 +202,9 @@ public class TileBreeder implements ApplicationContextAware {
         AtomicInteger sharedThreadCount = new AtomicInteger();
         for (int i = 0; i < threadCount; i++) {
             if (type == TYPE.TRUNCATE) {
-                tasks[i] = createTruncateTask(trIter, tl, filterUpdate);
+                tasks[i] = createTruncateTask(trIter, tl, filterUpdate, priority);
             } else {
-                SeedTask task = (SeedTask) createSeedTask(type, trIter, tl, filterUpdate);
+                SeedTask task = (SeedTask) createSeedTask(type, trIter, tl, filterUpdate, priority);
                 task.setFailurePolicy(tileFailureRetryCount, tileFailureRetryWaitTime,
                         totalFailuresBeforeAborting, failureCounter);
                 tasks[i] = task;
@@ -282,22 +282,22 @@ public class TileBreeder implements ApplicationContextAware {
      * @throws IllegalArgumentException
      */
     private GWCTask createSeedTask(TYPE type, TileRangeIterator trIter, TileLayer tl,
-            boolean doFilterUpdate) throws IllegalArgumentException {
+            boolean doFilterUpdate, PRIORITY priority) throws IllegalArgumentException {
 
         switch (type) {
         case SEED:
-            return new SeedTask(storageBroker, trIter, tl, false, doFilterUpdate);
+            return new SeedTask(storageBroker, trIter, tl, false, doFilterUpdate, priority);
         case RESEED:
-            return new SeedTask(storageBroker, trIter, tl, true, doFilterUpdate);
+            return new SeedTask(storageBroker, trIter, tl, true, doFilterUpdate, priority);
         default:
             throw new IllegalArgumentException("Unknown request type " + type);
         }
     }
 
     private GWCTask createTruncateTask(TileRangeIterator trIter, TileLayer tl,
-            boolean doFilterUpdate) {
+            boolean doFilterUpdate, PRIORITY priority) {
 
-        return new TruncateTask(storageBroker, trIter.getTileRange(), tl, doFilterUpdate);
+        return new TruncateTask(storageBroker, trIter.getTileRange(), tl, doFilterUpdate, priority);
     }
 
     /**

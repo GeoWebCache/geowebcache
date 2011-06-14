@@ -23,8 +23,6 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.rest.GWCRestlet;
@@ -52,7 +50,7 @@ import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 
 
 public class SeedRestlet extends GWCRestlet {
-    private static Log log = LogFactory.getLog(SeedFormRestlet.class);
+    // private static Log log = LogFactory.getLog(SeedRestlet.class);
     
     private TileBreeder seeder;
 

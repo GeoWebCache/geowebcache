@@ -48,7 +48,7 @@ public class IndexRestlet extends GWCRestlet {
         Representation result = new StringRepresentation(
                 "<html><body>\n"
                 +"<a id=\"logo\" href=\"http://geowebcache.org\">"
-                +"<img src=\"http://geowebcache.org/trac/chrome/site/geowebcache_logo.png\" alt=\"\" height=\"100\" width=\"353\" border=\"0\"/></a>\n"
+                +"<img src=\"/geowebcache/rest/web/geowebcache_logo.png\" alt=\"\" height=\"100\" width=\"353\" border=\"0\"/></a>\n"
                 +"<h3>Resources available from here:</h3>"
                 +"<ul>"
                 +"<li><h4><a href=\"layers/\">layers</a></h4>"

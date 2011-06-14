@@ -19,14 +19,15 @@ package org.geowebcache.rest.seed;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
@@ -41,9 +42,10 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.seed.GWCTask;
-import org.geowebcache.seed.GWCTask.TYPE;
 import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.seed.TileBreeder;
+import org.geowebcache.seed.GWCTask.PRIORITY;
+import org.geowebcache.seed.GWCTask.TYPE;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.util.ServletUtils;
 import org.restlet.data.Form;
@@ -152,6 +154,12 @@ public class SeedFormRestlet extends GWCRestlet {
         makeThreadCountPullDown(doc);
 
         makeTypePullDown(doc);
+        
+        makePriorityPullDown(doc);
+
+        makeThroughputPullDown(doc);
+
+        makeScheduleFields(doc);
 
         makeGridSetPulldown(doc, tl);
 
@@ -369,6 +377,52 @@ public class SeedFormRestlet extends GWCRestlet {
         doc.append("</td></tr>\n");
     }
 
+    private void makePriorityPullDown(StringBuilder doc) {
+        doc.append("<tr><td>Priority:</td><td>\n");
+        Map<String, String> keysValues = new TreeMap<String, String>();
+
+        Iterator<PRIORITY> iter = Arrays.asList(PRIORITY.values()).iterator();
+
+        while (iter.hasNext()) {
+            PRIORITY p = iter.next();
+            keysValues.put(p.toString(), p.name());
+        }
+
+        makePullDown(doc, "priority", keysValues, GWCTask.PRIORITY.LOW.toString());
+        doc.append("</td></tr>\n");
+    }
+
+    private void makeThroughputPullDown(StringBuilder doc) {
+        doc.append("<tr><td>Throughput:</td><td>\n");
+        Map<String, String> keysValues = new TreeMap<String, String>();
+
+        for(int i = 1; i < 4; i++) {
+            for(int j = 1; j <= 100; j*=10) {
+                if(i == 3) {
+                    i = 5;
+                }
+                int tps = i * j;
+                keysValues.put(String.format("%03d", tps), String.format("%d requests / second", tps));
+            }
+        }
+
+        keysValues.put("-1", "No Restrictions");
+        
+        makePullDown(doc, "maxThroughput", keysValues, "No Restrictions", true);
+        doc.append("</td></tr>\n");
+    }
+
+    private void makeScheduleFields(StringBuilder doc) {
+        doc.append("<tr><td>Schedule (<a target=\"_blank\" href=\"http://en.wikipedia.org/wiki/Cron\">CRON</a>):</td><td>\n");
+
+        doc.append("<input type=\"radio\" name=\"is_scheduled\" value=\"false\" checked=\"checked\"/>Now ");
+        doc.append("<input type=\"radio\" name=\"is_scheduled\" value=\"true\"/>Repeat\n");
+        doc.append("<tr><td>&nbsp;</td><td>\n");
+        doc.append("<input type=\"text\" name=\"schedule\"/>\n");
+        
+        doc.append("</td></tr>\n");
+    }
+
     private void makeGridSetPulldown(StringBuilder doc, TileLayer tl) {
         doc.append("<tr><td>Grid Set:</td><td>\n");
         Map<String, String> keysValues = new TreeMap<String, String>();
@@ -390,18 +444,32 @@ public class SeedFormRestlet extends GWCRestlet {
 
     private void makePullDown(StringBuilder doc, String id, Map<String, String> keysValues,
             String defaultKey) {
+        makePullDown(doc, id, keysValues, defaultKey, false);
+    }
+    private void makePullDown(StringBuilder doc, String id, Map<String, String> keysValues,
+            String defaultKey, boolean orderByValue) {
+    
         doc.append("<select name=\"" + id + "\">\n");
 
         Iterator<Entry<String, String>> iter = keysValues.entrySet().iterator();
 
         while (iter.hasNext()) {
             Entry<String, String> entry = iter.next();
-            if (entry.getKey().equals(defaultKey)) {
-                doc.append("<option value=\"" + entry.getValue() + "\" selected=\"selected\">"
-                        + entry.getKey() + "</option>\n");
+            
+            String key;
+            String value;
+            
+            if(orderByValue) {
+                key = entry.getValue();
+                value = entry.getKey();
             } else {
-                doc.append("<option value=\"" + entry.getValue() + "\">" + entry.getKey()
-                        + "</option>\n");
+                key = entry.getKey();
+                value = entry.getValue();
+            }
+            if (key.equals(defaultKey)) {
+                doc.append("<option value=\"" + value + "\" selected=\"selected\">" + key + "</option>\n");
+            } else {
+                doc.append("<option value=\"" + value + "\">" + key + "</option>\n");
             }
         }
 
@@ -626,18 +694,42 @@ public class SeedFormRestlet extends GWCRestlet {
             fullParameters = tl.getModifiableParameters(parameters, "UTF-8");
         }
 
-        TYPE type = GWCTask.TYPE.valueOf(form.getFirst("type").getValue().toUpperCase());
+        TYPE type = TYPE.valueOf(form.getFirst("type").getValue().toUpperCase());
+        
+        // new attributes can't be expected to be set or older clients won't work.
+        PRIORITY priority = PRIORITY.LOW;
+        if(form.getFirst("priority") != null) {
+            priority = PRIORITY.valueOf(form.getFirst("priority").getValue());
+        } else {
+            if(type == TYPE.TRUNCATE) {
+                priority = PRIORITY.NORMAL;
+            }
+        }
+        
+        String schedule = GWCTask.NO_SCHEDULE;
+        if(form.getFirst("is_scheduled") != null) {
+            if(form.getFirst("is_scheduled").getValue().equals("true")) {
+                if(form.getFirst("schedule") != null) {
+                    schedule = form.getFirst("schedule").getValue();
+                }
+            }
+        }
+        
+        int maxThroughput = GWCTask.NO_THROUGHOUT_RESTRICTIONS;
+        if(form.getFirst("maxThroughput") != null) {
+            maxThroughput = Integer.parseInt(form.getFirst("maxThroughput").getValue());
+        }
 
         final String layerName = tl.getName();
         SeedRequest sr = new SeedRequest(layerName, bounds, gridSetId, threadCount, zoomStart,
-                zoomStop, format, type, fullParameters);
+                zoomStop, format, type, priority, schedule, maxThroughput, fullParameters);
 
         TileRange tr = TileBreeder.createTileRange(sr, tl);
 
         GWCTask[] tasks;
         try {
             tasks = seeder.createTasks(tr, tl, sr.getType(), sr.getThreadCount(),
-                    sr.getFilterUpdate());
+                    sr.getFilterUpdate(), priority);
         } catch (GeoWebCacheException e) {
             throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL);
         }
