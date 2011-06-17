@@ -8,11 +8,6 @@
     <param-value>/WEB-INF/acegi-config.xml</param-value>
   </context-param>
 
-  <context-param>
-    <param-name>GEOWEBCACHE_CACHE_DIR</param-name>
-    <param-value>C:\temp\gwc</param-value>
-  </context-param>
-  
   <!-- acegi security filter -->
   <filter>
     <filter-name>Acegi Filter Chain Proxy</filter-name>

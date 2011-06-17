@@ -71,13 +71,13 @@
         <gridSetName>EPSG:2163</gridSetName>
       </gridSubset>
     </gridSubsets>  
-    <wmsUrl><string>http://localhost:81/geoserver/wms</string></wmsUrl>
+    <wmsUrl><string>http://demo.opengeo.org/geoserver/wms</string></wmsUrl>
   </wmsLayer>
   
   <wmsLayer>
     <name>raster test layer</name>
      <mimeFormats><string>image/jpeg</string></mimeFormats>
-    <wmsUrl><string>http://localhost:81/geoserver/wms</string></wmsUrl>
+    <wmsUrl><string>http://demo.opengeo.org/geoserver/wms</string></wmsUrl>
     <wmsLayers>nurc:Img_Sample</wmsLayers>
   </wmsLayer>
   
@@ -103,7 +103,7 @@
       </gridSubset>
     </gridSubsets>
     <wmsUrl>
-      <string>http://localhost:81/geoserver/wms</string>
+      <string>http://demo.opengeo.org/geoserver/wms</string>
     </wmsUrl>
     <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
     <transparent>false</transparent>
