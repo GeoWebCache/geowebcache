@@ -34,7 +34,7 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
 
-class SeedTask extends GWCTask {
+public class SeedTask extends GWCTask {
     private static Log log = LogFactory.getLog(org.geowebcache.seed.SeedTask.class);
 
     private final TileRangeIterator trIter;

@@ -112,7 +112,7 @@ public class SeedRestlet extends GWCRestlet {
         
         SeedRequest sr = null;
         
-        XStream xs = xmlConfig.getConfiguredXStream(new XStream(new DomDriver()));
+        XStream xs = xmlConfig.configureXStreamForLayers(new XStream(new DomDriver()));
         
         if(formatExtension.equalsIgnoreCase("xml")) {
             sr = (SeedRequest) xs.fromXML(req.getEntity().getStream());

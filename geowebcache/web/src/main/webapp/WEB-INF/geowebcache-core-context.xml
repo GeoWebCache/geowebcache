@@ -58,6 +58,13 @@
     <constructor-arg ref="gwcGridSetBroker"/>
   </bean>
   
+  <bean id="gwcTaskDispatcher" class="org.geowebcache.task.TaskDispatcher">
+    <description>
+      TaskDispatcher serves up current and past tasks.
+    </description>
+    <property name="tileBreeder" ref="gwcTileBreeder"/>
+  </bean>
+  
   <bean id="gwcDefaultStorageFinder" class="org.geowebcache.storage.DefaultStorageFinder">
   	<constructor-arg ref="gwcAppCtx" />
   </bean>

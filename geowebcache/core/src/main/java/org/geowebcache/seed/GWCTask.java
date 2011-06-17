@@ -194,7 +194,7 @@ public abstract class GWCTask {
      * 
      * @return Priority of this task as a PRIORITY enum value.
      */
-    public GWCTask.PRIORITY getPriority() {
+    public PRIORITY getPriority() {
         return priority;
     }
 

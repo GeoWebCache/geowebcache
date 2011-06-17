@@ -74,7 +74,9 @@ import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
+import org.geowebcache.seed.GWCTask;
 import org.geowebcache.seed.SeedRequest;
+import org.geowebcache.seed.SeedTask;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
@@ -193,7 +195,7 @@ public class XMLConfiguration implements Configuration {
         docBuilderFactory.setNamespaceAware(true);
         DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
 
-        XStream xs = getConfiguredXStream(new XStream());
+        XStream xs = configureXStreamForLayers(new XStream());
 
         gwcConfig = (GeoWebCacheConfiguration) xs.unmarshal(new DomReader(
                 (Element) checkAndTransform(docBuilder.parse(is))));
@@ -361,7 +363,7 @@ public class XMLConfiguration implements Configuration {
 
     private void loadConfiguration(File xmlFile) throws GeoWebCacheException {
         Node rootNode = loadDocument(xmlFile);
-        XStream xs = getConfiguredXStream(new XStream());
+        XStream xs = configureXStreamForLayers(new XStream());
 
         gwcConfig = (GeoWebCacheConfiguration) xs.unmarshal(new DomReader((Element) rootNode));
 
@@ -374,7 +376,7 @@ public class XMLConfiguration implements Configuration {
     }
 
     @SuppressWarnings("unchecked")
-    public XStream getConfiguredXStream(XStream xs) {
+    public XStream configureXStreamForLayers(XStream xs) {
         // XStream xs = xstream;
         xs.setMode(XStream.NO_REFERENCES);
 
@@ -438,6 +440,46 @@ public class XMLConfiguration implements Configuration {
         return xs;
     }
 
+    public XStream configureXStreamForTasks(XStream xs) {
+        // XStream xs = xstream;
+        xs.setMode(XStream.NO_REFERENCES);
+
+        xs.alias("gwcConfiguration", GeoWebCacheConfiguration.class);
+        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns_xsi");
+        xs.aliasField("xmlns:xsi", GeoWebCacheConfiguration.class, "xmlns_xsi");
+        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xsi_noNamespaceSchemaLocation");
+        xs.aliasField("xsi:noNamespaceSchemaLocation", GeoWebCacheConfiguration.class,
+                "xsi_noNamespaceSchemaLocation");
+        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
+
+        xs.alias("keyword", String.class);
+        xs.alias("tasks", List.class);
+        xs.alias("task", GWCTask.class);
+        // xs.alias("SeedTask", SeedTask.class);
+        
+        xs.omitField(GWCTask.class, "sharedThreadCount");
+        xs.omitField(GWCTask.class, "threadOffset");
+        xs.omitField(GWCTask.class, "terminate");
+        xs.omitField(GWCTask.class, "groupStartTime");
+
+        xs.omitField(SeedTask.class, "trIter");
+        xs.omitField(SeedTask.class, "tl");
+        xs.omitField(SeedTask.class, "storageBroker");
+
+        if (this.context != null) {
+            /*
+             * Look up XMLConfigurationProvider extension points and let them contribute to the
+             * configuration
+             */
+            Collection<XMLConfigurationProvider> configExtensions;
+            configExtensions = this.context.getBeansOfType(XMLConfigurationProvider.class).values();
+            for (XMLConfigurationProvider extension : configExtensions) {
+                xs = extension.getConfiguredXStream(xs);
+            }
+        }
+        return xs;
+    }
+
     /**
      * Method responsible for writing out the entire GeoWebCacheConfiguration object
      * 
@@ -446,7 +488,7 @@ public class XMLConfiguration implements Configuration {
 
     protected void persistToFile(File xmlFile) throws GeoWebCacheException {
         // create the XStream for serializing the configuration
-        XStream xs = getConfiguredXStream(new XStream());
+        XStream xs = configureXStreamForLayers(new XStream());
 
         OutputStreamWriter writer = null;
         try {
