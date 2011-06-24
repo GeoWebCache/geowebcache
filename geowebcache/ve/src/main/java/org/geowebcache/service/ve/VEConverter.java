@@ -50,6 +50,13 @@ public class VEConverter extends Service {
     
     private GridSetBroker gsb;
     
+    /**
+     * Protected no-argument constructor to allow run-time instrumentation
+     */
+    protected VEConverter() {
+        super(SERVICE_VE);
+    }
+
     public VEConverter(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb) {
         super(SERVICE_VE);
         this.sb = sb;

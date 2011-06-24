@@ -67,6 +67,13 @@ public class WMSService extends Service {
 
     private RuntimeStats stats;
 
+    /**
+     * Protected no-argument constructor to allow run-time instrumentation
+     */
+    protected WMSService() {
+        super(SERVICE_WMS);
+    }
+
     public WMSService(StorageBroker sb, TileLayerDispatcher tld, RuntimeStats stats) {
         super(SERVICE_WMS);
 
@@ -75,6 +82,7 @@ public class WMSService extends Service {
         this.stats = stats;
     }
 
+    @Override
     public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response)
             throws GeoWebCacheException {
         final String encoding = request.getCharacterEncoding();

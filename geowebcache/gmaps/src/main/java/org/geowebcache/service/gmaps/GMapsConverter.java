@@ -45,6 +45,13 @@ public class GMapsConverter extends Service {
 
     private GridSetBroker gsb;
 
+    /**
+     * Protected no-argument constructor to allow run-time instrumentation
+     */
+    protected GMapsConverter() {
+        super(SERVICE_GMAPS);
+    }
+    
     public GMapsConverter(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb) {
         super(SERVICE_GMAPS);
 

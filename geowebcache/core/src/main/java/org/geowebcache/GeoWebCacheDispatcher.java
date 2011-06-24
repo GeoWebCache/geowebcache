@@ -210,7 +210,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * 
      */
     @Override
-    public ModelAndView handleRequestInternal(HttpServletRequest request,
+    protected ModelAndView handleRequestInternal(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
 
         // Break the request into components, {type, service name}
@@ -305,7 +305,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * @param response
      * @throws Exception
      */
-    public void handleServiceRequest(String serviceStr, HttpServletRequest request,
+    private void handleServiceRequest(String serviceStr, HttpServletRequest request,
             HttpServletResponse response) throws Exception {
 
         Conveyor conv = null;
@@ -354,7 +354,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
     }
 
-    public void handleDemoRequest(String action, HttpServletRequest request,
+    private void handleDemoRequest(String action, HttpServletRequest request,
             HttpServletResponse response) throws GeoWebCacheException {
         Demo.makeMap(tileLayerDispatcher, gridSetBroker, action, request, response);
     }
@@ -391,7 +391,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * @param request
      * @param response
      */
-    public void handleFrontPage(HttpServletRequest request, HttpServletResponse response) {
+    private void handleFrontPage(HttpServletRequest request, HttpServletResponse response) {
 
         String baseUrl = null;
 

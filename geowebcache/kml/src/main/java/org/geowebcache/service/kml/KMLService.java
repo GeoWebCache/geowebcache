@@ -71,6 +71,13 @@ public class KMLService extends Service {
 
     private RuntimeStats stats;
 
+    /**
+     * Protected no-argument constructor to allow run-time instrumentation
+     */
+    protected KMLService() {
+        super(SERVICE_KML);
+    }
+    
     public KMLService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
             RuntimeStats stats) {
         super(SERVICE_KML);
