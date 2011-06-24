@@ -47,6 +47,7 @@ import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.ImageMime;
+import org.geowebcache.service.HttpErrorCodeException;
 import org.geowebcache.service.OWSException;
 import org.geowebcache.service.Service;
 import org.geowebcache.stats.RuntimeStats;
@@ -208,7 +209,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * If a tile is requested the request will be handed off to handleServiceRequest.
      * 
      */
-    protected ModelAndView handleRequestInternal(HttpServletRequest request,
+    @Override
+    public ModelAndView handleRequestInternal(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
 
         // Break the request into components, {type, service name}
@@ -239,29 +241,29 @@ public class GeoWebCacheDispatcher extends AbstractController {
             } else {
                 writeError(response, 404, "Unknown path: " + requestComps[0]);
             }
+        } catch (HttpErrorCodeException e) {
+            writeFixedResponse(response, e.getErrorCode(), "text/plain", new ByteArrayResource(e
+                    .getMessage().getBytes()), CacheResult.OTHER);
+        } catch (RequestFilterException e) {
+
+            RequestFilterException reqE = (RequestFilterException) e;
+            reqE.setHttpInfoHeader(response);
+
+            writeFixedResponse(response, reqE.getResponseCode(), reqE.getContentType(),
+                    reqE.getResponse(), CacheResult.OTHER);
+        } catch (OWSException e) {
+            OWSException owsE = (OWSException) e;
+            writeFixedResponse(response, owsE.getResponseCode(), owsE.getContentType(),
+                    owsE.getResponse(), CacheResult.OTHER);
         } catch (Exception e) {
-            // e.printStackTrace();
-            if (e instanceof RequestFilterException) {
+            if (!(e instanceof BadTileException) || log.isDebugEnabled()) {
+                log.error(e.getMessage() + " " + request.getRequestURL().toString());
+            }
 
-                RequestFilterException reqE = (RequestFilterException) e;
-                reqE.setHttpInfoHeader(response);
+            writeError(response, 400, e.getMessage());
 
-                writeFixedResponse(response, reqE.getResponseCode(), reqE.getContentType(),
-                        reqE.getResponse(), CacheResult.OTHER);
-            } else if (e instanceof OWSException) {
-                OWSException owsE = (OWSException) e;
-                writeFixedResponse(response, owsE.getResponseCode(), owsE.getContentType(),
-                        owsE.getResponse(), CacheResult.OTHER);
-            } else {
-                if (!(e instanceof BadTileException) || log.isDebugEnabled()) {
-                    log.error(e.getMessage() + " " + request.getRequestURL().toString());
-                }
-
-                writeError(response, 400, e.getMessage());
-
-                if (!(e instanceof GeoWebCacheException) || log.isDebugEnabled()) {
-                    e.printStackTrace();
-                }
+            if (!(e instanceof GeoWebCacheException) || log.isDebugEnabled()) {
+                e.printStackTrace();
             }
         }
         return null;
@@ -303,7 +305,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * @param response
      * @throws Exception
      */
-    private void handleServiceRequest(String serviceStr, HttpServletRequest request,
+    public void handleServiceRequest(String serviceStr, HttpServletRequest request,
             HttpServletResponse response) throws Exception {
 
         Conveyor conv = null;
@@ -352,7 +354,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
     }
 
-    private void handleDemoRequest(String action, HttpServletRequest request,
+    public void handleDemoRequest(String action, HttpServletRequest request,
             HttpServletResponse response) throws GeoWebCacheException {
         Demo.makeMap(tileLayerDispatcher, gridSetBroker, action, request, response);
     }
@@ -389,7 +391,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * @param request
      * @param response
      */
-    private void handleFrontPage(HttpServletRequest request, HttpServletResponse response) {
+    public void handleFrontPage(HttpServletRequest request, HttpServletResponse response) {
 
         String baseUrl = null;
 
