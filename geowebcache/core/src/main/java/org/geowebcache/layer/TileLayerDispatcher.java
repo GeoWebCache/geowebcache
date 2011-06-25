@@ -66,6 +66,17 @@ public class TileLayerDispatcher implements DisposableBean {
         this.configs = newList;
     }
 
+    public boolean layerExists(final String layerName) {
+        for (int i = 0; i < configs.size(); i++) {
+            Configuration configuration = configs.get(i);
+            TileLayer layer = configuration.getTileLayer(layerName);
+            if (layer != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Returns the layer named after the {@code layerIdent} parameter.
      * 
