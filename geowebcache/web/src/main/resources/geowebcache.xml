@@ -5,6 +5,28 @@
 <version>1.2.2</version>
 <backendTimeout>120</backendTimeout>
 
+<!--
+	The basemap must be a segment of javascript that returns an OpenLayers layer to use as the baselayer.
+	Currently this one basemap layer must support all projections for gridsets configured in GeoWebCache 
+	or missing tiles will be returned.
+ -->
+<basemapConfig>
+	return new OpenLayers.Layer.WMS(
+	    "basemap", "../../service/wms",
+	    {
+	        layers: 'raster test layer',
+	        format: 'image/jpeg'
+	    },
+	    {
+	        tiled: true,
+	        buffer: 0,
+	        wrapDateLine: true,
+	        tileSize: new OpenLayers.Size(256,256),
+	        displayOutsideMaxExtent: true
+	    }
+	);
+</basemapConfig>
+
 <serviceInformation>
 	<title>My GeoWebCache</title>
 	<description>GeoWebCache is an advanced tile cache for WMS servers.It supports a large variety of protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</description>
