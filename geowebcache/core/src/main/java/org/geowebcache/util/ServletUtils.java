@@ -392,10 +392,14 @@ public class ServletUtils {
     }
 
     public static String gwcHtmlHeader(String pageTitle) {
+        return gwcHtmlHeader(pageTitle, "");
+    }
+    public static String gwcHtmlHeader(String pageTitle, String extras) {
         return "<head>\n" + "<title>" + pageTitle + "</title>" + "<style type=\"text/css\">\n"
                 + "body, td {\n"
                 + "font-family: Verdana,Arial,\'Bitstream Vera Sans\',Helvetica,sans-serif;\n"
                 + "font-size: 0.85em;\n" + "vertical-align: top;\n" + "}\n" + "</style>\n"
+                + extras
                 + "</head>\n";
     }
 

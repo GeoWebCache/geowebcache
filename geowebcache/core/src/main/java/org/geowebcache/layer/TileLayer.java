@@ -514,6 +514,14 @@ public abstract class TileLayer {
         }
     }
 
+    public GridSubset getDefaultGridSubset() {
+        if(getGridSubsets().keySet().iterator().hasNext()) {
+            return getGridSubsets().get(getGridSubsets().keySet().iterator().next());
+        } else {
+            return null;
+        }
+    }
+
     public GridSubset getGridSubset(String gridSetId) {
         return getGridSubsets().get(gridSetId);
     }

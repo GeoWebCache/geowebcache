@@ -40,11 +40,12 @@ public abstract class GWCTask {
     private static final int PRIORITY_STEP = (java.lang.Thread.NORM_PRIORITY + java.lang.Thread.MIN_PRIORITY) / 2;
     
     public static enum PRIORITY {
-        MIN("Lowest", java.lang.Thread.MIN_PRIORITY), 
-        LOW("Low", PRIORITY_STEP), 
-        NORMAL("Normal", java.lang.Thread.NORM_PRIORITY), 
-        HIGH("High", java.lang.Thread.MAX_PRIORITY - PRIORITY_STEP), 
-        MAX("Highest", java.lang.Thread.MAX_PRIORITY);
+        LOWEST("Lowest", java.lang.Thread.MIN_PRIORITY),                        // Only runs when everything else isn't running
+        VERY_LOW("Very Low", java.lang.Thread.NORM_PRIORITY - PRIORITY_STEP),   // May need to prioritize between tasks but want all tasks below normal.
+        LOW("Low", PRIORITY_STEP),                                              // Below normal threads 
+        NORMAL("Normal", java.lang.Thread.NORM_PRIORITY),                       // Equal with normal threads
+        HIGH("High", java.lang.Thread.MAX_PRIORITY - PRIORITY_STEP);            // Above normal threads
+        // HIGHEST("Highest", java.lang.Thread.MAX_PRIORITY);                   // removed, can't trust users with this
         
         private String readableName;
         private int threadPriority;

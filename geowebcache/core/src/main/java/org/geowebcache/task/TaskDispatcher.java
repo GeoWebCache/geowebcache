@@ -26,7 +26,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.seed.GWCTask;
-import org.geowebcache.seed.GWCTaskBits;
 import org.geowebcache.seed.TileBreeder;
 import org.springframework.beans.factory.DisposableBean;
 

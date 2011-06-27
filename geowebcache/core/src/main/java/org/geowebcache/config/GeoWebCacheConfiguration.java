@@ -46,6 +46,9 @@ public class GeoWebCacheConfiguration {
     /* Default values */
     Integer backendTimeout;
     
+    /* Basemap configuration */
+    String basemapConfig;
+    
     Boolean cacheBypassAllowed;
     
     Boolean runtimeStats;

@@ -288,6 +288,14 @@ public class XMLConfiguration implements Configuration {
         }
     }
 
+    public String getBasemapConfig() {
+        if (gwcConfig == null || gwcConfig.basemapConfig == null) {
+            return null;
+        } else {
+            return gwcConfig.basemapConfig;
+        }
+    }
+
     public synchronized ServiceInformation getServiceInformation() throws GeoWebCacheException {
         if (!mockConfiguration && this.gwcConfig == null) {
             File xmlFile = findConfFile();
