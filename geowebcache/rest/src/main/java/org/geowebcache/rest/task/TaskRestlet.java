@@ -25,8 +25,6 @@ import java.net.URLDecoder;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLConfiguration;
-import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.seed.GWCTask;
