@@ -24,11 +24,10 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.seed.GWCTask.PRIORITY;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileRange;
 
-class TruncateTask extends GWCTask {
+public class TruncateTask extends GWCTask {
     private static Log log = LogFactory.getLog(TruncateTask.class);
 
     private final TileRange tr;
@@ -46,7 +45,7 @@ class TruncateTask extends GWCTask {
         this.doFilterUpdate = doFilterUpdate;
         this.priority = priority;
 
-        super.parsedType = GWCTask.TYPE.TRUNCATE;
+        super.taskType = GWCTask.TYPE.TRUNCATE;
         super.layerName = tl.getName();
     }
 

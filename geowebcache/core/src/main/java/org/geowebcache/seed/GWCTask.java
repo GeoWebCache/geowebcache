@@ -74,7 +74,7 @@ public abstract class GWCTask {
 
     long taskId = -1;
 
-    protected TYPE parsedType = TYPE.UNSET;
+    protected TYPE taskType = TYPE.UNSET;
 
     protected STATE state = STATE.UNSET;
 
@@ -108,7 +108,7 @@ public abstract class GWCTask {
             int membersRemaining = this.sharedThreadCount.decrementAndGet();
             if (0 == membersRemaining) {
                 double groupTotalTimeSecs = (System.currentTimeMillis() - (double) groupStartTime) / 1000;
-                log.info("Thread group finished " + parsedType + " task after "
+                log.info("Thread group finished " + taskType + " task after "
                         + groupTotalTimeSecs + " seconds");
             }
         }
@@ -187,7 +187,7 @@ public abstract class GWCTask {
     }
 
     public TYPE getType() {
-        return parsedType;
+        return taskType;
     }
 
     /**

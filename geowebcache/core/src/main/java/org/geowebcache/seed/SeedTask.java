@@ -76,9 +76,9 @@ public class SeedTask extends GWCTask {
         sharedFailureCounter = new AtomicLong();
 
         if (reseed) {
-            super.parsedType = GWCTask.TYPE.RESEED;
+            super.taskType = GWCTask.TYPE.RESEED;
         } else {
-            super.parsedType = GWCTask.TYPE.SEED;
+            super.taskType = GWCTask.TYPE.SEED;
         }
         super.layerName = tl.getName();
 
