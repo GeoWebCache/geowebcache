@@ -50,11 +50,34 @@ public class TaskDispatcher implements DisposableBean {
      */
     public GWCTask getTask(final String taskIdent) throws GeoWebCacheException {
 
-        // TODO JIMG getTask - response to rest request
-
-        throw new GeoWebCacheException("Thread " + Thread.currentThread().getId()
-                + " Unknown task " + taskIdent + ". Check the logfiles,"
-                + " it may not have loaded properly.");
+        long taskId = 0;
+        try {
+            taskId = Long.parseLong(taskIdent);
+        } catch(NumberFormatException nfe) {
+            throw new GeoWebCacheException("Thread " + Thread.currentThread().getId()
+                    + "'" + taskIdent + "' is not a valiid task identifier. Must be numeric.");
+        }
+        
+        Iterator<GWCTask> iter = getTaskList().iterator();
+        
+        GWCTask task = null;
+        
+        while(iter.hasNext()) {
+            GWCTask t = iter.next();
+            
+            if(t.getTaskId() == taskId) {
+                task = t;
+                break;
+            }
+        }
+        
+        if(task == null) {
+            throw new GeoWebCacheException("Thread " + Thread.currentThread().getId()
+                    + " Unknown task " + taskIdent + ". Check the logfiles,"
+                    + " it may not have loaded properly.");
+        }
+        
+        return task;
     }
 
     /***
@@ -68,22 +91,22 @@ public class TaskDispatcher implements DisposableBean {
     }
 
     public int getTaskCount() {
-        // TODO task count
-        int count = 0; // init count
-
-        // ???
-
-        return count; // profit
+        return getTaskIdents().size();
     }
 
-    public Set<String> getTaskIdents() {
-        Set<String> taskIdents = new HashSet<String>();
+    public Set<Long> getTaskIdents() {
+        Set<Long> taskIdents = new HashSet<Long>();
 
         // TODO JIMG - list of task idents
+        Iterator<Entry<Long, GWCTask>> iter = seeder.getRunningTasksIterator();
+        while(iter.hasNext()) {
+            Entry<Long, GWCTask> entry = iter.next();
+            taskIdents.add(entry.getValue().getTaskId());
+        }
 
         return taskIdents;
     }
-
+    
     /**
      * Returns a list of all the tasks.
      * 
@@ -92,7 +115,6 @@ public class TaskDispatcher implements DisposableBean {
     public Iterable<GWCTask> getTaskList() {
         ArrayList<GWCTask> tasks = new ArrayList<GWCTask>();
 
-        // TODO JIMG get list of tasks
         Iterator<Entry<Long, GWCTask>> iter = seeder.getRunningTasksIterator();
         
         while(iter.hasNext()) {
