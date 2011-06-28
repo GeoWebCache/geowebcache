@@ -12,6 +12,7 @@
   </bean>
 
   <bean id="gwcSeedFormRestlet" class="org.geowebcache.rest.seed.SeedFormRestlet">
+    <property name="XMLConfiguration" ref="gwcXmlConfig"/>
     <property name="tileBreeder" ref="gwcTileBreeder"/>
   </bean>
   <bean id="gwcReloadRestlet" class="org.geowebcache.rest.reload.ReloadRestlet">
