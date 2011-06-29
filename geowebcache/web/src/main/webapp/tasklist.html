@@ -2,15 +2,15 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
  
-  <link rel="stylesheet" type="text/css" href="css/ext-all.css">
+  <link rel="stylesheet" type="text/css" href="js/extjs/resources/css/ext-all.css">
+  <link rel="stylesheet" type="text/css" href="css/tasklist.css">
  
   <!-- Include here your own css files if you have them. -->
  
-  <script type="text/javascript" src="js/extjs/ext-debug.js"></script>
+  <script type="text/javascript" src="js/extjs/ext-all.js"></script>
  
   <!-- Include here your extended classes if you have some. -->
   <script type="text/javascript" src="js/gwc/gwc-api.js"></script>
-  <script type="text/javascript" src="js/gwc/gwc-api-test.js"></script>
   <script type="text/javascript" src="js/gwc/tasklist.js"></script>
  
   <title id="page-title">GWC Task List</title>
@@ -21,17 +21,18 @@
   <script type="text/javascript">
  
   // Path to the blank image must point to a valid location on your server
-  Ext.BLANK_IMAGE_URL = 'ext/resources/images/default/s.gif';
+  Ext.BLANK_IMAGE_URL = 'images/s.gif';
   
   // Main application entry point
   Ext.onReady(function() {
-	runtests();
+	;
   });
   </script>
  
 </head>
  
 <body>
-
+	<a id="logo" href="home"><img src="rest/web/geowebcache_logo.png"height="70" width="247" border="0"/></a>
+    <div id="tasklist"></div>
 </body>
 </html>

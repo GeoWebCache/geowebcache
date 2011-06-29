@@ -13,7 +13,7 @@ function initOpenLayers() {
 	var m = new OpenLayers.Map( 'map',{
 			resolutions: layerResolutions,
 			projection: layerProjection,
-			maxExtent: layerExtents,
+			maxExtent: maxExtents,
 			units: layerUnits,
 			controls: [new OpenLayers.Control.Navigation(), 
 			           new OpenLayers.Control.PanZoomBar(),

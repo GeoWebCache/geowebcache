@@ -15,7 +15,7 @@
   <import resource="geowebcache-wmsservice-context.xml"/>
   <import resource="geowebcache-wmtsservice-context.xml"/>
 
-  <import resource="geowebcache-diskquota-context.xml"/>
+  <!-- <import resource="geowebcache-diskquota-context.xml"/> -->
   <import resource="geowebcache-arcgiscache-context.xml"/>
     
   <bean id="gwcUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">

@@ -93,13 +93,13 @@
         <gridSetName>EPSG:2163</gridSetName>
       </gridSubset>
     </gridSubsets>  
-    <wmsUrl><string>http://demo.opengeo.org/geoserver/wms</string></wmsUrl>
+    <wmsUrl><string>http://localhost:81/geoserver/wms</string></wmsUrl>
   </wmsLayer>
   
   <wmsLayer>
     <name>raster test layer</name>
      <mimeFormats><string>image/jpeg</string></mimeFormats>
-    <wmsUrl><string>http://demo.opengeo.org/geoserver/wms</string></wmsUrl>
+    <wmsUrl><string>http://localhost:81/geoserver/wms</string></wmsUrl>
     <wmsLayers>nurc:Img_Sample</wmsLayers>
   </wmsLayer>
   
@@ -125,7 +125,7 @@
       </gridSubset>
     </gridSubsets>
     <wmsUrl>
-      <string>http://demo.opengeo.org/geoserver/wms</string>
+      <string>http://localhost:81/geoserver/wms</string>
     </wmsUrl>
     <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
     <transparent>false</transparent>
@@ -137,6 +137,28 @@
       <expirationRule minZoom="0" expiration="500" />
     </expireClientsList>
   </wmsLayer>
+
+	<wmsLayer>
+		<name>world_labels_test2</name>
+		<mimeFormats><string>image/png8</string></mimeFormats>
+		<gridSubsets>
+			<gridSubset>
+				<gridSetName>EPSG:4326</gridSetName>
+				<extent>
+					<coords>
+						<double>-180</double>
+						<double>-90</double>
+						<double>0</double>
+						<double>0</double>
+					</coords>
+				</extent>
+				<zoomStart>3</zoomStart>
+				<zoomStop>15</zoomStop>                  
+			</gridSubset>
+		</gridSubsets>
+		<wmsUrl><string>http://SERVER:8080/geoserver/wms</string></wmsUrl>
+		<wmsLayers>World_Countries</wmsLayers>
+	</wmsLayer>
 
 </layers>
 </gwcConfiguration>
