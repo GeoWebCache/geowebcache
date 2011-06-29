@@ -34,6 +34,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -77,6 +79,7 @@ import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.seed.GWCTask;
 import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.seed.SeedTask;
+import org.geowebcache.seed.TruncateTask;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
@@ -88,6 +91,8 @@ import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.basic.IntConverter;
+import com.thoughtworks.xstream.converters.basic.LongConverter;
 import com.thoughtworks.xstream.io.xml.DomReader;
 
 /**
@@ -463,9 +468,15 @@ public class XMLConfiguration implements Configuration {
         xs.alias("keyword", String.class);
         xs.alias("tasks", List.class);
         xs.alias("task", GWCTask.class);
-        // xs.alias("SeedTask", SeedTask.class);
-        
-        xs.omitField(GWCTask.class, "sharedThreadCount");
+        xs.alias("task", SeedTask.class);
+        xs.alias("task", TruncateTask.class);
+
+        xs.registerConverter(new AtomicIntegerConverter());
+        xs.registerConverter(new AtomicLongConverter());
+        xs.aliasField("failedTileCount", GWCTask.class, "sharedFailureCounter");
+        xs.aliasField("type", GWCTask.class, "taskType");
+        xs.aliasField("threads", GWCTask.class, "sharedThreadCount");
+
         xs.omitField(GWCTask.class, "threadOffset");
         xs.omitField(GWCTask.class, "terminate");
         xs.omitField(GWCTask.class, "groupStartTime");
@@ -473,7 +484,16 @@ public class XMLConfiguration implements Configuration {
         xs.omitField(SeedTask.class, "trIter");
         xs.omitField(SeedTask.class, "tl");
         xs.omitField(SeedTask.class, "storageBroker");
+        xs.omitField(SeedTask.class, "doFilterUpdate");
+        xs.omitField(SeedTask.class, "tileFailureRetryCount");
+        xs.omitField(SeedTask.class, "tileFailureRetryWaitTime");
+        xs.omitField(SeedTask.class, "totalFailuresBeforeAborting");
 
+        xs.omitField(TruncateTask.class, "tl");
+        xs.omitField(TruncateTask.class, "tr");
+        xs.omitField(TruncateTask.class, "storageBroker");
+        xs.omitField(TruncateTask.class, "doFilterUpdate");
+        
         if (this.context != null) {
             /*
              * Look up XMLConfigurationProvider extension points and let them contribute to the
@@ -487,6 +507,34 @@ public class XMLConfiguration implements Configuration {
         }
         return xs;
     }
+    
+    class AtomicIntegerConverter extends IntConverter {
+        public boolean canConvert(Class type) {
+            return type.equals(AtomicInteger.class);
+        }
+        
+        public String toString(Object obj) {
+            return obj.toString();
+        }
+
+        public Object fromString(String val) {
+            return new AtomicInteger(Integer.parseInt(val));
+        }        
+    }    
+
+    class AtomicLongConverter extends LongConverter {
+        public boolean canConvert(Class type) {
+            return type.equals(AtomicLong.class);
+        }
+        
+        public String toString(Object obj) {
+            return obj.toString();
+        }
+
+        public Object fromString(String val) {
+            return new AtomicLong(Long.parseLong(val));
+        }        
+    }    
 
     /**
      * Method responsible for writing out the entire GeoWebCacheConfiguration object

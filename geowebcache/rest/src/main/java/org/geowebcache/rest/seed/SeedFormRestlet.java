@@ -523,14 +523,15 @@ public class SeedFormRestlet extends GWCRestlet {
         }
         
         String extras = "<script type=\"text/javascript\" src=\"../../openlayers/OpenLayers.js\"></script>\n";
-
+        
         extras += "<script type=\"text/javascript\">\n" + 
                   "  var layerName = '" + tl.getName() + "';\n" + 
                   "  var layerFormat = '" + tl.getDefaultMimeType().getMimeType() + "';\n" + 
                   "  var layerTileSize = new OpenLayers.Size(" + tl.getDefaultGridSubset().getTileWidth() + "," + tl.getDefaultGridSubset().getTileHeight() + ");\n" + 
                   "  var layerProjection = new OpenLayers.Projection('" + tl.getDefaultGridSubset().getSRS() + "');\n" + 
                   "  var layerResolutions = " + Arrays.toString(tl.getDefaultGridSubset().getResolutions()) + ";\n" +
-                  "  var layerExtents = new OpenLayers.Bounds(" + tl.getDefaultGridSubset().getGridSetBounds().toString() + ");\n" + 
+                  "  var layerExtents = new OpenLayers.Bounds(" + tl.getDefaultGridSubset().getOriginalExtent().toString() + ");\n" + 
+                  "  var maxExtents = new OpenLayers.Bounds(" + tl.getDefaultGridSubset().getGridSetBounds().toString() + ");\n" + 
                   "  var layerUnits = '" + tl.getDefaultGridSubset().getGridSet().guessMapUnits() + "';\n" +
                   "  var layerDotsPerInch = " + tl.getDefaultGridSubset().getDotsPerInch() + "\n;" +
                   "  function getBasemapLayer() {\n" + 

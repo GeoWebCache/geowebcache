@@ -5,6 +5,7 @@ docs
 examples
 ext-all-debug-w-comments.js
 ext-all-debug.js
+ext-debug.js
 ext.js
 index.html
 jsbuilder
