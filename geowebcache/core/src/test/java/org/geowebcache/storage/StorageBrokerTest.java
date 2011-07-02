@@ -7,7 +7,7 @@ import junit.framework.TestCase;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
-import org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend;
+import org.geowebcache.storage.jdbc.metastore.JDBCMetaBackend;
 import org.h2.tools.DeleteDbFiles;
 
 public class StorageBrokerTest extends TestCase {
