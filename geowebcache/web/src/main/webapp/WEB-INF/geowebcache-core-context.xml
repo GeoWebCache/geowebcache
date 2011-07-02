@@ -69,7 +69,7 @@
   	<constructor-arg ref="gwcAppCtx" />
   </bean>
 
-  <bean id="gwcMetaStore" class="org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend" destroy-method="destroy">
+  <bean id="gwcMetaStore" class="org.geowebcache.storage.jdbc.metastore.JDBCMetaBackend" destroy-method="destroy">
     <constructor-arg ref="gwcDefaultStorageFinder" />
     <constructor-arg>
       <description>Enable connection pooling?</description>
@@ -83,12 +83,24 @@
   
   <!-- Static definition of where to put the metastore. 
        Note that the directory is AUTOMATICALLY CREATED if it does not exist. -->
-  <!-- bean id="gwcMetaStore" class="org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend" destroy-method="destroy">
+  <!-- bean id="gwcMetaStore" class="org.geowebcache.storage.jdbc.metastore.JDBCMetaBackend" destroy-method="destroy">
     <constructor-arg value="org.h2.Driver" />
     <constructor-arg value="jdbc:h2:file:/tmp/gwc_metastore/h2_metastore;TRACE_LEVEL_FILE=0" />
     <constructor-arg value="username" />
     <constructor-arg value="password" />
   </bean -->
+
+  <bean id="gwcTaskStore" class="org.geowebcache.storage.jdbc.taskstore.JDBCTaskBackend" destroy-method="destroy">
+    <constructor-arg ref="gwcDefaultStorageFinder" />
+    <constructor-arg>
+      <description>Enable connection pooling?</description>
+      <value>TRUE</value>
+    </constructor-arg>
+    <constructor-arg>
+      <description>Max number of connections in the pool</description>
+      <value>15</value>
+    </constructor-arg>
+  </bean>
   
   <bean id="gwcBlobStore" class="org.geowebcache.storage.blobstore.file.FileBlobStore" destroy-method="destroy">
     <constructor-arg ref="gwcDefaultStorageFinder" />
