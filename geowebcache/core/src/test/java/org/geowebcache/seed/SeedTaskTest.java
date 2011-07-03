@@ -138,7 +138,7 @@ public class SeedTaskTest extends TestCase {
         replay(mockStorageBroker);
 
         boolean reseed = false;
-        SeedTask seedTask = new SeedTask(mockStorageBroker, trIter, tl, reseed, false, PRIORITY.LOW);
+        SeedTask seedTask = new SeedTask(mockStorageBroker, trIter, tl, reseed, false, PRIORITY.LOW, -1);
         seedTask.setTaskId(1L);
         seedTask.setThreadInfo(new AtomicInteger(), 0);
         /*
@@ -216,7 +216,7 @@ public class SeedTaskTest extends TestCase {
         replay(mockStorageBroker);
 
         boolean reseed = false;
-        SeedTask seedTask = new SeedTask(mockStorageBroker, trIter, tl, reseed, false, PRIORITY.LOW);
+        SeedTask seedTask = new SeedTask(mockStorageBroker, trIter, tl, reseed, false, PRIORITY.LOW, -1);
         seedTask.setTaskId(1L);
         seedTask.setThreadInfo(new AtomicInteger(), 0);
 
@@ -285,7 +285,7 @@ public class SeedTaskTest extends TestCase {
         TileRangeIterator trIter = new TileRangeIterator(tr, tl.getMetaTilingFactors());
 
         boolean reseed = false;
-        SeedTask task = new SeedTask(mockStorageBroker, trIter, tl, reseed, false, PRIORITY.LOW);
+        SeedTask task = new SeedTask(mockStorageBroker, trIter, tl, reseed, false, PRIORITY.LOW, -1);
         task.setTaskId(1L);
         task.setThreadInfo(new AtomicInteger(), 0);
         /*

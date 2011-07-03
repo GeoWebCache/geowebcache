@@ -30,7 +30,7 @@ public abstract class GWCTask {
     private static final Log log = LogFactory.getLog(GWCTask.class);
 
     public static enum TYPE {
-        UNSET, SEED, RESEED, TRUNCATE
+        UNSET, SEED, RESEED, TRUNCATE, JOB_MONITOR
     };
 
     public static enum STATE {
@@ -91,6 +91,8 @@ public abstract class GWCTask {
     protected long tilesTotal = -1;
 
     protected boolean terminate = false;
+    
+    protected long jobId = -1;
 
     private long groupStartTime;
 
@@ -202,6 +204,15 @@ public abstract class GWCTask {
     public STATE getState() {
         return state;
     }
+    
+    /**
+     * If associated to a job, the ID of the associated job.
+     * @return -1 if the task is not associated with a job.
+     */
+    public long getJobId() {
+        return jobId;
+    }
+    
     protected void checkInterrupted() throws InterruptedException {
         if (Thread.interrupted()) {
             this.state = STATE.DEAD;

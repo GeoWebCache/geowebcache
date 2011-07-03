@@ -18,14 +18,19 @@
 package org.geowebcache.storage;
 
 import java.sql.Timestamp;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.seed.GWCTask;
 import org.geowebcache.seed.SeedRequest;
+import org.geowebcache.seed.SeedTask;
 import org.geowebcache.seed.TileBreeder;
+import org.geowebcache.seed.TruncateTask;
 import org.geowebcache.seed.GWCTask.PRIORITY;
 import org.geowebcache.seed.GWCTask.STATE;
 import org.geowebcache.seed.GWCTask.TYPE;
@@ -111,15 +116,79 @@ public class JobObject extends StorageObject {
         return obj;
     }
     
+    /**
+     * Update a job based on all running tasks currently active in the system.
+     * @param tb
+     */
     public void update(TileBreeder tb) {
-        // TODO rationalise state from the running tasks
+        // rationalise state from the running tasks
+        Iterator<Entry<Long, GWCTask>> iter = tb.getRunningTasksIterator();
+        
+        boolean foundTask = false;
+        boolean isRunning = false;
 
-//        state = task.getState();
-//        timeSpent = task.getTimeSpent();
-//        timeRemaining = task.getTimeRemaining();
-//        tilesDone = task.getTilesDone();
-//        tilesTotal = task.getTilesTotal();
-//          failedTilesCount = task.getFailedTilesCount();
+        /*
+         * A potential concern: if we are locked on the sharedfailurecounter and the 
+         * running tasks list needs to change, there will be an exception because this 
+         * is iterating a list that another wants to change.
+         * 
+         * This method needs to only be called by the thread that has the power to 
+         * change the running tasks list, or we'll need to gate access to the list as 
+         * a whole.
+         */
+        while(iter.hasNext()) {
+            GWCTask task = iter.next().getValue();
+            
+            if(task.getJobId() == jobId) {
+                if(foundTask) {
+                    tilesDone += task.getTilesDone();
+                } else {
+                    foundTask = true;
+                    timeSpent = task.getTimeSpent();
+                    timeRemaining = task.getTimeRemaining();
+                    tilesDone = task.getTilesDone();
+                    tilesTotal = task.getTilesTotal();
+
+                    state = task.getState();
+                    
+                    if(task instanceof SeedTask) {
+                        failedTileCount = ((SeedTask)task).getSharedFailureCounter();
+                        isRunning = isRunning || task.getState() == STATE.RUNNING; // if any task is running, the job is running
+                    } else if(task instanceof TruncateTask) {
+                        ;
+                    }
+                }
+            }
+        }
+        
+        if(isRunning) {
+            state = STATE.RUNNING;
+        }
+    }
+
+    /**
+     * Update the job to match the details of this task.
+     * One task can be used to garner some information about the job, but not all.
+     * @param task
+     */
+    public void update(GWCTask task) throws GeoWebCacheException {
+        // rationalise state from the running tasks
+        
+        if(task.getJobId() != jobId) {
+            throw new GeoWebCacheException("Job ID Mismatch - can't update. Job " + jobId + " expected but a task for Job " + task.getJobId() + " was provided.");
+        } else {
+            timeSpent = task.getTimeSpent();
+            timeRemaining = 0;
+
+            state = task.getState();
+                    
+            if(task instanceof SeedTask) {
+                failedTileCount = ((SeedTask)task).getSharedFailureCounter();
+                
+                // make the assumption that total tiles - failed tiles = done tiles
+                tilesDone = tilesTotal - failedTileCount;
+            }
+        }
     }
 
     public long getJobId() {

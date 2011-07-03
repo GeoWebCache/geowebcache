@@ -90,11 +90,14 @@ import org.springframework.context.ApplicationContextAware;
  * @author Gabriel Roldan, based on Marius Suta's and Arne Kepp's SeedRestlet
  */
 public class TileBreeder implements ApplicationContextAware {
+    
     private static final String GWC_SEED_ABORT_LIMIT = "GWC_SEED_ABORT_LIMIT";
 
     private static final String GWC_SEED_RETRY_WAIT = "GWC_SEED_RETRY_WAIT";
 
     private static final String GWC_SEED_RETRY_COUNT = "GWC_SEED_RETRY_COUNT";
+    
+    private static final String GWC_JOB_MONITOR_UPDATE_FREQUENCY = "GWC_JOB_MONITOR_UPDATE_FREQUENCY";
 
     private static Log log = LogFactory.getLog(TileBreeder.class);
 
@@ -121,6 +124,16 @@ public class TileBreeder implements ApplicationContextAware {
      * threads of the same run.
      */
     private long totalFailuresBeforeAborting = 1000;
+    
+    /**
+     * How frequently the job monitor thread should update.
+     */
+    private long jobMonitorUpdateFrequency = 5000;
+    
+    public void init() {
+        JobMonitorTask jobMonitor = new JobMonitorTask(jobStore, this, jobMonitorUpdateFrequency);
+        threadPool.submit(new MTSeeder(jobMonitor));
+    }
 
     /**
      * Initializes the seed task failure control variables either with the provided environment
@@ -133,14 +146,17 @@ public class TileBreeder implements ApplicationContextAware {
         String retryCount = GWCVars.findEnvVar(applicationContext, GWC_SEED_RETRY_COUNT);
         String retryWait = GWCVars.findEnvVar(applicationContext, GWC_SEED_RETRY_WAIT);
         String abortLimit = GWCVars.findEnvVar(applicationContext, GWC_SEED_ABORT_LIMIT);
+        String monitorFrequency = GWCVars.findEnvVar(applicationContext, GWC_JOB_MONITOR_UPDATE_FREQUENCY);
 
         tileFailureRetryCount = (int) toLong(GWC_SEED_RETRY_COUNT, retryCount, 0);
         tileFailureRetryWaitTime = toLong(GWC_SEED_RETRY_WAIT, retryWait, 100);
         totalFailuresBeforeAborting = toLong(GWC_SEED_ABORT_LIMIT, abortLimit, 1000);
+        jobMonitorUpdateFrequency = toLong(GWC_JOB_MONITOR_UPDATE_FREQUENCY, monitorFrequency, 5000);
 
         checkPositive(tileFailureRetryCount, GWC_SEED_RETRY_COUNT);
         checkPositive(tileFailureRetryWaitTime, GWC_SEED_RETRY_WAIT);
         checkPositive(totalFailuresBeforeAborting, GWC_SEED_ABORT_LIMIT);
+        checkPositive(jobMonitorUpdateFrequency, GWC_JOB_MONITOR_UPDATE_FREQUENCY);
     }
 
     @SuppressWarnings("serial")
@@ -180,23 +196,20 @@ public class TileBreeder implements ApplicationContextAware {
         TileLayer tl = findTileLayer(sr.getLayerName());
 
         TileRange tr = createTileRange(sr, tl);
+        
+        JobObject job = null;
 
         try {
-            JobObject job = JobObject.createJobObject(tl, sr);
+            job = JobObject.createJobObject(tl, sr);
             jobStore.put(job);
         } catch (StorageException se) {
-            log
-                    .error(
-                            "Couldn't store the new job for layer"
-                                    + sr.getLayerName()
-                                    + ": "
-                                    + se.getMessage()
-                                    + ". Tasks will be executed if they aren't scheduled, but job management isn't available.",
-                            se);
+            log.error("Couldn't store the new job for layer" + sr.getLayerName() + ": " + se.getMessage() + 
+                      ". Tasks will be executed if they aren't scheduled, but job management isn't available.", se);
+            job = null;
         }
         
         GWCTask[] tasks = createTasks(tr, tl, sr.getType(), sr.getThreadCount(),
-                sr.getFilterUpdate(), sr.getPriority());
+                sr.getFilterUpdate(), sr.getPriority(), (job == null ? -1 : job.getJobId()));
 
         dispatchTasks(tasks);
     }
@@ -206,11 +219,16 @@ public class TileBreeder implements ApplicationContextAware {
 
         String layerName = tr.layerName;
         TileLayer tileLayer = layerDispatcher.getTileLayer(layerName);
-        return createTasks(tr, tileLayer, type, threadCount, filterUpdate, priority);
+        return createTasks(tr, tileLayer, type, threadCount, filterUpdate, priority, -1);
     }
 
     public GWCTask[] createTasks(TileRange tr, TileLayer tl, TYPE type, int threadCount,
             boolean filterUpdate, PRIORITY priority) throws GeoWebCacheException {
+        return createTasks(tr, tl, type, threadCount, filterUpdate, priority, -1);
+    }
+    
+    public GWCTask[] createTasks(TileRange tr, TileLayer tl, TYPE type, int threadCount,
+            boolean filterUpdate, PRIORITY priority, long jobId) throws GeoWebCacheException {
 
         if (type == TYPE.TRUNCATE || threadCount < 1) {
             log.trace("Forcing thread count to 1");
@@ -231,9 +249,9 @@ public class TileBreeder implements ApplicationContextAware {
         AtomicInteger sharedThreadCount = new AtomicInteger();
         for (int i = 0; i < threadCount; i++) {
             if (type == TYPE.TRUNCATE) {
-                tasks[i] = createTruncateTask(trIter, tl, filterUpdate, priority);
+                tasks[i] = createTruncateTask(trIter, tl, filterUpdate, priority, jobId);
             } else {
-                SeedTask task = (SeedTask) createSeedTask(type, trIter, tl, filterUpdate, priority);
+                SeedTask task = (SeedTask) createSeedTask(type, trIter, tl, filterUpdate, priority, jobId);
                 task.setFailurePolicy(tileFailureRetryCount, tileFailureRetryWaitTime,
                         totalFailuresBeforeAborting, failureCounter);
                 tasks[i] = task;
@@ -311,22 +329,22 @@ public class TileBreeder implements ApplicationContextAware {
      * @throws IllegalArgumentException
      */
     private GWCTask createSeedTask(TYPE type, TileRangeIterator trIter, TileLayer tl,
-            boolean doFilterUpdate, PRIORITY priority) throws IllegalArgumentException {
+            boolean doFilterUpdate, PRIORITY priority, long jobId) throws IllegalArgumentException {
 
         switch (type) {
         case SEED:
-            return new SeedTask(storageBroker, trIter, tl, false, doFilterUpdate, priority);
+            return new SeedTask(storageBroker, trIter, tl, false, doFilterUpdate, priority, jobId);
         case RESEED:
-            return new SeedTask(storageBroker, trIter, tl, true, doFilterUpdate, priority);
+            return new SeedTask(storageBroker, trIter, tl, true, doFilterUpdate, priority, jobId);
         default:
             throw new IllegalArgumentException("Unknown request type " + type);
         }
     }
 
     private GWCTask createTruncateTask(TileRangeIterator trIter, TileLayer tl,
-            boolean doFilterUpdate, PRIORITY priority) {
+            boolean doFilterUpdate, PRIORITY priority, long jobId) {
 
-        return new TruncateTask(storageBroker, trIter.getTileRange(), tl, doFilterUpdate, priority);
+        return new TruncateTask(storageBroker, trIter.getTileRange(), tl, doFilterUpdate, priority, jobId);
     }
 
     /**

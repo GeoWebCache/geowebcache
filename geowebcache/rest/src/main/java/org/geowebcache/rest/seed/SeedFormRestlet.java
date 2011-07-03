@@ -598,36 +598,38 @@ public class SeedFormRestlet extends GWCRestlet {
         while (iter.hasNext()) {
             Entry<Long, GWCTask> entry = iter.next();
             GWCTask task = entry.getValue();
-
-            final long spent = task.getTimeSpent();
-            final long remining = task.getTimeRemaining();
-            final long tilesDone = task.getTilesDone();
-            final long tilesTotal = task.getTilesTotal();
-
-            NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);
-            nf.setGroupingUsed(true);
-            final String tilesTotalStr;
-            if (tilesTotal < 0) {
-                tilesTotalStr = "Too many to count";
-            } else {
-                tilesTotalStr = nf.format(tilesTotal);
+            
+            if(task.getType() != TYPE.JOB_MONITOR) {
+                final long spent = task.getTimeSpent();
+                final long remining = task.getTimeRemaining();
+                final long tilesDone = task.getTilesDone();
+                final long tilesTotal = task.getTilesTotal();
+    
+                NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);
+                nf.setGroupingUsed(true);
+                final String tilesTotalStr;
+                if (tilesTotal < 0) {
+                    tilesTotalStr = "Too many to count";
+                } else {
+                    tilesTotalStr = nf.format(tilesTotal);
+                }
+                final String tilesDoneStr = nf.format(task.getTilesDone());
+                String timeSpent = toTimeString(spent, tilesDone, tilesTotal);
+                String timeRemaining = toTimeString(remining, tilesDone, tilesTotal);
+    
+                doc.append("<tr>");
+                doc.append("<td>").append(entry.getKey()).append("</td>");
+                doc.append("<td>").append(task.getLayerName()).append("</td>");
+                doc.append("<td>").append(task.getType()).append("</td>");
+                doc.append("<td>").append(tilesTotalStr).append("</td>");
+                doc.append("<td>").append(tilesDoneStr).append("</td>");
+                doc.append("<td>").append(timeSpent).append("</td>");
+                doc.append("<td>").append(timeRemaining).append("</td>");
+                doc.append("<td>(Thread ").append(task.getThreadOffset() + 1).append(" of ")
+                        .append(task.getThreadCount()).append(") </td>");
+                doc.append("<td>").append(makeThreadKillForm(entry.getKey(), tl)).append("</td>");
+                doc.append("<tr>");
             }
-            final String tilesDoneStr = nf.format(task.getTilesDone());
-            String timeSpent = toTimeString(spent, tilesDone, tilesTotal);
-            String timeRemaining = toTimeString(remining, tilesDone, tilesTotal);
-
-            doc.append("<tr>");
-            doc.append("<td>").append(entry.getKey()).append("</td>");
-            doc.append("<td>").append(task.getLayerName()).append("</td>");
-            doc.append("<td>").append(task.getType()).append("</td>");
-            doc.append("<td>").append(tilesTotalStr).append("</td>");
-            doc.append("<td>").append(tilesDoneStr).append("</td>");
-            doc.append("<td>").append(timeSpent).append("</td>");
-            doc.append("<td>").append(timeRemaining).append("</td>");
-            doc.append("<td>(Thread ").append(task.getThreadOffset() + 1).append(" of ")
-                    .append(task.getThreadCount()).append(") </td>");
-            doc.append("<td>").append(makeThreadKillForm(entry.getKey(), tl)).append("</td>");
-            doc.append("<tr>");
         }
 
         if (tasks) {

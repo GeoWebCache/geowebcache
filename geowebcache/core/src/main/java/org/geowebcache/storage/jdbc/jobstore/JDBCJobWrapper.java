@@ -340,10 +340,10 @@ class JDBCJobWrapper {
 
             ResultSet rs = prep.executeQuery();
             try {
-                if (rs.first()) {
-                    stObj = readJob(rs);
+                if (rs.next()) {
+                    readJob(stObj, rs);
 
-                    return true;
+                    return true || false;
                 } else {
                     return false;
                 }
@@ -364,7 +364,7 @@ class JDBCJobWrapper {
                 "zoom_start, zoom_stop, format, job_type, max_throughput, priority, schedule, " + 
                 "time_first_start, time_latest_start) " + 
                 "KEY(job_id) " + 
-                "VALUES(NULL, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         final Connection conn = getConnection();
 
@@ -372,31 +372,35 @@ class JDBCJobWrapper {
             Long insertId;
             PreparedStatement prep = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
-                // prep.setLong(1, stObj.getJobId());
+                if(stObj.getJobId() == -1) {
+                    prep.setNull(1, java.sql.Types.BIGINT);
+                } else {
+                    prep.setLong(1, stObj.getJobId());
+                }
 
-                prep.setString(1, stObj.getLayerName());
-                prep.setString(2, stObj.getState().name());
-                prep.setLong(3, stObj.getTimeSpent());
-                prep.setLong(4, stObj.getTimeRemaining());
-                prep.setLong(5, stObj.getTilesDone());
-                prep.setLong(6, stObj.getTilesTotal());
-                prep.setLong(7, stObj.getFailedTileCount());
+                prep.setString(2, stObj.getLayerName());
+                prep.setString(3, stObj.getState().name());
+                prep.setLong(4, stObj.getTimeSpent());
+                prep.setLong(5, stObj.getTimeRemaining());
+                prep.setLong(6, stObj.getTilesDone());
+                prep.setLong(7, stObj.getTilesTotal());
+                prep.setLong(8, stObj.getFailedTileCount());
                 
-                prep.setString(8, stObj.getBounds().toString());
-                prep.setString(9, stObj.getGridSetId());
-                prep.setInt(10, stObj.getSrs().getNumber());
+                prep.setString(9, stObj.getBounds().toString());
+                prep.setString(10, stObj.getGridSetId());
+                prep.setInt(11, stObj.getSrs().getNumber());
 
-                prep.setInt(11, stObj.getThreadCount());
-                prep.setInt(12, stObj.getZoomStart());
-                prep.setInt(13, stObj.getZoomStop());
-                prep.setString(14, stObj.getFormat());
-                prep.setString(15, stObj.getJobType().name());
-                prep.setInt(16, stObj.getMaxThroughput());
-                prep.setString(17, stObj.getPriority().name());
-                prep.setString(18, stObj.getSchedule());
+                prep.setInt(12, stObj.getThreadCount());
+                prep.setInt(13, stObj.getZoomStart());
+                prep.setInt(14, stObj.getZoomStop());
+                prep.setString(15, stObj.getFormat());
+                prep.setString(16, stObj.getJobType().name());
+                prep.setInt(17, stObj.getMaxThroughput());
+                prep.setString(18, stObj.getPriority().name());
+                prep.setString(19, stObj.getSchedule());
                 
-                prep.setTimestamp(19, stObj.getTimeFirstStart());
-                prep.setTimestamp(20, stObj.getTimeLatestStart());
+                prep.setTimestamp(20, stObj.getTimeFirstStart());
+                prep.setTimestamp(21, stObj.getTimeLatestStart());
                 
                 insertId = wrappedInsert(prep);
             } finally {
@@ -538,7 +542,9 @@ class JDBCJobWrapper {
             ResultSet rs = prep.executeQuery();
             try {
                 while(rs.next()) {
-                    result.add(readJob(rs));
+                    JobObject job = new JobObject();
+                    readJob(job, rs);
+                    result.add(job);
                 }
             } finally {
                 close(rs);
@@ -550,33 +556,30 @@ class JDBCJobWrapper {
         return result;
     }
 
-    private JobObject readJob(ResultSet rs) throws SQLException {
-        JobObject result = new JobObject(); 
-        result.setJobId(rs.getLong("job_id"));
-        result.setLayerName(rs.getString("layer_name"));
-        result.setState(STATE.valueOf(rs.getString("state")));
-        result.setTimeSpent(rs.getLong("time_spent"));
-        result.setTimeRemaining(rs.getLong("time_remaining"));
-        result.setTilesDone(rs.getLong("tiles_done"));
-        result.setTilesTotal(rs.getLong("tiles_total"));
-        result.setFailedTileCount(rs.getLong("failed_tile_count"));
+    private void readJob(JobObject job, ResultSet rs) throws SQLException {
+        job.setJobId(rs.getLong("job_id"));
+        job.setLayerName(rs.getString("layer_name"));
+        job.setState(STATE.valueOf(rs.getString("state")));
+        job.setTimeSpent(rs.getLong("time_spent"));
+        job.setTimeRemaining(rs.getLong("time_remaining"));
+        job.setTilesDone(rs.getLong("tiles_done"));
+        job.setTilesTotal(rs.getLong("tiles_total"));
+        job.setFailedTileCount(rs.getLong("failed_tile_count"));
         
-        result.setBounds(new BoundingBox(rs.getString("bounds")));
-        result.setGridSetId(rs.getString("gridset_id"));
-        result.setSrs(SRS.getSRS(rs.getInt("srs")));
+        job.setBounds(new BoundingBox(rs.getString("bounds")));
+        job.setGridSetId(rs.getString("gridset_id"));
+        job.setSrs(SRS.getSRS(rs.getInt("srs")));
    
-        result.setThreadCount(rs.getInt("thread_count"));
-        result.setZoomStart(rs.getInt("zoom_start"));
-        result.setZoomStop(rs.getInt("zoom_stop"));
-        result.setFormat(rs.getString("format"));
-        result.setJobType(TYPE.valueOf(rs.getString("job_type")));
-        result.setMaxThroughput(rs.getInt("max_throughput"));
-        result.setPriority(PRIORITY.valueOf(rs.getString("priority")));
-        result.setSchedule(rs.getString("schedule"));
+        job.setThreadCount(rs.getInt("thread_count"));
+        job.setZoomStart(rs.getInt("zoom_start"));
+        job.setZoomStop(rs.getInt("zoom_stop"));
+        job.setFormat(rs.getString("format"));
+        job.setJobType(TYPE.valueOf(rs.getString("job_type")));
+        job.setMaxThroughput(rs.getInt("max_throughput"));
+        job.setPriority(PRIORITY.valueOf(rs.getString("priority")));
+        job.setSchedule(rs.getString("schedule"));
         
-        result.setTimeFirstStart(rs.getTimestamp("time_first_start"));
-        result.setTimeLatestStart(rs.getTimestamp("time_latest_start"));
-        
-        return result;
+        job.setTimeFirstStart(rs.getTimestamp("time_first_start"));
+        job.setTimeLatestStart(rs.getTimestamp("time_latest_start"));
     }
 }

@@ -1,0 +1,135 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Arne Kepp / The Open Planning Project 2008 
+ */
+package org.geowebcache.seed;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.storage.JobObject;
+import org.geowebcache.storage.JobStore;
+
+public class JobMonitorTask extends GWCTask {
+    private static Log log = LogFactory.getLog(JobMonitorTask.class);
+
+    private final JobStore jobStore;
+    private final TileBreeder seeder;
+    private final long updateFrequency;
+    private final ConcurrentLinkedQueue<GWCTask> finishedTasks;
+
+    public JobMonitorTask(JobStore js, TileBreeder seeder, long updateFrequency) {
+        this.jobStore = js;
+        this.seeder = seeder;
+        this.updateFrequency = updateFrequency;
+        this.finishedTasks = new ConcurrentLinkedQueue<GWCTask>();
+
+        super.taskType = GWCTask.TYPE.JOB_MONITOR;
+    }
+
+    /**
+     * Infrequently wake up and go through the list of running tasks to update the jobs (task groups).
+     * @see org.geowebcache.seed.GWCTask#doActionInternal()
+     */
+    @Override
+    protected void doActionInternal() throws GeoWebCacheException, InterruptedException {
+        super.state = GWCTask.STATE.RUNNING;
+
+        Thread.currentThread().setPriority(PRIORITY.LOW.getThreadPriority());
+        
+        int consecutiveFailures = 0;
+
+        while((!Thread.interrupted()) && super.state != GWCTask.STATE.DEAD) {
+            try {
+                Iterator<Entry<Long, GWCTask>> tasks = seeder.getRunningTasksIterator();
+                
+                List<Long> jobIds = new ArrayList<Long>();
+                while(tasks.hasNext()) {
+                    GWCTask task = tasks.next().getValue();
+                    
+                    if(!(task instanceof JobMonitorTask)) {
+                        if(!jobIds.contains(task.getJobId())) {
+                            jobIds.add(task.getJobId());
+                            
+                            JobObject job = new JobObject();
+                            job.setJobId(task.getJobId());
+                            if(jobStore.get(job)) {
+                                job.update(seeder);
+                                jobStore.put(job);
+                            }                        
+                        }
+                    }
+                }
+                
+                // clear out completed tasks
+                jobIds = new ArrayList<Long>();
+                while(!finishedTasks.isEmpty()) {
+                    GWCTask task;
+                    synchronized(finishedTasks) {
+                        task = finishedTasks.poll();
+                    }
+                    if(!(task instanceof JobMonitorTask)) {
+                        if(!jobIds.contains(task.getJobId())) {
+                            jobIds.add(task.getJobId());
+                            
+                            JobObject job = new JobObject();
+                            job.setJobId(task.getJobId());
+                            if(jobStore.get(job)) {
+                                job.update(task);
+                                jobStore.put(job);
+                            }                        
+                        }
+                    }
+                }
+
+                consecutiveFailures = 0;
+            } catch (Exception e) {
+                log.error("During job monitor task: " + e.getClass().getName() + ": " + e.getMessage());
+                
+                consecutiveFailures++;
+                
+                if(consecutiveFailures > 5) {
+                    log.error("5 consecutive failures in a row, job monitoring will be shut down.");
+                    super.state = GWCTask.STATE.DEAD;
+                }
+            }
+            
+            Thread.sleep(updateFrequency);
+        }
+
+        if (super.state != GWCTask.STATE.DEAD) {
+            super.state = GWCTask.STATE.DONE;
+            log.debug("Completed job monitoring.");
+        }
+    }
+
+    @Override
+    protected void dispose() {
+        // do nothing
+    }
+
+    public void addFinishedTask(GWCTask task) {
+        synchronized(finishedTasks) {
+            finishedTasks.add(task);
+        }
+    }
+
+}

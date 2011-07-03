@@ -177,7 +177,7 @@
   </bean>
 
   <!-- Breeder (the one that seeds) -->
-  <bean id="gwcTileBreeder" class="org.geowebcache.seed.TileBreeder">
+  <bean id="gwcTileBreeder" class="org.geowebcache.seed.TileBreeder" init-method="init">
     <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
     <property name="threadPoolExecutor" ref="gwcSeederThreadPoolExec"/>
     <property name="storageBroker" ref="gwcStorageBroker"/>

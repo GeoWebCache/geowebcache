@@ -62,13 +62,14 @@ public class SeedTask extends GWCTask {
      *            - the SeedRequest
      */
     public SeedTask(StorageBroker sb, TileRangeIterator trIter, TileLayer tl, boolean reseed,
-            boolean doFilterUpdate, PRIORITY priority) {
+            boolean doFilterUpdate, PRIORITY priority, long jobId) {
         this.storageBroker = sb;
         this.trIter = trIter;
         this.tl = tl;
         this.reseed = reseed;
         this.priority = priority;
         this.doFilterUpdate = doFilterUpdate;
+        this.jobId = jobId;
 
         tileFailureRetryCount = 0;
         tileFailureRetryWaitTime = 100;
@@ -282,5 +283,9 @@ public class SeedTask extends GWCTask {
         if (tl instanceof WMSLayer) {
             ((WMSLayer) tl).cleanUpThreadLocals();
         }
+    }
+    
+    public long getSharedFailureCounter() {
+        return(sharedFailureCounter.get());
     }
 }

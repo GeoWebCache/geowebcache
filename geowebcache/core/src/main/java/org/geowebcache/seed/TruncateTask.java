@@ -38,12 +38,13 @@ public class TruncateTask extends GWCTask {
 
     private final StorageBroker storageBroker;
 
-    public TruncateTask(StorageBroker sb, TileRange tr, TileLayer tl, boolean doFilterUpdate, PRIORITY priority) {
+    public TruncateTask(StorageBroker sb, TileRange tr, TileLayer tl, boolean doFilterUpdate, PRIORITY priority, long jobId) {
         this.storageBroker = sb;
         this.tr = tr;
         this.tl = tl;
         this.doFilterUpdate = doFilterUpdate;
         this.priority = priority;
+        this.jobId = jobId;
 
         super.taskType = GWCTask.TYPE.TRUNCATE;
         super.layerName = tl.getName();

@@ -59,6 +59,8 @@ public class GeoWebCacheConfiguration {
     
     String proxyUrl;
     
+    Integer jobUpdateFrequency;
+    
     ServiceInformation serviceInformation;
     
     protected List<FormatModifier> formatModifiers;

@@ -303,6 +303,14 @@ public class XMLConfiguration implements Configuration {
             return gwcConfig.basemapConfig;
         }
     }
+    
+    public Integer getJobUpdateFrequency() {
+        if (gwcConfig == null || gwcConfig.jobUpdateFrequency == null) {
+            return null;
+        } else {
+            return gwcConfig.jobUpdateFrequency;
+        }
+    }
 
     public synchronized ServiceInformation getServiceInformation() throws GeoWebCacheException {
         if (!mockConfiguration && this.gwcConfig == null) {

@@ -87,7 +87,7 @@ Ext.application({
 		    return Ext.String.format(
 		    	"<div style='float: left;'><b>{0}%</b>&nbsp;</div>" + 
 		    	"<div style='float: left;'>&nbsp;{1} of<br /> {2}</div>",
-		    	Ext.Number.toFixed(record.data.tilesDone / record.data.tilesTotal, 2),
+		    	Ext.Number.toFixed((record.data.tilesDone / record.data.tilesTotal) * 100, 2),
 		        addCommas(record.data.tilesDone),
 		        addCommas(record.data.tilesTotal)
 		    );
