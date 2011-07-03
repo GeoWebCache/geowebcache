@@ -52,7 +52,7 @@ public class GWCVars {
 
             if (value != null) {
                 if (varStr.equals(DefaultStorageFinder.GWC_METASTORE_PASSWORD) || 
-                    varStr.equals(DefaultStorageFinder.GWC_TASKSTORE_PASSWORD)) {
+                    varStr.equals(DefaultStorageFinder.GWC_JOBTORE_PASSWORD)) {
                     log.info("Found " + typeStr + " for " + varStr + " set to <hidden>");
                 } else {
                     log.info("Found " + typeStr + " for " + varStr + " set to " + value);

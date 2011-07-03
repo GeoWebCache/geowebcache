@@ -28,9 +28,9 @@
   <bean id="gwcFilterUpdateRestlet" class="org.geowebcache.rest.filter.FilterUpdateRestlet">
     <constructor-arg  ref="gwcTLDispatcher"/>
   </bean>
-  <bean id="gwcTaskRestlet" class="org.geowebcache.rest.task.TaskRestlet">
+  <bean id="gwcJobRestlet" class="org.geowebcache.rest.job.JobRestlet">
     <property name="XMLConfiguration" ref="gwcXmlConfig"/>
-    <property name="taskDispatcher" ref="gwcTaskDispatcher"/>
+    <property name="jobDispatcher" ref="gwcJobDispatcher" />
   </bean>
   <bean id="gwcByteStreamerRestlet" class="org.geowebcache.rest.webresources.ByteStreamerRestlet" />
   
@@ -63,12 +63,12 @@
           <ref bean="gwcFilterUpdateRestlet" />
         </entry>
         <entry>
-          <key><value>/tasks.{extension}</value></key>
-          <ref bean="gwcTaskRestlet" />
+          <key><value>/jobs.{extension}</value></key>
+          <ref bean="gwcJobRestlet" />
         </entry>
         <entry>
-          <key><value>/tasks/{task}.{extension}</value></key>
-          <ref bean="gwcTaskRestlet" />
+          <key><value>/jobs/{job}.{extension}</value></key>
+          <ref bean="gwcJobRestlet" />
         </entry>
         <entry>
           <key><value>/web/{filename}</value></key>

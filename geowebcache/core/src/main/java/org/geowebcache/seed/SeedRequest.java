@@ -244,4 +244,8 @@ public class SeedRequest {
     public Map<String, String> getParameters() {
         return parameters;
     }
+
+    public void setLayerName(String name) {
+        this.name = name;        
+    }
 }

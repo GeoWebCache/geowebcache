@@ -25,17 +25,18 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -63,8 +64,10 @@ import org.geowebcache.filter.parameters.StringParameterFilter;
 import org.geowebcache.filter.request.CircularExtentFilter;
 import org.geowebcache.filter.request.FileRasterFilter;
 import org.geowebcache.filter.request.WMSRasterFilter;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.grid.XMLGridSet;
 import org.geowebcache.grid.XMLGridSubset;
 import org.geowebcache.grid.XMLOldGrid;
@@ -76,14 +79,14 @@ import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
-import org.geowebcache.seed.GWCTask;
 import org.geowebcache.seed.SeedRequest;
-import org.geowebcache.seed.SeedTask;
-import org.geowebcache.seed.TruncateTask;
 import org.geowebcache.storage.DefaultStorageFinder;
+import org.geowebcache.storage.JobObject;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.StorageObject;
 import org.geowebcache.util.ApplicationContextProvider;
+import org.geowebcache.util.ISO8601DateParser;
 import org.springframework.web.context.WebApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -91,8 +94,8 @@ import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.SingleValueConverter;
 import com.thoughtworks.xstream.converters.basic.IntConverter;
-import com.thoughtworks.xstream.converters.basic.LongConverter;
 import com.thoughtworks.xstream.io.xml.DomReader;
 
 /**
@@ -453,7 +456,7 @@ public class XMLConfiguration implements Configuration {
         return xs;
     }
 
-    public XStream configureXStreamForTasks(XStream xs) {
+    public XStream configureXStreamForJobs(XStream xs) {
         // XStream xs = xstream;
         xs.setMode(XStream.NO_REFERENCES);
 
@@ -465,35 +468,18 @@ public class XMLConfiguration implements Configuration {
                 "xsi_noNamespaceSchemaLocation");
         xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
 
-        xs.alias("keyword", String.class);
-        xs.alias("tasks", List.class);
-        xs.alias("task", GWCTask.class);
-        xs.alias("task", SeedTask.class);
-        xs.alias("task", TruncateTask.class);
-
-        xs.registerConverter(new AtomicIntegerConverter());
-        xs.registerConverter(new AtomicLongConverter());
-        xs.aliasField("failedTileCount", GWCTask.class, "sharedFailureCounter");
-        xs.aliasField("type", GWCTask.class, "taskType");
-        xs.aliasField("threads", GWCTask.class, "sharedThreadCount");
-
-        xs.omitField(GWCTask.class, "threadOffset");
-        xs.omitField(GWCTask.class, "terminate");
-        xs.omitField(GWCTask.class, "groupStartTime");
-
-        xs.omitField(SeedTask.class, "trIter");
-        xs.omitField(SeedTask.class, "tl");
-        xs.omitField(SeedTask.class, "storageBroker");
-        xs.omitField(SeedTask.class, "doFilterUpdate");
-        xs.omitField(SeedTask.class, "tileFailureRetryCount");
-        xs.omitField(SeedTask.class, "tileFailureRetryWaitTime");
-        xs.omitField(SeedTask.class, "totalFailuresBeforeAborting");
-
-        xs.omitField(TruncateTask.class, "tl");
-        xs.omitField(TruncateTask.class, "tr");
-        xs.omitField(TruncateTask.class, "storageBroker");
-        xs.omitField(TruncateTask.class, "doFilterUpdate");
+        xs.alias("jobs", List.class);
+        xs.alias("job", JobObject.class);
         
+        xs.omitField(StorageObject.class, "access_count");
+        xs.omitField(StorageObject.class, "blob_size");
+        xs.omitField(StorageObject.class, "access_last");
+        xs.omitField(StorageObject.class, "status");
+        
+        xs.registerConverter(new SRSConverter());
+        xs.registerConverter(new TimestampConverter());
+        xs.registerConverter(new BoundingBoxConverter());
+
         if (this.context != null) {
             /*
              * Look up XMLConfigurationProvider extension points and let them contribute to the
@@ -508,31 +494,57 @@ public class XMLConfiguration implements Configuration {
         return xs;
     }
     
-    class AtomicIntegerConverter extends IntConverter {
+    class SRSConverter extends IntConverter {
         public boolean canConvert(Class type) {
-            return type.equals(AtomicInteger.class);
+            return type.equals(SRS.class);
         }
         
         public String toString(Object obj) {
-            return obj.toString();
+            return Integer.toString(((SRS)obj).getNumber());
         }
 
         public Object fromString(String val) {
-            return new AtomicInteger(Integer.parseInt(val));
+            return SRS.getSRS(Integer.parseInt(val));
         }        
     }    
 
-    class AtomicLongConverter extends LongConverter {
+    class TimestampConverter implements SingleValueConverter {
         public boolean canConvert(Class type) {
-            return type.equals(AtomicLong.class);
+            if(type.equals(Timestamp.class)) {
+                return true;
+            }
+            return type.equals(Timestamp.class);
         }
         
         public String toString(Object obj) {
-            return obj.toString();
+            Timestamp ts = (Timestamp)obj;
+            
+            return (ISO8601DateParser.toString(ts));
         }
 
         public Object fromString(String val) {
-            return new AtomicLong(Long.parseLong(val));
+            Date d = null;
+            
+            try {
+                d = ISO8601DateParser.parse(val);
+            } catch(ParseException pe) {
+                log.warn("Couldn't parse date: " + val);
+            }
+            return new Timestamp(d.getTime());
+        }        
+    }    
+
+    class BoundingBoxConverter implements SingleValueConverter {
+        public boolean canConvert(Class type) {
+            return type.equals(BoundingBox.class);
+        }
+        
+        public String toString(Object obj) {
+            return ((BoundingBox)obj).toString();
+        }
+
+        public Object fromString(String val) {
+            return new BoundingBox(val);
         }        
     }    
 

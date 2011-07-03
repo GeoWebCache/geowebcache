@@ -58,11 +58,11 @@
     <constructor-arg ref="gwcGridSetBroker"/>
   </bean>
   
-  <bean id="gwcTaskDispatcher" class="org.geowebcache.task.TaskDispatcher">
+  <bean id="gwcJobDispatcher" class="org.geowebcache.job.JobDispatcher">
     <description>
-      TaskDispatcher serves up current and past tasks.
+      JobDispatcher serves up jobs.
     </description>
-    <property name="tileBreeder" ref="gwcTileBreeder"/>
+    <property name="jobStore" ref="gwcJobStore"/>
   </bean>
   
   <bean id="gwcDefaultStorageFinder" class="org.geowebcache.storage.DefaultStorageFinder">
@@ -90,7 +90,7 @@
     <constructor-arg value="password" />
   </bean -->
 
-  <bean id="gwcTaskStore" class="org.geowebcache.storage.jdbc.taskstore.JDBCTaskBackend" destroy-method="destroy">
+  <bean id="gwcJobStore" class="org.geowebcache.storage.jdbc.jobstore.JDBCJobBackend" destroy-method="destroy">
     <constructor-arg ref="gwcDefaultStorageFinder" />
     <constructor-arg>
       <description>Enable connection pooling?</description>
@@ -181,6 +181,7 @@
     <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
     <property name="threadPoolExecutor" ref="gwcSeederThreadPoolExec"/>
     <property name="storageBroker" ref="gwcStorageBroker"/>
+    <property name="jobStore" ref="gwcJobStore"/>
   </bean>
 
   <bean id="gwcProxyDispatcher"

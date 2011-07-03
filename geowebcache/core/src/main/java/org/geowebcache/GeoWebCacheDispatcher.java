@@ -423,7 +423,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 + "demo\">A list of all the layers and automatic demos</a></li></ul>\n");
         str.append("<h3>Task Manager:</h3>\n");
         str.append("<ul><li><a href=\"" + baseUrl
-                + "tasklist.html\">Manage tasks such as seeding and truncating tiles.</a></li></ul>\n");
+                + "joblist.html\">Manage jobs such as seeding and truncating tiles.</a></li></ul>\n");
         str.append("<h3>GetCapabilities:</h3>\n");
         str.append("<ul><li><a href=\""
                 + baseUrl

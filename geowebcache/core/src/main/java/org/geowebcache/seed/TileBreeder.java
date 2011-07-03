@@ -35,7 +35,10 @@ import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.seed.GWCTask.PRIORITY;
 import org.geowebcache.seed.GWCTask.TYPE;
+import org.geowebcache.storage.JobObject;
+import org.geowebcache.storage.JobStore;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
 import org.geowebcache.util.GWCVars;
@@ -101,6 +104,8 @@ public class TileBreeder implements ApplicationContextAware {
 
     private StorageBroker storageBroker;
 
+    private JobStore jobStore;
+
     /**
      * How many retries per failed tile. 0 = don't retry, 1 = retry once if failed, etc
      */
@@ -161,14 +166,37 @@ public class TileBreeder implements ApplicationContextAware {
         return defaultVal;
     }
 
-    public void seed(final String layerName, final SeedRequest sr) throws GeoWebCacheException {
+    /**
+     * Creates tasks to seed a layer based on a seed request
+     * Called by SeedRestlet - SeedFormRestlet calls createTasks and dispatchTasks directly.
+     * This method will create a job that describes the seeding tasks spawned as one managed 
+     * entity. If you bypass this method by calling createTasks and dispatchTasks directly, 
+     * the job information won't be available, and can't be managed via the JobManager.
+     * @param sr
+     * @throws GeoWebCacheException
+     */
+    public void seed(final SeedRequest sr) throws GeoWebCacheException {
 
-        TileLayer tl = findTileLayer(layerName);
+        TileLayer tl = findTileLayer(sr.getLayerName());
 
         TileRange tr = createTileRange(sr, tl);
 
+        try {
+            JobObject job = JobObject.createJobObject(tl, sr);
+            jobStore.put(job);
+        } catch (StorageException se) {
+            log
+                    .error(
+                            "Couldn't store the new job for layer"
+                                    + sr.getLayerName()
+                                    + ": "
+                                    + se.getMessage()
+                                    + ". Tasks will be executed if they aren't scheduled, but job management isn't available.",
+                            se);
+        }
+        
         GWCTask[] tasks = createTasks(tr, tl, sr.getType(), sr.getThreadCount(),
-                sr.getFilterUpdate(), sr.priority);
+                sr.getFilterUpdate(), sr.getPriority());
 
         dispatchTasks(tasks);
     }
@@ -198,6 +226,7 @@ public class TileBreeder implements ApplicationContextAware {
 
         GWCTask[] tasks = new GWCTask[threadCount];
 
+        // TODO setup throttling atomic here
         AtomicLong failureCounter = new AtomicLong();
         AtomicInteger sharedThreadCount = new AtomicInteger();
         for (int i = 0; i < threadCount; i++) {
@@ -334,6 +363,10 @@ public class TileBreeder implements ApplicationContextAware {
     public void setThreadPoolExecutor(SeederThreadPoolExecutor stpe) {
         threadPool = stpe;
         // statusArray = new int[threadPool.getMaximumPoolSize()][3];
+    }
+
+    public void setJobStore(JobStore js) {
+        jobStore = js;
     }
 
     public void setStorageBroker(StorageBroker sb) {

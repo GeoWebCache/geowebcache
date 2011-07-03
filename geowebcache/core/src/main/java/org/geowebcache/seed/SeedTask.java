@@ -182,7 +182,7 @@ public class SeedTask extends GWCTask {
         }
 
         if (this.terminate) {
-            log.info("Job on " + Thread.currentThread().getName() + " was terminated after "
+            log.info("Task on " + Thread.currentThread().getName() + " was terminated after "
                     + this.tilesDone + " tiles");
         } else {
             log.info(Thread.currentThread().getName() + " completed (re)seeding layer " + layerName

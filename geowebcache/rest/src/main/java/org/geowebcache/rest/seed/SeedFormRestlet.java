@@ -796,17 +796,11 @@ public class SeedFormRestlet extends GWCRestlet {
         SeedRequest sr = new SeedRequest(layerName, bounds, gridSetId, threadCount, zoomStart,
                 zoomStop, format, type, priority, schedule, maxThroughput, fullParameters);
 
-        TileRange tr = TileBreeder.createTileRange(sr, tl);
-
-        GWCTask[] tasks;
         try {
-            tasks = seeder.createTasks(tr, tl, sr.getType(), sr.getThreadCount(),
-                    sr.getFilterUpdate(), priority);
-        } catch (GeoWebCacheException e) {
-            throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL);
+            seeder.seed(sr);
+        } catch(GeoWebCacheException gwce) {
+            throw new RestletException(gwce.getMessage(), Status.SERVER_ERROR_INTERNAL);
         }
-
-        seeder.dispatchTasks(tasks);
 
         // Give the thread executor a chance to run
         try {

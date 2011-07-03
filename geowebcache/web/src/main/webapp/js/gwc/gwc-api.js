@@ -11,48 +11,56 @@ Ext.define('GWC.RestService', {
         disableCaching: true,
         endpoint: 'http://localhost:8080/geowebcache/rest',
         timeout: 60000,
-        taskStore: null
+        jobStore: null
     },
     
     constructor: function(config) {
     	this.initConfig(config);
     	
-    	Ext.define('Task', {
+    	Ext.define('Job', {
     		extend: 'Ext.data.Model',
     	    fields: [
-    	        {name: 'taskId',  						type: 'long'},
-    	        {name: 'doFilterUpdate',				type: 'boolean'},
-    	        {name: 'state',							type: 'string'},
-    	        {name: 'type',							type: 'string'},
-    	        {name: 'reseed',						type: 'boolean'},
+    	        {name: 'jobId',  						type: 'long'},
     	        {name: 'layerName',						type: 'string'},
+    	        {name: 'state',							type: 'string'},
     	        {name: 'timeSpent',						type: 'long'},
-    	        {name: 'tilesTotal',					type: 'long'},
+    	        {name: 'timeRemaining',					type: 'long'},
     	        {name: 'tilesDone',						type: 'long'},
+    	        {name: 'tilesTotal',					type: 'long'},
     	        {name: 'failedTileCount',				type: 'long'},
+    	        {name: 'bounds',						type: 'string'},
+    	        {name: 'gridSetId',						type: 'string'},
+    	        {name: 'srs',							type: 'int'},
+    	        {name: 'threadCount',					type: 'int'},
+    	        {name: 'zoomStart',						type: 'int'},
+    	        {name: 'zoomStop',						type: 'int'},
+    	        {name: 'format',						type: 'format'},
+    	        {name: 'jobType',						type: 'string'},
+    	        {name: 'maxThroughput',					type: 'int'},
     	        {name: 'priority',						type: 'string'},
-    	        {name: 'threads',						type: 'long'},
-    	        {name: 'timeRemaining',					type: 'long'}
+    	        {name: 'schedule',						type: 'string'},
+    	        {name: 'timeFirstStart',				type: 'date'},
+    	        {name: 'timeLatestStart',				type: 'date'}
     	    ],
     	    proxy: {
     			type: 'rest',
-    			url : this.endpoint + '/tasks.json',
+    			url : this.endpoint + '/jobs.json',
                 reader: {
-                	root: 'tasks'
+                	root: 'jobs'
                 	// totalProperty: 'totalCount' // if we are doing pagination
             	}
     		}
     	});
     	
-    	this.taskStore = new Ext.data.Store({
-    	    model: 'Task',
+    	this.jobStore = new Ext.data.Store({
+    	    model: 'Job',
     	    pageSize: 0
     	});
 
     	return this;
     },
 
-	loadTasks: function(callback, failurecallback) {
-    	this.taskStore.load();
+	loadJobs: function(callback, failurecallback) {
+    	this.jobStore.load();
 	}	
 });

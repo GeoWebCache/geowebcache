@@ -47,13 +47,13 @@ public class DefaultStorageFinder {
     
     public final static String GWC_METASTORE_DRIVER_CLASS = "GWC_METASTORE_DRIVER_CLASS";
     
-    public final static String GWC_TASKSTORE_JDBC_URL = "GWC_TASKSTORE_JDBC_URL";
+    public final static String GWC_JOBSTORE_JDBC_URL = "GWC_JOBSTORE_JDBC_URL";
     
-    public final static String GWC_TASKSTORE_USERNAME = "GWC_TASKSTORE_USERNAME";
+    public final static String GWC_JOBTORE_USERNAME = "GWC_JOBSTORE_USERNAME";
     
-    public final static String GWC_TASKSTORE_PASSWORD = "GWC_TASKSTORE_PASSWORD";
+    public final static String GWC_JOBTORE_PASSWORD = "GWC_JOBSTORE_PASSWORD";
     
-    public final static String GWC_TASKSTORE_DRIVER_CLASS = "GWC_TASKSTORE_DRIVER_CLASS";
+    public final static String GWC_JOBSTORE_DRIVER_CLASS = "GWC_JOBTORE_DRIVER_CLASS";
     
     public final static String GWC_BLANK_TILE_PATH = "GWC_BLANK_TILE_PATH";
     
