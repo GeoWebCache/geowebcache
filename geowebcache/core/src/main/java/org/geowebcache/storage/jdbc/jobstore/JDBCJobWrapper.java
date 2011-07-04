@@ -249,7 +249,7 @@ class JDBCJobWrapper {
         
         condCreate(conn, "JOBS", "job_id BIGINT AUTO_INCREMENT PRIMARY KEY, " + 
                 "layer_name VARCHAR(254), " + 
-                "state VARCHAR(10), " + 
+                "state VARCHAR(20), " + 
                 "time_spent BIGINT, " + 
                 "time_remaining BIGINT, " + 
                 "tiles_done BIGINT, " + 

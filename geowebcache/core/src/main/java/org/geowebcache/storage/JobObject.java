@@ -182,7 +182,7 @@ public class JobObject extends StorageObject {
 
             state = task.getState();
                     
-            if(task instanceof SeedTask) {
+            if(task instanceof SeedTask && task.getState() == STATE.DONE) {
                 failedTileCount = ((SeedTask)task).getSharedFailureCounter();
                 
                 // make the assumption that total tiles - failed tiles = done tiles

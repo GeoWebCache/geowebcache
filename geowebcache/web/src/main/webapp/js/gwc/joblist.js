@@ -33,8 +33,12 @@ Ext.application({
         	} else {
         		state_img = 'state_blue.png';
         	}
-    	} else if(record.data.state == 'DEAD') {
+    	} else if(record.data.state == 'INTERRUPTED') {
+    		state_img = 'state_interrupted.png';
+    	} else if(record.data.state == 'KILLED') {
     		state_img = 'state_red.png';
+    	} else if(record.data.state == 'DEAD') {
+    		state_img = 'state_black.png';
     	}
     	
 	    return Ext.String.format(

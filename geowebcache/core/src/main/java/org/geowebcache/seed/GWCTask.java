@@ -33,8 +33,17 @@ public abstract class GWCTask {
         UNSET, SEED, RESEED, TRUNCATE, JOB_MONITOR
     };
 
+    /**
+     * UNSET: default
+     * READY: not sure where this state is actually set
+     * RUNNING: self evident
+     * DONE: Completed successfully
+     * INTERRUPTED: task was stopped early. Should be restarted if appropriate.
+     * KILLED: task was stopped intentionally with no intention to restart.
+     * DEAD: task has failed in some way and couldn't continue. Implies it should not be restarted.  
+     */
     public static enum STATE {
-        UNSET, READY, RUNNING, DONE, DEAD
+        UNSET, READY, RUNNING, DONE, INTERRUPTED, KILLED, DEAD
     };
 
     private static final int PRIORITY_STEP = (java.lang.Thread.NORM_PRIORITY + java.lang.Thread.MIN_PRIORITY) / 2;
@@ -215,7 +224,9 @@ public abstract class GWCTask {
     
     protected void checkInterrupted() throws InterruptedException {
         if (Thread.interrupted()) {
-            this.state = STATE.DEAD;
+            if(this.state == STATE.UNSET || this.state == STATE.READY || this.state == STATE.RUNNING) {
+                this.state = STATE.DEAD;
+            }
             throw new InterruptedException();
         }
     }

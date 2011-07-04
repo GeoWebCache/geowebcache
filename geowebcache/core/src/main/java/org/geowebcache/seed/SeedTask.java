@@ -185,17 +185,17 @@ public class SeedTask extends GWCTask {
         if (this.terminate) {
             log.info("Task on " + Thread.currentThread().getName() + " was terminated after "
                     + this.tilesDone + " tiles");
+            super.state = GWCTask.STATE.KILLED;
         } else {
             log.info(Thread.currentThread().getName() + " completed (re)seeding layer " + layerName
                     + " after " + this.tilesDone + " tiles and " + this.timeSpent + " seconds.");
+            super.state = GWCTask.STATE.DONE;
         }
 
         checkInterrupted();
         if (threadOffset == 0 && doFilterUpdate) {
             runFilterUpdates(tr.gridSetId);
         }
-
-        super.state = GWCTask.STATE.DONE;
     }
 
     /**
