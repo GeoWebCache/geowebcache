@@ -284,8 +284,8 @@ public class WMSService extends Service {
 
         int height, width;
         try {
-            height = Integer.parseInt(values.get("width"));
-            width = Integer.parseInt(values.get("height"));
+            height = Integer.parseInt(values.get("height"));
+            width = Integer.parseInt(values.get("width"));
         } catch (NumberFormatException nfe) {
             throw new GeoWebCacheException(
                     "The parameters for height and width must both be positive integers.");
