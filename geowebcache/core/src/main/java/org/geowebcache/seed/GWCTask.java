@@ -70,9 +70,6 @@ public abstract class GWCTask {
         public String toString() { return String.format("%02d - %s", threadPriority, readableName); }
     };
     
-    public static String NO_SCHEDULE = null;
-    public static int NO_THROUGHOUT_RESTRICTIONS = -1;
-
     /**
      * Value shared between all the threads in the group, is incremented each time a task starts
      * working and decremented each time one task finishes (either normally or abnormally)
@@ -104,6 +101,7 @@ public abstract class GWCTask {
     protected long jobId = -1;
 
     private long groupStartTime;
+    
 
     /**
      * Marks this task as active in the group by incrementing the shared counter, delegates to
@@ -224,8 +222,8 @@ public abstract class GWCTask {
     
     protected void checkInterrupted() throws InterruptedException {
         if (Thread.interrupted()) {
-            if(this.state == STATE.UNSET || this.state == STATE.READY || this.state == STATE.RUNNING) {
-                this.state = STATE.DEAD;
+            if(this.state == STATE.READY || this.state == STATE.RUNNING) {
+                this.state = STATE.INTERRUPTED;
             }
             throw new InterruptedException();
         }

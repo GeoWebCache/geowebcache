@@ -47,7 +47,7 @@ import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.seed.GWCTask.PRIORITY;
 import org.geowebcache.seed.GWCTask.TYPE;
-import org.geowebcache.storage.TileRange;
+import org.geowebcache.storage.JobObject;
 import org.geowebcache.util.ServletUtils;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
@@ -441,6 +441,7 @@ public class SeedFormRestlet extends GWCRestlet {
         doc.append("<tr><td>Schedule (<a target=\"_blank\" href=\"http://en.wikipedia.org/wiki/Cron\">CRON</a>):</td><td>\n");
 
         doc.append("<input type=\"radio\" name=\"is_scheduled\" value=\"false\" checked=\"checked\"/>Now ");
+        doc.append("<input type=\"radio\" name=\"is_scheduled\" value=\"once\"/>Run Once\n");
         doc.append("<input type=\"radio\" name=\"is_scheduled\" value=\"true\"/>Repeat\n");
         doc.append("<tr><td>&nbsp;</td><td>\n");
         doc.append("<input type=\"text\" name=\"schedule\"/>\n");
@@ -780,23 +781,29 @@ public class SeedFormRestlet extends GWCRestlet {
             }
         }
         
-        String schedule = GWCTask.NO_SCHEDULE;
+        String schedule = JobObject.NO_SCHEDULE;
         if(form.getFirst("is_scheduled") != null) {
-            if(form.getFirst("is_scheduled").getValue().equals("true")) {
+            if(form.getFirst("is_scheduled").getValue().equals("true") || 
+               form.getFirst("is_scheduled").getValue().equals("once")) {
                 if(form.getFirst("schedule") != null) {
                     schedule = form.getFirst("schedule").getValue();
                 }
             }
         }
         
-        int maxThroughput = GWCTask.NO_THROUGHOUT_RESTRICTIONS;
+        boolean runOnce = false;
+        if(form.getFirst("is_scheduled") != null) {
+            runOnce = form.getFirst("is_scheduled").getValue().equals("once");
+        }
+        
+        int maxThroughput = -1;
         if(form.getFirst("maxThroughput") != null) {
             maxThroughput = Integer.parseInt(form.getFirst("maxThroughput").getValue());
         }
 
         final String layerName = tl.getName();
         SeedRequest sr = new SeedRequest(layerName, bounds, gridSetId, threadCount, zoomStart,
-                zoomStop, format, type, priority, schedule, maxThroughput, fullParameters);
+                zoomStop, format, type, priority, schedule, runOnce, maxThroughput, fullParameters);
 
         try {
             seeder.seed(sr);

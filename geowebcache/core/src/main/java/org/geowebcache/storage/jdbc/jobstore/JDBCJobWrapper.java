@@ -263,9 +263,13 @@ class JDBCJobWrapper {
                 "zoom_stop INT, " + 
                 "format VARCHAR(32), " + 
                 "job_type VARCHAR(10), " + 
+                "throughput FLOAT, " + 
                 "max_throughput INT, " + 
                 "priority VARCHAR(10), " + 
-                "schedule VARCHAR(10), " + 
+                "schedule VARCHAR(254), " + 
+                "run_once BOOL, " + 
+                "filter_update BOOL, " + 
+                "parameters VARCHAR(1024), " + 
                 "time_first_start TIMESTAMP, " + 
                 "time_latest_start TIMESTAMP ", 
                 "layer_name", 
@@ -361,10 +365,11 @@ class JDBCJobWrapper {
         String query = "MERGE INTO " + 
                 "JOBS(job_id, layer_name, state, time_spent, time_remaining, tiles_done, " + 
                 "tiles_total, failed_tile_count, bounds, gridset_id, srs, thread_count, " + 
-                "zoom_start, zoom_stop, format, job_type, max_throughput, priority, schedule, " + 
+                "zoom_start, zoom_stop, format, job_type, throughput, max_throughput, " +  
+                "priority, schedule, run_once, filter_update, parameters, " + 
                 "time_first_start, time_latest_start) " + 
                 "KEY(job_id) " + 
-                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         final Connection conn = getConnection();
 
@@ -395,21 +400,29 @@ class JDBCJobWrapper {
                 prep.setInt(14, stObj.getZoomStop());
                 prep.setString(15, stObj.getFormat());
                 prep.setString(16, stObj.getJobType().name());
-                prep.setInt(17, stObj.getMaxThroughput());
-                prep.setString(18, stObj.getPriority().name());
-                prep.setString(19, stObj.getSchedule());
+                prep.setFloat(17, stObj.getThroughput());
+                prep.setInt(18, stObj.getMaxThroughput());
+                prep.setString(19, stObj.getPriority().name());
+                prep.setString(20, stObj.getSchedule());
+                prep.setBoolean(21, stObj.isRunOnce());
+                prep.setBoolean(22, stObj.isFilterUpdate());
+                prep.setString(23, stObj.getEncodedParameters());
                 
-                prep.setTimestamp(20, stObj.getTimeFirstStart());
-                prep.setTimestamp(21, stObj.getTimeLatestStart());
+                prep.setTimestamp(24, stObj.getTimeFirstStart());
+                prep.setTimestamp(25, stObj.getTimeLatestStart());
                 
                 insertId = wrappedInsert(prep);
             } finally {
                 close(prep);
             }
             if (insertId == null) {
-                log.error("Did not receive a id for " + query);
+                log.error("Did not receive an id for " + query);
             } else {
-                stObj.setJobId(insertId.longValue());
+                if(stObj.getJobId() == -1) {
+                    // only use the inserted id if we were doing an insert.
+                    // what insertid will be if we weren't doing an insert is not defined.
+                    stObj.setJobId(insertId.longValue());
+                }
             }
 
         } finally {
@@ -556,6 +569,46 @@ class JDBCJobWrapper {
         return result;
     }
 
+    public Iterable<JobObject> getPendingScheduledJobs() throws SQLException {
+        String query = "SELECT * FROM JOBS " + 
+                        "WHERE (state = '" + STATE.READY.name() + "') " + 
+                          "AND schedule IS NOT NULL";
+        return getFilteredJobs(query);
+    }
+
+    public Iterable<JobObject> getInterruptedJobs() throws SQLException {
+        String query = "SELECT * FROM JOBS " + 
+                        "WHERE (state = '" + STATE.RUNNING.name() + "' OR state = '" + STATE.INTERRUPTED.name() + "')";
+        return getFilteredJobs(query);
+    }
+    
+    private Iterable<JobObject> getFilteredJobs(String query) throws SQLException {
+        ArrayList<JobObject> result = new ArrayList<JobObject>();
+        
+        final Connection conn = getConnection();
+
+        PreparedStatement prep = null;
+        
+        try {
+            prep = conn.prepareStatement(query);
+
+            ResultSet rs = prep.executeQuery();
+            try {
+                while(rs.next()) {
+                    JobObject job = new JobObject();
+                    readJob(job, rs);
+                    result.add(job);
+                }
+            } finally {
+                close(rs);
+            }
+        } finally {
+            close(prep);
+            close(conn);
+        }
+        return result;
+    }
+    
     private void readJob(JobObject job, ResultSet rs) throws SQLException {
         job.setJobId(rs.getLong("job_id"));
         job.setLayerName(rs.getString("layer_name"));
@@ -575,9 +628,13 @@ class JDBCJobWrapper {
         job.setZoomStop(rs.getInt("zoom_stop"));
         job.setFormat(rs.getString("format"));
         job.setJobType(TYPE.valueOf(rs.getString("job_type")));
+        job.setThroughput(rs.getFloat("throughput"));
         job.setMaxThroughput(rs.getInt("max_throughput"));
         job.setPriority(PRIORITY.valueOf(rs.getString("priority")));
         job.setSchedule(rs.getString("schedule"));
+        job.setRunOnce(rs.getBoolean("run_once"));
+        job.setFilterUpdate(rs.getBoolean("filter_update"));
+        job.setEncodedParameters(rs.getString("parameters"));
         
         job.setTimeFirstStart(rs.getTimestamp("time_first_start"));
         job.setTimeLatestStart(rs.getTimestamp("time_latest_start"));

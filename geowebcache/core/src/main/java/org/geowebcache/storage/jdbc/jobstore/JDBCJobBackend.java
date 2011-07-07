@@ -19,6 +19,7 @@ package org.geowebcache.storage.jdbc.jobstore;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -165,5 +166,27 @@ public class JDBCJobBackend implements JobStore {
         if (this.wrpr != null) {
             wrpr.destroy();
         }
+    }
+
+    public Iterable<JobObject> getPendingScheduledJobs() {
+        try {
+            Iterable<JobObject> response = wrpr.getPendingScheduledJobs();
+            return response;
+        } catch (SQLException se) {
+            log.error("Failed to get pending scheduled jobs: " + se.getMessage());
+        }
+
+        return new ArrayList<JobObject>();
+    }
+
+    public Iterable<JobObject> getInterruptedJobs() {
+        try {
+            Iterable<JobObject> response = wrpr.getInterruptedJobs();
+            return response;
+        } catch (SQLException se) {
+            log.error("Failed to get interrupted jobs: " + se.getMessage());
+        }
+
+        return new ArrayList<JobObject>();
     }
 }

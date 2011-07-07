@@ -17,6 +17,11 @@
  */
 package org.geowebcache.storage;
 
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.geowebcache.seed.GWCTask;
+
 /**
  * A taskstore manages all meta information related to tasks
  */
@@ -48,4 +53,8 @@ public interface JobStore {
      * Destroy method for Spring
      */
     public void destroy();
+
+    public Iterable<JobObject> getPendingScheduledJobs();
+
+    public Iterable<JobObject> getInterruptedJobs();
 }

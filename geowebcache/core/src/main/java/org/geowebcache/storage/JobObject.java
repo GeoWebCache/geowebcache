@@ -17,10 +17,19 @@
  */
 package org.geowebcache.storage;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
@@ -34,14 +43,19 @@ import org.geowebcache.seed.TruncateTask;
 import org.geowebcache.seed.GWCTask.PRIORITY;
 import org.geowebcache.seed.GWCTask.STATE;
 import org.geowebcache.seed.GWCTask.TYPE;
+import org.geowebcache.util.StringUtils;
 
 /**
  * Represents a geowebcache job - which is a collection of tasks (threads). Jobs may be complete, running, or not started yet.
  */
 public class JobObject extends StorageObject {
 
+    private static Log log = LogFactory.getLog(JobObject.class);
+
     public static final String OBJECT_TYPE = "job";
 
+    public static String NO_SCHEDULE = null;
+    
     private long jobId = -1l;
     private String layerName = null;
     private STATE state = STATE.UNSET;
@@ -59,13 +73,17 @@ public class JobObject extends StorageObject {
     private int zoomStop = -1;
     private String format = null;
     private TYPE jobType = TYPE.UNSET;
+    private float throughput = 0;
     private int maxThroughput = -1;
+    
     private PRIORITY priority = PRIORITY.LOW;
-    private String schedule = null;
+    private String schedule = NO_SCHEDULE;
+    private boolean runOnce = false;
+    private boolean filterUpdate = false;
+    private String encodedParameters = null;
     
     private Timestamp timeFirstStart = null;
     private Timestamp timeLatestStart = null;
-    
 
     public static JobObject createJobObject(TileLayer tl, SeedRequest sr) throws GeoWebCacheException {
         JobObject obj = new JobObject();
@@ -112,6 +130,13 @@ public class JobObject extends StorageObject {
         obj.maxThroughput = sr.getMaxThroughput();
         obj.priority = sr.getPriority();
         obj.schedule = sr.getSchedule();
+        obj.runOnce = sr.isRunOnce();
+        
+        obj.filterUpdate = sr.getFilterUpdate();
+        obj.setParameters(sr.getParameters());
+        
+        // finally, change the state to ready
+        obj.state = STATE.READY;
         
         return obj;
     }
@@ -142,6 +167,10 @@ public class JobObject extends StorageObject {
             if(task.getJobId() == jobId) {
                 if(foundTask) {
                     tilesDone += task.getTilesDone();
+
+                    if(task instanceof SeedTask) {
+                        throughput += ((SeedTask)task).getThroughput();
+                    }
                 } else {
                     foundTask = true;
                     timeSpent = task.getTimeSpent();
@@ -153,6 +182,7 @@ public class JobObject extends StorageObject {
                     
                     if(task instanceof SeedTask) {
                         failedTileCount = ((SeedTask)task).getSharedFailureCounter();
+                        throughput = ((SeedTask)task).getThroughput();
                         isRunning = isRunning || task.getState() == STATE.RUNNING; // if any task is running, the job is running
                     } else if(task instanceof TruncateTask) {
                         ;
@@ -341,6 +371,27 @@ public class JobObject extends StorageObject {
 
     public void setSchedule(String schedule) {
         this.schedule = schedule;
+        
+        // an empty string is interpreted as no schedule, make sure it's set properly
+        if(this.schedule != null && this.schedule.equals("")) {
+            this.schedule = NO_SCHEDULE;
+        }
+    }
+
+    public boolean isRunOnce() {
+        return runOnce;
+    }
+
+    public void setRunOnce(boolean runOnce) {
+        this.runOnce = runOnce;
+    }
+
+    public boolean isFilterUpdate() {
+        return filterUpdate;
+    }
+
+    public void setFilterUpdate(boolean filterUpdate) {
+        this.filterUpdate = filterUpdate;
     }
 
     public Timestamp getTimeFirstStart() {
@@ -359,10 +410,76 @@ public class JobObject extends StorageObject {
         this.timeLatestStart = timeLatestStart;
     }
 
+    public String getEncodedParameters() {
+        return encodedParameters;
+    }
+
+    public void setEncodedParameters(String encodedParameters) {
+        this.encodedParameters = encodedParameters;
+    }
+    
+    public float getThroughput() {
+        return throughput;
+    }
+
+    public void setThroughput(float throughput) {
+        this.throughput = throughput;
+    }
+
+    /**
+     * Gets parameters as a map of key/value pairs.
+     * Internally the parameters are stored as a single URL encoded querystring.
+     * Getters and setters for parameters handle the conversion.
+     * Because a map is returned, multiple parameters with the same name isn't supported. 
+     * @return
+     */
+    public Map<String, String> getParameters() {
+        Map<String, String> map = new HashMap<String, String>();
+        
+        if(encodedParameters != null && encodedParameters != "") {
+            try {
+                for (String param : encodedParameters.split("&")) {
+                    String pair[] = param.split("=");
+                    String key = URLDecoder.decode(pair[0], "UTF-8");
+                    String value = URLDecoder.decode(pair[1], "UTF-8");
+                    map.put(key, value);
+                }
+            }catch (UnsupportedEncodingException e) {
+                log.warn("Couldn't interpret parameters, they won't be used. Parameters were:\n" + encodedParameters, e);
+            }
+        }        
+        
+        return(map);
+    }
+    
+    public void setParameters(Map<String, String> map) {
+        if(map == null) {
+            encodedParameters = null;
+        } else {
+            try {
+                List<String> list = new ArrayList<String>();
+                for (Entry<String, String>entry : map.entrySet()) {
+                    String key = URLEncoder.encode(entry.getKey(), "UTF-8");
+                    String value = URLEncoder.encode(entry.getValue(), "UTF-8");
+                    
+                    list.add(key + "=" + value);
+                }
+                encodedParameters = StringUtils.join(list, "&"); 
+                
+            } catch (UnsupportedEncodingException e) {
+                log.warn("Couldn't encode parameters, they won't be used. Parameters were:\n" + map.toString(), e);
+            }
+        }
+    }
+
     public String getType() {
         return OBJECT_TYPE;
     }
     public String toString() {
         return "[" + jobId + "," + jobType + ":" + "," + layerName + "," + gridSetId + "]";
+    }
+
+    public boolean isScheduled() {
+        return (schedule != NO_SCHEDULE);
     }
 }

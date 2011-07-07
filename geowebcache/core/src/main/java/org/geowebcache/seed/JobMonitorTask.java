@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.job.JobScheduler;
 import org.geowebcache.storage.JobObject;
 import org.geowebcache.storage.JobStore;
 
@@ -56,8 +57,12 @@ public class JobMonitorTask extends GWCTask {
         Thread.currentThread().setPriority(PRIORITY.LOW.getThreadPriority());
         
         int consecutiveFailures = 0;
+        
+        initCron4J();
+        
+        restartInterruptedTasks();
 
-        while((!Thread.interrupted()) && super.state != GWCTask.STATE.DEAD) {
+        while((!Thread.interrupted()) && super.state != GWCTask.STATE.INTERRUPTED) {
             try {
                 Iterator<Entry<Long, GWCTask>> tasks = seeder.getRunningTasksIterator();
                 
@@ -118,6 +123,38 @@ public class JobMonitorTask extends GWCTask {
         if (super.state != GWCTask.STATE.DEAD) {
             super.state = GWCTask.STATE.DONE;
             log.debug("Completed job monitoring.");
+        }
+    }
+
+    /**
+     * Ensures all ready jobs in the system are scheduled using Cron4J
+     * Called when this task begins.  
+     */
+    private void initCron4J() {
+        Iterator<JobObject> iter = jobStore.getPendingScheduledJobs().iterator();
+        
+        while(iter.hasNext()) {
+            JobObject job = iter.next();
+            JobScheduler.scheduleJob(job, seeder);
+        }
+    }
+
+
+    /**
+     * Checks for interrupted tasks or tasks that the store thought was running 
+     * and starts them.
+     * Called when this task begins.  
+     */
+    private void restartInterruptedTasks() {
+        Iterator<JobObject> iter = jobStore.getInterruptedJobs().iterator();
+        
+        while(iter.hasNext()) {
+            JobObject job = iter.next();
+            try {
+                seeder.executeJob(job);
+            } catch (GeoWebCacheException e) {
+                log.error("Couldn't restart interrupted job: " + e.getMessage(), e);
+            }
         }
     }
 

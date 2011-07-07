@@ -101,7 +101,7 @@ public class JobRestlet extends GWCRestlet {
             if(req.getAttributes().get("job") == null) {
                 jobId = -1;
             } else {
-                jobId = Long.parseLong((String)req.getAttributes().get("task"));
+                jobId = Long.parseLong((String)req.getAttributes().get("job"));
             }
         } catch (NumberFormatException nfe) {
             throw new RestletException("'" + jobId + "' is not a valid job ID.", Status.CLIENT_ERROR_BAD_REQUEST);
@@ -181,7 +181,7 @@ public class JobRestlet extends GWCRestlet {
         long jobId = -1;
         
         try {
-            jobId = Long.parseLong((String)req.getAttributes().get("task"));
+            jobId = Long.parseLong((String)req.getAttributes().get("job"));
         } catch (NumberFormatException nfe) {
             throw new RestletException("'" + jobId + "' is not a valid job ID.", Status.CLIENT_ERROR_BAD_REQUEST);
         }
@@ -201,7 +201,7 @@ public class JobRestlet extends GWCRestlet {
         long jobId = -1;
         
         try {
-            jobId = Long.parseLong((String)req.getAttributes().get("task"));
+            jobId = Long.parseLong((String)req.getAttributes().get("job"));
         } catch (NumberFormatException nfe) {
             throw new RestletException("'" + jobId + "' is not a valid job ID.", Status.CLIENT_ERROR_BAD_REQUEST);
         }

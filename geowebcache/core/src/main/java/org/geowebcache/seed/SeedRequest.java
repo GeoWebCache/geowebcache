@@ -58,6 +58,8 @@ public class SeedRequest {
     protected PRIORITY priority = PRIORITY.LOW;
 
     protected String schedule = null;
+    
+    protected boolean runOnce = false;
 
     public SeedRequest() {
         // do nothing, i guess
@@ -78,7 +80,7 @@ public class SeedRequest {
      */
     public SeedRequest(String name, BoundingBox bounds, String gridSetId, int threadCount,
             int zoomStart, int zoomStop, String format, GWCTask.TYPE type,
-            PRIORITY priority, String schedule, int maxThroughput,
+            PRIORITY priority, String schedule, boolean runOnce, int maxThroughput,
             Map<String, String> parameters) {
         this.name = name;
         this.bounds = bounds;
@@ -90,6 +92,7 @@ public class SeedRequest {
         this.enumType = type;
         this.priority = priority;
         this.schedule = schedule;
+        this.runOnce = runOnce;
         this.maxThroughput = maxThroughput;
         this.parameters = parameters;
     }
@@ -214,6 +217,15 @@ public class SeedRequest {
      */
     public String getSchedule() {
         return schedule;
+    }
+    
+    /**
+     * If true, the task will only run once the next time the specified CRON would fire.
+     * 
+     * @return 
+     */
+    public boolean isRunOnce() {
+        return runOnce;
     }
 
     /**

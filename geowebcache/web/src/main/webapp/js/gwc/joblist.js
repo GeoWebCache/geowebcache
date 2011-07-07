@@ -19,9 +19,11 @@ Ext.application({
     
     /* renderers for various columns of the grid */
     renderState: function(value, p, record) {
-    	state_img = 'state_gray.png'; // other states, UNSET and READY
+    	state_img = 'state_gray.png'; // UNSET
     	
-    	if(record.data.state == 'RUNNING') {
+    	if(record.data.state == 'READY') {
+    		state_img = 'state_lightgreen.png';
+    	} else if(record.data.state == 'RUNNING') {
         	if(record.data.failedTileCount > 0) {
         		state_img = 'state_yellow.png';
         	} else {
@@ -58,7 +60,8 @@ Ext.application({
 	    return Ext.String.format(
 	    	this.jobTemplate,
 	        jobType,
-	        record.data.layerName
+	        record.data.layerName,
+	        formatMimeType(record.data.format)
 	    );
 	},
 	
@@ -73,20 +76,33 @@ Ext.application({
 	},
 	
     renderTime: function(value, p, record) {
-		if(record.data.timeSpent == -1 || record.data.timeRemaining == -1) {
-			return "n/a";
+		if(record.data.state == 'RUNNING') {
+			if(record.data.timeSpent == -1 || record.data.timeRemaining == -1) {
+				return "unknown";
+			} else {
+				return Ext.String.format(
+			    	"elapsed: {0}<br />to go: {1}",
+			        formatSecondsElapsed(record.data.timeSpent),
+			        formatSecondsElapsed(record.data.timeRemaining)
+			    );
+			}
 		} else {
-			return Ext.String.format(
-		    	"elapsed: {0}<br />to go: {1}",
-		        formatSecondsElapsed(record.data.timeSpent),
-		        formatSecondsElapsed(record.data.timeRemaining)
-		    );
+			if(record.data.timeSpent == -1) {
+				return "-";
+			} else {
+				return Ext.String.format(
+			    	"elapsed: {0}",
+			        formatSecondsElapsed(record.data.timeSpent)
+			    );
+			}
 		}
 	},
 
     renderTileCounts: function(value, p, record) {
-		if(record.data.tilesDone == -1 || record.data.tilesTotal == -1) {
-			return "too many to count";
+		if(record.data.jobType == 'TRUNCATE') {
+			return "-";
+		} else if(record.data.tilesDone == -1 || record.data.tilesTotal == -1) {
+			return "unknown";
 		} else {
 		    return Ext.String.format(
 		    	"<div style='float: left;'><b>{0}%</b>&nbsp;</div>" + 
@@ -98,11 +114,34 @@ Ext.application({
 		}
 	},
 
-    renderThroughput: function(value, p, record) {
-		if(record.data.maxThroughput == -1) {
-			return "no limit";
+    renderSchedule: function(value, p, record) {
+		if(record.data.runOnce) {
+			return Ext.String.format(
+			    	"{0}<br />(once)",
+			        record.data.schedule
+			    );
 		} else {
-			return record.data.maxThroughput;
+			return record.data.schedule;
+		}
+	},
+
+	renderThroughput: function(value, p, record) {
+		// alert(record.data.throughput);
+		if(record.data.jobType == 'TRUNCATE') {
+			return "-";
+		} else if(record.data.state != 'UNSET' && record.data.state != 'READY') {
+			tput = Ext.Number.toFixed(record.data.throughput, 1);
+			var result = tput + " / sec";
+			if(record.data.maxThroughput != -1) {
+				result = result + "<br />(max " + record.data.maxThroughput + ")";
+			}
+			return result;
+		} else {
+			if(record.data.maxThroughput == -1) {
+				return "no limit";
+			} else {
+				return "max " + record.data.maxThroughput + " / sec";
+			}
 		}
 	},
 	
@@ -130,7 +169,7 @@ Ext.application({
 	        },{
 	            text: "Job",
 	            dataIndex: 'jobId',
-	            flex: 20,
+	            flex: 10,
 	            renderer: this.renderJob,
 	            sortable: false
 	        },{
@@ -142,11 +181,17 @@ Ext.application({
 	        },{
 	            text: "Region",
 	            dataIndex: 'bounds',
-	            width: 100,
 	            flex: 4,
 	            align: "center",
 	            renderer: this.renderRegion,
 	            sortable: false
+	        },{
+	            text: "Start Time",
+	            dataIndex: 'timeFirstStart',
+	            flex: 3,
+	            align: "center",
+	            hidden: true,
+	            sortable: true
 	        },{
 	            text: "Time",
 	            dataIndex: 'timeRemaining',
@@ -178,6 +223,7 @@ Ext.application({
 	            text: "Schedule",
 	            dataIndex: 'schedule',
 	            width: 80,
+	            renderer: this.renderSchedule,
 	            align: "center",
 	            sortable: true
 	        }],
@@ -243,6 +289,11 @@ var formatSecondsElapsed = function(seconds) {
 			Ext.String.leftPad(minutes, 2, '0'), 
 			Ext.String.leftPad(seconds, 2, '0'));
 	
+	return result;
+};
+
+var formatMimeType = function(mimeType) {
+	var result = mimeType.replace("image/", "").toLowerCase();
 	return result;
 };
 

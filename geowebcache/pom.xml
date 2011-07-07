@@ -54,7 +54,7 @@
       <name>mortbay</name>
       <url>http://www.mortbay.org/maven2/release</url>
       <snapshots>
-	<enabled>false</enabled>
+      <enabled>false</enabled>
       </snapshots>
     </repository>
     <repository>
@@ -66,6 +66,17 @@
       <id>oracleReleases</id>
       <name>Oracle Released Java Packages</name>
       <url>http://download.oracle.com/maven</url>
+      <layout>default</layout>
+    </repository>
+    <repository>
+	  <!-- 
+		This repository was added only for cron4j. 
+		Could we make a copy of this in one of the 
+		above repositories?
+	  -->
+      <id>GridGainSystems</id>
+      <name>GridGain Systems hosted libraries</name>
+      <url>http://www.gridgainsystems.com/maven2</url>
       <layout>default</layout>
     </repository>
   </repositories>

@@ -478,7 +478,9 @@ public class XMLConfiguration implements Configuration {
 
         xs.alias("jobs", List.class);
         xs.alias("job", JobObject.class);
-        
+
+        xs.aliasField("parameters", JobObject.class, "encodedParameters");
+
         xs.omitField(StorageObject.class, "access_count");
         xs.omitField(StorageObject.class, "blob_size");
         xs.omitField(StorageObject.class, "access_last");

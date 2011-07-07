@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.logging.Log;
@@ -55,14 +56,25 @@ public class SeedTask extends GWCTask {
 
     private AtomicLong sharedFailureCounter;
 
+    private int minTimeBetweenRequests;
+    
+    private ThroughputTracker throughputTracker = null;
+    
+    private long seedStartTime; 
+    
     /**
-     * Constructs a SeedTask from a SeedRequest
-     * 
-     * @param req
-     *            - the SeedRequest
+     * Constructs a SeedTask
+     * @param sb Used to store the tiles and meta information
+     * @param trIter Iterable range of tiles to seed
+     * @param tl Layer to seed
+     * @param reseed If true, existing cached tiles will be overwritten with the latest
+     * @param doFilterUpdate
+     * @param priority thread priority for this task
+     * @param maxThroughput Maximum number of requests per second
+     * @param jobId
      */
     public SeedTask(StorageBroker sb, TileRangeIterator trIter, TileLayer tl, boolean reseed,
-            boolean doFilterUpdate, PRIORITY priority, long jobId) {
+            boolean doFilterUpdate, PRIORITY priority, float maxThroughput, long jobId) {
         this.storageBroker = sb;
         this.trIter = trIter;
         this.tl = tl;
@@ -75,6 +87,15 @@ public class SeedTask extends GWCTask {
         tileFailureRetryWaitTime = 100;
         totalFailuresBeforeAborting = 10000;
         sharedFailureCounter = new AtomicLong();
+
+        if(maxThroughput > 0) {
+            minTimeBetweenRequests = (int)(1000 / maxThroughput);
+        } else {
+            minTimeBetweenRequests = 0;
+        }
+        
+        throughputTracker = new ThroughputTracker(5); // minimal throughput tracking by default
+        seedStartTime = -1;
 
         if (reseed) {
             super.taskType = GWCTask.TYPE.RESEED;
@@ -116,6 +137,7 @@ public class SeedTask extends GWCTask {
 
         long seedCalls = 0;
         while (gridLoc != null && this.terminate == false) {
+            seedStartTime = System.currentTimeMillis();
 
             checkInterrupted();
             Map<String, String> fullParameters = tr.parameters;
@@ -178,8 +200,11 @@ public class SeedTask extends GWCTask {
             updateStatusInfo(tl, tilesCompletedByThisThread, START_TIME);
 
             checkInterrupted();
+            
             seedCalls++;
             gridLoc = trIter.nextMetaGridLocation(gridLoc);
+
+            checkThrottling();
         }
 
         if (this.terminate) {
@@ -195,6 +220,23 @@ public class SeedTask extends GWCTask {
         checkInterrupted();
         if (threadOffset == 0 && doFilterUpdate) {
             runFilterUpdates(tr.gridSetId);
+        }
+    }
+
+    private void checkThrottling() throws InterruptedException {
+        if(seedStartTime != -1) {
+            int sample = (int)(System.currentTimeMillis() - seedStartTime);
+            // There is a 0.02 of a second buffer here as a rough "factor out the overhead" and "if
+            // it's close don't sleep the thread for almost no time" reasons
+            if(minTimeBetweenRequests > 0 && minTimeBetweenRequests > (sample + 20)) {
+                try {
+                    Thread.sleep(minTimeBetweenRequests - sample);
+                } catch (InterruptedException e) {
+                    checkInterrupted();
+                }
+                sample = (int)(System.currentTimeMillis() - seedStartTime);
+            }
+            throughputTracker.addSample(sample);
         }
     }
 
@@ -277,6 +319,10 @@ public class SeedTask extends GWCTask {
         this.totalFailuresBeforeAborting = totalFailuresBeforeAborting;
         this.sharedFailureCounter = sharedFailureCounter;
     }
+    
+    public void setThrottlingPolicy(int sampleSize) {
+        throughputTracker = new ThroughputTracker(sampleSize);
+    }
 
     @Override
     protected void dispose() {
@@ -287,5 +333,13 @@ public class SeedTask extends GWCTask {
     
     public long getSharedFailureCounter() {
         return(sharedFailureCounter.get());
+    }
+
+    /**
+     * Number of requests this seed task is handling per second.
+     * @return current throughput in actions (in this case requests) per second
+     */
+    public float getThroughput() {
+        return throughputTracker.getThroughput();
     }
 }
