@@ -244,12 +244,15 @@ public abstract class GWCTask {
     }
 
     /**
-     * Log a new error, warning or info for this task
+     * Log a new error, warning or info for this task to be collated by the job the task belongs to.
+     * Tasks may be spawned without a job. In this case no logging will occur.
      * @param joblog
      */
     protected void addLog(JobLogObject joblog) {
-        synchronized(newLogs) {
-            newLogs.add(joblog);
+        if(newLogs != null && jobId != -1) {
+            synchronized(newLogs) {
+                newLogs.add(joblog);
+            }
         }
     }
 
