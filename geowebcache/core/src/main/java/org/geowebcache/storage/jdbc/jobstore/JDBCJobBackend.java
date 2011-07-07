@@ -132,7 +132,7 @@ public class JDBCJobBackend implements JobStore {
 
     public long getCount() throws StorageException {
         try {
-            long response = wrpr.getCount();
+            long response = wrpr.getJobCount();
             return response;
         } catch (SQLException se) {
             log.error("Failed to get job count: " + se.getMessage());
@@ -181,6 +181,7 @@ public class JDBCJobBackend implements JobStore {
 
     public Iterable<JobObject> getInterruptedJobs() {
         try {
+            wrpr.setRunningJobsToInterrupted();
             Iterable<JobObject> response = wrpr.getInterruptedJobs();
             return response;
         } catch (SQLException se) {

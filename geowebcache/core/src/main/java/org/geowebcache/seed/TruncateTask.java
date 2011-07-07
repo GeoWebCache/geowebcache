@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.storage.JobLogObject;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileRange;
 
@@ -63,6 +64,7 @@ public class TruncateTask extends GWCTask {
             e.printStackTrace();
             super.state = GWCTask.STATE.DEAD;
             log.error("During truncate request: " + e.getMessage());
+            addLog(JobLogObject.createErrorLog(jobId, e));
         }
 
         checkInterrupted();
@@ -76,6 +78,10 @@ public class TruncateTask extends GWCTask {
         }
     }
 
+    protected void doAbnormalExit() {
+        ; // not much a truncate job can do on abnormal exit
+    }
+    
     /**
      * Updates any request filters
      */

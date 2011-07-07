@@ -28,6 +28,8 @@ Ext.define('GWC.RestService', {
     	        {name: 'tilesDone',						type: 'long'},
     	        {name: 'tilesTotal',					type: 'long'},
     	        {name: 'failedTileCount',				type: 'long'},
+    	        {name: 'warnCount',						type: 'long'},
+    	        {name: 'errorCount',					type: 'long'},
     	        {name: 'bounds',						type: 'string'},
     	        {name: 'gridSetId',						type: 'string'},
     	        {name: 'srs',							type: 'int'},

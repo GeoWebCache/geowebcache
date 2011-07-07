@@ -19,7 +19,11 @@ package org.geowebcache.storage.jdbc.jobstore;
 
 import static org.geowebcache.storage.jdbc.JDBCUtils.close;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -27,6 +31,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,8 +41,10 @@ import org.geowebcache.seed.GWCTask.PRIORITY;
 import org.geowebcache.seed.GWCTask.STATE;
 import org.geowebcache.seed.GWCTask.TYPE;
 import org.geowebcache.storage.DefaultStorageFinder;
+import org.geowebcache.storage.JobLogObject;
 import org.geowebcache.storage.JobObject;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.JobLogObject.LOG_LEVEL;
 import org.h2.jdbcx.JdbcConnectionPool;
 
 /**
@@ -84,7 +91,7 @@ class JDBCJobWrapper {
     private int maxConnections;
 
     private JdbcConnectionPool connPool;
-
+    
     protected JDBCJobWrapper(String driverClass, String jdbcString, String username,
             String password, boolean useConnectionPooling, int maxConnections)
             throws StorageException, SQLException {
@@ -186,13 +193,9 @@ class JDBCJobWrapper {
         final Connection conn = getConnection();
         try {
 
-            /** Easy ones */
             checkJobsTable(conn);
+            checkJobLogsTable(conn);
             
-//            condCreate(conn, "LOGS",
-//                    "ID BIGINT AUTO_INCREMENT PRIMARY KEY, VALUE VARCHAR(126) UNIQUE", "VALUE",
-//                    null);
-
             int fromVersion = getDbVersion(conn);
             log.info("JobStore database is version " + fromVersion);
 
@@ -276,6 +279,27 @@ class JDBCJobWrapper {
                 null);
     }
 
+    private void checkJobLogsTable(Connection conn) throws SQLException {
+        
+        condCreate(conn, "JOB_LOGS", "job_log_id BIGINT AUTO_INCREMENT PRIMARY KEY, " + 
+                "job_id BIGINT, " + 
+                "log_level VARCHAR(6), " + 
+                "log_time TIMESTAMP, " +  
+                "log_summary VARCHAR(254), " +  
+                "log_text CLOB ", 
+                "log_time", 
+                null);
+        
+        Statement st = null;
+        try {
+            st = conn.createStatement();
+            st.execute("ALTER TABLE JOB_LOGS ADD FOREIGN KEY(job_id) REFERENCES JOBS(job_id)");
+        } finally {
+            close(st);
+        }
+           
+    }
+
     private void condCreate(Connection conn, String tableName, String columns, String indexColumns,
             String index2Columns) throws SQLException {
         Statement st = null;
@@ -308,22 +332,44 @@ class JDBCJobWrapper {
         }
     }
 
-    protected void deleteJob(JobObject stObj) throws SQLException {
+    /**
+     * Delete the job including all logs related to the job
+     * @param jobId
+     * @throws SQLException
+     */
+    public void deleteJob(long jobId) throws SQLException {
         final Connection conn = getConnection();
         try {
-            deleteJob(conn, stObj);
+            deleteJob(conn, jobId);
+        } finally {
+            close(conn);
+        }
+    }
+    public void deleteJob(JobObject stObj) throws SQLException {
+        final Connection conn = getConnection();
+        try {
+            deleteJob(conn, stObj.getJobId());
         } finally {
             close(conn);
         }
     }
 
-    protected void deleteJob(Connection conn, JobObject stObj) throws SQLException {
+    protected void deleteJob(Connection conn, long jobId) throws SQLException {
 
-        String query = "DELETE FROM JOBS WHERE JOB_ID = ?";
-
+        String query = "DELETE FROM JOB_LOGS WHERE JOB_ID = ?";
         PreparedStatement prep = conn.prepareStatement(query);
         try {
-            prep.setLong(1, stObj.getJobId());
+            prep.setLong(1, jobId);
+
+            prep.execute();
+        } finally {
+            close(prep);
+        }
+
+        query = "DELETE FROM JOBS WHERE JOB_ID = ?";
+        prep = conn.prepareStatement(query);
+        try {
+            prep.setLong(1, jobId);
 
             prep.execute();
         } finally {
@@ -346,8 +392,9 @@ class JDBCJobWrapper {
             try {
                 if (rs.next()) {
                     readJob(stObj, rs);
-
-                    return true || false;
+                    stObj.setErrorCount(getJobLogCount(stObj, LOG_LEVEL.ERROR));
+                    stObj.setWarnCount(getJobLogCount(stObj, LOG_LEVEL.WARN));
+                    return true;
                 } else {
                     return false;
                 }
@@ -424,6 +471,78 @@ class JDBCJobWrapper {
                     stObj.setJobId(insertId.longValue());
                 }
             }
+            
+            putRecentJobLogs(stObj, conn);
+
+        } finally {
+            conn.close();
+        }
+    }
+
+    /**
+     * Goes through recently added logs for this job and persists them
+     * Clears recent logs from the list of recent logs. 
+     * Uses a ConcurrentLinkedQueue and is threadsafe. 
+     * @param stObj
+     * @param conn
+     * @throws SQLException 
+     * @throws StorageException 
+     */
+    private void putRecentJobLogs(JobObject stObj, Connection conn) throws StorageException, SQLException {
+        ConcurrentLinkedQueue<JobLogObject> logs = stObj.getNewLogs();
+        
+        while(!logs.isEmpty()) {
+            JobLogObject joblog;
+            synchronized(logs) {
+                joblog = logs.poll();
+            }
+            putJobLog(joblog);
+        }
+    }
+
+    public void putJobLog(JobLogObject stObj) throws SQLException, StorageException {
+
+        // Not really a fan of tacking log_ onto the front of every field, but it ensures
+        // common keywords like log, level, time, summary, text won't clash with database 
+        // keywords, causing unnecessary pain.
+        String query = "MERGE INTO " + 
+                "JOB_LOGS(job_log_id, job_id, log_level, log_time, log_summary, log_text) " + 
+                "KEY(job_id) " + 
+                "VALUES(?,?,?,?,?,?)";
+
+        final Connection conn = getConnection();
+
+        try {
+            Long insertId;
+            PreparedStatement prep = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            try {
+                if(stObj.getJobLogId() == -1) {
+                    prep.setNull(1, java.sql.Types.BIGINT);
+                } else {
+                    prep.setLong(1, stObj.getJobLogId());
+                }
+
+                prep.setLong(2, stObj.getJobId());
+                prep.setString(3, stObj.getLogLevel().name());
+                prep.setTimestamp(4, stObj.getLogTime());
+                prep.setString(5, stObj.getLogSummary());
+                
+                Reader reader = (Reader) new BufferedReader(new StringReader(stObj.getLogText()));
+                prep.setCharacterStream(6, reader, stObj.getLogText().length());
+                
+                insertId = wrappedInsert(prep);
+            } finally {
+                close(prep);
+            }
+            if (insertId == null) {
+                log.error("Did not receive an id for " + query);
+            } else {
+                if(stObj.getJobLogId() == -1) {
+                    // only use the inserted id if we were doing an insert.
+                    // what insertid will be if we weren't doing an insert is not defined.
+                    stObj.setJobLogId(insertId.longValue());
+                }
+            }
 
         } finally {
             conn.close();
@@ -449,66 +568,7 @@ class JDBCJobWrapper {
         }
     }
 
-    public void destroy() {
-        Connection conn = null;
-        try {
-            conn = getConnection();
-            this.closing = true;
-            try {
-                conn.createStatement().execute("SHUTDOWN");
-            } catch (SQLException se) {
-                log.warn("SHUTDOWN call to JDBC resulted in: " + se.getMessage());
-            }
-        } catch (SQLException e) {
-            log.error("Couldn't obtain JDBC Connection to perform database shut down", e);
-        } finally {
-            if (conn != null) {
-                // should be already closed after SHUTDOWN
-                boolean closed = false;
-                try {
-                    closed = conn.isClosed();
-                } catch (SQLException e) {
-                    log.error(e);
-                }
-                if (!closed) {
-                    close(conn);
-                }
-            }
-        }
-
-        try {
-            Thread.sleep(250);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.gc();
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.gc();
-    }
-
-    public void deleteJob(long jobId) throws SQLException {
-
-        String query = "DELETE FROM JOBS WHERE JOB_ID = ?";
-
-        final Connection conn = getConnection();
-        try {
-            PreparedStatement prep = conn.prepareStatement(query);
-            try {
-                prep.setLong(1, jobId);
-                prep.execute();
-            } finally {
-                close(prep);
-            }
-        } finally {
-            close(conn);
-        }
-    }
-
-    public long getCount() throws SQLException {
+    public long getJobCount() throws SQLException {
         
         long result = 0;
 
@@ -521,7 +581,52 @@ class JDBCJobWrapper {
             ResultSet rs = prep.executeQuery();
             try {
                 if (rs.first()) {
-                    result = rs.getLong(0);
+                    result = rs.getLong(1);
+                }
+            } finally {
+                close(rs);
+            }
+        } finally {
+            close(prep);
+            close(conn);
+        }
+
+        return result;
+    }
+
+    public long getJobLogCount(JobObject stObj) throws SQLException {
+        return getJobLogCount(stObj, null);
+    }
+    /**
+     * Gets a count of logs for a job
+     * @param stObj The job to get a count of logs for
+     * @param level optionally only count logs of a certain level (ERROR, WARN or INFO)
+     * @return count
+     * @throws SQLException
+     */
+    public long getJobLogCount(JobObject stObj, LOG_LEVEL level) throws SQLException {
+        
+        long result = 0;
+
+        String query = "SELECT COUNT(*) FROM JOB_LOGS WHERE job_id = ?";
+        
+        if(level != null) {
+            query += " AND log_level = ?";
+        }
+
+        final Connection conn = getConnection();
+        PreparedStatement prep = null; 
+        try {
+            prep = conn.prepareStatement(query);
+            prep.setLong(1, stObj.getJobId());
+            if(level != null) {
+                prep.setString(2, level.name());
+            }
+
+            ResultSet rs = prep.executeQuery();
+            try {
+                if (rs.first()) {
+                    result = rs.getLong(1);
                 }
             } finally {
                 close(rs);
@@ -557,7 +662,37 @@ class JDBCJobWrapper {
                 while(rs.next()) {
                     JobObject job = new JobObject();
                     readJob(job, rs);
+                    job.setErrorCount(getJobLogCount(job, LOG_LEVEL.ERROR));
+                    job.setWarnCount(getJobLogCount(job, LOG_LEVEL.WARN));
                     result.add(job);
+                }
+            } finally {
+                close(rs);
+            }
+        } finally {
+            close(prep);
+            close(conn);
+        }
+        return result;
+    }
+    public Iterable<JobLogObject> getJobLogs(JobObject job) throws SQLException, IOException {
+        ArrayList<JobLogObject> result = new ArrayList<JobLogObject>();
+        
+        String query = "SELECT * FROM JOB_LOGS WHERE job_id = ?";
+
+        final Connection conn = getConnection();
+
+        PreparedStatement prep = null;
+        
+        try {
+            prep = conn.prepareStatement(query);
+
+            ResultSet rs = prep.executeQuery();
+            try {
+                while(rs.next()) {
+                    JobLogObject joblog = new JobLogObject();
+                    readJobLog(joblog, rs);
+                    result.add(joblog);
                 }
             } finally {
                 close(rs);
@@ -576,9 +711,36 @@ class JDBCJobWrapper {
         return getFilteredJobs(query);
     }
 
+    /**
+     * Updates all jobs with a status of running in the store to instead be interrupted.
+     * This method is only valid if called before jobs are actually started by GeoWebCache. 
+     * This must be done to capture the use case where a job couldn't be marked as 
+     * interrupted because the system went down without a chance to update the store.
+     * @throws SQLException
+     */
+    public void setRunningJobsToInterrupted() throws SQLException {
+        String query = "UPDATE JOBS " + 
+                               "SET state = '" + STATE.INTERRUPTED.name() + "' " + 
+                             "WHERE state = '" + STATE.RUNNING.name() + "'";
+
+        final Connection conn = getConnection();
+        PreparedStatement prep = conn.prepareStatement(query);
+        try {
+            prep.execute();
+        } finally {
+            close(prep);
+        }
+    }
+    
+
+    /**
+     * Gets all jobs that are considered to have been interrupted during execution.
+     * @return
+     * @throws SQLException
+     */
     public Iterable<JobObject> getInterruptedJobs() throws SQLException {
         String query = "SELECT * FROM JOBS " + 
-                        "WHERE (state = '" + STATE.RUNNING.name() + "' OR state = '" + STATE.INTERRUPTED.name() + "')";
+                        "WHERE state = '" + STATE.INTERRUPTED.name() + "'";
         return getFilteredJobs(query);
     }
     
@@ -639,4 +801,71 @@ class JDBCJobWrapper {
         job.setTimeFirstStart(rs.getTimestamp("time_first_start"));
         job.setTimeLatestStart(rs.getTimestamp("time_latest_start"));
     }
+
+    private void readJobLog(JobLogObject joblog, ResultSet rs) throws SQLException, IOException {
+        joblog.setJobLogId(rs.getLong("job_log_id"));
+        joblog.setJobId(rs.getLong("job_id"));
+        joblog.setLogLevel(JobLogObject.LOG_LEVEL.valueOf(rs.getString("level")));
+        joblog.setLogTime(rs.getTimestamp("log_time"));
+        joblog.setLogSummary(rs.getString("log_summary"));
+        joblog.setLogText(readClob(rs, "log_text"));
+    }
+
+    private String readClob(ResultSet rs, String field) throws SQLException, IOException {
+        StringBuilder sb = new StringBuilder();
+        Reader reader = rs.getCharacterStream(field);
+        
+        while (true) {
+            char[] buff = new char[1024];
+            int len = reader.read(buff);
+            if (len < 0) {
+                break;
+            } else {
+                sb.append(buff);
+            }
+        }
+        return sb.toString();
+    }
+
+    public void destroy() {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            this.closing = true;
+            try {
+                conn.createStatement().execute("SHUTDOWN");
+            } catch (SQLException se) {
+                log.warn("SHUTDOWN call to JDBC resulted in: " + se.getMessage());
+            }
+        } catch (SQLException e) {
+            log.error("Couldn't obtain JDBC Connection to perform database shut down", e);
+        } finally {
+            if (conn != null) {
+                // should be already closed after SHUTDOWN
+                boolean closed = false;
+                try {
+                    closed = conn.isClosed();
+                } catch (SQLException e) {
+                    log.error(e);
+                }
+                if (!closed) {
+                    close(conn);
+                }
+            }
+        }
+
+        try {
+            Thread.sleep(250);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.gc();
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.gc();
+    }
+
 }

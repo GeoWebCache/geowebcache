@@ -127,6 +127,14 @@ public class JobMonitorTask extends GWCTask {
     }
 
     /**
+     * The job monitor doesn't do anything on abnormal exit - assumes that things are so unstable at
+     * this point that trying to save off the latest state of the tasks isn't worth attempting.
+     */
+    protected void doAbnormalExit() {
+        ; 
+    }
+
+    /**
      * Ensures all ready jobs in the system are scheduled using Cron4J
      * Called when this task begins.  
      */
@@ -151,6 +159,7 @@ public class JobMonitorTask extends GWCTask {
         while(iter.hasNext()) {
             JobObject job = iter.next();
             try {
+                job.setState(STATE.INTERRUPTED);
                 seeder.executeJob(job);
             } catch (GeoWebCacheException e) {
                 log.error("Couldn't restart interrupted job: " + e.getMessage(), e);
@@ -168,5 +177,4 @@ public class JobMonitorTask extends GWCTask {
             finishedTasks.add(task);
         }
     }
-
 }

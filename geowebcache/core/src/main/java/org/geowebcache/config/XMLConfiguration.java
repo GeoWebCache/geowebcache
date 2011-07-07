@@ -481,14 +481,13 @@ public class XMLConfiguration implements Configuration {
 
         xs.aliasField("parameters", JobObject.class, "encodedParameters");
 
-        xs.omitField(StorageObject.class, "access_count");
-        xs.omitField(StorageObject.class, "blob_size");
-        xs.omitField(StorageObject.class, "access_last");
-        xs.omitField(StorageObject.class, "status");
-        
         xs.registerConverter(new SRSConverter());
         xs.registerConverter(new TimestampConverter());
         xs.registerConverter(new BoundingBoxConverter());
+        
+        xs.omitField(JobObject.class, "newLogs");
+        
+        
 
         if (this.context != null) {
             /*
@@ -556,7 +555,7 @@ public class XMLConfiguration implements Configuration {
         public Object fromString(String val) {
             return new BoundingBox(val);
         }        
-    }    
+    }
 
     /**
      * Method responsible for writing out the entire GeoWebCacheConfiguration object

@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.logging.Log;
@@ -31,6 +30,7 @@ import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.storage.JobLogObject;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
@@ -166,6 +166,7 @@ public class SeedTask extends GWCTask {
                                 + ". Error count reached configured maximum of "
                                 + totalFailuresBeforeAborting);
                         super.state = GWCTask.STATE.DEAD;
+                        addLog(JobLogObject.createErrorLog(jobId, "Thread Aborted Seeding", "A thread of the job has aborted seeding due to too many failures."));
                         return;
                     }
                     String logMsg = "Seed failed at " + tile.toString() + " after "
@@ -179,9 +180,9 @@ public class SeedTask extends GWCTask {
                             Thread.sleep(tileFailureRetryCount);
                         }
                     } else {
-                        log.info(logMsg
-                                + " Skipping and continuing with next tile. Original error: "
-                                + e.getMessage());
+                        logMsg += " Skipping and continuing with next tile. Original error: " + e.getMessage();
+                        log.info(logMsg);
+                        addLog(JobLogObject.createWarnLog(jobId, "Seed Failed", logMsg));
                     }
                 }
             }
@@ -208,12 +209,17 @@ public class SeedTask extends GWCTask {
         }
 
         if (this.terminate) {
-            log.info("Task on " + Thread.currentThread().getName() + " was terminated after "
-                    + this.tilesDone + " tiles");
+            String logMsg = "Thread " + Thread.currentThread().getName() + " was terminated after "
+                    + this.tilesDone + " tiles";
+            log.info(logMsg);
+            addLog(JobLogObject.createInfoLog(jobId, "Seeding Terminated", logMsg));
             super.state = GWCTask.STATE.KILLED;
         } else {
-            log.info(Thread.currentThread().getName() + " completed (re)seeding layer " + layerName
-                    + " after " + this.tilesDone + " tiles and " + this.timeSpent + " seconds.");
+            String logMsg = Thread.currentThread().getName() + " completed (re)seeding layer "
+                    + layerName + " after " + this.tilesDone + " tiles and " + this.timeSpent
+                    + " seconds.";
+            log.info(logMsg);
+            addLog(JobLogObject.createInfoLog(jobId, "Seeding Completed", logMsg));
             super.state = GWCTask.STATE.DONE;
         }
 
@@ -221,6 +227,14 @@ public class SeedTask extends GWCTask {
         if (threadOffset == 0 && doFilterUpdate) {
             runFilterUpdates(tr.gridSetId);
         }
+    }
+
+    protected void doAbnormalExit() {
+        String logMsg = "Thread " + Thread.currentThread().getName() + " was terminated after "
+                + this.tilesDone + " tiles";
+        log.info(logMsg);
+        addLog(JobLogObject.createErrorLog(jobId, "Seeding Terminated Abnormally", logMsg));
+        super.state = GWCTask.STATE.DEAD;
     }
 
     private void checkThrottling() throws InterruptedException {

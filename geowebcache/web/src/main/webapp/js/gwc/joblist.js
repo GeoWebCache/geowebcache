@@ -51,17 +51,35 @@ Ext.application({
 	},
 	
     renderJob: function(value, p, record) {
+		jobType = "";
     	if(record.data.reseed && record.data.jobType == "SEED") {
     		jobType = "RESEED";
     	} else {
     		jobType = record.data.jobType;
     	}
     	
+    	errorInfo = "";
+    	if(record.data.errorCount + record.data.warnCount == 0) {
+    		if(record.data.state == 'RUNNING') {
+    			errorInfo = "running smoothly";
+    		} else if(record.data.state != 'UNSET' && record.data.state != 'READY') {
+    			errorInfo = "view logs";
+    		}
+    	} else {
+    		if(record.data.errorCount > 0) {
+    			errorInfo = "<img style=\"border: 0\" src=\"images/error.png\" title=\"Errors: " + record.data.errorCount + "\"/>";
+    		}
+    		if(record.data.warnCount > 0) {
+    			errorInfo += "<img style=\"border: 0\" src=\"images/warning.png\" title=\"Warnings: " + record.data.warnCount + "\"/>";
+    		}
+    	}
+    	
 	    return Ext.String.format(
 	    	this.jobTemplate,
 	        jobType,
 	        record.data.layerName,
-	        formatMimeType(record.data.format)
+	        formatMimeType(record.data.format),
+	        errorInfo
 	    );
 	},
 	
@@ -130,8 +148,13 @@ Ext.application({
 		if(record.data.jobType == 'TRUNCATE') {
 			return "-";
 		} else if(record.data.state != 'UNSET' && record.data.state != 'READY') {
-			tput = Ext.Number.toFixed(record.data.throughput, 1);
-			var result = tput + " / sec";
+			var result = "";
+			if(record.data.throughput == 0.0) {
+				result = "";
+			} else {
+				tput = Ext.Number.toFixed(record.data.throughput, 1);
+				result = tput + " / sec";
+			}
 			if(record.data.maxThroughput != -1) {
 				result = result + "<br />(max " + record.data.maxThroughput + ")";
 			}

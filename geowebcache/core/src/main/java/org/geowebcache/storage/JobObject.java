@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,12 +44,13 @@ import org.geowebcache.seed.TruncateTask;
 import org.geowebcache.seed.GWCTask.PRIORITY;
 import org.geowebcache.seed.GWCTask.STATE;
 import org.geowebcache.seed.GWCTask.TYPE;
+import org.geowebcache.storage.JobLogObject.LOG_LEVEL;
 import org.geowebcache.util.StringUtils;
 
 /**
  * Represents a geowebcache job - which is a collection of tasks (threads). Jobs may be complete, running, or not started yet.
  */
-public class JobObject extends StorageObject {
+public class JobObject {
 
     private static Log log = LogFactory.getLog(JobObject.class);
 
@@ -84,6 +86,11 @@ public class JobObject extends StorageObject {
     
     private Timestamp timeFirstStart = null;
     private Timestamp timeLatestStart = null;
+    
+    private long warnCount = 0;
+    private long errorCount = 0;
+    
+    private ConcurrentLinkedQueue<JobLogObject> newLogs = new ConcurrentLinkedQueue<JobLogObject>(); 
 
     public static JobObject createJobObject(TileLayer tl, SeedRequest sr) throws GeoWebCacheException {
         JobObject obj = new JobObject();
@@ -171,6 +178,8 @@ public class JobObject extends StorageObject {
                     if(task instanceof SeedTask) {
                         throughput += ((SeedTask)task).getThroughput();
                     }
+                    
+                    addLogs(task.getNewLogs());
                 } else {
                     foundTask = true;
                     timeSpent = task.getTimeSpent();
@@ -180,6 +189,8 @@ public class JobObject extends StorageObject {
 
                     state = task.getState();
                     
+                    addLogs(task.getNewLogs());
+
                     if(task instanceof SeedTask) {
                         failedTileCount = ((SeedTask)task).getSharedFailureCounter();
                         throughput = ((SeedTask)task).getThroughput();
@@ -211,6 +222,7 @@ public class JobObject extends StorageObject {
             timeRemaining = 0;
 
             state = task.getState();
+            addLogs(task.getNewLogs());
                     
             if(task instanceof SeedTask && task.getState() == STATE.DONE) {
                 failedTileCount = ((SeedTask)task).getSharedFailureCounter();
@@ -218,6 +230,33 @@ public class JobObject extends StorageObject {
                 // make the assumption that total tiles - failed tiles = done tiles
                 tilesDone = tilesTotal - failedTileCount;
             }
+
+            if (task.getState() == STATE.DONE) {
+                newLogs.add(JobLogObject.createInfoLog(jobId, "Job Completed", "Job finished with a status of DONE."));
+            } else if (task.getState() == STATE.DEAD) { 
+                newLogs.add(JobLogObject.createErrorLog(jobId, "Job Dead", "Job finished with a status of DEAD. This means the job did not complete successfully and due to problems during execution should not be reattempted."));
+            } else if (task.getState() == STATE.KILLED) { 
+                newLogs.add(JobLogObject.createWarnLog(jobId, "Job Killed", "Job finished with a status of KILLED. This usually means a user has intentionally stopped the job."));
+            } else if (task.getState() == STATE.INTERRUPTED) { 
+                newLogs.add(JobLogObject.createWarnLog(jobId, "Job Completed", "Job finished with a status of INTERRUPTED. This usually means the GeoWebCache was forced to shut down while jobs were running. Jobs may be restarted automatically when GeoWebCache restarts."));
+            }
+        }
+    }
+
+    /**
+     * Log an error, warning or info for this job.
+     * All new warnings and errors for a job should come through this call to be persisted in a thread safe manner and keep error and warning counts accurate. 
+     * @param joblog The job to log. This call ensures the log is associate to this job.
+     */
+    protected void log(JobLogObject joblog) {
+        joblog.setJobId(jobId);
+        if(joblog.getLogLevel() == LOG_LEVEL.ERROR) {
+            errorCount++;
+        } else if(joblog.getLogLevel() == LOG_LEVEL.WARN) {
+            warnCount++;
+        }
+        synchronized(newLogs) { 
+            newLogs.add(joblog);
         }
     }
 
@@ -472,6 +511,39 @@ public class JobObject extends StorageObject {
         }
     }
 
+    public long getWarnCount() {
+        return warnCount;
+    }
+
+    public void setWarnCount(long warnCount) {
+        this.warnCount = warnCount;
+    }
+
+    public long getErrorCount() {
+        return errorCount;
+    }
+
+    public void setErrorCount(long errorCount) {
+        this.errorCount = errorCount;
+    }
+
+    public ConcurrentLinkedQueue<JobLogObject> getNewLogs() {
+        return newLogs;
+    }
+
+    private void addLogs(ConcurrentLinkedQueue<JobLogObject> logs) {
+        JobLogObject joblog;
+        while(!logs.isEmpty()) {
+            synchronized(logs) {
+                joblog = logs.poll();
+            }
+            synchronized(newLogs) {
+                newLogs.add(joblog);
+            }
+        }
+        
+    }
+    
     public String getType() {
         return OBJECT_TYPE;
     }

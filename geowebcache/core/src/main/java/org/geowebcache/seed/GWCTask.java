@@ -16,11 +16,14 @@
  */
 package org.geowebcache.seed;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.storage.JobLogObject;
+import org.geowebcache.storage.JobLogObject.LOG_LEVEL;
 
 /**
  * 
@@ -101,6 +104,14 @@ public abstract class GWCTask {
     protected long jobId = -1;
 
     private long groupStartTime;
+
+    /**
+     * These logs will eventually get polled onto the new logs for the job (that all tasks for a job
+     * can contribute to. The Job's list of new tasks will eventually get persisted to the DB, but
+     * they have to take this path so that currently running jobs can keep count of new errors and
+     * warnings.
+     */
+    protected ConcurrentLinkedQueue<JobLogObject> newLogs = new ConcurrentLinkedQueue<JobLogObject>();
     
 
     /**
@@ -112,6 +123,12 @@ public abstract class GWCTask {
         this.groupStartTime = System.currentTimeMillis();
         try {
             doActionInternal();
+        } catch(InterruptedException ie) {
+            doAbnormalExit();
+            throw ie;
+        } catch(GeoWebCacheException gwce) {
+            doAbnormalExit();
+            throw gwce;
         } finally {
             dispose();
             int membersRemaining = this.sharedThreadCount.decrementAndGet();
@@ -124,6 +141,8 @@ public abstract class GWCTask {
     }
 
     protected abstract void dispose();
+    
+    protected abstract void doAbnormalExit();
 
     /**
      * Extension point for subclasses to do what they do
@@ -219,12 +238,27 @@ public abstract class GWCTask {
     public long getJobId() {
         return jobId;
     }
-    
+
+    public ConcurrentLinkedQueue<JobLogObject> getNewLogs() {
+        return newLogs;
+    }
+
+    /**
+     * Log a new error, warning or info for this task
+     * @param joblog
+     */
+    protected void addLog(JobLogObject joblog) {
+        synchronized(newLogs) {
+            newLogs.add(joblog);
+        }
+    }
+
     protected void checkInterrupted() throws InterruptedException {
         if (Thread.interrupted()) {
             if(this.state == STATE.READY || this.state == STATE.RUNNING) {
                 this.state = STATE.INTERRUPTED;
             }
+            addLog(JobLogObject.createInfoLog(jobId, "Interrupted", "A thread of the job has been interrupted."));
             throw new InterruptedException();
         }
     }
