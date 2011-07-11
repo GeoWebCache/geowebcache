@@ -234,11 +234,11 @@ public class JobObject {
             if (task.getState() == STATE.DONE) {
                 newLogs.add(JobLogObject.createInfoLog(jobId, "Job Completed", "Job finished with a status of DONE."));
             } else if (task.getState() == STATE.DEAD) { 
-                newLogs.add(JobLogObject.createErrorLog(jobId, "Job Dead", "Job finished with a status of DEAD. This means the job did not complete successfully and due to problems during execution should not be reattempted."));
+                newLogs.add(JobLogObject.createInfoLog(jobId, "Job Dead", "Job finished with a status of DEAD. This means the job did not complete successfully and due to problems during execution should not be reattempted."));
             } else if (task.getState() == STATE.KILLED) { 
-                newLogs.add(JobLogObject.createWarnLog(jobId, "Job Killed", "Job finished with a status of KILLED. This usually means a user has intentionally stopped the job."));
+                newLogs.add(JobLogObject.createInfoLog(jobId, "Job Killed", "Job finished with a status of KILLED. This usually means a user has intentionally stopped the job."));
             } else if (task.getState() == STATE.INTERRUPTED) { 
-                newLogs.add(JobLogObject.createWarnLog(jobId, "Job Completed", "Job finished with a status of INTERRUPTED. This usually means the GeoWebCache was forced to shut down while jobs were running. Jobs may be restarted automatically when GeoWebCache restarts."));
+                newLogs.add(JobLogObject.createInfoLog(jobId, "Job Completed", "Job finished with a status of INTERRUPTED. This usually means the GeoWebCache was forced to shut down while jobs were running. Jobs may be restarted automatically when GeoWebCache restarts."));
             }
         }
     }
@@ -531,6 +531,12 @@ public class JobObject {
         return newLogs;
     }
 
+    public void addLog(JobLogObject joblog) {
+        synchronized(newLogs) {
+            newLogs.add(joblog);
+        }
+    }
+
     private void addLogs(ConcurrentLinkedQueue<JobLogObject> logs) {
         JobLogObject joblog;
         while(!logs.isEmpty()) {
@@ -541,7 +547,6 @@ public class JobObject {
                 newLogs.add(joblog);
             }
         }
-        
     }
     
     public String getType() {

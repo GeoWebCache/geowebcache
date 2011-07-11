@@ -18,8 +18,6 @@
  */
 package org.geowebcache.seed;
 
-import it.sauronsoftware.cron4j.Scheduler;
-
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
@@ -41,6 +39,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.seed.GWCTask.PRIORITY;
 import org.geowebcache.seed.GWCTask.STATE;
 import org.geowebcache.seed.GWCTask.TYPE;
+import org.geowebcache.storage.JobLogObject;
 import org.geowebcache.storage.JobObject;
 import org.geowebcache.storage.JobStore;
 import org.geowebcache.storage.StorageBroker;
@@ -225,7 +224,7 @@ public class TileBreeder implements ApplicationContextAware {
         TileRange tr = createTileRange(job, tl);
 
         if(job.isScheduled()) {
-            JobScheduler.scheduleJob(job, this);
+            JobScheduler.scheduleJob(job, this, jobStore);
         } else {
             executeJob(job, tl, tr);
         }
@@ -418,6 +417,7 @@ public class TileBreeder implements ApplicationContextAware {
         }
         
         // save this initial state of the job to the store.
+        job.addLog(JobLogObject.createInfoLog(job.getJobId(), "Job Started", "This job has started execution."));
         try {
             jobStore.put(job);
         } catch (StorageException e) {

@@ -81,10 +81,10 @@ import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
+import org.geowebcache.storage.JobLogObject;
 import org.geowebcache.storage.JobObject;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
-import org.geowebcache.storage.StorageObject;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.geowebcache.util.ISO8601DateParser;
 import org.springframework.web.context.WebApplicationContext;
@@ -557,6 +557,37 @@ public class XMLConfiguration implements Configuration {
         }        
     }
 
+    public XStream configureXStreamForJobLogs(XStream xs) {
+        // XStream xs = xstream;
+        xs.setMode(XStream.NO_REFERENCES);
+
+        xs.alias("gwcConfiguration", GeoWebCacheConfiguration.class);
+        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns_xsi");
+        xs.aliasField("xmlns:xsi", GeoWebCacheConfiguration.class, "xmlns_xsi");
+        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xsi_noNamespaceSchemaLocation");
+        xs.aliasField("xsi:noNamespaceSchemaLocation", GeoWebCacheConfiguration.class,
+                "xsi_noNamespaceSchemaLocation");
+        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
+
+        xs.alias("logs", List.class);
+        xs.alias("log", JobLogObject.class);
+
+        xs.registerConverter(new TimestampConverter());
+        
+        if (this.context != null) {
+            /*
+             * Look up XMLConfigurationProvider extension points and let them contribute to the
+             * configuration
+             */
+            Collection<XMLConfigurationProvider> configExtensions;
+            configExtensions = this.context.getBeansOfType(XMLConfigurationProvider.class).values();
+            for (XMLConfigurationProvider extension : configExtensions) {
+                xs = extension.getConfiguredXStream(xs);
+            }
+        }
+        return xs;
+    }
+    
     /**
      * Method responsible for writing out the entire GeoWebCacheConfiguration object
      * 

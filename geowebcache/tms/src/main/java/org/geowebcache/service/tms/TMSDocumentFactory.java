@@ -18,7 +18,6 @@ package org.geowebcache.service.tms;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Iterator;
 
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;

@@ -28,6 +28,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.job.JobScheduler;
 import org.geowebcache.storage.JobObject;
 import org.geowebcache.storage.JobStore;
+import org.geowebcache.storage.StorageException;
 
 public class JobMonitorTask extends GWCTask {
     private static Log log = LogFactory.getLog(JobMonitorTask.class);
@@ -130,7 +131,7 @@ public class JobMonitorTask extends GWCTask {
      * The job monitor doesn't do anything on abnormal exit - assumes that things are so unstable at
      * this point that trying to save off the latest state of the tasks isn't worth attempting.
      */
-    protected void doAbnormalExit() {
+    protected void doAbnormalExit(Throwable t) {
         ; 
     }
 
@@ -139,11 +140,15 @@ public class JobMonitorTask extends GWCTask {
      * Called when this task begins.  
      */
     private void initCron4J() {
-        Iterator<JobObject> iter = jobStore.getPendingScheduledJobs().iterator();
-        
-        while(iter.hasNext()) {
-            JobObject job = iter.next();
-            JobScheduler.scheduleJob(job, seeder);
+        Iterator<JobObject> iter;
+        try {
+            iter = jobStore.getPendingScheduledJobs().iterator();
+            while(iter.hasNext()) {
+                JobObject job = iter.next();
+                JobScheduler.scheduleJob(job, seeder, jobStore);
+            }
+        } catch (StorageException e) {
+            log.error("Job Monitor couldn't initialise Cron4J due to a storage exception.", e);
         }
     }
 
@@ -154,16 +159,20 @@ public class JobMonitorTask extends GWCTask {
      * Called when this task begins.  
      */
     private void restartInterruptedTasks() {
-        Iterator<JobObject> iter = jobStore.getInterruptedJobs().iterator();
-        
-        while(iter.hasNext()) {
-            JobObject job = iter.next();
-            try {
-                job.setState(STATE.INTERRUPTED);
-                seeder.executeJob(job);
-            } catch (GeoWebCacheException e) {
-                log.error("Couldn't restart interrupted job: " + e.getMessage(), e);
+        try {
+            Iterator<JobObject> iter = jobStore.getInterruptedJobs().iterator();
+            
+            while(iter.hasNext()) {
+                JobObject job = iter.next();
+                try {
+                    job.setState(STATE.INTERRUPTED);
+                    seeder.executeJob(job);
+                } catch (GeoWebCacheException e) {
+                    log.error("Couldn't restart interrupted job: " + e.getMessage(), e);
+                }
             }
+        } catch (StorageException e) {
+            log.error("Job Monitor couldn't restart interrupted jobs due to a storage exception.", e);
         }
     }
 

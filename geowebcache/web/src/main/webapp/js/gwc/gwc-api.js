@@ -11,7 +11,8 @@ Ext.define('GWC.RestService', {
         disableCaching: true,
         endpoint: 'http://localhost:8080/geowebcache/rest',
         timeout: 60000,
-        jobStore: null
+        jobStore: null,
+        logStore: null
     },
     
     constructor: function(config) {
@@ -55,6 +56,26 @@ Ext.define('GWC.RestService', {
                 	root: 'jobs'
                 	// totalProperty: 'totalCount' // if we are doing pagination
             	}
+    		},
+    	});
+    	
+    	Ext.define('JobLog', {
+    		extend: 'Ext.data.Model',
+    	    fields: [
+    	        {name: 'jobLogId',  					type: 'long'},
+    	    	{name: 'jobId',  						type: 'long'},
+    	        {name: 'logLevel',						type: 'string'},
+    	        {name: 'logTime',						type: 'date'},
+    	        {name: 'logSummary',					type: 'string'},
+    	        {name: 'logText',						type: 'string'}
+    	    ],
+    	    proxy: {
+    			type: 'rest',
+    			url : this.endpoint + '/jobs/0/logs.json',
+                reader: {
+        			root: 'logs'
+        			// totalProperty: 'totalCount' // if we are doing pagination
+    			}
     		}
     	});
     	
@@ -63,10 +84,22 @@ Ext.define('GWC.RestService', {
     	    pageSize: 0
     	});
 
+    	this.logStore = new Ext.data.Store({
+    	    model: 'JobLog',
+    	    pageSize: 0
+    	});
+
     	return this;
     },
 
-	loadJobs: function(callback, failurecallback) {
+	loadJobs: function() {
     	this.jobStore.load();
+	},
+
+	getLogs: function(jobId) {
+    	this.logStore.proxy.url = 'rest/jobs/' + jobId + '/logs.json';
+    	this.logStore.load();
+    	
+    	return this.logStore;
 	}	
 });

@@ -190,7 +190,7 @@ public class JobRestlet extends GWCRestlet {
             throw new RestletException("No valid job ID provided.", Status.CLIENT_ERROR_BAD_REQUEST);
         }
         
-        JobObject job = findJob(jobId);
+        // JobObject job = findJob(jobId);
         
         jobDispatcher.remove(jobId);
     }

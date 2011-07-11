@@ -17,10 +17,6 @@
  */
 package org.geowebcache.storage;
 
-import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import org.geowebcache.seed.GWCTask;
 
 /**
  * A taskstore manages all meta information related to tasks
@@ -41,6 +37,32 @@ public interface JobStore {
      * @throws StorageException
      */
     public Iterable<JobObject> getJobs() throws StorageException;
+
+    /**
+     * Gets jobs with a schedule set that have a status of interrupted.
+     * @return
+     */
+    public Iterable<JobObject> getPendingScheduledJobs() throws StorageException;
+
+    /**
+     * Gets jobs that were running when they system was forced to stop, or interrupted for some other reason.
+     * @return
+     */
+    public Iterable<JobObject> getInterruptedJobs() throws StorageException;
+
+    /**
+     * Get logs for a particular job.
+     * @param jobId
+     * @return
+     */
+    public Iterable<JobLogObject> getLogs(long jobId) throws StorageException;
+
+    /**
+     * Get all logs available in the system.
+     * This method should require pagination parameters
+     * @return
+     */
+    public Iterable<JobLogObject> getAllLogs() throws StorageException;
     
     /**
      * Wipes the entire storage. Should only be invoked during testing.
@@ -53,8 +75,4 @@ public interface JobStore {
      * Destroy method for Spring
      */
     public void destroy();
-
-    public Iterable<JobObject> getPendingScheduledJobs();
-
-    public Iterable<JobObject> getInterruptedJobs();
 }

@@ -18,12 +18,11 @@
 package org.geowebcache.storage.jdbc.jobstore;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.storage.DefaultStorageFinder;
+import org.geowebcache.storage.JobLogObject;
 import org.geowebcache.storage.JobObject;
 import org.geowebcache.storage.JobStore;
 import org.geowebcache.storage.MetaStore;
@@ -105,10 +104,10 @@ public class JDBCJobBackend implements JobStore {
             wrpr.deleteJob(jobId);
             return true;
         } catch (SQLException se) {
-            log.error("Failed to delete job '" + jobId + "'", se);
+            String logMsg = "Failed to delete job '" + jobId + "'";
+            log.error(logMsg, se);
+            throw new StorageException(logMsg + ", " + se.getMessage());
         }
-
-        return false;
     }
 
     public boolean get(JobObject stObj) throws StorageException {
@@ -116,17 +115,19 @@ public class JDBCJobBackend implements JobStore {
             boolean response = wrpr.getJob(stObj);
             return response;
         } catch (SQLException se) {
-            log.error("Failed to get job: " + se.getMessage());
+            String logMsg = "Failed to get job '" + stObj.getJobId() + "'";
+            log.error(logMsg, se);
+            throw new StorageException(logMsg + ", " + se.getMessage());
         }
-
-        return false;
     }
 
     public void put(JobObject stObj) throws StorageException {
         try {
             wrpr.putJob(stObj);
         } catch (SQLException se) {
-            log.error("Failed to put job: " + se.getMessage());
+            String logMsg = "Failed to put job '" + stObj.getJobId() + "'";
+            log.error(logMsg, se);
+            throw new StorageException(logMsg + ", " + se.getMessage());
         }
     }
 
@@ -135,10 +136,10 @@ public class JDBCJobBackend implements JobStore {
             long response = wrpr.getJobCount();
             return response;
         } catch (SQLException se) {
-            log.error("Failed to get job count: " + se.getMessage());
+            String logMsg = "Failed to get job count";
+            log.error(logMsg, se);
+            throw new StorageException(logMsg + ", " + se.getMessage());
         }
-
-        return 0;
     }
 
     public Iterable<JobObject> getJobs() throws StorageException {
@@ -146,10 +147,10 @@ public class JDBCJobBackend implements JobStore {
             Iterable<JobObject> response = wrpr.getJobs();
             return response;
         } catch (SQLException se) {
-            log.error("Failed to get jobs: " + se.getMessage());
+            String logMsg = "Failed to get jobs";
+            log.error(logMsg, se);
+            throw new StorageException(logMsg + ", " + se.getMessage());
         }
-
-        return new ArrayList<JobObject>();
     }
 
     public void clear() throws StorageException {
@@ -168,26 +169,48 @@ public class JDBCJobBackend implements JobStore {
         }
     }
 
-    public Iterable<JobObject> getPendingScheduledJobs() {
+    public Iterable<JobObject> getPendingScheduledJobs() throws StorageException {
         try {
             Iterable<JobObject> response = wrpr.getPendingScheduledJobs();
             return response;
         } catch (SQLException se) {
-            log.error("Failed to get pending scheduled jobs: " + se.getMessage());
+            String logMsg = "Failed to get pending scheduled jobs";
+            log.error(logMsg, se);
+            throw new StorageException(logMsg + ", " + se.getMessage());
         }
-
-        return new ArrayList<JobObject>();
     }
 
-    public Iterable<JobObject> getInterruptedJobs() {
+    public Iterable<JobObject> getInterruptedJobs() throws StorageException {
         try {
             wrpr.setRunningJobsToInterrupted();
             Iterable<JobObject> response = wrpr.getInterruptedJobs();
             return response;
         } catch (SQLException se) {
-            log.error("Failed to get interrupted jobs: " + se.getMessage());
+            String logMsg = "Failed to get interrupted jobs";
+            log.error(logMsg, se);
+            throw new StorageException(logMsg + ", " + se.getMessage());
         }
+    }
 
-        return new ArrayList<JobObject>();
+    public Iterable<JobLogObject> getLogs(long jobId) throws StorageException {
+        try {
+            Iterable<JobLogObject> response = wrpr.getLogs(jobId);
+            return response;
+        } catch (Exception e) {
+            String logMsg = "Failed to get logs for job '" + jobId + "'";
+            log.error(logMsg, e);
+            throw new StorageException(logMsg + ", " + e.getMessage());
+        }
+    }
+
+    public Iterable<JobLogObject> getAllLogs() throws StorageException {
+        try {
+            Iterable<JobLogObject> response = wrpr.getAllLogs();
+            return response;
+        } catch (Exception e) {
+            String logMsg = "Failed to get all logs.";
+            log.error(logMsg, e);
+            throw new StorageException(logMsg + ", " + e.getMessage());
+        }
     }
 }

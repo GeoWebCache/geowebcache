@@ -7,7 +7,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.seed.ScheduledJobInitiator;
 import org.geowebcache.seed.TileBreeder;
+import org.geowebcache.storage.JobLogObject;
 import org.geowebcache.storage.JobObject;
+import org.geowebcache.storage.JobStore;
+import org.geowebcache.storage.StorageException;
 
 /**
  * Synchronises all access to a singleton cron4j Scheduler.
@@ -23,16 +26,21 @@ public class JobScheduler {
         instance.start();
     }
     
-    public static void scheduleJob(JobObject job, TileBreeder seeder) {
+    public static void scheduleJob(JobObject job, TileBreeder seeder, JobStore jobStore) {
         // scheduled jobs don't run immediately, but the job monitor needs to be aware of them.
-        ScheduledJobInitiator sji = new ScheduledJobInitiator(job, seeder);
+        ScheduledJobInitiator sji = new ScheduledJobInitiator(job, seeder, jobStore);
         synchronized(instance) {
             try {
                 sji.setScheduleId(instance.schedule(job.getSchedule(), sji));
                 log.info("Job " + job.getJobId() + " has been scheduled.");
             } catch (InvalidPatternException e) {
-                // TODO: job error can't start due to bad schedule
                 log.error("Couldn't schedule job " + job.getJobId() + " - invalid schedule pattern: '" + job.getSchedule() + "'.");
+                job.addLog(JobLogObject.createErrorLog(job.getJobId(), "Couldn't schedule job", "Job has an invalid schedule pattern: '" + job.getSchedule() + "'."));
+                try {
+                    jobStore.put(job);
+                } catch (StorageException se) {
+                    log.error("Couldn't save job log.", se);
+                }
             }
         }
     }

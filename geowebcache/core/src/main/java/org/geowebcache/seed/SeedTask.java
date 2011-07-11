@@ -229,10 +229,10 @@ public class SeedTask extends GWCTask {
         }
     }
 
-    protected void doAbnormalExit() {
+    protected void doAbnormalExit(Throwable t) {
         String logMsg = "Thread " + Thread.currentThread().getName() + " was terminated after "
-                + this.tilesDone + " tiles";
-        log.info(logMsg);
+                + this.tilesDone + " tiles due to the following exception:\n";
+        logMsg += t.getClass().getName() + ": " + t.getMessage();
         addLog(JobLogObject.createErrorLog(jobId, "Seeding Terminated Abnormally", logMsg));
         super.state = GWCTask.STATE.DEAD;
     }

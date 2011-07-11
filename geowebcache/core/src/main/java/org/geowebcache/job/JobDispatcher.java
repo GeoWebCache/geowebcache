@@ -19,6 +19,7 @@ package org.geowebcache.job;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.storage.JobLogObject;
 import org.geowebcache.storage.JobObject;
 import org.geowebcache.storage.JobStore;
 import org.geowebcache.storage.StorageException;
@@ -56,6 +57,30 @@ public class JobDispatcher implements DisposableBean {
         }
         
         return obj;
+    }
+
+    /**
+     * Returns the logs for a job based on the {@code jobId} parameter.
+     * 
+     * @throws GeoWebCacheException
+     *             if no such job exists
+     */
+    public Iterable<JobLogObject> getJobLogs(final long jobId) throws GeoWebCacheException {
+
+        Iterable<JobLogObject> list;
+        
+        try {
+            if(jobId == -1) {
+                list = jobStore.getAllLogs();
+            } else {
+                list = jobStore.getLogs(jobId);
+            }
+        } catch(StorageException se) {
+            throw new GeoWebCacheException("Thread " + Thread.currentThread().getId()
+                    + " Unable to get logs for job " + jobId + ". It this job should exist, check the log files.", se);
+        }
+        
+        return list;
     }
 
     /***

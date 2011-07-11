@@ -32,6 +32,10 @@
     <property name="XMLConfiguration" ref="gwcXmlConfig"/>
     <property name="jobDispatcher" ref="gwcJobDispatcher" />
   </bean>
+  <bean id="gwcJobLogRestlet" class="org.geowebcache.rest.job.JobLogRestlet">
+    <property name="XMLConfiguration" ref="gwcXmlConfig"/>
+    <property name="jobDispatcher" ref="gwcJobDispatcher" />
+  </bean>
   <bean id="gwcByteStreamerRestlet" class="org.geowebcache.rest.webresources.ByteStreamerRestlet" />
   
   <!-- REST Dispatcher -->
@@ -69,6 +73,10 @@
         <entry>
           <key><value>/jobs/{job}.{extension}</value></key>
           <ref bean="gwcJobRestlet" />
+        </entry>
+        <entry>
+          <key><value>/jobs/{job}/logs.{extension}</value></key>
+          <ref bean="gwcJobLogRestlet" />
         </entry>
         <entry>
           <key><value>/web/{filename}</value></key>

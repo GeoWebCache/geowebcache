@@ -496,6 +496,9 @@ class JDBCJobWrapper {
             synchronized(logs) {
                 joblog = logs.poll();
             }
+            // Make sure the joblog points to this job. Sometimes a job might have logs before first 
+            // being saved so the logs won't be pointing to the right ID yet.
+            joblog.setJobId(stObj.getJobId());
             putJobLog(joblog);
         }
     }
@@ -507,7 +510,7 @@ class JDBCJobWrapper {
         // keywords, causing unnecessary pain.
         String query = "MERGE INTO " + 
                 "JOB_LOGS(job_log_id, job_id, log_level, log_time, log_summary, log_text) " + 
-                "KEY(job_id) " + 
+                "KEY(job_log_id) " + 
                 "VALUES(?,?,?,?,?,?)";
 
         final Connection conn = getConnection();
@@ -675,17 +678,64 @@ class JDBCJobWrapper {
         }
         return result;
     }
-    public Iterable<JobLogObject> getJobLogs(JobObject job) throws SQLException, IOException {
-        ArrayList<JobLogObject> result = new ArrayList<JobLogObject>();
-        
-        String query = "SELECT * FROM JOB_LOGS WHERE job_id = ?";
 
+    /**
+     * Gets all jobs logged in the system.
+     * @return a potentially very long list of job logs.
+     * @throws SQLException
+     * @throws IOException
+     */
+    public Iterable<JobLogObject> getAllLogs() throws SQLException, IOException {
+        return getLogsInternal(-1);
+    }
+
+    /**
+     * Get logs for a job
+     * If the job provided doesn't have an ID set (i.e. it's the default value of -1) then
+     * it can't have any jobs in the datastore so an empty list is returned.
+     * @param job
+     * @return Iterable of JobLogObjects for this job
+     * @throws SQLException
+     * @throws IOException
+     */
+    public Iterable<JobLogObject> getLogs(JobObject job) throws SQLException, IOException {
+        return getLogs(job.getJobId());
+    }
+    
+    public Iterable<JobLogObject> getLogs(long jobId) throws SQLException, IOException {
+        if(jobId == -1) {
+            return new ArrayList<JobLogObject>();
+        } else {
+            return getLogsInternal(jobId);
+        }
+    }
+
+    /**
+     * Gets logs for a job or all logs in the system if jobId is -1
+     * @param jobId
+     * @return
+     * @throws SQLException
+     * @throws IOException
+     */
+    protected Iterable<JobLogObject> getLogsInternal(long jobId) throws SQLException, IOException {
+        ArrayList<JobLogObject> result = new ArrayList<JobLogObject>();
+
+        String query = "SELECT * FROM JOB_LOGS";
+        
+        if(jobId != -1) {
+            query += " WHERE job_id = ?";
+        }
+        
         final Connection conn = getConnection();
 
         PreparedStatement prep = null;
         
         try {
             prep = conn.prepareStatement(query);
+
+            if(jobId != -1) {
+                prep.setLong(1, jobId);
+            }
 
             ResultSet rs = prep.executeQuery();
             try {
@@ -704,6 +754,12 @@ class JDBCJobWrapper {
         return result;
     }
 
+    /**
+     * Gets all jobs considered pending and scheduled.
+     * Pending is any job that is ready to be run (state = READY). Shceduled is any job with a schedule set.
+     * @return
+     * @throws SQLException
+     */
     public Iterable<JobObject> getPendingScheduledJobs() throws SQLException {
         String query = "SELECT * FROM JOBS " + 
                         "WHERE (state = '" + STATE.READY.name() + "') " + 
@@ -734,7 +790,7 @@ class JDBCJobWrapper {
     
 
     /**
-     * Gets all jobs that are considered to have been interrupted during execution.
+     * Gets all jobs that are considered to have been interrupted during execution (state = INTERRUPTED).
      * @return
      * @throws SQLException
      */
@@ -805,7 +861,7 @@ class JDBCJobWrapper {
     private void readJobLog(JobLogObject joblog, ResultSet rs) throws SQLException, IOException {
         joblog.setJobLogId(rs.getLong("job_log_id"));
         joblog.setJobId(rs.getLong("job_id"));
-        joblog.setLogLevel(JobLogObject.LOG_LEVEL.valueOf(rs.getString("level")));
+        joblog.setLogLevel(JobLogObject.LOG_LEVEL.valueOf(rs.getString("log_level")));
         joblog.setLogTime(rs.getTimestamp("log_time"));
         joblog.setLogSummary(rs.getString("log_summary"));
         joblog.setLogText(readClob(rs, "log_text"));
@@ -821,7 +877,7 @@ class JDBCJobWrapper {
             if (len < 0) {
                 break;
             } else {
-                sb.append(buff);
+                sb.append(buff, 0, len);
             }
         }
         return sb.toString();
@@ -867,5 +923,4 @@ class JDBCJobWrapper {
         }
         System.gc();
     }
-
 }

@@ -78,8 +78,12 @@ public class TruncateTask extends GWCTask {
         }
     }
 
-    protected void doAbnormalExit() {
-        ; // not much a truncate job can do on abnormal exit
+    protected void doAbnormalExit(Throwable t) {
+        String logMsg = "Thread " + Thread.currentThread().getName() + " was terminated due to the following exception:\n";
+        logMsg += t.getClass().getName() + " + : " + t.getMessage();
+        log.info(logMsg);
+        addLog(JobLogObject.createErrorLog(jobId, "Seeding Terminated Abnormally", logMsg));
+        super.state = GWCTask.STATE.DEAD;
     }
     
     /**

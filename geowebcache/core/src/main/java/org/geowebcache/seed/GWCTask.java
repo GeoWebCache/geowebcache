@@ -23,7 +23,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.storage.JobLogObject;
-import org.geowebcache.storage.JobLogObject.LOG_LEVEL;
 
 /**
  * 
@@ -121,13 +120,14 @@ public abstract class GWCTask {
     public final void doAction() throws GeoWebCacheException, InterruptedException {
         this.sharedThreadCount.incrementAndGet();
         this.groupStartTime = System.currentTimeMillis();
+
         try {
             doActionInternal();
         } catch(InterruptedException ie) {
-            doAbnormalExit();
+            doAbnormalExit(ie);
             throw ie;
         } catch(GeoWebCacheException gwce) {
-            doAbnormalExit();
+            doAbnormalExit(gwce);
             throw gwce;
         } finally {
             dispose();
@@ -142,7 +142,7 @@ public abstract class GWCTask {
 
     protected abstract void dispose();
     
-    protected abstract void doAbnormalExit();
+    protected abstract void doAbnormalExit(Throwable t);
 
     /**
      * Extension point for subclasses to do what they do
