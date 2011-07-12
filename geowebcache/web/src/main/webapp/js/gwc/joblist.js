@@ -100,8 +100,6 @@ var setupMenu = function () {
 
 Ext.Loader.onReady(function () {
     
-	var contextMenu = setupMenu();
-	
 	Ext.define('GWC.JobGrid', {
 		extend: 'Ext.grid.Panel',
 		initComponent : function () {
@@ -117,7 +115,9 @@ Ext.Loader.onReady(function () {
 	            stripeRows: true,
 	            listeners: {
                 	itemcontextmenu: function (view, rec, node, index, e) {
+	        			var contextMenu = setupMenu();
                     	e.stopEvent();
+                    	console.log(rec.data);
                 		contextMenu.items.get(1).disabled = (rec.data.state != "RUNNING");
                 		contextMenu.items.get(2).disabled = (rec.data.state == "RUNNING");
                 		if(rec.hasntRunYet()) {
@@ -125,7 +125,6 @@ Ext.Loader.onReady(function () {
                 		} else {
                 			contextMenu.items.get(2).text = "Delete";
                 		}
-                			
                     	contextMenu.showAt(e.getXY());
                     	return false;
                 	}
