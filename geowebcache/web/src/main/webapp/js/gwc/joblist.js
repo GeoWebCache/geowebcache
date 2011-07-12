@@ -117,7 +117,6 @@ Ext.Loader.onReady(function () {
                 	itemcontextmenu: function (view, rec, node, index, e) {
 	        			var contextMenu = setupMenu();
                     	e.stopEvent();
-                    	console.log(rec.data);
                 		contextMenu.items.get(1).disabled = (rec.data.state != "RUNNING");
                 		contextMenu.items.get(2).disabled = (rec.data.state == "RUNNING");
                 		if(rec.hasntRunYet()) {

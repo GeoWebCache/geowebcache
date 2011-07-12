@@ -132,7 +132,10 @@ public class JobDispatcher implements DisposableBean {
 
     public boolean remove(final long jobId) throws GeoWebCacheException {
         try {
+            // if the job deleted was a scheduled one, make sure it's not still scheduled.
+            JobScheduler.deschedule(jobId);
             return jobStore.delete(jobId);
+            
         } catch(StorageException se) {
             throw new GeoWebCacheException("Thread " + Thread.currentThread().getId()
                     + " Unable to delete job " + jobId + ".", se);

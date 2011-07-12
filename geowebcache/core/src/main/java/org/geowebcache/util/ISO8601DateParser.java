@@ -84,7 +84,7 @@ public class ISO8601DateParser {
         if ( input.endsWith( "Z" ) ) {
             input = input.substring( 0, input.length() - 1) + "GMT-00:00";
         } else {
-            int inset = 6;
+            int inset = 9;
         
             String s0 = input.substring( 0, input.length() - inset );
             String s1 = input.substring( input.length() - inset, input.length() );
@@ -107,7 +107,7 @@ public class ISO8601DateParser {
         String output = df.format( date );
 
         int inset0 = 9;
-        int inset1 = 6;
+        int inset1 = 9;
         
         String s0 = output.substring( 0, output.length() - inset0 );
         String s1 = output.substring( output.length() - inset1, output.length() );

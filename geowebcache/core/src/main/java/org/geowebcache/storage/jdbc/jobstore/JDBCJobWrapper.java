@@ -726,6 +726,8 @@ class JDBCJobWrapper {
             query += " WHERE job_id = ?";
         }
         
+        query += " ORDER BY log_time DESC";        
+        
         final Connection conn = getConnection();
 
         PreparedStatement prep = null;

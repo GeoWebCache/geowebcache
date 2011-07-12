@@ -3,6 +3,10 @@ package org.geowebcache.job;
 import it.sauronsoftware.cron4j.InvalidPatternException;
 import it.sauronsoftware.cron4j.Scheduler;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.seed.ScheduledJobInitiator;
@@ -21,9 +25,15 @@ public class JobScheduler {
     
     private static Scheduler instance;
     
+    /**
+     * The job scheduler keeps track of the cron4j schedule ID's and maps them to jobs.
+     */
+    private static Map<Long, String> scheduleIds;
+    
     static {
         instance = new Scheduler();
         instance.start();
+        scheduleIds = new HashMap<Long, String>();
     }
     
     public static void scheduleJob(JobObject job, TileBreeder seeder, JobStore jobStore) {
@@ -31,7 +41,7 @@ public class JobScheduler {
         ScheduledJobInitiator sji = new ScheduledJobInitiator(job, seeder, jobStore);
         synchronized(instance) {
             try {
-                sji.setScheduleId(instance.schedule(job.getSchedule(), sji));
+                scheduleIds.put(job.getJobId(), instance.schedule(job.getSchedule(), sji));
                 log.info("Job " + job.getJobId() + " has been scheduled.");
             } catch (InvalidPatternException e) {
                 log.error("Couldn't schedule job " + job.getJobId() + " - invalid schedule pattern: '" + job.getSchedule() + "'.");
@@ -45,9 +55,22 @@ public class JobScheduler {
         }
     }
 
-    public static void deschedule(String scheduleId) {
+    public static void deschedule(long jobId) {
+        String scheduleId = null;
         synchronized(instance) {
-            instance.deschedule(scheduleId);
+            if(scheduleIds.containsKey(jobId)) {
+                scheduleId = scheduleIds.get(jobId);
+            }
+        }
+        
+        if(scheduleId != null) {
+            synchronized(instance) {
+                instance.deschedule(scheduleId);
+                if(scheduleIds.containsValue(scheduleId)) {
+                    scheduleIds.remove(jobId);
+                    log.info("Job " + jobId + " has been de-scheduled.");
+                }
+            }
         }
     }
 

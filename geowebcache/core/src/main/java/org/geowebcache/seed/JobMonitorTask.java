@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.job.JobScheduler;
+import org.geowebcache.storage.JobLogObject;
 import org.geowebcache.storage.JobObject;
 import org.geowebcache.storage.JobStore;
 import org.geowebcache.storage.StorageException;
@@ -166,6 +167,7 @@ public class JobMonitorTask extends GWCTask {
                 JobObject job = iter.next();
                 try {
                     job.setState(STATE.INTERRUPTED);
+                    job.addLog(JobLogObject.createWarnLog(job.getJobId(), "Job Interruption Detected", "This job was running last time GeoWebCache was running. Changing state to interrupted."));
                     seeder.executeJob(job);
                 } catch (GeoWebCacheException e) {
                     log.error("Couldn't restart interrupted job: " + e.getMessage(), e);

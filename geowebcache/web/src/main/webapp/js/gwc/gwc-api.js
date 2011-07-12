@@ -85,11 +85,13 @@ Ext.define('GWC.RestService', {
     	    model: 'Job',
     	    pageSize: 0
     	});
+    	this.jobStore.sort('startTime', 'desc');
 
     	this.logStore = new Ext.data.Store({
     	    model: 'JobLog',
     	    pageSize: 0
     	});
+    	this.logStore.sort('logTime', 'asc');
 
     	return this;
     },
