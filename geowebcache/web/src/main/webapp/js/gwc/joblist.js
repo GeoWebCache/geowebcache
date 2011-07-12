@@ -9,6 +9,8 @@ Ext.BLANK_IMAGE_URL = 'images/s.gif';
 
 Ext.Loader.onReady(function() {
     
+	contextMenu = setupMenu();
+	
 	Ext.define('GWC.JobGrid', {
 		extend: 'Ext.grid.Panel',
 		initComponent : function() {
@@ -16,12 +18,27 @@ Ext.Loader.onReady(function() {
 	        this.regionTemplate = loadTemplate('Region', 'js/gwc/regiontemplate.html');
 	        this.title = 'Job List';
 	        this.store = gwc.getJobStore();
-	        this.disableSelection = true;
+	        this.disableSelection = false;
 	        this.loadMask = true;
 	        this.viewConfig = {
 	            id: 'gv',
 	            trackOver: false,
-	            stripeRows: true
+	            stripeRows: true,
+	            listeners: {
+                	itemcontextmenu: function(view, rec, node, index, e) {
+                    	e.stopEvent();
+                		contextMenu.items.get(1).disabled = (rec.data.state != "RUNNING");
+                		contextMenu.items.get(2).disabled = (rec.data.state == "RUNNING");
+                		if(rec.hasntRunYet()) {
+                			contextMenu.items.get(2).text = "Cancel";
+                		} else {
+                			contextMenu.items.get(2).text = "Delete";
+                		}
+                			
+                    	contextMenu.showAt(e.getXY());
+                    	return false;
+                	}
+	        	}
 	        };
 
 	        this.columns = [{
@@ -142,12 +159,34 @@ Ext.Loader.onReady(function() {
 		},
 	    
 		refreshLogs : function() {
-			gwc.getLogs(this.jobId);
+			gwc.loadLogs(this.jobId);
 	    }
 	});
 
 });
-	
+
+Ext.onReady(function() {
+	gwc = Ext.create('GWC.RestService');
+	joblist = new GWC.JobGrid({
+        tools: [{
+            type:'refresh',
+            tooltip: 'Refresh Job List',
+            handler: function(event, toolEl, panel){
+        		gwc.loadJobs();
+            }
+        },
+        {
+            type:'help',
+            tooltip: 'Get Help',
+            handler: function(event, toolEl, panel){
+        		showHelp();
+            }
+        }],
+	    renderTo: 'joblist'
+	});
+	gwc.loadJobs();
+});
+
 showLogs = function(jobId) {
 	logGrid = Ext.create('GWC.JobLogGrid');
 	logGrid.jobId = jobId;
@@ -186,25 +225,48 @@ showHelp = function() {
 	helpWindow.show();	
 }
 
-Ext.onReady(function() {
-	gwc = Ext.create('GWC.RestService');
-	joblist = new GWC.JobGrid({
-        tools: [{
-            type:'refresh',
-            tooltip: 'Refresh Job List',
-            // hidden:true,
-            handler: function(event, toolEl, panel){
-        		gwc.loadJobs();
-            }
-        },
-        {
-            type:'help',
-            tooltip: 'Get Help',
-            handler: function(event, toolEl, panel){
-        		showHelp();
-            }
-        }],
-	    renderTo: 'joblist'
+setupMenu = function() {
+	var viewLogsAction = Ext.create('Ext.Action', {
+	    icon: 'images/logs.png', 
+	    text: 'View Logs',
+	    disabled: false,
+	    handler: function(widget, event) {
+			var rec = joblist.getSelectionModel().getSelection()[0];
+			if (rec) {
+				showLogs(rec.data.jobId);
+			}
+		}
 	});
-	gwc.loadJobs();
-});
+
+	var stopAction = Ext.create('Ext.Action', {
+	    icon: 'images/stop.png', 
+	    text: 'Stop Job',
+	    disabled: true,
+	    handler: function(widget, event) {
+//	        var rec = grid.getSelectionModel().getSelection()[0];
+//	        if (rec) {
+//	            alert("Sell " + rec.get('company'));
+//	        } else {
+//	            alert('Please select a company from the grid');
+//	        }
+			alert("stop");
+	    }
+	});
+	
+	var deleteAction = Ext.create('Ext.Action', {
+	    icon: 'images/delete.png', 
+	    text: 'Delete Job',
+	    disabled: true,
+	    handler: function(widget, event) {
+			alert("delete");
+	    }
+	});
+
+	return Ext.create('Ext.menu.Menu', {
+	    items: [
+	        viewLogsAction,
+	        stopAction,
+	        deleteAction
+	    ]
+	});
+}

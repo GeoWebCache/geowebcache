@@ -57,6 +57,10 @@ Ext.define('GWC.RestService', {
                 	// totalProperty: 'totalCount' // if we are doing pagination
             	}
     		},
+    		hasntRunYet: function() {
+    			return(this.data.state == 'UNSET' || this.data.state == 'READY');
+    		}
+    			
     	});
     	
     	Ext.define('JobLog', {
@@ -96,10 +100,8 @@ Ext.define('GWC.RestService', {
     	this.jobStore.load();
 	},
 
-	getLogs: function(jobId) {
+	loadLogs: function(jobId) {
     	this.logStore.proxy.url = 'rest/jobs/' + jobId + '/logs.json';
     	this.logStore.load();
-    	
-    	return this.logStore;
 	}	
 });

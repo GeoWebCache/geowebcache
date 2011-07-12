@@ -40,13 +40,7 @@ renderJob = function(value, p, record) {
 	}
 	
 	errorInfo = "";
-	if(record.data.errorCount + record.data.warnCount == 0) {
-		if(record.data.state == 'RUNNING') {
-			errorInfo = "running smoothly";
-		} else if(record.data.state != 'UNSET' && record.data.state != 'READY') {
-			errorInfo = "view logs";
-		}
-	} else {
+	if(record.data.errorCount + record.data.warnCount != 0) {
 		if(record.data.errorCount > 0) {
 			errorInfo = "<img style=\"border: 0\" src=\"images/error.png\" title=\"Errors: " + record.data.errorCount + "\"/>";
 		}
