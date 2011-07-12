@@ -1,5 +1,5 @@
-var loadTemplate = function(templateName, templateUrl) {
-	result = null;
+var loadTemplate = function (templateName, templateUrl) {
+	var result = null;
 	Ext.Ajax.request({
 		url: templateUrl,
 		success: function(response) {
@@ -13,8 +13,8 @@ var loadTemplate = function(templateName, templateUrl) {
 	return result;
 };
 
-var formatSecondsElapsed = function(seconds) {
-	result = "";
+var formatSecondsElapsed = function (seconds) {
+	var result = "";
 	
 	if(Math.floor(seconds / 604800) > 1) { // weeks
 		result = Math.floor(seconds / 604800) + " weeks ";
@@ -28,8 +28,8 @@ var formatSecondsElapsed = function(seconds) {
 		result += "1 day ";
 	}
 
-	hours = Math.floor(seconds % 86400 / 3600);
-	minutes = Math.floor(seconds % 3600 / 60);
+	var hours = Math.floor(seconds % 86400 / 3600);
+	var minutes = Math.floor(seconds % 3600 / 60);
 	seconds = seconds % 60;
 	
 	result = Ext.String.format("{0} {1}:{2}:{3}",
@@ -41,16 +41,16 @@ var formatSecondsElapsed = function(seconds) {
 	return result;
 };
 
-var formatMimeType = function(mimeType) {
+var formatMimeType = function (mimeType) {
 	var result = mimeType.replace("image/", "").toLowerCase();
 	return result;
 };
 
-var addCommas = function(nStr) {
+var addCommas = function (nStr) {
     nStr += '';
-    x = nStr.split('.');
-    x1 = x[0];
-    x2 = x.length > 1 ? '.' + x[1] : '';
+    var x = nStr.split('.');
+    var x1 = x[0];
+    var x2 = x.length > 1 ? '.' + x[1] : '';
     var rgx = /(\d+)(\d{3})/;
     while (rgx.test(x1)) {
         x1 = x1.replace(rgx, '$1' + ',' + '$2');

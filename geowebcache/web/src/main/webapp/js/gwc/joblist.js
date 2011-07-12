@@ -7,13 +7,99 @@ Ext.require([
 
 Ext.BLANK_IMAGE_URL = 'images/s.gif';
 
-Ext.Loader.onReady(function() {
+var joblist = null;
+
+var showLogs = function (jobId) {
+	var logGrid = Ext.create('GWC.JobLogGrid');
+	logGrid.jobId = jobId;
+	logGrid.refreshLogs();
+    var logWindow = Ext.create('widget.window', {
+        width: 800,
+        height: 600,
+        title: 'Logs for job ' + jobId,
+        closable: true,
+        plain: true,
+        layout: 'fit',
+        modal: true,
+        tools: [{
+            type:'refresh',
+            tooltip: 'Refresh Logs',
+            // hidden:true,
+            handler: function(event, toolEl, panel){
+        		logGrid.refreshLogs();
+            }
+        }],
+        items: [logGrid]
+	});
+	logWindow.show();	
+};
+
+var showHelp = function () {
+    var helpWindow = Ext.create('widget.window', {
+        width: 800,
+        height: 400,
+        title: 'Job Manager Help',
+        closable: true,
+        plain: true,
+        layout: 'fit',
+        items: []
+	});
+	helpWindow.show();	
+};
+
+var setupMenu = function () {
+	var viewLogsAction = Ext.create('Ext.Action', {
+	    icon: 'images/logs.png', 
+	    text: 'View Logs',
+	    disabled: false,
+	    handler: function(widget, event) {
+			var rec = joblist.getSelectionModel().getSelection()[0];
+			if (rec) {
+				showLogs(rec.data.jobId);
+			}
+		}
+	});
+
+	var stopAction = Ext.create('Ext.Action', {
+	    icon: 'images/stop.png', 
+	    text: 'Stop Job',
+	    disabled: true,
+	    handler: function(widget, event) {
+//	        var rec = grid.getSelectionModel().getSelection()[0];
+//	        if (rec) {
+//	            alert("Sell " + rec.get('company'));
+//	        } else {
+//	            alert('Please select a company from the grid');
+//	        }
+			alert("stop");
+	    }
+	});
+	
+	var deleteAction = Ext.create('Ext.Action', {
+	    icon: 'images/delete.png', 
+	    text: 'Delete Job',
+	    disabled: true,
+	    handler: function(widget, event) {
+			alert("delete");
+	    }
+	});
+
+	return Ext.create('Ext.menu.Menu', {
+	    items: [
+	        viewLogsAction,
+	        stopAction,
+	        deleteAction
+	    ]
+	});
+};
+
+Ext.Loader.onReady(function () {
     
-	contextMenu = setupMenu();
+	var contextMenu = setupMenu();
 	
 	Ext.define('GWC.JobGrid', {
 		extend: 'Ext.grid.Panel',
-		initComponent : function() {
+		initComponent : function () {
 	        this.jobTemplate = loadTemplate('Job Title', 'js/gwc/jobtemplate.html');
 	        this.regionTemplate = loadTemplate('Region', 'js/gwc/regiontemplate.html');
 	        this.title = 'Job List';
@@ -25,7 +111,7 @@ Ext.Loader.onReady(function() {
 	            trackOver: false,
 	            stripeRows: true,
 	            listeners: {
-                	itemcontextmenu: function(view, rec, node, index, e) {
+                	itemcontextmenu: function (view, rec, node, index, e) {
                     	e.stopEvent();
                 		contextMenu.items.get(1).disabled = (rec.data.state != "RUNNING");
                 		contextMenu.items.get(2).disabled = (rec.data.state == "RUNNING");
@@ -158,14 +244,14 @@ Ext.Loader.onReady(function() {
 	        this.callParent();
 		},
 	    
-		refreshLogs : function() {
+		refreshLogs : function () {
 			gwc.loadLogs(this.jobId);
 	    }
 	});
 
 });
 
-Ext.onReady(function() {
+Ext.onReady(function () {
 	gwc = Ext.create('GWC.RestService');
 	joblist = new GWC.JobGrid({
         tools: [{
@@ -174,8 +260,7 @@ Ext.onReady(function() {
             handler: function(event, toolEl, panel){
         		gwc.loadJobs();
             }
-        },
-        {
+        },{
             type:'help',
             tooltip: 'Get Help',
             handler: function(event, toolEl, panel){
@@ -186,87 +271,3 @@ Ext.onReady(function() {
 	});
 	gwc.loadJobs();
 });
-
-showLogs = function(jobId) {
-	logGrid = Ext.create('GWC.JobLogGrid');
-	logGrid.jobId = jobId;
-	logGrid.refreshLogs();
-    logWindow = Ext.create('widget.window', {
-        width: 800,
-        height: 600,
-        title: 'Logs for job ' + jobId,
-        closable: true,
-        plain: true,
-        layout: 'fit',
-        modal: true,
-        tools: [{
-            type:'refresh',
-            tooltip: 'Refresh Logs',
-            // hidden:true,
-            handler: function(event, toolEl, panel){
-        		logGrid.refreshLogs();
-            }
-        }],
-        items: [logGrid]
-	});
-	logWindow.show();	
-}
-
-showHelp = function() {
-    helpWindow = Ext.create('widget.window', {
-        width: 800,
-        height: 400,
-        title: 'Job Manager Help',
-        closable: true,
-        plain: true,
-        layout: 'fit',
-        items: []
-	});
-	helpWindow.show();	
-}
-
-setupMenu = function() {
-	var viewLogsAction = Ext.create('Ext.Action', {
-	    icon: 'images/logs.png', 
-	    text: 'View Logs',
-	    disabled: false,
-	    handler: function(widget, event) {
-			var rec = joblist.getSelectionModel().getSelection()[0];
-			if (rec) {
-				showLogs(rec.data.jobId);
-			}
-		}
-	});
-
-	var stopAction = Ext.create('Ext.Action', {
-	    icon: 'images/stop.png', 
-	    text: 'Stop Job',
-	    disabled: true,
-	    handler: function(widget, event) {
-//	        var rec = grid.getSelectionModel().getSelection()[0];
-//	        if (rec) {
-//	            alert("Sell " + rec.get('company'));
-//	        } else {
-//	            alert('Please select a company from the grid');
-//	        }
-			alert("stop");
-	    }
-	});
-	
-	var deleteAction = Ext.create('Ext.Action', {
-	    icon: 'images/delete.png', 
-	    text: 'Delete Job',
-	    disabled: true,
-	    handler: function(widget, event) {
-			alert("delete");
-	    }
-	});
-
-	return Ext.create('Ext.menu.Menu', {
-	    items: [
-	        viewLogsAction,
-	        stopAction,
-	        deleteAction
-	    ]
-	});
-}

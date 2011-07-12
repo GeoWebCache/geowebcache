@@ -15,50 +15,49 @@ Ext.define('GWC.RestService', {
         logStore: null
     },
     
-    constructor: function(config) {
+    constructor: function (config) {
     	this.initConfig(config);
     	
     	Ext.define('Job', {
     		extend: 'Ext.data.Model',
-    	    fields: [
-    	        {name: 'jobId',  						type: 'long'},
-    	        {name: 'layerName',						type: 'string'},
-    	        {name: 'state',							type: 'string'},
-    	        {name: 'timeSpent',						type: 'long'},
-    	        {name: 'timeRemaining',					type: 'long'},
-    	        {name: 'tilesDone',						type: 'long'},
-    	        {name: 'tilesTotal',					type: 'long'},
-    	        {name: 'failedTileCount',				type: 'long'},
-    	        {name: 'warnCount',						type: 'long'},
-    	        {name: 'errorCount',					type: 'long'},
-    	        {name: 'bounds',						type: 'string'},
-    	        {name: 'gridSetId',						type: 'string'},
-    	        {name: 'srs',							type: 'int'},
-    	        {name: 'threadCount',					type: 'int'},
-    	        {name: 'zoomStart',						type: 'int'},
-    	        {name: 'zoomStop',						type: 'int'},
-    	        {name: 'format',						type: 'string'},
-    	        {name: 'jobType',						type: 'string'},
-    	        {name: 'throughput',					type: 'float'},
-    	        {name: 'maxThroughput',					type: 'int'},
-    	        {name: 'priority',						type: 'string'},
-    	        {name: 'schedule',						type: 'string'},
-    	        {name: 'runOnce',						type: 'boolean'},
-    	        {name: 'filterUpdate',					type: 'boolean'},
-    	        {name: 'parameters',					type: 'string'},
-    	        {name: 'timeFirstStart',				type: 'date'},
-    	        {name: 'timeLatestStart',				type: 'date'}
+    		fields: [
+    		    {name: 'jobId',				type: 'long'},
+    		    {name: 'layerName',			type: 'string'},
+    		    {name: 'state',				type: 'string'},
+    		    {name: 'timeSpent',			type: 'long'},
+    		    {name: 'timeRemaining',		type: 'long'},
+    		    {name: 'tilesDone',			type: 'long'},
+    		    {name: 'tilesTotal',		type: 'long'},
+    		    {name: 'failedTileCount',	type: 'long'},
+    		    {name: 'warnCount',			type: 'long'},
+    		    {name: 'errorCount',		type: 'long'},
+    		    {name: 'bounds',			type: 'string'},
+    		    {name: 'gridSetId',			type: 'string'},
+    		    {name: 'srs',				type: 'int'},
+    		    {name: 'threadCount',		type: 'int'},
+    		    {name: 'zoomStart',			type: 'int'},
+    		    {name: 'zoomStop',			type: 'int'},
+    		    {name: 'format',			type: 'string'},
+    		    {name: 'jobType',			type: 'string'},
+    		    {name: 'throughput',		type: 'float'},
+    		    {name: 'maxThroughput',		type: 'int'},
+    		    {name: 'priority',			type: 'string'},
+    		    {name: 'schedule',			type: 'string'},
+    		    {name: 'runOnce',			type: 'boolean'},
+    		    {name: 'filterUpdate',		type: 'boolean'},
+    		    {name: 'parameters',		type: 'string'},
+    		    {name: 'timeFirstStart',	type: 'date'},
+    	        {name: 'timeLatestStart',	type: 'date'}
     	    ],
     	    proxy: {
     			type: 'rest',
     			url : this.endpoint + '/jobs.json',
                 reader: {
                 	root: 'jobs'
-                	// totalProperty: 'totalCount' // if we are doing pagination
             	}
     		},
-    		hasntRunYet: function() {
-    			return(this.data.state == 'UNSET' || this.data.state == 'READY');
+    		hasntRunYet: function () {
+    			return (this.data.state == 'UNSET' || this.data.state == 'READY');
     		}
     			
     	});
@@ -96,11 +95,11 @@ Ext.define('GWC.RestService', {
     	return this;
     },
 
-	loadJobs: function() {
+	loadJobs: function () {
     	this.jobStore.load();
 	},
 
-	loadLogs: function(jobId) {
+	loadLogs: function (jobId) {
     	this.logStore.proxy.url = 'rest/jobs/' + jobId + '/logs.json';
     	this.logStore.load();
 	}	
