@@ -8,7 +8,6 @@
 Ext.define('GWC.RestService', {
     
     config: {
-        disableCaching: true,
         endpoint: 'http://localhost:8080/geowebcache/rest',
         timeout: 60000,
         jobStore: null,
@@ -102,5 +101,22 @@ Ext.define('GWC.RestService', {
 	loadLogs: function (jobId) {
     	this.logStore.proxy.url = 'rest/jobs/' + jobId + '/logs.json';
     	this.logStore.load();
-	}	
+	},
+	
+	// Going to handle delete and update outside jobStore because it makes  
+	// of assumptions on how to do the restful posts and deletes.
+	deleteJob: function (jobId) {
+		Ext.Ajax.request({ 
+			url: this.endpoint + '/jobs/' + jobId + '.json', method: 'DELETE',
+			timeout: this.timeout,
+			success: function(response, opts) {
+				;
+	    	},
+	    	failure: function(response, opts) {
+	    		// an alert may be too confronting for an API to do
+	    		console.log(response);
+	    		alert('Failed to delete job ' + jobId + '\n' + response.status + ': ' + response.responseText);
+	    	}
+		});
+	}
 });

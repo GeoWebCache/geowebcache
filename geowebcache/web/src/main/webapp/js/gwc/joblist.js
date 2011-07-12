@@ -8,6 +8,7 @@ Ext.require([
 Ext.BLANK_IMAGE_URL = 'images/s.gif';
 
 var joblist = null;
+var gwc = null;
 
 var showLogs = function (jobId) {
 	var logGrid = Ext.create('GWC.JobLogGrid');
@@ -80,7 +81,11 @@ var setupMenu = function () {
 	    text: 'Delete Job',
 	    disabled: true,
 	    handler: function(widget, event) {
-			alert("delete");
+			var rec = joblist.getSelectionModel().getSelection()[0];
+			if (rec) {
+				gwc.getJobStore().remove(rec);
+				gwc.deleteJob(rec.data.jobId);
+			}
 	    }
 	});
 
