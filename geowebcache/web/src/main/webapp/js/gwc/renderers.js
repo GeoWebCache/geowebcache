@@ -109,7 +109,7 @@ var renderTileCounts = function (value, p, record) {
 };
 
 var renderSchedule = function (value, p, record) {
-	if(record.data.runOnce) {
+	if(record.data.runOnce && record.data.schedule) {
 		return Ext.String.format(
 		    	"{0}<br />(once)",
 		        record.data.schedule

@@ -117,7 +117,7 @@ Ext.Loader.onReady(function () {
                 	itemcontextmenu: function (view, rec, node, index, e) {
 	        			var contextMenu = setupMenu();
                     	e.stopEvent();
-                		contextMenu.items.get(1).disabled = (rec.data.state != "RUNNING");
+                		contextMenu.items.get(1).disabled = (rec.data.state != "RUNNING" || rec.data.jobType == "TRUNCATE");
                 		contextMenu.items.get(2).disabled = (rec.data.state == "RUNNING");
                 		if(rec.hasntRunYet()) {
                 			contextMenu.items.get(2).text = "Cancel";
@@ -218,6 +218,7 @@ Ext.Loader.onReady(function () {
 	        this.viewConfig = {
 	            id: 'lv',
 	            trackOver: false,
+	            layout: 'fit',
 	            stripeRows: true
 	        };
 
@@ -269,8 +270,29 @@ Ext.onReady(function () {
             handler: function(event, toolEl, panel){
         		showHelp();
             }
-        }],
-	    renderTo: 'joblist'
+        }]
 	});
+
+	Ext.create('Ext.container.Viewport', {
+	    layout: 'border',
+	    renderTo: Ext.getBody(),
+	    items: [{
+	    	region: 'north',
+		    border: 0,
+	        xtype: 'panel',
+	        items: {
+	            html: '<a id="logo" href="home"><img src="rest/web/geowebcache_logo.png"height="70" width="247" border="0"/></a>'
+	    	}
+        },{
+	    	region: 'center',
+		    border: 0,
+	        layout: 'fit',
+	        xtype: 'panel',
+	        items: [
+	            joblist
+	    	]
+	    }]
+	});
+	
 	gwc.loadJobs();
 });
