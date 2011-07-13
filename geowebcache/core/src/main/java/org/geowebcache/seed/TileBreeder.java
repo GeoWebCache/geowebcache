@@ -468,6 +468,20 @@ public class TileBreeder implements ApplicationContextAware {
         return threadPool.terminateGWCTask(id);
     }
 
+    public boolean terminateJob(final long id) {
+        Iterator<Entry<Long, GWCTask>> runningTasks = getRunningTasksIterator();
+        boolean result = true;
+        while (runningTasks.hasNext() && result) {
+            Entry<Long, GWCTask> next = runningTasks.next();
+            GWCTask task = next.getValue();
+            if(task.getJobId() == id) {
+                long taskId = task.getTaskId();
+                result = terminateGWCTask(taskId);
+            }
+        }
+        return result;
+    }
+
     public Iterable<TileLayer> getLayers() {
         return this.layerDispatcher.getLayerList();
     }

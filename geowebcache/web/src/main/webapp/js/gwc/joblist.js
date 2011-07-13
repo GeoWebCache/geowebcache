@@ -88,19 +88,6 @@ var setupMenu = function () {
 		    			alert('Failed to add job\n' + response.status + ': ' + response.responseText);
 		    		}
 				);
-				
-				deleteJob: function (jobId, success, failure) {
-					Ext.Ajax.request({ 
-						url: this.endpoint + '/jobs/' + jobId + '.json', method: 'DELETE',
-						timeout: this.timeout,
-						success: function(response, opts) {
-							gwc.loadJobs();
-				    	},
-				    	failure: function(response, opts) {
-				    		alert('Failed to delete job ' + jobId + '\n' + response.status + ': ' + response.responseText);
-				    	}
-					});
-				}
 			}
 	    }
 	});
@@ -112,10 +99,18 @@ var setupMenu = function () {
 	    handler: function(widget, event) {
 			var rec = joblist.getSelectionModel().getSelection()[0];
 			if (rec) {
-				rec.set('state','KILLED');
-				gwc.getJobStore().save();
+				var newrec = rec.copy(-1); 
+				newrec.set('state','KILLED');
+				gwc.updateJob(newrec, 
+					function(response, opts) {
+						gwc.loadJobs();
+		    		},
+		    		function(response, opts) {
+		    			alert('Failed to stop job\n' + response.status + ': ' + response.responseText);
+		    		}
+				);
 			}
-	    }
+		}
 	});
 	
 	var deleteAction = Ext.create('Ext.Action', {
@@ -193,7 +188,7 @@ Ext.Loader.onReady(function () {
 	        },{
 	            text: "Job ID",
 	            dataIndex: 'jobId',
-	            flex: 10,
+	            width: 28,
 	            hidden: true,
 	            sortable: false
 	        },{
@@ -252,7 +247,7 @@ Ext.Loader.onReady(function () {
 	        },{
 	            text: "Schedule",
 	            dataIndex: 'schedule',
-	            width: 80,
+	            width: 55,
 	            renderer: renderSchedule,
 	            align: "center",
 	            sortable: true

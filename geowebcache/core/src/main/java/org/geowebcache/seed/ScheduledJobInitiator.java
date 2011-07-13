@@ -39,11 +39,13 @@ public class ScheduledJobInitiator implements Runnable {
     }
     
     public void run() {
+        JobObject job_to_run = null;
         if(job.isRunOnce()) {
             log.info("Starting scheduled run-once job: " + job.getJobId());
             // remove run-once job from schedule.
             JobScheduler.deschedule(this.job.getJobId());
             job.addLog(JobLogObject.createInfoLog(job.getJobId(), "Once Off Job Scheduled", "This once-off job is now scheduled to start."));
+            job_to_run = job;
         } else {
             log.info("The repeating job " + job.getJobId() + " is scheduled to begin now.");
             job.addLog(JobLogObject.createInfoLog(job.getJobId(), "Spawned New Job", "This repeating job is now scheduled to start. Will spawn a new job to run."));
@@ -56,12 +58,13 @@ public class ScheduledJobInitiator implements Runnable {
             // Clone the existing job and run it. The original job already scheduled stays in the system.
             // To do this we just need to clear the ID. Jobs are persisted on execution and a job with 
             // no ID will be treated as a new job according to the store.
-            job.setJobId(-1);
+            job_to_run = JobObject.createJobObject(job);
+            job_to_run.setJobId(-1);
+            job_to_run.setSchedule(null);
         }
         
         try {
-            job.setSchedule(null);
-            seeder.executeJob(job);
+            seeder.executeJob(job_to_run);
         } catch(GeoWebCacheException gwce) {
             log.error("Couldn't start scheduled job: " + gwce.getMessage(), gwce);
         }

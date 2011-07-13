@@ -149,6 +149,51 @@ public class JobObject {
     }
     
     /**
+     * Copies the configuration of an existing job to make a new one.
+     * Because this isn't a deep clone operation not all items are copied.
+     * Essentially the copied job is in a state ready to be executed. 
+     * @param job
+     * @return
+     */
+    public static JobObject createJobObject(JobObject job) {
+        JobObject obj = new JobObject();
+        
+        // obj.jobId = job.jobId;
+        obj.layerName = job.layerName;
+        // obj.state = job.state;
+        // obj.timeSpent = job.timeSpent;
+        // obj.timeRemaining = job.timeRemaining;
+        // obj.tilesDone = job.tilesDone;
+        // obj.tilesTotal = job.tilesTotal;
+        // obj.failedTileCount = job.failedTileCount;
+
+        obj.bounds = job.bounds;
+        obj.gridSetId = job.gridSetId;
+        obj.srs = job.srs;
+        obj.threadCount = job.threadCount;
+        obj.zoomStart = job.zoomStart;
+        obj.zoomStop = job.zoomStop;
+        obj.format = job.format;
+        obj.jobType = job.jobType;
+        // obj.throughput = job.throughput;
+        obj.maxThroughput = job.maxThroughput;
+        
+        obj.priority = job.priority;
+        obj.schedule = job.schedule;
+        obj.runOnce = job.runOnce;
+        obj.filterUpdate = job.filterUpdate;
+        obj.encodedParameters = job.encodedParameters;
+        
+        // obj.timeFirstStart = job.timeFirstStart;
+        // obj.timeLatestStart = job.timeLatestStart;
+        
+        // obj.warnCount = job.warnCount;
+        // obj.errorCount = job.errorCount;
+        
+        return obj;
+    }
+
+    /**
      * Update a job based on all running tasks currently active in the system.
      * @param tb
      */

@@ -110,12 +110,11 @@ var renderTileCounts = function (value, p, record) {
 
 var renderSchedule = function (value, p, record) {
 	if(record.data.runOnce && record.data.schedule) {
-		return Ext.String.format(
-		    	"{0}<br />(once)",
-		        record.data.schedule
-		    );
+		return "<img style=\"border: 0\" src=\"images/time.png\" title=\"Run Once: " + record.data.schedule + "\"/>";
+	} else if(record.data.schedule) {
+		return "<img style=\"border: 0\" src=\"images/repeat.png\" title=\"Repeats: " + record.data.schedule + "\"/>";
 	} else {
-		return record.data.schedule;
+		return "";
 	}
 };
 

@@ -88,7 +88,7 @@ Ext.define('GWC.RestService', {
     	    model: 'job',
     	    pageSize: 0
     	});
-    	this.jobStore.sort('startTime', 'desc');
+    	this.jobStore.sort('timeFirstStart', 'desc');
 
     	this.logStore = new Ext.data.Store({
     	    model: 'log',
@@ -113,6 +113,16 @@ Ext.define('GWC.RestService', {
 	addJob: function (rec, success, failure) {
 		Ext.Ajax.request({ 
 			url: this.endpoint + '/jobs.json', method: 'PUT',
+			timeout: this.timeout,
+			jsonData: Ext.JSON.encode({"job": rec.data }),
+			success: success,
+	    	failure: failure
+		});
+	},
+	
+	updateJob: function (rec, success, failure) {
+		Ext.Ajax.request({ 
+			url: this.endpoint + '/jobs/' + rec.data.jobId + '.json', method: 'POST',
 			timeout: this.timeout,
 			jsonData: Ext.JSON.encode({"job": rec.data }),
 			success: success,

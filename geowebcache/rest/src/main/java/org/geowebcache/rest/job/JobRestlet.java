@@ -28,6 +28,7 @@ import org.geowebcache.job.JobScheduler;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.seed.TileBreeder;
+import org.geowebcache.seed.GWCTask.STATE;
 import org.geowebcache.storage.JobObject;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -149,6 +150,9 @@ public class JobRestlet extends GWCRestlet {
     
     /**
      * POST overwrites an existing job
+     * A running job can be killed only, it can't be updated in any other way.
+     * Jobs that aren't running can have their details updated only if they haven't been run before 
+     * (State of ready or unset). 
      * 
      * @param req
      * @param resp
@@ -156,7 +160,61 @@ public class JobRestlet extends GWCRestlet {
      */
     private void doPost(Request req, Response resp) throws RestletException, IOException,
             GeoWebCacheException {
-        throw new RestletException("Method not allowed", Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
+        String formatExtension = (String) req.getAttributes().get("extension");
+        
+        JobObject job = null;
+        
+        XStream xs = xmlConfig.configureXStreamForJobs(new XStream(new DomDriver()));
+        
+        if(formatExtension.equalsIgnoreCase("xml")) {
+            job = (JobObject) xs.fromXML(req.getEntity().getStream());
+        } else if(formatExtension.equalsIgnoreCase("json")){
+            job = (JobObject) xs.fromXML(convertJson(req.getEntity().getText()));
+        } else {
+            throw new RestletException("Format extension unknown or not specified: "
+                    + formatExtension,
+                    Status.CLIENT_ERROR_BAD_REQUEST);
+        }
+        
+        try {
+            JobObject origjob = jobDispatcher.getJob(job.getJobId());
+            
+            if(origjob.getState() == STATE.RUNNING && job.getState() == STATE.KILLED) {
+                // if the job is running, all you can do is stop it.
+                if(!seeder.terminateJob(job.getJobId())) {
+                    throw new GeoWebCacheException("Couldn't kill running job: " + origjob.getJobId());
+                }                
+                
+            } else if(origjob.getState() == STATE.UNSET && origjob.getState() == STATE.READY) {
+                // not all properties of a job can be updated, and they can only be 
+                // updated if the job isn't running.
+                origjob.setBounds(job.getBounds());
+                origjob.setFormat(job.getFormat());
+                origjob.setGridSetId(job.getGridSetId());
+                origjob.setJobType(job.getJobType());
+                origjob.setMaxThroughput(job.getMaxThroughput());
+                origjob.setPriority(job.getPriority());
+                origjob.setRunOnce(job.isRunOnce());
+                origjob.setSchedule(job.getSchedule());
+                origjob.setSrs(job.getSrs());
+                origjob.setThreadCount(job.getThreadCount());
+                origjob.setZoomStart(job.getZoomStart());
+                origjob.setZoomStop(job.getZoomStop());
+                
+                jobDispatcher.getJobStore().put(origjob);
+            } else {
+                if(origjob.getState() == STATE.RUNNING) {
+                    throw new GeoWebCacheException("A running job can't have any settings changed except to be killed.");
+                } else {
+                    throw new GeoWebCacheException("Only jobs that haven't been run can be changed. Instead clone or rerun the job.");
+                }
+            }
+            
+        }catch(IllegalArgumentException e){
+            throw new RestletException(e.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
+        } catch (GeoWebCacheException e) {
+            throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL);
+        }
     }
     
     /**
@@ -186,6 +244,8 @@ public class JobRestlet extends GWCRestlet {
         
         try {
             if(job.isScheduled()) {
+                job.setState(STATE.READY);
+                jobDispatcher.getJobStore().put(job);
                 JobScheduler.scheduleJob(job, seeder, jobDispatcher.getJobStore());
             } else {
                 seeder.executeJob(job);
