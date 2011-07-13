@@ -142,6 +142,10 @@ public class JobDispatcher implements DisposableBean {
         }
     }
 
+    public JobStore getJobStore() {
+        return this.jobStore;
+    }
+
     public void setJobStore(JobStore jobStore) {
         this.jobStore = jobStore;
     }

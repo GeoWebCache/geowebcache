@@ -559,4 +559,25 @@ public class JobObject {
     public boolean isScheduled() {
         return (schedule != NO_SCHEDULE);
     }
+    
+    /**
+     * Deal with ensuring a deserialized job is in a valid state.
+     * Between extJS and XStream, some of the JSON isn't converted properly. 
+     * This method makes sure the job is in a state the system would expect it to be in.
+     * It's mainly stuff that was null turning into stuff that is an empty string - and it's extJS doing it.
+     * @return
+     */
+    private Object readResolve() {
+        if(this.schedule != null && this.schedule.equals("")) {
+            this.schedule = null;
+        }
+
+        if(this.encodedParameters != null && this.encodedParameters.equals("")) {
+            this.encodedParameters = null;
+        }
+
+        newLogs = new ConcurrentLinkedQueue<JobLogObject>();
+        
+        return this;
+    }
 }

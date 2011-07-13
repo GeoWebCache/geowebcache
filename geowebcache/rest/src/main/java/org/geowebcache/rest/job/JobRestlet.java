@@ -24,8 +24,10 @@ import java.io.StringWriter;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.job.JobDispatcher;
+import org.geowebcache.job.JobScheduler;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
+import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.storage.JobObject;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -54,6 +56,8 @@ public class JobRestlet extends GWCRestlet {
     
     private XMLConfiguration xmlConfig;
     
+    private TileBreeder seeder;
+
     private JobDispatcher jobDispatcher;
     
     public void handle(Request request, Response response) {
@@ -150,10 +154,9 @@ public class JobRestlet extends GWCRestlet {
      * @param resp
      * @throws RestletException
      */
-    private void doPost(Request req, Response resp) 
-    throws RestletException, IOException, GeoWebCacheException {
-        throw new RestletException("Method not allowed",
-                Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
+    private void doPost(Request req, Response resp) throws RestletException, IOException,
+            GeoWebCacheException {
+        throw new RestletException("Method not allowed", Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
     }
     
     /**
@@ -163,10 +166,35 @@ public class JobRestlet extends GWCRestlet {
      * @param resp
      * @throws RestletException
      */
-    private void doPut(Request req, Response resp) 
-    throws RestletException, IOException , GeoWebCacheException {
-        throw new RestletException("Method not allowed",
-                Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
+    private void doPut(Request req, Response resp) throws RestletException, IOException,
+            GeoWebCacheException {
+        String formatExtension = (String) req.getAttributes().get("extension");
+        
+        JobObject job = null;
+        
+        XStream xs = xmlConfig.configureXStreamForJobs(new XStream(new DomDriver()));
+        
+        if(formatExtension.equalsIgnoreCase("xml")) {
+            job = (JobObject) xs.fromXML(req.getEntity().getStream());
+        } else if(formatExtension.equalsIgnoreCase("json")){
+            job = (JobObject) xs.fromXML(convertJson(req.getEntity().getText()));
+        } else {
+            throw new RestletException("Format extension unknown or not specified: "
+                    + formatExtension,
+                    Status.CLIENT_ERROR_BAD_REQUEST);
+        }
+        
+        try {
+            if(job.isScheduled()) {
+                JobScheduler.scheduleJob(job, seeder, jobDispatcher.getJobStore());
+            } else {
+                seeder.executeJob(job);
+            }
+        }catch(IllegalArgumentException e){
+            throw new RestletException(e.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
+        } catch (GeoWebCacheException e) {
+            throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL);
+        }
     }
     
     /**
@@ -276,7 +304,7 @@ public class JobRestlet extends GWCRestlet {
     public Representation getXMLRepresentation(Object o) {
         XStream xs = xmlConfig.configureXStreamForJobs(new XStream());
         String xmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + xs.toXML(o);
-        
+
         return new StringRepresentation(xmlText, MediaType.TEXT_XML);
     }
 
@@ -325,6 +353,10 @@ public class JobRestlet extends GWCRestlet {
         this.jobDispatcher = jobDispatcher;
     }
     
+    public void setTileBreeder(TileBreeder seeder) {
+        this.seeder = seeder;
+    }
+
     public void setXMLConfiguration(XMLConfiguration xmlConfig) {
         this.xmlConfig = xmlConfig;
     }

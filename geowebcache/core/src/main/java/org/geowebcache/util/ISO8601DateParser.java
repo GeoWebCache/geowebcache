@@ -79,20 +79,22 @@ public class ISO8601DateParser {
         //NOTE: SimpleDateFormat uses GMT[-+]hh:mm for the TZ which breaks
         //things a bit.  Before we go on we have to repair this.
         SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ssz" );
+        String result = input;
         
         //this is zero time so we need to add that TZ indicator for 
-        if ( input.endsWith( "Z" ) ) {
-            input = input.substring( 0, input.length() - 1) + "GMT-00:00";
+        if ( result.endsWith( "Z" ) ) {
+            result = result.substring( 0, result.length() - 1) + "GMT-00:00";
         } else {
             int inset = 9;
         
-            String s0 = input.substring( 0, input.length() - inset );
-            String s1 = input.substring( input.length() - inset, input.length() );
+            String s0 = result.substring( 0, result.length() - inset );
+            String s1 = result.substring( result.length() - inset, result.length() );
 
-            input = s0 + "GMT" + s1;
+            result = s0 + s1 + "GMT";
         }
+        // result = df.format(new Date());
         
-        return df.parse( input );
+        return df.parse( result );
         
     }
 

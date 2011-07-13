@@ -30,6 +30,7 @@
   </bean>
   <bean id="gwcJobRestlet" class="org.geowebcache.rest.job.JobRestlet">
     <property name="XMLConfiguration" ref="gwcXmlConfig"/>
+    <property name="tileBreeder" ref="gwcTileBreeder"/>
     <property name="jobDispatcher" ref="gwcJobDispatcher" />
   </bean>
   <bean id="gwcJobLogRestlet" class="org.geowebcache.rest.job.JobLogRestlet">

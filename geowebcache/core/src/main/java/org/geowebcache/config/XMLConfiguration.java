@@ -534,12 +534,16 @@ public class XMLConfiguration implements Configuration {
         public Object fromString(String val) {
             Date d = null;
             
-            try {
-                d = ISO8601DateParser.parse(val);
-            } catch(ParseException pe) {
-                log.warn("Couldn't parse date: " + val);
+            if(val == null || val.equals("null")) {
+                return null;
+            } else {
+                try {
+                    d = ISO8601DateParser.parse(val);
+                } catch(ParseException pe) {
+                    log.warn("Couldn't parse date: " + val);
+                }
+                return new Timestamp(d.getTime());
             }
-            return new Timestamp(d.getTime());
         }        
     }    
 

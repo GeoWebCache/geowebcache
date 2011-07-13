@@ -61,30 +61,78 @@ var setupMenu = function () {
 		}
 	});
 
+	var cloneAction = Ext.create('Ext.Action', {
+	    icon: 'images/clone.png', 
+	    text: 'Clone',
+	    disabled: false,
+	    handler: function(widget, event) {
+			var rec = joblist.getSelectionModel().getSelection()[0];
+			if (rec) {
+				var newrec = rec.copy(-1); 
+				newrec.set('jobId',-1);
+				newrec.set('state','UNSET');
+				newrec.set('timeSpent',-1);
+				newrec.set('timeRemaining',-1);
+				newrec.set('tilesDone',-1);
+				newrec.set('tilesTotal',-1);
+				newrec.set('failedTileCount',0);
+				newrec.set('warnCount',0);
+				newrec.set('errorCount',0);
+				newrec.set('throughput',0);
+				gwc.addJob(newrec, 
+					function(response, opts) {
+						gwc.loadJobs();
+		    		},
+		    		function(response, opts) {
+		    			// an alert may be too confronting for an API to do
+		    			alert('Failed to add job\n' + response.status + ': ' + response.responseText);
+		    		}
+				);
+				
+				deleteJob: function (jobId, success, failure) {
+					Ext.Ajax.request({ 
+						url: this.endpoint + '/jobs/' + jobId + '.json', method: 'DELETE',
+						timeout: this.timeout,
+						success: function(response, opts) {
+							gwc.loadJobs();
+				    	},
+				    	failure: function(response, opts) {
+				    		alert('Failed to delete job ' + jobId + '\n' + response.status + ': ' + response.responseText);
+				    	}
+					});
+				}
+			}
+	    }
+	});
+	
 	var stopAction = Ext.create('Ext.Action', {
 	    icon: 'images/stop.png', 
-	    text: 'Stop Job',
+	    text: 'Stop',
 	    disabled: true,
 	    handler: function(widget, event) {
-//	        var rec = grid.getSelectionModel().getSelection()[0];
-//	        if (rec) {
-//	            alert("Sell " + rec.get('company'));
-//	        } else {
-//	            alert('Please select a company from the grid');
-//	        }
-			alert("stop");
+			var rec = joblist.getSelectionModel().getSelection()[0];
+			if (rec) {
+				rec.set('state','KILLED');
+				gwc.getJobStore().save();
+			}
 	    }
 	});
 	
 	var deleteAction = Ext.create('Ext.Action', {
 	    icon: 'images/delete.png', 
-	    text: 'Delete Job',
+	    text: 'Delete',
 	    disabled: true,
 	    handler: function(widget, event) {
 			var rec = joblist.getSelectionModel().getSelection()[0];
 			if (rec) {
-				gwc.getJobStore().remove(rec);
-				gwc.deleteJob(rec.data.jobId);
+				gwc.deleteJob(rec.data.jobId,
+						function(response, opts) {
+							gwc.loadJobs();
+			    		},
+			    		function(response, opts) {
+				    		alert('Failed to delete job ' + jobId + '\n' + response.status + ': ' + response.responseText);
+			    		}
+					);
 			}
 	    }
 	});
@@ -92,6 +140,7 @@ var setupMenu = function () {
 	return Ext.create('Ext.menu.Menu', {
 	    items: [
 	        viewLogsAction,
+	        cloneAction,
 	        stopAction,
 	        deleteAction
 	    ]
@@ -117,12 +166,16 @@ Ext.Loader.onReady(function () {
                 	itemcontextmenu: function (view, rec, node, index, e) {
 	        			var contextMenu = setupMenu();
                     	e.stopEvent();
-                		contextMenu.items.get(1).disabled = (rec.data.state != "RUNNING" || rec.data.jobType == "TRUNCATE");
-                		contextMenu.items.get(2).disabled = (rec.data.state == "RUNNING");
-                		if(rec.hasntRunYet()) {
-                			contextMenu.items.get(2).text = "Cancel";
+                		contextMenu.items.get(2).disabled = (rec.data.state != "RUNNING" || rec.data.jobType == "TRUNCATE");
+                		contextMenu.items.get(3).disabled = (rec.data.state == "RUNNING");
+                		if(rec.hasntRunYet() || rec.data.state == "RUNNING") {
+                			contextMenu.items.get(1).icon = 'images/clone.png', 
+                			contextMenu.items.get(1).text = "Clone";
+                			contextMenu.items.get(3).text = "Cancel";
                 		} else {
-                			contextMenu.items.get(2).text = "Delete";
+                			contextMenu.items.get(1).icon = 'images/rerun.png', 
+                			contextMenu.items.get(1).text = "Rerun";
+                			contextMenu.items.get(3).text = "Delete";
                 		}
                     	contextMenu.showAt(e.getXY());
                     	return false;

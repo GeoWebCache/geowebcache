@@ -17,7 +17,7 @@ Ext.define('GWC.RestService', {
     constructor: function (config) {
     	this.initConfig(config);
     	
-    	Ext.define('Job', {
+    	Ext.define('job', {
     		extend: 'Ext.data.Model',
     		fields: [
     		    {name: 'jobId',				type: 'long'},
@@ -53,6 +53,9 @@ Ext.define('GWC.RestService', {
     			url : this.endpoint + '/jobs.json',
                 reader: {
                 	root: 'jobs'
+            	},
+            	writer: {
+            		root: 'job'
             	}
     		},
     		hasntRunYet: function () {
@@ -61,7 +64,7 @@ Ext.define('GWC.RestService', {
     			
     	});
     	
-    	Ext.define('JobLog', {
+    	Ext.define('log', {
     		extend: 'Ext.data.Model',
     	    fields: [
     	        {name: 'jobLogId',  					type: 'long'},
@@ -82,13 +85,13 @@ Ext.define('GWC.RestService', {
     	});
     	
     	this.jobStore = new Ext.data.Store({
-    	    model: 'Job',
+    	    model: 'job',
     	    pageSize: 0
     	});
     	this.jobStore.sort('startTime', 'desc');
 
     	this.logStore = new Ext.data.Store({
-    	    model: 'JobLog',
+    	    model: 'log',
     	    pageSize: 0
     	});
     	this.logStore.sort('logTime', 'asc');
@@ -107,18 +110,22 @@ Ext.define('GWC.RestService', {
 	
 	// Going to handle delete and update outside jobStore because it makes  
 	// of assumptions on how to do the restful posts and deletes.
-	deleteJob: function (jobId) {
+	addJob: function (rec, success, failure) {
+		Ext.Ajax.request({ 
+			url: this.endpoint + '/jobs.json', method: 'PUT',
+			timeout: this.timeout,
+			jsonData: Ext.JSON.encode({"job": rec.data }),
+			success: success,
+	    	failure: failure
+		});
+	},
+	
+	deleteJob: function (jobId, success, failure) {
 		Ext.Ajax.request({ 
 			url: this.endpoint + '/jobs/' + jobId + '.json', method: 'DELETE',
 			timeout: this.timeout,
-			success: function(response, opts) {
-				;
-	    	},
-	    	failure: function(response, opts) {
-	    		// an alert may be too confronting for an API to do
-	    		console.log(response);
-	    		alert('Failed to delete job ' + jobId + '\n' + response.status + ': ' + response.responseText);
-	    	}
+			success: success,
+	    	failure: failure
 		});
 	}
 });

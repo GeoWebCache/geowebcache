@@ -414,6 +414,7 @@ public class TileBreeder implements ApplicationContextAware {
             job.setTimeLatestStart(new Timestamp(new Date().getTime()));
         } else {
             job.setTimeFirstStart(new Timestamp(new Date().getTime()));
+            job.setTimeLatestStart(null);
         }
         
         // save this initial state of the job to the store.
