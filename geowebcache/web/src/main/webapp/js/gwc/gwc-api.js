@@ -95,6 +95,7 @@ Ext.define('GWC.RestService', {
     		    {name: 'bounds',			type: 'string'},
     		    {name: 'gridSetId',			type: 'string'},
     		    {name: 'threadCount',		type: 'int'},
+    		    {name: 'maxThroughput',		type: 'int'},
     		    {name: 'zoomStart',			type: 'int'},
     		    {name: 'zoomStop',			type: 'int'}
     	    ]

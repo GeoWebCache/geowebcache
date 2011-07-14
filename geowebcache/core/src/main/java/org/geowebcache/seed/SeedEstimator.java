@@ -82,7 +82,13 @@ public class SeedEstimator {
      * @return Time in seconds left to complete the seeding
      */
     public long totalTimeEstimate(long timeSpent, long tilesDone, long tilesTotal, long threadCount) {
-        return Math.round((double) timeSpent * (((double) tilesTotal / threadCount) / (double) tilesDone));
+        long result = Math.round((double) timeSpent * (((double) tilesTotal / threadCount) / (double) tilesDone));
+//        if(maxThroughput > 0) {
+//            long throttledResult = Math.round((double) 1 * (((double) tilesTotal / threadCount) / (double) maxThroughput / 9)); // assuming 9 tiles per request = bad
+//            return throttledResult;
+//        } else {
+            return result;
+//        }
     }
     
     /**
@@ -98,14 +104,37 @@ public class SeedEstimator {
 
     public void performEstimate(SeedEstimate estimate) throws GeoWebCacheException {
         estimate.tilesTotal = tileCount(estimate.layerName, estimate.gridSetId, estimate.bounds, estimate.zoomStart, estimate.zoomStop);
-        
+
         if(estimate.timeSpent == 0 || estimate.tilesDone == 0) {
-            // assumptions will be applied
-            estimate.timeRemaining = this.totalTimeEstimate(estimate.tilesTotal, estimate.threadCount);
+            int tilesPerRequest = getTilesPerRequest(estimate.layerName);
+            
+            // we only check for throttling when there isn't any real history
+            if(estimate.maxThroughput > 0) {
+                // assumptions will be applied
+                estimate.timeRemaining = this.totalTimeEstimate(1, estimate.maxThroughput * tilesPerRequest, estimate.tilesTotal, estimate.threadCount);    
+            } else {
+                estimate.timeRemaining = this.totalTimeEstimate(1, 5 * tilesPerRequest, estimate.tilesTotal, estimate.threadCount);
+            }
         } else {
             estimate.timeRemaining = this.totalTimeEstimate(estimate.timeSpent, estimate.tilesDone, estimate.tilesTotal, estimate.threadCount);
         }
         
+    }
+
+    private int getTilesPerRequest(String layerName) throws GeoWebCacheException {
+        if(seeder == null) {
+            throw new GeoWebCacheException("Seeder not available (probably shouldn't have called tileCount with a layerName)");
+        }
+
+        TileLayer tl = seeder.findTileLayer(layerName);
+        
+        int factors[] = tl.getMetaTilingFactors();
+        
+        if(factors.length == 2) {
+            return(factors[0] * factors[1]);
+        } else {
+            return 1;
+        }
     }
 
     public void setSeeder(TileBreeder seeder) {

@@ -9,6 +9,7 @@ testEstimate = function(gwcService) {
 	    bounds :		'509701.31637505,-1346243.9324925,1776701.316375,-128243.93249254',
 	    gridSetId : 	'EPSG:2163',
 	    threadCount :	2,
+	    maxThroughput :	0,
 	    zoomStart : 	0,
 	    zoomStop : 		3,
 	    tilesDone : 	0,

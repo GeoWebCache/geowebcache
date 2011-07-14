@@ -9,6 +9,7 @@ public class SeedEstimate {
     public int zoomStart;
     public int zoomStop;
     public int threadCount;
+    public int maxThroughput;
 
     public long timeSpent;
     public long tilesDone;

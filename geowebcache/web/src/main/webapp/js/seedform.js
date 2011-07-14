@@ -151,6 +151,7 @@ function doEstimate() {
     		"zoomStop" : parseInt($('zoomStop').value, 10),
     		"gridSetId" : $('gridSetId').value,
     		"threadCount" : parseInt($('threadCount').value, 10),
+    		"maxThroughput" : parseInt($('maxThroughput').value, 10),
     		"bounds": $('minX').value + ',' + $('minY').value + ',' + $('maxX').value + ',' + $('maxY').value
     	}
     };
