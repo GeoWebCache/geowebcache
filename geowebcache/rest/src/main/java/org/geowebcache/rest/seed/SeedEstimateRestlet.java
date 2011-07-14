@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLConfiguration;
-import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.seed.SeedEstimate;
@@ -46,13 +45,13 @@ public class SeedEstimateRestlet extends GWCRestlet {
     public JSONObject myrequest;
 
     private XMLConfiguration xmlConfig;
+    
+    private SeedEstimator estimator; 
 
     public void handle(Request request, Response response){
         Method met = request.getMethod();
         try {
-            if (met.equals(Method.GET)) {
-                doGet(request, response);
-            } else if(met.equals(Method.POST)) {
+            if(met.equals(Method.POST)) {
                 doPost(request, response);
             } else {
                 throw new RestletException("Method not allowed", Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
@@ -64,82 +63,6 @@ public class SeedEstimateRestlet extends GWCRestlet {
             response.setEntity("Encountered IO error " + ioe.getMessage(),MediaType.TEXT_PLAIN);
             response.setStatus(Status.SERVER_ERROR_INTERNAL);
         }
-    }
-    
-    /**
-     * Returns a StringRepresentation with the status of the running threads
-     * in the thread pool. 
-     */
-    public void doGet(Request req, Response resp) throws RestletException {
-        SeedEstimate estimate = new SeedEstimate();
-        String formatExtension = (String) req.getAttributes().get("extension");
-        
-        if(req.getAttributes().get("layerName") == null) {
-            throw new RestletException("Couldn't perform estimate, layerName required", Status.CLIENT_ERROR_BAD_REQUEST);
-        } else {
-            estimate.gridSetId = (String)req.getAttributes().get("gridSetId");
-        }
-
-        if(req.getAttributes().get("gridSetId") == null) {
-            throw new RestletException("Couldn't perform estimate, gridSetId required", Status.CLIENT_ERROR_BAD_REQUEST);
-        } else {
-            estimate.gridSetId = (String)req.getAttributes().get("gridSetId");
-        }
-
-        if(req.getAttributes().get("bounds") == null) {
-            throw new RestletException("Couldn't perform estimate, bounds required", Status.CLIENT_ERROR_BAD_REQUEST);
-        } else {
-            estimate.bounds = new BoundingBox((String)req.getAttributes().get("bounds"));
-        }
-
-        if(req.getAttributes().get("zoomStart") == null) {
-            throw new RestletException("Couldn't perform estimate, zoomStart required", Status.CLIENT_ERROR_BAD_REQUEST);
-        } else {
-            try {
-                estimate.zoomStart = Integer.parseInt((String)req.getAttributes().get("zoomStart"));
-            } catch (NumberFormatException nfe) {
-                throw new RestletException("'" + req.getAttributes().get("zoomStart") + "' is not a valid zoomStart.", Status.CLIENT_ERROR_BAD_REQUEST);
-            }
-        }
-
-        if(req.getAttributes().get("zoomStop") == null) {
-            throw new RestletException("Couldn't perform estimate, zoomStop required", Status.CLIENT_ERROR_BAD_REQUEST);
-        } else {
-            try {
-                estimate.zoomStop = Integer.parseInt((String)req.getAttributes().get("zoomStop"));
-            } catch (NumberFormatException nfe) {
-                throw new RestletException("'" + req.getAttributes().get("zoomStop") + "' is not a valid zoomStop.", Status.CLIENT_ERROR_BAD_REQUEST);
-            }
-        }
-
-        if(req.getAttributes().get("threadCount") == null) {
-            throw new RestletException("Couldn't perform estimate, threadCount required", Status.CLIENT_ERROR_BAD_REQUEST);
-        } else {
-            try {
-                estimate.threadCount = Integer.parseInt((String)req.getAttributes().get("threadCount"));
-            } catch (NumberFormatException nfe) {
-                throw new RestletException("'" + req.getAttributes().get("threadCount") + "' is not a valid threadCount.", Status.CLIENT_ERROR_BAD_REQUEST);
-            }
-        }
-
-        if(req.getAttributes().get("tilesDone") == null || req.getAttributes().get("timeSpent") == null) {
-            // assumes 100ms a tile if no known figures exist to work from
-            estimate.tilesDone = 5;
-            estimate.timeSpent = 1;
-        } else {
-            try {
-                estimate.tilesDone = Long.parseLong((String)req.getAttributes().get("tilesDone"));
-            } catch (NumberFormatException nfe) {
-                throw new RestletException("'" + req.getAttributes().get("tilesDone") + "' is not a valid tilesDone.", Status.CLIENT_ERROR_BAD_REQUEST);
-            }
-            try {
-                estimate.timeSpent = Long.parseLong((String)req.getAttributes().get("timeSpent"));
-            } catch (NumberFormatException nfe) {
-                throw new RestletException("'" + req.getAttributes().get("timeSpent") + "' is not a valid timeSpent.", Status.CLIENT_ERROR_BAD_REQUEST);
-            }
-        }
-        
-        resp.setEntity(doEstimate(estimate, formatExtension));
     }
     
     /**
@@ -172,7 +95,7 @@ public class SeedEstimateRestlet extends GWCRestlet {
 
     private Representation doEstimate(SeedEstimate estimate, String formatExtension) throws RestletException {
         try {
-            SeedEstimator.getInstance().performEstimate(estimate);
+            estimator.performEstimate(estimate);
         } catch (GeoWebCacheException gwce) {
             throw new RestletException("Couldn't perform estimate: " + gwce.getMessage(), Status.SERVER_ERROR_INTERNAL);
         }
@@ -221,5 +144,9 @@ public class SeedEstimateRestlet extends GWCRestlet {
     
     public void setXMLConfiguration(XMLConfiguration xmlConfig) {
         this.xmlConfig = xmlConfig;
+    }
+
+    public void setEstimator(SeedEstimator estimator) {
+        this.estimator = estimator;
     }
 }

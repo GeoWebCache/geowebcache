@@ -184,6 +184,10 @@
     <property name="jobStore" ref="gwcJobStore"/>
   </bean>
 
+  <bean id="gwcSeedEstimator" class="org.geowebcache.seed.SeedEstimator">
+    <property name="seeder" ref="gwcTileBreeder"/>
+  </bean>
+
   <bean id="gwcProxyDispatcher"
 	class="org.geowebcache.proxy.ProxyDispatcher"/>
 

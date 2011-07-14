@@ -124,7 +124,7 @@ public class SeedTask extends GWCTask {
         TileRange tr = trIter.getTileRange();
 
         checkInterrupted();
-        super.tilesTotal = SeedEstimator.getInstance().tileCount(tr.rangeBounds, tr.zoomStart, tr.zoomStop);
+        super.tilesTotal = new SeedEstimator().tileCount(tr.rangeBounds, tr.zoomStart, tr.zoomStop);
 
         final int metaTilingFactorX = tl.getMetaTilingFactors()[0];
         final int metaTilingFactorY = tl.getMetaTilingFactors()[1];
@@ -272,7 +272,7 @@ public class SeedTask extends GWCTask {
         timeSpent = (int) (System.currentTimeMillis() - start_time) / 1000;
 
         int threadCount = sharedThreadCount.get();
-        long timeTotal = SeedEstimator.getInstance().totalTimeEstimate(timeSpent, tilesDone, tilesTotal, threadCount);
+        long timeTotal = new SeedEstimator().totalTimeEstimate(timeSpent, tilesDone, tilesTotal, threadCount);
 
         timeRemaining = (int) (timeTotal - timeSpent);
     }

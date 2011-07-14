@@ -84,6 +84,22 @@ Ext.define('GWC.RestService', {
     		}
     	});
     	
+    	Ext.define('estimate', {
+    		extend: 'Ext.data.Model',
+    		fields: [
+    		    {name: 'layerName',			type: 'string'},
+    		    {name: 'timeSpent',			type: 'long'},
+    		    {name: 'timeRemaining',		type: 'long'},
+    		    {name: 'tilesDone',			type: 'long'},
+    		    {name: 'tilesTotal',		type: 'long'},
+    		    {name: 'bounds',			type: 'string'},
+    		    {name: 'gridSetId',			type: 'string'},
+    		    {name: 'threadCount',		type: 'int'},
+    		    {name: 'zoomStart',			type: 'int'},
+    		    {name: 'zoomStop',			type: 'int'}
+    	    ]
+    	});
+
     	this.jobStore = new Ext.data.Store({
     	    model: 'job',
     	    pageSize: 0
@@ -134,6 +150,16 @@ Ext.define('GWC.RestService', {
 		Ext.Ajax.request({ 
 			url: this.endpoint + '/jobs/' + jobId + '.json', method: 'DELETE',
 			timeout: this.timeout,
+			success: success,
+	    	failure: failure
+		});
+	},
+	
+	doEstimate: function (rec, success, failure) {
+		Ext.Ajax.request({ 
+			url: this.endpoint + '/estimate.json', method: 'POST',
+			timeout: this.timeout,
+			jsonData: Ext.JSON.encode({"estimate": rec.data }),
 			success: success,
 	    	failure: failure
 		});

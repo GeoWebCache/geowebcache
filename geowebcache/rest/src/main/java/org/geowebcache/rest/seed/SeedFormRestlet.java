@@ -176,6 +176,8 @@ public class SeedFormRestlet extends GWCRestlet {
 
         makeBboxFields(doc);
 
+        makeEstimate(doc);
+
         makeSubmit(doc);
 
         makeOpenLayersBBoxInput(doc);
@@ -276,6 +278,13 @@ public class SeedFormRestlet extends GWCRestlet {
         doc.append("</td></tr>\n");
     }
 
+    private void makeEstimate(StringBuilder doc) {
+        doc.append("<tr><td valign=\"top\">Estimate:</td><td>\n");
+        makeButton(doc, "doEstimateButton", "Update", "onclick=\"doEstimate();\"");
+        doc.append("<span name=\"estimates\" id=\"estimates\">estimates not calculated yet ...</span>\n");
+        doc.append("</td></tr>\n");
+    }
+    
     private void makeBboxFields(StringBuilder doc) {
         doc.append("<tr><td valign=\"top\">Bounding box:</td><td>\n");
         makeTextInput(doc, "minX", 12);
@@ -475,7 +484,7 @@ public class SeedFormRestlet extends GWCRestlet {
     private void makePullDown(StringBuilder doc, String id, Map<String, String> keysValues,
             String defaultKey, boolean orderByValue) {
     
-        doc.append("<select name=\"" + id + "\">\n");
+        doc.append("<select name=\"" + id + "\" id=\"" + id + "\">\n");
 
         Iterator<Entry<String, String>> iter = keysValues.entrySet().iterator();
 
@@ -540,6 +549,7 @@ public class SeedFormRestlet extends GWCRestlet {
                   "  }\n" +
                   "</script>\n";
 
+        extras += "<script type=\"text/javascript\" src=\"../../js/gwc/util.js\"></script>\n";
         extras += "<script type=\"text/javascript\" src=\"../../js/seedform.js\"></script>\n";
         
         extras += "<link rel=\"stylesheet\" href=\"../../openlayers/theme/default/style.css\" type=\"text/css\">\n" + 

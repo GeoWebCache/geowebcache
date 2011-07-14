@@ -7,20 +7,7 @@ import org.geowebcache.layer.TileLayer;
 
 public class SeedEstimator {
 
-    TileBreeder seeder;
-    
-    private static SeedEstimator instance = null;
-    
-    private SeedEstimator() {
-        seeder = new TileBreeder();
-    }
-    
-    public static SeedEstimator getInstance() {
-        if(instance == null) {
-            instance = new SeedEstimator();
-        }
-        return instance;
-    }
+    TileBreeder seeder = null;
     
     /**
      * helper for counting the number of tiles
@@ -49,7 +36,23 @@ public class SeedEstimator {
         return count;
     }
     
+    /**
+     * Helper for counting the number of tiles
+     * Can only be used if seeder has been set - either manually or due to using a spring instantiated copy of this class.
+     * 
+     * @param layerName
+     * @param gridSetId
+     * @param bounds
+     * @param zoomStart
+     * @param zoomStop
+     * @return
+     * @throws GeoWebCacheException
+     */
     public long tileCount(String layerName, String gridSetId, BoundingBox bounds, int zoomStart, int zoomStop) throws GeoWebCacheException {
+        if(seeder == null) {
+            throw new GeoWebCacheException("Seeder not available (probably shouldn't have called tileCount with a layerName)");
+        }
+
         TileLayer tl = seeder.findTileLayer(layerName);
 
         if (gridSetId == null) {
@@ -95,7 +98,18 @@ public class SeedEstimator {
 
     public void performEstimate(SeedEstimate estimate) throws GeoWebCacheException {
         estimate.tilesTotal = tileCount(estimate.layerName, estimate.gridSetId, estimate.bounds, estimate.zoomStart, estimate.zoomStop);
-        estimate.timeRemaining = this.totalTimeEstimate(estimate.timeSpent, estimate.tilesDone, estimate.tilesTotal, estimate.threadCount);
+        
+        if(estimate.timeSpent == 0 || estimate.tilesDone == 0) {
+            // assumptions will be applied
+            estimate.timeRemaining = this.totalTimeEstimate(estimate.tilesTotal, estimate.threadCount);
+        } else {
+            estimate.timeRemaining = this.totalTimeEstimate(estimate.timeSpent, estimate.tilesDone, estimate.tilesTotal, estimate.threadCount);
+        }
         
     }
+
+    public void setSeeder(TileBreeder seeder) {
+        this.seeder = seeder;
+    }
+
 }

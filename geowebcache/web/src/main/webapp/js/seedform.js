@@ -60,6 +60,8 @@ function initOpenLayers() {
 
 	m.zoomToExtent(layerExtents);
 	
+	doEstimate();
+	
 	return m;
 }
 
@@ -85,6 +87,7 @@ function createToolbar(vlayer) {
 	            vlayer.removeAllFeatures();
 	            
 				vlayer.addFeatures(new OpenLayers.Feature.Vector(new OpenLayers.Bounds(ll.lon, ll.lat, ur.lon, ur.lat).toGeometry()));
+			    doEstimate();
 			}
         },
         
@@ -140,6 +143,36 @@ function createToolbar(vlayer) {
 	return toolbar;
 }
 
+function doEstimate() {
+	var rec = {
+		"estimate": {
+			"layerName" : layerName,
+			"zoomStart" : parseInt($('zoomStart').value, 10),
+    		"zoomStop" : parseInt($('zoomStop').value, 10),
+    		"gridSetId" : $('gridSetId').value,
+    		"threadCount" : parseInt($('threadCount').value, 10),
+    		"bounds": $('minX').value + ',' + $('minY').value + ',' + $('maxX').value + ',' + $('maxY').value
+    	}
+    };
+    
+    if($('minX').value == '') {
+    	rec.estimate.bounds = maxExtents.left + ',' + maxExtents.bottom + ',' + maxExtents.right + ',' + maxExtents.top;
+    }
+
+	var jsonFormat = new OpenLayers.Format.JSON();
+    OpenLayers.Request.POST(
+    	{
+    		url: '../../rest/estimate.json',
+        	data: jsonFormat.write(rec),
+	        callback: function(request) {
+	        	console.log(request);
+	        	var newrec = jsonFormat.read(request.responseText);
+				$('estimates').innerHTML = addCommas(newrec.estimate.tilesTotal) + " tiles in " + formatSecondsElapsed(newrec.estimate.timeRemaining);
+	        }
+	    }
+	);
+}    
+
 function updateFeature() {
 	vlayer = map.getLayersByName('extent')[0];
 	
@@ -154,6 +187,7 @@ function updateFeature() {
 		bounds = new OpenLayers.Bounds(minX, minY, maxX, maxY);
 	    vlayer.removeAllFeatures();
 		vlayer.addFeatures(new OpenLayers.Feature.Vector(bounds.toGeometry()));
+	    doEstimate();
 	}
 }
 
@@ -167,6 +201,8 @@ function resetFeature() {
     $('minY').value = "";
     $('maxX').value = "";
     $('maxY').value = "";
+
+    doEstimate();
 }
 
 function updateBounds(result) {
@@ -176,6 +212,8 @@ function updateBounds(result) {
     $('minY').value = bounds.bottom;
     $('maxX').value = bounds.right;
     $('maxY').value = bounds.top;
+    
+    doEstimate();
 }    
 
 function getDefaultBasemap() {

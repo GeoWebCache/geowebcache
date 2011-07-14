@@ -32,14 +32,18 @@ var formatSecondsElapsed = function (seconds) {
 	var minutes = Math.floor(seconds % 3600 / 60);
 	seconds = seconds % 60;
 	
-	result = Ext.String.format("{0} {1}:{2}:{3}",
-			result, 
-			Ext.String.leftPad(hours, 2, '0'), 
-			Ext.String.leftPad(minutes, 2, '0'), 
-			Ext.String.leftPad(seconds, 2, '0'));
+	result = result + " " + zeroPad(hours, 2) + ":" + zeroPad(minutes, 2) + ":" + zeroPad(seconds, 2);
 	
 	return result;
 };
+
+function zeroPad(num, count) {
+	var numZeropad = num + '';
+	while (numZeropad.length < count) {
+		numZeropad = "0" + numZeropad;
+	}
+	return numZeropad;
+}
 
 var formatMimeType = function (mimeType) {
 	var result = mimeType.replace("image/", "").toLowerCase();

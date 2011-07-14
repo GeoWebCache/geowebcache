@@ -39,6 +39,7 @@
   </bean>
   <bean id="gwcSeedEstimateRestlet" class="org.geowebcache.rest.seed.SeedEstimateRestlet">
     <property name="XMLConfiguration" ref="gwcXmlConfig"/>
+    <property name="estimator" ref="gwcSeedEstimator"/>
   </bean>
   <bean id="gwcByteStreamerRestlet" class="org.geowebcache.rest.webresources.ByteStreamerRestlet" />
   
