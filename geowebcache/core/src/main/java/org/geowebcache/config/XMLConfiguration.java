@@ -79,6 +79,7 @@ import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
+import org.geowebcache.seed.SeedEstimate;
 import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.JobLogObject;
@@ -401,16 +402,7 @@ public class XMLConfiguration implements Configuration {
 
     @SuppressWarnings("unchecked")
     public XStream configureXStreamForLayers(XStream xs) {
-        // XStream xs = xstream;
-        xs.setMode(XStream.NO_REFERENCES);
-
-        xs.alias("gwcConfiguration", GeoWebCacheConfiguration.class);
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns_xsi");
-        xs.aliasField("xmlns:xsi", GeoWebCacheConfiguration.class, "xmlns_xsi");
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xsi_noNamespaceSchemaLocation");
-        xs.aliasField("xsi:noNamespaceSchemaLocation", GeoWebCacheConfiguration.class,
-                "xsi_noNamespaceSchemaLocation");
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
+        commonXStreamConfig(xs);
 
         xs.alias("keyword", String.class);
         xs.alias("layers", List.class);
@@ -450,31 +442,11 @@ public class XMLConfiguration implements Configuration {
 
         xs.alias("contactInformation", ContactInformation.class);
 
-        if (this.context != null) {
-            /*
-             * Look up XMLConfigurationProvider extension points and let them contribute to the
-             * configuration
-             */
-            Collection<XMLConfigurationProvider> configExtensions;
-            configExtensions = this.context.getBeansOfType(XMLConfigurationProvider.class).values();
-            for (XMLConfigurationProvider extension : configExtensions) {
-                xs = extension.getConfiguredXStream(xs);
-            }
-        }
         return xs;
     }
 
     public XStream configureXStreamForJobs(XStream xs) {
-        // XStream xs = xstream;
-        xs.setMode(XStream.NO_REFERENCES);
-
-        xs.alias("gwcConfiguration", GeoWebCacheConfiguration.class);
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns_xsi");
-        xs.aliasField("xmlns:xsi", GeoWebCacheConfiguration.class, "xmlns_xsi");
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xsi_noNamespaceSchemaLocation");
-        xs.aliasField("xsi:noNamespaceSchemaLocation", GeoWebCacheConfiguration.class,
-                "xsi_noNamespaceSchemaLocation");
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
+        commonXStreamConfig(xs);
 
         xs.alias("jobs", List.class);
         xs.alias("job", JobObject.class);
@@ -486,8 +458,27 @@ public class XMLConfiguration implements Configuration {
         xs.registerConverter(new BoundingBoxConverter());
         
         xs.omitField(JobObject.class, "newLogs");
-        
-        
+
+        return xs;
+    }
+    
+    public XStream configureXStreamForSeedEstimate(XStream xs) {
+        commonXStreamConfig(xs);
+        xs.alias("estimate", SeedEstimate.class);
+        xs.registerConverter(new BoundingBoxConverter());
+        return xs;
+    }
+
+    private XStream commonXStreamConfig(XStream xs) {
+        xs.setMode(XStream.NO_REFERENCES);
+
+        xs.alias("gwcConfiguration", GeoWebCacheConfiguration.class);
+        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns_xsi");
+        xs.aliasField("xmlns:xsi", GeoWebCacheConfiguration.class, "xmlns_xsi");
+        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xsi_noNamespaceSchemaLocation");
+        xs.aliasField("xsi:noNamespaceSchemaLocation", GeoWebCacheConfiguration.class,
+                "xsi_noNamespaceSchemaLocation");
+        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
 
         if (this.context != null) {
             /*
@@ -562,16 +553,7 @@ public class XMLConfiguration implements Configuration {
     }
 
     public XStream configureXStreamForJobLogs(XStream xs) {
-        // XStream xs = xstream;
-        xs.setMode(XStream.NO_REFERENCES);
-
-        xs.alias("gwcConfiguration", GeoWebCacheConfiguration.class);
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns_xsi");
-        xs.aliasField("xmlns:xsi", GeoWebCacheConfiguration.class, "xmlns_xsi");
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xsi_noNamespaceSchemaLocation");
-        xs.aliasField("xsi:noNamespaceSchemaLocation", GeoWebCacheConfiguration.class,
-                "xsi_noNamespaceSchemaLocation");
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
+        commonXStreamConfig(xs);
 
         xs.alias("logs", List.class);
         xs.alias("log", JobLogObject.class);

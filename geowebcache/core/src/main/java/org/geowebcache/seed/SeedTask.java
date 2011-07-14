@@ -60,7 +60,7 @@ public class SeedTask extends GWCTask {
     
     private ThroughputTracker throughputTracker = null;
     
-    private long seedStartTime; 
+    private long seedStartTime;
     
     /**
      * Constructs a SeedTask
@@ -124,8 +124,7 @@ public class SeedTask extends GWCTask {
         TileRange tr = trIter.getTileRange();
 
         checkInterrupted();
-        // TODO move to TileRange object, or distinguish between thread and task
-        super.tilesTotal = tileCount(tr.rangeBounds, tr.zoomStart, tr.zoomStop);
+        super.tilesTotal = SeedEstimator.getInstance().tileCount(tr.rangeBounds, tr.zoomStart, tr.zoomStop);
 
         final int metaTilingFactorX = tl.getMetaTilingFactors()[0];
         final int metaTilingFactorY = tl.getMetaTilingFactors()[1];
@@ -255,33 +254,6 @@ public class SeedTask extends GWCTask {
     }
 
     /**
-     * helper for counting the number of tiles
-     * 
-     * @param layer
-     * @param level
-     * @param gridBounds
-     * @return -1 if too many
-     */
-    private long tileCount(long[][] coveredGridLevels, int startZoom, int stopZoom) {
-        long count = 0;
-
-        for (int i = startZoom; i <= stopZoom; i++) {
-            long[] gridBounds = coveredGridLevels[i];
-
-            long thisLevel = (1 + gridBounds[2] - gridBounds[0])
-                    * (1 + gridBounds[3] - gridBounds[1]);
-
-            if (thisLevel > (Long.MAX_VALUE / 4) && i != stopZoom) {
-                return -1;
-            } else {
-                count += thisLevel;
-            }
-        }
-
-        return count;
-    }
-
-    /**
      * Helper method to report status of thread progress.
      * 
      * @param layer
@@ -294,16 +266,15 @@ public class SeedTask extends GWCTask {
     private void updateStatusInfo(TileLayer layer, long tilesCount, long start_time) {
 
         // working on tile
-        this.tilesDone = tilesCount;
+        tilesDone = tilesCount;
 
         // estimated time of completion in seconds, use a moving average over the last
-        this.timeSpent = (int) (System.currentTimeMillis() - start_time) / 1000;
+        timeSpent = (int) (System.currentTimeMillis() - start_time) / 1000;
 
         int threadCount = sharedThreadCount.get();
-        long timeTotal = Math.round((double) timeSpent
-                * (((double) tilesTotal / threadCount) / (double) tilesCount));
+        long timeTotal = SeedEstimator.getInstance().totalTimeEstimate(timeSpent, tilesDone, tilesTotal, threadCount);
 
-        this.timeRemaining = (int) (timeTotal - timeSpent);
+        timeRemaining = (int) (timeTotal - timeSpent);
     }
 
     /**
