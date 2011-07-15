@@ -1,0 +1,30 @@
+{
+    job: {
+        jobType: "RESEED",
+        jobId: 98,
+        state: "DONE",
+        gridSetId: "EPSG:2163",
+        srs: "2163",
+        layerName: "topp:states",
+        errorCount: 0,
+        timeSpent: 114,
+        maxThroughput: -1,
+        tilesTotal: 6003,
+        warnCount: 0,
+        zoomStart: 0,
+        filterUpdate: false,
+        priority: "LOW",
+        failedTileCount: 0,
+        parameters: "",
+        timeRemaining: 0,
+        runOnce: false,
+        format: "image/png",
+        tilesDone: 6003,
+        throughput: 5.8288646,
+        bounds: "-2495667.977678598,-2223677.196231552,4504332.022321401,1976322.8037684471",
+        zoomStop: 1,
+        threadCount: 1,
+        timeFirstStart: "2011-07-14T15:57:11+00:00"
+    }
+
+}

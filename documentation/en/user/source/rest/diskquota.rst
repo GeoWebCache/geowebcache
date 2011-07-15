@@ -9,6 +9,11 @@ configure the disk usage limits and expiration policies for a GeoWebCache instan
 Operations
 ----------
 
+The following is a list of valid entry points for the Disk Quota REST API.
+
+/diskquota
+^^^^^^^^^^
+
 ``/diskquota.<format>``
 
 .. list-table::
@@ -19,7 +24,7 @@ Operations
      - Return Code
      - Formats
    * - GET
-     - Return de global disk quota configuration
+     - Return the global disk quota configuration
      - 200
      - XML, JSON
    * - POST

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job>
+  <jobId>98</jobId>
+  <layerName>topp:states</layerName>
+  <state>DONE</state>
+  <timeSpent>114</timeSpent>
+  <timeRemaining>0</timeRemaining>
+
+  <tilesDone>6003</tilesDone>
+  <tilesTotal>6003</tilesTotal>
+  <failedTileCount>0</failedTileCount>
+  <bounds>-2495667.977678598,-2223677.196231552,4504332.022321401,1976322.8037684471</bounds>
+  <gridSetId>EPSG:2163</gridSetId>
+  <srs>2163</srs>
+
+  <threadCount>1</threadCount>
+  <zoomStart>0</zoomStart>
+  <zoomStop>1</zoomStop>
+  <format>image/png</format>
+  <jobType>RESEED</jobType>
+  <throughput>5.8288646</throughput>
+
+  <maxThroughput>-1</maxThroughput>
+  <priority>LOW</priority>
+  <runOnce>false</runOnce>
+  <filterUpdate>false</filterUpdate>
+  <parameters></parameters>
+  <timeFirstStart>2011-07-14T15:57:11+00:00</timeFirstStart>
+
+  <warnCount>0</warnCount>
+  <errorCount>0</errorCount>
+</job>

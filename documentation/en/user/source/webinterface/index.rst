@@ -11,3 +11,4 @@ GeoWebCache has a minimal web interface.  While not fully featured, it allows th
    status
    demo
    seed
+   jobs

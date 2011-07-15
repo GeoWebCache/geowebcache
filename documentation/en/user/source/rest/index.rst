@@ -65,4 +65,5 @@ document. These codes are described in detail by the `http specification <http:/
    :maxdepth: 1
 
    diskquota.rst
+   jobs.rst
 

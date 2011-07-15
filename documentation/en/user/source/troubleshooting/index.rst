@@ -31,6 +31,8 @@ Logging
 
 Logging can be controlled through :file:`WEB-INF/classes/log4j.properties`. By default, log messages will end up in the standard log of the container, which is for Apache Tomcat is inside the :file:`logs` directory.
 
+The logs that are collected for seeding jobs are also logged to the log4j logs, often in more detail.
+
 Getting help
 ------------
 

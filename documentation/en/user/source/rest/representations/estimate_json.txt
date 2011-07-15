@@ -1,0 +1,11 @@
+{
+	"estimate": {
+		"layerName":"img states",
+		"zoomStart":0,
+		"zoomStop":15,
+		"gridSetId":"EPSG:4326",
+		"threadCount":1,
+		"maxThroughput":-1,
+		"bounds":"-180,-90,180,90"
+	}
+}

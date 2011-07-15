@@ -1,0 +1,28 @@
+{
+    logs: [
+        {
+            jobId: 98,
+            logLevel: "INFO",
+            logTime: "2011-07-14T15:59:09+00:00",
+            logText: "Job finished with a status of DONE.",
+            jobLogId: 198,
+            logSummary: "Job Completed"
+        },
+        {
+            jobId: 98,
+            logLevel: "INFO",
+            logTime: "2011-07-14T15:59:06+00:00",
+            logText: "GWC Seeder Thread-3 completed (re)seeding layer topp:states after 5994 tiles and 114 seconds.",
+            jobLogId: 197,
+            logSummary: "Seeding Completed"
+        },
+        {
+            jobId: 98,
+            logLevel: "INFO",
+            logTime: "2011-07-14T15:57:11+00:00",
+            logText: "This job has started execution.",
+            jobLogId: 196,
+            logSummary: "Job Started"
+        }
+    ]
+}

@@ -1,0 +1,9 @@
+<estimate>
+	<layerName>img states</layerName>
+	<zoomStart>0</zoomStart>
+	<zoomStop>15</zoomStop>
+	<gridSetId>EPSG:4326</gridSetId>
+	<threadCount>1</threadCount>
+	<maxThroughput>-1</maxThroughput>
+	<bounds>-180,-90,180,90"</bounds>
+</estimate>
