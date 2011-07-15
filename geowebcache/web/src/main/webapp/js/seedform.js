@@ -166,7 +166,6 @@ function doEstimate() {
     		url: '../../rest/estimate.json',
         	data: jsonFormat.write(rec),
 	        callback: function(request) {
-	        	console.log(request);
 	        	var newrec = jsonFormat.read(request.responseText);
 				$('estimates').innerHTML = addCommas(newrec.estimate.tilesTotal) + " tiles in " + formatSecondsElapsed(newrec.estimate.timeRemaining);
 	        }
