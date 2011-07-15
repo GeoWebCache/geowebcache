@@ -242,6 +242,8 @@ public class JobRestlet extends GWCRestlet {
                     Status.CLIENT_ERROR_BAD_REQUEST);
         }
         
+        job.setJobId(-1);
+
         try {
             if(job.isScheduled()) {
                 job.setState(STATE.READY);
