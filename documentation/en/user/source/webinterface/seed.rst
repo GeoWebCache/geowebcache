@@ -30,9 +30,9 @@ To create a new seed task, fill out the form with the following information:
    * - :guilabel:`Type of operation`
      - This is one of the **seed**, **reseed**, or **truncate** operations described above.  
    * - :guilabel:`Grid set`
-     - The name of the any valid :ref:`grid set <configuration.layers.gridsets>` as defined for a given layer.
+     - The name of any valid :ref:`grid set <configuration.layers.gridsets>` as defined for a given layer.
    * - :guilabel:`Throughput`
-     - Maximum number of requests per second to allow this task to make. Helps ensure the backend service doesn't get flooded with requests. Note that this throttles the number of requests, not tiles.
+     - Maximum number of requests per second this task is allowed to make. Helps ensure the backend service doesn't get flooded with requests. Note that this throttles the number of requests, not tiles.
    * - :guilabel:`Schedule`
      - A seed job can be scheduled to begin at a later time or on a regular basis. A `CRON <http://en.wikipedia.org/wiki/Cron>`_ string is used to set the schedule.
    * - :guilabel:`Format`
@@ -62,7 +62,7 @@ The interactive map at the bottom of the seed form makes it easier to select wha
    :align: left
    :class: float_left
 
-**Move / Resize** - Adds handles to the bounds on the map that lets you move and resize the bounds.
+**Move / Resize** - Lets you move and resize the bounds.
 
 .. image:: img/bounds_select.png
    :align: left
@@ -81,6 +81,6 @@ The map also shows a base layer which can be configured in the GeoWebCache confi
 Managing a seed job
 -------------------
 
-When a seed task is ongoing, returning to the layer's Seed page will display the current status of the task, including projected duration and number of tiles, with details for each thread (if more than one).  Threads can be terminated by clicking the :guilabel:`Kill Thread` button next to the thread status.
+When a seed task is ongoing, returning to the layer's Seed page will display the current status of the task, including projected duration and number of tiles, with details for each thread (if there is more than one).  Threads can be terminated by clicking the :guilabel:`Kill Thread` button next to the thread status. Managing seed tasks is also possible using the :ref:`webinterface.jobs`
 
 .. note:: A word on terminology. A task in GeoWebCache is a single thread performing some activity such as seeding or truncating. A job is a schedulable (or immediately executed) activity that can run multiple tasks to achieve its goal. The terms task and thread in GeoWebCache are pretty much interchangeable.

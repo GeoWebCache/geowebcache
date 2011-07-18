@@ -11,7 +11,7 @@ The URL format of the job manager is::
 
 An example of the job manager can be seen here: :download:`Job Manager Example <img/jobmanager.png>`
 
-Each job is represented as a row in the table and contains various information. From left to right the columns are:
+Each job is represented as a row in the table and contains various columns of information. From left to right the columns are:
 
 .. list-table::
    :widths: 25 75
@@ -26,7 +26,7 @@ Each job is represented as a row in the table and contains various information. 
    * - :guilabel:`Region`
      - Information about what geographic region and zoom levels are involved in the job. This includes gird set information such as projection and extents, and zoom levels.
    * - :guilabel:`Time`
-     - How long the job has been running or ran for, and an estimate of how much time the job will take to complete.
+     - How long the job has been running or how long it ran for, and an estimate of how much time the job will take to complete.
    * - :guilabel:`Tiles`
      - When the job is running or complete this shows what percentage of the tiles involved have been processed, and how many tiles are involved.
    * - :guilabel:`Threads`
@@ -41,7 +41,7 @@ Each job is represented as a row in the table and contains various information. 
 Table Features
 --------------
 
-The table supports features such as ordering based on a column, hiding and showing columns and dragging the columns to different locations in the table. Keep in mind that adjustments to the table aren't remembered between sessions.
+The table supports features such as ordering based on a column, hiding and showing columns and dragging the columns to different locations in the table. Keep in mind however that adjustments to the table are not remembered between sessions.
 
 The table doesn't automatically update itself but there is a handy refresh button at the top right, next to the help button.
 
@@ -60,7 +60,7 @@ Jobs can be in a variety of states. What you can do to a job depends on what sta
    :align: left
    :class: float_left
 
-**READY** - Jobs that are ready to run are in this state. Because ready jobs that aren't scheduled will run straight away, you'll usually only see scheduled jobs waiting to start with this state.
+**READY** - Jobs that are ready to run are in this state. Ready jobs that are not scheduled will run straight away, so you will usually only see scheduled jobs waiting to start with this state.
 
 .. image:: img/state_green.png
    :align: left
@@ -84,7 +84,7 @@ Jobs can be in a variety of states. What you can do to a job depends on what sta
    :align: left
    :class: float_left
 
-**DONE** - Jobs that have completed with one ore more failed tiles.
+**DONE** - Jobs that have completed with one or more failed tiles.
 
 .. image:: img/state_interrupted.png
    :align: left
@@ -96,7 +96,7 @@ Jobs can be in a variety of states. What you can do to a job depends on what sta
    :align: left
    :class: float_left
 
-**KILLED** - Jobs that have been terminated prematurely, probably due to user intervention. Jobs that have been stopped before completion have this state.
+**KILLED** - Jobs that have been terminated prematurely; probably due to user intervention. Jobs that have been stopped before completion have this state.
 
 .. image:: img/state_black.png
    :align: left
@@ -111,7 +111,7 @@ Manipulating Jobs
    :align: left
    :class: float_left
 
-The job list has a context menu accessible by right clicking on a job. This allows access to log information for the job as well as commands that can be performed on the job. Not all actions are available to all jobs, it depends on the state the job is in.
+The job list has a context menu accessible by right clicking on a job. This allows access to log information for the job as well as commands that can be performed on the job. Not all actions are available to all jobs. It depends on the state the job is in.
 
 .. list-table::
    :widths: 25, 75
@@ -124,7 +124,7 @@ The job list has a context menu accessible by right clicking on a job. This allo
 		:class: float_left
 
        :guilabel:`View Logs`
-     - Each job has a history associated to it in the form of logs. Each log entry is timestamped, and can be a warning, error or simply informative. Log entries have a summary as well as more detailed text. An example of the log window for a job can be seen here: :download:`Job Logs Example <img/logwindow.png>`.
+     - Each job has a history associated to it in the form of logs. Each log entry is time stamped, and can be a warning, error or simply informative. Log entries have a summary as well as more detailed text. An example of the log window for a job can be seen here: :download:`Job Logs Example <img/logwindow.png>`.
    * - .. image:: img/clone.png
 		:align: left
 		:class: float_left

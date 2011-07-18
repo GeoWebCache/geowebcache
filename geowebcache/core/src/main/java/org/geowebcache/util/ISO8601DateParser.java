@@ -85,14 +85,13 @@ public class ISO8601DateParser {
         if ( result.endsWith( "Z" ) ) {
             result = result.substring( 0, result.length() - 1) + "GMT-00:00";
         } else {
-            int inset = 9;
+            int inset = 6;
         
             String s0 = result.substring( 0, result.length() - inset );
             String s1 = result.substring( result.length() - inset, result.length() );
 
-            result = s0 + s1 + "GMT";
+            result = s0 + "GMT" + s1;
         }
-        // result = df.format(new Date());
         
         return df.parse( result );
         
