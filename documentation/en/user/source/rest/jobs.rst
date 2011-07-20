@@ -1,7 +1,7 @@
-.. _jobs:
+.. _rest.jobs:
 
 Jobs REST API
-===================
+=============
 
 The REST API for job management provides a RESTful interface through which clients can view and manage jobs.
 
@@ -161,7 +161,7 @@ The following is a list of valid entry points for the Job REST API.
      - 405 - METHOD NOT ALLOWED
      - 
    * - POST
-     - Send layer, zoom level, grid set, thread count, max throughput and bounds information and get an estimate of the number of tiles and a time estimate to complete seeding.
+     - Send layer, format, zoom level, grid set, thread count, max throughput and bounds information and get an estimate of the number of tiles, time estimate to complete seeding and anticipated disk space required.
      - 200 - OK
      - XML, JSON
    * - 
@@ -179,8 +179,10 @@ The following is a list of valid entry points for the Job REST API.
 
 *Representations*:
 
-- :download:`XML <representations/estimate_xml.txt>`
-- :download:`JSON <representations/estimate_json.txt>`
+- :download:`XML Request <representations/estimate_xml.txt>`
+- :download:`XML Response <representations/estimate_xml_response.txt>`
+- :download:`JSON Request <representations/estimate_json.txt>`
+- :download:`JSON Response <representations/estimate_json_response.txt>`
 
 *Example URLs*:
 

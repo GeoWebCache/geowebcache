@@ -10,10 +10,12 @@ public class SeedEstimate {
     public int zoomStop;
     public int threadCount;
     public int maxThroughput;
+    public String format;
 
-    public long timeSpent;
     public long tilesDone;
+    public long timeSpent;
 
     public long tilesTotal;
+    public long diskSpace;
     public long timeRemaining;
 }

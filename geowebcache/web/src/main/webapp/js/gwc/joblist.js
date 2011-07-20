@@ -198,12 +198,6 @@ Ext.Loader.onReady(function () {
 	            renderer: renderJob,
 	            sortable: false
 	        },{
-	            text: "Priority",
-	            dataIndex: 'priority',
-	            width: 50,
-	            align: "center",
-	            sortable: true
-	        },{
 	            text: "Region",
 	            dataIndex: 'bounds',
 	            flex: 4,

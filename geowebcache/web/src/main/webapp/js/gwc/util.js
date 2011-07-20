@@ -37,6 +37,13 @@ var formatSecondsElapsed = function (seconds) {
 	return result;
 };
 
+var formatByteString = function (bytes) {
+	var sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+	if (bytes == 0) return 'n/a';
+	var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+	return ((i == 0)? (bytes / Math.pow(1024, i)) : (bytes / Math.pow(1024, i)).toFixed(1)) + ' ' + sizes[i];
+};
+
 function zeroPad(num, count) {
 	var numZeropad = num + '';
 	while (numZeropad.length < count) {

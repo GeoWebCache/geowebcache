@@ -4,9 +4,14 @@
 		"layerName": "topp:states",
 		"format": "image/png",
 		"maxThroughput": -1,
+		"tilesDone": 0,
+		"tilesTotal": 18651,
 		"bounds": "1861260.8870225,326935.54615082,2028141.7457275,529576.5888641",
 		"zoomStart": 0,
 		"zoomStop": 3,
-		"threadCount": 1
+		"diskSpace": 559530,
+		"threadCount": 1,
+		"timeSpent": 0,
+		"timeRemaining": 414
 	}
 }

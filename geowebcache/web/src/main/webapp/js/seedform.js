@@ -150,6 +150,7 @@ function doEstimate() {
 			"zoomStart" : parseInt($('zoomStart').value, 10),
     		"zoomStop" : parseInt($('zoomStop').value, 10),
     		"gridSetId" : $('gridSetId').value,
+    		"format" : $('format').value,
     		"threadCount" : parseInt($('threadCount').value, 10),
     		"maxThroughput" : parseInt($('maxThroughput').value, 10),
     		"bounds": $('minX').value + ',' + $('minY').value + ',' + $('maxX').value + ',' + $('maxY').value
@@ -167,7 +168,7 @@ function doEstimate() {
         	data: jsonFormat.write(rec),
 	        callback: function(request) {
 	        	var newrec = jsonFormat.read(request.responseText);
-				$('estimates').innerHTML = addCommas(newrec.estimate.tilesTotal) + " tiles in " + formatSecondsElapsed(newrec.estimate.timeRemaining);
+				$('estimates').innerHTML = "tiles: " + addCommas(newrec.estimate.tilesTotal) + ", time: " + formatSecondsElapsed(newrec.estimate.timeRemaining) + ", disk space: " + formatByteString(newrec.estimate.diskSpace * 1024);
 	        }
 	    }
 	);

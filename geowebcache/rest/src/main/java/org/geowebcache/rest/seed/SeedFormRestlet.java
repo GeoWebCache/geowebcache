@@ -158,8 +158,6 @@ public class SeedFormRestlet extends GWCRestlet {
 
         makeTypePullDown(doc);
         
-        makePriorityPullDown(doc);
-
         makeThroughputPullDown(doc);
 
         makeScheduleFields(doc);
@@ -411,21 +409,6 @@ public class SeedFormRestlet extends GWCRestlet {
         doc.append("</td></tr>\n");
     }
 
-    private void makePriorityPullDown(StringBuilder doc) {
-        doc.append("<tr><td>Priority:</td><td>\n");
-        Map<String, String> keysValues = new TreeMap<String, String>();
-
-        Iterator<PRIORITY> iter = Arrays.asList(PRIORITY.values()).iterator();
-
-        while (iter.hasNext()) {
-            PRIORITY p = iter.next();
-            keysValues.put(p.toString(), p.name());
-        }
-
-        makePullDown(doc, "priority", keysValues, GWCTask.PRIORITY.LOW.toString());
-        doc.append("</td></tr>\n");
-    }
-
     private void makeThroughputPullDown(StringBuilder doc) {
         doc.append("<tr><td>Throughput:</td><td>\n");
         Map<String, String> keysValues = new TreeMap<String, String>();
@@ -593,7 +576,7 @@ public class SeedFormRestlet extends GWCRestlet {
         doc.append("<h4>List of currently executing tasks:</h4>\n");
 
         Iterator<Entry<Long, GWCTask>> iter = seeder.getRunningTasksIterator();
-
+        
         boolean tasks = false;
         if (!iter.hasNext()) {
             doc.append("<ul><li><i>none</i></li></ul>\n");
@@ -605,7 +588,7 @@ public class SeedFormRestlet extends GWCRestlet {
             doc.append("</tr>");
             tasks = true;
         }
-
+        
         while (iter.hasNext()) {
             Entry<Long, GWCTask> entry = iter.next();
             GWCTask task = entry.getValue();
@@ -647,6 +630,8 @@ public class SeedFormRestlet extends GWCRestlet {
             doc.append("</table>");
         }
         doc.append("<p><a href=\"./" + tl.getName() + "\">Refresh list</a></p>\n");
+        doc.append("<p>For more detail, go to the <a href=\"http://localhost:8080/geowebcache/joblist.html\">Job Manager Page</a></p>\n");
+
     }
 
     private String toTimeString(long timeSeconds, final long tilesDone, final long tilesTotal) {
@@ -781,14 +766,10 @@ public class SeedFormRestlet extends GWCRestlet {
 
         TYPE type = TYPE.valueOf(form.getFirst("type").getValue().toUpperCase());
         
-        // new attributes can't be expected to be set or older clients won't work.
+        // Priority isn't exposed through the seed form now
         PRIORITY priority = PRIORITY.LOW;
-        if(form.getFirst("priority") != null) {
-            priority = PRIORITY.valueOf(form.getFirst("priority").getValue());
-        } else {
-            if(type == TYPE.TRUNCATE) {
-                priority = PRIORITY.NORMAL;
-            }
+        if(type == TYPE.TRUNCATE) {
+            priority = PRIORITY.NORMAL;
         }
         
         String schedule = JobObject.NO_SCHEDULE;

@@ -85,12 +85,17 @@ public class ISO8601DateParser {
         if ( result.endsWith( "Z" ) ) {
             result = result.substring( 0, result.length() - 1) + "GMT-00:00";
         } else {
-            int inset = 6;
-        
-            String s0 = result.substring( 0, result.length() - inset );
-            String s1 = result.substring( result.length() - inset, result.length() );
-
-            result = s0 + "GMT" + s1;
+            if(result.length() > 19) {
+                int inset = 6;
+            
+                String s0 = result.substring( 0, result.length() - inset );
+                String s1 = result.substring( result.length() - inset, result.length() );
+    
+                result = s0 + "GMT" + s1;
+            } else {
+                // must be missing timezone information off the end, assume server local time
+                result += "+0930";
+            }
         }
         
         return df.parse( result );
