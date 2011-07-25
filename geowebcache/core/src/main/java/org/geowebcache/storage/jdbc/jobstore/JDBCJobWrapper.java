@@ -30,6 +30,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -64,6 +65,9 @@ class JDBCJobWrapper {
 
     /** Database version, for automatic updates */
     static int DB_VERSION = 120;
+    
+    private static final String CLEAR_OLD_JOBS_KEY = "clearOldJobs";
+    private static final long CLEAR_OLD_JOBS_DEFAULT = 0;
 
     /** Connection information */
     final String jdbcString;
@@ -248,6 +252,100 @@ class JDBCJobWrapper {
         }
     }
 
+    /**
+     * Checks / creates the "variables" table and verifies that a variable with the provided key exists.
+     * 
+     * @param conn
+     * @throws SQLException
+     */
+    protected String getDBVariable(Connection conn, String key, String defaultValue) throws SQLException, StorageException {
+        condCreate(conn, "VARIABLES", "KEY VARCHAR(32), VALUE VARCHAR(128)", "KEY", null);
+
+        PreparedStatement prep = null;
+        PreparedStatement prep2 = null;
+        ResultSet rs = null;
+
+        try {
+            String query = "SELECT VALUE FROM VARIABLES WHERE KEY LIKE ?";
+            prep = conn.prepareStatement(query);
+            prep.setString(1, key);
+            rs = prep.executeQuery();
+
+            if (rs.first()) {
+                String str = rs.getString("value");
+                return str;
+            } else {
+                query = "INSERT INTO VARIABLES (KEY,VALUE) VALUES (?,?)";
+                prep2 = conn.prepareStatement(query);
+                prep2.setString(1, key);
+                prep2.setString(2, defaultValue);
+                prep2.execute();
+
+                return defaultValue;
+            }
+        } catch(Exception e) {
+            throw new StorageException("Failed to get DB Variable '" + key + "': " + e.getClass().getName() + ": " + e.getMessage());
+        } finally {
+            close(rs);
+            close(prep);
+            close(prep2);
+        }
+    }
+
+    /**
+     * Checks / creates the "variables" table and sets the value of a supplied variable.
+     * @param conn
+     * @param key
+     * @param val
+     * @throws SQLException
+     * @throws StorageException
+     */
+    protected void setDBVariable(Connection conn, String key, String val) throws SQLException, StorageException {
+        condCreate(conn, "VARIABLES", "KEY VARCHAR(32), VALUE VARCHAR(128)", "KEY", null);
+
+        PreparedStatement prep = null;
+
+        try {
+            String query = "MERGE INTO VARIABLES(key, value) KEY (key) VALUES (?,?)";
+            prep = conn.prepareStatement(query);
+            prep.setString(1, key);
+            prep.setString(2, val);
+            prep.execute();
+        } finally {
+            close(prep);
+        }
+    }
+
+    /**
+     * Gets the ClearOldJobs setting from the DB.
+     * This setting is number of seconds once a job is complete before deleting it from the database.
+     * If set to 0, old jobs are never deleted.
+     * @param conn
+     * @return
+     * @throws SQLException
+     * @throws StorageException
+     */
+    protected long getClearOldJobs() throws SQLException, StorageException {
+        long clear_old_jobs = 0;
+        final Connection conn = getConnection();
+        try {
+            String str = getDBVariable(conn, CLEAR_OLD_JOBS_KEY, Long.toString(CLEAR_OLD_JOBS_DEFAULT));
+            clear_old_jobs = Long.parseLong(str);
+        } finally {
+            close(conn);
+        }
+        return clear_old_jobs;
+    }
+
+    protected void setClearOldJobs(long newVal) throws SQLException, StorageException {
+        final Connection conn = getConnection();
+        try {
+            setDBVariable(conn, CLEAR_OLD_JOBS_KEY, Long.toString(newVal));
+        } finally {
+            close(conn);
+        }
+    }
+
     private void checkJobsTable(Connection conn) throws SQLException {
         
         condCreate(conn, "JOBS", "job_id BIGINT AUTO_INCREMENT PRIMARY KEY, " + 
@@ -275,7 +373,8 @@ class JDBCJobWrapper {
                 "filter_update BOOL, " + 
                 "parameters VARCHAR(1024), " + 
                 "time_first_start TIMESTAMP, " + 
-                "time_latest_start TIMESTAMP ", 
+                "time_latest_start TIMESTAMP, " + 
+                "time_finish TIMESTAMP ", 
                 "layer_name", 
                 null);
     }
@@ -294,7 +393,7 @@ class JDBCJobWrapper {
         Statement st = null;
         try {
             st = conn.createStatement();
-            st.execute("ALTER TABLE JOB_LOGS ADD FOREIGN KEY(job_id) REFERENCES JOBS(job_id)");
+            st.execute("ALTER TABLE JOB_LOGS ADD FOREIGN KEY(job_id) REFERENCES JOBS(job_id) ON DELETE CASCADE");
         } finally {
             close(st);
         }
@@ -415,9 +514,9 @@ class JDBCJobWrapper {
                 "tiles_total, failed_tile_count, bounds, gridset_id, srs, thread_count, " + 
                 "zoom_start, zoom_stop, format, job_type, throughput, max_throughput, " +  
                 "priority, schedule, run_once, spawned_by, filter_update, parameters, " + 
-                "time_first_start, time_latest_start) " + 
+                "time_first_start, time_latest_start, time_finish) " + 
                 "KEY(job_id) " + 
-                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         final Connection conn = getConnection();
 
@@ -459,6 +558,7 @@ class JDBCJobWrapper {
                 
                 prep.setTimestamp(25, stObj.getTimeFirstStart());
                 prep.setTimestamp(26, stObj.getTimeLatestStart());
+                prep.setTimestamp(27, stObj.getTimeFinish());
                 
                 insertId = wrappedInsert(prep);
             } finally {
@@ -861,6 +961,7 @@ class JDBCJobWrapper {
         
         job.setTimeFirstStart(rs.getTimestamp("time_first_start"));
         job.setTimeLatestStart(rs.getTimestamp("time_latest_start"));
+        job.setTimeFinish(rs.getTimestamp("time_finish"));
     }
 
     private void readJobLog(JobLogObject joblog, ResultSet rs) throws SQLException, IOException {
@@ -927,5 +1028,32 @@ class JDBCJobWrapper {
             e.printStackTrace();
         }
         System.gc();
+    }
+
+    /**
+     * Removes all jobs that finished before the provided timestamp.
+     * Logs should get deleted due to the way the referential constraint was set up. 
+     * @param ts
+     * @return Number of jobs purged.
+     * @throws SQLException
+     */
+    public long purgeOldJobs(Timestamp ts) throws SQLException {
+        String query = "DELETE FROM JOBS WHERE time_finish < ?";
+        Connection conn = null;
+        PreparedStatement prep = null;
+        long result = 0;
+
+        try {
+            conn = getConnection();
+
+            prep = conn.prepareStatement(query);
+            prep.setTimestamp(1, ts);
+
+            result = prep.executeUpdate();
+        } finally {
+            close(prep);
+            close(conn);
+        }
+        return result;
     }
 }

@@ -113,6 +113,7 @@ Manipulating Jobs
 
 The job list has a context menu accessible by right clicking on a job. This allows access to log information for the job as well as commands that can be performed on the job. Not all actions are available to all jobs. It depends on the state the job is in.
 
+
 .. list-table::
    :widths: 25, 75
    :header-rows: 1 
@@ -154,3 +155,12 @@ Interrupted jobs
 ----------------
 
 Jobs that have been interrupted, perhaps due to an unexpected shutdown of GeoWebCache, will be automatically restarted when GeoWebCache restarts. This is done by looking for jobs that have running or interrupted states when GeoWebCache starts.
+
+Job Manager Options
+-------------------
+
+.. image:: img/optionsform.png
+   :align: left
+   :class: float_left
+
+Some configuration options can be set using the Job Manager. At the top right of the job manager are help, refresh and options buttons. Click on the options button to display the options window. Currently there is only one option that can be set - How old a complete job is before it is automatically removed from the system.

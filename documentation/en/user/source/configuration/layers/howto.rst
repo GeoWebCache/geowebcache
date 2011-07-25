@@ -12,13 +12,14 @@ Changing the location of geowebcache.xml
 
 The location of the configuration file is set in :file:`WEB-INF/geowebcache-core-context.xml`.  If you wish to move the configuration file to a different location, open :file:`geowebcache-core-context.xml` and look for the ``<bean>`` tag referencing ``gwcXmlConfig``:
 
-.. code-block: xml
-<bean id="gwcXmlConfig" class="org.geowebcache.config.XMLConfiguration">
-     <constructor-arg ref="gwcAppCtx" />
-     <constructor-arg ref="gwcGridSetBroker"/>
-     <constructor-arg ref="gwcDefaultStorageFinder" />
-     <!-- constructor-arg value="/etc/geowebcache" / -->
-</bean>
+.. code-block:: xml
+
+	<bean id="gwcXmlConfig" class="org.geowebcache.config.XMLConfiguration">
+	     <constructor-arg ref="gwcAppCtx" />
+	     <constructor-arg ref="gwcGridSetBroker"/>
+	     <constructor-arg ref="gwcDefaultStorageFinder" />
+	     <!-- constructor-arg value="/etc/geowebcache" / -->
+	</bean>
 
 
 Uncomment the bottom ``<constructor-arg value= ...>`` tag and specify the location where you would like to place :file:`geowebcache.xml`.

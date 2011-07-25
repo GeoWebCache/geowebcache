@@ -8,7 +8,7 @@ The REST API for job management provides a RESTful interface through which clien
 Operations
 ----------
 
-The following is a list of valid entry points for the Job REST API.
+The following is a list of valid entry points for the Job REST API. Each entry point lists the possible HTTP responses for each method (GET, POST, PUT, DELETE). Though not listed, a 500 Server Error is also possible from any of the following if GeoWebCache experiences an unexpected error.
 
 /jobs
 ^^^^^
@@ -165,7 +165,7 @@ The following is a list of valid entry points for the Job REST API.
      - 200 - OK
      - XML, JSON
    * - 
-     - 
+     - Most likeley because an unsupported format was requested.
      - 400 - BAD REQUEST
      - 
    * - PUT
@@ -188,3 +188,51 @@ The following is a list of valid entry points for the Job REST API.
 
 - http://localhost:8080/geowebcache/rest/estimate.xml
 - http://localhost:8080/geowebcache/rest/estimate.json
+
+/settings
+^^^^^^^^^
+
+``/settings.<format>``
+
+.. list-table::
+   :widths: 10,55,23,12
+   :header-rows: 1
+
+   * - Method
+     - Action
+     - Return Code
+     - Formats
+   * - GET
+     - Return settings taht can be set through this interface.
+     - 200 - OK
+     - XML, JSON
+   * - 
+     - Most likeley because an unsupported format was requested.
+     - 400 - BAD REQUEST
+     - 
+   * - POST
+     - Update the settings.
+     - 200 - OK
+     - XML, JSON
+   * - 
+     - Most likeley because an unsupported format was requested.
+     - 400 - BAD REQUEST
+     - 
+   * - PUT
+     - 
+     - 405 - METHOD NOT ALLOWED
+     - 
+   * - DELETE
+     - 
+     - 405 - METHOD NOT ALLOWED
+     - 
+
+*Representations*:
+
+- :download:`XML <representations/settings_xml.txt>`
+- :download:`JSON <representations/settings_json.txt>`
+
+*Example URLs*:
+
+- http://localhost:8080/geowebcache/rest/settings.xml
+- http://localhost:8080/geowebcache/rest/settings.json

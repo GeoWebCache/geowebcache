@@ -48,6 +48,125 @@ var showHelp = function () {
 	helpWindow.show();	
 };
 
+var makeOptionsForm = function() {
+	var optionsForm = new Ext.FormPanel({
+	    bodyPadding: 10,
+	    
+	    items: [
+	        {
+	            xtype      : 'fieldcontainer',
+	            fieldLabel : 'Remove old jobs after',
+	            labelWidth : 140,
+	            defaultType: 'radiofield',
+	            defaults: {
+	                flex: 1
+	            },
+	            items: [
+	                {
+	                    boxLabel  : 'a day',
+	                    name      : 'clearOldJobs',
+	                    inputValue: '86400',
+	                    id        : 'clearOldJobs_day'
+	                }, {
+	                    boxLabel  : 'a week',
+	                    name      : 'clearOldJobs',
+	                    inputValue: '604800',
+	                    id        : 'clearOldJobs_week'
+	                }, {
+	                    boxLabel  : 'a month',
+	                    name      : 'clearOldJobs',
+	                    inputValue: '2600640',
+	                    id        : 'clearOldJobs_month'
+	                }, {
+	                    boxLabel  : 'a year',
+	                    name      : 'clearOldJobs',
+	                    inputValue: '31536000',
+	                    id        : 'clearOldJobs_year'
+	                }, {
+	                    boxLabel  : 'never',
+	                    name      : 'clearOldJobs',
+	                    inputValue: '0',
+	                    id        : 'clearOldJobs_never'
+	                }
+	            ]
+	        }
+	    ],
+	    
+	    buttons: [
+	        {
+		        text: 'Save',
+		        handler: function() {
+		    		// var form = this.up('form').getForm();
+		    		var values = this.up('form').getForm().getValues();
+		    		
+		    		Ext.getCmp('optionsWindow').close();
+					
+		    		var rec = Ext.create('settings', {
+		    		    clearOldJobs: values.clearOldJobs
+		    		});
+		    		
+		    		gwc.setSettings(rec, 
+						function(response, opts) {
+							;
+			    		},
+			    		function(response, opts) {
+			    			alert('Failed to save settings\n' + response.status + ': ' + response.responseText);
+			    		}
+					);
+		        }
+	    	},{
+		        text: 'Cancel',
+		        handler: function() {
+	    			Ext.getCmp('optionsWindow').close();
+	    		}
+	    	}
+	    ]
+	});
+	
+	return optionsForm;
+}
+
+var prepShowOptions = function() {
+	var settings = gwc.getSettings(
+		showOptions, 
+		function(response, opts) {
+			alert('Failed to load settings for editing\n' + response.status + ': ' + response.responseText);
+	});
+}
+
+var showOptions = function (response, opts) {
+	var optionsForm = makeOptionsForm();
+	var settings = Ext.JSON.decode(response.responseText).settings;
+	updateClearOldJobsFormField(optionsForm.getForm(), settings.clearOldJobs);
+    var optionsWindow = Ext.create('widget.window', {
+    	id: "optionsWindow",
+        width: 250,
+        height: 200,
+        title: 'Options',
+        closable: true,
+        plain: true,
+        layout: 'fit',
+        items: [optionsForm]
+	});
+    optionsWindow.show();	
+};
+
+var updateClearOldJobsFormField = function (form, val) {
+	var field;
+	if(val == 86400) {
+		field = form.findField("clearOldJobs_day");
+	} else if(val == 604800) {
+		field = form.findField("clearOldJobs_week");
+	} else if(val == 2600640) {
+		field = form.findField("clearOldJobs_month");
+	} else if(val == 31536000) {
+		field = form.findField("clearOldJobs_year");
+	} else {
+		field = form.findField("clearOldJobs_never");
+	}
+	field.setValue(true);
+};
+
 var setupMenu = function () {
 	var viewLogsAction = Ext.create('Ext.Action', {
 	    icon: 'images/logs.png', 
@@ -84,7 +203,6 @@ var setupMenu = function () {
 						gwc.loadJobs();
 		    		},
 		    		function(response, opts) {
-		    			// an alert may be too confronting for an API to do
 		    			alert('Failed to add job\n' + response.status + ': ' + response.responseText);
 		    		}
 				);
@@ -298,15 +416,22 @@ Ext.Loader.onReady(function () {
 
 });
 
+// This was useful here: http://docs.sencha.com/ext-js/4-0/#/api/Ext.panel.Tool-cfg-type
 Ext.onReady(function () {
 	gwc = Ext.create('GWC.RestService');
 	joblist = new GWC.JobGrid({
         tools: [{
+            type:'gear',
+            tooltip: 'Job Options',
+            handler: function(event, toolEl, panel){
+        		prepShowOptions();
+            }
+        },{
             type:'refresh',
             tooltip: 'Refresh Job List',
             handler: function(event, toolEl, panel){
         		gwc.loadJobs();
-            }
+        	}
         },{
             type:'help',
             tooltip: 'Get Help',

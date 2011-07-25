@@ -127,7 +127,7 @@
       </gridSubset>
     </gridSubsets>
     <wmsUrl>
-      <string>http://demo.opengeo.org/geoserver/wms</string>
+      <string>http://www.opengeo.com/geoserver/wms</string>
     </wmsUrl>
     <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
     <transparent>false</transparent>

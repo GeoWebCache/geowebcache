@@ -17,6 +17,8 @@
  */
 package org.geowebcache.storage;
 
+import java.sql.Timestamp;
+
 
 /**
  * A taskstore manages all meta information related to tasks
@@ -63,6 +65,18 @@ public interface JobStore {
      * @return
      */
     public Iterable<JobLogObject> getAllLogs() throws StorageException;
+    
+    /**
+     * Gets the db variable clear_old_jobs which is the number of seconds old a job must be before it is automatically deleted.
+     * If set to 0, old jobs will never be deleted.
+     * @return
+     * @throws StorageException
+     */
+    public long getClearOldJobsSetting() throws StorageException;
+
+    public void setClearOldJobsSetting(long clearOldJobsVal) throws StorageException;
+    
+    public long purgeOldJobs(Timestamp ts) throws StorageException;
     
     /**
      * Wipes the entire storage. Should only be invoked during testing.

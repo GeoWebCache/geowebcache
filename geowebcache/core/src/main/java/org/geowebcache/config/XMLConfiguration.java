@@ -84,6 +84,7 @@ import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.JobLogObject;
 import org.geowebcache.storage.JobObject;
+import org.geowebcache.storage.SettingsObject;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.ApplicationContextProvider;
@@ -465,6 +466,13 @@ public class XMLConfiguration implements Configuration {
     public XStream configureXStreamForSeedEstimate(XStream xs) {
         commonXStreamConfig(xs);
         xs.alias("estimate", SeedEstimate.class);
+        xs.registerConverter(new BoundingBoxConverter());
+        return xs;
+    }
+    
+    public XStream configureXStreamForSettings(XStream xs) {
+        commonXStreamConfig(xs);
+        xs.alias("settings", SettingsObject.class);
         xs.registerConverter(new BoundingBoxConverter());
         return xs;
     }

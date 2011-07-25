@@ -18,6 +18,7 @@
 package org.geowebcache.storage.jdbc.jobstore;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,6 +27,7 @@ import org.geowebcache.storage.JobLogObject;
 import org.geowebcache.storage.JobObject;
 import org.geowebcache.storage.JobStore;
 import org.geowebcache.storage.MetaStore;
+import org.geowebcache.storage.SettingsObject;
 import org.geowebcache.storage.StorageException;
 
 /**
@@ -38,6 +40,8 @@ public class JDBCJobBackend implements JobStore {
     /** Wrapper that sets everything up */
     private JDBCJobWrapper wrpr;
 
+    private SettingsObject settings;
+    
     private boolean enabled = true;
 
     public JDBCJobBackend(String driverClass, String jdbcString, String username, String password)
@@ -67,10 +71,17 @@ public class JDBCJobBackend implements JobStore {
         try {
             wrpr = new JDBCJobWrapper(driverClass, jdbcString, username, password,
                     useConnectionPooling, maxConnections);
+            initSettings();
         } catch (SQLException se) {
             enabled = false;
             throw new StorageException(se.getMessage());
         }
+    }
+
+    private void initSettings() throws StorageException {
+        // init the settings, they are cached at this level
+        settings = new SettingsObject();
+        settings.setClearOldJobs(getClearOldJobsSetting());
     }
 
     public JDBCJobBackend(DefaultStorageFinder defStoreFind) throws StorageException {
@@ -87,6 +98,7 @@ public class JDBCJobBackend implements JobStore {
 
         try {
             wrpr = new JDBCJobWrapper(defStoreFind, useConnectionPooling, maxConnections);
+            initSettings();
         } catch (SQLException se) {
             log.error("Failed to start JDBC jobstore: " + se.getMessage());
             log.warn("Disabling JDBC jobstore, not all functionality will be available!");
@@ -155,7 +167,6 @@ public class JDBCJobBackend implements JobStore {
 
     public void clear() throws StorageException {
         if (wrpr.driverClass.equals("org.h2.Driver")) {
-            // TODO
             // wrpr.getConnection().getMetaData().get
             // DeleteDbFiles.execute(findTempDir(), TESTDB_NAME, true);
             // } else {
@@ -209,6 +220,44 @@ public class JDBCJobBackend implements JobStore {
             return response;
         } catch (Exception e) {
             String logMsg = "Failed to get all logs.";
+            log.error(logMsg, e);
+            throw new StorageException(logMsg + ", " + e.getMessage());
+        }
+    }
+
+    public long getClearOldJobsSetting() throws StorageException {
+        if(settings.getClearOldJobs() == -1) {
+            try {
+                long response = wrpr.getClearOldJobs();
+                settings.setClearOldJobs(response);
+                return response;
+            } catch (Exception e) {
+                String logMsg = "Failed to get 'clear old jobs' variable.";
+                log.error(logMsg, e);
+                throw new StorageException(logMsg + ", " + e.getMessage());
+            }
+        } else {
+            return(settings.getClearOldJobs());
+        }
+    }
+
+    public void setClearOldJobsSetting(long clearOldJobsVal) throws StorageException {
+        try {
+            wrpr.setClearOldJobs(clearOldJobsVal);
+            settings.setClearOldJobs(clearOldJobsVal);
+        } catch (Exception e) {
+            String logMsg = "Failed to set 'clear old jobs' variable to " + clearOldJobsVal;
+            log.error(logMsg, e);
+            throw new StorageException(logMsg + ", " + e.getMessage());
+        }
+    }
+
+    public long purgeOldJobs(Timestamp ts) throws StorageException {
+        try {
+            long result = wrpr.purgeOldJobs(ts);
+            return result;
+        } catch (Exception e) {
+            String logMsg = "Failed to purge old jobs.";
             log.error(logMsg, e);
             throw new StorageException(logMsg + ", " + e.getMessage());
         }

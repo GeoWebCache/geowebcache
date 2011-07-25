@@ -87,6 +87,7 @@ public class JobObject {
     
     private Timestamp timeFirstStart = null;
     private Timestamp timeLatestStart = null;
+    private Timestamp timeFinish = null;
     
     private long warnCount = 0;
     private long errorCount = 0;
@@ -278,10 +279,13 @@ public class JobObject {
             }
 
             if (task.getState() == STATE.DONE) {
+                timeFinish = new Timestamp(System.currentTimeMillis()); 
                 newLogs.add(JobLogObject.createInfoLog(jobId, "Job Completed", "Job finished with a status of DONE."));
             } else if (task.getState() == STATE.DEAD) { 
+                timeFinish = new Timestamp(System.currentTimeMillis()); 
                 newLogs.add(JobLogObject.createInfoLog(jobId, "Job Dead", "Job finished with a status of DEAD. This means the job did not complete successfully and due to problems during execution should not be reattempted."));
             } else if (task.getState() == STATE.KILLED) { 
+                timeFinish = new Timestamp(System.currentTimeMillis()); 
                 newLogs.add(JobLogObject.createInfoLog(jobId, "Job Killed", "Job finished with a status of KILLED. This usually means a user has intentionally stopped the job."));
             } else if (task.getState() == STATE.INTERRUPTED) { 
                 newLogs.add(JobLogObject.createInfoLog(jobId, "Job Completed", "Job finished with a status of INTERRUPTED. This usually means the GeoWebCache was forced to shut down while jobs were running. Jobs may be restarted automatically when GeoWebCache restarts."));
@@ -493,6 +497,14 @@ public class JobObject {
 
     public void setTimeLatestStart(Timestamp timeLatestStart) {
         this.timeLatestStart = timeLatestStart;
+    }
+
+    public Timestamp getTimeFinish() {
+        return timeFinish;
+    }
+
+    public void setTimeFinish(Timestamp timeFinish) {
+        this.timeFinish = timeFinish;
     }
 
     public String getEncodedParameters() {

@@ -5,7 +5,6 @@ import it.sauronsoftware.cron4j.Scheduler;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -72,6 +71,10 @@ public class JobScheduler {
                 }
             }
         }
+    }
+    
+    public static Scheduler getSchedulerInstance() {
+        return instance;
     }
 
     private JobScheduler() {

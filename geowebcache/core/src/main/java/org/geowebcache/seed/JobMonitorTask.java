@@ -37,12 +37,14 @@ public class JobMonitorTask extends GWCTask {
     private final JobStore jobStore;
     private final TileBreeder seeder;
     private final long updateFrequency;
+    private final String purgeJobTaskSchedule;
     private final ConcurrentLinkedQueue<GWCTask> finishedTasks;
 
-    public JobMonitorTask(JobStore js, TileBreeder seeder, long updateFrequency) {
+    public JobMonitorTask(JobStore js, TileBreeder seeder, long updateFrequency, String purgeJobTaskSchedule) {
         this.jobStore = js;
         this.seeder = seeder;
         this.updateFrequency = updateFrequency;
+        this.purgeJobTaskSchedule = purgeJobTaskSchedule;
         this.finishedTasks = new ConcurrentLinkedQueue<GWCTask>();
 
         super.taskType = GWCTask.TYPE.JOB_MONITOR;
@@ -61,6 +63,8 @@ public class JobMonitorTask extends GWCTask {
         int consecutiveFailures = 0;
         
         initCron4J();
+
+        scheduleOldJobPurgeTask();
         
         restartInterruptedTasks();
 
@@ -153,6 +157,13 @@ public class JobMonitorTask extends GWCTask {
         }
     }
 
+    /**
+     * Schedules a task to daily check for old jobs and delete them.
+     */
+    private void scheduleOldJobPurgeTask() {
+        OldJobPurgeTask ojct = new OldJobPurgeTask(jobStore);
+        JobScheduler.getSchedulerInstance().schedule(purgeJobTaskSchedule, ojct);
+    }
 
     /**
      * Checks for interrupted tasks or tasks that the store thought was running 

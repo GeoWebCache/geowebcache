@@ -102,6 +102,13 @@ Ext.define('GWC.RestService', {
     	    ]
     	});
 
+    	Ext.define('settings', {
+    		extend: 'Ext.data.Model',
+    		fields: [
+    		    {name: 'clearOldJobs',		type: 'long'}
+    	    ]
+    	});
+
     	this.jobStore = new Ext.data.Store({
     	    model: 'job',
     	    pageSize: 0
@@ -162,6 +169,25 @@ Ext.define('GWC.RestService', {
 			url: this.endpoint + '/estimate.json', method: 'POST',
 			timeout: this.timeout,
 			jsonData: Ext.JSON.encode({"estimate": rec.data }),
+			success: success,
+	    	failure: failure
+		});
+	},
+
+	getSettings: function (success, failure) {
+		Ext.Ajax.request({ 
+			url: this.endpoint + '/settings.json', method: 'GET',
+			timeout: this.timeout,
+			success: success,
+	    	failure: failure
+		});
+	},
+
+	setSettings: function (rec, success, failure) {
+		Ext.Ajax.request({ 
+			url: this.endpoint + '/settings.json', method: 'POST',
+			timeout: this.timeout,
+			jsonData: Ext.JSON.encode({"settings": rec.data }),
 			success: success,
 	    	failure: failure
 		});

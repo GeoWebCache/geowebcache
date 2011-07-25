@@ -106,6 +106,10 @@ public class TileBreeder implements ApplicationContextAware {
     
     private static final String GWC_THROUGHPUT_SAMPLE_SIZE = "GWC_THROUGHPUT_SAMPLE_SIZE";
 
+    private static final String GWC_PURGE_JOB_TASK_SCHEDULE = "GWC_PURGE_JOB_TASK_SCHEDULE";
+
+    private static final String GWC_PURGE_JOB_TASK_SCHEDULE_DEFAULT = "0 23 * * *"; // every day at 11pm 
+    
     private static Log log = LogFactory.getLog(TileBreeder.class);
 
     private SeederThreadPoolExecutor threadPool;
@@ -142,8 +146,13 @@ public class TileBreeder implements ApplicationContextAware {
      */
     private long throughputSampleSize = 50;
     
+    /**
+     * schedule for purging old jobs.
+     */
+    private String purgeJobTaskSchedule = GWC_PURGE_JOB_TASK_SCHEDULE_DEFAULT;
+    
     public void init() {
-        JobMonitorTask jobMonitor = new JobMonitorTask(jobStore, this, jobMonitorUpdateFrequency);
+        JobMonitorTask jobMonitor = new JobMonitorTask(jobStore, this, jobMonitorUpdateFrequency, purgeJobTaskSchedule);
         threadPool.submit(new MTSeeder(jobMonitor));
     }
 
@@ -172,6 +181,11 @@ public class TileBreeder implements ApplicationContextAware {
         checkPositive(totalFailuresBeforeAborting, GWC_SEED_ABORT_LIMIT);
         checkPositive(jobMonitorUpdateFrequency, GWC_JOB_MONITOR_UPDATE_FREQUENCY);
         checkPositive(throughputSampleSize, GWC_THROUGHPUT_SAMPLE_SIZE);
+        
+        purgeJobTaskSchedule = GWCVars.findEnvVar(applicationContext, GWC_PURGE_JOB_TASK_SCHEDULE);
+        if(purgeJobTaskSchedule == null || purgeJobTaskSchedule.equals("")) {
+            purgeJobTaskSchedule = GWC_PURGE_JOB_TASK_SCHEDULE_DEFAULT;
+        }
     }
 
     @SuppressWarnings("serial")
