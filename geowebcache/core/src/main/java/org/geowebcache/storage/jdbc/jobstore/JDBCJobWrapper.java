@@ -271,6 +271,7 @@ class JDBCJobWrapper {
                 "priority VARCHAR(10), " + 
                 "schedule VARCHAR(254), " + 
                 "run_once BOOL, " + 
+                "spawned_by BIGINT, " + 
                 "filter_update BOOL, " + 
                 "parameters VARCHAR(1024), " + 
                 "time_first_start TIMESTAMP, " + 
@@ -413,10 +414,10 @@ class JDBCJobWrapper {
                 "JOBS(job_id, layer_name, state, time_spent, time_remaining, tiles_done, " + 
                 "tiles_total, failed_tile_count, bounds, gridset_id, srs, thread_count, " + 
                 "zoom_start, zoom_stop, format, job_type, throughput, max_throughput, " +  
-                "priority, schedule, run_once, filter_update, parameters, " + 
+                "priority, schedule, run_once, spawned_by, filter_update, parameters, " + 
                 "time_first_start, time_latest_start) " + 
                 "KEY(job_id) " + 
-                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         final Connection conn = getConnection();
 
@@ -452,11 +453,12 @@ class JDBCJobWrapper {
                 prep.setString(19, stObj.getPriority().name());
                 prep.setString(20, stObj.getSchedule());
                 prep.setBoolean(21, stObj.isRunOnce());
-                prep.setBoolean(22, stObj.isFilterUpdate());
-                prep.setString(23, stObj.getEncodedParameters());
+                prep.setLong(22, stObj.getSpawnedBy());
+                prep.setBoolean(23, stObj.isFilterUpdate());
+                prep.setString(24, stObj.getEncodedParameters());
                 
-                prep.setTimestamp(24, stObj.getTimeFirstStart());
-                prep.setTimestamp(25, stObj.getTimeLatestStart());
+                prep.setTimestamp(25, stObj.getTimeFirstStart());
+                prep.setTimestamp(26, stObj.getTimeLatestStart());
                 
                 insertId = wrappedInsert(prep);
             } finally {
@@ -853,6 +855,7 @@ class JDBCJobWrapper {
         job.setPriority(PRIORITY.valueOf(rs.getString("priority")));
         job.setSchedule(rs.getString("schedule"));
         job.setRunOnce(rs.getBoolean("run_once"));
+        job.setSpawnedBy(rs.getLong("spawned_by"));
         job.setFilterUpdate(rs.getBoolean("filter_update"));
         job.setEncodedParameters(rs.getString("parameters"));
         

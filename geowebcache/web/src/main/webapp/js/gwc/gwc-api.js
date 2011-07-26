@@ -43,6 +43,7 @@ Ext.define('GWC.RestService', {
     		    {name: 'priority',			type: 'string'},
     		    {name: 'schedule',			type: 'string'},
     		    {name: 'runOnce',			type: 'boolean'},
+    		    {name: 'spawnedBy',			type: 'long'},
     		    {name: 'filterUpdate',		type: 'boolean'},
     		    {name: 'parameters',		type: 'string'},
     		    {name: 'timeFirstStart',	type: 'date'},

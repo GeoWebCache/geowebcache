@@ -74,7 +74,7 @@ public class SeedTask extends GWCTask {
      * @param jobId
      */
     public SeedTask(StorageBroker sb, TileRangeIterator trIter, TileLayer tl, boolean reseed,
-            boolean doFilterUpdate, PRIORITY priority, float maxThroughput, long jobId) {
+            boolean doFilterUpdate, PRIORITY priority, float maxThroughput, long jobId, long spawnedBy) {
         this.storageBroker = sb;
         this.trIter = trIter;
         this.tl = tl;
@@ -82,6 +82,7 @@ public class SeedTask extends GWCTask {
         this.priority = priority;
         this.doFilterUpdate = doFilterUpdate;
         this.jobId = jobId;
+        this.spawnedBy = spawnedBy;
 
         tileFailureRetryCount = 0;
         tileFailureRetryWaitTime = 100;

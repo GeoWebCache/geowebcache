@@ -102,6 +102,8 @@ public abstract class GWCTask {
     
     protected long jobId = -1;
 
+    protected long spawnedBy = -1;
+    
     private long groupStartTime;
 
     /**
@@ -111,7 +113,6 @@ public abstract class GWCTask {
      * warnings.
      */
     protected ConcurrentLinkedQueue<JobLogObject> newLogs = new ConcurrentLinkedQueue<JobLogObject>();
-    
 
     /**
      * Marks this task as active in the group by incrementing the shared counter, delegates to

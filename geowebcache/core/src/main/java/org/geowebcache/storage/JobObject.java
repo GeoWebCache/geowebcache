@@ -80,6 +80,7 @@ public class JobObject {
     
     private PRIORITY priority = PRIORITY.LOW;
     private String schedule = NO_SCHEDULE;
+    private long spawnedBy = -1l;
     private boolean runOnce = false;
     private boolean filterUpdate = false;
     private String encodedParameters = null;
@@ -570,6 +571,14 @@ public class JobObject {
 
     public void setErrorCount(long errorCount) {
         this.errorCount = errorCount;
+    }
+    
+    public long getSpawnedBy() {
+        return spawnedBy;
+    }
+
+    public void setSpawnedBy(long spawnedBy) {
+        this.spawnedBy = spawnedBy;
     }
 
     public ConcurrentLinkedQueue<JobLogObject> getNewLogs() {

@@ -16,6 +16,9 @@
  */
 package org.geowebcache.seed;
 
+import java.util.Iterator;
+import java.util.Map.Entry;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -47,26 +50,53 @@ public class ScheduledJobInitiator implements Runnable {
             job.addLog(JobLogObject.createInfoLog(job.getJobId(), "Once Off Job Scheduled", "This once-off job is now scheduled to start."));
             job_to_run = job;
         } else {
-            log.info("The repeating job " + job.getJobId() + " is scheduled to begin now.");
-            job.addLog(JobLogObject.createInfoLog(job.getJobId(), "Spawned New Job", "This repeating job is now scheduled to start. Will spawn a new job to run."));
-            try {
-                jobStore.put(job);
-            } catch (StorageException e) {
-                log.error("Got an exception while trying to log that a repeating job spawned a new job.", e);
+            if(spawnedJobAlreadyRunning()) {
+                log.warn("The repeating job " + job.getJobId() + " is now scheduled to start but a job spawned by this schedule is still running.");
+                job.addLog(JobLogObject.createWarnLog(job.getJobId(), "Couldn't Spawn Job", "This repeating job is now scheduled to start, but a job spawned by this schedule is still running. Will not spawn a new job at this time."));
+                try {
+                    jobStore.put(job);
+                } catch (StorageException e) {
+                    log.error("Got an exception while trying to log that a repeating job spawned a new job.", e);
+                }
+            } else {
+                log.info("The repeating job " + job.getJobId() + " is scheduled to begin now.");
+                job.addLog(JobLogObject.createInfoLog(job.getJobId(), "Spawned New Job", "This repeating job is now scheduled to start. Will spawn a new job to run."));
+                try {
+                    jobStore.put(job);
+                } catch (StorageException e) {
+                    log.error("Got an exception while trying to log that a repeating job spawned a new job.", e);
+                }
+    
+                // Clone the existing job and run it. The original job already scheduled stays in the system.
+                // To do this we just need to clear the ID. Jobs are persisted on execution and a job with 
+                // no ID will be treated as a new job according to the store.
+                job_to_run = JobObject.createJobObject(job);
+                job_to_run.setJobId(-1);
+                job_to_run.setSpawnedBy(job.getJobId());
+                job_to_run.setSchedule(null);
             }
-
-            // Clone the existing job and run it. The original job already scheduled stays in the system.
-            // To do this we just need to clear the ID. Jobs are persisted on execution and a job with 
-            // no ID will be treated as a new job according to the store.
-            job_to_run = JobObject.createJobObject(job);
-            job_to_run.setJobId(-1);
-            job_to_run.setSchedule(null);
         }
         
         try {
-            seeder.executeJob(job_to_run);
+            if(job_to_run != null) {
+                seeder.executeJob(job_to_run);
+            }
         } catch(GeoWebCacheException gwce) {
             log.error("Couldn't start scheduled job: " + gwce.getMessage(), gwce);
         }
+    }
+
+    private boolean spawnedJobAlreadyRunning() {
+        Iterator<Entry<Long, GWCTask>> iter = seeder.getRunningTasksIterator();
+        
+        while(iter.hasNext()) {
+            GWCTask task = iter.next().getValue();
+            
+            if(task.spawnedBy == this.job.getJobId()) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

@@ -110,9 +110,11 @@ var renderTileCounts = function (value, p, record) {
 
 var renderSchedule = function (value, p, record) {
 	if(record.data.runOnce && record.data.schedule) {
-		return "<img style=\"border: 0\" src=\"images/time.png\" title=\"Run Once: " + record.data.schedule + "\"/>";
+		return "<img style=\"border: 0\" src=\"images/clock.png\" title=\"Run Once: " + record.data.schedule + "\"/>";
 	} else if(record.data.schedule) {
-		return "<img style=\"border: 0\" src=\"images/repeat.png\" title=\"Repeats: " + record.data.schedule + "\"/>";
+		return "<img style=\"border: 0\" src=\"images/time.png\" title=\"Repeats: " + record.data.schedule + "\"/>";
+	} else if(record.data.spawnedBy != -1) {
+		return "<img style=\"border: 0\" src=\"images/time_link.png\" title=\"Spawned by scheduled job " + record.data.spawnedBy + "\"/>";
 	} else {
 		return "";
 	}
@@ -153,3 +155,6 @@ var renderLogLevel = function (value, p, record) {
 	return "<img style=\"border: 0\" src=\"images/" + imageFile + "\" title=\"" + record.data.logLevel + "\"/>";
 };
 
+var renderWrapText = function (val, p, record) {
+    return '<div style="white-space:normal !important;">'+ val +'</div>';
+}

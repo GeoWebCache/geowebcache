@@ -235,16 +235,16 @@ public class TileBreeder implements ApplicationContextAware {
 
         String layerName = tr.layerName;
         TileLayer tileLayer = layerDispatcher.getTileLayer(layerName);
-        return createTasks(tr, tileLayer, type, threadCount, filterUpdate, priority, 0, -1);
+        return createTasks(tr, tileLayer, type, threadCount, filterUpdate, priority, 0, -1, -1);
     }
 
     public GWCTask[] createTasks(TileRange tr, TileLayer tl, TYPE type, int threadCount,
             boolean filterUpdate, PRIORITY priority) throws GeoWebCacheException {
-        return createTasks(tr, tl, type, threadCount, filterUpdate, priority, 0, -1);
+        return createTasks(tr, tl, type, threadCount, filterUpdate, priority, 0, -1, -1);
     }
     
     public GWCTask[] createTasks(TileRange tr, TileLayer tl, TYPE type, int threadCount,
-            boolean filterUpdate, PRIORITY priority, int maxThroughput, long jobId) throws GeoWebCacheException {
+            boolean filterUpdate, PRIORITY priority, int maxThroughput, long jobId, long spawnedBy) throws GeoWebCacheException {
 
         if (type == TYPE.TRUNCATE || threadCount < 1) {
             log.trace("Forcing thread count to 1");
@@ -266,9 +266,9 @@ public class TileBreeder implements ApplicationContextAware {
         
         for (int i = 0; i < threadCount; i++) {
             if (type == TYPE.TRUNCATE) {
-                tasks[i] = createTruncateTask(trIter, tl, filterUpdate, priority, jobId);
+                tasks[i] = createTruncateTask(trIter, tl, filterUpdate, priority, jobId, spawnedBy);
             } else {
-                SeedTask task = (SeedTask) createSeedTask(type, trIter, tl, filterUpdate, priority, maxThroughputPerThread, jobId);
+                SeedTask task = (SeedTask) createSeedTask(type, trIter, tl, filterUpdate, priority, maxThroughputPerThread, jobId, spawnedBy);
                 task.setFailurePolicy(tileFailureRetryCount, tileFailureRetryWaitTime,
                         totalFailuresBeforeAborting, failureCounter);
                 task.setThrottlingPolicy((int)throughputSampleSize);
@@ -347,22 +347,22 @@ public class TileBreeder implements ApplicationContextAware {
      * @throws IllegalArgumentException
      */
     private GWCTask createSeedTask(TYPE type, TileRangeIterator trIter, TileLayer tl,
-            boolean doFilterUpdate, PRIORITY priority, float maxThroughput, long jobId) throws IllegalArgumentException {
+            boolean doFilterUpdate, PRIORITY priority, float maxThroughput, long jobId, long spawnedBy) throws IllegalArgumentException {
 
         switch (type) {
         case SEED:
-            return new SeedTask(storageBroker, trIter, tl, false, doFilterUpdate, priority, maxThroughput, jobId);
+            return new SeedTask(storageBroker, trIter, tl, false, doFilterUpdate, priority, maxThroughput, jobId, spawnedBy);
         case RESEED:
-            return new SeedTask(storageBroker, trIter, tl, true, doFilterUpdate, priority, maxThroughput, jobId);
+            return new SeedTask(storageBroker, trIter, tl, true, doFilterUpdate, priority, maxThroughput, jobId, spawnedBy);
         default:
             throw new IllegalArgumentException("Unknown request type " + type);
         }
     }
 
     private GWCTask createTruncateTask(TileRangeIterator trIter, TileLayer tl,
-            boolean doFilterUpdate, PRIORITY priority, long jobId) {
+            boolean doFilterUpdate, PRIORITY priority, long jobId, long spawnedBy) {
 
-        return new TruncateTask(storageBroker, trIter.getTileRange(), tl, doFilterUpdate, priority, jobId);
+        return new TruncateTask(storageBroker, trIter.getTileRange(), tl, doFilterUpdate, priority, jobId, spawnedBy);
     }
 
     /**
@@ -426,7 +426,7 @@ public class TileBreeder implements ApplicationContextAware {
         }
 
         GWCTask[] tasks = createTasks(tr, tl, job.getJobType(), job.getThreadCount(),
-                job.isFilterUpdate(), job.getPriority(), job.getMaxThroughput(), job.getJobId());
+                job.isFilterUpdate(), job.getPriority(), job.getMaxThroughput(), job.getJobId(), job.getSpawnedBy());
         
         dispatchTasks(tasks);
     }

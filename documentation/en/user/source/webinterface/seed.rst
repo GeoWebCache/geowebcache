@@ -34,7 +34,7 @@ To create a new seed task, fill out the form with the following information:
    * - :guilabel:`Throughput`
      - Maximum number of requests per second this task is allowed to make. Helps ensure the backend service doesn't get flooded with requests. Note that this throttles the number of requests, not tiles.
    * - :guilabel:`Schedule`
-     - A seed job can be scheduled to begin at a later time or on a regular basis. A `CRON <http://en.wikipedia.org/wiki/Cron>`_ string is used to set the schedule.
+     - A seed job can be scheduled to begin at a later time or on a regular basis. A `CRON <http://en.wikipedia.org/wiki/Cron>`_ string is used to set the schedule. Make sure there is enough time for the job to complete before it will be restarted. If the job is scheduled to start but it's already running, the job won't be restarted and a warning will be logged.
    * - :guilabel:`Format`
      - Any valid image format as defined for that layer.
    * - :guilabel:`Zoom start`

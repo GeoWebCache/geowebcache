@@ -274,17 +274,18 @@ Ext.Loader.onReady(function () {
             },{
                 text: "Timestamp",
                 dataIndex: 'logTime',
-                flex: 2,
+                flex: 4,
                 sortable: true
             },{
                 text: "Summary",
                 dataIndex: 'logSummary',
-                flex: 2,
+                flex: 5,
                 sortable: false
             },{
                 text: "Text",
                 dataIndex: 'logText',
-                flex: 6,
+                flex: 13,
+                renderer: renderWrapText,
                 sortable: true
             }];
 	        this.callParent();
