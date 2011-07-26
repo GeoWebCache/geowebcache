@@ -6,25 +6,27 @@
 <backendTimeout>120</backendTimeout>
 
 <!--
-	The basemap must be a segment of javascript that returns an OpenLayers layer to use as the baselayer.
-	Currently this one basemap layer must support all projections for gridsets configured in GeoWebCache 
-	or missing tiles will be returned.
+	The basemap must be a segment of javascript that returns an OpenLayers layer to use as the baselayer, or null to not show a basemap.
  -->
 <basemapConfig>
-	return new OpenLayers.Layer.WMS(
-	    "basemap", "../../service/wms",
-	    {
-	        layers: 'raster test layer',
-	        format: 'image/jpeg'
-	    },
-	    {
-	        tiled: true,
-	        buffer: 0,
-	        wrapDateLine: true,
-	        tileSize: new OpenLayers.Size(256,256),
-	        displayOutsideMaxExtent: true
-	    }
-	);
+	if(layerProjection.projCode == "EPSG:4326" || layerProjection.projCode == "EPSG:900913") {
+		return new OpenLayers.Layer.WMS(
+		    "basemap", "../../service/wms",
+		    {
+		        layers: 'raster test layer',
+		        format: 'image/jpeg'
+		    },
+		    {
+		        tiled: true,
+		        buffer: 0,
+		        wrapDateLine: true,
+		        tileSize: new OpenLayers.Size(256,256),
+		        displayOutsideMaxExtent: true
+		    }
+		);
+	} else {
+		return null;
+	}
 </basemapConfig>
 
 <serviceInformation>
