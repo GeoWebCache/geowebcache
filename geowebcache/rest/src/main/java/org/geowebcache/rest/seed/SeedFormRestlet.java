@@ -561,9 +561,6 @@ public class SeedFormRestlet extends GWCRestlet {
                 + "<li>Seeding past zoomlevel 20 is usually not recommended.</li>\n"
                 + "<li>Truncating KML will also truncate all KMZ archives.</li>\n"
                 + "<li>Please check the logs of the container to look for error messages and progress indicators.</li>\n"
-                + "<li>Responding to user requests for tiles is likely at Normal priority. Usually, seed tasks should be below this.</li>\n"
-                + "<li>Truncating at normal priority is common to ensure user based seeding of the latest tiles.</li>\n"
-                + "<li>Use high priority sparingly, if at all.</li>\n"
                 + "</ul>\n");
 
         doc.append("Here are the max bounds, if you do not specify bounds these will be used.\n");

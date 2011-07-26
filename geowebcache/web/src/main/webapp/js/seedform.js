@@ -23,11 +23,11 @@ function initOpenLayers() {
 	);
 	
 	var basemap = getBasemapLayer();
-	if(!basemap) {
-		basemap = getDefaultBasemap();
+	if(basemap) {
+		basemap.projection = layerProjection;
+		basemap.resolutions = layerResolutions;
+		m.addLayer(basemap);
 	}
-	basemap.projection = layerProjection;
-	basemap.resolutions = layerResolutions;
 
 	var tileLayer = new OpenLayers.Layer.WMS(
 	    "layer", "../../service/wms",
@@ -39,11 +39,11 @@ function initOpenLayers() {
 	        noMagic: true,
 	        transparent: true,
 	        tileSize: layerTileSize,
-	        isBaseLayer: false
+	        isBaseLayer: basemap == null
 	    }
 	);
 	
-	m.addLayers([basemap, tileLayer]);
+	m.addLayer(tileLayer);
 
     var vectorLayer = new OpenLayers.Layer.Vector("extent", 
     	{
@@ -221,7 +221,7 @@ function getDefaultBasemap() {
 	return new OpenLayers.Layer.WMS(
 	    "basemap", "../../service/wms",
 	    {
-	        layers: 'raster test layerz',
+	        layers: 'raster test layer',
 	        format: 'image/jpeg'
 	    },
 	    {
