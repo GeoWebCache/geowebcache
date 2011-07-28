@@ -3,13 +3,21 @@ package org.geowebcache.demo;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.filter.parameters.FloatParameterFilter;
+import org.geowebcache.filter.parameters.ParameterFilter;
+import org.geowebcache.filter.parameters.RegexParameterFilter;
+import org.geowebcache.filter.parameters.StringParameterFilter;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -20,6 +28,7 @@ import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.util.ServletUtils;
+import org.springframework.util.Assert;
 
 public class Demo {
     
@@ -247,11 +256,18 @@ public class Demo {
             +"#map { width: 85%; height: 85%; border: 0px; padding: 0px; }\n"
             +"</style>\n"
 
-            +"<script src=\""+openLayersPath+"\"></script>\n"
-            +"<script type=\"text/javascript\">\n"
+            +"<script src=\""+openLayersPath+"\"></script>    \n"
+            +"<script type=\"text/javascript\">               \n"
+            +"var map, demolayer;                               \n"
+            + "  // sets the chosen modifiable parameter        \n"
+            + "  function setParam(name, value){                \n"
+            + "   str = \"demolayer.mergeNewParams({\" + name + \": '\" + value + \"'})\" \n"
+            + "   //alert(str);                                   \n"
+            + "   eval(str);                                    \n"
+            + "  }                                              \n"
+            
             +"OpenLayers.DOTS_PER_INCH = "+gridSubset.getDotsPerInch()+";\n"
             +"OpenLayers.Util.onImageLoadErrorColor = 'transparent';\n"
-            +"var map, layer;\n"
         		
             +"function init(){\n"
             +"var mapOptions = { \n"
@@ -268,7 +284,7 @@ public class Demo {
 	    +"map.addControl(new OpenLayers.Control.Navigation());\n"
 	    +"map.addControl(new OpenLayers.Control.Scale($('scale')));\n"
 	    +"map.addControl(new OpenLayers.Control.MousePosition({element: $('location')}));\n"
-            +"var demolayer = new OpenLayers.Layer.WMS(\n"
+            +"demolayer = new OpenLayers.Layer.WMS(\n"
             +"\""+layerName+"\",\"../service/wms\",\n"
             +"{layers: '"+layerName+"', format: '"+formatStr+"' },\n"
             +"{ tileSize: new OpenLayers.Size("+gridSubset.getTileWidth()+","+gridSubset.getTileHeight()+")";
@@ -315,10 +331,84 @@ public class Demo {
             +"</script>\n"
             +"</head>\n"
             +"<body onload=\"init()\">\n"
+            +"<div id=\"params\">"
+            + makeModifiableParameters(layer)
+            +"</div>\n"
             +"<div id=\"map\"></div>\n"
             +"<div id=\"nodelist\"></div>\n"
             +"</body>\n"
             +"</html>";
         return page;
     }
+    
+    
+    private static String makeModifiableParameters(TileLayer tl) {
+        List<ParameterFilter> parameterFilters = tl.getParameterFilters();
+        if (parameterFilters == null || parameterFilters.size() == 0) {
+            return "";
+        }
+        StringBuilder doc = new StringBuilder();
+        doc.append("Modifiable Parameters:\n");
+        doc.append("<table>\n");
+        for (ParameterFilter pf : parameterFilters) {
+            Assert.notNull(pf);
+            String key = pf.getKey();
+            String defaultValue = pf.getDefaultValue();
+            List<String> legalValues = pf.getLegalValues();
+            doc.append("<tr><td>").append(key.toUpperCase()).append(": ").append("</td><td>");
+            String parameterId = key;
+            if (pf instanceof StringParameterFilter) {
+                Map<String, String> keysValues = makeParametersMap(defaultValue, legalValues);
+                makePullDown(doc, parameterId, keysValues, defaultValue);
+            } else if (pf instanceof RegexParameterFilter) {
+                makeTextInput(doc, parameterId, 25);
+            } else if (pf instanceof FloatParameterFilter) {
+                Map<String, String> keysValues = makeParametersMap(defaultValue, legalValues);
+                makePullDown(doc, parameterId, keysValues, defaultValue);
+            } else if ("org.geowebcache.filter.parameters.NaiveWMSDimensionFilter".equals(pf
+                    .getClass().getName())) {
+                makeTextInput(doc, parameterId, 25);
+            } else {
+                throw new IllegalStateException("Unknown parameter filter type for layer '"
+                        + tl.getName() + "': " + pf.getClass().getName());
+            }
+            doc.append("</td></tr>\n");
+        }
+        doc.append("</table>\n");
+        return doc.toString();
+    }
+
+    private static Map<String, String> makeParametersMap(String defaultValue, List<String> legalValues) {
+        Map<String, String> map = new TreeMap<String, String>();
+        for (String s : legalValues) {
+            map.put(s, s);
+        }
+        map.put(defaultValue, defaultValue);
+        return map;
+    }
+
+    private static void makePullDown(StringBuilder doc, String id, Map<String, String> keysValues,
+            String defaultKey) {
+        doc.append("<select name=\"" + id + "\" onchange=\"setParam('"+id+"', value)\">\n");
+
+        Iterator<Entry<String, String>> iter = keysValues.entrySet().iterator();
+
+        while (iter.hasNext()) {
+            Entry<String, String> entry = iter.next();
+            if (entry.getKey().equals(defaultKey)) {
+                doc.append("<option value=\"" + entry.getValue() + "\" selected=\"selected\">"
+                        + entry.getKey() + "</option>\n");
+            } else {
+                doc.append("<option value=\"" + entry.getValue() + "\">" + entry.getKey()
+                        + "</option>\n");
+            }
+        }
+
+        doc.append("</select>\n");
+    }
+    
+    private static void makeTextInput(StringBuilder doc, String id, int size) {
+        doc.append("<input name=\"" + id + "\" type=\"text\" size=\"" + size + "\" />\n");
+    }
 }
+
