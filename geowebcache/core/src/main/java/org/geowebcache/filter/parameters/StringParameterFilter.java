@@ -41,4 +41,9 @@ public class StringParameterFilter extends ParameterFilter {
     public List<String> getLegalValues() {
         return values;
     }
+
+    @Override
+    public boolean applies(String parameterValue) {
+        return getLegalValues().contains(parameterValue);
+    }
 }
