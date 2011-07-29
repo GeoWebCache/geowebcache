@@ -42,7 +42,7 @@ public class HttpClientBuilder {
 
     private URL proxyUrl = null;
 
-    private Integer backendTimeout = null;
+    private Integer backendTimeoutMillis = null;
 
     private boolean doAuthentication = false;
 
@@ -115,8 +115,11 @@ public class HttpClientBuilder {
         }
     }
 
-    public void setBackendTimeout(int backendTimeout) {
-        this.backendTimeout = backendTimeout * 1000;
+    /**
+     * @param backendTimeout timeout in seconds
+     */
+    public void setBackendTimeout(final int backendTimeout) {
+        this.backendTimeoutMillis = backendTimeout * 1000;
     }
 
     /**
@@ -127,8 +130,8 @@ public class HttpClientBuilder {
     public HttpClient buildClient() {
         HttpClient httpClient = new HttpClient();
         HttpConnectionParams params = httpClient.getHttpConnectionManager().getParams();
-        params.setConnectionTimeout(backendTimeout * 1000);
-        params.setSoTimeout(backendTimeout * 1000);
+        params.setConnectionTimeout(backendTimeoutMillis);
+        params.setSoTimeout(backendTimeoutMillis);
 
         if (authscope != null && httpcredentials != null) {
             httpClient.getState().setCredentials(authscope, httpcredentials);

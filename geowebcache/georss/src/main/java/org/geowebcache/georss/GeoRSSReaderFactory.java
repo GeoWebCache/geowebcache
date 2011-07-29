@@ -29,26 +29,42 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.util.HttpClientBuilder;
 
 class GeoRSSReaderFactory {
 
+    private static final Log log = LogFactory.getLog(GeoRSSReaderFactory.class);
+
     public GeoRSSReader createReader(final URL url, final String username, final String password)
             throws IOException {
 
+        if (log.isDebugEnabled()) {
+            log.debug("Creating GeoRSS reader for URL " + url.toExternalForm() + " with user "
+                    + username);
+        }
+
         HttpClientBuilder builder = new HttpClientBuilder();
         builder.setHttpCredentials(username, password, url);
-        builder.setBackendTimeout(120 * 1000);
+        builder.setBackendTimeout(120);
 
         HttpClient httpClient = builder.buildClient();
+
         GetMethod getMethod = new GetMethod(url.toString());
         if (builder.isDoAuthentication()) {
             getMethod.setDoAuthentication(true);
             httpClient.getParams().setAuthenticationPreemptive(true);
         }
 
+        if (log.isDebugEnabled()) {
+            log.debug("Executing HTTP GET requesr for feed URL " + url.toExternalForm());
+        }
         httpClient.executeMethod(getMethod);
 
+        if (log.isDebugEnabled()) {
+            log.debug("Building GeoRSS reader out of URL response");
+        }
         String contentEncoding = getMethod.getResponseCharSet();
         if (contentEncoding == null) {
             contentEncoding = "UTF-8";
@@ -56,6 +72,9 @@ class GeoRSSReaderFactory {
 
         InputStream in = getMethod.getResponseBodyAsStream();
         Reader reader = new BufferedReader(new InputStreamReader(in, contentEncoding));
+        if (log.isDebugEnabled()) {
+            log.debug("GeoRSS reader created, returning.");
+        }
         return createReader(reader);
     }
 

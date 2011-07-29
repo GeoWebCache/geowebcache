@@ -47,6 +47,7 @@ import org.geowebcache.layer.BadTileException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.ImageMime;
+import org.geowebcache.service.HttpErrorCodeException;
 import org.geowebcache.service.OWSException;
 import org.geowebcache.service.Service;
 import org.geowebcache.stats.RuntimeStats;
@@ -208,6 +209,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * If a tile is requested the request will be handed off to handleServiceRequest.
      * 
      */
+    @Override
     protected ModelAndView handleRequestInternal(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
 
@@ -239,29 +241,29 @@ public class GeoWebCacheDispatcher extends AbstractController {
             } else {
                 writeError(response, 404, "Unknown path: " + requestComps[0]);
             }
+        } catch (HttpErrorCodeException e) {
+            writeFixedResponse(response, e.getErrorCode(), "text/plain", new ByteArrayResource(e
+                    .getMessage().getBytes()), CacheResult.OTHER);
+        } catch (RequestFilterException e) {
+
+            RequestFilterException reqE = (RequestFilterException) e;
+            reqE.setHttpInfoHeader(response);
+
+            writeFixedResponse(response, reqE.getResponseCode(), reqE.getContentType(),
+                    reqE.getResponse(), CacheResult.OTHER);
+        } catch (OWSException e) {
+            OWSException owsE = (OWSException) e;
+            writeFixedResponse(response, owsE.getResponseCode(), owsE.getContentType(),
+                    owsE.getResponse(), CacheResult.OTHER);
         } catch (Exception e) {
-            // e.printStackTrace();
-            if (e instanceof RequestFilterException) {
+            if (!(e instanceof BadTileException) || log.isDebugEnabled()) {
+                log.error(e.getMessage() + " " + request.getRequestURL().toString());
+            }
 
-                RequestFilterException reqE = (RequestFilterException) e;
-                reqE.setHttpInfoHeader(response);
+            writeError(response, 400, e.getMessage());
 
-                writeFixedResponse(response, reqE.getResponseCode(), reqE.getContentType(),
-                        reqE.getResponse(), CacheResult.OTHER);
-            } else if (e instanceof OWSException) {
-                OWSException owsE = (OWSException) e;
-                writeFixedResponse(response, owsE.getResponseCode(), owsE.getContentType(),
-                        owsE.getResponse(), CacheResult.OTHER);
-            } else {
-                if (!(e instanceof BadTileException) || log.isDebugEnabled()) {
-                    log.error(e.getMessage() + " " + request.getRequestURL().toString());
-                }
-
-                writeError(response, 400, e.getMessage());
-
-                if (!(e instanceof GeoWebCacheException) || log.isDebugEnabled()) {
-                    e.printStackTrace();
-                }
+            if (!(e instanceof GeoWebCacheException) || log.isDebugEnabled()) {
+                e.printStackTrace();
             }
         }
         return null;

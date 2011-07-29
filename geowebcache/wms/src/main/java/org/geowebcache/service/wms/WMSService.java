@@ -65,6 +65,13 @@ public class WMSService extends Service {
 
     private RuntimeStats stats;
 
+    /**
+     * Protected no-argument constructor to allow run-time instrumentation
+     */
+    protected WMSService() {
+        super(SERVICE_WMS);
+    }
+
     public WMSService(StorageBroker sb, TileLayerDispatcher tld, RuntimeStats stats) {
         super(SERVICE_WMS);
 
@@ -73,6 +80,7 @@ public class WMSService extends Service {
         this.stats = stats;
     }
 
+    @Override
     public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response)
             throws GeoWebCacheException {
         final String encoding = request.getCharacterEncoding();
@@ -274,8 +282,8 @@ public class WMSService extends Service {
 
         int height, width;
         try {
-            height = Integer.parseInt(values.get("width"));
-            width = Integer.parseInt(values.get("height"));
+            height = Integer.parseInt(values.get("height"));
+            width = Integer.parseInt(values.get("width"));
         } catch (NumberFormatException nfe) {
             throw new GeoWebCacheException(
                     "The parameters for height and width must both be positive integers.");

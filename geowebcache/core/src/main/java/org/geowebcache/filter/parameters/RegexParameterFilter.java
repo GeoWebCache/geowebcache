@@ -48,4 +48,9 @@ public class RegexParameterFilter extends ParameterFilter {
     public List<String> getLegalValues() {
         return null;
     }
+
+    @Override
+    public boolean applies(String parameterValue) {
+        return getMatcher(parameterValue).matches();
+    }
 }

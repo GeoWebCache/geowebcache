@@ -51,6 +51,13 @@ public class TMSService extends Service {
     
     private RuntimeStats stats;
     
+    /**
+     * Protected no-argument constructor to allow run-time instrumentation
+     */
+    protected TMSService() {
+        super(SERVICE_TMS);
+    }
+
     public TMSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb, RuntimeStats stats) {
         super(SERVICE_TMS);
         this.sb = sb;
@@ -63,6 +70,7 @@ public class TMSService extends Service {
         this.baseUrl = baseUrl;
     }
 
+    @Override
     public ConveyorTile getConveyor(HttpServletRequest request,
             HttpServletResponse response) throws GeoWebCacheException {
 

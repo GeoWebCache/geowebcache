@@ -46,6 +46,13 @@ public class MGMapsConverter extends Service {
     
     private GridSetBroker gsb;
     
+    /**
+     * Protected no-argument constructor to allow run-time instrumentation
+     */
+    protected MGMapsConverter() {
+        super(SERVICE_MGMAPS);
+    }
+    
     public MGMapsConverter(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb) {
         super(SERVICE_MGMAPS);
         

@@ -35,6 +35,23 @@ public abstract class ParameterFilter {
         return defaultValue;
     }
     
+    /**
+     * Checks whether a given parameter value applies to this filter
+     * 
+     * @param parameterValue
+     *            the value to check if applies to this parameter filter
+     * @return {@code true} if {@code parameterValue} is valid according to this filter,
+     *         {@code false} otherwise
+     */
+    public boolean applies(String parameterValue) {
+        try {
+            apply(parameterValue);
+        } catch (ParameterException e) {
+            return false;
+        }
+        return true;
+    }
+    
     public String apply(String str) throws ParameterException {
         return null;
     }

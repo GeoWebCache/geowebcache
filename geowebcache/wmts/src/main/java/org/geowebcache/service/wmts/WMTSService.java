@@ -55,6 +55,13 @@ public class WMTSService extends Service {
 
     private RuntimeStats stats;
 
+    /**
+     * Protected no-argument constructor to allow run-time instrumentation
+     */
+    protected WMTSService(){
+        super(SERVICE_WMTS);
+    }
+    
     public WMTSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
             RuntimeStats stats) {
         super(SERVICE_WMTS);
@@ -65,8 +72,9 @@ public class WMTSService extends Service {
         this.stats = stats;
     }
 
+    @Override
     public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response)
-            throws OWSException {
+            throws GeoWebCacheException, OWSException {
         String encoding = request.getCharacterEncoding();
         String[] keys = { "layer", "request", "style", "format", "tilematrixset", "tilematrix",
                 "tilerow", "tilecol" };
