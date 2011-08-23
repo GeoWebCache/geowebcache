@@ -237,10 +237,10 @@ public class BoundingBox {
     /**
      * Minimal sanity check
      * 
-     * @return whether min x < max x, min y < max y
+     * @return whether min x <= max x, min y <= max y
      */
     public boolean isSane() {
-        return (coords[0] < coords[2] && coords[1] < coords[3]);
+        return (coords[0] <= coords[2] && coords[1] <= coords[3]);
     }
 
     @Override

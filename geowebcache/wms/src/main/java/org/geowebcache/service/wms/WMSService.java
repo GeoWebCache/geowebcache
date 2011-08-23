@@ -158,7 +158,7 @@ public class WMSService extends Service {
             String requestBbox = paramValues.get("bbox");
             try {
                 bbox = new BoundingBox(requestBbox);
-                if (bbox == null || !bbox.isSane()) {
+                if (bbox == null || !bbox.isSane() || bbox.getWidth() == 0 || bbox.getHeight() == 0) {
                     throw new ServiceException("The bounding box parameter (" + requestBbox
                             + ") is missing or not sane");
                 }
@@ -254,7 +254,7 @@ public class WMSService extends Service {
             log.debug(nfe.getMessage());
         }
 
-        if (bbox == null || !bbox.isSane()) {
+        if (bbox == null || !bbox.isSane() || bbox.getWidth() == 0 || bbox.getHeight() == 0) {
             throw new ServiceException("The bounding box parameter (" + values.get("srs")
                     + ") is missing or not sane");
         }
