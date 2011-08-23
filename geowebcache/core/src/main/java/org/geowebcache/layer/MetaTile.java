@@ -19,8 +19,8 @@ package org.geowebcache.layer;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.awt.image.RasterFormatException;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -45,6 +45,7 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.mime.FormatModifier;
+import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.springframework.util.Assert;
 
@@ -60,12 +61,15 @@ public class MetaTile implements TileResponseReceiver {
         // the native extensions are available, if not, an Error will be thrown
         boolean nativeJAIAvailable;
         try {
-            Class image = Class.forName("com.sun.medialib.mlib.Image");
+            Class<?> image = Class.forName("com.sun.medialib.mlib.Image");
             nativeJAIAvailable = (Boolean) image.getMethod("isAvailable").invoke(null);
         } catch (Throwable e) {
             nativeJAIAvailable = false;
         }
         NATIVE_JAI_AVAILABLE = nativeJAIAvailable;
+        if (!NATIVE_JAI_AVAILABLE) {
+            log.warn("********* Native JAI is not installed, meta tile cropping may be slow ********");
+        }
     }
 
     // buffer for storing the metatile, if it is an image
@@ -305,36 +309,26 @@ public class MetaTile implements TileResponseReceiver {
     public RenderedImage createTile(int minX, int minY, int tileWidth, int tileHeight) {
 
         RenderedImage tile = null;
-        boolean useJAI = true;
-        if (!(metaTiledImage instanceof BufferedImage)) {
-            useJAI = true;
-        } else if (responseFormat.getMimeType().startsWith("image/jpeg")) {
-            useJAI = NATIVE_JAI_AVAILABLE;
+
+        try {
+            tile = CropDescriptor.create(metaTiledImage, new Float(minX), new Float(minY),
+                    new Float(tileWidth), new Float(tileHeight), no_cache);
+            tile = TranslateDescriptor.create(tile, new Float(-1f * minX), new Float(-1f * minY),
+                    null, null);
+        } catch (IllegalArgumentException iae) {
+            log.error("Error cropping, image is " + metaTiledImage.getWidth() + "x"
+                    + metaTiledImage.getHeight() + ", requesting a " + tileWidth + "x" + tileHeight
+                    + " tile starting at " + minX + "," + minY + ".");
+            log.error("Message from JAI: " + iae.getMessage());
+            iae.printStackTrace();
         }
-        // JAI is messing up for JPEG with non native JAI
-        if (useJAI) {
-            // Use JAI
-            try {
-                tile = CropDescriptor.create(metaTiledImage, new Float(minX), new Float(minY),
-                        new Float(tileWidth), new Float(tileHeight), no_cache);
-                tile = TranslateDescriptor.create(tile, new Float(-1f * minX),
-                        new Float(-1f * minY), null, null);
-            } catch (IllegalArgumentException iae) {
-                log.error("Error cropping, image is " + metaTiledImage.getWidth() + "x"
-                        + metaTiledImage.getHeight() + ", requesting a " + tileWidth + "x"
-                        + tileHeight + " tile starting at " + minX + "," + minY + ".");
-                log.error("Message from JAI: " + iae.getMessage());
-                iae.printStackTrace();
-            }
-        } else {
-            // Don't use JAI
-            try {
-                tile = ((BufferedImage) metaTiledImage).getSubimage(minX, minY, tileWidth,
-                        tileHeight);
-            } catch (RasterFormatException rfe) {
-                log.error("RendereedImage.getSubimage(" + minX + "," + minY + "," + tileWidth + ","
-                        + tileHeight + ") threw exception:");
-                rfe.printStackTrace();
+
+        if (!nativeAccelAvailable()) {
+            if (ImageMime.jpeg.equals(responseFormat) && !(tile instanceof BufferedImage)) {
+                // The non native JPEG writer creates repeated tiles if not given a buffered image
+                tile = new BufferedImage(tile.getColorModel(),
+                        ((WritableRaster) tile.getData()).createWritableTranslatedChild(0, 0), tile
+                                .getColorModel().isAlphaPremultiplied(), null);
             }
         }
 
@@ -348,6 +342,10 @@ public class MetaTile implements TileResponseReceiver {
         }
 
         return tile;
+    }
+
+    protected boolean nativeAccelAvailable() {
+        return NATIVE_JAI_AVAILABLE;
     }
 
     /**
