@@ -317,7 +317,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
         conv = service.getConveyor(request, response);
         final String layerName = conv.getLayerId();
         if (layerName != null && !tileLayerDispatcher.getTileLayer(layerName).isEnabled()) {
-            throw new GeoWebCacheException("Layer '" + layerName + "' is disabled");
+            throw new OWSException(400, "InvalidParameterValue", "LAYERS", "Layer '" + layerName
+                    + "' is disabled");
         }
 
         // Check where this should be dispatched
