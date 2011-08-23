@@ -237,10 +237,14 @@ public class BoundingBox {
     /**
      * Minimal sanity check
      * 
-     * @return whether min x <= max x, min y <= max y
+     * @return whether min x < max x, min y < max y
      */
     public boolean isSane() {
-        return (coords[0] <= coords[2] && coords[1] <= coords[3]);
+        return (coords[0] < coords[2] && coords[1] < coords[3]);
+    }
+
+    public boolean isNull() {
+        return (coords[0] > coords[2] || coords[1] > coords[3]);
     }
 
     @Override
@@ -250,7 +254,7 @@ public class BoundingBox {
     }
 
     public boolean intersects(BoundingBox other) {
-        if (!(isSane() && other.isSane())) {
+        if (isNull() || other.isNull()) {
             return false;
         }
         return !(other.getMinX() > getMaxX() || other.getMaxX() < getMinX()
@@ -258,7 +262,7 @@ public class BoundingBox {
     }
     
     public static BoundingBox intersection(BoundingBox bboxA, BoundingBox bboxB) {
-        BoundingBox retBbox = new BoundingBox(0, 0, 0, 0);
+        BoundingBox retBbox = new BoundingBox(0, 0, -1, -1);
         if (bboxA.intersects(bboxB)) {
             for (int i = 0; i < 2; i++) {
                 if (bboxA.coords[i] > bboxB.coords[i]) {
