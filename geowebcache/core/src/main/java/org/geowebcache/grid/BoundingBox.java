@@ -250,15 +250,11 @@ public class BoundingBox {
     }
 
     public boolean intersects(BoundingBox other) {
-        double width = getWidth();
-        double height = getHeight();
-        if (width <= 0 || height <= 0 || other.getWidth() <= 0 || other.getHeight() <= 0) {
+        if (!(isSane() && other.isSane())) {
             return false;
         }
-
-        return (other.coords[0] + other.getWidth() > coords[0]
-                && other.coords[1] + other.getHeight() > coords[1]
-                && other.coords[0] < coords[0] + width && other.coords[1] < coords[1] + height);
+        return !(other.getMinX() > getMaxX() || other.getMaxX() < getMinX()
+                || other.getMinY() > getMaxY() || other.getMaxY() < getMinY());
     }
     
     public static BoundingBox intersection(BoundingBox bboxA, BoundingBox bboxB) {
