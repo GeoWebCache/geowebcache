@@ -19,3 +19,4 @@ This User Manual is a guide to the most common aspects of GeoWebCache.
    production/index
    troubleshooting/index
    development/index
+   faq/index
