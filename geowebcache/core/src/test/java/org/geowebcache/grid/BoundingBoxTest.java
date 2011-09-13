@@ -66,8 +66,7 @@ public class BoundingBoxTest extends TestCase {
 
         BoundingBox intersection = BoundingBox.intersection(bb1, bb2);
         assertNotNull(intersection);
-        assertEquals(0D, intersection.getWidth());
-        assertEquals(0D, intersection.getHeight());
+        assertTrue(intersection.isNull());
         assertFalse(intersection.isSane());
     }
 }

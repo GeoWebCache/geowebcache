@@ -243,6 +243,10 @@ public class BoundingBox {
         return (coords[0] < coords[2] && coords[1] < coords[3]);
     }
 
+    public boolean isNull() {
+        return (coords[0] > coords[2] || coords[1] > coords[3]);
+    }
+
     @Override
     public int hashCode() {
         return Float.floatToIntBits((float) coords[0])
@@ -250,19 +254,15 @@ public class BoundingBox {
     }
 
     public boolean intersects(BoundingBox other) {
-        double width = getWidth();
-        double height = getHeight();
-        if (width <= 0 || height <= 0 || other.getWidth() <= 0 || other.getHeight() <= 0) {
+        if (isNull() || other.isNull()) {
             return false;
         }
-
-        return (other.coords[0] + other.getWidth() > coords[0]
-                && other.coords[1] + other.getHeight() > coords[1]
-                && other.coords[0] < coords[0] + width && other.coords[1] < coords[1] + height);
+        return !(other.getMinX() > getMaxX() || other.getMaxX() < getMinX()
+                || other.getMinY() > getMaxY() || other.getMaxY() < getMinY());
     }
     
     public static BoundingBox intersection(BoundingBox bboxA, BoundingBox bboxB) {
-        BoundingBox retBbox = new BoundingBox(0, 0, 0, 0);
+        BoundingBox retBbox = new BoundingBox(0, 0, -1, -1);
         if (bboxA.intersects(bboxB)) {
             for (int i = 0; i < 2; i++) {
                 if (bboxA.coords[i] > bboxB.coords[i]) {
