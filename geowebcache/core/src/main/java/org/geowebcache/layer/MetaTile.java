@@ -16,10 +16,15 @@
  */
 package org.geowebcache.layer;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,6 +38,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 import javax.media.jai.JAI;
+import javax.media.jai.operator.BandSelectDescriptor;
 import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 
@@ -264,7 +270,31 @@ public class MetaTile implements TileResponseReceiver {
     }
 
     public void setImage(RenderedImage metaTiledImage) {
-        this.metaTiledImage = metaTiledImage;
+        if (!(metaTiledImage instanceof BufferedImage) && !nativeAccelAvailable()
+                && ImageMime.jpeg.equals(responseFormat)) {
+
+            if (metaTiledImage.getSampleModel().getNumBands() > 3) {
+                metaTiledImage = BandSelectDescriptor.create(metaTiledImage, new int[] { 0, 1, 2 },
+                        null);
+            }
+
+            Raster raster = metaTiledImage.getData();
+            DataBuffer data = raster.getDataBuffer();
+
+            SampleModel sampleModel = raster.getSampleModel().createCompatibleSampleModel(
+                    metaTiledImage.getWidth(), metaTiledImage.getHeight());
+            Point location = new Point(raster.getMinX(), raster.getMinY());
+
+            WritableRaster writableRaster = WritableRaster.createWritableRaster(sampleModel, data,
+                    location);
+
+            ColorModel colorModel = metaTiledImage.getColorModel();
+            boolean alphaPremultiplied = colorModel.isAlphaPremultiplied();
+            this.metaTiledImage = new BufferedImage(colorModel, writableRaster, alphaPremultiplied,
+                    null);
+        } else {
+            this.metaTiledImage = metaTiledImage;
+        }
     }
 
     /**
@@ -308,28 +338,25 @@ public class MetaTile implements TileResponseReceiver {
      */
     public RenderedImage createTile(int minX, int minY, int tileWidth, int tileHeight) {
 
-        RenderedImage tile = null;
+        RenderedImage tile;
 
-        try {
-            tile = CropDescriptor.create(metaTiledImage, new Float(minX), new Float(minY),
-                    new Float(tileWidth), new Float(tileHeight), no_cache);
-            tile = TranslateDescriptor.create(tile, new Float(-1f * minX), new Float(-1f * minY),
-                    null, null);
-        } catch (IllegalArgumentException iae) {
-            log.error("Error cropping, image is " + metaTiledImage.getWidth() + "x"
-                    + metaTiledImage.getHeight() + ", requesting a " + tileWidth + "x" + tileHeight
-                    + " tile starting at " + minX + "," + minY + ".");
-            log.error("Message from JAI: " + iae.getMessage());
-            iae.printStackTrace();
-        }
-
-        if (!nativeAccelAvailable()) {
-            if (ImageMime.jpeg.equals(responseFormat) && !(tile instanceof BufferedImage)) {
-                // The non native JPEG writer creates repeated tiles if not given a buffered image
-                tile = new BufferedImage(tile.getColorModel(),
-                        ((WritableRaster) tile.getData()).createWritableTranslatedChild(0, 0), tile
-                                .getColorModel().isAlphaPremultiplied(), null);
+        if (!nativeAccelAvailable() && metaTiledImage instanceof BufferedImage) {
+            BufferedImage img = (BufferedImage) metaTiledImage;
+            tile = img.getSubimage(minX, minY, tileWidth, tileHeight);
+        } else {
+            try {
+                tile = CropDescriptor.create(metaTiledImage, new Float(minX), new Float(minY),
+                        new Float(tileWidth), new Float(tileHeight), no_cache);
+                tile = TranslateDescriptor.create(tile, new Float(-1f * minX),
+                        new Float(-1f * minY), null, null);
+            } catch (IllegalArgumentException iae) {
+                log.error("Error cropping, image is " + metaTiledImage.getWidth() + "x"
+                        + metaTiledImage.getHeight() + ", requesting a " + tileWidth + "x"
+                        + tileHeight + " tile starting at " + minX + "," + minY + ".");
+                log.error("Message from JAI: " + iae.getMessage());
+                throw (iae);
             }
+
         }
 
         if (log.isDebugEnabled()) {
