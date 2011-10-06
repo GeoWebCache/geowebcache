@@ -38,6 +38,6 @@ Note that to use WMS you should not have two grid sets with the same SRS defined
 Support for Regular WMS Clients
 -------------------------------
 
-GeoWebCache can recombine and resample tiles to answer arbitrary WMS requests. To enable this feature, open ``geowebcache-servlet.xml``, find ``<property name="fullWMS"><value>FALSE</value></property>`` and change to ``<property name="fullWMS"><value>TRUE</value></property>``. All layers that are to support this feature must currently be configured to support a PNG format.
+GeoWebCache can recombine and resample tiles to answer arbitrary WMS requests. To enable this feature, open ``geowebcache-wmsservice-context.xml``, find ``<property name="fullWMS"><value>FALSE</value></property>`` and change to ``<property name="fullWMS"><value>TRUE</value></property>``. All layers that are to support this feature must currently be configured to support a PNG format.
 
 Note that this requires GeoWebCache to decompress many tiles and recompress the resulting canvas. Response times will therefore be on the order of seconds, depending on the size of the requested image and the tile sizes. You may have to increase the heap size of the Java process (``-Xmx256M``) to use this functionality.
