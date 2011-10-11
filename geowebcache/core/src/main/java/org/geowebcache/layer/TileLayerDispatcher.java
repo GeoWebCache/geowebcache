@@ -27,7 +27,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -59,9 +59,9 @@ public class TileLayerDispatcher implements DisposableBean {
 
     private ServiceInformation serviceInformation = null;
 
-    private ExecutorService configLoadService;
+    private final ExecutorService configLoadService;
 
-    private Future<Map<String, TileLayer>> configurationLoadTask;
+    private FutureTask<Map<String, TileLayer>> configurationLoadTask;
 
     public TileLayerDispatcher(GridSetBroker gridSetBroker, List<Configuration> configs) {
         this(gridSetBroker, configs, 2);
@@ -73,19 +73,15 @@ public class TileLayerDispatcher implements DisposableBean {
 
         this.configs = configs;
 
-        if (loadDelay > -1) {
-            ThreadFactory tfac = new CustomizableThreadFactory("GWC Configuration loader thread-");
-            ((CustomizableThreadFactory) tfac).setDaemon(true);
-            configLoadService = Executors.newSingleThreadExecutor(tfac);
-            ConfigurationLoader loader = new ConfigurationLoader(this, loadDelay);
-            configurationLoadTask = configLoadService.submit(loader);
-        } else {
-            try {
-                configuredLayers = new ConfigurationLoader(this, loadDelay).call();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        if (loadDelay < 0) {
+            loadDelay = 0;
         }
+        ThreadFactory tfac = new CustomizableThreadFactory("GWC Configuration loader thread-");
+        ((CustomizableThreadFactory) tfac).setDaemon(true);
+        configLoadService = Executors.newSingleThreadExecutor(tfac);
+        ConfigurationLoader loader = new ConfigurationLoader(this, loadDelay, false);
+        configurationLoadTask = new FutureTask<Map<String,TileLayer>>(loader); 
+        configLoadService.execute(configurationLoadTask);
     }
 
     /**
@@ -140,12 +136,19 @@ public class TileLayerDispatcher implements DisposableBean {
      * @throws GeoWebCacheException
      */
     public void reInit() throws GeoWebCacheException {
+        reInit(false);
+    }
+    
+    public void reInit(final boolean reload) throws GeoWebCacheException {
         // this should wait for the current running config load task to finish if it still didn't
         checkConfigurationLoaded();
         // now mark config not loaded by setting layers to null
         this.configuredLayers = null;
         // and let a new task to perform the config load
-        configurationLoadTask = configLoadService.submit(new ConfigurationLoader(this, 0));
+        ConfigurationLoader loader = new ConfigurationLoader(this, 0, reload);
+        configurationLoadTask = new FutureTask<Map<String,TileLayer>>(loader); 
+        configLoadService.execute(configurationLoadTask);
+        checkConfigurationLoaded();
     }
 
     public int getLayerCount() {
@@ -313,15 +316,18 @@ public class TileLayerDispatcher implements DisposableBean {
         }
     }
 
-    private class ConfigurationLoader implements Callable<Map<String, TileLayer>> {
+    private static class ConfigurationLoader implements Callable<Map<String, TileLayer>> {
 
         TileLayerDispatcher parent;
 
         int loadDelay;
 
-        private ConfigurationLoader(TileLayerDispatcher parent, int loadDelay) {
+        private final boolean reload;
+
+        private ConfigurationLoader(TileLayerDispatcher parent, int loadDelay, boolean reload) {
             this.parent = parent;
             this.loadDelay = loadDelay;
+            this.reload = reload;
         }
 
         public Map<String, TileLayer> call() throws Exception {
@@ -336,7 +342,7 @@ public class TileLayerDispatcher implements DisposableBean {
                 }
             }
 
-            LinkedHashMap<String, TileLayer> newLayers = parent.initialize(false);
+            LinkedHashMap<String, TileLayer> newLayers = parent.initialize(reload);
             log.info("ConfigurationLoader completed");
             return newLayers;
         }
