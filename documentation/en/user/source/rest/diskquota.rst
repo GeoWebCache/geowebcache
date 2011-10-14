@@ -19,7 +19,7 @@ Operations
      - Return Code
      - Formats
    * - GET
-     - Return de global disk quota configuration
+     - Return the global disk quota configuration
      - 200
      - XML, JSON
    * - POST
@@ -42,7 +42,7 @@ Operations
 
 
 DiskQuota cURL Examples
-=======================
+-----------------------
 
 The examples in this section use the `cURL <http://curl.haxx.se/>`_
 utility, which is a handy command line tool for executing HTTP requests and 
@@ -50,7 +50,7 @@ transferring files. Though cURL is used the examples apply to any HTTP-capable
 tool or library.
 
 Getting the current Disk Quota configuration
---------------------------------------------
+++++++++++++++++++++++++++++++++++++++++++++
 
 The following obtains the current disk quota configuration in XML format:
 
@@ -100,7 +100,7 @@ The response should look like:
 
 
 Changing Disk Quota configuration
----------------------------------
++++++++++++++++++++++++++++++++++
 
 Request body for PUT can contain only the desired properties to be modified, and a diff will be applied to the current configuration. For example:
 
