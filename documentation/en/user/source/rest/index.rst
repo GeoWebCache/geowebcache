@@ -64,5 +64,6 @@ document. These codes are described in detail by the `http specification <http:/
 .. toctree::
    :maxdepth: 1
 
+   seed.rst
    diskquota.rst
 
