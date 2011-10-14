@@ -315,9 +315,9 @@ public class TileBreeder implements ApplicationContextAware {
             Entry<Long, GWCTask> entry = iter.next();
             GWCTask task = entry.getValue();
 
-            ret[idx][0] = (int) task.getTilesDone();
+            ret[idx][0] = task.getTilesDone();
 
-            ret[idx][1] = (int) task.getTilesTotal();
+            ret[idx][1] = task.getTilesTotal();
 
             ret[idx][2] = task.getTimeRemaining();
 
