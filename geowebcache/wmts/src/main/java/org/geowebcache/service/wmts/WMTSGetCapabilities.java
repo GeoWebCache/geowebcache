@@ -427,8 +427,8 @@ public class WMTSGetCapabilities {
          str.append("      <TopLeftCorner>"+ tlCoordinates[0] +" "+ tlCoordinates[1] +"</TopLeftCorner>\n");
          str.append("      <TileWidth>"+tileWidth+"</TileWidth>\n");    
          str.append("      <TileHeight>"+tileHeight+"</TileHeight>\n");      
-         str.append("      <MatrixWidth>"+grid.getExtent()[0]+"</MatrixWidth>\n");    
-         str.append("      <MatrixHeight>"+grid.getExtent()[1]+"</MatrixHeight>\n");    
+         str.append("      <MatrixWidth>"+grid.getNumTilesWide()+"</MatrixWidth>\n");    
+         str.append("      <MatrixHeight>"+grid.getNumTilesHigh()+"</MatrixHeight>\n");    
          str.append("    </TileMatrix>\n");
      }
      

@@ -110,24 +110,26 @@ public class GridSetFactory {
             Grid curGrid = new Grid();
 
             if(scaleDenoms != null) {
-                curGrid.scaleDenom = scaleDenoms[i];
-                curGrid.resolution = pixelSize * (scaleDenoms[i] / gridSet.metersPerUnit);
+                curGrid.setScaleDenom(scaleDenoms[i]);
+                curGrid.setResolution(pixelSize * (scaleDenoms[i] / gridSet.metersPerUnit));
             } else {
-                curGrid.resolution = resolutions[i];
-                curGrid.scaleDenom =  (resolutions[i] * gridSet.metersPerUnit) / 0.00028;
-                //System.out.println(name+" : "+i+" : "+curGrid.scaleDenom+" : "+resolutions[i]);
+                curGrid.setResolution(resolutions[i]);
+                curGrid.setScaleDenom((resolutions[i] * gridSet.metersPerUnit) / 0.00028);
             }
             
-            double mapUnitWidth = tileWidth * curGrid.resolution;
-            double mapUnitHeight = tileHeight * curGrid.resolution;
+            double mapUnitWidth = tileWidth * curGrid.getResolution();
+            double mapUnitHeight = tileHeight * curGrid.getResolution();
             
-            curGrid.extent[0] = (long) Math.ceil( (extent.getWidth() - mapUnitWidth * 0.01) / mapUnitWidth);
-            curGrid.extent[1] = (long) Math.ceil( (extent.getHeight() - mapUnitHeight * 0.01) / mapUnitHeight);
+            long tilesWide = (long) Math.ceil((extent.getWidth() - mapUnitWidth * 0.01) / mapUnitWidth);
+            long tilesHigh = (long) Math.ceil((extent.getHeight() - mapUnitHeight * 0.01) / mapUnitHeight);
+            
+            curGrid.setNumTilesWide(tilesWide);
+            curGrid.setNumTilesHigh(tilesHigh);
             
             if(scaleNames == null) {
-                curGrid.name = gridSet.name + ":" + i;
+                curGrid.setName(gridSet.name + ":" + i);
             } else {
-                curGrid.name = scaleNames[i];
+                curGrid.setName(scaleNames[i]);
             }
             
             gridSet.gridLevels[i] = curGrid;

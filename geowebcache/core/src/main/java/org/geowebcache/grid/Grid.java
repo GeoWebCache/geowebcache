@@ -16,42 +16,137 @@
  */
 package org.geowebcache.grid;
 
-import java.util.Arrays;
+import java.io.Serializable;
 
-public class Grid {    
-    // numTilesWide and numTilesHigh (ie, maxX exclusive, maxY exclusive)
-    protected long[] extent = new long[2];
-    
-    protected double resolution;
-    
-    protected double scaleDenom;
- 
-    protected String name;
-    
+/**
+ * @author groldan
+ * 
+ */
+public class Grid implements Serializable, Cloneable {
+
+    private static final long serialVersionUID = 1L;
+
+    private long numTilesWide;
+
+    private long numTilesHigh;
+
+    private double resolution;
+
+    private double scaleDenom;
+
+    private String name;
+
+    @Override
     public boolean equals(Object obj) {
-        if(! (obj instanceof Grid))
+        if (!(obj instanceof Grid))
             return false;
-        
+
         Grid other = (Grid) obj;
-        
-        if(! Arrays.equals(other.extent, extent))
+
+        if(numTilesWide != other.numTilesWide)
             return false;
-        
-        if(Math.abs(other.resolution - resolution) / Math.abs(other.resolution + resolution) > 0.005)
+
+        if(numTilesHigh != other.numTilesHigh)
             return false;
-        
+
+        if (Math.abs(other.resolution - resolution) / Math.abs(other.resolution + resolution) > 0.005)
+            return false;
+
         return true;
     }
-    
-    public long[] getExtent() {
-        return extent;
-    }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public double getScaleDenominator() {
         return scaleDenom;
+    }
+
+    /**
+     * @return the resolution
+     */
+    public double getResolution() {
+        return resolution;
+    }
+
+    /**
+     * @param resolution
+     *            the resolution to set
+     */
+    public void setResolution(double resolution) {
+        this.resolution = resolution;
+    }
+
+    /**
+     * @return the scaleDenom
+     */
+    public double getScaleDenom() {
+        return scaleDenom;
+    }
+
+    /**
+     * @param scaleDenom
+     *            the scaleDenom to set
+     */
+    public void setScaleDenom(double scaleDenom) {
+        this.scaleDenom = scaleDenom;
+    }
+
+    /**
+     * @param name
+     *            the name to set
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * @return the numTilesWide
+     */
+    public long getNumTilesWide() {
+        return numTilesWide;
+    }
+
+    /**
+     * @param numTilesWide
+     *            the numTilesWide to set
+     */
+    public void setNumTilesWide(long numTilesWide) {
+        this.numTilesWide = numTilesWide;
+    }
+
+    /**
+     * @return the numTilesHigh
+     */
+    public long getNumTilesHigh() {
+        return numTilesHigh;
+    }
+
+    /**
+     * @param numTilesHigh
+     *            the numTilesHigh to set
+     */
+    public void setNumTilesHigh(long numTilesHigh) {
+        this.numTilesHigh = numTilesHigh;
+    }
+
+    @Override
+    public String toString() {
+        return new StringBuilder(getClass().getSimpleName()).append("[name: '").append(name)
+                .append("', resolution: ").append(resolution).append(", scale denom: ")
+                .append(scaleDenom).append(", grid extent: ").append(numTilesWide).append(" x ")
+                .append(numTilesHigh).append("]").toString();
+    }
+
+    @Override
+    public Grid clone() {
+        Grid clon;
+        try {
+            clon = (Grid) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+        return clon;
     }
 }

@@ -63,12 +63,12 @@ public class GridSet {
     protected BoundingBox boundsFromIndex(long[] tileIndex) {
         Grid grid = gridLevels[(int) tileIndex[2]];
         
-        double width = grid.resolution * tileWidth;
-        double height = grid.resolution * tileHeight;
+        double width = grid.getResolution() * tileWidth;
+        double height = grid.getResolution() * tileHeight;
        
         long y = tileIndex[1];
         if(yBaseToggle) {
-            y = y - grid.extent[1];
+            y = y - grid.getNumTilesHigh();
         }
         
         BoundingBox tileBounds = new BoundingBox(
@@ -82,15 +82,15 @@ public class GridSet {
     protected BoundingBox boundsFromRectangle(long[] rectangleExtent) {
         Grid grid = gridLevels[(int) rectangleExtent[4]];
         
-        double width = grid.resolution * tileWidth;
-        double height = grid.resolution * tileHeight;
+        double width = grid.getResolution() * tileWidth;
+        double height = grid.getResolution() * tileHeight;
         
         long bottomY = rectangleExtent[1];
         long topY = rectangleExtent[3];
         
         if(yBaseToggle) {
-            bottomY = bottomY - grid.extent[1];
-            topY = topY - grid.extent[1];
+            bottomY = bottomY - grid.getNumTilesHigh();
+            topY = topY - grid.getNumTilesHigh();
         }
         
         BoundingBox rectangleBounds = new BoundingBox(
@@ -112,11 +112,11 @@ public class GridSet {
         for(int i=0; i< gridLevels.length; i++) {
             Grid grid = gridLevels[i];
             
-            double error = Math.abs(wRes - grid.resolution);
+            double error = Math.abs(wRes - grid.getResolution());
             
             if(error < bestError) {
                 bestError = error;
-                bestResolution = grid.resolution;
+                bestResolution = grid.getResolution();
                 bestLevel = i;
             } else {
                 break;
@@ -134,8 +134,8 @@ public class GridSet {
     throws GridAlignmentMismatchException {
         Grid grid = gridLevels[level];
         
-        double width = grid.resolution * tileWidth;
-        double height = grid.resolution * tileHeight;
+        double width = grid.getResolution() * tileWidth;
+        double height = grid.getResolution() * tileHeight;
         
         double x = (tileBounds.getMinX() - baseCoords[0]) / width;
         
@@ -150,7 +150,7 @@ public class GridSet {
         }
         
         if(yBaseToggle) {
-            posY = posY + grid.extent[1];
+            posY = posY + grid.getNumTilesHigh();
         }
         
         long[] ret = { posX, posY, level };
@@ -169,8 +169,8 @@ public class GridSet {
         for(int i=0; i< gridLevels.length; i++) {
             Grid grid = gridLevels[i];
 
-            double countX = rectWidth / (grid.resolution * tileWidth);
-            double countY = rectHeight / (grid.resolution * tileHeight);
+            double countX = rectWidth / (grid.getResolution() * tileWidth);
+            double countY = rectHeight / (grid.getResolution() * tileHeight);
             
             double error = 
                 Math.abs(countX - Math.round(countX)) + 
@@ -190,8 +190,8 @@ public class GridSet {
     protected long[] closestRectangle(int level, BoundingBox rectangeBounds) {
         Grid grid = gridLevels[level];
         
-        double width = grid.resolution * tileWidth;
-        double height = grid.resolution * tileHeight;
+        double width = grid.getResolution() * tileWidth;
+        double height = grid.getResolution() * tileHeight;
         
         
         long minX = (long) Math.floor((rectangeBounds.getMinX() - baseCoords[0]) / width);
@@ -200,8 +200,8 @@ public class GridSet {
         long maxY = (long) Math.ceil(((rectangeBounds.getMaxY() - baseCoords[1]) / height));
         
         if(yBaseToggle) {
-            minY = minY + grid.extent[1];
-            maxY = maxY + grid.extent[1];
+            minY = minY + grid.getNumTilesHigh();
+            maxY = maxY + grid.getNumTilesHigh();
         }
         
         // We substract one, since that's the tile at that position
@@ -245,19 +245,20 @@ public class GridSet {
     
     public BoundingBox getBounds() {
         int i;
-        long[] extent = null;
+        long tilesWide, tilesHigh;
 
         for (i = (gridLevels.length -1); i > 0; i--) {
-            extent = gridLevels[i].extent;
-
-            if (extent[0] == 1 && extent[1] == 0) {
+            tilesWide = gridLevels[i].getNumTilesWide();
+            tilesHigh = gridLevels[i].getNumTilesHigh();
+            
+            if (tilesWide == 1 && tilesHigh == 0) {
                 break;
             }
         }
-        
-        extent = gridLevels[i].extent;
-        
-        long[] ret = { 0, 0, extent[0] - 1, extent[1] - 1, i};
+                
+        tilesWide = gridLevels[i].getNumTilesWide();
+        tilesHigh = gridLevels[i].getNumTilesHigh();
+        long[] ret = { 0, 0, tilesWide - 1, tilesHigh - 1, i};
 
         return boundsFromRectangle(ret);
     }
@@ -287,9 +288,9 @@ public class GridSet {
             Grid grid = gridLevels[gridIndex];
             
             double dTileHeight = tileHeight;
-            double dGridExtent = grid.extent[1];
+            double dGridExtent = grid.getNumTilesHigh();
             
-            double top = baseCoords[1] + dTileHeight * grid.resolution * dGridExtent;
+            double top = baseCoords[1] + dTileHeight * grid.getResolution() * dGridExtent;
             
             // Round off if we are within 0.5% of an integer value
             if(Math.abs(top - Math.round(top)) < (top / 200)) {

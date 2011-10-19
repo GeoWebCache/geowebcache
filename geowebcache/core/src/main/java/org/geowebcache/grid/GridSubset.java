@@ -108,13 +108,13 @@ public class GridSubset {
             cov[1] = cov[1] - (cov[1] % metaFactors[1]);
             
             cov[2] = cov[2] - (cov[2] % metaFactors[0]) + (metaFactors[0] - 1);
-            if(cov[2] > this.gridSet.gridLevels[z].extent[0]) {
-                cov[2] = this.gridSet.gridLevels[z].extent[0];
+            if(cov[2] > this.gridSet.gridLevels[z].getNumTilesWide()) {
+                cov[2] = this.gridSet.gridLevels[z].getNumTilesWide();
             }
             
             cov[3] = cov[3] - (cov[3] % metaFactors[1]) + (metaFactors[1] - 1);
-            if(cov[3] > this.gridSet.gridLevels[z].extent[1]) {
-                cov[3] = this.gridSet.gridLevels[z].extent[1];
+            if(cov[3] > this.gridSet.gridLevels[z].getNumTilesHigh()) {
+                cov[3] = this.gridSet.gridLevels[z].getNumTilesHigh();
             }
         }
         
@@ -196,7 +196,7 @@ public class GridSubset {
     
     public long getGridIndex(String gridId) {
         for(int i = 0; i < gridCoverageLevels.length; i++) {
-            if(gridSet.gridLevels[firstLevel + i].name.equals(gridId)) {
+            if(gridSet.gridLevels[firstLevel + i].getName().equals(gridId)) {
                 return i;
             }
         }
@@ -207,7 +207,7 @@ public class GridSubset {
     public String[] getGridNames() {
         String[] ret = new String[gridCoverageLevels.length];
         for(int i=0; i<gridCoverageLevels.length; i++) {
-            ret[i] = gridSet.gridLevels[i + firstLevel].name;
+            ret[i] = gridSet.gridLevels[i + firstLevel].getName();
         }
         
         return ret;
@@ -221,8 +221,12 @@ public class GridSubset {
         return gridSet.getBounds();
     }
     
-    public long[] getGridSetExtent(int z) {
-        return gridSet.gridLevels[z].extent;
+    public long getNumTilesWide(int zoomLevel){
+        return gridSet.gridLevels[zoomLevel].getNumTilesWide();
+    }
+    
+    public long getNumTilesHigh(int zoomLevel){
+        return gridSet.gridLevels[zoomLevel].getNumTilesHigh();
     }
         
     public String getName() {
@@ -240,7 +244,7 @@ public class GridSubset {
         double[] ret = new double[firstLevel + gridCoverageLevels.length];
         
         for(int i = 0; i < ret.length; i++) {
-            ret[i] = gridSet.gridLevels[i].resolution;
+            ret[i] = gridSet.gridLevels[i].getResolution();
         }
         
         return ret;
@@ -253,9 +257,10 @@ public class GridSubset {
 
        if((idx - firstLevel + 1) < gridCoverageLevels.length) {
            // Check whether this grid is doubling
-           double resolutionCheck = gridSet.gridLevels[idx].resolution / 2 - gridSet.gridLevels[idx + 1].resolution;
+            double resolutionCheck = gridSet.gridLevels[idx].getResolution() / 2
+                    - gridSet.gridLevels[idx + 1].getResolution();
            
-           if (Math.abs(resolutionCheck) > gridSet.gridLevels[idx + 1].resolution * 0.025) {
+            if (Math.abs(resolutionCheck) > gridSet.gridLevels[idx + 1].getResolution() * 0.025) {
                throw new GeoWebCacheException("The resolution is not decreasing by a factor of two for " + this.getName());
            } else {
                GridCoverage cov = gridCoverageLevels[idx + 1];
@@ -318,9 +323,9 @@ public class GridSubset {
             
             long[] cur = {
                     gridCov.coverage[0],
-                    grid.extent[1] - gridCov.coverage[3],
+                    grid.getNumTilesHigh() - gridCov.coverage[3],
                     gridCov.coverage[2],
-                    grid.extent[1] - gridCov.coverage[1]
+                    grid.getNumTilesHigh() - gridCov.coverage[1]
             };
             
             ret[i] = cur;

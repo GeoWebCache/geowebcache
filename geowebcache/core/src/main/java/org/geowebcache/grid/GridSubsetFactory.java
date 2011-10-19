@@ -32,7 +32,8 @@ public class GridSubsetFactory {
         ret.gridCoverageLevels = new GridCoverage[gridSet.gridLevels.length];
         
         for(int i=0; i<ret.gridCoverageLevels.length; i++) {
-            long[] tmp = {0,0,gridSet.gridLevels[i].extent[0] - 1,gridSet.gridLevels[i].extent[1] - 1, i};
+            Grid level = gridSet.gridLevels[i];
+            long[] tmp = { 0, 0, level.getNumTilesWide() - 1, level.getNumTilesHigh() - 1, i };
             GridCoverage gridCov = new GridCoverage(tmp);
             ret.gridCoverageLevels[i] = gridCov;
         }
@@ -77,8 +78,9 @@ public class GridSubsetFactory {
             if(extent != null) {
                 gridCov = new GridCoverage(gridSet.closestRectangle(i + ret.firstLevel, extent) );
             } else {
-                long[] gridExtent = gridSet.gridLevels[i + ret.firstLevel].extent;
-                long[] fullCoverage = {0,0,gridExtent[0] - 1,gridExtent[1] -1, i + ret.firstLevel}; 
+                Grid level = gridSet.gridLevels[i + ret.firstLevel];
+                long[] fullCoverage = { 0, 0, level.getNumTilesWide() - 1,
+                        level.getNumTilesHigh() - 1, i + ret.firstLevel };
                 gridCov = new GridCoverage(fullCoverage);
             }
 
