@@ -168,7 +168,7 @@ class CacheCleanerTask implements Runnable {
 
             if (excedent.getBytes().compareTo(BigInteger.ZERO) > 0) {
 
-                log.info("Submitting global cache quota enforcement task");
+                log.debug("Submitting global cache quota enforcement task");
                 LayerQuotaEnforcementTask task;
                 QuotaResolver quotaResolver = monitor.newGlobalQuotaResolver();
                 task = new LayerQuotaEnforcementTask(globallyManagedLayerNames, quotaResolver,
