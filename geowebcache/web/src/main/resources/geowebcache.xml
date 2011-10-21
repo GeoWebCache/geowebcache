@@ -66,6 +66,12 @@
 
   <wmsLayer>
     <name>topp:states</name>
+    <mimeFormats>
+      <string>image/gif</string>
+      <string>image/jpeg</string>
+      <string>image/png</string>
+      <string>image/png8</string>
+    </mimeFormats>
     <gridSubsets>
       <gridSubset>
         <gridSetName>EPSG:2163</gridSetName>
@@ -76,7 +82,12 @@
   
   <wmsLayer>
     <name>raster test layer</name>
-     <mimeFormats><string>image/jpeg</string></mimeFormats>
+    <mimeFormats>
+      <string>image/gif</string>
+      <string>image/jpeg</string>
+      <string>image/png</string>
+      <string>image/png8</string>
+    </mimeFormats>
     <wmsUrl><string>http://demo.opengeo.org/geoserver/wms</string></wmsUrl>
     <wmsLayers>nurc:Img_Sample</wmsLayers>
   </wmsLayer>
@@ -87,7 +98,12 @@
       <title>Nicer title for Image States</title>
       <description>This is a description. Fascinating.</description>
     </metaInformation>
-    <mimeFormats><string>image/gif</string></mimeFormats>
+    <mimeFormats>
+      <string>image/gif</string>
+      <string>image/jpeg</string>
+      <string>image/png</string>
+      <string>image/png8</string>
+    </mimeFormats>
     <!-- Grid Subset Example -->
     <gridSubsets>
       <gridSubset>

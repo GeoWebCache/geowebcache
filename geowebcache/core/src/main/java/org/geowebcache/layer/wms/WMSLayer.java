@@ -363,6 +363,7 @@ public class WMSLayer extends AbstractTileLayer {
             /** ****************** Return lock and response ****** */
         } finally {
             removeFromQueue(metaGlo);
+            metaTile.dispose();
         }
         return finalizeTile(tile);
     }
