@@ -25,9 +25,9 @@ public class GridSetFactory {
     
     static int DEFAULT_LEVELS = 31;
     
-    final static double EPSG4326_TO_METERS = 6378137.0 * 2.0 * Math.PI / 360.0;
+    public final static double EPSG4326_TO_METERS = 6378137.0 * 2.0 * Math.PI / 360.0;
     
-    final static double EPSG3857_TO_METERS = 1;
+    public final static double EPSG3857_TO_METERS = 1;
     
     private static GridSet baseGridSet(String name, SRS srs, int tileWidth, int tileHeight) {
         GridSet gridSet = new GridSet();
