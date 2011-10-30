@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -79,6 +80,7 @@ import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.ApplicationContextProvider;
+import org.springframework.util.StringUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -133,7 +135,7 @@ public class XMLConfiguration implements Configuration {
         this.gridSetBroker = gridSetBroker;
         defStoreFind = defaultStorage;
 
-        if(filePath.startsWith("/") || filePath.contains(":\\") || filePath.startsWith("\\\\") ) {
+        if (filePath.startsWith("/") || filePath.contains(":\\") || filePath.startsWith("\\\\")) {
             this.absPath = filePath;
         } else {
             this.relPath = filePath;
@@ -618,12 +620,12 @@ public class XMLConfiguration implements Configuration {
             log.info("Updating configuration from 1.2.4 to 1.2.6");
             rootNode = applyTransform(rootNode, "geowebcache_126.xsl").getFirstChild();
         }
-        
+
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.2.6")) {
             log.info("Updating configuration from 1.2.6 to 1.3.0");
             rootNode = applyTransform(rootNode, "geowebcache_130.xsl").getFirstChild();
         }
-        
+
         // Check again after transform
         if (!rootNode.getNodeName().equals("gwcConfiguration")) {
             log.error("Unable to parse file, expected gwcConfiguration at root after transform.");
@@ -646,10 +648,16 @@ public class XMLConfiguration implements Configuration {
                 validator.validate(domSrc);
                 log.info("Configuration file validated fine.");
             } catch (SAXException e) {
-                log.info(e.getMessage());
+                String msg = "*** GWC configuration validation error: " + e.getMessage();
+                char[] c = new char[4 + msg.length()];
+                Arrays.fill(c, '*');
+                String warndecoration = new String(c);
+                log.warn(warndecoration);
+                log.info(msg);
+                log.warn(warndecoration);
                 log.info("Will try to use configuration anyway.");
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e.getMessage(), e);
             }
         }
 
