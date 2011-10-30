@@ -40,7 +40,6 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
-import org.geowebcache.storage.StorageException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
@@ -356,7 +355,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         File cacheRoot;
         try {
             cacheRoot = new File(storageFinder.getDefaultPath());
-        } catch (StorageException e) {
+        } catch (ConfigurationException e) {
             throw new RuntimeException(e);
         }
         cacheInfoBuilder = new LayerCacheInfoBuilder(cacheRoot, cleanUpExecutorService,

@@ -186,7 +186,7 @@ public class TileLayerDispatcher implements DisposableBean {
             return 0;
         }
         if (layerCount <= 0) {
-            log.error("Configuration " + config.getIdentifier() + " contained no layers.");
+            log.info("Configuration " + config.getIdentifier() + " contained no layers.");
         }
 
         // Check whether there is any general service information

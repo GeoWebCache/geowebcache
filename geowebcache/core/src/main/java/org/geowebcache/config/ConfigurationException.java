@@ -20,11 +20,14 @@ package org.geowebcache.config;
 import org.geowebcache.GeoWebCacheException;
 
 public class ConfigurationException extends GeoWebCacheException {
+
+    private static final long serialVersionUID = 1613753249919539845L;
+
     public ConfigurationException(String msg) {
         super(msg);
     }
 
-    private static final long serialVersionUID = -3728930637143910200L;
-
-    
+    public ConfigurationException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
 }

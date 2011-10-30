@@ -136,6 +136,7 @@ public class XMLConfigurationTest extends TestCase {
         XMLConfiguration xmlConfig = new XMLConfiguration(is);
         
         GridSetBroker gsb = new GridSetBroker(false, false);
+        xmlConfig.initialize(gsb);
         
         List<TileLayer> list = xmlConfig.getTileLayers();
         

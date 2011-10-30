@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.io.FileResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.mime.MimeException;
@@ -58,7 +59,7 @@ public class FileBlobStore implements BlobStore {
 
     private static ExecutorService deleteExecutorService;
 
-    public FileBlobStore(DefaultStorageFinder defStoreFinder) throws StorageException {
+    public FileBlobStore(DefaultStorageFinder defStoreFinder) throws ConfigurationException {
         path = defStoreFinder.getDefaultPath();
         stagingArea = new File(path, "_gwc_in_progress_deletes_");
         createDeleteExecutorService();

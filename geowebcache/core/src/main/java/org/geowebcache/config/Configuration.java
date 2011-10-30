@@ -31,6 +31,9 @@ public interface Configuration {
 
     public List<? extends TileLayer> getTileLayers() throws GeoWebCacheException;
 
+    /**
+     * @return non null identifier for this configuration
+     */
     public String getIdentifier();
 
     public ServiceInformation getServiceInformation() throws GeoWebCacheException;

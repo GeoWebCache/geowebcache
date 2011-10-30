@@ -24,6 +24,7 @@ import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.geowebcache.util.GWCVars;
 import org.springframework.web.context.WebApplicationContext;
@@ -36,45 +37,44 @@ public class DefaultStorageFinder {
     public final static String GWC_CACHE_DIR = "GEOWEBCACHE_CACHE_DIR";
 
     public final static String GS_DATA_DIR = "GEOSERVER_DATA_DIR";
-    
+
     public final static String GWC_METASTORE_DISABLED = "GWC_METASTORE_DISABLED";
-    
+
     public final static String GWC_METASTORE_JDBC_URL = "GWC_METASTORE_JDBC_URL";
-    
+
     public final static String GWC_METASTORE_USERNAME = "GWC_METASTORE_USERNAME";
-    
+
     public final static String GWC_METASTORE_PASSWORD = "GWC_METASTORE_PASSWORD";
-    
+
     public final static String GWC_METASTORE_DRIVER_CLASS = "GWC_METASTORE_DRIVER_CLASS";
-    
+
     public final static String GWC_BLANK_TILE_PATH = "GWC_BLANK_TILE_PATH";
-    
+
     private static Log log = LogFactory.getLog(org.geowebcache.storage.DefaultStorageFinder.class);
 
     private String defaultPrefix = null;
 
     private WebApplicationContext context = null;
-    
+
     public DefaultStorageFinder(ApplicationContextProvider provider) {
         context = provider.getApplicationContext();
     }
-    
-    public synchronized String getDefaultPath() throws StorageException {
+
+    public synchronized String getDefaultPath() throws ConfigurationException {
         if (this.defaultPrefix == null) {
             determineDefaultPrefix();
             if (this.defaultPrefix == null) {
-                throw new StorageException(
-                        "Unable to find writable path for cache.");
+                throw new ConfigurationException("Unable to find writable path for cache.");
             }
         }
 
         return this.defaultPrefix;
     }
-    
+
     public String findEnvVar(String varStr) {
         return GWCVars.findEnvVar(context, varStr);
     }
-    
+
     /**
      * Looks for <br>
      * 1) GEOWEBCACHE_CACHE_DIR<br>
@@ -90,8 +90,8 @@ public class DefaultStorageFinder {
     private void determineDefaultPrefix() {
         ServletContext serlvCtx = context.getServletContext();
 
-        final String[] typeStrs = { "Java environment variable ",
-                "Servlet context parameter ", "System environment variable " };
+        final String[] typeStrs = { "Java environment variable ", "Servlet context parameter ",
+                "System environment variable " };
 
         final String[] varStrs = { GWC_CACHE_DIR, GS_DATA_DIR, "TEMP", "TMP" };
 
@@ -146,13 +146,17 @@ public class DefaultStorageFinder {
             }
         }
         String logMsg;
-        
+
         if (this.defaultPrefix == null) {
             String tmpDir = System.getProperty("java.io.tmpdir");
             if (tmpDir != null) {
-                this.defaultPrefix = tmpDir + File.separator + "geowebcache";
+                File temp = new File(tmpDir, "geowebcache");
                 logMsg = "Reverting to java.io.tmpdir " + this.defaultPrefix + " for storage. "
-                    +"Please set " + GWC_CACHE_DIR + ".";
+                        + "Please set " + GWC_CACHE_DIR + ".";
+                if (!temp.exists() && !temp.mkdirs()) {
+                    throw new RuntimeException("Can't create " + temp.getAbsolutePath());
+                }
+                this.defaultPrefix = temp.getAbsolutePath();
             } else {
                 logMsg = "Unable to determine temp directory. Proceeding with undefined results.";
             }
@@ -162,25 +166,23 @@ public class DefaultStorageFinder {
                 break;
 
             case 1: // GEOSERVER_DATA_DIR, prefix
-                this.defaultPrefix = this.defaultPrefix
-                        + File.separator + "gwc";
+                this.defaultPrefix = this.defaultPrefix + File.separator + "gwc";
                 break;
 
             case 2: // TEMP directories
             case 3:
-                this.defaultPrefix = this.defaultPrefix
-                        + File.separator + "geowebcache";
+                this.defaultPrefix = this.defaultPrefix + File.separator + "geowebcache";
             }
-            
+
             logMsg = msgPrefix + ", using it as the default prefix.";
         }
-        
-        String warnStr = "*** "+logMsg+" ***";
+
+        String warnStr = "*** " + logMsg + " ***";
         StringBuilder stars = new StringBuilder();
-        for(int i=0; i < warnStr.length(); i++) {
+        for (int i = 0; i < warnStr.length(); i++) {
             stars.append("*");
         }
-        
+
         log.info(stars.toString());
         log.info(warnStr);
         log.info(stars.toString());

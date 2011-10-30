@@ -44,7 +44,6 @@ import org.geowebcache.diskquota.storage.StorageUnit;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
-import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
@@ -172,12 +171,7 @@ public class ConfigLoader {
     }
 
     private File getConfigResource() throws ConfigurationException, FileNotFoundException {
-        String cachePath;
-        try {
-            cachePath = storageFinder.getDefaultPath();
-        } catch (StorageException e) {
-            throw new ConfigurationException(e.getMessage());
-        }
+        String cachePath = storageFinder.getDefaultPath();
 
         File file = new File(cachePath, CONFIGURATION_FILE_NAME);
 
@@ -301,8 +295,9 @@ public class ConfigLoader {
      * @param fileNameRelPath
      * @return
      * @throws IOException
+     * @throws ConfigurationException 
      */
-    public OutputStream getStorageOutputStream(String... fileNameRelPath) throws IOException {
+    public OutputStream getStorageOutputStream(String... fileNameRelPath) throws IOException, ConfigurationException {
         File rootCacheDir = getFileStorageDir(fileNameRelPath);
         String fileName = fileNameRelPath[fileNameRelPath.length - 1];
         File configFile = new File(rootCacheDir, fileName);
@@ -317,8 +312,9 @@ public class ConfigLoader {
      * @return
      * @throws IOException
      *             if {@code fileName} doesn't exist
+     * @throws ConfigurationException 
      */
-    public InputStream getStorageInputStream(String... fileNameRelPath) throws IOException {
+    public InputStream getStorageInputStream(String... fileNameRelPath) throws IOException, ConfigurationException {
         File rootCacheDir = getFileStorageDir(fileNameRelPath);
         String fileName = fileNameRelPath[fileNameRelPath.length - 1];
         File configFile = new File(rootCacheDir, fileName);
@@ -332,7 +328,7 @@ public class ConfigLoader {
      * @return
      * @throws StorageException
      */
-    private File getFileStorageDir(String[] fileNameRelPath) throws StorageException {
+    private File getFileStorageDir(String[] fileNameRelPath) throws ConfigurationException {
         File parentDir = getRootCacheDir();
         for (int i = 0; i < fileNameRelPath.length - 1; i++) {
             parentDir = new File(parentDir, fileNameRelPath[i]);
@@ -341,7 +337,7 @@ public class ConfigLoader {
         return parentDir;
     }
 
-    public File getRootCacheDir() throws StorageException {
+    public File getRootCacheDir() throws ConfigurationException {
         return new File(storageFinder.getDefaultPath());
     }
 

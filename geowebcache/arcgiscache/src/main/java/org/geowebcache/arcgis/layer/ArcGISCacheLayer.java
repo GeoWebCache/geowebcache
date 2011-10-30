@@ -32,7 +32,6 @@ import org.geowebcache.io.Resource;
 import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.storage.StorageException;
 
 /**
  * 
@@ -305,7 +304,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         return String.valueOf(data);
     }
 
-    private Resource readFile(File fh) throws StorageException {
+    private Resource readFile(File fh)  {
         if (!fh.exists()) {
             return null;
         }

@@ -13,11 +13,18 @@
        By default this lives in WEB-INF/classes/geowebcache.xml -->
   <bean id="gwcXmlConfig" class="org.geowebcache.config.XMLConfiguration">
     <constructor-arg ref="gwcAppCtx" />
-    <constructor-arg ref="gwcGridSetBroker"/>
     <constructor-arg ref="gwcDefaultStorageFinder" />
-    <!-- By default GWC will look for geowebcache.xml in WEB-INF/classes,
-         alternatively you can specify an absolute or relative path to a directory -->
-    <!-- constructor-arg value="/etc/geowebcache" / -->
+    <!-- By default GWC will look for geowebcache.xml in {GEOWEBCACHE_CACHE_DIR},
+         if not found will look at GEOSEVER_DATA_DIR/gwc/
+         alternatively you can specify an absolute or relative path to a directory
+         by replacing the gwcDefaultStorageFinder constructor argument above by the directory
+         path, like constructor-arg value="/etc/geowebcache"     
+    -->
+    <property name="template" value="/geowebcache.xml">
+      <description>Set the location of the template configuration file to copy over to the
+        cache directory if one doesn't already exist.
+      </description>
+    </property>
   </bean>
   
   <!-- If you like to automatically configure GWC from a WMS Getcapabilities document,

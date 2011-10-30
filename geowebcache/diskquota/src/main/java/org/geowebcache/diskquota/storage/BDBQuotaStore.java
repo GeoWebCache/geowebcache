@@ -20,8 +20,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.storage.DefaultStorageFinder;
-import org.geowebcache.storage.StorageException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
@@ -77,7 +77,7 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
     private boolean diskQuotaEnabled;
 
     public BDBQuotaStore(final DefaultStorageFinder cacheDirFinder,
-            TilePageCalculator tilePageCalculator) throws StorageException {
+            TilePageCalculator tilePageCalculator) throws ConfigurationException {
 
         Assert.notNull(cacheDirFinder, "cacheDirFinder can't be null");
         Assert.notNull(tilePageCalculator, "tilePageCalculator can't be null");
