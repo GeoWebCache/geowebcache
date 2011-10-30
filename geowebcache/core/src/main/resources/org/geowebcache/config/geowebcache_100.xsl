@@ -28,8 +28,8 @@
 
 <xsl:template match="gwc:gwcConfiguration">
   <gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                  xsi:noNamespaceSchemaLocation="http://geowebcache.org/schema/1.0.1/geowebcache.xsd"
-                  xmlns="http://geowebcache.org/schema/1.0.1">
+    xmlns="http://geowebcache.org/schema/1.0.1"
+    xsi:schemaLocation="http://geowebcache.org/schema/1.0.1 http://geowebcache.org/schema/1.0.1/geowebcache.xsd">
     <xsl:apply-templates/>
   </gwcConfiguration>
 </xsl:template>

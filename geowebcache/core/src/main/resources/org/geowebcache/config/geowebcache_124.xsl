@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xsl:stylesheet xmlns:gwc="http://geowebcache.org/schema/1.2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:stylesheet xmlns:gwc="http://geowebcache.org/schema/1.2.4" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 <xsl:output method="xml" version="1.0" encoding="utf-8" indent="yes"/>
 
 <xsl:template match="node()|*">
@@ -28,8 +28,8 @@
 
 <xsl:template match="gwc:gwcConfiguration">
   <gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns="http://geowebcache.org/schema/1.2.1"
-    xsi:schemaLocation="http://geowebcache.org/schema/1.2.1 http://geowebcache.org/schema/1.2.1/geowebcache.xsd">
+    xmlns="http://geowebcache.org/schema/1.2.5"
+    xsi:schemaLocation="http://geowebcache.org/schema/1.2.5 http://geowebcache.org/schema/1.2.5/geowebcache.xsd">
     <xsl:apply-templates/>
   </gwcConfiguration>
 </xsl:template>
