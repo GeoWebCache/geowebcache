@@ -23,7 +23,14 @@ import org.apache.commons.logging.LogFactory;
 public class GridSetFactory {
     private static Log log = LogFactory.getLog(GridSetFactory.class);
     
-    static int DEFAULT_LEVELS = 31;
+    /**
+     * Default pixel size in meters, producing a default of 90.7 DPI
+     * 
+     * @see GridSubset#getDotsPerInch()
+     */
+    public static final double DEFAULT_PIXEL_SIZE_METER = 0.00028;
+
+    public static int DEFAULT_LEVELS = 31;
     
     public final static double EPSG4326_TO_METERS = 6378137.0 * 2.0 * Math.PI / 360.0;
     
@@ -114,7 +121,8 @@ public class GridSetFactory {
                 curGrid.setResolution(pixelSize * (scaleDenoms[i] / gridSet.metersPerUnit));
             } else {
                 curGrid.setResolution(resolutions[i]);
-                curGrid.setScaleDenom((resolutions[i] * gridSet.metersPerUnit) / 0.00028);
+                curGrid.setScaleDenom((resolutions[i] * gridSet.metersPerUnit)
+                        / DEFAULT_PIXEL_SIZE_METER);
             }
             
             double mapUnitWidth = tileWidth * curGrid.getResolution();

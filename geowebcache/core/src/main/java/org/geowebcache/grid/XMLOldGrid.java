@@ -64,14 +64,14 @@ public class XMLOldGrid {
         } else {
             if(resolutions != null) {
                 gridSet = GridSetFactory.createGridSet(srs.toString(), srs, gridBounds, false, resolutions, 
-                        null, null, 0.00028, null, 256, 256, false);
+                        null, null, GridSetFactory.DEFAULT_PIXEL_SIZE_METER, null, 256, 256, false);
             } else {
                 if(zoomStop == null) {
                     zoomStop = 30;
                 }
                 
                 gridSet = GridSetFactory.createGridSet(srs.toString(), srs, gridBounds, false, zoomStop + 1, 
-                        null, 0.00028, 256, 256, false );
+                        null, GridSetFactory.DEFAULT_PIXEL_SIZE_METER, 256, 256, false );
             }
         }
         

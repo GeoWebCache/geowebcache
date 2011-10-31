@@ -60,7 +60,7 @@ public class XMLGridSet {
         }
         
         if(pixelSize == null) {
-            pixelSize = 0.00028;
+            pixelSize = GridSetFactory.DEFAULT_PIXEL_SIZE_METER;
         }
         
         if(yCoordinateFirst == null) {

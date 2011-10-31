@@ -306,7 +306,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
                             env.getMaxX(), env.getMaxY());
 
                     GridSet gridSet = GridSetFactory.createGridSet(gridSetName, srs, extent, false,
-                            25, null, 0.00028, 256, 256, false);
+                            25, null, GridSetFactory.DEFAULT_PIXEL_SIZE_METER, 256, 256, false);
                     grids.put(gridSetName, GridSubsetFactory.createGridSubSet(gridSet));
                 }
             }
@@ -411,7 +411,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
     public List<TileLayer> getTileLayers() throws GeoWebCacheException {
         return new ArrayList<TileLayer>(layers.values());
     }
-    
+
     /**
      * @see org.geowebcache.config.Configuration#getTileLayerNames()
      */
