@@ -299,7 +299,7 @@ public abstract class AbstractTileLayer extends TileLayer {
      */
     @Override
     public boolean useETags() {
-        return useETags == null? false : useETags.booleanValue();
+        return useETags == null ? false : useETags.booleanValue();
     }
 
     @Override
@@ -345,7 +345,7 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     @Override
     public boolean isQueryable() {
-        return queryable == null? false :queryable.booleanValue();
+        return queryable == null ? false : queryable.booleanValue();
     }
 
     /**
@@ -360,6 +360,10 @@ public abstract class AbstractTileLayer extends TileLayer {
     @Override
     public void setBackendTimeout(int seconds) {
         backendTimeout = seconds;
+    }
+
+    public List<String> getMimeFormats() {
+        return mimeFormats == null ? null : new ArrayList<String>(mimeFormats);
     }
 
     /**

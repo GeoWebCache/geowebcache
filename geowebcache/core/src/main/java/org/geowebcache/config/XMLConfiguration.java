@@ -409,6 +409,8 @@ public class XMLConfiguration implements Configuration {
         // XStream xs = xstream;
         xs.setMode(XStream.NO_REFERENCES);
 
+        xs.addDefaultImplementation(ArrayList.class, List.class);
+
         xs.alias("gwcConfiguration", GeoWebCacheConfiguration.class);
         xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns_xsi");
         xs.aliasField("xmlns:xsi", GeoWebCacheConfiguration.class, "xmlns_xsi");
@@ -426,7 +428,7 @@ public class XMLConfiguration implements Configuration {
 
         xs.alias("gridSet", XMLGridSet.class);
         xs.alias("gridSubset", XMLGridSubset.class);
-
+        
         xs.alias("mimeFormats", new ArrayList<String>().getClass());
         xs.alias("formatModifiers", new ArrayList<FormatModifier>().getClass());
         xs.alias("srs", org.geowebcache.grid.SRS.class);
