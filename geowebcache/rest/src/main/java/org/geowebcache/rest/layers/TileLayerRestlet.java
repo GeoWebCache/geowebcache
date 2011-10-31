@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.NoSuchElementException;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLConfiguration;
@@ -55,15 +56,15 @@ import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
  * This is the TileLayer resource class required by the REST interface
  */
 public class TileLayerRestlet extends GWCRestlet {
-    
+
     private XMLConfiguration xmlConfig;
-    
+
     private TileLayerDispatcher layerDispatcher;
-    
+
     public void handle(Request request, Response response) {
         Method met = request.getMethod();
         try {
-            if(met.equals(Method.GET)) {
+            if (met.equals(Method.GET)) {
                 doGet(request, response);
             } else {
                 // These modify layers, so we reload afterwards
@@ -75,9 +76,9 @@ public class TileLayerRestlet extends GWCRestlet {
                     doDelete(request, response);
                 } else {
                     throw new RestletException("Method not allowed",
-                        Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
+                            Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
                 }
-                
+
                 layerDispatcher.reInit();
             }
         } catch (RestletException re) {
@@ -90,27 +91,28 @@ public class TileLayerRestlet extends GWCRestlet {
             e.printStackTrace();
         }
     }
-    
+
     /**
      * GET outputs an existing layer
      * 
      * @param req
      * @param resp
      * @throws RestletException
-     * @throws  
+     * @throws
      */
     protected void doGet(Request req, Response resp) throws RestletException {
-        //String layerName = (String) req.getAttributes().get("layer");
+        // String layerName = (String) req.getAttributes().get("layer");
         String layerName = null;
         try {
             layerName = URLDecoder.decode((String) req.getAttributes().get("layer"), "UTF-8");
-        } catch (UnsupportedEncodingException uee) { }
-        
+        } catch (UnsupportedEncodingException uee) {
+        }
+
         String formatExtension = (String) req.getAttributes().get("extension");
         resp.setEntity(doGetInternal(layerName, formatExtension));
     }
-    
-    /** 
+
+    /**
      * We separate out the internal to make unit testing easier
      * 
      * @param layerName
@@ -118,20 +120,20 @@ public class TileLayerRestlet extends GWCRestlet {
      * @return
      * @throws RestletException
      */
-    protected Representation doGetInternal(String layerName, String formatExtension) 
-    throws RestletException {
+    protected Representation doGetInternal(String layerName, String formatExtension)
+            throws RestletException {
         TileLayer tl = findTileLayer(layerName, layerDispatcher);
-        
-        if(formatExtension.equalsIgnoreCase("xml")) {
+
+        if (formatExtension.equalsIgnoreCase("xml")) {
             return getXMLRepresentation(tl);
-        } else if(formatExtension.equalsIgnoreCase("json")) {
+        } else if (formatExtension.equalsIgnoreCase("json")) {
             return getJsonRepresentation(tl);
         } else {
-            throw new RestletException("Unknown or missing format extension : " + formatExtension, 
+            throw new RestletException("Unknown or missing format extension : " + formatExtension,
                     Status.CLIENT_ERROR_BAD_REQUEST);
         }
     }
-    
+
     /**
      * POST overwrites an existing layer
      * 
@@ -139,17 +141,22 @@ public class TileLayerRestlet extends GWCRestlet {
      * @param resp
      * @throws RestletException
      */
-    private void doPost(Request req, Response resp) 
-    throws RestletException, IOException, GeoWebCacheException {
+    private void doPost(Request req, Response resp) throws RestletException, IOException,
+            GeoWebCacheException {
         TileLayer tl = deserializeAndCheckLayer(req, resp, false);
-        if( ! xmlConfig.modifyLayer(tl) ) {
-            throw new RestletException("Layer " + tl.getName() + " is not known by the configuration." 
+
+        try {
+            layerDispatcher.modify(tl);
+        } catch (NoSuchElementException e) {
+            throw new RestletException("Layer " + tl.getName()
+                    + " is not known by the configuration."
                     + "Maybe it was loaded from another source, or you're trying to add a new "
                     + "layer and need to do an HTTP PUT ?", Status.CLIENT_ERROR_BAD_REQUEST);
         }
+
         layerDispatcher.reInit();
     }
-    
+
     /**
      * PUT creates a new layer
      * 
@@ -157,27 +164,27 @@ public class TileLayerRestlet extends GWCRestlet {
      * @param resp
      * @throws RestletException
      */
-    private void doPut(Request req, Response resp) 
-    throws RestletException, IOException , GeoWebCacheException {
+    private void doPut(Request req, Response resp) throws RestletException, IOException,
+            GeoWebCacheException {
         TileLayer tl = deserializeAndCheckLayer(req, resp, true);
-        
+
         TileLayer testtl = null;
         try {
-            testtl = findTileLayer(tl.getName(), layerDispatcher);  
+            testtl = findTileLayer(tl.getName(), layerDispatcher);
         } catch (RestletException re) {
             // This is the expected behavior, it should not exist
         }
-        
-        if(testtl == null) {
-            xmlConfig.addLayer(tl); 
+
+        if (testtl == null) {
+            xmlConfig.addLayer(tl);
+            xmlConfig.save();
         } else {
-            throw new RestletException(
-            "Layer with name " + tl.getName() + " already exists, "
-            +"use POST if you want to replace it.", Status.CLIENT_ERROR_BAD_REQUEST );
+            throw new RestletException("Layer with name " + tl.getName() + " already exists, "
+                    + "use POST if you want to replace it.", Status.CLIENT_ERROR_BAD_REQUEST);
         }
         layerDispatcher.reInit();
     }
-    
+
     /**
      * DELETE removes an existing layer
      * 
@@ -185,30 +192,32 @@ public class TileLayerRestlet extends GWCRestlet {
      * @param resp
      * @throws RestletException
      */
-    private void doDelete(Request req, Response resp) 
-    throws RestletException, GeoWebCacheException {
+    private void doDelete(Request req, Response resp) throws RestletException, GeoWebCacheException {
         String layerName = (String) req.getAttributes().get("layer");
         TileLayer tl = findTileLayer(layerName, layerDispatcher);
-        xmlConfig.deleteLayer(tl);
-        layerDispatcher.reInit();
+        try {
+            layerDispatcher.removeLayer(tl.getName());
+        } catch (IOException e) {
+            throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL, e);
+        }
     }
-    
-    
-    protected TileLayer deserializeAndCheckLayer(Request req, Response resp, boolean isPut) 
-    throws RestletException, IOException {
+
+    protected TileLayer deserializeAndCheckLayer(Request req, Response resp, boolean isPut)
+            throws RestletException, IOException {
         // TODO UTF-8 may not always be right here
-        String layerName = ServletUtils.URLDecode((String) req.getAttributes().get("layer"), "UTF-8");
+        String layerName = ServletUtils.URLDecode((String) req.getAttributes().get("layer"),
+                "UTF-8");
         String formatExtension = (String) req.getAttributes().get("extension");
         InputStream is = req.getEntity().getStream();
-        
+
         // If appropriate, check whether this layer exists
-        if(! isPut) {
+        if (!isPut) {
             findTileLayer(layerName, layerDispatcher);
         }
-        
+
         return deserializeAndCheckLayerInternal(layerName, formatExtension, is);
     }
-    
+
     /**
      * We separate out the internal to make unit testing easier
      * 
@@ -219,13 +228,12 @@ public class TileLayerRestlet extends GWCRestlet {
      * @throws RestletException
      * @throws IOException
      */
-    protected TileLayer deserializeAndCheckLayerInternal(
-            String layerName, String formatExtension, InputStream is) 
-    throws RestletException, IOException {
-        
+    protected TileLayer deserializeAndCheckLayerInternal(String layerName, String formatExtension,
+            InputStream is) throws RestletException, IOException {
+
         XStream xs = xmlConfig.getConfiguredXStream(new XStream(new DomDriver()));
 
-        WMSLayer newLayer = null;
+        WMSLayer newLayer;
 
         if (formatExtension.equalsIgnoreCase("xml")) {
             newLayer = (WMSLayer) xs.fromXML(is);
@@ -234,26 +242,23 @@ public class TileLayerRestlet extends GWCRestlet {
             HierarchicalStreamReader hsr = driver.createReader(is);
             // See http://jira.codehaus.org/browse/JETTISON-48
             StringWriter writer = new StringWriter();
-            new HierarchicalStreamCopier().copy(
-                    hsr, new PrettyPrintWriter(writer));
+            new HierarchicalStreamCopier().copy(hsr, new PrettyPrintWriter(writer));
             writer.close();
             newLayer = (WMSLayer) xs.fromXML(writer.toString());
         } else {
-            throw new RestletException("Unknown or missing format extension: "
-                    + formatExtension, Status.CLIENT_ERROR_BAD_REQUEST);
+            throw new RestletException("Unknown or missing format extension: " + formatExtension,
+                    Status.CLIENT_ERROR_BAD_REQUEST);
         }
 
         if (!newLayer.getName().equals(layerName)) {
-            throw new RestletException(
-                    "There is a mismatch between the name of the "
+            throw new RestletException("There is a mismatch between the name of the "
                     + " layer in the submission and the URL you specified.",
                     Status.CLIENT_ERROR_BAD_REQUEST);
         }
 
         return newLayer;
     }
-    
-   
+
     /**
      * Returns a XMLRepresentation of the layer
      * 
@@ -263,7 +268,7 @@ public class TileLayerRestlet extends GWCRestlet {
     public Representation getXMLRepresentation(TileLayer layer) {
         XStream xs = xmlConfig.getConfiguredXStream(new XStream());
         String xmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + xs.toXML(layer);
-        
+
         return new StringRepresentation(xmlText, MediaType.TEXT_XML);
     }
 
@@ -276,8 +281,8 @@ public class TileLayerRestlet extends GWCRestlet {
     public JsonRepresentation getJsonRepresentation(TileLayer layer) {
         JsonRepresentation rep = null;
         try {
-            XStream xs = xmlConfig.getConfiguredXStream(
-                    new XStream(new JsonHierarchicalStreamDriver()));
+            XStream xs = xmlConfig.getConfiguredXStream(new XStream(
+                    new JsonHierarchicalStreamDriver()));
             JSONObject obj = new JSONObject(xs.toXML(layer));
             rep = new JsonRepresentation(obj);
         } catch (JSONException jse) {
@@ -285,11 +290,11 @@ public class TileLayerRestlet extends GWCRestlet {
         }
         return rep;
     }
-    
+
     public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {
         layerDispatcher = tileLayerDispatcher;
     }
-    
+
     public void setXMLConfiguration(XMLConfiguration xmlConfig) {
         this.xmlConfig = xmlConfig;
     }

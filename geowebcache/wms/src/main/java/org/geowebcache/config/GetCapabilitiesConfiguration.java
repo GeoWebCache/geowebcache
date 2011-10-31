@@ -20,6 +20,7 @@ package org.geowebcache.config;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -27,6 +28,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -149,7 +151,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
         return layers;
     }
 
-    public ServiceInformation getServiceInformation() throws GeoWebCacheException {
+    public ServiceInformation getServiceInformation() {
         return null;
     }
 
@@ -408,8 +410,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
     /**
      * @see org.geowebcache.config.Configuration#getTileLayers()
      */
-    public List<TileLayer> getTileLayers() throws GeoWebCacheException {
-        return new ArrayList<TileLayer>(layers.values());
+    public List<TileLayer> getTileLayers() {
+        return Collections.unmodifiableList(new ArrayList<TileLayer>(layers.values()));
     }
 
     /**
@@ -426,11 +428,32 @@ public class GetCapabilitiesConfiguration implements Configuration {
         return layers.get(layerIdent);
     }
 
+    /**
+     * @see org.geowebcache.config.Configuration#getTileLayerCount()
+     */
     public int getTileLayerCount() {
         return layers.size();
     }
 
-    public boolean remove(String layerName) {
+    /**
+     * @see org.geowebcache.config.Configuration#removeLayer(java.lang.String)
+     */
+    public boolean removeLayer(String layerName) {
         return layers.remove(layerName) != null;
+    }
+
+    /**
+     * @see org.geowebcache.config.Configuration#modifyLayer(org.geowebcache.layer.TileLayer)
+     */
+    public void modifyLayer(TileLayer tl) throws NoSuchElementException {
+        throw new UnsupportedOperationException("modifyLayer is not supported by "
+                + getClass().getSimpleName());
+    }
+
+    /**
+     * @see org.geowebcache.config.Configuration#save()
+     */
+    public void save() throws IOException {
+        // silently do nothing
     }
 }

@@ -16,105 +16,112 @@
  */
 package org.geowebcache.grid;
 
-
 public class GridSet {
-        
-    protected Grid[] gridLevels;
-    
+
+    private Grid[] gridLevels;
+
     /**
-     * The base cordinates, used to map tile indexes
-     * to coordinate bounding boxes. These can either
+     * The base cordinates, used to map tile indexes to coordinate bounding boxes. These can either
      * be top left or bottom left, so must be kept private
      */
-    protected double[] baseCoords;
-    
-    protected BoundingBox originalExtent;
-    
+    private double[] baseCoords;
+
+    private BoundingBox originalExtent;
+
     /**
-     * Whether the y-coordinate of baseCoords is at
-     * the top (true) or at the bottom (false)
+     * Whether the y-coordinate of baseCoords is at the top (true) or at the bottom (false)
      */
     protected boolean yBaseToggle = false;
-    
+
     /**
-     * By default the coordinates are {x,y},
-     * this flag reverses the output for WMTS getcapabilities
+     * By default the coordinates are {x,y}, this flag reverses the output for WMTS getcapabilities
      */
-    protected boolean yCoordinateFirst = false;
-    
-    protected boolean scaleWarning = false;
-       
-    protected double metersPerUnit;
-    
-    protected double pixelSize;
-    
-    protected String name;
-    
-    protected SRS srs;
-    
-    protected int tileWidth;
-    
-    protected int tileHeight;
-    
+    private boolean yCoordinateFirst = false;
+
+    private boolean scaleWarning = false;
+
+    private double metersPerUnit;
+
+    private double pixelSize;
+
+    private String name;
+
+    private SRS srs;
+
+    private int tileWidth;
+
+    private int tileHeight;
+
     protected GridSet() {
         // Blank
     }
-    
+
+    /**
+     * @return the originalExtent
+     */
+    public BoundingBox getOriginalExtent() {
+        return originalExtent;
+    }
+
+    /**
+     * @param originalExtent
+     *            the originalExtent to set
+     */
+    void setOriginalExtent(BoundingBox originalExtent) {
+        this.originalExtent = originalExtent;
+    }
+
     protected BoundingBox boundsFromIndex(long[] tileIndex) {
-        Grid grid = gridLevels[(int) tileIndex[2]];
-        
-        double width = grid.getResolution() * tileWidth;
-        double height = grid.getResolution() * tileHeight;
-       
+        Grid grid = getGridLevels()[(int) tileIndex[2]];
+
+        double width = grid.getResolution() * getTileWidth();
+        double height = grid.getResolution() * getTileHeight();
+
         long y = tileIndex[1];
-        if(yBaseToggle) {
+        if (yBaseToggle) {
             y = y - grid.getNumTilesHigh();
         }
-        
-        BoundingBox tileBounds = new BoundingBox(
-                baseCoords[0] + width*tileIndex[0],
-                baseCoords[1] + height*(y),
-                baseCoords[0] + width*(tileIndex[0] + 1),
-                baseCoords[1] + height*(y + 1));
+
+        BoundingBox tileBounds = new BoundingBox(getBaseCoords()[0] + width * tileIndex[0],
+                getBaseCoords()[1] + height * (y), getBaseCoords()[0] + width * (tileIndex[0] + 1),
+                getBaseCoords()[1] + height * (y + 1));
         return tileBounds;
     }
-    
+
     protected BoundingBox boundsFromRectangle(long[] rectangleExtent) {
-        Grid grid = gridLevels[(int) rectangleExtent[4]];
-        
-        double width = grid.getResolution() * tileWidth;
-        double height = grid.getResolution() * tileHeight;
-        
+        Grid grid = getGridLevels()[(int) rectangleExtent[4]];
+
+        double width = grid.getResolution() * getTileWidth();
+        double height = grid.getResolution() * getTileHeight();
+
         long bottomY = rectangleExtent[1];
         long topY = rectangleExtent[3];
-        
-        if(yBaseToggle) {
+
+        if (yBaseToggle) {
             bottomY = bottomY - grid.getNumTilesHigh();
             topY = topY - grid.getNumTilesHigh();
         }
-        
-        BoundingBox rectangleBounds = new BoundingBox(
-                baseCoords[0] + width*rectangleExtent[0], 
-                baseCoords[1] + height*(bottomY),
-                baseCoords[0] + width*(rectangleExtent[2] + 1),
-                baseCoords[1] + height*(topY + 1) );
-                
+
+        BoundingBox rectangleBounds = new BoundingBox(getBaseCoords()[0] + width * rectangleExtent[0],
+                getBaseCoords()[1] + height * (bottomY), getBaseCoords()[0] + width
+                        * (rectangleExtent[2] + 1), getBaseCoords()[1] + height * (topY + 1));
+
         return rectangleBounds;
     }
-    
-    protected long[] closestIndex(BoundingBox tileBounds) throws GridMismatchException {       
-        double wRes = tileBounds.getWidth() / tileWidth;
-        
+
+    protected long[] closestIndex(BoundingBox tileBounds) throws GridMismatchException {
+        double wRes = tileBounds.getWidth() / getTileWidth();
+
         double bestError = Double.MAX_VALUE;
         int bestLevel = -1;
         double bestResolution = -1.0;
-        
-        for(int i=0; i< gridLevels.length; i++) {
-            Grid grid = gridLevels[i];
-            
+
+        for (int i = 0; i < getGridLevels().length; i++) {
+            Grid grid = getGridLevels()[i];
+
             double error = Math.abs(wRes - grid.getResolution());
-            
-            if(error < bestError) {
+
+            if (error < bestError) {
                 bestError = error;
                 bestResolution = grid.getResolution();
                 bestLevel = i;
@@ -122,154 +129,151 @@ public class GridSet {
                 break;
             }
         }
-        
-        if(Math.abs(wRes - bestResolution) > (0.1*wRes)) {
+
+        if (Math.abs(wRes - bestResolution) > (0.1 * wRes)) {
             throw new ResolutionMismatchException(wRes, bestResolution);
         }
 
         return closestIndex(bestLevel, tileBounds);
     }
-    
-    protected long[] closestIndex(int level, BoundingBox tileBounds) 
-    throws GridAlignmentMismatchException {
-        Grid grid = gridLevels[level];
-        
-        double width = grid.getResolution() * tileWidth;
-        double height = grid.getResolution() * tileHeight;
-        
-        double x = (tileBounds.getMinX() - baseCoords[0]) / width;
-        
-        double y = (tileBounds.getMinY() - baseCoords[1]) / height;
-            
+
+    protected long[] closestIndex(int level, BoundingBox tileBounds)
+            throws GridAlignmentMismatchException {
+        Grid grid = getGridLevels()[level];
+
+        double width = grid.getResolution() * getTileWidth();
+        double height = grid.getResolution() * getTileHeight();
+
+        double x = (tileBounds.getMinX() - getBaseCoords()[0]) / width;
+
+        double y = (tileBounds.getMinY() - getBaseCoords()[1]) / height;
+
         long posX = (long) Math.round(x);
-        
+
         long posY = (long) Math.round(y);
-        
-        if(x - posX > 0.1 || y - posY > 0.1) {
-            throw new GridAlignmentMismatchException(x,posX,y,posY);
+
+        if (x - posX > 0.1 || y - posY > 0.1) {
+            throw new GridAlignmentMismatchException(x, posX, y, posY);
         }
-        
-        if(yBaseToggle) {
+
+        if (yBaseToggle) {
             posY = posY + grid.getNumTilesHigh();
         }
-        
+
         long[] ret = { posX, posY, level };
-        
+
         return ret;
     }
-    
-    public long[] closestRectangle(BoundingBox rectangleBounds) {       
+
+    public long[] closestRectangle(BoundingBox rectangleBounds) {
         double rectWidth = rectangleBounds.getWidth();
         double rectHeight = rectangleBounds.getHeight();
-        
+
         double bestError = Double.MAX_VALUE;
         int bestLevel = -1;
-        
+
         // Now we loop over the resolutions until
-        for(int i=0; i< gridLevels.length; i++) {
-            Grid grid = gridLevels[i];
+        for (int i = 0; i < getGridLevels().length; i++) {
+            Grid grid = getGridLevels()[i];
 
-            double countX = rectWidth / (grid.getResolution() * tileWidth);
-            double countY = rectHeight / (grid.getResolution() * tileHeight);
-            
-            double error = 
-                Math.abs(countX - Math.round(countX)) + 
-                Math.abs(countY - Math.round(countY));
+            double countX = rectWidth / (grid.getResolution() * getTileWidth());
+            double countY = rectHeight / (grid.getResolution() * getTileHeight());
 
-            if(error < bestError) {
+            double error = Math.abs(countX - Math.round(countX))
+                    + Math.abs(countY - Math.round(countY));
+
+            if (error < bestError) {
                 bestError = error;
                 bestLevel = i;
-            } else if(error >= bestError) {
+            } else if (error >= bestError) {
                 break;
             }
         }
-        
+
         return closestRectangle(bestLevel, rectangleBounds);
     }
-    
+
     protected long[] closestRectangle(int level, BoundingBox rectangeBounds) {
-        Grid grid = gridLevels[level];
-        
-        double width = grid.getResolution() * tileWidth;
-        double height = grid.getResolution() * tileHeight;
-        
-        
-        long minX = (long) Math.floor((rectangeBounds.getMinX() - baseCoords[0]) / width);
-        long minY = (long) Math.floor((rectangeBounds.getMinY() - baseCoords[1])/ height);
-        long maxX = (long) Math.ceil(((rectangeBounds.getMaxX() - baseCoords[0]) / width));
-        long maxY = (long) Math.ceil(((rectangeBounds.getMaxY() - baseCoords[1]) / height));
-        
-        if(yBaseToggle) {
+        Grid grid = getGridLevels()[level];
+
+        double width = grid.getResolution() * getTileWidth();
+        double height = grid.getResolution() * getTileHeight();
+
+        long minX = (long) Math.floor((rectangeBounds.getMinX() - getBaseCoords()[0]) / width);
+        long minY = (long) Math.floor((rectangeBounds.getMinY() - getBaseCoords()[1]) / height);
+        long maxX = (long) Math.ceil(((rectangeBounds.getMaxX() - getBaseCoords()[0]) / width));
+        long maxY = (long) Math.ceil(((rectangeBounds.getMaxY() - getBaseCoords()[1]) / height));
+
+        if (yBaseToggle) {
             minY = minY + grid.getNumTilesHigh();
             maxY = maxY + grid.getNumTilesHigh();
         }
-        
+
         // We substract one, since that's the tile at that position
         long[] ret = { minX, minY, maxX - 1, maxY - 1, level };
-        
+
         return ret;
     }
-    
+
     public boolean equals(Object obj) {
-        if(! (obj instanceof GridSet))
+        if (!(obj instanceof GridSet))
             return false;
-        
+
         GridSet other = (GridSet) obj;
-        
-        if(this == other)
+
+        if (this == other)
             return true;
-        
-        if(! other.srs.equals(srs))
+
+        if (!other.getSrs().equals(getSrs()))
             return false;
-        
-        if(! other.name.equals(name))
+
+        if (!other.getName().equals(getName()))
             return false;
-     
-        if(tileWidth != other.tileWidth ||
-                tileHeight != other.tileHeight)
+
+        if (getTileWidth() != other.getTileWidth() || getTileHeight() != other.getTileHeight())
             return false;
-        
-        if(gridLevels.length != other.gridLevels.length)
+
+        if (getGridLevels().length != other.getGridLevels().length)
             return false;
-        
-        for(int i=0; i<gridLevels.length; i++) {
-            if(! gridLevels[i].equals(other.gridLevels[i]))
+
+        for (int i = 0; i < getGridLevels().length; i++) {
+            if (!getGridLevels()[i].equals(other.getGridLevels()[i]))
                 return false;
         }
-        
-        if(yBaseToggle != other.yBaseToggle)
+
+        if (yBaseToggle != other.yBaseToggle)
             return false;
-        
+
         return true;
     }
-    
+
     public BoundingBox getBounds() {
         int i;
         long tilesWide, tilesHigh;
 
-        for (i = (gridLevels.length -1); i > 0; i--) {
-            tilesWide = gridLevels[i].getNumTilesWide();
-            tilesHigh = gridLevels[i].getNumTilesHigh();
-            
+        for (i = (getGridLevels().length - 1); i > 0; i--) {
+            tilesWide = getGridLevels()[i].getNumTilesWide();
+            tilesHigh = getGridLevels()[i].getNumTilesHigh();
+
             if (tilesWide == 1 && tilesHigh == 0) {
                 break;
             }
         }
-                
-        tilesWide = gridLevels[i].getNumTilesWide();
-        tilesHigh = gridLevels[i].getNumTilesHigh();
-        long[] ret = { 0, 0, tilesWide - 1, tilesHigh - 1, i};
+
+        tilesWide = getGridLevels()[i].getNumTilesWide();
+        tilesHigh = getGridLevels()[i].getNumTilesHigh();
+        long[] ret = { 0, 0, tilesWide - 1, tilesHigh - 1, i };
 
         return boundsFromRectangle(ret);
     }
-    
+
     public Grid[] getGrids() {
-        return gridLevels;
+        return getGridLevels();
     }
-    
+
     /**
-     * Returns the top left corner of the grid in the 
-     * order used by the coordinate system. (Bad idea)
+     * Returns the top left corner of the grid in the order used by the coordinate system. (Bad
+     * idea)
      * 
      * Used for WMTS GetCapabilities
      * 
@@ -279,71 +283,51 @@ public class GridSet {
     public double[] getOrderedTopLeftCorner(int gridIndex) {
         // First we will find the x,y pair, then we'll flip it if necessary
         double[] leftTop = new double[2];
-        
-        if(yBaseToggle) {
-            leftTop[0] = baseCoords[0];
-            leftTop[1] = baseCoords[1]; 
+
+        if (yBaseToggle) {
+            leftTop[0] = getBaseCoords()[0];
+            leftTop[1] = getBaseCoords()[1];
         } else {
             // We don't actually store the top coordinate, need to calculate it
-            Grid grid = gridLevels[gridIndex];
-            
-            double dTileHeight = tileHeight;
+            Grid grid = getGridLevels()[gridIndex];
+
+            double dTileHeight = getTileHeight();
             double dGridExtent = grid.getNumTilesHigh();
-            
-            double top = baseCoords[1] + dTileHeight * grid.getResolution() * dGridExtent;
-            
+
+            double top = getBaseCoords()[1] + dTileHeight * grid.getResolution() * dGridExtent;
+
             // Round off if we are within 0.5% of an integer value
-            if(Math.abs(top - Math.round(top)) < (top / 200)) {
+            if (Math.abs(top - Math.round(top)) < (top / 200)) {
                 top = Math.round(top);
             }
-            
-            leftTop[0] = baseCoords[0];
+
+            leftTop[0] = getBaseCoords()[0];
             leftTop[1] = top;
         }
-        
+
         // Y coordinate first?
-        if(yCoordinateFirst) {
-           double[] ret =  {leftTop[1], leftTop[0]};
-           return ret;
+        if (isyCoordinateFirst()) {
+            double[] ret = { leftTop[1], leftTop[0] };
+            return ret;
         }
-        
+
         return leftTop;
     }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public SRS getSRS() {
-        return srs;
-    }
-    
-    public boolean getScaleWarning() {
-        return scaleWarning;
-    }
-    
-    public int getTileHeight() {
-        return tileHeight;
-    }
-    
-    public int getTileWidth() {
-        return tileWidth;
-    }
-    
+
     public String guessMapUnits() {
-        if(113000 > metersPerUnit && metersPerUnit > 110000) {
+        if (113000 > getMetersPerUnit() && getMetersPerUnit() > 110000) {
             return "degrees";
-        } else if(1100 > metersPerUnit && metersPerUnit > 900) {      
+        } else if (1100 > getMetersPerUnit() && getMetersPerUnit() > 900) {
             return "kilometers";
-        } else if(1.1 > metersPerUnit && metersPerUnit > 0.9) {
+        } else if (1.1 > getMetersPerUnit() && getMetersPerUnit() > 0.9) {
             return "meters";
-        } else if(0.4 > metersPerUnit && metersPerUnit > 0.28) {
+        } else if (0.4 > getMetersPerUnit() && getMetersPerUnit() > 0.28) {
             return "feet";
-        } else if(0.03 > metersPerUnit && metersPerUnit > 0.02) {
+        } else if (0.03 > getMetersPerUnit() && getMetersPerUnit() > 0.02) {
             return "inches";
-        } else if(0.02 > metersPerUnit && metersPerUnit > 0.005) {
+        } else if (0.02 > getMetersPerUnit() && getMetersPerUnit() > 0.005) {
             return "centimeters";
-        } else if(0.002 > metersPerUnit && metersPerUnit > 0.0005) {
+        } else if (0.002 > getMetersPerUnit() && getMetersPerUnit() > 0.0005) {
             return "millimeters";
         } else {
             return "unknown";
@@ -352,5 +336,149 @@ public class GridSet {
 
     public boolean isTopLeftAligned() {
         return this.yBaseToggle;
+    }
+
+    void setTopLeftAligned(boolean yBaseToggle) {
+        this.yBaseToggle = yBaseToggle;
+    }
+
+    /**
+     * @return the gridLevels
+     */
+    public Grid[] getGridLevels() {
+        return gridLevels;
+    }
+
+    /**
+     * @param gridLevels the gridLevels to set
+     */
+    public void setGridLevels(Grid[] gridLevels) {
+        this.gridLevels = gridLevels;
+    }
+
+    /**
+     * @return the baseCoords
+     */
+    public double[] getBaseCoords() {
+        return baseCoords;
+    }
+
+    /**
+     * @param baseCoords the baseCoords to set
+     */
+    public void setBaseCoords(double[] baseCoords) {
+        this.baseCoords = baseCoords;
+    }
+
+    /**
+     * @return the yCoordinateFirst
+     */
+    public boolean isyCoordinateFirst() {
+        return yCoordinateFirst;
+    }
+
+    /**
+     * @param yCoordinateFirst the yCoordinateFirst to set
+     */
+    public void setyCoordinateFirst(boolean yCoordinateFirst) {
+        this.yCoordinateFirst = yCoordinateFirst;
+    }
+
+    /**
+     * @return the scaleWarning
+     */
+    public boolean isScaleWarning() {
+        return scaleWarning;
+    }
+
+    /**
+     * @param scaleWarning the scaleWarning to set
+     */
+    public void setScaleWarning(boolean scaleWarning) {
+        this.scaleWarning = scaleWarning;
+    }
+
+    /**
+     * @return the metersPerUnit
+     */
+    public double getMetersPerUnit() {
+        return metersPerUnit;
+    }
+
+    /**
+     * @param metersPerUnit the metersPerUnit to set
+     */
+    public void setMetersPerUnit(double metersPerUnit) {
+        this.metersPerUnit = metersPerUnit;
+    }
+
+    /**
+     * @return the pixelSize
+     */
+    public double getPixelSize() {
+        return pixelSize;
+    }
+
+    /**
+     * @param pixelSize the pixelSize to set
+     */
+    public void setPixelSize(double pixelSize) {
+        this.pixelSize = pixelSize;
+    }
+
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @param name the name to set
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * @return the srs
+     */
+    public SRS getSrs() {
+        return srs;
+    }
+
+    /**
+     * @param srs the srs to set
+     */
+    public void setSrs(SRS srs) {
+        this.srs = srs;
+    }
+
+    /**
+     * @return the tileWidth
+     */
+    public int getTileWidth() {
+        return tileWidth;
+    }
+
+    /**
+     * @param tileWidth the tileWidth to set
+     */
+    public void setTileWidth(int tileWidth) {
+        this.tileWidth = tileWidth;
+    }
+
+    /**
+     * @return the tileHeight
+     */
+    public int getTileHeight() {
+        return tileHeight;
+    }
+
+    /**
+     * @param tileHeight the tileHeight to set
+     */
+    public void setTileHeight(int tileHeight) {
+        this.tileHeight = tileHeight;
     }
 }

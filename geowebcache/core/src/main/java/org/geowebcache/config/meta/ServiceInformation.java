@@ -19,20 +19,132 @@ package org.geowebcache.config.meta;
 import java.util.List;
 
 public class ServiceInformation {
-    public String title;
-    
-    public String description;
-    
-    public List<String> keywords;
-    
-    public String fees;
-    
-    public String accessConstraints;
-    
-    public String providerName;
-    
-    public String providerSite;
-    
-    public ServiceProvider serviceProvider;
+    private String title;
+
+    private String description;
+
+    private List<String> keywords;
+
+    private String fees;
+
+    private String accessConstraints;
+
+    private String providerName;
+
+    private String providerSite;
+
+    private ServiceProvider serviceProvider;
+
+    /**
+     * @return the title
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * @param title
+     *            the title to set
+     */
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @param description
+     *            the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
+     * @return the keywords
+     */
+    public List<String> getKeywords() {
+        return keywords;
+    }
+
+    /**
+     * @return the fees
+     */
+    public String getFees() {
+        return fees;
+    }
+
+    /**
+     * @param fees
+     *            the fees to set
+     */
+    public void setFees(String fees) {
+        this.fees = fees;
+    }
+
+    /**
+     * @return the accessConstraints
+     */
+    public String getAccessConstraints() {
+        return accessConstraints;
+    }
+
+    /**
+     * @param accessConstraints
+     *            the accessConstraints to set
+     */
+    public void setAccessConstraints(String accessConstraints) {
+        this.accessConstraints = accessConstraints;
+    }
+
+    /**
+     * @return the providerName
+     */
+    public String getProviderName() {
+        return providerName;
+    }
+
+    /**
+     * @param providerName
+     *            the providerName to set
+     */
+    public void setProviderName(String providerName) {
+        this.providerName = providerName;
+    }
+
+    /**
+     * @return the providerSite
+     */
+    public String getProviderSite() {
+        return providerSite;
+    }
+
+    /**
+     * @param providerSite
+     *            the providerSite to set
+     */
+    public void setProviderSite(String providerSite) {
+        this.providerSite = providerSite;
+    }
+
+    /**
+     * @return the serviceProvider
+     */
+    public ServiceProvider getServiceProvider() {
+        return serviceProvider;
+    }
+
+    /**
+     * @param serviceProvider
+     *            the serviceProvider to set
+     */
+    public void setServiceProvider(ServiceProvider serviceProvider) {
+        this.serviceProvider = serviceProvider;
+    }
 
 }

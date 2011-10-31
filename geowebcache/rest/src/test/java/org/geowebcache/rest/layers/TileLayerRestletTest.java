@@ -24,7 +24,7 @@ import junit.framework.TestCase;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
-import org.geowebcache.config.XMLConfigurationTest;
+import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.RestletException;
@@ -83,7 +83,7 @@ public class TileLayerRestletTest extends TestCase {
 
     private XMLConfiguration loadXMLConfig() {
         InputStream is = XMLConfiguration.class
-                .getResourceAsStream(XMLConfigurationTest.LATEST_FILENAME);
+                .getResourceAsStream(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
         XMLConfiguration xmlConfig = null;
         try {
             xmlConfig = new XMLConfiguration(is);

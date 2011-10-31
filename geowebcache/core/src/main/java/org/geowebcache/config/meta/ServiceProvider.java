@@ -17,10 +17,55 @@
 package org.geowebcache.config.meta;
 
 public class ServiceProvider {
-    
-    public String providerName;
-    
-    public String providerSite;
-    
-    public ServiceContact serviceContact;
+
+    private String providerName;
+
+    private String providerSite;
+
+    private ServiceContact serviceContact;
+
+    /**
+     * @return the providerName
+     */
+    public String getProviderName() {
+        return providerName;
+    }
+
+    /**
+     * @param providerName
+     *            the providerName to set
+     */
+    public void setProviderName(String providerName) {
+        this.providerName = providerName;
+    }
+
+    /**
+     * @return the providerSite
+     */
+    public String getProviderSite() {
+        return providerSite;
+    }
+
+    /**
+     * @param providerSite
+     *            the providerSite to set
+     */
+    public void setProviderSite(String providerSite) {
+        this.providerSite = providerSite;
+    }
+
+    /**
+     * @return the serviceContact
+     */
+    public ServiceContact getServiceContact() {
+        return serviceContact;
+    }
+
+    /**
+     * @param serviceContact
+     *            the serviceContact to set
+     */
+    public void setServiceContact(ServiceContact serviceContact) {
+        this.serviceContact = serviceContact;
+    }
 }

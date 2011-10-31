@@ -20,7 +20,7 @@ import org.apache.commons.io.FileUtils;
 import org.easymock.classextension.EasyMock;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
-import org.geowebcache.config.XMLConfigurationTest;
+import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
 import org.geowebcache.diskquota.DiskQuotaMonitor;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -77,7 +77,7 @@ public class BDBQuotaStoreTest extends TestCase {
 
     private XMLConfiguration loadXMLConfig() {
         InputStream is = XMLConfiguration.class
-                .getResourceAsStream(XMLConfigurationTest.LATEST_FILENAME);
+                .getResourceAsStream(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
         XMLConfiguration xmlConfig = null;
         try {
             xmlConfig = new XMLConfiguration(is);
@@ -126,7 +126,7 @@ public class BDBQuotaStoreTest extends TestCase {
         assertTrue(tileSets.contains(tileSet));
 
         // remove one layer from the dispatcher
-        layerDispatcher.remove("topp:states");
+        layerDispatcher.removeLayer("topp:states");
         // and make sure at the next startup the store catches up (note this behaviour is just a
         // startup consistency check in case the store got out of sync for some reason. On normal
         // situations the store should have been notified through store.deleteLayer(layerName) if
@@ -255,7 +255,7 @@ public class BDBQuotaStoreTest extends TestCase {
     public void testRenameLayer() throws InterruptedException {
         final String oldLayerName = tilePageCalculator.getLayerNames().iterator().next();
         final String newLayerName = "renamed_layer";
-        
+
         // make sure the layer is there and has stuff
         Quota usedQuota = store.getUsedQuotaByLayerName(oldLayerName);
         assertNotNull(usedQuota);
@@ -263,8 +263,9 @@ public class BDBQuotaStoreTest extends TestCase {
         TileSet tileSet = tilePageCalculator.getTileSetsFor(oldLayerName).iterator().next();
         TilePage page = new TilePage(tileSet.getId(), 0, 0, (byte) 0);
         store.addHitsAndSetAccesTime(Collections.singleton(new PageStatsPayload(page)));
-        store.addToQuotaAndTileCounts(tileSet, new Quota(BigInteger.valueOf(1024)), Collections.EMPTY_LIST);
-        
+        store.addToQuotaAndTileCounts(tileSet, new Quota(BigInteger.valueOf(1024)),
+                Collections.EMPTY_LIST);
+
         Quota expectedQuota = store.getUsedQuotaByLayerName(oldLayerName);
         assertEquals(1024L, expectedQuota.getBytes().longValue());
 
@@ -278,7 +279,7 @@ public class BDBQuotaStoreTest extends TestCase {
         assertNotNull(usedQuota);
         assertEquals(0L, usedQuota.getBytes().longValue());
 
-        //created new layer?
+        // created new layer?
         Quota newLayerUsedQuota = store.getUsedQuotaByLayerName(newLayerName);
         assertEquals(expectedQuota.getBytes(), newLayerUsedQuota.getBytes());
     }

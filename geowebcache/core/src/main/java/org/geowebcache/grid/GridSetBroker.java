@@ -56,7 +56,7 @@ public class GridSetBroker {
                 256,
                 256,
                 true );
-        gridSets.put(WORLD_EPSG4326.name, WORLD_EPSG4326);
+        gridSets.put(WORLD_EPSG4326.getName(), WORLD_EPSG4326);
         
         if(useEPSG900913) {
             log.debug("Adding EPSG:900913 grid set for Spherical Mercator / GoogleMapsCompatible");
@@ -87,7 +87,7 @@ public class GridSetBroker {
                     256,
                     false );
         }
-        gridSets.put(WORLD_EPSG3857.name, WORLD_EPSG3857);
+        gridSets.put(WORLD_EPSG3857.getName(), WORLD_EPSG3857);
         
         log.debug("Adding GlobalCRS84Pixel");
         GridSet GlobalCRS84Pixel = GridSetFactory.createGridSet(
@@ -104,7 +104,7 @@ public class GridSetBroker {
                 256,
                 true );
         
-        gridSets.put(GlobalCRS84Pixel.name, GlobalCRS84Pixel);
+        gridSets.put(GlobalCRS84Pixel.getName(), GlobalCRS84Pixel);
         
         log.debug("Adding GlobalCRS84Scale");
         GridSet GlobalCRS84Scale = GridSetFactory.createGridSet(
@@ -121,7 +121,7 @@ public class GridSetBroker {
                 256,
                 true );
         
-        gridSets.put(GlobalCRS84Scale.name, GlobalCRS84Scale);
+        gridSets.put(GlobalCRS84Scale.getName(), GlobalCRS84Scale);
     }
     
     public GridSet get(String gridSetId) {

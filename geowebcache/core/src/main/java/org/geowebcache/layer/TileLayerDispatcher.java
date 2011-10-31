@@ -16,9 +16,11 @@
  */
 package org.geowebcache.layer;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -142,11 +144,7 @@ public class TileLayerDispatcher implements DisposableBean {
         ArrayList<TileLayer> layers = new ArrayList<TileLayer>();
         for (int i = 0; i < configs.size(); i++) {
             Configuration configuration = configs.get(i);
-            try {
-                layers.addAll(configuration.getTileLayers());
-            } catch (GeoWebCacheException e) {
-                throw new RuntimeException(e);
-            }
+            layers.addAll(configuration.getTileLayers());
         }
         return layers;
     }
@@ -191,13 +189,8 @@ public class TileLayerDispatcher implements DisposableBean {
 
         // Check whether there is any general service information
         if (this.serviceInformation == null) {
-            try {
-                log.debug("Reading service information.");
-                this.serviceInformation = config.getServiceInformation();
-            } catch (GeoWebCacheException e) {
-                log.error("Error reading service information from " + configIdent + ": "
-                        + e.getMessage());
-            }
+            log.debug("Reading service information.");
+            this.serviceInformation = config.getServiceInformation();
         }
         return layerCount;
     }
@@ -213,13 +206,39 @@ public class TileLayerDispatcher implements DisposableBean {
         //
     }
 
-    public boolean remove(final String layerName) {
+    public boolean removeLayer(final String layerName) throws IOException {
         for (Configuration config : configs) {
-            if (config.remove(layerName)) {
+            if (config.removeLayer(layerName)) {
+                config.save();
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Replaces and saves the given layer
+     * 
+     * @param tl
+     * @throws NoSuchElementException
+     * @throws IOException
+     */
+    public synchronized void modify(final TileLayer tl) throws NoSuchElementException, IOException {
+        if (!layerExists(tl.getName())) {
+            throw new NoSuchElementException("No layer named " + tl.getName() + " exists");
+        }
+        Configuration config = getConfiguration(tl);
+        config.modifyLayer(tl);
+        config.save();
+    }
+
+    private Configuration getConfiguration(TileLayer tl) {
+        for (Configuration c : configs) {
+            if (null != c.getTileLayer(tl.getName())) {
+                return c;
+            }
+        }
+        return null;
     }
 
 }

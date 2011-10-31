@@ -14,7 +14,15 @@
  * 
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
-package org.geowebcache.grid;
+package org.geowebcache.config;
+
+import org.geowebcache.grid.BoundingBox;
+import org.geowebcache.grid.GridSet;
+import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSetFactory;
+import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.GridSubsetFactory;
+import org.geowebcache.grid.SRS;
 
 
 /**

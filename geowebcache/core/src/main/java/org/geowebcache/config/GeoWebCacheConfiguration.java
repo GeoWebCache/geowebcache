@@ -17,103 +17,236 @@
 
 package org.geowebcache.config;
 
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.geowebcache.config.meta.ServiceInformation;
-import org.geowebcache.grid.XMLGridSet;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.FormatModifier;
 
-
 /**
- * This class only exists to facilitate the use of XStream, 
- * so that the XML configuration file(s) can be loaded directly.
+ * POJO for geowebcache.xml configuration
+ * 
+ * @invariant {@code #getLayers() != null}
+ * @invariant {@code #getGridSets() != null}
+ * @invariant {@code #getVersion() != null}
  */
 public class GeoWebCacheConfiguration {
-    
+
     /* Attributes for parser */
-    String xmlns_xsi;
+    @SuppressWarnings("unused")
+    private String xmlns_xsi;
 
-    String xsi_noNamespaceSchemaLocation; 
+    @SuppressWarnings("unused")
+    private String xsi_schemaLocation;
 
-    String xmlns;
-    
+    private String xmlns;
+
     /* Meta information */
-    String version = "";
-    
+    private String version;
+
     /* Default values */
-    Integer backendTimeout;
-    
-    Boolean cacheBypassAllowed;
-    
-    Boolean runtimeStats;
-    
-    String httpUsername;
-    
-    String httpPassword;
-    
-    String proxyUrl;
-    
-    ServiceInformation serviceInformation;
-    
-    protected List<FormatModifier> formatModifiers;
-    
-    protected List<XMLGridSet> gridSets;
-    
-    /* The old type of layers */
-    LinkedList<TileLayer> layers;
+    private Integer backendTimeout;
 
-    public GeoWebCacheConfiguration() {
+    private Boolean cacheBypassAllowed;
 
-    }
+    private Boolean runtimeStats;
 
-    /** 
-     * Initialize these variables because XStream for some reason doesnt do it. 
+    private String httpUsername;
+
+    private String httpPassword;
+
+    private String proxyUrl;
+
+    private ServiceInformation serviceInformation;
+
+    private List<FormatModifier> formatModifiers;
+
+    private List<XMLGridSet> gridSets;
+
+    /**
+     * The persisted list of layers
      */
-    public void init() {
-        xmlns_xsi = "http://www.w3.org/2001/XMLSchema-instance";
-        xsi_noNamespaceSchemaLocation = "http://geowebcache.org/schema/1.2.0/geowebcache.xsd";
-        xmlns = "http://geowebcache.org/schema/1.2.0";
-    }
-    
-    protected boolean replaceLayer(TileLayer layer) {
-        if(layers == null)
-            return false;
-        
-        Iterator<TileLayer> iter = layers.iterator();
-        while(iter.hasNext()) {
-            TileLayer aLayer = iter.next();
-            if(aLayer.getName().equals(layer.getName())) {
-                layers.remove(aLayer);
-                layers.add(layer);
-                return true;
-            }
-        }
-        return false;
+    private List<TileLayer> layers;
+
+    /**
+     * Default constructor
+     */
+    public GeoWebCacheConfiguration() {
+        readResolve();
     }
 
-    protected boolean addLayer(TileLayer layer) {
-        if(layers == null)
-            return false;
-        
-        Iterator<TileLayer> iter = layers.iterator();
-        while(iter.hasNext()) {
-            TileLayer aLayer = iter.next();
-            if(aLayer.getName().equals(layer.getName())) {
-                return false;
-            }
+    /**
+     * XStream initialization after deserialization
+     */
+    private Object readResolve() {
+        if (version == null) {
+            setVersion("1.3.0");
         }
-        
-        layers.add(layer);
-        return true;
+
+        xmlns_xsi = "http://www.w3.org/2001/XMLSchema-instance";
+
+        xmlns = "http://geowebcache.org/schema/" + getVersion();
+
+        xsi_schemaLocation = xmlns + " http://geowebcache.org/schema/" + getVersion()
+                + "/geowebcache.xsd";
+
+        if (layers == null) {
+            layers = new ArrayList<TileLayer>();
+        }
+
+        if (gridSets == null) {
+            gridSets = new ArrayList<XMLGridSet>();
+        }
+        return this;
     }
-    
-    protected boolean removeLayer(TileLayer layer) {
-        if(layers == null)
-            return false;
-        
-        return layers.remove(layer);
+
+    /**
+     * @return the version
+     */
+    public String getVersion() {
+        return version;
+    }
+
+    /**
+     * @param version
+     *            the version to set
+     */
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    /**
+     * @return the backendTimeout
+     */
+    public Integer getBackendTimeout() {
+        return backendTimeout;
+    }
+
+    /**
+     * @param backendTimeout
+     *            the backendTimeout to set
+     */
+    public void setBackendTimeout(Integer backendTimeout) {
+        this.backendTimeout = backendTimeout;
+    }
+
+    /**
+     * @return the cacheBypassAllowed
+     */
+    public Boolean getCacheBypassAllowed() {
+        return cacheBypassAllowed;
+    }
+
+    /**
+     * @param cacheBypassAllowed
+     *            the cacheBypassAllowed to set
+     */
+    public void setCacheBypassAllowed(Boolean cacheBypassAllowed) {
+        this.cacheBypassAllowed = cacheBypassAllowed;
+    }
+
+    /**
+     * @return the runtimeStats
+     */
+    public Boolean getRuntimeStats() {
+        return runtimeStats;
+    }
+
+    /**
+     * @param runtimeStats
+     *            the runtimeStats to set
+     */
+    public void setRuntimeStats(Boolean runtimeStats) {
+        this.runtimeStats = runtimeStats;
+    }
+
+    /**
+     * @return the httpUsername
+     */
+    public String getHttpUsername() {
+        return httpUsername;
+    }
+
+    /**
+     * @param httpUsername
+     *            the httpUsername to set
+     */
+    public void setHttpUsername(String httpUsername) {
+        this.httpUsername = httpUsername;
+    }
+
+    /**
+     * @return the httpPassword
+     */
+    public String getHttpPassword() {
+        return httpPassword;
+    }
+
+    /**
+     * @param httpPassword
+     *            the httpPassword to set
+     */
+    public void setHttpPassword(String httpPassword) {
+        this.httpPassword = httpPassword;
+    }
+
+    /**
+     * @return the proxyUrl
+     */
+    public String getProxyUrl() {
+        return proxyUrl;
+    }
+
+    /**
+     * @param proxyUrl
+     *            the proxyUrl to set
+     */
+    public void setProxyUrl(String proxyUrl) {
+        this.proxyUrl = proxyUrl;
+    }
+
+    /**
+     * @return the serviceInformation
+     */
+    public ServiceInformation getServiceInformation() {
+        return serviceInformation;
+    }
+
+    /**
+     * @param serviceInformation
+     *            the serviceInformation to set
+     */
+    public void setServiceInformation(ServiceInformation serviceInformation) {
+        this.serviceInformation = serviceInformation;
+    }
+
+    /**
+     * @return the formatModifiers
+     */
+    public List<FormatModifier> getFormatModifiers() {
+        return formatModifiers;
+    }
+
+    /**
+     * @param formatModifiers
+     *            the formatModifiers to set
+     */
+    public void setFormatModifiers(List<FormatModifier> formatModifiers) {
+        this.formatModifiers = formatModifiers;
+    }
+
+    /**
+     * @return the gridSets
+     */
+    public List<XMLGridSet> getGridSets() {
+        return gridSets;
+    }
+
+    /**
+     * @return the layers
+     */
+    public List<TileLayer> getLayers() {
+        return layers;
     }
 }

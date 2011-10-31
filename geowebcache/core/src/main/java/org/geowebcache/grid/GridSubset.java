@@ -34,8 +34,8 @@ public class GridSubset {
     protected GridCoverage[] gridCoverageLevels; 
     
     protected boolean fullGridSetCoverage = false;
-    
-    protected BoundingBox originalExtent = null;
+
+    private BoundingBox subSetExtent;
     
     protected GridSubset(GridSet gridSet) {
         this.gridSet = gridSet;
@@ -91,10 +91,10 @@ public class GridSubset {
     
     public void checkTileDimensions(int width, int height) throws TileDimensionsMismatchException {
     
-        if(width != gridSet.tileWidth || height != gridSet.tileHeight) {
+        if(width != gridSet.getTileWidth() || height != gridSet.getTileHeight()) {
             throw new TileDimensionsMismatchException(
                     width, height, 
-                    gridSet.tileWidth, gridSet.tileWidth);
+                    gridSet.getTileWidth(), gridSet.getTileWidth());
         }
     }
     
@@ -108,13 +108,13 @@ public class GridSubset {
             cov[1] = cov[1] - (cov[1] % metaFactors[1]);
             
             cov[2] = cov[2] - (cov[2] % metaFactors[0]) + (metaFactors[0] - 1);
-            if(cov[2] > this.gridSet.gridLevels[z].getNumTilesWide()) {
-                cov[2] = this.gridSet.gridLevels[z].getNumTilesWide();
+            if(cov[2] > this.gridSet.getGridLevels()[z].getNumTilesWide()) {
+                cov[2] = this.gridSet.getGridLevels()[z].getNumTilesWide();
             }
             
             cov[3] = cov[3] - (cov[3] % metaFactors[1]) + (metaFactors[1] - 1);
-            if(cov[3] > this.gridSet.gridLevels[z].getNumTilesHigh()) {
-                cov[3] = this.gridSet.gridLevels[z].getNumTilesHigh();
+            if(cov[3] > this.gridSet.getGridLevels()[z].getNumTilesHigh()) {
+                cov[3] = this.gridSet.getGridLevels()[z].getNumTilesHigh();
             }
         }
         
@@ -143,7 +143,7 @@ public class GridSubset {
      * @return
      */
     public double getDotsPerInch() {
-        return (0.0254 / this.gridSet.pixelSize);
+        return (0.0254 / this.gridSet.getPixelSize());
     }
     
     public BoundingBox getCoverageBounds(int level) {
@@ -196,7 +196,7 @@ public class GridSubset {
     
     public long getGridIndex(String gridId) {
         for(int i = 0; i < gridCoverageLevels.length; i++) {
-            if(gridSet.gridLevels[firstLevel + i].getName().equals(gridId)) {
+            if(gridSet.getGridLevels()[firstLevel + i].getName().equals(gridId)) {
                 return i;
             }
         }
@@ -207,7 +207,7 @@ public class GridSubset {
     public String[] getGridNames() {
         String[] ret = new String[gridCoverageLevels.length];
         for(int i=0; i<gridCoverageLevels.length; i++) {
-            ret[i] = gridSet.gridLevels[i + firstLevel].getName();
+            ret[i] = gridSet.getGridLevels()[i + firstLevel].getName();
         }
         
         return ret;
@@ -222,29 +222,33 @@ public class GridSubset {
     }
     
     public long getNumTilesWide(int zoomLevel){
-        return gridSet.gridLevels[zoomLevel].getNumTilesWide();
+        return gridSet.getGridLevels()[zoomLevel].getNumTilesWide();
     }
     
     public long getNumTilesHigh(int zoomLevel){
-        return gridSet.gridLevels[zoomLevel].getNumTilesHigh();
+        return gridSet.getGridLevels()[zoomLevel].getNumTilesHigh();
     }
         
     public String getName() {
-        return gridSet.name;
+        return gridSet.getName();
     }
     
+    void setOriginalExtent(BoundingBox extent) {
+        this.subSetExtent = extent;
+    }
+
     public BoundingBox getOriginalExtent() {
-        if(this.originalExtent == null) {
-            return gridSet.originalExtent;
+        if(this.subSetExtent == null) {
+            return gridSet.getOriginalExtent();
         }
-        return this.originalExtent;
+        return this.subSetExtent;
     }
     
     public double[] getResolutions() {
         double[] ret = new double[firstLevel + gridCoverageLevels.length];
         
         for(int i = 0; i < ret.length; i++) {
-            ret[i] = gridSet.gridLevels[i].getResolution();
+            ret[i] = gridSet.getGridLevels()[i].getResolution();
         }
         
         return ret;
@@ -257,10 +261,10 @@ public class GridSubset {
 
        if((idx - firstLevel + 1) < gridCoverageLevels.length) {
            // Check whether this grid is doubling
-            double resolutionCheck = gridSet.gridLevels[idx].getResolution() / 2
-                    - gridSet.gridLevels[idx + 1].getResolution();
+            double resolutionCheck = gridSet.getGridLevels()[idx].getResolution() / 2
+                    - gridSet.getGridLevels()[idx + 1].getResolution();
            
-            if (Math.abs(resolutionCheck) > gridSet.gridLevels[idx + 1].getResolution() * 0.025) {
+            if (Math.abs(resolutionCheck) > gridSet.getGridLevels()[idx + 1].getResolution() * 0.025) {
                throw new GeoWebCacheException("The resolution is not decreasing by a factor of two for " + this.getName());
            } else {
                GridCoverage cov = gridCoverageLevels[idx + 1];
@@ -292,19 +296,19 @@ public class GridSubset {
      * @return whether the scale is based on CRS84, even though it may not be
      */
     public boolean getScaleWarning() {
-        return gridSet.scaleWarning;
+        return gridSet.isScaleWarning();
     }
     
     public SRS getSRS() {
-        return gridSet.srs;
+        return gridSet.getSrs();
     }
     
     public int getTileHeight() {
-        return gridSet.tileHeight;
+        return gridSet.getTileHeight();
     }
     
     public int getTileWidth() {
-        return gridSet.tileWidth;
+        return gridSet.getTileWidth();
     }
     
     /**
@@ -318,7 +322,7 @@ public class GridSubset {
         long[][] ret = new long[gridCoverageLevels.length][4];
         
         for(int i=0; i<gridCoverageLevels.length; i++) {
-            Grid grid = gridSet.gridLevels[i + firstLevel];
+            Grid grid = gridSet.getGridLevels()[i + firstLevel];
             GridCoverage gridCov = gridCoverageLevels[i];
             
             long[] cur = {
@@ -349,6 +353,5 @@ public class GridSubset {
     public boolean fullGridSetCoverage() {
         return fullGridSetCoverage;
     }
-
 
 }
