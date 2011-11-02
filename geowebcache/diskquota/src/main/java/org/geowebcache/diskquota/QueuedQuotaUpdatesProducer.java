@@ -48,7 +48,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
 
     private boolean cancelled;
 
-    private final BDBQuotaStore quotaStore;
+    private final QuotaStore quotaStore;
 
     /**
      * 
@@ -61,7 +61,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
      *            a separate thread that takes care of them.
      */
     public QueuedQuotaUpdatesProducer(final DiskQuotaConfig quotaConfig,
-            final BlockingQueue<QuotaUpdate> queuedUpdates, BDBQuotaStore quotaStore) {
+            final BlockingQueue<QuotaUpdate> queuedUpdates, QuotaStore quotaStore) {
         Assert.notNull(quotaConfig, "quotaConfig can't be null");
         Assert.notNull(queuedUpdates, "queuedUpdates can't be null");
 
@@ -124,7 +124,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
 
     /**
      * @see org.geowebcache.storage.BlobStoreListener#layerDeleted(java.lang.String)
-     * @see BDBQuotaStore#deleteLayer(String)
+     * @see QuotaStore#deleteLayer(String)
      */
     public void layerDeleted(final String layerName) {
         quotaStore.deleteLayer(layerName);

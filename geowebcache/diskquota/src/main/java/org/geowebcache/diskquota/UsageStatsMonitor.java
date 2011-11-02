@@ -1,6 +1,5 @@
 package org.geowebcache.diskquota;
 
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -9,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.diskquota.storage.BDBQuotaStore;
 import org.geowebcache.diskquota.storage.TilePageCalculator;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -24,7 +22,7 @@ public class UsageStatsMonitor {
     private static final CustomizableThreadFactory tf = new CustomizableThreadFactory(
             "GWC DiskQuota Usage Stats Gathering Thread-");
 
-    private final BDBQuotaStore quotaStore;
+    private final QuotaStore quotaStore;
 
     private final TileLayerDispatcher tileLayerDispatcher;
 
@@ -55,7 +53,7 @@ public class UsageStatsMonitor {
      */
     private QueuedUsageStatsConsumer usageStatsConsumer;
 
-    public UsageStatsMonitor(final BDBQuotaStore quotaStore,
+    public UsageStatsMonitor(final QuotaStore quotaStore,
             final TileLayerDispatcher tileLayerDispatcher) {
 
         Assert.notNull(quotaStore, "quotaStore is null");

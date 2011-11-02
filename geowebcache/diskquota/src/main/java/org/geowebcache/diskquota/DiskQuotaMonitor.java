@@ -88,7 +88,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
     private LayerCacheInfoBuilder cacheInfoBuilder;
 
-    private BDBQuotaStore quotaStore;
+    private QuotaStore quotaStore;
 
     /**
      * Executor service for the periodic clean up of layers caches that exceed its quota
@@ -122,7 +122,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      */
     public DiskQuotaMonitor(final DefaultStorageFinder storageFinder,
             final ConfigLoader configLoader, final TileLayerDispatcher tld, final StorageBroker sb,
-            BDBQuotaStore quotaStore, final CacheCleaner cacheCleaner) throws IOException,
+            QuotaStore quotaStore, final CacheCleaner cacheCleaner) throws IOException,
             ConfigurationException {
 
         boolean disabled = Boolean.valueOf(storageFinder.findEnvVar(GWC_DISKQUOTA_DISABLED))
@@ -463,14 +463,14 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     }
 
     /**
-     * @see BDBQuotaStore#getUsedQuotaByLayerName(String)
+     * @see QuotaStore#getUsedQuotaByLayerName(String)
      */
     public Quota getUsedQuotaByLayerName(String layerName) throws InterruptedException {
         return quotaStore.getUsedQuotaByLayerName(layerName);
     }
 
     /**
-     * @see BDBQuotaStore#getGloballyUsedQuota()
+     * @see QuotaStore#getGloballyUsedQuota()
      */
     public Quota getGloballyUsedQuota() throws InterruptedException {
         return quotaStore.getGloballyUsedQuota();

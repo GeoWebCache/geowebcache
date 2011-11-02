@@ -23,7 +23,6 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.diskquota.storage.BDBQuotaStore;
 import org.geowebcache.diskquota.storage.LayerQuota;
 import org.geowebcache.diskquota.storage.Quota;
 import org.geowebcache.diskquota.storage.TilePage;
@@ -46,7 +45,7 @@ public class CacheCleaner implements DisposableBean {
 
     private final TileBreeder tileBreeder;
 
-    private final BDBQuotaStore pageStore;
+    private final QuotaStore pageStore;
 
     private boolean shutDown;
 
@@ -62,9 +61,9 @@ public class CacheCleaner implements DisposableBean {
 
         private final DiskQuotaConfig config;
 
-        private final BDBQuotaStore store;
+        private final QuotaStore store;
 
-        public GlobalQuotaResolver(DiskQuotaConfig config, BDBQuotaStore store) {
+        public GlobalQuotaResolver(DiskQuotaConfig config, QuotaStore store) {
             this.config = config;
             this.store = store;
         }
@@ -85,9 +84,9 @@ public class CacheCleaner implements DisposableBean {
     public static class LayerQuotaResolver implements QuotaResolver {
         private final LayerQuota layerQuota;
 
-        private final BDBQuotaStore store;
+        private final QuotaStore store;
 
-        public LayerQuotaResolver(LayerQuota layerQuota, BDBQuotaStore store) {
+        public LayerQuotaResolver(LayerQuota layerQuota, QuotaStore store) {
             this.layerQuota = layerQuota;
             this.store = store;
         }
@@ -119,7 +118,7 @@ public class CacheCleaner implements DisposableBean {
      * @param tileBreeder
      *            used to truncate expired pages of tiles
      */
-    public CacheCleaner(final TileBreeder tileBreeder, final BDBQuotaStore pageStore) {
+    public CacheCleaner(final TileBreeder tileBreeder, final QuotaStore pageStore) {
         this.tileBreeder = tileBreeder;
         this.pageStore = pageStore;
     }

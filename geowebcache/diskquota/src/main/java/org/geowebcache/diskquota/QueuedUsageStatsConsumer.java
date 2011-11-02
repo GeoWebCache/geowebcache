@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.diskquota.storage.BDBQuotaStore;
 import org.geowebcache.diskquota.storage.PageStatsPayload;
 import org.geowebcache.diskquota.storage.TilePage;
 import org.geowebcache.diskquota.storage.TilePageCalculator;
@@ -40,7 +39,7 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
      */
     private static final int MAX_AGGREGATES_BEFORE_COMMIT = 3000;
 
-    private final BDBQuotaStore quotaStore;
+    private final QuotaStore quotaStore;
 
     private final BlockingQueue<UsageStats> usageStatsQueue;
 
@@ -81,7 +80,7 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
      * @param quotaStore
      * @param queue
      */
-    public QueuedUsageStatsConsumer(final BDBQuotaStore quotaStore,
+    public QueuedUsageStatsConsumer(final QuotaStore quotaStore,
             final BlockingQueue<UsageStats> queue, final TilePageCalculator tilePageCalculator) {
 
         Assert.notNull(quotaStore, "quotaStore can't be null");
