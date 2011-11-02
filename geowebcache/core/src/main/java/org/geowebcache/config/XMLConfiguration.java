@@ -428,7 +428,7 @@ public class XMLConfiguration implements Configuration {
 
         xs.alias("gridSet", XMLGridSet.class);
         xs.alias("gridSubset", XMLGridSubset.class);
-        
+
         xs.alias("mimeFormats", new ArrayList<String>().getClass());
         xs.alias("formatModifiers", new ArrayList<FormatModifier>().getClass());
         xs.alias("srs", org.geowebcache.grid.SRS.class);
@@ -560,9 +560,41 @@ public class XMLConfiguration implements Configuration {
         return removed;
     }
 
-    public synchronized void addGridSet(final GridSet gridset) throws GeoWebCacheException {
-        XMLGridSet xmlGridset = new XMLGridSet(gridset);
-        gwcConfig.getGridSets().add(xmlGridset);
+    /**
+     * @param gridSet
+     * @throws GeoWebCacheException
+     */
+    public synchronized void addOrReplaceGridSet(final XMLGridSet gridSet) throws IllegalArgumentException {
+        final String gridsetName = gridSet.getName();
+        
+        List<XMLGridSet> gridSets = gwcConfig.getGridSets();
+        
+        for (Iterator<XMLGridSet> it = gridSets.iterator(); it.hasNext();) {
+            XMLGridSet gset = it.next();
+            if (gridsetName.equals(gset.getName())) {
+                it.remove();
+            }
+        }
+        gridSets.add(gridSet);
+    }
+
+    /**
+     * Removes and returns the gridset configuration named {@code gridsetName}.
+     * 
+     * @param gridsetName
+     *            the name of the gridset to remove
+     * @return the removed griset, or {@code null} if no such gridset exists
+     */
+    public synchronized XMLGridSet removeGridset(final String gridsetName) {
+        List<XMLGridSet> gridSets = gwcConfig.getGridSets();
+        for (Iterator<XMLGridSet> it = gridSets.iterator(); it.hasNext();) {
+            XMLGridSet gset = it.next();
+            if (gridsetName.equals(gset.getName())) {
+                it.remove();
+                return gset;
+            }
+        }
+        return null;
     }
 
     /**
@@ -729,7 +761,7 @@ public class XMLConfiguration implements Configuration {
      * @see org.geowebcache.config.Configuration#initialize(org.geowebcache.grid.GridSetBroker)
      */
     public int initialize(final GridSetBroker gridSetBroker) throws GeoWebCacheException {
-        
+
         this.gridSetBroker = gridSetBroker;
 
         if (this.configFileName != null) {

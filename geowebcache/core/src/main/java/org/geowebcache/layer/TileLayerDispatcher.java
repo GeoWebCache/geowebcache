@@ -28,9 +28,16 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.Configuration;
+import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.config.XMLGridSet;
 import org.geowebcache.config.meta.ServiceInformation;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSubset;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.util.Assert;
+
+import com.sun.org.apache.xerces.internal.xni.parser.XMLConfigurationException;
 
 /**
  * Serves tile layers from the {@link Configuration}s available in the application context.
@@ -241,4 +248,62 @@ public class TileLayerDispatcher implements DisposableBean {
         return null;
     }
 
+    /**
+     * Eliminates the gridset from the {@link GridSetBroker} and the
+     * {@link XMLConfigurationException} and saves the configuration, only if no layer references
+     * the given GridSet.
+     * 
+     * @param gridSetName
+     *            the gridset to remove.
+     * @return the removed gridset
+     * @throws IllegalStateException
+     *             if there's any layer referencing the given GridSet
+     * @throws IOException
+     */
+    public synchronized GridSet removeGridset(final String gridSetName)
+            throws IllegalStateException, IOException {
+
+        GridSet gridSet = gridSetBroker.get(gridSetName);
+        if (gridSet == null) {
+            return null;
+        }
+        List<String> refereningLayers = new ArrayList<String>();
+        for (TileLayer layer : getLayerList()) {
+            GridSubset gridSubset = layer.getGridSubset(gridSetName);
+            if (gridSubset != null) {
+                refereningLayers.add(layer.getName());
+            }
+        }
+        if (refereningLayers.size() > 0) {
+            throw new IllegalStateException("There are TileLayers referencing gridset '"
+                    + gridSetName + "': " + refereningLayers.toString());
+        }
+        XMLConfiguration persistingConfig = getXmlConfiguration();
+        GridSet removed = gridSetBroker.remove(gridSetName);
+        Assert.notNull(removed != null);
+        Assert.notNull(persistingConfig.removeGridset(gridSetName));
+        persistingConfig.save();
+        return removed;
+    }
+
+    public synchronized void addGridSet(final GridSet gridSet) throws IllegalArgumentException,
+            IOException {
+        if (null != gridSetBroker.get(gridSet.getName())) {
+            throw new IllegalArgumentException("GridSet " + gridSet.getName() + " already exists");
+        }
+        XMLConfiguration persistingConfig = getXmlConfiguration();
+        persistingConfig.addOrReplaceGridSet(new XMLGridSet(gridSet));
+        persistingConfig.save();
+        gridSetBroker.put(gridSet);
+    }
+
+    private XMLConfiguration getXmlConfiguration() throws IllegalStateException {
+        for (Configuration c : configs) {
+            if (c instanceof XMLConfiguration) {
+                return (XMLConfiguration) c;
+            }
+        }
+        throw new IllegalStateException("Found no configuration of type "
+                + XMLConfiguration.class.getName());
+    }
 }
