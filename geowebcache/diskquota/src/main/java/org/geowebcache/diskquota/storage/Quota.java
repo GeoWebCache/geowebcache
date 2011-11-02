@@ -46,7 +46,7 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
     private static final NumberFormat NICE_FORMATTER = NumberFormat.getNumberInstance();
     static {
         NICE_FORMATTER.setMinimumFractionDigits(1);
-        NICE_FORMATTER.setMaximumFractionDigits(3);
+        NICE_FORMATTER.setMaximumFractionDigits(2);
     }
 
     @PrimaryKey(sequence = "quota_id")
@@ -118,10 +118,10 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
 
     @Override
     public String toString() {
-        return toNiceString();
-//        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-//        sb.append('[').append(bytes).append(" bytes").append(']');
-//        return sb.toString();
+        StorageUnit bestFit = StorageUnit.bestFit(bytes);
+        BigDecimal value = StorageUnit.B.convertTo(new BigDecimal(bytes), bestFit);
+        return new StringBuilder(NICE_FORMATTER.format(value)).append(bestFit.toString())
+                .toString();
     }
 
     /**
@@ -196,7 +196,8 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
     public String toNiceString() {
         StorageUnit bestFit = StorageUnit.bestFit(bytes);
         BigDecimal value = StorageUnit.B.convertTo(new BigDecimal(bytes), bestFit);
-        return NICE_FORMATTER.format(value) + bestFit;
+        return new StringBuilder(NICE_FORMATTER.format(value)).append(' ')
+                .append(bestFit.toNiceString()).toString();
     }
 
     /**
