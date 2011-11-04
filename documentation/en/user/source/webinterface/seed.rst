@@ -27,7 +27,7 @@ To create a new seed task, fill out the form with the following information:
    * - :guilabel:`Type of operation`
      - This is one of the **seed**, **reseed**, or **truncate** operations described above.  
    * - :guilabel:`Grid set`
-     - The name of the any valid :ref:`grid set <configuration.layers.gridsets>` as defined for a given layer.
+     - The name of the any valid `grid set <concepts.gridsets>` as defined for a given layer.
    * - :guilabel:`Format`
      - Any valid image format as defined for that layer.
    * - :guilabel:`Zoom start`

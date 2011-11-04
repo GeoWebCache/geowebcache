@@ -1,4 +1,4 @@
-.. _diskquota:
+.. _rest.diskquota:
 
 Disk Quota REST API
 ===================
@@ -41,8 +41,8 @@ Operations
 - :download:`JSON <representations/diskquota_json.txt>`
 
 
-DiskQuota cURL Examples
------------------------
+Disk quota cURL Examples
+------------------------
 
 The examples in this section use the `cURL <http://curl.haxx.se/>`_
 utility, which is a handy command line tool for executing HTTP requests and 

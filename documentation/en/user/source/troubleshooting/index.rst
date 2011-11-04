@@ -19,11 +19,11 @@ If you have a problem with scales, it can be due to the fact that OpenLayers by 
 Incorrect or broken tiles
 -------------------------
 
-GeoWebCache does not track configuration changes internally. So if you reconfigure GeoWebCache, but old tiles overlap with the new layer, you will usually get the old tiles. One of the most common issues is caused by changing the :ref:`gridsets <configuration.layers.gridsets>` extent or adding a new, intermediary resolution or scale. This means that the X,Y,Z indexes used to store tiles no longer refer to the same thing as before.
+GeoWebCache does not track configuration changes internally. So if you reconfigure GeoWebCache, but old tiles overlap with the new layer, you will usually get the old tiles. One of the most common issues is caused by changing the gridset extent or adding a new, intermediary resolution or scale. This means that the X,Y,Z indexes used to store tiles no longer refer to the same thing as before.
 
 In this case you should stop the servlet container and wipe the appropriate cache directories. See the :ref:`configuration.storage` for more details.
 
-Note that you can safely modify gridsubsets.
+Note that you can safely modify gridsubsets, but the gridset should always be the full extent for the projection.
 
 
 Logging

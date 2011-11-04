@@ -1,4 +1,4 @@
-.. _diskquota:
+.. _rest.seed:
 
 Seeding and truncating through the REST API
 ===========================================

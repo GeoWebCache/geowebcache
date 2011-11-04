@@ -10,7 +10,6 @@ This section will describe how to manually configure layers in GeoWebCache, as w
    :maxdepth: 2
 
    howto
-   gridsets
    projections
    palettes
    parameterfilters
