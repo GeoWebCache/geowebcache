@@ -131,7 +131,7 @@ The necessary information is:
      - Description
    * - Layer name
      - ``<name>``
-     - The layer as known to the WMS.  For example, in GeoServer, this would be ``namespace:layername``.
+     - The layer name as published by GeoWebCache. It can be the same name as known to the WMS (for example, in GeoServer, this would be ``namespace:layername``) or not.
    * - Name of projection
      - ``<gridSetName>``
      - The projection name as referenced in the layer definition (in this example, ``EPSG:2236``)
