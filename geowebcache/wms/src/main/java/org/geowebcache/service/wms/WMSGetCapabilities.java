@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
@@ -173,7 +174,8 @@ public class WMSGetCapabilities {
                         + "</ContactOrganisation>\n");
                 str.append("    </ContactPersonPrimary>\n");
 
-                str.append("    <ContactPosition>" + servCont.getPositionName() + "</ContactPosition>\n");
+                str.append("    <ContactPosition>" + servCont.getPositionName()
+                        + "</ContactPosition>\n");
                 str.append("    <ContactAddress>\n");
                 str.append("      <AddressType>" + servCont.getAddressType() + "</AddressType>\n");
                 str.append("      <Address>" + servCont.getAddressStreet() + "</Address>\n");
@@ -331,23 +333,25 @@ public class WMSGetCapabilities {
             while (gridIter.hasNext()) {
                 GridSubset grid = gridIter.next();
 
-                Iterator<MimeType> mimeIter = null;
+                List<String> formats = new ArrayList<String>(2);
 
                 if (layer.getMimeTypes() != null) {
-                    mimeIter = layer.getMimeTypes().iterator();
+                    for (MimeType mime : layer.getMimeTypes()) {
+                        formats.add(mime.getFormat());
+                    }
                 } else {
-                    ArrayList<MimeType> arList = new ArrayList<MimeType>();
-                    arList.add(ImageMime.png);
-                    arList.add(ImageMime.jpeg);
-                    mimeIter = arList.iterator();
+                    formats.add(ImageMime.png.getFormat());
+                    formats.add(ImageMime.jpeg.getFormat());
                 }
 
-                while (mimeIter.hasNext()) {
-                    try {
-                        capabilityVendorSpecificTileset(str, layer, grid, mimeIter.next()
-                                .getFormat());
-                    } catch (GeoWebCacheException e) {
-                        log.error(e.getMessage());
+                List<String> styles = getStyles(layer.getParameterFilters());
+                for (String format : formats) {
+                    for (String style : styles) {
+                        try {
+                            capabilityVendorSpecificTileset(str, layer, grid, format, style);
+                        } catch (GeoWebCacheException e) {
+                            log.error(e.getMessage());
+                        }
                     }
                 }
             }
@@ -355,8 +359,33 @@ public class WMSGetCapabilities {
         str.append("  </VendorSpecificCapabilities>\n");
     }
 
+    /**
+     * @return a list with an empty string for the default style, and any other style name verbatim
+     */
+    private List<String> getStyles(List<ParameterFilter> parameterFilters) {
+        List<String> styles = new ArrayList<String>(2);
+        styles.add("");// the default style
+
+        if (parameterFilters != null) {
+            for (ParameterFilter filter : parameterFilters) {
+                if (!"STYLES".equalsIgnoreCase(filter.getKey())) {
+                    continue;
+                }
+                final String defaultStyle = filter.getDefaultValue();
+                for (String style : filter.getLegalValues()) {
+                    if (!defaultStyle.equals(style)) {
+                        styles.add(style);
+                    }
+                }
+            }
+        }
+
+        return styles;
+    }
+
     private void capabilityVendorSpecificTileset(StringBuilder str, TileLayer layer,
-            GridSubset grid, String formatStr) throws GeoWebCacheException {
+            GridSubset grid, String formatStr, String styleName) throws GeoWebCacheException {
+
         String srsStr = grid.getSRS().toString();
         StringBuilder resolutionsStr = new StringBuilder();
         double[] res = grid.getResolutions();
@@ -375,8 +404,8 @@ public class WMSGetCapabilities {
         str.append("      <Height>" + grid.getTileHeight() + "</Height>\n");
         str.append("      <Format>" + formatStr + "</Format>\n");
         str.append("      <Layers>" + layer.getName() + "</Layers>\n");
-        // TODO ignoring styles for now
-        str.append("      <Styles></Styles>\n");
+        str.append("      <Styles>").append(ServletUtils.URLEncode(styleName))
+                .append("</Styles>\n");
         str.append("    </TileSet>\n");
     }
 
