@@ -42,6 +42,7 @@ import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.storage.DiscontinuousTileRange;
 import org.geowebcache.storage.GeometryRasterMaskBuilder;
 import org.geowebcache.storage.RasterMask;
+import org.geowebcache.storage.StorageBroker;
 
 /**
  * A task to run a GeoRSS feed poll and launch the seeding process
@@ -69,6 +70,14 @@ class GeoRSSPollTask implements Runnable {
 
     private static final Log logger = LogFactory.getLog(GeoRSSPollTask.class);
 
+    /**
+     * Layer metadata property under which the lastUpdated entry value is stored
+     * 
+     * @see StorageBroker#putLayerMetadata(String, String, String)
+     * @see StorageBroker#getLayerMetadata(String, String)
+     */
+    private static final String LAST_UPDATED = "GeoRSS.lastUpdated";
+
     private static final String LAST_UPDATE_URL_TEMPLATE = "${lastUpdate}";
 
     private final PollDef poll;
@@ -76,12 +85,6 @@ class GeoRSSPollTask implements Runnable {
     private final TileBreeder seeder;
 
     private LinkedList<GWCTask> seedTasks = new LinkedList<GWCTask>();
-
-    /**
-     * Date and time of the more recent GeoRSS entry updated property. To be used as parameter for
-     * the feed url
-     */
-    private String lastUpdatedEntry = "";
 
     public GeoRSSPollTask(final PollDef poll, final TileBreeder seeder) {
         this.poll = poll;
@@ -116,13 +119,17 @@ class GeoRSSPollTask implements Runnable {
     }
 
     private void runPollAndLaunchSeed() throws IOException {
+        final String layerName = poll.getLayerName();
         final TileLayer layer = poll.getLayer();
         final GeoRSSFeedDefinition pollDef = poll.getPollDef();
 
-        logger.info("Polling GeoRSS feed for layer " + layer.getName() + ": " + pollDef.toString());
+        logger.info("Polling GeoRSS feed for layer " + layerName + ": " + pollDef.toString());
+
+        final StorageBroker storageBroker = seeder.getStorageBroker();
+        final String previousUpdatedEntry = storageBroker.getLayerMetadata(layerName, LAST_UPDATED);
 
         final String gridSetId = pollDef.getGridSetId();
-        final URL feedUrl = new URL(templateFeedUrl(pollDef.getFeedUrl()));
+        final URL feedUrl = new URL(templateFeedUrl(pollDef.getFeedUrl(), previousUpdatedEntry));
         final String httpUsername = pollDef.getHttpUsername();
         final String httpPassword = pollDef.getHttpUsername();
 
@@ -139,34 +146,36 @@ class GeoRSSPollTask implements Runnable {
 
         logger.debug("Got reader for " + pollDef.getFeedUrl()
                 + ". Creating geometry filter matrix for gridset " + gridSetId + " on layer "
-                + layer.getName());
+                + layerName);
 
         final int maxMaskLevel = pollDef.getMaxMaskLevel();
         final GeoRSSTileRangeBuilder matrixBuilder = new GeoRSSTileRangeBuilder(layer, gridSetId,
                 maxMaskLevel);
 
         logger.debug("Creating tile range mask based on GeoRSS feed's geometries from "
-                + feedUrl.toExternalForm() + " for " + layer.getName());
+                + feedUrl.toExternalForm() + " for " + layerName);
 
         final GeometryRasterMaskBuilder tileRangeMask = matrixBuilder.buildTileRangeMask(
-                geoRSSReader, this.lastUpdatedEntry);
+                geoRSSReader, previousUpdatedEntry);
 
         if (tileRangeMask == null) {
             logger.info("Did not create a tileRangeMask, presumably no new entries in feed.");
             return;
         }
 
-        this.lastUpdatedEntry = matrixBuilder.getLastEntryUpdate();
+        // store last updated entry to persist even after a restart
+        final String lastUpdatedEntry = matrixBuilder.getLastEntryUpdate();
+        storageBroker.putLayerMetadata(layerName, LAST_UPDATED, lastUpdatedEntry);
 
         logger.debug("Created tile range mask based on GeoRSS geometry feed from " + pollDef
-                + " for " + layer.getName() + ". Calculating number of affected tiles...");
+                + " for " + layerName + ". Calculating number of affected tiles...");
         _logImagesToDisk(tileRangeMask);
 
         final boolean tilesAffected = tileRangeMask.hasTilesSet();
         if (tilesAffected) {
-            logger.info("Launching reseed process " + pollDef + " for " + layer.getName());
+            logger.info("Launching reseed process " + pollDef + " for " + layerName);
         } else {
-            logger.info(pollDef + " for " + layer.getName()
+            logger.info(pollDef + " for " + layerName
                     + " did not affect any tile. No need to reseed.");
             return;
         }
@@ -177,14 +186,15 @@ class GeoRSSPollTask implements Runnable {
                 + " successfully launched.");
     }
 
-    private String templateFeedUrl(final String feedUrl) {
+    private String templateFeedUrl(final String feedUrl, final String lastUpdatedEntry) {
         if (feedUrl == null) {
             throw new NullPointerException("feedUrl");
         }
 
         String url = feedUrl;
         if (feedUrl.indexOf(LAST_UPDATE_URL_TEMPLATE) > -1) {
-            url = feedUrl.replace(LAST_UPDATE_URL_TEMPLATE, lastUpdatedEntry);
+            String replaceValue = lastUpdatedEntry == null ? "" : lastUpdatedEntry;
+            url = feedUrl.replace(LAST_UPDATE_URL_TEMPLATE, replaceValue);
             logger.info("Feed URL templated as '" + url + "'");
         }
         return url;
@@ -211,7 +221,7 @@ class GeoRSSPollTask implements Runnable {
         BufferedImage[] byLevelMasks = matrix.getByLevelMasks();
 
         for (int i = 0; i < byLevelMasks.length; i++) {
-            File output = new File(target, poll.getLayer().getName() + "_level_" + i + ".tiff");
+            File output = new File(target, poll.getLayerName() + "_level_" + i + ".tiff");
             System.out.println("--- writing " + output.getAbsolutePath() + "---");
             try {
                 ImageIO.write(byLevelMasks[i], "TIFF", output);

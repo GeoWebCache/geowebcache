@@ -340,6 +340,10 @@ public class TileBreeder implements ApplicationContextAware {
         storageBroker = sb;
     }
 
+    public StorageBroker getStorageBroker() {
+        return storageBroker;
+    }
+    
     public TileLayer findTileLayer(String layerName) throws GeoWebCacheException {
         TileLayer layer = null;
 

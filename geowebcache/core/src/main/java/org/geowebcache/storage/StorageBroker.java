@@ -200,4 +200,12 @@ public class StorageBroker {
         log.info("Destroying StorageBroker");
     }
 
+    
+    public String getLayerMetadata(final String layerName, final String key){
+        return this.blobStore.getLayerMetadata(layerName, key);
+    }
+    
+    public void putLayerMetadata(final String layerName, final String key, final String value){
+        this.blobStore.putLayerMetadata(layerName, key, value);
+    }
 }

@@ -19,6 +19,7 @@ package org.geowebcache.georss;
 
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
+import org.springframework.util.Assert;
 
 /**
  * A tuple like holder for a scheduled georss poll
@@ -29,8 +30,14 @@ class PollDef {
     private final GeoRSSFeedDefinition pollDef;
 
     public PollDef(final TileLayer layer, final GeoRSSFeedDefinition pollDef) {
+        Assert.notNull(layer, "layer is null");
+        Assert.notNull(pollDef, "GeoRSSFeedDefinition is null");
         this.layer = layer;
         this.pollDef = pollDef;
+    }
+
+    public String getLayerName() {
+        return layer.getName();
     }
 
     public TileLayer getLayer() {
