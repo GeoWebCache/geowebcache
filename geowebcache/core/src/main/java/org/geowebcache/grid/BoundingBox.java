@@ -202,6 +202,7 @@ public class BoundingBox {
      * @param other
      * @return whether the boxes are equal
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj != null && obj.getClass() == this.getClass()) {
             BoundingBox other = (BoundingBox) obj;

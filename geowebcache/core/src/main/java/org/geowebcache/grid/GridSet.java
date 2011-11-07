@@ -16,6 +16,8 @@
  */
 package org.geowebcache.grid;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 public class GridSet {
 
     private Grid[] gridLevels;
@@ -102,9 +104,9 @@ public class GridSet {
             topY = topY - grid.getNumTilesHigh();
         }
 
-        BoundingBox rectangleBounds = new BoundingBox(getBaseCoords()[0] + width * rectangleExtent[0],
-                getBaseCoords()[1] + height * (bottomY), getBaseCoords()[0] + width
-                        * (rectangleExtent[2] + 1), getBaseCoords()[1] + height * (topY + 1));
+        BoundingBox rectangleBounds = new BoundingBox(getBaseCoords()[0] + width
+                * rectangleExtent[0], getBaseCoords()[1] + height * (bottomY), getBaseCoords()[0]
+                + width * (rectangleExtent[2] + 1), getBaseCoords()[1] + height * (topY + 1));
 
         return rectangleBounds;
     }
@@ -215,6 +217,7 @@ public class GridSet {
         return ret;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof GridSet))
             return false;
@@ -245,6 +248,12 @@ public class GridSet {
             return false;
 
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hashCode = HashCodeBuilder.reflectionHashCode(this);
+        return hashCode;
     }
 
     public BoundingBox getBounds() {
@@ -350,7 +359,8 @@ public class GridSet {
     }
 
     /**
-     * @param gridLevels the gridLevels to set
+     * @param gridLevels
+     *            the gridLevels to set
      */
     public void setGridLevels(Grid[] gridLevels) {
         this.gridLevels = gridLevels;
@@ -364,7 +374,8 @@ public class GridSet {
     }
 
     /**
-     * @param baseCoords the baseCoords to set
+     * @param baseCoords
+     *            the baseCoords to set
      */
     public void setBaseCoords(double[] baseCoords) {
         this.baseCoords = baseCoords;
@@ -378,7 +389,8 @@ public class GridSet {
     }
 
     /**
-     * @param yCoordinateFirst the yCoordinateFirst to set
+     * @param yCoordinateFirst
+     *            the yCoordinateFirst to set
      */
     public void setyCoordinateFirst(boolean yCoordinateFirst) {
         this.yCoordinateFirst = yCoordinateFirst;
@@ -392,7 +404,8 @@ public class GridSet {
     }
 
     /**
-     * @param scaleWarning the scaleWarning to set
+     * @param scaleWarning
+     *            the scaleWarning to set
      */
     public void setScaleWarning(boolean scaleWarning) {
         this.scaleWarning = scaleWarning;
@@ -406,7 +419,8 @@ public class GridSet {
     }
 
     /**
-     * @param metersPerUnit the metersPerUnit to set
+     * @param metersPerUnit
+     *            the metersPerUnit to set
      */
     public void setMetersPerUnit(double metersPerUnit) {
         this.metersPerUnit = metersPerUnit;
@@ -420,7 +434,8 @@ public class GridSet {
     }
 
     /**
-     * @param pixelSize the pixelSize to set
+     * @param pixelSize
+     *            the pixelSize to set
      */
     public void setPixelSize(double pixelSize) {
         this.pixelSize = pixelSize;
@@ -434,7 +449,8 @@ public class GridSet {
     }
 
     /**
-     * @param name the name to set
+     * @param name
+     *            the name to set
      */
     public void setName(String name) {
         this.name = name;
@@ -448,7 +464,8 @@ public class GridSet {
     }
 
     /**
-     * @param srs the srs to set
+     * @param srs
+     *            the srs to set
      */
     public void setSrs(SRS srs) {
         this.srs = srs;
@@ -462,7 +479,8 @@ public class GridSet {
     }
 
     /**
-     * @param tileWidth the tileWidth to set
+     * @param tileWidth
+     *            the tileWidth to set
      */
     public void setTileWidth(int tileWidth) {
         this.tileWidth = tileWidth;
@@ -476,7 +494,8 @@ public class GridSet {
     }
 
     /**
-     * @param tileHeight the tileHeight to set
+     * @param tileHeight
+     *            the tileHeight to set
      */
     public void setTileHeight(int tileHeight) {
         this.tileHeight = tileHeight;
