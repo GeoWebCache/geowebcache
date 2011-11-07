@@ -231,10 +231,9 @@ public class WMTSGetCapabilities {
             layer(str, layer, baseUrl);
         }
          
-         Iterator<GridSet> gridSetIter = gsb.getGridSets().values().iterator();
-         while(gridSetIter.hasNext()) {
-             tileMatrixSet(str, gridSetIter.next());
-         }
+        for (GridSet gset : gsb.getGridSets()) {
+            tileMatrixSet(str, gset);
+        }
          
          str.append("</Contents>\n");
      }
