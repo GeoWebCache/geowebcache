@@ -23,19 +23,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class BoundingBox {
-    private static Log log = LogFactory
-            .getLog(org.geowebcache.grid.BoundingBox.class);
+    private static Log log = LogFactory.getLog(org.geowebcache.grid.BoundingBox.class);
 
     private static String DELIMITER = ",";
 
     private static double EQUALITYTHRESHOLD = 0.03;
 
-    public static final BoundingBox WORLD4326 = 
-        new BoundingBox(-180.0,-90.0,180.0,90.0);
-    
-    public static final BoundingBox WORLD3857 = 
-        new BoundingBox(-20037508.34,-20037508.34,20037508.34,20037508.34);
-    
+    public static final BoundingBox WORLD4326 = new BoundingBox(-180.0, -90.0, 180.0, 90.0);
+
+    public static final BoundingBox WORLD3857 = new BoundingBox(-20037508.34, -20037508.34,
+            20037508.34, 20037508.34);
+
     // minx, miny, maxx, maxy
     private double[] coords = new double[4];
 
@@ -45,7 +43,7 @@ public class BoundingBox {
         coords[2] = bbox.coords[2];
         coords[3] = bbox.coords[3];
     }
-    
+
     public BoundingBox(String BBOX) {
         setFromBBOXString(BBOX, 0);
         if (log.isTraceEnabled()) {
@@ -70,35 +68,35 @@ public class BoundingBox {
             log.trace("Created BBOX: " + getReadableString());
         }
     }
-    
-    public double getMinX(){
+
+    public double getMinX() {
         return coords[0];
     }
-    
+
     public void setMinX(double minx) {
         coords[0] = minx;
     }
 
-    public double getMinY(){
+    public double getMinY() {
         return coords[1];
     }
-    
+
     public void setMinY(double miny) {
         coords[1] = miny;
     }
 
-    public double getMaxX(){
+    public double getMaxX() {
         return coords[2];
     }
 
     public void setMaxX(double maxx) {
         coords[2] = maxx;
     }
-    
-    public double getMaxY(){
+
+    public double getMaxY() {
         return coords[3];
     }
-    
+
     public void setMaxY(double maxy) {
         coords[3] = maxy;
     }
@@ -106,14 +104,14 @@ public class BoundingBox {
     /**
      * @return [minx, miny, maxx, maxy]
      */
-    public double[] getCoords(){
+    public double[] getCoords() {
         return coords.clone();
     }
-    
+
     public double getWidth() {
         return coords[2] - coords[0];
     }
-    
+
     public double getHeight() {
         return coords[3] - coords[1];
     }
@@ -150,15 +148,15 @@ public class BoundingBox {
         String[] tokens = BBOX.split(DELIMITER);
         setFromStringArray(tokens, recWatch + 1);
     }
-    
+
     /**
      * Outputs a string suitable for logging and other human-readable tasks
      * 
      * @return a readable string
      */
     public String getReadableString() {
-        return "Min X: " + coords[0] + " Min Y: " + coords[1] + " Max X: "
-                + coords[2] + " Max Y: " + coords[3];
+        return "Min X: " + coords[0] + " Min Y: " + coords[1] + " Max X: " + coords[2] + " Max Y: "
+                + coords[3];
     }
 
     /**
@@ -178,26 +176,19 @@ public class BoundingBox {
     }
 
     public String toKMLLatLonBox() {
-        return "<LatLonBox>"
-        +"<north>"+Double.toString(coords[3])+"</north>"
-        +"<south>"+Double.toString(coords[1])+"</south>"
-        +"<east>"+Double.toString(coords[2])+"</east>"
-        +"<west>"+Double.toString(coords[0])+"</west>"
-        +"</LatLonBox>";
+        return "<LatLonBox>" + "<north>" + Double.toString(coords[3]) + "</north>" + "<south>"
+                + Double.toString(coords[1]) + "</south>" + "<east>" + Double.toString(coords[2])
+                + "</east>" + "<west>" + Double.toString(coords[0]) + "</west>" + "</LatLonBox>";
     }
-    
+
     public String toKMLLatLonAltBox() {
-        return "<LatLonAltBox>"
-        +"<north>"+Double.toString(coords[3])+"</north>"
-        +"<south>"+Double.toString(coords[1])+"</south>"
-        +"<east>"+Double.toString(coords[2])+"</east>"
-        +"<west>"+Double.toString(coords[0])+"</west>"
-        +"</LatLonAltBox>";
+        return "<LatLonAltBox>" + "<north>" + Double.toString(coords[3]) + "</north>" + "<south>"
+                + Double.toString(coords[1]) + "</south>" + "<east>" + Double.toString(coords[2])
+                + "</east>" + "<west>" + Double.toString(coords[0]) + "</west>" + "</LatLonAltBox>";
     }
-    
+
     /**
-     * Comparing whether the differences between the bounding boxes can be
-     * ignored.
+     * Comparing whether the differences between the bounding boxes can be ignored.
      * 
      * @param other
      * @return whether the boxes are equal
@@ -210,16 +201,14 @@ public class BoundingBox {
         }
         return false;
     }
-    
-    
+
     public boolean equals(BoundingBox other, double threshold) {
-            boolean result = true;
-            for (int i = 0; i < 4 && result; i++) {
-                result = (Math.abs(coords[i]) < threshold) 
-                        && Math.abs(other.coords[i]) < threshold
-                        || (coords[i] - other.coords[i]) / (coords[i] + other.coords[i]) < threshold;
-            }
-            return result;
+        boolean result = true;
+        for (int i = 0; i < 4 && result; i++) {
+            result = (Math.abs(coords[i]) < threshold) && Math.abs(other.coords[i]) < threshold
+                    || (coords[i] - other.coords[i]) / (coords[i] + other.coords[i]) < threshold;
+        }
+        return result;
     }
 
     /**
@@ -250,8 +239,7 @@ public class BoundingBox {
 
     @Override
     public int hashCode() {
-        return Float.floatToIntBits((float) coords[0])
-                ^ Float.floatToIntBits((float) coords[1]);
+        return Float.floatToIntBits((float) coords[0]) ^ Float.floatToIntBits((float) coords[1]);
     }
 
     public boolean intersects(BoundingBox other) {
@@ -261,7 +249,11 @@ public class BoundingBox {
         return !(other.getMinX() > getMaxX() || other.getMaxX() < getMinX()
                 || other.getMinY() > getMaxY() || other.getMaxY() < getMinY());
     }
-    
+
+    public BoundingBox intersection(BoundingBox bboxB) {
+        return intersection(this, bboxB);
+    }
+
     public static BoundingBox intersection(BoundingBox bboxA, BoundingBox bboxB) {
         BoundingBox retBbox = new BoundingBox(0, 0, -1, -1);
         if (bboxA.intersects(bboxB)) {
@@ -283,20 +275,20 @@ public class BoundingBox {
         }
         return retBbox;
     }
-    
+
     public void scale(double xFactor, double yFactor) {
-       double x = coords[2] - coords[0];
-       double xdiff = (x*xFactor - x)/2;
-       double y = coords[3] - coords[1];
-       double ydiff = (y*yFactor - y)/2;
-       
-       coords[0] = coords[0] - xdiff;
-       coords[1] = coords[1] - ydiff;
-       coords[2] = coords[2] + xdiff;
-       coords[3] = coords[3] + ydiff;
+        double x = coords[2] - coords[0];
+        double xdiff = (x * xFactor - x) / 2;
+        double y = coords[3] - coords[1];
+        double ydiff = (y * yFactor - y) / 2;
+
+        coords[0] = coords[0] - xdiff;
+        coords[1] = coords[1] - ydiff;
+        coords[2] = coords[2] + xdiff;
+        coords[3] = coords[3] + ydiff;
     }
-    
+
     public void scale(double factor) {
-        scale(factor,factor);
+        scale(factor, factor);
     }
 }

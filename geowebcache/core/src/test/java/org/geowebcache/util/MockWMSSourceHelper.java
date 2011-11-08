@@ -51,7 +51,7 @@ public class MockWMSSourceHelper extends WMSSourceHelper {
             WMSMetaTile metaTile = (WMSMetaTile) tileRespRecv;
             tiles = metaTile.getTilesGridPositions();
             format = metaTile.getResponseFormat().getInternalName().toUpperCase();
-            GridSubset gridSubset = layer.getGridSubsets().values().iterator().next();
+            GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
             tileW = gridSubset.getTileWidth();
             tileH = gridSubset.getTileHeight();
         }

@@ -43,21 +43,22 @@ public class WMSTileFuserTest extends TestCase {
         // One in between
         int width = (int) bounds.getWidth() * 10;
         int height= (int) bounds.getHeight() * 10;
-        WMSTileFuser tileFuser = new WMSTileFuser(layer, layer.getGridSubsets().values().iterator().next(), bounds, width, height);
+        GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
+        WMSTileFuser tileFuser = new WMSTileFuser(layer, gridSubset, bounds, width, height);
         tileFuser.determineSourceResolution();
         assertEquals(0.087890625, tileFuser.srcResolution, 0.087890625*0.001);
         
         // Zoomed too far out
         height = (int) bounds.getWidth() / 10;
         width = (int) bounds.getWidth() / 10;
-        tileFuser = new WMSTileFuser(layer, layer.getGridSubsets().values().iterator().next(), bounds, width, height);
+        tileFuser = new WMSTileFuser(layer, gridSubset, bounds, width, height);
         tileFuser.determineSourceResolution();
         assertEquals(0,tileFuser.srcIdx);
         
         // Zoomed too far in
         height = (int) bounds.getWidth() * 10000;
         width = (int) bounds.getWidth() * 10000;
-        tileFuser = new WMSTileFuser(layer, layer.getGridSubsets().values().iterator().next(), bounds, width, height);
+        tileFuser = new WMSTileFuser(layer, gridSubset, bounds, width, height);
         tileFuser.determineSourceResolution();
         assertEquals(10,tileFuser.srcIdx);
     }
@@ -71,7 +72,8 @@ public class WMSTileFuserTest extends TestCase {
         // One in between
         int width = (int) bounds.getWidth() * 10;
         int height= (int) bounds.getHeight() * 10;
-        WMSTileFuser tileFuser = new WMSTileFuser(layer, layer.getGridSubsets().values().iterator().next(), bounds, width, height);
+        GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
+        WMSTileFuser tileFuser = new WMSTileFuser(layer, gridSubset, bounds, width, height);
         tileFuser.determineSourceResolution();
         tileFuser.determineCanvasLayout();
         
@@ -89,7 +91,8 @@ public class WMSTileFuserTest extends TestCase {
         // One in between
         int width = (int) bounds.getWidth() * 25;
         int height= (int) bounds.getHeight() * 25;
-        WMSTileFuser tileFuser = new WMSTileFuser(layer, layer.getGridSubsets().values().iterator().next(), bounds, width, height);
+        GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
+        WMSTileFuser tileFuser = new WMSTileFuser(layer, gridSubset, bounds, width, height);
         tileFuser.determineSourceResolution();
         tileFuser.determineCanvasLayout();
     }

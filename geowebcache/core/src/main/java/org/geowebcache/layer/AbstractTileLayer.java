@@ -23,6 +23,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -169,8 +170,8 @@ public abstract class AbstractTileLayer extends TileLayer {
      * @return
      */
     @Override
-    public Map<String, GridSubset> getGridSubsets() {
-        return this.subSets;
+    public Set<String> getGridSubsets() {
+        return Collections.unmodifiableSet(this.subSets.keySet());
     }
 
     /**
@@ -415,6 +416,30 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     public List<RequestFilter> getRequestFilters() {
         return requestFilters;
+    }
+
+    @Override
+    public GridSubset getGridSubset(String gridSetId) {
+        return subSets.get(gridSetId);
+    }
+
+    @Override
+    public synchronized GridSubset removeGridSubset(String gridSetId) {
+        for (Iterator<XMLGridSubset> it = gridSubsets.iterator(); it.hasNext();) {
+            XMLGridSubset configSubset = it.next();
+            if (gridSetId.equals(configSubset.getGridSetName())) {
+                it.remove();
+                break;
+            }
+        }
+        return subSets.remove(gridSetId);
+    }
+
+    @Override
+    public synchronized void addGridSubset(GridSubset gridSubset) {
+        removeGridSubset(gridSubset.getName());
+        gridSubsets.add(new XMLGridSubset(gridSubset));
+        subSets.put(gridSubset.getName(), gridSubset);
     }
 
 }

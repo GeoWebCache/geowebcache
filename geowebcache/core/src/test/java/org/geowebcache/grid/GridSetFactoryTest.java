@@ -12,8 +12,8 @@ public class GridSetFactoryTest extends TestCase {
         GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), extent, false, resolutions, null, null, 0.00028, null, 256, 256, false);
         
         assertEquals("test", gridSet.getName());
-        assertEquals(-180.0, gridSet.getBaseCoords()[0]);
-        assertEquals(-90.0, gridSet.getBaseCoords()[1]);
+        assertEquals(-180.0, gridSet.tileOrigin()[0]);
+        assertEquals(-90.0, gridSet.tileOrigin()[1]);
         assertEquals(resolutions.length, gridSet.getGridLevels().length);
         
         Grid grid0 = gridSet.getGridLevels()[0];
@@ -54,8 +54,8 @@ public class GridSetFactoryTest extends TestCase {
         
         GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), extent, false, resolutions, null, null, 0.00028, null, 200, 200, false);
         
-        assertEquals(-173.0, gridSet.getBaseCoords()[0]);
-        assertEquals(-90.0, gridSet.getBaseCoords()[1]);
+        assertEquals(-173.0, gridSet.tileOrigin()[0]);
+        assertEquals(-90.0, gridSet.tileOrigin()[1]);
         assertEquals(resolutions.length, gridSet.getGridLevels().length);
         
         Grid grid0 = gridSet.getGridLevels()[0];
@@ -78,8 +78,8 @@ public class GridSetFactoryTest extends TestCase {
         GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), extent, false, 4, null, 0.00028, 256, 256, false);
         
         assertEquals("test", gridSet.getName());
-        assertEquals(-180.0, gridSet.getBaseCoords()[0]);
-        assertEquals(-90.0, gridSet.getBaseCoords()[1]);
+        assertEquals(-180.0, gridSet.tileOrigin()[0]);
+        assertEquals(-90.0, gridSet.tileOrigin()[1]);
         assertEquals(4, gridSet.getGridLevels().length);
         
         Grid grid0 = gridSet.getGridLevels()[0];
@@ -117,8 +117,8 @@ public class GridSetFactoryTest extends TestCase {
         GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getEPSG4326(), extent, false, 4, null, 0.00028, 256, 256, false);
         
         assertEquals("test", gridSet.getName());
-        assertEquals(-180.0, gridSet.getBaseCoords()[0]);
-        assertEquals(-90.0, gridSet.getBaseCoords()[1]);
+        assertEquals(-180.0, gridSet.tileOrigin()[0]);
+        assertEquals(-90.0, gridSet.tileOrigin()[1]);
         assertEquals(4, gridSet.getGridLevels().length);
         
         Grid grid0 = gridSet.getGridLevels()[0];
@@ -136,8 +136,8 @@ public class GridSetFactoryTest extends TestCase {
         GridSet gridSet = GridSetFactory.createGridSet("test", srs, extent, false, 4, null, 0.00028, 256, 256, false);
         
         assertEquals("test", gridSet.getName());
-        assertEquals(-180.0, gridSet.getBaseCoords()[0]);
-        assertEquals(-90.0, gridSet.getBaseCoords()[1]);
+        assertEquals(-180.0, gridSet.tileOrigin()[0]);
+        assertEquals(-90.0, gridSet.tileOrigin()[1]);
         assertEquals(4, gridSet.getGridLevels().length);
         
         Grid grid0 = gridSet.getGridLevels()[0];

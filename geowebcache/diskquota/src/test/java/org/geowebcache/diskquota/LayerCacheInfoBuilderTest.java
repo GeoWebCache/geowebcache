@@ -122,7 +122,7 @@ public class LayerCacheInfoBuilderTest extends TestCase {
             IOException {
         final String layerName = layer.getName();
 
-        final GridSubset gridSubset = layer.getGridSubsets().values().iterator().next();
+        final GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
         final String gridSetId = gridSubset.getName();
         final String prefix = this.rootCacheDir.getAbsolutePath();
         final MimeType mimeType = MimeType.createFromFormat("image/png");

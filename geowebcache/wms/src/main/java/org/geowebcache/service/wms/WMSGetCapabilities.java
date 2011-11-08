@@ -332,10 +332,9 @@ public class WMSGetCapabilities {
             if (!layer.isEnabled()) {
                 continue;
             }
-            Iterator<GridSubset> gridIter = layer.getGridSubsets().values().iterator();
-
-            while (gridIter.hasNext()) {
-                GridSubset grid = gridIter.next();
+            
+            for(String gridSetId : layer.getGridSubsets()){
+                GridSubset grid = layer.getGridSubset(gridSetId);
 
                 List<String> formats = new ArrayList<String>(2);
 
@@ -452,11 +451,10 @@ public class WMSGetCapabilities {
             str.append("      <Title>" + layer.getName() + "</Title>\n");
         }
 
-        Iterator<GridSubset> gridSetIter = layer.getGridSubsets().values().iterator();
         TreeSet<SRS> srsSet = new TreeSet<SRS>();
         StringBuilder boundingBoxStr = new StringBuilder();
-        while (gridSetIter.hasNext()) {
-            GridSubset curGridSubSet = gridSetIter.next();
+        for (String gridSetId : layer.getGridSubsets()) {
+            GridSubset curGridSubSet = layer.getGridSubset(gridSetId);
             SRS curSRS = curGridSubSet.getSRS();
             if (!srsSet.contains(curSRS)) {
                 str.append("      <SRS>" + curSRS.toString() + "</SRS>\n");

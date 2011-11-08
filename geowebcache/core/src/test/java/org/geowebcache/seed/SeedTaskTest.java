@@ -258,7 +258,7 @@ public class SeedTaskTest extends TestCase {
         // replay(mockSourceHelper);
         tl.setSourceHelper(mockSourceHelper);
 
-        final String gridSetId = tl.getGridSubsets().keySet().iterator().next();
+        final String gridSetId = tl.getGridSubsets().iterator().next();
         final int zoomLevel = 2;
         SeedRequest req = createRequest(tl, TYPE.SEED, zoomLevel, zoomLevel);
 
@@ -334,7 +334,7 @@ public class SeedTaskTest extends TestCase {
     }
 
     private SeedRequest createRequest(WMSLayer tl, TYPE type, int zoomStart, int zoomStop) {
-        String gridSet = tl.getGridSubsets().keySet().iterator().next();
+        String gridSet = tl.getGridSubsets().iterator().next();
         BoundingBox bounds = null;
         int threadCount = 1;
         String format = tl.getMimeTypes().get(0).getFormat();
