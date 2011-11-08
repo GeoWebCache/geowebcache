@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,10 +28,12 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -52,6 +55,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -233,7 +237,7 @@ public class XMLConfiguration implements Configuration {
         this.templateLocation = templateLocation;
     }
 
-    private File findOrCreateConfFile() throws ConfigurationException {
+    private File findConfigFile() throws ConfigurationException {
         if (null == configDirectory) {
             // used the InputStream constructor
             throw new IllegalStateException();
@@ -250,6 +254,11 @@ public class XMLConfiguration implements Configuration {
         }
 
         File xmlFile = new File(configDirectory, configFileName);
+        return xmlFile;
+    }
+
+    private File findOrCreateConfFile() throws ConfigurationException {
+        File xmlFile = findConfigFile();
 
         if (xmlFile.exists()) {
             log.info("Found configuration file in " + configDirectory.getAbsolutePath());
@@ -402,7 +411,46 @@ public class XMLConfiguration implements Configuration {
             }
             throw (IOException) new IOException(e.getMessage()).initCause(e);
         }
+
+        try {
+            backUpConfig(xmlFile);
+        } catch (Exception e) {
+            log.warn("Error creating back up of configuration file " + configFileName, e);
+        }
         persistToFile(xmlFile);
+    }
+
+    private void backUpConfig(final File xmlFile) throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyy-MM-ddTHHmmss").format(new Date());
+        String backUpFileName = "geowebcache_" + timeStamp + ".bak";
+        File parentFile = xmlFile.getParentFile();
+
+        log.debug("Backing up config file " + xmlFile.getName() + " to " + backUpFileName);
+
+        String[] previousBackUps = parentFile.list(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                if (configFileName.equals(name)) {
+                    return false;
+                }
+                if (name.startsWith(configFileName) && name.endsWith(".bak")) {
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        final int maxBackups = 10;
+        if (previousBackUps.length > maxBackups) {
+            Arrays.sort(previousBackUps);
+            String oldest = previousBackUps[0];
+            log.debug("Deleting oldest config backup " + oldest + " to keep a maximum of "
+                    + maxBackups + " backups.");
+            new File(parentFile, oldest).delete();
+        }
+
+        File backUpFile = new File(parentFile, backUpFileName);
+        FileUtils.copyFile(xmlFile, backUpFile);
+        log.debug("Config backup done");
     }
 
     @SuppressWarnings("unchecked")
