@@ -1,6 +1,7 @@
 package org.geowebcache.diskquota.storage;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -86,7 +87,11 @@ public class TilePageCalculator {
             throw new IllegalArgumentException(e);
         }
 
-        final Collection<GridSubset> gridSubSets = tileLayer.getGridSubsets().values();
+        final Collection<GridSubset> gridSubSets = new ArrayList<GridSubset>();
+        for (String gridSetId : tileLayer.getGridSubsets()) {
+            GridSubset subset = tileLayer.getGridSubset(gridSetId);
+            gridSubSets.add(subset);
+        }
         final List<MimeType> mimeTypes = tileLayer.getMimeTypes();
 
         return getTileSetsFor(layerName, gridSubSets, mimeTypes);

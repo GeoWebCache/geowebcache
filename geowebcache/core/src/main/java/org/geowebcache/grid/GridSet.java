@@ -25,16 +25,11 @@ public class GridSet {
 
     private Grid[] gridLevels;
 
-    /**
-     * The base cordinates, used to map tile indexes to coordinate bounding boxes. These can either
-     * be top left or bottom left, so must be kept private
-     */
-    private double[] baseCoords;
-
     private BoundingBox originalExtent;
 
     /**
-     * Whether the y-coordinate of baseCoords is at the top (true) or at the bottom (false)
+     * Whether the y-coordinate of {@link #tileOrigin()} is at the top (true) or at the bottom
+     * (false)
      */
     protected boolean yBaseToggle = false;
 
@@ -79,19 +74,24 @@ public class GridSet {
     }
 
     protected BoundingBox boundsFromIndex(long[] tileIndex) {
-        Grid grid = getGridLevels()[(int) tileIndex[2]];
+        final int tileZ = (int) tileIndex[2];
+        Grid grid = getGridLevels()[tileZ];
+
+        final long tileX = tileIndex[0];
+        final long tileY;
+        if (yBaseToggle) {
+            tileY = tileIndex[1] - grid.getNumTilesHigh();
+        } else {
+            tileY = tileIndex[1];
+        }
 
         double width = grid.getResolution() * getTileWidth();
         double height = grid.getResolution() * getTileHeight();
 
-        long y = tileIndex[1];
-        if (yBaseToggle) {
-            y = y - grid.getNumTilesHigh();
-        }
-
-        BoundingBox tileBounds = new BoundingBox(getBaseCoords()[0] + width * tileIndex[0],
-                getBaseCoords()[1] + height * (y), getBaseCoords()[0] + width * (tileIndex[0] + 1),
-                getBaseCoords()[1] + height * (y + 1));
+        final double[] tileOrigin = tileOrigin();
+        BoundingBox tileBounds = new BoundingBox(tileOrigin[0] + width * tileX, tileOrigin[1]
+                + height * (tileY), tileOrigin[0] + width * (tileX + 1), tileOrigin[1] + height
+                * (tileY + 1));
         return tileBounds;
     }
 
@@ -109,9 +109,9 @@ public class GridSet {
             topY = topY - grid.getNumTilesHigh();
         }
 
-        BoundingBox rectangleBounds = new BoundingBox(getBaseCoords()[0] + width
-                * rectangleExtent[0], getBaseCoords()[1] + height * (bottomY), getBaseCoords()[0]
-                + width * (rectangleExtent[2] + 1), getBaseCoords()[1] + height * (topY + 1));
+        BoundingBox rectangleBounds = new BoundingBox(tileOrigin()[0] + width * rectangleExtent[0],
+                tileOrigin()[1] + height * (bottomY), tileOrigin()[0] + width
+                        * (rectangleExtent[2] + 1), tileOrigin()[1] + height * (topY + 1));
 
         return rectangleBounds;
     }
@@ -151,9 +151,9 @@ public class GridSet {
         double width = grid.getResolution() * getTileWidth();
         double height = grid.getResolution() * getTileHeight();
 
-        double x = (tileBounds.getMinX() - getBaseCoords()[0]) / width;
+        double x = (tileBounds.getMinX() - tileOrigin()[0]) / width;
 
-        double y = (tileBounds.getMinY() - getBaseCoords()[1]) / height;
+        double y = (tileBounds.getMinY() - tileOrigin()[1]) / height;
 
         long posX = (long) Math.round(x);
 
@@ -206,10 +206,10 @@ public class GridSet {
         double width = grid.getResolution() * getTileWidth();
         double height = grid.getResolution() * getTileHeight();
 
-        long minX = (long) Math.floor((rectangeBounds.getMinX() - getBaseCoords()[0]) / width);
-        long minY = (long) Math.floor((rectangeBounds.getMinY() - getBaseCoords()[1]) / height);
-        long maxX = (long) Math.ceil(((rectangeBounds.getMaxX() - getBaseCoords()[0]) / width));
-        long maxY = (long) Math.ceil(((rectangeBounds.getMaxY() - getBaseCoords()[1]) / height));
+        long minX = (long) Math.floor((rectangeBounds.getMinX() - tileOrigin()[0]) / width);
+        long minY = (long) Math.floor((rectangeBounds.getMinY() - tileOrigin()[1]) / height);
+        long maxX = (long) Math.ceil(((rectangeBounds.getMaxX() - tileOrigin()[0]) / width));
+        long maxY = (long) Math.ceil(((rectangeBounds.getMaxY() - tileOrigin()[1]) / height));
 
         if (yBaseToggle) {
             minY = minY + grid.getNumTilesHigh();
@@ -289,8 +289,8 @@ public class GridSet {
         double[] leftTop = new double[2];
 
         if (yBaseToggle) {
-            leftTop[0] = getBaseCoords()[0];
-            leftTop[1] = getBaseCoords()[1];
+            leftTop[0] = tileOrigin()[0];
+            leftTop[1] = tileOrigin()[1];
         } else {
             // We don't actually store the top coordinate, need to calculate it
             Grid grid = getGridLevels()[gridIndex];
@@ -298,14 +298,14 @@ public class GridSet {
             double dTileHeight = getTileHeight();
             double dGridExtent = grid.getNumTilesHigh();
 
-            double top = getBaseCoords()[1] + dTileHeight * grid.getResolution() * dGridExtent;
+            double top = tileOrigin()[1] + dTileHeight * grid.getResolution() * dGridExtent;
 
             // Round off if we are within 0.5% of an integer value
             if (Math.abs(top - Math.round(top)) < (top / 200)) {
                 top = Math.round(top);
             }
 
-            leftTop[0] = getBaseCoords()[0];
+            leftTop[0] = tileOrigin()[0];
             leftTop[1] = top;
         }
 
@@ -362,18 +362,16 @@ public class GridSet {
     }
 
     /**
-     * @return the baseCoords
+     * The base cordinates in x/y order, used to map tile indexes to coordinate bounding boxes.
+     * These can either be top left or bottom left, so must be kept private.
+     * <p>
+     * This is a derived property of {@link #getOriginalExtent()} and {@link #isTopLeftAligned()}.
+     * </p>
      */
-    public double[] getBaseCoords() {
-        return baseCoords;
-    }
-
-    /**
-     * @param baseCoords
-     *            the baseCoords to set
-     */
-    public void setBaseCoords(double[] baseCoords) {
-        this.baseCoords = baseCoords;
+    public double[] tileOrigin() {
+        BoundingBox extent = getOriginalExtent();
+        double[] tileOrigin = { extent.getMinX(), yBaseToggle ? extent.getMaxY() : extent.getMinY() };
+        return tileOrigin;
     }
 
     /**
@@ -502,6 +500,47 @@ public class GridSet {
      */
     public void setTileHeight(int tileHeight) {
         this.tileHeight = tileHeight;
+    }
+
+    /**
+     * Evaluates wheter this GridSet is different engouh from {@code another} so that if this
+     * GridSet were replaced by {@code another} all layers referencing this GridSet should be
+     * truncated.
+     * <p>
+     * The rule is, if any of the following properties differ: {@link #getBounds()},
+     * {@link #isTopLeftAligned()}, {@link #getTileHeight()}, {@link #getTileWidth()},
+     * {@link #getSrs()}, OR none of the previously mentiond properties differ and
+     * {@link #getGrids()} are different, except if both the grids of {@code another} are a superset
+     * of the grids of this gridset (i.e. they are all the same but {@code another} just has more
+     * zoom levels}.
+     * </p>
+     * 
+     * @param oldGridSet
+     * @param another
+     * @return {@code true} if
+     */
+    public boolean shouldTruncateIfChanged(final GridSet another) {
+        boolean needsTruncate = !getBounds().equals(another.getBounds());
+        needsTruncate |= isTopLeftAligned() != another.isTopLeftAligned();
+        needsTruncate |= getTileWidth() != another.getTileWidth();
+        needsTruncate |= getTileHeight() != another.getTileHeight();
+        needsTruncate |= !getSrs().equalsIncludingAlias(another.getSrs());
+
+        if (needsTruncate) {
+            return true;
+        }
+        // now check the zoom levels
+        Grid[] myGrids = getGrids();
+        Grid[] otherGrids = another.getGrids();
+        if (myGrids.length > otherGrids.length) {
+            return true;
+        }
+        for (int i = 0; i < myGrids.length; i++) {
+            if (!myGrids[i].equals(otherGrids[i])) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

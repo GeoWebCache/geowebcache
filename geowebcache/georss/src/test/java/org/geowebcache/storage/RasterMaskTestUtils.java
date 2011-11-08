@@ -44,8 +44,7 @@ public class RasterMaskTestUtils {
 
         final Geometry entries[] = createSampleEntries();
 
-        final GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().keySet()
-                .iterator().next());
+        final GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
         final int[] metaTilingFactors = layer.getMetaTilingFactors();
         GeometryRasterMaskBuilder matrix = new GeometryRasterMaskBuilder(gridSubset,
                 metaTilingFactors, maxMaskLevel);

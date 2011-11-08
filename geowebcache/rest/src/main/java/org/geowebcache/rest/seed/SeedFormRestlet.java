@@ -60,7 +60,7 @@ public class SeedFormRestlet extends GWCRestlet {
     private TileBreeder seeder;
 
     public void handle(Request request, Response response) {
-        
+
         Method met = request.getMethod();
         try {
             if (met.equals(Method.GET)) {
@@ -274,15 +274,11 @@ public class SeedFormRestlet extends GWCRestlet {
     }
 
     private void makeBboxHints(StringBuilder doc, TileLayer tl) {
-        Iterator<Entry<String, GridSubset>> iter = tl.getGridSubsets().entrySet().iterator();
 
-        // int minStart = Integer.MAX_VALUE;
-        // int maxStop = Integer.MIN_VALUE;
-
-        while (iter.hasNext()) {
-            Entry<String, GridSubset> entry = iter.next();
-            doc.append("<li>" + entry.getKey().toString() + ":   "
-                    + entry.getValue().getOriginalExtent().toString() + "</li>\n");
+        for (String gridSetId : tl.getGridSubsets()) {
+            GridSubset subset = tl.getGridSubset(gridSetId);
+            doc.append("<li>" + gridSetId + ":   " + subset.getOriginalExtent().toString()
+                    + "</li>\n");
         }
 
     }
@@ -310,16 +306,15 @@ public class SeedFormRestlet extends GWCRestlet {
     private void makeZoomPullDown(StringBuilder doc, boolean isStart, TileLayer tl) {
         Map<String, String> keysValues = new TreeMap<String, String>();
 
-        Iterator<Entry<String, GridSubset>> iter = tl.getGridSubsets().entrySet().iterator();
 
         int minStart = Integer.MAX_VALUE;
         int maxStop = Integer.MIN_VALUE;
 
-        while (iter.hasNext()) {
-            Entry<String, GridSubset> entry = iter.next();
+        for(String gridSetId : tl.getGridSubsets()){
+            GridSubset subset = tl.getGridSubset(gridSetId);
 
-            int start = entry.getValue().getZoomStart();
-            int stop = entry.getValue().getZoomStop();
+            int start = subset.getZoomStart();
+            int stop = subset.getZoomStop();
 
             if (start < minStart) {
                 minStart = start;
@@ -373,11 +368,9 @@ public class SeedFormRestlet extends GWCRestlet {
         doc.append("<tr><td>Grid Set:</td><td>\n");
         Map<String, String> keysValues = new TreeMap<String, String>();
 
-        Iterator<String> iter = tl.getGridSubsets().keySet().iterator();
 
         String firstGridSetId = null;
-        while (iter.hasNext()) {
-            String gridSetId = iter.next();
+        for(String gridSetId : tl.getGridSubsets()){
             if (firstGridSetId == null) {
                 firstGridSetId = gridSetId;
             }

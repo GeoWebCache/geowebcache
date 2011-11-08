@@ -251,7 +251,7 @@ public class SeedTaskTest extends TestCase {
         // replay(mockSourceHelper);
         tl.setSourceHelper(mockSourceHelper);
 
-        final String gridSetId = tl.getGridSubsets().keySet().iterator().next();
+        final String gridSetId = tl.getGridSubsets().iterator().next();
         final int zoomLevel = 2;
         SeedRequest req = createRequest(tl, TYPE.SEED, zoomLevel, zoomLevel);
 

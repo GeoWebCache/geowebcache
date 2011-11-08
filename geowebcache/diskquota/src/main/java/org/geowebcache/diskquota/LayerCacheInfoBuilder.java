@@ -143,7 +143,7 @@ final class LayerCacheInfoBuilder {
     private Set<TileSet> findOnDiskTileSets(final TileLayer tileLayer, final File layerDir) {
 
         final String layerName = tileLayer.getName();
-        final Set<String> griSetNames = tileLayer.getGridSubsets().keySet();
+        final Set<String> griSetNames = tileLayer.getGridSubsets();
         Set<TileSet> foundTileSets = new HashSet<TileSet>();
         for (String gridSetName : griSetNames) {
             final String gridSetDirPrefix = FilePathGenerator.filteredGridSetId(gridSetName);

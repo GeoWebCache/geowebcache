@@ -54,7 +54,7 @@ public class GeoRSSTileRangeBuilderTest extends TestCase {
         RasterMaskTestUtils.debugToDisk = debugToDisk;
         layer = TestUtils.createWMSLayer("image/png", new GridSetBroker(false, false), 3, 3,
                 new BoundingBox(-180, -90, 180, 90));
-        gridsetId = layer.getGridSubsets().keySet().iterator().next();
+        gridsetId = layer.getGridSubsets().iterator().next();
     }
 
     public void testBuildTileRangeMask() throws Exception {

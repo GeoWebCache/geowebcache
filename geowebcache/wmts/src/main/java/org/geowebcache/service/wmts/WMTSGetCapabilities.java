@@ -374,10 +374,9 @@ public class WMTSGetCapabilities {
      
       
      private void layerGridSubSets(StringBuilder str, TileLayer layer) {
-         Iterator<GridSubset> gridSubsets = layer.getGridSubsets().values().iterator();
-         
-         while(gridSubsets.hasNext()) {
-             GridSubset gridSubset = gridSubsets.next();
+
+        for (String gridSetId : layer.getGridSubsets()) {
+            GridSubset gridSubset = layer.getGridSubset(gridSetId);
          
              str.append("    <TileMatrixSetLink>");
              str.append("      <TileMatrixSet>" + gridSubset.getName() + "</TileMatrixSet>\n");

@@ -244,7 +244,7 @@ public class TileBreeder implements ApplicationContextAware {
             gridSetId = tl.getGridSubsetForSRS(req.getSRS()).getName();
         }
         if (gridSetId == null) {
-            gridSetId = tl.getGridSubsets().entrySet().iterator().next().getKey();
+            gridSetId = tl.getGridSubsets().iterator().next();
         }
 
         GridSubset gridSubset = tl.getGridSubset(gridSetId);

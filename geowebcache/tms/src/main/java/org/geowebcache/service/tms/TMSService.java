@@ -23,8 +23,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
-import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
@@ -110,7 +110,7 @@ public class TMSService extends Service {
         if(lsf.length < 3) {
             layerId = lsf[0];
             TileLayer layer = tld.getTileLayer(layerId);
-            gridSetId = layer.getGridSubsets().values().iterator().next().getName();
+            gridSetId = layer.getGridSubsets().iterator().next();
         } else {
            layerId = lsf[0];
            gridSetId = lsf[1];

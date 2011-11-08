@@ -18,10 +18,9 @@ package org.geowebcache.service.kml;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorKMLTile;
@@ -81,10 +80,10 @@ public class KMLSiteMap {
             if (!tl.isEnabled()) {
                 continue;
             }
-            Map<String, GridSubset> grids = tl.getGridSubsets();
+            Set<String> grids = tl.getGridSubsets();
             List<MimeType> mimeTypes = tl.getMimeTypes();
             
-            if( grids != null && grids.containsKey(gridSetBroker.WORLD_EPSG4326.getName())
+            if( grids != null && grids.contains(gridSetBroker.WORLD_EPSG4326.getName())
                     && mimeTypes != null && mimeTypes.contains(XMLMime.kml) ) {
                 String smStr = "<sitemap><loc>"+urlPrefix+tl.getName()+"/sitemap.xml</loc></sitemap>";
                 os.write(smStr.getBytes());
