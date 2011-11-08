@@ -16,6 +16,9 @@
  */
 package org.geowebcache.grid;
 
+import java.util.Arrays;
+
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 public class GridSet {
@@ -53,6 +56,8 @@ public class GridSet {
     private int tileWidth;
 
     private int tileHeight;
+
+    private String description;
 
     protected GridSet() {
         // Blank
@@ -227,27 +232,17 @@ public class GridSet {
         if (this == other)
             return true;
 
-        if (!other.getSrs().equals(getSrs()))
-            return false;
+        boolean equals = ObjectUtils.equals(getSrs(), other.getSrs())
+                && ObjectUtils.equals(getName(), other.getName())
+                && ObjectUtils.equals(getDescription(), other.getDescription())
+                && ObjectUtils.equals(getTileWidth(), other.getTileWidth())
+                && ObjectUtils.equals(getTileHeight(), other.getTileHeight())
+                && ObjectUtils.equals(isTopLeftAligned(), other.isTopLeftAligned())
+                && ObjectUtils.equals(isyCoordinateFirst(), other.isyCoordinateFirst())
+                && ObjectUtils.equals(getOriginalExtent(), other.getOriginalExtent())
+                && Arrays.equals(getGridLevels(), other.getGridLevels());
 
-        if (!other.getName().equals(getName()))
-            return false;
-
-        if (getTileWidth() != other.getTileWidth() || getTileHeight() != other.getTileHeight())
-            return false;
-
-        if (getGridLevels().length != other.getGridLevels().length)
-            return false;
-
-        for (int i = 0; i < getGridLevels().length; i++) {
-            if (!getGridLevels()[i].equals(other.getGridLevels()[i]))
-                return false;
-        }
-
-        if (yBaseToggle != other.yBaseToggle)
-            return false;
-
-        return true;
+        return equals;
     }
 
     @Override
@@ -456,6 +451,14 @@ public class GridSet {
         this.name = name;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     /**
      * @return the srs
      */
@@ -500,4 +503,5 @@ public class GridSet {
     public void setTileHeight(int tileHeight) {
         this.tileHeight = tileHeight;
     }
+
 }

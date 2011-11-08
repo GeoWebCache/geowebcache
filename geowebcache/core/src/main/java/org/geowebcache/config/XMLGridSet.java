@@ -78,6 +78,7 @@ public class XMLGridSet implements Serializable {
                 .getScaleDenominators().clone());
         setMetersPerUnit(orig.getMetersPerUnit());
         setName(orig.getName());
+        setDescription(orig.getDescription());
         setPixelSize(orig.getPixelSize());
         setScaleNames(orig.getScaleNames() == null ? null : orig.getScaleNames().clone());
         setSrs(orig.getSrs());
@@ -97,6 +98,7 @@ public class XMLGridSet implements Serializable {
         setScaleDenominators(null);
         setMetersPerUnit(gset.getMetersPerUnit());
         setName(gset.getName());
+        setDescription(gset.getDescription());
         setPixelSize(gset.getPixelSize());
         setScaleNames(scaleNames(gset.getGrids()));
         setSrs(gset.getSrs());
