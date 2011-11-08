@@ -421,7 +421,7 @@ public class XMLConfiguration implements Configuration {
     }
 
     private void backUpConfig(final File xmlFile) throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyy-MM-ddTHHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyy-MM-dd'T'HHmmss").format(new Date());
         String backUpFileName = "geowebcache_" + timeStamp + ".bak";
         File parentFile = xmlFile.getParentFile();
 
