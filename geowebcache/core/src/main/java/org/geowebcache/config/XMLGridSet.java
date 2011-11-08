@@ -33,6 +33,8 @@ public class XMLGridSet implements Serializable {
 
     private String name;
 
+    private String description;
+
     private SRS srs;
 
     private BoundingBox extent;
@@ -120,6 +122,21 @@ public class XMLGridSet implements Serializable {
 
     public String getName() {
         return name;
+    }
+
+    /**
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @param description
+     *            the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**
