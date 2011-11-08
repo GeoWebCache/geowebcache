@@ -17,8 +17,11 @@
 package org.geowebcache.grid;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -34,9 +37,13 @@ public class GridSetBroker {
 
     public final GridSet WORLD_EPSG3857;
 
-    Hashtable<String, GridSet> gridSets = new Hashtable<String, GridSet>();
+    private Map<String, GridSet> gridSets;
+
+    private Set<String> embeddedGridSets;
 
     public GridSetBroker(boolean useEPSG900913, boolean useGWC11xNames) {
+        gridSets = new HashMap<String, GridSet>();
+
         String unprojectedName = "GlobalCRS84Geometric";
         String mercatorName = "GoogleMapsCompatible";
 
@@ -84,10 +91,19 @@ public class GridSetBroker {
                 null, null, GridSetFactory.DEFAULT_PIXEL_SIZE_METER, null, 256, 256, true);
 
         gridSets.put(GlobalCRS84Scale.getName(), GlobalCRS84Scale);
+
+        embeddedGridSets = Collections.unmodifiableSet(new HashSet<String>(gridSets.keySet()));
     }
 
     public GridSet get(String gridSetId) {
         return gridSets.get(gridSetId);
+    }
+
+    /**
+     * @return the names of the gridsets that are internally defined
+     */
+    public Set<String> getEmbeddedNames() {
+        return embeddedGridSets;
     }
 
     public Set<String> getNames() {
@@ -99,7 +115,7 @@ public class GridSetBroker {
     }
 
     public void put(GridSet gridSet) {
-        if (gridSets.contains(gridSet.getName())) {
+        if (gridSets.containsKey(gridSet.getName())) {
             log.warn("Duplicate grid set " + gridSet.getName() + ", "
                     + "removing previous instance, but it may still be referenced by layers.");
 
