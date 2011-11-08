@@ -36,9 +36,6 @@ public class XMLGridSubset implements Serializable {
 
     private BoundingBox extent;
 
-    // TODO remove in 1.2.2
-    private BoundingBox coverageBounds;
-
     private Integer zoomStart;
 
     private Integer zoomStop;
@@ -56,7 +53,6 @@ public class XMLGridSubset implements Serializable {
     public XMLGridSubset(XMLGridSubset sset) {
         setGridSetName(sset.getGridSetName());
         setExtent(sset.getExtent() == null ? null : new BoundingBox(sset.getExtent()));
-        coverageBounds = sset.coverageBounds;
         setZoomStart(sset.getZoomStart());
         setZoomStop(sset.getZoomStop());
     }
@@ -73,10 +69,6 @@ public class XMLGridSubset implements Serializable {
     }
 
     public GridSubset getGridSubSet(GridSetBroker gridSetBroker) {
-        // TODO remove in 1.2.2
-        if (getExtent() == null && coverageBounds != null) {
-            setExtent(coverageBounds);
-        }
 
         GridSet gridSet = gridSetBroker.get(getGridSetName());
 
