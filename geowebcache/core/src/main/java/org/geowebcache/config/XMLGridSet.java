@@ -169,8 +169,10 @@ public class XMLGridSet implements Serializable {
             setyCoordinateFirst(false);
         }
 
+        GridSet gridSet;
+
         if (getResolutions() != null || getScaleDenominators() != null) {
-            return GridSetFactory.createGridSet(getName(), getSrs(), getExtent(),
+            gridSet = GridSetFactory.createGridSet(getName(), getSrs(), getExtent(),
                     getAlignTopLeft(), getResolutions(), getScaleDenominators(),
                     getMetersPerUnit(), getPixelSize(), getScaleNames(), getTileWidth(),
                     getTileHeight(), getyCoordinateFirst());
@@ -179,10 +181,14 @@ public class XMLGridSet implements Serializable {
                 setLevels(30);
             }
 
-            return GridSetFactory.createGridSet(getName(), getSrs(), getExtent(),
+            gridSet = GridSetFactory.createGridSet(getName(), getSrs(), getExtent(),
                     getAlignTopLeft(), getLevels(), getMetersPerUnit(), getPixelSize(),
                     getTileWidth(), getTileHeight(), getyCoordinateFirst());
         }
+
+        gridSet.setDescription(getDescription());
+
+        return gridSet;
     }
 
     /**

@@ -291,6 +291,18 @@ public class TileLayerDispatcher implements DisposableBean {
         if (null != gridSetBroker.get(gridSet.getName())) {
             throw new IllegalArgumentException("GridSet " + gridSet.getName() + " already exists");
         }
+        saveGridSet(gridSet);
+    }
+
+    public synchronized void modifyGridSet(final GridSet gridSet) throws IllegalArgumentException,
+            IOException {
+        if (null == gridSetBroker.get(gridSet.getName())) {
+            throw new IllegalArgumentException("GridSet " + gridSet.getName() + " does not exist");
+        }
+        saveGridSet(gridSet);
+    }
+
+    private void saveGridSet(final GridSet gridSet) throws IOException {
         XMLConfiguration persistingConfig = getXmlConfiguration();
         persistingConfig.addOrReplaceGridSet(new XMLGridSet(gridSet));
         persistingConfig.save();
