@@ -239,9 +239,10 @@ public class XMLConfiguration implements Configuration {
             throw new IllegalStateException();
         }
 
-        if (!configDirectory.exists()) {
-            throw new ConfigurationException("Configuration directory does not exist: '"
-                    + configDirectory.getAbsolutePath() + "'");
+        if (!configDirectory.exists() && !configDirectory.mkdirs()) {
+            throw new ConfigurationException(
+                    "Configuration directory does not exist and cannot be created: '"
+                            + configDirectory.getAbsolutePath() + "'");
         }
         if (!configDirectory.canWrite()) {
             throw new ConfigurationException("Configuration directory is not writable: '"
@@ -564,11 +565,12 @@ public class XMLConfiguration implements Configuration {
      * @param gridSet
      * @throws GeoWebCacheException
      */
-    public synchronized void addOrReplaceGridSet(final XMLGridSet gridSet) throws IllegalArgumentException {
+    public synchronized void addOrReplaceGridSet(final XMLGridSet gridSet)
+            throws IllegalArgumentException {
         final String gridsetName = gridSet.getName();
-        
+
         List<XMLGridSet> gridSets = gwcConfig.getGridSets();
-        
+
         for (Iterator<XMLGridSet> it = gridSets.iterator(); it.hasNext();) {
             XMLGridSet gset = it.next();
             if (gridsetName.equals(gset.getName())) {
