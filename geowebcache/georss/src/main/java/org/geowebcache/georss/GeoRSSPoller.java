@@ -30,6 +30,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
 import org.geowebcache.layer.updatesource.UpdateSourceDefinition;
 import org.geowebcache.seed.TileBreeder;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 /**
  * 
@@ -64,38 +65,46 @@ public class GeoRSSPoller {
         this.scheduledPolls = new ArrayList<PollDef>();
         this.scheduledTasks = new ArrayList<GeoRSSPollTask>();
 
-        findEnabledPolls();
+        final int corePoolSize = 1;
+        CustomizableThreadFactory tf = new CustomizableThreadFactory("GWC GeoRSS Poll Tasks-");
+        tf.setDaemon(true);
+        tf.setThreadPriority(Thread.MIN_PRIORITY + 1);
+        schedulingPollExecutorService = Executors.newScheduledThreadPool(corePoolSize, tf);
 
-        if (pollCount() > 0) {
-            final int corePoolSize = 1;
-            schedulingPollExecutorService = Executors.newScheduledThreadPool(corePoolSize);
+        schedulingPollExecutorService.submit(new Runnable() {
 
-            final TimeUnit seconds = TimeUnit.SECONDS;
-            for (PollDef poll : this.scheduledPolls) {
-                GeoRSSPollTask command = new GeoRSSPollTask(poll, this.seeder);
-                GeoRSSFeedDefinition pollDef = poll.getPollDef();
-                long period = pollDef.getPollInterval();
+            public void run() {
+                logger.info("Initializing GeoRSS poller in a background job...");
 
-                logger.info("Scheduling layer " + poll.getLayer().getName()
-                        + " to poll the GeoRSS feed " + pollDef.getFeedUrl() + " every "
-                        + pollDef.getPollIntervalStr());
+                findEnabledPolls();
 
-                schedulingPollExecutorService.scheduleAtFixedRate(command, startUpDelaySecs,
-                        period, seconds);
+                if (pollCount() > 0) {
 
-                scheduledTasks.add(command);
+                    final TimeUnit seconds = TimeUnit.SECONDS;
+                    for (PollDef poll : scheduledPolls) {
+                        GeoRSSPollTask command = new GeoRSSPollTask(poll, seeder);
+                        GeoRSSFeedDefinition pollDef = poll.getPollDef();
+                        long period = pollDef.getPollInterval();
+
+                        logger.info("Scheduling layer " + poll.getLayer().getName()
+                                + " to poll the GeoRSS feed " + pollDef.getFeedUrl() + " every "
+                                + pollDef.getPollIntervalStr());
+
+                        schedulingPollExecutorService.scheduleAtFixedRate(command,
+                                startUpDelaySecs, period, seconds);
+
+                        scheduledTasks.add(command);
+                    }
+                    logger.info("Will wait " + startUpDelaySecs + " seconds before launching the "
+                            + pollCount() + " GeoRSS polls found");
+                } else {
+                    logger.info("No enabled GeoRSS feeds found, poller will not run.");
+                }
             }
-            logger.info("Will wait " + startUpDelaySecs + " seconds before launching the "
-                    + pollCount() + " GeoRSS polls found");
-        } else {
-            schedulingPollExecutorService = null;
-            logger.info("No enabled GeoRSS feeds found, poller will not run.");
-        }
+        });
     }
 
     private void findEnabledPolls() {
-        logger.info("Initializing GeoRSS poller...");
-
         final Iterable<TileLayer> layers = seeder.getLayers();
         for (TileLayer layer : layers) {
             if (layer.getUpdateSources().size() == 0) {
