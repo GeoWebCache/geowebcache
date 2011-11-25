@@ -515,7 +515,7 @@ public class SeedFormRestlet extends GWCRestlet {
             basemapConfig = "    return null;\n";
         }
         
-        String extras = "<script type=\"text/javascript\" src=\"../../openlayers/OpenLayers.js\"></script>\n";
+        String extras = "<script type=\"text/javascript\" src=\"../web/openlayers/OpenLayers.js\"></script>\n";
         
         extras += "<script type=\"text/javascript\">\n" + 
                   "  var layerName = '" + tl.getName() + "';\n" + 
@@ -532,10 +532,10 @@ public class SeedFormRestlet extends GWCRestlet {
                   "  }\n" +
                   "</script>\n";
 
-        extras += "<script type=\"text/javascript\" src=\"../../js/gwc/util.js\"></script>\n";
-        extras += "<script type=\"text/javascript\" src=\"../../js/seedform.js\"></script>\n";
+        extras += "<script type=\"text/javascript\" src=\"../web/js/gwc/util.js\"></script>\n";
+        extras += "<script type=\"text/javascript\" src=\"../web/js/seedform.js\"></script>\n";
         
-        extras += "<link rel=\"stylesheet\" href=\"../../openlayers/theme/default/style.css\" type=\"text/css\">\n" + 
+        extras += "<link rel=\"stylesheet\" href=\"../web/openlayers/theme/default/style.css\" type=\"text/css\">\n" + 
                   "  <style type=\"text/css\">\n" + 
                   "  .bboxinputmap { width: 768px; height: 512px; border: 1px solid #ccc; }\n" + 
                   "  .olControlEditingToolbar .olControlSizeItemActive {\n" +  
@@ -627,7 +627,7 @@ public class SeedFormRestlet extends GWCRestlet {
             doc.append("</table>");
         }
         doc.append("<p><a href=\"./" + tl.getName() + "\">Refresh list</a></p>\n");
-        doc.append("<p>For more detail, go to the <a href=\"http://localhost:8080/geowebcache/joblist.html\">Job Manager Page</a></p>\n");
+        doc.append("<p>For more detail, go to the <a href=\"../web/joblist.html\">Job Manager Page</a></p>\n");
 
     }
 

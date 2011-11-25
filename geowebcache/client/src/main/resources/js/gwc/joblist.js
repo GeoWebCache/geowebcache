@@ -1,4 +1,4 @@
-Ext.require([
+ext.require([
 	'Ext.grid.*',
     'Ext.data.*',
     'Ext.util.*',
@@ -449,7 +449,7 @@ Ext.onReady(function () {
 		    border: 0,
 	        xtype: 'panel',
 	        items: {
-	            html: '<a id="logo" href="home"><img src="rest/web/geowebcache_logo.png"height="70" width="247" border="0"/></a>'
+	            html: '<a id="logo" href="../../Home"><img src="geowebcache_logo.png"height="70" width="247" border="0"/></a>'
 	    	}
         },{
 	    	region: 'center',

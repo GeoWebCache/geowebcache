@@ -129,7 +129,7 @@ Ext.define('GWC.RestService', {
 	},
 
 	loadLogs: function (jobId) {
-    	this.logStore.proxy.url = 'rest/jobs/' + jobId + '/logs.json';
+    	this.logStore.proxy.url = this.endpoint + '/jobs/' + jobId + '/logs.json';
     	this.logStore.load();
 	},
 	

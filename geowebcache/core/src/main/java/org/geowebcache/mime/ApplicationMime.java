@@ -27,6 +27,10 @@ public class ApplicationMime extends MimeType {
             "application/bil32", "bil32", "bil32",
             "application/bil32", false);
     
+    public static final ApplicationMime js = new ApplicationMime(
+            "application/javascript", "js", "js",
+            "application/js", true);
+    
     
     private ApplicationMime(String mimeType, String fileExtension, 
                 String internalName, String format, boolean noop) {
@@ -43,6 +47,8 @@ public class ApplicationMime extends MimeType {
             return bil16;
         } else if (formatStr.equalsIgnoreCase(bil32.format)) {
             return bil32;
+        } else if (formatStr.equalsIgnoreCase(js.format)) {
+            return js;
         }
         
         return null;
@@ -53,6 +59,8 @@ public class ApplicationMime extends MimeType {
             return bil16;
         } else if (fileExtension.equals(bil32.fileExtension)) {
             return bil32;
+        } else if (fileExtension.equals(js.fileExtension)) {
+            return js;
         }
         
         return null;

@@ -484,10 +484,10 @@
             <manifestEntries>
               <Specification-Title>org.geowebcache</Specification-Title>
               <Specification-Version>${project.version}</Specification-Version>
-              <Specification-Vendor>${pom.url}</Specification-Vendor>
+              <Specification-Vendor>${project.url}</Specification-Vendor>
               <Implementation-Title>org.geowebcache</Implementation-Title>
               <Implementation-Version>${buildNumber}</Implementation-Version>
-              <Implementation-Vendor>${pom.url}</Implementation-Vendor>
+              <Implementation-Vendor>${project.url}</Implementation-Vendor>
             </manifestEntries>
           </archive>
         </configuration>
@@ -569,5 +569,6 @@
     <module>web</module>
     <module>diskquota</module>
     <module>arcgiscache</module>
+    <module>client</module>
   </modules>
 </project>

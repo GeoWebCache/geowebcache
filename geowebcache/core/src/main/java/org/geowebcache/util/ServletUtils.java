@@ -404,7 +404,7 @@ public class ServletUtils {
     }
 
     public static String gwcHtmlLogoLink(String relBasePath) {
-        return "<a id=\"logo\" href=\"" + relBasePath + "\">" + "<img src=\"" + relBasePath
+        return "<a id=\"logo\" href=\"" + relBasePath + "home\">" + "<img src=\"" + relBasePath
                 + "rest/web/geowebcache_logo.png\"" + "height=\"70\" width=\"247\" border=\"0\"/>"
                 + "</a>\n";
     }

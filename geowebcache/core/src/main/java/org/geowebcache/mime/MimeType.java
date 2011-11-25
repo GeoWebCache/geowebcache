@@ -145,7 +145,7 @@ public class MimeType {
             return mimeType;
         }
         
-        mimeType = ApplicationMime.createFromExtension(fileExtension);
+        mimeType = ApplicationMime.checkForExtension(fileExtension);
         if(mimeType != null) {
             return mimeType;
         }

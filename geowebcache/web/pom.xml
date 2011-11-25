@@ -69,6 +69,11 @@
       <artifactId>gwc-arcgiscache</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.geowebcache</groupId>
+      <artifactId>gwc-client</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- This is for Acegi -->
     <dependency>
