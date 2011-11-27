@@ -1,4 +1,4 @@
-ext.require([
+Ext.require([
 	'Ext.grid.*',
     'Ext.data.*',
     'Ext.util.*',

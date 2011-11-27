@@ -22,6 +22,7 @@ import java.sql.Timestamp;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.JobLogObject;
 import org.geowebcache.storage.JobObject;
@@ -45,7 +46,7 @@ public class JDBCJobBackend implements JobStore {
     private boolean enabled = true;
 
     public JDBCJobBackend(String driverClass, String jdbcString, String username, String password)
-            throws StorageException {
+            throws ConfigurationException, StorageException {
         this(driverClass, jdbcString, username, password, false, -1);
     }
 
@@ -62,7 +63,7 @@ public class JDBCJobBackend implements JobStore {
      * @throws StorageException
      */
     public JDBCJobBackend(String driverClass, String jdbcString, String username, String password,
-            boolean useConnectionPooling, int maxConnections) throws StorageException {
+            boolean useConnectionPooling, int maxConnections) throws ConfigurationException, StorageException {
         if (useConnectionPooling && maxConnections <= 0) {
             throw new IllegalArgumentException(
                     "If connection pooling is enabled maxConnections shall be a positive integer: "
@@ -74,7 +75,7 @@ public class JDBCJobBackend implements JobStore {
             initSettings();
         } catch (SQLException se) {
             enabled = false;
-            throw new StorageException(se.getMessage());
+            throw new ConfigurationException(se.getMessage());
         }
     }
 
@@ -84,12 +85,12 @@ public class JDBCJobBackend implements JobStore {
         settings.setClearOldJobs(getClearOldJobsSetting());
     }
 
-    public JDBCJobBackend(DefaultStorageFinder defStoreFind) throws StorageException {
+    public JDBCJobBackend(DefaultStorageFinder defStoreFind) throws ConfigurationException, StorageException {
         this(defStoreFind, false, -1);
     }
 
     public JDBCJobBackend(DefaultStorageFinder defStoreFind, boolean useConnectionPooling,
-            int maxConnections) throws StorageException {
+            int maxConnections) throws ConfigurationException, StorageException {
         if (useConnectionPooling && maxConnections <= 0) {
             throw new IllegalArgumentException(
                     "If connection pooling is enabled maxConnections shall be a positive integer: "

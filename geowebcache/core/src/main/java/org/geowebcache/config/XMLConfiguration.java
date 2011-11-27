@@ -71,9 +71,6 @@ import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.SRS;
-import org.geowebcache.grid.XMLGridSet;
-import org.geowebcache.grid.XMLGridSubset;
-import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.meta.ContactInformation;
@@ -88,8 +85,6 @@ import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.JobLogObject;
 import org.geowebcache.storage.JobObject;
 import org.geowebcache.storage.SettingsObject;
-import org.geowebcache.storage.StorageBroker;
-import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.geowebcache.util.ISO8601DateParser;
 import org.springframework.util.Assert;
@@ -512,9 +507,8 @@ public class XMLConfiguration implements Configuration {
         xs.alias("gwcConfiguration", GeoWebCacheConfiguration.class);
         xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns_xsi");
         xs.aliasField("xmlns:xsi", GeoWebCacheConfiguration.class, "xmlns_xsi");
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xsi_noNamespaceSchemaLocation");
-        xs.aliasField("xsi:noNamespaceSchemaLocation", GeoWebCacheConfiguration.class,
-                "xsi_noNamespaceSchemaLocation");
+        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xsi_schemaLocation");
+        xs.aliasField("xsi:schemaLocation", GeoWebCacheConfiguration.class, "xsi_schemaLocation");
         xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
 
         if (this.context != null) {

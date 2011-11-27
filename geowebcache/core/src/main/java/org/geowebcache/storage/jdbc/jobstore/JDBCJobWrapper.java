@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.seed.GWCTask.PRIORITY;
@@ -98,7 +99,7 @@ class JDBCJobWrapper {
     
     protected JDBCJobWrapper(String driverClass, String jdbcString, String username,
             String password, boolean useConnectionPooling, int maxConnections)
-            throws StorageException, SQLException {
+            throws ConfigurationException, SQLException {
         this.jdbcString = jdbcString;
         this.username = username;
         this.password = password;
@@ -108,7 +109,7 @@ class JDBCJobWrapper {
         try {
             Class.forName(driverClass);
         } catch (ClassNotFoundException cnfe) {
-            throw new StorageException("Class not found: " + cnfe.getMessage());
+            throw new ConfigurationException("Class not found: " + cnfe.getMessage());
         }
 
         if (!useConnectionPooling) {
@@ -119,7 +120,7 @@ class JDBCJobWrapper {
     }
 
     public JDBCJobWrapper(DefaultStorageFinder defStoreFind, boolean useConnectionPooling,
-            int maxConnections) throws StorageException, SQLException {
+            int maxConnections) throws ConfigurationException, SQLException {
         String envStrUsername;
         String envStrPassword;
         String envStrJdbcUrl;
@@ -154,7 +155,7 @@ class JDBCJobWrapper {
             String path = defStoreFind.getDefaultPath() + File.separator + "job_jdbc_h2";
             File dir = new File(path);
             if (!dir.exists() && !dir.mkdirs()) {
-                throw new StorageException("Unable to create " + dir.getAbsolutePath()
+                throw new ConfigurationException("Unable to create " + dir.getAbsolutePath()
                         + " for H2 database.");
             }
             this.jdbcString = "jdbc:h2:file:" + path + File.separator + "gwc_jobstore"
@@ -164,7 +165,7 @@ class JDBCJobWrapper {
         try {
             Class.forName(driverClass);
         } catch (ClassNotFoundException cnfe) {
-            throw new StorageException("Class not found: " + cnfe.getMessage());
+            throw new ConfigurationException("Class not found: " + cnfe.getMessage());
         }
 
         if (!useConnectionPooling) {
@@ -193,7 +194,7 @@ class JDBCJobWrapper {
         return conn;
     }
 
-    private void checkTables() throws StorageException, SQLException {
+    private void checkTables() throws ConfigurationException, SQLException {
         final Connection conn = getConnection();
         try {
 
@@ -223,7 +224,7 @@ class JDBCJobWrapper {
      * @throws StorageException
      *             if the database is newer than the software
      */
-    protected int getDbVersion(Connection conn) throws SQLException, StorageException {
+    protected int getDbVersion(Connection conn) throws SQLException, ConfigurationException {
 
         condCreate(conn, "VARIABLES", "KEY VARCHAR(32), VALUE VARCHAR(128)", "KEY", null);
 
