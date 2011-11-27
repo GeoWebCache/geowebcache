@@ -14,7 +14,15 @@
  * 
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
-package org.geowebcache.grid;
+package org.geowebcache.config;
+
+import org.geowebcache.grid.BoundingBox;
+import org.geowebcache.grid.GridSet;
+import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSetFactory;
+import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.GridSubsetFactory;
+import org.geowebcache.grid.SRS;
 
 
 /**
@@ -64,14 +72,14 @@ public class XMLOldGrid {
         } else {
             if(resolutions != null) {
                 gridSet = GridSetFactory.createGridSet(srs.toString(), srs, gridBounds, false, resolutions, 
-                        null, null, 0.00028, null, 256, 256, false);
+                        null, null, GridSetFactory.DEFAULT_PIXEL_SIZE_METER, null, 256, 256, false);
             } else {
                 if(zoomStop == null) {
                     zoomStop = 30;
                 }
                 
                 gridSet = GridSetFactory.createGridSet(srs.toString(), srs, gridBounds, false, zoomStop + 1, 
-                        null, 0.00028, 256, 256, false );
+                        null, GridSetFactory.DEFAULT_PIXEL_SIZE_METER, 256, 256, false );
             }
         }
         

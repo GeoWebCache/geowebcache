@@ -20,8 +20,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.ConfigurationException;
+import org.geowebcache.diskquota.QuotaStore;
 import org.geowebcache.storage.DefaultStorageFinder;
-import org.geowebcache.storage.StorageException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
@@ -77,7 +78,7 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
     private boolean diskQuotaEnabled;
 
     public BDBQuotaStore(final DefaultStorageFinder cacheDirFinder,
-            TilePageCalculator tilePageCalculator) throws StorageException {
+            TilePageCalculator tilePageCalculator) throws ConfigurationException {
 
         Assert.notNull(cacheDirFinder, "cacheDirFinder can't be null");
         Assert.notNull(tilePageCalculator, "tilePageCalculator can't be null");
@@ -227,6 +228,9 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
 
     }
 
+    /**
+     * @see org.geowebcache.diskquota.QuotaStore#createLayer(java.lang.String)
+     */
     public void createLayer(final String layerName) throws InterruptedException {
         issueSync(new Callable<Void>() {
 
@@ -327,10 +331,16 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
 
     }
 
+    /**
+     * @see org.geowebcache.diskquota.QuotaStore#getGloballyUsedQuota()
+     */
     public Quota getGloballyUsedQuota() throws InterruptedException {
         return getUsedQuotaByTileSetId(GLOBAL_QUOTA_NAME);
     }
 
+    /**
+     * @see org.geowebcache.diskquota.QuotaStore#getUsedQuotaByTileSetId(java.lang.String)
+     */
     public Quota getUsedQuotaByTileSetId(final String tileSetId) throws InterruptedException {
         Quota usedQuota = issueSync(new UsedQuotaByTileSetId(tileSetId));
         return usedQuota;
@@ -397,11 +407,17 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
 
     }
 
+    /**
+     * @see org.geowebcache.diskquota.QuotaStore#deleteLayer(java.lang.String)
+     */
     public void deleteLayer(final String layerName) {
         Assert.notNull(layerName);
         issue(new DeleteLayer(layerName));
     }
 
+    /**
+     * @see org.geowebcache.diskquota.QuotaStore#renameLayer(java.lang.String, java.lang.String)
+     */
     public void renameLayer(String oldLayerName, String newLayerName) throws InterruptedException {
         Assert.notNull(oldLayerName);
         Assert.notNull(newLayerName);
@@ -492,11 +508,7 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
     }
 
     /**
-     * 
-     * @param layerName
-     * @return the used quota for the given layer, may need to create a new one before returning if
-     *         no quota usage information for that layer already exists
-     * @throws InterruptedException
+     * @see org.geowebcache.diskquota.QuotaStore#getUsedQuotaByLayerName(java.lang.String)
      */
     public Quota getUsedQuotaByLayerName(final String layerName) throws InterruptedException {
         return issueSync(new UsedQuotaByLayerName(layerName));
@@ -536,12 +548,18 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
         }
     }
 
+    /**
+     * @see org.geowebcache.diskquota.QuotaStore#getTilesForPage(org.geowebcache.diskquota.storage.TilePage)
+     */
     public long[][] getTilesForPage(TilePage page) throws InterruptedException {
         TileSet tileSet = getTileSetById(page.getTileSetId());
         long[][] gridCoverage = tilePageCalculator.toGridCoverage(tileSet, page);
         return gridCoverage;
     }
 
+    /**
+     * @see org.geowebcache.diskquota.QuotaStore#getTileSets()
+     */
     public Set<TileSet> getTileSets() {
         Map<String, TileSet> map = new HashMap<String, TileSet>(tileSetById.map());
         map.remove(GLOBAL_QUOTA_NAME);
@@ -549,6 +567,9 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
         return hashSet;
     }
 
+    /**
+     * @see org.geowebcache.diskquota.QuotaStore#getTileSetById(java.lang.String)
+     */
     public TileSet getTileSetById(final String tileSetId) throws InterruptedException {
         return issueSync(new Callable<TileSet>() {
 
@@ -562,18 +583,31 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
         });
     }
 
+    /**
+     * @see org.geowebcache.diskquota.QuotaStore#accept(org.geowebcache.diskquota.storage.TileSetVisitor)
+     */
+    public void accept(TileSetVisitor visitor) {
+        EntityCursor<TileSet> cursor = this.tileSetById.entities();
+        try {
+            TileSet tileSet;
+            while ((tileSet = cursor.next()) != null) {
+                visitor.visit(tileSet, this);
+            }
+        } finally {
+            cursor.close();
+        }
+    }
+
+    /**
+     * @see org.geowebcache.diskquota.QuotaStore#getTilePageCalculator()
+     */
     public TilePageCalculator getTilePageCalculator() {
         return tilePageCalculator;
     }
 
     /**
-     * Adds the {@link TilePage#getNumPresentTilesInPage() number of tiles} present in each of the
-     * argument pages
-     * 
-     * @param quotaDiff
-     * 
-     * @param tileCountDiffs
-     * @throws InterruptedException
+     * @see org.geowebcache.diskquota.QuotaStore#addToQuotaAndTileCounts(org.geowebcache.diskquota.storage.TileSet,
+     *      org.geowebcache.diskquota.storage.Quota, java.util.Collection)
      */
     public void addToQuotaAndTileCounts(final TileSet tileSet, final Quota quotaDiff,
             final Collection<PageStatsPayload> tileCountDiffs) throws InterruptedException {
@@ -654,14 +688,7 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
     }
 
     /**
-     * Asynchronously updates (or set if not exists) the
-     * {@link PageStats#getFrequencyOfUsePerMinute()} and
-     * {@link PageStats#getLastAccessTimeMinutes()} values for the stored versions of the page
-     * statistics using {@link PageStats#addHits(long)}; these values are influenced by the
-     * {@code PageStats}' {@link PageStats#getFillFactor() fillFactor}.
-     * 
-     * @param statsUpdates
-     * @return
+     * @see org.geowebcache.diskquota.QuotaStore#addHitsAndSetAccesTime(java.util.Collection)
      */
     public Future<List<PageStats>> addHitsAndSetAccesTime(
             final Collection<PageStatsPayload> statsUpdates) {
@@ -726,9 +753,7 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
     }
 
     /**
-     * @param layerNames
-     * @return
-     * @throws InterruptedException
+     * @see org.geowebcache.diskquota.QuotaStore#getLeastFrequentlyUsedPage(java.util.Set)
      */
     public TilePage getLeastFrequentlyUsedPage(final Set<String> layerNames)
             throws InterruptedException {
@@ -741,9 +766,7 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
     }
 
     /**
-     * @param layerNames
-     * @return
-     * @throws InterruptedException
+     * @see org.geowebcache.diskquota.QuotaStore#getLeastRecentlyUsedPage(java.util.Set)
      */
     public TilePage getLeastRecentlyUsedPage(final Set<String> layerNames)
             throws InterruptedException {
@@ -814,6 +837,9 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
         }
     }
 
+    /**
+     * @see org.geowebcache.diskquota.QuotaStore#setTruncated(org.geowebcache.diskquota.storage.TilePage)
+     */
     public PageStats setTruncated(final TilePage tilePage) throws InterruptedException {
         return issueSync(new TruncatePage(tilePage));
     }

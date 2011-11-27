@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
@@ -122,12 +123,12 @@ public class WMSGetCapabilities {
         if (servInfo == null) {
             str.append("  <Title>Web Map Service - GeoWebCache</Title>\n");
         } else {
-            str.append("  <Title>" + servInfo.title + "</Title>\n");
-            str.append("  <Abstract>" + servInfo.description + "</Abstract>\n");
+            str.append("  <Title>" + servInfo.getTitle() + "</Title>\n");
+            str.append("  <Abstract>" + servInfo.getDescription() + "</Abstract>\n");
 
-            if (servInfo.keywords != null) {
+            if (servInfo.getKeywords() != null) {
                 str.append("  <KeywordList>\n");
-                Iterator<String> keywordIter = servInfo.keywords.iterator();
+                Iterator<String> keywordIter = servInfo.getKeywords().iterator();
                 while (keywordIter.hasNext()) {
                     str.append("    <Keyword>" + keywordIter.next() + "</Keyword>\n");
                 }
@@ -141,8 +142,8 @@ public class WMSGetCapabilities {
         serviceContact(str);
 
         if (servInfo != null) {
-            str.append("  <Fees>" + servInfo.fees + "</Fees>\n");
-            str.append("  <AccessConstraints>" + servInfo.accessConstraints
+            str.append("  <Fees>" + servInfo.getFees() + "</Fees>\n");
+            str.append("  <AccessConstraints>" + servInfo.getAccessConstraints()
                     + "</AccessConstraints>\n");
         }
 
@@ -155,39 +156,40 @@ public class WMSGetCapabilities {
         ServiceContact servCont = null;
 
         if (servInfo != null) {
-            servProv = servInfo.serviceProvider;
+            servProv = servInfo.getServiceProvider();
 
             if (servProv != null) {
-                servCont = servProv.serviceContact;
+                servCont = servProv.getServiceContact();
             }
 
             str.append("  <ContactInformation>\n");
 
-            if (servProv.providerName != null || servCont != null) {
+            if (servProv.getProviderName() != null || servCont != null) {
                 str.append("    <ContactPersonPrimary>\n");
                 if (servCont != null) {
-                    str.append("      <ContactPerson>" + servCont.individualName
+                    str.append("      <ContactPerson>" + servCont.getIndividualName()
                             + "</ContactPerson>\n");
                 }
-                str.append("      <ContactOrganisation>" + servProv.providerName
+                str.append("      <ContactOrganisation>" + servProv.getProviderName()
                         + "</ContactOrganisation>\n");
                 str.append("    </ContactPersonPrimary>\n");
 
-                str.append("    <ContactPosition>" + servCont.positionName + "</ContactPosition>\n");
+                str.append("    <ContactPosition>" + servCont.getPositionName()
+                        + "</ContactPosition>\n");
                 str.append("    <ContactAddress>\n");
-                str.append("      <AddressType>" + servCont.addressType + "</AddressType>\n");
-                str.append("      <Address>" + servCont.addressStreet + "</Address>\n");
-                str.append("      <City>" + servCont.addressCity + "</City>\n");
-                str.append("      <StateOrProvince>" + servCont.addressAdministrativeArea
+                str.append("      <AddressType>" + servCont.getAddressType() + "</AddressType>\n");
+                str.append("      <Address>" + servCont.getAddressStreet() + "</Address>\n");
+                str.append("      <City>" + servCont.getAddressCity() + "</City>\n");
+                str.append("      <StateOrProvince>" + servCont.getAddressAdministrativeArea()
                         + "</StateOrProvince>\n");
-                str.append("      <PostCode>" + servCont.addressPostalCode + "</PostCode>\n");
-                str.append("      <Country>" + servCont.addressCountry + "</Country>\n");
+                str.append("      <PostCode>" + servCont.getAddressPostalCode() + "</PostCode>\n");
+                str.append("      <Country>" + servCont.getAddressCountry() + "</Country>\n");
                 str.append("    </ContactAddress>\n");
-                str.append("    <ContactVoiceTelephone>" + servCont.phoneNumber
+                str.append("    <ContactVoiceTelephone>" + servCont.getPhoneNumber()
                         + "</ContactVoiceTelephone>\n");
-                str.append("    <ContactFacsimileTelephone/>" + servCont.faxNumber
+                str.append("    <ContactFacsimileTelephone/>" + servCont.getFaxNumber()
                         + "<ContactFacsimileTelephone/>\n");
-                str.append("    <ContactElectronicMailAddress>" + servCont.addressEmail
+                str.append("    <ContactElectronicMailAddress>" + servCont.getAddressEmail()
                         + "</ContactElectronicMailAddress>\n");
                 str.append("  </ContactInformation>\n");
             }
@@ -331,23 +333,25 @@ public class WMSGetCapabilities {
             while (gridIter.hasNext()) {
                 GridSubset grid = gridIter.next();
 
-                Iterator<MimeType> mimeIter = null;
+                List<String> formats = new ArrayList<String>(2);
 
                 if (layer.getMimeTypes() != null) {
-                    mimeIter = layer.getMimeTypes().iterator();
+                    for (MimeType mime : layer.getMimeTypes()) {
+                        formats.add(mime.getFormat());
+                    }
                 } else {
-                    ArrayList<MimeType> arList = new ArrayList<MimeType>();
-                    arList.add(ImageMime.png);
-                    arList.add(ImageMime.jpeg);
-                    mimeIter = arList.iterator();
+                    formats.add(ImageMime.png.getFormat());
+                    formats.add(ImageMime.jpeg.getFormat());
                 }
 
-                while (mimeIter.hasNext()) {
-                    try {
-                        capabilityVendorSpecificTileset(str, layer, grid, mimeIter.next()
-                                .getFormat());
-                    } catch (GeoWebCacheException e) {
-                        log.error(e.getMessage());
+                List<String> styles = getStyles(layer.getParameterFilters());
+                for (String format : formats) {
+                    for (String style : styles) {
+                        try {
+                            capabilityVendorSpecificTileset(str, layer, grid, format, style);
+                        } catch (GeoWebCacheException e) {
+                            log.error(e.getMessage());
+                        }
                     }
                 }
             }
@@ -355,8 +359,33 @@ public class WMSGetCapabilities {
         str.append("  </VendorSpecificCapabilities>\n");
     }
 
+    /**
+     * @return a list with an empty string for the default style, and any other style name verbatim
+     */
+    private List<String> getStyles(List<ParameterFilter> parameterFilters) {
+        List<String> styles = new ArrayList<String>(2);
+        styles.add("");// the default style
+
+        if (parameterFilters != null) {
+            for (ParameterFilter filter : parameterFilters) {
+                if (!"STYLES".equalsIgnoreCase(filter.getKey())) {
+                    continue;
+                }
+                final String defaultStyle = filter.getDefaultValue();
+                for (String style : filter.getLegalValues()) {
+                    if (!defaultStyle.equals(style)) {
+                        styles.add(style);
+                    }
+                }
+            }
+        }
+
+        return styles;
+    }
+
     private void capabilityVendorSpecificTileset(StringBuilder str, TileLayer layer,
-            GridSubset grid, String formatStr) throws GeoWebCacheException {
+            GridSubset grid, String formatStr, String styleName) throws GeoWebCacheException {
+
         String srsStr = grid.getSRS().toString();
         StringBuilder resolutionsStr = new StringBuilder();
         double[] res = grid.getResolutions();
@@ -375,8 +404,8 @@ public class WMSGetCapabilities {
         str.append("      <Height>" + grid.getTileHeight() + "</Height>\n");
         str.append("      <Format>" + formatStr + "</Format>\n");
         str.append("      <Layers>" + layer.getName() + "</Layers>\n");
-        // TODO ignoring styles for now
-        str.append("      <Styles></Styles>\n");
+        str.append("      <Styles>").append(ServletUtils.URLEncode(styleName))
+                .append("</Styles>\n");
         str.append("    </TileSet>\n");
     }
 

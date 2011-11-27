@@ -119,12 +119,12 @@ public class WMTSGetCapabilities {
         str.append("<ows:ServiceIdentification>\n");
         
         if (servInfo != null) {
-            appendTag(str, "  ", "ows:Title", servInfo.title, "Web Map Tile Service - GeoWebCache");
-            appendTag(str, "  ", "ows:Abstract", servInfo.description, null);
+            appendTag(str, "  ", "ows:Title", servInfo.getTitle(), "Web Map Tile Service - GeoWebCache");
+            appendTag(str, "  ", "ows:Abstract", servInfo.getDescription(), null);
             
-            if (servInfo != null && servInfo.keywords != null) {
+            if (servInfo != null && servInfo.getKeywords() != null) {
                 str.append("  <ows:Keywords>\n");
-                Iterator<String> keywordIter = servInfo.keywords.iterator();
+                Iterator<String> keywordIter = servInfo.getKeywords().iterator();
                 while(keywordIter.hasNext()) {
                     appendTag(str, "    ", "ows:Keyword", keywordIter.next(), null);
                 }
@@ -138,8 +138,8 @@ public class WMTSGetCapabilities {
         str.append("  <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>\n");
         
         if (servInfo != null) {
-            appendTag(str, "  ", "ows:Fees", servInfo.fees, null);
-            appendTag(str, "  ", "ows:AccessConstraints", servInfo.accessConstraints, null);
+            appendTag(str, "  ", "ows:Fees", servInfo.getFees(), null);
+            appendTag(str, "  ", "ows:AccessConstraints", servInfo.getAccessConstraints(), null);
         }
 
         str.append("</ows:ServiceIdentification>\n");
@@ -149,38 +149,38 @@ public class WMTSGetCapabilities {
         ServiceInformation servInfo = tld.getServiceInformation();
         ServiceProvider servProv = null;
         if(servInfo != null) {
-            servProv = servInfo.serviceProvider;
+            servProv = servInfo.getServiceProvider();
         }
         str.append("<ows:ServiceProvider>\n");
         
         if(servProv != null) {
-            appendTag(str, "  ", "ows:ProviderName", servProv.providerName, null);
+            appendTag(str, "  ", "ows:ProviderName", servProv.getProviderName(), null);
             
-            if(servProv.providerSite != null) {
-                appendXlink(str, "  ", "ows:ProviderSite", servProv.providerSite);
+            if(servProv.getProviderSite() != null) {
+                appendXlink(str, "  ", "ows:ProviderSite", servProv.getProviderSite());
             }
             
-            ServiceContact servCont = servProv.serviceContact;
+            ServiceContact servCont = servProv.getServiceContact();
             if(servCont != null) {
                 str.append("  <ows:ServiceContact>\n");
-                appendTag(str, "    ", "ows:IndividualName", servCont.individualName, null);
-                appendTag(str, "    ", "ows:PositionName", servCont.positionName, null);
+                appendTag(str, "    ", "ows:IndividualName", servCont.getIndividualName(), null);
+                appendTag(str, "    ", "ows:PositionName", servCont.getPositionName(), null);
                 str.append("    <ows:ContactInfo>\n");
                 
-                if(servCont.phoneNumber != null || servCont.faxNumber != null) {
+                if(servCont.getPhoneNumber() != null || servCont.getFaxNumber() != null) {
                     str.append("      <ows:Phone>\n");
-                    appendTag(str, "      ", "ows:Voice", servCont.phoneNumber, null);
-                    appendTag(str, "      ", "ows:Facsimile", servCont.faxNumber, null);
+                    appendTag(str, "      ", "ows:Voice", servCont.getPhoneNumber(), null);
+                    appendTag(str, "      ", "ows:Facsimile", servCont.getFaxNumber(), null);
                     str.append("      </ows:Phone>\n");
                 }
                 
                 str.append("      <ows:Address>\n");
-                appendTag(str, "      ", "ows:DeliveryPoint", servCont.addressStreet, null);
-                appendTag(str, "      ", "ows:City", servCont.addressCity, null);
-                appendTag(str, "      ", "ows:AdministrativeArea", servCont.addressAdministrativeArea, null);
-                appendTag(str, "      ", "ows:PostalCode", servCont.addressPostalCode, null);
-                appendTag(str, "      ", "ows:Country", servCont.addressCountry, null);
-                appendTag(str, "      ", "ows:ElectronicMailAddress", servCont.addressEmail, null);
+                appendTag(str, "      ", "ows:DeliveryPoint", servCont.getAddressStreet(), null);
+                appendTag(str, "      ", "ows:City", servCont.getAddressCity(), null);
+                appendTag(str, "      ", "ows:AdministrativeArea", servCont.getAddressAdministrativeArea(), null);
+                appendTag(str, "      ", "ows:PostalCode", servCont.getAddressPostalCode(), null);
+                appendTag(str, "      ", "ows:Country", servCont.getAddressCountry(), null);
+                appendTag(str, "      ", "ows:ElectronicMailAddress", servCont.getAddressEmail(), null);
                 str.append("      </ows:Address>\n");
                 
                 str.append("    </ows:ContactInfo>\n");
@@ -231,10 +231,9 @@ public class WMTSGetCapabilities {
             layer(str, layer, baseUrl);
         }
          
-         Iterator<GridSet> gridSetIter = gsb.getGridSets().values().iterator();
-         while(gridSetIter.hasNext()) {
-             tileMatrixSet(str, gridSetIter.next());
-         }
+        for (GridSet gset : gsb.getGridSets()) {
+            tileMatrixSet(str, gset);
+        }
          
          str.append("</Contents>\n");
      }
@@ -407,12 +406,12 @@ public class WMTSGetCapabilities {
          str.append("  <TileMatrixSet>\n");
          str.append("    <ows:Identifier>"+gridSet.getName()+"</ows:Identifier>\n");
          // If the following is not good enough, please get in touch and we will try to fix it :)
-         str.append("    <ows:SupportedCRS>urn:ogc:def:crs:EPSG::"+gridSet.getSRS().getNumber()+"</ows:SupportedCRS>\n");
+         str.append("    <ows:SupportedCRS>urn:ogc:def:crs:EPSG::"+gridSet.getSrs().getNumber()+"</ows:SupportedCRS>\n");
          // TODO detect these str.append("    <WellKnownScaleSet>urn:ogc:def:wkss:GlobalCRS84Pixel</WellKnownScaleSet>\n");
          Grid[] grids = gridSet.getGrids();
          for(int i=0; i<grids.length; i++) {
              double[] tlCoordinates = gridSet.getOrderedTopLeftCorner(i);
-             tileMatrix(str, grids[i], tlCoordinates, gridSet.getTileWidth(), gridSet.getTileHeight(), gridSet.getScaleWarning());
+             tileMatrix(str, grids[i], tlCoordinates, gridSet.getTileWidth(), gridSet.getTileHeight(), gridSet.isScaleWarning());
          }
          str.append("  </TileMatrixSet>\n");
      }
@@ -427,8 +426,8 @@ public class WMTSGetCapabilities {
          str.append("      <TopLeftCorner>"+ tlCoordinates[0] +" "+ tlCoordinates[1] +"</TopLeftCorner>\n");
          str.append("      <TileWidth>"+tileWidth+"</TileWidth>\n");    
          str.append("      <TileHeight>"+tileHeight+"</TileHeight>\n");      
-         str.append("      <MatrixWidth>"+grid.getExtent()[0]+"</MatrixWidth>\n");    
-         str.append("      <MatrixHeight>"+grid.getExtent()[1]+"</MatrixHeight>\n");    
+         str.append("      <MatrixWidth>"+grid.getNumTilesWide()+"</MatrixWidth>\n");    
+         str.append("      <MatrixHeight>"+grid.getNumTilesHigh()+"</MatrixHeight>\n");    
          str.append("    </TileMatrix>\n");
      }
      

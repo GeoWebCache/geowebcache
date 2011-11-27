@@ -18,23 +18,25 @@ package org.geowebcache.filter.parameters;
 
 import java.util.List;
 
+import org.apache.commons.lang.ObjectUtils;
+
 public abstract class ParameterFilter {
     public String key;
-    
+
     public String defaultValue;
-    
+
     public ParameterFilter() {
         // Empty for XStream
     }
-    
+
     public String getKey() {
         return key;
     }
-    
+
     public String getDefaultValue() {
         return defaultValue;
     }
-    
+
     /**
      * Checks whether a given parameter value applies to this filter
      * 
@@ -51,13 +53,35 @@ public abstract class ParameterFilter {
         }
         return true;
     }
-    
+
     public String apply(String str) throws ParameterException {
         return null;
     }
-    
+
     /**
      * @return null if the legal values cannot be enumerated
      */
     public abstract List<String> getLegalValues();
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (!getClass().equals(o.getClass())) {
+            return false;
+        }
+
+        ParameterFilter p = (ParameterFilter) o;
+        if (!ObjectUtils.equals(key, p.getKey())) {
+            return false;
+        }
+        if (!ObjectUtils.equals(defaultValue, p.getDefaultValue())) {
+            return false;
+        }
+        if (!ObjectUtils.equals(getLegalValues(), p.getLegalValues())) {
+            return false;
+        }
+        return true;
+    }
 }

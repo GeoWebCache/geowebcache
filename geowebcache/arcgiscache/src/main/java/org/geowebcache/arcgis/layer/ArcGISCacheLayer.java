@@ -32,7 +32,6 @@ import org.geowebcache.io.Resource;
 import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.storage.StorageException;
 
 /**
  * 
@@ -248,7 +247,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
 
         // long[] coverage = gridSubset.getCoverage(z);
         // long coverageMinY = coverage[1];
-        long coverageMaxY = grid.getExtent()[1] - 1;
+        long coverageMaxY = grid.getNumTilesHigh() - 1;
 
         final long x = tileIndex[0];
         // invert the order of the requested Y ordinate, since ArcGIS caches are top-left to
@@ -305,7 +304,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         return String.valueOf(data);
     }
 
-    private Resource readFile(File fh) throws StorageException {
+    private Resource readFile(File fh)  {
         if (!fh.exists()) {
             return null;
         }

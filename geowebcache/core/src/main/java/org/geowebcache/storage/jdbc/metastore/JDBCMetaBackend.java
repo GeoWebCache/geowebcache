@@ -21,6 +21,7 @@ import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.MetaStore;
@@ -49,7 +50,7 @@ public class JDBCMetaBackend implements MetaStore {
     private boolean enabled = true;
 
     public JDBCMetaBackend(String driverClass, String jdbcString, String username, String password)
-            throws StorageException {
+            throws ConfigurationException {
         this(driverClass, jdbcString, username, password, false, -1);
     }
 
@@ -66,7 +67,7 @@ public class JDBCMetaBackend implements MetaStore {
      * @throws StorageException
      */
     public JDBCMetaBackend(String driverClass, String jdbcString, String username, String password,
-            boolean useConnectionPooling, int maxConnections) throws StorageException {
+            boolean useConnectionPooling, int maxConnections) throws ConfigurationException {
         if (useConnectionPooling && maxConnections <= 0) {
             throw new IllegalArgumentException(
                     "If connection pooling is enabled maxConnections shall be a positive integer: "
@@ -77,7 +78,7 @@ public class JDBCMetaBackend implements MetaStore {
                     useConnectionPooling, maxConnections);
         } catch (SQLException se) {
             enabled = false;
-            throw new StorageException(se.getMessage());
+            throw new ConfigurationException(se.getMessage());
         }
 
         if (enabled) {
@@ -87,12 +88,12 @@ public class JDBCMetaBackend implements MetaStore {
         }
     }
 
-    public JDBCMetaBackend(DefaultStorageFinder defStoreFind) throws StorageException {
+    public JDBCMetaBackend(DefaultStorageFinder defStoreFind) throws ConfigurationException {
         this(defStoreFind, false, -1);
     }
 
     public JDBCMetaBackend(DefaultStorageFinder defStoreFind, boolean useConnectionPooling,
-            int maxConnections) throws StorageException {
+            int maxConnections) throws ConfigurationException {
         if (useConnectionPooling && maxConnections <= 0) {
             throw new IllegalArgumentException(
                     "If connection pooling is enabled maxConnections shall be a positive integer: "

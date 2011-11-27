@@ -18,15 +18,22 @@
 package org.geowebcache.storage.blobstore.file;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.channels.FileChannel;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.io.FileResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.mime.MimeException;
@@ -58,7 +65,7 @@ public class FileBlobStore implements BlobStore {
 
     private static ExecutorService deleteExecutorService;
 
-    public FileBlobStore(DefaultStorageFinder defStoreFinder) throws StorageException {
+    public FileBlobStore(DefaultStorageFinder defStoreFinder) throws ConfigurationException {
         path = defStoreFinder.getDefaultPath();
         stagingArea = new File(path, "_gwc_in_progress_deletes_");
         createDeleteExecutorService();
@@ -443,6 +450,100 @@ public class FileBlobStore implements BlobStore {
             return true;
         }
         return false;
+    }
+
+    /**
+     * @see org.geowebcache.storage.BlobStore#getLayerMetadata(java.lang.String, java.lang.String)
+     */
+    public String getLayerMetadata(final String layerName, final String key) {
+        Properties metadata = getLayerMetadata(layerName);
+        String value = metadata.getProperty(key);
+        if (value != null) {
+            try {
+                value = URLDecoder.decode(value, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return value;
+    }
+
+    /**
+     * @see org.geowebcache.storage.BlobStore#putLayerMetadata(java.lang.String, java.lang.String,
+     *      java.lang.String)
+     */
+    public void putLayerMetadata(final String layerName, final String key, final String value) {
+        Properties metadata = getLayerMetadata(layerName);
+        if (null == value) {
+            metadata.remove(key);
+        } else {
+            try {
+                metadata.setProperty(key, URLEncoder.encode(value, "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        final File metadataFile = getMetadataFile(layerName);
+
+        final String lockObj = metadataFile.getAbsolutePath().intern();
+        synchronized (lockObj) {
+            OutputStream out;
+            try {
+                if (!metadataFile.getParentFile().exists()) {
+                    metadataFile.getParentFile().mkdirs();
+                }
+                out = new FileOutputStream(metadataFile);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                String comments = "auto generated file, do not edit by hand";
+                metadata.store(out, comments);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            } finally {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    log.warn(e.getMessage(), e);
+                }
+            }
+        }
+    }
+
+    private Properties getLayerMetadata(final String layerName) {
+        final File metadataFile = getMetadataFile(layerName);
+        Properties properties = new Properties();
+        final String lockObj = metadataFile.getAbsolutePath().intern();
+        synchronized (lockObj) {
+            if (metadataFile.exists()) {
+                FileInputStream in;
+                try {
+                    in = new FileInputStream(metadataFile);
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    properties.load(in);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        log.warn(e.getMessage(), e);
+                    }
+                }
+            }
+        }
+        return properties;
+    }
+
+    private File getMetadataFile(final String layerName) {
+        File layerPath = getLayerPath(layerName);
+        File metadataFile = new File(layerPath, "metadata.properties");
+        return metadataFile;
     }
 
 }

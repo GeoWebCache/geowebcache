@@ -27,6 +27,8 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.XMLGridSubset;
+import org.geowebcache.config.XMLOldGrid;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.request.RequestFilter;
@@ -34,8 +36,6 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
-import org.geowebcache.grid.XMLGridSubset;
-import org.geowebcache.grid.XMLOldGrid;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.updatesource.UpdateSourceDefinition;
 import org.geowebcache.mime.FormatModifier;
@@ -299,7 +299,7 @@ public abstract class AbstractTileLayer extends TileLayer {
      */
     @Override
     public boolean useETags() {
-        return useETags == null? false : useETags.booleanValue();
+        return useETags == null ? false : useETags.booleanValue();
     }
 
     @Override
@@ -345,7 +345,7 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     @Override
     public boolean isQueryable() {
-        return queryable == null? false :queryable.booleanValue();
+        return queryable == null ? false : queryable.booleanValue();
     }
 
     /**
@@ -360,6 +360,10 @@ public abstract class AbstractTileLayer extends TileLayer {
     @Override
     public void setBackendTimeout(int seconds) {
         backendTimeout = seconds;
+    }
+
+    public List<String> getMimeFormats() {
+        return mimeFormats == null ? null : new ArrayList<String>(mimeFormats);
     }
 
     /**

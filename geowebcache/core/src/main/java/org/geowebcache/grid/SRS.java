@@ -20,7 +20,7 @@ import java.util.Hashtable;
 
 import org.geowebcache.GeoWebCacheException;
 
-public class SRS implements Comparable {
+public class SRS implements Comparable<SRS> {
     private final int number;
 
     private static final SRS EPSG4326 = new SRS(4326);
@@ -70,6 +70,7 @@ public class SRS implements Comparable {
         }
     }
     
+    @Override
     public boolean equals(Object obj) {
         if(obj instanceof SRS) {
             SRS other = (SRS) obj;
@@ -86,6 +87,7 @@ public class SRS implements Comparable {
         return number;
     }
 
+    @Override
     public int hashCode() {
         return number;
     }
@@ -110,16 +112,10 @@ public class SRS implements Comparable {
         return EPSG900913;
     }
     
-    public int compareTo(Object o) {
-        SRS other = (SRS) o;
-        
-        if(other.number == number) {
-            return 0;
-        } else if(other.number > number) {
-            return -1;
-        } else {
-            return 1;
-        }
-        
+    /**
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    public int compareTo(SRS other) {
+        return number - other.number;
     }
 }

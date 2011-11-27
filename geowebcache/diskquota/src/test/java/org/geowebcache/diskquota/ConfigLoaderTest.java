@@ -43,7 +43,6 @@ import org.geowebcache.diskquota.storage.StorageUnit;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
-import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.geowebcache.util.FileUtils;
 import org.springframework.web.context.WebApplicationContext;
@@ -176,7 +175,7 @@ public class ConfigLoaderTest extends TestCase {
         // assertNotNull(loadConfig);
     }
 
-    public void testGetRootCacheDir() throws StorageException {
+    public void testGetRootCacheDir() throws Exception {
         assertEquals(cacheDir.getAbsolutePath(), loader.getRootCacheDir().getAbsolutePath());
     }
 

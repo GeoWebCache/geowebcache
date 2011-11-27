@@ -20,54 +20,61 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang.ObjectUtils;
+
 public class FloatParameterFilter extends ParameterFilter {
 
     List<Float> values;
-    
+
     Float threshold;
-    
+
     public String apply(String str) throws ParameterException {
-        if(str == null || str.length() == 0) {
+        if (str == null || str.length() == 0) {
             return "";
         }
-        
+
         float val = Float.parseFloat(str);
-   
+
         float best = Float.MIN_VALUE;
- 
+
         float bestMismatch = Float.MAX_VALUE;
-        
+
         Iterator<Float> iter = values.iterator();
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             Float fl = iter.next();
-            
+
             float mismatch = Math.abs(fl - val);
-            if(mismatch < bestMismatch) {
+            if (mismatch < bestMismatch) {
                 best = fl;
                 bestMismatch = mismatch;
             }
         }
-        
-        if(threshold != null 
-                && threshold > 0 
-                && Math.abs(bestMismatch) < threshold) {
+
+        if (threshold != null && threshold > 0 && Math.abs(bestMismatch) < threshold) {
             return Float.toString(best);
         }
-        
-        throw new ParameterException("Closest match for " 
-                + super.key + "=" + str 
-                + " is " + Float.toString(best) 
-                + ", but this exceeds the threshold of " + Float.toString(threshold));
+
+        throw new ParameterException("Closest match for " + super.key + "=" + str + " is "
+                + Float.toString(best) + ", but this exceeds the threshold of "
+                + Float.toString(threshold));
     }
 
     public List<String> getLegalValues() {
         List<String> ret = new LinkedList<String>();
-        
+
         Iterator<Float> iter = values.iterator();
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             ret.add(Float.toString(iter.next()));
         }
-        
+
         return ret;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!super.equals(o)) {
+            return false;
+        }
+        return ObjectUtils.equals(threshold, ((FloatParameterFilter) o).threshold);
     }
 }

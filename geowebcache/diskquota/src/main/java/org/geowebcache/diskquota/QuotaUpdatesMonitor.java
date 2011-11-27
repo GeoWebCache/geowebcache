@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.diskquota.storage.BDBQuotaStore;
 import org.geowebcache.storage.StorageBroker;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.util.Assert;
@@ -24,7 +23,7 @@ public class QuotaUpdatesMonitor {
 
     private final StorageBroker storageBroker;
 
-    private final BDBQuotaStore quotaStore;
+    private final QuotaStore quotaStore;
 
     private ExecutorService executorService;
 
@@ -35,7 +34,7 @@ public class QuotaUpdatesMonitor {
     private QueuedQuotaUpdatesConsumer quotaUsageUpdatesConsumer;
 
     public QuotaUpdatesMonitor(final DiskQuotaConfig quotaConfig,
-            final StorageBroker storageBroker, final BDBQuotaStore quotaStore) {
+            final StorageBroker storageBroker, final QuotaStore quotaStore) {
         Assert.notNull(quotaConfig, "quotaConfig is null");
         Assert.notNull(storageBroker, "storageBroker is null");
         Assert.notNull(quotaStore, "quotaStore is null");

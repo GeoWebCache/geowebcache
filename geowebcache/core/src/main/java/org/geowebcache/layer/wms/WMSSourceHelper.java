@@ -27,6 +27,7 @@ import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.XMLMime;
+import org.geowebcache.util.ServletUtils;
 
 /**
  * Builds WMS requests to gather a certain tile or meta tile. The actual communication with the
@@ -108,7 +109,17 @@ public abstract class WMSSourceHelper {
 
         wmsParams.put("X", String.valueOf(x));
         wmsParams.put("Y", String.valueOf(y));
-
+        
+        String featureCount;
+        {
+            Map<String, String> values = ServletUtils.selectedStringsFromMap(
+                tile.servletReq.getParameterMap(), tile.servletReq.getCharacterEncoding(), "feature_count");
+            featureCount = values.get("feature_count");
+        }
+        if(featureCount != null){
+            wmsParams.put("FEATURE_COUNT", featureCount);
+        }
+        
         String mimeType = tile.getMimeType().getMimeType();
         Resource target = new ByteArrayResource(2048);
         makeRequest(tile, layer, wmsParams, mimeType, target);

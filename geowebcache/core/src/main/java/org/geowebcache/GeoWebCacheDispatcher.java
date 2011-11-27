@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,6 +143,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * @return
      */
     private Map<String, Service> loadServices() {
+        log.info("Loading GWC Service extensions...");
 
         List<Service> plugins = GeoWebCacheExtensions.extensions(Service.class);
         Map<String, Service> services = new HashMap<String, Service>();
@@ -149,6 +151,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
         for (Service aService : plugins) {
             services.put(aService.getPathName(), aService);
         }
+        log.info("Done loading GWC Service extensions. Found : "
+                + new ArrayList<String>(services.keySet()));
         return services;
     }
 

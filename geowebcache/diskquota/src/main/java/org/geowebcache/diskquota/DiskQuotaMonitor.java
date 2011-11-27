@@ -40,7 +40,6 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
-import org.geowebcache.storage.StorageException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
@@ -89,7 +88,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
     private LayerCacheInfoBuilder cacheInfoBuilder;
 
-    private BDBQuotaStore quotaStore;
+    private QuotaStore quotaStore;
 
     /**
      * Executor service for the periodic clean up of layers caches that exceed its quota
@@ -123,7 +122,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      */
     public DiskQuotaMonitor(final DefaultStorageFinder storageFinder,
             final ConfigLoader configLoader, final TileLayerDispatcher tld, final StorageBroker sb,
-            BDBQuotaStore quotaStore, final CacheCleaner cacheCleaner) throws IOException,
+            QuotaStore quotaStore, final CacheCleaner cacheCleaner) throws IOException,
             ConfigurationException {
 
         boolean disabled = Boolean.valueOf(storageFinder.findEnvVar(GWC_DISKQUOTA_DISABLED))
@@ -356,7 +355,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         File cacheRoot;
         try {
             cacheRoot = new File(storageFinder.getDefaultPath());
-        } catch (StorageException e) {
+        } catch (ConfigurationException e) {
             throw new RuntimeException(e);
         }
         cacheInfoBuilder = new LayerCacheInfoBuilder(cacheRoot, cleanUpExecutorService,
@@ -464,14 +463,14 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     }
 
     /**
-     * @see BDBQuotaStore#getUsedQuotaByLayerName(String)
+     * @see QuotaStore#getUsedQuotaByLayerName(String)
      */
     public Quota getUsedQuotaByLayerName(String layerName) throws InterruptedException {
         return quotaStore.getUsedQuotaByLayerName(layerName);
     }
 
     /**
-     * @see BDBQuotaStore#getGloballyUsedQuota()
+     * @see QuotaStore#getGloballyUsedQuota()
      */
     public Quota getGloballyUsedQuota() throws InterruptedException {
         return quotaStore.getGloballyUsedQuota();

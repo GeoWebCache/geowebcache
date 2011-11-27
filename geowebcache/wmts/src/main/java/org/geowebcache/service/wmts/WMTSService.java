@@ -194,8 +194,10 @@ public class WMTSService extends Service {
         if (tileRow == null) {
             throw new OWSException(400, "MissingParameterValue", "TILEROW", "No TILEROW specified");
         }
-        long[] gridExtent = gridSubset.getGridSetExtent((int) z);
-        long y = gridExtent[1] - Long.parseLong(tileRow) - 1;
+        
+        final long tilesHigh = gridSubset.getNumTilesHigh((int) z);
+
+        long y = tilesHigh - Long.parseLong(tileRow) - 1;
 
         String tileCol = values.get("tilecol");
         if (tileCol == null) {
@@ -212,8 +214,8 @@ public class WMTSService extends Service {
         }
 
         if (y < gridCov[1] || y > gridCov[3]) {
-            long minRow = gridExtent[1] - gridCov[3] - 1;
-            long maxRow = gridExtent[1] - gridCov[1] - 1;
+            long minRow = tilesHigh - gridCov[3] - 1;
+            long maxRow = tilesHigh - gridCov[1] - 1;
 
             throw new OWSException(400, "TileOutOfRange", "TILEROW", "Row " + tileRow
                     + " is out of range, min: " + minRow + " max:" + maxRow);

@@ -127,7 +127,7 @@ public class ServletUtils {
      */
     @SuppressWarnings("unchecked")
     public static Map<String, String> selectedStringsFromMap(Map<String, ?> map, String encoding,
-            String[] keys) {
+            String... keys) {
 
         map = new CaseInsensitiveMap(map);
         Map<String, String> selected = new CaseInsensitiveMap();

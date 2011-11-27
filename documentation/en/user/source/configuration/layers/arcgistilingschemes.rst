@@ -67,14 +67,14 @@ The 'tilingScheme' element expects the full path to the cache's :file:`conf.xml`
 
 Alternative cache directory
 ---------------------------
-It is also possible to get rid of the standard tiling scheme layout and separate out the location of the `conf.xml` file and the directory that actually holds the tiles, by using the ``tileCacheDir`` property:
+It is also possible to get rid of the standard tiling scheme layout and separate out the location of the `conf.xml` file and the directory that actually holds the tiles, by using the ``tileCachePath`` property:
 
 .. code-block:: xml
 
       <arcgisLayer>
         <name>naturalearth</name>
         <tilingScheme>C:\\arcgiscache\\naturalearth\\Layers\\conf.xml</tilingScheme>
-        <tileCacheDir>D:\\arcgistiles\\naturalearth\\</tileCacheDir>
+        <tileCachePath>D:\\arcgistiles\\naturalearth\\</tileCachePath>
       </arcgisLayer>
 
 OpenLayers Configuration

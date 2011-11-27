@@ -18,6 +18,7 @@
 package org.geowebcache.layer.wms;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -137,9 +138,10 @@ public class WMSLayer extends AbstractTileLayer {
         this.wmsUrl = wmsURL;
         this.wmsLayers = wmsLayers;
         this.wmsStyles = wmsStyles;
-        this.mimeFormats = mimeFormats;
+        this.mimeFormats = mimeFormats == null ? null : new ArrayList<String>(mimeFormats);
         this.subSets = subSets;
-        this.parameterFilters = parameterFilters;
+        this.parameterFilters = parameterFilters == null ? null : new ArrayList<ParameterFilter>(
+                parameterFilters);
         this.metaWidthHeight = metaWidthHeight;
         this.vendorParameters = vendorParams;
         this.transparent = true;
@@ -363,6 +365,7 @@ public class WMSLayer extends AbstractTileLayer {
             /** ****************** Return lock and response ****** */
         } finally {
             removeFromQueue(metaGlo);
+            metaTile.dispose();
         }
         return finalizeTile(tile);
     }
@@ -725,6 +728,10 @@ public class WMSLayer extends AbstractTileLayer {
 
     public String[] getWMSurl() {
         return this.wmsUrl;
+    }
+    
+    public String getWmsLayers(){
+        return wmsLayers;
     }
 
     public String getHttpPassword() {

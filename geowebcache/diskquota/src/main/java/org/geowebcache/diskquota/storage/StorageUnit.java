@@ -139,4 +139,15 @@ public enum StorageUnit {
         return bestFit(new BigDecimal(bytes), B);
     }
 
+    /**
+     * Returns {@code MB} instead of {@code MiB}, {@code GB} instead of {@code GiB}, etc.
+     */
+    public String toNiceString() {
+        String s = toString();
+        if (B == this) {
+            return s;
+        }
+
+        return new StringBuilder().append(s.charAt(0)).append(s.charAt(2)).toString();
+    }
 }

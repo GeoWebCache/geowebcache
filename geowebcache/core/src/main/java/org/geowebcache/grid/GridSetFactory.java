@@ -23,20 +23,27 @@ import org.apache.commons.logging.LogFactory;
 public class GridSetFactory {
     private static Log log = LogFactory.getLog(GridSetFactory.class);
     
-    static int DEFAULT_LEVELS = 31;
+    /**
+     * Default pixel size in meters, producing a default of 90.7 DPI
+     * 
+     * @see GridSubset#getDotsPerInch()
+     */
+    public static final double DEFAULT_PIXEL_SIZE_METER = 0.00028;
+
+    public static int DEFAULT_LEVELS = 31;
     
-    final static double EPSG4326_TO_METERS = 6378137.0 * 2.0 * Math.PI / 360.0;
+    public final static double EPSG4326_TO_METERS = 6378137.0 * 2.0 * Math.PI / 360.0;
     
-    final static double EPSG3857_TO_METERS = 1;
+    public final static double EPSG3857_TO_METERS = 1;
     
     private static GridSet baseGridSet(String name, SRS srs, int tileWidth, int tileHeight) {
         GridSet gridSet = new GridSet();
         
-        gridSet.name = name;
-        gridSet.srs = srs;
+        gridSet.setName(name);
+        gridSet.setSrs(srs);
         
-        gridSet.tileWidth = tileWidth;
-        gridSet.tileHeight = tileHeight;
+        gridSet.setTileWidth(tileWidth);
+        gridSet.setTileHeight(tileHeight);
         
         return gridSet;
     }
@@ -62,28 +69,28 @@ public class GridSetFactory {
         
         GridSet gridSet = baseGridSet(name, srs, tileWidth, tileHeight);
         
-        gridSet.baseCoords = new double[2];
+        gridSet.setBaseCoords(new double[2]);
         
-        gridSet.pixelSize = pixelSize;
+        gridSet.setPixelSize(pixelSize);
         
         if(alignTopLeft) {
-            gridSet.baseCoords[0] = extent.getMinX();
-            gridSet.baseCoords[1] = extent.getMaxY();
+            gridSet.getBaseCoords()[0] = extent.getMinX();
+            gridSet.getBaseCoords()[1] = extent.getMaxY();
             gridSet.yBaseToggle = true;
         } else {
-            gridSet.baseCoords[0] = extent.getMinX();
-            gridSet.baseCoords[1] = extent.getMinY();
+            gridSet.getBaseCoords()[0] = extent.getMinX();
+            gridSet.getBaseCoords()[1] = extent.getMinY();
         }
         
-        gridSet.yCoordinateFirst = yCoordinateFirst;
+        gridSet.setyCoordinateFirst(yCoordinateFirst);
         
-        gridSet.originalExtent = extent;
+        gridSet.setOriginalExtent(extent);
         
         if(metersPerUnit == null) {
             if(srs.equals(SRS.getEPSG4326())) {
-                gridSet.metersPerUnit = EPSG4326_TO_METERS;
+                gridSet.setMetersPerUnit(EPSG4326_TO_METERS);
             } else if(srs.equals(SRS.getEPSG3857())) {
-                gridSet.metersPerUnit = EPSG3857_TO_METERS;
+                gridSet.setMetersPerUnit(EPSG3857_TO_METERS);
             } else {
                 if(resolutions == null) {
                     log.warn("GridSet "+name+" was defined without metersPerUnit, assuming 1m/unit."
@@ -92,45 +99,48 @@ public class GridSetFactory {
                     log.warn("GridSet "+name+" was defined without metersPerUnit. " +
                     		"Assuming 1m per SRS unit for WMTS scale output.");
                     				
-                    gridSet.scaleWarning = true;
+                    gridSet.setScaleWarning(true);
                 }
-                gridSet.metersPerUnit = 1.0;
+                gridSet.setMetersPerUnit(1.0);
             }
         } else {
-            gridSet.metersPerUnit = metersPerUnit;
+            gridSet.setMetersPerUnit(metersPerUnit);
         }
         
         if(resolutions == null) {
-            gridSet.gridLevels = new Grid[scaleDenoms.length];
+            gridSet.setGridLevels(new Grid[scaleDenoms.length]);
         } else {
-            gridSet.gridLevels = new Grid[resolutions.length];
+            gridSet.setGridLevels(new Grid[resolutions.length]);
         }
         
-        for(int i=0; i<gridSet.gridLevels.length; i++) {
+        for(int i=0; i<gridSet.getGridLevels().length; i++) {
             Grid curGrid = new Grid();
 
             if(scaleDenoms != null) {
-                curGrid.scaleDenom = scaleDenoms[i];
-                curGrid.resolution = pixelSize * (scaleDenoms[i] / gridSet.metersPerUnit);
+                curGrid.setScaleDenom(scaleDenoms[i]);
+                curGrid.setResolution(pixelSize * (scaleDenoms[i] / gridSet.getMetersPerUnit()));
             } else {
-                curGrid.resolution = resolutions[i];
-                curGrid.scaleDenom =  (resolutions[i] * gridSet.metersPerUnit) / 0.00028;
-                //System.out.println(name+" : "+i+" : "+curGrid.scaleDenom+" : "+resolutions[i]);
+                curGrid.setResolution(resolutions[i]);
+                curGrid.setScaleDenom((resolutions[i] * gridSet.getMetersPerUnit())
+                        / DEFAULT_PIXEL_SIZE_METER);
             }
             
-            double mapUnitWidth = tileWidth * curGrid.resolution;
-            double mapUnitHeight = tileHeight * curGrid.resolution;
+            double mapUnitWidth = tileWidth * curGrid.getResolution();
+            double mapUnitHeight = tileHeight * curGrid.getResolution();
             
-            curGrid.extent[0] = (long) Math.ceil( (extent.getWidth() - mapUnitWidth * 0.01) / mapUnitWidth);
-            curGrid.extent[1] = (long) Math.ceil( (extent.getHeight() - mapUnitHeight * 0.01) / mapUnitHeight);
+            long tilesWide = (long) Math.ceil((extent.getWidth() - mapUnitWidth * 0.01) / mapUnitWidth);
+            long tilesHigh = (long) Math.ceil((extent.getHeight() - mapUnitHeight * 0.01) / mapUnitHeight);
             
-            if(scaleNames == null) {
-                curGrid.name = gridSet.name + ":" + i;
+            curGrid.setNumTilesWide(tilesWide);
+            curGrid.setNumTilesHigh(tilesHigh);
+            
+            if(scaleNames == null || scaleNames[i] == null) {
+                curGrid.setName(gridSet.getName() + ":" + i);
             } else {
-                curGrid.name = scaleNames[i];
+                curGrid.setName(scaleNames[i]);
             }
             
-            gridSet.gridLevels[i] = curGrid;
+            gridSet.getGridLevels()[i] = curGrid;
         }
         
         return gridSet; 

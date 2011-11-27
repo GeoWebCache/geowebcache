@@ -68,7 +68,8 @@ class GridSetBuilder {
             resolutions = resAndScales[0];
 
             double[] scales = resAndScales[1];
-            metersPerUnit = (0.00028 * scales[0]) / resolutions[0];
+            //TODO: check whether pixelSize computed above should be used instead
+            metersPerUnit = (GridSetFactory.DEFAULT_PIXEL_SIZE_METER * scales[0]) / resolutions[0];
         }
         {
             // See "How to calculate the -x parameter used in the examples above" at

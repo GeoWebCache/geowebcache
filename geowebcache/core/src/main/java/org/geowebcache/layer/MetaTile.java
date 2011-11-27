@@ -20,10 +20,13 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Vector;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -33,8 +36,9 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.CropDescriptor;
-import javax.media.jai.operator.TranslateDescriptor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,7 +49,6 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.mime.FormatModifier;
-import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.springframework.util.Assert;
 
@@ -53,7 +56,7 @@ public class MetaTile implements TileResponseReceiver {
 
     private static Log log = LogFactory.getLog(MetaTile.class);
 
-    private final RenderingHints no_cache = new RenderingHints(JAI.KEY_TILE_CACHE, null);
+    protected static final RenderingHints NO_CACHE = new RenderingHints(JAI.KEY_TILE_CACHE, null);
 
     private static final boolean NATIVE_JAI_AVAILABLE;
     static {
@@ -73,7 +76,7 @@ public class MetaTile implements TileResponseReceiver {
     }
 
     // buffer for storing the metatile, if it is an image
-    protected RenderedImage metaTiledImage = null;
+    protected RenderedImage metaTileImage = null;
 
     protected int[] gutter = new int[4]; // L,B,R,T in pixels
 
@@ -112,6 +115,8 @@ public class MetaTile implements TileResponseReceiver {
     private int metaTileWidth;
 
     private int metaTileHeight;
+
+    private List<RenderedImage> disposableImages;
 
     /**
      * The the request format is the format used for the request to the backend.
@@ -257,14 +262,14 @@ public class MetaTile implements TileResponseReceiver {
             throw new GeoWebCacheException("WMSMetaTile.setImageBytes() "
                     + "failed on ImageIO.read(byte[" + buffer.getSize() + "])", ioe);
         }
-        if (metaTiledImage == null) {
+        if (metaTileImage == null) {
             throw new GeoWebCacheException(
                     "ImageIO.read(InputStream) returned null. Unable to read image.");
         }
     }
 
     public void setImage(RenderedImage metaTiledImage) {
-        this.metaTiledImage = metaTiledImage;
+        this.metaTileImage = metaTiledImage;
     }
 
     /**
@@ -306,41 +311,20 @@ public class MetaTile implements TileResponseReceiver {
      *            height of the tile
      * @return a rendered image of the specified meta tile region
      */
-    public RenderedImage createTile(int minX, int minY, int tileWidth, int tileHeight) {
+    public RenderedImage createTile(final int minX, final int minY, final int tileWidth,
+            final int tileHeight) {
 
-        RenderedImage tile = null;
-
-        try {
-            tile = CropDescriptor.create(metaTiledImage, new Float(minX), new Float(minY),
-                    new Float(tileWidth), new Float(tileHeight), no_cache);
-            tile = TranslateDescriptor.create(tile, new Float(-1f * minX), new Float(-1f * minY),
-                    null, null);
-        } catch (IllegalArgumentException iae) {
-            log.error("Error cropping, image is " + metaTiledImage.getWidth() + "x"
-                    + metaTiledImage.getHeight() + ", requesting a " + tileWidth + "x" + tileHeight
-                    + " tile starting at " + minX + "," + minY + ".");
-            log.error("Message from JAI: " + iae.getMessage());
-            iae.printStackTrace();
+        // do a crop, and then turn it into a buffered image so that we can release
+        // the image chain
+        RenderedOp cropped = CropDescriptor.create(metaTileImage, Float.valueOf(minX),
+                Float.valueOf(minY), Float.valueOf(tileWidth), Float.valueOf(tileHeight), NO_CACHE);
+        if (nativeAccelAvailable()) {
+            log.trace("created cropped tile");
+            return cropped;
         }
-
-        if (!nativeAccelAvailable()) {
-            if (ImageMime.jpeg.equals(responseFormat) && !(tile instanceof BufferedImage)) {
-                // The non native JPEG writer creates repeated tiles if not given a buffered image
-                tile = new BufferedImage(tile.getColorModel(),
-                        ((WritableRaster) tile.getData()).createWritableTranslatedChild(0, 0), tile
-                                .getColorModel().isAlphaPremultiplied(), null);
-            }
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug("Thread: " + Thread.currentThread().getName() + "\n" + tile.toString() + ", "
-                    + "Information from tile (width, height, minx, miny): " + tile.getWidth()
-                    + ", " + tile.getHeight() + ", " + tile.getMinX() + ", " + tile.getMinY()
-                    + "\n" + "Information set (width, height, minx, miny): " + new Float(tileWidth)
-                    + ", " + new Float(tileHeight) + ", " + new Float(minX) + ", "
-                    + new Float(minY));
-        }
-
+        log.trace("native accel not available, returning buffered image");
+        BufferedImage tile = cropped.getAsBufferedImage();
+        disposePlanarImageChain(cropped, new HashSet<PlanarImage>());
         return tile;
     }
 
@@ -360,7 +344,7 @@ public class MetaTile implements TileResponseReceiver {
      * @return true if no error was encountered
      * @throws IOException
      */
-    public boolean writeTileToStream(int tileIdx, Resource target) throws IOException {
+    public boolean writeTileToStream(final int tileIdx, Resource target) throws IOException {
         if (tiles == null) {
             return false;
         }
@@ -382,7 +366,7 @@ public class MetaTile implements TileResponseReceiver {
         Rectangle tileRegion = tiles[tileIdx];
         RenderedImage tile = createTile(tileRegion.x, tileRegion.y, tileRegion.width,
                 tileRegion.height);
-
+        disposeLater(tile);
         OutputStream outputStream = target.getOutputStream();
         ImageOutputStream imgOut = new MemoryCacheImageOutputStream(outputStream);
         writer.setOutput(imgOut);
@@ -395,6 +379,13 @@ public class MetaTile implements TileResponseReceiver {
         }
 
         return true;
+    }
+
+    protected void disposeLater(RenderedImage tile) {
+        if (disposableImages == null) {
+            disposableImages = new ArrayList<RenderedImage>(tiles.length);
+        }
+        disposableImages.add(tile);
     }
 
     public String debugString() {
@@ -485,6 +476,85 @@ public class MetaTile implements TileResponseReceiver {
             return this.responseFormat;
         } else {
             return this.formatModifier.getRequestFormat();
+        }
+    }
+
+    /**
+     * Should be called as soon as the meta tile is no longer needed in order to dispose any held
+     * resource
+     */
+    public void dispose() {
+        if (metaTileImage == null) {
+            return;
+        }
+        RenderedImage image = metaTileImage;
+        metaTileImage = null;
+
+        if (log.isTraceEnabled()) {
+            log.trace("disposing metatile " + image);
+        }
+        if (image instanceof BufferedImage) {
+            ((BufferedImage) image).flush();
+        } else if (image instanceof PlanarImage) {
+            disposePlanarImageChain((PlanarImage) image, new HashSet<PlanarImage>());
+        }
+        if (disposableImages != null) {
+            for (RenderedImage tile : disposableImages) {
+                if (log.isTraceEnabled()) {
+                    log.trace("disposing tile " + tile);
+                }
+                if (tile instanceof BufferedImage) {
+                    ((BufferedImage) tile).flush();
+                } else if (tile instanceof PlanarImage) {
+                    disposePlanarImageChain((PlanarImage) tile, new HashSet<PlanarImage>());
+                }
+            }
+        }
+        disposableImages = null;
+    }
+
+    @SuppressWarnings("rawtypes")
+    protected static void disposePlanarImageChain(PlanarImage pi, HashSet<PlanarImage> visited) {
+        Vector sinks = pi.getSinks();
+        // check all the sinks (the image might be in the middle of a chain)
+        if (sinks != null) {
+            for (Object sink : sinks) {
+                if (sink instanceof PlanarImage && !visited.contains(sink)) {
+                    disposePlanarImageChain((PlanarImage) sink, visited);
+                } else if (sink instanceof BufferedImage) {
+                    ((BufferedImage) sink).flush();
+                }
+            }
+        }
+        // dispose the image itself
+        pi.dispose();
+        visited.add(pi);
+
+        // check the image sources
+        Vector sources = pi.getSources();
+        if (sources != null) {
+            for (Object child : sources) {
+                if (child instanceof PlanarImage && !visited.contains(child)) {
+                    disposePlanarImageChain((PlanarImage) child, visited);
+                } else if (child instanceof BufferedImage) {
+                    ((BufferedImage) child).flush();
+                }
+            }
+        }
+
+        // ImageRead might also hold onto a image input stream that we have to close
+        if (pi instanceof RenderedOp) {
+            RenderedOp op = (RenderedOp) pi;
+            for (Object param : op.getParameterBlock().getParameters()) {
+                if (param instanceof ImageInputStream) {
+                    ImageInputStream iis = (ImageInputStream) param;
+                    try {
+                        iis.close();
+                    } catch (IOException e) {
+                        // fine, we tried
+                    }
+                }
+            }
         }
     }
 }

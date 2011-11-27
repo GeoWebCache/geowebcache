@@ -75,6 +75,17 @@ public interface BlobStore {
 
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException;
 
+    /**
+     * @return the value of the stored metadata for the given layer and key, or {@code null} if no
+     *         such value exists
+     */
+    public String getLayerMetadata(String layerName, String key);
+
+    /**
+     * Stores a metadata key/value pair for the given layer
+     */
+    public void putLayerMetadata(String layerName, String key, String value);
+
     // /**
     // * Test to see whether the blobstore is ready or not
     // */

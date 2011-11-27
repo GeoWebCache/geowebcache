@@ -102,7 +102,6 @@ public class BlobStoreTest extends TestCase {
             is2.close();
         }
 
-        
         TileObject to3 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326",
                 "image/jpeg", parameters);
         fbs.delete(to3);
@@ -237,5 +236,26 @@ public class BlobStoreTest extends TestCase {
 
         return new FileBlobStore(StorageBrokerTest.findTempDir() + File.separator
                 + TEST_BLOB_DIR_NAME);
+    }
+
+    public void testLayerMetadata() throws Exception {
+        FileBlobStore fbs = setup();
+
+        final String layerName = "TestLayer";
+        final String key1 = "Test.Metadata.Property_1";
+        final String key2 = "Test.Metadata.Property_2";
+
+        assertNull(fbs.getLayerMetadata(layerName, key1));
+        assertNull(fbs.getLayerMetadata(layerName, key2));
+
+        fbs.putLayerMetadata(layerName, key1, "value 1");
+        fbs.putLayerMetadata(layerName, key2, "value 2");
+        assertEquals("value 1", fbs.getLayerMetadata(layerName, key1));
+        assertEquals("value 2", fbs.getLayerMetadata(layerName, key2));
+
+        fbs.putLayerMetadata(layerName, key1, "value 1_1");
+        fbs.putLayerMetadata(layerName, key2, null);
+        assertEquals("value 1_1", fbs.getLayerMetadata(layerName, key1));
+        assertNull(fbs.getLayerMetadata(layerName, key2));
     }
 }

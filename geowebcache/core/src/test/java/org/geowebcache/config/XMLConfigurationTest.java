@@ -1,151 +1,159 @@
 package org.geowebcache.config;
 
-import java.io.InputStream;
-import java.util.Iterator;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.io.FileUtils;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.filter.request.RequestFilter;
+import org.geowebcache.filter.parameters.ParameterFilter;
+import org.geowebcache.filter.parameters.StringParameterFilter;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
-import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.mime.FormatModifier;
-import org.geowebcache.mime.ImageMime;
+import org.geowebcache.layer.wms.WMSLayer;
 
 public class XMLConfigurationTest extends TestCase {
-    
-    public static final String LATEST_FILENAME = "geowebcache_125.xml";
 
-    @Override
+    private File configDir;
+
+    private File configFile;
+
+    private GridSetBroker gridSetBroker;
+
+    private XMLConfiguration config;
+
     protected void setUp() throws Exception {
-        super.setUp();
+        configDir = new File("target", "testConfig");
+        FileUtils.deleteDirectory(configDir);
+        configDir.mkdirs();
+        URL source = XMLConfiguration.class
+                .getResource(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
+        configFile = new File(configDir, "geowebcache.xml");
+        FileUtils.copyURLToFile(source, configFile);
+
+        gridSetBroker = new GridSetBroker(true, false);
+        config = new XMLConfiguration(null, configDir.getAbsolutePath());
+        config.initialize(gridSetBroker);
     }
 
-    public void testLoadPre10() throws Exception {
-        List<TileLayer> layers = loadResource("geowebcache_pre10.xml");
-        TileLayer layer = findLayer(layers, "topp:states");
-        assertTrue(layer != null);
-        TileLayer layer2 = findLayer(layers, "topp:states2");
-        GridSubset grid = layer2.getGridSubsetForSRS(SRS.getSRS(2163));
-        assertTrue(layer2 != null);
-        assertTrue(grid != null);
-    }
-        
-    public void testLoad10() throws Exception {
-        List<TileLayer> layers = loadResource("geowebcache_10.xml");
-        TileLayer layer = findLayer(layers, "topp:states");
-        assertTrue(layer != null);
-        //assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
-        TileLayer layer2 = findLayer(layers, "topp:states2");
-        GridSubset grid = layer2.getGridSubsetForSRS(SRS.getSRS(2163));
-        assertTrue(layer2 != null);
-        assertTrue(grid != null);
-    }
-    
-    public void testLoad101() throws Exception {
-        List<TileLayer> layers = loadResource("geowebcache_101.xml");
-        TileLayer layer = findLayer(layers, "topp:states");
-        assertTrue(layer != null);
-        //assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
-        TileLayer layer2 = findLayer(layers, "topp:states2");
-        GridSubset grid = layer2.getGridSubsetForSRS(SRS.getSRS(2163));
-        assertTrue(layer2 != null);
-        assertTrue(grid != null);
-        
-        // The additions in 1.0.1 are allowCacheBypass and backendTimeout
-        assertEquals(layer.getBackendTimeout().intValue(), 60);
-        assertEquals(layer2.getBackendTimeout().intValue(), 235);
-        assertEquals(layer.isCacheBypassAllowed().booleanValue(), true);
-        assertEquals(layer2.isCacheBypassAllowed().booleanValue(), false);
-    }
-    
-    public void testLoad114() throws Exception {
-        List<TileLayer> layers = loadResource("geowebcache_114.xml");
-        TileLayer layer = findLayer(layers, "topp:states");
-        assertTrue(layer != null);
-        //assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
-        TileLayer layer2 = findLayer(layers, "topp:states2");
-        GridSubset grid = layer2.getGridSubsetForSRS(SRS.getSRS(2163));
-        assertTrue(layer2 != null);
-        assertTrue(grid != null);
-        
-        // The additions in 1.0.1 are allowCacheBypass and backendTimeout
-        assertEquals(layer.getBackendTimeout().intValue(), 120);
-        assertEquals(layer2.getBackendTimeout().intValue(), 120);
-        assertEquals(layer.isCacheBypassAllowed().booleanValue(), true);
-        assertEquals(layer2.isCacheBypassAllowed().booleanValue(), true);
-        
-        FormatModifier fm = layer.getFormatModifier(ImageMime.jpeg); 
-        assertEquals(fm.getBgColor(), "0xDDDDDD");
-        assertTrue(fm.getRequestFormat().equals(ImageMime.png));
-        
-        List<RequestFilter> filters = layer.getRequestFilters();
-        assertEquals(filters.get(0).getName(),"testWMSRasterFilter");
-        assertEquals(filters.get(1).getName(),"testFileRasterFilter");
-    }
-    
-    
-    public void testLoad115() throws Exception {
-        List<TileLayer> layers = loadResource(LATEST_FILENAME);
-        TileLayer layer = findLayer(layers, "topp:states");
-        assertTrue(layer != null);
-        //assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
-        TileLayer layer2 = findLayer(layers, "topp:states2");
-        GridSubset grid = layer2.getGridSubsetForSRS(SRS.getSRS(2163));
-        assertTrue(layer2 != null);
-        assertTrue(grid != null);
-        
-        // The additions in 1.0.1 are allowCacheBypass and backendTimeout
-        assertEquals(layer.getBackendTimeout().intValue(), 120);
-        assertEquals(layer2.getBackendTimeout().intValue(), 120);
-        assertEquals(layer.isCacheBypassAllowed().booleanValue(), true);
-        assertEquals(layer2.isCacheBypassAllowed().booleanValue(), true);
-        
-        FormatModifier fm = layer.getFormatModifier(ImageMime.jpeg); 
-        assertEquals(fm.getBgColor(), "0xDDDDDD");
-        assertTrue(fm.getRequestFormat().equals(ImageMime.png));
-        
-        List<RequestFilter> filters = layer.getRequestFilters();
-        RequestFilter filter0 = filters.get(0);
-        assertEquals(filter0.getName(),"testWMSRasterFilter");
-        RequestFilter filter1 = filters.get(1);
-        assertEquals(filter1.getName(),"testFileRasterFilter");
-    }
-    
-    private TileLayer findLayer(List<TileLayer> layers, String layerName) 
-    throws GeoWebCacheException {
-        Iterator<TileLayer> iter = layers.iterator();
-        
-        while(iter.hasNext()) {
-            TileLayer layer = iter.next();
-            if(layer.getName().equals(layerName)) {
-                return layer;
-            }
+    public void testAddLayer() throws Exception {
+        int count = config.getTileLayerCount();
+
+        TileLayer tl = mock(WMSLayer.class);
+        when(tl.getName()).thenReturn("testLayer");
+        config.addLayer(tl);
+        assertEquals(count + 1, config.getTileLayerCount());
+        assertSame(tl, config.getTileLayer("testLayer"));
+        try {
+            config.addLayer(tl);
+            fail("Expected GeoWebCacheException on duplicate layer name");
+        } catch (GeoWebCacheException e) {
+            assertEquals("Layer testLayer already exists", e.getMessage());
         }
-        
-        throw new GeoWebCacheException("Layer " + layerName + 
-                " not found, set has " + layers.size() + " layers.");
     }
-    
-    private List<TileLayer> loadResource(String fileName) throws Exception {
-        InputStream is = XMLConfiguration.class.getResourceAsStream(fileName);
-        
-        XMLConfiguration xmlConfig = new XMLConfiguration(is);
-        
-        GridSetBroker gsb = new GridSetBroker(false, false);
-        
-        List<TileLayer> list = xmlConfig.getTileLayers();
-        
-        Iterator<TileLayer> iter = list.iterator();
-        while(iter.hasNext()) {
-            TileLayer layer = iter.next();
-            
-            layer.initialize(gsb);   
+
+    public void testModifyLayer() throws Exception {
+
+        TileLayer layer1 = mock(WMSLayer.class);
+        when(layer1.getName()).thenReturn("testLayer");
+
+        config.addLayer(layer1);
+        int count = config.getTileLayerCount();
+
+        TileLayer layer2 = mock(WMSLayer.class);
+        when(layer2.getName()).thenReturn("testLayer");
+        config.modifyLayer(layer2);
+
+        assertEquals(count, config.getTileLayerCount());
+        assertSame(layer2, config.getTileLayer("testLayer"));
+
+        when(layer1.getName()).thenReturn("another");
+        try {
+            config.modifyLayer(layer1);
+            fail("Expected NoSuchElementException");
+        } catch (NoSuchElementException e) {
+            assertTrue(true);
         }
-        
-        return list;
     }
+
+    public void testRemoveLayer() {
+
+        assertFalse(config.removeLayer("nonExistent"));
+
+        Set<String> tileLayerNames = config.getTileLayerNames();
+        for (String name : tileLayerNames) {
+            int count = config.getTileLayerCount();
+            assertTrue(config.removeLayer(name));
+            assertEquals(count - 1, config.getTileLayerCount());
+        }
+    }
+
+    public void testTemplate() throws Exception {
+        assertTrue(configFile.delete());
+        config.setTemplate("/geowebcache_empty.xml");
+        config.initialize(gridSetBroker);
+        assertEquals(0, config.getTileLayerCount());
+
+        assertTrue(configFile.delete());
+        config.setTemplate("/geowebcache.xml");
+        config.initialize(gridSetBroker);
+        assertEquals(3, config.getTileLayerCount());
+    }
+
+    public void testSave() throws Exception {
+        for (String name : config.getTileLayerNames()) {
+            int count = config.getTileLayerCount();
+            assertTrue(config.removeLayer(name));
+            assertEquals(count - 1, config.getTileLayerCount());
+        }
+
+        String layerName = "testLayer";
+        String[] wmsURL = { "http://wms.example.com/1", "http://wms.example.com/2" };
+        String wmsStyles = "default,line";
+        String wmsLayers = "states,border";
+        List<String> mimeFormats = Arrays.asList("image/png", "image/jpeg");
+        Hashtable<String, GridSubset> subSets = null;
+
+        StringParameterFilter filter = new StringParameterFilter();
+        filter.key = "STYLES";
+        filter.values = new ArrayList<String>(Arrays.asList("polygon", "point"));
+        filter.defaultValue = "polygon";
+
+        List<ParameterFilter> parameterFilters = new ArrayList<ParameterFilter>(
+                new ArrayList<ParameterFilter>(Arrays.asList((ParameterFilter) filter)));
+        int[] metaWidthHeight = { 9, 9 };
+        String vendorParams = "vendor=1";
+        boolean queryable = false;
+
+        WMSLayer layer = new WMSLayer(layerName, wmsURL, wmsStyles, wmsLayers, mimeFormats,
+                subSets, parameterFilters, metaWidthHeight, vendorParams, queryable);
+
+        config.addLayer(layer);
+
+        config.save();
+
+        XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
+        config2.initialize(gridSetBroker);
+        assertEquals(1, config2.getTileLayerCount());
+        assertNotNull(config2.getTileLayer("testLayer"));
+
+        WMSLayer l = (WMSLayer) config2.getTileLayer("testLayer");
+        assertTrue(Arrays.equals(wmsURL, l.getWMSurl()));
+        assertEquals(wmsStyles, l.getStyles());
+        assertEquals(wmsLayers, l.getWmsLayers());
+        assertEquals(mimeFormats, l.getMimeFormats());
+        assertEquals(parameterFilters, l.getParameterFilters());
+    }
+
 }

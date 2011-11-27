@@ -18,26 +18,180 @@ package org.geowebcache.config.meta;
 
 public class ServiceContact {
 
-    public String individualName;
+    private String individualName;
     
-    public String positionName;
+    private String positionName;
     
-    public String phoneNumber;
+    private String phoneNumber;
     
-    public String faxNumber;
+    private String faxNumber;
     
-    public String addressStreet;
+    private String addressStreet;
     
-    public String addressPostalCode;
+    private String addressPostalCode;
     
-    public String addressCity;
+    private String addressCity;
     
-    public String addressAdministrativeArea;
+    private String addressAdministrativeArea;
     
-    public String addressCountry;
+    private String addressCountry;
     
-    public String addressEmail;
+    private String addressEmail;
     
-    public String addressType;
+    private String addressType;
+
+    /**
+     * @return the individualName
+     */
+    public String getIndividualName() {
+        return individualName;
+    }
+
+    /**
+     * @param individualName the individualName to set
+     */
+    public void setIndividualName(String individualName) {
+        this.individualName = individualName;
+    }
+
+    /**
+     * @return the positionName
+     */
+    public String getPositionName() {
+        return positionName;
+    }
+
+    /**
+     * @param positionName the positionName to set
+     */
+    public void setPositionName(String positionName) {
+        this.positionName = positionName;
+    }
+
+    /**
+     * @return the phoneNumber
+     */
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    /**
+     * @param phoneNumber the phoneNumber to set
+     */
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    /**
+     * @return the faxNumber
+     */
+    public String getFaxNumber() {
+        return faxNumber;
+    }
+
+    /**
+     * @param faxNumber the faxNumber to set
+     */
+    public void setFaxNumber(String faxNumber) {
+        this.faxNumber = faxNumber;
+    }
+
+    /**
+     * @return the addressStreet
+     */
+    public String getAddressStreet() {
+        return addressStreet;
+    }
+
+    /**
+     * @param addressStreet the addressStreet to set
+     */
+    public void setAddressStreet(String addressStreet) {
+        this.addressStreet = addressStreet;
+    }
+
+    /**
+     * @return the addressPostalCode
+     */
+    public String getAddressPostalCode() {
+        return addressPostalCode;
+    }
+
+    /**
+     * @param addressPostalCode the addressPostalCode to set
+     */
+    public void setAddressPostalCode(String addressPostalCode) {
+        this.addressPostalCode = addressPostalCode;
+    }
+
+    /**
+     * @return the addressCity
+     */
+    public String getAddressCity() {
+        return addressCity;
+    }
+
+    /**
+     * @param addressCity the addressCity to set
+     */
+    public void setAddressCity(String addressCity) {
+        this.addressCity = addressCity;
+    }
+
+    /**
+     * @return the addressAdministrativeArea
+     */
+    public String getAddressAdministrativeArea() {
+        return addressAdministrativeArea;
+    }
+
+    /**
+     * @param addressAdministrativeArea the addressAdministrativeArea to set
+     */
+    public void setAddressAdministrativeArea(String addressAdministrativeArea) {
+        this.addressAdministrativeArea = addressAdministrativeArea;
+    }
+
+    /**
+     * @return the addressCountry
+     */
+    public String getAddressCountry() {
+        return addressCountry;
+    }
+
+    /**
+     * @param addressCountry the addressCountry to set
+     */
+    public void setAddressCountry(String addressCountry) {
+        this.addressCountry = addressCountry;
+    }
+
+    /**
+     * @return the addressEmail
+     */
+    public String getAddressEmail() {
+        return addressEmail;
+    }
+
+    /**
+     * @param addressEmail the addressEmail to set
+     */
+    public void setAddressEmail(String addressEmail) {
+        this.addressEmail = addressEmail;
+    }
+
+    /**
+     * @return the addressType
+     */
+    public String getAddressType() {
+        return addressType;
+    }
+
+    /**
+     * @param addressType the addressType to set
+     */
+    public void setAddressType(String addressType) {
+        this.addressType = addressType;
+    }
     
 }

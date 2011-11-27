@@ -394,9 +394,9 @@ public class TileBreeder implements ApplicationContextAware {
             Entry<Long, GWCTask> entry = iter.next();
             GWCTask task = entry.getValue();
 
-            ret[idx][0] = (int) task.getTilesDone();
+            ret[idx][0] = task.getTilesDone();
 
-            ret[idx][1] = (int) task.getTilesTotal();
+            ret[idx][1] = task.getTilesTotal();
 
             ret[idx][2] = task.getTimeRemaining();
 
@@ -462,6 +462,10 @@ public class TileBreeder implements ApplicationContextAware {
         storageBroker = sb;
     }
 
+    public StorageBroker getStorageBroker() {
+        return storageBroker;
+    }
+    
     public TileLayer findTileLayer(String layerName) throws GeoWebCacheException {
         TileLayer layer = null;
 

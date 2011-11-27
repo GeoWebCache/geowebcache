@@ -17,23 +17,54 @@
  */
 package org.geowebcache.config;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileLayerDispatcher;
 
+/**
+ * A layer and gridset provider for {@link TileLayerDispatcher}.
+ * <p>
+ * Implementations must be singletons discoverable through {@link GeoWebCacheExtensions} (i.e.
+ * spring beans)
+ * </p>
+ */
 public interface Configuration {
 
+    /**
+     * Initializes this configuration.
+     * <p>
+     * Any gridset provided by this configuration must be added to {@code gridSetBroker}
+     * </p>
+     * <p>
+     * Any layer provided by this configuration must be {@link TileLayer#initialize(GridSetBroker)
+     * initialized} with the provided {@code gridSetBroker}.
+     * </p>
+     * 
+     * @param gridSetBroker
+     * @return the count of layers provided by this configuration after initialization.
+     * @throws GeoWebCacheException
+     */
     public int initialize(GridSetBroker gridSetBroker) throws GeoWebCacheException;
 
-    public List<? extends TileLayer> getTileLayers() throws GeoWebCacheException;
+    /**
+     * @return an unmodifiable list of layers, may be empty, but not null.
+     */
+    public List<? extends TileLayer> getTileLayers();
 
+    /**
+     * @return non null identifier for this configuration
+     */
     public String getIdentifier();
 
-    public ServiceInformation getServiceInformation() throws GeoWebCacheException;
+    public ServiceInformation getServiceInformation();
 
     public boolean isRuntimeStatsEnabled();
 
@@ -48,7 +79,20 @@ public interface Configuration {
     public int getTileLayerCount();
 
     public Set<String> getTileLayerNames();
-    
-    public boolean remove(String layerName);
+
+    /**
+     * @param layerName
+     * @return {@code true} if the layer was removed, {@code false} if no such layer exists
+     */
+    public boolean removeLayer(String layerName);
+
+    public void modifyLayer(TileLayer tl) throws NoSuchElementException;
+
+    /**
+     * Saves this configuration
+     * 
+     * @throws IOException
+     */
+    public void save() throws IOException;
 
 }

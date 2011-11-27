@@ -20,6 +20,7 @@ Reload via a POST request with cURL
 
 The :guilabel:`Reload Configuration` button in the web interface merely makes a POST request to the GeoWebCache :ref:`rest` interface to reload the configuration.  Below is an example of this POST request executed using the command line utility `cURL <http://curl.haxx.se/>`_::
 
-  curl -u <admin>:<password> -d "reload" http://<GEOWEBCACHE_URL>/rest/
+  curl -u <admin>:<password> -d "reload_configuration=1" http://<GEOWEBCACHE_URL>/rest/reload
 
 In this example, please make sure to change the ``<admin>`` to your administrator username, ``<password>`` for your administrator password, and <GEOWEBCACHE_URL> for the URL to your geowebcache endpoint (such as ``localhost:8080/geowebcache``).  See the section on :ref:`configuration.security` for more details about the username and password.
+

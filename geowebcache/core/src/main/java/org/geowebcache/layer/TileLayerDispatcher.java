@@ -16,9 +16,11 @@
  */
 package org.geowebcache.layer;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -26,9 +28,16 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.Configuration;
+import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.config.XMLGridSet;
 import org.geowebcache.config.meta.ServiceInformation;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSubset;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.util.Assert;
+
+import com.sun.org.apache.xerces.internal.xni.parser.XMLConfigurationException;
 
 /**
  * Serves tile layers from the {@link Configuration}s available in the application context.
@@ -142,11 +151,7 @@ public class TileLayerDispatcher implements DisposableBean {
         ArrayList<TileLayer> layers = new ArrayList<TileLayer>();
         for (int i = 0; i < configs.size(); i++) {
             Configuration configuration = configs.get(i);
-            try {
-                layers.addAll(configuration.getTileLayers());
-            } catch (GeoWebCacheException e) {
-                throw new RuntimeException(e);
-            }
+            layers.addAll(configuration.getTileLayers());
         }
         return layers;
     }
@@ -186,18 +191,13 @@ public class TileLayerDispatcher implements DisposableBean {
             return 0;
         }
         if (layerCount <= 0) {
-            log.error("Configuration " + config.getIdentifier() + " contained no layers.");
+            log.info("Configuration " + config.getIdentifier() + " contained no layers.");
         }
 
         // Check whether there is any general service information
         if (this.serviceInformation == null) {
-            try {
-                log.debug("Reading service information.");
-                this.serviceInformation = config.getServiceInformation();
-            } catch (GeoWebCacheException e) {
-                log.error("Error reading service information from " + configIdent + ": "
-                        + e.getMessage());
-            }
+            log.debug("Reading service information.");
+            this.serviceInformation = config.getServiceInformation();
         }
         return layerCount;
     }
@@ -213,13 +213,97 @@ public class TileLayerDispatcher implements DisposableBean {
         //
     }
 
-    public boolean remove(final String layerName) {
+    public boolean removeLayer(final String layerName) throws IOException {
         for (Configuration config : configs) {
-            if (config.remove(layerName)) {
+            if (config.removeLayer(layerName)) {
+                config.save();
                 return true;
             }
         }
         return false;
     }
 
+    /**
+     * Replaces and saves the given layer
+     * 
+     * @param tl
+     * @throws NoSuchElementException
+     * @throws IOException
+     */
+    public synchronized void modify(final TileLayer tl) throws NoSuchElementException, IOException {
+        if (!layerExists(tl.getName())) {
+            throw new NoSuchElementException("No layer named " + tl.getName() + " exists");
+        }
+        Configuration config = getConfiguration(tl);
+        config.modifyLayer(tl);
+        config.save();
+    }
+
+    private Configuration getConfiguration(TileLayer tl) {
+        for (Configuration c : configs) {
+            if (null != c.getTileLayer(tl.getName())) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Eliminates the gridset from the {@link GridSetBroker} and the
+     * {@link XMLConfigurationException} and saves the configuration, only if no layer references
+     * the given GridSet.
+     * 
+     * @param gridSetName
+     *            the gridset to remove.
+     * @return the removed gridset
+     * @throws IllegalStateException
+     *             if there's any layer referencing the given GridSet
+     * @throws IOException
+     */
+    public synchronized GridSet removeGridset(final String gridSetName)
+            throws IllegalStateException, IOException {
+
+        GridSet gridSet = gridSetBroker.get(gridSetName);
+        if (gridSet == null) {
+            return null;
+        }
+        List<String> refereningLayers = new ArrayList<String>();
+        for (TileLayer layer : getLayerList()) {
+            GridSubset gridSubset = layer.getGridSubset(gridSetName);
+            if (gridSubset != null) {
+                refereningLayers.add(layer.getName());
+            }
+        }
+        if (refereningLayers.size() > 0) {
+            throw new IllegalStateException("There are TileLayers referencing gridset '"
+                    + gridSetName + "': " + refereningLayers.toString());
+        }
+        XMLConfiguration persistingConfig = getXmlConfiguration();
+        GridSet removed = gridSetBroker.remove(gridSetName);
+        Assert.notNull(removed != null);
+        Assert.notNull(persistingConfig.removeGridset(gridSetName));
+        persistingConfig.save();
+        return removed;
+    }
+
+    public synchronized void addGridSet(final GridSet gridSet) throws IllegalArgumentException,
+            IOException {
+        if (null != gridSetBroker.get(gridSet.getName())) {
+            throw new IllegalArgumentException("GridSet " + gridSet.getName() + " already exists");
+        }
+        XMLConfiguration persistingConfig = getXmlConfiguration();
+        persistingConfig.addOrReplaceGridSet(new XMLGridSet(gridSet));
+        persistingConfig.save();
+        gridSetBroker.put(gridSet);
+    }
+
+    private XMLConfiguration getXmlConfiguration() throws IllegalStateException {
+        for (Configuration c : configs) {
+            if (c instanceof XMLConfiguration) {
+                return (XMLConfiguration) c;
+            }
+        }
+        throw new IllegalStateException("Found no configuration of type "
+                + XMLConfiguration.class.getName());
+    }
 }

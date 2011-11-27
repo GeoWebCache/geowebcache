@@ -20,15 +20,17 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.ObjectUtils;
+
 public class RegexParameterFilter extends ParameterFilter {
     public String regex;
-    
+
     transient Pattern pat;
-    
+
     public RegexParameterFilter() {
         super();
     }
-    
+
     public synchronized Matcher getMatcher(String value) {
         if (pat == null) {
             pat = Pattern.compile(regex);
@@ -38,10 +40,10 @@ public class RegexParameterFilter extends ParameterFilter {
     }
 
     public String apply(String str) throws ParameterException {
-        if(getMatcher(str).matches()) {
+        if (getMatcher(str).matches()) {
             return str;
         }
-        
+
         throw new ParameterException(str + " violates filter for parameter " + key);
     }
 
@@ -52,5 +54,13 @@ public class RegexParameterFilter extends ParameterFilter {
     @Override
     public boolean applies(String parameterValue) {
         return getMatcher(parameterValue).matches();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!super.equals(o)) {
+            return false;
+        }
+        return ObjectUtils.equals(pat, ((RegexParameterFilter) o).pat);
     }
 }
