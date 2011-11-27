@@ -8,7 +8,7 @@
 Ext.define('GWC.RestService', {
     
     config: {
-        endpoint: '/geowebcache/rest',
+        endpoint: '..',
         timeout: 60000,
         jobStore: null,
         logStore: null
