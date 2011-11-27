@@ -515,9 +515,10 @@ public class SeedFormRestlet extends GWCRestlet {
             basemapConfig = "    return null;\n";
         }
         
-        String extras = "<script type=\"text/javascript\" src=\"../web/openlayers/OpenLayers.js\"></script>\n";
+        String extras = "<script type=\"text/javascript\" src=\"../web/openlayers/openlayers-gwc.js\"></script>\n";
         
-        extras += "<script type=\"text/javascript\">\n" + 
+        extras += "<script type=\"text/javascript\">\n" +
+                  "  OpenLayers.ImgPath = '../web/openlayers/img/';\n" + 
                   "  var layerName = '" + tl.getName() + "';\n" + 
                   "  var layerFormat = '" + tl.getDefaultMimeType().getMimeType() + "';\n" + 
                   "  var layerTileSize = new OpenLayers.Size(" + tl.getDefaultGridSubset().getTileWidth() + "," + tl.getDefaultGridSubset().getTileHeight() + ");\n" + 
