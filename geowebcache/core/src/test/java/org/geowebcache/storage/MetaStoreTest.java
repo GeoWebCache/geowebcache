@@ -25,7 +25,7 @@ import junit.framework.TestCase;
 
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
-import org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend;
+import org.geowebcache.storage.jdbc.metastore.JDBCMetaBackend;
 
 public class MetaStoreTest extends TestCase {
     public static final String TEST_DB_NAME = "gwcTestMetaStore";

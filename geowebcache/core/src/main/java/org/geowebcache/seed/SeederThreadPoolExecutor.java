@@ -70,9 +70,25 @@ public class SeederThreadPoolExecutor extends ThreadPoolExecutor implements Disp
                 if (task != null) {
                     this.currentPool.remove(task.getTaskId());
                 }
+                
+                checkJobStatus(task);
             }
         } finally {
             super.afterExecute(r, t);
+        }
+    }
+
+    /** 
+     * Called as a task finished execution.
+     * Add job to the queue of completed tasks for the monitor to take a look at.
+     * @param task
+     */
+    private void checkJobStatus(GWCTask task) {
+        
+        JobMonitorTask jmt = getJobMonitorTask();
+        
+        if(jmt != null) {
+            jmt.addFinishedTask(task);
         }
     }
 
@@ -129,6 +145,19 @@ public class SeederThreadPoolExecutor extends ThreadPoolExecutor implements Disp
 
     public Iterator<Entry<Long, GWCTask>> getRunningTasksIterator() {
         return this.currentPool.entrySet().iterator();
+    }
+
+    private JobMonitorTask getJobMonitorTask() {
+        Iterator<Entry<Long, GWCTask>> iter = this.currentPool.entrySet().iterator();
+        
+        while(iter.hasNext()) {
+            GWCTask task = iter.next().getValue();
+            if(task instanceof JobMonitorTask) {
+                return (JobMonitorTask)task;
+            }
+        }
+        
+        return null;
     }
 
     /**

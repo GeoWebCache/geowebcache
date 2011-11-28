@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<logs>
+  <log>
+    <jobLogId>198</jobLogId>
+    <jobId>98</jobId>
+    <logLevel>INFO</logLevel>
+    <logTime>2011-07-14T15:59:09+00:00</logTime>
+    <logSummary>Job Completed</logSummary>
+
+    <logText>Job finished with a status of DONE.</logText>
+  </log>
+  <log>
+    <jobLogId>197</jobLogId>
+    <jobId>98</jobId>
+    <logLevel>INFO</logLevel>
+    <logTime>2011-07-14T15:59:06+00:00</logTime>
+
+    <logSummary>Seeding Completed</logSummary>
+    <logText>GWC Seeder Thread-3 completed (re)seeding layer topp:states after 5994 tiles and 114 seconds.</logText>
+  </log>
+  <log>
+    <jobLogId>196</jobLogId>
+    <jobId>98</jobId>
+    <logLevel>INFO</logLevel>
+
+    <logTime>2011-07-14T15:57:11+00:00</logTime>
+    <logSummary>Job Started</logSummary>
+    <logText>This job has started execution.</logText>
+  </log>
+</logs>

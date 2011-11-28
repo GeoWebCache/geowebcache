@@ -1,0 +1,9 @@
+To set up an ExtJS development environment, download and 
+unzip a full ExtJS SDK to this folder. Only ext-all.js and 
+resource files will not be ignored by git (look at the 
+.gitignore file in this folder).
+
+To switch to the debug js file, depending on what page you 
+are working on, find the <script> tag for ext-all.js and 
+switch to ext-debug.js - which should now be at the same 
+location (src/main/webapp/js/extjs/ext-debug.js)

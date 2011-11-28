@@ -27,10 +27,13 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -64,8 +67,10 @@ import org.geowebcache.filter.parameters.StringParameterFilter;
 import org.geowebcache.filter.request.CircularExtentFilter;
 import org.geowebcache.filter.request.FileRasterFilter;
 import org.geowebcache.filter.request.WMSRasterFilter;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.meta.ContactInformation;
@@ -74,9 +79,14 @@ import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.FormatModifier;
+import org.geowebcache.seed.SeedEstimate;
 import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
+import org.geowebcache.storage.JobLogObject;
+import org.geowebcache.storage.JobObject;
+import org.geowebcache.storage.SettingsObject;
 import org.geowebcache.util.ApplicationContextProvider;
+import org.geowebcache.util.ISO8601DateParser;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import org.w3c.dom.Document;
@@ -85,6 +95,8 @@ import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.SingleValueConverter;
+import com.thoughtworks.xstream.converters.basic.IntConverter;
 import com.thoughtworks.xstream.io.xml.DomReader;
 
 /**
@@ -289,6 +301,14 @@ public class XMLConfiguration implements Configuration {
         }
     }
 
+    public synchronized String getBasemapConfig() {
+        return gwcConfig.getBasemapConfig();
+    }
+    
+    public synchronized Integer getJobUpdateFrequency() {
+		return gwcConfig.getJobUpdateFrequency();
+	}
+
     public synchronized ServiceInformation getServiceInformation() {
         return gwcConfig.getServiceInformation();
     }
@@ -379,7 +399,7 @@ public class XMLConfiguration implements Configuration {
     private GeoWebCacheConfiguration loadConfiguration(InputStream xmlFile) throws IOException,
             ConfigurationException {
         Node rootNode = loadDocument(xmlFile);
-        XStream xs = getConfiguredXStream(new XStream());
+        XStream xs = configureXStreamForLayers(new XStream());
 
         GeoWebCacheConfiguration config;
         config = (GeoWebCacheConfiguration) xs.unmarshal(new DomReader((Element) rootNode));
@@ -406,18 +426,8 @@ public class XMLConfiguration implements Configuration {
     }
 
     @SuppressWarnings("unchecked")
-    public XStream getConfiguredXStream(XStream xs) {
-        // XStream xs = xstream;
-        xs.setMode(XStream.NO_REFERENCES);
-
-        xs.addDefaultImplementation(ArrayList.class, List.class);
-
-        xs.alias("gwcConfiguration", GeoWebCacheConfiguration.class);
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns_xsi");
-        xs.aliasField("xmlns:xsi", GeoWebCacheConfiguration.class, "xmlns_xsi");
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xsi_schemaLocation");
-        xs.aliasField("xsi:schemaLocation", GeoWebCacheConfiguration.class, "xsi_schemaLocation");
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
+    public XStream configureXStreamForLayers(XStream xs) {
+        commonXStreamConfig(xs);
 
         xs.alias("keyword", String.class);
         xs.alias("layers", List.class);
@@ -457,6 +467,50 @@ public class XMLConfiguration implements Configuration {
 
         xs.alias("contactInformation", ContactInformation.class);
 
+        return xs;
+    }
+
+    public XStream configureXStreamForJobs(XStream xs) {
+        commonXStreamConfig(xs);
+
+        xs.alias("jobs", List.class);
+        xs.alias("job", JobObject.class);
+
+        xs.aliasField("parameters", JobObject.class, "encodedParameters");
+
+        xs.registerConverter(new SRSConverter());
+        xs.registerConverter(new TimestampConverter());
+        xs.registerConverter(new BoundingBoxConverter());
+        
+        xs.omitField(JobObject.class, "newLogs");
+
+        return xs;
+    }
+    
+    public XStream configureXStreamForSeedEstimate(XStream xs) {
+        commonXStreamConfig(xs);
+        xs.alias("estimate", SeedEstimate.class);
+        xs.registerConverter(new BoundingBoxConverter());
+        return xs;
+    }
+    
+    public XStream configureXStreamForSettings(XStream xs) {
+        commonXStreamConfig(xs);
+        xs.alias("settings", SettingsObject.class);
+        xs.registerConverter(new BoundingBoxConverter());
+        return xs;
+    }
+
+    private XStream commonXStreamConfig(XStream xs) {
+        xs.setMode(XStream.NO_REFERENCES);
+
+        xs.alias("gwcConfiguration", GeoWebCacheConfiguration.class);
+        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns_xsi");
+        xs.aliasField("xmlns:xsi", GeoWebCacheConfiguration.class, "xmlns_xsi");
+        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xsi_schemaLocation");
+        xs.aliasField("xsi:schemaLocation", GeoWebCacheConfiguration.class, "xsi_schemaLocation");
+        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
+
         if (this.context != null) {
             /*
              * Look up XMLConfigurationProvider extension points and let them contribute to the
@@ -470,7 +524,87 @@ public class XMLConfiguration implements Configuration {
         }
         return xs;
     }
+    
+    class SRSConverter extends IntConverter {
+        public boolean canConvert(Class type) {
+            return type.equals(SRS.class);
+        }
+        
+        public String toString(Object obj) {
+            return Integer.toString(((SRS)obj).getNumber());
+        }
 
+        public Object fromString(String val) {
+            return SRS.getSRS(Integer.parseInt(val));
+        }        
+    }    
+
+    class TimestampConverter implements SingleValueConverter {
+        public boolean canConvert(Class type) {
+            if(type.equals(Timestamp.class)) {
+                return true;
+            }
+            return type.equals(Timestamp.class);
+        }
+        
+        public String toString(Object obj) {
+            Timestamp ts = (Timestamp)obj;
+            
+            return (ISO8601DateParser.toString(ts));
+        }
+
+        public Object fromString(String val) {
+            Date d = null;
+            
+            if(val == null || val.equals("null")) {
+                return null;
+            } else {
+                try {
+                    d = ISO8601DateParser.parse(val);
+                } catch(ParseException pe) {
+                    log.warn("Couldn't parse date: " + val);
+                }
+                return new Timestamp(d.getTime());
+            }
+        }        
+    }    
+
+    class BoundingBoxConverter implements SingleValueConverter {
+        public boolean canConvert(Class type) {
+            return type.equals(BoundingBox.class);
+        }
+        
+        public String toString(Object obj) {
+            return ((BoundingBox)obj).toString();
+        }
+
+        public Object fromString(String val) {
+            return new BoundingBox(val);
+        }        
+    }
+
+    public XStream configureXStreamForJobLogs(XStream xs) {
+        commonXStreamConfig(xs);
+
+        xs.alias("logs", List.class);
+        xs.alias("log", JobLogObject.class);
+
+        xs.registerConverter(new TimestampConverter());
+        
+        if (this.context != null) {
+            /*
+             * Look up XMLConfigurationProvider extension points and let them contribute to the
+             * configuration
+             */
+            Collection<XMLConfigurationProvider> configExtensions;
+            configExtensions = this.context.getBeansOfType(XMLConfigurationProvider.class).values();
+            for (XMLConfigurationProvider extension : configExtensions) {
+                xs = extension.getConfiguredXStream(xs);
+            }
+        }
+        return xs;
+    }
+    
     /**
      * Method responsible for writing out the entire GeoWebCacheConfiguration object
      * 
@@ -478,7 +612,7 @@ public class XMLConfiguration implements Configuration {
      */
     private void persistToFile(File xmlFile) throws IOException {
         // create the XStream for serializing the configuration
-        XStream xs = getConfiguredXStream(new XStream());
+        XStream xs = configureXStreamForLayers(new XStream());
 
         OutputStreamWriter writer = null;
         try {

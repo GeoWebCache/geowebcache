@@ -18,13 +18,9 @@
 package org.geowebcache.rest.seed;
 
 import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.rest.GWCRestlet;
@@ -42,17 +38,12 @@ import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.resource.Representation;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
-import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import com.thoughtworks.xstream.io.copy.HierarchicalStreamCopier;
-import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.xml.DomDriver;
-import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 
 
 public class SeedRestlet extends GWCRestlet {
-    private static Log log = LogFactory.getLog(SeedFormRestlet.class);
+    // private static Log log = LogFactory.getLog(SeedRestlet.class);
     
     private TileBreeder seeder;
 
@@ -114,7 +105,7 @@ public class SeedRestlet extends GWCRestlet {
         
         SeedRequest sr = null;
         
-        XStream xs = xmlConfig.getConfiguredXStream(new XStream(new DomDriver()));
+        XStream xs = xmlConfig.configureXStreamForLayers(new XStream(new DomDriver()));
         
         if(formatExtension.equalsIgnoreCase("xml")) {
             sr = (SeedRequest) xs.fromXML(req.getEntity().getStream());
@@ -129,11 +120,12 @@ public class SeedRestlet extends GWCRestlet {
         String layerName = null;
         try {
             layerName = URLDecoder.decode((String) req.getAttributes().get("layer"), "UTF-8");
+            sr.setLayerName(layerName);
         } catch (UnsupportedEncodingException uee) { }
         
         
         try {
-            seeder.seed(layerName, sr);
+            seeder.seed(sr);
         }catch(IllegalArgumentException e){
             throw new RestletException(e.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
         } catch (GeoWebCacheException e) {
@@ -142,34 +134,6 @@ public class SeedRestlet extends GWCRestlet {
 
     }
 
-    
-    /**
-     * Deserializing a json string is more complicated. 
-     * 
-     * XStream does not natively support it. Rather, it uses a 
-     * JettisonMappedXmlDriver to convert to intermediate xml and 
-     * then deserializes that into the desired object. At this time, 
-     * there is a known issue with the Jettison driver involving 
-     * elements that come after an array in the json string.
-     * 
-     * http://jira.codehaus.org/browse/JETTISON-48
-     * 
-     * The code below is a hack: it treats the json string as text, then
-     * converts it to the intermediate xml and then deserializes that
-     * into the SeedRequest object.
-     */
-    private String convertJson(String entityText) throws IOException {
-        HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();
-        StringReader reader = new StringReader(entityText);
-        HierarchicalStreamReader hsr = driver.createReader(reader);
-        StringWriter writer = new StringWriter();
-        new HierarchicalStreamCopier().copy(hsr, new PrettyPrintWriter(
-                writer));
-        writer.close();
-        return writer.toString();
-    }
-    
-    
     public void setXmlConfig(XMLConfiguration xmlConfig){
         this.xmlConfig = xmlConfig;
     }

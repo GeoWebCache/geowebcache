@@ -65,11 +65,18 @@
     <constructor-arg ref="gwcGridSetBroker"/>
   </bean>
   
+  <bean id="gwcJobDispatcher" class="org.geowebcache.job.JobDispatcher">
+    <description>
+      JobDispatcher serves up jobs.
+    </description>
+    <property name="jobStore" ref="gwcJobStore"/>
+  </bean>
+  
   <bean id="gwcDefaultStorageFinder" class="org.geowebcache.storage.DefaultStorageFinder">
   	<constructor-arg ref="gwcAppCtx" />
   </bean>
 
-  <bean id="gwcMetaStore" class="org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend" destroy-method="destroy">
+  <bean id="gwcMetaStore" class="org.geowebcache.storage.jdbc.metastore.JDBCMetaBackend" destroy-method="destroy">
     <constructor-arg ref="gwcDefaultStorageFinder" />
     <constructor-arg>
       <description>Enable connection pooling?</description>
@@ -83,12 +90,24 @@
   
   <!-- Static definition of where to put the metastore. 
        Note that the directory is AUTOMATICALLY CREATED if it does not exist. -->
-  <!-- bean id="gwcMetaStore" class="org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend" destroy-method="destroy">
+  <!-- bean id="gwcMetaStore" class="org.geowebcache.storage.jdbc.metastore.JDBCMetaBackend" destroy-method="destroy">
     <constructor-arg value="org.h2.Driver" />
     <constructor-arg value="jdbc:h2:file:/tmp/gwc_metastore/h2_metastore;TRACE_LEVEL_FILE=0" />
     <constructor-arg value="username" />
     <constructor-arg value="password" />
   </bean -->
+
+  <bean id="gwcJobStore" class="org.geowebcache.storage.jdbc.jobstore.JDBCJobBackend" destroy-method="destroy">
+    <constructor-arg ref="gwcDefaultStorageFinder" />
+    <constructor-arg>
+      <description>Enable connection pooling?</description>
+      <value>TRUE</value>
+    </constructor-arg>
+    <constructor-arg>
+      <description>Max number of connections in the pool</description>
+      <value>15</value>
+    </constructor-arg>
+  </bean>
   
   <bean id="gwcBlobStore" class="org.geowebcache.storage.blobstore.file.FileBlobStore" destroy-method="destroy">
     <constructor-arg ref="gwcDefaultStorageFinder" />
@@ -165,10 +184,15 @@
   </bean>
 
   <!-- Breeder (the one that seeds) -->
-  <bean id="gwcTileBreeder" class="org.geowebcache.seed.TileBreeder">
+  <bean id="gwcTileBreeder" class="org.geowebcache.seed.TileBreeder" init-method="init">
     <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
     <property name="threadPoolExecutor" ref="gwcSeederThreadPoolExec"/>
     <property name="storageBroker" ref="gwcStorageBroker"/>
+    <property name="jobStore" ref="gwcJobStore"/>
+  </bean>
+
+  <bean id="gwcSeedEstimator" class="org.geowebcache.seed.SeedEstimator">
+    <property name="seeder" ref="gwcTileBreeder"/>
   </bean>
 
   <bean id="gwcProxyDispatcher"

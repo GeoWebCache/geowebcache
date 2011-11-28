@@ -115,7 +115,7 @@ public class StorageBroker {
             return false;
         }
         
-        if(tileObj.getId() == -1) {
+        if(tileObj.getJobId() == -1) {
             throw new StorageException(
                     "metaStore.get() returned true, but did not set an id on the object");
         }

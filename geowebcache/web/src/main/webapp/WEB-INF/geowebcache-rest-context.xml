@@ -12,6 +12,7 @@
   </bean>
 
   <bean id="gwcSeedFormRestlet" class="org.geowebcache.rest.seed.SeedFormRestlet">
+    <property name="XMLConfiguration" ref="gwcXmlConfig"/>
     <property name="tileBreeder" ref="gwcTileBreeder"/>
   </bean>
   <bean id="gwcReloadRestlet" class="org.geowebcache.rest.reload.ReloadRestlet">
@@ -26,6 +27,23 @@
   </bean>
   <bean id="gwcFilterUpdateRestlet" class="org.geowebcache.rest.filter.FilterUpdateRestlet">
     <constructor-arg  ref="gwcTLDispatcher"/>
+  </bean>
+  <bean id="gwcJobRestlet" class="org.geowebcache.rest.job.JobRestlet">
+    <property name="XMLConfiguration" ref="gwcXmlConfig"/>
+    <property name="tileBreeder" ref="gwcTileBreeder"/>
+    <property name="jobDispatcher" ref="gwcJobDispatcher" />
+  </bean>
+  <bean id="gwcJobLogRestlet" class="org.geowebcache.rest.job.JobLogRestlet">
+    <property name="XMLConfiguration" ref="gwcXmlConfig"/>
+    <property name="jobDispatcher" ref="gwcJobDispatcher" />
+  </bean>
+  <bean id="gwcSettingsRestlet" class="org.geowebcache.rest.job.SettingsRestlet">
+    <property name="XMLConfiguration" ref="gwcXmlConfig"/>
+    <property name="jobStore" ref="gwcJobStore" />
+  </bean>
+  <bean id="gwcSeedEstimateRestlet" class="org.geowebcache.rest.seed.SeedEstimateRestlet">
+    <property name="XMLConfiguration" ref="gwcXmlConfig"/>
+    <property name="estimator" ref="gwcSeedEstimator"/>
   </bean>
   <bean id="gwcByteStreamerRestlet" class="org.geowebcache.rest.webresources.ByteStreamerRestlet" />
   
@@ -56,6 +74,26 @@
         <entry>
           <key><value>/filter/{filterName}/update/{updateType}</value></key>
           <ref bean="gwcFilterUpdateRestlet" />
+        </entry>
+        <entry>
+          <key><value>/jobs.{extension}</value></key>
+          <ref bean="gwcJobRestlet" />
+        </entry>
+        <entry>
+          <key><value>/jobs/{job}.{extension}</value></key>
+          <ref bean="gwcJobRestlet" />
+        </entry>
+        <entry>
+          <key><value>/jobs/{job}/logs.{extension}</value></key>
+          <ref bean="gwcJobLogRestlet" />
+        </entry>
+        <entry>
+          <key><value>/settings.{extension}</value></key>
+          <ref bean="gwcSettingsRestlet" />
+        </entry>
+        <entry>
+          <key><value>/estimate.{extension}</value></key>
+          <ref bean="gwcSeedEstimateRestlet" />
         </entry>
         <entry>
           <key><value>/web/{filename}</value></key>

@@ -57,12 +57,20 @@
             </xs:documentation>
           </xs:annotation>
         </xs:element>
+        <xs:element name="basemapConfig" type="xs:string" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              A block of JavaScript code that returns an OpenLayers 
+              layer to use as the basemap. This basemap needs to 
+              support any projection and gridset configured for 
+              GeoWebCache.
+          </xs:annotation>
+        </xs:element>
         <xs:element name="serviceInformation" type="gwc:ServiceInformationType" maxOccurs="1" minOccurs="0">
           <xs:annotation>
             <xs:documentation xml:lang="en">
               Service information such as you or your company's
-              details that
-              you want provided in capabilities
+              details that you want provided in capabilities
               documents.
             </xs:documentation>
           </xs:annotation>

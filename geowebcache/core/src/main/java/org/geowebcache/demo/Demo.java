@@ -243,7 +243,7 @@ public class Demo {
         if(asPlugin) {
             openLayersPath = "../../openlayers/OpenLayers.js";
         } else {
-            openLayersPath = "../openlayers/OpenLayers.js";
+            openLayersPath = "../rest/web/openlayers/openlayers-gwc.js";
         }
         
         String page =

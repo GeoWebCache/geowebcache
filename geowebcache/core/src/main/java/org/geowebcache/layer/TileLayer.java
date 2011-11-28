@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -512,6 +513,17 @@ public abstract class TileLayer {
         } else {
             return value;
         }
+    }
+
+    public GridSubset getDefaultGridSubset() {
+        Iterator<Entry<String, GridSubset>> iter = getGridSubsets().entrySet().iterator();
+
+        if (iter.hasNext()) {
+            Entry<String, GridSubset> entry = iter.next();
+            return entry.getValue();
+        }
+        
+        return null;
     }
 
     public GridSubset getGridSubset(String gridSetId) {

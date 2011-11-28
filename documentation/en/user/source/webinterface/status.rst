@@ -5,7 +5,7 @@ Status Page
 
 The Status page is the main page of the GeoWebCache web interface.  It as accessible at ``http://<GEOWEBCACHE_URL>``.  For example, if geowebcache is running in Tomcat on port 8080, the URL would be ``http://localhost:8080/geowebcache``.
 
-Thise page also links to the :ref:`webinterface.demo`.
+This page also links to the :ref:`webinterface.demo` and the :ref:`webinterface.jobs`.
 
 Capabilities documents
 ----------------------

@@ -17,6 +17,8 @@ import org.restlet.resource.OutputRepresentation;
 
 public class ByteStreamerRestlet extends GWCRestlet {
     
+    private static final String MAPPED_PATH = "/rest/web";
+    
     public void handle(Request request, Response response) {
         Method met = request.getMethod();
         if (met.equals(Method.GET)) {
@@ -27,13 +29,24 @@ public class ByteStreamerRestlet extends GWCRestlet {
     }
 
     private void doGet(Request request, Response response) {
-        String filename = (String) request.getAttributes().get("filename");
+        String filename = null;
+        InputStream is = null;
         
-        InputStream is = ByteStreamerRestlet.class.getResourceAsStream(filename);
+        if(request.getResourceRef() != null && request.getResourceRef().getPath().contains(MAPPED_PATH)) {
+            filename = request.getResourceRef().getPath().substring(request.getResourceRef().getPath().lastIndexOf(MAPPED_PATH) + MAPPED_PATH.length());
+            is = ByteStreamerRestlet.class.getResourceAsStream(filename);
+        }
         
         if(is == null) {
-            response.setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-            return;
+            // revert to the older mechanism
+            filename = (String) request.getAttributes().get("filename");
+            is = ByteStreamerRestlet.class.getResourceAsStream(filename);
+        }
+        
+        
+        if(is == null) {
+            // response.setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+            throw new RestletException("Resource Not Found: " + filename, Status.CLIENT_ERROR_NOT_FOUND);
         }
         
         response.setStatus(Status.SUCCESS_OK);

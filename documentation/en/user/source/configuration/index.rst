@@ -17,6 +17,7 @@ This section describes the many configuration options available in GeoWebCache. 
    services
    diskquotas
    reload
+   basemap
 
 
 

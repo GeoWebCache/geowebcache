@@ -24,10 +24,11 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.storage.JobLogObject;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileRange;
 
-class TruncateTask extends GWCTask {
+public class TruncateTask extends GWCTask {
     private static Log log = LogFactory.getLog(TruncateTask.class);
 
     private final TileRange tr;
@@ -38,19 +39,25 @@ class TruncateTask extends GWCTask {
 
     private final StorageBroker storageBroker;
 
-    public TruncateTask(StorageBroker sb, TileRange tr, TileLayer tl, boolean doFilterUpdate) {
+    public TruncateTask(StorageBroker sb, TileRange tr, TileLayer tl, boolean doFilterUpdate, PRIORITY priority, long jobId, long spawnedBy) {
         this.storageBroker = sb;
         this.tr = tr;
         this.tl = tl;
         this.doFilterUpdate = doFilterUpdate;
+        this.priority = priority;
+        this.jobId = jobId;
+        this.spawnedBy = spawnedBy;
 
-        super.parsedType = GWCTask.TYPE.TRUNCATE;
+        super.taskType = GWCTask.TYPE.TRUNCATE;
         super.layerName = tl.getName();
     }
 
     @Override
     protected void doActionInternal() throws GeoWebCacheException, InterruptedException {
         super.state = GWCTask.STATE.RUNNING;
+
+        Thread.currentThread().setPriority(priority.getThreadPriority());
+
         checkInterrupted();
         try {
             storageBroker.delete(tr);
@@ -58,6 +65,7 @@ class TruncateTask extends GWCTask {
             e.printStackTrace();
             super.state = GWCTask.STATE.DEAD;
             log.error("During truncate request: " + e.getMessage());
+            addLog(JobLogObject.createErrorLog(jobId, e));
         }
 
         checkInterrupted();
@@ -71,6 +79,14 @@ class TruncateTask extends GWCTask {
         }
     }
 
+    protected void doAbnormalExit(Throwable t) {
+        String logMsg = "Thread " + Thread.currentThread().getName() + " was terminated due to the following exception:\n";
+        logMsg += t.getClass().getName() + " + : " + t.getMessage();
+        log.info(logMsg);
+        addLog(JobLogObject.createErrorLog(jobId, "Seeding Terminated Abnormally", logMsg));
+        super.state = GWCTask.STATE.DEAD;
+    }
+    
     /**
      * Updates any request filters
      */

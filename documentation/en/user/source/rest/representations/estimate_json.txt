@@ -1,0 +1,12 @@
+{
+	"estimate": {
+		"gridSetId": "EPSG:2163",
+		"layerName": "topp:states",
+		"format": "image/png",
+		"maxThroughput": -1,
+		"bounds": "1861260.8870225,326935.54615082,2028141.7457275,529576.5888641",
+		"zoomStart": 0,
+		"zoomStop": 3,
+		"threadCount": 1
+	}
+}

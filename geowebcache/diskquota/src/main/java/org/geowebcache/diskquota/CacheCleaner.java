@@ -31,6 +31,7 @@ import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.seed.GWCTask;
 import org.geowebcache.seed.TileBreeder;
+import org.geowebcache.seed.GWCTask.PRIORITY;
 import org.geowebcache.storage.TileRange;
 import org.springframework.beans.factory.DisposableBean;
 
@@ -259,7 +260,7 @@ public class CacheCleaner implements DisposableBean {
         GWCTask[] truncateTasks;
         try {
             truncateTasks = this.tileBreeder.createTasks(tileRange, GWCTask.TYPE.TRUNCATE, 1,
-                    filterUpdate);
+                    filterUpdate, PRIORITY.NORMAL);
         } catch (GeoWebCacheException e) {
             throw new RuntimeException(e);
         }

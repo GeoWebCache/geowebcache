@@ -392,15 +392,19 @@ public class ServletUtils {
     }
 
     public static String gwcHtmlHeader(String pageTitle) {
+        return gwcHtmlHeader(pageTitle, "");
+    }
+    public static String gwcHtmlHeader(String pageTitle, String extras) {
         return "<head>\n" + "<title>" + pageTitle + "</title>" + "<style type=\"text/css\">\n"
                 + "body, td {\n"
                 + "font-family: Verdana,Arial,\'Bitstream Vera Sans\',Helvetica,sans-serif;\n"
                 + "font-size: 0.85em;\n" + "vertical-align: top;\n" + "}\n" + "</style>\n"
+                + extras
                 + "</head>\n";
     }
 
     public static String gwcHtmlLogoLink(String relBasePath) {
-        return "<a id=\"logo\" href=\"" + relBasePath + "\">" + "<img src=\"" + relBasePath
+        return "<a id=\"logo\" href=\"" + relBasePath + "home\">" + "<img src=\"" + relBasePath
                 + "rest/web/geowebcache_logo.png\"" + "height=\"70\" width=\"247\" border=\"0\"/>"
                 + "</a>\n";
     }

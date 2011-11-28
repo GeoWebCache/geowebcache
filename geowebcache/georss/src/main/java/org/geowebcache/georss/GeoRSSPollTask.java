@@ -37,8 +37,9 @@ import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.seed.GWCTask;
-import org.geowebcache.seed.GWCTask.STATE;
 import org.geowebcache.seed.TileBreeder;
+import org.geowebcache.seed.GWCTask.PRIORITY;
+import org.geowebcache.seed.GWCTask.STATE;
 import org.geowebcache.storage.DiscontinuousTileRange;
 import org.geowebcache.storage.GeometryRasterMaskBuilder;
 import org.geowebcache.storage.RasterMask;
@@ -271,7 +272,7 @@ class GeoRSSPollTask implements Runnable {
                     gridSub.getZoomStart(), gridSub.getZoomStop(), rasterMask, mimeIter.next(),
                     (Map<String, String>) null);
             try {
-                GWCTask[] tasks = seeder.createTasks(dtr, layer, GWCTask.TYPE.TRUNCATE, 1, false);
+                GWCTask[] tasks = seeder.createTasks(dtr, layer, GWCTask.TYPE.TRUNCATE, 1, false, PRIORITY.NORMAL);
                 tasks[0].doAction();
             } catch (GeoWebCacheException e) {
                 logger.error("Problem truncating based on GeoRSS feed: " + e.getMessage());
@@ -297,7 +298,7 @@ class GeoRSSPollTask implements Runnable {
             final int seedingThreads = pollDef.getSeedingThreads();
             GWCTask[] tasks;
             try {
-                tasks = seeder.createTasks(dtr, layer, GWCTask.TYPE.SEED, seedingThreads, false);
+                tasks = seeder.createTasks(dtr, layer, GWCTask.TYPE.SEED, seedingThreads, false, PRIORITY.LOW);
             } catch (GeoWebCacheException e) {
                 throw (RuntimeException) new RuntimeException(e.getMessage()).initCause(e);
             }

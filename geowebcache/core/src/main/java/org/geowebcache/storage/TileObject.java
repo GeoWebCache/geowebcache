@@ -103,7 +103,7 @@ public class TileObject extends StorageObject {
         this.blob = blob;
     }
 
-    public long getId() {
+    public long getJobId() {
         return tile_id;
     }
 

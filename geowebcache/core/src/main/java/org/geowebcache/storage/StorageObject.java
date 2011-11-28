@@ -40,7 +40,7 @@ public abstract class StorageObject {
     /** 
      * @return the unique id for this object (within the type), -1 if it has not been set
      */
-    abstract public long getId();
+    abstract public long getJobId();
     
     /**
      * @return the name of the type of object. Identical for all objects of a class.

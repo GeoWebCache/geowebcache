@@ -58,6 +58,11 @@ public class GeoWebCacheConfiguration {
 
     private String proxyUrl;
 
+    /* Basemap configuration */
+    private String basemapConfig;
+    
+    private Integer jobUpdateFrequency;
+
     private ServiceInformation serviceInformation;
 
     private List<FormatModifier> formatModifiers;
@@ -204,6 +209,36 @@ public class GeoWebCacheConfiguration {
      */
     public void setProxyUrl(String proxyUrl) {
         this.proxyUrl = proxyUrl;
+    }
+
+    /**
+     * @return the jobUpdateFrequency
+     */
+    public Integer getJobUpdateFrequency() {
+        return jobUpdateFrequency;
+    }
+
+    /**
+     * @param jobUpdateFrequency
+     *            the jobUpdateFrequency to set
+     */
+    public void setJobUpdateFrequency(Integer jobUpdateFrequency) {
+        this.jobUpdateFrequency = jobUpdateFrequency;
+    }
+
+    /**
+     * @return the basemapConfig
+     */
+    public String getBasemapConfig() {
+        return basemapConfig;
+    }
+
+    /**
+     * @param basemapConfig
+     *            the basemapConfig to set
+     */
+    public void setBasemapConfig(String basemapConfig) {
+        this.basemapConfig = basemapConfig;
     }
 
     /**

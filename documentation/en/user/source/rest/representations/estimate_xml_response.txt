@@ -1,0 +1,13 @@
+<estimate>
+	<layerName>topp:states</layerName>
+	<format>image/png</format>
+	<zoomStart>0</zoomStart>
+	<zoomStop>3</zoomStop>
+	<gridSetId>EPSG:2163</gridSetId>
+	<threadCount>1</threadCount>
+	<maxThroughput>-1</maxThroughput>
+	<bounds>1861260.8870225,326935.54615082,2028141.7457275,529576.5888641</bounds>
+	<tilesTotal>18651</tilesTotal>
+	<timeRemaining>414</timeRemaining>
+	<diskSpace>559530</diskSpace>
+</estimate>
