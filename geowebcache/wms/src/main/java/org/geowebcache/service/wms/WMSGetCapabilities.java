@@ -152,30 +152,33 @@ public class WMSGetCapabilities {
 
     private void serviceContact(StringBuilder str) {
         ServiceInformation servInfo = tld.getServiceInformation();
-        ServiceProvider servProv = null;
-        ServiceContact servCont = null;
+        if (servInfo == null) {
+            return;
+        }
 
-        if (servInfo != null) {
-            servProv = servInfo.getServiceProvider();
+        ServiceProvider servProv = servInfo.getServiceProvider();
+        if (servProv == null) {
+            return;
+        }
 
-            if (servProv != null) {
-                servCont = servProv.getServiceContact();
+        ServiceContact servCont = servProv.getServiceContact();
+
+        str.append("  <ContactInformation>\n");
+
+        if (servProv.getProviderName() != null || servCont != null) {
+            str.append("    <ContactPersonPrimary>\n");
+            if (servCont != null) {
+                str.append("      <ContactPerson>" + servCont.getIndividualName()
+                        + "</ContactPerson>\n");
             }
+            str.append("      <ContactOrganisation>" + servProv.getProviderName()
+                    + "</ContactOrganisation>\n");
+            str.append("    </ContactPersonPrimary>\n");
 
-            str.append("  <ContactInformation>\n");
-
-            if (servProv.getProviderName() != null || servCont != null) {
-                str.append("    <ContactPersonPrimary>\n");
-                if (servCont != null) {
-                    str.append("      <ContactPerson>" + servCont.getIndividualName()
-                            + "</ContactPerson>\n");
-                }
-                str.append("      <ContactOrganisation>" + servProv.getProviderName()
-                        + "</ContactOrganisation>\n");
-                str.append("    </ContactPersonPrimary>\n");
-
+            if (servCont != null) {
                 str.append("    <ContactPosition>" + servCont.getPositionName()
                         + "</ContactPosition>\n");
+
                 str.append("    <ContactAddress>\n");
                 str.append("      <AddressType>" + servCont.getAddressType() + "</AddressType>\n");
                 str.append("      <Address>" + servCont.getAddressStreet() + "</Address>\n");
@@ -191,9 +194,10 @@ public class WMSGetCapabilities {
                         + "<ContactFacsimileTelephone/>\n");
                 str.append("    <ContactElectronicMailAddress>" + servCont.getAddressEmail()
                         + "</ContactElectronicMailAddress>\n");
-                str.append("  </ContactInformation>\n");
             }
         }
+        
+        str.append("  </ContactInformation>\n");
     }
 
     private void capability(StringBuilder str) {
