@@ -275,7 +275,7 @@ public class FileBlobStore implements BlobStore {
         int count = 0;
 
         String prefix = path + File.separator
-                + FilePathGenerator.filteredLayerName(trObj.layerName);
+                + FilePathGenerator.filteredLayerName(trObj.getLayerName());
 
         final File layerPath = new File(prefix);
 
@@ -287,9 +287,9 @@ public class FileBlobStore implements BlobStore {
         }
         FilePathFilter fpf = new FilePathFilter(trObj);
 
-        final String layerName = trObj.layerName;
-        final String gridSetId = trObj.gridSetId;
-        final String blobFormat = trObj.mimeType.getFormat();
+        final String layerName = trObj.getLayerName();
+        final String gridSetId = trObj.getGridSetId();
+        final String blobFormat = trObj.getMimeType().getFormat();
         // FRD trObj.getParametersId();
         final Long parametersId = trObj.getParametersId();
 

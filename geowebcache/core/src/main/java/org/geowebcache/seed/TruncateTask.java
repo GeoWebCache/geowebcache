@@ -81,7 +81,7 @@ class TruncateTask extends GWCTask {
             Iterator<RequestFilter> iter = reqFilters.iterator();
             while (iter.hasNext()) {
                 RequestFilter reqFilter = iter.next();
-                if (reqFilter.update(tl, tr.gridSetId)) {
+                if (reqFilter.update(tl, tr.getGridSetId())) {
                     log.debug("Updated request filter " + reqFilter.getName());
                 } else {
                     log.debug("Request filter " + reqFilter.getName()

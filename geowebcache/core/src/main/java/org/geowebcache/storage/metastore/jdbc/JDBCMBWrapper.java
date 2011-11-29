@@ -774,7 +774,7 @@ class JDBCMBWrapper {
             deletedTiles = new long[100];
         }
 
-        long[] bounds = trObj.rangeBounds[zoomLevel];
+        long[] bounds = trObj.rangeBounds(zoomLevel);
 
         final Connection conn;
         try {
@@ -805,8 +805,8 @@ class JDBCMBWrapper {
 
                 // System.out.println("x: " + xyz[0] + " y: " + xyz[1] + " z: " + xyz[2]);
 
-                TileObject to = TileObject.createQueryTileObject(trObj.layerName, xyz,
-                        trObj.gridSetId, trObj.mimeType.getFormat(), trObj.parameters);
+                TileObject to = TileObject.createQueryTileObject(trObj.getLayerName(), xyz,
+                        trObj.getGridSetId(), trObj.getMimeType().getFormat(), trObj.getParameters());
                 to.setParamtersId(parametersId);
 
                 try {
@@ -883,7 +883,7 @@ class JDBCMBWrapper {
     public void expireRange(TileRange trObj, int zoomLevel, long layerId, long formatId,
             long parametersId, long gridSetIdId) throws SQLException {
 
-        long[] bounds = trObj.rangeBounds[zoomLevel];
+        long[] bounds = trObj.rangeBounds(zoomLevel);
 
         String query;
 

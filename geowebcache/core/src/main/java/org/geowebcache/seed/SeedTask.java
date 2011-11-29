@@ -104,7 +104,7 @@ class SeedTask extends GWCTask {
 
         checkInterrupted();
         // TODO move to TileRange object, or distinguish between thread and task
-        super.tilesTotal = tileCount(tr.rangeBounds, tr.zoomStart, tr.zoomStop);
+        super.tilesTotal = tileCount(tr);
 
         final int metaTilingFactorX = tl.getMetaTilingFactors()[0];
         final int metaTilingFactorY = tl.getMetaTilingFactors()[1];
@@ -118,10 +118,10 @@ class SeedTask extends GWCTask {
         while (gridLoc != null && this.terminate == false) {
 
             checkInterrupted();
-            Map<String, String> fullParameters = tr.parameters;
-            
-            ConveyorTile tile = new ConveyorTile(storageBroker, layerName, tr.gridSetId, gridLoc,
-                    tr.mimeType, fullParameters, null, null);
+            Map<String, String> fullParameters = tr.getParameters();
+
+            ConveyorTile tile = new ConveyorTile(storageBroker, layerName, tr.getGridSetId(), gridLoc,
+                    tr.getMimeType(), fullParameters, null, null);
 
             for (int fetchAttempt = 0; fetchAttempt <= tileFailureRetryCount; fetchAttempt++) {
                 try {
@@ -192,7 +192,7 @@ class SeedTask extends GWCTask {
 
         checkInterrupted();
         if (threadOffset == 0 && doFilterUpdate) {
-            runFilterUpdates(tr.gridSetId);
+            runFilterUpdates(tr.getGridSetId());
         }
 
         super.state = GWCTask.STATE.DONE;
@@ -206,16 +206,24 @@ class SeedTask extends GWCTask {
      * @param gridBounds
      * @return -1 if too many
      */
-    private long tileCount(long[][] coveredGridLevels, int startZoom, int stopZoom) {
+    private long tileCount(TileRange tr) {
+
+        final int startZoom = tr.getZoomStart();
+        final int stopZoom = tr.getZoomStop();
+
         long count = 0;
 
-        for (int i = startZoom; i <= stopZoom; i++) {
-            long[] gridBounds = coveredGridLevels[i];
+        for (int z = startZoom; z <= stopZoom; z++) {
+            long[] gridBounds = tr.rangeBounds(z);
 
-            long thisLevel = (1 + gridBounds[2] - gridBounds[0])
-                    * (1 + gridBounds[3] - gridBounds[1]);
+            final long minx = gridBounds[0];
+            final long maxx = gridBounds[2];
+            final long miny = gridBounds[1];
+            final long maxy = gridBounds[3];
 
-            if (thisLevel > (Long.MAX_VALUE / 4) && i != stopZoom) {
+            long thisLevel = (1 + maxx - minx) * (1 + maxy - miny);
+
+            if (thisLevel > (Long.MAX_VALUE / 4) && z != stopZoom) {
                 return -1;
             } else {
                 count += thisLevel;

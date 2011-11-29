@@ -174,21 +174,21 @@ public class JDBCMetaBackend implements MetaStore {
     }
 
     public boolean delete(BlobStore blobStore, TileRange trObj) throws StorageException {
-        long layerId = idCache.getLayerId(trObj.layerName);
-        long formatId = idCache.getFormatId(trObj.mimeType.getFormat());
+        long layerId = idCache.getLayerId(trObj.getLayerName());
+        long formatId = idCache.getFormatId(trObj.getMimeType().getFormat());
         // FRD Set the parameters ID
         long parametersId = -1;
         if (trObj.getParametersId() != null) {
             parametersId = trObj.getParametersId();
-        } else if (trObj.parameters != null) {
-            parametersId = idCache.getParametersId(trObj.parameters);
+        } else if (trObj.getParameters() != null) {
+            parametersId = idCache.getParametersId(trObj.getParameters());
             if (-1L != parametersId) {
                 trObj.setParametersId(parametersId);
             }
         }
-        long gridSetIdId = idCache.getGridSetsId(trObj.gridSetId);
+        long gridSetIdId = idCache.getGridSetsId(trObj.getGridSetId());
 
-        for (int zoomLevel = trObj.zoomStart; zoomLevel <= trObj.zoomStop; zoomLevel++) {
+        for (int zoomLevel = trObj.getZoomStart(); zoomLevel <= trObj.getZoomStop(); zoomLevel++) {
             wrpr.deleteRange(blobStore, trObj, zoomLevel, layerId, formatId, parametersId,
                     gridSetIdId);
         }
@@ -197,15 +197,15 @@ public class JDBCMetaBackend implements MetaStore {
     }
 
     public boolean expire(TileRange trObj) throws StorageException {
-        long layerId = idCache.getLayerId(trObj.layerName);
-        long formatId = idCache.getFormatId(trObj.mimeType.getFormat());
-        long parametersId = idCache.getParametersId(trObj.parameters);
+        long layerId = idCache.getLayerId(trObj.getLayerName());
+        long formatId = idCache.getFormatId(trObj.getMimeType().getFormat());
+        long parametersId = idCache.getParametersId(trObj.getParameters());
         if (-1L != parametersId) {
             trObj.setParametersId(parametersId);
         }
-        long gridSetIdId = idCache.getGridSetsId(trObj.gridSetId);
+        long gridSetIdId = idCache.getGridSetsId(trObj.getGridSetId());
 
-        for (int zoomLevel = trObj.zoomStart; zoomLevel <= trObj.zoomStop; zoomLevel++) {
+        for (int zoomLevel = trObj.getZoomStart(); zoomLevel <= trObj.getZoomStop(); zoomLevel++) {
             try {
                 wrpr.expireRange(trObj, zoomLevel, layerId, formatId, parametersId, gridSetIdId);
 

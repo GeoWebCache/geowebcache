@@ -80,20 +80,20 @@ public class TileRangeIterator {
 
         // Figure out the starting point
         if (lastGridLoc == null) {
-            z = tr.zoomStart;
-            levelBounds = tr.rangeBounds[z];
+            z = tr.getZoomStart();
+            levelBounds = tr.rangeBounds(z);
             x = levelBounds[0];
             y = levelBounds[1];
 
         } else {
             z = (int) lastGridLoc[2];
-            levelBounds = tr.rangeBounds[z];
+            levelBounds = tr.rangeBounds(z);
             x = lastGridLoc[0] + metaX;
             y = lastGridLoc[1];
         }
 
         // Loop over any remaining zoom levels
-        for (; z <= tr.zoomStop; z++) {
+        for (; z <= tr.getZoomStop(); z++) {
             for (; y <= levelBounds[3]; y += metaY) {
                 for (; x <= levelBounds[2]; x += metaX) {
 
@@ -115,8 +115,8 @@ public class TileRangeIterator {
             }
 
             // Get ready for the next level
-            if (z < tr.zoomStop) {// but be careful not to go out of index
-                levelBounds = tr.rangeBounds[z + 1];
+            if (z < tr.getZoomStop()) {// but be careful not to go out of index
+                levelBounds = tr.rangeBounds(z + 1);
                 x = levelBounds[0];
                 y = levelBounds[1];
             }

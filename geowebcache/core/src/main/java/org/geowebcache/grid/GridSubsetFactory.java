@@ -16,77 +16,63 @@
  */
 package org.geowebcache.grid;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-
 public class GridSubsetFactory {
     private static Log log = LogFactory.getLog(GridSubsetFactory.class);
-    
+
     public static GridSubset createGridSubSet(GridSet gridSet) {
-        
-        GridSubset ret = new GridSubset(gridSet);
-        
-        ret.firstLevel = 0;
-        
-        ret.gridCoverageLevels = new GridCoverage[gridSet.getGridLevels().length];
-        
-        for(int i=0; i<ret.gridCoverageLevels.length; i++) {
-            Grid level = gridSet.getGridLevels()[i];
-            long[] tmp = { 0, 0, level.getNumTilesWide() - 1, level.getNumTilesHigh() - 1, i };
-            GridCoverage gridCov = new GridCoverage(tmp);
-            ret.gridCoverageLevels[i] = gridCov;
-        }
-       
-        ret.fullGridSetCoverage = true;
-        
+
+        GridSubset ret = createGridSubSet(gridSet, gridSet.getOriginalExtent(), 0,
+                gridSet.getGridLevels().length - 1);
         return ret;
     }
-    
-    public static GridSubset createGridSubSet(GridSet gridSet, BoundingBox extent, Integer zoomStart, Integer zoomStop) {
-        if(gridSet == null) {
+
+    public static GridSubset createGridSubSet(GridSet gridSet, BoundingBox extent,
+            Integer zoomStart, Integer zoomStop) {
+
+        if (gridSet == null) {
             log.error("Passed GridSet was null!");
         }
-        
-        GridSubset ret = new GridSubset(gridSet);
-        
-        if(zoomStart != null) {
-            ret.firstLevel = zoomStart;
-        } else {
-            ret.firstLevel = 0;
-        }
-        
-        if(zoomStop != null) {
-            ret.gridCoverageLevels = new GridCoverage[zoomStop - ret.firstLevel + 1];
-        } else {
-            ret.gridCoverageLevels = new GridCoverage[gridSet.getGridLevels().length - ret.firstLevel];
-        }
-        
-        // Save the original extent provided by the user
-        ret.setOriginalExtent(extent);
-        
-        // Is this plain wrong? GlobalCRS84Scale, I guess the resolution forces it
-        BoundingBox gridSetBounds = gridSet.getBounds();
-        
-        if(extent == null || extent.contains(gridSetBounds)) {
-            ret.fullGridSetCoverage = true;
-        }
-        
-        for(int i=0; i<ret.gridCoverageLevels.length; i++) {
-            GridCoverage gridCov;
-            
-            if(extent != null) {
-                gridCov = new GridCoverage(gridSet.closestRectangle(i + ret.firstLevel, extent) );
+
+        final int firstLevel = zoomStart == null ? 0 : zoomStart.intValue();
+        final int maxLevel = zoomStop == null ? gridSet.getGridLevels().length - 1 : zoomStop
+                .intValue();
+
+        Map<Integer, GridCoverage> coverages = new TreeMap<Integer, GridCoverage>();
+        for (int z = firstLevel; z <= maxLevel; z++) {
+
+            Grid level = gridSet.getGridLevels()[z];
+
+            long[] coverage;
+            if (extent == null) {
+                long maxColX = level.getNumTilesWide() - 1;
+                long maxColY = level.getNumTilesHigh() - 1;
+                coverage = new long[] { 0, 0, maxColX, maxColY, z };
             } else {
-                Grid level = gridSet.getGridLevels()[i + ret.firstLevel];
-                long[] fullCoverage = { 0, 0, level.getNumTilesWide() - 1,
-                        level.getNumTilesHigh() - 1, i + ret.firstLevel };
-                gridCov = new GridCoverage(fullCoverage);
+                coverage = gridSet.closestRectangle(z, extent);
             }
 
-            ret.gridCoverageLevels[i] = gridCov;
+            GridCoverage gridCov = new GridCoverage(coverage);
+            coverages.put(Integer.valueOf(z), gridCov);
         }
-       
+
+        // Save the original extent provided by the user
+        BoundingBox originalExtent = extent;
+        boolean fullCoverage = false;
+
+        // Is this plain wrong? GlobalCRS84Scale, I guess the resolution forces it
+        BoundingBox gridSetBounds = gridSet.getBounds();
+        if (extent == null || extent.contains(gridSetBounds)) {
+            fullCoverage = true;
+            originalExtent = gridSetBounds;
+        }
+
+        GridSubset ret = new GridSubset(gridSet, coverages, originalExtent, fullCoverage);
         return ret;
     }
 }

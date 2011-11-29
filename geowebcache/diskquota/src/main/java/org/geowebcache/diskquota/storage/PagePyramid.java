@@ -20,6 +20,8 @@ package org.geowebcache.diskquota.storage;
 import java.math.BigInteger;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,9 +44,9 @@ class PagePyramid {
     /**
      * {@code [level][numTilesPerPageX, numTilesPerPageY, numPagesX, numPagesY]}
      */
-    private PageLevelInfo[] pageInfo;
+    private Map<Integer, PageLevelInfo> pageInfo;
 
-    private long[][] gridSubsetCoverages;
+    private Map<Integer, long[]> gridSubsetCoverages;
 
     private final int zoomStart;
 
@@ -102,10 +104,13 @@ class PagePyramid {
      * @param zoomStart
      */
     public PagePyramid(final long[][] gridSubsetCoverages, int zoomStart, int zoomStop) {
-        this.gridSubsetCoverages = gridSubsetCoverages;
+        this.gridSubsetCoverages = new TreeMap<Integer, long[]>();
+        for (long[] coverage : gridSubsetCoverages) {
+            this.gridSubsetCoverages.put(Integer.valueOf((int) coverage[4]), coverage);
+        }
         this.zoomStart = zoomStart;
         this.zoomStop = zoomStop;
-        this.pageInfo = new PageLevelInfo[gridSubsetCoverages.length];
+        this.pageInfo = new TreeMap<Integer, PagePyramid.PageLevelInfo>();
     }
 
     public int getZoomStart() {
@@ -120,11 +125,12 @@ class PagePyramid {
         Assert.isTrue(zoomLevel >= zoomStart);
         Assert.isTrue(zoomLevel <= zoomStop);
 
-        PageLevelInfo levelInfo = pageInfo[zoomLevel];
+        final Integer key = Integer.valueOf(zoomLevel);
+        PageLevelInfo levelInfo = pageInfo.get(key);
         if (levelInfo == null) {
-            long[] coverage = this.gridSubsetCoverages[zoomLevel];
+            long[] coverage = this.gridSubsetCoverages.get(key);
             levelInfo = calculatePageInfo(coverage);
-            pageInfo[zoomLevel] = levelInfo;
+            pageInfo.put(key, levelInfo);
         }
 
         return levelInfo;
@@ -231,7 +237,7 @@ class PagePyramid {
 
         long[] pageCoverage = { minTileX, minTileY, maxTileX, maxTileY, level };
 
-        final int numLevels = pageInfo.length;
+        final int numLevels = pageInfo.size();
         long[][] allLevelsCoverage = new long[numLevels][];
         allLevelsCoverage[level] = pageCoverage;
         return allLevelsCoverage;

@@ -176,7 +176,7 @@ public class TileBreeder implements ApplicationContextAware {
     public GWCTask[] createTasks(TileRange tr, GWCTask.TYPE type, int threadCount,
             boolean filterUpdate) throws GeoWebCacheException {
 
-        String layerName = tr.layerName;
+        String layerName = tr.getLayerName();
         TileLayer tileLayer = layerDispatcher.getTileLayer(layerName);
         return createTasks(tr, tileLayer, type, threadCount, filterUpdate);
     }
