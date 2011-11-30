@@ -267,6 +267,7 @@ public class Demo {
             + "  }                                              \n"
             
             +"OpenLayers.DOTS_PER_INCH = "+gridSubset.getDotsPerInch()+";\n"
+            +"OpenLayers.ImgPath = '../rest/web/openlayers/img/';\n" 
             +"OpenLayers.Util.onImageLoadErrorColor = 'transparent';\n"
         		
             +"function init(){\n"
