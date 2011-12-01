@@ -82,6 +82,12 @@ public class GridSetBroker {
         GridSet GlobalCRS84Pixel = GridSetFactory.createGridSet("GlobalCRS84Pixel",
                 SRS.getEPSG4326(), BoundingBox.WORLD4326, true, scalesCRS84PixelResolutions(),
                 null, null, GridSetFactory.DEFAULT_PIXEL_SIZE_METER, null, 256, 256, true);
+        GlobalCRS84Pixel
+                .setDescription("This well-known scale set has been defined for global cartographic products. "
+                        + "Rounded pixel sizes have been chosen for intuitive cartographic representation of raster data. "
+                        + "Some values have been chosen to coincide with original pixel size of commonly used global"
+                        + "products like STRM (1\" and 3\"), GTOPO (30\") or ETOPO (2' and 5'). Scale denominator"
+                        + "and approximated pixel size in meters are only accurate near the equator.");
 
         gridSets.put(GlobalCRS84Pixel.getName(), GlobalCRS84Pixel);
 
@@ -89,9 +95,26 @@ public class GridSetBroker {
         GridSet GlobalCRS84Scale = GridSetFactory.createGridSet("GlobalCRS84Scale",
                 SRS.getEPSG4326(), BoundingBox.WORLD4326, true, scalesCRS84ScaleResolutions(),
                 null, null, GridSetFactory.DEFAULT_PIXEL_SIZE_METER, null, 256, 256, true);
+        GlobalCRS84Scale
+                .setDescription("This well-known scale set has been defined for global cartographic products. "
+                        + "Rounded scales have been chosen for intuitive cartographic representation of vector data. "
+                        + "Scale denominator is only accurate near the equator.");
 
         gridSets.put(GlobalCRS84Scale.getName(), GlobalCRS84Scale);
 
+        log.debug("Adding GoogleCRS84Quad");
+        GridSet GoogleCRS84Quad = GridSetFactory.createGridSet("GoogleCRS84Quad",
+                SRS.getEPSG4326(), BoundingBox.WORLD4326, true, null,
+                scalesCRS84QuadScaleDenominators(), null, GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                null, 256, 256, true);
+        GoogleCRS84Quad
+                .setDescription("This well-known scale set has been defined to allow quadtree "
+                        + "pyramids in CRS84. Level 0 allows representing the whole world "
+                        + "in a single 256x256 pixels (where the first 64 and last 64 lines "
+                        + "of the tile are left blank). The next level represents the whole world in 2x2"
+                        + " tiles of 256x256 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
+        
+        gridSets.put(GoogleCRS84Quad.getName(), GoogleCRS84Quad);
         embeddedGridSets = Collections.unmodifiableSet(new HashSet<String>(gridSets.keySet()));
     }
 
@@ -175,5 +198,17 @@ public class GridSetBroker {
                 6.28820698883665E-7, 2.51528279553466E-7 };
 
         return scalesCRS84Pixel;
+    }
+
+    private double[] scalesCRS84QuadScaleDenominators() {
+        double[] scalesCRS84QuadScaleResolutions = { 559082264.0287178, 279541132.0143589,
+                139770566.0071794, 69885283.00358972, 34942641.50179486, 17471320.75089743,
+                8735660.375448715, 4367830.187724357, 2183915.093862179, 1091957.546931089,
+                545978.7734655447, 272989.3867327723, 136494.6933663862, 68247.34668319309,
+                34123.67334159654, 17061.83667079827, 8530.918335399136, 4265.459167699568,
+                2132.729583849784
+
+        };
+        return scalesCRS84QuadScaleResolutions;
     }
 }

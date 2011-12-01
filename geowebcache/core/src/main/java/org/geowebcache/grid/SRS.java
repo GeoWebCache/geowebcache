@@ -96,10 +96,6 @@ public class SRS implements Comparable<SRS> {
         return "EPSG:" + Integer.toString(number);
     }
 
-    public String filePath() {
-        return "EPSG_" + Integer.toString(number);
-    }
-
     public static SRS getEPSG4326() {
         return EPSG4326;
     }
