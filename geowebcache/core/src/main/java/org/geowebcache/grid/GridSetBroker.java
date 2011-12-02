@@ -93,8 +93,9 @@ public class GridSetBroker {
 
         log.debug("Adding GlobalCRS84Scale");
         GridSet GlobalCRS84Scale = GridSetFactory.createGridSet("GlobalCRS84Scale",
-                SRS.getEPSG4326(), BoundingBox.WORLD4326, true, scalesCRS84ScaleResolutions(),
-                null, null, GridSetFactory.DEFAULT_PIXEL_SIZE_METER, null, 256, 256, true);
+                SRS.getEPSG4326(), BoundingBox.WORLD4326, true, null,
+                scalesCRS84ScaleDenominators(), null, GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                null, 256, 256, true);
         GlobalCRS84Scale
                 .setDescription("This well-known scale set has been defined for global cartographic products. "
                         + "Rounded scales have been chosen for intuitive cartographic representation of vector data. "
@@ -113,7 +114,7 @@ public class GridSetBroker {
                         + "in a single 256x256 pixels (where the first 64 and last 64 lines "
                         + "of the tile are left blank). The next level represents the whole world in 2x2"
                         + " tiles of 256x256 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
-        
+
         gridSets.put(GoogleCRS84Quad.getName(), GoogleCRS84Quad);
         embeddedGridSets = Collections.unmodifiableSet(new HashSet<String>(gridSets.keySet()));
     }
@@ -189,13 +190,17 @@ public class GridSetBroker {
         return scalesCRS84Pixel;
     }
 
-    private double[] scalesCRS84ScaleResolutions() {
-        double[] scalesCRS84Pixel = { 1.25764139776733, 0.628820698883665, 0.251528279553466,
-                0.125764139776733, 6.28820698883665E-2, 2.51528279553466E-2, 1.25764139776733E-2,
-                6.28820698883665E-3, 2.51528279553466E-3, 1.25764139776733E-3, 6.28820698883665E-4,
-                2.51528279553466E-4, 1.25764139776733E-4, 6.28820698883665E-5, 2.51528279553466E-5,
-                1.25764139776733E-5, 6.28820698883665E-6, 2.51528279553466E-6, 1.25764139776733E-6,
-                6.28820698883665E-7, 2.51528279553466E-7 };
+    private double[] scalesCRS84ScaleDenominators() {
+        // double[] scalesCRS84Pixel = { 1.25764139776733, 0.628820698883665, 0.251528279553466,
+        // 0.125764139776733, 6.28820698883665E-2, 2.51528279553466E-2, 1.25764139776733E-2,
+        // 6.28820698883665E-3, 2.51528279553466E-3, 1.25764139776733E-3, 6.28820698883665E-4,
+        // 2.51528279553466E-4, 1.25764139776733E-4, 6.28820698883665E-5, 2.51528279553466E-5,
+        // 1.25764139776733E-5, 6.28820698883665E-6, 2.51528279553466E-6, 1.25764139776733E-6,
+        // 6.28820698883665E-7, 2.51528279553466E-7 };
+        //
+        // return scalesCRS84Pixel;
+        double[] scalesCRS84Pixel = { 500E6, 250E6, 100E6, 50E6, 25E6, 10E6, 5E6, 2.5E6, 1E6,
+                500E3, 250E3, 100E3, 50E3, 25E3, 10E3, 5E3, 2.5E3, 1000, 500, 250, 100 };
 
         return scalesCRS84Pixel;
     }
