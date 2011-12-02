@@ -18,6 +18,7 @@ package org.geowebcache.grid;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.Assert;
 
 public class GridSetFactory {
     private static Log log = LogFactory.getLog(GridSetFactory.class);
@@ -48,8 +49,8 @@ public class GridSetFactory {
     }
 
     /**
-     * Note that you should provide EITHER resolutions or scales. Providing both will cause scales
-     * to be overwritten
+     * Note that you should provide EITHER resolutions or scales. Providing both will cause a
+     * precondition violation exception.
      * 
      * @param name
      * @param srs
@@ -62,12 +63,40 @@ public class GridSetFactory {
      * @param yCoordinateFirst
      * @return
      */
-    public static GridSet createGridSet(String name, SRS srs, BoundingBox extent,
+    public static GridSet createGridSet(final String name, final SRS srs, final BoundingBox extent,
             boolean alignTopLeft, double[] resolutions, double[] scaleDenoms, Double metersPerUnit,
             double pixelSize, String[] scaleNames, int tileWidth, int tileHeight,
             boolean yCoordinateFirst) {
 
+        Assert.notNull(name, "name is null");
+        Assert.notNull(srs, "srs is null");
+        Assert.notNull(extent, "extent is null");
+        Assert.isTrue(!extent.isNull() && extent.isSane(), "Extent is invalid: " + extent);
+        Assert.isTrue(resolutions != null || scaleDenoms != null);
+        Assert.isTrue(resolutions == null || scaleDenoms == null,
+                "Only one of resolutions or scaleDenoms should be provided, not both");
+
+        for (int i = 1; resolutions != null && i < resolutions.length; i++) {
+            if (resolutions[i] >= resolutions[i - 1]) {
+                throw new IllegalArgumentException(
+                        "Each resolution should be lower than it's prior one. Res[" + i + "] == "
+                                + resolutions[i] + ", Res[" + (i - 1) + "] == "
+                                + resolutions[i - 1] + ".");
+            }
+        }
+
+        for (int i = 1; scaleDenoms != null && i < scaleDenoms.length; i++) {
+            if (scaleDenoms[i] >= scaleDenoms[i - 1]) {
+                throw new IllegalArgumentException(
+                        "Each scale denominator should be lower than it's prior one. Scale[" + i
+                                + "] == " + scaleDenoms[i] + ", Scale[" + (i - 1) + "] == "
+                                + scaleDenoms[i - 1] + ".");
+            }
+        }
+
         GridSet gridSet = baseGridSet(name, srs, tileWidth, tileHeight);
+
+        gridSet.setResolutionsPreserved(resolutions != null);
 
         gridSet.setPixelSize(pixelSize);
 
@@ -116,12 +145,12 @@ public class GridSetFactory {
                         / DEFAULT_PIXEL_SIZE_METER);
             }
 
-            double mapUnitWidth = tileWidth * curGrid.getResolution();
-            double mapUnitHeight = tileHeight * curGrid.getResolution();
+            final double mapUnitWidth = tileWidth * curGrid.getResolution();
+            final double mapUnitHeight = tileHeight * curGrid.getResolution();
 
-            long tilesWide = (long) Math.ceil((extent.getWidth() - mapUnitWidth * 0.01)
+            final long tilesWide = (long) Math.ceil((extent.getWidth() - mapUnitWidth * 0.01)
                     / mapUnitWidth);
-            long tilesHigh = (long) Math.ceil((extent.getHeight() - mapUnitHeight * 0.01)
+            final long tilesHigh = (long) Math.ceil((extent.getHeight() - mapUnitHeight * 0.01)
                     / mapUnitHeight);
 
             curGrid.setNumTilesWide(tilesWide);

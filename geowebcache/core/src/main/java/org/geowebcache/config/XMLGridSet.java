@@ -93,14 +93,14 @@ public class XMLGridSet implements Serializable {
         setAlignTopLeft(gset.isTopLeftAligned());
         setExtent(gset.getOriginalExtent());
         // use resolutions, let levels and scaleDenoms null
-        setResolutions(resolutions(gset.getGrids()));
+        setResolutions(resolutions(gset.getGridLevels()));
         setLevels(null);
         setScaleDenominators(null);
         setMetersPerUnit(gset.getMetersPerUnit());
         setName(gset.getName());
         setDescription(gset.getDescription());
         setPixelSize(gset.getPixelSize());
-        setScaleNames(scaleNames(gset.getGrids()));
+        setScaleNames(scaleNames(gset.getGridLevels()));
         setSrs(gset.getSrs());
         setTileWidth(gset.getTileWidth());
         setTileHeight(gset.getTileHeight());
@@ -165,25 +165,37 @@ public class XMLGridSet implements Serializable {
             setPixelSize(GridSetFactory.DEFAULT_PIXEL_SIZE_METER);
         }
 
-        if (getyCoordinateFirst() == null) {
-            setyCoordinateFirst(false);
+        if (getYCoordinateFirst() == null) {
+            setYCoordinateFirst(false);
         }
 
         GridSet gridSet;
 
+        String name = getName();
+        SRS srs = getSrs();
+        BoundingBox extent = getExtent();
+        Boolean alignTopLeft = getAlignTopLeft();
+        double[] resolutions = getResolutions();
+        double[] scaleDenominators = getScaleDenominators();
+        Double metersPerUnit = getMetersPerUnit();
+        Double pixelSize = getPixelSize();
+        String[] scaleNames = getScaleNames();
+        Integer tileWidth = getTileWidth();
+        Integer tileHeight = getTileHeight();
+        Boolean yCoordinateFirst = getYCoordinateFirst();
+
         if (getResolutions() != null || getScaleDenominators() != null) {
-            gridSet = GridSetFactory.createGridSet(getName(), getSrs(), getExtent(),
-                    getAlignTopLeft(), getResolutions(), getScaleDenominators(),
-                    getMetersPerUnit(), getPixelSize(), getScaleNames(), getTileWidth(),
-                    getTileHeight(), getyCoordinateFirst());
+            gridSet = GridSetFactory.createGridSet(name, srs, extent, alignTopLeft, resolutions,
+                    scaleDenominators, metersPerUnit, pixelSize, scaleNames, tileWidth, tileHeight,
+                    yCoordinateFirst);
         } else {
             if (getLevels() == null) {
-                setLevels(30);
+                setLevels(18);
             }
 
-            gridSet = GridSetFactory.createGridSet(getName(), getSrs(), getExtent(),
-                    getAlignTopLeft(), getLevels(), getMetersPerUnit(), getPixelSize(),
-                    getTileWidth(), getTileHeight(), getyCoordinateFirst());
+            Integer levels = getLevels();
+            gridSet = GridSetFactory.createGridSet(name, srs, extent, alignTopLeft, levels,
+                    metersPerUnit, pixelSize, tileWidth, tileHeight, yCoordinateFirst);
         }
 
         gridSet.setDescription(getDescription());
@@ -359,7 +371,7 @@ public class XMLGridSet implements Serializable {
     /**
      * @return the yCoordinateFirst
      */
-    public Boolean getyCoordinateFirst() {
+    public Boolean getYCoordinateFirst() {
         return yCoordinateFirst;
     }
 
@@ -367,7 +379,7 @@ public class XMLGridSet implements Serializable {
      * @param yCoordinateFirst
      *            the yCoordinateFirst to set
      */
-    public void setyCoordinateFirst(Boolean yCoordinateFirst) {
+    public void setYCoordinateFirst(Boolean yCoordinateFirst) {
         this.yCoordinateFirst = yCoordinateFirst;
     }
 
