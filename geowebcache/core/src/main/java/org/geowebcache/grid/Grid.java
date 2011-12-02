@@ -43,10 +43,10 @@ public class Grid implements Serializable, Cloneable {
 
         Grid other = (Grid) obj;
 
-        if(numTilesWide != other.numTilesWide)
+        if (numTilesWide != other.numTilesWide)
             return false;
 
-        if(numTilesHigh != other.numTilesHigh)
+        if (numTilesHigh != other.numTilesHigh)
             return false;
 
         if (Math.abs(other.resolution - resolution) / Math.abs(other.resolution + resolution) > 0.005)
@@ -79,17 +79,10 @@ public class Grid implements Serializable, Cloneable {
     }
 
     /**
-     * @return the scaleDenom
-     */
-    public double getScaleDenom() {
-        return scaleDenom;
-    }
-
-    /**
      * @param scaleDenom
      *            the scaleDenom to set
      */
-    public void setScaleDenom(double scaleDenom) {
+    public void setScaleDenominator(double scaleDenom) {
         this.scaleDenom = scaleDenom;
     }
 

@@ -137,11 +137,11 @@ public class GridSetFactory {
             Grid curGrid = new Grid();
 
             if (scaleDenoms != null) {
-                curGrid.setScaleDenom(scaleDenoms[i]);
+                curGrid.setScaleDenominator(scaleDenoms[i]);
                 curGrid.setResolution(pixelSize * (scaleDenoms[i] / gridSet.getMetersPerUnit()));
             } else {
                 curGrid.setResolution(resolutions[i]);
-                curGrid.setScaleDenom((resolutions[i] * gridSet.getMetersPerUnit())
+                curGrid.setScaleDenominator((resolutions[i] * gridSet.getMetersPerUnit())
                         / DEFAULT_PIXEL_SIZE_METER);
             }
 
