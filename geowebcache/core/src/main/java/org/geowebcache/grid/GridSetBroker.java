@@ -76,6 +76,11 @@ public class GridSetBroker {
                     BoundingBox.WORLD3857, false, GridSetFactory.DEFAULT_LEVELS, null,
                     GridSetFactory.DEFAULT_PIXEL_SIZE_METER, 256, 256, false);
         }
+        WORLD_EPSG3857.setDescription("This well-known scale set has been defined to be compatible with Google Maps and"+
+                " Microsoft Live Map projections and zoom levels. Level 0 allows representing the whole " +
+                "world in a single 256x256 pixels. The next level represents the whole world in 2x2 tiles " +
+                "of 256x256 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
+
         gridSets.put(WORLD_EPSG3857.getName(), WORLD_EPSG3857);
 
         log.debug("Adding GlobalCRS84Pixel");
