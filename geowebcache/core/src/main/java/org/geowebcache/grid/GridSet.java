@@ -54,6 +54,12 @@ public class GridSet {
 
     private String description;
 
+    /**
+     * {@code true} if the resolutions are preserved and the scaleDenominators calculated,
+     * {@code false} if the resolutions are calculated based on the sacale denominators.
+     */
+    private boolean resolutionsPreserved;
+
     protected GridSet() {
         // Blank
     }
@@ -71,6 +77,24 @@ public class GridSet {
      */
     void setOriginalExtent(BoundingBox originalExtent) {
         this.originalExtent = originalExtent;
+    }
+
+    /**
+     * @return {@code true} if the resolutions are preserved and the scaleDenominators calculated,
+     *         {@code false} if the resolutions are calculated based on the sacale denominators.
+     */
+    public boolean isResolutionsPreserved() {
+        return resolutionsPreserved;
+    }
+
+    /**
+     * @param resolutionsPreserved
+     *            {@code true} if the resolutions are preserved and the scaleDenominators
+     *            calculated, {@code false} if the resolutions are calculated based on the sacale
+     *            denominators.
+     */
+    void setResolutionsPreserved(boolean resolutionsPreserved) {
+        this.resolutionsPreserved = resolutionsPreserved;
     }
 
     protected BoundingBox boundsFromIndex(long[] tileIndex) {
@@ -269,10 +293,6 @@ public class GridSet {
         long[] ret = { 0, 0, tilesWide - 1, tilesHigh - 1, i };
 
         return boundsFromRectangle(ret);
-    }
-
-    public Grid[] getGrids() {
-        return getGridLevels();
     }
 
     /**
@@ -530,8 +550,8 @@ public class GridSet {
             return true;
         }
         // now check the zoom levels
-        Grid[] myGrids = getGrids();
-        Grid[] otherGrids = another.getGrids();
+        Grid[] myGrids = getGridLevels();
+        Grid[] otherGrids = another.getGridLevels();
         if (myGrids.length > otherGrids.length) {
             return true;
         }

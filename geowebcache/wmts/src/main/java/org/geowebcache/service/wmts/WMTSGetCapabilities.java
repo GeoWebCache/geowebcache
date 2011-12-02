@@ -407,7 +407,7 @@ public class WMTSGetCapabilities {
          // If the following is not good enough, please get in touch and we will try to fix it :)
          str.append("    <ows:SupportedCRS>urn:ogc:def:crs:EPSG::"+gridSet.getSrs().getNumber()+"</ows:SupportedCRS>\n");
          // TODO detect these str.append("    <WellKnownScaleSet>urn:ogc:def:wkss:GlobalCRS84Pixel</WellKnownScaleSet>\n");
-         Grid[] grids = gridSet.getGrids();
+         Grid[] grids = gridSet.getGridLevels();
          for(int i=0; i<grids.length; i++) {
              double[] tlCoordinates = gridSet.getOrderedTopLeftCorner(i);
              tileMatrix(str, grids[i], tlCoordinates, gridSet.getTileWidth(), gridSet.getTileHeight(), gridSet.isScaleWarning());
