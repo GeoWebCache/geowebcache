@@ -39,14 +39,25 @@ public class GridSubsetFactory {
             log.error("Passed GridSet was null!");
         }
 
-        final int firstLevel = zoomStart == null ? 0 : zoomStart.intValue();
-        final int maxLevel = zoomStop == null ? gridSet.getGridLevels().length - 1 : zoomStop
-                .intValue();
+        final Grid[] gridLevels = gridSet.getGridLevels();
+        final int maxLevel = gridLevels.length - 1;
+        if (zoomStart == null) {
+            zoomStart = 0;
+        }
+        if (zoomStop == null) {
+            zoomStop = maxLevel;
+        } else if (zoomStop > maxLevel) {
+            String message = "Requested to create GridSubset with zoomStop " + zoomStop
+                    + " for GridSet " + gridSet.getName() + " whose max zoom level is " + maxLevel
+                    + ". Limiting GridSubset to zoomStop = " + maxLevel;
+            log.warn(message);
+            zoomStop = maxLevel;
+        }
 
         Map<Integer, GridCoverage> coverages = new TreeMap<Integer, GridCoverage>();
-        for (int z = firstLevel; z <= maxLevel; z++) {
+        for (int z = zoomStart; z <= zoomStop; z++) {
 
-            Grid level = gridSet.getGridLevels()[z];
+            Grid level = gridLevels[z];
 
             long[] coverage;
             if (extent == null) {

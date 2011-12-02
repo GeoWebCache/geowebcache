@@ -63,23 +63,18 @@ public class GridSetBroker {
                 GridSetFactory.DEFAULT_PIXEL_SIZE_METER, 256, 256, true);
         gridSets.put(WORLD_EPSG4326.getName(), WORLD_EPSG4326);
 
-        if (useEPSG900913) {
-            log.debug("Adding EPSG:900913 grid set for Spherical Mercator / GoogleMapsCompatible");
+        final SRS googleMapsCompatibleSRS = useEPSG900913 ? SRS.getEPSG900913() : SRS.getEPSG3857();
+        log.debug("Adding " + googleMapsCompatibleSRS
+                + " grid set for Spherical Mercator / GoogleMapsCompatible");
 
-            WORLD_EPSG3857 = GridSetFactory.createGridSet(mercatorName, SRS.getEPSG900913(),
-                    BoundingBox.WORLD3857, false, GridSetFactory.DEFAULT_LEVELS, null,
-                    GridSetFactory.DEFAULT_PIXEL_SIZE_METER, 256, 256, false);
-        } else {
-            log.debug("Adding EPSG:3857 grid set for Spherical Mercator / GoogleMapsCompatible");
-
-            WORLD_EPSG3857 = GridSetFactory.createGridSet(mercatorName, SRS.getEPSG3857(),
-                    BoundingBox.WORLD3857, false, GridSetFactory.DEFAULT_LEVELS, null,
-                    GridSetFactory.DEFAULT_PIXEL_SIZE_METER, 256, 256, false);
-        }
-        WORLD_EPSG3857.setDescription("This well-known scale set has been defined to be compatible with Google Maps and"+
-                " Microsoft Live Map projections and zoom levels. Level 0 allows representing the whole " +
-                "world in a single 256x256 pixels. The next level represents the whole world in 2x2 tiles " +
-                "of 256x256 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
+        WORLD_EPSG3857 = GridSetFactory.createGridSet(mercatorName, googleMapsCompatibleSRS,
+                BoundingBox.WORLD3857, false, googleMapsCompatibleResolutions(), null, 1.0D,
+                GridSetFactory.DEFAULT_PIXEL_SIZE_METER, null, 256, 256, false);
+        WORLD_EPSG3857
+                .setDescription("This well-known scale set has been defined to be compatible with Google Maps and"
+                        + " Microsoft Live Map projections and zoom levels. Level 0 allows representing the whole "
+                        + "world in a single 256x256 pixels. The next level represents the whole world in 2x2 tiles "
+                        + "of 256x256 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
 
         gridSets.put(WORLD_EPSG3857.getName(), WORLD_EPSG3857);
 
@@ -217,6 +212,18 @@ public class GridSetBroker {
                 545978.7734655447, 272989.3867327723, 136494.6933663862, 68247.34668319309,
                 34123.67334159654, 17061.83667079827, 8530.918335399136, 4265.459167699568,
                 2132.729583849784
+
+        };
+        return scalesCRS84QuadScaleResolutions;
+    }
+
+    private double[] googleMapsCompatibleResolutions() {
+        double[] scalesCRS84QuadScaleResolutions = { 156543.0339280410, 78271.51696402048,
+                39135.75848201023, 19567.87924100512, 9783.939620502561, 4891.969810251280,
+                2445.984905125640, 1222.992452562820, 611.4962262814100, 305.7481131407048,
+                152.8740565703525, 76.43702828517624, 38.21851414258813, 19.10925707129406,
+                9.554628535647032, 4.777314267823516, 2.388657133911758, 1.194328566955879,
+                0.5971642834779395
 
         };
         return scalesCRS84QuadScaleResolutions;
