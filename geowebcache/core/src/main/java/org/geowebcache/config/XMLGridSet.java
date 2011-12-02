@@ -92,10 +92,16 @@ public class XMLGridSet implements Serializable {
     public XMLGridSet(GridSet gset) {
         setAlignTopLeft(gset.isTopLeftAligned());
         setExtent(gset.getOriginalExtent());
-        // use resolutions, let levels and scaleDenoms null
-        setResolutions(resolutions(gset.getGridLevels()));
+
         setLevels(null);
-        setScaleDenominators(null);
+        if (gset.isResolutionsPreserved()) {
+            setResolutions(resolutions(gset.getGridLevels()));
+            setScaleDenominators(null);
+        } else {
+            setResolutions(null);
+            setScaleDenominators(scaleDenominators(gset.getGridLevels()));
+        }
+
         setMetersPerUnit(gset.getMetersPerUnit());
         setName(gset.getName());
         setDescription(gset.getDescription());
@@ -112,6 +118,14 @@ public class XMLGridSet implements Serializable {
             resolutions[i] = grids[i].getResolution();
         }
         return resolutions;
+    }
+
+    private static double[] scaleDenominators(Grid[] grids) {
+        double[] scales = new double[grids.length];
+        for (int i = 0; i < scales.length; i++) {
+            scales[i] = grids[i].getScaleDenominator();
+        }
+        return scales;
     }
 
     private static String[] scaleNames(Grid[] grids) {
