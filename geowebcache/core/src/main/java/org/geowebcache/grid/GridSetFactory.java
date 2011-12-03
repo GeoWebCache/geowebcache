@@ -30,7 +30,7 @@ public class GridSetFactory {
      */
     public static final double DEFAULT_PIXEL_SIZE_METER = 0.00028;
 
-    public static int DEFAULT_LEVELS = 31;
+    public static int DEFAULT_LEVELS = 22;
 
     public final static double EPSG4326_TO_METERS = 6378137.0 * 2.0 * Math.PI / 360.0;
 
