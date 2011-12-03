@@ -25,6 +25,8 @@ public class ServiceInformation {
 
     private List<String> keywords;
 
+    private ServiceProvider serviceProvider;
+
     private String fees;
 
     private String accessConstraints;
@@ -32,8 +34,6 @@ public class ServiceInformation {
     private String providerName;
 
     private String providerSite;
-
-    private ServiceProvider serviceProvider;
 
     /**
      * @return the title

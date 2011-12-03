@@ -56,15 +56,17 @@ import org.geowebcache.util.GWCVars;
  */
 public class WMSLayer extends AbstractTileLayer {
 
+    private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
+
     public enum RequestType {
         MAP, FEATUREINFO
     };
 
     private String[] wmsUrl = null;
 
-    private Integer concurrency = null;
-
     private String wmsLayers = null;
+
+    protected String wmsStyles;
 
     protected Integer gutter;
 
@@ -94,8 +96,6 @@ public class WMSLayer extends AbstractTileLayer {
     @SuppressWarnings("unused")
     private String cachePrefix;
 
-    protected String sphericalMercatorOverride;
-
     // private transient int expireCacheInt = -1;
 
     // private transient int expireClientsInt = -1;
@@ -112,9 +112,11 @@ public class WMSLayer extends AbstractTileLayer {
 
     private transient HashMap<GridLocObj, Boolean> procQueue;
 
-    private transient WMSSourceHelper sourceHelper = null;
+    private transient WMSSourceHelper sourceHelper;
 
-    private static transient Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
+    private transient Integer concurrency;
+
+    protected transient String sphericalMercatorOverride;
 
     /**
      * Note XStream uses reflection, this is only used for testing and loading from getCapabilities
@@ -729,8 +731,8 @@ public class WMSLayer extends AbstractTileLayer {
     public String[] getWMSurl() {
         return this.wmsUrl;
     }
-    
-    public String getWmsLayers(){
+
+    public String getWmsLayers() {
         return wmsLayers;
     }
 
@@ -823,5 +825,10 @@ public class WMSLayer extends AbstractTileLayer {
 
     public void setMetaInformation(LayerMetaInformation layerMetaInfo) {
         this.metaInformation = layerMetaInfo;
+    }
+
+    @Override
+    public String getStyles() {
+        return wmsStyles;
     }
 }

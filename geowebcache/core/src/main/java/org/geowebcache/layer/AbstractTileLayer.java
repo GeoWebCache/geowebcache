@@ -52,9 +52,9 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     private static final int[] DEFAULT_METATILING_FACTORS = { 1, 1 };
 
-    protected String name;
-
     protected Boolean enabled;
+
+    protected String name;
 
     protected LayerMetaInformation metaInformation;
 
@@ -62,18 +62,20 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     protected List<FormatModifier> formatModifiers;
 
-    protected List<XMLGridSubset> gridSubsets;
-
-    protected List<ParameterFilter> parameterFilters;
-
     // 1.1.x compatibility
     protected Hashtable<SRS, XMLOldGrid> grids;
 
-    protected List<RequestFilter> requestFilters;
+    protected List<XMLGridSubset> gridSubsets;
 
     protected List<UpdateSourceDefinition> updateSources;
 
+    protected List<RequestFilter> requestFilters;
+
     protected Boolean useETags;
+
+    protected int[] metaWidthHeight;
+
+    protected String expireCache;
 
     protected ArrayList<ExpirationRule> expireCacheList;
 
@@ -81,13 +83,13 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     protected ArrayList<ExpirationRule> expireClientsList;
 
-    protected String expireCache;
+    protected Integer backendTimeout;
 
     protected Boolean cacheBypassAllowed;
 
     protected Boolean queryable;
 
-    protected int[] metaWidthHeight;
+    protected List<ParameterFilter> parameterFilters;
 
     protected transient boolean saveExpirationHeaders;
 
@@ -96,10 +98,6 @@ public abstract class AbstractTileLayer extends TileLayer {
     protected transient Map<String, GridSubset> subSets;
 
     private transient LayerListenerList listeners;
-
-    protected Integer backendTimeout;
-
-    protected String wmsStyles = null;
 
     // Styles?
 
@@ -318,9 +316,7 @@ public abstract class AbstractTileLayer extends TileLayer {
      * @return the styles configured for the layer, may be null
      */
     @Override
-    public String getStyles() {
-        return wmsStyles;
-    }
+    public abstract String getStyles();
 
     /**
      * 
