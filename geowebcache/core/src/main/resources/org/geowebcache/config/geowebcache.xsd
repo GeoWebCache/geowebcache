@@ -146,7 +146,7 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:complexType name="WmsLayer">
+  <xs:complexType name="AbstractTileLayer" abstract="true">
     <xs:sequence>
       <xs:element name="enabled" type="xs:boolean" minOccurs="0">
         <xs:annotation>
@@ -248,39 +248,6 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <!-- WMS Specific stuff, some of which is not really WMS specific -->
-      <xs:element name="wmsUrl" type="gwc:WmsUrl" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation xml:lang="en">
-            A list of URLs to backend servers than can render tiles for this
-            layer. They are used in a
-            round robin fashion for load balancing and automatic failover.
-
-            The only time you can
-            ommit this element is if you expect the layer to be merged
-            with that from another source.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="wmsLayers" type="xs:string" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation xml:lang="en">
-            The LAYERS parameter sent to the WMS backend.
-            It may contain
-            commas, to request composites of several layers from the backend,
-            and be different from the name element.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="wmsStyles" type="xs:string" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation xml:lang="en">
-            This is the value sent to the backend server for the STYLES
-            parameter.
-            It may contain commas.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
       <xs:element name="metaWidthHeight" type="gwc:MetaWidthHeight" minOccurs="0">
         <xs:annotation>
           <xs:documentation xml:lang="en">
@@ -293,127 +260,7 @@
             repeated labels, but can overload the backend server.
           </xs:documentation>
         </xs:annotation>
-      </xs:element>
-      <xs:element name="gutter" type="xs:integer" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation xml:lang="en">
-            The gutter is a buffer around the image that is sliced away when
-            saving the tiles
-            to disk. It only applies to metatiles and is not applied if the resulting request
-            would
-            exceed the layer bounds. Note that your styles on the backend should avoid
-            rendering labels near the edges of
-            requested images. The default is zero.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="errorMime" type="xs:string" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation xml:lang="en">
-            The ERROR parameter sent to the WMS backend. The default is
-            application/vnd.ogc.se_xml,
-            the alternative is application/vnd.ogc.se_inimage
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="wmsVersion" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation xml:lang="en">
-            The VERSION parameter sent to the WMS backend.
-            The default is 1.1.1
-          </xs:documentation>
-        </xs:annotation>
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:enumeration value="1.0.0"/>
-            <xs:enumeration value="1.1.0"/>
-            <xs:enumeration value="1.1.1"/>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-      <xs:element name="httpUsername" type="xs:string" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation xml:lang="en">
-            If you wish to have this WMS layer to use
-            HTTP Authentication set
-            this to the username. You must then also
-            set httpPassword for it to take effect.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="httpPassword" type="xs:string" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation xml:lang="en">
-            If you wish to have this WMS layer to use
-            HTTP Authentication set
-            this to the username. You must then also
-            set httpUsername for it to take effect.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="proxyUrl" type="xs:string" minOccurs="0" />
-      <xs:element name="tiled" type="xs:boolean" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation xml:lang="en">
-            The TILED parameter sent to the WMS backend.
-            The default is FALSE,
-            you should generally not change this.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="transparent" type="xs:boolean" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation xml:lang="en">
-            The TRANSPARENT parameter sent to the WMS backend.
-            This will result
-            in transparent PNGs and GIFs. The default is TRUE.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="bgColor" type="xs:string" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation xml:lang="en">
-            The BGCOLOR parameter sent to the WMS backend.
-            This tells the WMS
-            backend what color to use where the image canvas is blank.
-            It is specified as as an RGB string ( 0xFF0000 =
-            red, 0x00FF00= green, 0x0000FF = blue )
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="palette" type="xs:string" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation xml:lang="en">
-            The PALETTE parameter sent to the WMS backend.
-            This tells the
-            server whether it should use a palette, something that can often
-            speed up rendering for 8 bit images (GIF and
-            8 bit PNG) because the WMS server
-            does not have to determine the optimal palette for the tile.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="vendorParameters" type="xs:string" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation xml:lang="en">
-            Fixed parameters that are appended to every request to the
-            backend.
-            For instance KEY1=value1&amp;amp;KEY2=value2
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="cachePrefix" type="xs:string" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation xml:lang="en">
-            As of GWC 1.1.0 this element is deprecated. The plugin for
-            GeoServer will use
-            %GEOSERVER_DATA_DIR%\gwc , whereas users of the standalone version may specify
-            this in
-            geowebcache-servlet.xml
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="expireCache" type="xs:integer" minOccurs="0">
+      </xs:element>      <xs:element name="expireCache" type="xs:integer" minOccurs="0">
         <xs:annotation>
           <xs:documentation xml:lang="en">
             How old the tile may be before it is refetched from the backend.
@@ -503,6 +350,165 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="WmsLayer">
+    <xs:complexContent>
+      <xs:extension base="gwc:AbstractTileLayer">
+        <xs:sequence>          <!-- WMS Specific stuff, some of which is not really WMS specific -->
+          <xs:element name="wmsUrl" type="gwc:WmsUrl" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                A list of URLs to backend servers than can render tiles for this
+                layer. They are used in a
+                round robin fashion for load balancing and automatic failover.
+    
+                The only time you can
+                ommit this element is if you expect the layer to be merged
+                with that from another source.
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="wmsLayers" type="xs:string" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                The LAYERS parameter sent to the WMS backend.
+                It may contain
+                commas, to request composites of several layers from the backend,
+                and be different from the name element.
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="wmsStyles" type="xs:string" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                This is the value sent to the backend server for the STYLES
+                parameter.
+                It may contain commas.
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="gutter" type="xs:integer" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                The gutter is a buffer around the image that is sliced away when
+                saving the tiles
+                to disk. It only applies to metatiles and is not applied if the resulting request
+                would
+                exceed the layer bounds. Note that your styles on the backend should avoid
+                rendering labels near the edges of
+                requested images. The default is zero.
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="errorMime" type="xs:string" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                The ERROR parameter sent to the WMS backend. The default is
+                application/vnd.ogc.se_xml,
+                the alternative is application/vnd.ogc.se_inimage
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="wmsVersion" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                The VERSION parameter sent to the WMS backend.
+                The default is 1.1.1
+              </xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="1.0.0"/>
+                <xs:enumeration value="1.1.0"/>
+                <xs:enumeration value="1.1.1"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="httpUsername" type="xs:string" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                If you wish to have this WMS layer to use
+                HTTP Authentication set
+                this to the username. You must then also
+                set httpPassword for it to take effect.
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="httpPassword" type="xs:string" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                If you wish to have this WMS layer to use
+                HTTP Authentication set
+                this to the username. You must then also
+                set httpUsername for it to take effect.
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="proxyUrl" type="xs:string" minOccurs="0" />
+          <xs:element name="tiled" type="xs:boolean" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                The TILED parameter sent to the WMS backend.
+                The default is FALSE,
+                you should generally not change this.
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="transparent" type="xs:boolean" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                The TRANSPARENT parameter sent to the WMS backend.
+                This will result
+                in transparent PNGs and GIFs. The default is TRUE.
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="bgColor" type="xs:string" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                The BGCOLOR parameter sent to the WMS backend.
+                This tells the WMS
+                backend what color to use where the image canvas is blank.
+                It is specified as as an RGB string ( 0xFF0000 =
+                red, 0x00FF00= green, 0x0000FF = blue )
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="palette" type="xs:string" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                The PALETTE parameter sent to the WMS backend.
+                This tells the
+                server whether it should use a palette, something that can often
+                speed up rendering for 8 bit images (GIF and
+                8 bit PNG) because the WMS server
+                does not have to determine the optimal palette for the tile.
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="vendorParameters" type="xs:string" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                Fixed parameters that are appended to every request to the
+                backend.
+                For instance KEY1=value1&amp;amp;KEY2=value2
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="cachePrefix" type="xs:string" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                As of GWC 1.1.0 this element is deprecated. The plugin for
+                GeoServer will use
+                %GEOSERVER_DATA_DIR%\gwc , whereas users of the standalone version may specify
+                this in
+                geowebcache-servlet.xml
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>        </xs:sequence>
+     </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:element name="arcgisLayer" type="gwc:ArcGISLayerType">
@@ -761,6 +767,13 @@
 
             If you change this value you must also reconsidering metatiling and
             clear the cache.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="yCoordinateFirst" type="xs:boolean" minOccurs="0" default="false">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+          Indicates whether the Coordinate Reference System has lat/long - y/x axis order
           </xs:documentation>
         </xs:annotation>
       </xs:element>
@@ -1536,6 +1549,13 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="keywords" type="gwc:KeywordsType" maxOccurs="1" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Keywords that describe this layer.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
     </xs:sequence>
   </xs:complexType>
 
@@ -1585,13 +1605,17 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="providerName" type="xs:string" maxOccurs="1" minOccurs="0">
+      </xs:element>
+      <xs:element name="providerSite" type="xs:string" maxOccurs="1" minOccurs="0">
+      </xs:element>
     </xs:sequence>
 
   </xs:complexType>
 
   <xs:complexType name="KeywordsType">
     <xs:sequence>
-      <xs:element name="keyword" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="string" type="xs:string" minOccurs="0" maxOccurs="unbounded">
         <xs:annotation>
           <xs:documentation xml:lang="en">
             A keyword that describes this service.

@@ -483,11 +483,11 @@ public class XMLConfiguration implements Configuration {
         xs.alias("parameterFilters", new ArrayList<ParameterFilter>().getClass());
         xs.alias("parameterFilter", ParameterFilter.class);
         xs.alias("seedRequest", SeedRequest.class);
-        // xs.alias("parameterFilter", ParameterFilter.class);
+
         xs.alias("floatParameterFilter", FloatParameterFilter.class);
         xs.alias("regexParameterFilter", RegexParameterFilter.class);
         xs.alias("stringParameterFilter", StringParameterFilter.class);
-        // xs.alias("regex", String.class);
+
         xs.alias("formatModifier", FormatModifier.class);
 
         xs.alias("circularExtentFilter", CircularExtentFilter.class);
@@ -502,8 +502,10 @@ public class XMLConfiguration implements Configuration {
 
         xs.alias("metaInformation", LayerMetaInformation.class);
 
+        xs.alias("serviceInformation", ServiceInformation.class);
         xs.alias("contactInformation", ContactInformation.class);
-
+        
+        
         if (this.context != null) {
             /*
              * Look up XMLConfigurationProvider extension points and let them contribute to the
@@ -653,7 +655,7 @@ public class XMLConfiguration implements Configuration {
      *            the file contaning the layer configurations
      * @return W3C DOM Document
      */
-    private Node loadDocument(InputStream xmlFile) throws ConfigurationException, IOException {
+    static Node loadDocument(InputStream xmlFile) throws ConfigurationException, IOException {
         Node topNode = null;
         try {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -667,7 +669,7 @@ public class XMLConfiguration implements Configuration {
         return topNode;
     }
 
-    private Node checkAndTransform(Document doc) throws ConfigurationException {
+    private static Node checkAndTransform(Document doc) throws ConfigurationException {
         Node rootNode = doc.getDocumentElement();
 
         // debugPrint(rootNode);
@@ -753,31 +755,19 @@ public class XMLConfiguration implements Configuration {
             log.error("Unable to parse file, expected gwcConfiguration at root after transform.");
             throw new ConfigurationException("Unable to parse after transform.");
         } else {
-            // Perform validation
-            // TODO dont know why this one suddenly failed to look up, revert to
-            // XMLConstants.W3C_XML_SCHEMA_NS_URI
-            SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
-            InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd");
-
             // Parsing the schema file
             try {
-                Schema schema = factory.newSchema(new StreamSource(is));
-                Validator validator = schema.newValidator();
-
-                // debugPrint(rootNode);
-
-                DOMSource domSrc = new DOMSource(rootNode);
-                validator.validate(domSrc);
+                validate(rootNode);
                 log.info("Configuration file validated fine.");
             } catch (SAXException e) {
                 String msg = "*** GWC configuration validation error: " + e.getMessage();
                 char[] c = new char[4 + msg.length()];
                 Arrays.fill(c, '*');
-                String warndecoration = new String(c);
+                String warndecoration = new String(c).substring(0, 80);
                 log.warn(warndecoration);
-                log.info(msg);
+                log.warn(msg);
+                log.warn("*** Will try to use configuration anyway. Please check the order of declared elements against the schema.");
                 log.warn(warndecoration);
-                log.info("Will try to use configuration anyway.");
             } catch (IOException e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
@@ -786,7 +776,23 @@ public class XMLConfiguration implements Configuration {
         return rootNode;
     }
 
-    private Node applyTransform(Node oldRootNode, String xslFilename) {
+    static void validate(Node rootNode) throws SAXException, IOException {
+        // Perform validation
+        // TODO dont know why this one suddenly failed to look up, revert to
+        // XMLConstants.W3C_XML_SCHEMA_NS_URI
+        SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+        InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd");
+
+        Schema schema = factory.newSchema(new StreamSource(is));
+        Validator validator = schema.newValidator();
+
+        // debugPrint(rootNode);
+
+        DOMSource domSrc = new DOMSource(rootNode);
+        validator.validate(domSrc);
+    }
+
+    private static Node applyTransform(Node oldRootNode, String xslFilename) {
         DOMResult result = new DOMResult();
         Transformer transformer;
 

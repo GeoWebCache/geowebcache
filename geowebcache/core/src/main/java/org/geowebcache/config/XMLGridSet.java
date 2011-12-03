@@ -91,6 +91,7 @@ public class XMLGridSet implements Serializable {
      */
     public XMLGridSet(GridSet gset) {
         setAlignTopLeft(gset.isTopLeftAligned());
+        setYCoordinateFirst(gset.isyCoordinateFirst());
         setExtent(gset.getOriginalExtent());
 
         setLevels(null);

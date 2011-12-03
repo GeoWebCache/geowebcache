@@ -56,7 +56,7 @@ public class XMLOldGrid {
         if(resolutions != null) {
             zoomStop = resolutions.length -1;
         } else if(zoomStop == null) {
-            zoomStop = 30;
+            zoomStop = GridSetFactory.DEFAULT_LEVELS;
         }
         
         if(dataBounds == null) {

@@ -28,9 +28,9 @@ public class FormatModifier {
     
     private static Log log = LogFactory.getLog(org.geowebcache.mime.FormatModifier.class);
     
-    private String requestFormat;
-    
     private String responseFormat;
+
+    private String requestFormat;
     
     private transient MimeType reqFormat;
     
