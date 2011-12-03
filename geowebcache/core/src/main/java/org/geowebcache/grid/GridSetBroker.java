@@ -61,6 +61,10 @@ public class GridSetBroker {
         WORLD_EPSG4326 = GridSetFactory.createGridSet(unprojectedName, SRS.getEPSG4326(),
                 BoundingBox.WORLD4326, false, GridSetFactory.DEFAULT_LEVELS, null,
                 GridSetFactory.DEFAULT_PIXEL_SIZE_METER, 256, 256, true);
+        WORLD_EPSG4326.setDescription("A default WGS84 tile matrix set where the first zoom level "
+                + "covers the world with two tiles on the horizonal axis and one tile "
+                + "over the vertical axis and each subsequent zoom level is calculated by half "
+                + "the resolution of its previous one.");
         gridSets.put(WORLD_EPSG4326.getName(), WORLD_EPSG4326);
 
         final SRS googleMapsCompatibleSRS = useEPSG900913 ? SRS.getEPSG900913() : SRS.getEPSG3857();
