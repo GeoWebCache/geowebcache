@@ -168,67 +168,57 @@ public class GridSetFactory {
         return gridSet;
     }
 
-    /**
-     * This covers the case where a number of zoom levels has been specified, but no resolutions /
-     * scale
-     * 
-     * @param pixelSize
-     * @param yCoordinateFirst
-     */
-    public static GridSet createGridSet(String name, SRS srs, BoundingBox extent,
-            boolean alignTopLeft, int levels, Double metersPerUnit, double pixelSize,
-            int tileWidth, int tileHeight, boolean yCoordinateFirst) {
+    public static GridSet createGridSet(final String name, final SRS srs, final BoundingBox extent,
+            final boolean alignTopLeft, final int levels, final Double metersPerUnit,
+            final double pixelSize, final int tileWidth, final int tileHeight,
+            final boolean yCoordinateFirst) {
+
+        final double extentWidth = extent.getWidth();
+        final double extentHeight = extent.getHeight();
+
+        double resX = extentWidth / tileWidth;
+        double resY = extentHeight / tileHeight;
+
+        final int tilesWide, tilesHigh;
+        if (resX <= resY) {
+            // use one tile wide by N tiles high
+            tilesWide = 1;
+            tilesHigh = (int) Math.round(resY / resX);
+            // previous resY was assuming 1 tile high, recompute with the actual number of tiles
+            // high
+            resY = resY / tilesHigh;
+        } else {
+            // use one tile high by N tiles wide
+            tilesHigh = 1;
+            tilesWide = (int) Math.round(resX / resY);
+            // previous resX was assuming 1 tile wide, recompute with the actual number of tiles
+            // wide
+            resX = resX / tilesWide;
+        }
+
+        // the maximum of resX and resY is the one that adjusts better
+        final double res = Math.max(resX, resY);
+
+        final double adjustedExtentWidth = tilesWide * tileWidth * res;
+        final double adjustedExtentHeight = tilesHigh * tileHeight * res;
+
+        BoundingBox adjExtent = new BoundingBox(extent);
+        adjExtent.setMaxX(adjExtent.getMinX() + adjustedExtentWidth);
+        // Do we keep the top or the bottom fixed?
+        if (alignTopLeft) {
+            adjExtent.setMinY(adjExtent.getMaxY() - adjustedExtentHeight);
+        } else {
+            adjExtent.setMaxY(adjExtent.getMinY() + adjustedExtentHeight);
+        }
 
         double[] resolutions = new double[levels];
-
-        double relWidth = extent.getWidth() / tileWidth;
-        double relHeight = extent.getHeight() / tileHeight;
-
-        double ratio = relWidth / relHeight;
-        double roundedRatio = Math.round(ratio);
-        double ratioDiff = ratio - roundedRatio;
-
-        // Cut 2.5% slack throughout
-        if (Math.abs(ratioDiff) < 0.025) {
-            // All good
-            resolutions[0] = relWidth / roundedRatio;
-
-        } else if (ratio < roundedRatio) {
-            // Increase the width
-            if (ratioDiff < 0) {
-                ratio = roundedRatio;
-            } else {
-                ratio = roundedRatio + 1;
-            }
-            relWidth += (ratio * relHeight - relWidth);
-
-            extent.setMaxX((relWidth * tileWidth) + extent.getMinX());
-
-            resolutions[0] = (extent.getWidth() / ratio) / tileWidth;
-        } else {
-            // Increase the height
-            if (ratioDiff > 0) {
-                ratio = roundedRatio;
-            } else {
-                ratio = roundedRatio + 1;
-            }
-            relHeight += ((relWidth / ratio) - relHeight);
-
-            // Do we keep the top or the bottom fixed?
-            if (alignTopLeft) {
-                extent.setMinY(extent.getMaxY() - (relHeight * tileHeight));
-            } else {
-                extent.setMaxY((relHeight * tileHeight) + extent.getMinY());
-            }
-
-            resolutions[0] = (extent.getWidth() / ratio) / tileWidth;
-        }
+        resolutions[0] = res;
 
         for (int i = 1; i < levels; i++) {
             resolutions[i] = resolutions[i - 1] / 2;
         }
 
-        return createGridSet(name, srs, extent, alignTopLeft, resolutions, null, metersPerUnit,
+        return createGridSet(name, srs, adjExtent, alignTopLeft, resolutions, null, metersPerUnit,
                 pixelSize, null, tileWidth, tileHeight, yCoordinateFirst);
     }
 }
