@@ -504,8 +504,7 @@ public class XMLConfiguration implements Configuration {
 
         xs.alias("serviceInformation", ServiceInformation.class);
         xs.alias("contactInformation", ContactInformation.class);
-        
-        
+
         if (this.context != null) {
             /*
              * Look up XMLConfigurationProvider extension points and let them contribute to the
@@ -540,6 +539,10 @@ public class XMLConfiguration implements Configuration {
         }
 
         try {
+            // set version to latest
+            String currentSchemaVersion = getCurrentSchemaVersion();
+            gwcConfig.setVersion(currentSchemaVersion);
+
             writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
             xs.toXML(gwcConfig, writer);
         } catch (IOException e) {
@@ -792,6 +795,28 @@ public class XMLConfiguration implements Configuration {
         validator.validate(domSrc);
     }
 
+    static String getCurrentSchemaVersion() {
+        InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd");
+        Document dom;
+        try {
+            dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(is);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        String version = dom.getDocumentElement().getAttribute("version");
+        if (null == version || version.trim().length() == 0) {
+            throw new IllegalStateException("Schema doesn't define version");
+        }
+        return version.trim();
+    }
+
     private static Node applyTransform(Node oldRootNode, String xslFilename) {
         DOMResult result = new DOMResult();
         Transformer transformer;
@@ -923,6 +948,10 @@ public class XMLConfiguration implements Configuration {
     public Set<String> getTileLayerNames() {
         Set<String> names = Collections.unmodifiableSet(this.layers.keySet());
         return names;
+    }
+
+    public String getVersion() {
+        return gwcConfig.getVersion();
     }
 
 }

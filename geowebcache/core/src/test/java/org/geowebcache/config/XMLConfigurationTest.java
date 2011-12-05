@@ -215,4 +215,30 @@ public class XMLConfigurationTest extends TestCase {
         assertNotNull(gridSet2);
         assertEquals(gridSet, gridSet2);
     }
+
+    public void testSaveCurrentVersion() throws Exception {
+
+        URL source = XMLConfiguration.class
+                .getResource(XMLConfigurationBackwardsCompatibilityTest.PREVIOUS_FILENAME);
+        configFile = new File(configDir, "geowebcache.xml");
+        FileUtils.copyURLToFile(source, configFile);
+
+        gridSetBroker = new GridSetBroker(true, false);
+        config = new XMLConfiguration(null, configDir.getAbsolutePath());
+        config.initialize(gridSetBroker);
+
+        final String previousVersion = config.getVersion();
+        assertNotNull(previousVersion);
+
+        config.save();
+
+        final String currVersion = XMLConfiguration.getCurrentSchemaVersion();
+        assertNotNull(currVersion);
+        assertFalse(previousVersion.equals(currVersion));
+
+        config = new XMLConfiguration(null, configDir.getAbsolutePath());
+        config.initialize(gridSetBroker);
+        final String savedVersion = config.getVersion();
+        assertEquals(currVersion, savedVersion);
+    }
 }
