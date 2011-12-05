@@ -20,12 +20,18 @@ import java.util.Arrays;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 public class GridSet {
 
-    private Grid[] gridLevels;
+    private String name;
 
-    private BoundingBox originalExtent;
+    private SRS srs;
+
+    private int tileWidth;
+
+    private int tileHeight;
 
     /**
      * Whether the y-coordinate of {@link #tileOrigin()} is at the top (true) or at the bottom
@@ -44,13 +50,9 @@ public class GridSet {
 
     private double pixelSize;
 
-    private String name;
+    private BoundingBox originalExtent;
 
-    private SRS srs;
-
-    private int tileWidth;
-
-    private int tileHeight;
+    private Grid[] gridLevels;
 
     private String description;
 
@@ -133,9 +135,12 @@ public class GridSet {
             topY = topY - grid.getNumTilesHigh();
         }
 
-        BoundingBox rectangleBounds = new BoundingBox(tileOrigin()[0] + width * rectangleExtent[0],
-                tileOrigin()[1] + height * (bottomY), tileOrigin()[0] + width
-                        * (rectangleExtent[2] + 1), tileOrigin()[1] + height * (topY + 1));
+        double[] tileOrigin = tileOrigin();
+        double minx = tileOrigin[0] + width * rectangleExtent[0];
+        double miny = tileOrigin[1] + height * (bottomY);
+        double maxx = tileOrigin[0] + width * (rectangleExtent[2] + 1);
+        double maxy = tileOrigin[1] + height * (topY + 1);
+        BoundingBox rectangleBounds = new BoundingBox(minx, miny, maxx, maxy);
 
         return rectangleBounds;
     }
@@ -563,4 +568,8 @@ public class GridSet {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
 }
