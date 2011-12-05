@@ -170,4 +170,100 @@ public class GridSetFactoryTest extends TestCase {
         assertFalse(gridSet.isResolutionsPreserved());
     }
 
+    public void testLevels2() throws Exception {
+        BoundingBox extent = new BoundingBox(0, 0, 1000, 1000);
+        int levels = 16;
+        int tileW = 300, tileH = 100;
+        Double metersPerUnit = 1D;
+        double pixelSize = GridSetFactory.DEFAULT_PIXEL_SIZE_METER;
+
+        GridSet gridSet = GridSetFactory.createGridSet("test", SRS.getSRS(3005), extent, false,
+                levels, metersPerUnit, pixelSize, tileW, tileH, false);
+
+        assertEquals(extent, gridSet.getOriginalExtent());
+        Grid[] gridLevels = gridSet.getGridLevels();
+        assertEquals(16, gridLevels.length);
+        assertEquals(1, gridLevels[0].getNumTilesWide());
+        assertEquals(3, gridLevels[0].getNumTilesHigh());
+
+        for (int i = 1; i < gridLevels.length; i++) {
+            assertEquals(2 * gridLevels[i - 1].getNumTilesWide(), gridLevels[i].getNumTilesWide());
+            assertEquals(2 * gridLevels[i - 1].getNumTilesHigh(), gridLevels[i].getNumTilesHigh());
+        }
+    }
+
+    public void testWideBoundsTallTile() throws Exception {
+        BoundingBox extent = new BoundingBox(0, 0, 100, 45);
+
+        // should give 4x1 tiles, with bounds height expanded to 50
+        int tileWidth = 10;
+        int tileHeight = 20;
+
+        SRS srs = SRS.getEPSG4326();
+
+        boolean alignTopLeft = false;
+        GridSet gridSet = GridSetFactory.createGridSet("test", srs, extent, alignTopLeft, 4, null,
+                0.00028, tileWidth, tileHeight, false);
+
+        assertEquals("test", gridSet.getName());
+        assertEquals(0D, gridSet.tileOrigin()[0]);
+        assertEquals(0D, gridSet.tileOrigin()[1]);
+
+        assertEquals(new BoundingBox(0, 0, 100, 50), gridSet.getBounds());
+
+        assertEquals(4, gridSet.getGridLevels().length);
+
+        Grid grid0 = gridSet.getGridLevels()[0];
+
+        assertEquals(4L, grid0.getNumTilesWide());
+        assertEquals(1L, grid0.getNumTilesHigh());
+        assertEquals(50D / 20D, grid0.getResolution());
+
+        alignTopLeft = true;
+        gridSet = GridSetFactory.createGridSet("test", srs, extent, alignTopLeft, 4, null, 0.00028,
+                tileWidth, tileHeight, false);
+
+        assertEquals(new BoundingBox(0, -5, 100, 45), gridSet.getBounds());
+        assertEquals("test", gridSet.getName());
+        assertEquals(0D, gridSet.tileOrigin()[0]);
+        assertEquals(45D, gridSet.tileOrigin()[1]);
+    }
+
+    public void testTallBoundsWideTile() throws Exception {
+        BoundingBox extent = new BoundingBox(0, 0, 100, 490);
+
+        // should give 1x10 tiles, with bounds width expanded to 500
+        int tileWidth = 20;
+        int tileHeight = 10;
+
+        SRS srs = SRS.getEPSG4326();
+
+        boolean alignTopLeft = false;
+        GridSet gridSet = GridSetFactory.createGridSet("test", srs, extent, alignTopLeft, 4, null,
+                0.00028, tileWidth, tileHeight, false);
+
+        assertEquals(new BoundingBox(0, 0, 100, 500), gridSet.getBounds());
+
+        assertEquals(4, gridSet.getGridLevels().length);
+
+        Grid grid0 = gridSet.getGridLevels()[0];
+
+        long tilesWide = 1;
+        long tilesHigh = 10;
+
+        assertEquals(tilesWide, grid0.getNumTilesWide());
+        assertEquals(tilesHigh, grid0.getNumTilesHigh());
+        assertEquals(500D / tileHeight / tilesHigh, grid0.getResolution());
+
+        alignTopLeft = true;
+        gridSet = GridSetFactory.createGridSet("test", srs, extent, alignTopLeft, 4, null, 0.00028,
+                tileWidth, tileHeight, false);
+
+        BoundingBox bounds = gridSet.getBounds();
+        assertEquals(new BoundingBox(0, -10, 100, 490), bounds);
+
+        assertEquals("test", gridSet.getName());
+        assertEquals(0D, gridSet.tileOrigin()[0]);
+        assertEquals(490D, gridSet.tileOrigin()[1]);
+    }
 }
