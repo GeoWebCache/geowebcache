@@ -17,7 +17,9 @@ import org.geowebcache.mime.ImageMime;
 
 public class XMLConfigurationBackwardsCompatibilityTest extends TestCase {
 
-    public static final String LATEST_FILENAME = "geowebcache_125.xml";
+    public static final String PREVIOUS_FILENAME = "geowebcache_125.xml";
+
+    public static final String LATEST_FILENAME = "geowebcache_130.xml";
 
     @Override
     protected void setUp() throws Exception {

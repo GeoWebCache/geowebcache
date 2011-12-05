@@ -114,6 +114,9 @@ public class GeoWebCacheConfiguration {
      */
     public void setVersion(String version) {
         this.version = version;
+        xmlns = "http://geowebcache.org/schema/" + version;
+        xsi_schemaLocation = xmlns + " http://geowebcache.org/schema/" + version
+                + "/geowebcache.xsd";
     }
 
     /**
