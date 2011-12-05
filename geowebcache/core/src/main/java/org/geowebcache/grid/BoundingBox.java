@@ -203,12 +203,10 @@ public class BoundingBox {
     }
 
     public boolean equals(BoundingBox other, double threshold) {
-        boolean result = true;
-        for (int i = 0; i < 4 && result; i++) {
-            result = (Math.abs(coords[i]) < threshold) && Math.abs(other.coords[i]) < threshold
-                    || (coords[i] - other.coords[i]) / (coords[i] + other.coords[i]) < threshold;
-        }
-        return result;
+        return Math.abs(getMinX() - other.getMinX()) < threshold
+                && Math.abs(getMinY() - other.getMinY()) < threshold
+                && Math.abs(getWidth() - other.getWidth()) < threshold
+                && Math.abs(getHeight() - other.getHeight()) < threshold;
     }
 
     /**
