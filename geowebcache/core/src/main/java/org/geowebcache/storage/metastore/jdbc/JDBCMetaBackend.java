@@ -49,9 +49,9 @@ public class JDBCMetaBackend implements MetaStore {
 
     private boolean enabled = true;
 
-    public JDBCMetaBackend(String driverClass, String jdbcString, String username, String password)
+    public JDBCMetaBackend(DefaultStorageFinder defStoreFind, String driverClass, String jdbcString, String username, String password)
             throws ConfigurationException {
-        this(driverClass, jdbcString, username, password, false, -1);
+        this(defStoreFind, driverClass, jdbcString, username, password, false, -1);
     }
 
     /**
@@ -66,25 +66,33 @@ public class JDBCMetaBackend implements MetaStore {
      *            Whether to use JDBC connection pooling
      * @throws StorageException
      */
-    public JDBCMetaBackend(String driverClass, String jdbcString, String username, String password,
+    public JDBCMetaBackend(DefaultStorageFinder defStoreFind, String driverClass, String jdbcString, String username, String password,
             boolean useConnectionPooling, int maxConnections) throws ConfigurationException {
         if (useConnectionPooling && maxConnections <= 0) {
             throw new IllegalArgumentException(
                     "If connection pooling is enabled maxConnections shall be a positive integer: "
                             + maxConnections);
         }
-        try {
-            wrpr = new JDBCMBWrapper(driverClass, jdbcString, username, password,
-                    useConnectionPooling, maxConnections);
-        } catch (SQLException se) {
+        String metaStoreDisabled = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_DISABLED);
+        if (metaStoreDisabled != null && Boolean.parseBoolean(metaStoreDisabled)) {
             enabled = false;
-            throw new ConfigurationException(se.getMessage());
-        }
-
-        if (enabled) {
-            idCache = new JDBCMBIdCache(wrpr);
-        } else {
+            wrpr = null;
             idCache = null;
+        } else {
+            try {
+                wrpr = new JDBCMBWrapper(driverClass, jdbcString, username, password,
+                        useConnectionPooling, maxConnections);
+            } catch (SQLException se) {
+                enabled = false;
+                throw new ConfigurationException(se.getMessage());
+            }
+
+            if (enabled) {
+                idCache = new JDBCMBIdCache(wrpr);
+            } else {
+                idCache = null;
+            }
+        	
         }
     }
 
