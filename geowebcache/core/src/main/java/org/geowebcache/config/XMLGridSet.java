@@ -18,6 +18,10 @@ package org.geowebcache.config;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.Grid;
 import org.geowebcache.grid.GridSet;
@@ -398,4 +402,18 @@ public class XMLGridSet implements Serializable {
         this.yCoordinateFirst = yCoordinateFirst;
     }
 
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return EqualsBuilder.reflectionEquals(this, o);
+    }
 }
