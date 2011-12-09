@@ -34,6 +34,11 @@ public class GridSubsetFactory {
 
     public static GridSubset createGridSubSet(GridSet gridSet, BoundingBox extent,
             Integer zoomStart, Integer zoomStop) {
+        return createGridSubSet(gridSet, extent, zoomStart, zoomStop, null, null);
+    }
+
+    public static GridSubset createGridSubSet(GridSet gridSet, BoundingBox extent,
+            Integer zoomStart, Integer zoomStop, Integer minCachedZoom, Integer maxCachedZoom) {
 
         if (gridSet == null) {
             log.error("Passed GridSet was null!");
@@ -72,7 +77,8 @@ public class GridSubsetFactory {
             originalExtent = gridSetBounds;
         }
 
-        GridSubset ret = new GridSubset(gridSet, coverages, originalExtent, fullCoverage);
+        GridSubset ret = new GridSubset(gridSet, coverages, originalExtent, fullCoverage, minCachedZoom, maxCachedZoom);
         return ret;
+
     }
 }

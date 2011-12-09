@@ -818,6 +818,22 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="minCachedLevel" type="xs:integer" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            If provided, requests for zoom levels below this threshold will
+            pass through to the original service.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="maxCachedLevel" type="xs:integer" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            If provided, requests for zoom levels above this threshold will
+            pass through to the original service.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
     </xs:sequence>
   </xs:complexType>
 

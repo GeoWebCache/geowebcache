@@ -17,11 +17,23 @@
  */
 package org.geowebcache.storage;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
+import org.geowebcache.mime.MimeException;
+import org.geowebcache.mime.MimeType;
+import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 
 /**
  * Handles cacheable objects (tiles, wfs responses) both in terms of data storage and metadata
@@ -40,6 +52,8 @@ public class StorageBroker {
     
     private boolean isReady = false;
     
+    private Map<String,Resource> transientCache;
+
     public StorageBroker(MetaStore metaStore, BlobStore blobStore) {
         this.metaStore = metaStore;
         this.blobStore = blobStore;
@@ -49,6 +63,15 @@ public class StorageBroker {
         } else {
             metaStoreEnabled = false;
         }
+        Map<String,Resource> lruCache = new LinkedHashMap<String, Resource>() {
+
+            @Override
+            protected boolean removeEldestEntry(Entry<String, Resource> eldest) {
+                return size() > 100;
+            }
+            
+        };
+        transientCache = Collections.synchronizedMap(lruCache);
     }
 
     public void addBlobStoreListener(BlobStoreListener listener){
@@ -207,5 +230,39 @@ public class StorageBroker {
     
     public void putLayerMetadata(final String layerName, final String key, final String value){
         this.blobStore.putLayerMetadata(layerName, key, value);
+    }
+
+    public static String computeTransientKey(TileObject tile) {
+        try {
+            return FilePathGenerator.tilePath("", tile.getLayerName(), tile.getXYZ(), tile.getGridSetId(), MimeType.createFromExtension("png"), tile.getParametersId() ).getAbsolutePath();
+        } catch (MimeException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public boolean getTransient(TileObject tile) {
+        String key = computeTransientKey(tile);
+        Resource resource = transientCache.remove(key);
+        if (log.isDebugEnabled()) {
+            long cacheSize = 0;
+            for (Resource r: transientCache.values()) {
+                cacheSize += r.getSize();
+            }
+            log.debug("cache size (kb) :" + + cacheSize / 1024);
+        }
+        tile.setBlob(resource); 
+        return resource != null;
+    }
+
+    public void putTransient(TileObject tile) {
+        String key = computeTransientKey(tile);
+        byte[] buf = new byte[tile.getBlobSize()];
+        try {
+            tile.getBlob().getInputStream().read(buf);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        ByteArrayResource blob = new ByteArrayResource(buf);
+        transientCache.put(key, blob);
     }
 }

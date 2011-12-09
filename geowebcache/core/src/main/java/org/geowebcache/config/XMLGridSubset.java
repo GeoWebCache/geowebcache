@@ -43,6 +43,10 @@ public class XMLGridSubset implements Serializable {
 
     private Integer zoomStop;
 
+    private Integer minCachedLevel;
+
+    private Integer maxCachedLevel;
+
     /**
      * Empty constructor
      */
@@ -85,7 +89,7 @@ public class XMLGridSubset implements Serializable {
             return null;
         }
         return GridSubsetFactory.createGridSubSet(gridSet, getExtent(), getZoomStart(),
-                getZoomStop());
+                getZoomStop(), minCachedLevel, maxCachedLevel);
     }
 
     public String getGridSetName() {
@@ -143,5 +147,21 @@ public class XMLGridSubset implements Serializable {
      */
     public void setZoomStop(Integer zoomStop) {
         this.zoomStop = zoomStop;
+    }
+
+    public Integer getMinCachedLevel() {
+        return minCachedLevel;
+    }
+
+    public void setMinCachedLevel(Integer minCachedLevel) {
+        this.minCachedLevel = minCachedLevel;
+    }
+
+    public Integer getMaxCachedLevel() {
+        return maxCachedLevel;
+    }
+
+    public void setMaxCachedLevel(Integer maxCachedLevel) {
+        this.maxCachedLevel = maxCachedLevel;
     }
 }

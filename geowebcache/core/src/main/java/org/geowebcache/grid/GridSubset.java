@@ -36,13 +36,23 @@ public class GridSubset {
 
     private final BoundingBox subSetExtent;
 
+    private final Integer minCachedZoom;
+
+    private final Integer maxCachedZoom;
+
     protected GridSubset(GridSet gridSet, Map<Integer, GridCoverage> coverages,
             BoundingBox originalExtent, boolean fullCoverage) {
+        this(gridSet, coverages, originalExtent, fullCoverage, null, null);
+    }
 
+    public GridSubset(GridSet gridSet, Map<Integer, GridCoverage> coverages,
+            BoundingBox originalExtent, boolean fullCoverage, Integer minCachedZoom, Integer maxCachedZoom) {
         this.gridSet = gridSet;
         this.gridCoverageLevels = coverages;
         this.subSetExtent = originalExtent;
         this.fullGridSetCoverage = fullCoverage;
+        this.minCachedZoom = minCachedZoom;
+        this.maxCachedZoom = maxCachedZoom;
     }
 
     public BoundingBox boundsFromIndex(long[] tileIndex) {
@@ -386,4 +396,14 @@ public class GridSubset {
         return fullGridSetCoverage;
     }
 
+    public boolean shouldCacheAtZoom(long zoom) {
+        boolean shouldCache = true;
+        if (minCachedZoom != null) {
+            shouldCache = zoom >= minCachedZoom;
+        }
+        if (shouldCache && maxCachedZoom != null) {
+            shouldCache = zoom <= maxCachedZoom;
+        }
+        return shouldCache;
+    }
 }
