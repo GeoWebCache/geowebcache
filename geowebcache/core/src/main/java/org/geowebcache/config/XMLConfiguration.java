@@ -929,6 +929,13 @@ public class XMLConfiguration implements Configuration {
     }
 
     /**
+     * @see org.geowebcache.config.Configuration#getLayers()
+     */
+    public Iterable<TileLayer> getLayers() {
+        return Collections.unmodifiableList(gwcConfig.getLayers());
+    }
+
+    /**
      * @see org.geowebcache.config.Configuration#getTileLayer(java.lang.String)
      */
     public TileLayer getTileLayer(String layerIdent) {
