@@ -56,8 +56,14 @@ public interface Configuration {
 
     /**
      * @return an unmodifiable list of layers, may be empty, but not null.
+     * @deprecated
      */
     public List<? extends TileLayer> getTileLayers();
+
+    /**
+     * @return an unmodifiable list of layers, may be empty, but not null.
+     */
+    public Iterable<? extends TileLayer> getLayers();
 
     /**
      * @return non null identifier for this configuration

@@ -34,6 +34,7 @@ import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.util.CompositeIterable;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.util.Assert;
 
@@ -147,13 +148,16 @@ public class TileLayerDispatcher implements DisposableBean {
      * 
      * @return a list view of this tile layer dispatcher's internal layers
      */
+    @SuppressWarnings("unchecked")
     public Iterable<TileLayer> getLayerList() {
-        ArrayList<TileLayer> layers = new ArrayList<TileLayer>();
-        for (int i = 0; i < configs.size(); i++) {
-            Configuration configuration = configs.get(i);
-            layers.addAll(configuration.getTileLayers());
+        List<Iterable<TileLayer>> perConfigLayers = new ArrayList<Iterable<TileLayer>>(
+                configs.size());
+
+        for (Configuration config : configs) {
+            perConfigLayers.add((Iterable<TileLayer>) config.getLayers());
         }
-        return layers;
+
+        return new CompositeIterable<TileLayer>(perConfigLayers);
     }
 
     private void initialize() {
