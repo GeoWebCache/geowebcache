@@ -739,6 +739,25 @@ class JDBCMBWrapper {
         }
     }
 
+    public void deleteLayerGridSubset(final long layerId, final long gridsetId) throws SQLException {
+        String query;
+        query = "DELETE FROM TILES WHERE LAYER_ID = ? AND GRIDSET_ID = ? ";
+
+        final Connection conn = getConnection();
+        try {
+            PreparedStatement prep = conn.prepareStatement(query);
+            try {
+                prep.setLong(1, layerId);
+                prep.setLong(2, gridsetId);
+                prep.execute();
+            } finally {
+                close(prep);
+            }
+        } finally {
+            close(conn);
+        }
+    }
+
     public void renameLayer(final long layerId, final String newLayerName) throws SQLException {
         String statement = "UPDATE LAYERS SET VALUE = ? WHERE ID = ?";
         final Connection conn = getConnection();
@@ -806,7 +825,8 @@ class JDBCMBWrapper {
                 // System.out.println("x: " + xyz[0] + " y: " + xyz[1] + " z: " + xyz[2]);
 
                 TileObject to = TileObject.createQueryTileObject(trObj.getLayerName(), xyz,
-                        trObj.getGridSetId(), trObj.getMimeType().getFormat(), trObj.getParameters());
+                        trObj.getGridSetId(), trObj.getMimeType().getFormat(),
+                        trObj.getParameters());
                 to.setParamtersId(parametersId);
 
                 try {
