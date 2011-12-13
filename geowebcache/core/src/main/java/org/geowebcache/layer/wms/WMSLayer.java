@@ -260,11 +260,11 @@ public class WMSLayer extends AbstractTileLayer {
 
         ConveyorTile returnTile;
 
+        tile.setMetaTileCacheOnly(!gridSubset.shouldCacheAtZoom(gridLoc[2]));
         try {
             if (tryCacheFetch(tile)) {
                 returnTile = finalizeTile(tile);
             } else if (mime.supportsTiling()) { // Okay, so we need to go to the backend
-                tile.setMetaTileCacheOnly(!gridSubset.shouldCacheAtZoom(gridLoc[2]));
                 returnTile = getMetatilingReponse(tile, true);
             } else {
                 returnTile = getNonMetatilingReponse(tile, true);
@@ -272,7 +272,7 @@ public class WMSLayer extends AbstractTileLayer {
         } finally {
             cleanUpThreadLocals();
         }
-
+        
         sendTileRequestedEvent(returnTile);
 
         return returnTile;

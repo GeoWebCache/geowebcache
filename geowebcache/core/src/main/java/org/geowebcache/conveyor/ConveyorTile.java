@@ -219,7 +219,9 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     public boolean retrieve(long maxAge) throws GeoWebCacheException {
         try {
             if (isMetaTileCacheOnly) {
-                return storageBroker.getTransient((TileObject) stObj);
+                boolean cached = storageBroker.getTransient((TileObject) stObj);
+                this.setCacheResult(cached ? CacheResult.HIT : CacheResult.MISS);
+                return cached;
             }
             boolean ret = storageBroker.get((TileObject) stObj);
 
