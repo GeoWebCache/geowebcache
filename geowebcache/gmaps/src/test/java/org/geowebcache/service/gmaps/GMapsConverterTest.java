@@ -101,9 +101,9 @@ public class GMapsConverterTest extends TestCase {
 
         List<ParameterFilter> filters = new ArrayList<ParameterFilter>();
         RegexParameterFilter parameterFilter = new RegexParameterFilter();
-        parameterFilter.key = CQL_FILTER_PARAMETER_NAME;
-        parameterFilter.defaultValue = "";
-        parameterFilter.regex = "value='.*'";
+        parameterFilter.setKey(CQL_FILTER_PARAMETER_NAME);
+        parameterFilter.setDefaultValue("");
+        parameterFilter.setRegex("value='.*'");
         filters.add(parameterFilter);
 
         WMSLayer wmsLayer = new WMSLayer(TEST_LAYER_NAME, null, null, null, null, null, filters,

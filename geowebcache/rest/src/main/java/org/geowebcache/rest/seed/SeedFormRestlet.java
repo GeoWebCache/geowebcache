@@ -194,8 +194,14 @@ public class SeedFormRestlet extends GWCRestlet {
             } else if (pf instanceof RegexParameterFilter) {
                 makeTextInput(doc, parameterId, 25);
             } else if (pf instanceof FloatParameterFilter) {
-                Map<String, String> keysValues = makeParametersMap(defaultValue, legalValues);
-                makePullDown(doc, parameterId, keysValues, defaultValue);
+                FloatParameterFilter floatFilter = (FloatParameterFilter) pf;
+                if (floatFilter.getValues().isEmpty()) {
+                    // accepts any value
+                    makeTextInput(doc, parameterId, 25);
+                } else {
+                    Map<String, String> keysValues = makeParametersMap(defaultValue, legalValues);
+                    makePullDown(doc, parameterId, keysValues, defaultValue);
+                }
             } else if ("org.geowebcache.filter.parameters.NaiveWMSDimensionFilter".equals(pf
                     .getClass().getName())) {
                 makeTextInput(doc, parameterId, 25);
@@ -306,11 +312,10 @@ public class SeedFormRestlet extends GWCRestlet {
     private void makeZoomPullDown(StringBuilder doc, boolean isStart, TileLayer tl) {
         Map<String, String> keysValues = new TreeMap<String, String>();
 
-
         int minStart = Integer.MAX_VALUE;
         int maxStop = Integer.MIN_VALUE;
 
-        for(String gridSetId : tl.getGridSubsets()){
+        for (String gridSetId : tl.getGridSubsets()) {
             GridSubset subset = tl.getGridSubset(gridSetId);
 
             int start = subset.getZoomStart();
@@ -368,9 +373,8 @@ public class SeedFormRestlet extends GWCRestlet {
         doc.append("<tr><td>Grid Set:</td><td>\n");
         Map<String, String> keysValues = new TreeMap<String, String>();
 
-
         String firstGridSetId = null;
-        for(String gridSetId : tl.getGridSubsets()){
+        for (String gridSetId : tl.getGridSubsets()) {
             if (firstGridSetId == null) {
                 firstGridSetId = gridSetId;
             }

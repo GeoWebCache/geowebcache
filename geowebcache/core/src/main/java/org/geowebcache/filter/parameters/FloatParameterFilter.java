@@ -16,17 +16,54 @@
  */
 package org.geowebcache.filter.parameters;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.lang.ObjectUtils;
-
 public class FloatParameterFilter extends ParameterFilter {
 
-    List<Float> values;
+    private static final long serialVersionUID = 4186888723396139208L;
 
-    Float threshold;
+    private List<Float> values;
+
+    private Float threshold;
+
+    public FloatParameterFilter() {
+        readResolve();
+    }
+
+    private FloatParameterFilter readResolve() {
+        if (values == null) {
+            values = new ArrayList<Float>(2);
+        }
+        if (threshold == null) {
+            threshold = Float.valueOf(1E-6f);
+        }
+        return this;
+    }
+
+    /**
+     * @return the values
+     */
+    public List<Float> getValues() {
+        return values;
+    }
+
+    /**
+     * @return the threshold
+     */
+    public Float getThreshold() {
+        return threshold;
+    }
+
+    /**
+     * @param threshold
+     *            the threshold to set
+     */
+    public void setThreshold(Float threshold) {
+        this.threshold = threshold;
+    }
 
     public String apply(String str) throws ParameterException {
         if (str == null || str.length() == 0) {
@@ -34,12 +71,16 @@ public class FloatParameterFilter extends ParameterFilter {
         }
 
         float val = Float.parseFloat(str);
+        if (values.isEmpty()) {
+            // this is an accept all filter. At least it will match 2.0 and 2.000 as the same value
+            return String.valueOf(val);
+        }
 
         float best = Float.MIN_VALUE;
 
         float bestMismatch = Float.MAX_VALUE;
 
-        Iterator<Float> iter = values.iterator();
+        Iterator<Float> iter = getValues().iterator();
         while (iter.hasNext()) {
             Float fl = iter.next();
 
@@ -54,7 +95,7 @@ public class FloatParameterFilter extends ParameterFilter {
             return Float.toString(best);
         }
 
-        throw new ParameterException("Closest match for " + super.key + "=" + str + " is "
+        throw new ParameterException("Closest match for " + super.getKey() + "=" + str + " is "
                 + Float.toString(best) + ", but this exceeds the threshold of "
                 + Float.toString(threshold));
     }
@@ -62,19 +103,11 @@ public class FloatParameterFilter extends ParameterFilter {
     public List<String> getLegalValues() {
         List<String> ret = new LinkedList<String>();
 
-        Iterator<Float> iter = values.iterator();
+        Iterator<Float> iter = getValues().iterator();
         while (iter.hasNext()) {
             ret.add(Float.toString(iter.next()));
         }
 
         return ret;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (!super.equals(o)) {
-            return false;
-        }
-        return ObjectUtils.equals(threshold, ((FloatParameterFilter) o).threshold);
     }
 }

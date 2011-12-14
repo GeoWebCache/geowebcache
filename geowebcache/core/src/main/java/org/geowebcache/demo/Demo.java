@@ -1,7 +1,10 @@
 package org.geowebcache.demo;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -268,7 +271,7 @@ public class Demo {
                 + "  // sets the chosen modifiable parameter        \n"
                 + "  function setParam(name, value){                \n"
                 + "   str = \"demolayer.mergeNewParams({\" + name + \": '\" + value + \"'})\" \n"
-                + "   //alert(str);                                   \n"
+                + "   // alert(str);                                   \n"
                 + "   eval(str);                                    \n"
                 + "  }                                              \n"
 
@@ -349,6 +352,12 @@ public class Demo {
         if (parameterFilters == null || parameterFilters.size() == 0) {
             return "";
         }
+        parameterFilters = new ArrayList<ParameterFilter>(parameterFilters);
+        Collections.sort(parameterFilters, new Comparator<ParameterFilter>() {
+            public int compare(ParameterFilter o1, ParameterFilter o2) {
+                return o1.getKey().compareTo(o2.getKey());
+            }
+        });
         StringBuilder doc = new StringBuilder();
         doc.append("Modifiable Parameters:\n");
         doc.append("<table>\n");
@@ -365,8 +374,14 @@ public class Demo {
             } else if (pf instanceof RegexParameterFilter) {
                 makeTextInput(doc, parameterId, 25);
             } else if (pf instanceof FloatParameterFilter) {
-                Map<String, String> keysValues = makeParametersMap(defaultValue, legalValues);
-                makePullDown(doc, parameterId, keysValues, defaultValue);
+                FloatParameterFilter floatParam = (FloatParameterFilter) pf;
+                if (floatParam.getValues().isEmpty()) {
+                    // accepts any value
+                    makeTextInput(doc, parameterId, 25);
+                } else {
+                    Map<String, String> keysValues = makeParametersMap(defaultValue, legalValues);
+                    makePullDown(doc, parameterId, keysValues, defaultValue);
+                }
             } else if ("org.geowebcache.filter.parameters.NaiveWMSDimensionFilter".equals(pf
                     .getClass().getName())) {
                 makeTextInput(doc, parameterId, 25);
@@ -411,6 +426,7 @@ public class Demo {
     }
 
     private static void makeTextInput(StringBuilder doc, String id, int size) {
-        doc.append("<input name=\"" + id + "\" type=\"text\" size=\"" + size + "\" />\n");
+        doc.append("<input name=\"" + id + "\" type=\"text\" size=\"" + size
+                + "\" onblur=\"setParam('" + id + "', value)\" />\n");
     }
 }

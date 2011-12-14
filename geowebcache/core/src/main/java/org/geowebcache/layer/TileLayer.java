@@ -112,12 +112,15 @@ public abstract class TileLayer {
     public abstract LayerMetaInformation getMetaInformation();
 
     /**
-     * Retrieves the GridSet names for this layer
+     * Retrieves the GridSet names for this layer.
+     * <p>
+     * The returned set is immutable.
+     * </p>
      * 
      * @see #getGridSubset(String)
      */
     public abstract Set<String> getGridSubsets();
-
+    
     /**
      * @return possibly empty list of update sources for this layer
      */

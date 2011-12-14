@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +31,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.request.RequestFilter;
@@ -62,9 +62,9 @@ public class WMSLayer extends AbstractTileLayer {
         MAP, FEATUREINFO
     };
 
-    private String[] wmsUrl = null;
+    private String[] wmsUrl;
 
-    private String wmsLayers = null;
+    private String wmsLayers;
 
     protected String wmsStyles;
 
@@ -132,7 +132,7 @@ public class WMSLayer extends AbstractTileLayer {
      * @param vendorParams
      */
     public WMSLayer(String layerName, String[] wmsURL, String wmsStyles, String wmsLayers,
-            List<String> mimeFormats, Hashtable<String, GridSubset> subSets,
+            List<String> mimeFormats, Map<String, GridSubset> subSets,
             List<ParameterFilter> parameterFilters, int[] metaWidthHeight, String vendorParams,
             boolean queryable) {
 
@@ -142,6 +142,12 @@ public class WMSLayer extends AbstractTileLayer {
         this.wmsStyles = wmsStyles;
         this.mimeFormats = mimeFormats == null ? null : new ArrayList<String>(mimeFormats);
         this.subSets = subSets;
+        this.gridSubsets = new ArrayList<XMLGridSubset>();
+        if (subSets != null) {
+            for (GridSubset subset : subSets.values()) {
+                gridSubsets.add(new XMLGridSubset(subset));
+            }
+        }
         this.parameterFilters = parameterFilters == null ? null : new ArrayList<ParameterFilter>(
                 parameterFilters);
         this.metaWidthHeight = metaWidthHeight;
@@ -150,6 +156,11 @@ public class WMSLayer extends AbstractTileLayer {
         // this.bgColor = "0x000000";
         // this.palette = "test.png";
         this.queryable = queryable;
+    }
+
+    protected WMSLayer readResolve() {
+        super.readResolve();
+        return this;
     }
 
     /**
@@ -811,11 +822,6 @@ public class WMSLayer extends AbstractTileLayer {
         } else {
             return srs.toString();
         }
-    }
-
-    private Object readResolve() {
-        // Not really needed at this point
-        return this;
     }
 
     public void cleanUpThreadLocals() {
