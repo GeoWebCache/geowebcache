@@ -105,6 +105,10 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
         startUp();
     }
 
+    /**
+     * @throws InterruptedException
+     * @see {@link #destroy()}
+     */
     public void startUp() throws InterruptedException {
         if (!diskQuotaEnabled) {
             log.info(getClass().getName() + " won't start, got env variable "
@@ -133,6 +137,7 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
     /**
      * 
      * @see org.springframework.beans.factory.DisposableBean#destroy()
+     * @see #startUp()
      */
     public void destroy() throws Exception {
         if (!diskQuotaEnabled) {

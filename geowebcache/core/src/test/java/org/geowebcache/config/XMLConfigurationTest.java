@@ -8,15 +8,15 @@ import java.io.FileInputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 import junit.framework.TestCase;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -27,6 +27,7 @@ import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSetFactory;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -53,7 +54,7 @@ public class XMLConfigurationTest extends TestCase {
         configFile = new File(configDir, "geowebcache.xml");
         FileUtils.copyURLToFile(source, configFile);
 
-        gridSetBroker = new GridSetBroker(true, false);
+        gridSetBroker = new GridSetBroker(true, true);
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
         config.initialize(gridSetBroker);
     }
@@ -134,12 +135,14 @@ public class XMLConfigurationTest extends TestCase {
         String wmsStyles = "default,line";
         String wmsLayers = "states,border";
         List<String> mimeFormats = Arrays.asList("image/png", "image/jpeg");
-        Hashtable<String, GridSubset> subSets = null;
+        Map<String, GridSubset> subSets = new HashMap<String, GridSubset>();
+        GridSubset gridSubSet = GridSubsetFactory.createGridSubSet(gridSetBroker.get("EPSG:4326"));
+        subSets.put(gridSubSet.getName(), gridSubSet);
 
         StringParameterFilter filter = new StringParameterFilter();
-        filter.key = "STYLES";
-        filter.values = new ArrayList<String>(Arrays.asList("polygon", "point"));
-        filter.defaultValue = "polygon";
+        filter.setKey("STYLES");
+        filter.getValues().addAll(Arrays.asList("polygon", "point"));
+        filter.setDefaultValue("polygon");
 
         List<ParameterFilter> parameterFilters = new ArrayList<ParameterFilter>(
                 new ArrayList<ParameterFilter>(Arrays.asList((ParameterFilter) filter)));
@@ -174,6 +177,11 @@ public class XMLConfigurationTest extends TestCase {
         assertEquals(wmsLayers, l.getWmsLayers());
         assertEquals(mimeFormats, l.getMimeFormats());
         assertEquals(parameterFilters, l.getParameterFilters());
+        for (GridSubset expected : subSets.values()) {
+            GridSubset actual = l.getGridSubset(expected.getName());
+            assertNotNull(actual);
+            assertEquals(new XMLGridSubset(expected), new XMLGridSubset(actual));
+        }
     }
 
     public void testSaveGridSet() throws Exception {

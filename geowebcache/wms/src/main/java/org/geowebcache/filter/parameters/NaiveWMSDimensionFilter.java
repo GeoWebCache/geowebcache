@@ -19,18 +19,21 @@ package org.geowebcache.filter.parameters;
 
 import java.util.List;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.geotools.data.wms.xml.Dimension;
 import org.geotools.data.wms.xml.Extent;
 
 /**
- * This class is used to forward information about WMS 1.1.x dimensions
- * from the getcapabilities configuration to GWC clients.
+ * This class is used to forward information about WMS 1.1.x dimensions from the getcapabilities
+ * configuration to GWC clients.
  * 
- * It is naive in the sense that it does not really parse or understand
- * the values it is dealing with, anything is accepted.
+ * It is naive in the sense that it does not really parse or understand the values it is dealing
+ * with, anything is accepted.
  */
-public class NaiveWMSDimensionFilter extends ParameterFilter 
-implements WMSDimensionProvider {
+public class NaiveWMSDimensionFilter extends ParameterFilter implements WMSDimensionProvider {
+
+    private static final long serialVersionUID = 8217550988333856916L;
 
     private Dimension dimension;
 
@@ -47,10 +50,10 @@ implements WMSDimensionProvider {
             keyName = "dim_" + keyName;
         }
 
-        this.key = keyName;
-        this.defaultValue = extent.getDefaultValue();
+        this.setKey(keyName);
+        this.setDefaultValue(extent.getDefaultValue());
     }
-    
+
     public String apply(String str) throws ParameterException {
         return str;
     }
@@ -75,5 +78,15 @@ implements WMSDimensionProvider {
             str.append(extent.getValue());
         }
         str.append("</Extent>\n");
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return EqualsBuilder.reflectionEquals(this, o);
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
     }
 }

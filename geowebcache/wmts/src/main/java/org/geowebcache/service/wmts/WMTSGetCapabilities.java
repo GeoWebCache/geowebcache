@@ -293,13 +293,13 @@ public class WMTSGetCapabilities {
              Iterator<ParameterFilter> iter = filters.iterator();
              while(stylesFilter == null && iter.hasNext()) {
                  ParameterFilter filter = iter.next();
-                 if(filter.key.equalsIgnoreCase("STYLES")) {
+                 if(filter.getKey().equalsIgnoreCase("STYLES")) {
                      stylesFilter = filter;
                  }
              }
              
              if(stylesFilter != null) {
-                 String defVal = stylesFilter.defaultValue; 
+                 String defVal = stylesFilter.getDefaultValue(); 
                  if(defVal == null) {
                      if(defStyle != null) {
                          defVal = defStyle;
@@ -348,7 +348,7 @@ public class WMTSGetCapabilities {
          while(iter.hasNext()) {
              ParameterFilter filter = iter.next();
              
-             if(! filter.key.equalsIgnoreCase("STYLES")) {
+             if(! filter.getKey().equalsIgnoreCase("STYLES")) {
                  List<String> values = filter.getLegalValues();
              
                  if(values != null) {
@@ -360,8 +360,8 @@ public class WMTSGetCapabilities {
          
      private void dimensionDescription(StringBuilder str, ParameterFilter filter, List<String> values) {
          str.append("    <Dimension>");
-         str.append("      <Identifier>"+filter.key+"</Identifier>");
-         String defaultStr = TileLayer.encodeDimensionValue(filter.defaultValue);
+         str.append("      <Identifier>"+filter.getKey()+"</Identifier>");
+         String defaultStr = TileLayer.encodeDimensionValue(filter.getDefaultValue());
          str.append("      <Default>"+encodeXmlChars(defaultStr)+"</Default>");
          
          Iterator<String> iter = values.iterator();

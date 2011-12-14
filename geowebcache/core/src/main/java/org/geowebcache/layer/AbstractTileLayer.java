@@ -101,6 +101,13 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     // Styles?
 
+    protected AbstractTileLayer readResolve() {
+        if (gridSubsets == null) {
+            gridSubsets = new ArrayList<XMLGridSubset>();
+        }
+        return this;
+    }
+
     /**
      * Registers a layer listener to be notified of layer events
      * 
@@ -235,22 +242,20 @@ public abstract class AbstractTileLayer extends TileLayer {
             subSets = new HashMap<String, GridSubset>();
         }
 
-        if (this.gridSubsets != null) {
-            Iterator<XMLGridSubset> iter = gridSubsets.iterator();
-            while (iter.hasNext()) {
-                XMLGridSubset xmlGridSubset = iter.next();
-                GridSubset gridSubset = xmlGridSubset.getGridSubSet(gridSetBroker);
+        if (this.gridSubsets == null) {
+            this.gridSubsets = new ArrayList<XMLGridSubset>();
+        }
 
-                if (gridSubset == null) {
-                    log.error(xmlGridSubset.getGridSetName()
-                            + " is not known by the GridSetBroker, skipping for layer " + name);
-                } else {
-                    subSets.put(gridSubset.getName(), gridSubset);
-                }
+        for (XMLGridSubset xmlGridSubset : gridSubsets) {
+            GridSubset gridSubset = xmlGridSubset.getGridSubSet(gridSetBroker);
 
+            if (gridSubset == null) {
+                log.error(xmlGridSubset.getGridSetName()
+                        + " is not known by the GridSetBroker, skipping for layer " + name);
+            } else {
+                subSets.put(gridSubset.getName(), gridSubset);
             }
 
-            this.gridSubsets = null;
         }
 
         // Convert version 1.1.x and 1.0.x grid objects
@@ -259,8 +264,9 @@ public abstract class AbstractTileLayer extends TileLayer {
             while (iter.hasNext()) {
                 GridSubset converted = iter.next().convertToGridSubset(gridSetBroker);
                 subSets.put(converted.getSRS().toString(), converted);
+                // hold it in case the layer is to be saved again
+                gridSubsets.add(new XMLGridSubset(converted));
             }
-
             // Null it for the garbage collector
             grids = null;
         }

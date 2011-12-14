@@ -19,6 +19,8 @@ package org.geowebcache.grid;
 import java.util.Collections;
 import java.util.Map;
 
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.util.ServletUtils;
 
@@ -405,5 +407,9 @@ public class GridSubset {
             shouldCache = zoom <= maxCachedZoom;
         }
         return shouldCache;
+    }
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

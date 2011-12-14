@@ -60,6 +60,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -455,6 +456,10 @@ public class XMLConfiguration implements Configuration {
 
     @SuppressWarnings("unchecked")
     public XStream getConfiguredXStream(XStream xs) {
+        return getConfiguredXStream(xs, this.context);
+    }
+
+    public static XStream getConfiguredXStream(XStream xs, WebApplicationContext context) {
         // XStream xs = xstream;
         xs.setMode(XStream.NO_REFERENCES);
 
@@ -467,7 +472,7 @@ public class XMLConfiguration implements Configuration {
         xs.aliasField("xsi:schemaLocation", GeoWebCacheConfiguration.class, "xsi_schemaLocation");
         xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
 
-        xs.alias("layers", List.class);
+        //xs.alias("layers", List.class);
         xs.alias("wmsLayer", WMSLayer.class);
 
         // These two are for 1.1.x compatibility
@@ -505,13 +510,13 @@ public class XMLConfiguration implements Configuration {
         xs.alias("serviceInformation", ServiceInformation.class);
         xs.alias("contactInformation", ContactInformation.class);
 
-        if (this.context != null) {
+        if (context != null) {
             /*
              * Look up XMLConfigurationProvider extension points and let them contribute to the
              * configuration
              */
-            Collection<XMLConfigurationProvider> configExtensions;
-            configExtensions = this.context.getBeansOfType(XMLConfigurationProvider.class).values();
+            List<XMLConfigurationProvider> configExtensions = GeoWebCacheExtensions.extensions(
+                    XMLConfigurationProvider.class, context);
             for (XMLConfigurationProvider extension : configExtensions) {
                 xs = extension.getConfiguredXStream(xs);
             }
