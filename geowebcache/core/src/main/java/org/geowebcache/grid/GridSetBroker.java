@@ -159,7 +159,7 @@ public class GridSetBroker {
      * <p>
      * This method doesn't check whether there's any layer referencing the gridset nor removes it
      * from the {@link XMLConfiguration}. For such a thing, check
-     * {@link TileLayerDispatcher#removeGridset(String)}, which cascades to thid method.
+     * {@link TileLayerDispatcher#removeGridset(String)}, which cascades to this method.
      * </p>
      * 
      * @param gridSetName

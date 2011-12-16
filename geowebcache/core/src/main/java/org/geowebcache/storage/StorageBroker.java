@@ -63,6 +63,9 @@ public class StorageBroker {
         this.verifyFileSize = verifyFileSize;
     }
 
+    /**
+     * Completely eliminates the cache for the given layer.
+     */
     public boolean delete(String layerName) throws StorageException {
         boolean ret = true;
         if (metaStoreEnabled) {
