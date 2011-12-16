@@ -32,15 +32,15 @@ import org.geowebcache.storage.blobstore.file.FilePathGenerator;
  */
 public class StorageBroker {
     private static Log log = LogFactory.getLog(org.geowebcache.storage.StorageBroker.class);
-    
+
     private BlobStore blobStore;
-    
-    private MetaStore metaStore; 
-    
+
+    private MetaStore metaStore;
+
     private boolean metaStoreEnabled = true;
-    
+
     private boolean verifyFileSize = false;
-    
+
     private boolean isReady = false;
     
     private TransientCache transientCache;
@@ -48,8 +48,8 @@ public class StorageBroker {
     public StorageBroker(MetaStore metaStore, BlobStore blobStore) {
         this.metaStore = metaStore;
         this.blobStore = blobStore;
-        
-        if(metaStore != null) {
+
+        if (metaStore != null) {
             metaStoreEnabled = metaStore.enabled();
         } else {
             metaStoreEnabled = false;
@@ -58,21 +58,24 @@ public class StorageBroker {
         transientCache = new TransientCache(100,1000);
     }
 
-    public void addBlobStoreListener(BlobStoreListener listener){
+    public void addBlobStoreListener(BlobStoreListener listener) {
         blobStore.addListener(listener);
     }
-    
-    public boolean removeBlobStoreListener(BlobStoreListener listener){
+
+    public boolean removeBlobStoreListener(BlobStoreListener listener) {
         return blobStore.removeListener(listener);
     }
-    
+
     public void setVerifyFileSize(boolean verifyFileSize) {
         this.verifyFileSize = verifyFileSize;
     }
-    
+
+    /**
+     * Completely eliminates the cache for the given layer.
+     */
     public boolean delete(String layerName) throws StorageException {
         boolean ret = true;
-        if(metaStoreEnabled) {
+        if (metaStoreEnabled) {
             ret = metaStore.delete(layerName);
         }
         ret = (ret && blobStore.delete(layerName));
@@ -100,7 +103,7 @@ public class StorageBroker {
 
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
         boolean ret = true;
-        if(metaStoreEnabled) {
+        if (metaStoreEnabled) {
             ret = metaStore.rename(oldLayerName, newLayerName);
         }
         ret = (ret && blobStore.rename(oldLayerName, newLayerName));
@@ -109,7 +112,7 @@ public class StorageBroker {
 
     public boolean delete(TileRange trObj) throws StorageException {
         boolean deleted;
-        if(metaStoreEnabled) {
+        if (metaStoreEnabled) {
             deleted = metaStore.delete(blobStore, trObj);
         } else {
             if (trObj instanceof DiscontinuousTileRange) {
