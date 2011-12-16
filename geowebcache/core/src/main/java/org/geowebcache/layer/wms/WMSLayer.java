@@ -254,11 +254,13 @@ public class WMSLayer extends AbstractTileLayer {
 
         long[] gridLoc = tile.getTileIndex();
 
+        GridSubset gridSubset = getGridSubset(tileGridSetId);
         // Final preflight check, throws exception if necessary
-        getGridSubset(tileGridSetId).checkCoverage(gridLoc);
+        gridSubset.checkCoverage(gridLoc);
 
         ConveyorTile returnTile;
 
+        tile.setMetaTileCacheOnly(!gridSubset.shouldCacheAtZoom(gridLoc[2]));
         try {
             if (tryCacheFetch(tile)) {
                 returnTile = finalizeTile(tile);
@@ -270,7 +272,7 @@ public class WMSLayer extends AbstractTileLayer {
         } finally {
             cleanUpThreadLocals();
         }
-
+        
         sendTileRequestedEvent(returnTile);
 
         return returnTile;
@@ -345,7 +347,6 @@ public class WMSLayer extends AbstractTileLayer {
             if (saveExpirationHeaders) {
                 metaTile.setExpiresHeader(GWCVars.CACHE_USE_WMS_BACKEND_VALUE);
             }
-
             sourceHelper.makeRequest(metaTile, buffer);
 
             if (metaTile.getError()) {
