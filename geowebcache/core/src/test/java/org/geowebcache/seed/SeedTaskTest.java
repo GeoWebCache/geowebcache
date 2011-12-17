@@ -21,15 +21,14 @@ import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.classextension.EasyMock.replay;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
+import static org.geowebcache.TestHelpers.createFakeSourceImage;
+import static org.geowebcache.TestHelpers.createWMSLayer;
+import static org.geowebcache.TestHelpers.createRequest;
+
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,17 +36,13 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import javax.imageio.ImageIO;
-
 import junit.framework.TestCase;
 
 import org.easymock.Capture;
 import org.easymock.classextension.EasyMock;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
-import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -67,8 +62,6 @@ import org.geowebcache.util.MockWMSSourceHelper;
  * @version $Id$
  */
 public class SeedTaskTest extends TestCase {
-
-    private final GridSetBroker gridSetBroker = new GridSetBroker(false, false);
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -331,54 +324,6 @@ public class SeedTaskTest extends TestCase {
         }
 
         assertEquals(expectedTiles, tileKeys);
-    }
-
-    private SeedRequest createRequest(WMSLayer tl, TYPE type, int zoomStart, int zoomStop) {
-        String gridSet = tl.getGridSubsets().iterator().next();
-        BoundingBox bounds = null;
-        int threadCount = 1;
-        String format = tl.getMimeTypes().get(0).getFormat();
-        SeedRequest req = new SeedRequest(tl.getName(), bounds, gridSet, threadCount, zoomStart,
-                zoomStop, format, type, null);
-        return req;
-
-    }
-
-    private WMSLayer createWMSLayer(final String format) {
-
-        String[] urls = { "http://localhost:38080/wms" };
-        List<String> formatList = Collections.singletonList(format);
-
-        Hashtable<String, GridSubset> grids = new Hashtable<String, GridSubset>();
-
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326,
-                new BoundingBox(-30.0, 15.0, 45.0, 30), 0, 10);
-
-        grids.put(grid.getName(), grid);
-        int[] metaWidthHeight = { 3, 3 };
-
-        WMSLayer layer = new WMSLayer("test:layer", urls, "aStyle", "test:layer", formatList,
-                grids, null, metaWidthHeight, "vendorparam=true", false);
-
-        layer.initialize(gridSetBroker);
-
-        return layer;
-    }
-
-    private byte[] createFakeSourceImage(final WMSLayer layer) throws IOException {
-
-        int tileWidth = layer.getGridSubset(gridSetBroker.WORLD_EPSG4326.getName()).getGridSet()
-                .getTileWidth();
-        int tileHeight = layer.getGridSubset(gridSetBroker.WORLD_EPSG4326.getName()).getGridSet()
-                .getTileHeight();
-
-        int width = tileWidth * layer.getMetaTilingFactors()[0];
-        int height = tileHeight * layer.getMetaTilingFactors()[1];
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        RenderedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        String formatName = layer.getMimeTypes().get(0).getInternalName();
-        ImageIO.write(image, formatName, out);
-        return out.toByteArray();
     }
 
     private static class Tuple<T extends Comparable<T>> implements Comparable<Tuple<T>> {

@@ -579,7 +579,6 @@ public abstract class TileLayer {
                     if (!completed) {
                         log.error("metaTile.writeTileToStream returned false, no tiles saved");
                     }
-
                     if (store) {
                         long[] idx = { gridPos[0], gridPos[1], gridPos[2] };
 
@@ -588,7 +587,11 @@ public abstract class TileLayer {
                                 tileProto.getParameters(), resource);
 
                         try {
-                            tileProto.getStorageBroker().put(tile);
+                            if (tileProto.isMetaTileCacheOnly()) {
+                                tileProto.getStorageBroker().putTransient(tile);
+                            } else {
+                                tileProto.getStorageBroker().put(tile);
+                            }
                         } catch (StorageException e) {
                             throw new GeoWebCacheException(e);
                         }

@@ -44,6 +44,10 @@ public class XMLGridSubset implements Serializable {
 
     private Integer zoomStop;
 
+    private Integer minCachedLevel;
+
+    private Integer maxCachedLevel;
+
     /**
      * Empty constructor
      */
@@ -59,6 +63,8 @@ public class XMLGridSubset implements Serializable {
         setExtent(sset.getExtent() == null ? null : new BoundingBox(sset.getExtent()));
         setZoomStart(sset.getZoomStart());
         setZoomStop(sset.getZoomStop());
+        setMinCachedLevel(sset.getMinCachedLevel());
+        setMaxCachedLevel(sset.getMaxCachedLevel());
     }
 
     /**
@@ -70,6 +76,8 @@ public class XMLGridSubset implements Serializable {
                 sset.getOriginalExtent()));
         setZoomStart(sset.getZoomStart());
         setZoomStop(sset.getZoomStop());
+        setMinCachedLevel(sset.getMinCachedZoom());
+        setMaxCachedLevel(sset.getMaxCachedZoom());
     }
 
     public GridSubset getGridSubSet(GridSetBroker gridSetBroker) {
@@ -81,7 +89,7 @@ public class XMLGridSubset implements Serializable {
             return null;
         }
         return GridSubsetFactory.createGridSubSet(gridSet, getExtent(), getZoomStart(),
-                getZoomStop());
+                getZoomStop(), minCachedLevel, maxCachedLevel);
     }
 
     public String getGridSetName() {
@@ -154,5 +162,21 @@ public class XMLGridSubset implements Serializable {
     @Override
     public boolean equals(Object o) {
         return EqualsBuilder.reflectionEquals(this, o);
+    }
+
+    public Integer getMinCachedLevel() {
+        return minCachedLevel;
+    }
+
+    public void setMinCachedLevel(Integer minCachedLevel) {
+        this.minCachedLevel = minCachedLevel;
+    }
+
+    public Integer getMaxCachedLevel() {
+        return maxCachedLevel;
+    }
+
+    public void setMaxCachedLevel(Integer maxCachedLevel) {
+        this.maxCachedLevel = maxCachedLevel;
     }
 }

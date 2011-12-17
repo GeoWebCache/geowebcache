@@ -22,6 +22,9 @@ import java.util.Arrays;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.io.Resource;
+import org.geowebcache.mime.MimeException;
+import org.geowebcache.mime.MimeType;
+import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 
 /**
  * Handles cacheable objects (tiles, wfs responses) both in terms of data storage and metadata
@@ -39,6 +42,8 @@ public class StorageBroker {
     private boolean verifyFileSize = false;
 
     private boolean isReady = false;
+    
+    private TransientCache transientCache;
 
     public StorageBroker(MetaStore metaStore, BlobStore blobStore) {
         this.metaStore = metaStore;
@@ -49,16 +54,18 @@ public class StorageBroker {
         } else {
             metaStoreEnabled = false;
         }
+        // @todo are these settings reasonable? should they be configurable?
+        transientCache = new TransientCache(100,1000);
     }
 
-    public void addBlobStoreListener(BlobStoreListener listener) {
+    public void addBlobStoreListener(BlobStoreListener listener){
         blobStore.addListener(listener);
     }
-
-    public boolean removeBlobStoreListener(BlobStoreListener listener) {
+    
+    public boolean removeBlobStoreListener(BlobStoreListener listener){
         return blobStore.removeListener(listener);
     }
-
+    
     public void setVerifyFileSize(boolean verifyFileSize) {
         this.verifyFileSize = verifyFileSize;
     }
@@ -221,5 +228,32 @@ public class StorageBroker {
 
     public void putLayerMetadata(final String layerName, final String key, final String value) {
         this.blobStore.putLayerMetadata(layerName, key, value);
+    }
+
+    public static String computeTransientKey(TileObject tile) {
+        try {
+            MimeType mime = MimeType.createFromFormat(tile.getBlobFormat());
+            return FilePathGenerator.tilePath("", tile.getLayerName(), tile.getXYZ(), 
+                    tile.getGridSetId(), mime, tile.getParametersId() ).getAbsolutePath();
+        } catch (MimeException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public boolean getTransient(TileObject tile) {
+        String key = computeTransientKey(tile);
+        Resource resource;
+        synchronized (transientCache) {
+            resource = transientCache.get(key);
+        }
+        tile.setBlob(resource); 
+        return resource != null;
+    }
+
+    public void putTransient(TileObject tile) {
+        String key = computeTransientKey(tile);
+        synchronized (transientCache) {
+            transientCache.put(key, tile.getBlob());
+        }
     }
 }
