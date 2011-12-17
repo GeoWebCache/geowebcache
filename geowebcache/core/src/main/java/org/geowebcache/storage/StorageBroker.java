@@ -58,14 +58,14 @@ public class StorageBroker {
         transientCache = new TransientCache(100,1000);
     }
 
-    public void addBlobStoreListener(BlobStoreListener listener) {
+    public void addBlobStoreListener(BlobStoreListener listener){
         blobStore.addListener(listener);
     }
-
-    public boolean removeBlobStoreListener(BlobStoreListener listener) {
+    
+    public boolean removeBlobStoreListener(BlobStoreListener listener){
         return blobStore.removeListener(listener);
     }
-
+    
     public void setVerifyFileSize(boolean verifyFileSize) {
         this.verifyFileSize = verifyFileSize;
     }

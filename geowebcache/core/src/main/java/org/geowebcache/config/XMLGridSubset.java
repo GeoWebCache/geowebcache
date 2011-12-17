@@ -63,6 +63,8 @@ public class XMLGridSubset implements Serializable {
         setExtent(sset.getExtent() == null ? null : new BoundingBox(sset.getExtent()));
         setZoomStart(sset.getZoomStart());
         setZoomStop(sset.getZoomStop());
+        setMinCachedLevel(sset.getMinCachedLevel());
+        setMaxCachedLevel(sset.getMaxCachedLevel());
     }
 
     /**
@@ -74,6 +76,8 @@ public class XMLGridSubset implements Serializable {
                 sset.getOriginalExtent()));
         setZoomStart(sset.getZoomStart());
         setZoomStop(sset.getZoomStop());
+        setMinCachedLevel(sset.getMinCachedZoom());
+        setMaxCachedLevel(sset.getMaxCachedZoom());
     }
 
     public GridSubset getGridSubSet(GridSetBroker gridSetBroker) {

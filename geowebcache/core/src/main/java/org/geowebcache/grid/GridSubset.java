@@ -388,6 +388,14 @@ public class GridSubset {
         Integer maxLevel = Collections.max(gridCoverageLevels.keySet());
         return maxLevel.intValue();
     }
+    
+    public Integer getMinCachedZoom(){
+        return minCachedZoom;
+    }
+    
+    public Integer getMaxCachedZoom(){
+        return maxCachedZoom;
+    }
 
     /**
      * Whether the Grid Subset equals or exceeds the extent of the Grid Set
