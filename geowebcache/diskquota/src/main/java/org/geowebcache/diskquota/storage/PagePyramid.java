@@ -23,8 +23,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.storage.TileRange;
 import org.springframework.util.Assert;
@@ -38,8 +36,6 @@ import org.springframework.util.Assert;
  * @author groldan
  */
 class PagePyramid {
-
-    private static final Log log = LogFactory.getLog(PagePyramid.class);
 
     /**
      * {@code [level][numTilesPerPageX, numTilesPerPageY, numPagesX, numPagesY]}
@@ -237,7 +233,7 @@ class PagePyramid {
 
         long[] pageCoverage = { minTileX, minTileY, maxTileX, maxTileY, level };
 
-        final int numLevels = pageInfo.size();
+        final int numLevels = gridSubsetCoverages.size();
         long[][] allLevelsCoverage = new long[numLevels][];
         allLevelsCoverage[level] = pageCoverage;
         return allLevelsCoverage;
