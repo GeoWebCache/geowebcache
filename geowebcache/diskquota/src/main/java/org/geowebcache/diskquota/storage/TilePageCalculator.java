@@ -4,11 +4,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.diskquota.storage.PagePyramid.PageLevelInfo;
@@ -22,8 +19,6 @@ import org.springframework.util.Assert;
 public class TilePageCalculator {
 
     private TileLayerDispatcher tld;
-
-    private Map<TileSet, PagePyramid> pagePyramids = new WeakHashMap<TileSet, PagePyramid>();
 
     public TilePageCalculator(final TileLayerDispatcher tld) {
         this.tld = tld;
@@ -53,11 +48,7 @@ public class TilePageCalculator {
     }
 
     private PagePyramid getPagePyramid(TileSet tileSet) {
-        PagePyramid pagePyramid = pagePyramids.get(tileSet);
-        if (pagePyramid == null) {
-            pagePyramid = newPagePyramid(tileSet);
-            pagePyramids.put(tileSet, pagePyramid);
-        }
+        PagePyramid pagePyramid = newPagePyramid(tileSet);
         return pagePyramid;
     }
 
@@ -130,15 +121,6 @@ public class TilePageCalculator {
         return layerTileSets;
     }
 
-    public Iterator<TilePage> computeAllPagesFor(final TileSet tileSet) {
-        PagePyramid pagePyramid = newPagePyramid(tileSet);
-        return computeAllPagesFor(tileSet, pagePyramid);
-    }
-
-    Iterator<TilePage> computeAllPagesFor(final TileSet tileSet, final PagePyramid pagePyramid) {
-        return new LazyTilePageIterator(tileSet, pagePyramid);
-    }
-
     private PagePyramid newPagePyramid(final TileSet tileSet) {
         final String layerName = tileSet.getLayerName();
         final TileLayer tileLayer;
@@ -148,7 +130,8 @@ public class TilePageCalculator {
             throw new IllegalArgumentException(e);
         }
 
-        final GridSubset gridSubset = tileLayer.getGridSubset(tileSet.getGridsetId());
+        final String gridsetId = tileSet.getGridsetId();
+        final GridSubset gridSubset = tileLayer.getGridSubset(gridsetId);
         return newPagePyramid(gridSubset);
     }
 
@@ -159,66 +142,5 @@ public class TilePageCalculator {
 
         PagePyramid pagePyramid = new PagePyramid(coverages, zoomStart, zoomStop);
         return pagePyramid;
-    }
-
-    private static class LazyTilePageIterator implements Iterator<TilePage> {
-
-        private final TileSet tileSet;
-
-        private final PagePyramid pagePyramid;
-
-        private TilePage next;
-
-        private byte currZoomLevel;
-
-        private PageLevelInfo currPageInfo;
-
-        private int currX;
-
-        private int currY;
-
-        public LazyTilePageIterator(TileSet tileSet, final PagePyramid pagePyramid) {
-            this.tileSet = tileSet;
-            this.pagePyramid = pagePyramid;
-            this.currZoomLevel = (byte) pagePyramid.getZoomStart();
-            currPageInfo = pagePyramid.getPageInfo(currZoomLevel);
-
-            currX = 0;
-            currY = 0;
-            next = new TilePage(tileSet.getId(), currX, currY, currZoomLevel);
-        }
-
-        public boolean hasNext() {
-            return next != null;
-        }
-
-        public TilePage next() {
-            TilePage current = next;
-            ++currX;
-            int pagesX = currPageInfo.pagesX;
-            if (currX == pagesX) {
-                currX = 0;
-                ++currY;
-                int pagesY = currPageInfo.pagesY;
-                if (currY == pagesY) {
-                    currY = 0;
-                    ++currZoomLevel;
-                    int zoomStop = pagePyramid.getZoomStop();
-                    if (currZoomLevel > zoomStop) {
-                        next = null;
-                        return current;
-                    } else {
-                        currPageInfo = pagePyramid.getPageInfo(currZoomLevel);
-                    }
-                }
-            }
-            next = new TilePage(tileSet.getId(), currX, currY, currZoomLevel);
-            return current;
-        }
-
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-
     }
 }
