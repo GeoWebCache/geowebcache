@@ -71,7 +71,11 @@ public class TileRange {
         } else {
             this.rangeBounds = new TreeMap<Integer, long[]>();
             for (long[] bounds : rangeBounds) {
-                this.rangeBounds.put(Integer.valueOf((int) bounds[4]), bounds);
+                if (bounds != null) {
+                    // could be null in case calling code is only interested in a subset of zoom
+                    // levels
+                    this.rangeBounds.put(Integer.valueOf((int) bounds[4]), bounds);
+                }
             }
         }
         this.zoomStart = zoomStart;
