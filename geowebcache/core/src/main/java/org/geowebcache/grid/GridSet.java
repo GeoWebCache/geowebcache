@@ -371,18 +371,28 @@ public class GridSet {
         this.yBaseToggle = yBaseToggle;
     }
 
+    public int getNumLevels() {
+        return gridLevels.length;
+    }
+
     /**
      * @return the gridLevels
+     * @deprecated use {@link #getGrid(int)}
      */
+    @Deprecated
     public Grid[] getGridLevels() {
         return gridLevels;
+    }
+
+    public Grid getGrid(final int zLevel) {
+        return gridLevels[zLevel];
     }
 
     /**
      * @param gridLevels
      *            the gridLevels to set
      */
-    public void setGridLevels(Grid[] gridLevels) {
+    void setGridLevels(Grid[] gridLevels) {
         this.gridLevels = gridLevels;
     }
 
@@ -410,7 +420,7 @@ public class GridSet {
      * @param yCoordinateFirst
      *            the yCoordinateFirst to set
      */
-    public void setyCoordinateFirst(boolean yCoordinateFirst) {
+    void setyCoordinateFirst(boolean yCoordinateFirst) {
         this.yCoordinateFirst = yCoordinateFirst;
     }
 
@@ -425,7 +435,7 @@ public class GridSet {
      * @param scaleWarning
      *            the scaleWarning to set
      */
-    public void setScaleWarning(boolean scaleWarning) {
+    void setScaleWarning(boolean scaleWarning) {
         this.scaleWarning = scaleWarning;
     }
 
@@ -440,7 +450,7 @@ public class GridSet {
      * @param metersPerUnit
      *            the metersPerUnit to set
      */
-    public void setMetersPerUnit(double metersPerUnit) {
+    void setMetersPerUnit(double metersPerUnit) {
         this.metersPerUnit = metersPerUnit;
     }
 
@@ -455,7 +465,7 @@ public class GridSet {
      * @param pixelSize
      *            the pixelSize to set
      */
-    public void setPixelSize(double pixelSize) {
+    void setPixelSize(double pixelSize) {
         this.pixelSize = pixelSize;
     }
 
@@ -470,7 +480,7 @@ public class GridSet {
      * @param name
      *            the name to set
      */
-    public void setName(String name) {
+    void setName(String name) {
         this.name = name;
     }
 
@@ -493,7 +503,7 @@ public class GridSet {
      * @param srs
      *            the srs to set
      */
-    public void setSrs(SRS srs) {
+    void setSrs(SRS srs) {
         this.srs = srs;
     }
 
@@ -508,7 +518,7 @@ public class GridSet {
      * @param tileWidth
      *            the tileWidth to set
      */
-    public void setTileWidth(int tileWidth) {
+    void setTileWidth(int tileWidth) {
         this.tileWidth = tileWidth;
     }
 
@@ -523,7 +533,7 @@ public class GridSet {
      * @param tileHeight
      *            the tileHeight to set
      */
-    public void setTileHeight(int tileHeight) {
+    void setTileHeight(int tileHeight) {
         this.tileHeight = tileHeight;
     }
 

@@ -19,7 +19,7 @@ package org.geowebcache.grid;
 import java.util.Collections;
 import java.util.Map;
 
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.util.ServletUtils;
@@ -48,7 +48,8 @@ public class GridSubset {
     }
 
     public GridSubset(GridSet gridSet, Map<Integer, GridCoverage> coverages,
-            BoundingBox originalExtent, boolean fullCoverage, Integer minCachedZoom, Integer maxCachedZoom) {
+            BoundingBox originalExtent, boolean fullCoverage, Integer minCachedZoom,
+            Integer maxCachedZoom) {
         this.gridSet = gridSet;
         this.gridCoverageLevels = coverages;
         this.subSetExtent = originalExtent;
@@ -117,23 +118,26 @@ public class GridSubset {
         }
     }
 
-    public long[][] expandToMetaFactors(long[][] coverages, int[] metaFactors) {
+    public long[][] expandToMetaFactors(final long[][] coverages, final int[] metaFactors) {
         long[][] ret = ServletUtils.arrayDeepCopy(coverages);
 
-        for (int z = 0; z < ret.length; z++) {
-            long[] cov = ret[z];
+        for (long[] cov : ret) {
+            final int z = (int) cov[4];
+            final Grid grid = this.gridSet.getGrid(z);
+            final long numTilesWide = grid.getNumTilesWide();
+            final long numTilesHigh = grid.getNumTilesHigh();
 
             cov[0] = cov[0] - (cov[0] % metaFactors[0]);
             cov[1] = cov[1] - (cov[1] % metaFactors[1]);
 
             cov[2] = cov[2] - (cov[2] % metaFactors[0]) + (metaFactors[0] - 1);
-            if (cov[2] > this.gridSet.getGridLevels()[z].getNumTilesWide()) {
-                cov[2] = this.gridSet.getGridLevels()[z].getNumTilesWide();
+            if (cov[2] > numTilesWide) {
+                cov[2] = numTilesWide;
             }
 
             cov[3] = cov[3] - (cov[3] % metaFactors[1]) + (metaFactors[1] - 1);
-            if (cov[3] > this.gridSet.getGridLevels()[z].getNumTilesHigh()) {
-                cov[3] = this.gridSet.getGridLevels()[z].getNumTilesHigh();
+            if (cov[3] > numTilesHigh) {
+                cov[3] = numTilesHigh;
             }
         }
 
@@ -388,12 +392,12 @@ public class GridSubset {
         Integer maxLevel = Collections.max(gridCoverageLevels.keySet());
         return maxLevel.intValue();
     }
-    
-    public Integer getMinCachedZoom(){
+
+    public Integer getMinCachedZoom() {
         return minCachedZoom;
     }
-    
-    public Integer getMaxCachedZoom(){
+
+    public Integer getMaxCachedZoom() {
         return maxCachedZoom;
     }
 
@@ -418,6 +422,6 @@ public class GridSubset {
     }
     @Override
     public String toString() {
-        return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }
