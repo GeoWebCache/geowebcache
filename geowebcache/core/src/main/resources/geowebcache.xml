@@ -122,18 +122,18 @@
           </extent>
         </gridSubset>
       </gridSubsets>
-      <wmsUrl>
-        <string>http://demo.opengeo.org/geoserver/wms</string>
-      </wmsUrl>
-      <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
-      <transparent>false</transparent>
-      <bgColor>0x0066FF</bgColor>
       <expireCacheList>
         <expirationRule minZoom="0" expiration="60" />
       </expireCacheList>
       <expireClientsList>
         <expirationRule minZoom="0" expiration="500" />
       </expireClientsList>
+      <wmsUrl>
+        <string>http://demo.opengeo.org/geoserver/wms</string>
+      </wmsUrl>
+      <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
+      <transparent>false</transparent>
+      <bgColor>0x0066FF</bgColor>
     </wmsLayer>
   </layers>
   
