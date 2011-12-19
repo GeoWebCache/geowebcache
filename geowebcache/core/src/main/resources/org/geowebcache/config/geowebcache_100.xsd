@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           targetNamespace="http://geowebcache.org/schema/1.0.1" 
+           xmlns:gwc="http://geowebcache.org/schema/1.0.1"
+           elementFormDefault="qualified">
+
+<xs:element name="gwcConfiguration">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="version" type="xs:string" minOccurs="0"/>
+      <xs:element name="backendTimeout" type="xs:integer" minOccurs="0"/>
+      <xs:element name="cacheBypassAllowed" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="layers">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="wmsLayer" type="gwc:wmsLayer" minOccurs="1" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+     </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+<xs:complexType name="wmsLayer">
+  <xs:sequence>
+     <xs:element name="name" type="xs:string"/>
+     <xs:element name="mimeFormats" type="gwc:mimeFormats" minOccurs="0"/>
+     <xs:element name="errorMime" type="xs:string" minOccurs="0"/>
+     <xs:element name="grids" type="gwc:grids"/>
+     <xs:element name="wmsUrl" type="gwc:wmsUrl"/>
+     <xs:element name="wmsLayers" type="xs:string"/>
+     <xs:element name="wmsStyles" type="xs:string" minOccurs="0"/>
+     <xs:element name="metaWidthHeight" type="gwc:metaWidthHeight" minOccurs="0"/>
+     <xs:element name="errorMime" type="xs:string" minOccurs="0"/>
+     <xs:element name="wmsVersion" type="xs:string" minOccurs="0"/> 
+     <xs:element name="tiled" type="xs:boolean" minOccurs="0"/>
+     <xs:element name="transparent" type="xs:boolean" minOccurs="0"/>
+     <xs:element name="bgColor" type="xs:string" minOccurs="0"/>
+     <xs:element name="palette" type="xs:string" minOccurs="0"/>
+     <xs:element name="vendorParameters" type="xs:string" minOccurs="0"/>
+     <xs:element name="cachePrefix" type="xs:string" minOccurs="0"/>
+     <xs:element name="expireCache" type="xs:integer" minOccurs="0"/>
+     <xs:element name="expireClients" type="xs:integer" minOccurs="0"/>
+     <xs:element name="backendTimeout" type="xs:integer" minOccurs="0"/>
+     <xs:element name="cacheBypassAllowed" type="xs:boolean" minOccurs="0"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="mimeFormats">
+  <xs:sequence>
+     <xs:element name="string" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="grids">
+  <xs:sequence>
+      <xs:element name="entry" type="gwc:entry" minOccurs="1" maxOccurs="unbounded"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="entry">
+  <xs:sequence>
+     <xs:element name="srs" type="gwc:srs"/>
+     <xs:element name="grid" type="gwc:grid"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="srs">
+  <xs:sequence>
+     <xs:element name="number" type="xs:integer"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="grid">
+  <xs:sequence>
+     <xs:element name="srs" type="gwc:srs"/>
+     <xs:element name="dataBounds" type="gwc:Bounds"/>
+     <xs:element name="gridBounds" type="gwc:Bounds"/>
+     <xs:choice minOccurs="0" maxOccurs="1">
+       <xs:element name="resolutions" type="gwc:Resolutions" minOccurs="0" />
+       <xs:sequence>
+         <xs:element name="zoomStart" type="xs:integer" minOccurs="0" />
+         <xs:element name="zoomStop" type="xs:integer" minOccurs="0" />
+       </xs:sequence>
+     </xs:choice>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="Bounds">
+  <xs:sequence>
+    <xs:element name="coords" type="gwc:Coords"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="Coords">
+  <xs:sequence>
+     <xs:element name="double" type="xs:double" minOccurs="4" maxOccurs="4"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="Resolutions">
+  <xs:sequence>
+     <xs:element name="double" type="xs:double" minOccurs="1" maxOccurs="unbounded"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="wmsUrl">
+  <xs:sequence>
+     <xs:element name="string" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="metaWidthHeight">
+  <xs:sequence>
+     <xs:element name="int" type="xs:integer" minOccurs="2" maxOccurs="2"/>
+  </xs:sequence>
+</xs:complexType>
+
+</xs:schema>

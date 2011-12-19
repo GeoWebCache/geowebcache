@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://geowebcache.org/schema/1.2.6"
+  xsi:schemaLocation="http://geowebcache.org/schema/1.2.6 http://geowebcache.org/schema/1.2.6/geowebcache.xsd">
+  <version>1.2.6</version>
+  <backendTimeout>120</backendTimeout>
+  <serviceInformation>
+    <title>GeoWebCache</title>
+    <description>GeoWebCache description.</description>
+    <keywords>
+      <keyword>WFS</keyword>
+      <keyword>WMS</keyword>
+      <keyword>WMTS</keyword>
+      <keyword>GEOWEBCACHE</keyword>
+    </keywords>
+    <serviceProvider>
+      <providerName>John Smith inc.</providerName>
+      <providerSite>http://www.example.com/</providerSite>
+      <serviceContact>
+        <individualName>John Smith</individualName>
+        <positionName>Geospatial Expert</positionName>
+        <addressType>Work</addressType>
+        <addressStreet>1 Bumpy St.</addressStreet>
+        <addressCity>Hobart</addressCity>
+        <addressAdministrativeArea>TAS</addressAdministrativeArea>
+        <addressPostalCode>7005</addressPostalCode>
+        <addressCountry>Australia</addressCountry>
+        <phoneNumber>+61 3 0000 0000</phoneNumber>
+        <faxNumber>+61 3 0000 0001</faxNumber>
+        <addressEmail>john.smith@example.com</addressEmail>
+      </serviceContact>
+    </serviceProvider>
+    <fees>NONE</fees>
+    <accessConstraints>NONE</accessConstraints>
+  </serviceInformation>
+
+  <gridSets>
+    <!-- Grid Set Example, by default EPSG:900913 and EPSG:4326 are defined -->
+    <gridSet>
+      <!-- This does not have to be an EPSG code, you can also have multiple gridSet elements per SRS -->
+      <name>EPSG:2163</name>
+      <srs>
+        <number>2163</number>
+      </srs>
+      <extent>
+        <coords>
+          <double>-2495667.977678598</double>
+          <double>-2223677.196231552</double>
+          <double>3291070.6104286816</double>
+          <double>959189.3312465074</double>
+        </coords>
+      </extent>
+      <scaleDenominators>
+        <double>25000000</double>
+        <double>1000000</double>
+        <double>100000</double>
+        <double>25000</double>
+      </scaleDenominators>
+      <tileHeight>200</tileHeight>
+      <tileWidth>200</tileWidth>
+    </gridSet>
+  </gridSets>
+
+  <layers>
+
+    <wmsLayer>
+      <name>topp:states</name>
+      <mimeFormats>
+        <string>image/gif</string>
+        <string>image/jpeg</string>
+        <string>image/png</string>
+        <string>image/png8</string>
+      </mimeFormats>
+      <gridSubsets>
+        <gridSubset>
+          <gridSetName>EPSG:2163</gridSetName>
+        </gridSubset>
+      </gridSubsets>
+      <wmsUrl>
+        <string>http://demo.opengeo.org/geoserver/wms</string>
+      </wmsUrl>
+    </wmsLayer>
+  </layers>
+  
+</gwcConfiguration>

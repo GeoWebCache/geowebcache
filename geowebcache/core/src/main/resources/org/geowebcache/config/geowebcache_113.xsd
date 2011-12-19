@@ -1,0 +1,464 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           xmlns:xml="http://www.w3.org/XML/1998/namespace"
+           targetNamespace="http://geowebcache.org/schema/1.1.3" 
+           xmlns:gwc="http://geowebcache.org/schema/1.1.3"
+           elementFormDefault="qualified">
+
+<xs:element name="gwcConfiguration">
+  <xs:annotation><xs:documentation xml:lang="en">
+    Wrapper element for XStream. Make sure it has the correct namespace
+  </xs:documentation></xs:annotation>
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="version" type="xs:string" minOccurs="0">
+        <xs:annotation><xs:documentation xml:lang="en">
+          The version number should match the XSD namespace and the version of GWC
+        </xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="backendTimeout" type="xs:integer" minOccurs="0">
+        <xs:annotation><xs:documentation xml:lang="en">
+          The backend timeout is the number of seconds GWC will wait for a backend 
+          server to return something before closing the connection.
+        </xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="cacheBypassAllowed" type="xs:boolean" minOccurs="0">
+        <xs:annotation><xs:documentation xml:lang="en">
+          Determines whether cached=false is allowed for requests going through the WMS service, 
+          including converters such as Google Maps. Enabling this disables caching for those requests.
+        </xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="formatModifiers" type="gwc:formatModifiers" minOccurs="0">
+        <xs:annotation><xs:documentation xml:lang="en">
+          These are the global format modifiers that apply to all layers in this
+          file, unless the layer has separately defined modifiers. They can be used
+          to avoid repeated compression, by making image/png backend requests before
+          compressing to image/jpeg . They can also be used for special tweaks, 
+          such as setting the background color for formats that do not support 
+          transparency.
+        </xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="layers">
+        <xs:annotation><xs:documentation xml:lang="en">
+        The list of WMS layers provided by this configuration.
+        </xs:documentation></xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="wmsLayer" type="gwc:wmsLayer" minOccurs="1" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+     </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+<xs:complexType name="wmsLayer">
+  <xs:sequence>
+     <xs:element name="name" type="xs:string">
+       <xs:annotation><xs:documentation xml:lang="en">
+         The name of the layer that GWC should respond to. It is equivalent to the 
+         value of LAYERS= in WMS requests, and can contain commas. See wmsLayers
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="mimeFormats" type="gwc:mimeFormats" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         List of formats to be supported. These must be known to GeoWebCache. Legal values are
+         image/png, image/png8, image/png24, image/gif, image/jpeg, image/tiff, gml,
+         application/vnd.google-earth.kml+xml, application/vnd.google-earth.kmz+xml,
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="formatModifiers" type="gwc:formatModifiers" minOccurs="0">
+        <xs:annotation><xs:documentation xml:lang="en">
+          If formatModifiers are specified on the layer the global ones will be
+          ignored. Format modifiers can be used to apply special tweaks depending
+          on the requested format, such as requesting image/png from the backend
+          and then persist that to disk.
+        </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="grids" type="gwc:grids">
+       <xs:annotation><xs:documentation xml:lang="en">
+         The grid definitions contain information about the SRS, the maximum extent for 
+         this SRS and the bounds of your data.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="wmsUrl" type="gwc:wmsUrl">
+       <xs:annotation><xs:documentation xml:lang="en">
+         A list of URLs to backend servers than can render tiles for this layer. They are used in a
+         round robin fashion for load balancing and automatic failover.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="wmsLayers" type="xs:string">
+       <xs:annotation><xs:documentation xml:lang="en">
+         The LAYERS parameter sent to the WMS backend. 
+         It may contain commas, to request composites of several layers from the backend, 
+         and be different from the name element.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="wmsStyles" type="xs:string" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         This is the value sent to the backend server for the STYLES parameter. 
+         It may contain commas.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="metaWidthHeight" type="gwc:metaWidthHeight" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         The metatiling factors used for this layer. These are used to scale the bounding 
+         box and height/width. With tiles that are 256 by 256 pixels, a 4 by 4 metatiled 
+         requests results in a 1024 by 1024 pixel image requested from the backend server. 
+         Higher reduced the number of repeated labels, but can overload the backend server.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="gutter" type="xs:integer" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         The gutter is a buffer around the image that is sliced away when saving the tiles
+         to disk. It only applies to metatiles and is not applied if the resulting request
+         would exceed the layer bounds. Note that your styles on the backend should avoid 
+         rendering labels near the edges of requested images. The default is zero.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="errorMime" type="xs:string" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         The ERROR parameter sent to the WMS backend. The default is application/vnd.ogc.se_inimage, 
+         the alternative is application/vnd.ogc.se_xml
+       </xs:documentation></xs:annotation>
+     </xs:element>  
+     <xs:element name="wmsVersion" type="xs:string" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         The VERSION parameter sent to the WMS backend. 
+         The default is 1.1.0
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="tiled" type="xs:boolean" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         The TILED parameter sent to the WMS backend. 
+         The default is FALSE, you should generally not change this.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="transparent" type="xs:boolean" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         The TRANSPARENT parameter sent to the WMS backend. 
+         This will result in transparent PNGs and GIFs. The default is TRUE.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="bgColor" type="xs:string" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         The BGCOLOR parameter sent to the WMS backend. 
+         This tells the WMS backend what color to use where the image canvas is blank. 
+         It is specified as as an RGB string ( 0xFF0000 = red, 0x00FF00= green, 0x0000FF = blue )
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="palette" type="xs:string" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         The PALETTE parameter sent to the WMS backend. 
+         This tells the server whether it should use a palette, something that can often
+         speed up rendering for 8 bit images (GIF and 8 bit PNG) because the WMS server
+         does not have to determine the optimal palette for the tile.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="vendorParameters" type="xs:string" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         Fixed parameters that are appended to every request to the backend. 
+         For instance KEY1=value1&amp;amp;KEY2=value2
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="cachePrefix" type="xs:string" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         As of GWC 1.1.0 this element is deprecated. The plugin for GeoServer will use 
+         %GEOSERVER_DATA_DIR%\gwc , whereas users of the standalone version may specify 
+         this in geowebcache-servlet.xml
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="expireCache" type="xs:integer" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         How old the tile may be before it is refetched from the backend. 
+         The default value is 0, which means infinite, otherwise specified in seconds. 
+         As of GWC 1.1.0 this element is not fully implemented. 
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="expireClients" type="xs:integer" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         The HTTP expiration header sent to client. Can either be a value in number of seconds 
+         or 0 to disable the header. A special value of -1 may be used to set no-cache 
+         headers. By default the expiration header from the WMS backend is used. If it is not 
+         set or not available (no request has been forwarded to backend since startup) 
+         then the value is set to 3600 seconds.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="backendTimeout" type="xs:integer" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         The backend timeout is the number of seconds GWC will wait for a backend 
+         server to return something before closing the connection.
+         The default value is the global value, alternatively 120s.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="cacheBypassAllowed" type="xs:boolean" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         Whether this layer allows the clients to bypass the cache. The default value 
+         is the global value, alternatively false.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:element name="parameterFilters" type="gwc:parameterFilters" minOccurs="0">
+       <xs:annotation><xs:documentation xml:lang="en">
+         A list of parameter filters, meaning parameters the client may specify that GWC
+         will forward to the backend. Each combination of parameters effectively 
+         results in a new set of tiles.
+       </xs:documentation></xs:annotation>
+     </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="mimeFormats">
+  <xs:sequence>
+     <xs:element name="string" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="grids">
+  <xs:sequence>
+      <xs:element name="entry" type="gwc:entry" minOccurs="1" maxOccurs="unbounded">
+        <xs:annotation><xs:documentation xml:lang="en">
+          Each entry consists of a key (the EPSG code of the SRS) and a value (the grid element).
+        </xs:documentation></xs:annotation>
+      </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="entry">
+  <xs:sequence>
+     <xs:element name="srs" type="gwc:srs"/>
+     <xs:element name="grid" type="gwc:grid"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="srs">
+  <xs:sequence>
+     <xs:element name="number" type="xs:integer">
+        <xs:annotation><xs:documentation xml:lang="en">
+          The numeric part of the EPSG code, i.e. for EPSG:4326 use "4326".
+        </xs:documentation></xs:annotation>
+      </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="grid">
+  <xs:sequence>
+     <xs:element name="srs" type="gwc:srs"/>
+     <xs:element name="dataBounds" type="gwc:Bounds">
+        <xs:annotation><xs:documentation xml:lang="en">
+          The data bounds denote the extent of the data. They should generally be the smallest 
+          bounding box in which all your data fits. There is no penalty for expanding these 
+          bounds at a later time, old tiles will still work. Coordinates must be specified in 
+          the context of the SRS for which the grid is being defined.
+          
+          These bounds have to be contained by the grid bounds, but approximate values are
+          perfectly fine. GeoWebCache will automatically expand to the best matching grid bounds
+          for each zoomlevel.
+        </xs:documentation></xs:annotation>
+      </xs:element>
+     <xs:element name="gridBounds" type="gwc:Bounds">
+       <xs:annotation><xs:documentation xml:lang="en">
+         The grid bounds denote the extent of the grid. They should generally be the biggest 
+         bounding box that is valid for the current SRS. If you change the grid bounds you
+         must also clear all caches related to this layer. Coordinates must be specified in 
+         the context of the SRS for which the grid is being defined.
+         
+         The area does not have to be square, GeoWebCache will automatically create a
+         suitable, rectangular grid or expand it to a square. 
+       </xs:documentation></xs:annotation>
+     </xs:element>
+     <xs:choice minOccurs="0" maxOccurs="1">
+       <xs:element name="resolutions" type="gwc:Resolutions" minOccurs="0">
+         <xs:annotation><xs:documentation xml:lang="en">
+           You can either specify an array of resolutions in descending order, 
+           or maximum and a minimum zoomlevels.
+           
+           Resolutions are specified as (SRS units) / pixel. For instance,
+           if your grid bounds are 180 by 180 degrees (in WGS84, this would be
+           either hemissphere), and the tiles are 256 by 256 pixels, then first
+           resolution would be 180 degress / 256 pixels = 0.703125 degrees / pixel.
+           
+         </xs:documentation></xs:annotation>
+       </xs:element>
+       <xs:sequence>
+         <xs:element name="zoomStart" type="xs:integer" minOccurs="0">
+           <xs:annotation><xs:documentation xml:lang="en">
+             You can either specify an array of resolutions in descending order, 
+             or maximum and a minimum zoomlevels. 
+           </xs:documentation></xs:annotation>
+         </xs:element>
+         <xs:element name="zoomStop" type="xs:integer" minOccurs="0">
+           <xs:annotation><xs:documentation xml:lang="en">
+             You can either specify an array of resolutions in descending order, 
+             or maximum and a minimum zoomlevels.
+           </xs:documentation></xs:annotation>
+         </xs:element>
+       </xs:sequence>
+     </xs:choice>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="Bounds">
+  <xs:sequence>
+    <xs:element name="coords" type="gwc:Coords"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="Coords">
+  <xs:sequence>
+     <xs:element name="double" type="xs:double" minOccurs="4" maxOccurs="4"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="Resolutions">
+  <xs:sequence>
+     <xs:element name="double" type="xs:double" minOccurs="1" maxOccurs="unbounded"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="wmsUrl">
+  <xs:sequence>
+     <xs:element name="string" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="metaWidthHeight">
+  <xs:sequence>
+     <xs:element name="int" type="xs:integer" minOccurs="2" maxOccurs="2"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="parameterFilters">
+  <xs:sequence>
+     <xs:sequence>
+       <xs:element name="regexParameterFilter" type="gwc:regexParameterFilter" minOccurs="0" maxOccurs="unbounded">
+         <xs:annotation><xs:documentation xml:lang="en">
+           Regular expression parameter filters
+         </xs:documentation></xs:annotation>
+       </xs:element>
+     </xs:sequence>
+     <xs:sequence>
+       <xs:element name="floatParameterFilter" type="gwc:floatParameterFilter" minOccurs="0" maxOccurs="unbounded">
+         <xs:annotation><xs:documentation xml:lang="en">
+           Floating point parameter filters
+         </xs:documentation></xs:annotation>
+       </xs:element>
+     </xs:sequence>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="regexParameterFilter">
+  <xs:sequence>
+    <xs:element name="key" type="xs:string">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The key for which the filter should be invoked. The key is case insensitive.
+       </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="defaultValue" type="xs:string">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The default value. This value is used When the client does not specify 
+        the parameter in the request. In many cases this should be an empty element.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="regex" type="xs:string">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The regular expression used to match against the value requested by the client.
+        Care should be taken to allow as few values as possible and to make the 
+        expression as efficient as possible. See Java's regular expression documentation, 
+        the dialect is similar to Perl's regular expressions.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="floatParameterFilter">
+  <xs:sequence>
+    <xs:element name="key" type="xs:string">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The key for which the filter should be invoked. The key is case insensitive.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="defaultValue" type="xs:string">
+      <xs:annotation><xs:documentation xml:lang="en">
+        The default value. This value is used When the client does not specify 
+        the parameter in the request. In many cases this should be an empty element.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="values" type="gwc:floatList">
+      <xs:annotation><xs:documentation xml:lang="en">
+        A list of floating point numbers that are possible values. When a client request is 
+        received these are scanned linearly and that best match, in terms of smallest
+        absolute difference, is used.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="threshold" type="xs:float">
+      <xs:annotation><xs:documentation xml:lang="en">
+        For a request to be accepted, the difference between the value and the best match
+        must not exceed the threshold specified here. A reasonable value is the largest
+        difference between two adjacent values.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="floatList">
+  <xs:sequence>
+     <xs:element name="float" type="xs:float" minOccurs="1" maxOccurs="unbounded"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="formatModifiers">
+  <xs:sequence>
+    <xs:element name="formatModifier" type="gwc:formatModifier" minOccurs="1" maxOccurs="unbounded">
+      <xs:annotation><xs:documentation xml:lang="en">
+        Format modifiers, used to request PNGs when compressing to JPEG, 
+        overriding transparency, palette and setting the background for specifc formats. 
+      </xs:documentation></xs:annotation>
+    </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="formatModifier">
+  <xs:sequence>
+    <xs:element name="responseFormat" type="xs:string" minOccurs="1">
+      <xs:annotation><xs:documentation xml:lang="en">
+        Format modifiers are keyed by the format requested by the client accessing GWC
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="requestFormat" type="xs:string" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        This is the format used when GWC queries the backend server
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="transparent" type="xs:boolean" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        This overrides the value for transparent when GWC queries the backend server.
+        If the response format does not support transparency you generally want this off.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="bgColor" type="xs:string" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        This is the bgColor used when GWC queries the backend server. It is a 
+        0x prefixed RGB value, for example 0xDDDDDD is light grey. It only applies
+        if transparency is off.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="palette" type="xs:string" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        This is the palette used when GWC queries the backend server.
+        The palette must be known on the backend server. It does not affect
+        the palette used when GWC persists the tiles.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="compressionQuality" type="xs:float" minOccurs="0">
+      <xs:annotation><xs:documentation xml:lang="en">
+        This is a floating point value that describes the compression. It
+        has to be a postive number less than or equal to 1.0. For minimal
+        compression (best quality) use 1.0, smaller values yield better 
+        file sizes. Note that as of GWC 1.1.3 this setting only applies
+        to the response format JPEG.
+      </xs:documentation></xs:annotation>
+    </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+</xs:schema>
