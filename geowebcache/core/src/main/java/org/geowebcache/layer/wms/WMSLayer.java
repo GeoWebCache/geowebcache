@@ -296,11 +296,14 @@ public class WMSLayer extends AbstractTileLayer {
      */
     public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException,
             IOException {
-        if (tile.getMimeType().supportsTiling()
-                && (metaWidthHeight[0] > 1 || metaWidthHeight[1] > 1)) {
-            getMetatilingReponse(tile, tryCache);
-        } else {
-            getNonMetatilingReponse(tile, tryCache);
+        GridSubset gridSubset = getGridSubset(tile.getGridSetId());
+        if (gridSubset.shouldCacheAtZoom(tile.getTileIndex()[2])) {
+            if (tile.getMimeType().supportsTiling()
+                    && (metaWidthHeight[0] > 1 || metaWidthHeight[1] > 1)) {
+                getMetatilingReponse(tile, tryCache);
+            } else {
+                getNonMetatilingReponse(tile, tryCache);
+            }
         }
     }
 
