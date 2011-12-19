@@ -47,7 +47,7 @@ public class EntityStoreBuilder {
         Integer cacheSizeMB = config.getCacheSizeMB();
         if (cacheMemoryPercentAllowed == null) {
             if (cacheSizeMB == null) {
-                log.warn("Neither disk quota page store' cache memory percent nor cache size was provided."
+                log.info("Neither disk quota page store' cache memory percent nor cache size was provided."
                         + " Defaulting to 25% Heap Size");
                 envCfg.setCachePercent(25);
             } else {
