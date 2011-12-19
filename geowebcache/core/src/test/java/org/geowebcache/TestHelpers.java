@@ -65,7 +65,7 @@ public class TestHelpers {
     }
     
     public static SeedRequest createRequest(WMSLayer tl, GWCTask.TYPE type, int zoomStart, int zoomStop) {
-        String gridSet = tl.getGridSubsets().keySet().iterator().next();
+        String gridSet = tl.getGridSubsets().iterator().next();
         BoundingBox bounds = null;
         int threadCount = 1;
         String format = tl.getMimeTypes().get(0).getFormat();

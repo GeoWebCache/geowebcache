@@ -140,6 +140,21 @@ public class JDBCMetaBackend implements MetaStore {
         return false;
     }
 
+    public boolean deleteByGridsetId(final String layerName, final String gridsetName)
+            throws StorageException {
+        long layerId = idCache.getLayerId(layerName);
+        long gridSetId = idCache.getGridSetsId(gridsetName);
+        try {
+            wrpr.deleteLayerGridSubset(layerId, gridSetId);
+            return true;
+        } catch (SQLException se) {
+            log.error("Failed to delete layer gridset '" + layerName + "'" + "/'" + gridsetName
+                    + "'", se);
+        }
+
+        return false;
+    }
+
     public boolean rename(final String oldLayerName, final String newLayerName)
             throws StorageException {
         Assert.notNull(oldLayerName, "old layer name");

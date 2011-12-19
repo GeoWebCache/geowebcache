@@ -15,4 +15,6 @@ public interface BlobStoreListener {
 
     void layerRenamed(String oldLayerName, String newLayerName);
 
+    void gridSubsetDeleted(String layerName, String gridSetId);
+
 }

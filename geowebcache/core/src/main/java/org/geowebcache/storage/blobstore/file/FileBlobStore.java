@@ -18,6 +18,7 @@
 package org.geowebcache.storage.blobstore.file;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -170,32 +171,79 @@ public class FileBlobStore implements BlobStore {
 
     }
 
+    /**
+     * @see org.geowebcache.storage.BlobStore#delete(java.lang.String)
+     */
     public boolean delete(final String layerName) throws StorageException {
-        final File layerPath = getLayerPath(layerName);
+        final File source = getLayerPath(layerName);
+        final String target = FilePathGenerator.filteredLayerName(layerName);
 
-        if (!layerPath.exists() || !layerPath.canWrite()) {
-            log.info(layerPath + " does not exist or is not writable");
+        boolean ret = stageDelete(source, target);
+
+        this.listeners.sendLayerDeleted(layerName);
+        return ret;
+    }
+
+    private boolean stageDelete(final File source, final String targetName) throws StorageException {
+
+        if (!source.exists() || !source.canWrite()) {
+            log.info(source + " does not exist or is not writable");
             return false;
         }
+
         if (!stagingArea.exists() && !stagingArea.mkdirs()) {
             throw new StorageException("Can't create staging directory for deletes: "
                     + stagingArea.getAbsolutePath());
         }
-        String dirName = FilePathGenerator.filteredLayerName(layerName);
-        File tmpFolder = new File(stagingArea, dirName);
+
+        File tmpFolder = new File(stagingArea, targetName);
         int tries = 0;
         while (tmpFolder.exists()) {
             ++tries;
-            dirName = FilePathGenerator.filteredLayerName(layerName + "." + tries);
-            tmpFolder = new File(layerPath.getParentFile(), dirName);
+            String dirName = FilePathGenerator.filteredLayerName(targetName + "." + tries);
+            tmpFolder = new File(stagingArea, dirName);
         }
-        boolean renamed = layerPath.renameTo(tmpFolder);
+        boolean renamed = source.renameTo(tmpFolder);
         if (!renamed) {
-            throw new IllegalStateException("Can't rename " + layerPath.getAbsolutePath() + " to "
+            throw new IllegalStateException("Can't rename " + source.getAbsolutePath() + " to "
                     + tmpFolder.getAbsolutePath() + " for deletion");
         }
         deletePending(tmpFolder);
-        this.listeners.sendLayerDeleted(layerName);
+        return true;
+    }
+
+    /**
+     * @throws StorageException
+     * @see org.geowebcache.storage.BlobStore#deleteByGridsetId(java.lang.String, java.lang.String)
+     */
+    public boolean deleteByGridsetId(final String layerName, final String gridSetId)
+            throws StorageException {
+
+        final File layerPath = getLayerPath(layerName);
+        if (!layerPath.exists() || !layerPath.canWrite()) {
+            log.info(layerPath + " does not exist or is not writable");
+            return false;
+        }
+        final String filteredGridSetId = FilePathGenerator.filteredGridSetId(gridSetId);
+
+        File[] gridSubsetCaches = layerPath.listFiles(new FileFilter() {
+            public boolean accept(File pathname) {
+                if (!pathname.isDirectory()) {
+                    return false;
+                }
+                String dirName = pathname.getName();
+                return dirName.startsWith(filteredGridSetId);
+            }
+        });
+
+        for (File gridSubsetCache : gridSubsetCaches) {
+            String target = FilePathGenerator.filteredLayerName(layerName) + "_"
+                    + gridSubsetCache.getName();
+            stageDelete(gridSubsetCache, target);
+        }
+
+        listeners.sendGridSubsetDeleted(layerName, gridSetId);
+
         return true;
     }
 
