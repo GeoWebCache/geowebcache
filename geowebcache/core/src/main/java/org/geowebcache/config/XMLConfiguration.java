@@ -467,7 +467,6 @@ public class XMLConfiguration implements Configuration {
         xs.aliasField("xsi:schemaLocation", GeoWebCacheConfiguration.class, "xsi_schemaLocation");
         xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
 
-        xs.alias("keyword", String.class);
         xs.alias("layers", List.class);
         xs.alias("wmsLayer", WMSLayer.class);
 
