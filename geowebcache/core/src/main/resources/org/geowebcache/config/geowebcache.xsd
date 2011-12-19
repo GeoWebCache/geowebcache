@@ -782,7 +782,7 @@
 
   <xs:complexType name="GridSubsets">
     <xs:sequence>
-      <xs:element name="gridSubset" type="gwc:GridSubset" minOccurs="1" maxOccurs="unbounded" />
+      <xs:element name="gridSubset" type="gwc:GridSubset" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 

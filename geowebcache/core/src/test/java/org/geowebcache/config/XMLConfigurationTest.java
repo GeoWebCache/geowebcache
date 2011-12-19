@@ -17,6 +17,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -157,7 +158,7 @@ public class XMLConfigurationTest extends TestCase {
 
         config.save();
 
-        // IOUtils.copy(new FileInputStream(configFile), System.out);
+        IOUtils.copy(new FileInputStream(configFile), System.out);
         try {
             XMLConfiguration.validate(XMLConfiguration
                     .loadDocument(new FileInputStream(configFile)));
@@ -206,7 +207,7 @@ public class XMLConfigurationTest extends TestCase {
         config.addOrReplaceGridSet(new XMLGridSet(gridSet));
         config.save();
 
-        // IOUtils.copy(new FileInputStream(configFile), System.out);
+        IOUtils.copy(new FileInputStream(configFile), System.out);
         try {
             XMLConfiguration.validate(XMLConfiguration
                     .loadDocument(new FileInputStream(configFile)));
@@ -227,7 +228,7 @@ public class XMLConfigurationTest extends TestCase {
     public void testSaveCurrentVersion() throws Exception {
 
         URL source = XMLConfiguration.class
-                .getResource(XMLConfigurationBackwardsCompatibilityTest.PREVIOUS_FILENAME);
+                .getResource(XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE);
         configFile = new File(configDir, "geowebcache.xml");
         FileUtils.copyURLToFile(source, configFile);
 
