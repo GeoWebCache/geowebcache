@@ -260,7 +260,8 @@ public abstract class TileLayer {
     public GridSubset getGridSubsetForSRS(SRS srs) {
         for (String gridSet : getGridSubsets()) {
             GridSubset gridSubset = getGridSubset(gridSet);
-            if (gridSubset.getSRS().equals(srs)) {
+            SRS gridSetSRS = gridSubset.getSRS();
+            if (gridSetSRS.equals(srs)) {
                 return gridSubset;
             }
         }

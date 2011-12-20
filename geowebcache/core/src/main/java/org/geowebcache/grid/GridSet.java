@@ -559,7 +559,7 @@ public class GridSet {
         needsTruncate |= isTopLeftAligned() != another.isTopLeftAligned();
         needsTruncate |= getTileWidth() != another.getTileWidth();
         needsTruncate |= getTileHeight() != another.getTileHeight();
-        needsTruncate |= !getSrs().equalsIncludingAlias(another.getSrs());
+        needsTruncate |= !getSrs().equals(another.getSrs());
 
         if (needsTruncate) {
             return true;
