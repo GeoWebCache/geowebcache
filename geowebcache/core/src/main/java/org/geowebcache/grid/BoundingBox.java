@@ -17,12 +17,16 @@
  */
 package org.geowebcache.grid;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class BoundingBox {
+public class BoundingBox implements Serializable{
+
+    private static final long serialVersionUID = -2555598825074884627L;
+
     private static Log log = LogFactory.getLog(org.geowebcache.grid.BoundingBox.class);
 
     private static String DELIMITER = ",";

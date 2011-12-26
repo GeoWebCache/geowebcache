@@ -17,6 +17,8 @@
  */
 package org.geowebcache.diskquota.storage;
 
+import java.io.Serializable;
+
 import org.geowebcache.diskquota.ExpirationPolicy;
 
 import com.sleepycat.persist.model.Entity;
@@ -28,7 +30,9 @@ import com.sleepycat.persist.model.PrimaryKey;
  * 
  */
 @Entity
-public final class LayerQuota {
+public final class LayerQuota implements Serializable {
+
+    private static final long serialVersionUID = 5726170502452942487L;
 
     @PrimaryKey
     private String layer;

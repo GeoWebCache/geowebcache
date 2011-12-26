@@ -20,7 +20,6 @@ package org.geowebcache.filter.request;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Hashtable;
-import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,22 +39,100 @@ import org.geowebcache.layer.TileLayer;
  * The raster must match the dimensions of the zoomlevel and use 0x000000 for tiles that are valid.
  */
 public abstract class RasterFilter extends RequestFilter {
+
+    private static final long serialVersionUID = -5695649347572928323L;
+
     private static Log log = LogFactory.getLog(RasterFilter.class);
 
-    public Integer zoomStart;
+    private Integer zoomStart;
 
-    public Integer zoomStop;
+    private Integer zoomStop;
 
-    public Boolean resample;
+    private Boolean resample;
 
-    public Boolean preload;
+    private Boolean preload;
 
-    public Boolean debug;
+    private Boolean debug;
 
     public transient Hashtable<String, BufferedImage[]> matrices;
 
     public RasterFilter() {
 
+    }
+
+    /**
+     * @return the zoomStart
+     */
+    public Integer getZoomStart() {
+        return zoomStart;
+    }
+
+    /**
+     * @param zoomStart
+     *            the zoomStart to set
+     */
+    public void setZoomStart(Integer zoomStart) {
+        this.zoomStart = zoomStart;
+    }
+
+    /**
+     * @return the zoomStop
+     */
+    public Integer getZoomStop() {
+        return zoomStop;
+    }
+
+    /**
+     * @param zoomStop
+     *            the zoomStop to set
+     */
+    public void setZoomStop(Integer zoomStop) {
+        this.zoomStop = zoomStop;
+    }
+
+    /**
+     * @return the resample
+     */
+    public Boolean getResample() {
+        return resample;
+    }
+
+    /**
+     * @param resample
+     *            the resample to set
+     */
+    public void setResample(Boolean resample) {
+        this.resample = resample;
+    }
+
+    /**
+     * @return the preload
+     */
+    public Boolean getPreload() {
+        return preload;
+    }
+
+    /**
+     * @param preload
+     *            the preload to set
+     */
+    public void setPreload(Boolean preload) {
+        this.preload = preload;
+    }
+
+    /**
+     * @return the debug
+     */
+    public Boolean getDebug() {
+        return debug;
+    }
+
+    /**
+     * @param debug
+     *            the debug to set
+     */
+    public void setDebug(Boolean debug) {
+        this.debug = debug;
     }
 
     public void apply(ConveyorTile convTile) throws RequestFilterException {
@@ -104,7 +181,7 @@ public abstract class RasterFilter extends RequestFilter {
             try {
                 setMatrix(convTile.getLayer(), gridSetId, (int) idx[2], false);
             } catch (Exception e) {
-                log.error("Failed to load matrix for " + this.name + ", " + gridSetId + ", "
+                log.error("Failed to load matrix for " + this.getName() + ", " + gridSetId + ", "
                         + idx[2] + " : " + e.getMessage());
                 throw new RequestFilterException(this, 500,
                         "Failed while trying to load filter for " + idx[2]
@@ -151,8 +228,8 @@ public abstract class RasterFilter extends RequestFilter {
                     try {
                         setMatrix(layer, grid.getName(), i, false);
                     } catch (Exception e) {
-                        log.error("Failed to load matrix for " + this.name + ", " + grid.getName()
-                                + ", " + i + " : " + e.getMessage());
+                        log.error("Failed to load matrix for " + this.getName() + ", "
+                                + grid.getName() + ", " + i + " : " + e.getMessage());
                     }
                 }
             }

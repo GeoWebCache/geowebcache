@@ -27,10 +27,40 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayer;
 
 public class FileRasterFilter extends RasterFilter {
+
+    private static final long serialVersionUID = -6950985531575208956L;
+
+    private String storagePath;
     
-    String storagePath;
-    
-    String fileExtension;
+    private String fileExtension;
+
+    /**
+     * @return the storagePath
+     */
+    String getStoragePath() {
+        return storagePath;
+    }
+
+    /**
+     * @param storagePath the storagePath to set
+     */
+    void setStoragePath(String storagePath) {
+        this.storagePath = storagePath;
+    }
+
+    /**
+     * @return the fileExtension
+     */
+    String getFileExtension() {
+        return fileExtension;
+    }
+
+    /**
+     * @param fileExtension the fileExtension to set
+     */
+    void setFileExtension(String fileExtension) {
+        this.fileExtension = fileExtension;
+    }
 
     protected BufferedImage loadMatrix(TileLayer layer, String gridSetId, int zoomLevel)
     throws IOException, GeoWebCacheException {
@@ -56,7 +86,7 @@ public class FileRasterFilter extends RasterFilter {
     private String createFilePath(String gridSetId, int zoomLevel) {
         String path =  
             storagePath + File.separator 
-            + this.name + "_" + gridSetId 
+            + this.getName() + "_" + gridSetId 
             + "_" + zoomLevel + "." + fileExtension;
         
         return path;

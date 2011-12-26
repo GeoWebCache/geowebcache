@@ -53,6 +53,11 @@ public class XMLGridSubset implements Serializable {
      */
     public XMLGridSubset() {
         // nothing to do
+        readResolve();
+    }
+    
+    private XMLGridSubset readResolve(){
+        return this;
     }
 
     /**
