@@ -49,11 +49,32 @@ public class JDBCMetaBackend implements MetaStore {
 
     private boolean enabled = true;
 
+
+    /**
+     * Use the constructor with the DefaultStorageFinder instead.
+     * Otherwise disabling the MetaStore will fail. 
+     */
+    @Deprecated
     public JDBCMetaBackend(String driverClass, String jdbcString, String username, String password)
-            throws ConfigurationException {
-        this(driverClass, jdbcString, username, password, false, -1);
+    	throws ConfigurationException {
+    		this(null, driverClass, jdbcString, username, password, false, -1);
+    }
+    
+    /**
+     * Use the constructor with the DefaultStorageFinder instead.
+     * Otherwise disabling the MetaStore will fail. 
+     */
+    @Deprecated
+    public JDBCMetaBackend(String driverClass, String jdbcString, String username, String password,
+            boolean useConnectionPooling, int maxConnections) throws ConfigurationException {
+        this(null, driverClass, jdbcString, username, password, useConnectionPooling, maxConnections);
     }
 
+    public JDBCMetaBackend(DefaultStorageFinder defStoreFind, String driverClass, String jdbcString, String username, String password)
+            throws ConfigurationException {
+        this(defStoreFind, driverClass, jdbcString, username, password, false, -1);
+    }
+    
     /**
      * 
      * @param driverClass
@@ -66,26 +87,38 @@ public class JDBCMetaBackend implements MetaStore {
      *            Whether to use JDBC connection pooling
      * @throws StorageException
      */
-    public JDBCMetaBackend(String driverClass, String jdbcString, String username, String password,
+    public JDBCMetaBackend(DefaultStorageFinder defStoreFind, String driverClass, String jdbcString, String username, String password,
             boolean useConnectionPooling, int maxConnections) throws ConfigurationException {
         if (useConnectionPooling && maxConnections <= 0) {
             throw new IllegalArgumentException(
                     "If connection pooling is enabled maxConnections shall be a positive integer: "
                             + maxConnections);
         }
-        try {
-            wrpr = new JDBCMBWrapper(driverClass, jdbcString, username, password,
-                    useConnectionPooling, maxConnections);
-        } catch (SQLException se) {
+       if(defStoreFind != null && isMetaStoreDisabled(defStoreFind)) {
+    	    //No MetaStore:
             enabled = false;
-            throw new ConfigurationException(se.getMessage());
-        }
-
-        if (enabled) {
-            idCache = new JDBCMBIdCache(wrpr);
-        } else {
+            wrpr = null;
             idCache = null;
+        } else {
+    		try {
+                wrpr = new JDBCMBWrapper(driverClass, jdbcString, username, password,
+                        useConnectionPooling, maxConnections);
+            } catch (SQLException se) {
+                enabled = false;
+                throw new ConfigurationException(se.getMessage());
+            }
+
+            if (enabled) {
+                idCache = new JDBCMBIdCache(wrpr);
+            } else {
+                idCache = null;
+            }
         }
+    }
+    
+    private boolean isMetaStoreDisabled(DefaultStorageFinder defStoreFind) {
+    	String metaStoreDisabled = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_DISABLED);
+        return (metaStoreDisabled != null && Boolean.parseBoolean(metaStoreDisabled));
     }
 
     public JDBCMetaBackend(DefaultStorageFinder defStoreFind) throws ConfigurationException {
