@@ -31,7 +31,9 @@ import org.geowebcache.layer.TileLayer;
  *
  */
 public class CircularExtentFilter extends RequestFilter {
-    
+
+    private static final long serialVersionUID = -8488899568092162423L;
+
     CircularExtentFilter() {
         
     }

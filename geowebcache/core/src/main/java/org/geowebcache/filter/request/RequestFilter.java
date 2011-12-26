@@ -16,6 +16,8 @@
  */
 package org.geowebcache.filter.request;
 
+import java.io.Serializable;
+
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.layer.TileLayer;
@@ -24,9 +26,11 @@ import org.geowebcache.layer.TileLayer;
  * This is just a dummy class. Should be abstract, 
  * but that gets tricky with XStream
  */
-public abstract class RequestFilter {
+public abstract class RequestFilter implements Serializable {
+
+    private static final long serialVersionUID = -1058186522442111377L;
     
-    String name;
+    private String name;
     
     /**
      * Apply the filter to the 
@@ -44,6 +48,14 @@ public abstract class RequestFilter {
         return name;
     }
     
+    
+    /**
+     * @param name the name to set
+     */
+    void setName(String name) {
+        this.name = name;
+    }
+
     /**
      * Optional initialization 
      */

@@ -16,7 +16,11 @@
  */
 package org.geowebcache.config.meta;
 
-public class ServiceContact {
+import java.io.Serializable;
+
+public class ServiceContact implements Serializable{
+
+    private static final long serialVersionUID = 2137310743590604314L;
 
     private String individualName;
 

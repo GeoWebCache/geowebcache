@@ -16,7 +16,11 @@
  */
 package org.geowebcache.config.meta;
 
-public class ServiceProvider {
+import java.io.Serializable;
+
+public class ServiceProvider implements Serializable{
+
+    private static final long serialVersionUID = 6318645093724139893L;
 
     private String providerName;
 
