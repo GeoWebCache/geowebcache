@@ -91,7 +91,8 @@ public class TMSDocumentFactory {
     }
     
     private void tileMapsForLayer(StringBuilder str, TileLayer layer) {
-        for(GridSubset gridSub : layer.getGridSubsets().values()) {
+        for(String gridSetId : layer.getGridSubsets()){
+            GridSubset gridSub = layer.getGridSubset(gridSetId);
             for(MimeType mimeType : layer.getMimeTypes()) {
                 // GridSubset gridSub = iter.next();
                 str.append("    <TileMap\n");

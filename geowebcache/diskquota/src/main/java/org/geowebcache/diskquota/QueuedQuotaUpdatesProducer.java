@@ -130,6 +130,10 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
         quotaStore.deleteLayer(layerName);
     }
 
+    public void gridSubsetDeleted(String layerName, String gridSetId) {
+        quotaStore.deleteGridSubset(layerName, gridSetId);
+    }
+
     public void layerRenamed(String oldLayerName, String newLayerName) {
         try {
             quotaStore.renameLayer(oldLayerName, newLayerName);
@@ -182,5 +186,5 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
     public void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
     }
-
+ 
 }

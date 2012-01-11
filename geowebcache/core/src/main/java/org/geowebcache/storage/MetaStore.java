@@ -26,6 +26,8 @@ public interface MetaStore {
 
     public boolean delete(String layerName) throws StorageException;
 
+    public boolean deleteByGridsetId(String layerName, String gridsetId) throws StorageException;
+
     public boolean delete(TileObject stObj) throws StorageException;
 
     public boolean delete(BlobStore blobStore, TileRange trObj) throws StorageException;

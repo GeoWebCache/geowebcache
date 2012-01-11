@@ -16,50 +16,86 @@
  */
 package org.geowebcache.grid;
 
-import java.util.Hashtable;
+import static java.util.Arrays.asList;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.geowebcache.GeoWebCacheException;
 
 public class SRS implements Comparable<SRS> {
-    private final int number;
+
+    private static Map<Integer, SRS> list = new ConcurrentHashMap<Integer, SRS>();
 
     private static final SRS EPSG4326 = new SRS(4326);
 
-    private static final SRS EPSG3857 = new SRS(3857);
-    
-    private static final SRS EPSG900913 = new SRS(900913);
-    
-    private static Hashtable<Integer,SRS> list = new Hashtable<Integer,SRS>();
+    /**
+     * The EPSG says EPSG:3857 is the identifier for web mercator. ArcGIS 10 says either of
+     * EPSG:102113 or EPSG:102100 identifies web mercator. The "community" first defined it as
+     * EPSG:900913.
+     */
+    private static final SRS EPSG3857 = new SRS(3857, new ArrayList<Integer>(asList(900913, 102113,
+            102100)));
+
+    /**
+     * The EPSG says EPSG:3857 is the identifier for web mercator. ArcGIS 10 says either of
+     * EPSG:102113 or EPSG:102100 identifies web mercator. The "community" first defined it as
+     * EPSG:900913.
+     */
+    private static final SRS EPSG900913 = new SRS(900913, new ArrayList<Integer>(asList(3857,
+            102113, 102100)));
+
+    private final int number;
+
+    private transient final List<Integer> aliases;
 
     private SRS(int epsgNumber) {
-        number = epsgNumber;
+        this(epsgNumber, null);
     }
-    
-    
+
+    private SRS(int epsgNumber, List<Integer> aliases) {
+        this.number = epsgNumber;
+        this.aliases = aliases;
+        readResolve();
+    }
+
+    // called by XStream for custom initialization
+    private SRS readResolve() {
+        if (!list.containsKey(Integer.valueOf(number))) {
+            list.put(number, this);
+        }
+        return this;
+    }
+
     /**
-     * This is already externally synchronized
-     *  
-     * @param epsgNumber
+     * Returns an SRS object for the given epsg code.
+     * <p>
+     * If an SRS for this code already exists, it's returned. Otherwise a registered SRS is looked
+     * up that has an alias defined for the given code, and if found the alias is returned. If no
+     * SRS is registered nor an alias is found, a new SRS for this code is registered and returned.
+     * 
+     * @param epsgCode
      * @return
      */
-    public static SRS getSRS(int epsgNumber) {
-        SRS ret = list.get(epsgNumber);
-        
-        if(ret == null) {
-            // We'll use these a lot, so leave some shortcuts that avoid all the hashing
-            if(epsgNumber == 4326) {
-                list.put(4326, EPSG4326);
-            } else if(epsgNumber == 900913 || epsgNumber == 3857) {
-                list.put(3857, EPSG3857);
+    public static SRS getSRS(final int epsgCode) {
+        final Integer code = Integer.valueOf(epsgCode);
+        final SRS existing = list.get(code);
+
+        if (existing != null) {
+            return existing;
+        }
+        for (SRS candidate : new ArrayList<SRS>(list.values())) {
+            if (candidate.aliases != null && candidate.aliases.contains(Integer.valueOf(code))) {
+                list.put(code, candidate);
+                return candidate;
             }
-            
-            ret = new SRS(epsgNumber);
-            list.put(epsgNumber, ret);
         }
 
-        return ret;
+        return new SRS(epsgCode);
     }
-    
+
     public static SRS getSRS(String epsgStr) throws GeoWebCacheException {
         final String crsAuthPrefix = "EPSG:";
         if (epsgStr.substring(0, 5).equalsIgnoreCase(crsAuthPrefix)) {
@@ -69,18 +105,32 @@ public class SRS implements Comparable<SRS> {
             throw new GeoWebCacheException("Can't parse " + epsgStr + " as SRS string.");
         }
     }
-    
+
+    /**
+     * Two SRS are equal if they have the same code or any of them have the other one as an alias.
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof SRS) {
-            SRS other = (SRS) obj;
-            if(other.number == this.number
-                    || (this.number == 3857 && other.number == 900913)
-                    || (this.number == 900913 && other.number == 3857)) {
-                return true;
-            }
+        if (!(obj instanceof SRS)) {
+            return false;
         }
-        return false;
+        boolean equivalent = false;
+        SRS other = (SRS) obj;
+        if (other.number == this.number) {
+            equivalent = true;
+        } else if (this.aliases != null && other.aliases != null) {
+            equivalent = this.aliases.contains(other.number) || other.aliases.contains(this.number);
+        }
+        return equivalent;
+    }
+
+    /**
+     * @deprecated just use {@link #equals}
+     */
+    public boolean equalsIncludingAlias(Object o) {
+        return equals(o);
     }
 
     public int getNumber() {
@@ -96,10 +146,6 @@ public class SRS implements Comparable<SRS> {
         return "EPSG:" + Integer.toString(number);
     }
 
-    public String filePath() {
-        return "EPSG_" + Integer.toString(number);
-    }
-
     public static SRS getEPSG4326() {
         return EPSG4326;
     }
@@ -107,11 +153,11 @@ public class SRS implements Comparable<SRS> {
     public static SRS getEPSG3857() {
         return EPSG3857;
     }
-    
+
     public static SRS getEPSG900913() {
         return EPSG900913;
     }
-    
+
     /**
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */

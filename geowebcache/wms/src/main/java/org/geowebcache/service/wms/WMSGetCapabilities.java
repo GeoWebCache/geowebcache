@@ -152,30 +152,33 @@ public class WMSGetCapabilities {
 
     private void serviceContact(StringBuilder str) {
         ServiceInformation servInfo = tld.getServiceInformation();
-        ServiceProvider servProv = null;
-        ServiceContact servCont = null;
+        if (servInfo == null) {
+            return;
+        }
 
-        if (servInfo != null) {
-            servProv = servInfo.getServiceProvider();
+        ServiceProvider servProv = servInfo.getServiceProvider();
+        if (servProv == null) {
+            return;
+        }
 
-            if (servProv != null) {
-                servCont = servProv.getServiceContact();
+        ServiceContact servCont = servProv.getServiceContact();
+
+        str.append("  <ContactInformation>\n");
+
+        if (servProv.getProviderName() != null || servCont != null) {
+            str.append("    <ContactPersonPrimary>\n");
+            if (servCont != null) {
+                str.append("      <ContactPerson>" + servCont.getIndividualName()
+                        + "</ContactPerson>\n");
             }
+            str.append("      <ContactOrganisation>" + servProv.getProviderName()
+                    + "</ContactOrganisation>\n");
+            str.append("    </ContactPersonPrimary>\n");
 
-            str.append("  <ContactInformation>\n");
-
-            if (servProv.getProviderName() != null || servCont != null) {
-                str.append("    <ContactPersonPrimary>\n");
-                if (servCont != null) {
-                    str.append("      <ContactPerson>" + servCont.getIndividualName()
-                            + "</ContactPerson>\n");
-                }
-                str.append("      <ContactOrganisation>" + servProv.getProviderName()
-                        + "</ContactOrganisation>\n");
-                str.append("    </ContactPersonPrimary>\n");
-
+            if (servCont != null) {
                 str.append("    <ContactPosition>" + servCont.getPositionName()
                         + "</ContactPosition>\n");
+
                 str.append("    <ContactAddress>\n");
                 str.append("      <AddressType>" + servCont.getAddressType() + "</AddressType>\n");
                 str.append("      <Address>" + servCont.getAddressStreet() + "</Address>\n");
@@ -191,9 +194,10 @@ public class WMSGetCapabilities {
                         + "<ContactFacsimileTelephone/>\n");
                 str.append("    <ContactElectronicMailAddress>" + servCont.getAddressEmail()
                         + "</ContactElectronicMailAddress>\n");
-                str.append("  </ContactInformation>\n");
             }
         }
+        
+        str.append("  </ContactInformation>\n");
     }
 
     private void capability(StringBuilder str) {
@@ -328,10 +332,9 @@ public class WMSGetCapabilities {
             if (!layer.isEnabled()) {
                 continue;
             }
-            Iterator<GridSubset> gridIter = layer.getGridSubsets().values().iterator();
-
-            while (gridIter.hasNext()) {
-                GridSubset grid = gridIter.next();
+            
+            for(String gridSetId : layer.getGridSubsets()){
+                GridSubset grid = layer.getGridSubset(gridSetId);
 
                 List<String> formats = new ArrayList<String>(2);
 
@@ -448,11 +451,10 @@ public class WMSGetCapabilities {
             str.append("      <Title>" + layer.getName() + "</Title>\n");
         }
 
-        Iterator<GridSubset> gridSetIter = layer.getGridSubsets().values().iterator();
         TreeSet<SRS> srsSet = new TreeSet<SRS>();
         StringBuilder boundingBoxStr = new StringBuilder();
-        while (gridSetIter.hasNext()) {
-            GridSubset curGridSubSet = gridSetIter.next();
+        for (String gridSetId : layer.getGridSubsets()) {
+            GridSubset curGridSubSet = layer.getGridSubset(gridSetId);
             SRS curSRS = curGridSubSet.getSRS();
             if (!srsSet.contains(curSRS)) {
                 str.append("      <SRS>" + curSRS.toString() + "</SRS>\n");

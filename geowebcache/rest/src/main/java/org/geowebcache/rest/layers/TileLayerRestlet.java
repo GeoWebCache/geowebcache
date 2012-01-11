@@ -22,9 +22,9 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.NoSuchElementException;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -146,8 +146,9 @@ public class TileLayerRestlet extends GWCRestlet {
         TileLayer tl = deserializeAndCheckLayer(req, resp, false);
 
         try {
-            layerDispatcher.modify(tl);
-        } catch (NoSuchElementException e) {
+            Configuration configuration = layerDispatcher.modify(tl);
+            configuration.save();
+        } catch (IllegalArgumentException e) {
             throw new RestletException("Layer " + tl.getName()
                     + " is not known by the configuration."
                     + "Maybe it was loaded from another source, or you're trying to add a new "
@@ -194,9 +195,11 @@ public class TileLayerRestlet extends GWCRestlet {
      */
     private void doDelete(Request req, Response resp) throws RestletException, GeoWebCacheException {
         String layerName = (String) req.getAttributes().get("layer");
-        TileLayer tl = findTileLayer(layerName, layerDispatcher);
         try {
-            layerDispatcher.removeLayer(tl.getName());
+            Configuration configuration = layerDispatcher.removeLayer(layerName);
+            if (configuration != null) {
+                configuration.save();
+            }
         } catch (IOException e) {
             throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL, e);
         }

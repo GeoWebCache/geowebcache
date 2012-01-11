@@ -105,6 +105,10 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
         startUp();
     }
 
+    /**
+     * @throws InterruptedException
+     * @see {@link #destroy()}
+     */
     public void startUp() throws InterruptedException {
         if (!diskQuotaEnabled) {
             log.info(getClass().getName() + " won't start, got env variable "
@@ -133,6 +137,7 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
     /**
      * 
      * @see org.springframework.beans.factory.DisposableBean#destroy()
+     * @see #startUp()
      */
     public void destroy() throws Exception {
         if (!diskQuotaEnabled) {
@@ -413,6 +418,54 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
     public void deleteLayer(final String layerName) {
         Assert.notNull(layerName);
         issue(new DeleteLayer(layerName));
+    }
+
+    public void deleteGridSubset(String layerName, String gridSetId) {
+        issue(new DeleteLayerGridSubset(layerName, gridSetId));
+    }
+
+    private class DeleteLayerGridSubset implements Callable<Void> {
+
+        private final String layerName;
+
+        private final String gridSetId;
+
+        public DeleteLayerGridSubset(String layerName, String gridSetId) {
+            this.layerName = layerName;
+            this.gridSetId = gridSetId;
+        }
+
+        public Void call() {
+            Transaction transaction = entityStore.getEnvironment().beginTransaction(null, null);
+            try {
+                EntityCursor<TileSet> tileSets = tileSetsByLayer.entities(transaction, layerName,
+                        true, layerName, true, null);
+                TileSet tileSet;
+                Quota freed;
+                Quota global;
+                try {
+                    while (null != (tileSet = tileSets.next())) {
+                        if (tileSet.getGridsetId().equals(gridSetId)) {
+                            freed = usedQuotaByTileSetId.get(transaction, tileSet.getId(),
+                                    LockMode.DEFAULT);
+                            global = usedQuotaByTileSetId.get(transaction, GLOBAL_QUOTA_NAME,
+                                    LockMode.DEFAULT);
+
+                            tileSets.delete();
+                            global.subtract(freed.getBytes());
+                            usedQuotaById.put(transaction, global);
+                        }
+                    }
+                } finally {
+                    tileSets.close();
+                }
+                transaction.commit();
+            } catch (RuntimeException e) {
+                transaction.abort();
+                throw e;
+            }
+            return null;
+        }
     }
 
     /**

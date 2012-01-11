@@ -49,11 +49,32 @@ public class JDBCMetaBackend implements MetaStore {
 
     private boolean enabled = true;
 
+
+    /**
+     * Use the constructor with the DefaultStorageFinder instead.
+     * Otherwise disabling the MetaStore will fail. 
+     */
+    @Deprecated
     public JDBCMetaBackend(String driverClass, String jdbcString, String username, String password)
-            throws ConfigurationException {
-        this(driverClass, jdbcString, username, password, false, -1);
+    	throws ConfigurationException {
+    		this(null, driverClass, jdbcString, username, password, false, -1);
+    }
+    
+    /**
+     * Use the constructor with the DefaultStorageFinder instead.
+     * Otherwise disabling the MetaStore will fail. 
+     */
+    @Deprecated
+    public JDBCMetaBackend(String driverClass, String jdbcString, String username, String password,
+            boolean useConnectionPooling, int maxConnections) throws ConfigurationException {
+        this(null, driverClass, jdbcString, username, password, useConnectionPooling, maxConnections);
     }
 
+    public JDBCMetaBackend(DefaultStorageFinder defStoreFind, String driverClass, String jdbcString, String username, String password)
+            throws ConfigurationException {
+        this(defStoreFind, driverClass, jdbcString, username, password, false, -1);
+    }
+    
     /**
      * 
      * @param driverClass
@@ -66,26 +87,38 @@ public class JDBCMetaBackend implements MetaStore {
      *            Whether to use JDBC connection pooling
      * @throws StorageException
      */
-    public JDBCMetaBackend(String driverClass, String jdbcString, String username, String password,
+    public JDBCMetaBackend(DefaultStorageFinder defStoreFind, String driverClass, String jdbcString, String username, String password,
             boolean useConnectionPooling, int maxConnections) throws ConfigurationException {
         if (useConnectionPooling && maxConnections <= 0) {
             throw new IllegalArgumentException(
                     "If connection pooling is enabled maxConnections shall be a positive integer: "
                             + maxConnections);
         }
-        try {
-            wrpr = new JDBCMBWrapper(driverClass, jdbcString, username, password,
-                    useConnectionPooling, maxConnections);
-        } catch (SQLException se) {
+       if(defStoreFind != null && isMetaStoreDisabled(defStoreFind)) {
+    	    //No MetaStore:
             enabled = false;
-            throw new ConfigurationException(se.getMessage());
-        }
-
-        if (enabled) {
-            idCache = new JDBCMBIdCache(wrpr);
-        } else {
+            wrpr = null;
             idCache = null;
+        } else {
+    		try {
+                wrpr = new JDBCMBWrapper(driverClass, jdbcString, username, password,
+                        useConnectionPooling, maxConnections);
+            } catch (SQLException se) {
+                enabled = false;
+                throw new ConfigurationException(se.getMessage());
+            }
+
+            if (enabled) {
+                idCache = new JDBCMBIdCache(wrpr);
+            } else {
+                idCache = null;
+            }
         }
+    }
+    
+    private boolean isMetaStoreDisabled(DefaultStorageFinder defStoreFind) {
+    	String metaStoreDisabled = defStoreFind.findEnvVar(DefaultStorageFinder.GWC_METASTORE_DISABLED);
+        return (metaStoreDisabled != null && Boolean.parseBoolean(metaStoreDisabled));
     }
 
     public JDBCMetaBackend(DefaultStorageFinder defStoreFind) throws ConfigurationException {
@@ -140,6 +173,21 @@ public class JDBCMetaBackend implements MetaStore {
         return false;
     }
 
+    public boolean deleteByGridsetId(final String layerName, final String gridsetName)
+            throws StorageException {
+        long layerId = idCache.getLayerId(layerName);
+        long gridSetId = idCache.getGridSetsId(gridsetName);
+        try {
+            wrpr.deleteLayerGridSubset(layerId, gridSetId);
+            return true;
+        } catch (SQLException se) {
+            log.error("Failed to delete layer gridset '" + layerName + "'" + "/'" + gridsetName
+                    + "'", se);
+        }
+
+        return false;
+    }
+
     public boolean rename(final String oldLayerName, final String newLayerName)
             throws StorageException {
         Assert.notNull(oldLayerName, "old layer name");
@@ -174,21 +222,21 @@ public class JDBCMetaBackend implements MetaStore {
     }
 
     public boolean delete(BlobStore blobStore, TileRange trObj) throws StorageException {
-        long layerId = idCache.getLayerId(trObj.layerName);
-        long formatId = idCache.getFormatId(trObj.mimeType.getFormat());
+        long layerId = idCache.getLayerId(trObj.getLayerName());
+        long formatId = idCache.getFormatId(trObj.getMimeType().getFormat());
         // FRD Set the parameters ID
         long parametersId = -1;
         if (trObj.getParametersId() != null) {
             parametersId = trObj.getParametersId();
-        } else if (trObj.parameters != null) {
-            parametersId = idCache.getParametersId(trObj.parameters);
+        } else if (trObj.getParameters() != null) {
+            parametersId = idCache.getParametersId(trObj.getParameters());
             if (-1L != parametersId) {
                 trObj.setParametersId(parametersId);
             }
         }
-        long gridSetIdId = idCache.getGridSetsId(trObj.gridSetId);
+        long gridSetIdId = idCache.getGridSetsId(trObj.getGridSetId());
 
-        for (int zoomLevel = trObj.zoomStart; zoomLevel <= trObj.zoomStop; zoomLevel++) {
+        for (int zoomLevel = trObj.getZoomStart(); zoomLevel <= trObj.getZoomStop(); zoomLevel++) {
             wrpr.deleteRange(blobStore, trObj, zoomLevel, layerId, formatId, parametersId,
                     gridSetIdId);
         }
@@ -197,15 +245,15 @@ public class JDBCMetaBackend implements MetaStore {
     }
 
     public boolean expire(TileRange trObj) throws StorageException {
-        long layerId = idCache.getLayerId(trObj.layerName);
-        long formatId = idCache.getFormatId(trObj.mimeType.getFormat());
-        long parametersId = idCache.getParametersId(trObj.parameters);
+        long layerId = idCache.getLayerId(trObj.getLayerName());
+        long formatId = idCache.getFormatId(trObj.getMimeType().getFormat());
+        long parametersId = idCache.getParametersId(trObj.getParameters());
         if (-1L != parametersId) {
             trObj.setParametersId(parametersId);
         }
-        long gridSetIdId = idCache.getGridSetsId(trObj.gridSetId);
+        long gridSetIdId = idCache.getGridSetsId(trObj.getGridSetId());
 
-        for (int zoomLevel = trObj.zoomStart; zoomLevel <= trObj.zoomStop; zoomLevel++) {
+        for (int zoomLevel = trObj.getZoomStart(); zoomLevel <= trObj.getZoomStop(); zoomLevel++) {
             try {
                 wrpr.expireRange(trObj, zoomLevel, layerId, formatId, parametersId, gridSetIdId);
 

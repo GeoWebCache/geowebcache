@@ -35,6 +35,9 @@ public interface BlobStore {
      */
     public boolean delete(String layerName) throws StorageException;
 
+    public boolean deleteByGridsetId(final String layerName, final String gridSetId)
+            throws StorageException;
+
     public boolean delete(TileObject obj) throws StorageException;
 
     public boolean delete(TileRange obj) throws StorageException;

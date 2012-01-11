@@ -58,7 +58,7 @@ public class BDBQuotaStoreTest extends TestCase {
         LinkedList<Configuration> configList = new LinkedList<Configuration>();
         configList.add(xmlConfig);
 
-        layerDispatcher = new TileLayerDispatcher(new GridSetBroker(false, false), configList);
+        layerDispatcher = new TileLayerDispatcher(new GridSetBroker(true, true), configList);
 
         tilePageCalculator = new TilePageCalculator(layerDispatcher);
 
@@ -93,30 +93,30 @@ public class BDBQuotaStoreTest extends TestCase {
         assertNotNull(tileSets);
         assertEquals(10, tileSets.size());
 
-        TileSet tileSet = new TileSet("topp:states", "GoogleMapsCompatible", "image/png", null);
+        TileSet tileSet = new TileSet("topp:states", "EPSG:900913", "image/png", null);
         assertTrue(tileSets.contains(tileSet));
 
-        tileSet = new TileSet("topp:states", "GoogleMapsCompatible", "image/jpeg", null);
+        tileSet = new TileSet("topp:states", "EPSG:900913", "image/jpeg", null);
         assertTrue(tileSets.contains(tileSet));
 
-        tileSet = new TileSet("topp:states", "GoogleMapsCompatible", "image/gif", null);
+        tileSet = new TileSet("topp:states", "EPSG:900913", "image/gif", null);
         assertTrue(tileSets.contains(tileSet));
 
-        tileSet = new TileSet("topp:states", "GoogleMapsCompatible",
-                "application/vnd.google-earth.kml+xml", null);
+        tileSet = new TileSet("topp:states", "EPSG:900913", "application/vnd.google-earth.kml+xml",
+                null);
         assertTrue(tileSets.contains(tileSet));
 
-        tileSet = new TileSet("topp:states", "GlobalCRS84Geometric", "image/png", null);
+        tileSet = new TileSet("topp:states", "EPSG:4326", "image/png", null);
         assertTrue(tileSets.contains(tileSet));
 
-        tileSet = new TileSet("topp:states", "GlobalCRS84Geometric", "image/jpeg", null);
+        tileSet = new TileSet("topp:states", "EPSG:4326", "image/jpeg", null);
         assertTrue(tileSets.contains(tileSet));
 
-        tileSet = new TileSet("topp:states", "GlobalCRS84Geometric", "image/gif", null);
+        tileSet = new TileSet("topp:states", "EPSG:4326", "image/gif", null);
         assertTrue(tileSets.contains(tileSet));
 
-        tileSet = new TileSet("topp:states", "GlobalCRS84Geometric",
-                "application/vnd.google-earth.kml+xml", null);
+        tileSet = new TileSet("topp:states", "EPSG:4326", "application/vnd.google-earth.kml+xml",
+                null);
         assertTrue(tileSets.contains(tileSet));
 
         tileSet = new TileSet("topp:states2", "EPSG:2163", "image/png", null);
@@ -126,7 +126,8 @@ public class BDBQuotaStoreTest extends TestCase {
         assertTrue(tileSets.contains(tileSet));
 
         // remove one layer from the dispatcher
-        layerDispatcher.removeLayer("topp:states");
+        Configuration configuration = layerDispatcher.removeLayer("topp:states");
+        configuration.save();
         // and make sure at the next startup the store catches up (note this behaviour is just a
         // startup consistency check in case the store got out of sync for some reason. On normal
         // situations the store should have been notified through store.deleteLayer(layerName) if

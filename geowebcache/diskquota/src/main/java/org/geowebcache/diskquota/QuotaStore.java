@@ -90,4 +90,6 @@ public interface QuotaStore {
 
     public abstract PageStats setTruncated(final TilePage tilePage) throws InterruptedException;
 
+    public abstract void deleteGridSubset(String layerName, String gridSetId);
+
 }

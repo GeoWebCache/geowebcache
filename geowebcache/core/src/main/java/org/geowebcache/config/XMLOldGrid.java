@@ -16,6 +16,8 @@
  */
 package org.geowebcache.config;
 
+import java.io.Serializable;
+
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -31,7 +33,10 @@ import org.geowebcache.grid.SRS;
  * The problem is that it cannot use the GridSetBroker, so we end up with one
  * GridSet per layer anyway.
  */
-public class XMLOldGrid {
+public class XMLOldGrid implements Serializable{
+
+    private static final long serialVersionUID = 1413422643636728997L;
+
     private SRS srs = null;
     
     private BoundingBox dataBounds = null;
@@ -56,7 +61,7 @@ public class XMLOldGrid {
         if(resolutions != null) {
             zoomStop = resolutions.length -1;
         } else if(zoomStop == null) {
-            zoomStop = 30;
+            zoomStop = GridSetFactory.DEFAULT_LEVELS;
         }
         
         if(dataBounds == null) {

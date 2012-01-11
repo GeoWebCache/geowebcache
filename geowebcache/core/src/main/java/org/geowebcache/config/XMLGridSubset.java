@@ -18,6 +18,10 @@ package org.geowebcache.config;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.grid.BoundingBox;
@@ -36,18 +40,24 @@ public class XMLGridSubset implements Serializable {
 
     private BoundingBox extent;
 
-    // TODO remove in 1.2.2
-    private BoundingBox coverageBounds;
-
     private Integer zoomStart;
 
     private Integer zoomStop;
+
+    private Integer minCachedLevel;
+
+    private Integer maxCachedLevel;
 
     /**
      * Empty constructor
      */
     public XMLGridSubset() {
         // nothing to do
+        readResolve();
+    }
+    
+    private XMLGridSubset readResolve(){
+        return this;
     }
 
     /**
@@ -56,9 +66,10 @@ public class XMLGridSubset implements Serializable {
     public XMLGridSubset(XMLGridSubset sset) {
         setGridSetName(sset.getGridSetName());
         setExtent(sset.getExtent() == null ? null : new BoundingBox(sset.getExtent()));
-        coverageBounds = sset.coverageBounds;
         setZoomStart(sset.getZoomStart());
         setZoomStop(sset.getZoomStop());
+        setMinCachedLevel(sset.getMinCachedLevel());
+        setMaxCachedLevel(sset.getMaxCachedLevel());
     }
 
     /**
@@ -70,13 +81,11 @@ public class XMLGridSubset implements Serializable {
                 sset.getOriginalExtent()));
         setZoomStart(sset.getZoomStart());
         setZoomStop(sset.getZoomStop());
+        setMinCachedLevel(sset.getMinCachedZoom());
+        setMaxCachedLevel(sset.getMaxCachedZoom());
     }
 
     public GridSubset getGridSubSet(GridSetBroker gridSetBroker) {
-        // TODO remove in 1.2.2
-        if (getExtent() == null && coverageBounds != null) {
-            setExtent(coverageBounds);
-        }
 
         GridSet gridSet = gridSetBroker.get(getGridSetName());
 
@@ -85,7 +94,7 @@ public class XMLGridSubset implements Serializable {
             return null;
         }
         return GridSubsetFactory.createGridSubSet(gridSet, getExtent(), getZoomStart(),
-                getZoomStop());
+                getZoomStop(), minCachedLevel, maxCachedLevel);
     }
 
     public String getGridSetName() {
@@ -143,5 +152,36 @@ public class XMLGridSubset implements Serializable {
      */
     public void setZoomStop(Integer zoomStop) {
         this.zoomStop = zoomStop;
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return EqualsBuilder.reflectionEquals(this, o);
+    }
+
+    public Integer getMinCachedLevel() {
+        return minCachedLevel;
+    }
+
+    public void setMinCachedLevel(Integer minCachedLevel) {
+        this.minCachedLevel = minCachedLevel;
+    }
+
+    public Integer getMaxCachedLevel() {
+        return maxCachedLevel;
+    }
+
+    public void setMaxCachedLevel(Integer maxCachedLevel) {
+        this.maxCachedLevel = maxCachedLevel;
     }
 }

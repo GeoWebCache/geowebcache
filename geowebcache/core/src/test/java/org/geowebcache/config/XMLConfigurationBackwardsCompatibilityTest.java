@@ -1,12 +1,22 @@
 package org.geowebcache.config;
 
+import static java.util.Arrays.asList;
+
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import junit.framework.TestCase;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
@@ -14,10 +24,14 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.ImageMime;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 public class XMLConfigurationBackwardsCompatibilityTest extends TestCase {
 
-    public static final String LATEST_FILENAME = "geowebcache_125.xml";
+    public static final String GWC_125_CONFIG_FILE = "geowebcache_125.xml";
+
+    public static final String LATEST_FILENAME = "geowebcache_130.xml";
 
     @Override
     protected void setUp() throws Exception {
@@ -88,7 +102,7 @@ public class XMLConfigurationBackwardsCompatibilityTest extends TestCase {
     }
 
     public void testLoad115() throws Exception {
-        List<TileLayer> layers = loadResource(LATEST_FILENAME);
+        List<TileLayer> layers = loadResource("geowebcache_115.xml");
         TileLayer layer = findLayer(layers, "topp:states");
         assertTrue(layer != null);
         // assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
@@ -114,6 +128,45 @@ public class XMLConfigurationBackwardsCompatibilityTest extends TestCase {
         assertEquals(filter1.getName(), "testFileRasterFilter");
     }
 
+    public void testLoad126() throws Exception {
+
+        XMLConfiguration config = loadConfig("geowebcache_126.xml");
+
+        ServiceInformation serviceInfo = config.getServiceInformation();
+        assertNotNull(serviceInfo);
+        assertEquals("GeoWebCache", serviceInfo.getTitle());
+        assertEquals("GeoWebCache description.", serviceInfo.getDescription());
+
+        // check transform from <keyowrds><keyword>... to <keywords><string>...
+        assertEquals(asList("WFS", "WMS", "WMTS", "GEOWEBCACHE"), serviceInfo.getKeywords());
+
+        assertNotNull(serviceInfo.getAccessConstraints());
+        assertNotNull(serviceInfo.getFees());
+        assertNotNull(serviceInfo.getServiceProvider());
+        assertNotNull(serviceInfo.getServiceProvider().getProviderName());
+        assertNotNull(serviceInfo.getServiceProvider().getProviderSite());
+        assertNotNull(serviceInfo.getServiceProvider().getServiceContact());
+        assertNotNull(serviceInfo.getServiceProvider().getServiceContact()
+                .getAddressAdministrativeArea());
+        assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressCity());
+        assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressCountry());
+        assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressEmail());
+        assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressPostalCode());
+        assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressStreet());
+        assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressType());
+        assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getFaxNumber());
+        assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getIndividualName());
+        assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getPhoneNumber());
+        assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getPositionName());
+
+        List<TileLayer> layers = config.getTileLayers();
+        TileLayer layer = findLayer(layers, "topp:states");
+        assertNotNull(layer);
+
+        assertEquals(4, layer.getMimeTypes().size());
+        assertTrue(layer.getGridSubsets().contains("EPSG:2163"));
+    }
+
     private TileLayer findLayer(List<TileLayer> layers, String layerName)
             throws GeoWebCacheException {
         Iterator<TileLayer> iter = layers.iterator();
@@ -130,7 +183,22 @@ public class XMLConfigurationBackwardsCompatibilityTest extends TestCase {
     }
 
     private List<TileLayer> loadResource(String fileName) throws Exception {
-        InputStream is = XMLConfiguration.class.getResourceAsStream(fileName);
+        return loadConfig(fileName).getTileLayers();
+    }
+
+    private XMLConfiguration loadConfig(String fileName) throws Exception {
+
+        InputStream is;
+
+        is = XMLConfiguration.class.getResourceAsStream(fileName);
+        try {
+            Node root = XMLConfiguration.loadDocument(is);
+            print(root.getOwnerDocument());
+        } finally {
+            is.close();
+        }
+
+        is = XMLConfiguration.class.getResourceAsStream(fileName);
 
         XMLConfiguration xmlConfig = new XMLConfiguration(is);
 
@@ -146,6 +214,25 @@ public class XMLConfigurationBackwardsCompatibilityTest extends TestCase {
             layer.initialize(gsb);
         }
 
-        return list;
+        return xmlConfig;
+    }
+
+    /**
+     * Utility method to print out a dom.
+     */
+    protected void print(Document dom) throws Exception {
+        TransformerFactory txFactory = TransformerFactory.newInstance();
+        try {
+            txFactory.setAttribute("{http://xml.apache.org/xalan}indent-number", new Integer(2));
+        } catch (Exception e) {
+            // some
+        }
+
+        Transformer tx = txFactory.newTransformer();
+        tx.setOutputProperty(OutputKeys.METHOD, "xml");
+        tx.setOutputProperty(OutputKeys.INDENT, "yes");
+
+        tx.transform(new DOMSource(dom), new StreamResult(new OutputStreamWriter(System.out,
+                "utf-8")));
     }
 }

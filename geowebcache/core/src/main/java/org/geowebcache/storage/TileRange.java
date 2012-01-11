@@ -18,6 +18,7 @@
 package org.geowebcache.storage;
 
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.ServletUtils;
@@ -27,20 +28,20 @@ import org.geowebcache.util.ServletUtils;
  * and a set of (zoom level,xy bounds) specifications
  */
 public class TileRange {
-    final public String layerName;
+    private final String layerName;
 
-    final public String gridSetId;
+    private final String gridSetId;
 
-    final public int zoomStart;
+    private final int zoomStart;
 
-    final public int zoomStop;
+    private final int zoomStop;
 
     // {zoom}{minx,miny,maxx,maxy}
-    final public long[][] rangeBounds;
+    private final Map<Integer, long[]> rangeBounds;
 
-    final public MimeType mimeType;
+    private final MimeType mimeType;
 
-    final public Map<String, String> parameters;
+    private final Map<String, String> parameters;
 
     private Long parametersId;
 
@@ -55,15 +56,27 @@ public class TileRange {
 
     public TileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,
             long[][] rangeBounds, MimeType mimeType, Map<String, String> parameters) {
-        //we don't know the params id yet, has to be set by the metastore so we set it to null
+        // we don't know the params id yet, has to be set by the metastore so we set it to null
         this(layerName, gridSetId, zoomStart, zoomStop, rangeBounds, mimeType, parameters, null);
     }
 
     public TileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,
-            long[][] rangeBounds, MimeType mimeType, Map<String, String> parameters, Long parametersId) {
+            long[][] rangeBounds, MimeType mimeType, Map<String, String> parameters,
+            Long parametersId) {
         this.layerName = layerName;
         this.gridSetId = gridSetId;
-        this.rangeBounds = rangeBounds;
+        if (rangeBounds == null) {
+            this.rangeBounds = null;
+        } else {
+            this.rangeBounds = new TreeMap<Integer, long[]>();
+            for (long[] bounds : rangeBounds) {
+                if (bounds != null) {
+                    // could be null in case calling code is only interested in a subset of zoom
+                    // levels
+                    this.rangeBounds.put(Integer.valueOf((int) bounds[4]), bounds);
+                }
+            }
+        }
         this.zoomStart = zoomStart;
         this.zoomStop = zoomStop;
         this.mimeType = mimeType;
@@ -76,9 +89,13 @@ public class TileRange {
     }
 
     public boolean contains(long x, long y, int z) {
-        if (z >= zoomStart && z <= zoomStop) {
+        if (null == rangeBounds) {
+            return true;
+        }
 
-            long[] rB = rangeBounds[(int) z];
+        if (z >= getZoomStart() && z <= getZoomStop()) {
+
+            long[] rB = rangeBounds((int) z);
 
             if (rB[0] <= x && rB[2] >= x && rB[1] <= y && rB[3] >= y) {
                 return true;
@@ -96,5 +113,62 @@ public class TileRange {
      */
     public Long getParametersId() {
         return parametersId;
+    }
+
+    /**
+     * @return the zoomStart
+     */
+    public int getZoomStart() {
+        return zoomStart;
+    }
+
+    /**
+     * @return the zoomStop
+     */
+    public int getZoomStop() {
+        return zoomStop;
+    }
+
+    /**
+     * @return the layerName
+     */
+    public String getLayerName() {
+        return layerName;
+    }
+
+    /**
+     * @return the gridSetId
+     */
+    public String getGridSetId() {
+        return gridSetId;
+    }
+
+    /**
+     * @return the mimeType
+     */
+    public MimeType getMimeType() {
+        return mimeType;
+    }
+
+    /**
+     * @return the parameters
+     */
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    public long[] rangeBounds(final int zoomLevel) {
+        if (zoomLevel < zoomStart) {
+            throw new IllegalArgumentException(zoomLevel + " < zoomStart (" + zoomStart + ")");
+        }
+        if (zoomLevel > zoomStop) {
+            throw new IllegalArgumentException(zoomLevel + " > zoomStop (" + zoomStop + ")");
+        }
+        long[] zlevelBounds = rangeBounds.get(Integer.valueOf(zoomLevel));
+        if (zlevelBounds == null) {
+            throw new IllegalStateException("Found no range bounds for z level " + zoomLevel + ": "
+                    + rangeBounds);
+        }
+        return zlevelBounds;
     }
 }

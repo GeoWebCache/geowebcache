@@ -61,37 +61,65 @@ public class GridSetBroker {
         WORLD_EPSG4326 = GridSetFactory.createGridSet(unprojectedName, SRS.getEPSG4326(),
                 BoundingBox.WORLD4326, false, GridSetFactory.DEFAULT_LEVELS, null,
                 GridSetFactory.DEFAULT_PIXEL_SIZE_METER, 256, 256, true);
+        WORLD_EPSG4326.setDescription("A default WGS84 tile matrix set where the first zoom level "
+                + "covers the world with two tiles on the horizonal axis and one tile "
+                + "over the vertical axis and each subsequent zoom level is calculated by half "
+                + "the resolution of its previous one.");
         gridSets.put(WORLD_EPSG4326.getName(), WORLD_EPSG4326);
 
-        if (useEPSG900913) {
-            log.debug("Adding EPSG:900913 grid set for Spherical Mercator / GoogleMapsCompatible");
+        final SRS googleMapsCompatibleSRS = useEPSG900913 ? SRS.getEPSG900913() : SRS.getEPSG3857();
+        log.debug("Adding " + googleMapsCompatibleSRS
+                + " grid set for Spherical Mercator / GoogleMapsCompatible");
 
-            WORLD_EPSG3857 = GridSetFactory.createGridSet(mercatorName, SRS.getEPSG900913(),
-                    BoundingBox.WORLD3857, false, GridSetFactory.DEFAULT_LEVELS, null,
-                    GridSetFactory.DEFAULT_PIXEL_SIZE_METER, 256, 256, false);
-        } else {
-            log.debug("Adding EPSG:3857 grid set for Spherical Mercator / GoogleMapsCompatible");
+        WORLD_EPSG3857 = GridSetFactory.createGridSet(mercatorName, googleMapsCompatibleSRS,
+                BoundingBox.WORLD3857, false, googleMapsCompatibleResolutions(), null, 1.0D,
+                GridSetFactory.DEFAULT_PIXEL_SIZE_METER, null, 256, 256, false);
+        WORLD_EPSG3857
+                .setDescription("This well-known scale set has been defined to be compatible with Google Maps and"
+                        + " Microsoft Live Map projections and zoom levels. Level 0 allows representing the whole "
+                        + "world in a single 256x256 pixels. The next level represents the whole world in 2x2 tiles "
+                        + "of 256x256 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
 
-            WORLD_EPSG3857 = GridSetFactory.createGridSet(mercatorName, SRS.getEPSG3857(),
-                    BoundingBox.WORLD3857, false, GridSetFactory.DEFAULT_LEVELS, null,
-                    GridSetFactory.DEFAULT_PIXEL_SIZE_METER, 256, 256, false);
-        }
         gridSets.put(WORLD_EPSG3857.getName(), WORLD_EPSG3857);
 
         log.debug("Adding GlobalCRS84Pixel");
         GridSet GlobalCRS84Pixel = GridSetFactory.createGridSet("GlobalCRS84Pixel",
                 SRS.getEPSG4326(), BoundingBox.WORLD4326, true, scalesCRS84PixelResolutions(),
                 null, null, GridSetFactory.DEFAULT_PIXEL_SIZE_METER, null, 256, 256, true);
+        GlobalCRS84Pixel
+                .setDescription("This well-known scale set has been defined for global cartographic products. "
+                        + "Rounded pixel sizes have been chosen for intuitive cartographic representation of raster data. "
+                        + "Some values have been chosen to coincide with original pixel size of commonly used global"
+                        + "products like STRM (1\" and 3\"), GTOPO (30\") or ETOPO (2' and 5'). Scale denominator"
+                        + "and approximated pixel size in meters are only accurate near the equator.");
 
         gridSets.put(GlobalCRS84Pixel.getName(), GlobalCRS84Pixel);
 
         log.debug("Adding GlobalCRS84Scale");
         GridSet GlobalCRS84Scale = GridSetFactory.createGridSet("GlobalCRS84Scale",
-                SRS.getEPSG4326(), BoundingBox.WORLD4326, true, scalesCRS84ScaleResolutions(),
-                null, null, GridSetFactory.DEFAULT_PIXEL_SIZE_METER, null, 256, 256, true);
+                SRS.getEPSG4326(), BoundingBox.WORLD4326, true, null,
+                scalesCRS84ScaleDenominators(), null, GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                null, 256, 256, true);
+        GlobalCRS84Scale
+                .setDescription("This well-known scale set has been defined for global cartographic products. "
+                        + "Rounded scales have been chosen for intuitive cartographic representation of vector data. "
+                        + "Scale denominator is only accurate near the equator.");
 
         gridSets.put(GlobalCRS84Scale.getName(), GlobalCRS84Scale);
 
+        log.debug("Adding GoogleCRS84Quad");
+        GridSet GoogleCRS84Quad = GridSetFactory.createGridSet("GoogleCRS84Quad",
+                SRS.getEPSG4326(), BoundingBox.WORLD4326, true, null,
+                scalesCRS84QuadScaleDenominators(), null, GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                null, 256, 256, true);
+        GoogleCRS84Quad
+                .setDescription("This well-known scale set has been defined to allow quadtree "
+                        + "pyramids in CRS84. Level 0 allows representing the whole world "
+                        + "in a single 256x256 pixels (where the first 64 and last 64 lines "
+                        + "of the tile are left blank). The next level represents the whole world in 2x2"
+                        + " tiles of 256x256 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
+
+        gridSets.put(GoogleCRS84Quad.getName(), GoogleCRS84Quad);
         embeddedGridSets = Collections.unmodifiableSet(new HashSet<String>(gridSets.keySet()));
     }
 
@@ -131,7 +159,7 @@ public class GridSetBroker {
      * <p>
      * This method doesn't check whether there's any layer referencing the gridset nor removes it
      * from the {@link XMLConfiguration}. For such a thing, check
-     * {@link TileLayerDispatcher#removeGridset(String)}, which cascades to thid method.
+     * {@link TileLayerDispatcher#removeGridset(String)}, which cascades to this method.
      * </p>
      * 
      * @param gridSetName
@@ -166,14 +194,42 @@ public class GridSetBroker {
         return scalesCRS84Pixel;
     }
 
-    private double[] scalesCRS84ScaleResolutions() {
-        double[] scalesCRS84Pixel = { 1.25764139776733, 0.628820698883665, 0.251528279553466,
-                0.125764139776733, 6.28820698883665E-2, 2.51528279553466E-2, 1.25764139776733E-2,
-                6.28820698883665E-3, 2.51528279553466E-3, 1.25764139776733E-3, 6.28820698883665E-4,
-                2.51528279553466E-4, 1.25764139776733E-4, 6.28820698883665E-5, 2.51528279553466E-5,
-                1.25764139776733E-5, 6.28820698883665E-6, 2.51528279553466E-6, 1.25764139776733E-6,
-                6.28820698883665E-7, 2.51528279553466E-7 };
+    private double[] scalesCRS84ScaleDenominators() {
+        // double[] scalesCRS84Pixel = { 1.25764139776733, 0.628820698883665, 0.251528279553466,
+        // 0.125764139776733, 6.28820698883665E-2, 2.51528279553466E-2, 1.25764139776733E-2,
+        // 6.28820698883665E-3, 2.51528279553466E-3, 1.25764139776733E-3, 6.28820698883665E-4,
+        // 2.51528279553466E-4, 1.25764139776733E-4, 6.28820698883665E-5, 2.51528279553466E-5,
+        // 1.25764139776733E-5, 6.28820698883665E-6, 2.51528279553466E-6, 1.25764139776733E-6,
+        // 6.28820698883665E-7, 2.51528279553466E-7 };
+        //
+        // return scalesCRS84Pixel;
+        double[] scalesCRS84Pixel = { 500E6, 250E6, 100E6, 50E6, 25E6, 10E6, 5E6, 2.5E6, 1E6,
+                500E3, 250E3, 100E3, 50E3, 25E3, 10E3, 5E3, 2.5E3, 1000, 500, 250, 100 };
 
         return scalesCRS84Pixel;
+    }
+
+    private double[] scalesCRS84QuadScaleDenominators() {
+        double[] scalesCRS84QuadScaleResolutions = { 559082264.0287178, 279541132.0143589,
+                139770566.0071794, 69885283.00358972, 34942641.50179486, 17471320.75089743,
+                8735660.375448715, 4367830.187724357, 2183915.093862179, 1091957.546931089,
+                545978.7734655447, 272989.3867327723, 136494.6933663862, 68247.34668319309,
+                34123.67334159654, 17061.83667079827, 8530.918335399136, 4265.459167699568,
+                2132.729583849784
+
+        };
+        return scalesCRS84QuadScaleResolutions;
+    }
+
+    private double[] googleMapsCompatibleResolutions() {
+        double[] scalesCRS84QuadScaleResolutions = { 156543.0339280410, 78271.51696402048,
+                39135.75848201023, 19567.87924100512, 9783.939620502561, 4891.969810251280,
+                2445.984905125640, 1222.992452562820, 611.4962262814100, 305.7481131407048,
+                152.8740565703525, 76.43702828517624, 38.21851414258813, 19.10925707129406,
+                9.554628535647032, 4.777314267823516, 2.388657133911758, 1.194328566955879,
+                0.5971642834779395
+
+        };
+        return scalesCRS84QuadScaleResolutions;
     }
 }

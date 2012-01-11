@@ -15,8 +15,8 @@ $ make clean html
 - Update project version
 Set project version in pom.xml files:
 $ cd <project root>/geowebcache
-$ find . -name pom.xml -exec sed -i 's/1\.2\-SNAPSHOT/1\.2\.4/g' {} \;
-$ find release -name "*.xml" -exec sed -i 's/1\.2\-SNAPSHOT/1\.2\.4/g' {} \;
+$ find . -name pom.xml -exec sed -i 's/1\.4\-SNAPSHOT/1\.4\.0/g' {} \;
+$ find release -name "*.xml" -exec sed -i 's/1\.4\-SNAPSHOT/1\.4\.0/g' {} \;
 
 (replace 1\.2\.4 by the actual version number keeping the '\' scape characters)
 

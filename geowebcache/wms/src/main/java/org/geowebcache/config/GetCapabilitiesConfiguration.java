@@ -409,8 +409,16 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
     /**
      * @see org.geowebcache.config.Configuration#getTileLayers()
+     * @deprecated
      */
     public List<TileLayer> getTileLayers() {
+        return Collections.unmodifiableList(new ArrayList<TileLayer>(layers.values()));
+    }
+
+    /**
+     * @see org.geowebcache.config.Configuration#getLayers()
+     */
+    public Iterable<? extends TileLayer> getLayers() {
         return Collections.unmodifiableList(new ArrayList<TileLayer>(layers.values()));
     }
 

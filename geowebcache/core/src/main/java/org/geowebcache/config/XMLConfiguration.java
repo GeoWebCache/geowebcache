@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,6 +30,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,10 +57,12 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -245,7 +249,7 @@ public class XMLConfiguration implements Configuration {
         this.templateLocation = templateLocation;
     }
 
-    private File findOrCreateConfFile() throws ConfigurationException {
+    private File findConfigFile() throws ConfigurationException {
         if (null == configDirectory) {
             // used the InputStream constructor
             throw new IllegalStateException();
@@ -262,6 +266,11 @@ public class XMLConfiguration implements Configuration {
         }
 
         File xmlFile = new File(configDirectory, configFileName);
+        return xmlFile;
+    }
+
+    private File findOrCreateConfFile() throws ConfigurationException {
+        File xmlFile = findConfigFile();
 
         if (xmlFile.exists()) {
             log.info("Found configuration file in " + configDirectory.getAbsolutePath());
@@ -422,15 +431,53 @@ public class XMLConfiguration implements Configuration {
             }
             throw (IOException) new IOException(e.getMessage()).initCause(e);
         }
+
+        try {
+            backUpConfig(xmlFile);
+        } catch (Exception e) {
+            log.warn("Error creating back up of configuration file " + configFileName, e);
+        }
         persistToFile(xmlFile);
+    }
+
+    private void backUpConfig(final File xmlFile) throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyy-MM-dd'T'HHmmss").format(new Date());
+        String backUpFileName = "geowebcache_" + timeStamp + ".bak";
+        File parentFile = xmlFile.getParentFile();
+
+        log.debug("Backing up config file " + xmlFile.getName() + " to " + backUpFileName);
+
+        String[] previousBackUps = parentFile.list(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                if (configFileName.equals(name)) {
+                    return false;
+                }
+                if (name.startsWith(configFileName) && name.endsWith(".bak")) {
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        final int maxBackups = 10;
+        if (previousBackUps.length > maxBackups) {
+            Arrays.sort(previousBackUps);
+            String oldest = previousBackUps[0];
+            log.debug("Deleting oldest config backup " + oldest + " to keep a maximum of "
+                    + maxBackups + " backups.");
+            new File(parentFile, oldest).delete();
+        }
+
+        File backUpFile = new File(parentFile, backUpFileName);
+        FileUtils.copyFile(xmlFile, backUpFile);
+        log.debug("Config backup done");
     }
 
     @SuppressWarnings("unchecked")
     public XStream configureXStreamForLayers(XStream xs) {
         commonXStreamConfig(xs);
 
-        xs.alias("keyword", String.class);
-        xs.alias("layers", List.class);
+        //xs.alias("layers", List.class);
         xs.alias("wmsLayer", WMSLayer.class);
 
         // These two are for 1.1.x compatibility
@@ -446,11 +493,11 @@ public class XMLConfiguration implements Configuration {
         xs.alias("parameterFilters", new ArrayList<ParameterFilter>().getClass());
         xs.alias("parameterFilter", ParameterFilter.class);
         xs.alias("seedRequest", SeedRequest.class);
-        // xs.alias("parameterFilter", ParameterFilter.class);
+
         xs.alias("floatParameterFilter", FloatParameterFilter.class);
         xs.alias("regexParameterFilter", RegexParameterFilter.class);
         xs.alias("stringParameterFilter", StringParameterFilter.class);
-        // xs.alias("regex", String.class);
+
         xs.alias("formatModifier", FormatModifier.class);
 
         xs.alias("circularExtentFilter", CircularExtentFilter.class);
@@ -465,8 +512,20 @@ public class XMLConfiguration implements Configuration {
 
         xs.alias("metaInformation", LayerMetaInformation.class);
 
+        xs.alias("serviceInformation", ServiceInformation.class);
         xs.alias("contactInformation", ContactInformation.class);
 
+        if (context != null) {
+            /*
+             * Look up XMLConfigurationProvider extension points and let them contribute to the
+             * configuration
+             */
+            List<XMLConfigurationProvider> configExtensions = GeoWebCacheExtensions.extensions(
+                    XMLConfigurationProvider.class, context);
+            for (XMLConfigurationProvider extension : configExtensions) {
+                xs = extension.getConfiguredXStream(xs);
+            }
+        }
         return xs;
     }
 
@@ -511,17 +570,6 @@ public class XMLConfiguration implements Configuration {
         xs.aliasField("xsi:schemaLocation", GeoWebCacheConfiguration.class, "xsi_schemaLocation");
         xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
 
-        if (this.context != null) {
-            /*
-             * Look up XMLConfigurationProvider extension points and let them contribute to the
-             * configuration
-             */
-            Collection<XMLConfigurationProvider> configExtensions;
-            configExtensions = this.context.getBeansOfType(XMLConfigurationProvider.class).values();
-            for (XMLConfigurationProvider extension : configExtensions) {
-                xs = extension.getConfiguredXStream(xs);
-            }
-        }
         return xs;
     }
     
@@ -591,17 +639,6 @@ public class XMLConfiguration implements Configuration {
 
         xs.registerConverter(new TimestampConverter());
         
-        if (this.context != null) {
-            /*
-             * Look up XMLConfigurationProvider extension points and let them contribute to the
-             * configuration
-             */
-            Collection<XMLConfigurationProvider> configExtensions;
-            configExtensions = this.context.getBeansOfType(XMLConfigurationProvider.class).values();
-            for (XMLConfigurationProvider extension : configExtensions) {
-                xs = extension.getConfiguredXStream(xs);
-            }
-        }
         return xs;
     }
     
@@ -625,6 +662,10 @@ public class XMLConfiguration implements Configuration {
         }
 
         try {
+            // set version to latest
+            String currentSchemaVersion = getCurrentSchemaVersion();
+            gwcConfig.setVersion(currentSchemaVersion);
+
             writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
             xs.toXML(gwcConfig, writer);
         } catch (IOException e) {
@@ -740,7 +781,7 @@ public class XMLConfiguration implements Configuration {
      *            the file contaning the layer configurations
      * @return W3C DOM Document
      */
-    private Node loadDocument(InputStream xmlFile) throws ConfigurationException, IOException {
+    static Node loadDocument(InputStream xmlFile) throws ConfigurationException, IOException {
         Node topNode = null;
         try {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -754,7 +795,7 @@ public class XMLConfiguration implements Configuration {
         return topNode;
     }
 
-    private Node checkAndTransform(Document doc) throws ConfigurationException {
+    private static Node checkAndTransform(Document doc) throws ConfigurationException {
         Node rootNode = doc.getDocumentElement();
 
         // debugPrint(rootNode);
@@ -840,31 +881,19 @@ public class XMLConfiguration implements Configuration {
             log.error("Unable to parse file, expected gwcConfiguration at root after transform.");
             throw new ConfigurationException("Unable to parse after transform.");
         } else {
-            // Perform validation
-            // TODO dont know why this one suddenly failed to look up, revert to
-            // XMLConstants.W3C_XML_SCHEMA_NS_URI
-            SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
-            InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd");
-
             // Parsing the schema file
             try {
-                Schema schema = factory.newSchema(new StreamSource(is));
-                Validator validator = schema.newValidator();
-
-                // debugPrint(rootNode);
-
-                DOMSource domSrc = new DOMSource(rootNode);
-                validator.validate(domSrc);
+                validate(rootNode);
                 log.info("Configuration file validated fine.");
             } catch (SAXException e) {
                 String msg = "*** GWC configuration validation error: " + e.getMessage();
                 char[] c = new char[4 + msg.length()];
                 Arrays.fill(c, '*');
-                String warndecoration = new String(c);
+                String warndecoration = new String(c).substring(0, 80);
                 log.warn(warndecoration);
-                log.info(msg);
+                log.warn(msg);
+                log.warn("*** Will try to use configuration anyway. Please check the order of declared elements against the schema.");
                 log.warn(warndecoration);
-                log.info("Will try to use configuration anyway.");
             } catch (IOException e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
@@ -873,7 +902,45 @@ public class XMLConfiguration implements Configuration {
         return rootNode;
     }
 
-    private Node applyTransform(Node oldRootNode, String xslFilename) {
+    static void validate(Node rootNode) throws SAXException, IOException {
+        // Perform validation
+        // TODO dont know why this one suddenly failed to look up, revert to
+        // XMLConstants.W3C_XML_SCHEMA_NS_URI
+        SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+        InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd");
+
+        Schema schema = factory.newSchema(new StreamSource(is));
+        Validator validator = schema.newValidator();
+
+        // debugPrint(rootNode);
+
+        DOMSource domSrc = new DOMSource(rootNode);
+        validator.validate(domSrc);
+    }
+
+    static String getCurrentSchemaVersion() {
+        InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd");
+        Document dom;
+        try {
+            dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(is);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        String version = dom.getDocumentElement().getAttribute("version");
+        if (null == version || version.trim().length() == 0) {
+            throw new IllegalStateException("Schema doesn't define version");
+        }
+        return version.trim();
+    }
+
+    private static Node applyTransform(Node oldRootNode, String xslFilename) {
         DOMResult result = new DOMResult();
         Transformer transformer;
 
@@ -985,6 +1052,13 @@ public class XMLConfiguration implements Configuration {
     }
 
     /**
+     * @see org.geowebcache.config.Configuration#getLayers()
+     */
+    public Iterable<TileLayer> getLayers() {
+        return Collections.unmodifiableList(gwcConfig.getLayers());
+    }
+
+    /**
      * @see org.geowebcache.config.Configuration#getTileLayer(java.lang.String)
      */
     public TileLayer getTileLayer(String layerIdent) {
@@ -1004,6 +1078,10 @@ public class XMLConfiguration implements Configuration {
     public Set<String> getTileLayerNames() {
         Set<String> names = Collections.unmodifiableSet(this.layers.keySet());
         return names;
+    }
+
+    public String getVersion() {
+        return gwcConfig.getVersion();
     }
 
 }

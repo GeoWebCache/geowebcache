@@ -9,10 +9,10 @@
     <description>GeoWebCache is an advanced tile cache for WMS servers.It supports a large variety of protocols and
       formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</description>
     <keywords>
-      <keyword>WFS</keyword>
-      <keyword>WMS</keyword>
-      <keyword>WMTS</keyword>
-      <keyword>GEOWEBCACHE</keyword>
+      <string>WFS</string>
+      <string>WMS</string>
+      <string>WMTS</string>
+      <string>GEOWEBCACHE</string>
     </keywords>
     <serviceProvider>
       <providerName>John Smith inc.</providerName>
@@ -122,18 +122,18 @@
           </extent>
         </gridSubset>
       </gridSubsets>
-      <wmsUrl>
-        <string>http://demo.opengeo.org/geoserver/wms</string>
-      </wmsUrl>
-      <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
-      <transparent>false</transparent>
-      <bgColor>0x0066FF</bgColor>
       <expireCacheList>
         <expirationRule minZoom="0" expiration="60" />
       </expireCacheList>
       <expireClientsList>
         <expirationRule minZoom="0" expiration="500" />
       </expireClientsList>
+      <wmsUrl>
+        <string>http://demo.opengeo.org/geoserver/wms</string>
+      </wmsUrl>
+      <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
+      <transparent>false</transparent>
+      <bgColor>0x0066FF</bgColor>
     </wmsLayer>
   </layers>
   

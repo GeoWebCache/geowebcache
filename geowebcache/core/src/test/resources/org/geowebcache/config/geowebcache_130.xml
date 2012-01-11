@@ -1,13 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://geowebcache.org/schema/1.3.0 http://geowebcache.org/schema/1.3.0/geowebcache.xsd" xmlns="http://geowebcache.org/schema/1.3.0">
-  <version>1.1.5</version>
+<gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://geowebcache.org/schema/1.3.0"
+  xsi:schemaLocation="http://geowebcache.org/schema/1.3.0 http://geowebcache.org/schema/1.3.0/geowebcache.xsd">
+  <version>1.3.0</version>
   <backendTimeout>120</backendTimeout>
-  <cacheBypassAllowed>true</cacheBypassAllowed>
+  <serviceInformation>
+    <title>GeoWebCache</title>
+    <description>GeoWebCache is an advanced tile cache for WMS servers.It supports a large variety of protocols and
+      formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.
+    </description>
+    <keywords>
+      <string>WFS</string>
+      <string>WMS</string>
+      <string>WMTS</string>
+      <string>GEOWEBCACHE</string>
+    </keywords>
+    <serviceProvider>
+      <providerName>John Smith inc.</providerName>
+      <providerSite>http://www.example.com/</providerSite>
+      <serviceContact>
+        <individualName>John Smith</individualName>
+        <positionName>Geospatial Expert</positionName>
+        <addressType>Work</addressType>
+        <addressStreet>1 Bumpy St.</addressStreet>
+        <addressCity>Hobart</addressCity>
+        <addressAdministrativeArea>TAS</addressAdministrativeArea>
+        <addressPostalCode>7005</addressPostalCode>
+        <addressCountry>Australia</addressCountry>
+        <phoneNumber>+61 3 0000 0000</phoneNumber>
+        <faxNumber>+61 3 0000 0001</faxNumber>
+        <addressEmail>john.smith@example.com</addressEmail>
+      </serviceContact>
+    </serviceProvider>
+    <fees>NONE</fees>
+    <accessConstraints>NONE</accessConstraints>
+  </serviceInformation>
+
+  <gridSets>
+    <!-- Grid Set Example, by default EPSG:900913 and EPSG:4326 are defined -->
+    <gridSet>
+      <!-- This does not have to be an EPSG code, you can also have multiple gridSet elements per SRS -->
+      <name>EPSG:2163</name>
+      <srs>
+        <number>2163</number>
+      </srs>
+      <extent>
+        <coords>
+          <double>-2495667.977678598</double>
+          <double>-2223677.196231552</double>
+          <double>3291070.6104286816</double>
+          <double>959189.3312465074</double>
+        </coords>
+      </extent>
+      <scaleDenominators>
+        <double>25000000</double>
+        <double>1000000</double>
+        <double>100000</double>
+        <double>25000</double>
+      </scaleDenominators>
+      <metersPerUnit>1</metersPerUnit>
+      <tileHeight>200</tileHeight>
+      <tileWidth>200</tileWidth>
+    </gridSet>
+  </gridSets>
+
   <layers>
-    <!-- This is a pretty standard example, suitable for use with * Google Earth (EPSG:4326 , KML support) * Google Maps 
-      and Microsoft Virtual Earth (EPSG:900913, PNG support) -->
     <wmsLayer>
+      <enabled>true</enabled>
       <name>topp:states</name>
       <mimeFormats>
         <string>image/png</string>
@@ -33,63 +91,30 @@
           <compressionQuality>1.0</compressionQuality>
         </formatModifier>
       </formatModifiers>
-      <grids>
-        <entry>
-          <srs>
-            <number>900913</number>
-          </srs>
-          <grid>
-            <srs>
-              <number>900913</number>
-            </srs>
-            <dataBounds>
-              <coords>
-                <double>-1.3885038381028108E7</double>
-                <double>2870337.130394128</double>
-                <double>-7455049.488144671</double>
-                <double>6338174.0548753375</double>
-              </coords>
-            </dataBounds>
-            <gridBounds>
-              <coords>
-                <double>-2.003750834E7</double>
-                <double>-2.003750834E7</double>
-                <double>2.003750834E7</double>
-                <double>2.003750834E7</double>
-              </coords>
-            </gridBounds>
-          </grid>
-        </entry>
-        <entry>
-          <srs>
-            <number>4326</number>
-          </srs>
-          <grid>
-            <srs>
-              <number>4326</number>
-            </srs>
-            <dataBounds>
-              <coords>
-                <double>-124.731422</double>
-                <double>24.955967</double>
-                <double>-66.969849</double>
-                <double>49.371735</double>
-              </coords>
-            </dataBounds>
-            <gridBounds>
-              <coords>
-                <double>-180.0</double>
-                <double>-90.0</double>
-                <double>180.0</double>
-                <double>90.0</double>
-              </coords>
-            </gridBounds>
-            <!-- This grid only allows zoom levels 0 through 20 -->
-            <zoomStart>0</zoomStart>
-            <zoomStop>20</zoomStop>
-          </grid>
-        </entry>
-      </grids>
+      <gridSubsets>
+        <gridSubset>
+          <gridSetName>EPSG:900913</gridSetName>
+          <extent>
+            <coords>
+              <double>-1.3885038381028108E7</double>
+              <double>2870337.130394128</double>
+              <double>-7455049.488144671</double>
+              <double>6338174.0548753375</double>
+            </coords>
+          </extent>
+        </gridSubset>
+        <gridSubset>
+          <gridSetName>EPSG:4326</gridSetName>
+          <extent>
+            <coords>
+              <double>-124.731422</double>
+              <double>24.955967</double>
+              <double>-66.969849</double>
+              <double>49.371735</double>
+            </coords>
+          </extent>
+        </gridSubset>
+      </gridSubsets>
       <!-- Some sample request filters below, see the documentation for details -->
       <requestFilters>
         <!-- circularExtentFilter> <name>testfilter</name> </circularExtentFilter -->
@@ -109,20 +134,10 @@
           <fileExtension>tiff</fileExtension>
         </fileRasterFilter>
       </requestFilters>
-      <wmsUrl>
-        <string>http://sigma.openplans.org/geoserver/wms</string>
-      </wmsUrl>
-      <wmsLayers>topp:states</wmsLayers>
       <metaWidthHeight>
         <int>3</int>
         <int>3</int>
       </metaWidthHeight>
-      <errorMime>application/vnd.ogc.se_xml</errorMime>
-      <tiled>false</tiled>
-      <transparent>true</transparent>
-      <bgColor></bgColor>
-      <palette></palette>
-      <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
       <!-- The following are filters for additional parameters. Any legal value here will result in a new set of tiles, the 
         parameter is forwarded to the WMS backend. Note that all regexParameterFilters have to be listed before the first floatParameterFitler -->
       <parameterFilters>
@@ -148,6 +163,16 @@
           <threshold>0.2</threshold>
         </floatParameterFilter>
       </parameterFilters>
+      <wmsUrl>
+        <string>http://sigma.openplans.org/geoserver/wms</string>
+      </wmsUrl>
+      <wmsLayers>topp:states</wmsLayers>
+      <errorMime>application/vnd.ogc.se_xml</errorMime>
+      <tiled>false</tiled>
+      <transparent>true</transparent>
+      <bgColor></bgColor>
+      <palette></palette>
+      <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
     </wmsLayer>
 
 
@@ -163,41 +188,19 @@
         <string>image/png</string>
         <string>image/jpeg</string>
       </mimeFormats>
-      <grids>
-        <entry>
-          <srs>
-            <number>2163</number>
-          </srs>
-          <grid>
-            <srs>
-              <number>2163</number>
-            </srs>
-            <dataBounds>
-              <coords>
-                <double>-2495667.977678598</double>
-                <double>-2223677.196231552</double>
-                <double>3291070.6104286816</double>
-                <double>959189.3312465074</double>
-              </coords>
-            </dataBounds>
-            <gridBounds>
-              <coords>
-                <double>-2495667.977678598</double>
-                <double>-2223677.196231552</double>
-                <double>3291070.6104286816</double>
-                <double>959189.3312465074</double>
-              </coords>
-            </gridBounds>
-            <!-- Instead of specifying the max and min zoomlevels, you can also define an explicit list of resolutions (units/pixel). 
-              This list has to be in decreasing order. -->
-            <resolutions>
-              <double>15000.0</double>
-              <double>12000.0</double>
-              <double>4000.0</double>
-            </resolutions>
-          </grid>
-        </entry>
-      </grids>
+      <gridSubsets>
+        <gridSubset>
+          <gridSetName>EPSG:2163</gridSetName>
+        </gridSubset>
+      </gridSubsets>
+      <metaWidthHeight>
+        <int>3</int>
+        <int>3</int>
+      </metaWidthHeight>
+      <!-- You can specify expiration times in seconds. In the example below - disk cached is refreshed every 2 hours - clients 
+        are told to refresh from here every 4 minutes -->
+      <expireCache>7200</expireCache>
+      <expireClients>240</expireClients>
       <!-- Note that you can have multiple backend servers for the same layer. They will be used in round-robin fashion. 
         If one fails to respond properly, the next one will be used automatically. -->
       <wmsUrl>
@@ -206,10 +209,6 @@
       </wmsUrl>
       <wmsLayers>topp:states</wmsLayers>
       <wmsStyles>population</wmsStyles>
-      <metaWidthHeight>
-        <int>3</int>
-        <int>3</int>
-      </metaWidthHeight>
       <!-- 3 pixel gutter -->
       <gutter>3</gutter>
       <tiled>false</tiled>
@@ -217,10 +216,6 @@
       <bgColor></bgColor>
       <palette></palette>
       <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
-      <!-- You can specify expiration times in seconds. In the example below - disk cached is refreshed every 2 hours - clients 
-        are told to refresh from here every 4 minutes -->
-      <expireCache>7200</expireCache>
-      <expireClients>240</expireClients>
     </wmsLayer>
   </layers>
 </gwcConfiguration>

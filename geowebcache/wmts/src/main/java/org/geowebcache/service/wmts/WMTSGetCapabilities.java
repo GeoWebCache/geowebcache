@@ -293,13 +293,13 @@ public class WMTSGetCapabilities {
              Iterator<ParameterFilter> iter = filters.iterator();
              while(stylesFilter == null && iter.hasNext()) {
                  ParameterFilter filter = iter.next();
-                 if(filter.key.equalsIgnoreCase("STYLES")) {
+                 if(filter.getKey().equalsIgnoreCase("STYLES")) {
                      stylesFilter = filter;
                  }
              }
              
              if(stylesFilter != null) {
-                 String defVal = stylesFilter.defaultValue; 
+                 String defVal = stylesFilter.getDefaultValue(); 
                  if(defVal == null) {
                      if(defStyle != null) {
                          defVal = defStyle;
@@ -348,7 +348,7 @@ public class WMTSGetCapabilities {
          while(iter.hasNext()) {
              ParameterFilter filter = iter.next();
              
-             if(! filter.key.equalsIgnoreCase("STYLES")) {
+             if(! filter.getKey().equalsIgnoreCase("STYLES")) {
                  List<String> values = filter.getLegalValues();
              
                  if(values != null) {
@@ -360,8 +360,8 @@ public class WMTSGetCapabilities {
          
      private void dimensionDescription(StringBuilder str, ParameterFilter filter, List<String> values) {
          str.append("    <Dimension>");
-         str.append("      <Identifier>"+filter.key+"</Identifier>");
-         String defaultStr = TileLayer.encodeDimensionValue(filter.defaultValue);
+         str.append("      <Identifier>"+filter.getKey()+"</Identifier>");
+         String defaultStr = TileLayer.encodeDimensionValue(filter.getDefaultValue());
          str.append("      <Default>"+encodeXmlChars(defaultStr)+"</Default>");
          
          Iterator<String> iter = values.iterator();
@@ -374,10 +374,9 @@ public class WMTSGetCapabilities {
      
       
      private void layerGridSubSets(StringBuilder str, TileLayer layer) {
-         Iterator<GridSubset> gridSubsets = layer.getGridSubsets().values().iterator();
-         
-         while(gridSubsets.hasNext()) {
-             GridSubset gridSubset = gridSubsets.next();
+
+        for (String gridSetId : layer.getGridSubsets()) {
+            GridSubset gridSubset = layer.getGridSubset(gridSetId);
          
              str.append("    <TileMatrixSetLink>");
              str.append("      <TileMatrixSet>" + gridSubset.getName() + "</TileMatrixSet>\n");
@@ -408,7 +407,7 @@ public class WMTSGetCapabilities {
          // If the following is not good enough, please get in touch and we will try to fix it :)
          str.append("    <ows:SupportedCRS>urn:ogc:def:crs:EPSG::"+gridSet.getSrs().getNumber()+"</ows:SupportedCRS>\n");
          // TODO detect these str.append("    <WellKnownScaleSet>urn:ogc:def:wkss:GlobalCRS84Pixel</WellKnownScaleSet>\n");
-         Grid[] grids = gridSet.getGrids();
+         Grid[] grids = gridSet.getGridLevels();
          for(int i=0; i<grids.length; i++) {
              double[] tlCoordinates = gridSet.getOrderedTopLeftCorner(i);
              tileMatrix(str, grids[i], tlCoordinates, gridSet.getTileWidth(), gridSet.getTileHeight(), gridSet.isScaleWarning());

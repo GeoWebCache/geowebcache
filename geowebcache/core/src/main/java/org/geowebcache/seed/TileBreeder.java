@@ -247,7 +247,7 @@ public class TileBreeder implements ApplicationContextAware {
     public GWCTask[] createTasks(TileRange tr, GWCTask.TYPE type, int threadCount,
             boolean filterUpdate, PRIORITY priority) throws GeoWebCacheException {
 
-        String layerName = tr.layerName;
+        String layerName = tr.getLayerName();
         TileLayer tileLayer = layerDispatcher.getTileLayer(layerName);
         return createTasks(tr, tileLayer, type, threadCount, filterUpdate, priority, 0, -1, -1);
     }
@@ -323,7 +323,7 @@ public class TileBreeder implements ApplicationContextAware {
             gridSetId = tl.getGridSubsetForSRS(job.getSrs()).getName();
         }
         if (gridSetId == null) {
-            gridSetId = tl.getGridSubsets().entrySet().iterator().next().getKey();
+            gridSetId = tl.getGridSubsets().iterator().next();
         }
 
         GridSubset gridSubset = tl.getGridSubset(gridSetId);

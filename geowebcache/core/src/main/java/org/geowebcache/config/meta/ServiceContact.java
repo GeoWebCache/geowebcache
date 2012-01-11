@@ -16,29 +16,33 @@
  */
 package org.geowebcache.config.meta;
 
-public class ServiceContact {
+import java.io.Serializable;
+
+public class ServiceContact implements Serializable{
+
+    private static final long serialVersionUID = 2137310743590604314L;
 
     private String individualName;
-    
+
     private String positionName;
-    
-    private String phoneNumber;
-    
-    private String faxNumber;
-    
-    private String addressStreet;
-    
-    private String addressPostalCode;
-    
-    private String addressCity;
-    
-    private String addressAdministrativeArea;
-    
-    private String addressCountry;
-    
-    private String addressEmail;
-    
+
     private String addressType;
+
+    private String addressStreet;
+
+    private String addressCity;
+
+    private String addressAdministrativeArea;
+
+    private String addressPostalCode;
+
+    private String addressCountry;
+
+    private String phoneNumber;
+
+    private String faxNumber;
+
+    private String addressEmail;
 
     /**
      * @return the individualName
@@ -48,7 +52,8 @@ public class ServiceContact {
     }
 
     /**
-     * @param individualName the individualName to set
+     * @param individualName
+     *            the individualName to set
      */
     public void setIndividualName(String individualName) {
         this.individualName = individualName;
@@ -62,7 +67,8 @@ public class ServiceContact {
     }
 
     /**
-     * @param positionName the positionName to set
+     * @param positionName
+     *            the positionName to set
      */
     public void setPositionName(String positionName) {
         this.positionName = positionName;
@@ -76,7 +82,8 @@ public class ServiceContact {
     }
 
     /**
-     * @param phoneNumber the phoneNumber to set
+     * @param phoneNumber
+     *            the phoneNumber to set
      */
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
@@ -90,7 +97,8 @@ public class ServiceContact {
     }
 
     /**
-     * @param faxNumber the faxNumber to set
+     * @param faxNumber
+     *            the faxNumber to set
      */
     public void setFaxNumber(String faxNumber) {
         this.faxNumber = faxNumber;
@@ -104,7 +112,8 @@ public class ServiceContact {
     }
 
     /**
-     * @param addressStreet the addressStreet to set
+     * @param addressStreet
+     *            the addressStreet to set
      */
     public void setAddressStreet(String addressStreet) {
         this.addressStreet = addressStreet;
@@ -118,7 +127,8 @@ public class ServiceContact {
     }
 
     /**
-     * @param addressPostalCode the addressPostalCode to set
+     * @param addressPostalCode
+     *            the addressPostalCode to set
      */
     public void setAddressPostalCode(String addressPostalCode) {
         this.addressPostalCode = addressPostalCode;
@@ -132,7 +142,8 @@ public class ServiceContact {
     }
 
     /**
-     * @param addressCity the addressCity to set
+     * @param addressCity
+     *            the addressCity to set
      */
     public void setAddressCity(String addressCity) {
         this.addressCity = addressCity;
@@ -146,7 +157,8 @@ public class ServiceContact {
     }
 
     /**
-     * @param addressAdministrativeArea the addressAdministrativeArea to set
+     * @param addressAdministrativeArea
+     *            the addressAdministrativeArea to set
      */
     public void setAddressAdministrativeArea(String addressAdministrativeArea) {
         this.addressAdministrativeArea = addressAdministrativeArea;
@@ -160,7 +172,8 @@ public class ServiceContact {
     }
 
     /**
-     * @param addressCountry the addressCountry to set
+     * @param addressCountry
+     *            the addressCountry to set
      */
     public void setAddressCountry(String addressCountry) {
         this.addressCountry = addressCountry;
@@ -174,7 +187,8 @@ public class ServiceContact {
     }
 
     /**
-     * @param addressEmail the addressEmail to set
+     * @param addressEmail
+     *            the addressEmail to set
      */
     public void setAddressEmail(String addressEmail) {
         this.addressEmail = addressEmail;
@@ -188,10 +202,11 @@ public class ServiceContact {
     }
 
     /**
-     * @param addressType the addressType to set
+     * @param addressType
+     *            the addressType to set
      */
     public void setAddressType(String addressType) {
         this.addressType = addressType;
     }
-    
+
 }

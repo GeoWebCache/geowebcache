@@ -125,7 +125,7 @@ public class SeedTask extends GWCTask {
         TileRange tr = trIter.getTileRange();
 
         checkInterrupted();
-        super.tilesTotal = new SeedEstimator().tileCount(tr.rangeBounds, tr.zoomStart, tr.zoomStop);
+        super.tilesTotal = new SeedEstimator().tileCount(tr);
 
         final int metaTilingFactorX = tl.getMetaTilingFactors()[0];
         final int metaTilingFactorY = tl.getMetaTilingFactors()[1];
@@ -140,10 +140,10 @@ public class SeedTask extends GWCTask {
             seedStartTime = System.currentTimeMillis();
 
             checkInterrupted();
-            Map<String, String> fullParameters = tr.parameters;
-            
-            ConveyorTile tile = new ConveyorTile(storageBroker, layerName, tr.gridSetId, gridLoc,
-                    tr.mimeType, fullParameters, null, null);
+            Map<String, String> fullParameters = tr.getParameters();
+
+            ConveyorTile tile = new ConveyorTile(storageBroker, layerName, tr.getGridSetId(), gridLoc,
+                    tr.getMimeType(), fullParameters, null, null);
 
             for (int fetchAttempt = 0; fetchAttempt <= tileFailureRetryCount; fetchAttempt++) {
                 try {
@@ -225,7 +225,7 @@ public class SeedTask extends GWCTask {
 
         checkInterrupted();
         if (threadOffset == 0 && doFilterUpdate) {
-            runFilterUpdates(tr.gridSetId);
+            runFilterUpdates(tr.getGridSetId());
         }
     }
 

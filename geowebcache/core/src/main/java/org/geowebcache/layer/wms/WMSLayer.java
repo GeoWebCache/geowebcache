@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +31,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.request.RequestFilter;
@@ -56,15 +56,17 @@ import org.geowebcache.util.GWCVars;
  */
 public class WMSLayer extends AbstractTileLayer {
 
+    private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
+
     public enum RequestType {
         MAP, FEATUREINFO
     };
 
-    private String[] wmsUrl = null;
+    private String[] wmsUrl;
 
-    private Integer concurrency = null;
+    private String wmsLayers;
 
-    private String wmsLayers = null;
+    protected String wmsStyles;
 
     protected Integer gutter;
 
@@ -94,8 +96,6 @@ public class WMSLayer extends AbstractTileLayer {
     @SuppressWarnings("unused")
     private String cachePrefix;
 
-    protected String sphericalMercatorOverride;
-
     // private transient int expireCacheInt = -1;
 
     // private transient int expireClientsInt = -1;
@@ -112,9 +112,11 @@ public class WMSLayer extends AbstractTileLayer {
 
     private transient HashMap<GridLocObj, Boolean> procQueue;
 
-    private transient WMSSourceHelper sourceHelper = null;
+    private transient WMSSourceHelper sourceHelper;
 
-    private static transient Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
+    private transient Integer concurrency;
+
+    protected transient String sphericalMercatorOverride;
 
     /**
      * Note XStream uses reflection, this is only used for testing and loading from getCapabilities
@@ -130,7 +132,7 @@ public class WMSLayer extends AbstractTileLayer {
      * @param vendorParams
      */
     public WMSLayer(String layerName, String[] wmsURL, String wmsStyles, String wmsLayers,
-            List<String> mimeFormats, Hashtable<String, GridSubset> subSets,
+            List<String> mimeFormats, Map<String, GridSubset> subSets,
             List<ParameterFilter> parameterFilters, int[] metaWidthHeight, String vendorParams,
             boolean queryable) {
 
@@ -140,6 +142,12 @@ public class WMSLayer extends AbstractTileLayer {
         this.wmsStyles = wmsStyles;
         this.mimeFormats = mimeFormats == null ? null : new ArrayList<String>(mimeFormats);
         this.subSets = subSets;
+        this.gridSubsets = new ArrayList<XMLGridSubset>();
+        if (subSets != null) {
+            for (GridSubset subset : subSets.values()) {
+                gridSubsets.add(new XMLGridSubset(subset));
+            }
+        }
         this.parameterFilters = parameterFilters == null ? null : new ArrayList<ParameterFilter>(
                 parameterFilters);
         this.metaWidthHeight = metaWidthHeight;
@@ -148,6 +156,11 @@ public class WMSLayer extends AbstractTileLayer {
         // this.bgColor = "0x000000";
         // this.palette = "test.png";
         this.queryable = queryable;
+    }
+
+    protected WMSLayer readResolve() {
+        super.readResolve();
+        return this;
     }
 
     /**
@@ -254,11 +267,13 @@ public class WMSLayer extends AbstractTileLayer {
 
         long[] gridLoc = tile.getTileIndex();
 
+        GridSubset gridSubset = getGridSubset(tileGridSetId);
         // Final preflight check, throws exception if necessary
-        getGridSubset(tileGridSetId).checkCoverage(gridLoc);
+        gridSubset.checkCoverage(gridLoc);
 
         ConveyorTile returnTile;
 
+        tile.setMetaTileCacheOnly(!gridSubset.shouldCacheAtZoom(gridLoc[2]));
         try {
             if (tryCacheFetch(tile)) {
                 returnTile = finalizeTile(tile);
@@ -270,7 +285,7 @@ public class WMSLayer extends AbstractTileLayer {
         } finally {
             cleanUpThreadLocals();
         }
-
+        
         sendTileRequestedEvent(returnTile);
 
         return returnTile;
@@ -281,11 +296,14 @@ public class WMSLayer extends AbstractTileLayer {
      */
     public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException,
             IOException {
-        if (tile.getMimeType().supportsTiling()
-                && (metaWidthHeight[0] > 1 || metaWidthHeight[1] > 1)) {
-            getMetatilingReponse(tile, tryCache);
-        } else {
-            getNonMetatilingReponse(tile, tryCache);
+        GridSubset gridSubset = getGridSubset(tile.getGridSetId());
+        if (gridSubset.shouldCacheAtZoom(tile.getTileIndex()[2])) {
+            if (tile.getMimeType().supportsTiling()
+                    && (metaWidthHeight[0] > 1 || metaWidthHeight[1] > 1)) {
+                getMetatilingReponse(tile, tryCache);
+            } else {
+                getNonMetatilingReponse(tile, tryCache);
+            }
         }
     }
 
@@ -345,7 +363,6 @@ public class WMSLayer extends AbstractTileLayer {
             if (saveExpirationHeaders) {
                 metaTile.setExpiresHeader(GWCVars.CACHE_USE_WMS_BACKEND_VALUE);
             }
-
             sourceHelper.makeRequest(metaTile, buffer);
 
             if (metaTile.getError()) {
@@ -729,8 +746,8 @@ public class WMSLayer extends AbstractTileLayer {
     public String[] getWMSurl() {
         return this.wmsUrl;
     }
-    
-    public String getWmsLayers(){
+
+    public String getWmsLayers() {
         return wmsLayers;
     }
 
@@ -811,11 +828,6 @@ public class WMSLayer extends AbstractTileLayer {
         }
     }
 
-    private Object readResolve() {
-        // Not really needed at this point
-        return this;
-    }
-
     public void cleanUpThreadLocals() {
         WMS_BUFFER.remove();
         WMS_BUFFER2.remove();
@@ -823,5 +835,10 @@ public class WMSLayer extends AbstractTileLayer {
 
     public void setMetaInformation(LayerMetaInformation layerMetaInfo) {
         this.metaInformation = layerMetaInfo;
+    }
+
+    @Override
+    public String getStyles() {
+        return wmsStyles;
     }
 }

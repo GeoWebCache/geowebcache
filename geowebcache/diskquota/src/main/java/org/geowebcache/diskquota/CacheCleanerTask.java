@@ -110,15 +110,19 @@ class CacheCleanerTask implements Runnable {
         for (String layerName : configuredLayerNames) {
 
             if (monitor.isCacheInfoBuilderRunning(layerName)) {
-                log.info("Cache information is still being gathered for layer '" + layerName
-                        + "'. Skipping quota enforcement task for this layer.");
+                if (log.isInfoEnabled()) {
+                    log.info("Cache information is still being gathered for layer '" + layerName
+                            + "'. Skipping quota enforcement task for this layer.");
+                }
                 continue;
             }
 
             Future<?> runningCleanup = perLayerRunningCleanUps.get(layerName);
             if (runningCleanup != null && !runningCleanup.isDone()) {
-                log.debug("Cache clean up task still running for layer '" + layerName
-                        + "'. Ignoring it for this run.");
+                if (log.isDebugEnabled()) {
+                    log.debug("Cache clean up task still running for layer '" + layerName
+                            + "'. Ignoring it for this run.");
+                }
                 continue;
             }
 
@@ -129,10 +133,12 @@ class CacheCleanerTask implements Runnable {
 
             Quota excedent = usedQuota.difference(quota);
             if (excedent.getBytes().compareTo(BigInteger.ZERO) > 0) {
-                log.info("Layer '" + layerName + "' exceeds its quota of " + quota.toNiceString()
-                        + " by " + excedent.toNiceString() + ". Currently used: "
-                        + usedQuota.toNiceString() + ". Clean up task will be performed"
-                        + " using expiration policy " + policy);
+                if (log.isInfoEnabled()) {
+                    log.info("Layer '" + layerName + "' exceeds its quota of "
+                            + quota.toNiceString() + " by " + excedent.toNiceString()
+                            + ". Currently used: " + usedQuota.toNiceString()
+                            + ". Clean up task will be performed using expiration policy " + policy);
+                }
 
                 Set<String> layerNames = Collections.singleton(layerName);
                 QuotaResolver quotaResolver;
@@ -203,6 +209,9 @@ class CacheCleanerTask implements Runnable {
             this.monitor = monitor;
         }
 
+        /**
+         * @see java.util.concurrent.Callable#call()
+         */
         public Object call() throws Exception {
             try {
                 monitor.expireByLayerNames(layerNames, quotaResolver);
@@ -210,7 +219,8 @@ class CacheCleanerTask implements Runnable {
                 log.info("Layer quota enforcement task terminated prematurely");
                 return null;
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                log.warn("Exception expiring tiles for " + layerNames, e);
+                throw e;
             }
             return null;
         }

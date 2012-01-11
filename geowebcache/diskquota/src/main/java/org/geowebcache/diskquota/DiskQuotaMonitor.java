@@ -32,7 +32,6 @@ import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.diskquota.CacheCleaner.GlobalQuotaResolver;
 import org.geowebcache.diskquota.CacheCleaner.LayerQuotaResolver;
 import org.geowebcache.diskquota.CacheCleaner.QuotaResolver;
-import org.geowebcache.diskquota.storage.BDBQuotaStore;
 import org.geowebcache.diskquota.storage.LayerQuota;
 import org.geowebcache.diskquota.storage.Quota;
 import org.geowebcache.layer.TileLayer;

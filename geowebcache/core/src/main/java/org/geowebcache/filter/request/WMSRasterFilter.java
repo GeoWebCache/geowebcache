@@ -39,13 +39,58 @@ import org.geowebcache.mime.ImageMime;
 import org.geowebcache.util.ServletUtils;
 
 public class WMSRasterFilter extends RasterFilter {
+
+    private static final long serialVersionUID = 5565794752696452109L;
+
     private static Log log = LogFactory.getLog(RasterFilter.class);
 
-    public String wmsLayers;
+    private String wmsLayers;
 
-    public String wmsStyles;
+    private String wmsStyles;
 
-    public Integer backendTimeout;
+    private Integer backendTimeout;
+
+    /**
+     * @return the wmsLayers
+     */
+    public String getWmsLayers() {
+        return wmsLayers;
+    }
+
+    /**
+     * @param wmsLayers the wmsLayers to set
+     */
+    public void setWmsLayers(String wmsLayers) {
+        this.wmsLayers = wmsLayers;
+    }
+
+    /**
+     * @return the wmsStyles
+     */
+    public String getWmsStyles() {
+        return wmsStyles;
+    }
+
+    /**
+     * @param wmsStyles the wmsStyles to set
+     */
+    public void setWmsStyles(String wmsStyles) {
+        this.wmsStyles = wmsStyles;
+    }
+
+    /**
+     * @return the backendTimeout
+     */
+    public Integer getBackendTimeout() {
+        return backendTimeout;
+    }
+
+    /**
+     * @param backendTimeout the backendTimeout to set
+     */
+    public void setBackendTimeout(Integer backendTimeout) {
+        this.backendTimeout = backendTimeout;
+    }
 
     protected BufferedImage loadMatrix(TileLayer tlayer, String gridSetId, int z)
             throws IOException, GeoWebCacheException {
@@ -165,7 +210,7 @@ public class WMSRasterFilter extends RasterFilter {
     }
 
     public boolean update(TileLayer layer, String gridSetId) {
-        for (int z = super.zoomStart; z <= super.zoomStop; z++) {
+        for (int z = super.getZoomStart(); z <= super.getZoomStop(); z++) {
             try {
                 this.setMatrix(layer, gridSetId, z, true);
             } catch (Exception e) {

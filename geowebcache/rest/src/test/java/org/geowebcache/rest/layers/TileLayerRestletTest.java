@@ -17,7 +17,12 @@
 package org.geowebcache.rest.layers;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -25,10 +30,20 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
+import org.geowebcache.config.XMLGridSubset;
+import org.geowebcache.filter.parameters.ParameterFilter;
+import org.geowebcache.filter.parameters.StringParameterFilter;
 import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.rest.RestletException;
 import org.restlet.resource.Representation;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
+import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 
 /**
  * Most of the work is done by XMLConfig and XStream, so this is fairly short
@@ -83,7 +98,7 @@ public class TileLayerRestletTest extends TestCase {
 
     private XMLConfiguration loadXMLConfig() {
         InputStream is = XMLConfiguration.class
-                .getResourceAsStream(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
+                .getResourceAsStream(XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE);
         XMLConfiguration xmlConfig = null;
         try {
             xmlConfig = new XMLConfiguration(is);
@@ -110,5 +125,4 @@ public class TileLayerRestletTest extends TestCase {
 
         return tlr;
     }
-
 }

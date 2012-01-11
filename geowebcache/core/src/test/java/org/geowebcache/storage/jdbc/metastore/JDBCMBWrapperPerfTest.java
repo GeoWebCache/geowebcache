@@ -23,7 +23,7 @@ public class JDBCMBWrapperPerfTest extends TestCase {
 
     private JDBCMBWrapper jdbcWrapper;
 
-    private static final int NUM_TILES_PER_THREAD = 4000;
+    private static final int NUM_TILES_PER_THREAD = 1000;
 
     private File directory;
 

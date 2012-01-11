@@ -243,7 +243,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         GridSet gridSet = gridSubset.getGridSet();
         final int z = (int) tileIndex[2];
 
-        Grid grid = gridSet.getGrids()[z];
+        Grid grid = gridSet.getGridLevels()[z];
 
         // long[] coverage = gridSubset.getCoverage(z);
         // long coverageMinY = coverage[1];

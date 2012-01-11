@@ -16,14 +16,21 @@
  */
 package org.geowebcache.filter.parameters;
 
+import java.io.Serializable;
 import java.util.List;
 
-import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
-public abstract class ParameterFilter {
-    public String key;
+public abstract class ParameterFilter implements Serializable {
 
-    public String defaultValue;
+    private static final long serialVersionUID = -531248230951783132L;
+
+    private String key;
+
+    private String defaultValue;
 
     public ParameterFilter() {
         // Empty for XStream
@@ -63,25 +70,35 @@ public abstract class ParameterFilter {
      */
     public abstract List<String> getLegalValues();
 
+    /**
+     * @param key
+     *            the key to set
+     */
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    /**
+     * @param defaultValue
+     *            the defaultValue to set
+     */
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-        if (!getClass().equals(o.getClass())) {
-            return false;
-        }
-
-        ParameterFilter p = (ParameterFilter) o;
-        if (!ObjectUtils.equals(key, p.getKey())) {
-            return false;
-        }
-        if (!ObjectUtils.equals(defaultValue, p.getDefaultValue())) {
-            return false;
-        }
-        if (!ObjectUtils.equals(getLegalValues(), p.getLegalValues())) {
-            return false;
-        }
-        return true;
+        return EqualsBuilder.reflectionEquals(this, o);
     }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
 }

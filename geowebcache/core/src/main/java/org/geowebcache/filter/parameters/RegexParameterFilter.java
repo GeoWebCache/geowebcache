@@ -20,12 +20,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.ObjectUtils;
-
 public class RegexParameterFilter extends ParameterFilter {
-    public String regex;
 
-    transient Pattern pat;
+    private static final long serialVersionUID = -1496940509350980799L;
+
+    private String regex;
+
+    private transient Pattern pat;
 
     public RegexParameterFilter() {
         super();
@@ -33,7 +34,7 @@ public class RegexParameterFilter extends ParameterFilter {
 
     public synchronized Matcher getMatcher(String value) {
         if (pat == null) {
-            pat = Pattern.compile(regex);
+            pat = Pattern.compile(getRegex());
         }
 
         return pat.matcher(value);
@@ -44,7 +45,7 @@ public class RegexParameterFilter extends ParameterFilter {
             return str;
         }
 
-        throw new ParameterException(str + " violates filter for parameter " + key);
+        throw new ParameterException(str + " violates filter for parameter " + getKey());
     }
 
     public List<String> getLegalValues() {
@@ -56,11 +57,18 @@ public class RegexParameterFilter extends ParameterFilter {
         return getMatcher(parameterValue).matches();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (!super.equals(o)) {
-            return false;
-        }
-        return ObjectUtils.equals(pat, ((RegexParameterFilter) o).pat);
+    /**
+     * @return the regex
+     */
+    public String getRegex() {
+        return regex;
+    }
+
+    /**
+     * @param regex
+     *            the regex to set
+     */
+    public void setRegex(String regex) {
+        this.regex = regex;
     }
 }

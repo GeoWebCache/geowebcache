@@ -23,6 +23,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -51,9 +52,9 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     private static final int[] DEFAULT_METATILING_FACTORS = { 1, 1 };
 
-    protected String name;
-
     protected Boolean enabled;
+
+    protected String name;
 
     protected LayerMetaInformation metaInformation;
 
@@ -61,18 +62,20 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     protected List<FormatModifier> formatModifiers;
 
-    protected List<XMLGridSubset> gridSubsets;
-
-    protected List<ParameterFilter> parameterFilters;
-
     // 1.1.x compatibility
     protected Hashtable<SRS, XMLOldGrid> grids;
 
-    protected List<RequestFilter> requestFilters;
+    protected List<XMLGridSubset> gridSubsets;
 
     protected List<UpdateSourceDefinition> updateSources;
 
+    protected List<RequestFilter> requestFilters;
+
     protected Boolean useETags;
+
+    protected int[] metaWidthHeight;
+
+    protected String expireCache;
 
     protected ArrayList<ExpirationRule> expireCacheList;
 
@@ -80,13 +83,13 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     protected ArrayList<ExpirationRule> expireClientsList;
 
-    protected String expireCache;
+    protected Integer backendTimeout;
 
     protected Boolean cacheBypassAllowed;
 
     protected Boolean queryable;
 
-    protected int[] metaWidthHeight;
+    protected List<ParameterFilter> parameterFilters;
 
     protected transient boolean saveExpirationHeaders;
 
@@ -96,11 +99,14 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     private transient LayerListenerList listeners;
 
-    protected Integer backendTimeout;
-
-    protected String wmsStyles = null;
-
     // Styles?
+
+    protected AbstractTileLayer readResolve() {
+        if (gridSubsets == null) {
+            gridSubsets = new ArrayList<XMLGridSubset>();
+        }
+        return this;
+    }
 
     /**
      * Registers a layer listener to be notified of layer events
@@ -169,8 +175,8 @@ public abstract class AbstractTileLayer extends TileLayer {
      * @return
      */
     @Override
-    public Map<String, GridSubset> getGridSubsets() {
-        return this.subSets;
+    public Set<String> getGridSubsets() {
+        return Collections.unmodifiableSet(this.subSets.keySet());
     }
 
     /**
@@ -236,22 +242,20 @@ public abstract class AbstractTileLayer extends TileLayer {
             subSets = new HashMap<String, GridSubset>();
         }
 
-        if (this.gridSubsets != null) {
-            Iterator<XMLGridSubset> iter = gridSubsets.iterator();
-            while (iter.hasNext()) {
-                XMLGridSubset xmlGridSubset = iter.next();
-                GridSubset gridSubset = xmlGridSubset.getGridSubSet(gridSetBroker);
+        if (this.gridSubsets == null) {
+            this.gridSubsets = new ArrayList<XMLGridSubset>();
+        }
 
-                if (gridSubset == null) {
-                    log.error(xmlGridSubset.getGridSetName()
-                            + " is not known by the GridSetBroker, skipping for layer " + name);
-                } else {
-                    subSets.put(gridSubset.getName(), gridSubset);
-                }
+        for (XMLGridSubset xmlGridSubset : gridSubsets) {
+            GridSubset gridSubset = xmlGridSubset.getGridSubSet(gridSetBroker);
 
+            if (gridSubset == null) {
+                log.error(xmlGridSubset.getGridSetName()
+                        + " is not known by the GridSetBroker, skipping for layer " + name);
+            } else {
+                subSets.put(gridSubset.getName(), gridSubset);
             }
 
-            this.gridSubsets = null;
         }
 
         // Convert version 1.1.x and 1.0.x grid objects
@@ -260,8 +264,9 @@ public abstract class AbstractTileLayer extends TileLayer {
             while (iter.hasNext()) {
                 GridSubset converted = iter.next().convertToGridSubset(gridSetBroker);
                 subSets.put(converted.getSRS().toString(), converted);
+                // hold it in case the layer is to be saved again
+                gridSubsets.add(new XMLGridSubset(converted));
             }
-
             // Null it for the garbage collector
             grids = null;
         }
@@ -317,9 +322,7 @@ public abstract class AbstractTileLayer extends TileLayer {
      * @return the styles configured for the layer, may be null
      */
     @Override
-    public String getStyles() {
-        return wmsStyles;
-    }
+    public abstract String getStyles();
 
     /**
      * 
@@ -415,6 +418,30 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     public List<RequestFilter> getRequestFilters() {
         return requestFilters;
+    }
+
+    @Override
+    public GridSubset getGridSubset(String gridSetId) {
+        return subSets.get(gridSetId);
+    }
+
+    @Override
+    public synchronized GridSubset removeGridSubset(String gridSetId) {
+        for (Iterator<XMLGridSubset> it = gridSubsets.iterator(); it.hasNext();) {
+            XMLGridSubset configSubset = it.next();
+            if (gridSetId.equals(configSubset.getGridSetName())) {
+                it.remove();
+                break;
+            }
+        }
+        return subSets.remove(gridSetId);
+    }
+
+    @Override
+    public synchronized void addGridSubset(GridSubset gridSubset) {
+        removeGridSubset(gridSubset.getName());
+        gridSubsets.add(new XMLGridSubset(gridSubset));
+        subSets.put(gridSubset.getName(), gridSubset);
     }
 
 }

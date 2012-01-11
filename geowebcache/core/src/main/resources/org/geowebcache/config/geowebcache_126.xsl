@@ -26,6 +26,10 @@
     </xsl:attribute>
 </xsl:template>
 
+<xsl:template match="gwc:keyword">
+  <string><xsl:apply-templates/></string>
+</xsl:template>
+
 <xsl:template match="gwc:gwcConfiguration">
   <gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="http://geowebcache.org/schema/1.3.0"
