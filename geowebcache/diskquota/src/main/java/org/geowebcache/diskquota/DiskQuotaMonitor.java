@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.diskquota.CacheCleaner.GlobalQuotaResolver;
 import org.geowebcache.diskquota.CacheCleaner.LayerQuotaResolver;
@@ -360,8 +361,8 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         cacheInfoBuilder = new LayerCacheInfoBuilder(cacheRoot, cleanUpExecutorService,
                 quotaUsageMonitor);
 
-        for (TileLayer tileLayer : tileLayerDispatcher.getLayerList()) {
-            String layerName = tileLayer.getName();
+        for (String layerName : tileLayerDispatcher.getLayerNames()) {
+
             Quota usedQuota = quotaStore.getUsedQuotaByLayerName(layerName);
             if (usedQuota.getBytes().compareTo(BigInteger.ZERO) > 0) {
                 log.debug("Using saved quota information for layer " + layerName + ": "
@@ -369,6 +370,13 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
             } else {
                 log.debug(layerName + " has no saved used quota information,"
                         + "traversing layer cache to compute its disk usage.");
+                TileLayer tileLayer;
+                try {
+                    tileLayer = tileLayerDispatcher.getTileLayer(layerName);
+                } catch (GeoWebCacheException e) {
+                    e.printStackTrace();
+                    continue;
+                }
                 cacheInfoBuilder.buildCacheInfo(tileLayer);
             }
         }
