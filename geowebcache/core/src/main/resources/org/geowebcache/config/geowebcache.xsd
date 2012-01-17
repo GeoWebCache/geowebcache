@@ -506,6 +506,15 @@
                 geowebcache-servlet.xml
               </xs:documentation>
             </xs:annotation>
+          </xs:element>
+          <xs:element name="concurrency" type="xs:positiveInteger" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                An indication of how many concurrent threads can simultaneously request tiles from this layer with
+                minimal thread contention. If not set defaults to 32. This property is deprecated and scheduled to
+                be removed in 1.4.0.
+              </xs:documentation> 
+            </xs:annotation>
           </xs:element>        </xs:sequence>
      </xs:extension>
     </xs:complexContent>

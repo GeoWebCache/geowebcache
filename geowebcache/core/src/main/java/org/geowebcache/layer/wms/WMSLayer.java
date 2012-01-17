@@ -96,6 +96,8 @@ public class WMSLayer extends AbstractTileLayer {
     @SuppressWarnings("unused")
     private String cachePrefix;
 
+    private Integer concurrency;
+
     // private transient int expireCacheInt = -1;
 
     // private transient int expireClientsInt = -1;
@@ -113,8 +115,6 @@ public class WMSLayer extends AbstractTileLayer {
     private transient HashMap<GridLocObj, Boolean> procQueue;
 
     private transient WMSSourceHelper sourceHelper;
-
-    private transient Integer concurrency;
 
     protected transient String sphericalMercatorOverride;
 
