@@ -1,5 +1,7 @@
 package org.geowebcache.seed;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
@@ -7,11 +9,33 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.storage.TileRange;
 
 public class SeedEstimator {
 
+    private static Log log = LogFactory.getLog(org.geowebcache.seed.SeedEstimator.class);
+
     TileBreeder seeder = null;
     
+    /**
+     * helper for counting the number of tiles in a TileRange
+	 * Passes the call through to a more parameterised tileCount method.
+     * 
+     * @param TileRange collection of bounts, start and stop zooms
+     * @return -1 if too many
+     */
+    public long tileCount(TileRange tr) {
+        //TODO: Noticed that metatiling isn't always factored into the provided tile range
+        long[][] coveredGridLevels = new long[tr.getZoomStop() - tr.getZoomStart() + 1][];
+
+        for (int i = tr.getZoomStart(); i <= tr.getZoomStop(); i++) {
+            long[] gridBounds = tr.rangeBounds(i);
+            coveredGridLevels[i - tr.getZoomStart()] = gridBounds;
+        }
+
+        return tileCount(coveredGridLevels, tr.getZoomStart(), tr.getZoomStop());
+    }
+
     /**
      * helper for counting the number of tiles
      * 
@@ -24,15 +48,23 @@ public class SeedEstimator {
         long count = 0;
 
         for (int i = startZoom; i <= stopZoom; i++) {
-            long[] gridBounds = coveredGridLevels[i];
-
-            long thisLevel = (1 + gridBounds[2] - gridBounds[0])
-                    * (1 + gridBounds[3] - gridBounds[1]);
-
-            if (thisLevel > (Long.MAX_VALUE / 4) && i != stopZoom) {
-                return -1;
-            } else {
-                count += thisLevel;
+            // we need to look up the zoom level. coveredGridLevels may be an array 
+            // that goes from zoom 3 to 5 so we have to look up the number stored 
+            // with the grid bounds.
+            for(int j = 0; j < coveredGridLevels.length; j++) {
+                if(coveredGridLevels[i][4] == j) {
+                    long[] gridBounds = coveredGridLevels[i];
+        
+                    long thisLevel = (1 + gridBounds[2] - gridBounds[0])
+                            * (1 + gridBounds[3] - gridBounds[1]);
+        
+                    if (thisLevel > (Long.MAX_VALUE / 4) && i != stopZoom) {
+                        return -1;
+                    } else {
+                        count += thisLevel;
+                    }
+                    break;
+                }
             }
         }
 
@@ -59,7 +91,7 @@ public class SeedEstimator {
         TileLayer tl = seeder.findTileLayer(layerName);
 
         if (gridSetId == null) {
-            gridSetId = tl.getGridSubsets().entrySet().iterator().next().getKey();
+            gridSetId = tl.getGridSubsets().iterator().next();
         }
         GridSubset gridSubset = tl.getGridSubset(gridSetId);
         

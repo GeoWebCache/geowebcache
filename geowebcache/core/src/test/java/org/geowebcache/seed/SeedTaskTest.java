@@ -20,10 +20,9 @@ import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.classextension.EasyMock.replay;
-
 import static org.geowebcache.TestHelpers.createFakeSourceImage;
+import static org.geowebcache.TestHelpers.createJob;
 import static org.geowebcache.TestHelpers.createWMSLayer;
-import static org.geowebcache.TestHelpers.createRequest;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -41,7 +40,6 @@ import junit.framework.TestCase;
 import org.easymock.Capture;
 import org.easymock.classextension.EasyMock;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileResponseReceiver;

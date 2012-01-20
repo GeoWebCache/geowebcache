@@ -261,6 +261,9 @@ public class Demo {
                 + "body { font-family: sans-serif; font-weight: bold; font-size: .8em; }\n"
                 + "body { border: 0px; margin: 0px; padding: 0px; }\n"
                 + "#map { width: 85%; height: 85%; border: 0px; padding: 0px; }\n"
+                + "#displays { width: 85%; padding: 2px; }\n"
+                + "#scale { border: 0px; float: left; }\n"
+                + "#location { border: 0px; float: right; }\n"
                 + "</style>\n"
 
                 + "<script src=\""
@@ -278,6 +281,7 @@ public class Demo {
                 + "OpenLayers.DOTS_PER_INCH = "
                 + gridSubset.getDotsPerInch()
                 + ";\n"
+                + "OpenLayers.ImgPath = '../rest/web/openlayers/img/';\n" 
                 + "OpenLayers.Util.onImageLoadErrorColor = 'transparent';\n"
 
                 + "function init(){\n"
@@ -341,8 +345,15 @@ public class Demo {
                 + "function setHTML(response){\n"
                 + "    document.getElementById('nodelist').innerHTML = response.responseText;\n"
                 + "};\n" + "</script>\n" + "</head>\n" + "<body onload=\"init()\">\n"
-                + "<div id=\"params\">" + makeModifiableParameters(layer) + "</div>\n"
-                + "<div id=\"map\"></div>\n" + "<div id=\"nodelist\"></div>\n" + "</body>\n"
+                + "<div id=\"map\"></div>\n"
+                + "<div id=\"displays\">\n"
+                + "  &nbsp;\n"
+                + "  <div id=\"scale\"></div>\n"
+                + "  <div id=\"location\"></div>\n"
+                + "</div>\n\n"
+                + "<div id=\"nodelist\"></div>\n"
+                + "<div id=\"params\">" + makeModifiableParameters(layer) + "</div>\n\n"
+                + "</body>\n"
                 + "</html>";
         return page;
     }

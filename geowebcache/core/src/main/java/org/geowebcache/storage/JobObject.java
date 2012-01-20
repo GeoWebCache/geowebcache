@@ -107,7 +107,7 @@ public class JobObject {
             obj.gridSetId = tl.getGridSubsetForSRS(sr.getSRS()).getName();
         }
         if (obj.gridSetId == null) {
-            obj.gridSetId = tl.getGridSubsets().entrySet().iterator().next().getKey();
+            obj.gridSetId = tl.getGridSubsets().iterator().next();
         }
 
         GridSubset gridSubset = tl.getGridSubset(obj.gridSetId);
@@ -283,7 +283,7 @@ public class JobObject {
                 newLogs.add(JobLogObject.createInfoLog(jobId, "Job Completed", "Job finished with a status of DONE."));
             } else if (task.getState() == STATE.DEAD) { 
                 timeFinish = new Timestamp(System.currentTimeMillis()); 
-                newLogs.add(JobLogObject.createInfoLog(jobId, "Job Dead", "Job finished with a status of DEAD. This means the job did not complete successfully and due to problems during execution should not be reattempted."));
+                newLogs.add(JobLogObject.createInfoLog(jobId, "Job Dead", "Job finished with a status of DEAD. This means the job did not complete successfully and due to problems during execution should not be reattempted until the problem is resolved."));
             } else if (task.getState() == STATE.KILLED) { 
                 timeFinish = new Timestamp(System.currentTimeMillis()); 
                 newLogs.add(JobLogObject.createInfoLog(jobId, "Job Killed", "Job finished with a status of KILLED. This usually means a user has intentionally stopped the job."));

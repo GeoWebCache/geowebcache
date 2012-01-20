@@ -513,18 +513,20 @@ public class SeedFormRestlet extends GWCRestlet {
         }
         
         String extras = "<script type=\"text/javascript\" src=\"../web/openlayers/openlayers-gwc.js\"></script>\n";
-        
+		
+        GridSubset gridSubset = tl.getGridSubset(tl.getGridSubsets().iterator().next());
+		
         extras += "<script type=\"text/javascript\">\n" +
                   "  OpenLayers.ImgPath = '../web/openlayers/img/';\n" + 
                   "  var layerName = '" + tl.getName() + "';\n" + 
                   "  var layerFormat = '" + tl.getDefaultMimeType().getMimeType() + "';\n" + 
-                  "  var layerTileSize = new OpenLayers.Size(" + tl.getDefaultGridSubset().getTileWidth() + "," + tl.getDefaultGridSubset().getTileHeight() + ");\n" + 
-                  "  var layerProjection = new OpenLayers.Projection('" + tl.getDefaultGridSubset().getSRS() + "');\n" + 
-                  "  var layerResolutions = " + Arrays.toString(tl.getDefaultGridSubset().getResolutions()) + ";\n" +
-                  "  var layerExtents = new OpenLayers.Bounds(" + tl.getDefaultGridSubset().getOriginalExtent().toString() + ");\n" + 
-                  "  var maxExtents = new OpenLayers.Bounds(" + tl.getDefaultGridSubset().getGridSetBounds().toString() + ");\n" + 
-                  "  var layerUnits = '" + tl.getDefaultGridSubset().getGridSet().guessMapUnits() + "';\n" +
-                  "  var layerDotsPerInch = " + tl.getDefaultGridSubset().getDotsPerInch() + "\n;" +
+                  "  var layerTileSize = new OpenLayers.Size(" + gridSubset.getTileWidth() + "," + gridSubset.getTileHeight() + ");\n" + 
+                  "  var layerProjection = new OpenLayers.Projection('" + gridSubset.getSRS() + "');\n" + 
+                  "  var layerResolutions = " + Arrays.toString(gridSubset.getResolutions()) + ";\n" +
+                  "  var layerExtents = new OpenLayers.Bounds(" + gridSubset.getOriginalExtent().toString() + ");\n" + 
+                  "  var maxExtents = new OpenLayers.Bounds(" + gridSubset.getGridSetBounds().toString() + ");\n" + 
+                  "  var layerUnits = '" + gridSubset.getGridSet().guessMapUnits() + "';\n" +
+                  "  var layerDotsPerInch = " + gridSubset.getDotsPerInch() + "\n;" +
                   "  function getBasemapLayer() {\n" + 
                   basemapConfig +
                   "  }\n" +

@@ -51,6 +51,10 @@ public class SRS implements Comparable<SRS> {
 
     private transient final List<Integer> aliases;
 
+    private SRS() {
+        this(4326, null);
+    }
+
     private SRS(int epsgNumber) {
         this(epsgNumber, null);
     }

@@ -14,7 +14,10 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.seed.GWCTask;
+import org.geowebcache.seed.GWCTask.TYPE;
+import org.geowebcache.seed.GWCTask.PRIORITY;
 import org.geowebcache.seed.SeedRequest;
+import org.geowebcache.storage.JobObject;
 
 /**
  * Some common utility test functions.
@@ -64,16 +67,24 @@ public class TestHelpers {
         return layer;
     }
     
-    public static SeedRequest createRequest(WMSLayer tl, GWCTask.TYPE type, int zoomStart,
-            int zoomStop) {
+    public static JobObject createJob(WMSLayer tl, TYPE type, int zoomStart, int zoomStop) {
         String gridSet = tl.getGridSubsets().iterator().next();
         BoundingBox bounds = null;
         int threadCount = 1;
         String format = tl.getMimeTypes().get(0).getFormat();
-        SeedRequest req = new SeedRequest(tl.getName(), bounds, gridSet, threadCount, zoomStart,
-                zoomStop, format, type, null);
-        return req;
+        JobObject job = new JobObject();
+        
+        job.setLayerName(tl.getName());
+        job.setBounds(bounds);
+        job.setGridSetId(gridSet);
+        job.setThreadCount(threadCount);
+        job.setZoomStart(zoomStart);
+        job.setZoomStop(zoomStop);
+        job.setFormat(format);
+        job.setJobType(type);
+        job.setPriority(PRIORITY.LOW);
 
+        return job;
     }
 
 }

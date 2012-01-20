@@ -119,6 +119,13 @@ public class WMSLayer extends AbstractTileLayer {
     protected transient String sphericalMercatorOverride;
 
     /**
+     * XStream needs a no-args constructor to make an instance of this class to load details into.
+	 */
+	public WMSLayer() {
+		;
+	}
+
+    /**
      * Note XStream uses reflection, this is only used for testing and loading from getCapabilities
      * 
      * @param layerName
