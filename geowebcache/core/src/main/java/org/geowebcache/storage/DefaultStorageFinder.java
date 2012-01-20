@@ -48,6 +48,8 @@ public class DefaultStorageFinder {
 
     public final static String GWC_METASTORE_DRIVER_CLASS = "GWC_METASTORE_DRIVER_CLASS";
        
+    public final static String GWC_JOBSTORE_MEMONLY = "GWC_JOBSTORE_MEMONLY";
+     
     public final static String GWC_JOBSTORE_JDBC_URL = "GWC_JOBSTORE_JDBC_URL";
     
     public final static String GWC_JOBTORE_USERNAME = "GWC_JOBSTORE_USERNAME";

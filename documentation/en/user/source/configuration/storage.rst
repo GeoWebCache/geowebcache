@@ -65,3 +65,23 @@ The metastore is recommended since it allows for cache expiration, disk quotas, 
 * JVM system environment variable
 * As a servlet context parameteter
 * As an operating system environment variable
+
+
+Jobstore
+---------
+
+The jobstore is a database that contains information about the jobs that have been executed or are scheduled in the system. The job store also keeps track of information about jobs as they are running, and saves progress on a regular bases so that if something goes wrong GeoWebCache can log information about the job and try to recover.
+
+By default the JobStore does not save to disk and is kept in memory only. This means that if for some reason GeoWebCache is stopped and started all job information will be lost. To change this and any other JobStore settings, find the :file:`geowebcache-core-context.xml` file and adjust the following block of code in that file:
+
+.. code-block:: xml
+
+  <bean id="gwcJobStore" class="org.geowebcache.storage.jdbc.jobstore.JDBCJobBackend" destroy-method="destroy">
+
+    ...
+
+    <constructor-arg>
+      <description>Set the job store to run in memory only</description>
+      <value>TRUE</value>
+    </constructor-arg>
+  </bean>

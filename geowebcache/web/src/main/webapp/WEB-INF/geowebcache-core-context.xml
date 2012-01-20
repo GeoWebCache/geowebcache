@@ -108,7 +108,20 @@
       <description>Max number of connections in the pool</description>
       <value>15</value>
     </constructor-arg>
+    <constructor-arg>
+      <description>Set the job store to run in memory only</description>
+      <value>TRUE</value>
+    </constructor-arg>
   </bean>
+
+  <!-- Static definition of where to put the jobstore. 
+       Note that the directory is AUTOMATICALLY CREATED if it does not exist. -->
+  <!-- bean id="gwcJobStore" class="org.geowebcache.storage.jdbc.jobstore.JDBCJobBackend" destroy-method="destroy">
+    <constructor-arg value="org.h2.Driver" />
+    <constructor-arg value="jdbc:h2:file:/tmp/gwc_jobstore/h2_jobstore;TRACE_LEVEL_FILE=0" />
+    <constructor-arg value="username" />
+    <constructor-arg value="password" />
+  </bean -->
   
   <bean id="gwcBlobStore" class="org.geowebcache.storage.blobstore.file.FileBlobStore" destroy-method="destroy">
     <constructor-arg ref="gwcDefaultStorageFinder" />

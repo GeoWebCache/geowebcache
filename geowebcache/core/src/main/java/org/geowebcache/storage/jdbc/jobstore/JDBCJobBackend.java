@@ -47,7 +47,12 @@ public class JDBCJobBackend implements JobStore {
 
     public JDBCJobBackend(String driverClass, String jdbcString, String username, String password)
             throws ConfigurationException, StorageException {
-        this(driverClass, jdbcString, username, password, false, -1);
+        this(driverClass, jdbcString, username, password, false, -1, true);
+    }
+
+    public JDBCJobBackend(String driverClass, String jdbcString, String username, String password,
+            int maxConnections) throws ConfigurationException, StorageException {
+        this(driverClass, jdbcString, username, password, false, maxConnections, true);
     }
 
     /**
@@ -57,13 +62,15 @@ public class JDBCJobBackend implements JobStore {
      * @param username
      * @param password
      * @param useConnectionPooling
-     *            Maximum number of connections in the pool iif useConnectionPooling
+     *          Maximum number of connections in the pool iif useConnectionPooling
      * @param maxConnections
-     *            Whether to use JDBC connection pooling
+     *          Whether to use JDBC connection pooling
+     * @memOnly
+     *          Whether to run the jbo store in memory only
      * @throws StorageException
      */
     public JDBCJobBackend(String driverClass, String jdbcString, String username, String password,
-            boolean useConnectionPooling, int maxConnections) throws ConfigurationException, StorageException {
+            boolean useConnectionPooling, int maxConnections, boolean memOnly) throws ConfigurationException, StorageException {
         if (useConnectionPooling && maxConnections <= 0) {
             throw new IllegalArgumentException(
                     "If connection pooling is enabled maxConnections shall be a positive integer: "
@@ -71,7 +78,7 @@ public class JDBCJobBackend implements JobStore {
         }
         try {
             wrpr = new JDBCJobWrapper(driverClass, jdbcString, username, password,
-                    useConnectionPooling, maxConnections);
+                    useConnectionPooling, maxConnections, memOnly);
             initSettings();
         } catch (SQLException se) {
             enabled = false;
@@ -86,11 +93,11 @@ public class JDBCJobBackend implements JobStore {
     }
 
     public JDBCJobBackend(DefaultStorageFinder defStoreFind) throws ConfigurationException, StorageException {
-        this(defStoreFind, false, -1);
+        this(defStoreFind, false, -1, true);
     }
 
     public JDBCJobBackend(DefaultStorageFinder defStoreFind, boolean useConnectionPooling,
-            int maxConnections) throws ConfigurationException, StorageException {
+            int maxConnections, boolean memOnly) throws ConfigurationException, StorageException {
         if (useConnectionPooling && maxConnections <= 0) {
             throw new IllegalArgumentException(
                     "If connection pooling is enabled maxConnections shall be a positive integer: "
@@ -98,7 +105,7 @@ public class JDBCJobBackend implements JobStore {
         }
 
         try {
-            wrpr = new JDBCJobWrapper(defStoreFind, useConnectionPooling, maxConnections);
+            wrpr = new JDBCJobWrapper(defStoreFind, useConnectionPooling, maxConnections, memOnly);
             initSettings();
         } catch (SQLException se) {
             log.error("Failed to start JDBC jobstore: " + se.getMessage());
