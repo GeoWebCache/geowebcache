@@ -52,8 +52,8 @@ public class SeedEstimator {
             // that goes from zoom 3 to 5 so we have to look up the number stored 
             // with the grid bounds.
             for(int j = 0; j < coveredGridLevels.length; j++) {
-                if(coveredGridLevels[i][4] == j) {
-                    long[] gridBounds = coveredGridLevels[i];
+                if(coveredGridLevels[j][4] == i) {
+                    long[] gridBounds = coveredGridLevels[j];
         
                     long thisLevel = (1 + gridBounds[2] - gridBounds[0])
                             * (1 + gridBounds[3] - gridBounds[1]);
