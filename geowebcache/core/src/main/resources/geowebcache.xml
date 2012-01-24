@@ -80,6 +80,18 @@
       <wmsUrl>
         <string>http://demo.opengeo.org/geoserver/wms</string>
       </wmsUrl>
+      <parameterFilters>
+        <stringParameterFilter>
+          <key>STYLES</key>
+          <defaultValue>population</defaultValue>
+          <values>
+            <string>population</string>
+            <string>polygon</string>
+            <string>usflags</string>
+            <string>pophatch</string>
+          </values>
+        </stringParameterFilter>
+      </parameterFilters>
     </wmsLayer>
 
     <wmsLayer>
