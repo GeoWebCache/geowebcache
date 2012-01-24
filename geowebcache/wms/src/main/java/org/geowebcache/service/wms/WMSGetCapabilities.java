@@ -171,8 +171,8 @@ public class WMSGetCapabilities {
                 str.append("      <ContactPerson>" + servCont.getIndividualName()
                         + "</ContactPerson>\n");
             }
-            str.append("      <ContactOrganisation>" + servProv.getProviderName()
-                    + "</ContactOrganisation>\n");
+            str.append("      <ContactOrganization>" + servProv.getProviderName()
+                    + "</ContactOrganization>\n");
             str.append("    </ContactPersonPrimary>\n");
 
             if (servCont != null) {
@@ -190,13 +190,13 @@ public class WMSGetCapabilities {
                 str.append("    </ContactAddress>\n");
                 str.append("    <ContactVoiceTelephone>" + servCont.getPhoneNumber()
                         + "</ContactVoiceTelephone>\n");
-                str.append("    <ContactFacsimileTelephone/>" + servCont.getFaxNumber()
-                        + "<ContactFacsimileTelephone/>\n");
+                str.append("    <ContactFacsimileTelephone>").append(servCont.getFaxNumber())
+                        .append("</ContactFacsimileTelephone>\n");
                 str.append("    <ContactElectronicMailAddress>" + servCont.getAddressEmail()
                         + "</ContactElectronicMailAddress>\n");
             }
         }
-        
+
         str.append("  </ContactInformation>\n");
     }
 
@@ -332,8 +332,8 @@ public class WMSGetCapabilities {
             if (!layer.isEnabled()) {
                 continue;
             }
-            
-            for(String gridSetId : layer.getGridSubsets()){
+
+            for (String gridSetId : layer.getGridSubsets()) {
                 GridSubset grid = layer.getGridSubset(gridSetId);
 
                 List<String> formats = new ArrayList<String>(2);
