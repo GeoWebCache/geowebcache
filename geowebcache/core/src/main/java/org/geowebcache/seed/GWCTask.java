@@ -171,4 +171,11 @@ public abstract class GWCTask {
             throw new InterruptedException();
         }
     }
+
+    @Override
+    public String toString() {
+        return new StringBuilder("[").append(getTaskId()).append(": ").append(getLayerName())
+                .append(", ").append(getType()).append(", ").append(getState()).append("]")
+                .toString();
+    }
 }

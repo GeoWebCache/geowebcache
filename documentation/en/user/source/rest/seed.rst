@@ -117,13 +117,13 @@ Sample response:
  * Closing connection #0
 
 
-Querying and Terminating the running tasks
-==========================================
+Querying the running tasks
+==========================
 
 Operations
 ----------
 
-``/rest/seed/<layer>``
+``/rest/seed[/<layer>].json``
 
 .. list-table::
    :header-rows: 1
@@ -133,12 +133,12 @@ Operations
      - Return Code
      - Formats
    * - GET
+     - Get the global or per layer state of running and pending tasks
+     - 200
+     - JSON
+   * - POST
      - 
      - 405
-     - 
-   * - POST
-     - Issue a terminate running tasks request
-     - 200
      - 
    * - PUT
      - 
@@ -152,6 +152,32 @@ Operations
 Getting the current state of the seeding threads
 ++++++++++++++++++++++++++++++++++++++++++++++++
 
+Sending a GET reques to the ``/rest/seed.json`` resource returns a list of pending (scheduled) and running
+tasks for all the layers.
+
+Sending a GET reques to the ``/rest/seed/<layer name>.json`` resource returns a list of pending (scheduled) and running
+tasks for that specific layer.
+
+The returned content is a JSON array of the form:
+
+.. code-block:: xml 
+
+   {"long-array-array":[[<long>,<long>,<long>,<long>,<long>],...]}
+
+If there are no pending or running tasks, the returned array is empty:
+
+.. code-block:: xml 
+
+   {"long-array-array":[]}
+   
+The returned array of arrays contains one array per seeding/truncate Task.
+The meaning of each long value in each thread array is: ``[tiles processed, total # of tiles to process, # of remaining tiles, Task ID, Task status]``.
+The meaning of the ``Task status`` field is:
+-1 = ABORTED, 
+0 = PENDING, 
+1 = RUNNING, 
+2 = DONE.
+
 Sample request:
 
 .. code-block:: xml 
@@ -162,24 +188,78 @@ Sample response:
 
 .. code-block:: xml 
 
-   {"long-array-array":[[17888,44739250,18319],[17744,44739250,18468],[16608,44739250,19733],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]}
+   {"long-array-array":[[17888,44739250,18319,1,1],[17744,44739250,18468,2,1],[16608,44739250,19733,3,0],[0,1000,1000,4,1]]}
   
+In the sample response above tasks ``1`` and ``2``  for the ``topp:states`` layer are running, and
+tasks ``3`` and ``4`` are in pending state waiting for an available thread:
 
-The returned array of arrays contains one array per seeding thread.
-The meaning of each long value in each thread array is: [tiles processed, total # of tiles to process, # of remaining tiles].
-In the sample response above only the first three threads are active.
-
-
-Terminating running tasks
-+++++++++++++++++++++++++
-
-The following request terminates all running seed and truncate tasks. Note it doesn't matter which layer name you use at the end of the URL, but it has to be the name of an existing layer.
 
 Sample request:
 
 .. code-block:: xml 
 
- curl -v -u geowebcache:secured -d "kill_all=1"  "http://localhost:8080/geowebcache/rest/seed/nurc:Arc_Sample"
+   curl -u <user>:<password> -XGET http://localhost:8080/geoserver/gwc/rest/seed.json
+
+Sample response:
+
+.. code-block:: xml 
+
+   {"long-array-array":[[2240,327426,1564,2,1],[2368,327426,1477,3,1],[2272,327426,1541,4,1],[2176,327426,1611,5,1],[1056,15954794690,79320691,6,1],[1088,15954794690,76987729,7,1],[1040,15954794690,80541010,8,1],[1104,15954794690,75871965,9,1]]}
+  
+The sample response response above contains the list of tasks for all the layers.
+
+
+Terminating running tasks
+=========================
+
+Operations
+----------
+
+``/rest/seed[/<layer>]``
+
+.. list-table::
+   :header-rows: 1
+
+   * - Method
+     - Action
+     - Return Code
+     - Formats
+   * - GET
+     - 
+     - 405
+     - 
+   * - POST
+     - Issue a kill running and/or pending tasks request
+     - 200
+     - 
+   * - PUT
+     - 
+     - 405
+     - 
+   * - DELETE
+     -
+     - 405
+     -
+
+
+A POST request to the ``/rest/seed`` resource terminates pending and/or running tasks for any layer.
+
+A POST request to the ``/rest/seed/<layer name>`` resource terminates pending and/or running tasks for that specific layer.
+
+In order to indicate whether to terminate pending and/or running tasks, the form parameter ``"kill_all"`` needs to be specified,
+with one of the following values: ``all``, ``running``, ``pending`` (for backwards compatibility, the kill_all parameter
+value ``1`` is also accepted and equivalent to ``running``).
+
+For example: ``curl -d "kill_all=all" <host>/rest/seed`` kills both pending and running tasks for any layer,
+``curl -d "kill_all=all" <host>/rest/seed/topp:states`` kills only pending tasks for the ``topp:states`` layer, and so on.
+ 
+The following request terminates all running seed and truncate tasks.
+
+Sample request:
+
+.. code-block:: xml 
+
+ curl -v -u geowebcache:secured -d "kill_all=all"  "http://localhost:8080/geowebcache/rest/seed"
  
 Sample response:
 
@@ -187,16 +267,6 @@ Sample response:
 
  * About to connect() to localhost port 8080 (#0)
  *   Trying 127.0.0.1... connected
- * Connected to localhost (127.0.0.1) port 8080 (#0)
- * Server auth using Basic with user 'admin'
- > POST /geoserver/gwc/rest/seed/nurc:Arc_Sample HTTP/1.1
- > Authorization: Basic YWRtaW46Z2Vvc2VydmVy
- > User-Agent: curl/7.21.3 (x86_64-pc-linux-gnu) libcurl/7.21.3 OpenSSL/0.9.8o zlib/1.2.3.4 libidn/1.18
- > Host: localhost:8080
- > Accept: */*
- > Content-Length: 10
- > Content-Type: application/x-www-form-urlencoded
- > 
  < HTTP/1.1 200 OK
  < Date: Fri, 14 Oct 2011 22:23:04 GMT
  < Server: Noelios-Restlet-Engine/1.0..8
@@ -204,18 +274,7 @@ Sample response:
  < Content-Length: 426
  < 
  <html>
- <head>
- <title>GWC Seed Form</title><style type="text/css">
- body, td {
- font-family: Verdana,Arial,'Bitstream Vera Sans',Helvetica,sans-serif;
- font-size: 0.85em;
- vertical-align: top;
- }
- </style>
- </head>
- <body>
- <a id="logo" href="../../"><img src="../../rest/web/geowebcache_logo.png"height="70" width="247" border="0"/></a>
- <ul><li>Requested to terminate all tasks.</li></ul><p><a href="./nurc:Arc_Sample">Go back</a></p>
+ ...
  * Connection #0 to host localhost left intact
  * Closing connection #0
 

@@ -18,12 +18,23 @@
  */
 package org.geowebcache.seed;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,6 +45,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.seed.GWCTask.STATE;
 import org.geowebcache.seed.GWCTask.TYPE;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileRange;
@@ -95,7 +107,7 @@ public class TileBreeder implements ApplicationContextAware {
 
     private static Log log = LogFactory.getLog(TileBreeder.class);
 
-    private SeederThreadPoolExecutor threadPool;
+    private ThreadPoolExecutor threadPool;
 
     private TileLayerDispatcher layerDispatcher;
 
@@ -116,6 +128,23 @@ public class TileBreeder implements ApplicationContextAware {
      * threads of the same run.
      */
     private long totalFailuresBeforeAborting = 1000;
+
+    private Map<Long, SubmittedTask> currentPool = new TreeMap<Long, SubmittedTask>();
+
+    private AtomicLong currentId = new AtomicLong();
+
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    private static class SubmittedTask {
+        public final GWCTask task;
+
+        public final Future<GWCTask> future;
+
+        public SubmittedTask(final GWCTask task, final Future<GWCTask> future) {
+            this.task = task;
+            this.future = future;
+        }
+    }
 
     /**
      * Initializes the seed task failure control variables either with the provided environment
@@ -189,11 +218,6 @@ public class TileBreeder implements ApplicationContextAware {
             threadCount = 1;
         }
 
-        if (threadCount > threadPool.getMaximumPoolSize()) {
-            throw new GeoWebCacheException("Asked to use " + threadCount + " threads,"
-                    + " but maximum is " + threadPool.getMaximumPoolSize());
-        }
-
         TileRangeIterator trIter = new TileRangeIterator(tr, tl.getMetaTilingFactors());
 
         GWCTask[] tasks = new GWCTask[threadCount];
@@ -216,8 +240,17 @@ public class TileBreeder implements ApplicationContextAware {
     }
 
     public void dispatchTasks(GWCTask[] tasks) {
-        for (int i = 0; i < tasks.length; i++) {
-            threadPool.submit(new MTSeeder(tasks[i]));
+        lock.writeLock().lock();
+        try {
+            for (int i = 0; i < tasks.length; i++) {
+                final Long taskId = this.currentId.incrementAndGet();
+                final GWCTask task = tasks[i];
+                task.setTaskId(taskId);
+                Future<GWCTask> future = threadPool.submit(new MTSeeder(task));
+                this.currentPool.put(taskId, new SubmittedTask(task, future));
+            }
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
@@ -301,30 +334,75 @@ public class TileBreeder implements ApplicationContextAware {
     }
 
     /**
-     * Method returns List of Strings representing the status of the currently running threads
+     * Method returns List of Strings representing the status of the currently running and scheduled
+     * threads
      * 
-     * @return
+     * @return array of {@code [[tilesDone, tilesTotal, tilesRemaining, taskID, taskStatus],...]}
+     *         where {@code taskStatus} is one of:
+     *         {@code 0 = PENDING, 1 = RUNNING, 2 = DONE, -1 = ABORTED}
      */
     public long[][] getStatusList() {
-        Iterator<Entry<Long, GWCTask>> iter = threadPool.getRunningTasksIterator();
+        return getStatusList(null);
+    }
 
-        long[][] ret = new long[threadPool.getMaximumPoolSize()][3];
-        int idx = 0;
+    public long[][] getStatusList(final String layerName) {
+        List<long[]> list = new ArrayList<long[]>(currentPool.size());
 
-        while (iter.hasNext()) {
-            Entry<Long, GWCTask> entry = iter.next();
-            GWCTask task = entry.getValue();
-
-            ret[idx][0] = task.getTilesDone();
-
-            ret[idx][1] = task.getTilesTotal();
-
-            ret[idx][2] = task.getTimeRemaining();
-
-            idx++;
+        lock.readLock().lock();
+        try {
+            Iterator<Entry<Long, SubmittedTask>> iter = currentPool.entrySet().iterator();
+            while (iter.hasNext()) {
+                Entry<Long, SubmittedTask> entry = iter.next();
+                GWCTask task = entry.getValue().task;
+                if (layerName != null && !layerName.equals(task.getLayerName())) {
+                    continue;
+                }
+                long[] ret = new long[5];
+                ret[0] = task.getTilesDone();
+                ret[1] = task.getTilesTotal();
+                ret[2] = task.getTimeRemaining();
+                ret[3] = task.getTaskId();
+                ret[4] = stateCode(task.getState());
+                list.add(ret);
+            }
+        } finally {
+            lock.readLock().unlock();
+            this.drain();
         }
 
+        long[][] ret = list.toArray(new long[list.size()][]);
         return ret;
+    }
+
+    private long stateCode(STATE state) {
+        switch (state) {
+        case UNSET:
+        case READY:
+            return 0;
+        case RUNNING:
+            return 1;
+        case DONE:
+            return 2;
+        case DEAD:
+            return -1;
+        default:
+            throw new IllegalArgumentException("Unknown state: " + state);
+        }
+    }
+
+    private void drain() {
+        lock.writeLock().lock();
+        try {
+            threadPool.purge();
+            for (Iterator<Entry<Long, SubmittedTask>> it = this.currentPool.entrySet().iterator(); it
+                    .hasNext();) {
+                if (it.next().getValue().future.isDone()) {
+                    it.remove();
+                }
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {
@@ -333,7 +411,6 @@ public class TileBreeder implements ApplicationContextAware {
 
     public void setThreadPoolExecutor(SeederThreadPoolExecutor stpe) {
         threadPool = stpe;
-        // statusArray = new int[threadPool.getMaximumPoolSize()][3];
     }
 
     public void setStorageBroker(StorageBroker sb) {
@@ -343,7 +420,7 @@ public class TileBreeder implements ApplicationContextAware {
     public StorageBroker getStorageBroker() {
         return storageBroker;
     }
-    
+
     public TileLayer findTileLayer(String layerName) throws GeoWebCacheException {
         TileLayer layer = null;
 
@@ -356,12 +433,47 @@ public class TileBreeder implements ApplicationContextAware {
         return layer;
     }
 
-    public Iterator<Entry<Long, GWCTask>> getRunningTasksIterator() {
-        return threadPool.getRunningTasksIterator();
+    public Iterator<GWCTask> getRunningTasks() {
+        drain();
+        return filterTasks(STATE.RUNNING);
+    }
+
+    public Iterator<GWCTask> getRunningAndPendingTasks() {
+        drain();
+        return filterTasks(STATE.READY, STATE.UNSET, STATE.RUNNING);
+    }
+
+    public Iterator<GWCTask> getPendingTasks() {
+        drain();
+        return filterTasks(STATE.READY, STATE.UNSET);
+    }
+
+    private Iterator<GWCTask> filterTasks(STATE... filter) {
+        Set<STATE> states = new HashSet<STATE>(Arrays.asList(filter));
+        lock.readLock().lock();
+        List<GWCTask> runningTasks = new ArrayList<GWCTask>(this.currentPool.size());
+        try {
+            Collection<SubmittedTask> values = this.currentPool.values();
+            for (SubmittedTask t : values) {
+                GWCTask task = t.task;
+                if (states.contains(task.getState())) {
+                    runningTasks.add(task);
+                }
+            }
+        } finally {
+            lock.readLock().unlock();
+        }
+        return runningTasks.iterator();
     }
 
     public boolean terminateGWCTask(final long id) {
-        return threadPool.terminateGWCTask(id);
+        SubmittedTask submittedTask = this.currentPool.remove(Long.valueOf(id));
+        if (submittedTask == null) {
+            return false;
+        }
+        submittedTask.task.terminateNicely();
+        // submittedTask.future.cancel(true);
+        return true;
     }
 
     public Iterable<TileLayer> getLayers() {

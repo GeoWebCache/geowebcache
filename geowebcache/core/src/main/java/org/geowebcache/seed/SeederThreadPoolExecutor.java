@@ -16,11 +16,6 @@
  */
 package org.geowebcache.seed;
 
-import java.lang.reflect.Field;
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -37,110 +32,9 @@ public class SeederThreadPoolExecutor extends ThreadPoolExecutor implements Disp
 
     private static final ThreadFactory tf = new CustomizableThreadFactory("GWC Seeder Thread-");
 
-    long currentId = 0;
-
-    TreeMap<Long, GWCTask> currentPool = new TreeMap<Long, GWCTask>();
-
     public SeederThreadPoolExecutor(int corePoolSize, int maxPoolSize) {
         super(corePoolSize, maxPoolSize, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
                 tf);
-    }
-
-    @Override
-    protected void beforeExecute(Thread t, Runnable r) {
-        super.beforeExecute(t, r);
-
-        synchronized (this) {
-            GWCTask task = extractGWCTask(r);
-
-            if (task != null) {
-                Long taskId = this.getNextId();
-                task.setTaskId(taskId);
-                this.currentPool.put(taskId, task);
-            }
-        }
-    }
-
-    @Override
-    protected void afterExecute(Runnable r, Throwable t) {
-        try {
-            synchronized (this) {
-                GWCTask task = extractGWCTask(r);
-
-                if (task != null) {
-                    this.currentPool.remove(task.getTaskId());
-                }
-            }
-        } finally {
-            super.afterExecute(r, t);
-        }
-    }
-
-    /**
-     * FutureTask does not provide access to the actual task, so we used reflection to get at it, at
-     * least for the time being.
-     * 
-     * TODO There's hopefully a pretty way to do this ?
-     * 
-     * @param fT
-     * @return
-     */
-    private GWCTask extractGWCTask(Runnable r) {
-        FutureTask fT = null;
-        if (r instanceof FutureTask) {
-            fT = (FutureTask) r;
-        } else {
-            return null;
-        }
-
-        GWCTask task = null;
-
-        Class<?> c = fT.getClass();
-        try {
-            Field sync = c.getDeclaredField("sync");
-            sync.setAccessible(true);
-            Object obj = sync.get(fT);
-            c = obj.getClass();
-            Field callable = c.getDeclaredField("callable");
-            callable.setAccessible(true);
-            MTSeeder mts = (MTSeeder) callable.get(obj);
-            task = mts.task;
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-
-        return task;
-    }
-
-    public boolean terminateGWCTask(long id) {
-        GWCTask task = this.currentPool.get(id);
-
-        if (task != null && GWCTask.TYPE.TRUNCATE != task.getType()) {
-            task.terminateNicely();
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public Iterator<Entry<Long, GWCTask>> getRunningTasksIterator() {
-        return this.currentPool.entrySet().iterator();
-    }
-
-    /**
-     * Generates (increments) a unique id to assign to tasks, it's assumed the calling function is
-     * synchronized!
-     * 
-     * @return a unique id for the task
-     */
-    private long getNextId() {
-        long ret = this.currentId;
-        this.currentId++;
-        return ret;
     }
 
     /**

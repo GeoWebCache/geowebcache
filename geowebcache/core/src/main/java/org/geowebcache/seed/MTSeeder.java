@@ -35,7 +35,7 @@ class MTSeeder implements Callable<GWCTask> {
         try {
             task.doAction();
         } catch (GeoWebCacheException gwce) {
-            log.error(gwce.getMessage());
+            log.error(gwce.getMessage(), gwce);
         } catch (InterruptedException e) {
             log.info(task.getType() + " task #" + task.getTaskId() + " has been interrupted");
         } catch (RuntimeException e) {
