@@ -333,7 +333,8 @@ public class FileBlobStore implements BlobStore {
         if (!layerPath.isDirectory() || !layerPath.canWrite()) {
             throw new StorageException(prefix + " does is not a directory or is not writable.");
         }
-        FilePathFilter fpf = new FilePathFilter(trObj);
+        
+        final FilePathFilter tileFinder = new FilePathFilter(trObj);
 
         final String layerName = trObj.getLayerName();
         final String gridSetId = trObj.getGridSetId();
@@ -341,14 +342,15 @@ public class FileBlobStore implements BlobStore {
         // FRD trObj.getParametersId();
         final Long parametersId = trObj.getParametersId();
 
-        File[] srsZoomDirs = layerPath.listFiles(fpf);
+        File[] srsZoomDirs = layerPath.listFiles(tileFinder);
 
+        final String gridsetPrefix = FilePathGenerator.filteredGridSetId(gridSetId);
         for (File srsZoomParamId : srsZoomDirs) {
-            int zoomLevel = FilePathGenerator.findZoomLevel(srsZoomParamId.getName());
-            File[] intermediates = srsZoomParamId.listFiles(fpf);
+            int zoomLevel = FilePathGenerator.findZoomLevel(gridsetPrefix, srsZoomParamId.getName());
+            File[] intermediates = srsZoomParamId.listFiles(tileFinder);
 
             for (File imd : intermediates) {
-                File[] tiles = imd.listFiles(fpf);
+                File[] tiles = imd.listFiles(tileFinder);
                 long length;
 
                 for (File tile : tiles) {

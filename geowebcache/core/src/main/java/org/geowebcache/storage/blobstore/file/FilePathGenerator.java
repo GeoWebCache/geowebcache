@@ -160,14 +160,12 @@ public class FilePathGenerator {
     }
 
     /**
-     * Extracts the zoomLevel from something like EPSG_2163_01 or EPSG_2163_01_7 (i.e.
-     * {@code <EPSG>_<code>_<zLevel>[_<parametersId>]})
-     * 
-     * @param dirName
-     * @return
+     * Extracts the zoomLevel from {@code <gridsetPrefix>_<zLevel>[_<parametersId>]})
+     * @precondition {@code dirName.startsWith(gridsetPrefix + "_")}
      */
-    public static int findZoomLevel(final String dirName) {
-        String[] parts = dirName.split("_");
-        return Integer.parseInt(parts[2]);
+    public static int findZoomLevel(final String gridsetPrefix, final String dirName) {
+        assert dirName.startsWith(gridsetPrefix + "_");
+        String[] parts = dirName.substring(gridsetPrefix.length() + 1).split("_");
+        return Integer.parseInt(parts[0]);
     }
 }
