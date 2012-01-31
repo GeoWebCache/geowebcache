@@ -75,12 +75,49 @@ Sample response:
  > Content-Length: 209
  > 
  < HTTP/1.1 200 OK
- < Date: Fri, 14 Oct 2011 22:12:27 GMT
- < Server: Noelios-Restlet-Engine/1.0..8
- < Transfer-Encoding: chunked
- < 
- * Connection #0 to host localhost left intact
- * Closing connection #0
+
+
+Here's a more complete xml fragment for a seed request, including parameter filters:
+
+.. code-block:: xml
+
+ <?xml version="1.0" encoding="UTF-8"?>
+ <seedRequest>
+   <name>topp:states</name>
+   <bounds>
+     <coords>
+       <double>-2495667.977678598</double>
+       <double>-2223677.196231552</double>
+       <double>3291070.6104286816</double>
+       <double>959189.3312465074</double>
+     </coords>
+   </bounds>
+
+   <!-- These are listed on http://localhost:8080/geowebcache/demo -->
+   <gridSetId>EPSG:2163</gridSetId>
+   <zoomStart>0</zoomStart>
+   <!-- This will be reduced to 3, since the layer is only defined for 0-3 -->
+   <zoomStop>2</zoomStop>
+   <format>image/png</format>
+ 
+   <!-- type can be * seed (add tiles) * reseed (replace tiles) * truncate (remove tiles) -->
+   <type>truncate</type> 
+
+   <!-- Number of seeding threads to run in parallel. 
+        If type == truncate only one thread will be used regardless of this parameter -->
+   <threadCount>1</threadCount>
+   <!-- Parameter filters -->
+   <parameters>
+     <entry>
+       <string>STYLES</string>
+       <string>pophatch</string>
+     </entry>
+     <entry>
+       <string>CQL_FILTER</string>
+       <string>TOTPOP > 10000</string>
+     </entry>
+   </parameters>
+ </seedRequest>
 
 
 Truncate JSON example
