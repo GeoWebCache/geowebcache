@@ -28,6 +28,10 @@ public class LayerMetaInformation {
     
     List<ContactInformation> contacts;
     
+    LayerMetaInformation() {
+        // default constructor for XStream
+    }
+
     public LayerMetaInformation(String title, String description, List<String> keywords, List<ContactInformation> contacts) {
         this.title = title;
         this.description = description;

@@ -5,6 +5,10 @@ public class ExpirationRule {
     
     private int expiration;
     
+    ExpirationRule() {
+        // default constructor for XStream
+    }
+
     public ExpirationRule(int minZoom, int expiration) {
         this.minZoom = minZoom;
         this.expiration = expiration;

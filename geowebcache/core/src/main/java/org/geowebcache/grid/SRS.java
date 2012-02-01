@@ -47,10 +47,14 @@ public class SRS implements Comparable<SRS> {
     private static final SRS EPSG900913 = new SRS(900913, new ArrayList<Integer>(asList(3857,
             102113, 102100)));
 
-    private final int number;
+    private int number;
 
-    private transient final List<Integer> aliases;
+    private transient List<Integer> aliases;
 
+    private SRS() {
+        // default constructor for XStream
+    }
+    
     private SRS(int epsgNumber) {
         this(epsgNumber, null);
     }
