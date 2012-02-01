@@ -41,6 +41,10 @@ public class BoundingBox implements Serializable{
     // minx, miny, maxx, maxy
     private double[] coords = new double[4];
 
+    BoundingBox() {
+        // default constructor for XStream
+    }
+
     public BoundingBox(BoundingBox bbox) {
         coords[0] = bbox.coords[0];
         coords[1] = bbox.coords[1];
