@@ -95,7 +95,7 @@ public class ImageMime extends MimeType {
     throws MimeException {
         if (fileExtension.equalsIgnoreCase("png")) {
             return png;
-        } else if (fileExtension.equalsIgnoreCase("jpeg")) {
+        } else if (fileExtension.equalsIgnoreCase("jpeg") || fileExtension.equalsIgnoreCase("jpg")) {
             return jpeg;
         } else if (fileExtension.equalsIgnoreCase("gif")) {
             return gif;
