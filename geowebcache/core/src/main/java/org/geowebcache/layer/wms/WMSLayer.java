@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLGridSubset;
+import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.request.RequestFilter;
@@ -356,6 +357,8 @@ public class WMSLayer extends AbstractTileLayer {
             return finalizeTile(tile);
         }
 
+        tile.setCacheResult(CacheResult.MISS);
+        
         /*
          * This thread's byte buffer
          */
@@ -460,6 +463,7 @@ public class WMSLayer extends AbstractTileLayer {
 
     public void setTileIndexHeader(ConveyorTile tile) {
         tile.servletResp.addHeader("geowebcache-tile-index", Arrays.toString(tile.getTileIndex()));
+        tile.servletResp.addHeader("geowebcache-cache-result", String.valueOf(tile.getCacheResult()));
     }
 
     public ConveyorTile doNonMetatilingRequest(ConveyorTile tile) throws GeoWebCacheException {
