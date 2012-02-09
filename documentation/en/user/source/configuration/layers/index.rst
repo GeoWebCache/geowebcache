@@ -17,6 +17,7 @@ This section will describe how to manually configure layers in GeoWebCache, as w
    arcgistilingschemes
    staticcaps
    georss
+   selectivezoom
    examples
    
 
