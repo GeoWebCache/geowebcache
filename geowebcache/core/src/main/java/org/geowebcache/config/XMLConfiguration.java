@@ -31,7 +31,6 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -472,7 +471,7 @@ public class XMLConfiguration implements Configuration {
         xs.aliasField("xsi:schemaLocation", GeoWebCacheConfiguration.class, "xsi_schemaLocation");
         xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
 
-        //xs.alias("layers", List.class);
+        // xs.alias("layers", List.class);
         xs.alias("wmsLayer", WMSLayer.class);
 
         // These two are for 1.1.x compatibility
@@ -559,15 +558,31 @@ public class XMLConfiguration implements Configuration {
     }
 
     /**
+     * @return {@code true} only if {@code tl instanceof WMSLayer}
+     * @see org.geowebcache.config.Configuration#canSave(org.geowebcache.layer.TileLayer)
+     */
+    public boolean canSave(TileLayer tl) {
+        return tl instanceof WMSLayer;
+    }
+
+    /**
      * @param tl
      *            the layer to add to this configuration
      * @return
-     * @throws GeoWebCacheException
+     * @throws IllegalArgumentException
      *             if a layer named the same than {@code tl} already exists
+     * @see org.geowebcache.config.Configuration#addLayer(org.geowebcache.layer.TileLayer)
      */
-    public synchronized void addLayer(TileLayer tl) throws GeoWebCacheException {
+    public synchronized void addLayer(TileLayer tl) throws IllegalArgumentException {
+        if (tl == null) {
+            throw new NullPointerException();
+        }
+        if (!(tl instanceof WMSLayer)) {
+            throw new IllegalArgumentException("Can't add layers of type "
+                    + tl.getClass().getName());
+        }
         if (null != getTileLayer(tl.getName())) {
-            throw new GeoWebCacheException("Layer " + tl.getName() + " already exists");
+            throw new IllegalArgumentException("Layer '" + tl.getName() + "' already exists");
         }
 
         initialize(tl);

@@ -101,4 +101,25 @@ public interface Configuration {
      */
     public void save() throws IOException;
 
+    /**
+     * @param tl
+     *            a tile layer to be added or saved
+     * @return {@code true} if this configuration is capable of saving the given tile layer,
+     *         {@code false} otherwise (usually this check is based on an instanceof check, as
+     *         different configurations may be specialized on different kinds of layers).
+     */
+    public boolean canSave(TileLayer tl);
+
+    /**
+     * Adds, but not saves, the given tile layer to this configuration, provided
+     * {@link #canSave(TileLayer) canSave(tl) == true}.
+     * 
+     * @param tl
+     *            the tile layer to add to the configuration
+     * @throws IllegalArgumentException
+     *             if this configuration is not able of saving the specific type of layer given, or
+     *             if any required piece of information is missing or invalid in the layer (for
+     *             example, a missing or duplicated name or id, etc).
+     */
+    public void addLayer(TileLayer tl) throws IllegalArgumentException;
 }
