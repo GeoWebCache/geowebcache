@@ -70,9 +70,9 @@ public class XMLConfigurationTest extends TestCase {
         assertSame(tl, config.getTileLayer("testLayer"));
         try {
             config.addLayer(tl);
-            fail("Expected GeoWebCacheException on duplicate layer name");
-        } catch (GeoWebCacheException e) {
-            assertEquals("Layer testLayer already exists", e.getMessage());
+            fail("Expected IllegalArgumentException on duplicate layer name");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Layer 'testLayer' already exists", e.getMessage());
         }
     }
 

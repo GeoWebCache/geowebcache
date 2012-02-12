@@ -177,8 +177,8 @@ public class TileLayerRestlet extends GWCRestlet {
         }
 
         if (testtl == null) {
-            xmlConfig.addLayer(tl);
-            xmlConfig.save();
+            Configuration config = layerDispatcher.addLayer(tl);
+            config.save();
         } else {
             throw new RestletException("Layer with name " + tl.getName() + " already exists, "
                     + "use POST if you want to replace it.", Status.CLIENT_ERROR_BAD_REQUEST);

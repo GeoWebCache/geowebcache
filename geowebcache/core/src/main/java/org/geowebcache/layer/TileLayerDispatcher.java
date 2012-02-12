@@ -238,13 +238,35 @@ public class TileLayerDispatcher implements DisposableBean {
     }
 
     /**
+     * Adds a layer and returns (but doesn't save) the {@link Configuration} to which the layer was
+     * added.
+     * 
+     * @param tl
+     *            the layer to add
+     * @return the configuration to which the layer was added; calling code is in charge of decising
+     *         whether to {@link Configuration#save() save} the configuration permanently or not.
+     * @throws IllegalArgumentException
+     *             if the given tile layer can't be added to any configuraion managed by this tile
+     *             layer dispatcher.
+     */
+    public synchronized Configuration addLayer(final TileLayer tl) throws IllegalArgumentException {
+        for (Configuration c : configs) {
+            if (c.canSave(tl)) {
+                c.addLayer(tl);
+                return c;
+            }
+        }
+        throw new IllegalArgumentException("No configuration found capable of saving " + tl);
+    }
+
+    /**
      * Replaces the given layer and returns the Layer's configuration, does not save the
      * configuration, the calling code shall do that if the change is to be made persistent.
      * 
      * @param tl
      * @throws IllegalArgumentException
      */
-    public synchronized Configuration modify(final TileLayer tl) throws IllegalArgumentException{
+    public synchronized Configuration modify(final TileLayer tl) throws IllegalArgumentException {
         Configuration config = getConfiguration(tl);
         config.modifyLayer(tl);
         return config;

@@ -464,4 +464,23 @@ public class GetCapabilitiesConfiguration implements Configuration {
     public void save() throws IOException {
         // silently do nothing
     }
+
+    /**
+     * @return {@code false}
+     * @see org.geowebcache.config.Configuration#canSave(org.geowebcache.layer.TileLayer)
+     */
+    public boolean canSave(TileLayer tl) {
+        return false;
+    }
+
+    /**
+     * @see org.geowebcache.config.Configuration#addLayer(org.geowebcache.layer.TileLayer)
+     */
+    public void addLayer(TileLayer tl) throws IllegalArgumentException {
+        if (tl == null) {
+            throw new NullPointerException();
+        }
+        throw new IllegalArgumentException(
+                "This is a read only configuration object, can't add tile layer " + tl.getName());
+    }
 }
