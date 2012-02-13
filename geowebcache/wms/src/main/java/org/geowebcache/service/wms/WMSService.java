@@ -17,8 +17,11 @@
  */
 package org.geowebcache.service.wms;
 
+import static org.geowebcache.grid.GridUtil.findBestMatchingGrid;
+
 import java.io.IOException;
 import java.nio.channels.Channels;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletOutputStream;
@@ -37,8 +40,6 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.layer.wms.WMSLayer;
-import org.geowebcache.layer.wms.WMSSourceHelper;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
@@ -147,12 +148,6 @@ public class WMSService extends Service {
             srs = SRS.getSRS(requestSrs);
         }
 
-        GridSubset gridSubset = tileLayer.getGridSubsetForSRS(srs);
-        if (gridSubset == null) {
-            throw new ServiceException("Unable to match requested SRS " + srs
-                    + " to those supported by layer");
-        }
-
         final BoundingBox bbox;
         {
             String requestBbox = paramValues.get("bbox");
@@ -171,14 +166,38 @@ public class WMSService extends Service {
         final int tileWidth = Integer.parseInt(values.get("width"));
         final int tileHeight = Integer.parseInt(values.get("height"));
 
+        final List<GridSubset> crsMatchingSubsets = tileLayer.getGridSubsetsForSRS(srs);
+        if (crsMatchingSubsets.isEmpty()) {
+            throw new ServiceException("Unable to match requested SRS " + srs
+                    + " to those supported by layer");
+        }
+
+        long[] tileIndexTarget = new long[3];
+        GridSubset gridSubset;
+        {
+            GridSubset bestMatch = findBestMatchingGrid(bbox, crsMatchingSubsets, tileWidth,
+                    tileHeight, tileIndexTarget);
+            if (bestMatch == null) {
+                // proceed as it used to be
+                gridSubset = crsMatchingSubsets.get(0);
+                tileIndexTarget = null;
+            } else {
+                gridSubset = bestMatch;
+            }
+        }
+        
         if (fullWMS) {
             // If we support full WMS we need to do a few tests to determine whether
             // this is a request that requires us to recombine tiles to respond.
             long[] tileIndex = null;
-            try {
-                tileIndex = gridSubset.closestIndex(bbox);
-            } catch (GridMismatchException gme) {
-                // Do nothing, the null is info enough
+            if (tileIndexTarget == null) {
+                try {
+                    tileIndex = gridSubset.closestIndex(bbox);
+                } catch (GridMismatchException gme) {
+                    // Do nothing, the null is info enough
+                }
+            } else {
+                tileIndex = tileIndexTarget;
             }
 
             if (tileIndex == null || gridSubset.getTileWidth() != tileWidth
@@ -192,7 +211,8 @@ public class WMSService extends Service {
             }
         }
 
-        long[] tileIndex = gridSubset.closestIndex(bbox);
+        long[] tileIndex = tileIndexTarget == null ? gridSubset.closestIndex(bbox)
+                : tileIndexTarget;
 
         gridSubset.checkTileDimensions(tileWidth, tileHeight);
 
