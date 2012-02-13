@@ -41,6 +41,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
@@ -274,7 +275,17 @@ public class TileBreeder implements ApplicationContextAware {
         String gridSetId = req.getGridSetId();
 
         if (gridSetId == null) {
-            gridSetId = tl.getGridSubsetForSRS(req.getSRS()).getName();
+            SRS srs = req.getSRS();
+            List<GridSubset> crsMatches = tl.getGridSubsetsForSRS(srs);
+            if (!crsMatches.isEmpty()) {
+                if (crsMatches.size() == 1) {
+                    gridSetId = crsMatches.get(0).getName();
+                } else {
+                    throw new IllegalArgumentException(
+                            "More than one GridSubet matches the requested SRS " + srs
+                                    + ". gridSetId must be specified");
+                }
+            }
         }
         if (gridSetId == null) {
             gridSetId = tl.getGridSubsets().iterator().next();

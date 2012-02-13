@@ -17,6 +17,7 @@
 package org.geowebcache.layer;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ import org.geowebcache.grid.GridMismatchException;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.GridUtil;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.io.ByteArrayResource;
@@ -250,12 +252,11 @@ public abstract class TileLayer {
     public abstract void releaseLayerLock();
 
     /**
-     * Whether the layer supports the given projection
+     * This methdod is deprecated, as a layer may be configured for more than one gridset with the
+     * same SRS.
      * 
-     * @param srs
-     *            Name of projection, for example "EPSG:4326"
-     * @return
-     * @throws GeoWebCacheException
+     * @deprecated use {@link #getGridSubsetsForSRS(SRS)} in combination with
+     *             {@link GridUtil#findBestMatchingGrid} instead
      */
     public GridSubset getGridSubsetForSRS(SRS srs) {
         for (String gridSet : getGridSubsets()) {
@@ -266,6 +267,26 @@ public abstract class TileLayer {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns an immutable list of all the layer's {@link GridSubset} whose {@link GridSet} has a
+     * SRS equal to {@code srs} (may be an alias), or the empty list of none matches.
+     */
+    public List<GridSubset> getGridSubsetsForSRS(SRS srs) {
+        List<GridSubset> matches = Collections.emptyList();
+
+        for (String gridSet : getGridSubsets()) {
+            GridSubset gridSubset = getGridSubset(gridSet);
+            SRS gridSetSRS = gridSubset.getSRS();
+            if (gridSetSRS.equals(srs)) {
+                if (matches.isEmpty()) {
+                    matches = new ArrayList<GridSubset>(2);
+                }
+                matches.add(gridSubset);
+            }
+        }
+        return matches.isEmpty() ? matches : Collections.unmodifiableList(matches);
     }
 
     /**
