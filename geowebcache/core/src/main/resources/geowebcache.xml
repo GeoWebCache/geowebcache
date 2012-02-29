@@ -77,9 +77,6 @@
           <gridSetName>EPSG:2163</gridSetName>
         </gridSubset>
       </gridSubsets>
-      <wmsUrl>
-        <string>http://demo.opengeo.org/geoserver/wms</string>
-      </wmsUrl>
       <parameterFilters>
         <stringParameterFilter>
           <key>STYLES</key>
@@ -92,6 +89,9 @@
           </values>
         </stringParameterFilter>
       </parameterFilters>
+      <wmsUrl>
+        <string>http://demo.opengeo.org/geoserver/wms</string>
+      </wmsUrl>
     </wmsLayer>
 
     <wmsLayer>
