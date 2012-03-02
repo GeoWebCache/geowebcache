@@ -88,6 +88,8 @@ public abstract class TileLayer {
      */
     public abstract boolean removeLayerListener(TileLayerListener listener);
 
+    public abstract String getId();
+    
     /**
      * Then name of the layer
      * 

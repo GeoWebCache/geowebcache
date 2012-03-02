@@ -75,12 +75,20 @@ public interface Configuration {
     public boolean isRuntimeStatsEnabled();
 
     /**
-     * @param layerIdent
+     * @param layerName
      *            the layer name
      * @return the layer named {@code layerIdent} or {@code null} if no such layer exists in this
      *         configuration
      */
-    public TileLayer getTileLayer(String layerIdent);
+    public TileLayer getTileLayer(String layerName);
+
+    /**
+     * @param layerId
+     *            the layer identifier
+     * @return the layer identified by {@code layerId} or {@code null} if no such layer exists in
+     *         this configuration
+     */
+    public TileLayer getTileLayerById(String layerId);
 
     public int getTileLayerCount();
 
@@ -122,4 +130,6 @@ public interface Configuration {
      *             example, a missing or duplicated name or id, etc).
      */
     public void addLayer(TileLayer tl) throws IllegalArgumentException;
+
+    public boolean containsLayer(String tileLayerId);
 }

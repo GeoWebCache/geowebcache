@@ -958,8 +958,23 @@ public class XMLConfiguration implements Configuration {
     /**
      * @see org.geowebcache.config.Configuration#getTileLayer(java.lang.String)
      */
-    public TileLayer getTileLayer(String layerIdent) {
-        return layers.get(layerIdent);
+    public TileLayer getTileLayer(String layerName) {
+        return layers.get(layerName);
+    }
+
+    /**
+     * @see org.geowebcache.config.Configuration#getTileLayerById(String)
+     */
+    public TileLayer getTileLayerById(String layerId) {
+        // this configuration does not differentiate between identifier and identity yet
+        return layers.get(layerId);
+    }
+
+    /**
+     * @see org.geowebcache.config.Configuration#containsLayer(java.lang.String)
+     */
+    public boolean containsLayer(String layerId) {
+        return layers.containsKey(layerId);
     }
 
     /**
