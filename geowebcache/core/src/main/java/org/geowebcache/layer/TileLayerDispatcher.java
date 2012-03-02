@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -86,22 +85,22 @@ public class TileLayerDispatcher implements DisposableBean {
     }
 
     /**
-     * Returns the layer named after the {@code layerIdent} parameter.
+     * Returns the layer named after the {@code layerName} parameter.
      * 
      * @throws GeoWebCacheException
      *             if no such layer exists
      */
-    public TileLayer getTileLayer(final String layerIdent) throws GeoWebCacheException {
+    public TileLayer getTileLayer(final String layerName) throws GeoWebCacheException {
 
         for (int i = 0; i < configs.size(); i++) {
             Configuration configuration = configs.get(i);
-            TileLayer layer = configuration.getTileLayer(layerIdent);
+            TileLayer layer = configuration.getTileLayer(layerName);
             if (layer != null) {
                 return layer;
             }
         }
         throw new GeoWebCacheException("Thread " + Thread.currentThread().getId()
-                + " Unknown layer " + layerIdent + ". Check the logfiles,"
+                + " Unknown layer " + layerName + ". Check the logfiles,"
                 + " it may not have loaded properly.");
     }
 
@@ -229,10 +228,12 @@ public class TileLayerDispatcher implements DisposableBean {
      * @return the Configuration from which the layer has been removed, or {@code null} if no
      *         configuration contained such a layer
      */
-    public Configuration removeLayer(final String layerName) throws IllegalArgumentException {
-        Configuration config = getConfiguration(layerName);
-        if (config.removeLayer(layerName)) {
-            return config;
+    public synchronized Configuration removeLayer(final String layerName)
+            throws IllegalArgumentException {
+        for (Configuration config : configs) {
+            if (config.removeLayer(layerName)) {
+                return config;
+            }
         }
         return null;
     }
@@ -274,19 +275,17 @@ public class TileLayerDispatcher implements DisposableBean {
 
     public Configuration getConfiguration(TileLayer tl) throws IllegalArgumentException {
         Assert.notNull(tl, "layer is null");
-        return getConfiguration(tl.getName());
+        return getConfiguration(tl.getId());
     }
 
-    public Configuration getConfiguration(final String tileLayerName)
-            throws IllegalArgumentException {
-        Assert.notNull(tileLayerName, "tileLayerName is null");
+    public Configuration getConfiguration(final String tileLayerId) throws IllegalArgumentException {
+        Assert.notNull(tileLayerId, "tileLayerId is null");
         for (Configuration c : configs) {
-            if (null != c.getTileLayer(tileLayerName)) {
+            if (c.containsLayer(tileLayerId)) {
                 return c;
             }
         }
-        throw new IllegalArgumentException("No configuration found containing layer "
-                + tileLayerName);
+        throw new IllegalArgumentException("No configuration found containing layer " + tileLayerId);
     }
 
     /**

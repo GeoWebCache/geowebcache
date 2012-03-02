@@ -430,10 +430,25 @@ public class GetCapabilitiesConfiguration implements Configuration {
     }
 
     /**
+     * @see org.geowebcache.config.Configuration#containsLayer(java.lang.String)
+     */
+    public boolean containsLayer(String tileLayerId) {
+        return getTileLayerById(tileLayerId) != null;
+    }
+
+    /**
+     * @see org.geowebcache.config.Configuration#getTileLayerById(java.lang.String)
+     */
+    public TileLayer getTileLayerById(String layerId) {
+        // this configuration does not differentiate between layer identifier and identity
+        return getTileLayer(layerId);
+    }
+
+    /**
      * @see org.geowebcache.config.Configuration#getTileLayer(java.lang.String)
      */
-    public TileLayer getTileLayer(String layerIdent) {
-        return layers.get(layerIdent);
+    public TileLayer getTileLayer(String layerName) {
+        return layers.get(layerName);
     }
 
     /**
@@ -483,4 +498,5 @@ public class GetCapabilitiesConfiguration implements Configuration {
         throw new IllegalArgumentException(
                 "This is a read only configuration object, can't add tile layer " + tl.getName());
     }
+
 }

@@ -139,6 +139,11 @@ public abstract class AbstractTileLayer extends TileLayer {
         }
     }
 
+    @Override
+    public String getId(){
+        return getName();
+    }
+    
     /**
      * Then name of the layer
      * 
