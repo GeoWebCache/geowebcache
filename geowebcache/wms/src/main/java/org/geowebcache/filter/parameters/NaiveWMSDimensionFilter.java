@@ -89,4 +89,9 @@ public class NaiveWMSDimensionFilter extends ParameterFilter implements WMSDimen
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
+
+    @Override
+    public NaiveWMSDimensionFilter clone() {
+        return new NaiveWMSDimensionFilter(dimension, extent);
+    }
 }

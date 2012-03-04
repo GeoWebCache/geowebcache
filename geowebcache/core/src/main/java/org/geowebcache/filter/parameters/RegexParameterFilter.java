@@ -16,6 +16,7 @@
  */
 package org.geowebcache.filter.parameters;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,5 +71,14 @@ public class RegexParameterFilter extends ParameterFilter {
      */
     public void setRegex(String regex) {
         this.regex = regex;
+    }
+
+    @Override
+    public RegexParameterFilter clone() {
+        RegexParameterFilter clone = new RegexParameterFilter();
+        clone.setDefaultValue(getDefaultValue());
+        clone.setKey(getKey());
+        clone.regex = regex;
+        return clone;
     }
 }

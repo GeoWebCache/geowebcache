@@ -110,4 +110,15 @@ public class FloatParameterFilter extends ParameterFilter {
 
         return ret;
     }
+
+    @Override
+    public FloatParameterFilter clone() {
+        FloatParameterFilter clone = new FloatParameterFilter();
+        clone.setDefaultValue(getDefaultValue());
+        clone.setKey(getKey());
+        if (values != null) {
+            clone.values = new ArrayList<Float>(values);
+        }
+        return clone;
+    }
 }
