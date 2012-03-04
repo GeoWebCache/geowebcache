@@ -30,7 +30,7 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 
-public class XMLGridSubset implements Serializable {
+public class XMLGridSubset implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 2758612849329765806L;
 
@@ -55,8 +55,8 @@ public class XMLGridSubset implements Serializable {
         // nothing to do
         readResolve();
     }
-    
-    private XMLGridSubset readResolve(){
+
+    private XMLGridSubset readResolve() {
         return this;
     }
 
@@ -83,6 +83,11 @@ public class XMLGridSubset implements Serializable {
         setZoomStop(sset.getZoomStop());
         setMinCachedLevel(sset.getMinCachedZoom());
         setMaxCachedLevel(sset.getMaxCachedZoom());
+    }
+
+    @Override
+    public XMLGridSubset clone() {
+        return new XMLGridSubset(this);
     }
 
     public GridSubset getGridSubSet(GridSetBroker gridSetBroker) {

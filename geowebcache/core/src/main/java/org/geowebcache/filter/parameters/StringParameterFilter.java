@@ -70,4 +70,15 @@ public class StringParameterFilter extends ParameterFilter {
     public boolean applies(String parameterValue) {
         return getLegalValues().contains(parameterValue);
     }
+
+    @Override
+    public StringParameterFilter clone() {
+        StringParameterFilter clone = new StringParameterFilter();
+        clone.setDefaultValue(getDefaultValue());
+        clone.setKey(getKey());
+        if (values != null) {
+            clone.values = new ArrayList<String>(values);
+        }
+        return clone;
+    }
 }

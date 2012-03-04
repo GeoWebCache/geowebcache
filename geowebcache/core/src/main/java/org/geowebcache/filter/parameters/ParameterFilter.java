@@ -24,7 +24,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-public abstract class ParameterFilter implements Serializable {
+public abstract class ParameterFilter implements Serializable, Cloneable {
 
     private static final long serialVersionUID = -531248230951783132L;
 
@@ -44,6 +44,9 @@ public abstract class ParameterFilter implements Serializable {
         return defaultValue;
     }
 
+    @Override
+    public abstract ParameterFilter clone();
+    
     /**
      * Checks whether a given parameter value applies to this filter
      * 
