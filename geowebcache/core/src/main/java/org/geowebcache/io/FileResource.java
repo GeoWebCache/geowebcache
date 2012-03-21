@@ -23,10 +23,10 @@ public class FileResource implements Resource {
      * @see org.geowebcache.io.Resource#getSize()
      */
     public long getSize() {
-        if (file.exists()) {
-            return file.length();
-        }
-        return -1L;
+        // avoid a (relatively expensive) call to File.exists(), file.length() returns 0 if the file
+        // doesn't exist anyway
+        long size = file.length();
+        return size == 0 ? -1 : size;
     }
 
     public long transferTo(WritableByteChannel target) throws IOException {
