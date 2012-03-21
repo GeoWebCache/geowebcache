@@ -29,8 +29,16 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Arrays;
 
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp.ConnectionFactory;
+import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.dbcp.PoolableConnectionFactory;
+import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.pool.impl.GenericObjectPool;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
@@ -39,7 +47,6 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.StorageObject;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
-import org.h2.jdbcx.JdbcConnectionPool;
 
 /**
  * Wrapper class for the JDBC object, used by JDBCMetaBackend
@@ -87,7 +94,7 @@ class JDBCMBWrapper {
 
     private int maxConnections;
 
-    private JdbcConnectionPool connPool;
+    private volatile DataSource connPool;
 
     protected JDBCMBWrapper(String driverClass, String jdbcString, String username,
             String password, boolean useConnectionPooling, int maxConnections)
@@ -174,9 +181,11 @@ class JDBCMBWrapper {
         Connection conn;
         if (useConnectionPooling) {
             if (connPool == null) {
-                connPool = JdbcConnectionPool.create(jdbcString, username, password == null ? ""
-                        : password);
-                connPool.setMaxConnections(maxConnections);
+                synchronized (this) {
+                    if (connPool == null) {
+                        connPool = createDataSource();
+                    }
+                }
             }
             conn = connPool.getConnection();
         } else {
@@ -184,6 +193,39 @@ class JDBCMBWrapper {
         }
         conn.setAutoCommit(true);
         return conn;
+    }
+
+    private DataSource createDataSource() {
+        // connPool = JdbcConnectionPool.create(jdbcString, username, password == null ? ""
+        // : password);
+        // connPool.setMaxConnections(maxConnections);
+
+        // ObjectPool that serves as the actual pool of connections.
+        GenericObjectPool.Config config = new GenericObjectPool.Config();
+        config.maxActive = maxConnections;
+        config.maxIdle = (int) Math.ceil(maxConnections * 0.5);
+        config.minIdle = (int) Math.min(10, Math.ceil(maxConnections * 0.1));
+        config.maxWait = 1000;
+
+        ObjectPool connectionPool = new GenericObjectPool(null, config);
+
+        // ConnectionFactory that the pool will use to create Connections.
+
+        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(jdbcString,
+                username, password == null ? "" : password);
+
+        // PoolableConnectionFactory, wraps the "real" Connections
+        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(
+                connectionFactory, connectionPool, null, null, false, true);
+        connectionPool.setFactory(poolableConnectionFactory);
+
+        //
+        // Finally, we create the PoolingDriver itself,
+        // passing in the object pool we created.
+        //
+        PoolingDataSource poolingDataSource = new PoolingDataSource(connectionPool);
+
+        return poolingDataSource;
     }
 
     private void checkTables() throws ConfigurationException, SQLException {
@@ -633,10 +675,10 @@ class JDBCMBWrapper {
                 try {
                     closed = conn.isClosed();
                 } catch (SQLException e) {
-                    log.error(e);
+                    log.debug("It's OK, db called for shutdown previously", e);
                 }
                 if (!closed) {
-                    close(conn);
+                    log.error("Connection used for metastore db shutdown should be closed at this point");
                 }
             }
         }
