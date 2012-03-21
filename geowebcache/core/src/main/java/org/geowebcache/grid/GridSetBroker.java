@@ -72,8 +72,9 @@ public class GridSetBroker {
                 + " grid set for Spherical Mercator / GoogleMapsCompatible");
 
         WORLD_EPSG3857 = GridSetFactory.createGridSet(mercatorName, googleMapsCompatibleSRS,
-                BoundingBox.WORLD3857, false, googleMapsCompatibleResolutions(), null, 1.0D,
+                BoundingBox.WORLD3857, false, commonPractice900913Resolutions(), null, 1.0D,
                 GridSetFactory.DEFAULT_PIXEL_SIZE_METER, null, 256, 256, false);
+
         WORLD_EPSG3857
                 .setDescription("This well-known scale set has been defined to be compatible with Google Maps and"
                         + " Microsoft Live Map projections and zoom levels. Level 0 allows representing the whole "
@@ -81,6 +82,20 @@ public class GridSetBroker {
                         + "of 256x256 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
 
         gridSets.put(WORLD_EPSG3857.getName(), WORLD_EPSG3857);
+
+        log.debug("Adding WMTS 1.0 GoogleMapsCompatible Gridset");
+        GridSet googleMapsCompatible = GridSetFactory.createGridSet("GoogleMapsCompatible",
+                googleMapsCompatibleSRS, BoundingBox.WORLD3857, false,
+                googleMapsCompatibleResolutions(), null, 1.0D,
+                GridSetFactory.DEFAULT_PIXEL_SIZE_METER, null, 256, 256, false);
+
+        googleMapsCompatible
+                .setDescription("This well-known scale set has been defined to be compatible with Google Maps and"
+                        + " Microsoft Live Map projections and zoom levels. Level 0 allows representing the whole "
+                        + "world in a single 256x256 pixels. The next level represents the whole world in 2x2 tiles "
+                        + "of 256x256 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
+
+        gridSets.put(googleMapsCompatible.getName(), googleMapsCompatible);
 
         log.debug("Adding GlobalCRS84Pixel");
         GridSet GlobalCRS84Pixel = GridSetFactory.createGridSet("GlobalCRS84Pixel",
@@ -222,14 +237,43 @@ public class GridSetBroker {
     }
 
     private double[] googleMapsCompatibleResolutions() {
-        double[] scalesCRS84QuadScaleResolutions = { 156543.0339280410, 78271.51696402048,
-                39135.75848201023, 19567.87924100512, 9783.939620502561, 4891.969810251280,
-                2445.984905125640, 1222.992452562820, 611.4962262814100, 305.7481131407048,
-                152.8740565703525, 76.43702828517624, 38.21851414258813, 19.10925707129406,
-                9.554628535647032, 4.777314267823516, 2.388657133911758, 1.194328566955879,
-                0.5971642834779395, 0.29858214173896974, 0.14929107086948487
+        double[] scalesCRS84QuadScaleResolutions = { //
+        156543.0339280410, //
+                78271.51696402048, //
+                39135.75848201023, //
+                19567.87924100512, //
+                9783.939620502561, //
+                4891.969810251280, //
+                2445.984905125640, //
+                1222.992452562820, //
+                611.4962262814100, //
+                305.7481131407048, //
+                152.8740565703525, //
+                76.43702828517624, //
+                38.21851414258813, //
+                19.10925707129406, //
+                9.554628535647032, //
+                4.777314267823516, //
+                2.388657133911758, //
+                1.194328566955879, //
+                0.5971642834779395, //
+                0.29858214173896974, //
+                0.14929107086948487
 
         };
         return scalesCRS84QuadScaleResolutions;
+    }
+
+    private double[] commonPractice900913Resolutions() {
+        return new double[] { //
+        156543.03390625, 78271.516953125, 39135.7584765625, 19567.87923828125, 9783.939619140625,
+                4891.9698095703125, 2445.9849047851562, 1222.9924523925781, 611.4962261962891,
+                305.74811309814453, 152.87405654907226, 76.43702827453613, 38.218514137268066,
+                19.109257068634033, 9.554628534317017, 4.777314267158508, 2.388657133579254,
+                1.194328566789627, 0.5971642833948135, 0.29858214169740677, 0.14929107084870338,
+                0.07464553542435169, 0.037322767712175846, 0.018661383856087923,
+                0.009330691928043961, 0.004665345964021981, 0.0023326729820109904,
+                0.0011663364910054952, 5.831682455027476E-4, 2.915841227513738E-4,
+                1.457920613756869E-4 };
     }
 }
