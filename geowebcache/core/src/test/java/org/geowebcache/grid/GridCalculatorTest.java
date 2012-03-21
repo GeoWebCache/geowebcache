@@ -104,8 +104,8 @@ public class GridCalculatorTest extends TestCase {
         GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857, bbox, 0,
                 10);
 
-        long[][] solution = { { 0, 0, 0, 0, 0 }, { 0, 0, 1, 1, 1 }, { 1, 1, 3, 3, 2 },
-                { 3, 3, 7, 7, 3 }, { 7, 7, 15, 15, 4 } };
+        long[][] solution = { { 0, 0, 0, 0, 0 }, { 1, 1, 1, 1, 1 }, { 2, 2, 3, 3, 2 },
+                { 4, 4, 7, 7, 3 }, { 8, 8, 15, 15, 4 } };
 
         for (int i = 0; i < solution.length; i++) {
             long[] bounds = grid.getCoverage(i);
@@ -124,9 +124,9 @@ public class GridCalculatorTest extends TestCase {
         GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857, bbox, 0,
                 10);
 
-        long[][] solution = { { 0, 0, 0, 0, 0 }, { 0, 0, 1, 1, 1 }, { 1, 1, 3, 3, 2 },
-                { 3, 3, 7, 7, 3 }, { 7, 7, 15, 15, 4 }, { 15, 15, 31, 31, 5 },
-                { 31, 31, 63, 63, 6 } };
+        long[][] solution = { { 0, 0, 0, 0, 0 }, { 1, 1, 1, 1, 1 }, { 2, 2, 3, 3, 2 },
+                { 4, 4, 7, 7, 3 }, { 8, 8, 15, 15, 4 }, { 16, 16, 31, 31, 5 },
+                { 32, 32, 63, 63, 6 } };
 
         for (int i = 0; i < solution.length; i++) {
             long[] bounds = grid.getCoverage(i);
