@@ -101,7 +101,7 @@ public class GridSet {
 
     protected BoundingBox boundsFromIndex(long[] tileIndex) {
         final int tileZ = (int) tileIndex[2];
-        Grid grid = getGridLevels()[tileZ];
+        Grid grid = getGrid(tileZ);
 
         final long tileX = tileIndex[0];
         final long tileY;

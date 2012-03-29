@@ -10,6 +10,7 @@ import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.webapp.WebAppContext;
+import org.mortbay.thread.QueuedThreadPool;
 
 /**
  * Jetty starter, will run GeoWebCache inside the Jetty web container.<br>
@@ -40,6 +41,12 @@ public class Start {
             wah.setWar("src/main/webapp");
             jettyServer.setHandler(wah);
             wah.setTempDirectory(new File("target/work"));
+
+            // Use this to set a limit on the number of threads used to respond requests
+             QueuedThreadPool tp = new QueuedThreadPool();
+             tp.setMinThreads(50);
+             tp.setMaxThreads(50);
+             conn.setThreadPool(tp);
 
             jettyServer.start();
 

@@ -25,6 +25,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,9 @@ import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.demo.Demo;
 import org.geowebcache.filter.request.RequestFilterException;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
@@ -476,6 +479,17 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * Happy ending, sets the headers and writes the response back to the client.
      */
     private void writeData(ConveyorTile tile) throws IOException {
+        HttpServletResponse servletResp = tile.servletResp;
+        servletResp.addHeader("geowebcache-cache-result", String.valueOf(tile.getCacheResult()));
+        servletResp.addHeader("geowebcache-tile-index", Arrays.toString(tile.getTileIndex()));
+        long[] tileIndex = tile.getTileIndex();
+        TileLayer layer = tile.getLayer();
+        GridSubset gridSubset = layer.getGridSubset(tile.getGridSetId());
+        BoundingBox tileBounds = gridSubset.boundsFromIndex(tileIndex);
+        servletResp.addHeader("geowebcache-tile-bounds", tileBounds.toString());
+        servletResp.addHeader("geowebcache-gridset", gridSubset.getName());
+        servletResp.addHeader("geowebcache-crs", gridSubset.getSRS().toString());
+        
         if (tile.getLayer().useETags()) {
             String ifNoneMatch = tile.servletReq.getHeader("If-None-Match");
             String hexTag = Long.toHexString(tile.getTSCreated());

@@ -28,6 +28,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -46,6 +48,7 @@ import org.geowebcache.io.Resource;
 import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.layer.GridLocObj;
+import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
@@ -461,11 +464,6 @@ public class WMSLayer extends AbstractTileLayer {
         return false;
     }
 
-    public void setTileIndexHeader(ConveyorTile tile) {
-        tile.servletResp.addHeader("geowebcache-tile-index", Arrays.toString(tile.getTileIndex()));
-        tile.servletResp.addHeader("geowebcache-cache-result", String.valueOf(tile.getCacheResult()));
-    }
-
     public ConveyorTile doNonMetatilingRequest(ConveyorTile tile) throws GeoWebCacheException {
         tile.setTileLayer(this);
 
@@ -487,7 +485,6 @@ public class WMSLayer extends AbstractTileLayer {
 
         if (tile.servletResp != null) {
             setExpirationHeader(tile.servletResp, (int) tile.getTileIndex()[2]);
-            setTileIndexHeader(tile);
         }
 
         return tile;
