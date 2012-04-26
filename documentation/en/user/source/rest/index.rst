@@ -63,7 +63,8 @@ document. These codes are described in detail by the `http specification <http:/
 
 .. toctree::
    :maxdepth: 1
-
+   
+   layers.rst
    seed.rst
    diskquota.rst
 
