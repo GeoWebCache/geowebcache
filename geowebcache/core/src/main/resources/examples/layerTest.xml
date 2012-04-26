@@ -1,78 +1,15 @@
-<wmslayer>
-  <name>topp:states</name>
+<wmsLayer>
+  <name>layer1</name>
   <mimeFormats>
     <string>image/png</string>
-    <string>image/jpeg</string>
-    <string>application/vnd.google-earth.kml+xml</string>
   </mimeFormats>
-  <grids>
-    <entry>
-      <SRS>
-        <number>900913</number>
-      </SRS>
-      <grid>
-        <srs>
-          <number>900913</number>
-        </srs>
-        <dataBounds>
-          <coords>
-            <double>-1.3885038381028108E7</double>
-            <double>2870337.130394128</double>
-            <double>-7455049.488144671</double>
-            <double>6338174.0548753375</double>
-          </coords>
-        </dataBounds>
-        <gridBounds>
-          <coords>
-            <double>-2.003750834E7</double>
-            <double>-2.003750834E7</double>
-            <double>2.003750834E7</double>
-            <double>2.003750834E7</double>
-          </coords>
-        </gridBounds>
-      </grid>
-    </entry>
-    <entry>
-      <SRS>
-        <number>4326</number>
-      </SRS>
-      <grid>
-        <srs>
-          <number>4326</number>
-        </srs>
-        <dataBounds>
-          <coords>
-            <double>-124.731422</double>
-            <double>24.955967</double>
-            <double>-66.969849</double>
-            <double>49.371735</double>
-          </coords>
-        </dataBounds>
-        <gridBounds>
-          <coords>
-            <double>-180.0</double>
-            <double>-90.0</double>
-            <double>180.0</double>
-            <double>90.0</double>
-          </coords>
-        </gridBounds>
-      </grid>
-    </entry>
-
-  </grids>
+  <gridSubsets>
+    <gridSubset>
+      <gridSetName>EPSG:900913</gridSetName>
+    </gridSubset>
+  </gridSubsets>
   <wmsUrl>
-    <string>http://sigma.openplans.org/geoserver/wms</string>
+    <string>http://localhost:8080/geoserver/wms</string>
   </wmsUrl>
   <wmsLayers>topp:states</wmsLayers>
-  <wmsStyles>population</wmsStyles>
-  <metaWidthHeight>
-    <int>3</int>
-    <int>3</int>
-  </metaWidthHeight>
-  <tiled>false</tiled>
-  <transparent>true</transparent>
-  <bgColor></bgColor>
-  <palette></palette>
-  <vendorParameters>format_options=regionateby:auto</vendorParameters>
-</wmslayer>
-		
+</wmsLayer>
