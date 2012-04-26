@@ -78,8 +78,6 @@ public class TileLayerRestlet extends GWCRestlet {
                     throw new RestletException("Method not allowed",
                             Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
                 }
-
-                layerDispatcher.reInit();
             }
         } catch (RestletException re) {
             response.setEntity(re.getRepresentation());
@@ -154,8 +152,6 @@ public class TileLayerRestlet extends GWCRestlet {
                     + "Maybe it was loaded from another source, or you're trying to add a new "
                     + "layer and need to do an HTTP PUT ?", Status.CLIENT_ERROR_BAD_REQUEST);
         }
-
-        layerDispatcher.reInit();
     }
 
     /**
@@ -183,7 +179,6 @@ public class TileLayerRestlet extends GWCRestlet {
             throw new RestletException("Layer with name " + tl.getName() + " already exists, "
                     + "use POST if you want to replace it.", Status.CLIENT_ERROR_BAD_REQUEST);
         }
-        layerDispatcher.reInit();
     }
 
     /**
