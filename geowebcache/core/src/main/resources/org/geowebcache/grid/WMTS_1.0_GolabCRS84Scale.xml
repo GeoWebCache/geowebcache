@@ -1,0 +1,48 @@
+<gridSet>
+  <name>GlobalCRS84Scale</name>
+  <description>This well-known scale set has been defined for global cartographic products. 
+      Rounded scales have been chosen for intuitive cartographic representation of vector data. 
+      Scale denominator is only accurate near the equator.
+  </description>
+  <srs>
+    <number>4326</number>
+  </srs>
+  <extent>
+    <coords>
+      <double>-180.0</double>
+      <double>-90.0</double>
+      <double>180.0</double>
+      <double>90.0</double>
+    </coords>
+  </extent>
+  <alignTopLeft>true</alignTopLeft>
+  <scaleDenominators>
+    <double>5.0E8</double>
+    <double>2.5E8</double>
+    <double>1.0E8</double>
+    <double>5.0E7</double>
+    <double>2.5E7</double>
+    <double>1.0E7</double>
+    <double>5000000.0</double>
+    <double>2500000.0</double>
+    <double>1000000.0</double>
+    <double>500000.0</double>
+    <double>250000.0</double>
+    <double>100000.0</double>
+    <double>50000.0</double>
+    <double>25000.0</double>
+    <double>10000.0</double>
+    <double>5000.0</double>
+    <double>2500.0</double>
+    <double>1000.0</double>
+    <double>500.0</double>
+    <double>250.0</double>
+    <double>100.0</double>
+  </scaleDenominators>
+  <metersPerUnit>111319.49079327358</metersPerUnit>
+  <pixelSize>2.8E-4</pixelSize>
+  <tileHeight>256</tileHeight>
+  <tileWidth>256</tileWidth>
+  <yCoordinateFirst>false</yCoordinateFirst>
+</gridSet>
+<gridSet>

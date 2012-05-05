@@ -1,0 +1,63 @@
+<gridSet>
+  <name>EPSG:900913</name>
+  <description>This well-known scale set has been defined to be compatible with Google Maps and Microsoft Live Map projections and zoom levels. 
+      Level 0 allows representing the whole world in a single 256x256 pixels. 
+      The next level represents the whole world in 2x2 tiles of 256x256 pixels and so on in powers of 2. 
+      Scale denominator is only accurate near the equator.
+  </description>
+  <srs>
+    <number>900913</number>
+  </srs>
+  <extent>
+    <coords>
+      <double>-2.003750834E7</double>
+      <double>-2.003750834E7</double>
+      <double>2.003750834E7</double>
+      <double>2.003750834E7</double>
+    </coords>
+  </extent>
+  <alignTopLeft>false</alignTopLeft>
+  <resolutions>
+    <double>156543.03390625</double>
+    <double>78271.516953125</double>
+    <double>39135.7584765625</double>
+    <double>19567.87923828125</double>
+    <double>9783.939619140625</double>
+    <double>4891.9698095703125</double>
+    <double>2445.9849047851562</double>
+    <double>1222.9924523925781</double>
+    <double>611.4962261962891</double>
+    <double>305.74811309814453</double>
+    <double>152.87405654907226</double>
+    <double>76.43702827453613</double>
+    <double>38.218514137268066</double>
+    <double>19.109257068634033</double>
+    <double>9.554628534317017</double>
+    <double>4.777314267158508</double>
+    <double>2.388657133579254</double>
+    <double>1.194328566789627</double>
+    <double>0.5971642833948135</double>
+    <double>0.2985821416974068</double>
+    <double>0.1492910708487034</double>
+    <double>0.0746455354243517</double>
+    <double>0.0373227677121758</double>
+    <double>0.0186613838560879</double>
+    <double>0.009330691928044</double>
+    <!--
+    By default we include zoom levels 0-24, which is up to close to 1mm per pixel.
+    Here are a couple more ones if you need higher resolution. Beware depending on
+    the spatial extent of your dataset, your cache may grow to unmanageable size though. 
+    <double>0.004665345964022</double>
+    <double>0.002332672982011</double>
+    <double>0.0011663364910055</double>
+    <double>5.831682455027E-4</double>
+    <double>2.915841227514E-4</double>
+    <double>1.457920613757E-4</double>
+     -->
+  </resolutions>
+  <metersPerUnit>1.0</metersPerUnit>
+  <pixelSize>2.8E-4</pixelSize>
+  <tileHeight>256</tileHeight>
+  <tileWidth>256</tileWidth>
+  <yCoordinateFirst>false</yCoordinateFirst>
+</gridSet>

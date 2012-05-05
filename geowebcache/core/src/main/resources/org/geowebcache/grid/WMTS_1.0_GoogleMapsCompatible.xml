@@ -1,0 +1,48 @@
+<gridSet>
+  <name>GoogleMapsCompatible</name>
+  <description>This well-known scale set has been defined to be compatible with Google Maps and Microsoft Live Map projections and zoom levels. 
+      Level 0 allows representing the whole world in a single 256x256 pixels. 
+      The next level represents the whole world in 2x2 tiles of 256x256 pixels and so on in powers of 2. 
+      Scale denominator is only accurate near the equator.
+  </description>
+  <srs>
+    <number>900913</number>
+  </srs>
+  <extent>
+    <coords>
+      <double>-2.003750834E7</double>
+      <double>-2.003750834E7</double>
+      <double>2.003750834E7</double>
+      <double>2.003750834E7</double>
+    </coords>
+  </extent>
+  <alignTopLeft>false</alignTopLeft>
+  <resolutions>
+    <double>156543.033928041</double>
+    <double>78271.51696402048</double>
+    <double>39135.75848201023</double>
+    <double>19567.87924100512</double>
+    <double>9783.93962050256</double>
+    <double>4891.96981025128</double>
+    <double>2445.98490512564</double>
+    <double>1222.99245256282</double>
+    <double>611.49622628141</double>
+    <double>305.7481131407048</double>
+    <double>152.8740565703525</double>
+    <double>76.43702828517624</double>
+    <double>38.21851414258813</double>
+    <double>19.10925707129406</double>
+    <double>9.554628535647032</double>
+    <double>4.777314267823516</double>
+    <double>2.388657133911758</double>
+    <double>1.194328566955879</double>
+    <double>0.5971642834779395</double>
+    <double>0.2985821417389697</double>
+    <double>0.1492910708694849</double>
+  </resolutions>
+  <metersPerUnit>1.0</metersPerUnit>
+  <pixelSize>2.8E-4</pixelSize>
+  <tileHeight>256</tileHeight>
+  <tileWidth>256</tileWidth>
+  <yCoordinateFirst>false</yCoordinateFirst>
+</gridSet>

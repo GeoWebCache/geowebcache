@@ -1,0 +1,46 @@
+<gridSet>
+  <name>GlobalCRS84Pixel</name>
+  <description>This well-known scale set has been defined for global cartographic products. 
+      Rounded pixel sizes have been chosen for intuitive cartographic representation of raster data. 
+      Some values have been chosen to coincide with original pixel size of commonly used globalproducts 
+      like STRM (1&quot; and 3&quot;), GTOPO (30&quot;) or ETOPO (2&apos; and 5&apos;). 
+      Scale denominatorand approximated pixel size in meters are only accurate near the equator.
+  </description>
+  <srs>
+    <number>4326</number>
+  </srs>
+  <extent>
+    <coords>
+      <double>-180.0</double>
+      <double>-90.0</double>
+      <double>180.0</double>
+      <double>90.0</double>
+    </coords>
+  </extent>
+  <alignTopLeft>true</alignTopLeft>
+  <resolutions>
+    <double>2.0</double>
+    <double>1.0</double>
+    <double>0.5</double>
+    <double>0.3333333333333333</double>
+    <double>0.1666666666666667</double>
+    <double>0.0833333333333333</double>
+    <double>0.0333333333333333</double>
+    <double>0.0166666666666667</double>
+    <double>0.0083333333333333</double>
+    <double>0.0041666666666667</double>
+    <double>0.0013888888888889</double>
+    <double>8.333333333333E-4</double>
+    <double>2.777777777778E-4</double>
+    <double>1.388888888889E-4</double>
+    <double>8.33333333333E-5</double>
+    <double>2.77777777778E-5</double>
+    <double>8.3333333333E-6</double>
+    <double>2.7777777778E-6</double>
+  </resolutions>
+  <metersPerUnit>111319.49079327358</metersPerUnit>
+  <pixelSize>2.8E-4</pixelSize>
+  <tileHeight>256</tileHeight>
+  <tileWidth>256</tileWidth>
+  <yCoordinateFirst>false</yCoordinateFirst>
+</gridSet>

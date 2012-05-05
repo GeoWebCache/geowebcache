@@ -1,0 +1,47 @@
+<gridSet>
+  <name>GoogleCRS84Quad</name>
+  <description>This well-known scale set has been defined to allow quadtree pyramids in CRS84. 
+      Level 0 allows representing the whole world in a single 256x256 pixels (where the first 64 and 
+      last 64 lines of the tile are left blank). 
+      The next level represents the whole world in 2x2 tiles of 256x256 pixels and so on in powers of 2. 
+      Scale denominator is only accurate near the equator.
+  </description>
+  <srs>
+    <number>4326</number>
+  </srs>
+  <extent>
+    <coords>
+      <double>-180.0</double>
+      <double>-90.0</double>
+      <double>180.0</double>
+      <double>90.0</double>
+    </coords>
+  </extent>
+  <alignTopLeft>true</alignTopLeft>
+  <scaleDenominators>
+    <double>5.590822640287178E8</double>
+    <double>2.795411320143589E8</double>
+    <double>1.397705660071794E8</double>
+    <double>6.988528300358972E7</double>
+    <double>3.494264150179486E7</double>
+    <double>1.747132075089743E7</double>
+    <double>8735660.375448715</double>
+    <double>4367830.187724357</double>
+    <double>2183915.093862179</double>
+    <double>1091957.546931089</double>
+    <double>545978.7734655447</double>
+    <double>272989.3867327723</double>
+    <double>136494.6933663862</double>
+    <double>68247.34668319309</double>
+    <double>34123.67334159654</double>
+    <double>17061.83667079827</double>
+    <double>8530.918335399136</double>
+    <double>4265.459167699568</double>
+    <double>2132.729583849784</double>
+  </scaleDenominators>
+  <metersPerUnit>111319.49079327358</metersPerUnit>
+  <pixelSize>2.8E-4</pixelSize>
+  <tileHeight>256</tileHeight>
+  <tileWidth>256</tileWidth>
+  <yCoordinateFirst>false</yCoordinateFirst>
+</gridSet>
