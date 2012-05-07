@@ -61,6 +61,7 @@ public class TileLayerRestlet extends GWCRestlet {
 
     private TileLayerDispatcher layerDispatcher;
 
+    @Override
     public void handle(Request request, Response response) {
         Method met = request.getMethod();
         try {
