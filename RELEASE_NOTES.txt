@@ -1,0 +1,111 @@
+GeoWebCache 1.3-RC2 (2011-12-20)
+--------------------------------
+
+This is the second release candidate of the 1.3 series, bringing a number
+of new functionalities and bug fixes.
+
+Thanks to Miles Jordan and Just van den Broecke for the bug reports and patches.
+Also a warm welcome to Ian Schneider from OpenGeo to the development team and 
+a big thanks for his contributions.
+
+New Functionality:
+
+- Support configurable min/max caching, so that only a subset of the served zoom levels gets saved to disk.
+- Create template geowebcache.xml config at startup eliminates need to manually create config file from scratch.
+- Document seeding and truncating with REST.
+- Allow  ESRI aliases for web mercator ( EPSG:102113 or EPSG:102100 ).
+- Allow seeding for parameter filters through the UI.
+- Show available extra caches (through parameter filters) in the layer demo page.
+- Support gathering disk quota stats for parameter filters.
+- Allow to rename a layer at runtime.
+
+Notable bug fixes:
+
+- seeding error when using level attribute.
+- zoomStart and zoomStop Break GWC Fucntionality.
+- GetFeatureInfo FEATURE_COUNT is ignored.
+- GEOWEBCACHE_CACHE_DIR cannot be set from environment variable.
+- Tile height/width mismatch breaks non GetMap requests.
+- GetFeatureInfo bbox is incorrect.
+- GeoRSSPollTask: negative HTTP backend timeout due to int overflow.
+- WMS GetCapabilities request throws NPE if missing <serviceContact>.
+- Ignored styles TileSet property in getCapabilities for non default styles.
+- REST seed request with GET method may return wrong tile count/total.
+
+Also:
+
+- Replace configuration element name <keyword> by <string> like used for the rest of the string properties.
+- "wmsVersion" layer config property > 1.1.1 is not supported, make it explicit.
+
+
+GeoWebCache 1.3-RC1 (2011-10-03)
+--------------------------------
+
+This is the first release candidate of the 1.3 series.
+
+
+New Functionality:
+- Allow to rename layers at runtime maintaining its cache and diskquota statistics.
+- Allow seeding for parameter filters through the UI.
+- Support gathering disk quota statistics for multiple parameter filters.
+- Start of a FAQ section in the user documentation.
+
+Bug fixes and improvements:
+- Incorrect computation of BoundingBox.intersects for single point envelopes.
+- Allow service implementations to be proxied by adding default constructors.
+- FileBlobStore throws exception if requested to delete a tile range for a layer that has not been cached yet.
+- Avoid flooding the logs with exception reports that are expected behaviour.
+- GEOWEBCACHE_CACHE_DIR cannot be set from environment variable.
+- GetFeatureInfo swaps WIDTH and HEIGHT parameters.
+- GeoRSS poll task timeout setting integer overflow.
+
+
+GeoWebCache 1.2.6 (2011-04-19)
+------------------------------ 
+
+Bug fix release:
+
+- Prevent stale thread locals when getTile is called with cache miss.
+- Use layer's default mime type as FORMAT parameter for GetFeatureInfo, since the provided MimeType is valid only for INFO_FORMAT.
+- Fixes to WMTS exception codes, locators and http status codes. 
+- Send HTTP basc authentication preemtively to backend WMS's to avoid double round-trip when seeding.
+- Do not use JAI's crop operation if native JAI is no available and storage format is jpeg, the non native JAI operation is buggy.
+- Allow to specify a different tile location than the config file for ArcGIS tiling schemes.
+
+
+GeoWebCache 1.2.5 (2011-04-02)
+------------------------------ 
+
+This release comes with a number of bug fixes and improvements (check the full list bellow), remarkably:
+
+- Added an "enabled" property to the layer configuration XML schema, so that it's possible to keep a layer from being listed in the capabilities document or accessed through any of the provided service interfaces, but still being able of seeding it either through the web or the REST interfaces.
+- New embedded, high performance storage mechanism for Disk Quota statistics based on the Berkeley DB JE no-SQL database engine.
+- Possibility to define a GWC_DISKQUOTA_DISABLED=true environment variable to disable the usage of the disk quota module. Useful for load balanced deployments for the same reasons you need to disable the meta-store. This is a work around until "clustering" is supported for the disk quota storage.
+- Improved DiskQuota documentation <http://geowebcache.org/docs/current/configuration/diskquotas.html>
+- REST API to configure the global disk quota settings <http://geowebcache.org/docs/current/rest/diskquota.html>
+- Implemented a CQL_FILTER parameter extension for the Google Maps service interface
+- Fixed the computation of estimated and remaining seeding time and number of tiles to process reported by the web interface
+- Improved the stability of the system by avoiding the unnecessary load of existing tiles into memory when re-seeding
+- Seeding and truncating with parameter filters (i.e. for multiple styles or other WMS parameters)
+- Failure tolerance control for seeding:  <http://geowebcache.org/docs/current/production/index.html#seeding-and-truncating-the-cache>
+
+
+GeoWebCache 1.2.4 (2011-01-24)
+------------------------------
+
+Since the last official release (1.2.2), the GeoWebCache development of new features and bug 
+fixes continued, the project sources moved from SVN hosting to GIT[1], the code base was modularized,
+and the documentation[2] also improved a lot (thanks to Mike Pumphrey from OpenGeo for the docs).
+
+Thanks also to our oldest contributor, Arne Kepp, for his continued community support, our
+newest one Miles Jordan, and Gabriel Roldan for some of the new features since joining the 
+development team last year.
+
+In this release, besides numerous bug fixes, you'll find three new exciting features:
+- the ability to control the maximum size of the cache with the new Disk Quota;
+- the ability to serve tiles out of an ArcGIS Server cache directly from GeoWebCache;
+- the ability to configure the service metadata for the GetCapabilities document.
+
+
+[1] <https://github.com/GeoWebCache/geowebcache>
+[2] <http://geowebcache.org/docs/current>
