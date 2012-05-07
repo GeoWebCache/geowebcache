@@ -17,48 +17,65 @@
 package org.geowebcache.rest.layers;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
-import org.geowebcache.config.XMLGridSubset;
-import org.geowebcache.filter.parameters.ParameterFilter;
-import org.geowebcache.filter.parameters.StringParameterFilter;
+import org.geowebcache.grid.BoundingBox;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubset;
-import org.geowebcache.grid.GridSubsetFactory;
+import org.geowebcache.grid.GridSetFactory;
+import org.geowebcache.grid.SRS;
+import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.rest.RestletException;
+import org.restlet.data.MediaType;
+import org.restlet.data.Method;
+import org.restlet.data.Request;
+import org.restlet.data.Response;
+import org.restlet.data.Status;
 import org.restlet.resource.Representation;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
-import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
+import org.restlet.resource.StringRepresentation;
 
 /**
  * Most of the work is done by XMLConfig and XStream, so this is fairly short
  */
 public class TileLayerRestletTest extends TestCase {
+    TileLayerDispatcher tld;
+
     // For the gets we'll use a shared one
     TileLayerRestlet tlr;
 
     protected void setUp() throws Exception {
-        tlr = preparedTileLayerRestlet();
-    }
+        GridSetBroker gridSetBroker = new GridSetBroker(false, false);
 
-    // public void testBogus() throws Exception {
-    // assertTrue(true);
-    // }
+        BoundingBox extent = new BoundingBox(0, 0, 10E6, 10E6);
+        boolean alignTopLeft = false;
+        int levels = 10;
+        Double metersPerUnit = 1.0;
+        double pixelSize = 0.0028;
+        int tileWidth = 256;
+        int tileHeight = 256;
+        boolean yCoordinateFirst = false;
+        GridSet gridSet = GridSetFactory.createGridSet("EPSG:3395", SRS.getSRS("EPSG:3395"),
+                extent, alignTopLeft, levels, metersPerUnit, pixelSize, tileWidth, tileHeight,
+                yCoordinateFirst);
+        gridSetBroker.put(gridSet);
+
+        XMLConfiguration xmlConfig = loadXMLConfig();
+        xmlConfig.initialize(gridSetBroker);
+        LinkedList<Configuration> configList = new LinkedList<Configuration>();
+        configList.add(xmlConfig);
+
+        tld = new TileLayerDispatcher(gridSetBroker, configList);
+
+        tlr = new TileLayerRestlet();
+        tlr.setXMLConfiguration(xmlConfig);
+        tlr.setTileLayerDispatcher(tld);
+    }
 
     public void testGetXml() throws Exception {
         Representation rep = tlr.doGetInternal("topp:states", "xml");
@@ -96,7 +113,79 @@ public class TileLayerRestletTest extends TestCase {
         assertTrue(rep == null);
     }
 
+    public void testPut() throws Exception {
+        String layerXml = "<wmsLayer>" + //
+                "  <name>newLayer1</name>" + //
+                "  <mimeFormats>" + //
+                "    <string>image/png</string>" + //
+                "  </mimeFormats>" + //
+                "  <gridSubsets>" + //
+                "    <gridSubset>" + //
+                "      <gridSetName>EPSG:3395</gridSetName>" + //
+                "    </gridSubset>" + //
+                "  </gridSubsets>" + //
+                "  <wmsUrl>" + //
+                "    <string>http://localhost:8080/geoserver/wms</string>" + //
+                "  </wmsUrl>" + //
+                "  <wmsLayers>topp:states</wmsLayers>" + //
+                "</wmsLayer>";
+
+        String layerXml2 = "<wmsLayer>" + //
+                "  <name>newLayer2</name>" + //
+                "  <mimeFormats>" + //
+                "    <string>image/png</string>" + //
+                "  </mimeFormats>" + //
+                "  <gridSubsets>" + //
+                "    <gridSubset>" + //
+                "      <gridSetName>EPSG:3395</gridSetName>" + //
+                "    </gridSubset>" + //
+                "  </gridSubsets>" + //
+                "  <wmsUrl>" + //
+                "    <string>http://localhost:8080/geoserver/wms</string>" + //
+                "  </wmsUrl>" + //
+                "  <wmsLayers>topp:states</wmsLayers>" + //
+                "</wmsLayer>";
+
+        Request request;
+        Representation entity;
+        Response response;
+
+        request = new Request();
+        request.setMethod(Method.PUT);
+        request.getAttributes().put("layer", "newLayer1");
+        request.getAttributes().put("extension", "xml");
+        entity = new StringRepresentation(layerXml, MediaType.TEXT_XML);
+        request.setEntity(entity);
+        response = new Response(request);
+
+        tlr.handle(request, response);
+        assertEquals(Status.SUCCESS_OK, response.getStatus());
+
+        TileLayer tileLayer1 = tld.getTileLayer("newLayer1");
+        assertEquals(1, tileLayer1.getGridSubsets().size());
+        assertNotNull(tileLayer1.getGridSubset("EPSG:3395"));
+
+        request = new Request();
+        request.setMethod(Method.PUT);
+        request.getAttributes().put("layer", "newLayer2");
+        request.getAttributes().put("extension", "xml");
+        entity = new StringRepresentation(layerXml2, MediaType.TEXT_XML);
+        request.setEntity(entity);
+        response = new Response(request);
+
+        tlr.handle(request, response);
+        assertEquals(Status.SUCCESS_OK, response.getStatus());
+
+        TileLayer tileLayer2 = tld.getTileLayer("newLayer2");
+        assertEquals(1, tileLayer2.getGridSubsets().size());
+        assertNotNull(tileLayer2.getGridSubset("EPSG:3395"));
+
+        tileLayer1 = tld.getTileLayer("newLayer1");
+        assertNotNull(tileLayer1.getGridSubset("EPSG:3395"));
+    }
+
     private XMLConfiguration loadXMLConfig() {
+
         InputStream is = XMLConfiguration.class
                 .getResourceAsStream(XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE);
         XMLConfiguration xmlConfig = null;
@@ -107,22 +196,5 @@ public class TileLayerRestletTest extends TestCase {
         }
 
         return xmlConfig;
-    }
-
-    TileLayerRestlet preparedTileLayerRestlet() throws GeoWebCacheException {
-
-        GridSetBroker gridSetBroker = new GridSetBroker(false, false);
-        XMLConfiguration xmlConfig = loadXMLConfig();
-        xmlConfig.initialize(gridSetBroker);
-        LinkedList<Configuration> configList = new LinkedList<Configuration>();
-        configList.add(xmlConfig);
-
-        TileLayerDispatcher layerDispatcher = new TileLayerDispatcher(gridSetBroker, configList);
-
-        TileLayerRestlet tlr = new TileLayerRestlet();
-        tlr.setXMLConfiguration(xmlConfig);
-        tlr.setTileLayerDispatcher(layerDispatcher);
-
-        return tlr;
     }
 }
