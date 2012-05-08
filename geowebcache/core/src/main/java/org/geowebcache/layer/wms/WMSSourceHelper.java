@@ -57,7 +57,7 @@ public abstract class WMSSourceHelper {
         Map<String, String> wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(),
                 WMSLayer.RequestType.MAP);
 
-        wmsParams.put("FORMAT", tile.getMimeType().getFormat());
+        wmsParams.put("FORMAT", tile.getMimeType().getMimeType());
         wmsParams.put("SRS", layer.backendSRSOverride(gridSubset.getSRS()));
         wmsParams.put("HEIGHT", String.valueOf(gridSubset.getTileHeight()));
         wmsParams.put("WIDTH", String.valueOf(gridSubset.getTileWidth()));
