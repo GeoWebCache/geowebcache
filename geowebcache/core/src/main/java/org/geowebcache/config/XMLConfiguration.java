@@ -195,12 +195,12 @@ public class XMLConfiguration implements Configuration {
         if (configFileDirectory.startsWith("/") || configFileDirectory.contains(":\\")
                 || configFileDirectory.startsWith("\\\\")) {
 
-            log.info("Provided cache directory as absolute path '" + configFileDirectory + "'");
+            log.info("Provided configuration directory as absolute path '" + configFileDirectory + "'");
             this.configDirectory = new File(configFileDirectory);
         } else {
 
             String baseDir = context.getServletContext().getRealPath("");
-            log.info("Provided cache directory relative to servlet context '" + baseDir + "': "
+            log.info("Provided configuration directory relative to servlet context '" + baseDir + "': "
                     + configFileDirectory);
             this.configDirectory = new File(baseDir, configFileDirectory);
         }
