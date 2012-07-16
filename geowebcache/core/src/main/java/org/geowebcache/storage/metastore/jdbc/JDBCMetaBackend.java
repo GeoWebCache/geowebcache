@@ -244,14 +244,6 @@ public class JDBCMetaBackend implements MetaStore {
         return true;
     }
 
-    /**
-     * @deprecated to be removed at 1.4, not actually being called
-     */
-    @Deprecated
-    public boolean expire(TileRange trObj) throws StorageException {
-        return false;
-    }
-
     public boolean get(TileObject stObj) throws StorageException {
         stObj.setLayerId(idCache.getLayerId(stObj.getLayerName()));
         stObj.setFormatId(idCache.getFormatId(stObj.getBlobFormat()));

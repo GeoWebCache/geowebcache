@@ -121,14 +121,6 @@ public class StorageBroker {
         return deleted;
     }
 
-    /**
-     * @deprecated to be removed at 1.4, does nothing
-     */
-    @Deprecated
-    public boolean expire(TileRange trObj) throws StorageException {
-        return false;
-    }
-
     public boolean get(TileObject tileObj) throws StorageException {
         if (!metaStoreEnabled) {
             boolean found = getBlobOnly(tileObj);
