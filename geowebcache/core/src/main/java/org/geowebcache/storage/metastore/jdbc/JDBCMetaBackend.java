@@ -244,25 +244,12 @@ public class JDBCMetaBackend implements MetaStore {
         return true;
     }
 
+    /**
+     * @deprecated to be removed at 1.4, not actually being called
+     */
+    @Deprecated
     public boolean expire(TileRange trObj) throws StorageException {
-        long layerId = idCache.getLayerId(trObj.getLayerName());
-        long formatId = idCache.getFormatId(trObj.getMimeType().getFormat());
-        long parametersId = idCache.getParametersId(trObj.getParameters());
-        if (-1L != parametersId) {
-            trObj.setParametersId(parametersId);
-        }
-        long gridSetIdId = idCache.getGridSetsId(trObj.getGridSetId());
-
-        for (int zoomLevel = trObj.getZoomStart(); zoomLevel <= trObj.getZoomStop(); zoomLevel++) {
-            try {
-                wrpr.expireRange(trObj, zoomLevel, layerId, formatId, parametersId, gridSetIdId);
-
-            } catch (SQLException se) {
-                log.error(se.getMessage());
-            }
-        }
-
-        return true;
+        return false;
     }
 
     public boolean get(TileObject stObj) throws StorageException {
