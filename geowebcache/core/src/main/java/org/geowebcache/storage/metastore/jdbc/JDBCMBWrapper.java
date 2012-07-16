@@ -942,47 +942,4 @@ class JDBCMBWrapper {
         log.debug("Deleted " + Arrays.toString(tileIds));
     }
 
-    public void expireRange(TileRange trObj, int zoomLevel, long layerId, long formatId,
-            long parametersId, long gridSetIdId) throws SQLException {
-
-        long[] bounds = trObj.rangeBounds(zoomLevel);
-
-        String query;
-
-        if (parametersId == -1L) {
-            query = "UPDATE TILES SET CREATED = -1 WHERE "
-                    + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND GRIDSET_ID = ? "
-                    + " AND FORMAT_ID = ? AND PARAMETERS_ID IS NULL";
-        } else {
-            query = "UPDATE TILES SET CREATED = -1 WHERE "
-                    + " LAYER_ID = ? AND X >= ? AND X <= ? AND Y >= ? AND Y <= ? AND Z = ? AND GRIDSET_ID = ? "
-                    + " AND FORMAT_ID = ? AND PARAMETERS_ID = ?";
-        }
-
-        final Connection conn = getConnection();
-        try {
-            PreparedStatement prep = conn.prepareStatement(query);
-            try {
-                prep.setLong(1, layerId);
-                prep.setLong(2, bounds[0]);
-                prep.setLong(3, bounds[2]);
-                prep.setLong(4, bounds[1]);
-                prep.setLong(5, bounds[3]);
-                prep.setLong(6, zoomLevel);
-                prep.setLong(7, gridSetIdId);
-                prep.setLong(8, formatId);
-
-                if (parametersId != -1L) {
-                    prep.setLong(9, parametersId);
-                }
-
-                prep.execute();
-            } finally {
-                close(prep);
-            }
-        } finally {
-            close(conn);
-        }
-    }
-
 }

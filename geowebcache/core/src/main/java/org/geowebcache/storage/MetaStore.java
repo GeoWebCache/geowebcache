@@ -32,6 +32,10 @@ public interface MetaStore {
 
     public boolean delete(BlobStore blobStore, TileRange trObj) throws StorageException;
 
+    /**
+     * @deprecated to be removed at 1.4, not actually being called
+     */
+    @Deprecated
     public boolean expire(TileRange trObj) throws StorageException;
 
     // If lock is encountered, wait inside function until available
