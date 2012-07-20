@@ -23,26 +23,24 @@ import org.restlet.Restlet;
 import org.restlet.data.Status;
 
 public class GWCRestlet extends Restlet {
-    
+
     protected static TileLayer findTileLayer(String layerName, TileLayerDispatcher layerDispatcher) {
-        if(layerName == null || layerName.length() == 0) {
-            throw new RestletException("Layer not specified",
-                    Status.CLIENT_ERROR_BAD_REQUEST);
+        if (layerName == null || layerName.length() == 0) {
+            throw new RestletException("Layer not specified", Status.CLIENT_ERROR_BAD_REQUEST);
         }
-        
-        TileLayer layer = null;
+
+        if (!layerDispatcher.layerExists(layerName)) {
+            throw new RestletException("Unknown layer: " + layerName, Status.CLIENT_ERROR_NOT_FOUND);
+        }
+
+        TileLayer layer;
         try {
             layer = layerDispatcher.getTileLayer(layerName);
         } catch (GeoWebCacheException gwce) {
-            throw new RestletException("Encountered error: " + gwce.getMessage(), 
+            throw new RestletException("Encountered error: " + gwce.getMessage(),
                     Status.SERVER_ERROR_INTERNAL);
         }
-        
-        if(layer == null) {
-            throw new RestletException("Uknown layer: " + layerName, 
-                    Status.CLIENT_ERROR_NOT_FOUND);
-        }
-        
+
         return layer;
     }
 }
