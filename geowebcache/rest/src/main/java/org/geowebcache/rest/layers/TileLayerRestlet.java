@@ -28,9 +28,9 @@ import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
+import org.geowebcache.service.HttpErrorCodeException;
 import org.geowebcache.util.ServletUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,6 +44,7 @@ import org.restlet.resource.Representation;
 import org.restlet.resource.StringRepresentation;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.copy.HierarchicalStreamCopier;
@@ -83,6 +84,11 @@ public class TileLayerRestlet extends GWCRestlet {
         } catch (RestletException re) {
             response.setEntity(re.getRepresentation());
             response.setStatus(re.getStatus());
+        } catch (HttpErrorCodeException httpException) {
+            int errorCode = httpException.getErrorCode();
+            Status status = Status.valueOf(errorCode);
+            response.setStatus(status);
+            response.setEntity(httpException.getMessage(), MediaType.TEXT_PLAIN);
         } catch (Exception e) {
             // Either GeoWebCacheException or IOException
             response.setEntity(e.getMessage() + " " + e.toString(), MediaType.TEXT_PLAIN);
@@ -191,11 +197,14 @@ public class TileLayerRestlet extends GWCRestlet {
      */
     private void doDelete(Request req, Response resp) throws RestletException, GeoWebCacheException {
         String layerName = (String) req.getAttributes().get("layer");
+        findTileLayer(layerName, layerDispatcher);
         try {
             Configuration configuration = layerDispatcher.removeLayer(layerName);
-            if (configuration != null) {
-                configuration.save();
+            if (configuration == null) {
+                throw new RestletException("Configuration to remove layer not found",
+                        Status.SERVER_ERROR_INTERNAL);
             }
+            configuration.save();
         } catch (IOException e) {
             throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL, e);
         }
@@ -232,21 +241,33 @@ public class TileLayerRestlet extends GWCRestlet {
 
         XStream xs = xmlConfig.getConfiguredXStream(new XStream(new DomDriver()));
 
-        WMSLayer newLayer;
+        TileLayer newLayer;
 
-        if (formatExtension.equalsIgnoreCase("xml")) {
-            newLayer = (WMSLayer) xs.fromXML(is);
-        } else if (formatExtension.equalsIgnoreCase("json")) {
-            HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();
-            HierarchicalStreamReader hsr = driver.createReader(is);
-            // See http://jira.codehaus.org/browse/JETTISON-48
-            StringWriter writer = new StringWriter();
-            new HierarchicalStreamCopier().copy(hsr, new PrettyPrintWriter(writer));
-            writer.close();
-            newLayer = (WMSLayer) xs.fromXML(writer.toString());
-        } else {
-            throw new RestletException("Unknown or missing format extension: " + formatExtension,
-                    Status.CLIENT_ERROR_BAD_REQUEST);
+        try {
+            if (formatExtension.equalsIgnoreCase("xml")) {
+                newLayer = (TileLayer) xs.fromXML(is);
+            } else if (formatExtension.equalsIgnoreCase("json")) {
+                HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();
+                HierarchicalStreamReader hsr = driver.createReader(is);
+                // See http://jira.codehaus.org/browse/JETTISON-48
+                StringWriter writer = new StringWriter();
+                new HierarchicalStreamCopier().copy(hsr, new PrettyPrintWriter(writer));
+                writer.close();
+                newLayer = (TileLayer) xs.fromXML(writer.toString());
+            } else {
+                throw new RestletException("Unknown or missing format extension: "
+                        + formatExtension, Status.CLIENT_ERROR_BAD_REQUEST);
+            }
+        } catch (ConversionException xstreamExceptionWrapper) {
+            Throwable cause = xstreamExceptionWrapper.getCause();
+            if (cause instanceof Error) {
+                throw (Error) cause;
+            }
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+            }
+            throw new RestletException(cause.getMessage(), Status.SERVER_ERROR_INTERNAL,
+                    (Exception) cause);
         }
 
         if (!newLayer.getName().equals(layerName)) {
