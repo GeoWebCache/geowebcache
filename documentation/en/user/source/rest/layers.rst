@@ -6,8 +6,64 @@ Managing Layers through the REST API
 The REST API for Layer management provides a RESTful interface through which clients can 
 programatically add, modify, or remove cached Layers.
 
-Operations
-----------
+Layers list
+-----------
+
+``/rest/seed/layers.xml``
+
+.. list-table::
+   :header-rows: 1
+
+   * - Method
+     - Action
+     - Return Code
+     - Formats
+   * - GET
+     - Return the list of available layers
+     - 200
+     - XML
+   * - POST
+     - 
+     - 400
+     - 
+   * - PUT
+     - 
+     - 400
+     - 
+   * - DELETE
+     - 
+     - 400
+     -
+
+Note: JSON representation is intentionally left aside as the library used for JSON marshaling has issues with multi-valued properties such as `parameterFilters`.
+
+Sample request:
+
+.. code-block:: xml
+
+ curl -u geowebcache:secured  "http://localhost:8080/geowebcache/rest/layers"
+
+Sample response:
+ 
+.. code-block:: xml
+
+ <layers>
+  <layer>
+    <name>img states</name>
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="http://localhost:8080/geowebcache/rest/layers/img+states.xml" type="text/xml"/>
+  </layer>
+  <layer>
+    <name>raster test layer</name>
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="http://localhost:8080/geowebcache/rest/layers/raster+test+layer.xml" type="text/xml"/>
+  </layer>
+  <layer>
+    <name>topp:states</name>
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="http://localhost:8080/geowebcache/rest/layers/topp%3Astates.xml" type="text/xml"/>
+  </layer>
+ </layers>
+
+Layer Operations
+----------------
 
 ``/rest/seed/layers/<layer>.xml``
 
