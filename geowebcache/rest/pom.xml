@@ -24,6 +24,11 @@
       <artifactId>servlet-api</artifactId>
     </dependency>
 
+    <dependency>
+     <groupId>org.freemarker</groupId>
+     <artifactId>freemarker</artifactId>
+    </dependency>
+
     <!-- restlet.org dependencies -->
     <dependency>
       <groupId>org.restlet</groupId>
@@ -40,9 +45,10 @@
       <artifactId>com.noelios.restlet.ext.simple</artifactId>
     </dependency>
 
-    <!--
-      dependency> <groupId>org.restlet</groupId> <artifactId>org.restlet.ext.freemarker</artifactId> </dependency
-    -->
+    <dependency>
+      <groupId>org.restlet</groupId>
+      <artifactId>org.restlet.ext.freemarker</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.restlet</groupId>
@@ -67,6 +73,11 @@
 
     <!-- test dependencies  -->
     <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
@@ -77,6 +88,11 @@
       <version>${project.version}</version>
       <scope>test</scope>
       <classifier>tests</classifier>
+    </dependency>
+    <dependency>
+      <groupId>xmlunit</groupId>
+      <artifactId>xmlunit</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

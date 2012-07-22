@@ -16,11 +16,20 @@
  */
 package org.geowebcache.rest.layers;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
-import junit.framework.TestCase;
+import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.custommonkey.xmlunit.NamespaceContext;
+import org.custommonkey.xmlunit.SimpleNamespaceContext;
+import org.custommonkey.xmlunit.XMLTestCase;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.custommonkey.xmlunit.XpathEngine;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
@@ -32,6 +41,8 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.RestletException;
+import org.geowebcache.util.ServletUtils;
+import org.restlet.data.CharacterSet;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
 import org.restlet.data.Request;
@@ -39,11 +50,15 @@ import org.restlet.data.Response;
 import org.restlet.data.Status;
 import org.restlet.resource.Representation;
 import org.restlet.resource.StringRepresentation;
+import org.w3c.dom.Document;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
 /**
  * Most of the work is done by XMLConfig and XStream, so this is fairly short
  */
-public class TileLayerRestletTest extends TestCase {
+public class TileLayerRestletTest extends XMLTestCase {
     TileLayerDispatcher tld;
 
     // For the gets we'll use a shared one
@@ -111,6 +126,45 @@ public class TileLayerRestletTest extends TestCase {
             assertTrue(re.getRepresentation().getText().indexOf("format") > 0);
         }
         assertTrue(rep == null);
+    }
+
+    public void testGetList() throws Exception {
+
+        final String rootPath = "http://my.gwc.org/rest";
+        Representation rep = tlr.listLayers("xml", rootPath);
+        assertNotNull(rep);
+        assertEquals(CharacterSet.UTF_8, rep.getCharacterSet());
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        rep.write(output);
+
+        // System.err.println(output.toString());
+
+        Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+                .parse(new ByteArrayInputStream(output.toByteArray()));
+
+        List<String> layerNames = Lists.newArrayList(tld.getLayerNames());
+        Collections.sort(layerNames);
+        assertXpathExists("/layers", dom);
+
+        NamespaceContext ctx = new SimpleNamespaceContext(ImmutableMap.of("atom",
+                "http://www.w3.org/2005/Atom"));
+        XpathEngine xpathEngine = XMLUnit.newXpathEngine();
+        xpathEngine.setNamespaceContext(ctx);
+
+        for (int i = 0; i < layerNames.size(); i++) {
+            int xpathIndex = i + 1;
+
+            String layerName = layerNames.get(i);
+            String xpath = "/layers/layer[" + xpathIndex + "]/name";
+            assertXpathEvaluatesTo(layerName, xpath, dom);
+
+            String href = rootPath + "/layers/" + ServletUtils.URLEncode(layerName) + ".xml";
+            xpath = "/layers/layer[" + xpathIndex + "]/link/@href";
+            String actual = xpathEngine.evaluate(xpath, dom);
+            // System.err.println("-------- " + actual);
+            assertEquals(href, actual);
+        }
     }
 
     public void testPut() throws Exception {
