@@ -58,6 +58,14 @@
           <ref bean="gwcTileLayerRestlet" />
         </entry>
         <entry>
+          <key><value>/layers.{extension}</value></key>
+          <ref bean="gwcTileLayerRestlet" />
+        </entry>
+        <entry>
+          <key><value>/layers</value></key>
+          <ref bean="gwcTileLayerRestlet" />
+        </entry>
+        <entry>
           <key><value>/bounds/{layer}/{srs}/{type}</value></key>
           <ref bean="gwcBoundsRestlet" />
         </entry>
