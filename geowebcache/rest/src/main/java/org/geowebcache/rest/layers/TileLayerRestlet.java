@@ -120,8 +120,11 @@ public class TileLayerRestlet extends GWCRestlet {
 
         Representation representation;
         if (layerName == null) {
-            final String rootPath = req.getRootRef().toString();
-            representation = listLayers(formatExtension, rootPath);
+            String restRoot = req.getResourceRef().getParentRef().toString();
+            if (restRoot.endsWith("/")) {
+                restRoot = restRoot.substring(0, restRoot.length() - 1);
+            }
+            representation = listLayers(formatExtension, restRoot);
         } else {
             try {
                 layerName = URLDecoder.decode(layerName, "UTF-8");
@@ -137,9 +140,9 @@ public class TileLayerRestlet extends GWCRestlet {
      * @param rootPath
      * @return
      */
-    Representation listLayers(String extension, final String rootPath) {
+    Representation listLayers(String extension, final String restRoot) {
 
-        if(null == extension){
+        if (null == extension) {
             extension = "xml";
         }
         List<String> layerNames = new ArrayList<String>(layerDispatcher.getLayerNames());
@@ -187,7 +190,7 @@ public class TileLayerRestlet extends GWCRestlet {
                         writer.startNode("atom:link");
                         writer.addAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
                         writer.addAttribute("rel", "alternate");
-                        String href = rootPath + "/layers/" + ServletUtils.URLEncode(name) + ".xml";
+                        String href = restRoot + "/layers/" + ServletUtils.URLEncode(name) + ".xml";
                         writer.addAttribute("href", href);
                         writer.addAttribute("type", MediaType.TEXT_XML.toString());
 
