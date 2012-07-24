@@ -18,14 +18,20 @@
 package org.geowebcache.grid;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class BoundingBox implements Serializable{
+public class BoundingBox implements Serializable {
 
     private static final long serialVersionUID = -2555598825074884627L;
+
+    private static DecimalFormat COORD_FORMATTER = new DecimalFormat();
+    static {
+        COORD_FORMATTER.setMinimumFractionDigits(1);
+    }
 
     private static Log log = LogFactory.getLog(org.geowebcache.grid.BoundingBox.class);
 
@@ -172,14 +178,14 @@ public class BoundingBox implements Serializable{
      */
     @Override
     public String toString() {
-        StringBuffer buff = new StringBuffer(40);
-        buff.append(Double.toString(coords[0]));
+        StringBuilder buff = new StringBuilder(40);
+        buff.append(COORD_FORMATTER.format(coords[0]));
         buff.append(',');
-        buff.append(Double.toString(coords[1]));
+        buff.append(COORD_FORMATTER.format(coords[1]));
         buff.append(',');
-        buff.append(Double.toString(coords[2]));
+        buff.append(COORD_FORMATTER.format(coords[2]));
         buff.append(',');
-        buff.append(Double.toString(coords[3]));
+        buff.append(COORD_FORMATTER.format(coords[3]));
         return buff.toString();
     }
 
