@@ -31,8 +31,10 @@ public class BoundingBox implements Serializable {
     private static DecimalFormat COORD_FORMATTER = new DecimalFormat();
     static {
         COORD_FORMATTER.setMinimumFractionDigits(1);
+        COORD_FORMATTER.setGroupingUsed(false);
+        COORD_FORMATTER.setMaximumFractionDigits(16);
     }
-
+    
     private static Log log = LogFactory.getLog(org.geowebcache.grid.BoundingBox.class);
 
     private static String DELIMITER = ",";
