@@ -17,4 +17,9 @@ public interface Resource {
     public InputStream getInputStream() throws IOException;
 
     public OutputStream getOutputStream() throws IOException;
+
+    /**
+     * @return
+     */
+    public long getLastModified();
 }

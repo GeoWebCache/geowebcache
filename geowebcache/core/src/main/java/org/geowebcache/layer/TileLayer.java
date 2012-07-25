@@ -616,6 +616,7 @@ public abstract class TileLayer {
                             } else {
                                 tileProto.getStorageBroker().put(tile);
                             }
+                            tileProto.getStorageObject().setCreated(tile.getCreated());
                         } catch (StorageException e) {
                             throw new GeoWebCacheException(e);
                         }

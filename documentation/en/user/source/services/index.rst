@@ -15,4 +15,5 @@ Below is a list of the standard services that are distributed with GeoWebCache. 
    gmaps.rst
    bingmaps.rst
    mobilegmaps.rst
+   responseheaders.rst
 
