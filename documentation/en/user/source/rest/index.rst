@@ -5,7 +5,13 @@ REST API
 
 This section will discuss the GeoWebCache REST API.
 
-.. note:: This section is under construction.
+.. toctree::
+   :maxdepth: 1
+   
+   layers.rst
+   seed.rst
+   diskquota.rst
+
 
 
 Formats and representations
@@ -60,11 +66,4 @@ Status codes
 A Http request uses a ``status code`` to relay the outcome of the request to the
 client. Different status codes are used for various purposes through out this 
 document. These codes are described in detail by the `http specification <http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html>`_.
-
-.. toctree::
-   :maxdepth: 1
-   
-   layers.rst
-   seed.rst
-   diskquota.rst
 

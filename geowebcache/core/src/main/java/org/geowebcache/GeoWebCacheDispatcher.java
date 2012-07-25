@@ -26,6 +26,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.util.DateParseException;
+import org.apache.commons.httpclient.util.DateUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.Configuration;
@@ -370,8 +373,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     /**
      * Helper function for looking up the service that should handle the request.
      * 
-     * @param request
-     *            full HttpServletRequest
+     * @param request full HttpServletRequest
      * @return
      */
     private Service findService(String serviceStr) throws GeoWebCacheException {
@@ -454,12 +456,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
     /**
      * Wrapper method for writing an error back to the client, and logging it at the same time.
      * 
-     * @param response
-     *            where to write to
-     * @param httpCode
-     *            the HTTP code to provide
-     * @param errorMsg
-     *            the actual error message, human readable
+     * @param response where to write to
+     * @param httpCode the HTTP code to provide
+     * @param errorMsg the actual error message, human readable
      */
     private void writeError(HttpServletResponse response, int httpCode, String errorMsg) {
         log.debug(errorMsg);
@@ -480,33 +479,70 @@ public class GeoWebCacheDispatcher extends AbstractController {
      */
     private void writeData(ConveyorTile tile) throws IOException {
         HttpServletResponse servletResp = tile.servletResp;
-        servletResp.addHeader("geowebcache-cache-result", String.valueOf(tile.getCacheResult()));
-        servletResp.addHeader("geowebcache-tile-index", Arrays.toString(tile.getTileIndex()));
+        final HttpServletRequest servletReq = tile.servletReq;
+
+        final CacheResult cacheResult = tile.getCacheResult();
+        int httpCode = HttpServletResponse.SC_OK;
+        String mimeType = tile.getMimeType().getMimeType();
+        Resource blob = tile.getBlob();
+        int contentLength = (int) (blob == null ? -1 : blob.getSize());
+
+        servletResp.setHeader("geowebcache-cache-result", String.valueOf(cacheResult));
+        servletResp.setHeader("geowebcache-tile-index", Arrays.toString(tile.getTileIndex()));
         long[] tileIndex = tile.getTileIndex();
         TileLayer layer = tile.getLayer();
         GridSubset gridSubset = layer.getGridSubset(tile.getGridSetId());
         BoundingBox tileBounds = gridSubset.boundsFromIndex(tileIndex);
-        servletResp.addHeader("geowebcache-tile-bounds", tileBounds.toString());
-        servletResp.addHeader("geowebcache-gridset", gridSubset.getName());
-        servletResp.addHeader("geowebcache-crs", gridSubset.getSRS().toString());
-        
-        if (tile.getLayer().useETags()) {
-            String ifNoneMatch = tile.servletReq.getHeader("If-None-Match");
-            String hexTag = Long.toHexString(tile.getTSCreated());
+        servletResp.setHeader("geowebcache-tile-bounds", tileBounds.toString());
+        servletResp.setHeader("geowebcache-gridset", gridSubset.getName());
+        servletResp.setHeader("geowebcache-crs", gridSubset.getSRS().toString());
+
+        final long tileTimeStamp = tile.getTSCreated();
+        final String ifModSinceHeader = servletReq.getHeader("If-Modified-Since");
+        // commons-httpclient's DateUtil can encode and decode timestamps formatted as per RFC-1123,
+        // which is one of the three formats allowed for Last-Modified and If-Modified-Since headers
+        // (e.g. 'Sun, 06 Nov 1994 08:49:37 GMT'). See
+        // http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3.1
+
+        final String lastModified = org.apache.commons.httpclient.util.DateUtil
+                .formatDate(new Date(tileTimeStamp));
+        servletResp.setHeader("Last-Modified", lastModified);
+
+        final Date ifModifiedSince;
+        if (ifModSinceHeader != null && ifModSinceHeader.length() > 0) {
+            try {
+                ifModifiedSince = DateUtil.parseDate(ifModSinceHeader);
+                // the HTTP header has second precision
+                long ifModSinceSeconds = 1000 * (ifModifiedSince.getTime() / 1000);
+                long tileTimeStampSeconds = 1000 * (tileTimeStamp / 1000);
+                if (ifModSinceSeconds >= tileTimeStampSeconds) {
+                    httpCode = HttpServletResponse.SC_NOT_MODIFIED;
+                    blob = null;
+                }
+            } catch (DateParseException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Can't parse client's If-Modified-Since header: '" + ifModSinceHeader
+                            + "'");
+                }
+            }
+        }
+
+        if (httpCode == HttpServletResponse.SC_OK && tile.getLayer().useETags()) {
+            String ifNoneMatch = servletReq.getHeader("If-None-Match");
+            String hexTag = Long.toHexString(tileTimeStamp);
 
             if (ifNoneMatch != null) {
                 if (ifNoneMatch.equals(hexTag)) {
-                    tile.servletResp.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-                    return;
+                    httpCode = HttpServletResponse.SC_NOT_MODIFIED;
+                    blob = null;
                 }
             }
 
             // If we get here, we want ETags but the client did not have the tile.
-            tile.servletResp.setHeader("ETag", hexTag);
+            servletResp.setHeader("ETag", hexTag);
         }
 
-        writeFixedResponse(tile.servletResp, 200, tile.getMimeType().getMimeType(), tile.getBlob(),
-                tile.getCacheResult());
+        writeFixedResponse(servletResp, httpCode, mimeType, blob, cacheResult, contentLength);
     }
 
     /**
@@ -536,20 +572,24 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
     private void writeFixedResponse(HttpServletResponse response, int httpCode, String contentType,
             Resource resource, CacheResult cacheRes) {
+
+        int contentLength = (int) (resource == null ? -1 : resource.getSize());
+        writeFixedResponse(response, httpCode, contentType, resource, cacheRes, contentLength);
+    }
+
+    private void writeFixedResponse(HttpServletResponse response, int httpCode, String contentType,
+            Resource resource, CacheResult cacheRes, int contentLength) {
+
         response.setStatus(httpCode);
         response.setContentType(contentType);
 
+        response.setContentLength((int) contentLength);
         if (resource != null) {
-            int size = (int) resource.getSize();
-            if (size > -1) {
-                response.setContentLength(size);
-            }
-
             try {
                 OutputStream os = response.getOutputStream();
                 resource.transferTo(Channels.newChannel(os));
 
-                runtimeStats.log(size, cacheRes);
+                runtimeStats.log(contentLength, cacheRes);
 
             } catch (IOException ioe) {
                 log.debug("Caught IOException: " + ioe.getMessage() + "\n\n" + ioe.toString());

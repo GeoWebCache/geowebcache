@@ -20,6 +20,13 @@ public class FileResource implements Resource {
     }
 
     /**
+     * @see org.geowebcache.io.Resource#getLastModified()
+     */
+    public long getLastModified() {
+        return file.lastModified();
+    }
+
+    /**
      * @see org.geowebcache.io.Resource#getSize()
      */
     public long getSize() {

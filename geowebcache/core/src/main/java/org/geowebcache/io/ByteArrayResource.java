@@ -18,6 +18,8 @@ public class ByteArrayResource implements Resource {
 
     private int length;
 
+    private long lastModified = System.currentTimeMillis();
+
     public ByteArrayResource() {
         this(null);
     }
@@ -45,6 +47,13 @@ public class ByteArrayResource implements Resource {
 
     public ByteArrayResource(final int initialCapacity) {
         this(new byte[initialCapacity], 0, 0);
+    }
+
+    /**
+     * @see org.geowebcache.io.Resource#getLastModified()
+     */
+    public long getLastModified() {
+        return lastModified;
     }
 
     /**

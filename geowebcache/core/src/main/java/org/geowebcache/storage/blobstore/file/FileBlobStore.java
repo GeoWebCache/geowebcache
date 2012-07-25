@@ -386,7 +386,15 @@ public class FileBlobStore implements BlobStore {
 
     public Resource get(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, false);
-        return readFile(fh);
+        Resource resource = readFile(fh);
+        /*
+         * Temporary measure until we get rid of the metastore and Resource.getLastModified() is the
+         * only way of getting to the tile's last modification time.
+         */
+        if (null != resource && 0L == stObj.getCreated()) {
+            stObj.setCreated(resource.getLastModified());
+        }
+        return resource;
     }
 
     public void put(TileObject stObj) throws StorageException {
@@ -394,6 +402,7 @@ public class FileBlobStore implements BlobStore {
         final long oldSize = fh.length();
         final boolean existed = oldSize > 0;
         writeFile(fh, stObj.getBlob());
+        stObj.setCreated(fh.lastModified());
         /*
          * This is important because listeners may be tracking tile existence
          */
