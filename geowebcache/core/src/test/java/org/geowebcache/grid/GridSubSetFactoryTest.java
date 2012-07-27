@@ -32,4 +32,20 @@ public class GridSubSetFactoryTest extends TestCase {
         
         assertTrue(Arrays.equals(correct, ret));
     }
+
+    public void testGridNames() throws Exception {
+        BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
+
+        int zoomStart = 3;
+        int zoomStop = 9;
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bbox, zoomStart,
+                zoomStop);
+
+        String[] gridNames = grid.getGridNames();
+        final int nlevels = 1 + (grid.getZoomStop() - grid.getZoomStart());
+        assertEquals(nlevels, gridNames.length);
+        for(String name : gridNames){
+            assertNotNull(name);
+        }
+    }
 }
