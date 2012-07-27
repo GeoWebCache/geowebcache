@@ -8,17 +8,18 @@ Copy geowebcache.xsd to http://geowebcache.org/schemas/<version>/geowebcache.xsd
 On a clone of the main GWC repo, if don't already have it:
 $ git clone git@github.com:GeoWebCache/geowebcache.git 
 
-- Build docs
-$ cd <project root>/documentation/en/user
-$ make clean html
-
 - Update project version
 Set project version in pom.xml files:
 $ cd <project root>/geowebcache
-$ find . -name pom.xml -exec sed -i 's/1\.2\-SNAPSHOT/1\.2\.4/g' {} \;
-$ find release -name "*.xml" -exec sed -i 's/1\.2\-SNAPSHOT/1\.2\.4/g' {} \;
+$ find . -name pom.xml -exec sed -i 's/1\.3\-SNAPSHOT/1\.3\.0/g' {} \;
+$ find release -name "*.xml" -exec sed -i 's/1\.3\-SNAPSHOT/1\.3\.0/g' {} \;
+$ find ../documentation -name "conf.py" -exec sed -i 's/1\.3\-RC3/1\.3\.0/g' {} \;
 
-(replace 1\.2\.4 by the actual version number keeping the '\' scape characters)
+(replace 1\.3\.0 by the actual version number keeping the '\' scape characters)
+
+- Build docs
+$ cd <project root>/documentation/en/user
+$ make clean html
 
 - Build version
 $ cd <project root>/geowebcache
