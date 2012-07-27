@@ -16,7 +16,9 @@
  */
 package org.geowebcache.grid;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -245,15 +247,15 @@ public class GridSubset {
     }
 
     public String[] getGridNames() {
-        String[] ret = new String[gridCoverageLevels.size()];
+        List<String> ret = new ArrayList<String>(gridCoverageLevels.size());
 
+        final int zoomStart = getZoomStart();
         final int zoomStop = getZoomStop();
-        final Grid[] gridLevels = gridSet.getGridLevels();
-        for (int i = getZoomStart(); i < zoomStop; i++) {
-            ret[i] = gridLevels[i].getName();
+        for (int i = zoomStart; i <= zoomStop; i++) {
+            ret.add(gridSet.getGrid(i).getName());
         }
 
-        return ret;
+        return ret.toArray(new String[ret.size()]);
     }
 
     public GridSet getGridSet() {
