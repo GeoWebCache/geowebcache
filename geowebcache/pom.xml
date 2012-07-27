@@ -494,6 +494,7 @@
               <Implementation-Title>org.geowebcache</Implementation-Title>
               <Implementation-Version>${buildNumber}</Implementation-Version>
               <Implementation-Vendor>${pom.url}</Implementation-Vendor>
+              <Git-Revision>${build.commit.id}</Git-Revision>
             </manifestEntries>
           </archive>
         </configuration>
@@ -538,6 +539,25 @@
         <configuration>
           <forkMode>pertest</forkMode>
           <argLine>${maven.test.jvmargs}</argLine>
+        </configuration>
+      </plugin>
+
+      <!-- initialize git revision info -->
+      <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <version>2.0.4</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <prefix>build</prefix>
+          <failOnNoGitDirectory>false</failOnNoGitDirectory>
+          <skipPoms>false</skipPoms>
         </configuration>
       </plugin>
 
