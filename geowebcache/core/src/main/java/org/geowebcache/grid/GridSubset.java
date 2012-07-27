@@ -234,11 +234,11 @@ public class GridSubset {
 
     public long getGridIndex(String gridId) {
 
+        final int zoomStart = getZoomStart();
         final int zoomStop = getZoomStop();
-        final Grid[] gridLevels = gridSet.getGridLevels();
 
-        for (int index = getZoomStart(); index < zoomStop; index++) {
-            if (gridLevels[index].getName().equals(gridId)) {
+        for (int index = zoomStart; index <= zoomStop; index++) {            
+            if (gridSet.getGrid(index).getName().equals(gridId)) {
                 return index;
             }
         }
