@@ -492,9 +492,8 @@
               <Specification-Version>${project.version}</Specification-Version>
               <Specification-Vendor>${pom.url}</Specification-Vendor>
               <Implementation-Title>org.geowebcache</Implementation-Title>
-              <Implementation-Version>${buildNumber}</Implementation-Version>
+              <Implementation-Version>${build.branch}/${build.commit.id}</Implementation-Version>
               <Implementation-Vendor>${pom.url}</Implementation-Vendor>
-              <Git-Revision>${build.commit.id}</Git-Revision>
             </manifestEntries>
           </archive>
         </configuration>
