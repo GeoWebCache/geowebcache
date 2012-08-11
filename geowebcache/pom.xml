@@ -6,7 +6,7 @@
   <groupId>org.geowebcache</groupId>
   <artifactId>geowebcache</artifactId>
   <packaging>pom</packaging>
-  <version>1.3-SNAPSHOT</version>
+  <version>1.3-RC5</version>
   <name>geowebcache</name>
   <url>http://geowebcache.org</url>
 
@@ -428,7 +428,7 @@
      </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.2</version>
+        <version>2.1</version>
         <configuration>
           <!--descriptorRefs>
             <descriptorRef>project</descriptorRef>
@@ -438,7 +438,7 @@
             <descriptor>release/war.xml</descriptor>
             <descriptor>release/doc.xml</descriptor>
           </descriptors>
-          <finalName>geowebcache-1.3-SNAPSHOT</finalName>
+          <finalName>geowebcache-1.3-RC5</finalName>
           <outputDirectory>${project.build.directory}/release</outputDirectory>
         </configuration>
       </plugin>
