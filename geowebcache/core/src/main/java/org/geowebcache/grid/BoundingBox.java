@@ -18,8 +18,9 @@
 package org.geowebcache.grid;
 
 import java.io.Serializable;
-import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Arrays;
+import java.util.Locale;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,7 +29,7 @@ public class BoundingBox implements Serializable {
 
     private static final long serialVersionUID = -2555598825074884627L;
 
-    private static DecimalFormat COORD_FORMATTER = new DecimalFormat();
+    private static NumberFormat COORD_FORMATTER = NumberFormat.getNumberInstance(Locale.ENGLISH);
     static {
         COORD_FORMATTER.setMinimumFractionDigits(1);
         COORD_FORMATTER.setGroupingUsed(false);
