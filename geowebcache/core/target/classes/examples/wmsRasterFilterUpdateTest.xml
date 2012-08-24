@@ -1,0 +1,8 @@
+<wmsRasterFilterUpdate>
+  <srs>
+    <number>4326</number>
+  </srs>
+  <zoomStart>0</zoomStart>
+  <zoomStop>12</zoomStop>
+</wmsRasterFilterUpdate>
+		

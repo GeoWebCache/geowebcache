@@ -1,0 +1,48 @@
+<gridSet>
+  <name>EPSG:4326</name>
+  <description>A default WGS84 tile matrix set where the first zoom level covers the world with two tiles 
+      on the horizonal axis and one tile over the vertical axis and each subsequent zoom level is calculated
+      by half the resolution of its previous one.
+ </description>
+  <srs>
+    <number>4326</number>
+  </srs>
+  <extent>
+    <coords>
+      <double>-180.0</double>
+      <double>-90.0</double>
+      <double>180.0</double>
+      <double>90.0</double>
+    </coords>
+  </extent>
+  <alignTopLeft>false</alignTopLeft>
+  <resolutions>
+    <double>0.703125</double>
+    <double>0.3515625</double>
+    <double>0.17578125</double>
+    <double>0.087890625</double>
+    <double>0.0439453125</double>
+    <double>0.02197265625</double>
+    <double>0.010986328125</double>
+    <double>0.0054931640625</double>
+    <double>0.00274658203125</double>
+    <double>0.001373291015625</double>
+    <double>6.866455078125E-4</double>
+    <double>3.433227539062E-4</double>
+    <double>1.716613769531E-4</double>
+    <double>8.58306884766E-5</double>
+    <double>4.29153442383E-5</double>
+    <double>2.14576721191E-5</double>
+    <double>1.07288360596E-5</double>
+    <double>5.3644180298E-6</double>
+    <double>2.6822090149E-6</double>
+    <double>1.3411045074E-6</double>
+    <double>6.705522537E-7</double>
+    <double>3.352761269E-7</double>
+  </resolutions>
+  <metersPerUnit>111319.49079327358</metersPerUnit>
+  <pixelSize>2.8E-4</pixelSize>
+  <tileHeight>256</tileHeight>
+  <tileWidth>256</tileWidth>
+  <yCoordinateFirst>false</yCoordinateFirst>
+</gridSet>

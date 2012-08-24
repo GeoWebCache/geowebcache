@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layers>
+ <!-- 
+  This is a pretty standard example, suitable for use with 
+   * Google Earth (EPSG:4326 , KML support)
+   * Google Maps and Microsoft Virtual Earth (EPSG:900913, PNG support)
+ -->
+ <wmslayer>
+  <name>topp:states</name>
+  <mimeFormats>
+    <string>image/png</string>
+    <string>image/jpeg</string>
+    <string>application/vnd.google-earth.kml+xml</string>
+  </mimeFormats>
+  <grids>
+    <entry>
+      <SRS>
+        <number>900913</number>
+      </SRS>
+      <grid>
+        <srs>
+          <number>900913</number>
+        </srs>
+        <dataBounds>
+          <coords>
+            <double>-1.3885038381028108E7</double>
+            <double>2870337.130394128</double>
+            <double>-7455049.488144671</double>
+            <double>6338174.0548753375</double>
+          </coords>
+        </dataBounds>
+        <gridBounds>
+          <coords>
+            <double>-2.003750834E7</double>
+            <double>-2.003750834E7</double>
+            <double>2.003750834E7</double>
+            <double>2.003750834E7</double>
+          </coords>
+        </gridBounds>
+      </grid>
+    </entry>
+    <entry>
+      <SRS>
+        <number>4326</number>
+      </SRS>
+      <grid>
+        <srs>
+          <number>4326</number>
+        </srs>
+        <dataBounds>
+          <coords>
+            <double>-124.731422</double>
+            <double>24.955967</double>
+            <double>-66.969849</double>
+            <double>49.371735</double>
+          </coords>
+        </dataBounds>
+        <gridBounds>
+          <coords>
+            <double>-180.0</double>
+            <double>-90.0</double>
+            <double>180.0</double>
+            <double>90.0</double>
+          </coords>
+        </gridBounds>
+      </grid>
+    </entry>
+
+  </grids>
+  <wmsUrl>
+    <string>http://sigma.openplans.org/geoserver/wms</string>
+  </wmsUrl>
+  <wmsLayers>topp:states</wmsLayers>
+  <wmsStyles>population</wmsStyles>
+  <metaWidthHeight>
+    <int>3</int>
+    <int>3</int>
+  </metaWidthHeight>
+  <tiled>false</tiled>
+  <transparent>true</transparent>
+  <bgColor></bgColor>
+  <palette></palette>
+  <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
+  <cachePrefix>/var/lib/geowebcache/topp_states</cachePrefix>
+</wmslayer>
+
+ <!-- 
+  This example shows that you can reuse WMS-layers and give them
+  new names or styles, as shown here.
+   
+  EPSG:2163 is an equal area (Azimuthal Lambert) projection and demonstrates
+  that GeoWebCache is now SRS agnostic. Note that in order to make the
+  tiles work in OpenLayers you need to provide the correct bounds and
+  resolution(s). Please use the source of the demo page for reference,
+  as GeoWebCache will calculate them automatically for you there.
+  
+  Note that the grid bounds and the layer bounds are the same, they could be
+  different if the SRS has "natural" bounds that cover all the area that 
+  could be relevant, in case the dataset grows.
+ -->
+ 
+ <wmslayer>
+  <name>topp:states2</name>
+  <mimeFormats>
+    <string>image/png</string>
+    <string>image/jpeg</string>
+  </mimeFormats>
+  <grids>
+    <entry>
+      <SRS>
+        <number>2163</number>
+      </SRS>
+      <grid>
+        <srs>
+          <number>2163</number>
+        </srs>
+        <dataBounds>
+          <coords>          
+            <double>-2495667.977678598</double>
+            <double>-2223677.196231552</double>
+            <double>3291070.6104286816</double>
+            <double>959189.3312465074</double>
+          </coords>
+        </dataBounds>
+        <gridBounds>
+          <coords>
+            <double>-2495667.977678598</double>
+            <double>-2223677.196231552</double>
+            <double>3291070.6104286816</double>
+            <double>959189.3312465074</double>
+          </coords>
+        </gridBounds>
+      </grid>
+    </entry>
+  </grids>
+  <!-- 
+  Note that you can have multiple backend servers for the same layer.
+  They will be used in round-robin fashion. If one fails to respond
+  properly, the next one will be used automatically.
+  -->
+  <wmsUrl>
+    <string>http://sigma.openplans.org/geoserver/wms</string>
+    <string>http://atlas.openplans.org:8080/geoserver/wms</string>
+  </wmsUrl>
+  <wmsLayers>topp:states</wmsLayers>
+  <wmsStyles>polygon</wmsStyles>
+  <metaWidthHeight>
+    <int>3</int>
+    <int>3</int>
+  </metaWidthHeight>
+  <tiled>false</tiled>
+  <transparent>true</transparent>
+  <bgColor></bgColor>
+  <palette></palette>
+  <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
+  <!-- cachePrefix>/var/lib/geowebcache/topp_states</cachePrefix -->
+</wmslayer>
+</layers>

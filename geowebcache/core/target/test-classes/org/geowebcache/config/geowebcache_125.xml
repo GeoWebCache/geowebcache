@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                  xsi:noNamespaceSchemaLocation="http://geowebcache.org/schema/1.2.5/geowebcache.xsd" 
+                  xmlns="http://geowebcache.org/schema/1.2.5">
+<version>1.2.5</version>
+<backendTimeout>120</backendTimeout>
+<cacheBypassAllowed>true</cacheBypassAllowed>
+<layers>
+ <!-- 
+  This is a pretty standard example, suitable for use with 
+   * Google Earth (EPSG:4326 , KML support)
+   * Google Maps and Microsoft Virtual Earth (EPSG:900913, PNG support)
+ -->
+ <wmsLayer>
+  <name>topp:states</name>
+  <mimeFormats>
+    <string>image/png</string>
+    <string>image/jpeg</string>
+    <string>image/gif</string>
+    <string>application/vnd.google-earth.kml+xml</string>
+  </mimeFormats>
+  <!-- Format modifiers change certain settings for a
+       specific format -->
+  <formatModifiers>
+    <formatModifier>
+      <!-- Mandatory, the format requested by client -->
+      <responseFormat>image/jpeg</responseFormat>
+      <!-- Optional, the format GWC will use to get metatiles from backend,
+           This allows you to avoid lossy compression, such as JPEG, to be
+           applied twice. Use image/png; mode=24bit for MapServer -->
+      <requestFormat>image/png</requestFormat>
+      <!-- Optional, override transparent parameter in WMS request-->
+      <transparent>false</transparent>
+      <!-- Optional, override or set backgroud color for WMS request-->
+      <bgColor>0xDDDDDD</bgColor>
+      <!-- Optional, override or set palette parameter for WMS request -->
+      <!-- palette>webSafePalette</palette -->
+      <!-- Optional, adjust the compression ratio used when saving
+           the tiles. For minimum compression use 1.0 -->
+      <compressionQuality>1.0</compressionQuality>
+    </formatModifier>
+  </formatModifiers>
+  <grids>
+    <entry>
+      <srs>
+        <number>900913</number>
+      </srs>
+      <grid>
+        <srs>
+          <number>900913</number>
+        </srs>
+        <dataBounds>
+          <coords>
+            <double>-1.3885038381028108E7</double>
+            <double>2870337.130394128</double>
+            <double>-7455049.488144671</double>
+            <double>6338174.0548753375</double>
+          </coords>
+        </dataBounds>
+        <gridBounds>
+          <coords>
+            <double>-2.003750834E7</double>
+            <double>-2.003750834E7</double>
+            <double>2.003750834E7</double>
+            <double>2.003750834E7</double>
+          </coords>
+        </gridBounds>
+      </grid>
+    </entry>
+    <entry>
+      <srs>
+        <number>4326</number>
+      </srs>
+      <grid>
+        <srs>
+          <number>4326</number>
+        </srs>
+        <dataBounds>
+          <coords>
+            <double>-124.731422</double>
+            <double>24.955967</double>
+            <double>-66.969849</double>
+            <double>49.371735</double>
+          </coords>
+        </dataBounds>
+        <gridBounds>
+          <coords>
+            <double>-180.0</double>
+            <double>-90.0</double>
+            <double>180.0</double>
+            <double>90.0</double>
+          </coords>
+        </gridBounds>
+        <!-- 
+           This grid only allows zoom levels 0 through 20
+        -->
+        <zoomStart>0</zoomStart>
+        <zoomStop>20</zoomStop>
+      </grid>
+    </entry>
+  </grids>
+  <!-- Some sample request filters below, see the documentation for details -->
+  <requestFilters>
+    <!-- circularExtentFilter>
+      <name>testfilter</name>
+    </circularExtentFilter -->
+    <wmsRasterFilter>
+      <name>testWMSRasterFilter</name>
+      <zoomStart>12</zoomStart>
+      <zoomStop>13</zoomStop>
+      <resample>true</resample>
+      <debug>true</debug>
+      <wmsStyles>onebit</wmsStyles>
+      <backendTimeout>120</backendTimeout>
+    </wmsRasterFilter>
+    <fileRasterFilter>
+      <name>testFileRasterFilter</name>
+      <zoomStop>8</zoomStop>
+      <storagePath>/home/ak/testfilter</storagePath>
+      <fileExtension>tiff</fileExtension>
+    </fileRasterFilter>
+  </requestFilters>
+  <wmsUrl>
+    <string>http://sigma.openplans.org/geoserver/wms</string>
+  </wmsUrl>
+  <wmsLayers>topp:states</wmsLayers>
+  <metaWidthHeight>
+    <int>3</int>
+    <int>3</int>
+  </metaWidthHeight>
+  <errorMime>application/vnd.ogc.se_xml</errorMime>
+  <tiled>false</tiled>
+  <transparent>true</transparent>
+  <bgColor></bgColor>
+  <palette></palette>
+  <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
+  <!-- 
+     The following are filters for additional parameters. Any legal value
+     here will result in a new set of tiles, the parameter is forwarded
+     to the WMS backend. Note that all regexParameterFilters have to be
+     listed before the first floatParameterFitler
+  -->
+  <parameterFilters>
+    <!-- 
+      The following filter allows STYLES to take the values
+        <blank>
+        polygon
+        population
+      The default value is <blank>. It is used when the client
+      omits the parameter in the request
+      
+      Also note that this filter usually has no effect if you 
+      specify <wmsStyles>
+    -->
+    <regexParameterFilter>
+      <key>STYLES</key>
+      <defaultValue></defaultValue>
+      <regex>^(|polygon|population)$</regex>
+    </regexParameterFilter>
+    <!-- 
+      The following filter allows SOMEPARAMETER to take the values
+      1.0, 2.0, 4.0 and <blank>
+      The default is <blank>, this value is always allowed
+      The threshold is set to 0.2, meaning that 1.19 will
+      be accepted and rounded to 1.00, whereas 1.21 will result
+      in an exception. 
+    -->
+    <floatParameterFilter>
+      <key>SOMEPARAMETER</key>
+      <defaultValue></defaultValue>
+      <values><float>1.0</float><float>2.0</float><float>4.0</float></values>
+      <threshold>0.2</threshold>
+    </floatParameterFilter>
+  </parameterFilters>
+</wmsLayer>
+
+
+ <!-- 
+  This example shows that you can reuse WMS-layers and give them
+  new names or styles, as shown here.
+   
+  EPSG:2163 is an equal area (Azimuthal Lambert) projection and demonstrates
+  that GeoWebCache is now srs agnostic. Note that in order to make the
+  tiles work in OpenLayers you need to provide the correct bounds and
+  resolution(s). Please use the source of the demo page for reference,
+  as GeoWebCache will calculate them automatically for you there.
+  
+  Note that the grid bounds and the layer bounds are the same, they could be
+  different if the srs has "natural" bounds that cover all the area that 
+  could be relevant, in case the dataset grows.
+ -->
+ <wmsLayer>
+  <name>topp:states2</name>
+  <mimeFormats>
+    <string>image/png</string>
+    <string>image/jpeg</string>
+  </mimeFormats>
+  <grids>
+    <entry>
+      <srs>
+        <number>2163</number>
+      </srs>
+      <grid>
+        <srs>
+          <number>2163</number>
+        </srs>
+        <dataBounds>
+          <coords>          
+            <double>-2495667.977678598</double>
+            <double>-2223677.196231552</double>
+            <double>3291070.6104286816</double>
+            <double>959189.3312465074</double>
+          </coords>
+        </dataBounds>
+        <gridBounds>
+          <coords>
+            <double>-2495667.977678598</double>
+            <double>-2223677.196231552</double>
+            <double>3291070.6104286816</double>
+            <double>959189.3312465074</double>
+          </coords>
+        </gridBounds>
+        <!-- Instead of specifying the max and min zoomlevels,
+             you can also define an explicit list of resolutions (units/pixel).
+             This list has to be in decreasing order. -->
+        <resolutions><double>15000.0</double><double>12000.0</double><double>4000.0</double></resolutions>
+      </grid>
+    </entry>
+  </grids>
+  <!-- 
+  Note that you can have multiple backend servers for the same layer.
+  They will be used in round-robin fashion. If one fails to respond
+  properly, the next one will be used automatically.
+  -->
+  <wmsUrl>
+    <string>http://sigma.openplans.org/geoserver/wms</string>
+    <string>http://sigma.openplans.org/geoserver/wms</string>
+  </wmsUrl>
+  <wmsLayers>topp:states</wmsLayers>
+  <wmsStyles>population</wmsStyles>
+  <metaWidthHeight>
+    <int>3</int>
+    <int>3</int>
+  </metaWidthHeight>
+  <!-- 3 pixel gutter -->
+  <gutter>3</gutter>
+  <tiled>false</tiled>
+  <transparent>true</transparent>
+  <bgColor></bgColor>
+  <palette></palette>
+  <!-- vendorParameters>format_options=regionateby:auto</vendorParameters -->
+  <!-- 
+  You can specify expiration times in seconds. In the example below
+  - disk cached is refreshed every 2 hours
+  - clients are told to refresh from here every 4 minutes
+  -->
+  <expireCache>7200</expireCache>
+  <expireClients>240</expireClients>
+</wmsLayer>
+</layers>
+</gwcConfiguration>
