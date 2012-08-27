@@ -120,7 +120,7 @@ public class RuntimeStats {
     
     public void log(int size, CacheResult cacheResult) {
         if(this.statsThread != null) {
-            synchronized(this) {
+            synchronized(bytes) {
                 curBytes += size;
                 curRequests += 1;
                 
@@ -135,16 +135,18 @@ public class RuntimeStats {
         }
     }
     
-    protected synchronized int[] popIntervalData() {
-        int[] ret = {curBytes, curRequests};
+    protected int[] popIntervalData() {
+        synchronized(bytes) {
+            int[] ret = {curBytes, curRequests};
         
-        curBytes = 0;
-        curRequests = 0;
+            curBytes = 0;
+            curRequests = 0;
         
-        return ret;
+            return ret;
+        }
     }
 
-    public synchronized String getHTMLStats() {
+    public String getHTMLStats() {
         long runningTime = (System.currentTimeMillis() - startTime) / 1000;
         
         StringBuilder str = new StringBuilder();
@@ -257,9 +259,9 @@ public class RuntimeStats {
         
         int accu = 0;
         
-        int pos = ((ringPos - 1) + bytes.length) % bytes.length;
-        
         synchronized(bytes) {
+            int pos = ((ringPos - 1) + bytes.length) % bytes.length;
+    
             for(int i=0; i<nodeCount; i++) {
                 accu += requests[pos];
                 pos = ((pos - 1) + bytes.length) % bytes.length;
@@ -268,7 +270,7 @@ public class RuntimeStats {
         
         String avg = formatRequests((accu * 1.0) / interval);
         
-        String[] ret = {accu + "", avg}; 
+        String[] ret = {accu + "", avg};
         
         return ret;
     }
