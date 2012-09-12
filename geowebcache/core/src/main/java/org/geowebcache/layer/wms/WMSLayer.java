@@ -373,6 +373,7 @@ public class WMSLayer extends AbstractTileLayer {
             if (saveExpirationHeaders) {
                 metaTile.setExpiresHeader(GWCVars.CACHE_USE_WMS_BACKEND_VALUE);
             }
+            long requestTime = System.currentTimeMillis();
             sourceHelper.makeRequest(metaTile, buffer);
 
             if (metaTile.getError()) {
@@ -387,7 +388,7 @@ public class WMSLayer extends AbstractTileLayer {
 
             metaTile.setImageBytes(buffer);
 
-            saveTiles(metaTile, tile);
+            saveTiles(metaTile, tile, requestTime);
 
             /** ****************** Return lock and response ****** */
         } finally {

@@ -23,11 +23,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.diskquota.storage.BDBQuotaStore;
 import org.geowebcache.storage.BlobStoreListener;
-import org.geowebcache.storage.LegacyStorageBroker;
+import org.geowebcache.storage.DefaultStorageBroker;
 import org.springframework.util.Assert;
 
 /**
- * Monitors {@link LegacyStorageBroker} activity to keep track of the disk usage.
+ * Monitors {@link DefaultStorageBroker} activity to keep track of the disk usage.
  * <p>
  * This class only cares about receiving {@link BlobStoreListener} events and submitting
  * {@link QuotaUpdate}s to the provided {@link BlockingQueue}. Another thread is responsible of

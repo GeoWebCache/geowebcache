@@ -55,7 +55,7 @@ public class BlobStoreTest extends TestCase {
                 "image/jpeg", parameters);
         to2.setId(11231231);
 
-        Resource resp = fbs.get(to2);
+        Resource resp = fbs.getBlobOnly(to2);
 
         to2.setBlob(resp);
 
@@ -89,7 +89,7 @@ public class BlobStoreTest extends TestCase {
                 "image/jpeg", parameters);
         to2.setId(11231231);
 
-        Resource resp = fbs.get(to2);
+        Resource resp = fbs.getBlobOnly(to2);
 
         // to2.setBlob(resp);
 
@@ -108,7 +108,7 @@ public class BlobStoreTest extends TestCase {
 
         TileObject to4 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326",
                 "image/jpeg", parameters);
-        assertNull(fbs.get(to4));
+        assertNull(fbs.getBlobOnly(to4));
     }
 
     public void testTilRangeDelete() throws Exception {
@@ -152,7 +152,7 @@ public class BlobStoreTest extends TestCase {
         // starting x and x + tos.length should have data, the remaining should not
         TileObject firstTO = TileObject.createQueryTileObject(layerName, tos[0].xyz,
                 srs.toString(), mime.getFormat(), parameters);
-        InputStream is = fbs.get(firstTO).getInputStream();
+        InputStream is = fbs.getBlobOnly(firstTO).getInputStream();
         InputStream is2 = bytes.getInputStream();
         try {
             assertTrue(IOUtils.contentEquals(is, is2));
@@ -163,7 +163,7 @@ public class BlobStoreTest extends TestCase {
 
         TileObject lastTO = TileObject.createQueryTileObject(layerName, tos[tos.length - 1].xyz,
                 srs.toString(), mime.getFormat(), parameters);
-        is = fbs.get(lastTO).getInputStream();
+        is = fbs.getBlobOnly(lastTO).getInputStream();
         is2 = bytes.getInputStream();
         try {
             assertTrue(IOUtils.contentEquals(is, is2));
@@ -174,7 +174,7 @@ public class BlobStoreTest extends TestCase {
 
         TileObject midTO = TileObject.createQueryTileObject(layerName,
                 tos[(tos.length - 1) / 2].xyz, srs.toString(), mime.getFormat(), parameters);
-        Resource res = fbs.get(midTO);
+        Resource res = fbs.getBlobOnly(midTO);
 
         assertNull(res);
     }

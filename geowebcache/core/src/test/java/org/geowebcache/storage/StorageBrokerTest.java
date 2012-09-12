@@ -7,7 +7,6 @@ import junit.framework.TestCase;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
-import org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend;
 import org.h2.tools.DeleteDbFiles;
 
 public class StorageBrokerTest extends TestCase {
@@ -82,7 +81,7 @@ public class StorageBrokerTest extends TestCase {
         
         BlobStore blobStore = new FileBlobStore(blobPath);
         
-        StorageBroker sb = new LegacyStorageBroker(blobStore);
+        StorageBroker sb = new DefaultStorageBroker(blobStore);
         
         //long[] xyz = {1L,2L,3L};
         Resource blob = new ByteArrayResource(new byte[20*1024]);

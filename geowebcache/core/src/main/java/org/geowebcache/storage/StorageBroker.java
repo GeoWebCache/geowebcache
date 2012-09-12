@@ -6,8 +6,6 @@ public interface StorageBroker {
 
     public abstract boolean removeBlobStoreListener(BlobStoreListener listener);
 
-    public abstract void setVerifyFileSize(boolean verifyFileSize);
-
     /**
      * Completely eliminates the cache for the given layer.
      */

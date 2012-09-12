@@ -80,9 +80,8 @@
     <constructor-arg value="/tmp/gwc_blobstore" />
   </bean -->
   
-  <bean id="gwcStorageBroker" class="org.geowebcache.storage.LegacyStorageBroker" destroy-method="destroy">
+  <bean id="gwcStorageBroker" class="org.geowebcache.storage.DefaultStorageBroker" destroy-method="destroy">
     <constructor-arg ref="gwcBlobStore" />
-    <property name="verifyFileSize" value="TRUE"/>
   </bean>
   
   

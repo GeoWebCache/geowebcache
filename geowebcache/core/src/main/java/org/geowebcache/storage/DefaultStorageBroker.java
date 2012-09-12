@@ -23,18 +23,16 @@ import org.geowebcache.io.Resource;
 
 /**
  * Handles cacheable objects (tiles, wfs responses) both in terms of data storage and metadata
- * storage, delegating to a {@link MetaStore} and a {@link BlobStore}
+ * storage, delegating most work to a {@link BlobStore}
  */
-public class LegacyStorageBroker implements StorageBroker {
-    private static Log log = LogFactory.getLog(org.geowebcache.storage.LegacyStorageBroker.class);
+public class DefaultStorageBroker implements StorageBroker {
+    private static Log log = LogFactory.getLog(org.geowebcache.storage.DefaultStorageBroker.class);
 
     private BlobStore blobStore;
 
-    private boolean verifyFileSize = false;
-    
     private TransientCache transientCache;
     
-    public LegacyStorageBroker(BlobStore blobStore) {
+    public DefaultStorageBroker(BlobStore blobStore) {
         this.blobStore = blobStore;
 
         // @todo are these settings reasonable? should they be configurable?
@@ -56,17 +54,10 @@ public class LegacyStorageBroker implements StorageBroker {
     }
     
     /* (non-Javadoc)
-     * @see org.geowebcache.storage.StorageBroker#setVerifyFileSize(boolean)
-     */
-    public void setVerifyFileSize(boolean verifyFileSize) {
-        this.verifyFileSize = verifyFileSize;
-    }
-
-    /* (non-Javadoc)
      * @see org.geowebcache.storage.StorageBroker#delete(java.lang.String)
      */
     public boolean delete(String layerName) throws StorageException {
-       return false;
+        return blobStore.delete(layerName);
     }
 
     /* (non-Javadoc)
@@ -74,38 +65,28 @@ public class LegacyStorageBroker implements StorageBroker {
      */
     public boolean deleteByGridSetId(final String layerName, final String gridSetId)
             throws StorageException {
-        return false;
+        return blobStore.deleteByGridsetId(layerName, gridSetId);
     }
 
     /* (non-Javadoc)
      * @see org.geowebcache.storage.StorageBroker#rename(java.lang.String, java.lang.String)
      */
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
-        return false;
+        return blobStore.rename(oldLayerName, newLayerName);
     }
 
     /* (non-Javadoc)
      * @see org.geowebcache.storage.StorageBroker#delete(org.geowebcache.storage.TileRange)
      */
     public boolean delete(TileRange trObj) throws StorageException {
-        return false;
+        return blobStore.delete(trObj);
     }
 
     /* (non-Javadoc)
      * @see org.geowebcache.storage.StorageBroker#get(org.geowebcache.storage.TileObject)
      */
     public boolean get(TileObject tileObj) throws StorageException {
-        return getBlobOnly(tileObj);
-    }
-
-    private boolean getBlobOnly(TileObject tileObj) throws StorageException {
-        Resource blob = blobStore.get(tileObj);
-        if (blob == null) {
-            return false;
-        } else {
-            tileObj.blob = blob;
-            return true;
-        }
+        return blobStore.get(tileObj);
     }
 
     /* (non-Javadoc)

@@ -564,11 +564,11 @@ public abstract class TileLayer {
     /**
      * Loops over the gridPositions, generates cache keys and saves to cache
      * 
-     * @param gridPositions
      * @param metaTile
-     * @param imageFormat
+     * @param tileProto
+     * @param requestTime
      */
-    protected void saveTiles(MetaTile metaTile, ConveyorTile tileProto) throws GeoWebCacheException {
+    protected void saveTiles(MetaTile metaTile, ConveyorTile tileProto, long requestTime) throws GeoWebCacheException {
 
         final long[][] gridPositions = metaTile.getTilesGridPositions();
         final long[] gridLoc = tileProto.getTileIndex();
@@ -609,6 +609,7 @@ public abstract class TileLayer {
                         TileObject tile = TileObject.createCompleteTileObject(this.getName(), idx,
                                 tileProto.getGridSetId(), tileProto.getMimeType().getFormat(),
                                 tileProto.getParameters(), resource);
+                        tile.setCreated(requestTime);
 
                         try {
                             if (tileProto.isMetaTileCacheOnly()) {

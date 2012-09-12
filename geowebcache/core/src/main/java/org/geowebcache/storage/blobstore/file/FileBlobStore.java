@@ -30,7 +30,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.channels.FileChannel;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,6 +46,7 @@ import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.BlobStoreListenerList;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.StorageObject.Status;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
@@ -390,25 +390,44 @@ public class FileBlobStore implements BlobStore {
         return true;
     }
 
-    public Resource get(TileObject stObj) throws StorageException {
+    public Resource getBlobOnly(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, false);
         Resource resource = readFile(fh);
-        /*
-         * Temporary measure until we get rid of the metastore and Resource.getLastModified() is the
-         * only way of getting to the tile's last modification time.
-         */
         if (null != resource && 0L == stObj.getCreated()) {
             stObj.setCreated(resource.getLastModified());
         }
         return resource;
+    }
+    
+    public boolean get(TileObject stObj) throws StorageException {
+        File fh = getFileHandleTile(stObj, false);
+        if(!fh.exists()) {
+            stObj.setStatus(Status.MISS);
+            return false;
+        } else {
+            Resource resource = readFile(fh);
+            stObj.setBlob(resource);
+            stObj.setCreated(resource.getLastModified());
+            stObj.setBlobSize((int) resource.getSize());
+            return true;
+        }
     }
 
     public void put(TileObject stObj) throws StorageException {
         final File fh = getFileHandleTile(stObj, true);
         final long oldSize = fh.length();
         final boolean existed = oldSize > 0;
-        writeFile(fh, stObj.getBlob());
-        stObj.setCreated(fh.lastModified());
+        writeFile(fh, stObj);
+        // mark the last modification as the tile creation time if set, otherwise
+        // we'll leave it to the writing time
+        if(stObj.getCreated() > 0) {
+            try {
+                fh.setLastModified(stObj.getCreated());
+            } catch(Exception e) {
+                log.debug("Failed to set the last modified time to match the tile request time", e);
+            }
+        } 
+
         /*
          * This is important because listeners may be tracking tile existence
          */
@@ -449,7 +468,7 @@ public class FileBlobStore implements BlobStore {
         return new FileResource(fh);
     }
 
-    private void writeFile(File target, Resource source) throws StorageException {
+    private void writeFile(File target, TileObject stObj) throws StorageException {
         // Open the output stream
         FileOutputStream fos;
         try {
@@ -460,7 +479,7 @@ public class FileBlobStore implements BlobStore {
 
         FileChannel channel = fos.getChannel();
         try {
-            source.transferTo(channel);
+            stObj.getBlob().transferTo(channel);
         } catch (IOException ioe) {
             throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
         } finally {
