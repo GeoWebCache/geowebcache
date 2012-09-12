@@ -17,6 +17,8 @@
  */
 package org.geowebcache.storage.blobstore.file;
 
+import static org.geowebcache.storage.blobstore.file.FilePathUtils.*;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -28,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.channels.FileChannel;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -64,17 +67,21 @@ public class FileBlobStore implements BlobStore {
 
     private final BlobStoreListenerList listeners = new BlobStoreListenerList();
 
+    private FilePathGenerator pathGenerator;
+
     private static ExecutorService deleteExecutorService;
 
     public FileBlobStore(DefaultStorageFinder defStoreFinder) throws ConfigurationException {
         path = defStoreFinder.getDefaultPath();
         stagingArea = new File(path, "_gwc_in_progress_deletes_");
+        pathGenerator = new FilePathGenerator(this.path);
         createDeleteExecutorService();
         issuePendingDeletes();
     }
 
     public FileBlobStore(String rootPath) throws StorageException {
         path = rootPath;
+        pathGenerator = new FilePathGenerator(this.path);
         File fh = new File(path);
 
         if (!fh.exists() || !fh.isDirectory() || !fh.canWrite()) {
@@ -176,7 +183,7 @@ public class FileBlobStore implements BlobStore {
      */
     public boolean delete(final String layerName) throws StorageException {
         final File source = getLayerPath(layerName);
-        final String target = FilePathGenerator.filteredLayerName(layerName);
+        final String target = filteredLayerName(layerName);
 
         boolean ret = stageDelete(source, target);
 
@@ -200,7 +207,7 @@ public class FileBlobStore implements BlobStore {
         int tries = 0;
         while (tmpFolder.exists()) {
             ++tries;
-            String dirName = FilePathGenerator.filteredLayerName(targetName + "." + tries);
+            String dirName = filteredLayerName(targetName + "." + tries);
             tmpFolder = new File(stagingArea, dirName);
         }
         boolean renamed = source.renameTo(tmpFolder);
@@ -224,7 +231,7 @@ public class FileBlobStore implements BlobStore {
             log.info(layerPath + " does not exist or is not writable");
             return false;
         }
-        final String filteredGridSetId = FilePathGenerator.filteredGridSetId(gridSetId);
+        final String filteredGridSetId = filteredGridSetId(gridSetId);
 
         File[] gridSubsetCaches = layerPath.listFiles(new FileFilter() {
             public boolean accept(File pathname) {
@@ -237,7 +244,7 @@ public class FileBlobStore implements BlobStore {
         });
 
         for (File gridSubsetCache : gridSubsetCaches) {
-            String target = FilePathGenerator.filteredLayerName(layerName) + "_"
+            String target = filteredLayerName(layerName) + "_"
                     + gridSubsetCache.getName();
             stageDelete(gridSubsetCache, target);
         }
@@ -285,7 +292,7 @@ public class FileBlobStore implements BlobStore {
     }
 
     private File getLayerPath(String layerName) {
-        String prefix = path + File.separator + FilePathGenerator.filteredLayerName(layerName);
+        String prefix = path + File.separator + filteredLayerName(layerName);
 
         File layerPath = new File(prefix);
         return layerPath;
@@ -323,7 +330,7 @@ public class FileBlobStore implements BlobStore {
         int count = 0;
 
         String prefix = path + File.separator
-                + FilePathGenerator.filteredLayerName(trObj.getLayerName());
+                + filteredLayerName(trObj.getLayerName());
 
         final File layerPath = new File(prefix);
 
@@ -339,14 +346,13 @@ public class FileBlobStore implements BlobStore {
         final String layerName = trObj.getLayerName();
         final String gridSetId = trObj.getGridSetId();
         final String blobFormat = trObj.getMimeType().getFormat();
-        // FRD trObj.getParametersId();
-        final Long parametersId = trObj.getParametersId();
+        final String parametersId = trObj.getParametersId();
 
         File[] srsZoomDirs = layerPath.listFiles(tileFinder);
 
-        final String gridsetPrefix = FilePathGenerator.filteredGridSetId(gridSetId);
+        final String gridsetPrefix = filteredGridSetId(gridSetId);
         for (File srsZoomParamId : srsZoomDirs) {
-            int zoomLevel = FilePathGenerator.findZoomLevel(gridsetPrefix, srsZoomParamId.getName());
+            int zoomLevel = findZoomLevel(gridsetPrefix, srsZoomParamId.getName());
             File[] intermediates = srsZoomParamId.listFiles(tileFinder);
 
             for (File imd : intermediates) {
@@ -413,7 +419,7 @@ public class FileBlobStore implements BlobStore {
         }
     }
 
-    private File getFileHandleTile(TileObject stObj, boolean create) {
+    private File getFileHandleTile(TileObject stObj, boolean create) throws StorageException {
         final MimeType mimeType;
         try {
             mimeType = MimeType.createFromFormat(stObj.getBlobFormat());
@@ -422,20 +428,18 @@ public class FileBlobStore implements BlobStore {
             throw new RuntimeException(me);
         }
 
-        final String layerName = stObj.getLayerName();
-        final long[] xyz = stObj.getXYZ();
-        final String gridSetId = stObj.getGridSetId();
-        final long parametersId = stObj.getParametersId();
-
-        final File tilePath = FilePathGenerator.tilePath(path, layerName, xyz, gridSetId, mimeType,
-                parametersId);
-
-        if (create) {
-            File parent = tilePath.getParentFile();
-            mkdirs(parent, stObj);
+        try {
+            final File tilePath = pathGenerator.tilePath(stObj, mimeType);
+    
+            if (create) {
+                File parent = tilePath.getParentFile();
+                mkdirs(parent, stObj);
+            }
+    
+            return tilePath;
+        } catch(IOException e) {
+            throw new StorageException("Failed to build tile path for tile " + stObj, e);
         }
-
-        return tilePath;
     }
 
     private Resource readFile(File fh) throws StorageException {

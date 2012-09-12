@@ -72,12 +72,6 @@ public class StorageBrokerTest extends TestCase {
         System.out.println("Deleting old test database.");
         deleteDb(TEST_DB_NAME);
 
-        System.out.println("Creating new metastore in " + findTempDir() + File.separator +TEST_DB_NAME);
-        MetaStore metaStore = new JDBCMetaBackend("org.h2.Driver",
-                "jdbc:h2:file:" + findTempDir() + File.separator +TEST_DB_NAME + ";TRACE_LEVEL_FILE=0",
-                "sa",
-                "");
-
         String blobPath = findTempDir() + File.separator + TEST_BLOB_DIR_NAME;
         System.out.println("Creating new blobstore in " + blobPath);
         
@@ -88,7 +82,7 @@ public class StorageBrokerTest extends TestCase {
         
         BlobStore blobStore = new FileBlobStore(blobPath);
         
-        StorageBroker sb = new StorageBroker(metaStore, blobStore);
+        StorageBroker sb = new LegacyStorageBroker(blobStore);
         
         //long[] xyz = {1L,2L,3L};
         Resource blob = new ByteArrayResource(new byte[20*1024]);

@@ -29,6 +29,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
+import org.geowebcache.storage.LegacyStorageBroker;
 import org.geowebcache.storage.StorageBroker;
 import org.mockito.ArgumentCaptor;
 
@@ -43,7 +44,7 @@ public class WMSServiceTest extends TestCase {
     private GridSetBroker gridsetBroker;
 
     protected void setUp() throws Exception {
-        sb = mock(StorageBroker.class);
+        sb = mock(LegacyStorageBroker.class);
         tld = mock(TileLayerDispatcher.class);
         gridsetBroker = new GridSetBroker(true, true);
     }

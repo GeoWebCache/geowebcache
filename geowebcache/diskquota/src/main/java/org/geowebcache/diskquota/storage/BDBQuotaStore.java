@@ -521,7 +521,7 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
                 while (null != (oldTileSet = tileSets.next())) {
                     final String gridsetId = oldTileSet.getGridsetId();
                     final String blobFormat = oldTileSet.getBlobFormat();
-                    final Long parametersId = oldTileSet.getParametersId();
+                    final String parametersId = oldTileSet.getParametersId();
                     newTileSet = new TileSet(newLayerName, gridsetId, blobFormat, parametersId);
                     // this creates the tileset's empty used Quota too
                     newTileSet = getOrCreateTileSet(transaction, newTileSet);

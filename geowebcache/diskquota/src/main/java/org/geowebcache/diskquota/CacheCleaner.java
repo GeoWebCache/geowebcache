@@ -209,7 +209,7 @@ public class CacheCleaner implements DisposableBean {
         final String layerName = tileSet.getLayerName();
         final String gridSetId = tileSet.getGridsetId();
         final String blobFormat = tileSet.getBlobFormat();
-        final Long parametersId = tileSet.getParametersId();
+        final String parametersId = tileSet.getParametersId();
         final int zoomLevel = tilePage.getZoomLevel();
         final long[][] pageGridCoverage = pageStore.getTilesForPage(tilePage);
 
@@ -222,7 +222,7 @@ public class CacheCleaner implements DisposableBean {
         if (log.isTraceEnabled()) {
             if (parametersId != null) {
                 log.trace("Expiring page " + tilePage + "/" + mimeType.getFormat() 
-                    + "/" + Long.toHexString(parametersId));
+                    + "/" + parametersId);
             } else {
                 log.trace("Expiring page " + tilePage + "/" + mimeType.getFormat());
             }
@@ -244,7 +244,7 @@ public class CacheCleaner implements DisposableBean {
 
     // FRD , Long parameterId
     private GWCTask createTruncateTaskForPage(final String layerName, String gridSetId,
-            int zoomLevel, long[][] pageGridCoverage, MimeType mimeType, Long parametersId) {
+            int zoomLevel, long[][] pageGridCoverage, MimeType mimeType, String parametersId) {
         TileRange tileRange;
         {
             int zoomStart = zoomLevel;

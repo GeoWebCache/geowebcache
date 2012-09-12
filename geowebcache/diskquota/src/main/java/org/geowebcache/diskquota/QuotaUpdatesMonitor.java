@@ -117,7 +117,7 @@ public class QuotaUpdatesMonitor {
     }
 
     public void tileStored(final String layerName, final String gridSetId, final String blobFormat,
-            final Long parametersId, final long x, final long y, final int z, final long blobSize) {
+            final String parametersId, final long x, final long y, final int z, final long blobSize) {
         this.quotaDiffsProducer.tileStored(layerName, gridSetId, blobFormat, parametersId, x, y, z,
                 blobSize);
     }

@@ -17,20 +17,41 @@
  */
 package org.geowebcache.storage.blobstore.file;
 
-import java.io.File;
+import static org.geowebcache.storage.blobstore.file.FilePathUtils.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.storage.TileObject;
 
 public class FilePathGenerator {
+    
+    private static Log log = LogFactory.getLog(FilePathGenerator.class);
+    
+    static final String PARAMETER_FILE = "parameters.txt";
+    Map<String, String> parameterPathCache = new ConcurrentHashMap<String, String>();
+    
+    String cacheRoot;
+    
 
+    public FilePathGenerator(String cacheRoot) {
+        this.cacheRoot = cacheRoot;
+    }
+    
     /**
-     * Builds the storage path for a tile and returns it as two components, the directory path and
-     * the tile file name.
+     * Builds the storage path for a tile and returns it as a File reference
      * <p>
      * </p>
      * 
-     * @param prefix
-     *            the cache root directory path
      * @param layerName
      *            name of the layer the tile belongs to
      * @param tileIndex
@@ -43,8 +64,8 @@ public class FilePathGenerator {
      *            the parameters identifier
      * @return File pointer to the tile image
      */
-    public static File tilePath(String prefix, String layerName, long[] tileIndex,
-            String gridSetId, MimeType mimeType, long parameters_id) {
+    public File tilePath(TileObject tile, MimeType mimeType) throws IOException {
+        final long[] tileIndex = tile.getXYZ();
         long x = tileIndex[0];
         long y = tileIndex[1];
         long z = tileIndex[2];
@@ -62,14 +83,21 @@ public class FilePathGenerator {
 
         String fileExtension = mimeType.getFileExtension();
 
-        path.append(prefix);
+        path.append(cacheRoot);
         path.append(File.separatorChar);
-        appendFiltered(layerName, path);
+        appendFiltered(tile.getLayerName(), path);
         path.append(File.separatorChar);
-        appendGridsetZoomLevelDir(gridSetId, z, path);
-        if (parameters_id != -1L) {
+        appendGridsetZoomLevelDir(tile.getGridSetId(), z, path);
+        String parametersId = tile.getParametersId();
+        Map<String, String> parameters = tile.getParameters();
+        if (parametersId == null && parameters != null && !parameters.isEmpty()) {
+            parametersId = getParametersId(tile.getLayerName(), path.toString(), parameters);
+            tile.setParametersId(parametersId);
+            // path.append(Long.toHexString(parameters_id));
+        }
+        if(parametersId != null) {
             path.append('_');
-            path.append(Long.toHexString(parameters_id));
+            path.append(parametersId);
         }
         path.append(File.separatorChar);
         zeroPadder(halfx, digits, path);
@@ -87,85 +115,156 @@ public class FilePathGenerator {
         return tileFile;
     }
 
-    public static String gridsetZoomLevelDir(String gridSetId, long zoomLevel) {
-        String gridSetStr = filteredGridSetId(gridSetId);
-        StringBuilder sb = new StringBuilder(gridSetStr);
-        sb.append('_');
-        zeroPadder(zoomLevel, 2, sb);
-        return sb.toString();
+    protected String buildKey(String parametersKvp) {
+        return DigestUtils.shaHex(parametersKvp);
+    }
+    
+    protected String getParametersId(String gridSetId, String fileBase, Map<String, String> parameters) throws IOException {
+        String parametersKvp = getParametersKvp(parameters);
+        String parametersSHA = buildKey(parametersKvp);
+        String pathKey = gridSetId + parametersKvp;
+        String parametersId = parameterPathCache.get(pathKey);
+        if(log.isDebugEnabled()) {
+            log.debug("Searched in path cache for key " + pathKey + ", found " + parametersId);
+        }
+
+
+        // common case, the param ids are cached and the target dir exists already
+        if(parametersId != null) {
+            File cacheDirectory = new File(fileBase + "_" + parametersId);
+            if(cacheDirectory.exists()) {
+                if(log.isDebugEnabled()) {
+                    log.debug("Directory found at first attempt for " + pathKey + ": " + cacheDirectory.getPath());
+                } 
+                return parametersId;
+            }
+            // if it does not exist we need to synch up before creation
+        }
+        
+        synchronized (this) {
+            // check if the pathKey has been associated by another thread in the same GWC
+            // while we were waiting on the synch region. If another GWC instance created the
+            // path we won't have it in our cache
+            parametersId = parameterPathCache.get(pathKey);
+            if(parametersId != null) {
+                File cacheDirectory = new File(fileBase + "_" + parametersId);
+                if(!cacheDirectory.exists()) {
+                    if(log.isDebugEnabled()) {
+                        log.debug("Creating new cache directory for " + pathKey + ": " + cacheDirectory.getPath());
+                    }
+                    createCacheDirectory(cacheDirectory, parametersKvp);
+                } else {
+                    if(log.isDebugEnabled()) {
+                        log.debug("Directory found for " + pathKey + ": " + cacheDirectory.getPath());
+                    }
+                }
+                return parametersId;
+            }
+            
+            // ok, build the path
+            for(int i = 0; i < Integer.MAX_VALUE; i++) {
+                parametersId = parametersSHA + "_" + i;
+                File currFile = new File(fileBase + "_" + parametersId);
+                if(!currFile.exists() && !parameterCollision(parametersId)) {
+                    if(createCacheDirectory(currFile, parametersKvp)) {
+                        if(log.isDebugEnabled()) {
+                            log.debug("Created new cache directory for " + pathKey + ": " + currFile.getPath());
+                        }
+                        parameterPathCache.put(pathKey, parametersId);
+                        return parametersId;
+                    }
+                } 
+                
+                // directory exists, we need to check the parameters
+                File parameterFile = new File(currFile, PARAMETER_FILE);
+                if(!parameterFile.exists()) {
+                    // leave it alone, it may be another GWC process trying to 
+                    // write on the same directory
+                    if(log.isDebugEnabled()) {
+                        log.debug("Found empty cache directory for " + pathKey + ", skipping: " + currFile.getPath());
+                    }
+                } else {
+                    // check if the params are the same, or we're just hitting a collision
+                    String paramFileKvp = FileUtils.readFileToString(parameterFile);
+                    String currPathKey = fileBase + "_" + paramFileKvp;
+                    if(paramFileKvp.equals(parametersKvp)) {
+                        if(log.isDebugEnabled()) {
+                            log.debug("Found cache directory for " + pathKey + ", skipping: " + currFile.getPath());
+                        }
+                        parameterPathCache.put(currPathKey, paramFileKvp);
+                        return parametersId;
+                    } else {
+                        if(log.isDebugEnabled()) {
+                            log.debug("Found busy cache directory for " + pathKey + ", collision found, skipping: " + currFile.getPath());
+                        }
+                    }
+                }
+                
+            }
+        }
+        
+        throw new RuntimeException("Failed to locate an appropriate folder for the pathKey " + pathKey 
+                + ", this is likely due a programmin error");
     }
 
-    private static void appendGridsetZoomLevelDir(String gridSetId, long z, StringBuilder path) {
+    /**
+     * Checks if a parameterId collides with something already in the cache
+     * 
+     * @param parametersId
+     * @return
+     */
+    boolean parameterCollision(String parametersId) {
+        return parameterPathCache.values().contains(parametersId);
+    }
+
+    /**
+     * Writes down the root of a cache directory and the associated parameter file
+     * 
+     * @param cacheDirectory
+     * @param parametersKvp
+     * @throws IOException
+     */
+    private boolean createCacheDirectory(File cacheDirectory, String parametersKvp) throws IOException {
+        if(!cacheDirectory.mkdirs()) {
+            if(cacheDirectory.exists()) {
+                // collision with another GWC active on the same directory, leave it alone
+                return false;
+            } else {
+                throw new IOException("Failed to create tile directory " + cacheDirectory.getAbsolutePath());
+            }
+        }
+        File parameterFile = new File(cacheDirectory, PARAMETER_FILE);
+        FileUtils.write(parameterFile, parametersKvp);
+        return true;
+    }
+
+    /**
+     * Turns the parameter list into a sorted KVP string
+     * 
+     * @param parameters
+     * @return
+     */
+    protected String getParametersKvp(Map<String, String> parameters) {
+        StringBuilder sb = new StringBuilder();
+        SortedMap<String, String> sorted = new TreeMap<String, String>(parameters);
+        for (Map.Entry<String, String> e : sorted.entrySet()) {
+            if(sb.length() == 0) {
+                sb.append("?");
+            } else {
+                sb.append("&");
+            }
+            sb.append(e.getKey()).append('=').append(e.getValue());
+        }
+        String paramtersKvp = sb.toString();
+        return paramtersKvp;
+    }
+    
+    private void appendGridsetZoomLevelDir(String gridSetId, long z, StringBuilder path) {
         appendFiltered(gridSetId, path);
         path.append('_');
         zeroPadder(z, 2, path);
     }
 
-    public static String zeroPadder(long number, int order) {
-        StringBuilder sb = new StringBuilder();
-        zeroPadder(number, order, sb);
-        return sb.toString();
-    }
 
-    /**
-     * Silly way to pad numbers with leading zeros, since I don't know a fast way of doing this in
-     * Java.
-     * 
-     * @param number
-     * @param order
-     * @return
-     */
-    private static void zeroPadder(long number, int order, StringBuilder padding) {
-        int numberOrder = 1;
-
-        if (number > 9) {
-            if (number > 11) {
-                numberOrder = (int) Math.ceil(Math.log10(number) - 0.001);
-            } else {
-                numberOrder = 2;
-            }
-        }
-
-        int diffOrder = order - numberOrder;
-
-        if (diffOrder > 0) {
-
-            while (diffOrder > 0) {
-                padding.append('0');
-                diffOrder--;
-            }
-            padding.append(number);// toString() + Long.toString(number);
-        } else {
-            padding.append(number);
-        }
-    }
-
-    public static String filteredGridSetId(String gridSetId) {
-        return gridSetId.replace(':', '_');
-    }
-
-    public static String filteredLayerName(String layerName) {
-        return layerName.replace(':', '_').replace(' ', '_');
-    }
-
-    private static void appendFiltered(String str, StringBuilder path) {
-        char c;
-        for (int i = 0; i < str.length(); i++) {
-            c = str.charAt(i);
-            if (':' == c || ' ' == c) {
-                c = '_';
-            }
-            path.append(c);
-        }
-    }
-
-    /**
-     * Extracts the zoomLevel from {@code <gridsetPrefix>_<zLevel>[_<parametersId>]})
-     * @precondition {@code dirName.startsWith(gridsetPrefix + "_")}
-     */
-    public static int findZoomLevel(final String gridsetPrefix, final String dirName) {
-        assert dirName.startsWith(gridsetPrefix + "_");
-        String[] parts = dirName.substring(gridsetPrefix.length() + 1).split("_");
-        return Integer.parseInt(parts[0]);
-    }
+   
 }

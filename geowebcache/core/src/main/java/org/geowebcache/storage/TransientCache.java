@@ -15,13 +15,15 @@
 package org.geowebcache.storage;
 
 import java.io.IOException;
-import java.lang.ref.SoftReference;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
+import org.geowebcache.mime.MimeType;
+import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 
 /**
  * Non-thread safe Resource cache. Currently in-memory only.
@@ -32,6 +34,17 @@ public class TransientCache {
     private final int maxTiles;
     private final int maxStorage;
     private long currentStorage;
+    
+    /**
+     * A path generator that uses the key set as its key to build keys suitable for usage in
+     * the in memory transient cache
+     */
+    private static FilePathGenerator keyGenerator = new FilePathGenerator("") {
+        protected String getParametersId(String base, java.util.Map<String,String> parameters) throws java.io.IOException {
+            return getParametersKvp(parameters);
+        };
+    };
+    
     private Map<String,Resource> cache = new LinkedHashMap<String, Resource>() {
 
         @Override
@@ -104,4 +117,14 @@ public class TransientCache {
         }
         return remove;
     }
+    
+    public static String computeTransientKey(TileObject tile) {
+        try {
+            MimeType mime = MimeType.createFromFormat(tile.getBlobFormat());
+            return keyGenerator.tilePath(tile, mime).getAbsolutePath();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
 }

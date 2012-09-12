@@ -22,19 +22,15 @@ import java.sql.SQLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.ConfigurationException;
-import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
-import org.geowebcache.storage.MetaStore;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.StorageObject.Status;
 import org.geowebcache.storage.TileObject;
-import org.geowebcache.storage.TileRange;
-import org.springframework.util.Assert;
 
 /**
  * JDBC implementation of a {@link MetaStore}
  */
-public class JDBCMetaBackend implements MetaStore {
+public class JDBCMetaBackend  {
     private static Log log = LogFactory
             .getLog(org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend.class);
 
@@ -161,94 +157,11 @@ public class JDBCMetaBackend implements MetaStore {
         return enabled;
     }
 
-    public boolean delete(String layerName) throws StorageException {
-        long layerId = idCache.getLayerId(layerName);
-        try {
-            wrpr.deleteLayer(layerId);
-            return true;
-        } catch (SQLException se) {
-            log.error("Failed to delete layer '" + layerName + "'", se);
-        }
-
-        return false;
-    }
-
-    public boolean deleteByGridsetId(final String layerName, final String gridsetName)
-            throws StorageException {
-        long layerId = idCache.getLayerId(layerName);
-        long gridSetId = idCache.getGridSetsId(gridsetName);
-        try {
-            wrpr.deleteLayerGridSubset(layerId, gridSetId);
-            return true;
-        } catch (SQLException se) {
-            log.error("Failed to delete layer gridset '" + layerName + "'" + "/'" + gridsetName
-                    + "'", se);
-        }
-
-        return false;
-    }
-
-    public boolean rename(final String oldLayerName, final String newLayerName)
-            throws StorageException {
-        Assert.notNull(oldLayerName, "old layer name");
-        Assert.notNull(newLayerName, "new layer name");
-
-        long layerId = idCache.getLayerId(oldLayerName);
-        try {
-            wrpr.renameLayer(layerId, newLayerName);
-            idCache.clear();
-            return true;
-        } catch (SQLException se) {
-            log.error("Failed to rename layer '" + oldLayerName + "' to '" + newLayerName + "'", se);
-        }
-
-        return false;
-    }
-
-    public boolean delete(TileObject stObj) throws StorageException {
-        stObj.setLayerId(idCache.getLayerId(stObj.getLayerName()));
-        stObj.setFormatId(idCache.getFormatId(stObj.getBlobFormat()));
-        long parametersId = idCache.getParametersId(stObj.getParameters());
-        stObj.setParamtersId(parametersId);
-
-        try {
-            wrpr.deleteTile(stObj);
-            return true;
-        } catch (SQLException se) {
-            log.error("Failed to get tile: " + se.getMessage());
-        }
-
-        return false;
-    }
-
-    public boolean delete(BlobStore blobStore, TileRange trObj) throws StorageException {
-        long layerId = idCache.getLayerId(trObj.getLayerName());
-        long formatId = idCache.getFormatId(trObj.getMimeType().getFormat());
-        // FRD Set the parameters ID
-        long parametersId = -1;
-        if (trObj.getParametersId() != null) {
-            parametersId = trObj.getParametersId();
-        } else if (trObj.getParameters() != null) {
-            parametersId = idCache.getParametersId(trObj.getParameters());
-            if (-1L != parametersId) {
-                trObj.setParametersId(parametersId);
-            }
-        }
-        long gridSetIdId = idCache.getGridSetsId(trObj.getGridSetId());
-
-        for (int zoomLevel = trObj.getZoomStart(); zoomLevel <= trObj.getZoomStop(); zoomLevel++) {
-            wrpr.deleteRange(blobStore, trObj, zoomLevel, layerId, formatId, parametersId,
-                    gridSetIdId);
-        }
-
-        return true;
-    }
-
     public boolean get(TileObject stObj) throws StorageException {
         stObj.setLayerId(idCache.getLayerId(stObj.getLayerName()));
         stObj.setFormatId(idCache.getFormatId(stObj.getBlobFormat()));
         stObj.setGridSetIdId(idCache.getGridSetsId(stObj.getGridSetId()));
-        stObj.setParamtersId(idCache.getParametersId(stObj.getParameters()));
+        stObj.setParametersId(String.valueOf(idCache.getParametersId(stObj.getParameters())));
 
         try {
 
@@ -267,35 +180,6 @@ public class JDBCMetaBackend implements MetaStore {
 
         } catch (SQLException se) {
             log.error("Failed to get tile: " + se.getMessage());
-        }
-
-        return false;
-    }
-
-    public void put(TileObject stObj) throws StorageException {
-        stObj.setLayerId(idCache.getLayerId(stObj.getLayerName()));
-        stObj.setFormatId(idCache.getFormatId(stObj.getBlobFormat()));
-        stObj.setGridSetIdId(idCache.getGridSetsId(stObj.getGridSetId()));
-        stObj.setParamtersId(idCache.getParametersId(stObj.getParameters()));
-
-        try {
-            wrpr.deleteTile(stObj);
-        } catch (SQLException se) {
-            log.error("Failed to delete tile: " + se.getMessage());
-        }
-
-        try {
-            wrpr.putTile(stObj);
-        } catch (SQLException se) {
-            log.error("Failed to put tile: " + se.getMessage());
-        }
-    }
-
-    public boolean unlock(TileObject stObj) throws StorageException {
-        try {
-            return wrpr.unlockTile(stObj);
-        } catch (SQLException se) {
-            log.error("Failed to unlock tile: " + se.getMessage());
         }
 
         return false;
