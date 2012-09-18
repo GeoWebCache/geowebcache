@@ -5,13 +5,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
-import com.sleepycat.persist.model.DeleteAction;
-import com.sleepycat.persist.model.Entity;
-import com.sleepycat.persist.model.PrimaryKey;
-import com.sleepycat.persist.model.Relationship;
-import com.sleepycat.persist.model.SecondaryKey;
-
-@Entity
 public class PageStats implements Serializable {
 
     /**
@@ -19,10 +12,8 @@ public class PageStats implements Serializable {
      */
     private static final long serialVersionUID = 719776699585233200L;
 
-    @PrimaryKey(sequence = "page_stats_seq")
     private long id;
 
-    @SecondaryKey(name = "page_stats_by_page_id", relate = Relationship.ONE_TO_ONE, relatedEntity = TilePage.class, onRelatedEntityDelete = DeleteAction.CASCADE)
     private long pageId;
 
     /**
@@ -31,13 +22,10 @@ public class PageStats implements Serializable {
      * time elapsed since the last use ({@link #lastAccessTimeMinutes}), and the new number of hits
      * added in that period of time.
      */
-    @SecondaryKey(name = "LFU", relate = Relationship.MANY_TO_ONE)
     private float frequencyOfUse;
 
-    @SecondaryKey(name = "LRU", relate = Relationship.MANY_TO_ONE)
     private int lastAccessTimeMinutes;
 
-    @SecondaryKey(name = "fill_factor", relate = Relationship.MANY_TO_ONE)
     private float fillFactor;
 
     private BigInteger numHits;

@@ -61,7 +61,7 @@
     </dependency>
     <dependency>
       <groupId>org.geowebcache</groupId>
-      <artifactId>gwc-diskquota</artifactId>
+      <artifactId>gwc-diskquota-bdb</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

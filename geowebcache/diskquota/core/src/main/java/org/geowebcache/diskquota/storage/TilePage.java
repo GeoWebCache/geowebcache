@@ -1,21 +1,12 @@
 package org.geowebcache.diskquota.storage;
 
-import com.sleepycat.persist.model.DeleteAction;
-import com.sleepycat.persist.model.Entity;
-import com.sleepycat.persist.model.PrimaryKey;
-import com.sleepycat.persist.model.Relationship;
-import com.sleepycat.persist.model.SecondaryKey;
 
-@Entity
 public class TilePage {
 
-    @PrimaryKey(sequence = "page_id")
     private long id;
 
-    @SecondaryKey(name = "tileset_id_fk", relate = Relationship.MANY_TO_ONE, relatedEntity = TileSet.class, onRelatedEntityDelete = DeleteAction.CASCADE)
     private String tileSetId;
 
-    @SecondaryKey(name = "page_key", relate = Relationship.ONE_TO_ONE)
     private String key;
 
     private byte pageZ;

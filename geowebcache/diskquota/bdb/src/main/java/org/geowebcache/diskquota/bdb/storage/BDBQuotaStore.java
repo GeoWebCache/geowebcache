@@ -1,4 +1,4 @@
-package org.geowebcache.diskquota.storage;
+package org.geowebcache.diskquota.bdb.storage;
 
 import static org.geowebcache.diskquota.DiskQuotaMonitor.GWC_DISKQUOTA_DISABLED;
 
@@ -22,6 +22,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.diskquota.QuotaStore;
+import org.geowebcache.diskquota.storage.PageStats;
+import org.geowebcache.diskquota.storage.PageStatsPayload;
+import org.geowebcache.diskquota.storage.PageStoreConfig;
+import org.geowebcache.diskquota.storage.Quota;
+import org.geowebcache.diskquota.storage.TilePage;
+import org.geowebcache.diskquota.storage.TilePageCalculator;
+import org.geowebcache.diskquota.storage.TileSet;
+import org.geowebcache.diskquota.storage.TileSetVisitor;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;

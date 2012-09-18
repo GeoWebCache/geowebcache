@@ -22,12 +22,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.NumberFormat;
 
-import com.sleepycat.persist.model.DeleteAction;
-import com.sleepycat.persist.model.Entity;
-import com.sleepycat.persist.model.PrimaryKey;
-import com.sleepycat.persist.model.Relationship;
-import com.sleepycat.persist.model.SecondaryKey;
-
 /**
  * A <b>Mutable</b> representation of the disk usage of a given cache tile set, given by a value and
  * a {@link StorageUnit storage unit}.
@@ -38,7 +32,6 @@ import com.sleepycat.persist.model.SecondaryKey;
  * @author groldan
  * 
  */
-@Entity
 public class Quota implements Cloneable, Comparable<Quota>, Serializable {
 
     private static final long serialVersionUID = -3817255124248938529L;
@@ -49,10 +42,8 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
         NICE_FORMATTER.setMaximumFractionDigits(2);
     }
 
-    @PrimaryKey(sequence = "quota_id")
     private int id;
 
-    @SecondaryKey(name = "tileset_id", relatedEntity = TileSet.class, relate = Relationship.ONE_TO_ONE, onRelatedEntityDelete = DeleteAction.CASCADE)
     private String tileSetId;
 
     private BigInteger bytes;
@@ -71,15 +62,15 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
         bytes = quota.getBytes();
     }
 
-    int getId() {
+    public int getId() {
         return id;
     }
 
-    String getTileSetId() {
+    public String getTileSetId() {
         return tileSetId;
     }
 
-    void setTileSetId(String tileSetId) {
+    public void setTileSetId(String tileSetId) {
         this.tileSetId = tileSetId;
     }
 
@@ -233,5 +224,10 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
     @Override
     public Quota clone() {
         return new Quota(this);
+    }
+
+    public void setId(int id) {
+        // TODO Auto-generated method stub
+        
     }
 }

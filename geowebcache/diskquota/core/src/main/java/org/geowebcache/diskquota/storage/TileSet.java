@@ -1,17 +1,10 @@
 package org.geowebcache.diskquota.storage;
 
-import com.sleepycat.persist.model.Entity;
-import com.sleepycat.persist.model.PrimaryKey;
-import com.sleepycat.persist.model.Relationship;
-import com.sleepycat.persist.model.SecondaryKey;
 
-@Entity
 public class TileSet implements Comparable<TileSet> {
 
-    @PrimaryKey
     private String key;
 
-    @SecondaryKey(name = "layer", relate = Relationship.MANY_TO_ONE)
     private String layerName;
 
     private String gridsetId;
@@ -26,7 +19,7 @@ public class TileSet implements Comparable<TileSet> {
         // empty constructor, needed by runtime code optimizers and reflection
     }
 
-    TileSet(String id) {
+    public TileSet(String id) {
         this.key = id;
     }
 

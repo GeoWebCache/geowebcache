@@ -22,6 +22,7 @@ import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
 import org.geowebcache.diskquota.DiskQuotaMonitor;
+import org.geowebcache.diskquota.bdb.storage.BDBQuotaStore;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;

@@ -21,7 +21,6 @@ import java.util.concurrent.BlockingQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.diskquota.storage.BDBQuotaStore;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.StorageBroker;
 import org.springframework.util.Assert;
