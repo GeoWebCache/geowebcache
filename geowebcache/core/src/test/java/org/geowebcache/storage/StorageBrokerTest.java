@@ -7,7 +7,6 @@ import junit.framework.TestCase;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
-import org.h2.tools.DeleteDbFiles;
 
 public class StorageBrokerTest extends TestCase {
     public static final String TEST_DB_NAME = "gwcTestStorageBroker";
@@ -28,7 +27,7 @@ public class StorageBrokerTest extends TestCase {
         if(! RUN_PERFORMANCE_TESTS)
             return;
         
-        StorageBroker sb = resetAndPrepBasicTestDb();
+        StorageBroker sb = resetAndPrepStorageBroker();
         
         for(int i=0;i<REPEAT_COUNT; i++) {
             runBasicTileTest(sb, i, "Uni");
@@ -40,7 +39,7 @@ public class StorageBrokerTest extends TestCase {
             return;
         
         System.out.println("\n");
-        StorageBroker sb = resetAndPrepBasicTestDb();
+        StorageBroker sb = resetAndPrepStorageBroker();
         
         long iterations = REPEAT_COUNT;
         
@@ -67,9 +66,8 @@ public class StorageBrokerTest extends TestCase {
                 + THREAD_COUNT + " threads in parallel" );
     }
     
-    private StorageBroker resetAndPrepBasicTestDb() throws Exception {
+    private StorageBroker resetAndPrepStorageBroker() throws Exception {
         System.out.println("Deleting old test database.");
-        deleteDb(TEST_DB_NAME);
 
         String blobPath = findTempDir() + File.separator + TEST_BLOB_DIR_NAME;
         System.out.println("Creating new blobstore in " + blobPath);
@@ -101,11 +99,6 @@ public class StorageBrokerTest extends TestCase {
         System.out.println(TILE_PUT_COUNT+ " inserts took " + Long.toString(stopInsert - startInsert) + "ms");
         
         return sb;
-    }
-    
-    public static void deleteDb(String db_name) throws Exception {
-        DeleteDbFiles.execute(findTempDir(), db_name, true);
-        // Should clear out blobs too
     }
     
     public static String findTempDir() throws Exception {
