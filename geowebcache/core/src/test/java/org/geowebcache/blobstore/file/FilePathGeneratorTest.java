@@ -7,6 +7,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.storage.TileObject;
@@ -49,25 +50,28 @@ public class FilePathGeneratorTest extends TestCase {
         Map<String, String> params = new HashMap<String, String>();
         params.put("style", "population");
         TileObject tile = TileObject.createCompleteTileObject("states", new long[] {0, 0, 0}, "EPSG:2163", "png", params, null);
+        String sha1 = DigestUtils.shaHex("?style=population");
+        
 
         // first time, this will also create the path on disk
         File path = generator.tilePath(tile, ImageMime.png);
-        testParameterId(path, "2314488c68b7a06b8a42afae1cc5fc1e640ec75a_0", "&style=population");
+        testParameterId(path, sha1 + "_0", "?style=population");
         
         // another time, it should go off the pre-calculated tile id
         path = generator.tilePath(tile, ImageMime.png);
-        testParameterId(path, "2314488c68b7a06b8a42afae1cc5fc1e640ec75a_0", "&style=population");
+        testParameterId(path, sha1 + "_0", "?style=population");
         
         // this time with a separate tile, but same params
         tile = TileObject.createCompleteTileObject("states", new long[] {0, 0, 0}, "EPSG:2163", "png", params, null);
         path = generator.tilePath(tile, ImageMime.png);
-        testParameterId(path, "2314488c68b7a06b8a42afae1cc5fc1e640ec75a_0", "&style=population");
+        testParameterId(path, sha1 + "_0", "?style=population");
         
         // and now a separate tile, but different params
         params.put("style", "polygon");
         tile = TileObject.createCompleteTileObject("states", new long[] {0, 0, 0}, "EPSG:2163", "png", params, null);
         path = generator.tilePath(tile, ImageMime.png);
-        testParameterId(path, "c518a4ee815d2451ac0c2504abc6196c1b9b7ac8_0", "&style=polygon");
+        sha1 = DigestUtils.shaHex("?style=polygon");
+        testParameterId(path, sha1 + "_0", "?style=polygon");
     }
     
     public void testCollisionManagement() throws Exception {
@@ -76,14 +80,14 @@ public class FilePathGeneratorTest extends TestCase {
         params.put("style", "population");
         TileObject tile = TileObject.createCompleteTileObject("states", new long[] {0, 0, 0}, "EPSG:2163", "png", params, null);
         File path = collisionGenerator.tilePath(tile, ImageMime.png);
-        testParameterId(path, "abc_0", "&style=population");
+        testParameterId(path, "abc_0", "?style=population");
 
         // now we'll get a collision
         params = new HashMap<String, String>();
         params.put("style", "polygon");
         tile = TileObject.createCompleteTileObject("states", new long[] {0, 0, 0}, "EPSG:2163", "png", params, null);
         path = collisionGenerator.tilePath(tile, ImageMime.png);
-        testParameterId(path, "abc_1", "&style=polygon");
+        testParameterId(path, "abc_1", "?style=polygon");
         
         // remove the first zoom directory, assuming it was emptied somehow
         File paramCacheRoot = new File(testRoot, "states/EPSG_2163_00/abc_0");
@@ -95,7 +99,7 @@ public class FilePathGeneratorTest extends TestCase {
         params.put("style", "hatches");
         tile = TileObject.createCompleteTileObject("states", new long[] {0, 0, 0}, "EPSG:2163", "png", params, null);
         path = collisionGenerator.tilePath(tile, ImageMime.png);
-        testParameterId(path, "abc_2", "&style=hatches");
+        testParameterId(path, "abc_2", "?style=hatches");
         
     }
 
