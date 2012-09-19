@@ -40,7 +40,8 @@ public class TransientCache {
      * the in memory transient cache
      */
     private static FilePathGenerator keyGenerator = new FilePathGenerator("") {
-        protected String getParametersId(String base, java.util.Map<String,String> parameters) throws java.io.IOException {
+        @Override
+        protected String getParametersId(String gridSetId, String fileBase, java.util.Map<String,String> parameters) throws IOException {
             return getParametersKvp(parameters);
         };
     };

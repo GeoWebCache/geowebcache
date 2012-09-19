@@ -390,15 +390,6 @@ public class FileBlobStore implements BlobStore {
         return true;
     }
 
-    public Resource getBlobOnly(TileObject stObj) throws StorageException {
-        File fh = getFileHandleTile(stObj, false);
-        Resource resource = readFile(fh);
-        if (null != resource && 0L == stObj.getCreated()) {
-            stObj.setCreated(resource.getLastModified());
-        }
-        return resource;
-    }
-    
     public boolean get(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, false);
         if(!fh.exists()) {

@@ -43,15 +43,6 @@ public interface BlobStore {
     public boolean delete(TileRange obj) throws StorageException;
 
     /**
-     * Retrieve a blob from storage. Calls setBlob() on passed object.
-     * 
-     * @param key
-     * @return data, byte[0] if the blob is empty, null if it did not exist
-     * @throws StorageException
-     */
-    public Resource getBlobOnly(TileObject obj) throws StorageException;
-    
-    /**
      * Retrieves a tile from the storage, filling its metadata too
      * @param obj
      * @return
