@@ -39,88 +39,52 @@ public class DefaultStorageBroker implements StorageBroker {
         transientCache = new TransientCache(100,1000);
     }
 
-    /* (non-Javadoc)
-     * @see org.geowebcache.storage.StorageBroker#addBlobStoreListener(org.geowebcache.storage.BlobStoreListener)
-     */
     public void addBlobStoreListener(BlobStoreListener listener){
         blobStore.addListener(listener);
     }
     
-    /* (non-Javadoc)
-     * @see org.geowebcache.storage.StorageBroker#removeBlobStoreListener(org.geowebcache.storage.BlobStoreListener)
-     */
     public boolean removeBlobStoreListener(BlobStoreListener listener){
         return blobStore.removeListener(listener);
     }
     
-    /* (non-Javadoc)
-     * @see org.geowebcache.storage.StorageBroker#delete(java.lang.String)
-     */
     public boolean delete(String layerName) throws StorageException {
         return blobStore.delete(layerName);
     }
 
-    /* (non-Javadoc)
-     * @see org.geowebcache.storage.StorageBroker#deleteByGridSetId(java.lang.String, java.lang.String)
-     */
     public boolean deleteByGridSetId(final String layerName, final String gridSetId)
             throws StorageException {
         return blobStore.deleteByGridsetId(layerName, gridSetId);
     }
 
-    /* (non-Javadoc)
-     * @see org.geowebcache.storage.StorageBroker#rename(java.lang.String, java.lang.String)
-     */
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
         return blobStore.rename(oldLayerName, newLayerName);
     }
 
-    /* (non-Javadoc)
-     * @see org.geowebcache.storage.StorageBroker#delete(org.geowebcache.storage.TileRange)
-     */
     public boolean delete(TileRange trObj) throws StorageException {
         return blobStore.delete(trObj);
     }
 
-    /* (non-Javadoc)
-     * @see org.geowebcache.storage.StorageBroker#get(org.geowebcache.storage.TileObject)
-     */
     public boolean get(TileObject tileObj) throws StorageException {
         return blobStore.get(tileObj);
     }
 
-    /* (non-Javadoc)
-     * @see org.geowebcache.storage.StorageBroker#put(org.geowebcache.storage.TileObject)
-     */
     public boolean put(TileObject tileObj) throws StorageException {
         blobStore.put(tileObj);
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.geowebcache.storage.StorageBroker#destroy()
-     */
     public void destroy() {
         log.info("Destroying StorageBroker");
     }
 
-    /* (non-Javadoc)
-     * @see org.geowebcache.storage.StorageBroker#getLayerMetadata(java.lang.String, java.lang.String)
-     */
     public String getLayerMetadata(final String layerName, final String key) {
         return this.blobStore.getLayerMetadata(layerName, key);
     }
 
-    /* (non-Javadoc)
-     * @see org.geowebcache.storage.StorageBroker#putLayerMetadata(java.lang.String, java.lang.String, java.lang.String)
-     */
     public void putLayerMetadata(final String layerName, final String key, final String value) {
         this.blobStore.putLayerMetadata(layerName, key, value);
     }
 
-    /* (non-Javadoc)
-     * @see org.geowebcache.storage.StorageBroker#getTransient(org.geowebcache.storage.TileObject)
-     */
     public boolean getTransient(TileObject tile) {
         String key = TransientCache.computeTransientKey(tile);
         Resource resource;
@@ -131,9 +95,6 @@ public class DefaultStorageBroker implements StorageBroker {
         return resource != null;
     }
 
-    /* (non-Javadoc)
-     * @see org.geowebcache.storage.StorageBroker#putTransient(org.geowebcache.storage.TileObject)
-     */
     public void putTransient(TileObject tile) {
         String key = TransientCache.computeTransientKey(tile);
         synchronized (transientCache) {
