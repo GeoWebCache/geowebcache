@@ -35,7 +35,6 @@ import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.storage.DefaultStorageBroker;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
@@ -66,7 +65,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
 
     /**
      * @deprecated as of 1.2.5, use
-     *             {@link #ConveyorTile(DefaultStorageBroker, String, String, long[], MimeType, Map, HttpServletRequest, HttpServletResponse)}
+     *             {@link #ConveyorTile(StorageBroker, String, String, long[], MimeType, Map, HttpServletRequest, HttpServletResponse)}
      *             instead. This method just calls it with the provided {@code fullParameters} and
      *             will be removed soon
      */

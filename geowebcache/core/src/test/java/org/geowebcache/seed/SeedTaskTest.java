@@ -49,7 +49,6 @@ import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.layer.wms.WMSMetaTile;
 import org.geowebcache.layer.wms.WMSSourceHelper;
 import org.geowebcache.seed.GWCTask.TYPE;
-import org.geowebcache.storage.DefaultStorageBroker;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
@@ -125,7 +124,7 @@ public class SeedTaskTest extends TestCase {
         /*
          * Create a mock storage broker that does nothing
          */
-        final StorageBroker mockStorageBroker = EasyMock.createMock(DefaultStorageBroker.class);
+        final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
         expect(mockStorageBroker.put((TileObject) anyObject())).andReturn(true).anyTimes();
         expect(mockStorageBroker.get((TileObject) anyObject())).andReturn(false).anyTimes();
         replay(mockStorageBroker);
@@ -203,7 +202,7 @@ public class SeedTaskTest extends TestCase {
         /*
          * Create a mock storage broker that does nothing
          */
-        final StorageBroker mockStorageBroker = EasyMock.createMock(DefaultStorageBroker.class);
+        final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
         expect(mockStorageBroker.put((TileObject) anyObject())).andReturn(true).anyTimes();
         expect(mockStorageBroker.get((TileObject) anyObject())).andReturn(false).anyTimes();
         replay(mockStorageBroker);
@@ -233,7 +232,7 @@ public class SeedTaskTest extends TestCase {
 
     /**
      * Make sure when seeding a given zoom level, the correct tiles are sent to the
-     * {@link DefaultStorageBroker}
+     * {@link StorageBroker}
      * 
      * @throws Exception
      */
@@ -260,7 +259,7 @@ public class SeedTaskTest extends TestCase {
          * Create a mock storage broker that has never an image in its blob store and that captures
          * the TileObject the seeder requests it to store for further test validation
          */
-        final StorageBroker mockStorageBroker = EasyMock.createMock(DefaultStorageBroker.class);
+        final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
         Capture<TileObject> storedObjects = new Capture<TileObject>() {
             /**
              * Override because setValue with anyTimes() resets the list of values

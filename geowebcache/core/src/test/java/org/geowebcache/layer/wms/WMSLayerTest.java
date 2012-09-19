@@ -50,7 +50,6 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.seed.GWCTask;
 import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.seed.TileBreeder;
-import org.geowebcache.storage.DefaultStorageBroker;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
@@ -78,7 +77,7 @@ public class WMSLayerTest extends TestCase {
 
         layer.setSourceHelper(mockSourceHelper);
 
-        final StorageBroker mockStorageBroker = EasyMock.createMock(DefaultStorageBroker.class);
+        final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
         Capture<TileObject> captured = new Capture<TileObject>();
         expect(mockStorageBroker.put(EasyMock.capture(captured))).andReturn(true).anyTimes();
         replay(mockStorageBroker);
@@ -231,7 +230,7 @@ public class WMSLayerTest extends TestCase {
     class MockTileSupport {
 
         final byte[] fakeWMSResponse;
-        final StorageBroker storageBroker = EasyMock.createMock(DefaultStorageBroker.class);
+        final StorageBroker storageBroker = EasyMock.createMock(StorageBroker.class);
         final AtomicInteger cacheHits = new AtomicInteger();
         final AtomicInteger cacheMisses = new AtomicInteger();
         final AtomicInteger storagePutCounter = new AtomicInteger();

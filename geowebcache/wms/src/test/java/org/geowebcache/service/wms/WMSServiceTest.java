@@ -1,10 +1,7 @@
 package org.geowebcache.service.wms;
 
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,9 +26,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
-import org.geowebcache.storage.DefaultStorageBroker;
 import org.geowebcache.storage.StorageBroker;
-import org.mockito.ArgumentCaptor;
 
 public class WMSServiceTest extends TestCase {
 
@@ -44,7 +39,7 @@ public class WMSServiceTest extends TestCase {
     private GridSetBroker gridsetBroker;
 
     protected void setUp() throws Exception {
-        sb = mock(DefaultStorageBroker.class);
+        sb = mock(StorageBroker.class);
         tld = mock(TileLayerDispatcher.class);
         gridsetBroker = new GridSetBroker(true, true);
     }

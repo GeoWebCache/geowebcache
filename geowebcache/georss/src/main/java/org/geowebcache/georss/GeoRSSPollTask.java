@@ -42,7 +42,6 @@ import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.storage.DiscontinuousTileRange;
 import org.geowebcache.storage.GeometryRasterMaskBuilder;
 import org.geowebcache.storage.RasterMask;
-import org.geowebcache.storage.DefaultStorageBroker;
 import org.geowebcache.storage.StorageBroker;
 
 /**
@@ -74,8 +73,8 @@ class GeoRSSPollTask implements Runnable {
     /**
      * Layer metadata property under which the lastUpdated entry value is stored
      * 
-     * @see DefaultStorageBroker#putLayerMetadata(String, String, String)
-     * @see DefaultStorageBroker#getLayerMetadata(String, String)
+     * @see StorageBroker#putLayerMetadata(String, String, String)
+     * @see StorageBroker#getLayerMetadata(String, String)
      */
     private static final String LAST_UPDATED = "GeoRSS.lastUpdated";
 
