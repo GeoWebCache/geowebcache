@@ -111,6 +111,8 @@ public class SeedTaskTest extends TestCase {
         mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
         mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
         mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
+        mockSourceHelper.setConcurrency(32);
+        mockSourceHelper.setBackendTimeout(120);    
         replay(mockSourceHelper);
 
         tl.setSourceHelper(mockSourceHelper);

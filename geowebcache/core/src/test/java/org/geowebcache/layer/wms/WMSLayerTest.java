@@ -273,6 +273,10 @@ public class WMSLayerTest extends TestCase {
             };
             mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
             expectLastCall().anyTimes().asStub();
+            mockSourceHelper.setConcurrency(32);
+            expectLastCall().once();
+            mockSourceHelper.setBackendTimeout(120);
+            expectLastCall().once();
             replay(mockSourceHelper);
 
             tl.setSourceHelper(mockSourceHelper);

@@ -44,9 +44,6 @@ import org.springframework.util.Assert;
 
 /**
  * This class is a wrapper for HTTP interaction with WMS backend
- * 
- * All methods in this class MUST be written as if they were static
- * 
  */
 public class WMSHttpHelper extends WMSSourceHelper {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSHttpHelper.class);
