@@ -36,6 +36,9 @@ import org.geowebcache.util.ServletUtils;
  */
 public abstract class WMSSourceHelper {
 
+    private int concurrency = 32;
+    private int backendTimetout;
+
     abstract protected void makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer,
             Map<String, String> wmsParams, String expectedMimeType, Resource target)
             throws GeoWebCacheException;
@@ -135,5 +138,36 @@ public abstract class WMSSourceHelper {
             return true;
         }
         return false;
+    }
+
+    /**
+     * The levels of concurrent requests this source helper is allowing
+     * @return
+     */
+    public int getConcurrency() {
+        return concurrency;
+    }
+
+    /**
+     * Sets the maximum amount of concurrent requests this source helper will issue
+     * @param concurrency
+     */
+    public void setConcurrency(int concurrency) {
+        this.concurrency = concurrency;
+    }
+
+    /**
+     * Sets the backend timeout for HTTP calls
+     * @param backendTimeout
+     */
+    public void setBackendTimeout(int backendTimeout) {
+        this.backendTimetout = backendTimeout;
+    }
+    
+    /**
+     * Returns the backend timeout for HTTP calls
+     */
+    public int getBackendTimeout() {
+        return this.backendTimetout;
     }
 }
