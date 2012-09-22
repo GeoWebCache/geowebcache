@@ -31,6 +31,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.channels.FileChannel;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -460,26 +461,44 @@ public class FileBlobStore implements BlobStore {
     }
 
     private void writeFile(File target, TileObject stObj) throws StorageException {
-        // Open the output stream
-        FileOutputStream fos;
+        // first write to temp file
+        File tmp = new File(path, "tmp");
+        tmp.mkdirs();
+        File temp = new File(tmp, UUID.randomUUID().toString());
+        
         try {
-            fos = new FileOutputStream(target);
-        } catch (FileNotFoundException ioe) {
-            throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
-        }
-
-        FileChannel channel = fos.getChannel();
-        try {
-            stObj.getBlob().transferTo(channel);
-        } catch (IOException ioe) {
-            throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
-        } finally {
+            // Open the output stream
+            FileOutputStream fos;
             try {
-                channel.close();
-            } catch (IOException ioe) {
+                fos = new FileOutputStream(temp);
+            } catch (FileNotFoundException ioe) {
                 throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
             }
+    
+            FileChannel channel = fos.getChannel();
+            try {
+                stObj.getBlob().transferTo(channel);
+            } catch (IOException ioe) {
+                throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
+            } finally {
+                try {
+                    channel.close();
+                } catch (IOException ioe) {
+                    throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
+                }
+            }
+            
+            // rename to final position. This will fail if another GWC also wrote this
+            // file, in such case we'll just eliminate this one
+            if(temp.renameTo(target)) {
+                temp = null;
+            }
+        } finally {
+            if(temp != null) {
+                temp.delete();
+            }
         }
+        
     }
 
     public void clear() throws StorageException {
