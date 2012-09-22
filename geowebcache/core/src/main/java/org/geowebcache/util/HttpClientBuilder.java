@@ -24,6 +24,7 @@ import java.net.URL;
 import java.util.List;
 
 import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
@@ -155,6 +156,7 @@ public class HttpClientBuilder {
         params.setSoTimeout(backendTimeoutMillis);
         params.setConnectionTimeout(backendTimeoutMillis);
         params.setMaxTotalConnections(concurrency);
+        params.setMaxConnectionsPerHost(HostConfiguration.ANY_HOST_CONFIGURATION, concurrency);
         
         connectionManager.setParams(params);
 

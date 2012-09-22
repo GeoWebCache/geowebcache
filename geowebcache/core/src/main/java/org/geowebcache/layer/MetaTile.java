@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -353,10 +354,11 @@ public class MetaTile implements TileResponseReceiver {
         if (log.isDebugEnabled()) {
             log.debug("Thread: " + Thread.currentThread().getName() + " writing: " + tileIdx);
         }
-
+        
         // TODO should we recycle the writers ?
         // GR: it'd be only a 2% perf gain according to profiler
-        ImageWriter writer = javax.imageio.ImageIO.getImageWritersByFormatName(format).next();
+        Iterator<ImageWriter> it = javax.imageio.ImageIO.getImageWritersByFormatName(format);
+        ImageWriter writer = it.next();
         ImageWriteParam param = writer.getDefaultWriteParam();
 
         if (this.formatModifier != null) {
