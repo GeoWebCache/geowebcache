@@ -20,9 +20,14 @@ package org.geowebcache.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.locks.LockProvider;
+import org.geowebcache.locks.MemoryLockProvider;
 import org.geowebcache.mime.FormatModifier;
+
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 /**
  * POJO for geowebcache.xml configuration
@@ -47,6 +52,10 @@ public class GeoWebCacheConfiguration {
 
     /* Default values */
     private Integer backendTimeout;
+    
+    private String lockProviderName;
+
+    private transient LockProvider lockProvider;
 
     private Boolean cacheBypassAllowed;
 
@@ -68,7 +77,7 @@ public class GeoWebCacheConfiguration {
      * The persisted list of layers
      */
     private List<TileLayer> layers;
-
+    
     /**
      * Default constructor
      */
@@ -251,5 +260,30 @@ public class GeoWebCacheConfiguration {
      */
     public List<TileLayer> getLayers() {
         return layers;
+    }
+    
+    /**
+     * Returns the chosen lock provider
+     * @return
+     */
+    public LockProvider getLockProvider() {
+        if(lockProvider == null) {
+            if(lockProviderName == null) {
+                lockProvider = new MemoryLockProvider();
+            } else {
+                Object provider = GeoWebCacheExtensions.bean(lockProviderName);
+                if(provider == null) {
+                    throw new RuntimeException("Could not find lock provider " + lockProviderName 
+                            + " in the spring application context");
+                } else if(!(provider instanceof LockProvider)) {
+                    throw new RuntimeException("Found bean " + lockProviderName 
+                            + " in the spring application context, but it was not a LockProvider");
+                } else {
+                    lockProvider = (LockProvider) provider;
+                }
+            }
+        }
+        
+        return lockProvider;
     }
 }

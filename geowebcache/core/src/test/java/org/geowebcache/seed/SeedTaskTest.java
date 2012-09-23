@@ -41,6 +41,7 @@ import junit.framework.TestCase;
 import org.easymock.Capture;
 import org.easymock.classextension.EasyMock;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.TestHelpers;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.io.Resource;

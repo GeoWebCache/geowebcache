@@ -23,9 +23,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,8 +41,8 @@ import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.layer.ExpirationRule;
-import org.geowebcache.layer.GridLocObj;
 import org.geowebcache.layer.meta.LayerMetaInformation;
+import org.geowebcache.locks.LockProvider;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
@@ -104,21 +101,13 @@ public class WMSLayer extends AbstractTileLayer {
 
     private transient int curWmsURL;
 
-    private transient Lock layerLock;
-
-    private transient boolean layerLocked;
-
-    private transient Condition layerLockedCond;
-
-    private transient Condition[] gridLocConds;
-
-    private transient HashMap<GridLocObj, Boolean> procQueue;
-
     private transient WMSSourceHelper sourceHelper;
 
     protected transient String sphericalMercatorOverride;
 
-    WMSLayer(){
+    private transient LockProvider lockProvider;
+
+    WMSLayer() {
         //default constructor for XStream
     }
     
@@ -187,10 +176,6 @@ public class WMSLayer extends AbstractTileLayer {
             backendTimeout = 120;
         }
 
-        layerLock = new ReentrantLock();
-        layerLockedCond = layerLock.newCondition();
-        procQueue = new HashMap<GridLocObj, Boolean>();
-
         if (this.metaWidthHeight == null || this.metaWidthHeight.length != 2) {
             this.metaWidthHeight = new int[2];
             this.metaWidthHeight[0] = 3;
@@ -200,13 +185,6 @@ public class WMSLayer extends AbstractTileLayer {
         // Create conditions for tile locking
         if (concurrency == null) {
             concurrency = 32;
-        }
-
-        // TODO There should be a WMSServer object and it should be on that
-        this.gridLocConds = new Condition[concurrency];
-
-        for (int i = 0; i < gridLocConds.length; i++) {
-            gridLocConds[i] = layerLock.newCondition();
         }
 
         if (this.sourceHelper instanceof WMSHttpHelper) {
@@ -344,26 +322,23 @@ public class WMSLayer extends AbstractTileLayer {
             metaTile.setExpiresHeader(GWCVars.CACHE_USE_WMS_BACKEND_VALUE);
         }
 
-        long[] metaGridLoc = metaTile.getMetaGridPos();
-        GridLocObj metaGlo = new GridLocObj(metaGridLoc, this.gridLocConds.length);
-
-        /** ****************** Acquire lock ******************* */
-        waitForQueue(metaGlo);
-        /** ****************** Check cache again ************** */
-        if (tryCache && tryCacheFetch(tile)) {
-            // Someone got it already, return lock and we're done
-            removeFromQueue(metaGlo);
-            return finalizeTile(tile);
-        }
-
-        tile.setCacheResult(CacheResult.MISS);
-        
-        /*
-         * This thread's byte buffer
-         */
-        ByteArrayResource buffer = getImageBuffer(WMS_BUFFER);
-
+        String metaKey = buildLockKey(tile, metaTile);
         try {
+            /** ****************** Acquire lock ******************* */
+            lockProvider.getLock(metaKey);
+            /** ****************** Check cache again ************** */
+            if (tryCache && tryCacheFetch(tile)) {
+                // Someone got it already, return lock and we're done
+                return finalizeTile(tile);
+            }
+    
+            tile.setCacheResult(CacheResult.MISS);
+            
+            /*
+             * This thread's byte buffer
+             */
+            ByteArrayResource buffer = getImageBuffer(WMS_BUFFER);
+
             /** ****************** No luck, Request metatile ****** */
             // Leave a hint to save expiration, if necessary
             if (saveExpirationHeaders) {
@@ -388,10 +363,36 @@ public class WMSLayer extends AbstractTileLayer {
 
             /** ****************** Return lock and response ****** */
         } finally {
-            removeFromQueue(metaGlo);
+            lockProvider.releaseLock(metaKey);
             metaTile.dispose();
         }
         return finalizeTile(tile);
+    }
+
+    private String buildLockKey(ConveyorTile tile, WMSMetaTile metaTile) {
+        StringBuilder metaKey = new StringBuilder();
+        
+        final long[] tileIndex;
+        if(metaTile != null) {
+            tileIndex = metaTile.getMetaGridPos();
+            metaKey.append("meta_");
+        } else {
+            tileIndex = tile.getTileIndex();
+            metaKey.append("tile_");
+        }
+        long x = tileIndex[0];
+        long y = tileIndex[1];
+        long z = tileIndex[2];
+
+        metaKey.append(tile.getLayerId());
+        metaKey.append("_").append(tile.getGridSetId());
+        metaKey.append("_").append(x).append("_").append(y).append("_").append(z);
+        if(tile.getParametersId() != null) {
+            metaKey.append("_").append(tile.getParametersId());
+        }            
+        metaKey.append(".").append(tile.getMimeType().getFileExtension());
+
+        return metaKey.toString();
     }
 
     /**
@@ -407,18 +408,16 @@ public class WMSLayer extends AbstractTileLayer {
             throws GeoWebCacheException {
         // String debugHeadersStr = null;
         long[] gridLoc = tile.getTileIndex();
-        GridLocObj glo = new GridLocObj(gridLoc, this.gridLocConds.length);
 
-        /** ****************** Acquire lock ******************* */
-        waitForQueue(glo);
+        String lockKey = buildLockKey(tile, null);
         try {
+            /** ****************** Acquire lock ******************* */
+            lockProvider.getLock(lockKey);
+            
             /** ****************** Check cache again ************** */
             if (tryCache && tryCacheFetch(tile)) {
                 // Someone got it already, return lock and we're done
-                removeFromQueue(glo);
                 return tile;
-                // return this.createTileResponse(tile.getData(), -1, mime,
-                // response);
             }
 
             /** ****************** Tile ******************* */
@@ -442,7 +441,7 @@ public class WMSLayer extends AbstractTileLayer {
 
             /** ****************** Return lock and response ****** */
         } finally {
-            removeFromQueue(glo);
+            lockProvider.releaseLock(lockKey);
         }
         return finalizeTile(tile);
     }
@@ -629,109 +628,6 @@ public class WMSLayer extends AbstractTileLayer {
         return null;
     }
 
-    /**
-     * Acquires lock for the entire layer, returns only after all other requests that could write to
-     * the queue have finished
-     */
-    public void acquireLayerLock() {
-        if (layerLock == null) {
-            layerLocked = true;
-            return;
-        }
-
-        boolean wait = true;
-        // Wait until the queue is free
-        while (wait) {
-            try {
-                layerLock.lock();
-                this.layerLocked = true;
-                if (this.procQueue == null || this.procQueue.size() == 0) {
-                    wait = false;
-                }
-            } finally {
-                layerLock.unlock();
-            }
-        }
-    }
-
-    /**
-     * Releases lock for the entire layer, signals threads that have been kept waiting
-     */
-    public void releaseLayerLock() {
-        if (layerLock == null) {
-            layerLocked = false;
-            return;
-        }
-
-        layerLock.lock();
-        try {
-            layerLocked = false;
-            // Wake everyone up
-            layerLockedCond.signalAll();
-        } finally {
-            layerLock.unlock();
-        }
-    }
-
-    /**
-     * 
-     * @param metaGridLoc
-     * @return
-     */
-    protected boolean waitForQueue(GridLocObj glo) {
-        boolean retry = true;
-        boolean hasWaited = false;
-        // int condIdx = getLocCondIdx(gridLoc);
-
-        while (retry) {
-            layerLock.lock();
-            try {
-                // Check for global lock
-                if (layerLocked) {
-                    this.layerLockedCond.await();
-                } else if (this.procQueue.containsKey(glo)) {
-                    // System.out.println(Thread.currentThread().getId()
-                    // + " WAITING FOR "+glo.toString()+ " convar " + condIdx);
-                    hasWaited = true;
-                    this.gridLocConds[glo.hashCode()].await();
-                    // System.out.println(Thread.currentThread().getId()
-                    // + " WAKING UP "+glo.toString()+ " convar " + condIdx);
-                } else {
-                    this.procQueue.put(glo, true);
-                    retry = false;
-                    // System.out.println(Thread.currentThread().getId()
-                    // + " CONTINUES "+glo.toString()+ " convar " + condIdx);
-                }
-            } catch (InterruptedException ie) {
-                // Do we care? Maybe if the program is about to shut down
-            } finally {
-                layerLock.unlock();
-            }
-        }
-
-        return hasWaited;
-    }
-
-    /**
-     * Synchronization function, ensures that the same metatile is not requested simultaneously by
-     * two threads.
-     * 
-     * @param gridLoc
-     *            the grid positions of the tile (bottom left of metatile)
-     * @return
-     */
-    protected void removeFromQueue(GridLocObj glo) {
-        layerLock.lock();
-        try {
-            // System.out.println(Thread.currentThread().getId()
-            // + " DONE, SIGNALLING "+glo.toString() + " convar " + condIdx);
-            this.procQueue.remove(glo);
-            this.gridLocConds[glo.hashCode()].signalAll();
-        } finally {
-            layerLock.unlock();
-        }
-    }
-
     public void setErrorMime(String errormime) {
         this.errorMime = errormime;
     }
@@ -852,5 +748,9 @@ public class WMSLayer extends AbstractTileLayer {
     @Override
     public String getStyles() {
         return wmsStyles;
+    }
+
+    public void setLockProvider(LockProvider lockProvider) {
+        this.lockProvider = lockProvider;
     }
 }

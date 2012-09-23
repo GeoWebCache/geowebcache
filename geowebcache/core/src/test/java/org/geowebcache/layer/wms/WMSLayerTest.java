@@ -40,6 +40,7 @@ import junit.framework.TestCase;
 import org.easymock.Capture;
 import org.easymock.IAnswer;
 import org.easymock.classextension.EasyMock;
+import org.geowebcache.TestHelpers;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -55,6 +56,7 @@ import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
 import org.geowebcache.storage.TransientCache;
+import org.geowebcache.util.MockLockProvider;
 import org.geowebcache.util.MockWMSSourceHelper;
 
 import com.mockrunner.mock.web.MockHttpServletRequest;
@@ -70,12 +72,19 @@ public class WMSLayerTest extends TestCase {
 
     private final GridSetBroker gridSetBroker = new GridSetBroker(false, false);
 
+    @Override
+    protected void tearDown() throws Exception {
+        TestHelpers.mockProvider.verify();
+        TestHelpers.mockProvider.clear();
+    }
+
     public void testSeedMetaTiled() throws Exception {
         WMSLayer layer = createWMSLayer("image/png");
 
         WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper();
-
+        MockLockProvider lockProvider = new MockLockProvider();
         layer.setSourceHelper(mockSourceHelper);
+        layer.setLockProvider(lockProvider);
 
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
         Capture<TileObject> captured = new Capture<TileObject>();
@@ -104,6 +113,10 @@ public class WMSLayerTest extends TestCase {
         assertTrue(value.getBlob().getSize() > 0);
 
         verify(mockStorageBroker);
+        
+        // check the lock provider was called in a symmetric way
+        lockProvider.verify();
+        lockProvider.clear();
     }
 
     public void testMinMaxCacheSeedTile() throws Exception {

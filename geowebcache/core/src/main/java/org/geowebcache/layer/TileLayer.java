@@ -242,18 +242,6 @@ public abstract class TileLayer {
     public abstract boolean initialize(GridSetBroker gridSetBroker);
 
     /**
-     * Acquire the global lock for the layer, primarily used for truncating
-     * 
-     */
-    public abstract void acquireLayerLock();
-
-    /**
-     * Release the global lock for the layer
-     * 
-     */
-    public abstract void releaseLayerLock();
-
-    /**
      * This methdod is deprecated, as a layer may be configured for more than one gridset with the
      * same SRS.
      * 
