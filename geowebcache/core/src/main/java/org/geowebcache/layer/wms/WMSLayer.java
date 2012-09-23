@@ -323,9 +323,11 @@ public class WMSLayer extends AbstractTileLayer {
         }
 
         String metaKey = buildLockKey(tile, metaTile);
+        boolean lockAcquired = false;
         try {
             /** ****************** Acquire lock ******************* */
             lockProvider.getLock(metaKey);
+            lockAcquired = true;
             /** ****************** Check cache again ************** */
             if (tryCache && tryCacheFetch(tile)) {
                 // Someone got it already, return lock and we're done
@@ -363,7 +365,9 @@ public class WMSLayer extends AbstractTileLayer {
 
             /** ****************** Return lock and response ****** */
         } finally {
-            lockProvider.releaseLock(metaKey);
+            if(lockAcquired) {
+                lockProvider.releaseLock(metaKey);
+            }
             metaTile.dispose();
         }
         return finalizeTile(tile);
@@ -410,9 +414,11 @@ public class WMSLayer extends AbstractTileLayer {
         long[] gridLoc = tile.getTileIndex();
 
         String lockKey = buildLockKey(tile, null);
+        boolean lockAcquired = false;
         try {
             /** ****************** Acquire lock ******************* */
             lockProvider.getLock(lockKey);
+            lockAcquired = true;
             
             /** ****************** Check cache again ************** */
             if (tryCache && tryCacheFetch(tile)) {
@@ -441,7 +447,9 @@ public class WMSLayer extends AbstractTileLayer {
 
             /** ****************** Return lock and response ****** */
         } finally {
-            lockProvider.releaseLock(lockKey);
+            if(lockAcquired) {
+                lockProvider.releaseLock(lockKey);
+            }
         }
         return finalizeTile(tile);
     }

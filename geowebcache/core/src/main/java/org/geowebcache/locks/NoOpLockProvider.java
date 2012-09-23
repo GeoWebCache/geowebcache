@@ -17,21 +17,20 @@ package org.geowebcache.locks;
 import org.geowebcache.GeoWebCacheException;
 
 /**
- * Generic abstraction for getting/releasing exclusive locks
+ * A no-op implementation of LockProvider. It does not actually lock anything, can be used to test
+ * if the other subsystems continue to work properly in face of absence of locks
  * 
  * @author Andrea Aime - GeoSolutions
+ * 
  */
-public interface LockProvider {
-    
-    /**
-     * Acquires a exclusive lock on the specified key
-     * @param lockKey
-     */
-    public void getLock(String lockKey) throws GeoWebCacheException;
+public class NoOpLockProvider implements LockProvider {
 
-    /**
-     * Releases the lock on the specified key
-     * @param lockKey
-     */
-    public void releaseLock(String lockKey) throws GeoWebCacheException;
+    public void getLock(String lockKey) throws GeoWebCacheException {
+        // nothing to do
+    }
+
+    public void releaseLock(String lockKey) throws GeoWebCacheException {
+        // nothing to do
+    }
+
 }

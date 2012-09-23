@@ -151,5 +151,14 @@
 
   <bean id="gwcProxyDispatcher"
 	class="org.geowebcache.proxy.ProxyDispatcher"/>
+  
+  <!-- Lock providers -->
+  <bean id="noLock" class="org.geowebcache.locks.NoOpLockProvider"/>
+
+  <bean id="memoryLock" class="org.geowebcache.locks.MemoryLockProvider"/>
+  
+  <bean id="nioLock" class="org.geowebcache.locks.NIOLockProvider">
+    <constructor-arg ref="gwcDefaultStorageFinder"/>
+  </bean>
 
 </beans>

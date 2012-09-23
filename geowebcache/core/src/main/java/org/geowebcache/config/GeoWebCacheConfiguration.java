@@ -53,9 +53,9 @@ public class GeoWebCacheConfiguration {
     /* Default values */
     private Integer backendTimeout;
     
-    private String lockProviderName;
+    private String lockProvider;
 
-    private transient LockProvider lockProvider;
+    private transient LockProvider lockProviderInstance;
 
     private Boolean cacheBypassAllowed;
 
@@ -267,23 +267,23 @@ public class GeoWebCacheConfiguration {
      * @return
      */
     public LockProvider getLockProvider() {
-        if(lockProvider == null) {
-            if(lockProviderName == null) {
-                lockProvider = new MemoryLockProvider();
+        if(lockProviderInstance == null) {
+            if(lockProvider == null) {
+                lockProviderInstance = new MemoryLockProvider();
             } else {
-                Object provider = GeoWebCacheExtensions.bean(lockProviderName);
+                Object provider = GeoWebCacheExtensions.bean(lockProvider);
                 if(provider == null) {
-                    throw new RuntimeException("Could not find lock provider " + lockProviderName 
+                    throw new RuntimeException("Could not find lock provider " + lockProvider 
                             + " in the spring application context");
                 } else if(!(provider instanceof LockProvider)) {
-                    throw new RuntimeException("Found bean " + lockProviderName 
+                    throw new RuntimeException("Found bean " + lockProvider 
                             + " in the spring application context, but it was not a LockProvider");
                 } else {
-                    lockProvider = (LockProvider) provider;
+                    lockProviderInstance = (LockProvider) provider;
                 }
             }
         }
         
-        return lockProvider;
+        return lockProviderInstance;
     }
 }

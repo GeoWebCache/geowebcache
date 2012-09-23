@@ -70,24 +70,32 @@ public class FileBlobStore implements BlobStore {
 
     private FilePathGenerator pathGenerator;
 
+    private File tmp;
+
     private static ExecutorService deleteExecutorService;
 
-    public FileBlobStore(DefaultStorageFinder defStoreFinder) throws ConfigurationException {
-        path = defStoreFinder.getDefaultPath();
-        stagingArea = new File(path, "_gwc_in_progress_deletes_");
-        pathGenerator = new FilePathGenerator(this.path);
-        createDeleteExecutorService();
-        issuePendingDeletes();
+    public FileBlobStore(DefaultStorageFinder defStoreFinder) throws StorageException, ConfigurationException {
+        this(defStoreFinder.getDefaultPath());
     }
 
     public FileBlobStore(String rootPath) throws StorageException {
         path = rootPath;
         pathGenerator = new FilePathGenerator(this.path);
-        File fh = new File(path);
 
+        // prepare the root
+        File fh = new File(path);
+        fh.mkdirs();
         if (!fh.exists() || !fh.isDirectory() || !fh.canWrite()) {
             throw new StorageException(path + " is not writable directory.");
         }
+        
+        // and the temporary directory
+        tmp = new File(path, "tmp");
+        tmp.mkdirs();
+        if (!tmp.exists() || !tmp.isDirectory() || !tmp.canWrite()) {
+            throw new StorageException(tmp.getPath() + " is not writable directory.");
+        }
+        
         stagingArea = new File(path, "_gwc_in_progress_deletes_");
         createDeleteExecutorService();
         issuePendingDeletes();
@@ -462,7 +470,6 @@ public class FileBlobStore implements BlobStore {
 
     private void writeFile(File target, TileObject stObj) throws StorageException {
         // first write to temp file
-        File tmp = new File(path, "tmp");
         tmp.mkdirs();
         File temp = new File(tmp, UUID.randomUUID().toString());
         
@@ -495,6 +502,7 @@ public class FileBlobStore implements BlobStore {
             }
         } finally {
             if(temp != null) {
+                log.warn("Tile " + target.getPath() + " was already written by another thread/process");
                 temp.delete();
             }
         }
