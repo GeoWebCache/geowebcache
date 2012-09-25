@@ -161,4 +161,8 @@
     <constructor-arg ref="gwcDefaultStorageFinder"/>
   </bean>
 
+  <!-- The tool performing the automatic migration between metastore and fs hashes -->
+  <bean id="metastoreRemover" class="org.geowebcache.storage.MetastoreRemover">
+    <constructor-arg ref="gwcDefaultStorageFinder"/>
+  </bean>
 </beans>

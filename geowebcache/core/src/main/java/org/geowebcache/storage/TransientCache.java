@@ -27,47 +27,45 @@ import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 
 /**
  * Non-thread safe Resource cache. Currently in-memory only.
+ * 
  * @author Ian Schneider <ischneider@opengeo.org>
  */
 public class TransientCache {
-    
+
     private final int maxTiles;
+
     private final int maxStorage;
+
     private long currentStorage;
-    
+
     /**
-     * A path generator that uses the key set as its key to build keys suitable for usage in
-     * the in memory transient cache
+     * A path generator that uses the key set as its key to build keys suitable for usage in the in
+     * memory transient cache
      */
-    private static FilePathGenerator keyGenerator = new FilePathGenerator("") {
-        @Override
-        protected String getParametersId(String gridSetId, String fileBase, java.util.Map<String,String> parameters) throws IOException {
-            return getParametersKvp(parameters);
-        };
-    };
-    
-    private Map<String,Resource> cache = new LinkedHashMap<String, Resource>() {
+    private static FilePathGenerator keyGenerator = new FilePathGenerator("");
+
+    private Map<String, Resource> cache = new LinkedHashMap<String, Resource>() {
 
         @Override
         protected boolean removeEldestEntry(Entry<String, Resource> eldest) {
             return removeEntries(eldest);
         }
-        
+
     };
-    
+
     public TransientCache(int maxTiles, int maxStorageKB) {
         this.maxTiles = maxTiles;
         this.maxStorage = maxStorageKB * 1024;
     }
-    
+
     public int size() {
         return cache.size();
     }
-    
+
     public long storageSize() {
         return currentStorage;
     }
-    
+
     public void put(String key, Resource r) {
         byte[] buf = new byte[(int) r.getSize()];
         try {
@@ -79,7 +77,7 @@ public class TransientCache {
         currentStorage += r.getSize();
         cache.put(key, blob);
     }
-    
+
     public Resource get(String key) {
         Resource cached = cache.get(key);
         if (cached != null) {
@@ -88,7 +86,7 @@ public class TransientCache {
         }
         return cached;
     }
-    
+
     /**
      * Loop through elements, removing and recompute currentStorage size
      */
@@ -107,7 +105,7 @@ public class TransientCache {
         }
         currentStorage = storage;
     }
-    
+
     private boolean removeEntries(Entry<String, Resource> eldest) {
         boolean remove = false;
         // not sure if we can do both at the same time?
@@ -118,7 +116,7 @@ public class TransientCache {
         }
         return remove;
     }
-    
+
     public static String computeTransientKey(TileObject tile) {
         try {
             MimeType mime = MimeType.createFromFormat(tile.getBlobFormat());

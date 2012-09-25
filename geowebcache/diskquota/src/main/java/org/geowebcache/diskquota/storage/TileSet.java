@@ -5,7 +5,7 @@ import com.sleepycat.persist.model.PrimaryKey;
 import com.sleepycat.persist.model.Relationship;
 import com.sleepycat.persist.model.SecondaryKey;
 
-@Entity
+@Entity(version=1)
 public class TileSet implements Comparable<TileSet> {
 
     @PrimaryKey

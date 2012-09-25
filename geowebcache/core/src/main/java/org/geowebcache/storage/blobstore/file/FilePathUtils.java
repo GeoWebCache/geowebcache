@@ -1,5 +1,8 @@
 package org.geowebcache.storage.blobstore.file;
 
+import static org.geowebcache.storage.blobstore.file.FilePathUtils.appendFiltered;
+import static org.geowebcache.storage.blobstore.file.FilePathUtils.zeroPadder;
+
 public class FilePathUtils {
 
     public static String gridsetZoomLevelDir(String gridSetId, long zoomLevel) {
@@ -78,4 +81,14 @@ public class FilePathUtils {
         String[] parts = dirName.substring(gridsetPrefix.length() + 1).split("_");
         return Integer.parseInt(parts[0]);
     }
+    
+    /**
+     * Adds the gridset and zoom level fors the standard file system layout path
+     */
+    public static void appendGridsetZoomLevelDir(String gridSetId, long z, StringBuilder path) {
+        appendFiltered(gridSetId, path);
+        path.append('_');
+        zeroPadder(z, 2, path);
+    }
+
 }

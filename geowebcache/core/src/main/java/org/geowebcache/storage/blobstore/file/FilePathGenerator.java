@@ -20,14 +20,11 @@ package org.geowebcache.storage.blobstore.file;
 import static org.geowebcache.storage.blobstore.file.FilePathUtils.*;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.mime.MimeType;
@@ -60,7 +57,7 @@ public class FilePathGenerator {
      *            the parameters identifier
      * @return File pointer to the tile image
      */
-    public File tilePath(TileObject tile, MimeType mimeType) throws IOException {
+    public File tilePath(TileObject tile, MimeType mimeType) {
         final long[] tileIndex = tile.getXYZ();
         long x = tileIndex[0];
         long y = tileIndex[1];
@@ -87,7 +84,7 @@ public class FilePathGenerator {
         String parametersId = tile.getParametersId();
         Map<String, String> parameters = tile.getParameters();
         if (parametersId == null && parameters != null && !parameters.isEmpty()) {
-            parametersId = getParametersId(tile.getLayerName(), path.toString(), parameters);
+            parametersId = getParametersId(parameters);
             tile.setParametersId(parametersId);
         }
         if(parametersId != null) {
@@ -110,11 +107,16 @@ public class FilePathGenerator {
         return tileFile;
     }
 
-    protected String buildKey(String parametersKvp) {
+    protected static String buildKey(String parametersKvp) {
         return DigestUtils.shaHex(parametersKvp);
     }
     
-    protected String getParametersId(String gridSetId, String fileBase, Map<String, String> parameters) throws IOException {
+    /**
+     * Returns the parameters identifier for the given parameters map
+     * @param parameters
+     * @return
+     */
+    public static String getParametersId(Map<String, String> parameters) {
         String parametersKvp = getParametersKvp(parameters);
         return buildKey(parametersKvp);
     }
@@ -125,7 +127,7 @@ public class FilePathGenerator {
      * @param parameters
      * @return
      */
-    protected String getParametersKvp(Map<String, String> parameters) {
+    public static String getParametersKvp(Map<String, String> parameters) {
         StringBuilder sb = new StringBuilder();
         SortedMap<String, String> sorted = new TreeMap<String, String>(parameters);
         for (Map.Entry<String, String> e : sorted.entrySet()) {
@@ -138,12 +140,6 @@ public class FilePathGenerator {
         }
         String paramtersKvp = sb.toString();
         return paramtersKvp;
-    }
-    
-    private void appendGridsetZoomLevelDir(String gridSetId, long z, StringBuilder path) {
-        appendFiltered(gridSetId, path);
-        path.append('_');
-        zeroPadder(z, 2, path);
     }
 
 

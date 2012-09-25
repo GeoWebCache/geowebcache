@@ -447,18 +447,14 @@ public class FileBlobStore implements BlobStore {
             throw new RuntimeException(me);
         }
 
-        try {
-            final File tilePath = pathGenerator.tilePath(stObj, mimeType);
-    
-            if (create) {
-                File parent = tilePath.getParentFile();
-                mkdirs(parent, stObj);
-            }
-    
-            return tilePath;
-        } catch(IOException e) {
-            throw new StorageException("Failed to build tile path for tile " + stObj, e);
+        final File tilePath = pathGenerator.tilePath(stObj, mimeType);
+
+        if (create) {
+            File parent = tilePath.getParentFile();
+            mkdirs(parent, stObj);
         }
+
+        return tilePath;
     }
 
     private Resource readFile(File fh) throws StorageException {

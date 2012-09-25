@@ -29,13 +29,7 @@ public class FilePathGeneratorTest extends TestCase {
         testRoot.mkdir();
         
         generator = new FilePathGenerator(testRoot.getPath());
-        collisionGenerator = new FilePathGenerator(testRoot.getPath()) {
-            @Override
-            protected String buildKey(String parametersKvp) {
-                // return a fixed key to simulate hash collisions
-                return "abc";
-            }
-        };
+        collisionGenerator = new FilePathGenerator(testRoot.getPath());
     }
 
     public void testPathNoParams() throws Exception {
