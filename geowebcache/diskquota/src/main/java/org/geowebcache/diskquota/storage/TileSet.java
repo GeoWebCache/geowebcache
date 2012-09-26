@@ -5,7 +5,7 @@ import com.sleepycat.persist.model.PrimaryKey;
 import com.sleepycat.persist.model.Relationship;
 import com.sleepycat.persist.model.SecondaryKey;
 
-@Entity
+@Entity(version=1)
 public class TileSet implements Comparable<TileSet> {
 
     @PrimaryKey
@@ -18,7 +18,7 @@ public class TileSet implements Comparable<TileSet> {
 
     private String blobFormat;
 
-    private Long parametersId;
+    private String parametersId;
 
     private transient int cachedHashCode;
 
@@ -43,7 +43,7 @@ public class TileSet implements Comparable<TileSet> {
      *            the given layer/gridset/format
      * @param size
      */
-    public TileSet(String layerName, String gridsetId, String blobFormat, Long parametersId) {
+    public TileSet(String layerName, String gridsetId, String blobFormat, String parametersId) {
         this.layerName = layerName;
         this.gridsetId = gridsetId;
         this.blobFormat = blobFormat;
@@ -54,7 +54,7 @@ public class TileSet implements Comparable<TileSet> {
     }
 
     public static void computeId(String layerName, String gridsetId, String blobFormat,
-            Long parametersId, StringBuilder idTarget) {
+            String parametersId, StringBuilder idTarget) {
         idTarget.append(layerName).append('#').append(gridsetId).append('#').append(blobFormat);
         if (parametersId != null) {
             idTarget.append('#').append(parametersId);
@@ -77,7 +77,7 @@ public class TileSet implements Comparable<TileSet> {
         return blobFormat;
     }
 
-    public Long getParametersId() {
+    public String getParametersId() {
         return parametersId;
     }
 
@@ -116,10 +116,14 @@ public class TileSet implements Comparable<TileSet> {
         if (val != 0) {
             return val;
         }
-
-        val = parametersId == null ? (o.parametersId == null ? 0 : -1) : parametersId.intValue()
-                - o.parametersId.intValue();
-        return val;
+        
+        if(parametersId == null) {
+            return o.parametersId == null ? 0 : -1;
+        } else if(o.parametersId == null) {
+            return 1;
+        } else {
+            return parametersId.compareTo(o.parametersId);
+        }
     }
 
     @Override

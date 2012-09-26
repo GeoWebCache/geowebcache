@@ -37,7 +37,6 @@ import org.geowebcache.diskquota.storage.LayerQuota;
 import org.geowebcache.diskquota.storage.Quota;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
 import org.springframework.beans.factory.DisposableBean;
@@ -114,8 +113,6 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      *            loads and saves the layers quota config and usage status
      * @param tld
      *            provides access to the layers configured for disk quota insurance
-     * @param sb
-     *            provides a mean to listen to {@link BlobStore} events to keep track of layers disk
      *            quota usage
      * @throws IOException
      * @throws ConfigurationException

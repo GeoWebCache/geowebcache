@@ -77,6 +77,7 @@ import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.locks.LockProvider;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
@@ -360,6 +361,7 @@ public class XMLConfiguration implements Configuration {
             }
 
             wl.setSourceHelper(sourceHelper);
+            wl.setLockProvider(gwcConfig.getLockProvider());
         }
     }
 
@@ -621,14 +623,10 @@ public class XMLConfiguration implements Configuration {
         }
 
         boolean removed = false;
-        tileLayer.acquireLayerLock();
-        try {
-            removed = gwcConfig.getLayers().remove(tileLayer);
-            if (removed) {
-                updateLayers();
-            }
-        } finally {
-            tileLayer.releaseLayerLock();
+        removed = gwcConfig.getLayers().remove(tileLayer);
+        if (removed) {
+            updateLayers();
+            
         }
         return removed;
     }

@@ -42,6 +42,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;
+import org.geowebcache.storage.blobstore.file.FilePathUtils;
 import org.geowebcache.util.FileUtils;
 
 /**
@@ -95,7 +96,7 @@ final class LayerCacheInfoBuilder {
     public void buildCacheInfo(final TileLayer tileLayer) {
 
         final String layerName = tileLayer.getName();
-        final String layerDirName = FilePathGenerator.filteredLayerName(layerName);
+        final String layerDirName = FilePathUtils.filteredLayerName(layerName);
 
         final File layerDir = new File(rootCacheDir, layerDirName);
 
@@ -110,17 +111,17 @@ final class LayerCacheInfoBuilder {
         for (TileSet tileSet : onDiskTileSets) {
             final String gridSetId = tileSet.getGridsetId();
             // final String blobFormat = tileSet.getBlobFormat();
-            final Long parametersId = tileSet.getParametersId();
+            final String parametersId = tileSet.getParametersId();
             final GridSubset gs = tileLayer.getGridSubset(gridSetId);
             final int zoomStart = gs.getZoomStart();
             final int zoomStop = gs.getZoomStop();
 
             for (int zoomLevel = zoomStart; zoomLevel <= zoomStop; zoomLevel++) {
                 String gridsetZLevelParamsDirName;
-                gridsetZLevelParamsDirName = FilePathGenerator.gridsetZoomLevelDir(gridSetId,
+                gridsetZLevelParamsDirName = FilePathUtils.gridsetZoomLevelDir(gridSetId,
                         zoomLevel);
                 if (parametersId != null) {
-                    gridsetZLevelParamsDirName += "_" + Long.toHexString(parametersId);
+                    gridsetZLevelParamsDirName += "_" + parametersId;
                 }
                 final File gridsetZLevelDir = new File(layerDir, gridsetZLevelParamsDirName);
 
@@ -146,7 +147,7 @@ final class LayerCacheInfoBuilder {
         final Set<String> griSetNames = tileLayer.getGridSubsets();
         Set<TileSet> foundTileSets = new HashSet<TileSet>();
         for (String gridSetName : griSetNames) {
-            final String gridSetDirPrefix = FilePathGenerator.filteredGridSetId(gridSetName);
+            final String gridSetDirPrefix = FilePathUtils.filteredGridSetId(gridSetName);
             FileFilter prefixFilter = new FileFilter() {
                 public boolean accept(File pathname) {
                     if (!pathname.isDirectory()) {
@@ -165,9 +166,9 @@ final class LayerCacheInfoBuilder {
                 final String gridsetId = gridSetName;
                 // we don't care here.. format should be part of the top level directory name
                 final String blobFormat = null;
-                Long parametersId = null;
+                String parametersId = null;
                 if (parts.length == 2) {
-                    parametersId = Long.parseLong(parts[1], 16);
+                    parametersId = parts[1];
                 }
                 TileSet tileSet = new TileSet(layerName, gridsetId, blobFormat, parametersId);
                 foundTileSets.add(tileSet);
@@ -197,7 +198,7 @@ final class LayerCacheInfoBuilder {
 
         private final String layerName;
 
-        private final Long parametersId;
+        private final String parametersId;
 
         private static class Stats {
             long runTimeMillis;
@@ -208,7 +209,7 @@ final class LayerCacheInfoBuilder {
         }
 
         public ZoomLevelVisitor(final String layerName, final File zoomLevelPath,
-                final String gridsetId, final int zoomLevel, Long parametersId,
+                final String gridsetId, final int zoomLevel, String parametersId,
                 final QuotaUpdatesMonitor quotaUsageMonitor) {
             this.layerName = layerName;
             this.zoomLevelPath = zoomLevelPath;
