@@ -44,9 +44,6 @@ import org.springframework.util.Assert;
 
 /**
  * This class is a wrapper for HTTP interaction with WMS backend
- * 
- * All methods in this class MUST be written as if they were static
- * 
  */
 public class WMSHttpHelper extends WMSSourceHelper {
     private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSHttpHelper.class);
@@ -56,6 +53,10 @@ public class WMSHttpHelper extends WMSSourceHelper {
     private final String httpUsername;
 
     private final String httpPassword;
+    
+    private volatile HttpClient client;
+
+    private boolean doAuthentication;
 
     public WMSHttpHelper() {
         this(null, null, null);
@@ -66,6 +67,23 @@ public class WMSHttpHelper extends WMSSourceHelper {
         this.httpUsername = httpUsername;
         this.httpPassword = httpPassword;
         this.proxyUrl = proxyUrl;
+    }
+    
+    HttpClient getHttpClient() {
+        if(client == null) {
+            synchronized (this) {
+                if(client != null) {
+                    return client;
+                }
+                
+                HttpClientBuilder builder = new HttpClientBuilder(null, getBackendTimeout(), httpUsername,
+                        httpPassword, proxyUrl, getConcurrency());    
+                doAuthentication = builder.isDoAuthentication();
+                client = builder.buildClient();
+            }
+        }
+        
+        return client;
     }
 
     /**
@@ -259,11 +277,10 @@ public class WMSHttpHelper extends WMSSourceHelper {
      */
     public GetMethod executeRequest(final URL url, final Map<String, String> queryParams,
             final Integer backendTimeout) throws HttpException, IOException {
-
-        HttpClientBuilder builder = new HttpClientBuilder(url, backendTimeout, httpUsername,
-                httpPassword, proxyUrl);
-        HttpClient httpClient = builder.buildClient();
-
+        // grab the client
+        HttpClient httpClient = getHttpClient();
+        
+        // prepare the request
         GetMethod getMethod = new GetMethod(url.toString());
         if (queryParams != null && queryParams.size() > 0) {
             NameValuePair[] params = new NameValuePair[queryParams.size()];
@@ -274,8 +291,9 @@ public class WMSHttpHelper extends WMSSourceHelper {
             }
             getMethod.setQueryString(params);
         }
-        getMethod.setDoAuthentication(builder.isDoAuthentication());
+        getMethod.setDoAuthentication(doAuthentication);
 
+        // fire!
         httpClient.executeMethod(getMethod);
         return getMethod;
     }

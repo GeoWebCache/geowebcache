@@ -11,6 +11,11 @@ public class StorageException extends IOException {
         this.msg = msg;
     }
     
+    public StorageException(String msg, Throwable cause) {
+        this.msg = msg;
+        initCause(cause);
+    }
+    
     public String getMessage() {
         return msg;
     }

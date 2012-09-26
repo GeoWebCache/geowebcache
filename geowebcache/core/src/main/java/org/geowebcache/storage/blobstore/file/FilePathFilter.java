@@ -17,6 +17,8 @@
  */
 package org.geowebcache.storage.blobstore.file;
 
+import static org.geowebcache.storage.blobstore.file.FilePathUtils.*;
+
 import java.io.File;
 import java.io.FilenameFilter;
 
@@ -38,7 +40,7 @@ public class FilePathFilter implements FilenameFilter {
             throw new StorageException("Specifying the grid set id is currently mandatory.");
         }
 
-        gridSetPrefix = FilePathGenerator.filteredGridSetId(tr.getGridSetId());
+        gridSetPrefix = filteredGridSetId(tr.getGridSetId());
 
         if (tr.getMimeType() != null) {
             mimeExtension = tr.getMimeType().getFileExtension();
@@ -81,7 +83,7 @@ public class FilePathFilter implements FilenameFilter {
             // All zoomlevels
             return true;
         } else {
-            int tmp = FilePathGenerator.findZoomLevel(gridSetPrefix, name);
+            int tmp = findZoomLevel(gridSetPrefix, name);
             if (tmp < tr.getZoomStart() || tmp > tr.getZoomStop()) {
                 return false;
             }
@@ -112,7 +114,7 @@ public class FilePathFilter implements FilenameFilter {
         // Check coordinates
         String[] coords = parts[0].split("_");
 
-        int zoomLevel = FilePathGenerator.findZoomLevel(gridSetPrefix, parent.getParentFile()
+        int zoomLevel = findZoomLevel(gridSetPrefix, parent.getParentFile()
                 .getName());
         long x = Long.parseLong(coords[0]);
         long y = Long.parseLong(coords[1]);

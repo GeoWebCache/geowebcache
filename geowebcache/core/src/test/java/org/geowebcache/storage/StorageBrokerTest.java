@@ -7,8 +7,6 @@ import junit.framework.TestCase;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
-import org.geowebcache.storage.metastore.jdbc.JDBCMetaBackend;
-import org.h2.tools.DeleteDbFiles;
 
 public class StorageBrokerTest extends TestCase {
     public static final String TEST_DB_NAME = "gwcTestStorageBroker";
@@ -29,7 +27,7 @@ public class StorageBrokerTest extends TestCase {
         if(! RUN_PERFORMANCE_TESTS)
             return;
         
-        StorageBroker sb = resetAndPrepBasicTestDb();
+        StorageBroker sb = resetAndPrepStorageBroker();
         
         for(int i=0;i<REPEAT_COUNT; i++) {
             runBasicTileTest(sb, i, "Uni");
@@ -41,7 +39,7 @@ public class StorageBrokerTest extends TestCase {
             return;
         
         System.out.println("\n");
-        StorageBroker sb = resetAndPrepBasicTestDb();
+        StorageBroker sb = resetAndPrepStorageBroker();
         
         long iterations = REPEAT_COUNT;
         
@@ -68,15 +66,8 @@ public class StorageBrokerTest extends TestCase {
                 + THREAD_COUNT + " threads in parallel" );
     }
     
-    private StorageBroker resetAndPrepBasicTestDb() throws Exception {
+    private StorageBroker resetAndPrepStorageBroker() throws Exception {
         System.out.println("Deleting old test database.");
-        deleteDb(TEST_DB_NAME);
-
-        System.out.println("Creating new metastore in " + findTempDir() + File.separator +TEST_DB_NAME);
-        MetaStore metaStore = new JDBCMetaBackend("org.h2.Driver",
-                "jdbc:h2:file:" + findTempDir() + File.separator +TEST_DB_NAME + ";TRACE_LEVEL_FILE=0",
-                "sa",
-                "");
 
         String blobPath = findTempDir() + File.separator + TEST_BLOB_DIR_NAME;
         System.out.println("Creating new blobstore in " + blobPath);
@@ -88,7 +79,7 @@ public class StorageBrokerTest extends TestCase {
         
         BlobStore blobStore = new FileBlobStore(blobPath);
         
-        StorageBroker sb = new StorageBroker(metaStore, blobStore);
+        StorageBroker sb = new DefaultStorageBroker(blobStore);
         
         //long[] xyz = {1L,2L,3L};
         Resource blob = new ByteArrayResource(new byte[20*1024]);
@@ -108,11 +99,6 @@ public class StorageBrokerTest extends TestCase {
         System.out.println(TILE_PUT_COUNT+ " inserts took " + Long.toString(stopInsert - startInsert) + "ms");
         
         return sb;
-    }
-    
-    public static void deleteDb(String db_name) throws Exception {
-        DeleteDbFiles.execute(findTempDir(), db_name, true);
-        // Should clear out blobs too
     }
     
     public static String findTempDir() throws Exception {

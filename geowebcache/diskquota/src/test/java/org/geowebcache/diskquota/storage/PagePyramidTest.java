@@ -31,7 +31,7 @@ import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
-import org.geowebcache.storage.blobstore.file.FilePathGenerator;
+import org.geowebcache.storage.blobstore.file.FilePathUtils;
 
 public class PagePyramidTest extends TestCase {
 
@@ -80,7 +80,7 @@ public class PagePyramidTest extends TestCase {
             totalPages += levelPages;
             totalTiles = totalTiles.add(tilesPerPage.multiply(BigInteger.valueOf(levelPages)));
 
-            System.out.println(FilePathGenerator.zeroPadder(z, 2) + ": (total pages ="
+            System.out.println(FilePathUtils.zeroPadder(z, 2) + ": (total pages ="
                     + nf.format(totalPages) + ") " + pageInfo.toString() + "(level tiles = "
                     + nf.format(tilesPerPage.multiply(BigInteger.valueOf(levelPages))) + ") ");
         }

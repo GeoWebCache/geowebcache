@@ -14,18 +14,23 @@
  */
 package org.geowebcache.layer.wms;
 
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
-import static org.easymock.EasyMock.capture;
-import static org.easymock.EasyMock.anyObject;
-import static org.easymock.classextension.EasyMock.replay;
-import static org.easymock.classextension.EasyMock.verify;
+import static org.easymock.EasyMock.*;
+import static org.easymock.classextension.EasyMock.*;
+import static org.geowebcache.TestHelpers.*;
 
-import static org.geowebcache.TestHelpers.createWMSLayer;
-import static org.geowebcache.TestHelpers.createFakeSourceImage;
-import static org.geowebcache.TestHelpers.createRequest;
-
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.channels.Channels;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,33 +38,29 @@ import javax.servlet.http.HttpServletResponse;
 import junit.framework.TestCase;
 
 import org.easymock.Capture;
+import org.easymock.IAnswer;
 import org.easymock.classextension.EasyMock;
+import org.geowebcache.TestHelpers;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.OutsideCoverageException;
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.Resource;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.seed.GWCTask;
+import org.geowebcache.seed.SeedRequest;
+import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileObject;
+import org.geowebcache.storage.TileRange;
+import org.geowebcache.storage.TileRangeIterator;
+import org.geowebcache.storage.TransientCache;
+import org.geowebcache.util.MockLockProvider;
 import org.geowebcache.util.MockWMSSourceHelper;
 
 import com.mockrunner.mock.web.MockHttpServletRequest;
 import com.mockrunner.mock.web.MockHttpServletResponse;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.channels.Channels;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.easymock.IAnswer;
-import org.geowebcache.grid.*;
-import org.geowebcache.io.ByteArrayResource;
-import org.geowebcache.io.Resource;
-import org.geowebcache.seed.GWCTask;
-import org.geowebcache.seed.SeedRequest;
-import org.geowebcache.seed.TileBreeder;
-import org.geowebcache.storage.*;
 
 /**
  * Unit test suite for {@link WMSLayer}
@@ -71,12 +72,19 @@ public class WMSLayerTest extends TestCase {
 
     private final GridSetBroker gridSetBroker = new GridSetBroker(false, false);
 
+    @Override
+    protected void tearDown() throws Exception {
+        TestHelpers.mockProvider.verify();
+        TestHelpers.mockProvider.clear();
+    }
+
     public void testSeedMetaTiled() throws Exception {
         WMSLayer layer = createWMSLayer("image/png");
 
         WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper();
-
+        MockLockProvider lockProvider = new MockLockProvider();
         layer.setSourceHelper(mockSourceHelper);
+        layer.setLockProvider(lockProvider);
 
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
         Capture<TileObject> captured = new Capture<TileObject>();
@@ -105,6 +113,10 @@ public class WMSLayerTest extends TestCase {
         assertTrue(value.getBlob().getSize() > 0);
 
         verify(mockStorageBroker);
+        
+        // check the lock provider was called in a symmetric way
+        lockProvider.verify();
+        lockProvider.clear();
     }
 
     public void testMinMaxCacheSeedTile() throws Exception {
@@ -274,6 +286,8 @@ public class WMSLayerTest extends TestCase {
             };
             mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
             expectLastCall().anyTimes().asStub();
+            mockSourceHelper.setConcurrency(32);
+            mockSourceHelper.setBackendTimeout(120);
             replay(mockSourceHelper);
 
             tl.setSourceHelper(mockSourceHelper);
@@ -284,7 +298,7 @@ public class WMSLayerTest extends TestCase {
 
                 public Boolean answer() throws Throwable {
                     TileObject tile = (TileObject) EasyMock.getCurrentArguments()[0];
-                    String key = StorageBroker.computeTransientKey(tile);
+                    String key = TransientCache.computeTransientKey(tile);
                     Resource resource;
                     synchronized (transientCache) {
                         resource = transientCache.get(key);
@@ -303,7 +317,7 @@ public class WMSLayerTest extends TestCase {
 
                 @Override
                 public void setValue(TileObject tile) {
-                    String key = StorageBroker.computeTransientKey(tile);
+                    String key = TransientCache.computeTransientKey(tile);
                     synchronized (transientCache) {
                         transientCache.put(key, tile.getBlob());
                     }
@@ -315,14 +329,14 @@ public class WMSLayerTest extends TestCase {
             expect(storageBroker.put(capture(new Capture<TileObject>() {
                 @Override
                 public void setValue(TileObject value) {
-                    puts.add(StorageBroker.computeTransientKey(value));
+                    puts.add(TransientCache.computeTransientKey(value));
                     storagePutCounter.incrementAndGet();
                 }
             }))).andReturn(true).anyTimes();
             expect(storageBroker.get((TileObject) anyObject())).andAnswer(new IAnswer<Boolean>() {
                 public Boolean answer() throws Throwable {
                     TileObject tile = (TileObject) EasyMock.getCurrentArguments()[0];
-                    if (puts.contains(StorageBroker.computeTransientKey(tile))) {
+                    if (puts.contains(TransientCache.computeTransientKey(tile))) {
                         tile.setBlob(new ByteArrayResource(fakeWMSResponse));
                         storageGetCounter.incrementAndGet();
                         return true;

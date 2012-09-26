@@ -13,8 +13,10 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.locks.LockProvider;
 import org.geowebcache.seed.GWCTask;
 import org.geowebcache.seed.SeedRequest;
+import org.geowebcache.util.MockLockProvider;
 
 /**
  * Some common utility test functions.
@@ -23,6 +25,7 @@ import org.geowebcache.seed.SeedRequest;
 public class TestHelpers {
 
     static GridSetBroker gridSetBroker = new GridSetBroker(false, false);
+    public static MockLockProvider mockProvider = new MockLockProvider();
 
     public static byte[] createFakeSourceImage(final WMSLayer layer) throws IOException {
 
@@ -60,6 +63,7 @@ public class TestHelpers {
                 grids, null, metaWidthHeight, "vendorparam=true", false);
 
         layer.initialize(gridSetBroker);
+        layer.setLockProvider(new MockLockProvider());
 
         return layer;
     }
