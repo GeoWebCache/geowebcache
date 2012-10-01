@@ -103,3 +103,31 @@ Resource Allocation
 
 Also see http://geowebcache.org/trac/wiki/resources for tools that can be used to estimate how much storage you need and how long seeding will take
 
+
+Clustering
+----------
+
+GeoWebCache is quite an efficient piece of software, as such it normally does not need clustering for performance reasons (GeoWebCache running on an old notebook with a seeded tile can literally flood a gigabit line), but it may still make sense to cluster GeoWebCache for high availability reasons. 
+
+Before the GeoWebCache 1.4.x clustering GeoWebCache instances required:
+* turning off the disk quota subsystem
+* turning off the metastore subsystem
+* setting up clustering in active/passing mode
+
+Starting with 1.4.0 the metastore subsystem has been removed and replaced with full on disk metadata, which makes it possible to keep on using tile expiration and layer parameters even with clustering active. Moreover, the tile creation workflow has been modified to allow for an active/active setup, meaning several GWC instances can now share the same cache directory without risks of file corruption or incomplete tiles being served back to clients.
+
+Each GWC internally synchs to avoid two requests end up working on the same meta tile, but by default separate GWC instances do not and will end up wasting time. In case you want to make sure two separate instances do not end up working on the same metatile you have two options:
+
+ * make it unlikely for two instances to work on the same metatile by using sticky sessions in the load balancer (very often requests for the tiles making up a metatile originate from the same client)
+ * switch to file based locking so that the GWC instances properly synch up activity
+
+ In order to activate file based locking you will have to chage the geowebcache.xml configuration and activate the "NIO locks" as follows::
+
+      ..
+      <backendTimeout>120</backendTimeout>
+      <lockProvider>nioLock</lockProvider>
+      <serviceInformation>
+        <title>GeoWebCache</title>
+      ...
+
+A new ``lockfiles`` directory will be created in the cache directory where all GeoWebCache instances will create the lock files for the time it takes to request and write out a metatile (a separate file will be used for each metatile).
