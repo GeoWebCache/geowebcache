@@ -36,14 +36,15 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 /**
- * Upgrades a 1.3.x GWC cache directory to the 1.4.x metastore-less style
+ * Upgrades a 1.3.x GWC cache directory to the 1.4.x metastore-less style.
+ * 
  * 
  * @author Andrea Aime - GeoSolutions
  */
 public class MetastoreRemover {
 
     private static Log log = LogFactory.getLog(org.geowebcache.storage.MetastoreRemover.class);
-
+    
     private DefaultStorageFinder storageFinder;
 
     private boolean defaultLocation;
@@ -60,7 +61,10 @@ public class MetastoreRemover {
                 JdbcTemplate template = new JdbcTemplate(ds);
 
                 // maybe we should make this optional?
-                migrateTileDates(template, new FilePathGenerator(root.getPath()));
+                boolean migrateCreationDates = Boolean.getBoolean("MIGRATE_CREATION_DATES");
+                if(migrateCreationDates) {
+                    migrateTileDates(template, new FilePathGenerator(root.getPath()));
+                }
                 migrateParameters(template, root);
                 // remove all the tiles from storage to avoid further migration attempts
                 // in the future, but only if the old metastore was external to the data dir
