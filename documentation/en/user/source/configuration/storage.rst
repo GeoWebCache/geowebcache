@@ -3,15 +3,12 @@
 Storage
 =======
 
-The storage subsystem of GeoWebCache is made up of two components.  The first is a storage mechanism for tiles, called the **cache**. The second is an (optional) storage mechanism for information about those tiles, such as when each tile was created and what its size is, called the **metastore**.
-
-
 Cache
 -----
 
 .. note:: The cache is sometimes referred to as the "blobstore".
 
-The cache is a directory structure consisting of various image files organized by layer and zoom level.  By default, the cache is stored in the temporary storage folder specified by the web application conatiner.  (For Tomcat, this is the :file:`temp` directory inside the root.)   The driectory created will be called :file:`geowebcache`.  If this directory is not available, GeoWebCache will attempt to create a new :file:`geowebcache` directory in the location specified by the ``TEMP`` system environment variable.
+The cache is a directory structure consisting of various image files organized by layer and zoom level.  By default, the cache is stored in the temporary storage folder specified by the web application container.  (For Tomcat, this is the :file:`temp` directory inside the root.)   The driectory created will be called :file:`geowebcache`.  If this directory is not available, GeoWebCache will attempt to create a new :file:`geowebcache` directory in the location specified by the ``TEMP`` system environment variable.
 
 There are a few ways to change the location of the cache:
 
@@ -53,15 +50,3 @@ Finally, although not recommended, it is possible to set this location directly 
    </bean -->
 
 making sure to edit the path.  As usual, any changes to the servlet configuration files will require :ref:`configuration.reload`.
-
-
-Metastore
----------
-
-The metastore is a database that contains information about the tiles in the cache.  It is stored in the same directory as the cache, and consists of a small H2 database in a directory called :file:`meta_jdbc_h2`.
-
-The metastore is recommended since it allows for cache expiration, disk quotas, parameter filters, and more, but it is optional.  To turn off the metastore, you need to set the ``GWC_METASTORE_DISABLED`` variable to be "TRUE".  This can be done in the same way as described above for setting the ``GEOWEBCACHE_CACHE_DIR`` variable:
-
-* JVM system environment variable
-* As a servlet context parameteter
-* As an operating system environment variable
