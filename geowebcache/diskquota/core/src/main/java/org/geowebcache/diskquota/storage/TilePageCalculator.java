@@ -103,7 +103,7 @@ public class TilePageCalculator {
 
         String gridsetId;
         String blobFormat;
-        Long parametersId = null;
+        String parametersId = null;
         // TODO: create one TileSet per parametersId (somehow...)
 
         TileSet tileSet;

@@ -22,11 +22,11 @@ import java.util.concurrent.BlockingQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.storage.BlobStoreListener;
-import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.DefaultStorageBroker;
 import org.springframework.util.Assert;
 
 /**
- * Monitors {@link StorageBroker} activity to keep track of the disk usage.
+ * Monitors {@link DefaultStorageBroker} activity to keep track of the disk usage.
  * <p>
  * This class only cares about receiving {@link BlobStoreListener} events and submitting
  * {@link QuotaUpdate}s to the provided {@link BlockingQueue}. Another thread is responsible of
@@ -75,7 +75,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
      * @see org.geowebcache.storage.BlobStoreListener#tileStored
      */
     public void tileStored(final String layerName, final String gridSetId, final String blobFormat,
-            final Long parametersId, final long x, final long y, final int z, final long blobSize) {
+            final String parametersId, final long x, final long y, final int z, final long blobSize) {
         if (blobSize == 0) {
             return;
         }
@@ -91,7 +91,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
      * @see org.geowebcache.storage.BlobStoreListener#tileDeleted
      */
     public void tileDeleted(final String layerName, final String gridSetId,
-            final String blobFormat, final Long parametersId, final long x, final long y,
+            final String blobFormat, final String parametersId, final long x, final long y,
             final int z, final long blobSize) {
 
         int blockSize = quotaConfig.getDiskBlockSize();
@@ -107,7 +107,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
      * @see org.geowebcache.storage.BlobStoreListener#tileUpdated
      */
     public void tileUpdated(String layerName, String gridSetId, String blobFormat,
-            Long parametersId, long x, long y, int z, long blobSize, long oldSize) {
+            String parametersId, long x, long y, int z, long blobSize, long oldSize) {
 
         int blockSize = quotaConfig.getDiskBlockSize();
         double delta = blobSize - oldSize;
@@ -156,7 +156,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
      *            tile index
      */
     private void quotaUpdate(String layerName, String gridSetId, String blobFormat,
-            Long parametersId, long amount, long[] tileIndex) {
+            String parametersId, long amount, long[] tileIndex) {
 
         if (cancelled(layerName)) {
             return;

@@ -268,7 +268,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         return str.toString();
     }
 
-    public long getParametersId() {
+    public String getParametersId() {
         return stObj.getParametersId();
     }
 

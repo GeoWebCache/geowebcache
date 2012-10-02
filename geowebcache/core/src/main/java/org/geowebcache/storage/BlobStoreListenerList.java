@@ -42,7 +42,7 @@ public final class BlobStoreListenerList {
     }
 
     public void sendTileDeleted(String layerName, String gridSetId, String blobFormat,
-            Long parametersId, long x, long y, int z, long length) {
+            String parametersId, long x, long y, int z, long length) {
 
         if (listeners.size() > 0) {
             for (int i = 0; i < listeners.size(); i++) {
@@ -59,8 +59,7 @@ public final class BlobStoreListenerList {
             final String layerName = stObj.getLayerName();
             final String gridSetId = stObj.getGridSetId();
             final String blobFormat = stObj.getBlobFormat();
-            final long parameters = stObj.getParametersId();
-            final Long paramsId = parameters == -1 ? null : Long.valueOf(parameters);
+            final String paramsId = stObj.getParametersId();
             final int blobSize = stObj.getBlobSize();
 
             sendTileDeleted(layerName, gridSetId, blobFormat, paramsId, xyz[0], xyz[1],
@@ -75,9 +74,7 @@ public final class BlobStoreListenerList {
             final String layerName = stObj.getLayerName();
             final String gridSetId = stObj.getGridSetId();
             final String blobFormat = stObj.getBlobFormat();
-            final long parameters = stObj.getParametersId();
-            final Long paramsId = parameters == -1 ? null : Long.valueOf(parameters);
-
+            final String paramsId = stObj.getParametersId();
             final int blobSize = stObj.getBlobSize();
 
             for (int i = 0; i < listeners.size(); i++) {
@@ -94,8 +91,7 @@ public final class BlobStoreListenerList {
             final String layerName = stObj.getLayerName();
             final String gridSetId = stObj.getGridSetId();
             final String blobFormat = stObj.getBlobFormat();
-            final long parameters = stObj.getParametersId();
-            final Long paramsId = parameters == -1 ? null : Long.valueOf(parameters);
+            final String paramsId = stObj.getParametersId();
 
             final int blobSize = stObj.getBlobSize();
 

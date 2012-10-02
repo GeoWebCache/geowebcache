@@ -42,11 +42,7 @@ public class QueuedUsageStatsProducer implements TileLayerListener {
         }
         String gridsetId = tile.getGridSetId();
         String blobFormat = tile.getMimeType().getFormat();
-        Long parametersId;
-        {
-            long paramsId = tile.getParametersId();
-            parametersId = paramsId == -1 ? null : Long.valueOf(paramsId);
-        }
+        String parametersId = tile.getParametersId();
         TileSet tileSet = new TileSet(layerName, gridsetId, blobFormat, parametersId);
         long[] tileIndex = tile.getTileIndex().clone();
         UsageStats usageLog = new UsageStats(tileSet, tileIndex);

@@ -22,12 +22,15 @@ import java.lang.management.RuntimeMXBean;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 
+import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpConnectionManager;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.params.HttpConnectionParams;
+import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
 /**
  * Builder class for HttpClients
@@ -47,14 +50,31 @@ public class HttpClientBuilder {
 
     private boolean doAuthentication = false;
 
+    private int concurrency;
+
     public HttpClientBuilder() {
         super();
     }
 
+    /**
+     * Instantiates a new http client builder 
+     * @param url The server url, or null if no authentication is required or if the client is going to be
+     *            used against a single server only 
+     * @param backendTimeout
+     * @param httpUsername
+     * @param httpPassword
+     * @param proxyUrl
+     * @param concurrency
+     */
     public HttpClientBuilder(URL url, Integer backendTimeout, String httpUsername,
-            String httpPassword, URL proxyUrl) {
-        this.setHttpCredentials(httpUsername, httpPassword,
+            String httpPassword, URL proxyUrl, int concurrency) {
+        if(url != null) {
+            this.setHttpCredentials(httpUsername, httpPassword,
                 new AuthScope(url.getHost(), url.getPort()));
+        } else {
+            this.setHttpCredentials(httpUsername, httpPassword,
+                    AuthScope.ANY);
+        }
 
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
         List<String> lst = runtimeMXBean.getInputArguments();
@@ -75,6 +95,7 @@ public class HttpClientBuilder {
             }
         this.setProxy(proxyUrl);
         this.setBackendTimeout(backendTimeout);
+        this.concurrency = concurrency;
     }
 
     private String extractVMArg(String arg) {
@@ -129,11 +150,18 @@ public class HttpClientBuilder {
      * @return the generated HttpClient
      */
     public HttpClient buildClient() {
-        HttpClient httpClient = new HttpClient();
-        HttpConnectionParams params = httpClient.getHttpConnectionManager().getParams();
-        params.setConnectionTimeout(backendTimeoutMillis);
-        params.setSoTimeout(backendTimeoutMillis);
+        HttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
 
+        HttpConnectionManagerParams params = new HttpConnectionManagerParams();
+        params.setSoTimeout(backendTimeoutMillis);
+        params.setConnectionTimeout(backendTimeoutMillis);
+        params.setMaxTotalConnections(concurrency);
+        params.setMaxConnectionsPerHost(HostConfiguration.ANY_HOST_CONFIGURATION, concurrency);
+        
+        connectionManager.setParams(params);
+
+        HttpClient httpClient = new HttpClient(connectionManager);
+        
         if (authscope != null && httpcredentials != null) {
             httpClient.getState().setCredentials(authscope, httpcredentials);
             httpClient.getParams().setAuthenticationPreemptive(true);

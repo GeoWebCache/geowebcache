@@ -18,3 +18,4 @@ In essence, GeoWebCache is a set of Java classes (program files) and some config
 
    prerequisites/index
    geowebcache.rst
+   upgrading.rst
