@@ -1,6 +1,34 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Gabriel Roldan (OpenGeo) 2010
+ *  
+ */
 package org.geowebcache.diskquota.storage;
 
-
+/**
+ * A rectangular group of tiles in a specific TileSet zoom level. The size of the group is
+ * calculated by the TilePageCalculator, at the time of writing the calculation uses a logarithmic
+ * relation to the number of tiles in the zoom level. 
+ * <p> 
+ * The tile page is the atomic information handled by the disk quota subsystem, informations about
+ * frequency and freshness of use is handled at this level, as such this is the minimum amount of
+ * tiles the disk quota subsystem evicts when the 
+ * 
+ * @author Andrea Aime - GeoSolutions
+ *
+ */
 public class TilePage {
 
     private long id;
@@ -11,7 +39,7 @@ public class TilePage {
 
     private byte pageZ;
 
-    private int pageY;;
+    private int pageY;
 
     private int pageX;
 

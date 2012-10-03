@@ -20,6 +20,10 @@ package org.geowebcache.diskquota.storage;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+/**
+ * Enumerates the various storage units according to the power of two based units (instead of
+ * the more common commercial prefixes, often used but not entirely correct)
+ */
 public enum StorageUnit {
     /**
      * Byte
