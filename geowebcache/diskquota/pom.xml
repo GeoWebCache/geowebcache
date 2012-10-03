@@ -16,5 +16,6 @@
   <modules>
     <module>core</module>
     <module>bdb</module>
+    <module>jdbc</module>
   </modules>
 </project>

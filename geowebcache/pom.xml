@@ -25,6 +25,8 @@
     <guava.version>11.0.1</guava.version>
     <log4j.version>1.2.14</log4j.version>
     <h2.version>1.1.119</h2.version>
+    <postgresql.version>8.4-701.jdbc3</postgresql.version>
+    <oracle.version></oracle.version>
     <java.awt.headless>true</java.awt.headless>
     <jalopy.phase>disabled</jalopy.phase>
     <jalopy.srcExcludesPattern>disabled</jalopy.srcExcludesPattern>
@@ -369,6 +371,18 @@
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
       <version>${h2.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>${postgresql.version}</version>
+    </dependency>
+
+    <dependency>
+      <artifactId>ojdbc14</artifactId>
+      <groupId>com.oracle</groupId>
+      <version>${oracle.version}</version>
     </dependency>
 
     <!-- Berkeley DB JE -->
