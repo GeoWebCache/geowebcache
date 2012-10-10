@@ -47,16 +47,20 @@ public class TilePage {
 
     public TilePage() {
     }
-
-    public TilePage(String tileSetId, int pageX, int pageY, int zoomLevel) {
+    
+    public TilePage(String tileSetId, int pageX, int pageY, int zoomLevel, int creationTimeMinutes) {
         this.tileSetId = tileSetId;
         this.pageX = pageX;
         this.pageY = pageY;
         this.pageZ = (byte) zoomLevel;
+        this.creationTimeMinutes = creationTimeMinutes;
         StringBuilder sb = new StringBuilder(128);
         computeId(tileSetId, pageX, pageY, zoomLevel, sb);
         this.key = sb.toString();
-        this.creationTimeMinutes = SystemUtils.get().currentTimeMinutes();
+    }
+
+    public TilePage(String tileSetId, int pageX, int pageY, int zoomLevel) {
+        this(tileSetId, pageX, pageY, zoomLevel, SystemUtils.get().currentTimeMinutes());
     }
 
     public static void computeId(String tileSetId, int pageX, int pageY, int pageZ,

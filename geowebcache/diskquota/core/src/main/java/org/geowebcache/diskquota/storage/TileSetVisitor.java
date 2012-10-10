@@ -21,6 +21,6 @@ import org.geowebcache.diskquota.QuotaStore;
 
 public interface TileSetVisitor {
 
-    void visit(TileSet tileSet, QuotaStore bdbQuotaStore);
+    void visit(TileSet tileSet, QuotaStore quotaStore);
 
 }

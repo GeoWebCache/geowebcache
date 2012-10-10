@@ -152,4 +152,12 @@ public class PageStats implements Serializable {
                 .append("m ago]");
         return sb.toString();
     }
+
+    public void setNumHits(BigInteger numHits) {
+        this.numHits = numHits;
+    }
+
+    public BigInteger getNumHits() {
+        return numHits;
+    }
 }

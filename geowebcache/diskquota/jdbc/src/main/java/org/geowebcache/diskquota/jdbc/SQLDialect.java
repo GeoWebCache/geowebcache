@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
 /**
  * Base class for quota store JDBC dialects, provides functionality based on SQL standards,
@@ -53,9 +53,12 @@ public class SQLDialect {
 
             // this one embeds both tile page and page stats, since they are linked 1-1
             put("TILEPAGE", Arrays.asList(
-                    "CREATE TABLE ${schema}TILEPAGE (\n" + //
-                            " KEY VARCHAR(256) PRIMARY KEY,\n" + //
-                            " TILESET_ID VARCHAR(256) REFERENCES ${schema}TILESET(KEY),\n" + //
+                    "CREATE TABLE ${schema}TILEPAGE (\n"
+                            + //
+                            " KEY VARCHAR(256) PRIMARY KEY,\n"
+                            + //
+                            " TILESET_ID VARCHAR(256) REFERENCES ${schema}TILESET(KEY) ON DELETE CASCADE,\n"
+                            + //
                             " PAGE_Z SMALLINT,\n" + //
                             " PAGE_X INTEGER,\n" + //
                             " PAGE_Y INTEGER,\n" + //
@@ -73,14 +76,14 @@ public class SQLDialect {
 
             // size guesses: the size in bytes is going to be less than a zettabyte
             // (one million petabytes, 10^21) for the foreseeable future
-            put("QUOTA", Arrays.asList( //
-                    "CREATE TABLE ${schema}QUOTA (\n" + //
-                            "  ID INTEGER PRIMARY KEY,\n" + //
-                            "  TILESET_ID VARCHAR(256) REFERENCES ${schema}TILESET(KEY),\n" + //
-                            "  BYTES NUMERIC(21),\n" + //
-                            ")", //
-                    "CREATE INDEX QUOTA_TILESET ON QUOTA(TILESET_ID)" //
-            ));
+            put("QUOTA",
+                    Arrays.asList( //
+                            "CREATE TABLE ${schema}QUOTA (\n"
+                                    + "  TILESET_ID VARCHAR(256) PRIMARY KEY REFERENCES ${schema}TILESET(KEY) ON DELETE CASCADE,\n" //
+                                    + "  BYTES NUMERIC(21) NOT NULL DEFAULT 0,\n" + //
+                                    ")", //
+                            "CREATE INDEX QUOTA_TILESET ON QUOTA(TILESET_ID)" //
+                    ));
 
         }
     };
@@ -90,9 +93,9 @@ public class SQLDialect {
      * 
      * @param template
      */
-    public void initializeTables(String schema, JdbcTemplate template) {
+    public void initializeTables(String schema, SimpleJdbcTemplate template) {
         String prefix;
-        if(schema == null) {
+        if (schema == null) {
             prefix = "";
         } else {
             prefix = schema + ".";
@@ -101,7 +104,7 @@ public class SQLDialect {
             if (!tableExists(template, table)) {
                 for (String command : TABLE_CREATION_MAP.get(table)) {
                     command = command.replace("${schema}", prefix);
-                    template.execute(command);
+                    template.getJdbcOperations().execute(command);
                 }
             }
         }
@@ -109,18 +112,316 @@ public class SQLDialect {
 
     /**
      * Checks if the specified table exists
+     * 
      * @param template
      * @param tableName
      * @return
      */
-    private boolean tableExists(JdbcTemplate template, String tableName) {
+    private boolean tableExists(SimpleJdbcTemplate template, String tableName) {
         try {
             // execute a query returning no data just to check if the table is there
-            template.execute("SELECT * FROM " + tableName + " WHERE 1 = 0");
+            template.queryForInt("SELECT count(*) FROM " + tableName + " WHERE 1 = 0");
             return true;
         } catch (DataAccessException e) {
             return false;
         }
+    }
+
+    public String getAllLayersQuery(String schema) {
+        StringBuilder sb = new StringBuilder("SELECT DISTINCT(LAYER_NAME) FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET");
+
+        return sb.toString();
+    }
+
+    public String getLayerDeletionStatement(String schema, String layerNameParam) {
+        StringBuilder sb = new StringBuilder("DELETE ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET WHERE LAYER_NAME = :").append(layerNameParam);
+
+        return sb.toString();
+    }
+    
+    public String getLayerGridDeletionStatement(String schema, String layerNameParam, String gridsetIdParam) {
+        StringBuilder sb = new StringBuilder("DELETE ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET WHERE LAYER_NAME = :").append(layerNameParam);
+        sb.append(" AND GRIDSET_ID = :").append(gridsetIdParam);
+
+        return sb.toString();
+    }
+
+
+    public String getTileSetsQuery(String schema) {
+        StringBuilder sb = new StringBuilder(
+                "SELECT KEY, LAYER_NAME, GRIDSET_ID, BLOB_FORMAT, PARAMETERS_ID FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET");
+
+        return sb.toString();
+    }
+
+    public String getTileSetQuery(String schema, String keyParam) {
+        StringBuilder sb = new StringBuilder(
+                "SELECT KEY, LAYER_NAME, GRIDSET_ID, BLOB_FORMAT, PARAMETERS_ID FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET WHERE KEY = :" + keyParam);
+
+        return sb.toString();
+    }
+
+    public String getCreateTileSetQuery(String schema, String keyParam, String layerNameParam,
+            String gridSetIdParam, String blobFormatParam, String paramIdParam) {
+        StringBuilder sb = new StringBuilder("INSERT INTO ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET select :").append(keyParam);
+        sb.append(", :").append(layerNameParam);
+        sb.append(", :").append(gridSetIdParam);
+        sb.append(", :").append(blobFormatParam);
+        sb.append(", :").append(paramIdParam);
+
+        // add this to try avoiding race conditions with other GWC instances doing parallel
+        // insertions
+        sb.append(" WHERE NOT EXISTS(SELECT 1 FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET WHERE KEY = :").append(keyParam).append(")");
+
+        return sb.toString();
+    }
+
+    public String getCreateQuotaStatement(String schema, String keyParam) {
+        StringBuilder sb = new StringBuilder("INSERT INTO ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("QUOTA(TILESET_ID) SELECT :").append(keyParam);
+
+        // add this to try avoiding race conditions with other GWC instances doing parallel
+        // insertions
+        sb.append(" WHERE NOT EXISTS(SELECT 1 FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("QUOTA WHERE TILESET_ID = :").append(keyParam).append(")");
+        return sb.toString();
+    }
+
+    public String getUsedQuotaByTileSetId(String schema, String keyParam) {
+        StringBuilder sb = new StringBuilder("SELECT BYTES FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("QUOTA WHERE TILESET_ID = :" + keyParam);
+        return sb.toString();
+    }
+
+    public String getUsedQuotaByLayerName(String schema, String layerNameParam) {
+        StringBuilder sb = new StringBuilder("SELECT SUM(BYTES) FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("QUOTA JOIN ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET ON QUOTA.TILESET_ID = TILESET.KEY ");
+        sb.append("WHERE TILESET.LAYER_NAME = :").append(layerNameParam);
+        return sb.toString();
+
+    }
+
+    public String getRenameLayerStatement(String schema, String oldLayerName, String newLayerName) {
+        StringBuilder sb = new StringBuilder("UPDATE ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET SET LAYER_NAME = :").append(newLayerName)
+                .append(" WHERE LAYER_NAME = :").append(oldLayerName);
+
+        return sb.toString();
+    }
+
+    public String getUpdateQuotaStatement(String schema, String tileSetIdParam, String bytesParam) {
+        StringBuilder sb = new StringBuilder("UPDATE ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("QUOTA SET BYTES = BYTES + :").append(bytesParam);
+        sb.append(" WHERE TILESET_ID = :").append(tileSetIdParam);
+        
+        return sb.toString();
+    }
+
+    public String getPageStats(String schema, String keyParam) {
+        StringBuilder sb = new StringBuilder("SELECT FREQUENCY_OF_USE, LAST_ACCESS_TIME_MINUTES, FILL_FACTOR, NUM_HITS FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILEPAGE WHERE KEY = :").append(keyParam);
+        
+        return sb.toString();
+    }
+
+    public String contionalTilePageInsertStatement(String schema, String keyParam, String tileSetIdParam,
+            String zParam, String xParam, String yParam, String creationParam, String frequencyParam,
+            String lastAccessParam, String fillFactorParam, String numHitsParam) {
+        StringBuilder sb = new StringBuilder("INSERT INTO ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILEPAGE SELECT :").append(keyParam).append(", ");
+        sb.append(":").append(tileSetIdParam).append(", ");
+        sb.append(":").append(zParam).append(", ");
+        sb.append(":").append(xParam).append(", ");
+        sb.append(":").append(yParam).append(", ");
+        sb.append(":").append(creationParam).append(", ");
+        sb.append(":").append(frequencyParam).append(", ");
+        sb.append(":").append(lastAccessParam).append(", ");
+        sb.append(":").append(fillFactorParam).append(", ");
+        sb.append(":").append(numHitsParam).append(" ");
+        
+        sb.append(" WHERE NOT EXISTS(SELECT 1 FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILEPAGE WHERE KEY = :").append(keyParam).append(")");
+
+        return sb.toString();
+    }
+
+    /**
+     * Updates the fill factor in a page provided the old fill factor is still the one we read from
+     * the db, otherwise updates nothing
+     * 
+     * @param schema
+     * @param keyParam
+     * @param newfillFactorParam
+     * @param oldFillFactorParam
+     * @return
+     */
+    public String conditionalUpdatePageStatsFillFactor(String schema, String keyParam, String newfillFactorParam, String oldFillFactorParam) {
+        StringBuilder sb = new StringBuilder("UPDATE ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILEPAGE SET FILL_FACTOR = :").append(newfillFactorParam);
+        sb.append(" WHERE KEY = :").append(keyParam);
+        // add this to avoid overwriting a fill factor that was updated by someone else
+        sb.append(" AND FILL_FACTOR = :").append(oldFillFactorParam);
+        
+        return sb.toString();
+
+    }
+    
+    /**
+     * Forces the fill factor in a page to the desired value
+     * 
+     * @param schema
+     * @param keyParam
+     * @param newfillFactorParam
+     * @param oldFillFactorParam
+     * @return
+     */
+    public String updatePageStatsFillFactor(String schema, String keyParam, String newfillFactorParam) {
+        StringBuilder sb = new StringBuilder("UPDATE ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILEPAGE SET FILL_FACTOR = :").append(newfillFactorParam);
+        sb.append(" WHERE KEY = :").append(keyParam);
+        
+        return sb.toString();
+
+    }
+    
+    /**
+     * Updates the fill factor in a page provided the old fill factor is still the one we read from
+     * the db, otherwise updates nothing
+     * 
+     * @param schema
+     * @param keyParam
+     * @param newfillFactorParam
+     * @param oldFillFactorParam
+     * @return
+     */
+    public String updatePageStats(String schema, String keyParam, String newHitsParam, String oldHitsParam, 
+            String newFrequencyParam, String oldFrequencyParam, String newLastAccessTimeParam, String oldLastAccessTimeParam) {
+        StringBuilder sb = new StringBuilder("UPDATE ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILEPAGE SET NUM_HITS = :").append(newHitsParam);
+        sb.append(", FREQUENCY_OF_USE = :").append(newFrequencyParam);
+        sb.append(", LAST_ACCESS_TIME_MINUTES = :").append(newLastAccessTimeParam);
+        sb.append(" WHERE KEY = :").append(keyParam);
+        // add this to avoid overwriting params that were updated by another instance
+        sb.append(" AND NUM_HITS = :").append(oldHitsParam);
+        sb.append(" AND FREQUENCY_OF_USE = :").append(oldFrequencyParam);
+        sb.append(" AND LAST_ACCESS_TIME_MINUTES = :").append(oldLastAccessTimeParam);
+        
+        return sb.toString();
+
+    }
+
+    public String getLeastFrequentlyUsedPage(String schema, List<String> layerParamNames) {
+        StringBuilder sb = new StringBuilder("SELECT TILESET_ID, PAGE_X, PAGE_Y, PAGE_Z, CREATION_TIME_MINUTES FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILEPAGE WHERE TILESET_ID IN (");
+        sb.append("SELECT KEY FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET WHERE LAYER_NAME IN (");
+        for (int i = 0; i < layerParamNames.size(); i++) {
+            sb.append(":" + layerParamNames.get(i));
+            if(i < layerParamNames.size() - 1) {
+                sb.append(", ");
+            }
+        }
+        sb.append(")) ");
+        sb.append("ORDER BY FREQUENCY_OF_USE ASC LIMIT 1");
+        
+        return sb.toString();
+    }
+    
+    public String getLeastRecentlyUsedPage(String schema, List<String> layerParamNames) {
+        StringBuilder sb = new StringBuilder("SELECT TILESET_ID, PAGE_X, PAGE_Y, PAGE_Z, CREATION_TIME_MINUTES FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILEPAGE WHERE TILESET_ID IN (");
+        sb.append("SELECT KEY FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET WHERE LAYER_NAME IN (");
+        for (int i = 0; i < layerParamNames.size(); i++) {
+            sb.append(":" + layerParamNames.get(i));
+            if(i < layerParamNames.size() - 1) {
+                sb.append(", ");
+            }
+        }
+        sb.append(")) ");
+        sb.append("ORDER BY LAST_ACCESS_TIME_MINUTES ASC LIMIT 1");
+        
+        return sb.toString();
     }
 
 }
