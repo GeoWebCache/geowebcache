@@ -107,6 +107,8 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
     private boolean diskQuotaEnabled;
 
+    private QuotaStoreProvider quotaStoreProvider;
+
     /**
      * 
      * @param configLoader
@@ -119,7 +121,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      */
     public DiskQuotaMonitor(final DefaultStorageFinder storageFinder,
             final ConfigLoader configLoader, final TileLayerDispatcher tld, final StorageBroker sb,
-            QuotaStore quotaStore, final CacheCleaner cacheCleaner) throws IOException,
+            QuotaStoreProvider quotaStoreProvider, final CacheCleaner cacheCleaner) throws IOException,
             ConfigurationException {
 
         boolean disabled = Boolean.valueOf(storageFinder.findEnvVar(GWC_DISKQUOTA_DISABLED))
@@ -134,7 +136,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         this.configLoader = configLoader;
         this.storageBroker = sb;
         this.tileLayerDispatcher = tld;
-        this.quotaStore = quotaStore;
+        this.quotaStoreProvider = quotaStoreProvider;
         this.cacheCleaner = cacheCleaner;
     }
 
@@ -205,7 +207,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      * @throws ConfigurationException
      * @see {@link #shutDown(int)}
      */
-    public void startUp() throws ConfigurationException {
+    public void startUp() throws ConfigurationException, IOException {
         Assert.isTrue(diskQuotaEnabled, "startUp called but DiskQuotaMonitor is disabled!");
         Assert.isTrue(!isRunning, "DiskQuotaMonitor is already running");
 
@@ -217,12 +219,14 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         }
     }
 
-    private void startUpInternal() throws InterruptedException, ConfigurationException {
+    private void startUpInternal() throws InterruptedException, ConfigurationException, IOException {
         try {
             this.quotaConfig = configLoader.loadConfig();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        
+        quotaStore = quotaStoreProvider.getQuotaStore();
 
         quotaUsageMonitor = new QuotaUpdatesMonitor(quotaConfig, storageBroker, quotaStore);
         usageStatsMonitor = new UsageStatsMonitor(quotaStore, tileLayerDispatcher);
@@ -492,6 +496,6 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      */
     public void expireByLayerNames(Set<String> layerNames, QuotaResolver quotaResolver)
             throws InterruptedException {
-        cacheCleaner.expireByLayerNames(layerNames, quotaResolver);
+        cacheCleaner.expireByLayerNames(layerNames, quotaResolver, quotaStore);
     }
 }

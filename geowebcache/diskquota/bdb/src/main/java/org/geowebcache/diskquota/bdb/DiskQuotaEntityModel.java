@@ -14,7 +14,7 @@
  *  
  *  @author Andrea Aime - GeoSolutions
  */
-package org.geowebcache.diskquota.bdb.storage;
+package org.geowebcache.diskquota.bdb;
 
 import java.util.HashMap;
 import java.util.Map;

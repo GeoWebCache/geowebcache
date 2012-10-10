@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 
@@ -29,13 +30,26 @@ public class SimpleJdbcTemplate extends org.springframework.jdbc.core.simple.Sim
      * @return
      */
     public <T> T queryForOptionalObject(String sql, ParameterizedRowMapper<T> rowMapper, Map params) {
-        List<T> results = query(sql, rowMapper, params);
-        if (results.size() > 1) {
-            throw new IncorrectResultSizeDataAccessException(1, results.size());
-        } else if (results.size() == 1) {
-            return results.get(0);
-        } else {
-            return null;
+        try {
+            List<T> results = query(sql, rowMapper, params);
+            if (results.size() > 1) {
+                throw new IncorrectResultSizeDataAccessException(1, results.size());
+            } else if (results.size() == 1) {
+                return results.get(0);
+            } else {
+                return null;
+            }
+        } catch(DataAccessException e) {
+            throw new ParametricDataAccessException(sql, params, e);
+        }
+    }
+    
+    @Override
+    public int update(String sql, Map params) throws DataAccessException {
+        try {
+            return super.update(sql, params);
+        } catch(DataAccessException e) {
+            throw new ParametricDataAccessException(sql, params, e);
         }
     }
 

@@ -69,6 +69,8 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
     private transient Date lastCleanUpTime;
 
     private List<LayerQuota> layerQuotas;
+    
+    private String quotaStore;
 
     public void setDefaults() {
         if (enabled == null) {
@@ -92,6 +94,9 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
         }
         if (globalQuota == null) {
             globalQuota = new Quota(500, StorageUnit.MiB);
+        }
+        if (quotaStore == null) {
+            quotaStore = "bdb";
         }
     }
 
@@ -276,5 +281,21 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
         clone.globalQuota = globalQuota == null ? null : new Quota(globalQuota);
         clone.layerQuotas = layerQuotas == null ? null : new ArrayList<LayerQuota>(layerQuotas);
         return clone;
+    }
+
+    /**
+     * Returns the quota store name
+     * @return
+     */
+    public String getQuotaStore() {
+        return quotaStore;
+    }
+
+    /**
+     * Sets the quota store name
+     * @param quotaStore
+     */
+    public void setQuotaStore(String quotaStore) {
+        this.quotaStore = quotaStore;
     }
 }

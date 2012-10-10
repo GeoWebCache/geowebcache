@@ -1,4 +1,6 @@
-package org.geowebcache.diskquota.storage;
+package org.geowebcache.diskquota.jdbc;
+
+import org.geowebcache.diskquota.storage.SystemUtils;
 
 public class MockSystemUtils extends SystemUtils {
 

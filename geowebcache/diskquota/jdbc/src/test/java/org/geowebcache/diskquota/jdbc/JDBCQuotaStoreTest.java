@@ -28,7 +28,6 @@ import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
 import org.geowebcache.diskquota.DiskQuotaMonitor;
 import org.geowebcache.diskquota.QuotaStore;
-import org.geowebcache.diskquota.storage.MockSystemUtils;
 import org.geowebcache.diskquota.storage.PageStats;
 import org.geowebcache.diskquota.storage.PageStatsPayload;
 import org.geowebcache.diskquota.storage.Quota;
@@ -98,7 +97,7 @@ public class JDBCQuotaStoreTest extends TestCase {
     
     @Override
     protected void tearDown() throws Exception {
-        dataSource.close();
+        store.close();
     }
 
     private SQLDialect getDialect() {
@@ -215,8 +214,8 @@ public class JDBCQuotaStoreTest extends TestCase {
         // startup consistency check in case the store got out of sync for some reason. On normal
         // situations the store should have been notified through store.deleteLayer(layerName) if
         // the layer was removed programmatically through StorageBroker.deleteLayer
-        store.destroy();
-        store.setDataSource(dataSource);
+        store.close();
+        store.setDataSource(setupDataSource());
         store.initialize();
 
         tileSets = store.getTileSets();

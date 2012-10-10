@@ -16,6 +16,7 @@
  */
 package org.geowebcache.diskquota.jdbc;
 
+import java.io.Closeable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.ResultSet;
@@ -35,6 +36,7 @@ import java.util.concurrent.Future;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.diskquota.QuotaStore;
@@ -46,6 +48,7 @@ import org.geowebcache.diskquota.storage.TilePageCalculator;
 import org.geowebcache.diskquota.storage.TileSet;
 import org.geowebcache.diskquota.storage.TileSetVisitor;
 import org.geowebcache.storage.DefaultStorageFinder;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -105,6 +108,8 @@ public class JDBCQuotaStore implements QuotaStore {
      */
     ExecutorService executor;
 
+    private DataSource dataSource;
+
     public JDBCQuotaStore(DefaultStorageFinder finder, TilePageCalculator tilePageCalculator) {
         this.finder = finder;
         this.calculator = tilePageCalculator;
@@ -151,6 +156,7 @@ public class JDBCQuotaStore implements QuotaStore {
      * Sets the connection pool provider and initializes the tables in the dbms if missing
      */
     public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
         DataSourceTransactionManager dsTransactionManager = new DataSourceTransactionManager(
                 dataSource);
         this.tt = new TransactionTemplate(dsTransactionManager);
@@ -627,8 +633,15 @@ public class JDBCQuotaStore implements QuotaStore {
         });
     }
 
-    public void destroy() {
-        // not much to do for the moment, the connection pool is externally provided
+    public void close() throws Exception {
+        // try to close the data source if possible
+        if(dataSource instanceof BasicDataSource) {
+            ((BasicDataSource) dataSource).close();
+        } else if(dataSource instanceof Closeable) {
+            ((Closeable) dataSource).close();
+        }
+        
+        // release the templates
         tt = null;
         jt = null;
     }

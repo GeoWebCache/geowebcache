@@ -14,7 +14,7 @@
  * 
  * @author Gabriel Roldan
  */
-package org.geowebcache.diskquota.bdb.storage;
+package org.geowebcache.diskquota.bdb;
 
 import static org.geowebcache.diskquota.DiskQuotaMonitor.GWC_DISKQUOTA_DISABLED;
 
@@ -61,7 +61,7 @@ import com.sleepycat.persist.EntityStore;
 import com.sleepycat.persist.PrimaryIndex;
 import com.sleepycat.persist.SecondaryIndex;
 
-public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBean {
+public class BDBQuotaStore implements QuotaStore {
 
     private static final Log log = LogFactory.getLog(BDBQuotaStore.class);
 
@@ -120,18 +120,8 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
     }
 
     /**
-     * Initialization method called by Spring, actually loads an applies the page store
-     * configuration
-     * 
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
-    public void afterPropertiesSet() throws Exception {
-        startUp();
-    }
-
-    /**
      * @throws InterruptedException
-     * @see {@link #destroy()}
+     * @see {@link #close()}
      */
     public void startUp() throws InterruptedException {
         if (!diskQuotaEnabled) {
@@ -158,12 +148,7 @@ public class BDBQuotaStore implements QuotaStore, InitializingBean, DisposableBe
         log.info("Quota Store initialized. Global quota: " + getGloballyUsedQuota().toNiceString());
     }
 
-    /**
-     * 
-     * @see org.springframework.beans.factory.DisposableBean#destroy()
-     * @see #startUp()
-     */
-    public void destroy() throws Exception {
+    public void close() throws Exception {
         if (!diskQuotaEnabled) {
             return;
         }

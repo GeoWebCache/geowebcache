@@ -92,4 +92,10 @@ public interface QuotaStore {
 
     public abstract void deleteGridSubset(String layerName, String gridSetId);
 
+    /**
+     * Closes the quota store, releasing any resources the store might be depending onto
+     * @throws Exception 
+     */
+    public abstract void close() throws Exception;
+
 }

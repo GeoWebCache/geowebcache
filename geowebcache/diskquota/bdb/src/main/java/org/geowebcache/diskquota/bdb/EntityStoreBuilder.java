@@ -14,7 +14,7 @@
  * 
  * @author Gabriel Roldan
  */
-package org.geowebcache.diskquota.bdb.storage;
+package org.geowebcache.diskquota.bdb;
 
 import java.io.File;
 import java.util.Properties;

@@ -1,4 +1,4 @@
-package org.geowebcache.diskquota.storage;
+package org.geowebcache.diskquota;
 
 import java.io.File;
 import java.io.InputStream;
@@ -21,8 +21,15 @@ import org.easymock.classextension.EasyMock;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
-import org.geowebcache.diskquota.DiskQuotaMonitor;
-import org.geowebcache.diskquota.bdb.storage.BDBQuotaStore;
+import org.geowebcache.diskquota.bdb.BDBQuotaStore;
+import org.geowebcache.diskquota.storage.PageStats;
+import org.geowebcache.diskquota.storage.PageStatsPayload;
+import org.geowebcache.diskquota.storage.Quota;
+import org.geowebcache.diskquota.storage.StorageUnit;
+import org.geowebcache.diskquota.storage.SystemUtils;
+import org.geowebcache.diskquota.storage.TilePage;
+import org.geowebcache.diskquota.storage.TilePageCalculator;
+import org.geowebcache.diskquota.storage.TileSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
@@ -64,13 +71,13 @@ public class BDBQuotaStoreTest extends TestCase {
         tilePageCalculator = new TilePageCalculator(layerDispatcher);
 
         store = new BDBQuotaStore(cacheDirFinder, tilePageCalculator);
-        store.afterPropertiesSet();
+        store.startUp();
         testTileSet = tilePageCalculator.getTileSetsFor("topp:states2").iterator().next();
     }
 
     public void tearDown() {
         try {
-            store.destroy();
+            store.close();
             FileUtils.deleteDirectory(targetDir);
         } catch (Exception e) {
         }
@@ -133,7 +140,7 @@ public class BDBQuotaStoreTest extends TestCase {
         // startup consistency check in case the store got out of sync for some reason. On normal
         // situations the store should have been notified through store.deleteLayer(layerName) if
         // the layer was removed programmatically through StorageBroker.deleteLayer
-        store.destroy();
+        store.close();
         store.startUp();
 
         tileSets = store.getTileSets();

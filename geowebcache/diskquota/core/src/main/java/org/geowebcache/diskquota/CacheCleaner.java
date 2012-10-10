@@ -45,8 +45,6 @@ public class CacheCleaner implements DisposableBean {
 
     private final TileBreeder tileBreeder;
 
-    private final QuotaStore pageStore;
-
     private boolean shutDown;
 
     public static interface QuotaResolver {
@@ -118,9 +116,8 @@ public class CacheCleaner implements DisposableBean {
      * @param tileBreeder
      *            used to truncate expired pages of tiles
      */
-    public CacheCleaner(final TileBreeder tileBreeder, final QuotaStore pageStore) {
+    public CacheCleaner(final TileBreeder tileBreeder) {
         this.tileBreeder = tileBreeder;
-        this.pageStore = pageStore;
     }
 
     /**
@@ -142,7 +139,7 @@ public class CacheCleaner implements DisposableBean {
      * @throws InterruptedException
      * @see {@link org.geowebcache.diskquota.ExpirationPolicy#expireByLayerNames}
      */
-    public void expireByLayerNames(final Set<String> layerNames, final QuotaResolver quotaResolver)
+    public void expireByLayerNames(final Set<String> layerNames, final QuotaResolver quotaResolver, final QuotaStore pageStore)
             throws InterruptedException {
 
         Quota limit;
@@ -198,12 +195,12 @@ public class CacheCleaner implements DisposableBean {
                 throw new InterruptedException();
             }
 
-            expirePage(tilePage);
+            expirePage(pageStore, tilePage);
 
         }
     }
 
-    private void expirePage(TilePage tilePage) throws InterruptedException {
+    private void expirePage(QuotaStore pageStore, TilePage tilePage) throws InterruptedException {
         final String tileSetId = tilePage.getTileSetId();
         final TileSet tileSet = pageStore.getTileSetById(tileSetId);
         final String layerName = tileSet.getLayerName();

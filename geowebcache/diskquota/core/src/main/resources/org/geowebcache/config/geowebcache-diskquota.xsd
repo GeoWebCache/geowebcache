@@ -16,6 +16,11 @@
             <xs:documentation>Whether the diskquota monitor is enabled or not</xs:documentation>
           </xs:annotation>
         </xs:element>
+        <xs:element name="quotaStore" type="xs:string" min="0">
+          <xs:annotation>
+            <xs:documentation>Name of the quota store to be used, at the time of writing the possible values are 'bdb', 'h2' or 'jdbc', defaults to 'bdb'</xs:documentation>
+          </xs:annotation>
+        </xs:element>
         <xs:element name="diskBlockSize" type="xs:int">
           <xs:annotation>
             <xs:documentation xml:lang="en">Cache's file system block size, in bytes. Usually 4096, 8192,

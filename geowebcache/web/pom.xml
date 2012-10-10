@@ -66,6 +66,11 @@
     </dependency>
     <dependency>
       <groupId>org.geowebcache</groupId>
+      <artifactId>gwc-diskquota-jdbc</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.geowebcache</groupId>
       <artifactId>gwc-arcgiscache</artifactId>
       <version>${project.version}</version>
     </dependency>
