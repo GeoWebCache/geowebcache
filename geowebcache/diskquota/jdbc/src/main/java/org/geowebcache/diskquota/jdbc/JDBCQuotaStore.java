@@ -375,13 +375,7 @@ public class JDBCQuotaStore implements QuotaStore {
         params.put("parametersId", tset.getParametersId());
 
         // run the insert, if that creates a record then also create the quota
-        if (jt.update(createTileSet, params) > 0) {
-            String quotaCreation = dialect.getCreateQuotaStatement(schema, "key");
-            jt.update(quotaCreation, Collections.singletonMap("key", tset.getId()));
-            return true;
-        }
-
-        return false;
+        return jt.update(createTileSet, params) > 0;
     }
 
     protected TileSet getOrCreateTileSet(TileSet tileSet) {

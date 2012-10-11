@@ -1,10 +1,10 @@
 package org.geowebcache.diskquota.jdbc;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,7 +15,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.Future;
 
 import junit.framework.TestCase;
@@ -43,7 +42,7 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
 
-public class JDBCQuotaStoreTest extends TestCase {
+public abstract class JDBCQuotaStoreTest extends TestCase {
 
     JDBCQuotaStore store;
 
@@ -83,7 +82,7 @@ public class JDBCQuotaStoreTest extends TestCase {
         tilePageCalculator = new TilePageCalculator(layerDispatcher);
 
         // prepare a connection pool for tests against a H2 database
-        dataSource = setupDataSource();
+        dataSource = getDataSource();
         SQLDialect dialect = getDialect();
 
         // setup the quota store
@@ -102,9 +101,11 @@ public class JDBCQuotaStoreTest extends TestCase {
         store.close();
     }
 
-    private SQLDialect getDialect() {
-        return new H2Dialect();
-    }
+    protected abstract SQLDialect getDialect();
+    
+    protected abstract BasicDataSource getDataSource() throws IOException, SQLException;
+    
+
 
     private XMLConfiguration loadXMLConfig() {
         InputStream is = null;
@@ -120,32 +121,6 @@ public class JDBCQuotaStoreTest extends TestCase {
         }
 
         return xmlConfig;
-    }
-
-    private BasicDataSource setupDataSource() throws IOException {
-        // cleanup previous eventual db
-        File[] files = new File("./target").listFiles(new FilenameFilter() {
-
-            public boolean accept(File dir, String name) {
-                return name.startsWith("quota-h2");
-            }
-        });
-        for (File file : files) {
-            assertTrue(file.delete());
-        }
-
-        BasicDataSource dataSource = new BasicDataSource();
-
-        dataSource.setDriverClassName("org.h2.Driver");
-        dataSource.setUrl("jdbc:h2:./target/quota-h2");
-        dataSource.setUsername("sa");
-        dataSource.setPoolPreparedStatements(true);
-        dataSource.setAccessToUnderlyingConnectionAllowed(true);
-        dataSource.setMinIdle(1);
-        dataSource.setMaxActive(4);
-        // if we cannot get a connection within 5 seconds give up
-        dataSource.setMaxWait(5000);
-        return dataSource;
     }
 
     public void testTableSetup() throws Exception {
@@ -217,7 +192,7 @@ public class JDBCQuotaStoreTest extends TestCase {
         // situations the store should have been notified through store.deleteLayer(layerName) if
         // the layer was removed programmatically through StorageBroker.deleteLayer
         store.close();
-        store.setDataSource(setupDataSource());
+        store.setDataSource(getDataSource());
         store.initialize();
 
         tileSets = store.getTileSets();

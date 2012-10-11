@@ -16,13 +16,21 @@
  */
 package org.geowebcache.diskquota.jdbc;
 
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.dao.DataAccessException;
+import javax.sql.DataSource;
+
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.support.DatabaseMetaDataCallback;
+import org.springframework.jdbc.support.JdbcAccessor;
+import org.springframework.jdbc.support.JdbcUtils;
+import org.springframework.jdbc.support.MetaDataAccessException;
 
 /**
  * Base class for quota store JDBC dialects, provides functionality based on SQL standards,
@@ -40,13 +48,16 @@ public class SQLDialect {
             // is normally a mime plus some extras, again 64 should fit, a param id is
             // a SHA-1 sum that uses 41 chars, the id is the sum of all the above plus
             // connecting chars, 256 is again more than enough
+            // bytes is going to be less than a zettabyte(one million petabytes, 10^21) for the
+            // foreseeable future
             put("TILESET", Arrays.asList( //
                     "CREATE TABLE ${schema}TILESET (\n" + //
                             "  KEY VARCHAR(256) PRIMARY KEY,\n" + //
                             "  LAYER_NAME VARCHAR(64),\n" + //
                             "  GRIDSET_ID VARCHAR(32),\n" + //
                             "  BLOB_FORMAT VARCHAR(64),\n" + //
-                            "  PARAMETERS_ID VARCHAR(41)\n" + //
+                            "  PARAMETERS_ID VARCHAR(41),\n" + //
+                            "  BYTES NUMERIC(21) NOT NULL DEFAULT 0\n" + //
                             ")", //
                     "CREATE INDEX TILESET_LAYER ON TILESET(LAYER_NAME)" //
             ));
@@ -66,24 +77,11 @@ public class SQLDialect {
                             " FREQUENCY_OF_USE FLOAT,\n" + //
                             " LAST_ACCESS_TIME_MINUTES INTEGER,\n" + //
                             " FILL_FACTOR FLOAT,\n" + //
-                            " NUM_HITS NUMBER(64)\n" + //
+                            " NUM_HITS NUMERIC(64)\n" + //
                             ")", //
                     "CREATE INDEX TILEPAGE_TILESET ON TILEPAGE(TILESET_ID)",
-                    "CREATE INDEX TILEPAGE_FREQUENCY ON TILEPAGE(FREQUENCY_OF_USE)",
-                    "CREATE INDEX TILEPAGE_LAST_ACCESS ON TILEPAGE(LAST_ACCESS_TIME_MINUTES)",
-                    "CREATE INDEX TILEPAGE_FILL_FACTOR ON TILEPAGE(FILL_FACTOR)" //
-            ));
-
-            // size guesses: the size in bytes is going to be less than a zettabyte
-            // (one million petabytes, 10^21) for the foreseeable future
-            put("QUOTA",
-                    Arrays.asList( //
-                            "CREATE TABLE ${schema}QUOTA (\n"
-                                    + "  TILESET_ID VARCHAR(256) PRIMARY KEY REFERENCES ${schema}TILESET(KEY) ON DELETE CASCADE,\n" //
-                                    + "  BYTES NUMERIC(21) NOT NULL DEFAULT 0,\n" + //
-                                    ")", //
-                            "CREATE INDEX QUOTA_TILESET ON QUOTA(TILESET_ID)" //
-                    ));
+                    "CREATE INDEX TILEPAGE_FREQUENCY ON TILEPAGE(FREQUENCY_OF_USE DESC)",
+                    "CREATE INDEX TILEPAGE_LAST_ACCESS ON TILEPAGE(LAST_ACCESS_TIME_MINUTES DESC)"));
 
         }
     };
@@ -101,7 +99,7 @@ public class SQLDialect {
             prefix = schema + ".";
         }
         for (String table : TABLE_CREATION_MAP.keySet()) {
-            if (!tableExists(template, table)) {
+            if (!tableExists(template, schema, table)) {
                 for (String command : TABLE_CREATION_MAP.get(table)) {
                     command = command.replace("${schema}", prefix);
                     template.getJdbcOperations().execute(command);
@@ -117,12 +115,26 @@ public class SQLDialect {
      * @param tableName
      * @return
      */
-    private boolean tableExists(SimpleJdbcTemplate template, String tableName) {
+    private boolean tableExists(SimpleJdbcTemplate template, final String schema,
+            final String tableName) {
         try {
-            // execute a query returning no data just to check if the table is there
-            template.queryForInt("SELECT count(*) FROM " + tableName + " WHERE 1 = 0");
-            return true;
-        } catch (DataAccessException e) {
+            DataSource ds = ((JdbcAccessor) template.getJdbcOperations()).getDataSource();
+            return (Boolean) JdbcUtils.extractDatabaseMetaData(ds, new DatabaseMetaDataCallback() {
+
+                public Object processMetaData(DatabaseMetaData dbmd) throws SQLException,
+                        MetaDataAccessException {
+                    ResultSet rs = null;
+                    try {
+                        rs = dbmd.getTables(null, schema, tableName, new String[] { "TABLE" });
+                        return rs.next();
+                    } finally {
+                        if (rs != null) {
+                            rs.close();
+                        }
+                    }
+                }
+            });
+        } catch (MetaDataAccessException e) {
             return false;
         }
     }
@@ -138,7 +150,7 @@ public class SQLDialect {
     }
 
     public String getLayerDeletionStatement(String schema, String layerNameParam) {
-        StringBuilder sb = new StringBuilder("DELETE ");
+        StringBuilder sb = new StringBuilder("DELETE FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
         }
@@ -146,9 +158,10 @@ public class SQLDialect {
 
         return sb.toString();
     }
-    
-    public String getLayerGridDeletionStatement(String schema, String layerNameParam, String gridsetIdParam) {
-        StringBuilder sb = new StringBuilder("DELETE ");
+
+    public String getLayerGridDeletionStatement(String schema, String layerNameParam,
+            String gridsetIdParam) {
+        StringBuilder sb = new StringBuilder("DELETE FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
         }
@@ -157,7 +170,6 @@ public class SQLDialect {
 
         return sb.toString();
     }
-
 
     public String getTileSetsQuery(String schema) {
         StringBuilder sb = new StringBuilder(
@@ -192,9 +204,11 @@ public class SQLDialect {
         sb.append(", :").append(gridSetIdParam);
         sb.append(", :").append(blobFormatParam);
         sb.append(", :").append(paramIdParam);
+        sb.append(", 0 ");
 
         // add this to try avoiding race conditions with other GWC instances doing parallel
         // insertions
+        addEmtpyTableReference(sb);
         sb.append(" WHERE NOT EXISTS(SELECT 1 FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
@@ -204,21 +218,13 @@ public class SQLDialect {
         return sb.toString();
     }
 
-    public String getCreateQuotaStatement(String schema, String keyParam) {
-        StringBuilder sb = new StringBuilder("INSERT INTO ");
-        if (schema != null) {
-            sb.append(schema).append(".");
-        }
-        sb.append("QUOTA(TILESET_ID) SELECT :").append(keyParam);
-
-        // add this to try avoiding race conditions with other GWC instances doing parallel
-        // insertions
-        sb.append(" WHERE NOT EXISTS(SELECT 1 FROM ");
-        if (schema != null) {
-            sb.append(schema).append(".");
-        }
-        sb.append("QUOTA WHERE TILESET_ID = :").append(keyParam).append(")");
-        return sb.toString();
+    /**
+     * Whatever source table to use when there is not a real table to use as the source,
+     * e.g., "select 1" vs "select 1 from dual". For most databases not adding anything is just fine.
+     * @param sb 
+     */
+    protected void addEmtpyTableReference(StringBuilder sb) {
+        // nothing to do        
     }
 
     public String getUsedQuotaByTileSetId(String schema, String keyParam) {
@@ -226,7 +232,7 @@ public class SQLDialect {
         if (schema != null) {
             sb.append(schema).append(".");
         }
-        sb.append("QUOTA WHERE TILESET_ID = :" + keyParam);
+        sb.append("TILESET WHERE KEY = :" + keyParam);
         return sb.toString();
     }
 
@@ -235,12 +241,7 @@ public class SQLDialect {
         if (schema != null) {
             sb.append(schema).append(".");
         }
-        sb.append("QUOTA JOIN ");
-        if (schema != null) {
-            sb.append(schema).append(".");
-        }
-        sb.append("TILESET ON QUOTA.TILESET_ID = TILESET.KEY ");
-        sb.append("WHERE TILESET.LAYER_NAME = :").append(layerNameParam);
+        sb.append("TILESET WHERE TILESET.LAYER_NAME = :").append(layerNameParam);
         return sb.toString();
 
     }
@@ -261,25 +262,27 @@ public class SQLDialect {
         if (schema != null) {
             sb.append(schema).append(".");
         }
-        sb.append("QUOTA SET BYTES = BYTES + :").append(bytesParam);
-        sb.append(" WHERE TILESET_ID = :").append(tileSetIdParam);
-        
+        sb.append("TILESET SET BYTES = BYTES + :").append(bytesParam);
+        sb.append(" WHERE KEY = :").append(tileSetIdParam);
+
         return sb.toString();
     }
 
     public String getPageStats(String schema, String keyParam) {
-        StringBuilder sb = new StringBuilder("SELECT FREQUENCY_OF_USE, LAST_ACCESS_TIME_MINUTES, FILL_FACTOR, NUM_HITS FROM ");
+        StringBuilder sb = new StringBuilder(
+                "SELECT FREQUENCY_OF_USE, LAST_ACCESS_TIME_MINUTES, FILL_FACTOR, NUM_HITS FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
         }
         sb.append("TILEPAGE WHERE KEY = :").append(keyParam);
-        
+
         return sb.toString();
     }
 
-    public String contionalTilePageInsertStatement(String schema, String keyParam, String tileSetIdParam,
-            String zParam, String xParam, String yParam, String creationParam, String frequencyParam,
-            String lastAccessParam, String fillFactorParam, String numHitsParam) {
+    public String contionalTilePageInsertStatement(String schema, String keyParam,
+            String tileSetIdParam, String zParam, String xParam, String yParam,
+            String creationParam, String frequencyParam, String lastAccessParam,
+            String fillFactorParam, String numHitsParam) {
         StringBuilder sb = new StringBuilder("INSERT INTO ");
         if (schema != null) {
             sb.append(schema).append(".");
@@ -294,7 +297,8 @@ public class SQLDialect {
         sb.append(":").append(lastAccessParam).append(", ");
         sb.append(":").append(fillFactorParam).append(", ");
         sb.append(":").append(numHitsParam).append(" ");
-        
+
+        addEmtpyTableReference(sb);
         sb.append(" WHERE NOT EXISTS(SELECT 1 FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
@@ -314,7 +318,8 @@ public class SQLDialect {
      * @param oldFillFactorParam
      * @return
      */
-    public String conditionalUpdatePageStatsFillFactor(String schema, String keyParam, String newfillFactorParam, String oldFillFactorParam) {
+    public String conditionalUpdatePageStatsFillFactor(String schema, String keyParam,
+            String newfillFactorParam, String oldFillFactorParam) {
         StringBuilder sb = new StringBuilder("UPDATE ");
         if (schema != null) {
             sb.append(schema).append(".");
@@ -323,11 +328,11 @@ public class SQLDialect {
         sb.append(" WHERE KEY = :").append(keyParam);
         // add this to avoid overwriting a fill factor that was updated by someone else
         sb.append(" AND FILL_FACTOR = :").append(oldFillFactorParam);
-        
+
         return sb.toString();
 
     }
-    
+
     /**
      * Forces the fill factor in a page to the desired value
      * 
@@ -337,18 +342,19 @@ public class SQLDialect {
      * @param oldFillFactorParam
      * @return
      */
-    public String updatePageStatsFillFactor(String schema, String keyParam, String newfillFactorParam) {
+    public String updatePageStatsFillFactor(String schema, String keyParam,
+            String newfillFactorParam) {
         StringBuilder sb = new StringBuilder("UPDATE ");
         if (schema != null) {
             sb.append(schema).append(".");
         }
         sb.append("TILEPAGE SET FILL_FACTOR = :").append(newfillFactorParam);
         sb.append(" WHERE KEY = :").append(keyParam);
-        
+
         return sb.toString();
 
     }
-    
+
     /**
      * Updates the fill factor in a page provided the old fill factor is still the one we read from
      * the db, otherwise updates nothing
@@ -359,8 +365,9 @@ public class SQLDialect {
      * @param oldFillFactorParam
      * @return
      */
-    public String updatePageStats(String schema, String keyParam, String newHitsParam, String oldHitsParam, 
-            String newFrequencyParam, String oldFrequencyParam, String newLastAccessTimeParam, String oldLastAccessTimeParam) {
+    public String updatePageStats(String schema, String keyParam, String newHitsParam,
+            String oldHitsParam, String newFrequencyParam, String oldFrequencyParam,
+            String newLastAccessTimeParam, String oldLastAccessTimeParam) {
         StringBuilder sb = new StringBuilder("UPDATE ");
         if (schema != null) {
             sb.append(schema).append(".");
@@ -373,13 +380,14 @@ public class SQLDialect {
         sb.append(" AND NUM_HITS = :").append(oldHitsParam);
         sb.append(" AND FREQUENCY_OF_USE = :").append(oldFrequencyParam);
         sb.append(" AND LAST_ACCESS_TIME_MINUTES = :").append(oldLastAccessTimeParam);
-        
+
         return sb.toString();
 
     }
 
     public String getLeastFrequentlyUsedPage(String schema, List<String> layerParamNames) {
-        StringBuilder sb = new StringBuilder("SELECT TILESET_ID, PAGE_X, PAGE_Y, PAGE_Z, CREATION_TIME_MINUTES FROM ");
+        StringBuilder sb = new StringBuilder(
+                "SELECT TILESET_ID, PAGE_X, PAGE_Y, PAGE_Z, CREATION_TIME_MINUTES FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
         }
@@ -391,18 +399,19 @@ public class SQLDialect {
         sb.append("TILESET WHERE LAYER_NAME IN (");
         for (int i = 0; i < layerParamNames.size(); i++) {
             sb.append(":" + layerParamNames.get(i));
-            if(i < layerParamNames.size() - 1) {
+            if (i < layerParamNames.size() - 1) {
                 sb.append(", ");
             }
         }
         sb.append(")) ");
         sb.append("ORDER BY FREQUENCY_OF_USE ASC LIMIT 1");
-        
+
         return sb.toString();
     }
-    
+
     public String getLeastRecentlyUsedPage(String schema, List<String> layerParamNames) {
-        StringBuilder sb = new StringBuilder("SELECT TILESET_ID, PAGE_X, PAGE_Y, PAGE_Z, CREATION_TIME_MINUTES FROM ");
+        StringBuilder sb = new StringBuilder(
+                "SELECT TILESET_ID, PAGE_X, PAGE_Y, PAGE_Z, CREATION_TIME_MINUTES FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
         }
@@ -414,13 +423,13 @@ public class SQLDialect {
         sb.append("TILESET WHERE LAYER_NAME IN (");
         for (int i = 0; i < layerParamNames.size(); i++) {
             sb.append(":" + layerParamNames.get(i));
-            if(i < layerParamNames.size() - 1) {
+            if (i < layerParamNames.size() - 1) {
                 sb.append(", ");
             }
         }
         sb.append(")) ");
         sb.append("ORDER BY LAST_ACCESS_TIME_MINUTES ASC LIMIT 1");
-        
+
         return sb.toString();
     }
 
