@@ -48,7 +48,7 @@ import org.geowebcache.diskquota.storage.TilePageCalculator;
 import org.geowebcache.diskquota.storage.TileSet;
 import org.geowebcache.diskquota.storage.TileSetVisitor;
 import org.geowebcache.storage.DefaultStorageFinder;
-import org.springframework.dao.DataAccessException;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -227,20 +227,7 @@ public class JDBCQuotaStore implements QuotaStore {
                     layerTileSets = Collections.singleton(new TileSet(GLOBAL_QUOTA_NAME));
                 }
                 for (TileSet tset : layerTileSets) {
-                    String createTileSet = dialect.getCreateTileSetQuery(schema, "key",
-                            "layerName", "gridSetId", "blobFormat", "parametersId");
-                    Map<String, Object> params = new HashMap<String, Object>();
-                    params.put("key", tset.getId());
-                    params.put("layerName", tset.getLayerName());
-                    params.put("gridSetId", tset.getGridsetId());
-                    params.put("blobFormat", tset.getBlobFormat());
-                    params.put("parametersId", tset.getParametersId());
-
-                    // run the insert, if that creates a record then also create the quota
-                    if (jt.update(createTileSet, params) > 0) {
-                        String quotaCreation = dialect.getCreateQuotaStatement(schema, "key");
-                        jt.update(quotaCreation, Collections.singletonMap("key", tset.getId()));
-                    }
+                    createTileSet(tset);
                 }
 
             }
@@ -360,16 +347,57 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     public TileSet getTileSetById(String tileSetId) throws InterruptedException {
-        String getTileSet = dialect.getTileSetQuery(schema, "key");
-        final TileSetRowMapper tileSetMapper = new TileSetRowMapper();
-        TileSet result = jt.queryForOptionalObject(getTileSet, tileSetMapper,
-                Collections.singletonMap("key", tileSetId));
+        // locate the tileset
+        TileSet result = getTileSetByIdInternal(tileSetId);
 
         // make it compatible with BDB quota store behavior
         if (result == null) {
             throw new IllegalArgumentException("Could not find a tile set with id: " + tileSetId);
         }
         return result;
+    }
+
+    private TileSet getTileSetByIdInternal(String tileSetId) {
+        String getTileSet = dialect.getTileSetQuery(schema, "key");
+        final TileSetRowMapper tileSetMapper = new TileSetRowMapper();
+        return jt.queryForOptionalObject(getTileSet, tileSetMapper,
+                Collections.singletonMap("key", tileSetId));
+    }
+
+    private boolean createTileSet(TileSet tset) {
+        String createTileSet = dialect.getCreateTileSetQuery(schema, "key", "layerName",
+                "gridSetId", "blobFormat", "parametersId");
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("key", tset.getId());
+        params.put("layerName", tset.getLayerName());
+        params.put("gridSetId", tset.getGridsetId());
+        params.put("blobFormat", tset.getBlobFormat());
+        params.put("parametersId", tset.getParametersId());
+
+        // run the insert, if that creates a record then also create the quota
+        if (jt.update(createTileSet, params) > 0) {
+            String quotaCreation = dialect.getCreateQuotaStatement(schema, "key");
+            jt.update(quotaCreation, Collections.singletonMap("key", tset.getId()));
+            return true;
+        }
+
+        return false;
+    }
+
+    protected TileSet getOrCreateTileSet(TileSet tileSet) {
+        for (int i = 0; i < maxLoops; i++) {
+            TileSet tset = getTileSetByIdInternal(tileSet.getId());
+            if (tset != null) {
+                return tset;
+            }
+
+            if (createTileSet(tileSet)) {
+                return tileSet;
+            }
+        }
+
+        throw new ConcurrencyFailureException("Failed to create or locate tileset " + tileSet
+                + " after " + maxLoops + " attempts");
     }
 
     public TilePageCalculator getTilePageCalculator() {
@@ -382,6 +410,7 @@ public class JDBCQuotaStore implements QuotaStore {
 
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
+                getOrCreateTileSet(tileSet);
                 updateQuotas(tileSet, quotaDiff);
 
                 if (tileCountDiffs != null) {
@@ -437,6 +466,12 @@ public class JDBCQuotaStore implements QuotaStore {
 
                         modified = createNewPageStats(stats, page);
                     }
+                }
+
+                if (modified == 0) {
+                    throw new ConcurrencyFailureException(
+                            "Failed to create or update page stats for page " + payload.getPage()
+                                    + " after " + count + " attempts");
                 }
             }
 
@@ -512,6 +547,16 @@ public class JDBCQuotaStore implements QuotaStore {
                         List<PageStats> result = new ArrayList<PageStats>();
                         if (statsUpdates != null) {
                             for (PageStatsPayload payload : statsUpdates) {
+                                // verify the stats are referring to an existing tile set id
+                                String tileSetId = payload.getPage().getTileSetId();
+                                TileSet tset = getTileSetByIdInternal(tileSetId);
+                                if(tset == null) {
+                                    log.info("Can't add usage stats. TileSet does not exist. Was it deleted? "
+                                            + tileSetId);
+                                    continue;
+
+                                }
+                                // update the stats
                                 PageStats stats = upsertTilePageHitAccessTime(payload);
                                 result.add(stats);
                             }
@@ -559,6 +604,12 @@ public class JDBCQuotaStore implements QuotaStore {
                             }
                         }
 
+                        if (modified == 0) {
+                            throw new ConcurrencyFailureException(
+                                    "Failed to create or update page stats for page "
+                                            + payload.getPage() + " after " + count + " attempts");
+                        }
+
                         return stats;
                     }
 
@@ -586,11 +637,10 @@ public class JDBCQuotaStore implements QuotaStore {
         return getSinglePage(layerNames, true);
     }
 
-    
     public TilePage getLeastRecentlyUsedPage(Set<String> layerNames) throws InterruptedException {
         return getSinglePage(layerNames, false);
     }
-    
+
     private TilePage getSinglePage(Set<String> layerNames, boolean leastFrequentlyUsed) {
         Map<String, Object> params = new HashMap<String, Object>();
         List<String> layerParamNames = new ArrayList<String>();
@@ -602,7 +652,7 @@ public class JDBCQuotaStore implements QuotaStore {
             layerParamNames.add(param);
         }
         String select;
-        if(leastFrequentlyUsed) {
+        if (leastFrequentlyUsed) {
             select = dialect.getLeastFrequentlyUsedPage(schema, layerParamNames);
         } else {
             select = dialect.getLeastRecentlyUsedPage(schema, layerParamNames);
@@ -610,7 +660,6 @@ public class JDBCQuotaStore implements QuotaStore {
         TilePageRowMapper mapper = new TilePageRowMapper();
         return jt.queryForOptionalObject(select, mapper, params);
     }
-
 
     public PageStats setTruncated(final TilePage page) throws InterruptedException {
         return (PageStats) tt.execute(new TransactionCallback() {
@@ -635,12 +684,12 @@ public class JDBCQuotaStore implements QuotaStore {
 
     public void close() throws Exception {
         // try to close the data source if possible
-        if(dataSource instanceof BasicDataSource) {
+        if (dataSource instanceof BasicDataSource) {
             ((BasicDataSource) dataSource).close();
-        } else if(dataSource instanceof Closeable) {
+        } else if (dataSource instanceof Closeable) {
             ((Closeable) dataSource).close();
         }
-        
+
         // release the templates
         tt = null;
         jt = null;
@@ -667,7 +716,7 @@ public class JDBCQuotaStore implements QuotaStore {
             }
         }
     }
-    
+
     /**
      * Maps a result set into {@link TilePage} objects
      * 
@@ -682,7 +731,7 @@ public class JDBCQuotaStore implements QuotaStore {
             int pageY = rs.getInt(3);
             int pageZ = rs.getInt(4);
             int creationTimeMinutes = rs.getInt(5);
-            
+
             return new TilePage(tileSetId, pageX, pageY, pageZ, creationTimeMinutes);
         }
     }

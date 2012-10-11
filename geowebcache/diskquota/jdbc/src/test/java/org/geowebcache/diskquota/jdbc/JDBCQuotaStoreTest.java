@@ -15,10 +15,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Future;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -91,10 +93,10 @@ public class JDBCQuotaStoreTest extends TestCase {
 
         // finally initialize the store
         store.initialize();
-        
+
         testTileSet = tilePageCalculator.getTileSetsFor("topp:states2").iterator().next();
     }
-    
+
     @Override
     protected void tearDown() throws Exception {
         store.close();
@@ -123,15 +125,15 @@ public class JDBCQuotaStoreTest extends TestCase {
     private BasicDataSource setupDataSource() throws IOException {
         // cleanup previous eventual db
         File[] files = new File("./target").listFiles(new FilenameFilter() {
-            
+
             public boolean accept(File dir, String name) {
                 return name.startsWith("quota-h2");
             }
         });
         for (File file : files) {
-           assertTrue(file.delete()); 
+            assertTrue(file.delete());
         }
-        
+
         BasicDataSource dataSource = new BasicDataSource();
 
         dataSource.setDriverClassName("org.h2.Driver");
@@ -145,16 +147,16 @@ public class JDBCQuotaStoreTest extends TestCase {
         dataSource.setMaxWait(5000);
         return dataSource;
     }
-    
+
     public void testTableSetup() throws Exception {
         // on initialization we should have the tilesets setup properly
-        
+
         // check the global quota
         Quota global = store.getGloballyUsedQuota();
         assertNotNull(global);
         assertEquals(JDBCQuotaStore.GLOBAL_QUOTA_NAME, global.getTileSetId());
         assertEquals(0, global.getBytes().longValue());
-        
+
         Set<TileSet> tileSets = store.getTileSets();
         // two formats for topp:states2, four formats and two tilesets for topp:states
         assertNotNull(tileSets);
@@ -202,7 +204,7 @@ public class JDBCQuotaStoreTest extends TestCase {
         tileSet = new TileSet("topp:states2", "EPSG:2163", "image/jpeg", null);
         assertTrue(tileSets.contains(tileSet));
         assertQuotaZero(tileSet);
-        
+
         // check the layer wide quotas
         assertQuotaZero("topp:states");
         assertQuotaZero("topp:states2");
@@ -229,14 +231,14 @@ public class JDBCQuotaStoreTest extends TestCase {
         assertTrue(tileSets.contains(tileSet));
         assertQuotaZero(tileSet);
     }
-    
+
     public void testRenameLayer() throws InterruptedException {
         assertEquals(8, countTileSetsByLayerName("topp:states"));
         store.renameLayer("topp:states", "states_renamed");
         assertEquals(0, countTileSetsByLayerName("topp:states"));
         assertEquals(8, countTileSetsByLayerName("states_renamed"));
     }
-    
+
     public void testRenameLayer2() throws InterruptedException {
         final String oldLayerName = tilePageCalculator.getLayerNames().iterator().next();
         final String newLayerName = "renamed_layer";
@@ -268,13 +270,13 @@ public class JDBCQuotaStoreTest extends TestCase {
         Quota newLayerUsedQuota = store.getUsedQuotaByLayerName(newLayerName);
         assertEquals(expectedQuota.getBytes(), newLayerUsedQuota.getBytes());
     }
-    
+
     public void testDeleteGridSet() throws InterruptedException {
         assertEquals(8, countTileSetsByLayerName("topp:states"));
         store.deleteGridSubset("topp:states", "EPSG:900913");
         assertEquals(4, countTileSetsByLayerName("topp:states"));
     }
-    
+
     public void testDeleteLayer() throws InterruptedException {
         String layerName = tilePageCalculator.getLayerNames().iterator().next();
         // make sure the layer is there and has stuff
@@ -296,20 +298,18 @@ public class JDBCQuotaStoreTest extends TestCase {
         assertEquals(0L, usedQuota.getBytes().longValue());
     }
 
-    
     public void testVisitor() throws Exception {
         Set<TileSet> tileSets1 = store.getTileSets();
         final Set<TileSet> tileSets2 = new HashSet<TileSet>();
         store.accept(new TileSetVisitor() {
-            
+
             public void visit(TileSet tileSet, QuotaStore quotaStore) {
-                tileSets2.add(tileSet);                
+                tileSets2.add(tileSet);
             }
         });
         assertEquals(tileSets1, tileSets2);
     }
-    
-    
+
     public void testGetTileSetById() throws Exception {
         TileSet tileSet = store.getTileSetById(testTileSet.getId());
         assertNotNull(tileSet);
@@ -322,7 +322,7 @@ public class JDBCQuotaStoreTest extends TestCase {
             assertTrue(true);
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     public void testGetUsedQuotaByLayerName() throws Exception {
         String layerName = "topp:states2";
@@ -339,7 +339,7 @@ public class JDBCQuotaStoreTest extends TestCase {
         Quota usedQuotaByLayerName = store.getUsedQuotaByLayerName(layerName);
         assertEquals(expected.getBytes(), usedQuotaByLayerName.getBytes());
     }
-    
+
     @SuppressWarnings("unchecked")
     public void testGetUsedQuotaByTileSetId() throws Exception {
         String layerName = "topp:states2";
@@ -363,7 +363,21 @@ public class JDBCQuotaStoreTest extends TestCase {
             assertEquals(expectedValaue, store.getUsedQuotaByTileSetId(tsetId).getBytes());
         }
     }
-    
+
+    @SuppressWarnings("unchecked")
+    public void testUpdateUsedQuotaWithParameters() throws Exception {
+        // prepare a tileset with params
+        String paramId = DigestUtils.shaHex("&styles=polygon");
+        TileSet tset = new TileSet("topp:states2", "EPSG:2163", "image/jpeg", paramId);
+
+        Quota quotaDiff = new Quota(10D * Math.random(), StorageUnit.MiB);
+        PageStatsPayload stats = new PageStatsPayload(new TilePage(tset.getId(), 0, 0, 3));
+        stats.setNumTiles(10);
+        store.addToQuotaAndTileCounts(tset, quotaDiff, Collections.singletonList(stats));
+
+        assertEquals(quotaDiff.getBytes(), store.getUsedQuotaByTileSetId(tset.getId()).getBytes());
+    }
+
     /**
      * Combined test for {@link BDBQuotaStore#addToQuotaAndTileCounts(TileSet, Quota, Collection)}
      * and {@link BDBQuotaStore#addHitsAndSetAccesTime(Collection)}
@@ -421,7 +435,7 @@ public class JDBCQuotaStoreTest extends TestCase {
         float expected = 55.0f;// the 100 previous + the 10 added now / the 2 minutes that elapsed
         assertEquals(expected, frequencyOfUsePerMinute, 1e-6f);
     }
-    
+
     public void testGetGloballyUsedQuota() throws InterruptedException {
         Quota usedQuota = store.getGloballyUsedQuota();
         assertNotNull(usedQuota);
@@ -445,7 +459,7 @@ public class JDBCQuotaStoreTest extends TestCase {
         assertNotNull(usedQuota);
         assertEquals(500, usedQuota.getBytes().intValue());
     }
-    
+
     public void testSetTruncated() throws Exception {
         String tileSetId = testTileSet.getId();
         TilePage page = new TilePage(tileSetId, 0, 0, 2);
@@ -462,7 +476,7 @@ public class JDBCQuotaStoreTest extends TestCase {
         PageStats pageStats = store.setTruncated(page);
         assertEquals(0f, pageStats.getFillFactor());
     }
-    
+
     public void testGetLeastFrequentlyUsedPage() throws Exception {
         final String layerName = testTileSet.getLayerName();
         Set<String> layerNames = Collections.singleton(layerName);
@@ -526,7 +540,7 @@ public class JDBCQuotaStoreTest extends TestCase {
         leastRecentlyUsedPage = store.getLeastRecentlyUsedPage(layerNames);
         assertEquals(page2, leastRecentlyUsedPage);
     }
-    
+
     public void testGetTilesForPage() throws Exception {
         TilePage page = new TilePage(testTileSet.getId(), 0, 0, 0);
 
@@ -545,17 +559,18 @@ public class JDBCQuotaStoreTest extends TestCase {
 
     private int countTileSetsByLayerName(String layerName) {
         int count = 0;
-        for(TileSet ts : store.getTileSets()) {
-            if(layerName.equals(ts.getLayerName())) {
+        for (TileSet ts : store.getTileSets()) {
+            if (layerName.equals(ts.getLayerName())) {
                 count++;
             }
         }
-        
+
         return count;
     }
 
     /**
      * Asserts the quota used by this tile set is null
+     * 
      * @param tileSet
      */
     private void assertQuotaZero(TileSet tileSet) {
@@ -563,11 +578,12 @@ public class JDBCQuotaStoreTest extends TestCase {
         assertNotNull(quota);
         assertEquals(0, quota.getBytes().longValue());
     }
-    
+
     /**
      * Asserts the quota used by this tile set is null
+     * 
      * @param tileSet
-     * @throws InterruptedException 
+     * @throws InterruptedException
      */
     private void assertQuotaZero(String layerName) throws InterruptedException {
         Quota quota = store.getUsedQuotaByLayerName(layerName);

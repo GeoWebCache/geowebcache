@@ -75,6 +75,25 @@ public class TileSet implements Comparable<TileSet> {
             idTarget.append('#').append(parametersId);
         }
     }
+    
+    /**
+     * Initializes the other fields of the tileset from an id with the
+     * layer#gridset#format[#paramId] structure
+     */
+    public void initFromId() {
+        String[] splitted = key.split("#");
+        if (splitted.length < 3 || splitted.length > 4) {
+            throw new IllegalArgumentException("Invalid key for standard tile set, "
+                    + "it should have the layer#gridset#format[#paramId]");
+        }
+
+        this.layerName = splitted[0];
+        this.gridsetId = splitted[1];
+        this.blobFormat = splitted[2];
+        if (splitted.length == 4) {
+            this.parametersId = splitted[3];
+        }
+    }
 
     public String getId() {
         return key;
