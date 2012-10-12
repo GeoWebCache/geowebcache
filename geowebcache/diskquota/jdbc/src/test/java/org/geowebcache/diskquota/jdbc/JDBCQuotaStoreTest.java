@@ -480,6 +480,34 @@ public abstract class JDBCQuotaStoreTest extends TestCase {
         leastFrequentlyUsedPage = store.getLeastFrequentlyUsedPage(layerNames);
         assertEquals(page1, leastFrequentlyUsedPage);
     }
+    
+    public void testGetLeastFrequentlyUsedPageSkipEmpty() throws Exception {
+        final String layerName = testTileSet.getLayerName();
+        Set<String> layerNames = Collections.singleton(layerName);
+
+        TilePage lfuPage;
+        lfuPage = store.getLeastFrequentlyUsedPage(layerNames);
+        assertNull(lfuPage);
+
+        TilePage page1 = new TilePage(testTileSet.getId(), 0, 1, 2);
+        TilePage page2 = new TilePage(testTileSet.getId(), 1, 1, 2);
+
+        PageStatsPayload payload1 = new PageStatsPayload(page1);
+        PageStatsPayload payload2 = new PageStatsPayload(page2);
+
+        payload1.setNumHits(100);
+        payload2.setNumHits(10);
+        Collection<PageStatsPayload> statsUpdates = Arrays.asList(payload1, payload2);
+        store.addHitsAndSetAccesTime(statsUpdates).get();
+
+        TilePage leastFrequentlyUsedPage = store.getLeastFrequentlyUsedPage(layerNames);
+        assertEquals(page2, leastFrequentlyUsedPage);
+
+        store.setTruncated(page2);
+
+        leastFrequentlyUsedPage = store.getLeastFrequentlyUsedPage(layerNames);
+        assertEquals(page1, leastFrequentlyUsedPage);
+    }
 
     public void testGetLeastRecentlyUsedPage() throws Exception {
         MockSystemUtils mockSystemUtils = new MockSystemUtils();
@@ -511,6 +539,41 @@ public abstract class JDBCQuotaStoreTest extends TestCase {
 
         payload1.setLastAccessTime(mockSystemUtils.currentTimeMillis() + 10 * 60 * 1000);
         store.addHitsAndSetAccesTime(statsUpdates).get();
+
+        leastRecentlyUsedPage = store.getLeastRecentlyUsedPage(layerNames);
+        assertEquals(page2, leastRecentlyUsedPage);
+    }
+    
+    public void testGetLeastRecentlyUsedPageSkipEmpty() throws Exception {
+        MockSystemUtils mockSystemUtils = new MockSystemUtils();
+        mockSystemUtils.setCurrentTimeMinutes(1000);
+        mockSystemUtils.setCurrentTimeMillis(mockSystemUtils.currentTimeMinutes() * 60 * 1000);
+        SystemUtils.set(mockSystemUtils);
+
+        final String layerName = testTileSet.getLayerName();
+        Set<String> layerNames = Collections.singleton(layerName);
+
+        TilePage leastRecentlyUsedPage;
+        leastRecentlyUsedPage = store.getLeastRecentlyUsedPage(layerNames);
+        assertNull(leastRecentlyUsedPage);
+
+        TilePage page1 = new TilePage(testTileSet.getId(), 0, 1, 2);
+        TilePage page2 = new TilePage(testTileSet.getId(), 1, 1, 2);
+
+        PageStatsPayload payload1 = new PageStatsPayload(page1);
+        PageStatsPayload payload2 = new PageStatsPayload(page2);
+
+        payload1.setLastAccessTime(mockSystemUtils.currentTimeMillis() + 1 * 60 * 1000);
+        payload2.setLastAccessTime(mockSystemUtils.currentTimeMillis() + 2 * 60 * 1000);
+
+        Collection<PageStatsPayload> statsUpdates = Arrays.asList(payload1, payload2);
+        store.addHitsAndSetAccesTime(statsUpdates).get();
+
+        leastRecentlyUsedPage = store.getLeastRecentlyUsedPage(layerNames);
+        assertEquals(page1, leastRecentlyUsedPage);
+
+        // truncate the page, setting its fill to 0
+        store.setTruncated(page1);
 
         leastRecentlyUsedPage = store.getLeastRecentlyUsedPage(layerNames);
         assertEquals(page2, leastRecentlyUsedPage);

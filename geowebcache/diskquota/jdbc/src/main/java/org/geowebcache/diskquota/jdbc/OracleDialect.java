@@ -72,7 +72,8 @@ public class OracleDialect extends SQLDialect {
         if (schema != null) {
             sb.append(schema).append(".");
         }
-        sb.append("TILEPAGE WHERE TILESET_ID IN (");
+        sb.append("TILEPAGE WHERE FILL_FACTOR > 0 ");
+        sb.append("AND TILESET_ID IN (");
         sb.append("SELECT KEY FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
@@ -96,7 +97,8 @@ public class OracleDialect extends SQLDialect {
         if (schema != null) {
             sb.append(schema).append(".");
         }
-        sb.append("TILEPAGE WHERE TILESET_ID IN (");
+        sb.append("TILEPAGE WHERE FILL_FACTOR > 0 ");
+        sb.append("AND TILESET_ID IN (");
         sb.append("SELECT KEY FROM ");
         if (schema != null) {
             sb.append(schema).append(".");

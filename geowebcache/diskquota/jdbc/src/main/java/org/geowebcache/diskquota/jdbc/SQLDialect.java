@@ -79,7 +79,7 @@ public class SQLDialect {
                             " FILL_FACTOR FLOAT,\n" + //
                             " NUM_HITS NUMERIC(64)\n" + //
                             ")", //
-                    "CREATE INDEX TILEPAGE_TILESET ON TILEPAGE(TILESET_ID)",
+                    "CREATE INDEX TILEPAGE_TILESET ON TILEPAGE(TILESET_ID, FILL_FACTOR)",
                     "CREATE INDEX TILEPAGE_FREQUENCY ON TILEPAGE(FREQUENCY_OF_USE DESC)",
                     "CREATE INDEX TILEPAGE_LAST_ACCESS ON TILEPAGE(LAST_ACCESS_TIME_MINUTES DESC)"));
 
@@ -391,7 +391,8 @@ public class SQLDialect {
         if (schema != null) {
             sb.append(schema).append(".");
         }
-        sb.append("TILEPAGE WHERE TILESET_ID IN (");
+        sb.append("TILEPAGE WHERE FILL_FACTOR > 0 ");
+        sb.append("AND TILESET_ID IN (");
         sb.append("SELECT KEY FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
@@ -415,7 +416,8 @@ public class SQLDialect {
         if (schema != null) {
             sb.append(schema).append(".");
         }
-        sb.append("TILEPAGE WHERE TILESET_ID IN (");
+        sb.append("TILEPAGE WHERE FILL_FACTOR > 0 ");
+        sb.append("AND TILESET_ID IN (");
         sb.append("SELECT KEY FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
