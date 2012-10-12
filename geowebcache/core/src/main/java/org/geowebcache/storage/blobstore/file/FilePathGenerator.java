@@ -117,6 +117,9 @@ public class FilePathGenerator {
      * @return
      */
     public static String getParametersId(Map<String, String> parameters) {
+        if(parameters == null || parameters.size() == 0) {
+            return null;
+        }
         String parametersKvp = getParametersKvp(parameters);
         return buildKey(parametersKvp);
     }
