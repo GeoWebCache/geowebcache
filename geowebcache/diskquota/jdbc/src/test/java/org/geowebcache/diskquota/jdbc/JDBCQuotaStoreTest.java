@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,7 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 
-import junit.framework.TestCase;
+import javax.sql.DataSource;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.dbcp.BasicDataSource;
@@ -42,7 +44,7 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
 
-public abstract class JDBCQuotaStoreTest extends TestCase {
+public abstract class JDBCQuotaStoreTest extends OnlineTestCase {
 
     JDBCQuotaStore store;
 
@@ -58,8 +60,66 @@ public abstract class JDBCQuotaStoreTest extends TestCase {
 
     private TileSet testTileSet;
 
+
+    protected abstract SQLDialect getDialect();
+    
+    protected BasicDataSource getDataSource() throws IOException, SQLException {
+        BasicDataSource dataSource = new BasicDataSource();
+
+        dataSource.setDriverClassName(fixture.getProperty("driver"));
+        dataSource.setUrl(fixture.getProperty("url"));
+        dataSource.setUsername(fixture.getProperty("username"));
+        dataSource.setPassword(fixture.getProperty("password"));
+        dataSource.setPoolPreparedStatements(true);
+        dataSource.setAccessToUnderlyingConnectionAllowed(true);
+        dataSource.setMinIdle(1);
+        dataSource.setMaxActive(4);
+        // if we cannot get a connection within 5 seconds give up
+        dataSource.setMaxWait(5000);
+        
+        cleanupDatabase(dataSource);
+
+        return dataSource;
+    }
+    
+    protected void cleanupDatabase(DataSource dataSource) throws SQLException {
+        // cleanup
+        Connection cx = null;
+        Statement st = null;
+        try {
+            cx = dataSource.getConnection();
+            st = cx.createStatement();
+            try {
+                st.execute("DROP TABLE TILEPAGE CASCADE");
+            } catch(Exception e) {
+                // fine
+            }
+            try {
+                st.execute("DROP TABLE TILESET CASCADE");
+            } catch(Exception e) {
+                // fine too
+            }
+        } finally {
+            st.close();
+            cx.close();
+        }
+
+    }
+
+    
     @Override
-    protected void setUp() throws Exception {
+    protected void disconnect() throws Exception {
+        store.close();
+    }
+    
+    @Override
+    protected boolean isOnline() throws Exception {
+        return true;
+    }
+    
+    
+    @Override
+    protected void setUpInternal() throws Exception {
         // prepare a mock target directory for tiles
         targetDir = new File("target", "mockStore");
         FileUtils.deleteDirectory(targetDir);
@@ -96,16 +156,11 @@ public abstract class JDBCQuotaStoreTest extends TestCase {
         testTileSet = tilePageCalculator.getTileSetsFor("topp:states2").iterator().next();
     }
 
+    
     @Override
-    protected void tearDown() throws Exception {
+    protected void tearDownInternal() throws Exception {
         store.close();
     }
-
-    protected abstract SQLDialect getDialect();
-    
-    protected abstract BasicDataSource getDataSource() throws IOException, SQLException;
-    
-
 
     private XMLConfiguration loadXMLConfig() {
         InputStream is = null;

@@ -4,31 +4,31 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
 public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
 
-
-
     protected SQLDialect getDialect() {
         return new OracleDialect();
     }
 
-    protected BasicDataSource getDataSource() throws IOException, SQLException {
-        BasicDataSource dataSource = new BasicDataSource();
+    @Override
+    boolean checkAvailable() {
+        try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+        } catch (Exception e) {
+            System.out.println("Skipping " + OracleQuotaStoreTest.class
+                    + " tests, Oracle driver not available");
+            return false;
+        }
+        return super.checkAvailable();
+    }
 
-        dataSource.setDriverClassName("oracle.jdbc.driver.OracleDriver");
-        dataSource.setUrl("jdbc:oracle:thin:@localhost:1521:xe");
-        dataSource.setUsername("geoserver");
-        dataSource.setPassword("postgis");
-        dataSource.setPoolPreparedStatements(true);
-        dataSource.setAccessToUnderlyingConnectionAllowed(true);
-        dataSource.setMinIdle(1);
-        dataSource.setMaxActive(4);
-        // if we cannot get a connection within 5 seconds give up
-        dataSource.setMaxWait(5000);
-       
+    protected BasicDataSource getDataSource() throws IOException, SQLException {
+        BasicDataSource dataSource = super.getDataSource();
+
         // cleanup
         Connection cx = null;
         Statement st = null;
@@ -37,13 +37,13 @@ public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
             st = cx.createStatement();
             try {
                 st.execute("DROP TABLE TILEPAGE CASCADE CONSTRAINTS");
-            } catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 // fine
             }
             try {
                 st.execute("DROP TABLE TILESET CASCADE CONSTRAINTS");
-            } catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 // fine too
             }
@@ -51,8 +51,24 @@ public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
             st.close();
             cx.close();
         }
-        
+
         return dataSource;
+    }
+
+    @Override
+    protected String getFixtureId() {
+        return "oracle";
+    }
+
+    @Override
+    protected Properties createExampleFixture() {
+        Properties p = new Properties();
+        p.put("driver", "oracle.jdbc.driver.OracleDriver");
+        p.put("url", "jdbc:oracle:thin:@localhost:1521:xe");
+        p.put("username", "geoserver");
+        p.put("password", "postgis");
+
+        return p;
     }
 
 }
