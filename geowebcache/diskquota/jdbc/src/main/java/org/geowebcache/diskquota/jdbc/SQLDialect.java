@@ -126,7 +126,12 @@ public class SQLDialect {
                     try {
                         rs = dbmd.getTables(null, schema, tableName.toLowerCase(), null);
                         boolean exists = rs.next();
-                        return exists;
+                        rs.close();
+                        if(exists) {
+                            return true;
+                        }
+                        rs = dbmd.getTables(null, schema, tableName, null);
+                        return rs.next();
                     } finally {
                         if (rs != null) {
                             rs.close();
