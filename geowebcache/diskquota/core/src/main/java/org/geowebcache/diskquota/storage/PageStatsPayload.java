@@ -33,6 +33,8 @@ public class PageStatsPayload {
     private int numHits;
 
     private final TilePage page;
+    
+    private TileSet tileSet;
 
     public PageStatsPayload(final TilePage page) {
         Assert.notNull(page, "Page can't be null");
@@ -65,6 +67,20 @@ public class PageStatsPayload {
 
     public void setNumHits(int numHits) {
         this.numHits = numHits;
+    }
+
+    public TileSet getTileSet() {
+        return tileSet;
+    }
+
+    public void setTileSet(TileSet tileSet) {
+        this.tileSet = tileSet;
+    }
+
+    @Override
+    public String toString() {
+        return "PageStatsPayload [numTiles=" + numTiles + ", lastAccessTime=" + lastAccessTime
+                + ", numHits=" + numHits + ", page=" + page + ", tileSet=" + tileSet + "]";
     }
 
 }

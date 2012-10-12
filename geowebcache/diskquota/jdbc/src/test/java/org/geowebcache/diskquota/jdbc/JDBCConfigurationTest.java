@@ -10,6 +10,7 @@ public class JDBCConfigurationTest extends TestCase {
 
     public void testRoundTripJNDI() throws Exception {
         JDBCConfiguration config = new JDBCConfiguration();
+        config.setDialect("Oracle");
         config.setJNDISource("java:comp/env/jdbc/oralocal");
         File file = new File("./target/jndi-jdbc.xml");
         if(file.exists()) {
@@ -24,6 +25,7 @@ public class JDBCConfigurationTest extends TestCase {
     
     public void testRoundTripConnectionPool() throws Exception {
         JDBCConfiguration config = new JDBCConfiguration();
+        config.setDialect("PostgreSQL");
         ConnectionPoolConfiguration cp = new ConnectionPoolConfiguration();
         cp.setDriver("org.postgresql.Driver");
         cp.setUrl("jdbc:postgresql:gttest");
@@ -33,9 +35,9 @@ public class JDBCConfigurationTest extends TestCase {
         cp.setMaxConnections(10);
         cp.setValidationQuery("select 1");
         cp.setMaxOpenPreparedStatements(50);
+        config.setConnectionPool(cp);
         
-        config.setJNDISource("java:comp/env/jdbc/oralocal");
-        File file = new File("./target/jndi-jdbc.xml");
+        File file = new File("./target/dbcp-jdbc.xml");
         if(file.exists()) {
             assertTrue(file.delete());
         }

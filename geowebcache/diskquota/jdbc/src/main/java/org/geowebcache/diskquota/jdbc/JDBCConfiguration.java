@@ -1,3 +1,19 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Andrea Aime - GeoSolutions
+ */
 package org.geowebcache.diskquota.jdbc;
 
 import java.io.File;
@@ -6,15 +22,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
+import org.geowebcache.config.ConfigurationException;
 
 import com.thoughtworks.xstream.XStream;
 
 /**
- * A JDBC configuration for GeoWebCache
+ * A JDBC configuration for the GeoWebCache disk quota subsystem
  * 
  * @author Andrea Aime - GeoSolutions
  */
 public class JDBCConfiguration {
+
+    String dialect;
 
     String JNDISource;
 
@@ -27,25 +46,31 @@ public class JDBCConfiguration {
      * @return
      * @throws IOException
      */
-    public static JDBCConfiguration load(File sourceFile) throws IOException {
+    public static JDBCConfiguration load(File sourceFile) throws ConfigurationException {
         XStream xs = getXStream();
 
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(sourceFile);
             return (JDBCConfiguration) xs.fromXML(fis);
+        } catch (IOException e) {
+            throw new ConfigurationException("Failed to load the configuration from "
+                    + sourceFile.getAbsolutePath(), e);
         } finally {
             IOUtils.closeQuietly(fis);
         }
     }
 
-    public static void store(JDBCConfiguration config, File file) throws IOException {
+    public static void store(JDBCConfiguration config, File file) throws ConfigurationException {
         XStream xs = getXStream();
 
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file);
             xs.toXML(config, fos);
+        } catch (IOException e) {
+            throw new ConfigurationException("Failed to store the configuration into "
+                    + file.getAbsolutePath(), e);
         } finally {
             IOUtils.closeQuietly(fos);
         }
@@ -76,7 +101,7 @@ public class JDBCConfiguration {
     public void setConnectionPool(ConnectionPoolConfiguration connectionPool) {
         this.connectionPool = connectionPool;
     }
-    
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -107,15 +132,28 @@ public class JDBCConfiguration {
             return false;
         return true;
     }
+    
+    public String getDialect() {
+        return dialect;
+    }
 
+    public void setDialect(String dialect) {
+        this.dialect = dialect;
+    }
+
+    @Override
+    public String toString() {
+        return "JDBCConfiguration [dialect=" + dialect + ", JNDISource=" + JNDISource
+                + ", connectionPool=" + connectionPool + "]";
+    }
 
     public static class ConnectionPoolConfiguration {
         String driver;
 
         String url;
-        
+
         String username;
-        
+
         String password;
 
         int minConnections;
@@ -284,11 +322,6 @@ public class JDBCConfiguration {
                     + "]";
         }
 
-        
-        
-        
-
     }
 
-    
 }

@@ -174,6 +174,7 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
              * it is the first one for this tile set, lets start the aggregated updates on it
              */
             timedUpdate = new PageStatsPayload(new TilePage(tileSetId, pageX, pageY, pageZ));
+            timedUpdate.setTileSet(tileSet);
 
             aggregatedPendingUpdates.pages.put(pageKeyForTile, timedUpdate);
         } else {

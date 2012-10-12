@@ -1,3 +1,19 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Andrea Aime - GeoSolutions
+ */
 package org.geowebcache.diskquota.jdbc;
 
 import java.util.List;
@@ -10,7 +26,8 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 
 /**
- * An {@link SimpleJDBCTemplate} extended with some utility methods
+ * An {@link SimpleJDBCTemplate} extended with some utility methods and with failure reporting which
+ * includes the parameter values for parameterized statements
  * 
  * @author Andrea Aime - GeoSolutions
  */
@@ -39,16 +56,16 @@ public class SimpleJdbcTemplate extends org.springframework.jdbc.core.simple.Sim
             } else {
                 return null;
             }
-        } catch(DataAccessException e) {
+        } catch (DataAccessException e) {
             throw new ParametricDataAccessException(sql, params, e);
         }
     }
-    
+
     @Override
     public int update(String sql, Map params) throws DataAccessException {
         try {
             return super.update(sql, params);
-        } catch(DataAccessException e) {
+        } catch (DataAccessException e) {
             throw new ParametricDataAccessException(sql, params, e);
         }
     }

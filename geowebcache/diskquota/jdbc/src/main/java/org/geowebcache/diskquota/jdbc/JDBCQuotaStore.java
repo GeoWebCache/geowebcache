@@ -365,6 +365,11 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     private boolean createTileSet(TileSet tset) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Creating tileset " + tset);
+        }
+
         String createTileSet = dialect.getCreateTileSetQuery(schema, "key", "layerName",
                 "gridSetId", "blobFormat", "parametersId");
         Map<String, Object> params = new HashMap<String, Object>();
@@ -415,6 +420,11 @@ public class JDBCQuotaStore implements QuotaStore {
             }
 
             private void updateQuotas(final TileSet tileSet, final Quota quotaDiff) {
+                if (log.isDebugEnabled()) {
+                    log.info("Applying quota diff " + quotaDiff.getBytes() + " on tileset "
+                            + tileSet);
+                }
+
                 String updateQuota = dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
                 Map<String, Object> params = new HashMap<String, Object>();
                 params.put("tileSetId", tileSet.getId());
@@ -425,6 +435,10 @@ public class JDBCQuotaStore implements QuotaStore {
             }
 
             private void upsertTilePageFillFactor(PageStatsPayload payload) {
+                if (log.isDebugEnabled()) {
+                    log.info("Applying page stats payload " + payload);
+                }
+
                 // see http://en.wikipedia.org/wiki/Merge_(SQL)
                 // Even the Merge command that some databases support is prone to race conditions
                 // under concurrent load, but we don't want to lose data and it's difficult to
@@ -473,6 +487,11 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     private int updatePageFillFactor(TilePage page, PageStats stats, float oldFillFactor) {
+        if (log.isDebugEnabled()) {
+            log.info("Updating page " + page + " fill factor from  " + oldFillFactor + " to "
+                    + stats.getFillFactor());
+        }
+
         String update = dialect.conditionalUpdatePageStatsFillFactor(schema, "key", "fillFactor",
                 "oldFillFactor");
         Map<String, Object> params = new HashMap<String, Object>();
@@ -483,6 +502,10 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     private int setPageFillFactor(TilePage page, PageStats stats) {
+        if (log.isDebugEnabled()) {
+            log.info("Setting page " + page + " fill factor to " + stats.getFillFactor());
+        }
+
         String update = dialect.updatePageStatsFillFactor(schema, "key", "fillFactor");
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("key", page.getKey());
@@ -491,6 +514,11 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     private int createNewPageStats(PageStats stats, TilePage page) {
+        if(log.isDebugEnabled()) {
+            log.info("Creating new page stats: " + stats);
+        }
+
+        
         // for the moment we don't have the page in the db, we have to create it
         String insert = dialect.contionalTilePageInsertStatement(schema, "key", "tileSetId",
                 "pageZ", "pageX", "pageY", "creationTime", "frequencyOfUse", "lastAccessTime",
@@ -542,14 +570,9 @@ public class JDBCQuotaStore implements QuotaStore {
                         if (statsUpdates != null) {
                             for (PageStatsPayload payload : statsUpdates) {
                                 // verify the stats are referring to an existing tile set id
-                                String tileSetId = payload.getPage().getTileSetId();
-                                TileSet tset = getTileSetByIdInternal(tileSetId);
-                                if(tset == null) {
-                                    log.info("Can't add usage stats. TileSet does not exist. Was it deleted? "
-                                            + tileSetId);
-                                    continue;
+                                TileSet tset = payload.getTileSet();
+                                getOrCreateTileSet(tset);
 
-                                }
                                 // update the stats
                                 PageStats stats = upsertTilePageHitAccessTime(payload);
                                 result.add(stats);
@@ -560,8 +583,11 @@ public class JDBCQuotaStore implements QuotaStore {
                     }
 
                     private PageStats upsertTilePageHitAccessTime(PageStatsPayload payload) {
-
                         TilePage page = payload.getPage();
+                        
+                        if(log.isDebugEnabled()) {
+                            log.info("Updating page " + page + " with payload " + payload);
+                        }
 
                         int modified = 0;
                         int count = 0;
@@ -659,6 +685,10 @@ public class JDBCQuotaStore implements QuotaStore {
         return (PageStats) tt.execute(new TransactionCallback() {
 
             public Object doInTransaction(TransactionStatus status) {
+                if(log.isDebugEnabled()) {
+                    log.info("Truncating page " + page);
+                }
+                
                 PageStats stats = getPageStats(page.getKey());
                 if (stats != null) {
                     stats.setFillFactor(0);
@@ -677,6 +707,8 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     public void close() throws Exception {
+        log.info("Closing up the JDBC quota store ");
+        
         // try to close the data source if possible
         if (dataSource instanceof BasicDataSource) {
             ((BasicDataSource) dataSource).close();

@@ -20,10 +20,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Oracle dialect for the quota store
+ * Oracle dialect for the quota store, compared to the basic one creates index organized tables
+ * and uses the Oracle specific syntax to get the pages with the oldest access time and lowest
+ * access frequency
  * 
  * @author Andrea Aime - GeoSolutions
- * 
  */
 public class OracleDialect extends SQLDialect {
 
@@ -57,6 +58,7 @@ public class OracleDialect extends SQLDialect {
                         " NUM_HITS NUMBER(38)\n" + //
                         ") ORGANIZATION INDEX", //
                 "CREATE INDEX TILEPAGE_TILESET ON TILEPAGE(TILESET_ID)",
+                "CREATE INDEX TILEPAGE_FILL_FACTOR ON TILEPAGE(FILL_FACTOR)",
                 "CREATE INDEX TILEPAGE_FREQUENCY ON TILEPAGE(FREQUENCY_OF_USE DESC)",
                 "CREATE INDEX TILEPAGE_LAST_ACCESS ON TILEPAGE(LAST_ACCESS_TIME_MINUTES DESC)"));
     }

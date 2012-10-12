@@ -16,6 +16,11 @@
  */
 package org.geowebcache.diskquota.jdbc;
 
+/**
+ * PostgreSQL specific dialect 
+ * 
+ * @author Andrea Aime - GeoSolutions
+ */
 public class PostgreSQLDialect extends SQLDialect {
 
 }

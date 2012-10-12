@@ -180,17 +180,16 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long>, Serializable 
                  */
                 QuotaUpdate updateData;
                 updateData = queue.poll(DEFAULT_SYNC_TIMEOUT, TimeUnit.MILLISECONDS);
-                if (updateData == null) {
-                    /*
-                     * and check there are no pending aggregated updates for too long if we're idle
-                     */
-                    checkAggregatedTimeouts();
-                } else {
+                if (updateData != null) {
                     /*
                      * or perform an aggregated update in case we're really busy
                      */
                     performAggregatedUpdate(updateData);
                 }
+                /*
+                 * and check there are no pending aggregated updates for too long if we're idle
+                 */
+                checkAggregatedTimeouts();
             } catch (InterruptedException e) {
                 log.info("Shutting down quota update background task due to InterruptedException");
                 break;
@@ -226,14 +225,6 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long>, Serializable 
             aggregatedDelayedUpdates.put(tileSet, accumulatedUpdate);
         }
         accumulatedUpdate.add(updateData);
-
-        /*
-         * now make sure we're not waiting for too long before committing
-         */
-        boolean prune = checkAggregatedTimeout(accumulatedUpdate);
-        if (prune) {
-            prune(Collections.singletonList(tileSet));
-        }
     }
 
     /**

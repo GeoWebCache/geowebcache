@@ -37,7 +37,6 @@ import org.springframework.jdbc.support.MetaDataAccessException;
  * subclasses may override to take advantage of specific database features
  * 
  * @author Andrea Aime - GeoSolutions
- * 
  */
 public class SQLDialect {
 
@@ -125,8 +124,9 @@ public class SQLDialect {
                         MetaDataAccessException {
                     ResultSet rs = null;
                     try {
-                        rs = dbmd.getTables(null, schema, tableName, new String[] { "TABLE" });
-                        return rs.next();
+                        rs = dbmd.getTables(null, schema, tableName.toLowerCase(), null);
+                        boolean exists = rs.next();
+                        return exists;
                     } finally {
                         if (rs != null) {
                             rs.close();
@@ -262,7 +262,7 @@ public class SQLDialect {
         if (schema != null) {
             sb.append(schema).append(".");
         }
-        sb.append("TILESET SET BYTES = BYTES + :").append(bytesParam);
+        sb.append("TILESET SET BYTES = BYTES + (:").append(bytesParam).append(")");
         sb.append(" WHERE KEY = :").append(tileSetIdParam);
 
         return sb.toString();
