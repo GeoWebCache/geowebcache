@@ -514,11 +514,10 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     private int createNewPageStats(PageStats stats, TilePage page) {
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.info("Creating new page stats: " + stats);
         }
 
-        
         // for the moment we don't have the page in the db, we have to create it
         String insert = dialect.contionalTilePageInsertStatement(schema, "key", "tileSetId",
                 "pageZ", "pageX", "pageY", "creationTime", "frequencyOfUse", "lastAccessTime",
@@ -571,7 +570,16 @@ public class JDBCQuotaStore implements QuotaStore {
                             for (PageStatsPayload payload : statsUpdates) {
                                 // verify the stats are referring to an existing tile set id
                                 TileSet tset = payload.getTileSet();
-                                getOrCreateTileSet(tset);
+                                if (tset == null) {
+                                    String tileSetId = payload.getPage().getTileSetId();
+                                    tset = getTileSetByIdInternal(tileSetId);
+                                    if (tset == null) {
+                                        log.warn("Could not locate tileset with id " + tileSetId
+                                                + ", skipping page stats update: " + payload);
+                                    }
+                                } else {
+                                    getOrCreateTileSet(tset);
+                                }
 
                                 // update the stats
                                 PageStats stats = upsertTilePageHitAccessTime(payload);
@@ -584,8 +592,8 @@ public class JDBCQuotaStore implements QuotaStore {
 
                     private PageStats upsertTilePageHitAccessTime(PageStatsPayload payload) {
                         TilePage page = payload.getPage();
-                        
-                        if(log.isDebugEnabled()) {
+
+                        if (log.isDebugEnabled()) {
                             log.info("Updating page " + page + " with payload " + payload);
                         }
 
@@ -685,10 +693,10 @@ public class JDBCQuotaStore implements QuotaStore {
         return (PageStats) tt.execute(new TransactionCallback() {
 
             public Object doInTransaction(TransactionStatus status) {
-                if(log.isDebugEnabled()) {
+                if (log.isDebugEnabled()) {
                     log.info("Truncating page " + page);
                 }
-                
+
                 PageStats stats = getPageStats(page.getKey());
                 if (stats != null) {
                     stats.setFillFactor(0);
@@ -708,7 +716,7 @@ public class JDBCQuotaStore implements QuotaStore {
 
     public void close() throws Exception {
         log.info("Closing up the JDBC quota store ");
-        
+
         // try to close the data source if possible
         if (dataSource instanceof BasicDataSource) {
             ((BasicDataSource) dataSource).close();

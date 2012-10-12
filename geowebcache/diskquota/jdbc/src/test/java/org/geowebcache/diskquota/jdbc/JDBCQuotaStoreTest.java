@@ -371,6 +371,7 @@ public abstract class JDBCQuotaStoreTest extends TestCase {
 
         PageStatsPayload payload = new PageStatsPayload(page);
         int numHits = 100;
+        payload.setTileSet(tileSet);
         payload.setLastAccessTime(sysUtils.currentTimeMillis() - 1 * 60 * 1000);
         payload.setNumHits(numHits);
         payload.setNumTiles(1);
@@ -440,6 +441,7 @@ public abstract class JDBCQuotaStoreTest extends TestCase {
         TilePage page = new TilePage(tileSetId, 0, 0, 2);
 
         PageStatsPayload payload = new PageStatsPayload(page);
+        payload.setTileSet(testTileSet);
         int numHits = 100;
         payload.setNumHits(numHits);
         payload.setNumTiles(5);
@@ -463,8 +465,8 @@ public abstract class JDBCQuotaStoreTest extends TestCase {
         TilePage page1 = new TilePage(testTileSet.getId(), 0, 1, 2);
         TilePage page2 = new TilePage(testTileSet.getId(), 1, 1, 2);
 
-        PageStatsPayload payload1 = new PageStatsPayload(page1);
-        PageStatsPayload payload2 = new PageStatsPayload(page2);
+        PageStatsPayload payload1 = new PageStatsPayload(page1, testTileSet);
+        PageStatsPayload payload2 = new PageStatsPayload(page2, testTileSet);
 
         payload1.setNumHits(100);
         payload2.setNumHits(10);
@@ -492,8 +494,8 @@ public abstract class JDBCQuotaStoreTest extends TestCase {
         TilePage page1 = new TilePage(testTileSet.getId(), 0, 1, 2);
         TilePage page2 = new TilePage(testTileSet.getId(), 1, 1, 2);
 
-        PageStatsPayload payload1 = new PageStatsPayload(page1);
-        PageStatsPayload payload2 = new PageStatsPayload(page2);
+        PageStatsPayload payload1 = new PageStatsPayload(page1, testTileSet);
+        PageStatsPayload payload2 = new PageStatsPayload(page2, testTileSet);
 
         payload1.setNumHits(100);
         payload2.setNumHits(10);
@@ -525,8 +527,8 @@ public abstract class JDBCQuotaStoreTest extends TestCase {
         TilePage page1 = new TilePage(testTileSet.getId(), 0, 1, 2);
         TilePage page2 = new TilePage(testTileSet.getId(), 1, 1, 2);
 
-        PageStatsPayload payload1 = new PageStatsPayload(page1);
-        PageStatsPayload payload2 = new PageStatsPayload(page2);
+        PageStatsPayload payload1 = new PageStatsPayload(page1, testTileSet);
+        PageStatsPayload payload2 = new PageStatsPayload(page2, testTileSet);
 
         payload1.setLastAccessTime(mockSystemUtils.currentTimeMillis() + 1 * 60 * 1000);
         payload2.setLastAccessTime(mockSystemUtils.currentTimeMillis() + 2 * 60 * 1000);
@@ -560,8 +562,8 @@ public abstract class JDBCQuotaStoreTest extends TestCase {
         TilePage page1 = new TilePage(testTileSet.getId(), 0, 1, 2);
         TilePage page2 = new TilePage(testTileSet.getId(), 1, 1, 2);
 
-        PageStatsPayload payload1 = new PageStatsPayload(page1);
-        PageStatsPayload payload2 = new PageStatsPayload(page2);
+        PageStatsPayload payload1 = new PageStatsPayload(page1, testTileSet);
+        PageStatsPayload payload2 = new PageStatsPayload(page2, testTileSet);
 
         payload1.setLastAccessTime(mockSystemUtils.currentTimeMillis() + 1 * 60 * 1000);
         payload2.setLastAccessTime(mockSystemUtils.currentTimeMillis() + 2 * 60 * 1000);

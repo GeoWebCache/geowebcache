@@ -40,6 +40,13 @@ public class PageStatsPayload {
         Assert.notNull(page, "Page can't be null");
         this.page = page;
     }
+    
+    public PageStatsPayload(final TilePage page, final TileSet tileSet) {
+        Assert.notNull(page, "Page can't be null");
+        this.page = page;
+        this.tileSet = tileSet;
+    }
+
 
     public TilePage getPage() {
         return page;
