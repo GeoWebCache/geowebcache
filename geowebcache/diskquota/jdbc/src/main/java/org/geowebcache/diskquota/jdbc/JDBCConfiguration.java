@@ -40,7 +40,8 @@ public class JDBCConfiguration {
     ConnectionPoolConfiguration connectionPool;
 
     /**
-     * Loads a XML configuration from the specified file
+     * Loads a XML configuration from the specified file. The file must adhere to the
+     * {@code geowebcache-diskquota-jdbc.xsd} schema.
      * 
      * @param sourceFile
      * @return
@@ -52,13 +53,36 @@ public class JDBCConfiguration {
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(sourceFile);
-            return (JDBCConfiguration) xs.fromXML(fis);
+            JDBCConfiguration conf = (JDBCConfiguration) xs.fromXML(fis);
+            validateConfiguration(conf);
+            return conf;
         } catch (IOException e) {
             throw new ConfigurationException("Failed to load the configuration from "
                     + sourceFile.getAbsolutePath(), e);
         } finally {
             IOUtils.closeQuietly(fis);
         }
+    }
+
+    private static void validateConfiguration(JDBCConfiguration conf) throws ConfigurationException {
+        if(conf.getDialect() == null) {
+            throw new ConfigurationException("A dialect must be provided, possible values are H2, Oracle, PostgresSQL");
+        }
+        
+        ConnectionPoolConfiguration cp = conf.getConnectionPool();
+        if(conf.getJNDISource() == null && cp == null) {
+            throw new ConfigurationException("No data source provided, either configure JNDISource or connectionPool");
+        }
+        
+        if(cp != null) {
+            if(cp.getDriver() == null) {
+                throw new ConfigurationException("No JDBC driver provided");
+            }
+            if(cp.getUrl() == null) {
+                throw new ConfigurationException("No JDBC URL provided");
+            }
+        }
+        
     }
 
     public static void store(JDBCConfiguration config, File file) throws ConfigurationException {
@@ -160,8 +184,6 @@ public class JDBCConfiguration {
 
         int maxConnections;
 
-        int fetchSize;
-
         int connectionTimeout;
 
         String validationQuery;
@@ -198,14 +220,6 @@ public class JDBCConfiguration {
 
         public void setMaxConnections(int maxConnections) {
             this.maxConnections = maxConnections;
-        }
-
-        public int getFetchSize() {
-            return fetchSize;
-        }
-
-        public void setFetchSize(int fetchSize) {
-            this.fetchSize = fetchSize;
         }
 
         public int getConnectionTimeout() {
@@ -254,7 +268,6 @@ public class JDBCConfiguration {
             int result = 1;
             result = prime * result + connectionTimeout;
             result = prime * result + ((driver == null) ? 0 : driver.hashCode());
-            result = prime * result + fetchSize;
             result = prime * result + maxConnections;
             result = prime * result + maxOpenPreparedStatements;
             result = prime * result + minConnections;
@@ -280,8 +293,6 @@ public class JDBCConfiguration {
                 if (other.driver != null)
                     return false;
             } else if (!driver.equals(other.driver))
-                return false;
-            if (fetchSize != other.fetchSize)
                 return false;
             if (maxConnections != other.maxConnections)
                 return false;
@@ -316,7 +327,7 @@ public class JDBCConfiguration {
         public String toString() {
             return "ConnectionPoolConfiguration [driver=" + driver + ", url=" + url + ", username="
                     + username + ", password=" + password + ", minConnections=" + minConnections
-                    + ", maxConnections=" + maxConnections + ", fetchSize=" + fetchSize
+                    + ", maxConnections=" + maxConnections 
                     + ", connectionTimeout=" + connectionTimeout + ", validationQuery="
                     + validationQuery + ", maxOpenPreparedStatements=" + maxOpenPreparedStatements
                     + "]";
