@@ -159,3 +159,65 @@ It is possible to set the amount of threads to use when processing the disk quot
 .. code-block:: xml
 
    <maxConcurrentCleanUps>3</maxConcurrentCleanUps>
+
+Disk quota storage
+------------------
+
+The disk quota subystem defaults to use an embedded Berkeley DB whose storage is located in the cache directory, there is however also the possibility of using either an embedded H2 database, against storing information in the cache directory, or a standard Oracle or PostgreSQL database.
+
+In order to switch from the Berkeley DB to the embedded H2 storage the :file:`geowebcache-diskquota.xml` must contain the ``quotaStore`` element set to ``H2``:
+
+.. code-block:: xml
+
+    <?xml version="1.0" encoding="utf-8"?>
+    <gwcQuotaConfiguration>
+      <enabled>false</enabled>
+      <quotaStore>H2</quotaStore>
+      ...
+
+    </gwcQuotaConfiguration>
+
+
+In order to switch from the Berkeley DB to the freeform JDBC sources the :file:`geowebcache-diskquota.xml` must contain the ``quotaStore`` element set to ``JDBC``:
+
+.. code-block:: xml
+
+    <?xml version="1.0" encoding="utf-8"?>
+    <gwcQuotaConfiguration>
+      <enabled>false</enabled>
+      <quotaStore>JDBC</quotaStore>
+      ...
+
+    </gwcQuotaConfiguration>
+
+In this case a separate file, :file:`geowebcache-diskquota-jdbc.xml` will contain the configuration for the chosen database containing the chosen DBMS dialect, at the time of writing the possible values are ``H2``, ``Oracle``, ``PostgreSQL``.
+
+The connection pool can be either provided locally, in such case a DBCP based connection pool will be instantiated, or provided via JNDI.
+The JDNI configuration is as simple as follows:
+
+.. code-block:: xml
+
+    <gwcJdbcConfiguration>
+      <dialect>Oracle</dialect>
+      <JNDISource>java:comp/env/jdbc/oralocal</JNDISource>
+    </gwcJdbcConfiguration>
+
+The local connection pool can instead be configured by specifying the following:
+
+.. code-block:: xml
+
+    <gwcJdbcConfiguration>
+      <dialect>PostgreSQL</dialect>
+      <connectionPool>
+        <driver>org.postgresql.Driver</driver>
+        <url>jdbc:postgresql:gttest</url>
+        <username>cite</username>
+        <password>cite</password>
+        <minConnections>1</minConnections>
+        <maxConnections>10</maxConnections>
+        <fetchSize>1000</fetchSize>
+        <connectionTimeout>50</connectionTimeout>
+        <validationQuery>select 1</validationQuery>
+        <maxOpenPreparedStatements>50</maxOpenPreparedStatements>
+      </connectionPool>
+    </gwcJdbcConfiguration>
