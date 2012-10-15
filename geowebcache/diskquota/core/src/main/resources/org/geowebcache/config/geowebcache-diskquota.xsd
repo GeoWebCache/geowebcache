@@ -1,0 +1,216 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+  xmlns:xml="http://www.w3.org/XML/1998/namespace" 
+  targetNamespace="http://geowebcache.org/diskquota"
+  xmlns:gwc="http://geowebcache.org/diskquota" elementFormDefault="qualified">
+
+  <xs:element name="gwcQuotaConfiguration">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">Wrapper element for XStream. Make sure it has the correct namespace
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="enabled" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>Whether the diskquota monitor is enabled or not</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="quotaStore" type="xs:string" min="0">
+          <xs:annotation>
+            <xs:documentation>Name of the quota store to be used, at the time of writing the possible values are 'bdb', 'h2' or 'jdbc', defaults to 'bdb'</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="diskBlockSize" type="xs:int">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">Cache's file system block size, in bytes. Usually 4096, 8192,
+              etc.
+              There's no way in
+              the Java5 API to guess the filesystem block size. This parameter tells the disk quota monitor what the block size is so it can
+              make better computations with regard to the actual disk usage for the cache</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="cacheCleanUpFrequency" type="xs:int">
+          <xs:annotation>
+            <xs:documentation>Frequency in minutes for the quota monitor to run the clean up process for those layers
+              that exceed its quota.
+              REVISIT: think it would be better not to have to configure this frequency and instead automatically start the cache cleanup
+              whenever it's exceeded
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="cacheCleanUpUnits" type="gwc:TimeUnitType">
+          <xs:annotation>
+            <xs:documentation>Time unit for the cache update frequency. One of [SECONDS, MINUTES, HOURS, DAYS] if running Java6, just
+              [SECONDS] if running Java5
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="maxConcurrentCleanUps" type="xs:int" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>Maximum number of concurrent quota enforcement tasks to run. Defaults to 2.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="globalExpirationPolicyName" type="gwc:ExpirationPolicyType">
+          <xs:annotation>
+            <xs:documentation>Name of the cache expiration policy strategy for the whole Cache. Expiration policies set explicitly for layers
+              override this global value. If unset, this global setting defaults to the LFU policy.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="globalQuota" type="gwc:DiskQuotaType">
+          <xs:annotation>
+            <xs:documentation>Soft limit applied to the storage size of the whole cache. Limits explicitly set to layer quota configurations
+              contribute to this global limit by squeezing the available limit for non explicitly configured layers.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="layerQuotas" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              Specify per layer quotas
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="LayerQuota" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="layer" type="xs:string">
+                      <xs:annotation>
+                        <xs:documentation>Name of the layer to apply the quota to</xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                    <xs:element name="expirationPolicyName" type="gwc:ExpirationPolicyType">
+                      <xs:annotation>
+                        <xs:documentation>Name of the cache expiration policy strategy</xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                    <xs:element name="quota" type="gwc:DiskQuotaType">
+                      <xs:annotation>
+                        <xs:documentation>Soft limit applied to the storage size of the layer cache</xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                    <xs:element name="usedQuota" type="gwc:DiskQuotaType" minOccurs="0">
+                      <xs:annotation>
+                        <xs:documentation>Optional, current size of the layer's cache.
+                          This value will be automatically
+                          updated (presumably
+                          upon normal application shutdown).
+                          If not present, the layer cache size will
+                          be computed upon application startup,
+                          which may take a long while. A good way of avoiding it is
+                          to configure the usedQuota element with the output of
+                          the
+                          Unix du -sk command, that returns the
+                          number of kilobytes used by the argument directory. For example du -sk
+                          &lt;path to cache
+                          root&gt;/layerName; and then configure the usedQuota with that number and KB as unit
+                        </xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="DiskQuotaType">
+    <xs:annotation>
+      <xs:documentation xml:lang="en"></xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="value" type="xs:double"></xs:element>
+      <xs:element name="units" type="gwc:StorageUnitType" default="MiB" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="StorageUnitType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="B">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Bytes</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="KiB">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Kibibytes (1024 bytes. Different than KB, which is just 1000B)
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="MiB">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Mebibytes (1024 KiB. Different than MB, which is just 1000KB)
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="GiB">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Gibibytes (1024 MiB. Different than GB, which is just 1000MB)
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="TiB">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Tebibytes (1024 GiB. Different than TB, which is just 1000GB)
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="PiB">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Pebibytes (1024 TiB. Different than PB, which is just 1000TB)
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="EiB">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Exibytes (1024 PiB. Different than EB, which is just 1000PB)
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="ZiB">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Zebibytes (1024 EiB. Different than ZB -Zettabyte-, which is just
+            1000EB)
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="YiB">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Yobibytes (1024 ZiB. Different than YB -Yottabyte-, which is just
+            1000ZB)
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="TimeUnitType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SECONDS"></xs:enumeration>
+      <xs:enumeration value="MINUTES"></xs:enumeration>
+      <xs:enumeration value="HOURS"></xs:enumeration>
+      <xs:enumeration value="DAYS"></xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ExpirationPolicyType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="LRU">
+        <xs:annotation><xs:documentation>Least Recently Used expiration policy</xs:documentation></xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="LFU">
+        <xs:annotation><xs:documentation>Least Frequently Used expiration policy</xs:documentation></xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
