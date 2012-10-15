@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -48,7 +49,9 @@ import org.geowebcache.diskquota.storage.TilePageCalculator;
 import org.geowebcache.diskquota.storage.TileSet;
 import org.geowebcache.diskquota.storage.TileSetVisitor;
 import org.geowebcache.storage.DefaultStorageFinder;
+import org.h2.command.ddl.DeallocateProcedure;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -413,7 +416,10 @@ public class JDBCQuotaStore implements QuotaStore {
                 updateQuotas(tileSet, quotaDiff);
 
                 if (tileCountDiffs != null) {
-                    for (PageStatsPayload payload : tileCountDiffs) {
+                    // sort the payloads by page id as a deadlock avoidance measure, out
+                    // of order updates may result in deadlock with the addHitsAndSetAccessTime method
+                    List<PageStatsPayload> sorted = sortPayloads(tileCountDiffs);
+                    for (PageStatsPayload payload : sorted) {
                         upsertTilePageFillFactor(payload);
                     }
                 }
@@ -455,24 +461,30 @@ public class JDBCQuotaStore implements QuotaStore {
                 int modified = 0;
                 int count = 0;
                 while (modified == 0 && count < maxLoops) {
-                    count++;
-                    PageStats stats = getPageStats(page.getKey());
-                    if (stats != null) {
-                        float oldFillFactor = stats.getFillFactor();
-                        stats.addTiles(payload.getNumTiles(), tilesPerPage);
-                        // if no change, bail out early
-                        if (oldFillFactor == stats.getFillFactor()) {
-                            return;
+                    try {
+                        count++;
+                        PageStats stats = getPageStats(page.getKey());
+                        if (stats != null) {
+                            float oldFillFactor = stats.getFillFactor();
+                            stats.addTiles(payload.getNumTiles(), tilesPerPage);
+                            // if no change, bail out early
+                            if (oldFillFactor == stats.getFillFactor()) {
+                                return;
+                            }
+    
+                            // update the record in the db
+                            modified = updatePageFillFactor(page, stats, oldFillFactor);
+                        } else {
+                            // create the stats and update the fill factor
+                            stats = new PageStats(0);
+                            stats.addTiles(payload.getNumTiles(), tilesPerPage);
+    
+                            modified = createNewPageStats(stats, page);
                         }
-
-                        // update the record in the db
-                        modified = updatePageFillFactor(page, stats, oldFillFactor);
-                    } else {
-                        // create the stats and update the fill factor
-                        stats = new PageStats(0);
-                        stats.addTiles(payload.getNumTiles(), tilesPerPage);
-
-                        modified = createNewPageStats(stats, page);
+                    } catch(DeadlockLoserDataAccessException e) {
+                        if(log.isDebugEnabled()) {
+                            log.debug("Deadlock while updating page stats, will retry", e);
+                        }
                     }
                 }
 
@@ -484,6 +496,23 @@ public class JDBCQuotaStore implements QuotaStore {
             }
 
         });
+    }
+
+    /**
+     * Sorts the payloads by page key
+     * @param tileCountDiffs
+     * @return
+     */
+    protected List<PageStatsPayload> sortPayloads(Collection<PageStatsPayload> tileCountDiffs) {
+        List<PageStatsPayload> result = new ArrayList<PageStatsPayload>(tileCountDiffs);
+        Collections.sort(result, new Comparator<PageStatsPayload>() {
+
+            public int compare(PageStatsPayload pl1, PageStatsPayload pl2) {
+                TilePage p1 = pl1.getPage();
+                TilePage p2 = pl2.getPage();
+                return p1.getKey().compareTo(p2.getKey());
+            }});
+        return result;
     }
 
     private int updatePageFillFactor(TilePage page, PageStats stats, float oldFillFactor) {
@@ -567,7 +596,10 @@ public class JDBCQuotaStore implements QuotaStore {
                     public Object doInTransaction(TransactionStatus status) {
                         List<PageStats> result = new ArrayList<PageStats>();
                         if (statsUpdates != null) {
-                            for (PageStatsPayload payload : statsUpdates) {
+                            // sort the payloads by page id as a deadlock avoidance measure, out
+                            // of order updates may result in deadlock with the addHitsAndSetAccessTime method
+                            List<PageStatsPayload> sorted = sortPayloads(statsUpdates);
+                            for (PageStatsPayload payload : sorted) {
                                 // verify the stats are referring to an existing tile set id
                                 TileSet tset = payload.getTileSet();
                                 if (tset == null) {
@@ -601,34 +633,40 @@ public class JDBCQuotaStore implements QuotaStore {
                         int count = 0;
                         PageStats stats = null;
                         while (modified == 0 && count < maxLoops) {
-                            count++;
-                            stats = getPageStats(page.getKey());
-                            if (stats != null) {
-                                // gather the old values, we'll use them for the optimistic locking
-                                final BigInteger oldHits = stats.getNumHits();
-                                final float oldFrequency = stats.getFrequencyOfUsePerMinute();
-                                final int oldAccessTime = stats.getLastAccessTimeMinutes();
-                                // update the page so that it computes the new stats
-                                updatePageStats(payload, page, stats);
-
-                                // update the record in the db
-                                String update = dialect.updatePageStats(schema, "key", "newHits",
-                                        "oldHits", "newFrequency", "oldFrequency", "newAccessTime",
-                                        "oldAccessTime");
-                                Map<String, Object> params = new HashMap<String, Object>();
-                                params.put("key", page.getKey());
-                                params.put("newHits", new BigDecimal(stats.getNumHits()));
-                                params.put("oldHits", new BigDecimal(oldHits));
-                                params.put("newFrequency", stats.getFrequencyOfUsePerMinute());
-                                params.put("oldFrequency", oldFrequency);
-                                params.put("newAccessTime", stats.getLastAccessTimeMinutes());
-                                params.put("oldAccessTime", oldAccessTime);
-                                modified = jt.update(update, params);
-                            } else {
-                                // create the new stats and insert it
-                                stats = new PageStats(0);
-                                updatePageStats(payload, page, stats);
-                                modified = createNewPageStats(stats, page);
+                            try {
+                                count++;
+                                stats = getPageStats(page.getKey());
+                                if (stats != null) {
+                                    // gather the old values, we'll use them for the optimistic locking
+                                    final BigInteger oldHits = stats.getNumHits();
+                                    final float oldFrequency = stats.getFrequencyOfUsePerMinute();
+                                    final int oldAccessTime = stats.getLastAccessTimeMinutes();
+                                    // update the page so that it computes the new stats
+                                    updatePageStats(payload, page, stats);
+    
+                                    // update the record in the db
+                                    String update = dialect.updatePageStats(schema, "key", "newHits",
+                                            "oldHits", "newFrequency", "oldFrequency", "newAccessTime",
+                                            "oldAccessTime");
+                                    Map<String, Object> params = new HashMap<String, Object>();
+                                    params.put("key", page.getKey());
+                                    params.put("newHits", new BigDecimal(stats.getNumHits()));
+                                    params.put("oldHits", new BigDecimal(oldHits));
+                                    params.put("newFrequency", stats.getFrequencyOfUsePerMinute());
+                                    params.put("oldFrequency", oldFrequency);
+                                    params.put("newAccessTime", stats.getLastAccessTimeMinutes());
+                                    params.put("oldAccessTime", oldAccessTime);
+                                    modified = jt.update(update, params);
+                                } else {
+                                    // create the new stats and insert it
+                                    stats = new PageStats(0);
+                                    updatePageStats(payload, page, stats);
+                                    modified = createNewPageStats(stats, page);
+                                }
+                            } catch(DeadlockLoserDataAccessException e) {
+                                if(log.isDebugEnabled()) {
+                                    log.debug("Deadlock while updating page stats, will retry", e);
+                                }
                             }
                         }
 
