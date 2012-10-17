@@ -83,6 +83,22 @@ public class FilePathUtils {
     }
     
     /**
+     * Extracts the parametersId from {@code <gridsetPrefix>_<zLevel>[_<parametersId>]})
+     * 
+     * @precondition {@code dirName.startsWith(gridsetPrefix + "_")}
+     */
+    public static String findParameter(final String gridsetPrefix, final String dirName) {
+        assert dirName.startsWith(gridsetPrefix + "_");
+        String[] parts = dirName.substring(gridsetPrefix.length() + 1).split("_");
+        if(parts.length == 2) {
+            return parts[1];
+        } else {
+            return null;
+        }
+    }
+    
+    
+    /**
      * Adds the gridset and zoom level fors the standard file system layout path
      */
     public static void appendGridsetZoomLevelDir(String gridSetId, long z, StringBuilder path) {

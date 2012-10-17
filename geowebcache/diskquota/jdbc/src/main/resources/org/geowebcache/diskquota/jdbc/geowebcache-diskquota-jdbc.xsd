@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+  xmlns:xml="http://www.w3.org/XML/1998/namespace" 
+  targetNamespace="http://geowebcache.org/diskquota"
+  xmlns:gwc="http://geowebcache.org/diskquota" elementFormDefault="qualified">
+
+  <xs:element name="gwcJdbcConfiguration">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">Wrapper element for XStream. Make sure it has the correct namespace
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="dialect" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>The dialect used for the JDBC connection. Valid values at the time of writing: H2, Oracle, PostgreSQL</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="JNDISource" type="xs:string" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>JNDI resource used to locate the connection pool, optional, if this is missing then the connection pool element must be configured</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="connectionPool" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">Specifies the connection pool parameters. To be used when no JNDI data source is configured            
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="driver" type="xs:string">
+                <xs:annotation>
+                  <xs:documentation>The fully qualified name of the JDBC driver (e.g., 'oracle.jdbc.driver.OracleDriver')</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="url" type="xs:string">
+                <xs:annotation>
+                  <xs:documentation>The JDBC url (e.g., 'jdbc:oracle:thin:@192.168.2.4:1521:xe')</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="username" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>The user for the JDCB connection</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="password" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>The password for the JDCB connection</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="minConnections" type="xs:string">
+                <xs:annotation>
+                  <xs:documentation>The minimum number of connections kept in the pool</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="maxConnections" type="xs:string">
+                <xs:annotation>
+                  <xs:documentation>The maximum number of connections kept in the pool</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="connectionTimeout" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>Number of seconds to wait before giving up on a DBMS connection attempt</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="validationQuery" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>A quick query run to check if the connection is still alive (e.g., 'select 1 from dual')</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="maxOpenPreparedStatements" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>Maximum number of cached prepared statemenets per connection</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

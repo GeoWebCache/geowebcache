@@ -9,12 +9,16 @@
     <constructor-arg ref="gwcTLDispatcher" />
   </bean>
 
+  <bean id="DiskQuotaStoreProvider" class="org.geowebcache.diskquota.QuotaStoreProvider">
+      <constructor-arg ref="DiskQuotaConfigLoader" />
+  </bean>
+
   <bean id="DiskQuotaMonitor" class="org.geowebcache.diskquota.DiskQuotaMonitor">
     <constructor-arg ref="gwcDefaultStorageFinder" />
     <constructor-arg ref="DiskQuotaConfigLoader" />
     <constructor-arg ref="gwcTLDispatcher" />
     <constructor-arg ref="gwcStorageBroker" />
-    <constructor-arg ref="DiskQuotaStore" />
+    <constructor-arg ref="DiskQuotaStoreProvider" />
     <constructor-arg ref="gwcCacheCleaner" />
   </bean>
 
@@ -22,14 +26,8 @@
     <constructor-arg ref="gwcTLDispatcher" />
   </bean>
 
-  <bean id="DiskQuotaStore" class="org.geowebcache.diskquota.storage.BDBQuotaStore">
-    <constructor-arg ref="gwcDefaultStorageFinder" />
-    <constructor-arg ref="gwcTilePageCalculator" />
-  </bean>
-
   <bean id="gwcCacheCleaner" class="org.geowebcache.diskquota.CacheCleaner">
     <constructor-arg ref="gwcTileBreeder" />
-    <constructor-arg ref="DiskQuotaStore" />
   </bean>
 
   <!--bean id="mockWMSSource" class="org.geowebcache.util.MockWMSLayerSource"> <description>REMOVE THIS, it's a fake WMS 
@@ -58,5 +56,7 @@
     </property>
   </bean>
 
+  <bean id="bdbQuotaStoreFactory" class="org.geowebcache.diskquota.bdb.BDBQuotaStoreFactory"/>
+  <bean id="jdbcQuotaStoreFactory" class="org.geowebcache.diskquota.jdbc.JDBCQuotaStoreFactory"/>
   
 </beans>

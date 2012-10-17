@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 import org.geowebcache.util.ServletUtils;
 
 /**
@@ -56,8 +57,7 @@ public class TileRange {
 
     public TileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,
             long[][] rangeBounds, MimeType mimeType, Map<String, String> parameters) {
-        // we don't know the params id yet, has to be set by the metastore so we set it to null
-        this(layerName, gridSetId, zoomStart, zoomStop, rangeBounds, mimeType, parameters, null);
+        this(layerName, gridSetId, zoomStart, zoomStop, rangeBounds, mimeType, parameters, FilePathGenerator.getParametersId(parameters));
     }
 
     public TileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,

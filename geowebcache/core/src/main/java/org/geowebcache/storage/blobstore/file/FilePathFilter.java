@@ -88,8 +88,13 @@ public class FilePathFilter implements FilenameFilter {
                 return false;
             }
         }
-
-        return true;
+        
+        String parameter = findParameter(gridSetPrefix, name);
+        if(tr.getParametersId() == null) {
+            return parameter == null;
+        } else {
+            return tr.getParametersId().equals(parameter);
+        }
     }
 
     private boolean acceptIntermediateDir(String name) {
