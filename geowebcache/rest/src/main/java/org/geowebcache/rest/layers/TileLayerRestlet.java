@@ -36,6 +36,7 @@ import org.geowebcache.rest.RestletException;
 import org.geowebcache.rest.XstreamRepresentation;
 import org.geowebcache.service.HttpErrorCodeException;
 import org.geowebcache.util.ServletUtils;
+import org.geowebcache.util.URLMangler;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.restlet.data.CharacterSet;
@@ -70,6 +71,13 @@ public class TileLayerRestlet extends GWCRestlet {
     private XMLConfiguration xmlConfig;
 
     private TileLayerDispatcher layerDispatcher;
+
+    private URLMangler urlMangler;
+
+    // set by spring
+    public void setUrlMangler(URLMangler urlMangler) {
+        this.urlMangler = urlMangler;
+    }
 
     @Override
     public void handle(Request request, Response response) {
@@ -120,11 +128,11 @@ public class TileLayerRestlet extends GWCRestlet {
 
         Representation representation;
         if (layerName == null) {
-            String restRoot = req.getResourceRef().getParentRef().toString();
-            if (restRoot.endsWith("/")) {
-                restRoot = restRoot.substring(0, restRoot.length() - 1);
-            }
-            representation = listLayers(formatExtension, restRoot);
+            String restRoot = req.getRootRef().toString();
+            String contextPath = req.getRootRef().getPath();
+            String baseURL = restRoot.substring(0, restRoot.length() - contextPath.length());
+            String prefix = req.getResourceRef().getParentRef().getPath();
+            representation = listLayers(formatExtension, baseURL, prefix);
         } else {
             try {
                 layerName = URLDecoder.decode(layerName, "UTF-8");
@@ -138,9 +146,10 @@ public class TileLayerRestlet extends GWCRestlet {
     /**
      * @param extension
      * @param rootPath
+     * @param contextPath
      * @return
      */
-    Representation listLayers(String extension, final String restRoot) {
+    Representation listLayers(String extension, final String rootPath, final String contextPath) {
 
         if (null == extension) {
             extension = "xml";
@@ -190,7 +199,8 @@ public class TileLayerRestlet extends GWCRestlet {
                         writer.startNode("atom:link");
                         writer.addAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
                         writer.addAttribute("rel", "alternate");
-                        String href = restRoot + "/layers/" + ServletUtils.URLEncode(name) + ".xml";
+                        String href = urlMangler.buildURL(rootPath, contextPath, "/layers/"
+                                + ServletUtils.URLEncode(name) + ".xml");
                         writer.addAttribute("href", href);
                         writer.addAttribute("type", MediaType.TEXT_XML.toString());
 
