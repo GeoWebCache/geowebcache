@@ -76,6 +76,7 @@ public class WMSTileFuser {
 
     int reqWidth;
 
+    // The desired extent of the request
     final BoundingBox reqBounds;
 
     // Boolean reqTransparent;
@@ -88,12 +89,16 @@ public class WMSTileFuser {
     double yResolution;
 
     // The source resolution
+    /* Follows GIS rather than Graphics conventions and so is expressed as physical size of pixel 
+     * rather than density.*/
     double srcResolution;
 
     int srcIdx;
 
+    // Area of tiles being used in tile coordinates
     long[] srcRectangle;
 
+    // The spatial extent of the tiles used to fulfil the request
     BoundingBox srcBounds;
 
     BoundingBox canvasBounds;
@@ -206,6 +211,7 @@ public class WMSTileFuser {
     }
 
     protected void determineCanvasLayout() {
+        // Find the spatial extent of the tiles needed to cover the desired extent
         srcRectangle = gridSubset.getCoverageIntersection(srcIdx, reqBounds);
         srcBounds = gridSubset.boundsFromRectangle(srcRectangle);
 
@@ -278,7 +284,11 @@ public class WMSTileFuser {
             IOException {
         // Now we loop over all the relevant tiles and write them to the canvas,
         // Starting at the bottom, moving to the right and up
+        
+        // Bottom row of tiles, in tile coordinates
         long starty = srcRectangle[1];
+        
+        // gridy is the tile row index
         for (long gridy = starty; gridy <= srcRectangle[3]; gridy++) {
 
             int tiley = 0;

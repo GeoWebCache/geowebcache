@@ -88,6 +88,10 @@ public abstract class TileLayer {
      */
     public abstract boolean removeLayerListener(TileLayerListener listener);
 
+    /**
+     * The unique identifier for the layer.
+     * @return
+     */
     public abstract String getId();
     
     /**
@@ -103,8 +107,7 @@ public abstract class TileLayer {
     public abstract boolean isEnabled();
 
     /**
-     * @param enabled
-     *            whether to enabled caching for this layer
+     * @param enabled whether to enabled caching for this layer
      */
     public abstract void setEnabled(boolean enabled);
 
@@ -227,8 +230,18 @@ public abstract class TileLayer {
      */
     public abstract List<MimeType> getMimeTypes();
 
+    /**
+     * Gets the expiration time to be declared to clients.
+     * @param zoomLevel integer zoom level at which to consider the expiration rules
+     * @return integer duration in seconds
+     */
     public abstract int getExpireClients(int zoomLevel);
 
+    /**
+     * Gets the expiration time for tiles in the cache.
+     * @param zoomLevel integer zoom level at which to consider the expiration rules
+     * @return integer duration in seconds
+     */
     public abstract int getExpireCache(int zoomLevel);
 
     public abstract List<ParameterFilter> getParameterFilters();
@@ -242,7 +255,7 @@ public abstract class TileLayer {
     public abstract boolean initialize(GridSetBroker gridSetBroker);
 
     /**
-     * This methdod is deprecated, as a layer may be configured for more than one gridset with the
+     * This method is deprecated, as a layer may be configured for more than one gridset with the
      * same SRS.
      * 
      * @deprecated use {@link #getGridSubsetsForSRS(SRS)} in combination with
@@ -329,6 +342,11 @@ public abstract class TileLayer {
         return getGridSubset(gridSetId).getResolutions();
     }
 
+    /**
+     * Get the FormatModifier applicable to the given format.
+     * @param responseFormat MimeType of the format to consider
+     * @return FormatModifier describing the parameters for output to the given format
+     */
     public FormatModifier getFormatModifier(MimeType responseFormat) {
         List<FormatModifier> formatModifiers = getFormatModifiers();
         if (formatModifiers == null || formatModifiers.size() == 0) {

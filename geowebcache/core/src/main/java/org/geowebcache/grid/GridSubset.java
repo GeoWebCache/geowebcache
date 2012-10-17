@@ -64,6 +64,11 @@ public class GridSubset {
         return gridSet.boundsFromIndex(tileIndex);
     }
 
+    /**
+     * Finds the spatial bounding box of a rectangular group of tiles.
+     * @param rectangleExtent the rectangle of tiles.  {minx, miny, maxx, maxy} in tile coordinates
+     * @return the spatial bounding box in the coordinates of the SRS used by the GridSet
+     */
     public BoundingBox boundsFromRectangle(long[] rectangleExtent) {
         return gridSet.boundsFromRectangle(rectangleExtent);
     }
@@ -226,6 +231,12 @@ public class GridSubset {
         return ret;
     }
 
+    /**
+     * Find the area that covers the given rectangle with tiles from the subset.
+     * @param level integer zoom level at which to consider the tiles
+     * @param reqBounds BoundingBox to try to cover.
+     * @return Array of long, the rectangle in tile coordinates, {minx, miny, maxx, maxy}
+     */
     public long[] getCoverageIntersection(int level, BoundingBox reqBounds) {
         long[] reqRectangle = gridSet.closestRectangle(level, reqBounds);
         GridCoverage gridCoverage = gridCoverageLevels.get(Integer.valueOf(level));
