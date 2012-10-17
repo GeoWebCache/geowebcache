@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -442,5 +444,18 @@ public class ServletUtils {
             }
         }
         return ret;
+    }
+
+    /**
+     * Generate the base url of the request, minus the context path
+     * @param req servlet request
+     * @return Base url of request, minus the context path
+     */
+    public static String getServletBaseURL(HttpServletRequest req) {
+        if (req.getServerPort() == 80 || req.getServerPort() == 443) {
+            return req.getScheme() + "://" + req.getServerName();
+        } else {
+            return req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
+        }
     }
 }
