@@ -155,6 +155,7 @@
   <!-- Lock providers -->
   <bean id="noLock" class="org.geowebcache.locks.NoOpLockProvider"/>
 
+
   <bean id="memoryLock" class="org.geowebcache.locks.MemoryLockProvider"/>
   
   <bean id="nioLock" class="org.geowebcache.locks.NIOLockProvider">
@@ -165,4 +166,7 @@
   <bean id="metastoreRemover" class="org.geowebcache.storage.MetastoreRemover">
     <constructor-arg ref="gwcDefaultStorageFinder"/>
   </bean>
+
+  <bean id="gwcURLMangler" class="org.geowebcache.util.NullURLMangler" />
+
 </beans>

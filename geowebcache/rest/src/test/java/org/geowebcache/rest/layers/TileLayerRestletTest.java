@@ -41,6 +41,7 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.RestletException;
+import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.restlet.data.CharacterSet;
 import org.restlet.data.MediaType;
@@ -90,6 +91,7 @@ public class TileLayerRestletTest extends XMLTestCase {
         tlr = new TileLayerRestlet();
         tlr.setXMLConfiguration(xmlConfig);
         tlr.setTileLayerDispatcher(tld);
+        tlr.setUrlMangler(new NullURLMangler());
     }
 
     public void testGetXml() throws Exception {
@@ -130,8 +132,9 @@ public class TileLayerRestletTest extends XMLTestCase {
 
     public void testGetList() throws Exception {
 
-        final String rootPath = "http://my.gwc.org/rest";
-        Representation rep = tlr.listLayers("xml", rootPath);
+        final String rootPath = "http://my.gwc.org";
+        final String contextPath = "/rest";
+        Representation rep = tlr.listLayers("xml", rootPath, contextPath);
         assertNotNull(rep);
         assertEquals(CharacterSet.UTF_8, rep.getCharacterSet());
 
@@ -159,7 +162,7 @@ public class TileLayerRestletTest extends XMLTestCase {
             String xpath = "/layers/layer[" + xpathIndex + "]/name";
             assertXpathEvaluatesTo(layerName, xpath, dom);
 
-            String href = rootPath + "/layers/" + ServletUtils.URLEncode(layerName) + ".xml";
+            String href = rootPath + contextPath + "/layers/" + ServletUtils.URLEncode(layerName) + ".xml";
             xpath = "/layers/layer[" + xpathIndex + "]/link/@href";
             String actual = xpathEngine.evaluate(xpath, dom);
             // System.err.println("-------- " + actual);
