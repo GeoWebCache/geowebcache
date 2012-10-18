@@ -78,8 +78,16 @@ public class WMSTileFuserTest extends TestCase {
         tileFuser.determineCanvasLayout();
         
         assertTrue(tileFuser.srcBounds.contains(bounds));
-        int[] comparison = {-228, -193, -56, -6}; 
-        assertTrue(Arrays.equals(tileFuser.canvOfs,comparison));
+        WMSTileFuser.PixelOffsets comparison = new WMSTileFuser.PixelOffsets();
+        //-228, -193, -56, -6
+        comparison.left=-228;
+        comparison.bottom=-193;
+        comparison.right=-56;
+        comparison.top=-6;
+        assertEquals(comparison.left, tileFuser.canvOfs.left);
+        assertEquals(comparison.bottom, tileFuser.canvOfs.bottom);
+        assertEquals(comparison.right, tileFuser.canvOfs.right);
+        assertEquals(comparison.top, tileFuser.canvOfs.top);
     }
     
     public void testTileFuserSuperset() throws Exception {

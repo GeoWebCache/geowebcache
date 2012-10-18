@@ -105,10 +105,23 @@ public class WMSTileFuser {
 
     int[] canvasSize = new int[2];
 
+    static class SpatialOffsets {
+        double top;
+        double bottom;
+        double left;
+        double right;
+    };
+    static class PixelOffsets {
+        int top;
+        int bottom;
+        int left;
+        int right;
+    };
+    
     // These are values before scaling
-    int[] canvOfs = new int[4];
+    PixelOffsets canvOfs = new PixelOffsets();
 
-    double[] boundOfs = new double[4];
+    SpatialOffsets boundOfs = new SpatialOffsets();
 
     BufferedImage canvas;
 
@@ -218,20 +231,21 @@ public class WMSTileFuser {
         // We now have the complete area, lets figure out our offsets
         // Positive means that there is blank space to the first tile,
         // negative means we will not use the entire tile
-        boundOfs[0] = srcBounds.getMinX() - reqBounds.getMinX();
-        boundOfs[1] = srcBounds.getMinY() - reqBounds.getMinY();
-        boundOfs[2] = reqBounds.getMaxX() - srcBounds.getMaxX();
-        boundOfs[3] = reqBounds.getMaxY() - srcBounds.getMaxY();
+        boundOfs.left =   srcBounds.getMinX() - reqBounds.getMinX();
+        boundOfs.bottom = srcBounds.getMinY() - reqBounds.getMinY();
+        boundOfs.right =  reqBounds.getMaxX() - srcBounds.getMaxX();
+        boundOfs.top =    reqBounds.getMaxY() - srcBounds.getMaxY();
 
         canvasSize[0] = (int) Math.round(reqBounds.getWidth() / this.srcResolution);
         canvasSize[1] = (int) Math.round(reqBounds.getHeight() / this.srcResolution);
 
-        int[] naiveOfs = new int[4];
+        PixelOffsets naiveOfs = new PixelOffsets();
         // Calculate the corresponding pixel offsets. We'll stick to sane,
         // i.e. bottom left, coordinates at this point
-        for (int i = 0; i < 4; i++) {
-            naiveOfs[i] = (int) Math.round(boundOfs[i] / this.srcResolution);
-        }
+        naiveOfs.left   = (int) Math.round(boundOfs.left   / this.srcResolution);
+        naiveOfs.bottom = (int) Math.round(boundOfs.bottom / this.srcResolution);
+        naiveOfs.right  = (int) Math.round(boundOfs.right  / this.srcResolution);
+        naiveOfs.top    = (int) Math.round(boundOfs.top    / this.srcResolution);
         
         // Find the offsets on the opposite sides.  This is dependent of how the first two were rounded.
         
@@ -241,29 +255,29 @@ public class WMSTileFuser {
         int tileWidth = this.gridSubset.getTileWidth();
         int tileHeight = this.gridSubset.getTileHeight();
         
-        canvOfs[0]=naiveOfs[0];
-        canvOfs[1]=naiveOfs[1];
+        canvOfs.left=naiveOfs.left;
+        canvOfs.bottom=naiveOfs.bottom;
         
-        canvOfs[2] = (canvasSize[0]-canvOfs[0])%tileWidth; // Find nearby tile boundary
-        canvOfs[2] = (Integer.signum(naiveOfs[2])*tileWidth+canvOfs[2])%tileWidth; // Ensure same sign as naive calculation 
-        canvOfs[2] = canvOfs[2]-(naiveOfs[2]%tileWidth)+naiveOfs[2]; // Find adjustment from naive and apply to naive calculation
-        canvOfs[3] = (canvasSize[1]-canvOfs[1])%tileHeight; // Find nearby tile boundary
-        canvOfs[3] = (Integer.signum(naiveOfs[3])*tileHeight+canvOfs[3])%tileHeight; // Ensure same sign as naive calculation 
-        canvOfs[3] = canvOfs[3]-(naiveOfs[3]%tileHeight)+naiveOfs[3]; // Find adjustment from naive and apply to naive calculation
+        canvOfs.right = (canvasSize[0]-canvOfs.left)%tileWidth; // Find nearby tile boundary
+        canvOfs.right = (Integer.signum(naiveOfs.right)*tileWidth+canvOfs.right)%tileWidth; // Ensure same sign as naive calculation 
+        canvOfs.right = canvOfs.right-(naiveOfs.right%tileWidth)+naiveOfs.right; // Find adjustment from naive and apply to naive calculation
+        canvOfs.top = (canvasSize[1]-canvOfs.bottom)%tileHeight; // Find nearby tile boundary
+        canvOfs.top = (Integer.signum(naiveOfs.top)*tileHeight+canvOfs.top)%tileHeight; // Ensure same sign as naive calculation 
+        canvOfs.top = canvOfs.top-(naiveOfs.top%tileHeight)+naiveOfs.top; // Find adjustment from naive and apply to naive calculation
         
         //postconditions
-        assert Math.abs(canvOfs[0]-naiveOfs[0])<=1;
-        assert Math.abs(canvOfs[1]-naiveOfs[1])<=1;
-        assert Math.abs(canvOfs[2]-naiveOfs[2])<=1;
-        assert Math.abs(canvOfs[3]-naiveOfs[3])<=1;
+        assert Math.abs(canvOfs.left-naiveOfs.left)<=1;
+        assert Math.abs(canvOfs.bottom-naiveOfs.bottom)<=1;
+        assert Math.abs(canvOfs.right-naiveOfs.right)<=1;
+        assert Math.abs(canvOfs.top-naiveOfs.top)<=1;
         
         if (log.isDebugEnabled()) {
             log.debug("intersection rectangle: " + Arrays.toString(srcRectangle));
             log.debug("intersection bounds: " + srcBounds + " (" + reqBounds + ")");
-            log.debug("Bound offsets: " + Arrays.toString(boundOfs));
+            log.debug("Bound offsets: " + Arrays.toString(new double[]{boundOfs.left, boundOfs.bottom, boundOfs.right, boundOfs.top}));
             log.debug("Canvas size: " + Arrays.toString(canvasSize) + "(" + reqWidth + ","
                     + reqHeight + ")");
-            log.debug("Canvas offsets: " + Arrays.toString(canvOfs));
+            log.debug("Canvas offsets: " + Arrays.toString(new int[]{canvOfs.left, canvOfs.bottom, canvOfs.right, canvOfs.top}));
         }
     }
 
@@ -320,26 +334,26 @@ public class WMSTileFuser {
             int canvasy = (int) (srcRectangle[3] - gridy) * gridSubset.getTileHeight();
             int tileHeight = gridSubset.getTileHeight();
 
-            if (canvOfs[3] > 0) {
+            if (canvOfs.top > 0) {
                 // Add padding
-                canvasy += canvOfs[3];
+                canvasy += canvOfs.top;
             } else {
                 // Top tile is cut off
                 if (gridy == srcRectangle[3]) {
                     // This one starts at the top, so canvasy remains 0
-                    tileHeight = tileHeight + canvOfs[3];
-                    tiley = -canvOfs[3];
+                    tileHeight = tileHeight + canvOfs.top;
+                    tiley = -canvOfs.top;
                 } else {
                     // Offset that the first tile contributed,
                     // rather, we subtract what it did not contribute
-                    canvasy += canvOfs[3];
+                    canvasy += canvOfs.top;
                 }
             }
 
-            if (gridy == srcRectangle[1] && canvOfs[1] < 0) {
+            if (gridy == srcRectangle[1] && canvOfs.bottom < 0) {
                 // Check whether we only use part of the first tiles (bottom row)
                 // Offset is negative, slice the bottom off the tile
-                tileHeight += canvOfs[1];
+                tileHeight += canvOfs.bottom;
             }
 
             long startx = srcRectangle[0];
@@ -366,26 +380,26 @@ public class WMSTileFuser {
                 int canvasx = (int) (gridx - startx) * gridSubset.getTileWidth();
                 int tileWidth = gridSubset.getTileWidth();
 
-                if (canvOfs[0] > 0) {
+                if (canvOfs.left > 0) {
                     // Add padding
-                    canvasx += canvOfs[0];
+                    canvasx += canvOfs.left;
                 } else {
                     // Leftmost tile is cut off
                     if (gridx == srcRectangle[0]) {
                         // This one starts to the left top, so canvasx remains 0
-                        tileWidth = tileWidth + canvOfs[0];
-                        tilex = -canvOfs[0];
+                        tileWidth = tileWidth + canvOfs.left;
+                        tilex = -canvOfs.left;
                     } else {
                         // Offset that the first tile contributed,
                         // rather, we subtract what it did not contribute
-                        canvasx += canvOfs[0];
+                        canvasx += canvOfs.left;
                     }
                 }
 
-                if (gridx == srcRectangle[2] && canvOfs[2] < 0) {
+                if (gridx == srcRectangle[2] && canvOfs.right < 0) {
                     // Check whether we only use part of the first tiles (bottom row)
                     // Offset is negative, slice the bottom off the tile
-                    tileWidth = tileWidth + canvOfs[2];
+                    tileWidth = tileWidth + canvOfs.right;
                 }
 
                 // TODO We should really ensure we can never get here
