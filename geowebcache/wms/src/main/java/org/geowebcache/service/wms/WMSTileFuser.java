@@ -226,12 +226,37 @@ public class WMSTileFuser {
         canvasSize[0] = (int) Math.round(reqBounds.getWidth() / this.srcResolution);
         canvasSize[1] = (int) Math.round(reqBounds.getHeight() / this.srcResolution);
 
+        int[] naiveOfs = new int[4];
         // Calculate the corresponding pixel offsets. We'll stick to sane,
         // i.e. bottom left, coordinates at this point
         for (int i = 0; i < 4; i++) {
-            canvOfs[i] = (int) Math.round(boundOfs[i] / this.srcResolution);
+            naiveOfs[i] = (int) Math.round(boundOfs[i] / this.srcResolution);
         }
-
+        
+        // Find the offsets on the opposite sides.  This is dependent of how the first two were rounded.
+        
+        // First, find a tile boundary near the canvas edge, then make sure it's on the correct 
+        // side to match the corresponding boundOfs, then take the modulo of the naive rounding 
+        // based on the boundOfs, then subtract the two and apply the difference to the boundOfs.
+        int tileWidth = this.gridSubset.getTileWidth();
+        int tileHeight = this.gridSubset.getTileHeight();
+        
+        canvOfs[0]=naiveOfs[0];
+        canvOfs[1]=naiveOfs[1];
+        
+        canvOfs[2] = (canvasSize[0]-canvOfs[0])%tileWidth; // Find nearby tile boundary
+        canvOfs[2] = (Integer.signum(naiveOfs[2])*tileWidth+canvOfs[2])%tileWidth; // Ensure same sign as naive calculation 
+        canvOfs[2] = canvOfs[2]-(naiveOfs[2]%tileWidth)+naiveOfs[2]; // Find adjustment from naive and apply to naive calculation
+        canvOfs[3] = (canvasSize[1]-canvOfs[1])%tileHeight; // Find nearby tile boundary
+        canvOfs[3] = (Integer.signum(naiveOfs[3])*tileHeight+canvOfs[3])%tileHeight; // Ensure same sign as naive calculation 
+        canvOfs[3] = canvOfs[3]-(naiveOfs[3]%tileHeight)+naiveOfs[3]; // Find adjustment from naive and apply to naive calculation
+        
+        //postconditions
+        assert Math.abs(canvOfs[0]-naiveOfs[0])<=1;
+        assert Math.abs(canvOfs[1]-naiveOfs[1])<=1;
+        assert Math.abs(canvOfs[2]-naiveOfs[2])<=1;
+        assert Math.abs(canvOfs[3]-naiveOfs[3])<=1;
+        
         if (log.isDebugEnabled()) {
             log.debug("intersection rectangle: " + Arrays.toString(srcRectangle));
             log.debug("intersection bounds: " + srcBounds + " (" + reqBounds + ")");

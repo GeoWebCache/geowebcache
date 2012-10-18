@@ -78,7 +78,7 @@ public class WMSTileFuserTest extends TestCase {
         tileFuser.determineCanvasLayout();
         
         assertTrue(tileFuser.srcBounds.contains(bounds));
-        int[] comparison = {-228, -193, -57, -6}; 
+        int[] comparison = {-228, -193, -56, -6}; 
         assertTrue(Arrays.equals(tileFuser.canvOfs,comparison));
     }
     
