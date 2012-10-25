@@ -458,4 +458,18 @@ public class ServletUtils {
             return req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
         }
     }
+    
+    /**
+     * Generate the context path of the request, less the specified trailing path
+     * @param req
+     * @param trailingPath
+     */
+    public static String getServletContextPath(HttpServletRequest req, String trailingPath) {
+        String reqUrl = req.getRequestURL().toString();
+        String servletBase = ServletUtils.getServletBaseURL(req);
+        int prefixIdx = servletBase.length();
+        int suffixIdx = reqUrl.indexOf(trailingPath);
+        String context = reqUrl.substring(prefixIdx, suffixIdx);
+        return context;
+    }
 }
