@@ -27,6 +27,7 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.util.NullURLMangler;
 
 public class WMSServiceTest extends TestCase {
 
@@ -69,7 +70,7 @@ public class WMSServiceTest extends TestCase {
     private void testMultipleCrsMatchingGridSubsets(final String srs, final String expectedGridset,
             long[] tileIndex) throws Exception {
 
-        service = new WMSService(sb, tld, mock(RuntimeStats.class));
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler());
 
         @SuppressWarnings("unchecked")
         Map<String, String> kvp = new CaseInsensitiveMap();
