@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
@@ -47,9 +48,12 @@ import org.geowebcache.service.ServiceException;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
+import org.geowebcache.util.URLMangler;
 
 public class WMSService extends Service {
     public static final String SERVICE_WMS = "wms";
+    
+    static final String SERVICE_PATH = "/"+GeoWebCacheDispatcher.TYPE_SERVICE+"/"+SERVICE_WMS;
 
     private static Log log = LogFactory.getLog(org.geowebcache.service.wms.WMSService.class);
 
@@ -67,6 +71,8 @@ public class WMSService extends Service {
     private TileLayerDispatcher tld;
 
     private RuntimeStats stats;
+    
+    private URLMangler urlMangler;
 
     /**
      * Protected no-argument constructor to allow run-time instrumentation
@@ -75,12 +81,14 @@ public class WMSService extends Service {
         super(SERVICE_WMS);
     }
 
-    public WMSService(StorageBroker sb, TileLayerDispatcher tld, RuntimeStats stats) {
+    public WMSService(StorageBroker sb, TileLayerDispatcher tld, RuntimeStats stats,
+            URLMangler urlMangler) {
         super(SERVICE_WMS);
 
         this.sb = sb;
         this.tld = tld;
         this.stats = stats;
+        this.urlMangler = urlMangler;
     }
 
     @Override
@@ -223,10 +231,13 @@ public class WMSService extends Service {
     public void handleRequest(Conveyor conv) throws GeoWebCacheException {
 
         ConveyorTile tile = (ConveyorTile) conv;
+        
+        String servletBase = ServletUtils.getServletBaseURL(conv.servletReq);
+        String context = ServletUtils.getServletContextPath(conv.servletReq, SERVICE_PATH);
 
         if (tile.getHint() != null) {
             if (tile.getHint().equalsIgnoreCase("getcapabilities")) {
-                WMSGetCapabilities wmsCap = new WMSGetCapabilities(tld, tile.servletReq);
+                WMSGetCapabilities wmsCap = new WMSGetCapabilities(tld, tile.servletReq, servletBase, context, urlMangler);
                 wmsCap.writeResponse(tile.servletResp);
             } else if (tile.getHint().equalsIgnoreCase("getmap")) {
                 WMSTileFuser wmsFuser = new WMSTileFuser(tld, sb, tile.servletReq);
