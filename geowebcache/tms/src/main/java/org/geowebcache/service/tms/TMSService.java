@@ -138,11 +138,8 @@ public class TMSService extends Service {
         
         int paramsLength = params.length;
         
-        String reqUrl = conv.servletReq.getRequestURL().toString();
         String servletBase = ServletUtils.getServletBaseURL(conv.servletReq);
-        int prefixIdx = servletBase.length();
-        int suffixIdx = reqUrl.indexOf("/service/tms/1.0.0");
-        String context = reqUrl.substring(prefixIdx, suffixIdx);
+        String context = ServletUtils.getServletContextPath(conv.servletReq, "/service/tms/1.0.0");
         
         TMSDocumentFactory tdf = new TMSDocumentFactory(tld, gsb, servletBase, context, urlMangler);
         
