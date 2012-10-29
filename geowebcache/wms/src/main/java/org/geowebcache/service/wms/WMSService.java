@@ -73,6 +73,8 @@ public class WMSService extends Service {
     private RuntimeStats stats;
     
     private URLMangler urlMangler;
+    
+    private GeoWebCacheDispatcher controller;
 
     /**
      * Protected no-argument constructor to allow run-time instrumentation
@@ -82,13 +84,14 @@ public class WMSService extends Service {
     }
 
     public WMSService(StorageBroker sb, TileLayerDispatcher tld, RuntimeStats stats,
-            URLMangler urlMangler) {
+            URLMangler urlMangler, GeoWebCacheDispatcher controller) {
         super(SERVICE_WMS);
 
         this.sb = sb;
         this.tld = tld;
         this.stats = stats;
         this.urlMangler = urlMangler;
+        this.controller = controller;
     }
 
     @Override
@@ -232,8 +235,8 @@ public class WMSService extends Service {
 
         ConveyorTile tile = (ConveyorTile) conv;
         
-        String servletBase = ServletUtils.getServletBaseURL(conv.servletReq);
-        String context = ServletUtils.getServletContextPath(conv.servletReq, SERVICE_PATH);
+        String servletBase = ServletUtils.getServletBaseURL(conv.servletReq, controller.getServletPrefix());
+        String context = ServletUtils.getServletContextPath(conv.servletReq, SERVICE_PATH, controller.getServletPrefix());
 
         if (tile.getHint() != null) {
             if (tile.getHint().equalsIgnoreCase("getcapabilities")) {

@@ -59,6 +59,8 @@ public class WMTSService extends Service {
     private RuntimeStats stats;
     
     private URLMangler urlMangler;
+    
+    private GeoWebCacheDispatcher controller;
 
     /**
      * Protected no-argument constructor to allow run-time instrumentation
@@ -68,7 +70,7 @@ public class WMTSService extends Service {
     }
     
     public WMTSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
-            RuntimeStats stats, URLMangler urlMangler) {
+            RuntimeStats stats, URLMangler urlMangler, GeoWebCacheDispatcher controller) {
         super(SERVICE_WMTS);
 
         this.sb = sb;
@@ -76,6 +78,7 @@ public class WMTSService extends Service {
         this.gsb = gsb;
         this.stats = stats;
         this.urlMangler = urlMangler;
+        this.controller = controller;
     }
 
     @Override
@@ -246,8 +249,8 @@ public class WMTSService extends Service {
     public void handleRequest(Conveyor conv) throws OWSException {
 
         ConveyorTile tile = (ConveyorTile) conv;
-        String servletBase = ServletUtils.getServletBaseURL(conv.servletReq);
-        String context = ServletUtils.getServletContextPath(conv.servletReq, SERVICE_PATH);
+        String servletBase = ServletUtils.getServletBaseURL(conv.servletReq, controller.getServletPrefix());
+        String context = ServletUtils.getServletContextPath(conv.servletReq, SERVICE_PATH, controller.getServletPrefix());
 
         if (tile.getHint() != null) {
             if (tile.getHint().equals("getcapabilities")) {
