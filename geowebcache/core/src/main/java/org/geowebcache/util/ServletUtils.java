@@ -451,11 +451,20 @@ public class ServletUtils {
      * @param req servlet request
      * @return Base url of request, minus the context path
      */
-    public static String getServletBaseURL(HttpServletRequest req) {
+    public static String getServletBaseURL(HttpServletRequest req, String servletPrefix) {
+        String result;
         if (req.getServerPort() == 80 || req.getServerPort() == 443) {
-            return req.getScheme() + "://" + req.getServerName();
+            result = req.getScheme() + "://" + req.getServerName();
         } else {
-            return req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
+            result = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
+        }
+        if(servletPrefix==null){
+            return result;
+        } else {
+            // If the servlet is embeded within another, include the context path of the parent 
+            // servlet in the base.
+            String reqUrl = req.getContextPath();
+            return result+reqUrl;
         }
     }
     
@@ -464,9 +473,9 @@ public class ServletUtils {
      * @param req
      * @param trailingPath
      */
-    public static String getServletContextPath(HttpServletRequest req, String trailingPath) {
+    public static String getServletContextPath(HttpServletRequest req, String trailingPath, String servletPrefix) {
         String reqUrl = req.getRequestURL().toString();
-        String servletBase = ServletUtils.getServletBaseURL(req);
+        String servletBase = ServletUtils.getServletBaseURL(req, servletPrefix);
         int prefixIdx = servletBase.length();
         int suffixIdx = reqUrl.indexOf(trailingPath);
         String context = reqUrl.substring(prefixIdx, suffixIdx);

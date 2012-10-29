@@ -21,6 +21,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
@@ -51,6 +52,8 @@ public class TMSService extends Service {
     private RuntimeStats stats;
 
     private URLMangler urlMangler;
+    
+    private GeoWebCacheDispatcher controller;
 
     /**
      * Protected no-argument constructor to allow run-time instrumentation
@@ -60,13 +63,14 @@ public class TMSService extends Service {
     }
 
     public TMSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
-            RuntimeStats stats, URLMangler urlMangler) {
+            RuntimeStats stats, URLMangler urlMangler, GeoWebCacheDispatcher controller) {
         super(SERVICE_TMS);
         this.sb = sb;
         this.tld = tld;
         this.gsb = gsb;
         this.stats = stats;
         this.urlMangler = urlMangler;
+        this.controller = controller;
     }
     
     @Override
@@ -138,8 +142,8 @@ public class TMSService extends Service {
         
         int paramsLength = params.length;
         
-        String servletBase = ServletUtils.getServletBaseURL(conv.servletReq);
-        String context = ServletUtils.getServletContextPath(conv.servletReq, "/service/tms/1.0.0");
+        String servletBase = ServletUtils.getServletBaseURL(conv.servletReq, controller.getServletPrefix());
+        String context = ServletUtils.getServletContextPath(conv.servletReq, "/service/tms/1.0.0", controller.getServletPrefix());
         
         TMSDocumentFactory tdf = new TMSDocumentFactory(tld, gsb, servletBase, context, urlMangler);
         
