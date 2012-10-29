@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
@@ -73,10 +74,16 @@ public class TileLayerRestlet extends GWCRestlet {
     private TileLayerDispatcher layerDispatcher;
 
     private URLMangler urlMangler;
+    
+    private GeoWebCacheDispatcher controller;
 
     // set by spring
     public void setUrlMangler(URLMangler urlMangler) {
         this.urlMangler = urlMangler;
+    }
+    // set by spring
+    public void setController(GeoWebCacheDispatcher controller) {
+        this.controller = controller;
     }
 
     @Override
@@ -130,8 +137,17 @@ public class TileLayerRestlet extends GWCRestlet {
         if (layerName == null) {
             String restRoot = req.getRootRef().toString();
             String contextPath = req.getRootRef().getPath();
+            String servletPrefix=controller.getServletPrefix();
+            String parentPath="";
+            int spIndex = 0;
+            if(servletPrefix!=null){
+                spIndex = contextPath.indexOf(servletPrefix);
+                parentPath = contextPath.substring(0, spIndex);
+            }
+            contextPath = contextPath.substring(spIndex, contextPath.length());
             String baseURL = restRoot.substring(0, restRoot.length() - contextPath.length());
             String prefix = req.getResourceRef().getParentRef().getPath();
+            prefix = prefix.substring(parentPath.length(), prefix.length());
             representation = listLayers(formatExtension, baseURL, prefix);
         } else {
             try {
