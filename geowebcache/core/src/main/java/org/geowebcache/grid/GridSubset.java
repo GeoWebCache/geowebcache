@@ -379,16 +379,28 @@ public class GridSubset {
      * @return
      */
     // TODO: this is specific to WMTS, move it somewhere on the wmts module
+    // TODO: Does this need to be public?
     public long[][] getWMTSCoverages() {
         long[][] ret = new long[gridCoverageLevels.size()][4];
 
         final int zoomStop = getZoomStop();
         for (int i = getZoomStart(); i <= zoomStop; i++) {
-            Grid grid = gridSet.getGridLevels()[i];
+            Grid grid = gridSet.getGrid(i);
             long[] coverage = getCoverage(i);
 
-            long[] cur = { coverage[0], grid.getNumTilesHigh() - coverage[3], coverage[2],
-                    grid.getNumTilesHigh() - coverage[1] };
+            /*
+             * Both internal and WMTS coordinates start at 0 and run to 1 less than the number of
+             * tiles.  In internal coordinates, row 0 is the bottommost, and in WMTS it's the
+             * topmost.  So subtract the row number from 1 less than the height to convert.
+             */
+            long bottomRow = grid.getNumTilesHigh()-1; // The WMST row number for the bottom row
+            
+            long[] cur = { 
+                    coverage[0],             // minX
+                    bottomRow - coverage[3], // minY
+                    coverage[2],             // maxX
+                    bottomRow - coverage[1]  // maxY
+                };
 
             ret[i] = cur;
         }
