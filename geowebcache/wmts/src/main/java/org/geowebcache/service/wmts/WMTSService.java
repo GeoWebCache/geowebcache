@@ -37,6 +37,7 @@ import org.geowebcache.service.OWSException;
 import org.geowebcache.service.Service;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
 
@@ -58,15 +59,25 @@ public class WMTSService extends Service {
 
     private RuntimeStats stats;
     
-    private URLMangler urlMangler;
+    private URLMangler urlMangler = new NullURLMangler();
     
-    private GeoWebCacheDispatcher controller;
+    private GeoWebCacheDispatcher controller = null;
 
     /**
      * Protected no-argument constructor to allow run-time instrumentation
      */
     protected WMTSService(){
         super(SERVICE_WMTS);
+    }
+    
+    public WMTSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
+            RuntimeStats stats) {
+        super(SERVICE_WMTS);
+
+        this.sb = sb;
+        this.tld = tld;
+        this.gsb = gsb;
+        this.stats = stats;
     }
     
     public WMTSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
@@ -249,8 +260,12 @@ public class WMTSService extends Service {
     public void handleRequest(Conveyor conv) throws OWSException {
 
         ConveyorTile tile = (ConveyorTile) conv;
-        String servletBase = ServletUtils.getServletBaseURL(conv.servletReq, controller.getServletPrefix());
-        String context = ServletUtils.getServletContextPath(conv.servletReq, SERVICE_PATH, controller.getServletPrefix());
+        
+        String servletPrefix=null;
+        if (controller!=null) servletPrefix=controller.getServletPrefix();
+        
+        String servletBase = ServletUtils.getServletBaseURL(conv.servletReq, servletPrefix);
+        String context = ServletUtils.getServletContextPath(conv.servletReq, SERVICE_PATH, servletPrefix);
 
         if (tile.getHint() != null) {
             if (tile.getHint().equals("getcapabilities")) {
