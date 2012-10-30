@@ -43,6 +43,7 @@ import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.util.ServletUtils;
+import org.geowebcache.util.URLMangler;
 
 public class WMTSGetCapabilities {
     
@@ -54,20 +55,20 @@ public class WMTSGetCapabilities {
     
     private String baseUrl;
     
-    protected WMTSGetCapabilities(TileLayerDispatcher tld, GridSetBroker gsb, HttpServletRequest servReq) {
+    protected WMTSGetCapabilities(TileLayerDispatcher tld, GridSetBroker gsb, HttpServletRequest servReq, String baseUrl,
+            String contextPath, URLMangler urlMangler) {
         this.tld = tld;
         this.gsb = gsb;
-        
-        baseUrl = ServletUtils.stringFromMap(servReq.getParameterMap(), servReq.getCharacterEncoding(), "base_url");
-        
-        // This should prevent anyone from passing in anything nasty
-        if(baseUrl != null) {
-            baseUrl = encodeXmlChars(baseUrl);
+
+        String forcedBaseUrl = ServletUtils.stringFromMap(servReq.getParameterMap(), servReq.getCharacterEncoding(), "base_url");
+
+        if(forcedBaseUrl!=null) {
+            // This should prevent anyone from passing in anything nasty
+            this.baseUrl = encodeXmlChars(forcedBaseUrl);
+        } else {
+            this.baseUrl = urlMangler.buildURL(baseUrl, contextPath, WMTSService.SERVICE_PATH);
         }
         
-        if(baseUrl == null || baseUrl.length() == 0) {
-            baseUrl = servReq.getRequestURL().toString();
-        }
     }
     
     protected void writeResponse(HttpServletResponse response, RuntimeStats stats) {

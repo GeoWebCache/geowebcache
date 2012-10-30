@@ -21,6 +21,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
@@ -36,6 +37,7 @@ import org.geowebcache.service.ServiceException;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
+import org.geowebcache.util.URLMangler;
 
 public class TMSService extends Service {
 
@@ -47,10 +49,12 @@ public class TMSService extends Service {
     
     private GridSetBroker gsb;
     
-    private String baseUrl;
-    
     private RuntimeStats stats;
+
+    private URLMangler urlMangler;
     
+    private GeoWebCacheDispatcher controller;
+
     /**
      * Protected no-argument constructor to allow run-time instrumentation
      */
@@ -58,18 +62,17 @@ public class TMSService extends Service {
         super(SERVICE_TMS);
     }
 
-    public TMSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb, RuntimeStats stats) {
+    public TMSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
+            RuntimeStats stats, URLMangler urlMangler, GeoWebCacheDispatcher controller) {
         super(SERVICE_TMS);
         this.sb = sb;
         this.tld = tld;
         this.gsb = gsb;
         this.stats = stats;
+        this.urlMangler = urlMangler;
+        this.controller = controller;
     }
     
-    public void setBaseURL(String baseUrl) {
-        this.baseUrl = baseUrl;
-    }
-
     @Override
     public ConveyorTile getConveyor(HttpServletRequest request,
             HttpServletResponse response) throws GeoWebCacheException {
@@ -139,15 +142,10 @@ public class TMSService extends Service {
         
         int paramsLength = params.length;
         
-        String base = this.baseUrl;
+        String servletBase = ServletUtils.getServletBaseURL(conv.servletReq, controller.getServletPrefix());
+        String context = ServletUtils.getServletContextPath(conv.servletReq, "/service/tms/1.0.0", controller.getServletPrefix());
         
-        if(base == null) {
-            String reqUrl = conv.servletReq.getRequestURL().toString();
-            int idx = reqUrl.indexOf("/service/tms/1.0.0");
-            base = reqUrl.substring(0, idx);
-        }
-        
-        TMSDocumentFactory tdf = new TMSDocumentFactory(tld,gsb, base);
+        TMSDocumentFactory tdf = new TMSDocumentFactory(tld, gsb, servletBase, context, urlMangler);
         
         String ret = null;
         
@@ -181,8 +179,6 @@ public class TMSService extends Service {
         } catch (IOException e) {
             // TODO log error
         }
-        
-        
     }
-
+    
 }
