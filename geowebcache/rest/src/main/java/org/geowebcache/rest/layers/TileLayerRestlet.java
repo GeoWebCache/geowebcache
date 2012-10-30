@@ -36,6 +36,7 @@ import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.rest.XstreamRepresentation;
 import org.geowebcache.service.HttpErrorCodeException;
+import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
 import org.json.JSONException;
@@ -73,9 +74,9 @@ public class TileLayerRestlet extends GWCRestlet {
 
     private TileLayerDispatcher layerDispatcher;
 
-    private URLMangler urlMangler;
+    private URLMangler urlMangler = new NullURLMangler();
     
-    private GeoWebCacheDispatcher controller;
+    private GeoWebCacheDispatcher controller = null;
 
     // set by spring
     public void setUrlMangler(URLMangler urlMangler) {
@@ -137,7 +138,10 @@ public class TileLayerRestlet extends GWCRestlet {
         if (layerName == null) {
             String restRoot = req.getRootRef().toString();
             String contextPath = req.getRootRef().getPath();
-            String servletPrefix=controller.getServletPrefix();
+            
+            String servletPrefix = null;
+            if (controller!=null) servletPrefix=controller.getServletPrefix();
+            
             String parentPath="";
             int spIndex = 0;
             if(servletPrefix!=null){

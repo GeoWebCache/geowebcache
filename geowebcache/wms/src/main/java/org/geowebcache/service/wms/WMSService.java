@@ -47,6 +47,7 @@ import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
 
@@ -72,9 +73,10 @@ public class WMSService extends Service {
 
     private RuntimeStats stats;
     
-    private URLMangler urlMangler;
+    private URLMangler urlMangler = new NullURLMangler();
     
-    private GeoWebCacheDispatcher controller;
+    private GeoWebCacheDispatcher controller = null;
+    
 
     /**
      * Protected no-argument constructor to allow run-time instrumentation
@@ -83,8 +85,15 @@ public class WMSService extends Service {
         super(SERVICE_WMS);
     }
 
-    public WMSService(StorageBroker sb, TileLayerDispatcher tld, RuntimeStats stats,
-            URLMangler urlMangler, GeoWebCacheDispatcher controller) {
+    public WMSService(StorageBroker sb, TileLayerDispatcher tld, RuntimeStats stats) {
+        super(SERVICE_WMS);
+
+        this.sb = sb;
+        this.tld = tld;
+        this.stats = stats;
+    }
+    
+    public WMSService(StorageBroker sb, TileLayerDispatcher tld, RuntimeStats stats, URLMangler urlMangler, GeoWebCacheDispatcher controller) {
         super(SERVICE_WMS);
 
         this.sb = sb;
@@ -235,8 +244,11 @@ public class WMSService extends Service {
 
         ConveyorTile tile = (ConveyorTile) conv;
         
-        String servletBase = ServletUtils.getServletBaseURL(conv.servletReq, controller.getServletPrefix());
-        String context = ServletUtils.getServletContextPath(conv.servletReq, SERVICE_PATH, controller.getServletPrefix());
+        String servletPrefix=null;
+        if (controller!=null) servletPrefix=controller.getServletPrefix();
+        
+        String servletBase = ServletUtils.getServletBaseURL(conv.servletReq, servletPrefix);
+        String context = ServletUtils.getServletContextPath(conv.servletReq, SERVICE_PATH, servletPrefix);
 
         if (tile.getHint() != null) {
             if (tile.getHint().equalsIgnoreCase("getcapabilities")) {
