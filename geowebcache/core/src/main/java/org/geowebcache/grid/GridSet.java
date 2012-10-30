@@ -121,6 +121,11 @@ public class GridSet {
         return tileBounds;
     }
 
+    /**
+     * Finds the spatial bounding box of a rectangular group of tiles.
+     * @param rectangleExtent the rectangle of tiles.  {minx, miny, maxx, maxy} in tile coordinates
+     * @return the spatial bounding box in the coordinates of the SRS used by the GridSet
+     */
     protected BoundingBox boundsFromRectangle(long[] rectangleExtent) {
         Grid grid = getGridLevels()[(int) rectangleExtent[4]];
 
@@ -229,6 +234,12 @@ public class GridSet {
         return closestRectangle(bestLevel, rectangleBounds);
     }
 
+    /**
+     * Find the rectangle of tiles that most closely covers the given rectangle
+     * @param level integer zoom level to consider tiles at 
+     * @param rectangeBounds rectangle to match
+     * @return Array of long, the rectangle of tiles in tile coordinates: {minx, miny, maxx, maxy, level} 
+     */
     protected long[] closestRectangle(int level, BoundingBox rectangeBounds) {
         Grid grid = getGridLevels()[level];
 
