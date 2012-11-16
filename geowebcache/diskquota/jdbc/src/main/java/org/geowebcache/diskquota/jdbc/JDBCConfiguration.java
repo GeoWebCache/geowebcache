@@ -70,7 +70,7 @@ public class JDBCConfiguration {
         }
         
         ConnectionPoolConfiguration cp = conf.getConnectionPool();
-        if(conf.getJNDISource() == null && cp == null) {
+        if(conf.getJNDISource() == null && cp == null && !"H2".equals(conf.getDialect())) {
             throw new ConfigurationException("No data source provided, either configure JNDISource or connectionPool");
         }
         
