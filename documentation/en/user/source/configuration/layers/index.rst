@@ -18,6 +18,7 @@ This section will describe how to manually configure layers in GeoWebCache, as w
    staticcaps
    georss
    expiretiles
+   gridsets
    selectivezoom
    examples
    
