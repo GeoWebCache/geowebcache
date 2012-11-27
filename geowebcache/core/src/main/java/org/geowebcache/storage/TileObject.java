@@ -25,8 +25,8 @@ import org.geowebcache.io.Resource;
 
 /**
  * Represents a specific tile in a {@link GridSet}, identified by xyz. Normally the contents can be
- * either an image or a regionated KML tile, the class is format agnostic and just holds an array of
- * bytes.
+ * either an image or a regionated KML tile, the class is format agnostic and carries a {@link Resource}
+ * object with the data.
  */
 public class TileObject extends StorageObject {
     public static final String TYPE = "tile";

@@ -169,6 +169,7 @@ public abstract class TileLayer {
 
     /**
      * 
+     * 
      * @param tile
      * @param tryCache
      * @throws GeoWebCacheException
@@ -202,6 +203,7 @@ public abstract class TileLayer {
     public abstract String getStyles();
 
     /**
+     * The size of a metatile in tiles.
      * 
      * @return the {x,y} metatiling factors
      */

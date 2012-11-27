@@ -20,16 +20,29 @@ public class ByteArrayResource implements Resource {
 
     private long lastModified = System.currentTimeMillis();
 
+    /**
+     * Create a new empty ByteArrayResource
+     */
     public ByteArrayResource() {
         this(null);
     }
 
+    /**
+     * Create a new ByteArrayResource from the given byte array.
+     * @param data The array of bytes.  It will be retained by the Resource for storage.
+     */
     public ByteArrayResource(byte[] data) {
         this.data = data;
         this.offset = 0;
         this.length = data == null ? 0 : data.length;
     }
 
+    /**
+     * Create a new ByteArrayResource from the given byte array.
+     * @param data the array of bytes.  It will be retained by the Resource for storage.
+     * @param offset the beginning of the portion of the array to use as content
+     * @param length the length of the portion of the array to use as content
+     */
     public ByteArrayResource(byte[] data, int offset, int length) {
         this.data = data;
         if (data == null) {
@@ -45,6 +58,9 @@ public class ByteArrayResource implements Resource {
         }
     }
 
+    /**
+     * Create a new empty ByteArrayResource with a particular initial capacity.
+     */
     public ByteArrayResource(final int initialCapacity) {
         this(new byte[initialCapacity], 0, 0);
     }
@@ -124,6 +140,10 @@ public class ByteArrayResource implements Resource {
         return new SeekableInputStream(this);
     }
 
+    /**
+     * Get the contents of the resource.
+     * @return
+     */
     public byte[] getContents() {
         if (data == null || length == 0) {
             return null;
@@ -136,16 +156,22 @@ public class ByteArrayResource implements Resource {
         return buff;
     }
 
+    /**
+     * Discard the contents.
+     */
     public void truncate() {
         offset = 0;
         length = 0;
     }
 
+    /**
+     * @see org.geowebcache.io.Resource#getOutputStream()
+     */
     public OutputStream getOutputStream() throws IOException {
         return new SeekableOutputStream(this);
     }
 
-    public void expand() {
+    private void expand() {
         if (data == null) {
             data = new byte[4096];
             length = 0;

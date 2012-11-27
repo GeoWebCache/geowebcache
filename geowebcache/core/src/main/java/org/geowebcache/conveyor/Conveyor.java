@@ -6,7 +6,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
 
+/**
+ * Represents a request against a tile service and carries the information needed to complete it.
+ */
 public abstract class Conveyor {
+
+    /**
+     * Should the request represented by this conveyor be handled by the service or the layer
+     */
     public static enum RequestHandler {
         LAYER, SERVICE
     };

@@ -42,7 +42,11 @@ public class MimeType {
         this.supportsTiling = supportsTiling;
     }
     
-    // The string representing the MIME type
+    
+    /**
+     * The MIME identifier string for this format.
+     * @return
+     */
     public String getMimeType() {
         return mimeType;
     }
@@ -59,7 +63,10 @@ public class MimeType {
         return mimeType;
     }
 
-    // Used for saving to files etc
+    /**
+     * The conventional file extension most commonly used with this format.
+     * @return
+     */
     public String getFileExtension() {
         return fileExtension;
     }
@@ -69,6 +76,13 @@ public class MimeType {
         return internalName;
     }
     
+    /**
+     * The format allows for being broken into smaller pieces or being combined into larger ones.
+     * 
+     * In practice this means it must be a lossless raster image.
+     * 
+     * @return true if the format can be tiles, false otherwise.
+     */
     public boolean supportsTiling() {
         return supportsTiling;
     }

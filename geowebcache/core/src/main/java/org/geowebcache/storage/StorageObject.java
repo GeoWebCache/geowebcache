@@ -55,6 +55,9 @@ public abstract class StorageObject {
         return blob_format;
     }
     
+    /**
+     * The time that the stored resource was created/modified
+     */
     public long getCreated() {
         return created;
     }
@@ -63,6 +66,9 @@ public abstract class StorageObject {
         return status;
     }
     
+    /**
+     * The time that the stored resource was created/modified
+     */
     public void setCreated(long created) {
         this.created = created;
     }

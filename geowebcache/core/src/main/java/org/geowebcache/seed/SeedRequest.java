@@ -25,6 +25,9 @@ import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.seed.GWCTask.TYPE;
 
+/**
+ * Stores the information for a Seed Request.
+ */
 public class SeedRequest {
     private static Log log = LogFactory.getLog(org.geowebcache.seed.SeedRequest.class);
 
@@ -44,7 +47,7 @@ public class SeedRequest {
 
     private String format = null;
 
-    private String type = null;
+    private String type = null; //  TODO: This appears to do nothing as it is never changed from being null
 
     private TYPE enumType = null;
 
@@ -54,31 +57,33 @@ public class SeedRequest {
 
     public SeedRequest() {
         // do nothing, i guess
-        System.out.println("New SeedRequest");
+        System.out.println("New Empty SeedRequest");
     }
 
     /**
+     * Create a new SeedRequest
+     * 
      * Used by SeedPageResource
      * 
-     * @param name
-     * @param bounds
-     * @param srs
-     * @param threadCount
-     * @param zoomStart
-     * @param zoomStop
-     * @param format
-     * @param type
+     * @param layerName name of the tile layer
+     * @param bounds bounds for the requested region
+     * @param gridSetId the grid set id for this request
+     * @param threadCount the number of threads that should be used for this seed request
+     * @param zoomStart the zoom start level for this seed request
+     * @param zoomStop the zoom stop level for this seed request
+     * @param mimeFormat the MIME format requested
+     * @param type 
      */
-    public SeedRequest(String name, BoundingBox bounds, String gridSetId, int threadCount,
-            int zoomStart, int zoomStop, String format, GWCTask.TYPE type,
+    public SeedRequest(String layerName, BoundingBox bounds, String gridSetId, int threadCount,
+            int zoomStart, int zoomStop, String mimeFormat, GWCTask.TYPE type,
             Map<String, String> parameters) {
-        this.name = name;
+        this.name = layerName;
         this.bounds = bounds;
         this.gridSetId = gridSetId;
         this.threadCount = threadCount;
         this.zoomStart = zoomStart;
         this.zoomStop = zoomStop;
-        this.format = format;
+        this.format = mimeFormat;
         this.enumType = type;
         this.parameters = parameters;
     }
@@ -124,7 +129,7 @@ public class SeedRequest {
     }
 
     /**
-     * Method returns the format requested
+     * Method returns the MIME format requested
      * 
      * @return the format in String form
      */
