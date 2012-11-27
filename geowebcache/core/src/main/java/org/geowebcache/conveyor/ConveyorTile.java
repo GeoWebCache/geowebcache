@@ -39,6 +39,9 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 
+/**
+ * Represents a request for a tile and carries the information needed to complete it.
+ */
 public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     private static Log log = LogFactory.getLog(org.geowebcache.conveyor.ConveyorTile.class);
 
@@ -54,7 +57,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
 
     TileObject stObj = null;
 
-    private Map<String, String> fullParameters;
+    private Map<String, String> fullParameters; // TODO: why is this "full"?  It seems to only relate to filtering
 
     private boolean isMetaTileCacheOnly;
 
@@ -122,6 +125,10 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         return tileLayer;
     }
 
+    /**
+     * The time that the stored tile resource was created
+     * @return
+     */
     public long getTSCreated() {
         return stObj.getCreated();
     }

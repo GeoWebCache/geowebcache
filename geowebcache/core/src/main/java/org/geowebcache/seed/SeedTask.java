@@ -34,6 +34,10 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
 
+/**
+ * A GWCTask for seeding/reseeding the cache.
+ *
+ */
 class SeedTask extends GWCTask {
     private static Log log = LogFactory.getLog(org.geowebcache.seed.SeedTask.class);
 
@@ -56,10 +60,12 @@ class SeedTask extends GWCTask {
     private AtomicLong sharedFailureCounter;
 
     /**
-     * Constructs a SeedTask from a SeedRequest
-     * 
-     * @param req
-     *            - the SeedRequest
+     * Constructs a SeedTask
+     * @param sb
+     * @param trIter
+     * @param tl
+     * @param reseed
+     * @param doFilterUpdate
      */
     public SeedTask(StorageBroker sb, TileRangeIterator trIter, TileLayer tl, boolean reseed,
             boolean doFilterUpdate) {
@@ -84,6 +90,7 @@ class SeedTask extends GWCTask {
         super.state = GWCTask.STATE.READY;
     }
 
+    // TODO: refactoring this into smaller functions might improve readability
     @Override
     protected void doActionInternal() throws GeoWebCacheException, InterruptedException {
         super.state = GWCTask.STATE.RUNNING;
@@ -201,9 +208,7 @@ class SeedTask extends GWCTask {
     /**
      * helper for counting the number of tiles
      * 
-     * @param layer
-     * @param level
-     * @param gridBounds
+     * @param tr
      * @return -1 if too many
      */
     private long tileCount(TileRange tr) {
@@ -234,7 +239,7 @@ class SeedTask extends GWCTask {
     }
 
     /**
-     * Helper method to report status of thread progress.
+     * Helper method to update the members tracking thread progress.
      * 
      * @param layer
      * @param zoomStart

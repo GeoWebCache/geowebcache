@@ -1,5 +1,8 @@
 package org.geowebcache.storage;
 
+/**
+ * Abstracts and manages the storing of cachable objects and their metadata.
+ */
 public interface StorageBroker {
 
     public abstract void addBlobStoreListener(BlobStoreListener listener);
@@ -28,8 +31,20 @@ public interface StorageBroker {
 
     public abstract boolean delete(TileRange trObj) throws StorageException;
 
+    /**
+     * Sets the Resource for the given TileObject from storage
+     * @param tileObj TileOpject to set the Resource of
+     * @return true if successful, false otherwise
+     * @throws StorageException
+     */
     public abstract boolean get(TileObject tileObj) throws StorageException;
 
+    /**
+     * Puts the given TileObject into storage
+     * @param tileObj
+     * @return
+     * @throws StorageException
+     */
     public abstract boolean put(TileObject tileObj) throws StorageException;
 
     /**

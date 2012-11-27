@@ -307,6 +307,9 @@ public class FileBlobStore implements BlobStore {
         return layerPath;
     }
 
+    /**
+     * Delete a particular tile
+     */
     public boolean delete(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, false);
         boolean ret = false;
@@ -335,6 +338,9 @@ public class FileBlobStore implements BlobStore {
         return ret;
     }
 
+    /**
+     * Delete tiles within a range.
+     */
     public boolean delete(TileRange trObj) throws StorageException {
         int count = 0;
 
@@ -343,9 +349,12 @@ public class FileBlobStore implements BlobStore {
 
         final File layerPath = new File(prefix);
 
+        // If it wasn't there to be deleted, 
         if (!layerPath.exists()) {
             return true;
         }
+        
+        // We either want to delete it, or stuff within it
         if (!layerPath.isDirectory() || !layerPath.canWrite()) {
             throw new StorageException(prefix + " does is not a directory or is not writable.");
         }
@@ -399,6 +408,11 @@ public class FileBlobStore implements BlobStore {
         return true;
     }
 
+    /**
+     * Set the blob property of a TileObject.
+     * @param stObj the tile to load.  Its setBlob() method will be called.
+     * @return true if successful, false otherwise
+     */
     public boolean get(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, false);
         if(!fh.exists()) {
@@ -413,6 +427,9 @@ public class FileBlobStore implements BlobStore {
         }
     }
 
+    /**
+     * Store a tile.
+     */
     public void put(TileObject stObj) throws StorageException {
         final File fh = getFileHandleTile(stObj, true);
         final long oldSize = fh.length();
@@ -509,10 +526,16 @@ public class FileBlobStore implements BlobStore {
         throw new StorageException("Not implemented yet!");
     }
 
+    /**
+     * Add an event listener
+     */
     public void addListener(BlobStoreListener listener) {
         listeners.addListener(listener);
     }
 
+    /**
+     * Remove an event listener
+     */
     public boolean removeListener(BlobStoreListener listener) {
         return listeners.removeListener(listener);
     }

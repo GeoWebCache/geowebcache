@@ -25,6 +25,9 @@ import java.io.FilenameFilter;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileRange;
 
+/**
+ * Filter for identifying files that represent tiles within a particular range
+ */
 public class FilePathFilter implements FilenameFilter {
 
     private final String gridSetPrefix;
@@ -33,6 +36,11 @@ public class FilePathFilter implements FilenameFilter {
 
     private TileRange tr;
 
+    /**
+     * Create a filter for stored tiles that are within a particular range.
+     * @param trObj the range to find
+     * @throws StorageException
+     */
     public FilePathFilter(TileRange trObj) throws StorageException {
         this.tr = trObj;
 
