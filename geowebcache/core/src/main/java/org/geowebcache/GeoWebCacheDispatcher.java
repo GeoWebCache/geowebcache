@@ -484,7 +484,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
         int httpCode = HttpServletResponse.SC_OK;
         String mimeType = tile.getMimeType().getMimeType();
         Resource blob = tile.getBlob();
-        int contentLength = (int) (blob == null ? -1 : blob.getSize());
 
         servletResp.setHeader("geowebcache-cache-result", String.valueOf(cacheResult));
         servletResp.setHeader("geowebcache-tile-index", Arrays.toString(tile.getTileIndex()));
@@ -517,9 +516,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 if (ifModSinceSeconds >= tileTimeStampSeconds) {
                     httpCode = HttpServletResponse.SC_NOT_MODIFIED;
                     blob = null;
-                    // weblogic will complain about the wrong content lenght and refuse
-                    // to serve back the response if we don't actually write what we declared
-                    contentLength = 0;
                 }
             } catch (DateParseException e) {
                 if (log.isDebugEnabled()) {
@@ -537,9 +533,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 if (ifNoneMatch.equals(hexTag)) {
                     httpCode = HttpServletResponse.SC_NOT_MODIFIED;
                     blob = null;
-                    // weblogic will complain about the wrong content lenght and refuse
-                    // to serve back the response if we don't actually write what we declared
-                    contentLength = 0;
                 }
             }
 
@@ -547,6 +540,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             servletResp.setHeader("ETag", hexTag);
         }
 
+        int contentLength = (int) (blob == null ? -1 : blob.getSize());
         writeFixedResponse(servletResp, httpCode, mimeType, blob, cacheResult, contentLength);
     }
 
