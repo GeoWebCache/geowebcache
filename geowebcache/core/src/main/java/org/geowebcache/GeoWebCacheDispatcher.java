@@ -517,6 +517,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 if (ifModSinceSeconds >= tileTimeStampSeconds) {
                     httpCode = HttpServletResponse.SC_NOT_MODIFIED;
                     blob = null;
+                    // weblogic will complain about the wrong content lenght and refuse
+                    // to serve back the response if we don't actually write what we declared
+                    contentLength = 0;
                 }
             } catch (DateParseException e) {
                 if (log.isDebugEnabled()) {
@@ -534,6 +537,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 if (ifNoneMatch.equals(hexTag)) {
                     httpCode = HttpServletResponse.SC_NOT_MODIFIED;
                     blob = null;
+                    // weblogic will complain about the wrong content lenght and refuse
+                    // to serve back the response if we don't actually write what we declared
+                    contentLength = 0;
                 }
             }
 

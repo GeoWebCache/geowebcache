@@ -24,6 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.storage.DefaultStorageFinder;
@@ -34,6 +36,8 @@ import org.geowebcache.storage.DefaultStorageFinder;
  * @author Andrea Aime - GeoSolutions
  */
 public class NIOLockProvider implements LockProvider {
+    
+    public static Log LOGGER = LogFactory.getLog(NIOLockProvider.class);
 
     private String root;
     /**
@@ -46,6 +50,8 @@ public class NIOLockProvider implements LockProvider {
     int maxLockAttempts = 120 * 1000 / waitBeforeRetry;
 
     private Map<String, Lock> locks = new ConcurrentHashMap<String, Lock>();
+    
+    MemoryLockProvider memoryProvider = new MemoryLockProvider();
 
     public NIOLockProvider(DefaultStorageFinder storageFinder) throws ConfigurationException {
         this.root = storageFinder.getDefaultPath();
@@ -56,6 +62,10 @@ public class NIOLockProvider implements LockProvider {
     }
 
     public void getLock(String lockKey) throws GeoWebCacheException {
+        // first off, synchronize among threads in the same jvm (the nio locks won't lock 
+        // threads in the same JVM)
+        memoryProvider.getLock(lockKey);
+        // then synch up between different processes
         File file = getFile(lockKey);
         try {
             FileOutputStream fos = null;
@@ -95,6 +105,10 @@ public class NIOLockProvider implements LockProvider {
 
                 // store the lock so that release can find it
                 locks.put(lockKey, new Lock(file, fos, lock));
+                
+                if(LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Lock " + lockKey + " acquired by thread " + Thread.currentThread().getId() + " on file " + file);
+                }
 
                 // nullify so that we don't close them, the locking occurred as expected
                 fos = null;
@@ -102,6 +116,7 @@ public class NIOLockProvider implements LockProvider {
             } finally {
                 if (lock != null) {
                     lock.release();
+                    memoryProvider.releaseLock(lockKey);
                 }
                 IOUtils.closeQuietly(fos);
                 file.delete();
@@ -113,21 +128,35 @@ public class NIOLockProvider implements LockProvider {
     }
 
     public void releaseLock(String lockKey) throws GeoWebCacheException {
-        Lock lock = locks.get(lockKey);
-        if (lock == null) {
-            throw new GeoWebCacheException(
-                    "Lock key used for releasing lock is unkonwn, it means this lock was never acquired, or was released twice");
-        }
         try {
-            locks.remove(lockKey);
-            lock.lock.release();
-            IOUtils.closeQuietly(lock.fos);
-            lock.file.delete();
-        } catch (IOException e) {
-            throw new GeoWebCacheException("Failure while trying to release lock for key "
-                    + lockKey, e);
+            Lock lock = locks.get(lockKey);
+            if (lock == null) {
+                // do not crap out, locks usage in GWC is only there to prevent duplication of work
+                if(LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Lock key " + lockKey + " for releasing lock is unkonwn, it means " +
+                    		"this lock was never acquired, or was released twice. " +
+                    		"Current thread is: " + Thread.currentThread().getId() + ". " +
+                             "Are you running two GWC instances in the same JVM using NIO locks? " +
+                             "This case is not supported and will generate exactly this error message");
+                    return;
+                }
+            }
+            try {
+                locks.remove(lockKey);
+                lock.lock.release();
+                IOUtils.closeQuietly(lock.fos);
+                lock.file.delete();
+                
+                if(LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Lock " + lockKey + " released by thread " + Thread.currentThread().getId());
+                }
+            } catch (IOException e) {
+                throw new GeoWebCacheException("Failure while trying to release lock for key "
+                        + lockKey, e);
+            }
+        } finally {
+            memoryProvider.releaseLock(lockKey);
         }
-
     }
 
     private File getFile(String lockKey) {
