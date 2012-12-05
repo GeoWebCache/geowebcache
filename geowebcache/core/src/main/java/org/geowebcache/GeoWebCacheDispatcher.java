@@ -484,7 +484,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
         int httpCode = HttpServletResponse.SC_OK;
         String mimeType = tile.getMimeType().getMimeType();
         Resource blob = tile.getBlob();
-        int contentLength = (int) (blob == null ? -1 : blob.getSize());
 
         servletResp.setHeader("geowebcache-cache-result", String.valueOf(cacheResult));
         servletResp.setHeader("geowebcache-tile-index", Arrays.toString(tile.getTileIndex()));
@@ -541,6 +540,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             servletResp.setHeader("ETag", hexTag);
         }
 
+        int contentLength = (int) (blob == null ? -1 : blob.getSize());
         writeFixedResponse(servletResp, httpCode, mimeType, blob, cacheResult, contentLength);
     }
 
