@@ -74,7 +74,7 @@ public class WMSGetCapabilities {
         byte[] data = generateGetCapabilities().getBytes();
 
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("application/vnd.ogc.wms_xml");
+        response.setContentType("text/xml");
         response.setCharacterEncoding("UTF-8");
         response.setContentLength(data.length);
 
@@ -89,8 +89,13 @@ public class WMSGetCapabilities {
 
     private String generateGetCapabilities() {
         StringBuilder str = new StringBuilder();
+        ServiceInformation servInfo = tld.getServiceInformation();
+        String xsltUrl = (servInfo.getXsltTemplates() != null) ? servInfo.getXsltTemplates().getWmsGetCapabilities() : null;
 
         str.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        if (xsltUrl!=null) {
+          str.append("<?xml-stylesheet type=\"text/xsl\" href=\""+xsltUrl+"\" ?>\n");
+        }
         str.append("<!DOCTYPE WMT_MS_Capabilities SYSTEM \"http://schemas.opengis.net/wms/1.1.1/capabilities_1_1_1.dtd\" ");
         if (includeVendorSpecific) {
             str.append("[\n");
