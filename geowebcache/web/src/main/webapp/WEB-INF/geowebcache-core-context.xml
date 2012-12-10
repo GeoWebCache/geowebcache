@@ -176,4 +176,6 @@
   <bean id="gwcProxyDispatcher"
 	class="org.geowebcache.proxy.ProxyDispatcher"/>
 
+  <bean id="gwcURLMangler" class="org.geowebcache.util.NullURLMangler" />
+
 </beans>
