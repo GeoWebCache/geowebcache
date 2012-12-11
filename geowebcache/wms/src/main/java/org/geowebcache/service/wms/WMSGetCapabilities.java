@@ -45,6 +45,7 @@ import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.ServletUtils;
+import org.geowebcache.util.URLMangler;
 
 public class WMSGetCapabilities {
 
@@ -56,9 +57,11 @@ public class WMSGetCapabilities {
 
     private boolean includeVendorSpecific = false;
 
-    protected WMSGetCapabilities(TileLayerDispatcher tld, HttpServletRequest servReq) {
+    protected WMSGetCapabilities(TileLayerDispatcher tld, HttpServletRequest servReq, String baseUrl,
+            String contextPath, URLMangler urlMangler) {
         this.tld = tld;
-        urlStr = servReq.getRequestURL().toString() + "?SERVICE=WMS&amp;";
+        
+        urlStr = urlMangler.buildURL(baseUrl, contextPath, WMSService.SERVICE_PATH) + "?SERVICE=WMS&amp;";
 
         String[] tiledKey = { "TILED" };
         Map<String, String> tiledValue = ServletUtils.selectedStringsFromMap(
