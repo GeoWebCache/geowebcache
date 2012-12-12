@@ -138,6 +138,13 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
         log.info("Invoked setServletPrefix(" + servletPrefix + ")");
     }
+    /**
+     * GeoServer and other solutions that embedded this dispatcher will prepend a path, this is used
+     * to remove it.
+     */
+    public String getServletPrefix() {
+        return servletPrefix;
+    }
 
     /**
      * Services convert HTTP requests into the internal grid representation and specify what layer
