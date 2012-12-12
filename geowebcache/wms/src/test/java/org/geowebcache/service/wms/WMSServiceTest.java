@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import junit.framework.TestCase;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
+import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
@@ -31,6 +32,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.mockito.ArgumentCaptor;
+import org.geowebcache.util.NullURLMangler;
 
 public class WMSServiceTest extends TestCase {
 
@@ -73,7 +75,10 @@ public class WMSServiceTest extends TestCase {
     private void testMultipleCrsMatchingGridSubsets(final String srs, final String expectedGridset,
             long[] tileIndex) throws Exception {
 
-        service = new WMSService(sb, tld, mock(RuntimeStats.class));
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
 
         @SuppressWarnings("unchecked")
         Map<String, String> kvp = new CaseInsensitiveMap();
