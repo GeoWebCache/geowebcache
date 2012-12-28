@@ -51,6 +51,10 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
     static final int DEFAULT_MAX_CONCURRENT_CLEANUPS = 2;
 
     static ExpirationPolicy DEFAULT_GLOBAL_POLICY_NAME = ExpirationPolicy.LFU;
+    
+    public static final String DEFAULT_QUOTA_STORE_KEY = "GEOWEBCACHE_DEFAULT_QUOTA_STORE";
+    
+    static final String DEFAULT_QUOTA_STORE = System.getProperty(DEFAULT_QUOTA_STORE_KEY, "bdb"); 
 
     private Boolean enabled;
 
@@ -71,7 +75,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
     private List<LayerQuota> layerQuotas;
     
     private String quotaStore;
-
+    
     public void setDefaults() {
         if (enabled == null) {
             enabled = Boolean.FALSE;
@@ -96,7 +100,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
             globalQuota = new Quota(500, StorageUnit.MiB);
         }
         if (quotaStore == null) {
-            quotaStore = "bdb";
+            quotaStore = DEFAULT_QUOTA_STORE;
         }
     }
 

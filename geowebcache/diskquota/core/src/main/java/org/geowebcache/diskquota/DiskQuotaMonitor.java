@@ -139,6 +139,14 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         this.quotaStoreProvider = quotaStoreProvider;
         this.cacheCleaner = cacheCleaner;
     }
+    
+    /**
+     * Returns the quota store monitored by this class
+     * @return
+     */
+    public QuotaStore getQuotaStore() {
+        return quotaStore;
+    }
 
     /**
      * Returns whether the DiskQuotaMonitor is enabled.
