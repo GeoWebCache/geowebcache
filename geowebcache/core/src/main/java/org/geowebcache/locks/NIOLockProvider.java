@@ -49,8 +49,6 @@ public class NIOLockProvider implements LockProvider {
      */
     int maxLockAttempts = 120 * 1000 / waitBeforeRetry;
 
-    private Map<String, Lock> locks = new ConcurrentHashMap<String, Lock>();
-    
     MemoryLockProvider memoryProvider = new MemoryLockProvider();
 
     public NIOLockProvider(DefaultStorageFinder storageFinder) throws ConfigurationException {
@@ -61,26 +59,26 @@ public class NIOLockProvider implements LockProvider {
         this.root = root;
     }
 
-    public void getLock(String lockKey) throws GeoWebCacheException {
+    public LockProvider.Lock getLock(final String lockKey) throws GeoWebCacheException {
         // first off, synchronize among threads in the same jvm (the nio locks won't lock 
         // threads in the same JVM)
-        memoryProvider.getLock(lockKey);
+        final LockProvider.Lock memoryLock = memoryProvider.getLock(lockKey);
         // then synch up between different processes
-        File file = getFile(lockKey);
+        final File file = getFile(lockKey);
         try {
-            FileOutputStream fos = null;
-            FileLock lock = null;
+            FileOutputStream currFos = null;
+            FileLock currLock = null;
             try {
                 // try to lock
                 int count = 0;
-                while(lock == null && count < maxLockAttempts) {
+                while(currLock == null && count < maxLockAttempts) {
                     // the file output stream can also fail to be acquired due to the
                     // other nodes deleting the file
-                    fos = new FileOutputStream(file);
+                    currFos = new FileOutputStream(file);
                     try {
-                        lock = fos.getChannel().lock();
+                        currLock = currFos.getChannel().lock();
                     } catch(OverlappingFileLockException e) {
-                        IOUtils.closeQuietly(fos);
+                        IOUtils.closeQuietly(currFos);
                         try {
                             Thread.sleep(20);
                         } catch (InterruptedException ie) {
@@ -88,7 +86,7 @@ public class NIOLockProvider implements LockProvider {
                         }
                     } catch(IOException e) {
                         // this one is also thrown with a message "avoided fs deadlock"
-                        IOUtils.closeQuietly(fos);
+                        IOUtils.closeQuietly(currFos);
                         try {
                             Thread.sleep(20);
                         } catch (InterruptedException ie) {
@@ -103,22 +101,64 @@ public class NIOLockProvider implements LockProvider {
                     throw new GeoWebCacheException("Failed to get a lock on key " + lockKey + " after " + count + " attempts");
                 }
 
-                // store the lock so that release can find it
-                locks.put(lockKey, new Lock(file, fos, lock));
-                
                 if(LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Lock " + lockKey + " acquired by thread " + Thread.currentThread().getId() + " on file " + file);
                 }
+                
+                // store the results in a final variable for the inner class to use
+                final FileOutputStream fos = currFos;
+                final FileLock lock = currLock;
 
                 // nullify so that we don't close them, the locking occurred as expected
-                fos = null;
-                lock = null;
+                currFos = null;
+                currLock = null;
+                
+                return new LockProvider.Lock() {
+                    
+                    boolean released;
+
+                    public void release() throws GeoWebCacheException {
+                        if(released) {
+                            return;
+                        }
+                        
+                        try {
+                            released = true;
+                            if (!lock.isValid()) {
+                                // do not crap out, locks usage in GWC is only there to prevent duplication of work
+                                if(LOGGER.isDebugEnabled()) {
+                                    LOGGER.debug("Lock key " + lockKey + " for releasing lock is unkonwn, it means " +
+                                            "this lock was never acquired, or was released twice. " +
+                                            "Current thread is: " + Thread.currentThread().getId() + ". " +
+                                             "Are you running two GWC instances in the same JVM using NIO locks? " +
+                                             "This case is not supported and will generate exactly this error message");
+                                    return;
+                                }
+                            }
+                            try {
+                                lock.release();
+                                IOUtils.closeQuietly(fos);
+                                file.delete();
+                                
+                                if(LOGGER.isDebugEnabled()) {
+                                    LOGGER.debug("Lock " + lockKey + " released by thread " + Thread.currentThread().getId());
+                                }
+                            } catch (IOException e) {
+                                throw new GeoWebCacheException("Failure while trying to release lock for key "
+                                        + lockKey, e);
+                            }
+                        } finally {
+                            memoryLock.release();
+                        }
+                        
+                    }
+                };
             } finally {
-                if (lock != null) {
-                    lock.release();
-                    memoryProvider.releaseLock(lockKey);
+                if (currLock != null) {
+                    currLock.release();
+                    memoryLock.release();
                 }
-                IOUtils.closeQuietly(fos);
+                IOUtils.closeQuietly(currFos);
                 file.delete();
             }
         } catch (IOException e) {
@@ -127,57 +167,11 @@ public class NIOLockProvider implements LockProvider {
 
     }
 
-    public void releaseLock(String lockKey) throws GeoWebCacheException {
-        try {
-            Lock lock = locks.get(lockKey);
-            if (lock == null) {
-                // do not crap out, locks usage in GWC is only there to prevent duplication of work
-                if(LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Lock key " + lockKey + " for releasing lock is unkonwn, it means " +
-                    		"this lock was never acquired, or was released twice. " +
-                    		"Current thread is: " + Thread.currentThread().getId() + ". " +
-                             "Are you running two GWC instances in the same JVM using NIO locks? " +
-                             "This case is not supported and will generate exactly this error message");
-                    return;
-                }
-            }
-            try {
-                locks.remove(lockKey);
-                lock.lock.release();
-                IOUtils.closeQuietly(lock.fos);
-                lock.file.delete();
-                
-                if(LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Lock " + lockKey + " released by thread " + Thread.currentThread().getId());
-                }
-            } catch (IOException e) {
-                throw new GeoWebCacheException("Failure while trying to release lock for key "
-                        + lockKey, e);
-            }
-        } finally {
-            memoryProvider.releaseLock(lockKey);
-        }
-    }
-
     private File getFile(String lockKey) {
         File locks = new File(root, "lockfiles");
         locks.mkdirs();
         String sha1 = DigestUtils.shaHex(lockKey);
         return new File(locks, sha1 + ".lck");
     }
-
-    static class Lock {
-        File file;
-
-        FileOutputStream fos;
-
-        FileLock lock;
-
-        public Lock(File file, FileOutputStream fos, FileLock lock) {
-            this.file = file;
-            this.fos = fos;
-            this.lock = lock;
-        }
-
-    }
+    
 }
