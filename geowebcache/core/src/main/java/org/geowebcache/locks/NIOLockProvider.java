@@ -19,8 +19,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
@@ -41,7 +39,7 @@ public class NIOLockProvider implements LockProvider {
 
     private String root;
     /**
-     * The wait to occurr in case the lock cannot be acquired
+     * The wait to occur in case the lock cannot be acquired
      */
     int waitBeforeRetry = 20; 
     /**
