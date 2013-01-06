@@ -107,6 +107,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
         this.layerQuotas = other.layerQuotas == null ? null : new ArrayList<LayerQuota>(
                 other.layerQuotas);
         this.maxConcurrentCleanUps = other.maxConcurrentCleanUps;
+        this.quotaStore = other.quotaStore;
     }
 
     public Boolean isEnabled() {
