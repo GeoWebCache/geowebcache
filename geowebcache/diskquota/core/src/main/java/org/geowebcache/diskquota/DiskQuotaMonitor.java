@@ -353,6 +353,17 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     }
 
     /**
+     * Reloads the configuration from disk
+     * @param config
+     * @throws IOException 
+     * @throws ConfigurationException 
+     */
+    public void reloadConfig() throws ConfigurationException, IOException {
+        DiskQuotaConfig config = configLoader.loadConfig();
+        this.quotaConfig.setFrom(config);
+    }
+
+    /**
      * @see #saveConfig(DiskQuotaConfig)
      */
     public void saveConfig() {
