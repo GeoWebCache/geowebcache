@@ -141,6 +141,14 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     }
     
     /**
+     * Returns the quota store provider used by this class (used in {@link #startUp()}) to
+     * get the {@link QuotaStore} instance.
+     */
+    public QuotaStoreProvider getQuotaStoreProvider() {
+        return quotaStoreProvider;
+    }
+    
+    /**
      * Returns the quota store monitored by this class
      * @return
      */

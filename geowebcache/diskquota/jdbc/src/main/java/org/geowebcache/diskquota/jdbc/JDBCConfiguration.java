@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 
 import org.apache.commons.io.IOUtils;
 import org.geowebcache.config.ConfigurationException;
@@ -31,7 +32,7 @@ import com.thoughtworks.xstream.XStream;
  * 
  * @author Andrea Aime - GeoSolutions
  */
-public class JDBCConfiguration {
+public class JDBCConfiguration implements Serializable {
 
     String dialect;
 
@@ -171,7 +172,15 @@ public class JDBCConfiguration {
                 + ", connectionPool=" + connectionPool + "]";
     }
 
-    public static class ConnectionPoolConfiguration {
+    /**
+     * The connection pool configuration, used to build a local connection pool
+     * (with DBCP or other connection pool library)
+     * 
+     * @author Andrea Aime - GeoSolutions
+     */
+    public static class ConnectionPoolConfiguration implements Serializable {
+        private static final long serialVersionUID = 6677252877141737936L;
+
         String driver;
 
         String url;

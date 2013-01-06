@@ -52,10 +52,6 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
 
     static ExpirationPolicy DEFAULT_GLOBAL_POLICY_NAME = ExpirationPolicy.LFU;
     
-    public static final String DEFAULT_QUOTA_STORE_KEY = "GEOWEBCACHE_DEFAULT_QUOTA_STORE";
-    
-    static final String DEFAULT_QUOTA_STORE = System.getProperty(DEFAULT_QUOTA_STORE_KEY, "bdb"); 
-
     private Boolean enabled;
 
     private Integer diskBlockSize;
@@ -98,9 +94,6 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
         }
         if (globalQuota == null) {
             globalQuota = new Quota(500, StorageUnit.MiB);
-        }
-        if (quotaStore == null) {
-            quotaStore = DEFAULT_QUOTA_STORE;
         }
     }
 

@@ -299,7 +299,7 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     public void deleteLayerInternal(String layerName) {
-        log.info("Deleting disk quota information for layer '" + layerName);
+        log.info("Deleting disk quota information for layer '" + layerName + "'");
         String statement = dialect.getLayerDeletionStatement(schema, "layerName");
         jt.update(statement, Collections.singletonMap("layerName", layerName));
 

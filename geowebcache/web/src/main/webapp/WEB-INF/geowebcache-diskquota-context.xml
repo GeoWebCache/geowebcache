@@ -56,7 +56,12 @@
     </property>
   </bean>
 
+  <!-- The quota store factories -->
   <bean id="bdbQuotaStoreFactory" class="org.geowebcache.diskquota.bdb.BDBQuotaStoreFactory"/>
   <bean id="jdbcQuotaStoreFactory" class="org.geowebcache.diskquota.jdbc.JDBCQuotaStoreFactory"/>
   
+  <!-- The SQL dialects -->
+  <bean id="H2QuotaDialect" class="org.geowebcache.diskquota.jdbc.H2Dialect"/>
+  <bean id="PostgreSQLQuotaDialect" class="org.geowebcache.diskquota.jdbc.PostgreSQLDialect"/>
+  <bean id="OracleQuotaDialect" class="org.geowebcache.diskquota.jdbc.OracleDialect"/>
 </beans>
