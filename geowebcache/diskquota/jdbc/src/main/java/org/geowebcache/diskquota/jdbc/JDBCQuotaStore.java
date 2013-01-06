@@ -69,7 +69,10 @@ public class JDBCQuotaStore implements QuotaStore {
 
     private static final Log log = LogFactory.getLog(JDBCQuotaStore.class);
 
-    static final String GLOBAL_QUOTA_NAME = "___GLOBAL_QUOTA___";
+    /**
+     * The constant identifying the global quota tile set key
+     */
+    public static final String GLOBAL_QUOTA_NAME = "___GLOBAL_QUOTA___";
 
     /**
      * The dialect accounting for database specific differences
