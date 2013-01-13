@@ -17,7 +17,8 @@
 package org.geowebcache.diskquota.jdbc;
 
 import java.io.File;
-import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,6 +27,8 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.diskquota.QuotaStore;
 import org.geowebcache.diskquota.QuotaStoreFactory;
@@ -43,6 +46,8 @@ import org.springframework.context.ApplicationContextAware;
  *
  */
 public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationContextAware {
+    
+    private static final Log log = LogFactory.getLog(JDBCQuotaStore.class);
 
     public static final String H2_STORE = "H2";
 
@@ -83,10 +88,20 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
                     + configFile.getAbsolutePath());
         }
         config = JDBCConfiguration.load(configFile);
-        return getStore(cacheDirFinder, tilePageCalculator, config);
+        return getJDBCStore(cacheDirFinder, tilePageCalculator, config);
+    }
+    
+    public QuotaStore getJDBCStore(ApplicationContext ctx, JDBCConfiguration config) throws ConfigurationException {
+        // lookup dependencies in the classpath
+        DefaultStorageFinder cacheDirFinder = (DefaultStorageFinder) ctx
+                .getBean("gwcDefaultStorageFinder");
+        TilePageCalculator tilePageCalculator = (TilePageCalculator) ctx
+                .getBean("gwcTilePageCalculator");
+
+        return getJDBCStore(cacheDirFinder, tilePageCalculator, config);
     }
 
-    public QuotaStore getStore(DefaultStorageFinder cacheDirFinder,
+    private QuotaStore getJDBCStore(DefaultStorageFinder cacheDirFinder,
             TilePageCalculator tilePageCalculator, JDBCConfiguration config)
             throws ConfigurationException {
         DataSource ds = getDataSource(config);
@@ -141,6 +156,24 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
                 
                 ds = bds;
             }
+            
+            // verify the datasource works
+            Connection c = null;
+            try {
+                c = ds.getConnection();
+            } catch(SQLException e) {
+                throw new ConfigurationException("Failed to get a database connection: " + e.getMessage(), e);
+            } finally {
+                if(c != null) {
+                    try {
+                        c.close();
+                    } catch(SQLException e) {
+                        // nothing we can do about it, but at least let the admin know
+                        log.debug("An error occurred while closing the test JDBC connection: " + e.getMessage(), e);
+                    }
+                }
+            }
+            
             return ds;
         } catch (NamingException e) {
             throw new ConfigurationException("Failed to locate the data source in JNDI", e);
