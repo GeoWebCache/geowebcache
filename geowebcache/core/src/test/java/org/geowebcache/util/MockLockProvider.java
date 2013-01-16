@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.locks.MemoryLockProvider;
 
 /**
@@ -20,20 +21,22 @@ public class MockLockProvider extends MemoryLockProvider {
     public AtomicLong releases = new AtomicLong();
     public Map<String, String> keys = new ConcurrentHashMap<String, String>();
 
-    public void getLock(String lockKey) {
+    public Lock getLock(final String lockKey) {
         super.getLock(lockKey);
         acquires.incrementAndGet();
         assertFalse(keys.containsKey(lockKey));
         keys.put(lockKey, lockKey);
+        return new Lock() {
+
+            public void release() throws GeoWebCacheException {
+                releases.incrementAndGet();
+                assertTrue(keys.containsKey(lockKey));
+                keys.remove(lockKey);
+            }
+            
+        };
     }
 
-    public void releaseLock(String lockKey) {
-        super.releaseLock(lockKey);
-        releases.incrementAndGet();
-        assertTrue(keys.containsKey(lockKey));
-        keys.remove(lockKey);
-    }
-    
     public void verify() {
         assertEquals(acquires.get(), releases.get());
         assertEquals(0, keys.size());

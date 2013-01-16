@@ -69,7 +69,10 @@ public class JDBCQuotaStore implements QuotaStore {
 
     private static final Log log = LogFactory.getLog(JDBCQuotaStore.class);
 
-    static final String GLOBAL_QUOTA_NAME = "___GLOBAL_QUOTA___";
+    /**
+     * The constant identifying the global quota tile set key
+     */
+    public static final String GLOBAL_QUOTA_NAME = "___GLOBAL_QUOTA___";
 
     /**
      * The dialect accounting for database specific differences
@@ -299,7 +302,7 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     public void deleteLayerInternal(String layerName) {
-        log.info("Deleting disk quota information for layer '" + layerName);
+        log.info("Deleting disk quota information for layer '" + layerName + "'");
         String statement = dialect.getLayerDeletionStatement(schema, "layerName");
         jt.update(statement, Collections.singletonMap("layerName", layerName));
 
