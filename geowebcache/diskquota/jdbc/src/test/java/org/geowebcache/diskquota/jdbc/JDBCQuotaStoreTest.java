@@ -100,8 +100,12 @@ public abstract class JDBCQuotaStoreTest extends OnlineTestCase {
                 // fine too
             }
         } finally {
-            st.close();
-            cx.close();
+            if(st != null) {
+                st.close();
+            }
+            if(cx != null) {
+                cx.close();
+            }
         }
 
     }

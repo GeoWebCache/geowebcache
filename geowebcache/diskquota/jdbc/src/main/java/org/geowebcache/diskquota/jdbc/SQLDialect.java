@@ -149,7 +149,7 @@ public class SQLDialect {
         if (schema != null) {
             sb.append(schema).append(".");
         }
-        sb.append("TILESET");
+        sb.append("TILESET WHERE KEY <> '" + JDBCQuotaStore.GLOBAL_QUOTA_NAME + "'");
 
         return sb.toString();
     }

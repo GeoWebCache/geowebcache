@@ -51,7 +51,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
     static final int DEFAULT_MAX_CONCURRENT_CLEANUPS = 2;
 
     static ExpirationPolicy DEFAULT_GLOBAL_POLICY_NAME = ExpirationPolicy.LFU;
-
+    
     private Boolean enabled;
 
     private Integer diskBlockSize;
@@ -71,7 +71,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
     private List<LayerQuota> layerQuotas;
     
     private String quotaStore;
-
+    
     public void setDefaults() {
         if (enabled == null) {
             enabled = Boolean.FALSE;
@@ -95,9 +95,6 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
         if (globalQuota == null) {
             globalQuota = new Quota(500, StorageUnit.MiB);
         }
-        if (quotaStore == null) {
-            quotaStore = "bdb";
-        }
     }
 
     void setFrom(DiskQuotaConfig other) {
@@ -110,6 +107,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
         this.layerQuotas = other.layerQuotas == null ? null : new ArrayList<LayerQuota>(
                 other.layerQuotas);
         this.maxConcurrentCleanUps = other.maxConcurrentCleanUps;
+        this.quotaStore = other.quotaStore;
     }
 
     public Boolean isEnabled() {

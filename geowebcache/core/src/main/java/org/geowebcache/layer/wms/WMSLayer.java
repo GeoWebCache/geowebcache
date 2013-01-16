@@ -43,6 +43,7 @@ import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.locks.LockProvider;
+import org.geowebcache.locks.LockProvider.Lock;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
@@ -323,11 +324,10 @@ public class WMSLayer extends AbstractTileLayer {
         }
 
         String metaKey = buildLockKey(tile, metaTile);
-        boolean lockAcquired = false;
+        Lock lock = null;
         try {
             /** ****************** Acquire lock ******************* */
-            lockProvider.getLock(metaKey);
-            lockAcquired = true;
+            lock = lockProvider.getLock(metaKey);
             /** ****************** Check cache again ************** */
             if (tryCache && tryCacheFetch(tile)) {
                 // Someone got it already, return lock and we're done
@@ -365,8 +365,8 @@ public class WMSLayer extends AbstractTileLayer {
 
             /** ****************** Return lock and response ****** */
         } finally {
-            if(lockAcquired) {
-                lockProvider.releaseLock(metaKey);
+            if(lock != null) {
+                lock.release();
             }
             metaTile.dispose();
         }
@@ -414,11 +414,10 @@ public class WMSLayer extends AbstractTileLayer {
         long[] gridLoc = tile.getTileIndex();
 
         String lockKey = buildLockKey(tile, null);
-        boolean lockAcquired = false;
+        Lock lock = null;
         try {
             /** ****************** Acquire lock ******************* */
-            lockProvider.getLock(lockKey);
-            lockAcquired = true;
+            lock = lockProvider.getLock(lockKey);
             
             /** ****************** Check cache again ************** */
             if (tryCache && tryCacheFetch(tile)) {
@@ -447,8 +446,8 @@ public class WMSLayer extends AbstractTileLayer {
 
             /** ****************** Return lock and response ****** */
         } finally {
-            if(lockAcquired) {
-                lockProvider.releaseLock(lockKey);
+            if(lock != null) {
+                lock.release();
             }
         }
         return finalizeTile(tile);

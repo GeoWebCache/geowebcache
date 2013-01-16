@@ -11,14 +11,15 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-public class QuotaStoreProvider implements ApplicationContextAware, InitializingBean, DisposableBean {
+public class QuotaStoreProvider implements ApplicationContextAware, InitializingBean,
+        DisposableBean {
 
-    QuotaStore store;
+    protected QuotaStore store;
 
-    ApplicationContext applicationContext;
+    protected ApplicationContext applicationContext;
 
-    ConfigLoader loader;
-    
+    protected ConfigLoader loader;
+
     public QuotaStoreProvider(ConfigLoader loader) {
         this.loader = loader;
     }
@@ -26,7 +27,7 @@ public class QuotaStoreProvider implements ApplicationContextAware, Initializing
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
-    
+
     public synchronized QuotaStore getQuotaStore() throws ConfigurationException, IOException {
         return store;
     }
@@ -36,20 +37,31 @@ public class QuotaStoreProvider implements ApplicationContextAware, Initializing
     }
 
     public void afterPropertiesSet() throws Exception {
+        reloadQuotaStore();
+    }
+
+    public void reloadQuotaStore() throws IOException, ConfigurationException {
         DiskQuotaConfig config = loader.loadConfig();
         String quotaStoreName = config.getQuotaStore();
-       
-        List<QuotaStoreFactory> factories = GeoWebCacheExtensions.extensions(QuotaStoreFactory.class, applicationContext);
+        if(quotaStoreName == null) {
+            // the default quota store, for backwards compatibility
+            quotaStoreName = "BDB";
+        }
+
+        store = getQuotaStoreByName(quotaStoreName);
+    }
+
+    protected QuotaStore getQuotaStoreByName(String quotaStoreName) throws ConfigurationException, IOException  {
+        List<QuotaStoreFactory> factories = GeoWebCacheExtensions.extensions(
+                QuotaStoreFactory.class, applicationContext);
         for (QuotaStoreFactory factory : factories) {
-            store = factory.getQuotaStore(applicationContext, quotaStoreName);
-            if(store != null) {
-                break;
+            QuotaStore store = factory.getQuotaStore(applicationContext, quotaStoreName);
+            if (store != null) {
+                return store;
             }
         }
-        
-        if(store == null) {
-            throw new IllegalStateException("Could not find a quota store named " + quotaStoreName);
-        }
+
+        throw new IllegalStateException("Could not find a quota store named " + quotaStoreName);
     }
 
 }

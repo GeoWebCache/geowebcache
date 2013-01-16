@@ -25,12 +25,13 @@ import org.geowebcache.GeoWebCacheException;
  */
 public class NoOpLockProvider implements LockProvider {
 
-    public void getLock(String lockKey) throws GeoWebCacheException {
-        // nothing to do
-    }
-
-    public void releaseLock(String lockKey) throws GeoWebCacheException {
-        // nothing to do
+    public LockProvider.Lock getLock(String lockKey) throws GeoWebCacheException {
+        return new Lock() {
+            
+            public void release() throws GeoWebCacheException {
+                // nothing to do
+            }
+        };
     }
 
 }
