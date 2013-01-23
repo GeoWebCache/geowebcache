@@ -33,7 +33,7 @@ public class QuotaStoreProvider implements ApplicationContextAware, Initializing
     }
 
     public void destroy() throws Exception {
-        store.close();
+        if (store != null) store.close();
     }
 
     public void afterPropertiesSet() throws Exception {
@@ -42,6 +42,9 @@ public class QuotaStoreProvider implements ApplicationContextAware, Initializing
 
     public void reloadQuotaStore() throws IOException, ConfigurationException {
         DiskQuotaConfig config = loader.loadConfig();
+        if (!config.isEnabled()) {
+            return;
+        }
         String quotaStoreName = config.getQuotaStore();
         if(quotaStoreName == null) {
             // the default quota store, for backwards compatibility
