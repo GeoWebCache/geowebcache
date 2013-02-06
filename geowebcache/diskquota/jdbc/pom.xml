@@ -21,10 +21,6 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.sleepycat</groupId>
-      <artifactId>je</artifactId>
-    </dependency>
-    <dependency>
       <groupId>postgresql</groupId>
       <artifactId>postgresql</artifactId>
     </dependency>
