@@ -35,6 +35,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.ConfigurationException;
@@ -434,7 +435,7 @@ public class FileBlobStore implements BlobStore {
         final File fh = getFileHandleTile(stObj, true);
         final long oldSize = fh.length();
         final boolean existed = oldSize > 0;
-        writeFile(fh, stObj);
+        writeFile(fh, stObj, existed);
         // mark the last modification as the tile creation time if set, otherwise
         // we'll leave it to the writing time
         if(stObj.getCreated() > 0) {
@@ -481,39 +482,50 @@ public class FileBlobStore implements BlobStore {
         return new FileResource(fh);
     }
 
-    private void writeFile(File target, TileObject stObj) throws StorageException {
+    private void writeFile(File target, TileObject stObj, boolean existed) throws StorageException {
         // first write to temp file
         tmp.mkdirs();
         File temp = new File(tmp, UUID.randomUUID().toString());
         
         try {
-            // Open the output stream
-            FileOutputStream fos;
+            // Open the output stream and read the blob into the tile
+            FileOutputStream fos = null;
+            FileChannel channel = null;
             try {
                 fos = new FileOutputStream(temp);
-            } catch (FileNotFoundException ioe) {
-                throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
-            }
-    
-            FileChannel channel = fos.getChannel();
-            try {
-                stObj.getBlob().transferTo(channel);
-            } catch (IOException ioe) {
-                throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
-            } finally {
+                
+                channel = fos.getChannel();
                 try {
-                    channel.close();
+                    stObj.getBlob().transferTo(channel);
                 } catch (IOException ioe) {
                     throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
+                } finally {
+                    try {
+                        if(channel != null) {
+                            channel.close();
+                        }
+                    } catch (IOException ioe) {
+                        throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
+                    }
                 }
+            } catch (FileNotFoundException ioe) {
+                throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
+            } finally {
+                IOUtils.closeQuietly(fos);
             }
             
             // rename to final position. This will fail if another GWC also wrote this
             // file, in such case we'll just eliminate this one
             if(temp.renameTo(target)) {
                 temp = null;
+            } else if(existed) {
+                // if we are trying to overwrite and old tile, on windows that might fail... delete and rename instead
+                if(target.delete() && temp.renameTo(target)) {
+                    temp = null;
+                }
             }
         } finally {
+            
             if(temp != null) {
                 log.warn("Tile " + target.getPath() + " was already written by another thread/process");
                 temp.delete();
