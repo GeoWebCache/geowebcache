@@ -306,16 +306,52 @@ public abstract class JDBCQuotaStoreTest extends OnlineTestCase {
     }
 
     public void testDeleteGridSet() throws InterruptedException {
+        // put some data into the two gridsets
+        String layerName = "topp:states";
+        TileSet tset1 = new TileSet(layerName, "EPSG:4326", "image/jpeg", null);
+        addToQuotaStore(tset1);
+        TileSet tset2 = new TileSet(layerName, "EPSG:900913", "image/jpeg", null);
+        addToQuotaStore(tset2);
+        Quota tset1Quota = store.getUsedQuotaByTileSetId(tset1.getId());
+        Quota tset2Quota = store.getUsedQuotaByTileSetId(tset2.getId());
+        Quota globalQuota = store.getGloballyUsedQuota();
+        Quota sum = new Quota();
+        sum.add(tset1Quota);
+        sum.add(tset2Quota);
+        assertEquals(globalQuota.getBytes(), sum.getBytes());
+        
         assertEquals(8, countTileSetsByLayerName("topp:states"));
         store.deleteGridSubset("topp:states", "EPSG:900913");
         assertEquals(4, countTileSetsByLayerName("topp:states"));
+
+        // verify the quota for tset2 got erased and that now the total is equal to tset1
+        tset1Quota = store.getUsedQuotaByTileSetId(tset1.getId());
+        tset2Quota = store.getUsedQuotaByTileSetId(tset2.getId());
+        globalQuota = store.getGloballyUsedQuota();
+        assertNull(tset2Quota);
+        assertEquals(tset1Quota.getBytes(), globalQuota.getBytes());
+    }
+
+    private void addToQuotaStore(TileSet tset) throws InterruptedException {
+        Quota quotaDiff = new Quota(5, StorageUnit.MiB);
+        PageStatsPayload stats = new PageStatsPayload(new TilePage(tset.getId(), 0, 0, 3));
+        stats.setNumTiles(10);
+        store.addToQuotaAndTileCounts(tset, quotaDiff, Collections.singletonList(stats));
     }
 
     public void testDeleteLayer() throws InterruptedException {
-        String layerName = tilePageCalculator.getLayerNames().iterator().next();
+        // put some data into the layer
+        String layerName = "topp:states2";
+        TileSet tset = new TileSet(layerName, "EPSG:2163", "image/jpeg", null);
+
+        addToQuotaStore(tset);
+
         // make sure the layer is there and has stuff
-        Quota usedQuota = store.getUsedQuotaByLayerName(layerName);
-        assertNotNull(usedQuota);
+        Quota oldUsedQuota = store.getUsedQuotaByLayerName(layerName);
+        assertNotNull(oldUsedQuota);
+        Quota globalQuotaBefore = store.getGloballyUsedQuota();
+        assertTrue(oldUsedQuota.getBytes().longValue() > 0);
+        assertTrue(globalQuotaBefore.getBytes().longValue() > 0);
 
         TileSet tileSet = tilePageCalculator.getTileSetsFor(layerName).iterator().next();
         TilePage page = new TilePage(tileSet.getId(), 0, 0, (byte) 0);
@@ -327,9 +363,13 @@ public abstract class JDBCQuotaStoreTest extends OnlineTestCase {
 
         // cascade deleted?
         assertNull(store.getLeastRecentlyUsedPage(Collections.singleton(layerName)));
-        usedQuota = store.getUsedQuotaByLayerName(layerName);
+        Quota usedQuota = store.getUsedQuotaByLayerName(layerName);
         assertNotNull(usedQuota);
         assertEquals(0L, usedQuota.getBytes().longValue());
+        
+        // make sure the global quota got updated
+        Quota globalQuotaAfter = store.getGloballyUsedQuota();
+        assertEquals(0, globalQuotaAfter.getBytes().longValue());
     }
 
     public void testVisitor() throws Exception {
