@@ -264,6 +264,11 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         // when a quota is exceeded
         setUpScheduledCleanUp();
 
+        // the startup might be called more than once (happens in GeoServer after disk quota
+        // re-configuration for example), in this case shut down the old cache info builder
+        if(this.cacheInfoBuilder != null) {
+            cacheInfoBuilder.shutDown();
+        }
         this.cacheInfoBuilder = launchCacheInfoGatheringThreads();
     }
 
