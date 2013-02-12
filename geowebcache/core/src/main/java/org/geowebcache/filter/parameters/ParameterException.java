@@ -18,6 +18,10 @@ package org.geowebcache.filter.parameters;
 
 import org.geowebcache.GeoWebCacheException;
 
+/**
+ * A problem occurred while filtering a parameter.
+ *
+ */
 public class ParameterException extends GeoWebCacheException {
     
     private static final long serialVersionUID = 2471474123508934754L;
