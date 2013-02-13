@@ -24,6 +24,10 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
+/**
+ * A filter for a WMS parameter that ensure that it fits within a finite set of defined values.
+ *
+ */
 public abstract class ParameterFilter implements Serializable, Cloneable {
 
     private static final long serialVersionUID = -531248230951783132L;
@@ -36,10 +40,18 @@ public abstract class ParameterFilter implements Serializable, Cloneable {
         // Empty for XStream
     }
 
+    /**
+     * Get the key of the parameter to filter.
+     * @return
+     */
     public String getKey() {
         return key;
     }
 
+    /**
+     * Get the default value to use if the parameter is not specified.
+     * @return
+     */
     public String getDefaultValue() {
         return defaultValue;
     }
@@ -48,7 +60,10 @@ public abstract class ParameterFilter implements Serializable, Cloneable {
     public abstract ParameterFilter clone();
     
     /**
-     * Checks whether a given parameter value applies to this filter
+     * Checks whether a given parameter value applies to this filter.
+     * 
+     * Calls {@link #apply(String)} and checks for {@link ParameterException}.  Subclasses should 
+     * override if a more efficient check is available.
      * 
      * @param parameterValue
      *            the value to check if applies to this parameter filter
@@ -64,8 +79,15 @@ public abstract class ParameterFilter implements Serializable, Cloneable {
         return true;
     }
 
+    /**
+     * Apply the filter to the specified parameter value.
+     * @param str the value of the parameter to filter
+     * @return one of the legal values
+     * @throws ParameterException if the parameter value could not be reduced to one of the
+     *          legal values.
+     */
     public String apply(String str) throws ParameterException {
-        return null;
+        return null; // TODO Shouldn't this method be abstract?
     }
 
     /**
