@@ -57,7 +57,7 @@ public class RegexParameterFilter extends ParameterFilter {
     }
     
     @Override
-    public String apply(@Nullable String str) throws ParameterException {
+    public String apply(String str) throws ParameterException {
         if (str == null || str.length() == 0) {
             return getDefaultValue();
         }

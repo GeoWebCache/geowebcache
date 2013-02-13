@@ -24,7 +24,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-
 import com.google.common.base.Preconditions;
 
 /**
@@ -45,13 +44,13 @@ public class FloatParameterFilter extends ParameterFilter {
 
     public FloatParameterFilter() {
         super();
-        values = new ArrayList<Float>();
+        values = new ArrayList<Float>(0);
     }
 
     protected FloatParameterFilter readResolve() {
         super.readResolve();
         if (values == null) {
-            values = new ArrayList<Float>();
+            values = new ArrayList<Float>(0);
         }
         if (threshold == null) {
             threshold = DEFAULT_THRESHOLD;
@@ -70,6 +69,7 @@ public class FloatParameterFilter extends ParameterFilter {
         // TODO: apply Collections.unmodifiableList(...)
         return values;
     }
+
     /**
      *  Set the values
      */

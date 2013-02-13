@@ -34,13 +34,13 @@ public class StringParameterFilter extends ParameterFilter {
     private List<String> values;
 
     public StringParameterFilter() {
-        values = new ArrayList<String>();
+        values = new ArrayList<String>(0);
     }
 
     protected StringParameterFilter readResolve() {
         super.readResolve();
         if (values == null) {
-            values = new ArrayList<String>();
+            values = new ArrayList<String>(0);
         }
         for(String value: values) {
             Preconditions.checkNotNull(value, "Value list included a null pointer.");

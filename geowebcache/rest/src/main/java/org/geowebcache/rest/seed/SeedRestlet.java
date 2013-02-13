@@ -26,6 +26,7 @@ import java.net.URLDecoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.ContextualConfigurationProvider.Context;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.rest.GWCRestlet;
@@ -130,7 +131,7 @@ public class SeedRestlet extends GWCRestlet {
 
         SeedRequest sr = null;
 
-        XStream xs = xmlConfig.getConfiguredXStream(new XStream(new DomDriver()));
+        XStream xs = xmlConfig.getConfiguredXStreamWithContext(new XStream(new DomDriver()), Context.REST);
 
         if (formatExtension.equalsIgnoreCase("xml")) {
             sr = (SeedRequest) xs.fromXML(req.getEntity().getStream());

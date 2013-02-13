@@ -60,6 +60,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
+import org.geowebcache.config.ContextualConfigurationProvider.Context;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -390,7 +391,7 @@ public class XMLConfiguration implements Configuration {
     private GeoWebCacheConfiguration loadConfiguration(InputStream xmlFile) throws IOException,
             ConfigurationException {
         Node rootNode = loadDocument(xmlFile);
-        XStream xs = getConfiguredXStream(new XStream());
+        XStream xs = getConfiguredXStreamWithContext(new XStream(), Context.PERSIST);
 
         GeoWebCacheConfiguration config;
         config = (GeoWebCacheConfiguration) xs.unmarshal(new DomReader((Element) rootNode));
@@ -455,12 +456,19 @@ public class XMLConfiguration implements Configuration {
         log.debug("Config backup done");
     }
 
-    @SuppressWarnings("unchecked")
     public XStream getConfiguredXStream(XStream xs) {
-        return getConfiguredXStream(xs, this.context);
+        return getConfiguredXStreamWithContext(xs, this.context, (ContextualConfigurationProvider.Context)null);
     }
-
     public static XStream getConfiguredXStream(XStream xs, WebApplicationContext context) {
+        return getConfiguredXStreamWithContext(xs, context, (ContextualConfigurationProvider.Context)null);
+    }
+    public XStream getConfiguredXStreamWithContext(XStream xs, 
+            ContextualConfigurationProvider.Context providerContext) {
+        return getConfiguredXStreamWithContext(xs, this.context, providerContext);
+    }
+    
+    public static XStream getConfiguredXStreamWithContext(XStream xs, WebApplicationContext context, 
+            ContextualConfigurationProvider.Context providerContext) {
         // XStream xs = xstream;
         xs.setMode(XStream.NO_REFERENCES);
 
@@ -519,6 +527,15 @@ public class XMLConfiguration implements Configuration {
             List<XMLConfigurationProvider> configExtensions = GeoWebCacheExtensions.extensions(
                     XMLConfigurationProvider.class, context);
             for (XMLConfigurationProvider extension : configExtensions) {
+                // Check if the provider is context dependent
+                if(extension instanceof ContextualConfigurationProvider &&
+                        // Check if the context is applicable for the provider
+                        (providerContext==null ||
+                        !((ContextualConfigurationProvider)extension).appliesTo(providerContext))) {
+                            // If so, try the next one
+                            continue;
+                    }
+                
                 xs = extension.getConfiguredXStream(xs);
             }
         }
@@ -532,7 +549,7 @@ public class XMLConfiguration implements Configuration {
      */
     private void persistToFile(File xmlFile) throws IOException {
         // create the XStream for serializing the configuration
-        XStream xs = getConfiguredXStream(new XStream());
+        XStream xs = getConfiguredXStreamWithContext(new XStream(), Context.PERSIST);
 
         OutputStreamWriter writer = null;
         try {
