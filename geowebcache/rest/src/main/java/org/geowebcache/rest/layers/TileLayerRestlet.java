@@ -30,6 +30,7 @@ import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.GWCRestlet;
@@ -399,8 +400,13 @@ public class TileLayerRestlet extends GWCRestlet {
             if (cause instanceof RuntimeException) {
                 throw (RuntimeException) cause;
             }
-            throw new RestletException(cause.getMessage(), Status.SERVER_ERROR_INTERNAL,
-                    (Exception) cause);
+            if (cause!=null){
+                throw new RestletException(cause.getMessage(), Status.SERVER_ERROR_INTERNAL,
+                        (Exception) cause);
+            } else {
+                throw new RestletException(xstreamExceptionWrapper.getMessage(), 
+                    Status.SERVER_ERROR_INTERNAL, xstreamExceptionWrapper);
+            }
         }
 
         if (!newLayer.getName().equals(layerName)) {
@@ -409,6 +415,22 @@ public class TileLayerRestlet extends GWCRestlet {
                     Status.CLIENT_ERROR_BAD_REQUEST);
         }
 
+        // Check that the parameter filters deserialized correctly
+        if(newLayer.getParameterFilters()!=null) {
+            try {
+                for(@SuppressWarnings("unused") 
+                ParameterFilter filter: newLayer.getParameterFilters()){
+                    // Don't actually need to do anything here.  Just iterate over the elements 
+                    // casting them into ParameterFilter
+                }
+            } catch (ClassCastException ex) {
+                // By this point it has already been turned into a POJO, so the XML is no longer 
+                // available.  Otherwise it would be helpful to include in the error message.
+                throw new RestletException("parameterFilters contains an element that is not "+
+                        "a known ParameterFilter", Status.CLIENT_ERROR_BAD_REQUEST);
+            }
+        }
+        
         return newLayer;
     }
 
