@@ -36,11 +36,11 @@ This information is presented in the following schema inside the ``<wmsLayer>`` 
      <stringParameterFilter>
        <key> ...  </key>
        <defaultValue> ... </defaultValue>
-       <string>
-         <value> ... </value>
-         <value> ... </value>
+       <values>
+         <string> ... </string>
+         <string> ... </string>
           ... 
-       </string>
+       </values>
      </stringParameterFilter>
    </parameterFilters>
 

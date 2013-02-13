@@ -21,13 +21,18 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Filter to select the closest floating point value within a threshold.
+ */
 public class FloatParameterFilter extends ParameterFilter {
 
     private static final long serialVersionUID = 4186888723396139208L;
 
+    // These members get set by XStream
     private List<Float> values;
 
     private Float threshold;
+
 
     public FloatParameterFilter() {
         readResolve();
@@ -65,6 +70,7 @@ public class FloatParameterFilter extends ParameterFilter {
         this.threshold = threshold;
     }
 
+    @Override
     public String apply(String str) throws ParameterException {
         if (str == null || str.length() == 0) {
             return "";
@@ -100,6 +106,7 @@ public class FloatParameterFilter extends ParameterFilter {
                 + Float.toString(threshold));
     }
 
+    @Override
     public List<String> getLegalValues() {
         List<String> ret = new LinkedList<String>();
 
