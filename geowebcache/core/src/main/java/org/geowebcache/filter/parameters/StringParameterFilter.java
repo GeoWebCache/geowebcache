@@ -20,9 +20,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
 public class StringParameterFilter extends ParameterFilter {
 
     private static final long serialVersionUID = 7383381085250203901L;
@@ -40,6 +37,7 @@ public class StringParameterFilter extends ParameterFilter {
         return this;
     }
 
+    @Override
     public String apply(String str) throws ParameterException {
         if (str == null || str.length() == 0) {
             return "";
@@ -59,13 +57,19 @@ public class StringParameterFilter extends ParameterFilter {
         return values;
     }
 
-    /**
-     * @see org.geowebcache.filter.parameters.ParameterFilter#getLegalValues()
-     */
+    @Override
     public List<String> getLegalValues() {
         return values;
     }
 
+    /**
+     * Checks whether a given parameter value applies to this filter.
+     *
+     * @param parameterValue
+     *            the value to check if applies to this parameter filter
+     * @return {@code true} if {@code parameterValue} is valid according to this filter,
+     *         {@code false} otherwise
+     */
     @Override
     public boolean applies(String parameterValue) {
         return getLegalValues().contains(parameterValue);

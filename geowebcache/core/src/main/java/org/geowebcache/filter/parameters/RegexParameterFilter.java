@@ -16,7 +16,6 @@
  */
 package org.geowebcache.filter.parameters;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,7 +31,12 @@ public class RegexParameterFilter extends ParameterFilter {
     public RegexParameterFilter() {
         super();
     }
-
+    
+    /**
+     * Get a {@link Matcher} for this filter's regexp against the given string.
+     * @param value
+     * @return
+     */
     public synchronized Matcher getMatcher(String value) {
         if (pat == null) {
             pat = Pattern.compile(getRegex());
@@ -41,6 +45,7 @@ public class RegexParameterFilter extends ParameterFilter {
         return pat.matcher(value);
     }
 
+    @Override
     public String apply(String str) throws ParameterException {
         if (getMatcher(str).matches()) {
             return str;
@@ -49,10 +54,19 @@ public class RegexParameterFilter extends ParameterFilter {
         throw new ParameterException(str + " violates filter for parameter " + getKey());
     }
 
+    @Override
     public List<String> getLegalValues() {
         return null;
     }
 
+    /**
+     * Checks whether a given parameter value applies to this filter.
+     *
+     * @param parameterValue
+     *            the value to check if applies to this parameter filter
+     * @return {@code true} if {@code parameterValue} is valid according to this filter,
+     *         {@code false} otherwise
+     */
     @Override
     public boolean applies(String parameterValue) {
         return getMatcher(parameterValue).matches();
@@ -71,6 +85,7 @@ public class RegexParameterFilter extends ParameterFilter {
      */
     public void setRegex(String regex) {
         this.regex = regex;
+        this.pat = null;
     }
 
     @Override
