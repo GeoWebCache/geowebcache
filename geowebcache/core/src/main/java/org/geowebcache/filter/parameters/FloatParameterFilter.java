@@ -54,6 +54,12 @@ public class FloatParameterFilter extends ParameterFilter {
     public List<Float> getValues() {
         return values;
     }
+    /**
+     *  Set the values
+     */
+    public void setValues(List<Float> values) {
+        this.values = values;
+    }
 
     /**
      * @return the threshold

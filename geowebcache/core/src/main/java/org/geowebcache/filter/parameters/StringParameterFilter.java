@@ -53,8 +53,18 @@ public class StringParameterFilter extends ParameterFilter {
         throw new ParameterException(str + " violates filter for parameter " + getKey());
     }
 
+    /**
+     * @return the values the parameter can take
+     */
     public List<String> getValues() {
         return values;
+    }
+
+    /**
+     * Set the values the parameter can take
+     */
+    public void setValues(List<String> values) {
+        this.values = values;
     }
 
     @Override
