@@ -229,8 +229,15 @@ public class SeedFormRestlet extends GWCRestlet {
                     .getClass().getName())) {
                 makeTextInput(doc, parameterId, 25);
             } else {
-                throw new IllegalStateException("Unknown parameter filter type for layer '"
-                        + tl.getName() + "': " + pf.getClass().getName());
+                // Unknown filter type
+                if (legalValues == null) {
+                    // Doesn't have a defined set of values, just provide a text field
+                    makeTextInput(doc, parameterId, 25);
+                } else {
+                    // Does have a defined set of values, so provide a drop down
+                    Map<String, String> keysValues = makeParametersMap(defaultValue, legalValues);
+                    makePullDown(doc, parameterId, keysValues, defaultValue);
+                }
             }
             doc.append("</td></tr>");
         }
