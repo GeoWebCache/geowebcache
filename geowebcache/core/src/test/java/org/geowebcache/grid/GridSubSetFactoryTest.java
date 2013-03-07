@@ -47,6 +47,19 @@ public class GridSubSetFactoryTest extends TestCase {
             assertNotNull(name);
         }
     }
+    
+    public void testWMTSCoverage() throws Exception {
+        BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
+
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bbox, 1,
+                3);
+
+        long[][] coverages = grid.getWMTSCoverages();
+        assertEquals(3, coverages.length);
+        long[] correct = { 2, 0, 3, 0 };
+
+        assertTrue(Arrays.equals(correct, coverages[0]));
+    }
 
     public void testGridIndex() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);

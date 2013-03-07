@@ -384,7 +384,8 @@ public class GridSubset {
         long[][] ret = new long[gridCoverageLevels.size()][4];
 
         final int zoomStop = getZoomStop();
-        for (int i = getZoomStart(); i <= zoomStop; i++) {
+        int zoomStart = getZoomStart();
+        for (int i = zoomStart; i <= zoomStop; i++) {
             Grid grid = gridSet.getGrid(i);
             long[] coverage = getCoverage(i);
 
@@ -402,7 +403,7 @@ public class GridSubset {
                     bottomRow - coverage[1]  // maxY
                 };
 
-            ret[i] = cur;
+            ret[i - zoomStart] = cur;
         }
 
         return ret;
