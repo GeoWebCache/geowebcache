@@ -20,13 +20,21 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
+import com.google.common.base.Preconditions;
+
+@ParametersAreNonnullByDefault
 public class RegexParameterFilter extends ParameterFilter {
 
     private static final long serialVersionUID = -1496940509350980799L;
 
-    private String regex;
+    public final static String DEFAULT_EXPRESSION = "";
 
-    private transient Pattern pat;
+    private String regex = DEFAULT_EXPRESSION;
+
+    private transient Pattern pat = Pattern.compile(regex);
 
     public RegexParameterFilter() {
         super();
@@ -38,15 +46,22 @@ public class RegexParameterFilter extends ParameterFilter {
      * @return
      */
     public synchronized Matcher getMatcher(String value) {
-        if (pat == null) {
-            pat = Pattern.compile(getRegex());
-        }
-
         return pat.matcher(value);
     }
 
+    protected RegexParameterFilter readResolve() {
+        super.readResolve();
+        Preconditions.checkNotNull(regex);
+        this.pat = Pattern.compile(regex);
+        return this;
+    }
+    
     @Override
-    public String apply(String str) throws ParameterException {
+    public String apply(@Nullable String str) throws ParameterException {
+        if (str == null || str.length() == 0) {
+            return getDefaultValue();
+        }
+        
         if (getMatcher(str).matches()) {
             return str;
         }
@@ -55,7 +70,7 @@ public class RegexParameterFilter extends ParameterFilter {
     }
 
     @Override
-    public List<String> getLegalValues() {
+    public @Nullable List<String> getLegalValues() {
         return null;
     }
 
@@ -68,7 +83,7 @@ public class RegexParameterFilter extends ParameterFilter {
      *         {@code false} otherwise
      */
     @Override
-    public boolean applies(String parameterValue) {
+    public boolean applies(@Nullable String parameterValue) {
         return getMatcher(parameterValue).matches();
     }
 
@@ -81,11 +96,12 @@ public class RegexParameterFilter extends ParameterFilter {
 
     /**
      * @param regex
-     *            the regex to set
+     *            the regex to set.  {@literal null} will be treated as default value.
      */
-    public void setRegex(String regex) {
+    public void setRegex(@Nullable String regex) {
+        if(regex==null) regex = DEFAULT_EXPRESSION;
         this.regex = regex;
-        this.pat = null;
+        this.pat = Pattern.compile(this.regex);
     }
 
     @Override

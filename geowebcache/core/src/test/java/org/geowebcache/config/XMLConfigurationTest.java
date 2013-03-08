@@ -142,7 +142,7 @@ public class XMLConfigurationTest extends TestCase {
 
         StringParameterFilter filter = new StringParameterFilter();
         filter.setKey("STYLES");
-        filter.getValues().addAll(Arrays.asList("polygon", "point"));
+        filter.setValues(Arrays.asList("polygon", "point"));
         filter.setDefaultValue("polygon");
 
         List<ParameterFilter> parameterFilters = new ArrayList<ParameterFilter>(
