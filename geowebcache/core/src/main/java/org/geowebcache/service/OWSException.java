@@ -19,6 +19,9 @@ package org.geowebcache.service;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 
+// Thijs Brentjens (thijs@brentjensgeoict.nl): for fixing XSS vulnerability
+import org.owasp.encoder.*;
+
 public class OWSException extends Exception {
     private static final long serialVersionUID = -8024005353689857211L;
 
@@ -32,9 +35,9 @@ public class OWSException extends Exception {
 
     public OWSException(int httpCode, String exceptionCode, String locator, String exceptionText) {
         this.httpCode = httpCode;
-        this.exceptionCode = exceptionCode;
-        this.locator = locator;
-        this.exceptionText = exceptionText;
+        this.exceptionCode = Encode.forXml(exceptionCode);
+        this.locator = Encode.forXml(locator);
+        this.exceptionText = Encode.forXml(exceptionText);
     }
     
     public int getResponseCode() {
