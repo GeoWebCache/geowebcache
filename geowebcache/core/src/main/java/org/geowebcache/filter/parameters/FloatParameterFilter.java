@@ -45,13 +45,13 @@ public class FloatParameterFilter extends ParameterFilter {
 
     public FloatParameterFilter() {
         super();
-        values = Collections.emptyList();
+        values = new ArrayList<Float>();
     }
 
     protected FloatParameterFilter readResolve() {
         super.readResolve();
         if (values == null) {
-            values = Collections.emptyList();
+            values = new ArrayList<Float>();
         }
         if (threshold == null) {
             threshold = DEFAULT_THRESHOLD;
