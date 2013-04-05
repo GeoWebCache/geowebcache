@@ -17,9 +17,6 @@
  */
 package org.geowebcache.rest.seed;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
@@ -35,8 +32,6 @@ import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.seed.TileBreeder;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.restlet.data.MediaType;
-import org.restlet.data.Method;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.data.Status;
@@ -44,42 +39,13 @@ import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.resource.Representation;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
-import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import com.thoughtworks.xstream.io.copy.HierarchicalStreamCopier;
-import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
-import com.thoughtworks.xstream.io.xml.DomDriver;
-import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 
-public class SeedRestlet extends GWCRestlet {
+public class SeedRestlet extends GWCSeedingRestlet {
+    @SuppressWarnings("unused")
     private static Log log = LogFactory.getLog(SeedFormRestlet.class);
 
     private TileBreeder seeder;
-
-    public JSONObject myrequest;
-
-    private XMLConfiguration xmlConfig;
-
-    public void handle(Request request, Response response) {
-        Method met = request.getMethod();
-        try {
-            if (met.equals(Method.GET)) {
-                doGet(request, response);
-            } else if (met.equals(Method.POST)) {
-                doPost(request, response);
-            } else {
-                throw new RestletException("Method not allowed",
-                        Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
-            }
-        } catch (RestletException re) {
-            response.setEntity(re.getRepresentation());
-            response.setStatus(re.getStatus());
-        } catch (IOException ioe) {
-            response.setEntity("Encountered IO error " + ioe.getMessage(), MediaType.TEXT_PLAIN);
-            response.setStatus(Status.SERVER_ERROR_INTERNAL);
-        }
-    }
 
     /**
      * Returns a StringRepresentation with the status of the running threads in the thread pool.
@@ -121,27 +87,8 @@ public class SeedRestlet extends GWCRestlet {
         resp.setEntity(rep);
     }
 
-    /**
-     * Method responsible for handling incoming POSTs. It will parse the XML document and
-     * deserialize it into a SeedRequest, then create a SeedTask and forward it to the thread pool
-     * executor.
-     */
-    public void doPost(Request req, Response resp) throws RestletException, IOException {
-        String formatExtension = (String) req.getAttributes().get("extension");
-
-        SeedRequest sr = null;
-
-        XStream xs = xmlConfig.getConfiguredXStreamWithContext(new XStream(new DomDriver()), Context.REST);
-
-        if (formatExtension.equalsIgnoreCase("xml")) {
-            sr = (SeedRequest) xs.fromXML(req.getEntity().getStream());
-        } else if (formatExtension.equalsIgnoreCase("json")) {
-            sr = (SeedRequest) xs.fromXML(convertJson(req.getEntity().getText()));
-        } else {
-            throw new RestletException("Format extension unknown or not specified: "
-                    + formatExtension, Status.CLIENT_ERROR_BAD_REQUEST);
-        }
-
+    protected void handleRequest(Request req, Response resp, Object obj) {
+        final SeedRequest sr = (SeedRequest) obj;
         String layerName = null;
         try {
             layerName = URLDecoder.decode((String) req.getAttributes().get("layer"), "UTF-8");
@@ -156,33 +103,6 @@ public class SeedRestlet extends GWCRestlet {
             throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL);
         }
 
-    }
-
-    /**
-     * Deserializing a json string is more complicated.
-     * 
-     * XStream does not natively support it. Rather, it uses a JettisonMappedXmlDriver to convert to
-     * intermediate xml and then deserializes that into the desired object. At this time, there is a
-     * known issue with the Jettison driver involving elements that come after an array in the json
-     * string.
-     * 
-     * http://jira.codehaus.org/browse/JETTISON-48
-     * 
-     * The code below is a hack: it treats the json string as text, then converts it to the
-     * intermediate xml and then deserializes that into the SeedRequest object.
-     */
-    private String convertJson(String entityText) throws IOException {
-        HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();
-        StringReader reader = new StringReader(entityText);
-        HierarchicalStreamReader hsr = driver.createReader(reader);
-        StringWriter writer = new StringWriter();
-        new HierarchicalStreamCopier().copy(hsr, new PrettyPrintWriter(writer));
-        writer.close();
-        return writer.toString();
-    }
-
-    public void setXmlConfig(XMLConfiguration xmlConfig) {
-        this.xmlConfig = xmlConfig;
     }
 
     public void setTileBreeder(TileBreeder seeder) {
