@@ -536,24 +536,28 @@ public class XMLConfiguration implements Configuration {
 
         OutputStreamWriter writer = null;
         try {
-            writer = new OutputStreamWriter(new FileOutputStream(xmlFile), "UTF-8");
-        } catch (UnsupportedEncodingException uee) {
-            uee.printStackTrace();
-            throw new IOException(uee.getMessage());
-        } catch (FileNotFoundException fnfe) {
-            throw fnfe;
-        }
-
-        try {
-            // set version to latest
-            String currentSchemaVersion = getCurrentSchemaVersion();
-            gwcConfig.setVersion(currentSchemaVersion);
-
-            writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-            xs.toXML(gwcConfig, writer);
-        } catch (IOException e) {
-            throw (IOException) new IOException("Error writing to " + xmlFile.getAbsolutePath()
-                    + ": " + e.getMessage()).initCause(e);
+            try {
+                writer = new OutputStreamWriter(new FileOutputStream(xmlFile), "UTF-8");
+            } catch (UnsupportedEncodingException uee) {
+                uee.printStackTrace();
+                throw new IOException(uee.getMessage());
+            } catch (FileNotFoundException fnfe) {
+                throw fnfe;
+            }
+    
+            try {
+                // set version to latest
+                String currentSchemaVersion = getCurrentSchemaVersion();
+                gwcConfig.setVersion(currentSchemaVersion);
+    
+                writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+                xs.toXML(gwcConfig, writer);
+            } catch (IOException e) {
+                throw (IOException) new IOException("Error writing to " + xmlFile.getAbsolutePath()
+                        + ": " + e.getMessage()).initCause(e);
+            }
+        } finally {
+            IOUtils.closeQuietly(writer);
         }
 
         log.info("Wrote configuration to " + xmlFile.getAbsolutePath());
