@@ -59,6 +59,10 @@ public class XMLConfigurationTest extends TestCase {
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
         config.initialize(gridSetBroker);
     }
+    
+    protected void tearDown() throws Exception {
+    	FileUtils.deleteDirectory(configDir);
+    }
 
     public void testAddLayer() throws Exception {
         int count = config.getTileLayerCount();
@@ -158,7 +162,6 @@ public class XMLConfigurationTest extends TestCase {
 
         config.save();
 
-        IOUtils.copy(new FileInputStream(configFile), System.out);
         try {
             XMLConfiguration.validate(XMLConfiguration
                     .loadDocument(new FileInputStream(configFile)));
@@ -207,7 +210,6 @@ public class XMLConfigurationTest extends TestCase {
         config.addOrReplaceGridSet(new XMLGridSet(gridSet));
         config.save();
 
-        IOUtils.copy(new FileInputStream(configFile), System.out);
         try {
             XMLConfiguration.validate(XMLConfiguration
                     .loadDocument(new FileInputStream(configFile)));
