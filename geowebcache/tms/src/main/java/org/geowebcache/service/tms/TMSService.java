@@ -187,6 +187,7 @@ public class TMSService extends Service {
         
         conv.servletResp.setStatus(200);
         conv.servletResp.setContentType("text/xml");
+        conv.servletResp.setHeader("content-disposition", "inline;filename=tms-getcapabilities.xml");
         try {
             conv.servletResp.getOutputStream().write(data);
         } catch (IOException e) {
