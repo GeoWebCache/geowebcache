@@ -78,6 +78,7 @@ public class WMTSGetCapabilities {
         response.setContentType("application/vnd.ogc.wms_xml");
         response.setCharacterEncoding("UTF-8");
         response.setContentLength(data.length);
+        response.setHeader("content-disposition", "inline;filename=wmts-getcapabilities.xml");
         
         stats.log(data.length, CacheResult.OTHER);
         
