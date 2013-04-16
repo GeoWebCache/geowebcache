@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,7 +49,17 @@ public class XMLConfigurationTest extends TestCase {
 
     protected void setUp() throws Exception {
         configDir = new File("target", "testConfig");
-        FileUtils.deleteDirectory(configDir);
+        try{
+            FileUtils.deleteDirectory(configDir);
+        } catch (IOException e) {
+            Runtime.getRuntime().runFinalization();
+            System.gc();
+            System.gc();
+            Thread.sleep(500);
+            System.gc();
+            System.gc();            
+            
+        }
         configDir.mkdirs();
         URL source = XMLConfiguration.class
                 .getResource(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
