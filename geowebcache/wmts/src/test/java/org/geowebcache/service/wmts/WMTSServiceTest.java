@@ -1,4 +1,4 @@
-package org.geowebcache.service.wms;
+package org.geowebcache.service.wmts;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import junit.framework.TestCase;
 
@@ -19,8 +18,6 @@ import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.conveyor.Conveyor;
-import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
@@ -34,9 +31,9 @@ import org.geowebcache.util.NullURLMangler;
 
 import com.mockrunner.mock.web.MockHttpServletResponse;
 
-public class WMSServiceTest extends TestCase {
+public class WMTSServiceTest extends TestCase {
 
-    private WMSService service;
+    private WMTSService service;
 
     private StorageBroker sb;
 
@@ -48,73 +45,6 @@ public class WMSServiceTest extends TestCase {
         sb = mock(StorageBroker.class);
         tld = mock(TileLayerDispatcher.class);
         gridsetBroker = new GridSetBroker(true, true);
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    /**
-     * Layer may be configured with mutliple GridSets for the same CRS, and should chose the best
-     * fit for the request
-     */
-    public void testGetConveyorMultipleCrsMatchingGridSubsets() throws Exception {
-
-        testMultipleCrsMatchingGridSubsets("EPSG:4326", "EPSG:4326", new long[] { 1, 1, 1 });
-        testMultipleCrsMatchingGridSubsets("EPSG:4326", "EPSG:4326", new long[] { 10, 10, 10 });
-
-        testMultipleCrsMatchingGridSubsets("EPSG:4326", "GlobalCRS84Scale", new long[] { 1, 1, 1 });
-        testMultipleCrsMatchingGridSubsets("EPSG:4326", "GlobalCRS84Scale",
-                new long[] { 10, 10, 10 });
-
-        testMultipleCrsMatchingGridSubsets("EPSG:4326", "GlobalCRS84Scale", new long[] { 1, 1, 1 });
-        testMultipleCrsMatchingGridSubsets("EPSG:4326", "GlobalCRS84Scale",
-                new long[] { 10, 10, 10 });
-
-    }
-
-    private void testMultipleCrsMatchingGridSubsets(final String srs, final String expectedGridset,
-            long[] tileIndex) throws Exception {
-
-        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
-        when(gwcd.getServletPrefix()).thenReturn(null);
-        
-        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
-
-        @SuppressWarnings("unchecked")
-        Map<String, String> kvp = new CaseInsensitiveMap();
-        kvp.put("format", "image/png");
-        kvp.put("srs", "EPSG:4326");
-        kvp.put("width", "256");
-        kvp.put("height", "256");
-        kvp.put("layers", "mockLayer");
-        kvp.put("tiled", "true");
-        kvp.put("request", "GetMap");
-
-        List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale",
-                "EPSG:4326");
-        TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames);
-
-        // make the request match a tile in the expected gridset
-        BoundingBox bounds;
-        bounds = tileLayer.getGridSubset(expectedGridset).boundsFromIndex(tileIndex);
-        kvp.put("bbox", bounds.toString());
-
-        HttpServletRequest req = mock(HttpServletRequest.class);
-        HttpServletResponse resp = mock(HttpServletResponse.class);
-
-        when(req.getCharacterEncoding()).thenReturn("UTF-8");
-        when(req.getParameterMap()).thenReturn(kvp);
-
-        ConveyorTile tileRequest = service.getConveyor(req, resp);
-        assertNotNull(tileRequest);
-
-        assertEquals(expectedGridset, tileRequest.getGridSetId());
-        assertEquals("image/png", tileRequest.getMimeType().getMimeType());
-        assertTrue(
-                "Expected " + Arrays.toString(tileIndex) + " got "
-                        + Arrays.toString(tileRequest.getTileIndex()),
-
-                Arrays.equals(tileIndex, tileRequest.getTileIndex()));
     }
 
     private TileLayer mockTileLayer(String layerName, List<String> gridSetNames) throws Exception {
@@ -173,7 +103,7 @@ public class WMSServiceTest extends TestCase {
         GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
         when(gwcd.getServletPrefix()).thenReturn(null);
         
-        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
+        service = new WMTSService(sb, tld,null , mock(RuntimeStats.class));
     
         @SuppressWarnings("unchecked")
         Map<String, String> kvp = new CaseInsensitiveMap();
@@ -194,17 +124,17 @@ public class WMSServiceTest extends TestCase {
         when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
         
     
-        ConveyorTile conv = service.getConveyor(req, resp);
+        Conveyor conv = service.getConveyor(req, resp);
         assertNotNull(conv);
         
         final String layerName = conv.getLayerId();
         assertNull(layerName);
         
         assertEquals(Conveyor.RequestHandler.SERVICE,conv.reqHandler);
-        WMSGetCapabilities wmsCap = new WMSGetCapabilities(tld, conv.servletReq,"http://localhost:8080", "/service/wms", new NullURLMangler());
-        wmsCap.writeResponse(conv.servletResp);   
+        WMTSGetCapabilities wmsCap = new WMTSGetCapabilities(tld,gridsetBroker, conv.servletReq,"http://localhost:8080", "/service/wms", new NullURLMangler());
+        wmsCap.writeResponse(conv.servletResp,mock(RuntimeStats.class));   
         assertTrue(resp.containsHeader("content-disposition"));
-        assertEquals("inline;filename=wms-getcapabilities.xml", resp.getHeader("content-disposition"));                            
+        assertEquals("inline;filename=wmts-getcapabilities.xml", resp.getHeader("content-disposition"));                            
     
     }
 

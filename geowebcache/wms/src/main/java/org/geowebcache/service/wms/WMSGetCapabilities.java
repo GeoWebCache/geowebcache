@@ -80,6 +80,7 @@ public class WMSGetCapabilities {
         response.setContentType("application/vnd.ogc.wms_xml");
         response.setCharacterEncoding("UTF-8");
         response.setContentLength(data.length);
+        response.setHeader("content-disposition", "inline;filename=wms-getcapabilities.xml");
 
         try {
             OutputStream os = response.getOutputStream();
