@@ -29,9 +29,12 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.channels.FileChannel;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.ConfigurationException;
@@ -65,12 +68,11 @@ public class FileBlobStore implements BlobStore {
     private final BlobStoreListenerList listeners = new BlobStoreListenerList();
 
     private static ExecutorService deleteExecutorService;
+    
+    private File tmp;
 
-    public FileBlobStore(DefaultStorageFinder defStoreFinder) throws ConfigurationException {
-        path = defStoreFinder.getDefaultPath();
-        stagingArea = new File(path, "_gwc_in_progress_deletes_");
-        createDeleteExecutorService();
-        issuePendingDeletes();
+    public FileBlobStore(DefaultStorageFinder defStoreFinder) throws ConfigurationException, StorageException {
+        this(defStoreFinder.getDefaultPath());
     }
 
     public FileBlobStore(String rootPath) throws StorageException {
@@ -83,6 +85,13 @@ public class FileBlobStore implements BlobStore {
         stagingArea = new File(path, "_gwc_in_progress_deletes_");
         createDeleteExecutorService();
         issuePendingDeletes();
+        
+        // and the temporary directory
+        tmp = new File(path, "tmp");
+        tmp.mkdirs();
+        if (!tmp.exists() || !tmp.isDirectory() || !tmp.canWrite()) {
+            throw new StorageException(tmp.getPath() + " is not writable directory.");
+        }        
     }
 
     private void issuePendingDeletes() {
@@ -401,8 +410,17 @@ public class FileBlobStore implements BlobStore {
         final File fh = getFileHandleTile(stObj, true);
         final long oldSize = fh.length();
         final boolean existed = oldSize > 0;
-        writeFile(fh, stObj.getBlob());
-        stObj.setCreated(fh.lastModified());
+        writeFile(fh, stObj, existed);
+        // mark the last modification as the tile creation time if set, otherwise
+        // we'll leave it to the writing time
+        if(stObj.getCreated() > 0) {
+            try {
+                fh.setLastModified(stObj.getCreated());
+            } catch(Exception e) {
+                log.debug("Failed to set the last modified time to match the tile request time", e);
+            }
+        } 
+        
         /*
          * This is important because listeners may be tracking tile existence
          */
@@ -443,29 +461,6 @@ public class FileBlobStore implements BlobStore {
             return null;
         }
         return new FileResource(fh);
-    }
-
-    private void writeFile(File target, Resource source) throws StorageException {
-        // Open the output stream
-        FileOutputStream fos;
-        try {
-            fos = new FileOutputStream(target);
-        } catch (FileNotFoundException ioe) {
-            throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
-        }
-
-        FileChannel channel = fos.getChannel();
-        try {
-            source.transferTo(channel);
-        } catch (IOException ioe) {
-            throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
-        } finally {
-            try {
-                channel.close();
-            } catch (IOException ioe) {
-                throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
-            }
-        }
     }
 
     public void clear() throws StorageException {
@@ -603,6 +598,58 @@ public class FileBlobStore implements BlobStore {
         File layerPath = getLayerPath(layerName);
         File metadataFile = new File(layerPath, "metadata.properties");
         return metadataFile;
+    }
+
+    private void writeFile(File target, TileObject stObj, boolean existed) throws StorageException {
+        // first write to temp file
+        tmp.mkdirs();
+        File temp = new File(tmp, UUID.randomUUID().toString());
+        
+        try {
+            // Open the output stream and read the blob into the tile
+            FileOutputStream fos = null;
+            FileChannel channel = null;
+            try {
+                fos = new FileOutputStream(temp);
+                
+                channel = fos.getChannel();
+                try {
+                    stObj.getBlob().transferTo(channel);
+                } catch (IOException ioe) {
+                    throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
+                } finally {
+                    try {
+                        if(channel != null) {
+                            channel.close();
+                        }
+                    } catch (IOException ioe) {
+                        throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
+                    }
+                }
+            } catch (FileNotFoundException ioe) {
+                throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
+            } finally {
+                IOUtils.closeQuietly(fos);
+            }
+            
+            // rename to final position. This will fail if another GWC also wrote this
+            // file, in such case we'll just eliminate this one
+            if(temp.renameTo(target)) {
+                temp = null;
+            } else if(existed) {
+                // if we are trying to overwrite and old tile, on windows that might fail... delete and rename instead
+                if(target.delete() && temp.renameTo(target)) {
+                    temp = null;
+                }
+            }
+        } finally {
+            
+            if(temp != null) {
+                log.warn("Tile " + target.getPath() + " was already written by another thread/process");
+                FileUtils.deleteQuietly(temp);
+            }
+        }
+        
     }
 
 }
