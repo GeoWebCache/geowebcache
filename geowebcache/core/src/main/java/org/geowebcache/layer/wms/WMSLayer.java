@@ -63,6 +63,8 @@ public class WMSLayer extends AbstractTileLayer {
     private String[] wmsUrl;
 
     private String wmsLayers;
+    
+    private String wmsQueryLayers;
 
     protected String wmsStyles;
 
@@ -554,7 +556,7 @@ public class WMSLayer extends AbstractTileLayer {
         params.put("LAYERS", layers);
 
         if (reqType == RequestType.FEATUREINFO) {
-            params.put("QUERY_LAYERS", layers);
+            params.put("QUERY_LAYERS", wmsQueryLayers != null ? wmsQueryLayers : layers);
         }
 
         String exceptions;
@@ -654,6 +656,10 @@ public class WMSLayer extends AbstractTileLayer {
 
     public String getWmsLayers() {
         return wmsLayers;
+    }
+    
+    public String getWmsQueryLayers() {
+    	return wmsQueryLayers;
     }
 
     public String getHttpPassword() {
