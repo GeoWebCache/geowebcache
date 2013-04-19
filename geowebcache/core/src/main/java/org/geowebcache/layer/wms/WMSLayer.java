@@ -126,11 +126,13 @@ public class WMSLayer extends AbstractTileLayer {
      * @param grids
      * @param metaWidthHeight
      * @param vendorParams
+     * @param queryable
+     * @param wmsQueryLayers
      */
     public WMSLayer(String layerName, String[] wmsURL, String wmsStyles, String wmsLayers,
             List<String> mimeFormats, Map<String, GridSubset> subSets,
             List<ParameterFilter> parameterFilters, int[] metaWidthHeight, String vendorParams,
-            boolean queryable) {
+            boolean queryable, String wmsQueryLayers) {
 
         this.name = layerName;
         this.wmsUrl = wmsURL;
@@ -152,6 +154,7 @@ public class WMSLayer extends AbstractTileLayer {
         // this.bgColor = "0x000000";
         // this.palette = "test.png";
         this.queryable = queryable;
+        this.wmsQueryLayers = wmsQueryLayers;
     }
 
     protected WMSLayer readResolve() {

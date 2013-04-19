@@ -14,9 +14,15 @@
  */
 package org.geowebcache.layer.wms;
 
-import static org.easymock.EasyMock.*;
-import static org.easymock.classextension.EasyMock.*;
-import static org.geowebcache.TestHelpers.*;
+import static org.easymock.EasyMock.anyObject;
+import static org.easymock.EasyMock.capture;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.classextension.EasyMock.replay;
+import static org.easymock.classextension.EasyMock.verify;
+import static org.geowebcache.TestHelpers.createFakeSourceImage;
+import static org.geowebcache.TestHelpers.createRequest;
+import static org.geowebcache.TestHelpers.createWMSLayer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -47,6 +53,8 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
+import org.geowebcache.layer.wms.WMSLayer.RequestType;
+import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.seed.GWCTask;
 import org.geowebcache.seed.SeedRequest;
@@ -136,6 +144,32 @@ public class WMSLayerTest extends TestCase {
         assertEquals(42, mock.wmsMetaRequestCounter.get());
         assertEquals(218, mock.storagePutCounter.get());
     }
+    
+	public void testGetFeatureInfoQueryLayers() throws MimeException {
+
+		// a layer with no query layers
+		WMSLayer l = createFeatureInfoLayer("a,b", null);
+		assertNotNull(l.getWmsLayers());
+		assertNull(l.getWmsQueryLayers());
+		Map<String, String> rt = l.getWMSRequestTemplate(
+				MimeType.createFromFormat("text/plain"),
+				RequestType.FEATUREINFO);
+		assertEquals(l.getWmsLayers(), rt.get("QUERY_LAYERS"));
+
+		// a layer with query layers
+		l = createFeatureInfoLayer("a,b", "b");
+		assertNotNull(l.getWmsLayers());
+		assertNotNull(l.getWmsQueryLayers());
+		rt = l.getWMSRequestTemplate(MimeType.createFromFormat("text/plain"),
+				RequestType.FEATUREINFO);
+		assertEquals(l.getWmsQueryLayers(), rt.get("QUERY_LAYERS"));
+
+	}
+
+	private WMSLayer createFeatureInfoLayer(String wmsLayers, String wmsQueryLayers) {
+		return new WMSLayer("name", new String[0], null, wmsLayers, null, null,
+				null, null, null, true, wmsQueryLayers);
+	}
 
     //ignore to fix the build until the failing assertion is worked out
     public void _testMinMaxCacheGetTile() throws Exception {
