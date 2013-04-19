@@ -14,15 +14,9 @@
  */
 package org.geowebcache.layer.wms;
 
-import static org.easymock.EasyMock.anyObject;
-import static org.easymock.EasyMock.capture;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
-import static org.easymock.classextension.EasyMock.replay;
-import static org.easymock.classextension.EasyMock.verify;
-import static org.geowebcache.TestHelpers.createFakeSourceImage;
-import static org.geowebcache.TestHelpers.createRequest;
-import static org.geowebcache.TestHelpers.createWMSLayer;
+import static org.easymock.EasyMock.*;
+import static org.easymock.classextension.EasyMock.*;
+import static org.geowebcache.TestHelpers.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
