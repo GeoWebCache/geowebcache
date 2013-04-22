@@ -27,6 +27,9 @@ public class ApplicationMime extends MimeType {
             "application/bil32", "bil32", "bil32",
             "application/bil32", false);
     
+    public static final ApplicationMime json = new ApplicationMime(
+            "application/json", "json", "json",
+            "application/json", false);
     
     private ApplicationMime(String mimeType, String fileExtension, 
                 String internalName, String format, boolean noop) {
@@ -43,6 +46,8 @@ public class ApplicationMime extends MimeType {
             return bil16;
         } else if (formatStr.equalsIgnoreCase(bil32.format)) {
             return bil32;
+        } else if (formatStr.equalsIgnoreCase(json.format)) {
+            return json;
         }
         
         return null;
@@ -53,6 +58,8 @@ public class ApplicationMime extends MimeType {
             return bil16;
         } else if (fileExtension.equals(bil32.fileExtension)) {
             return bil32;
+        } else if (fileExtension.equals(json.fileExtension)) {
+            return json;
         }
         
         return null;

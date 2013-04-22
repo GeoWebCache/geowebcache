@@ -197,6 +197,15 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="infoMimeFormats" type="gwc:MimeFormats" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            List of formats to be supported for GetFeatureInfo. These must be known to
+            GeoWebCache. Legal values are
+            text/plain, text/html, application/vnd.ogc.gml and application/json 
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="formatModifiers" type="gwc:formatModifiers" minOccurs="0">
         <xs:annotation>
           <xs:documentation xml:lang="en">
