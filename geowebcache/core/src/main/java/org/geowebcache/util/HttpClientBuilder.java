@@ -23,7 +23,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpConnectionManager;
@@ -155,8 +154,11 @@ public class HttpClientBuilder {
         HttpConnectionManagerParams params = new HttpConnectionManagerParams();
         params.setSoTimeout(backendTimeoutMillis);
         params.setConnectionTimeout(backendTimeoutMillis);
-        params.setMaxTotalConnections(concurrency);
-        params.setMaxConnectionsPerHost(HostConfiguration.ANY_HOST_CONFIGURATION, concurrency);
+        if (concurrency > 0) {
+            params.setMaxTotalConnections(concurrency);
+            params.setMaxConnectionsPerHost(
+                    HostConfiguration.ANY_HOST_CONFIGURATION, concurrency);
+        }
         
         connectionManager.setParams(params);
 
