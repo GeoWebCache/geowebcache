@@ -314,6 +314,11 @@ public class WMSService extends Service {
             throw new GeoWebCacheException("The info_format parameter ("
                     + values.get("info_format") + ")is missing or not recognized.");
         }
+        
+        if (mimeType != null && !tl.getInfoMimeTypes().contains(mimeType)) {
+            throw new GeoWebCacheException("The info_format parameter ("
+                    + values.get("info_format") + ") is not supported.");
+        }
 
         ConveyorTile gfiConv = new ConveyorTile(sb, tl.getName(), gridSubset.getName(), null,
                 mimeType, null, tile.servletReq, tile.servletResp);

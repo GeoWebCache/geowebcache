@@ -334,13 +334,12 @@ public class WMTSGetCapabilities {
      }
      
      private void layerInfoFormats(StringBuilder str, TileLayer layer) {
-         // TODO properly
-         if(layer.isQueryable()) {
-             str.append("    <InfoFormat>text/plain</InfoFormat>\n");
-             str.append("    <InfoFormat>text/html</InfoFormat>\n");
-             str.append("    <InfoFormat>application/vnd.ogc.gml</InfoFormat>\n");
+         if (layer.isQueryable()) {
+             Iterator<MimeType> mimeIter = layer.getInfoMimeTypes().iterator();
+        	 while (mimeIter.hasNext()) {
+        		 str.append("    <InfoFormat>"+mimeIter.next().getFormat()+"</InfoFormat>\n");
+        	 }
          }
-         
      }
      
      private void layerDimensions(StringBuilder str, TileLayer layer, List<ParameterFilter> filters) {

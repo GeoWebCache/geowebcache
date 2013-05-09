@@ -59,6 +59,8 @@ public abstract class AbstractTileLayer extends TileLayer {
     protected LayerMetaInformation metaInformation;
 
     protected List<String> mimeFormats;
+    
+    protected List<String> infoMimeFormats;
 
     protected List<FormatModifier> formatModifiers;
 
@@ -94,6 +96,8 @@ public abstract class AbstractTileLayer extends TileLayer {
     protected transient boolean saveExpirationHeaders;
 
     protected transient List<MimeType> formats;
+    
+    protected transient List<MimeType> infoFormats;
 
     protected transient Map<String, GridSubset> subSets;
 
@@ -243,6 +247,24 @@ public abstract class AbstractTileLayer extends TileLayer {
             gwce.printStackTrace();
         }
 
+        try {
+            // mimetypes for info
+            this.infoFormats = new ArrayList<MimeType>();
+            if (infoMimeFormats != null) {
+                for (String fmt : infoMimeFormats) {
+                	infoFormats.add(MimeType.createFromFormat(fmt));
+                }
+            }
+            if (infoFormats.size() == 0) {
+            	infoFormats.add(MimeType.createFromFormat("text/plain"));
+            	infoFormats.add(MimeType.createFromFormat("text/html"));
+            	infoFormats.add(MimeType.createFromFormat("application/vnd.ogc.gml"));
+            }
+        } catch (GeoWebCacheException gwce) {
+            log.error(gwce.getMessage());
+            gwce.printStackTrace();
+        }
+        
         if (subSets == null) {
             subSets = new HashMap<String, GridSubset>();
         }
@@ -373,7 +395,7 @@ public abstract class AbstractTileLayer extends TileLayer {
     public List<String> getMimeFormats() {
         return mimeFormats == null ? null : new ArrayList<String>(mimeFormats);
     }
-
+    
     /**
      * 
      * @return array with supported MIME types
@@ -383,6 +405,19 @@ public abstract class AbstractTileLayer extends TileLayer {
         return formats;
     }
 
+    public List<String> getInfoMimeFormats() {
+        return infoMimeFormats == null ? null : new ArrayList<String>(infoMimeFormats);
+    }
+
+    /**
+     * 
+     * @return array with supported MIME types for information
+     */
+    @Override
+    public List<MimeType> getInfoMimeTypes() {
+        return infoFormats;
+    }
+    
     @Override
     public int getExpireClients(int zoomLevel) {
         return getExpiration(this.expireClientsList, zoomLevel);
