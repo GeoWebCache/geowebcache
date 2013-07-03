@@ -16,68 +16,136 @@ Please make sure you use **Java 1.5** to compile to ensure that we do not introd
 You are encouraged to join the `GeoWebCache Developers mailing list <https://lists.sourceforge.net/lists/listinfo/geowebcache-devel>`_ to discuss your work.  It is always a good idea to ask whether anyone else has already solved the same problem.
 
 
-Setting up Maven
-----------------
+Setting Up
+----------
 
-#. Get the installation file from http://maven.apache.org/download.html, unpack and include the :file:`bin` directory in your PATH variable.
+#. The Maven build system respects the current setting of JAVA_HOME.
 
-#. Set JAVA_HOME to point to the root directory of your JDK, for example:
+   To define JAVA_HOME be sure to point to the root directory of your JDK.
 
-   Linux/OS X::
+   Windows:
 
-     $ export JAVA_HOME=/opt/jdk1.5.0_21
+   .. code-block:: bash
 
-   Windows::
+      set JAVA_HOME=C:\Program Files\Java\jdk1.5.0_21
 
-     > set JAVA_HOME=C:\Program Files\Java\jdk1.5.0_21
+   Linux/OS X:
 
-#. Test that Maven is installed correctly::
+   .. code-block:: bash
 
-     mvn -version
+      export JAVA_HOME=/opt/jdk1.5.0_21
 
-#. Check that you are using the right version of the ``javac`` compiler, as this is determined by PATH, not JAVA_HOME::
+#. You can download maven from http://maven.apache.org/download.html, unpack and include the :file:`bin` directory in your PATH variable.
 
-     javac -version
+   Windows:
 
-#. Check out the code::
+   .. code-block:: bash
 
-     git clone https://github.com/GeoWebCache/geowebcache.git
+      set M2_HOME = C:\java\apache-maven-3.0.5
+      set PATH=%PATH%;%M2_HOME%\bin;%JAVA_HOME%\bin
 
-To build the code, enter the :file:`geowebcache` directory and run::
+   Linux:
 
-   mvn clean install
+   .. code-block:: bash
 
-To build with an embedded Jetty server to test changes::
+      export M2_HOME = ~/java/apache-maven-3.0.5
+      export PATH=$PATH:$M2_HOME/bin:$JAVA_HOME/bin
 
-   mvn clean install jetty:run
+   For more detail instructions on maven see the `download page <http://maven.apache.org/download.cgi>`_.
 
-To build a WAR file:  Currently GeoWebCache has all classes in a single maven project. To build a WAR file, edit :file:`pom.xml` and replace ``<!--WAR`` and ``WAR-->`` with ``<`` and ``>`` respectively. Run ``mvn clean install`` and you will find ``geowebcache.war`` inside the target directory.
+#. Test that Maven is installed correctly:
+
+   .. code-block:: bash
+
+      mvn -version
+
+#. Check that you are using the right version of the ``javac`` compiler (as this is determined by ``PATH``, not ``JAVA_HOME``):
+
+   .. code-block:: bash
+
+      javac -version
+
+Build
+~~~~~
+
+#. Check out the code:
+
+   .. code-block:: bash
+
+      mkdir gwc
+      cd gwc
+      git clone https://github.com/GeoWebCache/geowebcache.git
+
+#. To build the code, enter the :file:`geowebcache` directory and run:
+
+   .. code-block:: bash
+
+      cd geowebcache
+      mvn clean install
+
+#. To quickly run a local GeoWebCache for testing:
+
+   .. code-block:: bash
+
+      cd web
+      mvn jetty:run
+
+#. A WAR is built as the last step in ``mvn clean install`` above.
+
+   It is located in :file:`geowebcache/web/target/geowebcache.war`
+
 
 Setting up Eclipse
 ------------------
 
-#. Inside the source code directory, run::
+#. Inside the source code directory, run:
 
-     mvn clean install eclipse:eclipse
+   .. code-block:: bash
 
-Create a new workspace in Eclipse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      cd geowebcache
+      mvn eclipse:eclipse
 
-#. Set up Maven repository  (Window -> Preferences -> Java -> Build Path -> Class Path Variables)
+   This generates the :file:`.project` and :file:`.classpath` files used to define an Eclipse
+   project.
 
-#. Add a new variable M2_REPO, and set the path to <home directory>/.m2/repository
+#. Create a new workspace in Eclipse
 
-#. Next, go to Java -> Code Style -> Formatter.  Click on Import, choose geowebcache/tools/formatter.xml
+#. Configure the Maven repository
 
-#. Now we need to import the actual project (File -> Import -> Existing Projects into Workspace)
+   * Navigate to :menuselection:`Window --> Preferences --> Java --> Build Path --> Class Path Variables`
+   * Add a new variable M2_REPO, and set the path to :file:`.m2/repository` in your home directory
+     as shown below:
 
-To run GeoWebCache, go to Run -> Debug Configurations, double-click on Java Configurations
+     ==================== =========================================
+     System               PATH
+     ==================== =========================================
+     Windows              :file:`C:\\\\Users\\You\\.m2\\repository`
+     Linux or Mac         :file:`~/.m2/repository`
+     ==================== =========================================
 
-  * Set Name: GWC
-  * The Project: geowebcache
-  * For main class, set "Start"
+#. Next we will configure Eclipse for working on GeoWebCache files.
 
-Then press "Close", or "Debug" if you want to try it right away.
+   * Navigate to to :menuselection:`Java --> Code Style --> Formatter`.
+   * Click on Import, choose :file:`geowebcache/tools/formatter.xml`
+
+#. There is also a :file:`geowebcache/tools/codetemplates.xml` to assist
+   with creating new files.
+
+#. Now we need to import the actual project:
+
+   * Open the appropriate wizard menuselection:`File --> Import --> Existing Projects into Workspace`
+   * Choose your :file:`geowebcache` folder
+
+   This step depends on the :file:`.project` and :file:`.classpath` files generated
+   by ``mvn eclipse:eclipse`` above.
+
+#. To run GeoWebCache use the main menu :menuselection:`Run --> Debug Configurations` and double-click on Java Configurations
+
+   * **Set Name:** :kbd:`GWC`
+   * **The Project:** :kbd:`geowebcache`
+   * For main class, set **Start**
+
+   Then press :guilabel:`Close`, or :guilabel:`Debug` if you want to try it right away.
 
 Contributing patches
 --------------------
@@ -87,3 +155,15 @@ The prefered way of providing patches is to create an issue in GitHub a patch, w
   git diff > patch.txt
 
 In addition to creating the issue, you are highly encouraged to jump on the `GeoWebCache Developers mailing list <https://lists.sourceforge.net/lists/listinfo/geowebcache-devel>`_ to introduce the patch.
+
+.. note:: Any patch or pull request submitted to GeoWebCache is considered a contribution:
+
+   * For short patches to a single file a GeoWebCache committer may be able to apply them under
+     their own name.
+
+     By submitting a patch or pull request you are granting the committer permission to do this.
+
+   * For longer patches beyond a single file we will ask you to sing a contribution agreement.
+
+     For more information on signing a contribution agreement, or to request commit access please
+     check with your employer and then talk to us on the development list.
