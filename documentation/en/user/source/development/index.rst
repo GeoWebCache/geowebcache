@@ -155,3 +155,15 @@ The prefered way of providing patches is to create an issue in GitHub a patch, w
   git diff > patch.txt
 
 In addition to creating the issue, you are highly encouraged to jump on the `GeoWebCache Developers mailing list <https://lists.sourceforge.net/lists/listinfo/geowebcache-devel>`_ to introduce the patch.
+
+.. note:: Any patch or pull request submitted to GeoWebCache is considered a contribution:
+
+   * For short patches to a single file a GeoWebCache committer may be able to apply them under
+     their own name.
+
+     By submitting a patch or pull request you are granting the committer permission to do this.
+
+   * For longer patches beyond a single file we will ask you to sing a contribution agreement.
+
+     For more information on signing a contribution agreement, or to request commit access please
+     check with your employer and then talk to us on the development list.
