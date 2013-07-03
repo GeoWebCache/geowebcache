@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <!-- mvn -Dtest=StorageBrokerTest -Dmaven.test.jvmargs='-XX:+HeapDumpOnOutOfMemoryError -Xms32m -Xmx32m' test -->  
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.geowebcache</groupId>
@@ -40,7 +40,7 @@
       <name>OpenGeo Maven Repository</name>
       <url>http://repo.opengeo.org/</url>
       <snapshots>
-	<enabled>true</enabled>
+        <enabled>true</enabled>
       </snapshots>
     </repository>
     <repository>
@@ -65,7 +65,7 @@
       <layout>default</layout>
     </repository>
   </repositories>
-  
+ 
   <distributionManagement>
     <repository>
       <id>opengeo</id>
@@ -103,10 +103,10 @@
       <artifactId>commons-logging</artifactId>
       <version>${commons-logging.version}</version>
       <exclusions>
-	<exclusion>
-	  <groupId>avalon-framework</groupId>
-	  <artifactId>avalon-framework</artifactId>
-	</exclusion>
+    <exclusion>
+      <groupId>avalon-framework</groupId>
+      <artifactId>avalon-framework</artifactId>
+    </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -141,18 +141,18 @@
       <artifactId>jcs</artifactId>
       <version>1.3</version>
       <exclusions>
-	<exclusion>
-	  <groupId>mysql</groupId>
-	  <artifactId>mysql-connector-java</artifactId>
-	</exclusion>
-	<exclusion>
-	  <groupId>berkeleydb</groupId>
-	  <artifactId>berkeleydb</artifactId>
-	</exclusion>
-	<exclusion>
-	  <groupId>hsqldb</groupId>
-	  <artifactId>hsqldb</artifactId>
-	</exclusion>
+    <exclusion>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+    </exclusion>
+    <exclusion>
+      <groupId>berkeleydb</groupId>
+      <artifactId>berkeleydb</artifactId>
+    </exclusion>
+    <exclusion>
+      <groupId>hsqldb</groupId>
+      <artifactId>hsqldb</artifactId>
+    </exclusion>
       </exclusions>
     </dependency -->
     
@@ -254,18 +254,18 @@
       <type>pom</type>
       <scope>test</scope>
       <exclusions>
-	<exclusion>
-	  <groupId>org.slf4j</groupId>
-	  <artifactId>slf4j-simple</artifactId>
-	</exclusion>
-	<exclusion>
-	  <groupId>org.slf4j</groupId>
-	  <artifactId>jcl104-over-slf4j</artifactId>
-	</exclusion>
-	<exclusion>
-	  <groupId>org.slf4j</groupId>
-	  <artifactId>slf4j-api</artifactId>
-	</exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-simple</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>jcl104-over-slf4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -337,18 +337,18 @@
       <artifactId>acegi-security</artifactId>
       <version>${acegi.version}</version>
       <exclusions>
-	<exclusion>
-	  <groupId>org.springframework</groupId>
-	  <artifactId>spring-remoting</artifactId>
-	</exclusion>
-	<exclusion>
-	  <groupId>org.springframework</groupId>
-	  <artifactId>spring-jdbc</artifactId>
-	</exclusion>
-	<exclusion>
-	  <groupId>org.springframework</groupId>
-	  <artifactId>spring-support</artifactId>
-	</exclusion>
+    <exclusion>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-remoting</artifactId>
+    </exclusion>
+    <exclusion>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jdbc</artifactId>
+    </exclusion>
+    <exclusion>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-support</artifactId>
+    </exclusion>
       </exclusions>
     </dependency>
     
@@ -518,36 +518,36 @@
       </plugin>
 
      <plugin>
-	<groupId>org.codehaus.mojo</groupId>
-	<artifactId>tomcat-maven-plugin</artifactId>
-	<configuration>
-	  <url>http://localhost:8080/manager</url>
-	  <server>localhost</server>
-	</configuration>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>tomcat-maven-plugin</artifactId>
+    <configuration>
+      <url>http://localhost:8080/manager</url>
+      <server>localhost</server>
+    </configuration>
       </plugin>
       
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-compiler-plugin</artifactId>
-	<configuration>
-	  <source>1.5</source>
-	  <target>1.5</target>
-	</configuration>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <configuration>
+      <source>1.5</source>
+      <target>1.5</target>
+    </configuration>
       </plugin>
       
       <plugin>
-	<artifactId>maven-source-plugin</artifactId>
-	<configuration>
-	  <attach>true</attach>
-	</configuration>
-	<executions>
-	  <execution>
-	    <id>attach-sources</id>
-	    <goals>
-	      <goal>jar</goal>
-	    </goals>
-	  </execution>
-	</executions>
+    <artifactId>maven-source-plugin</artifactId>
+    <configuration>
+      <attach>true</attach>
+    </configuration>
+    <executions>
+      <execution>
+        <id>attach-sources</id>
+        <goals>
+          <goal>jar</goal>
+        </goals>
+      </execution>
+    </executions>
       </plugin>
       
       <plugin>
@@ -582,9 +582,9 @@
     
     <extensions>
       <extension>
-	<groupId>org.apache.maven.wagon</groupId>
-	<artifactId>wagon-webdav</artifactId>
-	<version>1.0-beta-2</version>
+    <groupId>org.apache.maven.wagon</groupId>
+    <artifactId>wagon-webdav</artifactId>
+    <version>1.0-beta-2</version>
       </extension>
     </extensions>
     
