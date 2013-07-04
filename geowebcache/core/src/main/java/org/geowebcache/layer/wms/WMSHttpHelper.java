@@ -233,11 +233,17 @@ public class WMSHttpHelper extends WMSSourceHelper {
             if (responseCode != 204) {
                 try {
                     InputStream inStream = getMethod.getResponseBodyAsStream();
-                    ReadableByteChannel channel = Channels.newChannel(inStream);
-                    try {
-                        target.transferFrom(channel);
-                    } finally {
-                        channel.close();
+                    if( inStream == null ){
+                    	String uri = getMethod.getURI().getURI();
+                    	log.error( "No response for "+getMethod.getName() +" " + uri );
+                    }
+                    else {
+	                    ReadableByteChannel channel = Channels.newChannel(inStream);
+	                    try {
+	                        target.transferFrom(channel);
+	                    } finally {
+	                        channel.close();
+	                    }
                     }
                     if (responseLength > 0) {
                         int readAccu = (int) target.getSize();
@@ -294,6 +300,9 @@ public class WMSHttpHelper extends WMSSourceHelper {
         getMethod.setDoAuthentication(doAuthentication);
 
         // fire!
+        if (log.isDebugEnabled()) {
+        	log.trace( getMethod.getURI().getURI() );
+        }
         httpClient.executeMethod(getMethod);
         return getMethod;
     }
