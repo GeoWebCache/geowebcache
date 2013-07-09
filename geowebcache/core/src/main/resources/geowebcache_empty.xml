@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns="http://geowebcache.org/schema/1.3.0"
-  xsi:schemaLocation="http://geowebcache.org/schema/1.3.0 http://geowebcache.org/schema/1.3.0/geowebcache.xsd">
-  <version>1.3.0</version>
+  xmlns="http://geowebcache.org/schema/1.4.0"
+  xsi:schemaLocation="http://geowebcache.org/schema/1.4.0 http://geowebcache.org/schema/1.4.0/geowebcache.xsd">
+  <version>1.4.0</version>
   <backendTimeout>120</backendTimeout>
   <!--
   <serviceInformation>
@@ -86,13 +86,12 @@
           <values>
             <string>population</string>
             <string>polygon</string>
-            <string>usflags</string>
             <string>pophatch</string>
           </values>
         </stringParameterFilter>
       </parameterFilters>
       <wmsUrl>
-        <string>http://demo.opengeo.org/geoserver/wms</string>
+        <string>http://demo.opengeo.org/geoserver/topp/wms</string>
       </wmsUrl>
     </wmsLayer>
 
