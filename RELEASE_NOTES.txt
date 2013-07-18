@@ -1,3 +1,22 @@
+GeoWebCache 1.5.0-beta (2013-07-17)
+------------------------------
+
+The begining of the first release cycle to be synchronized with GeoTools and GeoServer.
+
+Improvements:
+++++++++++++
+
+- Configurable GetInfo MIME formats
+- New ParameterFilter types can be added
+- XStream configuration can be varied between REST and Config file contexts
+- REST endpoint for mass truncating layers
+
+Notable Bug Fixes:
++++++++++++++++++
+
+- Code clean up, documentation, and revised dependencies
+
+
 GeoWebCache 1.4.0 (2013-07-09)
 ------------------------------
 
