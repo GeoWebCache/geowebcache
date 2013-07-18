@@ -6,13 +6,13 @@ Branching for Release
 
 Make a copy of the default config file and config schema for compatibility testing
 
-$ cp core/src/main/resources/geowebcache.xml geowebcache/core/src/test/resources/org/geowebcache/config/geowebcache_150.xml
+$ cp core/src/main/resources/geowebcache.xml core/src/test/resources/org/geowebcache/config/geowebcache_150.xml
 $ cp core/src/main/resources/org/geowebcache/config/geowebcache.xsd core/src/main/resources/org/geowebcache/config/geowebcache_150.xsd
 
 Commit
 
 $ git add core
-$ git commit "Retained 1.5 config for compatibility testing"
+$ git commit -m "Retained 1.5 config for compatibility testing"
 
 Create a new branch off of master.
 
@@ -30,6 +30,8 @@ $ find release -name "*.xml" -exec sed -i 's/1\.5\-SNAPSHOT/1\.6\-SNAPSHOT/g' {}
 $ sed -i 's/1\.5\.0/1\.6\.0/g' core/src/main/resources/geowebcache.xml
 $ sed -i 's/1\.5\.0/1\.6\.0/g' core/src/main/resources/geowebcache_empty.xml
 $ sed -i 's/1\.5\.0/1\.6\.0/g' core/src/main/resources/org/geowebcache/config/geowebcache.xsd
+
+Edit conf.py in the documentation sources, set the version numbers appropriately
 
 Commit changes
 
@@ -51,18 +53,20 @@ $ git commit -m "Updated release notes for 1.5.0"
 
 Note the commit id
 
-- Build docs
-$ cd <project root>/documentation/en/user
-$ make clean html
+Set the 'release' version in conf.py
 
 - Update project version
 Set project version in pom.xml files:
 $ cd <project root>/geowebcache
 $ find . -name pom.xml -exec sed -i 's/1\.5\-SNAPSHOT/1\.5\.0/g' {} \;
-$ sed -i 's/10\-SNAPSHOT/11.0/g' pom.xml
+$ sed -i 's/10\-SNAPSHOT/10-beta/g' pom.xml
 $ find release -name "*.xml" -exec sed -i 's/1\.5\-SNAPSHOT/1\.5\.0/g' {} \;
 
 (replace 1\.5\.0 by the actual version number keeping the '\' escape characters)
+
+- Build docs
+$ cd <project root>/documentation/en/user
+$ make clean html
 
 - Build version
 $ cd <project root>/geowebcache
