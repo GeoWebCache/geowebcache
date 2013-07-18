@@ -1,0 +1,180 @@
+GWC Release Guide
+=================
+
+Branching for Release
+---------------------
+
+Make a copy of the default config file and config schema for compatibility testing
+
+$ cp core/src/main/resources/geowebcache.xml geowebcache/core/src/test/resources/org/geowebcache/config/geowebcache_150.xml
+$ cp core/src/main/resources/org/geowebcache/config/geowebcache.xsd core/src/main/resources/org/geowebcache/config/geowebcache_150.xsd
+
+Commit
+
+$ git add core
+$ git commit "Retained 1.5 config for compatibility testing"
+
+Create a new branch off of master.
+
+$ git branch 1.5.x
+
+In master
+
+$ git checkout master
+
+Update version numbers in POMs and other config files
+
+$ find . -name pom.xml -exec sed -i 's/1\.5\-SNAPSHOT/1\.6\-SNAPSHOT/g' {} \;
+$ sed -i 's/10\-SNAPSHOT/11-SNAPSHOT/g' pom.xml
+$ find release -name "*.xml" -exec sed -i 's/1\.5\-SNAPSHOT/1\.6\-SNAPSHOT/g' {} \;
+$ sed -i 's/1\.5\.0/1\.6\.0/g' core/src/main/resources/geowebcache.xml
+$ sed -i 's/1\.5\.0/1\.6\.0/g' core/src/main/resources/geowebcache_empty.xml
+$ sed -i 's/1\.5\.0/1\.6\.0/g' core/src/main/resources/org/geowebcache/config/geowebcache.xsd
+
+Commit changes
+
+$ git add .
+$ git commit -m "Updated version to 1.6-SNAPSHOT"
+
+
+Tagging and releasing
+---------------------
+In the branch
+
+$ git checkout 1.5.x
+
+Update the Release Notes.
+
+$ emacs RELEASE_NOTES.txt
+$ git add RELEASE_NOTES.txt
+$ git commit -m "Updated release notes for 1.5.0"
+
+Note the commit id
+
+- Build docs
+$ cd <project root>/documentation/en/user
+$ make clean html
+
+- Update project version
+Set project version in pom.xml files:
+$ cd <project root>/geowebcache
+$ find . -name pom.xml -exec sed -i 's/1\.5\-SNAPSHOT/1\.5\.0/g' {} \;
+$ sed -i 's/10\-SNAPSHOT/11.0/g' pom.xml
+$ find release -name "*.xml" -exec sed -i 's/1\.5\-SNAPSHOT/1\.5\.0/g' {} \;
+
+(replace 1\.5\.0 by the actual version number keeping the '\' escape characters)
+
+- Build version
+$ cd <project root>/geowebcache
+$ mvn clean install
+
+- Package up release artifacts
+$ mvn assembly:attached
+
+The following files should be at <project root>/target/release:
+ - geowebcache-<VERSION>-doc.zip
+ - geowebcache-<VERSION>-src.zip
+ - geowebcache-<VERSION>-war.zip
+
+- Test the src artifact
+
+$ cd <project root>/geowebcache/target/release
+$ unzip geowebcache-<VERSION>-src.zip
+$ mvn clean install
+$ cd web
+$ mvn jetty:run
+Go to http://localhost:8080/geowebcache and check the app works as expected. Make sure the front page contains the version number. Test the demo pages
+$ CTRL+C
+$ cd ../..
+$ rm -rf geowebcache-<VERSION>
+
+- Test the war artifact
+
+$ cd <project root>/geowebcache/target/release
+$ unzip geowebcache-<VERSION>-war.zip
+$ less LICENSE.txt //check license is copied ok
+$ rm LICENSE.txt
+$ mv geowebcache.war <tomcat dir>/webapps
+$ cd <tomcat dir>
+$ rm -rf temp/geowebcache (in case you had an older gwc version in there)
+$ bin/startup.sh
+
+Go to http://localhost:8080/geowebcache and check the app works as expected. Make sure the front page contains the
+version number and the git commit as the build ID. Test the demo pages
+
+- Build schema docs
+Make sure you have xsddoc installed: <http://sourceforge.net/projects/xframe/files/xsddoc/>. If not, download xsddoc.zip and:
+$ unzip xsddoc.zip
+$ cd xsddoc/bin
+$ dos2unix xsddoc
+$ chmod +x xsddoc
+$ alias xsddoc=`pwd`/xsddoc
+
+Now build the schema docs:
+
+$ cd <project root>/geowebcache
+$ export VERSION=<VERSION>
+$ mkdir -p target/release/geowebcache-$VERSION/schema
+$ xsddoc -o target/release/geowebcache-$VERSION/schema -t "GeoWebCache $VERSION Configuration Schema" core/src/main/resources/org/geowebcache/config/geowebcache.xsd
+
+Check the generated docs:
+$ cd target/release
+$ firefox geowebcache-$VERSION/schema/index.html
+
+Package up the docs:
+$ zip -r geowebcache-$VERSION-xsddoc.zip geowebcache-$VERSION
+$ rm -rf geowebcache-$VERSION
+
+- Deploy (Requires credentials for the OpenGeo maven repository)
+$ cd <project root>/geowebcache
+$ mvn deploy
+
+- Tag the release
+$ cd <project root>/geowebcache
+$ git add .
+$ git commit -m "Set version to $VERSION"
+$ git tag -a $VERSION -m "Tagging release $VERSION"
+
+- Reset version info
+Now reset the version number to major.minor-SNAPSHOT, but recording a reverse patch so the history is clear:
+$git revert <commit id>
+where <commit id> is the commit hash for the  "Set version to $VERSION" commit above. I.e. the first one shown by git log
+
+$ git push origin
+$ git push origin --tags
+don't forget to add the --tags option so the new tag is pushed to the mainstream repo
+
+
+
+
+Publishing
+----------
+
+This requires credentials for the GWC web site, and a Sourceforge account with access to the GWC project.
+
+Create a new directory for the version in the files section on SourceForge.  Upload the four zip files in release/ to it.  
+
+If it's the new stable release, bring up the info dialog for the war zip and set it to be the default download for all platforms and the name of the download to "GeoWebCache <version>"
+
+Use SSH/SCP to connect to the web server.  The root of the site is at /home/geowebcache_org/htdocs
+
+Upload the doc zip to docs/ and unzip the doc subdirectory from within it.  Rename the new directory to the version number.
+
+If it's the new stable release, update the 'current' symlink to point to the new docs dir.
+
+Update docs/index.html
+
+Create the directory schema/VERSION and upload geowebcache.xsd and geowebcache_diskquota.xsd to it.
+
+Update index.html in the root.  Add a notice at the top of the page and provide a link to the files on Sourceforge.
+
+Post emails to the Dev and User mailing lists.
+
+
+
+Other notes
+-----------
+
+When you're done releasing, cherry pick the commit with the release note changes into master.  Alternatively, copy, paste and commit.
+
+The config schema and example config files shouldn't usualy change in the stable branch, but if they do, make a version named copy in a seperate commit from the change, then cherry pick that commit into master.
