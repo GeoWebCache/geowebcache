@@ -337,7 +337,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 Integer.parseInt(metaStrings[1]) };
 
         return new WMSLayer(name, wmsurl, stylesStr, name, mimeFormats, grids, paramFilters,
-                metaWidthHeight, this.vendorParameters, queryable);
+                metaWidthHeight, this.vendorParameters, queryable, null);
     }
 
     private WebMapServer getWMS() {
