@@ -72,7 +72,7 @@ public class TestUtils {
         int[] metaWidthHeight = { metaTileFactorX, metaTileFactorY };
 
         WMSLayer layer = new WMSLayer("test:layer", urls, "aStyle", "test:layer", formatList,
-                grids, null, metaWidthHeight, "vendorparam=true", false);
+                grids, null, metaWidthHeight, "vendorparam=true", false, null);
 
         layer.initialize(gridSetBroker);
 
