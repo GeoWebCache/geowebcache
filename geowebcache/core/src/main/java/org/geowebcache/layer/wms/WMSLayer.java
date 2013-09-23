@@ -118,6 +118,31 @@ public class WMSLayer extends AbstractTileLayer {
      * Note XStream uses reflection, this is only used for testing and loading from getCapabilities
      * 
      * @param layerName
+     * @param wmsURL
+     * @param wmsStyles
+     * @param wmsLayers
+     * @param mimeFormats
+     * @param subSets
+     * @param parameterFilters
+     * @param metaWidthHeight
+     * @param vendorParams
+     * @param queryable
+     * 
+     * @deprecated 1.6.0
+     */
+    @Deprecated
+    public WMSLayer(String layerName, String[] wmsURL, String wmsStyles, String wmsLayers,
+            List<String> mimeFormats, Map<String, GridSubset> subSets,
+            List<ParameterFilter> parameterFilters, int[] metaWidthHeight, String vendorParams,
+            boolean queryable) {
+        this(layerName, wmsURL,wmsStyles, wmsLayers, mimeFormats, subSets, parameterFilters, 
+                metaWidthHeight, vendorParams, queryable, null);
+    }
+    
+    /**
+     * Note XStream uses reflection, this is only used for testing and loading from getCapabilities
+     * 
+     * @param layerName
      * @param cacheFactory
      * @param wmsURL
      * @param wmsStyles
