@@ -19,6 +19,7 @@ package org.geowebcache.diskquota.bdb;
 import static org.geowebcache.diskquota.DiskQuotaMonitor.GWC_DISKQUOTA_DISABLED;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +35,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.ConfigurationException;
@@ -123,7 +125,7 @@ public class BDBQuotaStore implements QuotaStore {
      * @throws InterruptedException
      * @see {@link #close()}
      */
-    public void startUp() throws InterruptedException {
+    public void startUp() throws InterruptedException, IOException {
         if (!diskQuotaEnabled) {
             log.info(getClass().getName() + " won't start, got env variable "
                     + GWC_DISKQUOTA_DISABLED + "=true");
@@ -132,6 +134,26 @@ public class BDBQuotaStore implements QuotaStore {
         open = true;
         File storeDirectory = new File(cacheRootDir, "diskquota_page_store");
         storeDirectory.mkdirs();
+        File version = new File(storeDirectory, "version.txt");
+        if(storeDirectory.list().length==0) {
+            // Directory is empty
+            try {
+                FileUtils.write(version, "1.1");
+                } catch (IOException e) {
+                    throw new IOException("BDB DiskQuota could not write version.txt to new database", e);
+                }
+        } else {
+            // Directory not empty
+            try {
+                String versionString = FileUtils.readFileToString(version);
+                if (!versionString.equals("1.1")) {
+                    throw new IOException("BDB DiskQuota does not support database version "+versionString);
+                }
+            } catch (IOException e) {
+                throw new IOException("BDB DiskQuota could not detemine database version", e);
+            }
+        }
+        
         CustomizableThreadFactory tf = new CustomizableThreadFactory("GWC DiskQuota Store Writer-");
         transactionRunner = Executors.newFixedThreadPool(1, tf);
         try {
