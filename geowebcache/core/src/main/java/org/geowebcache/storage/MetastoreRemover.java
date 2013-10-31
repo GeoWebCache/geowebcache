@@ -89,14 +89,13 @@ public class MetastoreRemover {
         
         // remove disk quota if necessary (this we have to do regardless as we changed the 
         // structure of the params from int to string)
-        log.info("Cleaning up the old disk quota database");
         String path = root.getPath() + File.separator + "diskquota_page_store";
         File quotaRoot = new File(path);
         if(quotaRoot.exists()) {
             File version = new File(quotaRoot, "version.txt");
             if(!version.exists()) {
+                log.warn("Old style DiskQuota database found, removing it.");
                 FileUtils.deleteDirectory(quotaRoot);
-                FileUtils.write(version, "1.1");
             }
         }
     }
