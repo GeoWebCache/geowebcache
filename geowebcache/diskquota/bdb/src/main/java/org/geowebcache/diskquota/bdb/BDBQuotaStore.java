@@ -69,6 +69,10 @@ public class BDBQuotaStore implements QuotaStore {
 
     private static final String GLOBAL_QUOTA_NAME = "___GLOBAL_QUOTA___";
 
+    public static final String STORE_VERSION = "1.1";
+
+    private static final String VERSION_FILE = "version.txt";
+
     private EntityStore entityStore;
 
     private final String cacheRootDir;
@@ -134,23 +138,23 @@ public class BDBQuotaStore implements QuotaStore {
         open = true;
         File storeDirectory = new File(cacheRootDir, "diskquota_page_store");
         storeDirectory.mkdirs();
-        File version = new File(storeDirectory, "version.txt");
+        File version = new File(storeDirectory, VERSION_FILE);
         if(storeDirectory.list().length==0) {
             // Directory is empty
             try {
-                FileUtils.write(version, "1.1");
+                FileUtils.write(version, STORE_VERSION);
                 } catch (IOException e) {
-                    throw new IOException("BDB DiskQuota could not write version.txt to new database", e);
+                    throw new IOException("BDB DiskQuota could not write "+VERSION_FILE+" to new database", e);
                 }
         } else {
             // Directory not empty
             try {
                 String versionString = FileUtils.readFileToString(version);
-                if (!versionString.equals("1.1")) {
+                if (!versionString.equals(STORE_VERSION)) {
                     throw new IOException("BDB DiskQuota does not support database version "+versionString);
                 }
             } catch (IOException e) {
-                throw new IOException("BDB DiskQuota could not detemine database version", e);
+                throw new IOException("BDB DiskQuota could not read "+VERSION_FILE+" to detemine database version", e);
             }
         }
         
