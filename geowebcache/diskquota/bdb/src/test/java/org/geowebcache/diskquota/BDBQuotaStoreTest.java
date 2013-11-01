@@ -445,5 +445,10 @@ public class BDBQuotaStoreTest extends TestCase {
         PageStats pageStats = store.setTruncated(page);
         assertEquals(0f, pageStats.getFillFactor());
     }
+    
+    public void testCreatesVersion() throws Exception {
+        File versionFile = new File(targetDir, "diskquota_page_store/version.txt");
+        assertTrue(versionFile.exists());
+    }
 
 }
