@@ -42,6 +42,7 @@ import org.geowebcache.io.Resource;
 import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.layer.meta.LayerMetaInformation;
+import org.geowebcache.layer.meta.MetadataURL;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.LockProvider.Lock;
 import org.geowebcache.mime.FormatModifier;
@@ -784,6 +785,10 @@ public class WMSLayer extends AbstractTileLayer {
 
     public void setMetaInformation(LayerMetaInformation layerMetaInfo) {
         this.metaInformation = layerMetaInfo;
+    }
+
+    public void setMetadataURLs(List<MetadataURL> metadataURLs) {
+        this.metadataURLs = metadataURLs;
     }
 
     @Override
