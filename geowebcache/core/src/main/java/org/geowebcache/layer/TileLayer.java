@@ -46,6 +46,7 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.meta.LayerMetaInformation;
+import org.geowebcache.layer.meta.MetadataURL;
 import org.geowebcache.layer.updatesource.UpdateSourceDefinition;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
@@ -117,6 +118,11 @@ public abstract class TileLayer {
      * @return
      */
     public abstract LayerMetaInformation getMetaInformation();
+
+    /**
+     * List of Metadata URLs for the layer.
+     */
+    public abstract List<MetadataURL> getMetadataURLs();
 
     /**
      * Retrieves the GridSet names for this layer.
