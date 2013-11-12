@@ -379,7 +379,7 @@ public class WMTSGetCapabilities {
         for (String gridSetId : layer.getGridSubsets()) {
             GridSubset gridSubset = layer.getGridSubset(gridSetId);
          
-             str.append("    <TileMatrixSetLink>");
+             str.append("    <TileMatrixSetLink>\n");
              str.append("      <TileMatrixSet>" + gridSubset.getName() + "</TileMatrixSet>\n");
              
              if (! gridSubset.fullGridSetCoverage()) {
@@ -398,7 +398,7 @@ public class WMTSGetCapabilities {
                 }
                 str.append("      </TileMatrixSetLimits>\n");
             }
-            str.append("    </TileMatrixSetLink>");
+            str.append("    </TileMatrixSetLink>\n");
          }
      }
      
