@@ -41,7 +41,6 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 import org.geowebcache.storage.blobstore.file.FilePathUtils;
 import org.geowebcache.util.FileUtils;
 
@@ -61,6 +60,8 @@ final class LayerCacheInfoBuilder {
     private final Map<String, List<Future<ZoomLevelVisitor.Stats>>> perLayerRunningTasks;
 
     private final QuotaUpdatesMonitor quotaUsageMonitor;
+
+    private boolean closed = false;
 
     public LayerCacheInfoBuilder(final File rootCacheDir, final ExecutorService threadPool,
             QuotaUpdatesMonitor quotaUsageMonitor) {
@@ -116,7 +117,7 @@ final class LayerCacheInfoBuilder {
             final int zoomStart = gs.getZoomStart();
             final int zoomStop = gs.getZoomStop();
 
-            for (int zoomLevel = zoomStart; zoomLevel <= zoomStop; zoomLevel++) {
+            for (int zoomLevel = zoomStart; zoomLevel <= zoomStop && !closed; zoomLevel++) {
                 String gridsetZLevelParamsDirName;
                 gridsetZLevelParamsDirName = FilePathUtils.gridsetZoomLevelDir(gridSetId,
                         zoomLevel);
@@ -183,7 +184,7 @@ final class LayerCacheInfoBuilder {
      * @author groldan
      * 
      */
-    private static final class ZoomLevelVisitor implements FileFilter,
+    private final class ZoomLevelVisitor implements FileFilter,
             Callable<ZoomLevelVisitor.Stats> {
 
         private final String gridSetId;
@@ -200,7 +201,7 @@ final class LayerCacheInfoBuilder {
 
         private final String parametersId;
 
-        private static class Stats {
+        private class Stats {
             long runTimeMillis;
 
             long numTiles;
@@ -251,9 +252,9 @@ final class LayerCacheInfoBuilder {
          * @see java.io.FileFilter#accept(java.io.File)
          */
         public boolean accept(final File file) {
-            // if (Thread.interrupted()) {
-            // throw new TraversalCanceledException();
-            // }
+            if(closed) {
+                throw new TraversalCanceledException();
+            }
             if (file.isDirectory()) {
                 log.trace("Processing files in " + file.getAbsolutePath());
                 return true;
@@ -291,7 +292,7 @@ final class LayerCacheInfoBuilder {
          * @author groldan
          * 
          */
-        private static class TraversalCanceledException extends RuntimeException {
+        private class TraversalCanceledException extends RuntimeException {
             private static final long serialVersionUID = 1L;
             // doesn't need a body
         }
@@ -329,6 +330,7 @@ final class LayerCacheInfoBuilder {
     }
 
     public void shutDown() {
+        this.closed  = true;
         this.threadPool.shutdownNow();
     }
 }

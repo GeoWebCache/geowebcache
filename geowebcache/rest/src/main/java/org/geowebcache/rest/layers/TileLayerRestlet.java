@@ -26,16 +26,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.Configuration;
+import org.geowebcache.config.ContextualConfigurationProvider.Context;
 import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.rest.XstreamRepresentation;
 import org.geowebcache.service.HttpErrorCodeException;
+import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
+import org.geowebcache.util.URLMangler;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.restlet.data.CharacterSet;
@@ -70,6 +75,19 @@ public class TileLayerRestlet extends GWCRestlet {
     private XMLConfiguration xmlConfig;
 
     private TileLayerDispatcher layerDispatcher;
+
+    private URLMangler urlMangler = new NullURLMangler();
+    
+    private GeoWebCacheDispatcher controller = null;
+
+    // set by spring
+    public void setUrlMangler(URLMangler urlMangler) {
+        this.urlMangler = urlMangler;
+    }
+    // set by spring
+    public void setController(GeoWebCacheDispatcher controller) {
+        this.controller = controller;
+    }
 
     @Override
     public void handle(Request request, Response response) {
@@ -120,11 +138,23 @@ public class TileLayerRestlet extends GWCRestlet {
 
         Representation representation;
         if (layerName == null) {
-            String restRoot = req.getResourceRef().getParentRef().toString();
-            if (restRoot.endsWith("/")) {
-                restRoot = restRoot.substring(0, restRoot.length() - 1);
+            String restRoot = req.getRootRef().toString();
+            String contextPath = req.getRootRef().getPath();
+            
+            String servletPrefix = null;
+            if (controller!=null) servletPrefix=controller.getServletPrefix();
+            
+            String parentPath="";
+            int spIndex = 0;
+            if(servletPrefix!=null){
+                spIndex = contextPath.indexOf(servletPrefix);
+                parentPath = contextPath.substring(0, spIndex);
             }
-            representation = listLayers(formatExtension, restRoot);
+            contextPath = contextPath.substring(spIndex, contextPath.length());
+            String baseURL = restRoot.substring(0, restRoot.length() - contextPath.length());
+            String prefix = req.getResourceRef().getParentRef().getPath();
+            prefix = prefix.substring(parentPath.length(), prefix.length());
+            representation = listLayers(formatExtension, baseURL, prefix);
         } else {
             try {
                 layerName = URLDecoder.decode(layerName, "UTF-8");
@@ -138,9 +168,10 @@ public class TileLayerRestlet extends GWCRestlet {
     /**
      * @param extension
      * @param rootPath
+     * @param contextPath
      * @return
      */
-    Representation listLayers(String extension, final String restRoot) {
+    Representation listLayers(String extension, final String rootPath, final String contextPath) {
 
         if (null == extension) {
             extension = "xml";
@@ -157,7 +188,7 @@ public class TileLayerRestlet extends GWCRestlet {
             final XStream xStream = ((XstreamRepresentation) representation).getXStream();
             xStream.alias("layers", List.class);
 
-            xmlConfig.getConfiguredXStream(xStream);
+            xmlConfig.getConfiguredXStreamWithContext(xStream, Context.REST);
 
             xStream.registerConverter(new Converter() {
 
@@ -190,7 +221,8 @@ public class TileLayerRestlet extends GWCRestlet {
                         writer.startNode("atom:link");
                         writer.addAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
                         writer.addAttribute("rel", "alternate");
-                        String href = restRoot + "/layers/" + ServletUtils.URLEncode(name) + ".xml";
+                        String href = urlMangler.buildURL(rootPath, contextPath, "/layers/"
+                                + ServletUtils.URLEncode(name) + ".xml");
                         writer.addAttribute("href", href);
                         writer.addAttribute("type", MediaType.TEXT_XML.toString());
 
@@ -342,7 +374,7 @@ public class TileLayerRestlet extends GWCRestlet {
     protected TileLayer deserializeAndCheckLayerInternal(String layerName, String formatExtension,
             InputStream is) throws RestletException, IOException {
 
-        XStream xs = xmlConfig.getConfiguredXStream(new XStream(new DomDriver()));
+        XStream xs = xmlConfig.getConfiguredXStreamWithContext(new XStream(new DomDriver()), Context.REST);
 
         TileLayer newLayer;
 
@@ -369,8 +401,13 @@ public class TileLayerRestlet extends GWCRestlet {
             if (cause instanceof RuntimeException) {
                 throw (RuntimeException) cause;
             }
-            throw new RestletException(cause.getMessage(), Status.SERVER_ERROR_INTERNAL,
-                    (Exception) cause);
+            if (cause!=null){
+                throw new RestletException(cause.getMessage(), Status.SERVER_ERROR_INTERNAL,
+                        (Exception) cause);
+            } else {
+                throw new RestletException(xstreamExceptionWrapper.getMessage(), 
+                    Status.SERVER_ERROR_INTERNAL, xstreamExceptionWrapper);
+            }
         }
 
         if (!newLayer.getName().equals(layerName)) {
@@ -379,6 +416,22 @@ public class TileLayerRestlet extends GWCRestlet {
                     Status.CLIENT_ERROR_BAD_REQUEST);
         }
 
+        // Check that the parameter filters deserialized correctly
+        if(newLayer.getParameterFilters()!=null) {
+            try {
+                for(@SuppressWarnings("unused") 
+                ParameterFilter filter: newLayer.getParameterFilters()){
+                    // Don't actually need to do anything here.  Just iterate over the elements 
+                    // casting them into ParameterFilter
+                }
+            } catch (ClassCastException ex) {
+                // By this point it has already been turned into a POJO, so the XML is no longer 
+                // available.  Otherwise it would be helpful to include in the error message.
+                throw new RestletException("parameterFilters contains an element that is not "+
+                        "a known ParameterFilter", Status.CLIENT_ERROR_BAD_REQUEST);
+            }
+        }
+        
         return newLayer;
     }
 
@@ -389,7 +442,7 @@ public class TileLayerRestlet extends GWCRestlet {
      * @return
      */
     public Representation getXMLRepresentation(TileLayer layer) {
-        XStream xs = xmlConfig.getConfiguredXStream(new XStream());
+        XStream xs = xmlConfig.getConfiguredXStreamWithContext(new XStream(), Context.REST);
         String xmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + xs.toXML(layer);
 
         return new StringRepresentation(xmlText, MediaType.TEXT_XML);
@@ -404,8 +457,8 @@ public class TileLayerRestlet extends GWCRestlet {
     public JsonRepresentation getJsonRepresentation(TileLayer layer) {
         JsonRepresentation rep = null;
         try {
-            XStream xs = xmlConfig.getConfiguredXStream(new XStream(
-                    new JsonHierarchicalStreamDriver()));
+            XStream xs = xmlConfig.getConfiguredXStreamWithContext(new XStream(
+                    new JsonHierarchicalStreamDriver()), Context.REST);
             JSONObject obj = new JSONObject(xs.toXML(layer));
             rep = new JsonRepresentation(obj);
         } catch (JSONException jse) {

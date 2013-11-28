@@ -139,6 +139,22 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         this.quotaStoreProvider = quotaStoreProvider;
         this.cacheCleaner = cacheCleaner;
     }
+    
+    /**
+     * Returns the quota store provider used by this class (used in {@link #startUp()}) to
+     * get the {@link QuotaStore} instance.
+     */
+    public QuotaStoreProvider getQuotaStoreProvider() {
+        return quotaStoreProvider;
+    }
+    
+    /**
+     * Returns the quota store monitored by this class
+     * @return
+     */
+    public QuotaStore getQuotaStore() {
+        return quotaStore;
+    }
 
     /**
      * Returns whether the DiskQuotaMonitor is enabled.
@@ -248,6 +264,11 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         // when a quota is exceeded
         setUpScheduledCleanUp();
 
+        // the startup might be called more than once (happens in GeoServer after disk quota
+        // re-configuration for example), in this case shut down the old cache info builder
+        if(this.cacheInfoBuilder != null) {
+            cacheInfoBuilder.shutDown();
+        }
         this.cacheInfoBuilder = launchCacheInfoGatheringThreads();
     }
 
@@ -334,6 +355,17 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         if (config != quotaConfig) {
             this.quotaConfig.setFrom(config);
         }
+    }
+
+    /**
+     * Reloads the configuration from disk
+     * @param config
+     * @throws IOException 
+     * @throws ConfigurationException 
+     */
+    public void reloadConfig() throws ConfigurationException, IOException {
+        DiskQuotaConfig config = configLoader.loadConfig();
+        this.quotaConfig.setFrom(config);
     }
 
     /**

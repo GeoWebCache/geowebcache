@@ -233,6 +233,12 @@ public abstract class TileLayer {
     public abstract List<MimeType> getMimeTypes();
 
     /**
+     * 
+     * @return array with supported MIME types for information
+     */
+    public abstract List<MimeType> getInfoMimeTypes();
+    
+    /**
      * Gets the expiration time to be declared to clients.
      * @param zoomLevel integer zoom level at which to consider the expiration rules
      * @return integer duration in seconds

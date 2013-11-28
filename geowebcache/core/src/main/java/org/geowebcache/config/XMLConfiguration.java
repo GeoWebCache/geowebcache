@@ -60,6 +60,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
+import org.geowebcache.config.ContextualConfigurationProvider.Context;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -77,9 +78,9 @@ import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
-import org.geowebcache.locks.LockProvider;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.seed.SeedRequest;
+import org.geowebcache.seed.TruncateLayerRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.springframework.util.Assert;
@@ -390,7 +391,7 @@ public class XMLConfiguration implements Configuration {
     private GeoWebCacheConfiguration loadConfiguration(InputStream xmlFile) throws IOException,
             ConfigurationException {
         Node rootNode = loadDocument(xmlFile);
-        XStream xs = getConfiguredXStream(new XStream());
+        XStream xs = getConfiguredXStreamWithContext(new XStream(), Context.PERSIST);
 
         GeoWebCacheConfiguration config;
         config = (GeoWebCacheConfiguration) xs.unmarshal(new DomReader((Element) rootNode));
@@ -455,12 +456,19 @@ public class XMLConfiguration implements Configuration {
         log.debug("Config backup done");
     }
 
-    @SuppressWarnings("unchecked")
     public XStream getConfiguredXStream(XStream xs) {
-        return getConfiguredXStream(xs, this.context);
+        return getConfiguredXStreamWithContext(xs, this.context, (ContextualConfigurationProvider.Context)null);
     }
-
     public static XStream getConfiguredXStream(XStream xs, WebApplicationContext context) {
+        return getConfiguredXStreamWithContext(xs, context, (ContextualConfigurationProvider.Context)null);
+    }
+    public XStream getConfiguredXStreamWithContext(XStream xs, 
+            ContextualConfigurationProvider.Context providerContext) {
+        return getConfiguredXStreamWithContext(xs, this.context, providerContext);
+    }
+    
+    public static XStream getConfiguredXStreamWithContext(XStream xs, WebApplicationContext context, 
+            ContextualConfigurationProvider.Context providerContext) {
         // XStream xs = xstream;
         xs.setMode(XStream.NO_REFERENCES);
 
@@ -510,6 +518,8 @@ public class XMLConfiguration implements Configuration {
 
         xs.alias("serviceInformation", ServiceInformation.class);
         xs.alias("contactInformation", ContactInformation.class);
+        
+        xs.processAnnotations(TruncateLayerRequest.class);
 
         if (context != null) {
             /*
@@ -519,6 +529,15 @@ public class XMLConfiguration implements Configuration {
             List<XMLConfigurationProvider> configExtensions = GeoWebCacheExtensions.extensions(
                     XMLConfigurationProvider.class, context);
             for (XMLConfigurationProvider extension : configExtensions) {
+                // Check if the provider is context dependent
+                if(extension instanceof ContextualConfigurationProvider &&
+                        // Check if the context is applicable for the provider
+                        (providerContext==null ||
+                        !((ContextualConfigurationProvider)extension).appliesTo(providerContext))) {
+                            // If so, try the next one
+                            continue;
+                    }
+                
                 xs = extension.getConfiguredXStream(xs);
             }
         }
@@ -532,28 +551,32 @@ public class XMLConfiguration implements Configuration {
      */
     private void persistToFile(File xmlFile) throws IOException {
         // create the XStream for serializing the configuration
-        XStream xs = getConfiguredXStream(new XStream());
+        XStream xs = getConfiguredXStreamWithContext(new XStream(), Context.PERSIST);
 
         OutputStreamWriter writer = null;
         try {
-            writer = new OutputStreamWriter(new FileOutputStream(xmlFile), "UTF-8");
-        } catch (UnsupportedEncodingException uee) {
-            uee.printStackTrace();
-            throw new IOException(uee.getMessage());
-        } catch (FileNotFoundException fnfe) {
-            throw fnfe;
-        }
-
-        try {
-            // set version to latest
-            String currentSchemaVersion = getCurrentSchemaVersion();
-            gwcConfig.setVersion(currentSchemaVersion);
-
-            writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-            xs.toXML(gwcConfig, writer);
-        } catch (IOException e) {
-            throw (IOException) new IOException("Error writing to " + xmlFile.getAbsolutePath()
-                    + ": " + e.getMessage()).initCause(e);
+            try {
+                writer = new OutputStreamWriter(new FileOutputStream(xmlFile), "UTF-8");
+            } catch (UnsupportedEncodingException uee) {
+                uee.printStackTrace();
+                throw new IOException(uee.getMessage());
+            } catch (FileNotFoundException fnfe) {
+                throw fnfe;
+            }
+    
+            try {
+                // set version to latest
+                String currentSchemaVersion = getCurrentSchemaVersion();
+                gwcConfig.setVersion(currentSchemaVersion);
+    
+                writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+                xs.toXML(gwcConfig, writer);
+            } catch (IOException e) {
+                throw (IOException) new IOException("Error writing to " + xmlFile.getAbsolutePath()
+                        + ": " + e.getMessage()).initCause(e);
+            }
+        } finally {
+            IOUtils.closeQuietly(writer);
         }
 
         log.info("Wrote configuration to " + xmlFile.getAbsolutePath());

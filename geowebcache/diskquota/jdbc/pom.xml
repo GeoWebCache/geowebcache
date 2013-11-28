@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.geowebcache</groupId>
     <artifactId>gwc-diskquota</artifactId>
-    <version>1.4-SNAPSHOT</version>
+    <version>1.5-SNAPSHOT</version>
   </parent>
   <groupId>org.geowebcache</groupId>
   <artifactId>gwc-diskquota-jdbc</artifactId>
@@ -19,10 +19,6 @@
       <groupId>org.geowebcache</groupId>
       <artifactId>gwc-diskquota-core</artifactId>
       <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.sleepycat</groupId>
-      <artifactId>je</artifactId>
     </dependency>
     <dependency>
       <groupId>postgresql</groupId>

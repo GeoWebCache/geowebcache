@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -442,5 +444,41 @@ public class ServletUtils {
             }
         }
         return ret;
+    }
+
+    /**
+     * Generate the base url of the request, minus the context path
+     * @param req servlet request
+     * @return Base url of request, minus the context path
+     */
+    public static String getServletBaseURL(HttpServletRequest req, String servletPrefix) {
+        String result;
+        if (req.getServerPort() == 80 || req.getServerPort() == 443) {
+            result = req.getScheme() + "://" + req.getServerName();
+        } else {
+            result = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
+        }
+        if(servletPrefix==null){
+            return result;
+        } else {
+            // If the servlet is embeded within another, include the context path of the parent 
+            // servlet in the base.
+            String reqUrl = req.getContextPath();
+            return result+reqUrl;
+        }
+    }
+    
+    /**
+     * Generate the context path of the request, less the specified trailing path
+     * @param req
+     * @param trailingPath
+     */
+    public static String getServletContextPath(HttpServletRequest req, String trailingPath, String servletPrefix) {
+        String reqUrl = req.getRequestURL().toString();
+        String servletBase = ServletUtils.getServletBaseURL(req, servletPrefix);
+        int prefixIdx = servletBase.length();
+        int suffixIdx = reqUrl.indexOf(trailingPath);
+        String context = reqUrl.substring(prefixIdx, suffixIdx);
+        return context;
     }
 }

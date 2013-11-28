@@ -22,5 +22,4 @@ public interface XMLConfigurationProvider {
      *         xml mappings
      */
     XStream getConfiguredXStream(XStream xs);
-
 }

@@ -1,3 +1,61 @@
+GeoWebCache 1.5.0 (2013-08-18)
+------------------------------
+
+Final 1.5.0 version. 
+
+GeoWebCache 1.5.0-beta (2013-07-17)
+------------------------------
+
+The begining of the first release cycle to be synchronized with GeoTools and GeoServer.
+
+Improvements:
+++++++++++++
+
+- Configurable GetInfo MIME formats
+- New ParameterFilter types can be added
+- XStream configuration can be varied between REST and Config file contexts
+- REST endpoint for mass truncating layers
+
+Notable Bug Fixes:
++++++++++++++++++
+
+- Code clean up, documentation, and revised dependencies
+
+
+GeoWebCache 1.4.0 (2013-07-09)
+------------------------------
+
+After more than a year without a release and with GeoServer shipping with a 
+milestone of the GeoWebCache master, we've decided to synchronize releases with
+GeoServer and GeoTools once every 6 months starting with GeoWebCache 1.5 to be
+released in conjuntion with GeoServer 2.4.  GeoWebCache 1.4 is based on the
+milestone GeoServer was using and we are treating its use in GeoServer for 
+several months as being a successful release candidate.
+
+Improvements:
+++++++++++++
+
+- Metastore removed
+- Ability to create meaningful names for capabilities files
+- Allow for new subtypes of ParameterFilter, and other ParameterFilter fixes
+- Pluggable URL Mangling
+- Disk quota over JDBC
+- list layers through REST API
+- Documentation improvements
+
+Notable Bug Fixes:
++++++++++++++++++
+
+- Fix an XSS vulnerability in OWSExceptions
+- fix XSS vulnerability in ExceptionReport
+- Force TileBreeder to drain currentPool.
+- ArrayIndexOutOfBoundsException when producing WMTS capabilities with layers 
+  that do cache grids
+- Update global quota when a layer or a gridset is removed
+- Fixed off by one error when converting between internal and WMTS coordinates
+- Many other minor bug fixes
+
+
 GeoWebCache 1.3-RC3 (2012-05-07)
 --------------------------------
 

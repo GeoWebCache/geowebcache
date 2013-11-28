@@ -136,6 +136,10 @@ public class TileBreeder implements ApplicationContextAware {
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
+    // Number of dispatches without drain() being called.
+    private int dispatchesWithoutDrain = 0;
+    private static final int MAX_DISPATCHES_WITHOUT_DRAIN = 50;
+
     private static class SubmittedTask {
         public final GWCTask task;
 
@@ -283,6 +287,11 @@ public class TileBreeder implements ApplicationContextAware {
                 task.setTaskId(taskId);
                 Future<GWCTask> future = threadPool.submit(new MTSeeder(task));
                 this.currentPool.put(taskId, new SubmittedTask(task, future));
+            }
+            dispatchesWithoutDrain++;
+            if(dispatchesWithoutDrain>MAX_DISPATCHES_WITHOUT_DRAIN) {
+                // There are probably a lot of completed tasks that need to be drained
+                drain();
             }
         } finally {
             lock.writeLock().unlock();
@@ -458,6 +467,7 @@ public class TileBreeder implements ApplicationContextAware {
     private void drain() {
         lock.writeLock().lock();
         try {
+            dispatchesWithoutDrain=0;
             threadPool.purge();
             for (Iterator<Entry<Long, SubmittedTask>> it = this.currentPool.entrySet().iterator(); it
                     .hasNext();) {

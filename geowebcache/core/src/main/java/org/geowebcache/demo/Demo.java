@@ -386,8 +386,15 @@ public class Demo {
                     .getClass().getName())) {
                 makeTextInput(doc, parameterId, 25);
             } else {
-                throw new IllegalStateException("Unknown parameter filter type for layer '"
-                        + tl.getName() + "': " + pf.getClass().getName());
+                // Unknown filter type
+                if (legalValues == null) {
+                    // Doesn't have a defined set of values, just provide a text field
+                    makeTextInput(doc, parameterId, 25);
+                } else {
+                    // Does have a defined set of values, so provide a drop down
+                    Map<String, String> keysValues = makeParametersMap(defaultValue, legalValues);
+                    makePullDown(doc, parameterId, keysValues, defaultValue);
+                }
             }
             doc.append("</td></tr>\n");
         }
@@ -413,7 +420,9 @@ public class Demo {
 
         while (iter.hasNext()) {
             Entry<String, String> entry = iter.next();
-            if (entry.getKey().equals(defaultKey)) {
+            final String key = entry.getKey();
+            // equal, including both null
+            if ((key==null && defaultKey==null) || (key!=null && key.equals(defaultKey))) {
                 doc.append("<option value=\"" + entry.getValue() + "\" selected=\"selected\">"
                         + entry.getKey() + "</option>\n");
             } else {

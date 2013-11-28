@@ -149,7 +149,7 @@ public class SQLDialect {
         if (schema != null) {
             sb.append(schema).append(".");
         }
-        sb.append("TILESET");
+        sb.append("TILESET WHERE KEY <> '" + JDBCQuotaStore.GLOBAL_QUOTA_NAME + "'");
 
         return sb.toString();
     }
@@ -238,6 +238,15 @@ public class SQLDialect {
             sb.append(schema).append(".");
         }
         sb.append("TILESET WHERE KEY = :" + keyParam);
+        return sb.toString();
+    }
+    
+    public String getUsedQuotaByGridSetId(String schema, String gridsetIdParam) {
+        StringBuilder sb = new StringBuilder("SELECT SUM(BYTES) FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET WHERE GRIDSET_ID = :").append(gridsetIdParam);
         return sb.toString();
     }
 

@@ -24,6 +24,8 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.geotools.data.wms.xml.Dimension;
 import org.geotools.data.wms.xml.Extent;
 
+import com.google.common.base.Preconditions;
+
 /**
  * This class is used to forward information about WMS 1.1.x dimensions from the getcapabilities
  * configuration to GWC clients.
@@ -40,6 +42,8 @@ public class NaiveWMSDimensionFilter extends ParameterFilter implements WMSDimen
     private Extent extent;
 
     public NaiveWMSDimensionFilter(Dimension dimension, Extent extent) {
+        Preconditions.checkNotNull(dimension);
+        Preconditions.checkNotNull(extent);
         this.dimension = dimension;
         this.extent = extent;
 
@@ -55,6 +59,7 @@ public class NaiveWMSDimensionFilter extends ParameterFilter implements WMSDimen
     }
 
     public String apply(String str) throws ParameterException {
+        if(str==null || str.isEmpty()) return getDefaultValue();
         return str;
     }
 

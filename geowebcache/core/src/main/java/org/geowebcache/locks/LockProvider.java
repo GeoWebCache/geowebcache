@@ -27,11 +27,15 @@ public interface LockProvider {
      * Acquires a exclusive lock on the specified key
      * @param lockKey
      */
-    public void getLock(String lockKey) throws GeoWebCacheException;
+    public Lock getLock(String lockKey) throws GeoWebCacheException;
+    
+    
+    public interface Lock {
+        /**
+         * Releases the lock on the specified key
+         * @param lockKey
+         */
+        public void release() throws GeoWebCacheException;
+    }
 
-    /**
-     * Releases the lock on the specified key
-     * @param lockKey
-     */
-    public void releaseLock(String lockKey) throws GeoWebCacheException;
 }

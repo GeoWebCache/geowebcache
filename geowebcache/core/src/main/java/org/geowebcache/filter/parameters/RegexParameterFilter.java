@@ -16,32 +16,52 @@
  */
 package org.geowebcache.filter.parameters;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
+import com.google.common.base.Preconditions;
+
+@ParametersAreNonnullByDefault
 public class RegexParameterFilter extends ParameterFilter {
 
     private static final long serialVersionUID = -1496940509350980799L;
 
-    private String regex;
+    public final static String DEFAULT_EXPRESSION = "";
 
-    private transient Pattern pat;
+    private String regex = DEFAULT_EXPRESSION;
+
+    private transient Pattern pat = Pattern.compile(regex);
 
     public RegexParameterFilter() {
         super();
     }
-
+    
+    /**
+     * Get a {@link Matcher} for this filter's regexp against the given string.
+     * @param value
+     * @return
+     */
     public synchronized Matcher getMatcher(String value) {
-        if (pat == null) {
-            pat = Pattern.compile(getRegex());
-        }
-
         return pat.matcher(value);
     }
 
+    protected RegexParameterFilter readResolve() {
+        super.readResolve();
+        Preconditions.checkNotNull(regex);
+        this.pat = Pattern.compile(regex);
+        return this;
+    }
+    
+    @Override
     public String apply(String str) throws ParameterException {
+        if (str == null || str.length() == 0) {
+            return getDefaultValue();
+        }
+        
         if (getMatcher(str).matches()) {
             return str;
         }
@@ -49,12 +69,21 @@ public class RegexParameterFilter extends ParameterFilter {
         throw new ParameterException(str + " violates filter for parameter " + getKey());
     }
 
-    public List<String> getLegalValues() {
+    @Override
+    public @Nullable List<String> getLegalValues() {
         return null;
     }
 
+    /**
+     * Checks whether a given parameter value applies to this filter.
+     *
+     * @param parameterValue
+     *            the value to check if applies to this parameter filter
+     * @return {@code true} if {@code parameterValue} is valid according to this filter,
+     *         {@code false} otherwise
+     */
     @Override
-    public boolean applies(String parameterValue) {
+    public boolean applies(@Nullable String parameterValue) {
         return getMatcher(parameterValue).matches();
     }
 
@@ -67,10 +96,12 @@ public class RegexParameterFilter extends ParameterFilter {
 
     /**
      * @param regex
-     *            the regex to set
+     *            the regex to set.  {@literal null} will be treated as default value.
      */
-    public void setRegex(String regex) {
+    public void setRegex(@Nullable String regex) {
+        if(regex==null) regex = DEFAULT_EXPRESSION;
         this.regex = regex;
+        this.pat = Pattern.compile(this.regex);
     }
 
     @Override

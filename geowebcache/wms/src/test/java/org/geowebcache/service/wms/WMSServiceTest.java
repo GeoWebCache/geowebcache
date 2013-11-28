@@ -1,7 +1,8 @@
 package org.geowebcache.service.wms;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,7 +16,9 @@ import javax.servlet.http.HttpServletResponse;
 import junit.framework.TestCase;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
+import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.config.XMLGridSubset;
+import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
@@ -27,6 +30,9 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.util.NullURLMangler;
+
+import com.mockrunner.mock.web.MockHttpServletResponse;
 
 public class WMSServiceTest extends TestCase {
 
@@ -69,7 +75,10 @@ public class WMSServiceTest extends TestCase {
     private void testMultipleCrsMatchingGridSubsets(final String srs, final String expectedGridset,
             long[] tileIndex) throws Exception {
 
-        service = new WMSService(sb, tld, mock(RuntimeStats.class));
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
 
         @SuppressWarnings("unchecked")
         Map<String, String> kvp = new CaseInsensitiveMap();
@@ -157,6 +166,46 @@ public class WMSServiceTest extends TestCase {
         }
 
         return tileLayer;
+    }
+
+    public void testGetCap() throws Exception {
+    
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
+    
+        @SuppressWarnings("unchecked")
+        Map<String, String> kvp = new CaseInsensitiveMap();
+        kvp.put("service", "WMS");
+        kvp.put("version", "1.1.1");
+        kvp.put("request", "GetCapabilities");
+       
+    
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        when(req.getCharacterEncoding()).thenReturn("UTF-8");
+        when(req.getParameterMap()).thenReturn(kvp);
+        
+        
+
+        List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale","EPSG:4326");
+        TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames);
+        when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
+        
+    
+        ConveyorTile conv = service.getConveyor(req, resp);
+        assertNotNull(conv);
+        
+        final String layerName = conv.getLayerId();
+        assertNull(layerName);
+        
+        assertEquals(Conveyor.RequestHandler.SERVICE,conv.reqHandler);
+        WMSGetCapabilities wmsCap = new WMSGetCapabilities(tld, conv.servletReq,"http://localhost:8080", "/service/wms", new NullURLMangler());
+        wmsCap.writeResponse(conv.servletResp);   
+        assertTrue(resp.containsHeader("content-disposition"));
+        assertEquals("inline;filename=wms-getcapabilities.xml", resp.getHeader("content-disposition"));                            
+    
     }
 
 }

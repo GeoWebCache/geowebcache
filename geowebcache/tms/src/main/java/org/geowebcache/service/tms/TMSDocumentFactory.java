@@ -26,6 +26,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.util.URLMangler;
 
 /**
  * Basic implementation of the TMS documents. Not all of GWCs more advanced
@@ -40,17 +41,24 @@ public class TMSDocumentFactory {
     GridSetBroker gsb;
     
     String baseUrl;
+
+    private final String contextPath;
+
+    private final URLMangler urlMangler;
     
-    protected TMSDocumentFactory(TileLayerDispatcher tld, GridSetBroker gsb, String baseUrl) {
+    protected TMSDocumentFactory(TileLayerDispatcher tld, GridSetBroker gsb, String baseUrl,
+            String contextPath, URLMangler urlMangler) {
         this.tld = tld;
         this.gsb = gsb;
         this.baseUrl = baseUrl;
+        this.contextPath = contextPath;
+        this.urlMangler = urlMangler;
     }
     
     protected String getTileMapServiceDoc() {
         StringBuilder str = new StringBuilder();
         str.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-        str.append("<TileMapService version=\"1.0.0\" services=\""+baseUrl+"\">\n");
+        str.append("<TileMapService version=\"1.0.0\" services=\""+urlMangler.buildURL(baseUrl, contextPath, "")+"\">\n");
         // TODO can have these set through Spring
         str.append("  <Title>Tile Map Service</Title>\n");
         str.append("  <Abstract>A Tile Map Service served by GeoWebCache</Abstract>\n");
@@ -109,7 +117,7 @@ public class TMSDocumentFactory {
     protected String getTileMapDoc(TileLayer layer, GridSubset gridSub, GridSetBroker gsb, MimeType mimeType) {
         StringBuilder str = new StringBuilder();
         str.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-        str.append("<TileMap version=\"1.0.0\" tilemapservice=\""+ baseUrl + "/service/tms/1.0.0\">\n");
+        str.append("<TileMap version=\"1.0.0\" tilemapservice=\""+ urlMangler.buildURL(baseUrl, contextPath, "/service/tms/1.0.0") + "\">\n");
         str.append("  <Title>").append(tileMapTitle(layer)).append("</Title>\n");
         str.append("  <Abstract>").append(tileMapDescription(layer)).append("</Abstract>\n");
        // <KeywordList></KeywordList>
@@ -166,7 +174,7 @@ public class TMSDocumentFactory {
     
     private String tileMapUrl(TileLayer tl, GridSubset gridSub, MimeType mimeType) {
         // TODO add XML escaping
-        return baseUrl + "/service/tms/1.0.0/" + tileMapName(tl,gridSub,mimeType);
+        return urlMangler.buildURL(baseUrl, contextPath, "/service/tms/1.0.0/" + tileMapName(tl,gridSub,mimeType));
     }
     
     private String tileMapUrl(TileLayer tl, GridSubset gridSub, MimeType mimeType, int z) {

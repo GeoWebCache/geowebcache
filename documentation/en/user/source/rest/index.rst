@@ -11,6 +11,7 @@ This section will discuss the GeoWebCache REST API.
    layers.rst
    seed.rst
    diskquota.rst
+   masstruncate.rst
 
 
 

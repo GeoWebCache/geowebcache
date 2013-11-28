@@ -17,12 +17,16 @@
 package org.geowebcache.filter.parameters;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
+import com.google.common.base.Preconditions;
+
+@ParametersAreNonnullByDefault
 public class StringParameterFilter extends ParameterFilter {
 
     private static final long serialVersionUID = 7383381085250203901L;
@@ -30,19 +34,24 @@ public class StringParameterFilter extends ParameterFilter {
     private List<String> values;
 
     public StringParameterFilter() {
-        readResolve();
+        values = new ArrayList<String>(0);
     }
 
-    private StringParameterFilter readResolve() {
+    protected StringParameterFilter readResolve() {
+        super.readResolve();
         if (values == null) {
-            values = new ArrayList<String>(2);
+            values = new ArrayList<String>(0);
+        }
+        for(String value: values) {
+            Preconditions.checkNotNull(value, "Value list included a null pointer.");
         }
         return this;
     }
 
-    public String apply(String str) throws ParameterException {
+    @Override
+    public String apply(@Nullable String str) throws ParameterException {
         if (str == null || str.length() == 0) {
-            return "";
+            return getDefaultValue();
         }
 
         Iterator<String> iter = values.iterator();
@@ -55,19 +64,41 @@ public class StringParameterFilter extends ParameterFilter {
         throw new ParameterException(str + " violates filter for parameter " + getKey());
     }
 
+    /**
+     * @return the values the parameter can take.  Altering this list is deprecated and in future 
+     * it will be unmodifiable; use {@link setValues} instead.
+     */
     public List<String> getValues() {
+        // TODO: apply Collections.unmodifiableList(...)
         return values;
     }
 
     /**
-     * @see org.geowebcache.filter.parameters.ParameterFilter#getLegalValues()
+     * Set the values the parameter can take
      */
-    public List<String> getLegalValues() {
-        return values;
+    public void setValues(List<String> values) {
+        Preconditions.checkNotNull(values);
+        for(String value: values) {
+            Preconditions.checkNotNull(value, "Value list included a null pointer.");
+        }
+        this.values = new ArrayList<String>(values);
     }
 
     @Override
-    public boolean applies(String parameterValue) {
+    public @Nullable List<String> getLegalValues() {
+        return getValues();
+    }
+
+    /**
+     * Checks whether a given parameter value applies to this filter.
+     *
+     * @param parameterValue
+     *            the value to check if applies to this parameter filter
+     * @return {@code true} if {@code parameterValue} is valid according to this filter,
+     *         {@code false} otherwise
+     */
+    @Override
+    public boolean applies(@Nullable String parameterValue) {
         return getLegalValues().contains(parameterValue);
     }
 

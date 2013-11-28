@@ -45,6 +45,7 @@ import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.ServletUtils;
+import org.geowebcache.util.URLMangler;
 
 public class WMSGetCapabilities {
 
@@ -56,9 +57,11 @@ public class WMSGetCapabilities {
 
     private boolean includeVendorSpecific = false;
 
-    protected WMSGetCapabilities(TileLayerDispatcher tld, HttpServletRequest servReq) {
+    protected WMSGetCapabilities(TileLayerDispatcher tld, HttpServletRequest servReq, String baseUrl,
+            String contextPath, URLMangler urlMangler) {
         this.tld = tld;
-        urlStr = servReq.getRequestURL().toString() + "?SERVICE=WMS&amp;";
+        
+        urlStr = urlMangler.buildURL(baseUrl, contextPath, WMSService.SERVICE_PATH) + "?SERVICE=WMS&amp;";
 
         String[] tiledKey = { "TILED" };
         Map<String, String> tiledValue = ServletUtils.selectedStringsFromMap(
@@ -77,6 +80,7 @@ public class WMSGetCapabilities {
         response.setContentType("text/xml");
         response.setCharacterEncoding("UTF-8");
         response.setContentLength(data.length);
+        response.setHeader("content-disposition", "inline;filename=wms-getcapabilities.xml");
 
         try {
             OutputStream os = response.getOutputStream();
@@ -277,10 +281,36 @@ public class WMSGetCapabilities {
     }
 
     private void capabilityRequestGetFeatureInfo(StringBuilder str) {
+    	
+        // Find all the info formats we support
+        Iterable<TileLayer> layerIter = tld.getLayerList();
+
+        HashSet<String> formats = new HashSet<String>();
+
+        for (TileLayer layer : layerIter) {
+            if (!layer.isEnabled()) {
+                continue;
+            }
+            if (layer.getMimeTypes() != null) {
+                Iterator<MimeType> mimeIter = layer.getInfoMimeTypes().iterator();
+                while (mimeIter.hasNext()) {
+                    MimeType mime = mimeIter.next();
+                    formats.add(mime.getFormat());
+                }
+            } else {
+                formats.add("text/plain");
+                formats.add("text/html");
+                formats.add("application/vnd.ogc.gml");
+            }
+
+        }
+
+    	
         str.append("    <GetFeatureInfo>\n");
-        str.append("      <Format>text/plain</Format>\n");
-        str.append("      <Format>text/html</Format>\n");
-        str.append("      <Format>application/vnd.ogc.gml</Format>\n");
+        Iterator<String> formatIter = formats.iterator();
+        while (formatIter.hasNext()) {
+            str.append("      <Format>" + formatIter.next() + "</Format>\n");
+        }
         str.append("      <DCPType>\n");
         str.append("        <HTTP>\n");
         str.append("        <Get>\n");

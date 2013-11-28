@@ -57,7 +57,7 @@ public class MetastoreRemoverTest extends TestCase {
         assertFalse(original1.exists());
         assertTrue(transformed1.exists());
         if(migrateCreationDates) {
-            assertEquals(1348596068000l, transformed1.lastModified());
+            assertTrue(Math.abs(transformed1.lastModified() - 1348596068000d) < 1000);
         } else {
             assertEquals(FIXED_DATE, transformed1.lastModified());
         }
@@ -68,7 +68,7 @@ public class MetastoreRemoverTest extends TestCase {
         assertFalse(original2.exists());
         assertTrue(transformed2.exists());
         if(migrateCreationDates) {
-            assertEquals(1348595993000l, transformed2.lastModified());
+        	assertTrue(Math.abs(transformed2.lastModified() - 1348595993000l) < 1000);
         } else {
             assertEquals(FIXED_DATE, transformed1.lastModified());
         }
@@ -76,7 +76,7 @@ public class MetastoreRemoverTest extends TestCase {
         // let's also check a file that did not have the parameter transformed
         File untransformed = new File(root, "raster_test_layer/EPSG_900913_01/0_0/00_01.jpeg");
         if(migrateCreationDates) {
-            assertEquals(1348595928000l, untransformed.lastModified());
+        	assertTrue(Math.abs(untransformed.lastModified() - 1348595928000l) < 1000);
         } else {
             assertEquals(FIXED_DATE, transformed1.lastModified());
         }
