@@ -50,3 +50,13 @@ Finally, although not recommended, it is possible to set this location directly 
    </bean -->
 
 making sure to edit the path.  As usual, any changes to the servlet configuration files will require :ref:`configuration.reload`.
+
+
+PNGCrush
+--------
+
+If `PNGCrush<http://pmt.sourceforge.net/pngcrush/>`_ is installed, GeoWebCach can apply it to tiles as they are cached.  This increases overhead while caching, but the optimized PNGs will take be smaller and reduce bandwidth usage in serving them.
+
+To enable PNGCrush, set ``PNGCRUSH_PATH`` to the path of the PNGCrush executable.  It can be set the same way as ``GEOWEBCACHE_CACHE_DIR`` above.  If it is empty, PNGCrush will not be used.
+
+The command line parameters can be set with ``PNGCRUSH_OPTIONS`` which defaults to ``-q``.  The directory used to write out to files before optimizing them can be set with ``OPTIMIZATION_STAGING_DIR`` and by default a directory will be created inside ``GEOWEBCACHE_CACHE_DIR``.  A memory based filesystem like ``tmpfs`` or ``/dev/shm`` will reduce the overhead of disk IO.

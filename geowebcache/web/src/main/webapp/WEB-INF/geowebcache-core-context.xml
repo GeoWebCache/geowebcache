@@ -168,5 +168,9 @@
   </bean>
 
   <bean id="gwcURLMangler" class="org.geowebcache.util.NullURLMangler" />
+  
+  <bean id="gwcPNGCrushFilter" class="org.geowebcache.filter.resource.PNGCrushFilter">
+    <constructor-arg ref="gwcDefaultStorageFinder"/>
+  </bean>
 
 </beans>

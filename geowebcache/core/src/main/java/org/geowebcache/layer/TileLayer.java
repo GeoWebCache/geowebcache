@@ -31,10 +31,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.filter.request.RequestFilterException;
+import org.geowebcache.filter.resource.ResourceFilter;
+import org.geowebcache.filter.resource.ResourceFilterException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridMismatchException;
 import org.geowebcache.grid.GridSet;
@@ -635,6 +638,9 @@ public abstract class TileLayer {
                             if (tileProto.isMetaTileCacheOnly()) {
                                 tileProto.getStorageBroker().putTransient(tile);
                             } else {
+                                // apply resource filters
+                                filterResource(tile.getBlob(), tileProto.getMimeType());
+                                // persist the filtered resource
                                 tileProto.getStorageBroker().put(tile);
                             }
                             tileProto.getStorageObject().setCreated(tile.getCreated());
@@ -650,5 +656,32 @@ public abstract class TileLayer {
             }
         }
     }
+    
+    /**
+     * Get the ResourceFilters this layer applies to the tiles it persists.
+     * @return
+     */
+    protected List<ResourceFilter> getFilters() {
+        // TODO make this configurable on a per layer basis
+        return GeoWebCacheExtensions.extensions(ResourceFilter.class);
+    }
 
+    /**
+     * Apply ResourceFilters to the given Resource.  The layer should apply this to the resource of 
+     * every tile it persists to the cache.
+     * @param resource the Resource to filter
+     * @param type the type of the resource
+     */
+    public void filterResource(Resource resource, MimeType type) {
+        // TODO Mechanism to audit filter run times
+        log.trace("Applying Resource Filters");
+        for(ResourceFilter filter: getFilters()) {
+            try {
+                filter.applyTo(resource, type);
+            } catch (ResourceFilterException e) {
+                log.error("Error applying blob filter to resource", e);
+            }
+        }
+        log.trace("Done Applying Resource Filters");
+    }
 }

@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import org.easymock.IAnswer;
 import org.easymock.classextension.EasyMock;
 import org.geowebcache.TestHelpers;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.filter.resource.ResourceFilter;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.OutsideCoverageException;
@@ -81,7 +83,9 @@ public class WMSLayerTest extends TestCase {
     }
 
     public void testSeedMetaTiled() throws Exception {
-        WMSLayer layer = createWMSLayer("image/png");
+        ResourceFilter rFilter = EasyMock.createMock(ResourceFilter.class);
+        
+        WMSLayer layer = createWMSLayer("image/png", null, null, Collections.singletonList(rFilter));
 
         WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper();
         MockLockProvider lockProvider = new MockLockProvider();
@@ -89,9 +93,11 @@ public class WMSLayerTest extends TestCase {
         layer.setLockProvider(lockProvider);
 
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
-        Capture<TileObject> captured = new Capture<TileObject>();
-        expect(mockStorageBroker.put(EasyMock.capture(captured))).andReturn(true).anyTimes();
-        replay(mockStorageBroker);
+        Capture<TileObject> stored = new Capture<TileObject>();
+        Capture<Resource> filtered = new Capture<Resource>();
+        expect(mockStorageBroker.put(EasyMock.capture(stored))).andReturn(true).anyTimes();
+        rFilter.applyTo(capture(filtered), EasyMock.<MimeType>anyObject()); expectLastCall().anyTimes();
+        replay(mockStorageBroker, rFilter);
 
         String layerId = layer.getName();
         HttpServletRequest servletReq = new MockHttpServletRequest();
@@ -106,23 +112,86 @@ public class WMSLayerTest extends TestCase {
 
         boolean tryCache = false;
         layer.seedTile(tile, tryCache);
+        
+        {
+            assertEquals(1, stored.getValues().size());
+            TileObject value = stored.getValue();
+            assertNotNull(value);
+            assertEquals("image/png", value.getBlobFormat());
+            assertNotNull(value.getBlob());
+            assertTrue(value.getBlob().getSize() > 0);
+        }
+        
+        {
+            assertEquals(1, filtered.getValues().size());
+            Resource value = filtered.getValue();
+            assertNotNull(value);
+        }
 
-        assertEquals(1, captured.getValues().size());
-        TileObject value = captured.getValue();
-        assertNotNull(value);
-        assertEquals("image/png", value.getBlobFormat());
-        assertNotNull(value.getBlob());
-        assertTrue(value.getBlob().getSize() > 0);
-
-        verify(mockStorageBroker);
+        verify(mockStorageBroker, rFilter);
         
         // check the lock provider was called in a symmetric way
         lockProvider.verify();
         lockProvider.clear();
     }
+    
+    public void testSeedNonMetaTiled() throws Exception {
+        ResourceFilter rFilter = EasyMock.createMock(ResourceFilter.class);
+        
+        WMSLayer layer = createWMSLayer("image/png", null, null, Collections.singletonList(rFilter));
+
+        WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper();
+        MockLockProvider lockProvider = new MockLockProvider();
+        layer.setSourceHelper(mockSourceHelper);
+        layer.setLockProvider(lockProvider);
+
+        final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
+        Capture<TileObject> stored = new Capture<TileObject>();
+        Capture<Resource> filtered = new Capture<Resource>();
+        expect(mockStorageBroker.put(EasyMock.capture(stored))).andReturn(true).anyTimes();
+        rFilter.applyTo(capture(filtered), EasyMock.<MimeType>anyObject()); expectLastCall().anyTimes();
+        replay(mockStorageBroker, rFilter);
+
+        String layerId = layer.getName();
+        HttpServletRequest servletReq = new MockHttpServletRequest();
+        HttpServletResponse servletResp = new MockHttpServletResponse();
+
+        long[] gridLoc = { 0, 0, 0 };// x, y, level
+        MimeType mimeType = layer.getMimeTypes().get(0);
+        GridSet gridSet = gridSetBroker.WORLD_EPSG4326;
+        String gridSetId = gridSet.getName();
+        ConveyorTile tile = new ConveyorTile(mockStorageBroker, layerId, gridSetId, gridLoc,
+                mimeType, null, servletReq, servletResp);
+
+        boolean tryCache = false;
+        layer.getNonMetatilingReponse(tile, tryCache);
+        
+        {
+            assertEquals(1, stored.getValues().size());
+            TileObject value = stored.getValue();
+            assertNotNull(value);
+            assertEquals("image/png", value.getBlobFormat());
+            assertNotNull(value.getBlob());
+            assertTrue(value.getBlob().getSize() > 0);
+        }
+        
+        {
+            assertEquals(1, filtered.getValues().size());
+            Resource value = filtered.getValue();
+            assertNotNull(value);
+        }
+
+        verify(mockStorageBroker, rFilter);
+        
+        // check the lock provider was called in a symmetric way
+        lockProvider.verify();
+        lockProvider.clear();
+    }
+    
+
 
     public void testMinMaxCacheSeedTile() throws Exception {
-        WMSLayer tl = createWMSLayer("image/png", 5, 6);
+        WMSLayer tl = createWMSLayer("image/png", 5, 6, Collections.<ResourceFilter>emptyList());
         
         MockTileSupport mock = new MockTileSupport(tl);
 
@@ -167,7 +236,7 @@ public class WMSLayerTest extends TestCase {
 
     //ignore to fix the build until the failing assertion is worked out
     public void _testMinMaxCacheGetTile() throws Exception {
-        WMSLayer tl = createWMSLayer("image/png", 5, 6);
+        WMSLayer tl = createWMSLayer("image/png", 5, 6, Collections.<ResourceFilter>emptyList());
 
         MockTileSupport mock = new MockTileSupport(tl);
 

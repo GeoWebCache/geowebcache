@@ -50,6 +50,8 @@ public class DefaultStorageFinder {
 
     public final static String GWC_BLANK_TILE_PATH = "GWC_BLANK_TILE_PATH";
 
+    public final static String TEMP_PATH_SUFFIX = "tmp"; 
+
     private static Log log = LogFactory.getLog(org.geowebcache.storage.DefaultStorageFinder.class);
 
     private String defaultPrefix = null;
@@ -69,6 +71,19 @@ public class DefaultStorageFinder {
         }
 
         return this.defaultPrefix;
+    }
+    
+    /**
+     * Get a directory for temporary file storage
+     */
+    public File getTemp() throws ConfigurationException, StorageException {
+        File tmp = new File(getDefaultPath(), TEMP_PATH_SUFFIX);
+        tmp.mkdirs();
+        if (!tmp.exists() || !tmp.isDirectory() || !tmp.canWrite()) {
+            throw new StorageException(tmp.getPath() + " is not writable directory.");
+        }
+        
+        return tmp;
     }
 
     public String findEnvVar(String varStr) {

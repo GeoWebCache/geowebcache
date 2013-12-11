@@ -439,7 +439,7 @@ public class WMSLayer extends AbstractTileLayer {
      *            whether to try the cache, or seed
      * @throws GeoWebCacheException
      */
-    private ConveyorTile getNonMetatilingReponse(ConveyorTile tile, boolean tryCache)
+    ConveyorTile getNonMetatilingReponse(ConveyorTile tile, boolean tryCache)
             throws GeoWebCacheException {
         // String debugHeadersStr = null;
         long[] gridLoc = tile.getTileIndex();
@@ -467,6 +467,9 @@ public class WMSLayer extends AbstractTileLayer {
 
             if (tile.getStatus() > 299
                     || this.getExpireCache((int) gridLoc[2]) != GWCVars.CACHE_DISABLE_CACHE) {
+                // Filter the tile's resource
+                filterResource(tile.getBlob(), tile.getMimeType());
+                // Persist the tile to the cache.
                 tile.persist();
             }
 
