@@ -62,26 +62,6 @@ The file :file:`geowebcache-core-context.xml` is a configuration file that contr
 
    .. warning::  The ampersand sign, ``&`` has to be written out as ``&amp;`` in XML files. Also, make sure to omit the line breaks.
 
-#. Since GeoWebCache is not configured to look to a WMS by default, we need to enable this.  Find the block beginning with:
-
-   .. code-block:: xml
-
-      <bean id="gwcTLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
-
-#. Inside the ``constructor-arg`` ``<list>`` locate the line that says:
- 
-   .. code-block:: xml
-
-      <!-- ref bean="gwcWMSConfig" / -->
-
-   and uncomment the line
-
-   .. code-block:: xml
-
-      <ref bean="gwcWMSConfig" />
-
-   .. note:: The line immediately underneath this, ``<ref bean="gwcXmlConfig" />``, is what loads the three layers as mentioned in the :ref:`quickstart.xml` section.  Commenting this line out will remove those layers from the layer list.
-
 #. Save the file and reload the servlet using Tomcat's Manager, or by restarting the servlet container.
 
 #. Navigate to or reload your GeoWebCache demo page.  You should see the list of layers as advertised in the WMS capabilities document.
@@ -131,20 +111,8 @@ It is possible to change the metatiling factor by changing the third ``construct
 Multiple capabilities documents
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GeoWebCache can be configured from multiple capabilities documents.  To do this, you can duplicate the ``gwcWMSConfig`` bean, change the id, and add it to the list inside the ``gwcTLDispatcher`` bean, for example:
+GeoWebCache can be configured from multiple capabilities documents.  To do this, you can duplicate the ``gwcWMSConfig`` bean with a new id: ``gwcWMSConfig2`` for instance.
 
-   .. code-block:: xml
-
-      <bean id="gwcTLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
-        <constructor-arg ref="gwcGridSetBroker"/>
-        <constructor-arg>
-          <list>
-            <ref bean="gwcWMSConfig"/>
-            <ref bean="gwcWMSConfig2"/>
-            <ref bean="gwcWMSConfig3"/>
-          </list>
-        </constructor-arg>
-      </bean>
 
 Additional information
 ----------------------

@@ -18,6 +18,7 @@
 package org.geowebcache.config;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,6 +78,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
     private boolean allowCacheBypass = false;
 
     private final HashMap<String, TileLayer> layers;
+
+    private XMLConfiguration primaryConfig;
 
     public GetCapabilitiesConfiguration(GridSetBroker gridSetBroker, String url, String mimeTypes,
             String metaTiling, String allowCacheBypass) {
@@ -351,7 +354,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 metaWidthHeight, this.vendorParameters, queryable, null);
     }
 
-    private WebMapServer getWMS() {
+    WebMapServer getWMS() {
         try {
             return new WebMapServer(new URL(url));
         } catch (IOException ioe) {
@@ -413,6 +416,12 @@ public class GetCapabilitiesConfiguration implements Configuration {
         this.layers.clear();
         for (TileLayer layer : tileLayers) {
             layer.initialize(gridSetBroker);
+            if(primaryConfig!=null) {
+                primaryConfig.setDefaultValues(layer);
+            } else if (log.isErrorEnabled()) {
+                log.error("GetCapabilitiesConfiguration could not initialize a layer with default "+
+                        "values as it does not have a global configuration to delegate to.");
+            }
             layers.put(layer.getName(), layer);
         }
         return tileLayers.size();
@@ -509,5 +518,19 @@ public class GetCapabilitiesConfiguration implements Configuration {
         throw new IllegalArgumentException(
                 "This is a read only configuration object, can't add tile layer " + tl.getName());
     }
+    
+    /**
+     * Get the global configuration delegated to.
+     */
+    protected XMLConfiguration getPrimaryConfig() {
+        return primaryConfig;
+    }
 
+    /**
+     * Set the global configuration object to delegate to.
+     */
+     public void setPrimaryConfig(XMLConfiguration primaryConfig) {
+        this.primaryConfig = primaryConfig;
+    }
+    
 }

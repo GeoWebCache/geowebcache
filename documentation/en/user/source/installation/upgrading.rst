@@ -15,3 +15,5 @@ The metastore migration by default will migrate the parameter ids in the new `SH
 In case the user desires to perform the tile date migration fully the JVM will have to be started with an extra system variable, ``-DMIGRATE_CREATION_DATES=true``.
 
 All of the above will happen at the first time a GeoWebCache 1.4.x runs on a 1.3.x style cache directory. Once the change is over it won't be possible anymore to use said data directory against a 1.3.x series if parameters were used (in case no layer parameters were in use a downgrade is still possible by manually removing the disk quota store folder).
+
+``Configuration`` beans need no longer be passed to the ``Dispatcher``.  Simply declare the beans in ``geowebcache-core-context.xml``, and GWC will use them up automatically.
