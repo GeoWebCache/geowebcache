@@ -304,7 +304,11 @@ public class XMLConfiguration implements Configuration {
         return gwcConfig.getServiceInformation();
     }
 
-    private void setDefaultValues(TileLayer layer) {
+    /**
+     * Configuration objects lacking their own defaults can delegate to this
+     * @param layer
+     */
+    public void setDefaultValues(TileLayer layer) {
         // Additional values that can have defaults set
         if (layer.isCacheBypassAllowed() == null) {
             if (gwcConfig.getCacheBypassAllowed() != null) {
