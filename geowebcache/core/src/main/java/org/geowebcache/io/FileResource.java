@@ -76,4 +76,8 @@ public class FileResource implements Resource {
     public OutputStream getOutputStream() throws IOException {
         return new FileOutputStream(file);
     }
+
+    public File getFile() {
+        return file;
+    }
 }

@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import javax.imageio.ImageIO;
+
+import org.geowebcache.filter.resource.ResourceFilter;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
@@ -44,10 +46,10 @@ public class TestHelpers {
     }
 
     public static WMSLayer createWMSLayer(final String format) {
-        return createWMSLayer(format, null, null);
+        return createWMSLayer(format, null, null, Collections.<ResourceFilter>emptyList());
     }
 
-    public static WMSLayer createWMSLayer(final String format, Integer minCacheLevel, Integer maxCacheLevel) {
+    public static WMSLayer createWMSLayer(final String format, Integer minCacheLevel, Integer maxCacheLevel, final List<ResourceFilter> rFilters) {
         String[] urls = { "http://localhost:38080/wms" };
         List<String> formatList = Collections.singletonList(format);
 
@@ -60,7 +62,14 @@ public class TestHelpers {
         int[] metaWidthHeight = { 3, 3 };
 
         WMSLayer layer = new WMSLayer("test:layer", urls, "aStyle", "test:layer", formatList,
-                grids, null, metaWidthHeight, "vendorparam=true", false, null);
+                grids, null, metaWidthHeight, "vendorparam=true", false, null) {
+
+                    @Override
+                    protected List<ResourceFilter> getFilters() {
+                        return rFilters;
+                    }
+            
+        };
 
         layer.initialize(gridSetBroker);
         layer.setLockProvider(new MockLockProvider());
