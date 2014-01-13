@@ -14,12 +14,19 @@
  */
 package org.geowebcache.layer.wms;
 
-import static org.easymock.EasyMock.*;
-import static org.easymock.classextension.EasyMock.*;
-import static org.geowebcache.TestHelpers.*;
+import static org.easymock.EasyMock.anyObject;
+import static org.easymock.EasyMock.capture;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.classextension.EasyMock.replay;
+import static org.easymock.classextension.EasyMock.verify;
+import static org.geowebcache.TestHelpers.createFakeSourceImage;
+import static org.geowebcache.TestHelpers.createRequest;
+import static org.geowebcache.TestHelpers.createWMSLayer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -37,9 +44,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.easymock.Capture;
 import org.easymock.IAnswer;
 import org.easymock.classextension.EasyMock;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.TestHelpers;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSet;
@@ -119,6 +130,52 @@ public class WMSLayerTest extends TestCase {
         // check the lock provider was called in a symmetric way
         lockProvider.verify();
         lockProvider.clear();
+    }
+    
+    public void testCascadeGetLegendGraphics() throws GeoWebCacheException {
+        // setup the layer
+        WMSLayer layer = createWMSLayer("image/png");
+        final byte[] responseBody = new String("Fake body").getBytes();
+        layer.setSourceHelper(new WMSHttpHelper() {
+            @Override
+            public GetMethod executeRequest(URL url, Map<String, String> queryParams,
+                    Integer backendTimeout) throws HttpException, IOException {
+                GetMethod response = EasyMock.createMock(GetMethod.class);
+                expect(response.getStatusCode()).andReturn(200);
+                expect(response.getResponseBodyAsStream()).andReturn(new ByteArrayInputStream(responseBody));
+                expect(response.getResponseCharSet()).andReturn("UTF-8");
+                expect(response.getResponseHeader("Content-Type")).andReturn(new Header("Content-Type", "image/png"));
+                response.releaseConnection();
+                expectLastCall();
+                replay(response);
+                return response;
+            }
+        });
+        MockLockProvider lockProvider = new MockLockProvider();
+        layer.setLockProvider(lockProvider);
+
+        
+        // setup the conveyor tile
+        final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
+
+        String layerId = layer.getName();
+        MockHttpServletRequest servletReq = new MockHttpServletRequest();
+        servletReq.setQueryString("REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=topp:states");
+        MockHttpServletResponse servletResp = new MockHttpServletResponse();
+
+        long[] gridLoc = { 0, 0, 0 };// x, y, level
+        MimeType mimeType = layer.getMimeTypes().get(0);
+        GridSet gridSet = gridSetBroker.WORLD_EPSG4326;
+        String gridSetId = gridSet.getName();
+        ConveyorTile tile = new ConveyorTile(mockStorageBroker, layerId, gridSetId, gridLoc,
+                mimeType, null, servletReq, servletResp);
+        
+        // proxy the request, and check the response
+        layer.proxyRequest(tile);
+        
+        assertEquals(200, servletResp.getStatusCode());
+        assertEquals("Fake body", servletResp.getOutputStreamContent());
+        assertEquals("image/png", servletResp.getContentType());
     }
 
     public void testMinMaxCacheSeedTile() throws Exception {
