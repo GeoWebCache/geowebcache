@@ -18,12 +18,18 @@
 package org.geowebcache.layer.wms;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -41,6 +47,7 @@ import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.layer.ExpirationRule;
+import org.geowebcache.layer.ProxyLayer;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.meta.MetadataURL;
 import org.geowebcache.locks.LockProvider;
@@ -53,7 +60,7 @@ import org.geowebcache.util.GWCVars;
 /**
  * A tile layer backed by a WMS server
  */
-public class WMSLayer extends AbstractTileLayer {
+public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
     private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
 
@@ -798,5 +805,53 @@ public class WMSLayer extends AbstractTileLayer {
 
     public void setLockProvider(LockProvider lockProvider) {
         this.lockProvider = lockProvider;
+    }
+
+    public void proxyRequest(ConveyorTile tile) throws GeoWebCacheException {
+        String queryStr = tile.servletReq.getQueryString();
+        String serverStr = getWMSurl()[0];
+
+        GetMethod getMethod = null;
+        InputStream is = null;
+        try {
+            URL url;
+            if (serverStr.contains("?")) {
+                url = new URL(serverStr + "&" + queryStr);
+            } else {
+                url = new URL(serverStr + queryStr);
+            }
+            
+            WMSSourceHelper helper = getSourceHelper();
+            if(! (helper instanceof WMSHttpHelper)) {
+               throw new GeoWebCacheException("Can only proxy if WMS Layer is backed by an HTTP backend"); 
+            }
+
+            getMethod = ((WMSHttpHelper) helper).executeRequest(url, null, getBackendTimeout());
+            is = getMethod.getResponseBodyAsStream();
+
+            HttpServletResponse response = tile.servletResp;
+            response.setCharacterEncoding(getMethod.getResponseCharSet());
+            response.setContentType(getMethod.getResponseHeader("Content-Type").getValue());
+            
+            int read = 0;
+            byte[] data = new byte[1024];
+            
+            while (read > -1) {
+                read = is.read(data);
+                if (read > -1) {
+                    response.getOutputStream().write(data, 0, read);
+                }
+            }
+
+        } catch (IOException ioe) {
+            tile.servletResp.setStatus(500);
+            log.error(ioe.getMessage());
+        } finally{
+            if (getMethod != null) {
+                getMethod.releaseConnection();
+            }
+            IOUtils.closeQuietly(is);
+        }
+        
     }
 }
