@@ -15,6 +15,9 @@ import javax.servlet.http.HttpServletRequest;
 import junit.framework.TestCase;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
+import org.custommonkey.xmlunit.SimpleNamespaceContext;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.custommonkey.xmlunit.XpathEngine;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.conveyor.Conveyor;
@@ -28,6 +31,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
+import org.w3c.dom.Document;
 
 import com.mockrunner.mock.web.MockHttpServletResponse;
 
@@ -136,6 +140,21 @@ public class WMTSServiceTest extends TestCase {
         assertTrue(resp.containsHeader("content-disposition"));
         assertEquals("inline;filename=wmts-getcapabilities.xml", resp.getHeader("content-disposition"));                            
     
+        // System.out.println(resp.getOutputStreamContent());
+        
+        Document doc = XMLUnit.buildTestDocument(resp.getOutputStreamContent());
+        Map<String, String> namespaces = new HashMap<String, String>();
+        namespaces.put("xlink", "http://www.w3.org/1999/xlink");
+        namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+        namespaces.put("ows", "http://www.opengis.net/ows/1.1");        
+        namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
+        XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
+        XpathEngine xpath = XMLUnit.newXpathEngine();
+        
+        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer)", doc));
+        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer'])", doc));
+        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier)", doc));
+        assertEquals("", xpath.evaluate("//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier", doc));
     }
 
 }
