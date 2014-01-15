@@ -288,7 +288,12 @@ public class WMTSGetCapabilities {
          String defStyle = layer.getStyles();
          if(filters == null) {
              str.append("    <Style isDefault=\"true\">\n");
-             str.append("      <ows:Identifier>"+TileLayer.encodeDimensionValue(defStyle)+"</ows:Identifier>\n");
+             if(defStyle == null) {
+                 str.append("      <ows:Identifier></ows:Identifier>\n");
+             } else {
+                 str.append("      <ows:Identifier>"+TileLayer.encodeDimensionValue(defStyle)+"</ows:Identifier>\n");
+             }
+             
              str.append("    </Style>\n");
          } else {
              ParameterFilter stylesFilter = null;
@@ -321,6 +326,10 @@ public class WMTSGetCapabilities {
                          str.append("      <ows:Identifier>"+TileLayer.encodeDimensionValue(value)+"</ows:Identifier>\n");
                          str.append("    </Style>\n");
                  }
+             } else {
+                 str.append("    <Style isDefault=\"true\">\n");
+                 str.append("      <ows:Identifier></ows:Identifier>\n");
+                 str.append("    </Style>\n");
              }
          }
      }
