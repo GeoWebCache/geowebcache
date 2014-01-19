@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xml="http://www.w3.org/XML/1998/namespace"
-  targetNamespace="http://geowebcache.org/schema/1.5.0" xmlns:gwc="http://geowebcache.org/schema/1.5.0"
-  elementFormDefault="qualified" version="1.5.0">
+  targetNamespace="http://geowebcache.org/schema/1.6.0" xmlns:gwc="http://geowebcache.org/schema/1.6.0"
+  elementFormDefault="qualified" version="1.6.0">
 
   <xs:element name="gwcConfiguration">
     <xs:annotation>
@@ -354,6 +354,15 @@
             Whether this layer supports getfeatureinfo requests, which are
             proxied to the WMS backend.
             The default is false.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="wmsQueryLayers" type="xs:string" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            The QUERY_LAYERS value sent to the WMS backend server. This should
+            refer to one or more (comma separated) queryable layers. If omitted, 
+            the wmsLayers will be used.
           </xs:documentation>
         </xs:annotation>
       </xs:element>

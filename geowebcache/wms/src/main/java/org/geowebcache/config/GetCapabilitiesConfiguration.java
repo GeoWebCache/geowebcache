@@ -55,6 +55,7 @@ import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.meta.LayerMetaInformation;
+import org.geowebcache.layer.meta.MetadataURL;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 
@@ -272,6 +273,16 @@ public class GetCapabilitiesConfiguration implements Configuration {
                         }
                     }
                     wmsLayer.setSourceHelper(sourceHelper);
+
+                    List<org.geotools.data.wms.xml.MetadataURL> metadataURLs = layer.getMetadataURL();
+                    if (metadataURLs != null && !metadataURLs.isEmpty()) {
+                        List<MetadataURL> convertedMetadataURLs = new ArrayList<MetadataURL>();
+                        for (org.geotools.data.wms.xml.MetadataURL metadataURL : metadataURLs) {
+                            convertedMetadataURLs.add(new MetadataURL(metadataURL.getType(), metadataURL.getFormat(), metadataURL.getUrl()));
+                        }
+                        wmsLayer.setMetadataURLs(convertedMetadataURLs);
+                    }
+
                     layers.add(wmsLayer);
                 }
             }
@@ -340,7 +351,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 Integer.parseInt(metaStrings[1]) };
 
         return new WMSLayer(name, wmsurl, stylesStr, name, mimeFormats, grids, paramFilters,
-                metaWidthHeight, this.vendorParameters, queryable);
+                metaWidthHeight, this.vendorParameters, queryable, null);
     }
 
     WebMapServer getWMS() {

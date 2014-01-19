@@ -39,6 +39,7 @@ import org.geowebcache.grid.GridMismatchException;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.io.Resource;
+import org.geowebcache.layer.ProxyLayer;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
@@ -265,7 +266,18 @@ public class WMSService extends Service {
             } else if (tile.getHint().equalsIgnoreCase("getfeatureinfo")) {
                 handleGetFeatureInfo(tile);
             } else {
-                WMSRequests.handleProxy(tld, tile);
+                // see if we can proxy the request
+                TileLayer tl = tld.getTileLayer(tile.getLayerId());
+
+                if(tl == null) {
+                    throw new GeoWebCacheException(tile.getLayerId() + " is unknown.");
+                }
+                
+                if(tl instanceof ProxyLayer) {
+                    ((ProxyLayer) tl).proxyRequest(tile);
+                } else {
+                    throw new GeoWebCacheException(tile.getLayerId() + " cannot cascade WMS requests.");
+                }
             }
         } else {
             throw new GeoWebCacheException("The WMS Service would love to help, "

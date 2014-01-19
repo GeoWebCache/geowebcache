@@ -18,12 +18,18 @@
 package org.geowebcache.layer.wms;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -41,7 +47,9 @@ import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.layer.ExpirationRule;
+import org.geowebcache.layer.ProxyLayer;
 import org.geowebcache.layer.meta.LayerMetaInformation;
+import org.geowebcache.layer.meta.MetadataURL;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.LockProvider.Lock;
 import org.geowebcache.mime.FormatModifier;
@@ -52,7 +60,7 @@ import org.geowebcache.util.GWCVars;
 /**
  * A tile layer backed by a WMS server
  */
-public class WMSLayer extends AbstractTileLayer {
+public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
     private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
 
@@ -63,6 +71,8 @@ public class WMSLayer extends AbstractTileLayer {
     private String[] wmsUrl;
 
     private String wmsLayers;
+    
+    private String wmsQueryLayers;
 
     protected String wmsStyles;
 
@@ -116,6 +126,31 @@ public class WMSLayer extends AbstractTileLayer {
      * Note XStream uses reflection, this is only used for testing and loading from getCapabilities
      * 
      * @param layerName
+     * @param wmsURL
+     * @param wmsStyles
+     * @param wmsLayers
+     * @param mimeFormats
+     * @param subSets
+     * @param parameterFilters
+     * @param metaWidthHeight
+     * @param vendorParams
+     * @param queryable
+     * 
+     * @deprecated 1.6.0
+     */
+    @Deprecated
+    public WMSLayer(String layerName, String[] wmsURL, String wmsStyles, String wmsLayers,
+            List<String> mimeFormats, Map<String, GridSubset> subSets,
+            List<ParameterFilter> parameterFilters, int[] metaWidthHeight, String vendorParams,
+            boolean queryable) {
+        this(layerName, wmsURL,wmsStyles, wmsLayers, mimeFormats, subSets, parameterFilters, 
+                metaWidthHeight, vendorParams, queryable, null);
+    }
+    
+    /**
+     * Note XStream uses reflection, this is only used for testing and loading from getCapabilities
+     * 
+     * @param layerName
      * @param cacheFactory
      * @param wmsURL
      * @param wmsStyles
@@ -124,11 +159,13 @@ public class WMSLayer extends AbstractTileLayer {
      * @param grids
      * @param metaWidthHeight
      * @param vendorParams
+     * @param queryable
+     * @param wmsQueryLayers
      */
     public WMSLayer(String layerName, String[] wmsURL, String wmsStyles, String wmsLayers,
             List<String> mimeFormats, Map<String, GridSubset> subSets,
             List<ParameterFilter> parameterFilters, int[] metaWidthHeight, String vendorParams,
-            boolean queryable) {
+            boolean queryable, String wmsQueryLayers) {
 
         this.name = layerName;
         this.wmsUrl = wmsURL;
@@ -150,6 +187,7 @@ public class WMSLayer extends AbstractTileLayer {
         // this.bgColor = "0x000000";
         // this.palette = "test.png";
         this.queryable = queryable;
+        this.wmsQueryLayers = wmsQueryLayers;
     }
 
     protected WMSLayer readResolve() {
@@ -554,7 +592,7 @@ public class WMSLayer extends AbstractTileLayer {
         params.put("LAYERS", layers);
 
         if (reqType == RequestType.FEATUREINFO) {
-            params.put("QUERY_LAYERS", layers);
+            params.put("QUERY_LAYERS", wmsQueryLayers != null ? wmsQueryLayers : layers);
         }
 
         String exceptions;
@@ -655,6 +693,10 @@ public class WMSLayer extends AbstractTileLayer {
     public String getWmsLayers() {
         return wmsLayers;
     }
+    
+    public String getWmsQueryLayers() {
+    	return wmsQueryLayers;
+    }
 
     public String getHttpPassword() {
         return httpPassword;
@@ -752,6 +794,10 @@ public class WMSLayer extends AbstractTileLayer {
         this.metaInformation = layerMetaInfo;
     }
 
+    public void setMetadataURLs(List<MetadataURL> metadataURLs) {
+        this.metadataURLs = metadataURLs;
+    }
+
     @Override
     public String getStyles() {
         return wmsStyles;
@@ -759,5 +805,53 @@ public class WMSLayer extends AbstractTileLayer {
 
     public void setLockProvider(LockProvider lockProvider) {
         this.lockProvider = lockProvider;
+    }
+
+    public void proxyRequest(ConveyorTile tile) throws GeoWebCacheException {
+        String queryStr = tile.servletReq.getQueryString();
+        String serverStr = getWMSurl()[0];
+
+        GetMethod getMethod = null;
+        InputStream is = null;
+        try {
+            URL url;
+            if (serverStr.contains("?")) {
+                url = new URL(serverStr + "&" + queryStr);
+            } else {
+                url = new URL(serverStr + queryStr);
+            }
+            
+            WMSSourceHelper helper = getSourceHelper();
+            if(! (helper instanceof WMSHttpHelper)) {
+               throw new GeoWebCacheException("Can only proxy if WMS Layer is backed by an HTTP backend"); 
+            }
+
+            getMethod = ((WMSHttpHelper) helper).executeRequest(url, null, getBackendTimeout());
+            is = getMethod.getResponseBodyAsStream();
+
+            HttpServletResponse response = tile.servletResp;
+            response.setCharacterEncoding(getMethod.getResponseCharSet());
+            response.setContentType(getMethod.getResponseHeader("Content-Type").getValue());
+            
+            int read = 0;
+            byte[] data = new byte[1024];
+            
+            while (read > -1) {
+                read = is.read(data);
+                if (read > -1) {
+                    response.getOutputStream().write(data, 0, read);
+                }
+            }
+
+        } catch (IOException ioe) {
+            tile.servletResp.setStatus(500);
+            log.error(ioe.getMessage());
+        } finally{
+            if (getMethod != null) {
+                getMethod.releaseConnection();
+            }
+            IOUtils.closeQuietly(is);
+        }
+        
     }
 }

@@ -38,6 +38,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.meta.LayerMetaInformation;
+import org.geowebcache.layer.meta.MetadataURL;
 import org.geowebcache.layer.updatesource.UpdateSourceDefinition;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
@@ -57,6 +58,8 @@ public abstract class AbstractTileLayer extends TileLayer {
     protected String name;
 
     protected LayerMetaInformation metaInformation;
+
+    protected List<MetadataURL> metadataURLs;
 
     protected List<String> mimeFormats;
     
@@ -176,6 +179,11 @@ public abstract class AbstractTileLayer extends TileLayer {
     @Override
     public LayerMetaInformation getMetaInformation() {
         return this.metaInformation;
+    }
+
+    @Override
+    public List<MetadataURL> getMetadataURLs() {
+        return metadataURLs == null ? null : new ArrayList<MetadataURL>(metadataURLs);
     }
 
     /**
