@@ -1,3 +1,30 @@
+=======
+GeoWebCache 1.5.1 (2014-01-19)
+------------------------------
+
+First maintenance release of GeoWebCache 1.5.x
+
+Improvements:
++++++++++++++
+
+* Add MetadataURL elements in WMS GetCapabilities if the information is present in the upstream
+  server
+* Allow all layer types to cascade WMS requests other than GetMap/GetFeatureInfo
+  by implementing the ProxyLayer interface
+* Initialize default values of TileLayers created by GetCapabilitiesConfiguration.
+
+Fixes:
+++++++
+
+- Make sure the mandatory Style element is always present in the WMTS capabilities document
+- BDB DiskQuota store does not create version.txt
+
+
+GeoWebCache 1.5.0 (2013-08-18)
+------------------------------
+
+Final 1.5.0 version. (Same as beta) 
+
 GeoWebCache 1.5.0-beta (2013-07-17)
 ------------------------------
 
