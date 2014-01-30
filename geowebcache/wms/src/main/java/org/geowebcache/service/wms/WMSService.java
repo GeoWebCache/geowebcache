@@ -51,8 +51,11 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-public class WMSService extends Service {
+public class WMSService extends Service{
     public static final String SERVICE_WMS = "wms";
     
     static final String SERVICE_PATH = "/"+GeoWebCacheDispatcher.TYPE_SERVICE+"/"+SERVICE_WMS;
@@ -78,6 +81,9 @@ public class WMSService extends Service {
     
     private GeoWebCacheDispatcher controller = null;
     
+    private String hintsConfig = "DEFAULT";
+    
+    private WMSUtilities utility;
 
     /**
      * Protected no-argument constructor to allow run-time instrumentation
@@ -257,9 +263,13 @@ public class WMSService extends Service {
                 wmsCap.writeResponse(tile.servletResp);
             } else if (tile.getHint().equalsIgnoreCase("getmap")) {
                 WMSTileFuser wmsFuser = new WMSTileFuser(tld, sb, tile.servletReq);
+                // Setting of the applicationContext
+                wmsFuser.setApplicationContext(utility.getApplicationContext());
+                // Setting of the hintConfiguration if present
+                wmsFuser.setHintsConfiguration(hintsConfig);
                 try {
                     wmsFuser.writeResponse(tile.servletResp, stats);
-                } catch (IOException e) {
+                } catch (Exception e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
@@ -393,5 +403,13 @@ public class WMSService extends Service {
         } else {
             log.info("Will NOT proxy requests that miss tiled=true to backend.");
         }
+    }
+
+    public void setHintsConfig(String hintsConfig) {
+        this.hintsConfig = hintsConfig;
+    }
+    
+    public void setUtility(WMSUtilities utility) {
+        this.utility = utility;
     }
 }
