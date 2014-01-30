@@ -1020,5 +1020,16 @@ public class XMLConfiguration implements Configuration {
     public String getVersion() {
         return gwcConfig.getVersion();
     }
+    
+    /**
+     * Used for getting the "fullWMS" parameter from GeoWebCacheConfigration
+     * @return
+     */
+    public Boolean getfullWMS(){
+        if(gwcConfig!=null){
+            return gwcConfig.getFullWMS();
+        }
+        return null;        
+    }
 
 }

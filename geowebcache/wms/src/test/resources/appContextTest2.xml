@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- !DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd" -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:annotation-config />
+
+
+	<!--Encoders -->
+	<bean id="BMPEncoder" class="org.geowebcache.io.ImageEncoderImpl">
+		<constructor-arg type="boolean" value="true" />
+		<constructor-arg>
+			<list>
+				<value>image/bmp</value>
+			</list>
+		</constructor-arg>
+		<constructor-arg>
+			<list>
+				<value>com.sun.media.imageioimpl.plugins.bmp.BMPImageWriterSpi
+				</value>
+				<value>com.sun.imageio.plugins.bmp.BMPImageWriterSpi</value>
+			</list>
+		</constructor-arg>
+		<constructor-arg>
+			<map>
+				<entry key="COMPRESSION" value="NULL" />
+				<entry key="COMPRESSION_RATE" value="NULL" />
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<bean id="encoderContainer" class="org.geowebcache.io.ImageEncoderContainer" />
+
+</beans>
