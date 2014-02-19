@@ -95,7 +95,10 @@ public class WMSGetCapabilities {
     private String generateGetCapabilities() {
         StringBuilder str = new StringBuilder();
         ServiceInformation servInfo = tld.getServiceInformation();
-        String xsltUrl = (servInfo.getXsltTemplates() != null) ? servInfo.getXsltTemplates().getWmsGetCapabilities() : null;
+        String xsltUrl = null;
+        if ((servInfo != null) && (servInfo.getXsltTemplates() != null)) {
+          xsltUrl = servInfo.getXsltTemplates().getWmsGetCapabilities();
+        }
 
         str.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         if (xsltUrl!=null) {
