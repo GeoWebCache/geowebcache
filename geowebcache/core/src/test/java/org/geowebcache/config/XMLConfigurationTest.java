@@ -154,9 +154,10 @@ public class XMLConfigurationTest extends TestCase {
         int[] metaWidthHeight = { 9, 9 };
         String vendorParams = "vendor=1";
         boolean queryable = false;
+        String wmsQueryLayers = null;
 
         WMSLayer layer = new WMSLayer(layerName, wmsURL, wmsStyles, wmsLayers, mimeFormats,
-                subSets, parameterFilters, metaWidthHeight, vendorParams, queryable);
+                subSets, parameterFilters, metaWidthHeight, vendorParams, queryable, wmsQueryLayers);
 
         config.addLayer(layer);
 

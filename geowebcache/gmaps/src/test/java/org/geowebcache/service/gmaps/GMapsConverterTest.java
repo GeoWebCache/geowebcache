@@ -107,7 +107,7 @@ public class GMapsConverterTest extends TestCase {
         filters.add(parameterFilter);
 
         WMSLayer wmsLayer = new WMSLayer(TEST_LAYER_NAME, null, null, null, null, null, filters,
-                null, null, true);
+                null, null, true, null);
 
         TileLayerDispatcher tld = new TileLayerDispatcherMock(wmsLayer);
 

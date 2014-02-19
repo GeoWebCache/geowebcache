@@ -60,7 +60,7 @@ public class TestHelpers {
         int[] metaWidthHeight = { 3, 3 };
 
         WMSLayer layer = new WMSLayer("test:layer", urls, "aStyle", "test:layer", formatList,
-                grids, null, metaWidthHeight, "vendorparam=true", false);
+                grids, null, metaWidthHeight, "vendorparam=true", false, null);
 
         layer.initialize(gridSetBroker);
         layer.setLockProvider(new MockLockProvider());

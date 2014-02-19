@@ -42,6 +42,7 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.LayerMetaInformation;
+import org.geowebcache.layer.meta.MetadataURL;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.ServletUtils;
@@ -484,6 +485,16 @@ public class WMSGetCapabilities {
             str.append("      <Abstract>" + metaInfo.getDescription() + "</Abstract>\n");
         } else {
             str.append("      <Title>" + layer.getName() + "</Title>\n");
+        }
+
+        if (layer.getMetadataURLs() != null) {
+            for (MetadataURL metadataURL : layer.getMetadataURLs()) {
+                str.append("      <MetadataURL type=\"" + metadataURL.getType() + "\">\n");
+                str.append("        <Format>" + metadataURL.getFormat() + "</Format>\n");
+                str.append("        <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""
+                        + metadataURL.getUrl() + "\"/>\n");
+                str.append("      </MetadataURL>\n");
+            }
         }
 
         TreeSet<SRS> srsSet = new TreeSet<SRS>();
