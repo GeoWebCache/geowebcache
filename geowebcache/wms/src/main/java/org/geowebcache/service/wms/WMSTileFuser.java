@@ -18,8 +18,10 @@ package org.geowebcache.service.wms;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,13 +29,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
+import javax.media.jai.PlanarImage;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geotools.resources.image.ImageUtilities;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.conveyor.ConveyorTile;
@@ -42,6 +46,9 @@ import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
+import org.geowebcache.io.ImageDecoderContainer;
+import org.geowebcache.io.ImageEncoderContainer;
+import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -51,6 +58,8 @@ import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.AccountingOutputStream;
 import org.geowebcache.util.ServletUtils;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
 
 /*
  * It will work as follows
@@ -59,9 +68,11 @@ import org.geowebcache.util.ServletUtils;
  * 4) GWC will scale the raster down to the requested dimensions.
  * 5) GWC will then compress the raster to the desired output format and return the image. The image is not cached. 
  */
-public class WMSTileFuser {
+public class WMSTileFuser{
     private static Log log = LogFactory.getLog(WMSTileFuser.class);
-
+    
+    private ApplicationContext applicationContext;
+    
     final StorageBroker sb;
 
     final GridSubset gridSubset;
@@ -100,9 +111,9 @@ public class WMSTileFuser {
 
     // The spatial extent of the tiles used to fulfil the request
     BoundingBox srcBounds;
-
+    // 
     BoundingBox canvasBounds;
-
+    /**Canvas dimensions*/
     int[] canvasSize = new int[2];
 
     static class SpatialOffsets {
@@ -118,23 +129,117 @@ public class WMSTileFuser {
         int right;
     };
     
-    // These are values before scaling
+    /** These are values before scaling */
     PixelOffsets canvOfs = new PixelOffsets();
 
     SpatialOffsets boundOfs = new SpatialOffsets();
-
+    /** Mosaic image*/
     BufferedImage canvas;
-
+    /** Graphics object used for drawing the tiles into a mosaic*/
     Graphics2D gfx;
 
+    /**Layer parameters*/
     private Map<String, String> fullParameters;
 
+    /** Map of all the possible decoders to use*/
+    private ImageDecoderContainer decoderMap;
+    
+    /** Map of all the possible encoders to use*/
+    private ImageEncoderContainer encoderMap;
+
+    /** Hints used for writing the BufferedImage on the canvas*/
+    private RenderingHints hints;
+
+    /**
+     *Enum storing the Hints associated to one of the 3 configurations(SPEED, QUALITY, DEFAULT)
+     */
+    public enum HintsLevel {
+        QUALITY(0, "quality"), DEFAULT(1, "default"), SPEED(2, "speed");
+
+        private RenderingHints hints;
+
+        private String mode;
+
+        HintsLevel(int numHint, String mode) {
+            this.mode = mode;
+            switch (numHint) {
+            // QUALITY HINTS
+            case 0:
+                hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                hints.add(new RenderingHints(RenderingHints.KEY_ALPHA_INTERPOLATION,
+                        RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY));
+                hints.add(new RenderingHints(RenderingHints.KEY_INTERPOLATION,
+                        RenderingHints.VALUE_INTERPOLATION_BILINEAR));
+                hints.add(new RenderingHints(RenderingHints.KEY_RENDERING,
+                        RenderingHints.VALUE_RENDER_QUALITY));
+                hints.add(new RenderingHints(RenderingHints.KEY_TEXT_ANTIALIASING,
+                        RenderingHints.VALUE_TEXT_ANTIALIAS_ON));
+                hints.add(new RenderingHints(RenderingHints.KEY_STROKE_CONTROL,
+                        RenderingHints.VALUE_STROKE_NORMALIZE));
+                break;
+            // DEFAULT HINTS
+            case 1:
+                hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_DEFAULT);
+                hints.add(new RenderingHints(RenderingHints.KEY_ALPHA_INTERPOLATION,
+                        RenderingHints.VALUE_ALPHA_INTERPOLATION_DEFAULT));
+                hints.add(new RenderingHints(RenderingHints.KEY_RENDERING,
+                        RenderingHints.VALUE_RENDER_DEFAULT));
+                hints.add(new RenderingHints(RenderingHints.KEY_TEXT_ANTIALIASING,
+                        RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT));
+                hints.add(new RenderingHints(RenderingHints.KEY_STROKE_CONTROL,
+                        RenderingHints.VALUE_STROKE_DEFAULT));
+                break;
+            // SPEED HINTS
+            case 2:
+                hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_OFF);
+                hints.add(new RenderingHints(RenderingHints.KEY_ALPHA_INTERPOLATION,
+                        RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED));
+                hints.add(new RenderingHints(RenderingHints.KEY_INTERPOLATION,
+                        RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR));
+                hints.add(new RenderingHints(RenderingHints.KEY_RENDERING,
+                        RenderingHints.VALUE_RENDER_SPEED));
+                hints.add(new RenderingHints(RenderingHints.KEY_TEXT_ANTIALIASING,
+                        RenderingHints.VALUE_TEXT_ANTIALIAS_OFF));
+                hints.add(new RenderingHints(RenderingHints.KEY_STROKE_CONTROL,
+                        RenderingHints.VALUE_STROKE_PURE));
+                break;
+            }
+        }
+
+        public RenderingHints getRenderingHints() {
+            return hints;
+        }
+
+        public String getModeName(){
+            return mode;
+        }
+        
+        public static HintsLevel getHintsForMode(String mode) {
+
+            if(mode!=null){
+                if (mode.equalsIgnoreCase(QUALITY.getModeName())) {
+                    return QUALITY;
+                }else if(mode.equalsIgnoreCase(SPEED.getModeName())){
+                    return SPEED;
+                }else{
+                    return DEFAULT;
+                }
+            }else{
+                return DEFAULT;
+            }
+        }
+    }
+    
+    
     protected WMSTileFuser(TileLayerDispatcher tld, StorageBroker sb, HttpServletRequest servReq)
             throws GeoWebCacheException {
         this.sb = sb;
 
         String[] keys = { "layers", "format", "srs", "bbox", "width", "height", "transparent",
-                "bgcolor" };
+                "bgcolor", "hints" };
 
         Map<String, String> values = ServletUtils.selectedStringsFromMap(servReq.getParameterMap(),
                 servReq.getCharacterEncoding(), keys);
@@ -143,19 +248,36 @@ public class WMSTileFuser {
 
         String layerName = values.get("layers");
         layer = tld.getTileLayer(layerName);
+        
+        gridSubset = layer.getGridSubsetForSRS(SRS.getSRS(values.get("srs")));
 
+        outputFormat = (ImageMime) ImageMime.createFromFormat(values.get("format"));
+        
         List<MimeType> ml = layer.getMimeTypes();
         Iterator<MimeType> iter = ml.iterator();
+        
+        ImageMime firstMt = null;
+        
+        if(iter.hasNext()){
+            firstMt = (ImageMime)iter.next();
+        }
+        boolean outputGif = outputFormat.getInternalName().equalsIgnoreCase("gif");
         while (iter.hasNext()) {
-            MimeType mt = iter.next();
+            MimeType mt = iter.next();           
+            if(outputGif){
+                if (mt.getInternalName().equalsIgnoreCase("gif")) {
+                    this.srcFormat = (ImageMime) mt;
+                    break;
+                }
+            }
             if (mt.getInternalName().equalsIgnoreCase("png")) {
                 this.srcFormat = (ImageMime) mt;
             }
         }
-
-        gridSubset = layer.getGridSubsetForSRS(SRS.getSRS(values.get("srs")));
-
-        outputFormat = (ImageMime) ImageMime.createFromFormat(values.get("format"));
+        
+        if(srcFormat == null){
+            srcFormat = firstMt;
+        }
 
         reqBounds = new BoundingBox(values.get("bbox"));
 
@@ -163,16 +285,11 @@ public class WMSTileFuser {
 
         reqHeight = Integer.valueOf(values.get("height"));
 
-        // if(values[6] != null) {
-        // this.reqTransparent = Boolean.valueOf(values[6]);
-        // }
-
-        // if(values[7] != null) {
-        // this.reqBgColor = values[7];
-        // }
-
         fullParameters = layer.getModifiableParameters(servReq.getParameterMap(),
                 servReq.getCharacterEncoding());
+        if(values.get("hints")!=null){
+            hints = HintsLevel.getHintsForMode(values.get("hints")).getRenderingHints();
+        }        
     }
 
     protected WMSTileFuser(TileLayer layer, GridSubset gridSubset, BoundingBox bounds, int width,
@@ -185,6 +302,26 @@ public class WMSTileFuser {
         this.reqWidth = width;
         this.reqHeight = height;
         this.fullParameters = Collections.emptyMap();
+        
+        List<MimeType> ml = layer.getMimeTypes();
+        Iterator<MimeType> iter = ml.iterator();
+        ImageMime firstMt = null;
+        
+        if(iter.hasNext()){
+            firstMt = (ImageMime)iter.next();
+        }
+        
+        while (iter.hasNext()) {
+            MimeType mt = iter.next();
+            if (mt.getInternalName().equalsIgnoreCase("png")) {
+                this.srcFormat = (ImageMime) mt;
+                break;
+            }
+        }
+        
+        if(srcFormat == null){
+            srcFormat = firstMt;
+        }
     }
 
     protected void determineSourceResolution() {
@@ -317,10 +454,19 @@ public class WMSTileFuser {
             gfx.setColor(bgColor);
             gfx.fillRect(0, 0, canvasSize[0], canvasSize[1]);
         }
+        
+        // Hints settings
+        RenderingHints hintsTemp = HintsLevel.DEFAULT.getRenderingHints();
+        
+        if(hints!=null){
+            hintsTemp = hints;
+        }
+        gfx.addRenderingHints(hintsTemp);
     }
 
     protected void renderCanvas() throws OutsideCoverageException, GeoWebCacheException,
-            IOException {
+            IOException,Exception {        
+        
         // Now we loop over all the relevant tiles and write them to the canvas,
         // Starting at the bottom, moving to the right and up
         
@@ -362,19 +508,23 @@ public class WMSTileFuser {
                 long[] gridLoc = { gridx, gridy, srcIdx };
 
                 ConveyorTile tile = new ConveyorTile(sb, layer.getName(), gridSubset.getName(),
-                        gridLoc, ImageMime.png, fullParameters, null, null);
+                        gridLoc, srcFormat, fullParameters, null, null);
 
                 // Check whether this tile is to be rendered at all
                 try {
                     layer.applyRequestFilters(tile);
                 } catch (RequestFilterException e) {
-                    log.debug(e.getMessage());
+                    log.debug(e.getMessage(),e);
                     continue;
                 }
 
                 layer.getTile(tile);
-
-                BufferedImage tileImg = ImageIO.read(tile.getBlob().getInputStream());
+                // Selection of the resource input stream
+                Resource blob = tile.getBlob();
+                // Extraction of the image associated with the defined MimeType
+                String formatName = srcFormat.getMimeType();
+                BufferedImage tileImg = decoderMap.decode(formatName, blob, 
+                        decoderMap.isAggressiveInputStreamSupported(formatName), null);
 
                 int tilex = 0;
                 int canvasx = (int) (gridx - startx) * gridSubset.getTileWidth();
@@ -419,6 +569,7 @@ public class WMSTileFuser {
                 // Render the tile on the big canvas
                 log.debug("drawImage(subtile," + canvasx + "," + canvasy + ",null) "
                         + Arrays.toString(gridLoc));
+
                 gfx.drawImage(tileImg, canvasx, canvasy, null); // imageObserver
             }
         }
@@ -433,41 +584,86 @@ public class WMSTileFuser {
             canvas = new BufferedImage(reqWidth, reqHeight, preTransform.getType());
 
             Graphics2D gfx = canvas.createGraphics();
+
             AffineTransform affineTrans = AffineTransform.getScaleInstance(((double) reqWidth)
                     / preTransform.getWidth(), ((double) reqHeight) / preTransform.getHeight());
 
             log.debug("AffineTransform: " + (((double) reqWidth) / preTransform.getWidth()) + ","
                     + +(((double) reqHeight) / preTransform.getHeight()));
-
+            // Hints settings
+            RenderingHints hintsTemp = HintsLevel.DEFAULT.getRenderingHints();
+            
+            if(hints!=null){
+                hintsTemp = hints;
+            }
+            gfx.addRenderingHints(hintsTemp);
             gfx.drawRenderedImage(preTransform, affineTrans);
             gfx.dispose();
         }
     }
 
     protected void writeResponse(HttpServletResponse response, RuntimeStats stats)
-            throws IOException, OutsideCoverageException, GeoWebCacheException {
+            throws IOException, OutsideCoverageException, GeoWebCacheException,Exception {
         determineSourceResolution();
         determineCanvasLayout();
         createCanvas();
         renderCanvas();
-        scaleRaster();
+        scaleRaster();       
+        
+        AccountingOutputStream aos=null;
+        RenderedImage finalImage =null;
+        try{
+          finalImage = canvas;
 
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType(this.outputFormat.getMimeType());
-        response.setCharacterEncoding("UTF-8");
+          response.setStatus(HttpServletResponse.SC_OK);
+          response.setContentType(this.outputFormat.getMimeType());
+          response.setCharacterEncoding("UTF-8");
 
-        ServletOutputStream os = response.getOutputStream();
-        AccountingOutputStream aos = new AccountingOutputStream(os);
+          ServletOutputStream os = response.getOutputStream();
+          aos = new AccountingOutputStream(os);         
+          
+          // Image encoding with the associated writer
+          encoderMap.encode(finalImage, outputFormat, aos,
+                    encoderMap.isAggressiveOutputStreamSupported(outputFormat.getMimeType()), null);
+          
+          log.debug("WMS response size: " + aos.getCount() + "bytes.");
+          stats.log(aos.getCount(), CacheResult.WMS);
+        } catch (Exception e) {
+        	log.debug("IOException writing untiled response to client: " + e.getMessage(),e);
+        	
+        	// closing the stream
+        	if(aos!=null){
+        		IOUtils.closeQuietly(aos);
+        	}
+        	
+        	// releasing Image
+        	if(finalImage!=null){
+        		ImageUtilities.disposePlanarImageChain(PlanarImage.wrapRenderedImage(finalImage));
+        	}
+        }        
+    }
+	
+    /**
+     * Setting of the ApplicationContext associated for extracting the related beans
+     * 
+     * @param context
+     * @throws BeansException
+     */
+    public void setApplicationContext(ApplicationContext context) throws BeansException {
+        applicationContext = context; 
+        decoderMap = applicationContext.getBean(ImageDecoderContainer.class);
+        encoderMap = applicationContext.getBean(ImageEncoderContainer.class);
+        
+    }
 
-        try {
-            ImageIO.write(canvas, outputFormat.getInternalName(), aos);
-            aos.close();
-        } catch (IOException ioe) {
-            log.debug("IOException writing untiled response to client: " + ioe.getMessage());
+    /**
+     * Setting of the hints configuration taken from the WMSService
+     * @param hintsConfig
+     */
+    public void setHintsConfiguration(String hintsConfig) {
+        if(hints==null){
+            hints = HintsLevel.getHintsForMode(hintsConfig).getRenderingHints();
         }
-
-        log.debug("WMS response size: " + aos.getCount() + "bytes.");
-
-        stats.log(aos.getCount(), CacheResult.WMS);
+        
     }
 }
