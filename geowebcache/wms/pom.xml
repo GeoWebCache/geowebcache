@@ -37,6 +37,16 @@
     	<artifactId>commons-httpclient</artifactId>
     	<version>3.1</version>
     </dependency>
+    
+    <dependency>
+      <groupId>it.geosolutions.imageio-ext</groupId>
+      <artifactId>imageio-ext-png</artifactId>
+    </dependency>
+    
+    <dependency>
+		<groupId>it.geosolutions.imageio-ext</groupId>
+		<artifactId>imageio-ext-streams</artifactId>
+	</dependency>
 
     <!-- test dependencies -->
     <dependency>
