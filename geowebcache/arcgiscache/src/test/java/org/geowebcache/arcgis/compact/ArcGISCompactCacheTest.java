@@ -2,7 +2,6 @@ package org.geowebcache.arcgis.compact;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.net.URL;
 
@@ -38,9 +37,9 @@ public class ArcGISCompactCacheTest extends TestCase {
     private final static byte[] JFIFHeader = { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0,
             0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01 };
 
-    public void testCacheBundle() {
+    public void testCacheBundle() throws Exception {
         URL url = getClass().getResource("/compactcache/_alllayers/L05/R0000C0000.bundlx");
-        ArcGISCacheBundle bundle = new ArcGISCacheBundle(url.getFile());
+        ArcGISCacheBundle bundle = new ArcGISCacheBundle(url.toURI().getPath());
 
         assertNotNull(bundle);
 
@@ -54,9 +53,9 @@ public class ArcGISCompactCacheTest extends TestCase {
         assertTrue(bundle.tileExists(12, 7));
     }
 
-    public void testCompactCache() {
+    public void testCompactCache() throws Exception {
         URL url = getClass().getResource("/compactcache/_alllayers/");
-        ArcGISCompactCache cache = new ArcGISCompactCache(url.getFile());
+        ArcGISCompactCache cache = new ArcGISCompactCache(url.toURI().getPath());
 
         assertNotNull(cache);
 
@@ -77,7 +76,7 @@ public class ArcGISCompactCacheTest extends TestCase {
 
     public void testBundleFileResource() throws Exception {
         URL url = getClass().getResource("/compactcache/_alllayers/");
-        ArcGISCompactCache cache = new ArcGISCompactCache(url.getFile());
+        ArcGISCompactCache cache = new ArcGISCompactCache(url.toURI().getPath());
 
         assertNotNull(cache);
 
