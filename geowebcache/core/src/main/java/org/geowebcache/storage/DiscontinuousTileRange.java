@@ -27,7 +27,7 @@ import org.geowebcache.util.ServletUtils;
  */
 public class DiscontinuousTileRange extends TileRange {
 
-    final private RasterMask rasterMask;
+    final private TileRangeMask mask;
 
     /**
      * @deprecated use
@@ -40,18 +40,18 @@ public class DiscontinuousTileRange extends TileRange {
     }
 
     public DiscontinuousTileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,
-            RasterMask rasterMask, MimeType mimeType, Map<String, String> parameters) {
+            TileRangeMask rasterMask, MimeType mimeType, Map<String, String> parameters) {
 
         super(layerName, gridSetId, zoomStart, zoomStop, rasterMask.getGridCoverages(), mimeType,
                 parameters);
 
-        this.rasterMask = rasterMask;
+        this.mask = rasterMask;
     }
 
     @Override
     public boolean contains(long x, long y, int z) {
         if (super.contains(x, y, z)) {
-            return rasterMask.lookup(x, y, z);
+            return mask.lookup(x, y, z);
         }
         return false;
     }

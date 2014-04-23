@@ -22,7 +22,7 @@ import java.awt.image.Raster;
 
 import org.geowebcache.grid.GridSubset;
 
-public class RasterMask {
+public class RasterMask implements TileRangeMask {
     /**
      * By zoom level bitmasked images where every pixel represents a tile in the level's
      * {@link GridSubset#getCoverages() grid coverage}.
