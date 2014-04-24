@@ -120,9 +120,12 @@ public abstract class TileLayer {
     public abstract LayerMetaInformation getMetaInformation();
 
     /**
-     * List of Metadata URLs for the layer.
+     * List of Metadata URLs for the layer, subclasses should override this method if they support
+     * declaring metaddata URLs
      */
-    public abstract List<MetadataURL> getMetadataURLs();
+    public List<MetadataURL> getMetadataURLs() {
+        return null;
+    }
 
     /**
      * Retrieves the GridSet names for this layer.
