@@ -1,8 +1,5 @@
 package org.geowebcache.storage.blobstore.file;
 
-import static org.geowebcache.storage.blobstore.file.FilePathUtils.appendFiltered;
-import static org.geowebcache.storage.blobstore.file.FilePathUtils.zeroPadder;
-
 public class FilePathUtils {
 
     public static String gridsetZoomLevelDir(String gridSetId, long zoomLevel) {
@@ -79,9 +76,15 @@ public class FilePathUtils {
     public static int findZoomLevel(final String gridsetPrefix, final String dirName) {
         assert dirName.startsWith(gridsetPrefix + "_");
         String[] parts = dirName.substring(gridsetPrefix.length() + 1).split("_");
-        return Integer.parseInt(parts[0]);
+        String zlevel = parts[0];
+        try {
+            return Integer.parseInt(zlevel);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException(String.format("unable to find zoom level in '%s'",
+                    gridsetPrefix), e);
+        }
     }
-    
+
     /**
      * Extracts the parametersId from {@code <gridsetPrefix>_<zLevel>[_<parametersId>]})
      * 
@@ -90,14 +93,13 @@ public class FilePathUtils {
     public static String findParameter(final String gridsetPrefix, final String dirName) {
         assert dirName.startsWith(gridsetPrefix + "_");
         String[] parts = dirName.substring(gridsetPrefix.length() + 1).split("_");
-        if(parts.length == 2) {
+        if (parts.length == 2) {
             return parts[1];
         } else {
             return null;
         }
     }
-    
-    
+
     /**
      * Adds the gridset and zoom level fors the standard file system layout path
      */

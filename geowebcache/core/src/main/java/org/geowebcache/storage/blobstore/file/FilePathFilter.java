@@ -25,6 +25,8 @@ import java.io.FilenameFilter;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileRange;
 
+import com.google.common.base.Preconditions;
+
 /**
  * Filter for identifying files that represent tiles within a particular range
  */
@@ -35,6 +37,8 @@ public class FilePathFilter implements FilenameFilter {
     private String mimeExtension;
 
     private TileRange tr;
+
+    private String layerPrefix;
 
     /**
      * Create a filter for stored tiles that are within a particular range.
@@ -47,6 +51,9 @@ public class FilePathFilter implements FilenameFilter {
         if (tr.getGridSetId() == null) {
             throw new StorageException("Specifying the grid set id is currently mandatory.");
         }
+        String layerName = tr.getLayerName();
+        Preconditions.checkNotNull(layerName);
+        this.layerPrefix =  filteredLayerName(layerName);
 
         gridSetPrefix = filteredGridSetId(tr.getGridSetId());
 
@@ -54,7 +61,7 @@ public class FilePathFilter implements FilenameFilter {
             mimeExtension = tr.getMimeType().getFileExtension();
         }
     }
-
+    
     /**
      * Assumes it will get fed something like path: name: *EPSG_2163_01/0_0 01_01.png *EPSG_2163_01/
      * 0_0 * EPSG_2163_01
@@ -62,15 +69,15 @@ public class FilePathFilter implements FilenameFilter {
      * @see java.io.FilenameFilter#accept(java.io.File, java.lang.String)
      */
     public boolean accept(File parent, String fileName) {
-        boolean ret;
+        boolean ret = false;
         if (fileName.startsWith(gridSetPrefix)) {
             // gridset and zoomlevel level
             ret = acceptZoomLevelDir(fileName);
         } else if (fileName.contains(".")) {
             // filename
             ret = acceptFileName(parent, fileName);
-        } else {
-            // intermediate
+        } else if(!parent.getName().equals(layerPrefix)){
+            // not a sibling of the gridset prefix (e.g. another gridset), so an intermediate
             ret = acceptIntermediateDir(fileName);
         }
 
