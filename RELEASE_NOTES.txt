@@ -1,3 +1,15 @@
+GeoWebCache 1.5.2 (2014-01-19)
+------------------------------
+
+First maintenance release of GeoWebCache 1.5.x
+
+Fixes:
+++++++
+- Fix a bug in FilePathFilter that prevented truncate tasks from running if the tile layer had a cache for more than one gridset
+- Fixed a binary incompatible API change introduced in 1.5.1 by the additing of the abstract method TileLayer.getMetadataURLs(). Made it concrete and overridable by subclasses.
+- Fixed config file schema version, was mistakenly set to 1.6.0 while it should be 1.5.0
+
+
 GeoWebCache 1.5.1 (2014-01-19)
 ------------------------------
 
