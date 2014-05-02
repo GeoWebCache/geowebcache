@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns="http://geowebcache.org/schema/1.6.0"
-  xsi:schemaLocation="http://geowebcache.org/schema/1.6.0 http://geowebcache.org/schema/1.6.0/geowebcache.xsd">
-  <version>1.6.0</version>
+  xmlns="http://geowebcache.org/schema/1.5.0"
+  xsi:schemaLocation="http://geowebcache.org/schema/1.5.0 http://geowebcache.org/schema/1.5.0/geowebcache.xsd">
+  <version>1.5.0</version>
   <backendTimeout>120</backendTimeout>
   <!--
   <serviceInformation>
