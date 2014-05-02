@@ -1,7 +1,7 @@
-GeoWebCache 1.5.2 (2014-01-19)
+GeoWebCache 1.5.2 (2014-05-02)
 ------------------------------
 
-First maintenance release of GeoWebCache 1.5.x
+Second maintenance release of GeoWebCache 1.5.x
 
 Fixes:
 ++++++
