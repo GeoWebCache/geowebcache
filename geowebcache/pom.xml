@@ -173,19 +173,19 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.10</version>
+      <version>4.11</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-library</artifactId>
-      <version>1.1</version>
+      <version>1.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-integration</artifactId>
-      <version>1.1</version>
+      <version>1.3</version>
       <scope>test</scope>
     </dependency>
 
@@ -429,7 +429,7 @@
      <plugin>
       <artifactId>maven-javadoc-plugin</artifactId>
       <configuration>
-       <source>1.5</source>
+       <source>1.7</source>
        <version>false</version>
        <noqualifier>all</noqualifier>
        <maxmemory>256M</maxmemory>
@@ -453,7 +453,7 @@
         </tag>
        </tags>
        <links>
-        <link>http://java.sun.com/j2se/1.5/docs/api</link>
+        <link>http://docs.oracle.com/javase/7/docs/api/</link>
         <link>http://docs.geotools.org/stable/javadocs/</link>
        </links>
       </configuration>
@@ -544,8 +544,8 @@
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-compiler-plugin</artifactId>
     <configuration>
-      <source>1.5</source>
-      <target>1.5</target>
+      <source>1.7</source>
+      <target>1.7</target>
     </configuration>
       </plugin>
       
