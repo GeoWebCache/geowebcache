@@ -226,7 +226,7 @@ public class GridSubset {
         long[][] ret = new long[1 + zoomStop - zoomStart][5];
 
         for (int level = zoomStart; level <= zoomStop; level++) {
-            ret[level] = getCoverageIntersection(level, reqBounds);
+            ret[level - zoomStart] = getCoverageIntersection(level, reqBounds);
         }
         return ret;
     }
