@@ -794,7 +794,7 @@ public class XMLConfiguration implements Configuration {
         }
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.2.6")) {
-            log.info("Updating configuration from 1.2.6 to 1.3.0");
+            log.info("Updating configuration from 1.2.6 to 1.5.0");
             rootNode = applyTransform(rootNode, "geowebcache_126.xsl").getFirstChild();
         }
 
