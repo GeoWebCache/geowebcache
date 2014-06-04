@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
 
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,7 +65,7 @@ public class WMSGetCapabilitiesTest {
         
         WMSGetCapabilities capabilities = new WMSGetCapabilities(tld, servReq, baseUrl, contextPath, urlMangler);
         
-        String xml = capabilities.generateGetCapabilities();
+        String xml = capabilities.generateGetCapabilities(StandardCharsets.UTF_8);
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();

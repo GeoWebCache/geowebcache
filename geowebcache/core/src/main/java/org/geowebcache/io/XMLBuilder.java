@@ -18,6 +18,7 @@
 package org.geowebcache.io;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -251,5 +252,32 @@ public class XMLBuilder {
         return indentElement("LatLonBoundingBox")
                 .bboxAttributes(minx, miny, maxx, maxy)
                 .endElement();
+    }
+    
+    /**
+     * Append an XML header
+     * @param version
+     * @param charset
+     * @return
+     * @throws IOException
+     */
+    public XMLBuilder header(String version, @Nullable String charset) throws IOException {
+        appendUnescaped("<?xml version=\"").appendEscaped(version).appendUnescaped("\"");
+        if(charset!=null){
+            appendUnescaped(" encoding=\"").appendEscaped(charset).appendUnescaped("\"");
+        }
+        appendUnescaped("?>\n");
+        return this;
+    }
+    /**
+     * Append an XML header
+     * @param version
+     * @param charset
+     * @return
+     * @throws IOException
+     */
+    public XMLBuilder header(String version, @Nullable Charset charset) throws IOException {
+        String charsetName = charset.name();
+        return header(version, charsetName);
     }
 }

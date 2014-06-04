@@ -19,6 +19,8 @@ package org.geowebcache.service.tms;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -48,27 +50,30 @@ public class TMSDocumentFactory {
 
     private final URLMangler urlMangler;
     
+    Charset encoding;
+    
     protected TMSDocumentFactory(TileLayerDispatcher tld, GridSetBroker gsb, String baseUrl,
             String contextPath, URLMangler urlMangler) {
+        this(tld, gsb, baseUrl, contextPath, urlMangler, StandardCharsets.UTF_8);
+    }
+    protected TMSDocumentFactory(TileLayerDispatcher tld, GridSetBroker gsb, String baseUrl,
+            String contextPath, URLMangler urlMangler, Charset encoding) {
         this.tld = tld;
         this.gsb = gsb;
         this.baseUrl = baseUrl;
         this.contextPath = contextPath;
         this.urlMangler = urlMangler;
-    }
-    
-    private XMLBuilder docRoot(XMLBuilder xml) throws IOException{
-        return xml.indentElement("TileMapService")
-                    .attribute("version", "1.0.0")
-                    .attribute("services", urlMangler.buildURL(baseUrl, contextPath, ""));
+        this.encoding = encoding;
     }
     
     protected String getTileMapServiceDoc() {
         StringBuilder str = new StringBuilder();
         XMLBuilder xml = new XMLBuilder(str);
         try {
-            xml.appendUnescaped("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-            docRoot(xml);
+            xml.header("1.0", encoding);
+            xml.indentElement("TileMapService")
+            .attribute("version", "1.0.0")
+            .attribute("services", urlMangler.buildURL(baseUrl, contextPath, ""));
             // TODO can have these set through Spring
             xml.simpleElement("Title", "Tile Map Service", true);
             xml.simpleElement("Abstract", "A Tile Map Service served by GeoWebCache", true);
@@ -131,8 +136,10 @@ public class TMSDocumentFactory {
         StringBuilder str = new StringBuilder();
         XMLBuilder xml = new XMLBuilder(str);
         try {
-            xml.appendUnescaped("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-            docRoot(xml);
+            xml.header("1.0", encoding);
+            xml.indentElement("TileMap")
+            .attribute("version", "1.0.0")
+            .attribute("tilemapservice", urlMangler.buildURL(baseUrl, contextPath, "/service/tms/1.0.0"));
             xml.simpleElement("Title", tileMapTitle(layer), true);
             xml.simpleElement("Abstract", tileMapDescription(layer), true);
             

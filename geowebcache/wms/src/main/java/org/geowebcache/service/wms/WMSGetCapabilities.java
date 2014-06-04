@@ -19,6 +19,7 @@ package org.geowebcache.service.wms;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,11 +82,12 @@ public class WMSGetCapabilities {
 
     protected void writeResponse(HttpServletResponse response) {
 
-        byte[] data = generateGetCapabilities().getBytes(StandardCharsets.UTF_8);
+        final Charset encoding = StandardCharsets.UTF_8;
+        byte[] data = generateGetCapabilities(encoding).getBytes(encoding);
 
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/vnd.ogc.wms_xml");
-        response.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding(encoding.name());
         response.setContentLength(data.length);
         response.setHeader("content-disposition", "inline;filename=wms-getcapabilities.xml");
 
@@ -97,12 +99,12 @@ public class WMSGetCapabilities {
         }
     }
 
-    String generateGetCapabilities() {
+    String generateGetCapabilities(Charset encoding) {
         StringBuilder str = new StringBuilder();
         XMLBuilder xml = new XMLBuilder(str);
         
         try {
-            xml.appendUnescaped("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+            xml.header("1.0", encoding);
             xml.appendUnescaped("<!DOCTYPE WMT_MS_Capabilities SYSTEM \"http://schemas.opengis.net/wms/1.1.1/capabilities_1_1_1.dtd\" ");
             if (includeVendorSpecific) {
                 xml.appendUnescaped("[\n");
@@ -422,7 +424,7 @@ public class WMSGetCapabilities {
         xml.indentElement("Layer");
         xml.simpleElement("Title", "GeoWebCache WMS", true);
         xml.simpleElement("Abstract", "Note that not all GeoWebCache instances provide a full WMS service.", true);
-        xml.latLonBoundingBox((T) -180.0, (T) -90.0, (T) 180.0, (T) 90.0);
+        xml.latLonBoundingBox(-180.0, -90.0, 180.0, 90.0);
 
         Iterable<TileLayer> layerIter = tld.getLayerList();
         for (TileLayer layer : layerIter) {
