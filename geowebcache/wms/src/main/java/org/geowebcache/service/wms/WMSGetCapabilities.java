@@ -97,7 +97,7 @@ public class WMSGetCapabilities {
         }
     }
 
-    private String generateGetCapabilities() {
+    String generateGetCapabilities() {
         StringBuilder str = new StringBuilder();
         XMLBuilder xml = new XMLBuilder(str);
         
