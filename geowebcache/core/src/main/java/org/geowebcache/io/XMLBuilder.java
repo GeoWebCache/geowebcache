@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 public class XMLBuilder {
     Appendable builder;
     
@@ -199,5 +201,55 @@ public class XMLBuilder {
         if(! startOfElement) throw new IllegalArgumentException();
         appendUnescaped(" ").appendUnescaped(name).appendUnescaped("=\"").appendEscaped(value).appendUnescaped("\"");
         return this;
+    }
+    
+    /**
+     * Add minx, miny, maxx, and maxy attributes
+     * @param minx
+     * @param miny
+     * @param maxx
+     * @param maxy
+     * @return
+     * @throws IOException
+     */
+    public <T> XMLBuilder bboxAttributes(T minx, T miny, T maxx, T maxy) throws IOException {
+        return attribute("minx", minx.toString())
+                .attribute("miny", miny.toString())
+                .attribute("maxx", maxx.toString())
+                .attribute("maxy", maxy.toString());
+    }
+    
+    /**
+     * Add a BoundingBox element
+     * @param srs
+     * @param minx
+     * @param miny
+     * @param maxx
+     * @param maxy
+     * @return
+     * @throws IOException
+     */
+    public <T> XMLBuilder boundingBox(@Nullable String srs, T minx,T miny, T maxx, T maxy) throws IOException {
+        indentElement("BoundingBox");
+        if(srs!=null) attribute("SRS", srs);
+        bboxAttributes(minx, miny, maxx, maxy);
+        endElement();
+        return this;
+    }
+    
+    /**
+     * Add a LatLonBoundingBox element
+     * @param srs
+     * @param minx
+     * @param miny
+     * @param maxx
+     * @param maxy
+     * @return
+     * @throws IOException
+     */
+    public <T> XMLBuilder latLonBoundingBox(T minx, T miny, T maxx, T maxy) throws IOException {
+        return indentElement("LatLonBoundingBox")
+                .bboxAttributes(minx, miny, maxx, maxy)
+                .endElement();
     }
 }

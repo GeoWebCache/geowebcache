@@ -389,24 +389,7 @@ public class WMSGetCapabilities {
 
         return styles;
     }
-    <T> XMLBuilder bboxAttributes(XMLBuilder xml, T minx,T miny, T maxx, T maxy) throws IOException {
-        return xml.attribute("minx", minx.toString())
-        .attribute("miny", miny.toString())
-        .attribute("maxx", maxx.toString())
-        .attribute("maxy", maxy.toString());
-    }
-    <T> XMLBuilder boundingBox(XMLBuilder xml, String srs, T minx,T miny, T maxx, T maxy) throws IOException {
-        return bboxAttributes(xml.indentElement("BoundingBox")
-                .attribute("SRS", srs),
-                minx, miny, maxx, maxy)
-            .endElement();
-    }
-    <T> XMLBuilder latLonBoundingBox(XMLBuilder xml, T minx,T miny, T maxx, T maxy) throws IOException {
-        return bboxAttributes(xml.indentElement("LatLonBoundingBox"),
-                minx, miny, maxx, maxy)
-            .endElement();
-    }
-    
+
     private void capabilityVendorSpecificTileset(XMLBuilder xml, TileLayer layer,
             GridSubset grid, String formatStr, String styleName) throws GeoWebCacheException, IOException {
 
@@ -423,7 +406,7 @@ public class WMSGetCapabilities {
         
         xml.simpleElement("SRS", srsStr, true);
         
-        boundingBox(xml, srsStr, bs[0], bs[1], bs[2], bs[3]);
+        xml.boundingBox(srsStr, bs[0], bs[1], bs[2], bs[3]);
         
         xml.simpleElement("Resolutions", resolutionsStr.toString(), true);
         xml.simpleElement("Width", Integer.toString(grid.getTileWidth()), true);
@@ -439,7 +422,7 @@ public class WMSGetCapabilities {
         xml.indentElement("Layer");
         xml.simpleElement("Title", "GeoWebCache WMS", true);
         xml.simpleElement("Abstract", "Note that not all GeoWebCache instances provide a full WMS service.", true);
-        latLonBoundingBox(xml, -180.0, -90.0, 180.0, 90.0);
+        xml.latLonBoundingBox((T) -180.0, (T) -90.0, (T) 180.0, (T) 90.0);
 
         Iterable<TileLayer> layerIter = tld.getLayerList();
         for (TileLayer layer : layerIter) {
@@ -502,12 +485,12 @@ public class WMSGetCapabilities {
             GridSubset epsg4326GridSubSet = layer.getGridSubsetForSRS(SRS.getEPSG4326());
             if (null != epsg4326GridSubSet) {
                 String[] bs = boundsPrep(epsg4326GridSubSet.getCoverageBestFitBounds());
-                latLonBoundingBox(xml, bs[0], bs[1], bs[2], bs[3]);
+                xml.latLonBoundingBox(bs[0], bs[1], bs[2], bs[3]);
             }
             
             for(GridSubset curGridSubSet: gridSubsetSet) {
                 String[] bs = boundsPrep(curGridSubSet.getCoverageBestFitBounds());
-                boundingBox(xml, curGridSubSet.getSRS().toString(), bs[0], bs[1], bs[2], bs[3]);
+                xml.boundingBox(curGridSubSet.getSRS().toString(), bs[0], bs[1], bs[2], bs[3]);
             }
         }
 
