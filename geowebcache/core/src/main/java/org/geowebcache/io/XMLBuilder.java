@@ -118,7 +118,19 @@ public class XMLBuilder {
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
     public XMLBuilder endElement() throws IOException {
+        return endElement(null);
+    }
+    /**
+     * End an XML element
+     * @param name if not null and assertions are enabled, will check that the element being
+     * closed has this name.
+     * @return
+     * @throws IOException thrown if the underlying Appendable throws IOException
+     */
+    public XMLBuilder endElement(String name) throws IOException {
         NodeInfo ni = nodeStack.pop();
+        
+        assert name==null || name.equals(ni.name);
 
         if(startOfElement) {
             appendUnescaped("/>");
