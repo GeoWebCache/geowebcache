@@ -317,7 +317,11 @@ public class WMTSGetCapabilities {
                  }
              }
              
-             if(stylesFilter != null) {
+             List<String> legalStyles=null;
+             if(stylesFilter != null) legalStyles = stylesFilter.getLegalValues();
+             
+             if(legalStyles!=null && !legalStyles.isEmpty()) {
+                 // There's a style filter listing at least one value
                  String defVal = stylesFilter.getDefaultValue(); 
                  if(defVal == null) {
                      if(defStyle != null) {
@@ -327,9 +331,7 @@ public class WMTSGetCapabilities {
                      }
                  }
                  
-                 Iterator<String> valIter = stylesFilter.getLegalValues().iterator();
-                 while(valIter.hasNext()) {
-                     String value = valIter.next();
+                 for(String value:legalStyles) {
                      xml.indentElement("Style");
                      if(value.equals(defVal)) {
                          xml.attribute("isDefault", "true");
@@ -338,6 +340,7 @@ public class WMTSGetCapabilities {
                      xml.endElement();
                  }
              } else {
+                // Couldn't get a list of styles so just say there's a default.
                 xml.indentElement("Style");
                 xml.attribute("isDefault", "true");
                 xml.simpleElement("ows:Identifier", "", true);

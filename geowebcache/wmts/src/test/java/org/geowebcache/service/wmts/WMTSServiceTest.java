@@ -196,9 +196,75 @@ public class WMTSServiceTest extends TestCase {
             List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale","EPSG:4326");
             
             ParameterFilter styleFilter = mock(ParameterFilter.class);
-            when(styleFilter.getKey()).thenReturn("STYLE");
+            when(styleFilter.getKey()).thenReturn("STYLES");
             when(styleFilter.getDefaultValue()).thenReturn("Foo");
             when(styleFilter.getLegalValues()).thenReturn(null);
+            
+            TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames, Collections.singletonList(styleFilter));
+            when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
+        }
+    
+        Conveyor conv = service.getConveyor(req, resp);
+        assertNotNull(conv);
+        
+        final String layerName = conv.getLayerId();
+        assertNull(layerName);
+        
+        assertEquals(Conveyor.RequestHandler.SERVICE,conv.reqHandler);
+        WMTSGetCapabilities wmsCap = new WMTSGetCapabilities(tld,gridsetBroker, conv.servletReq,"http://localhost:8080", "/service/wms", new NullURLMangler());
+        wmsCap.writeResponse(conv.servletResp,mock(RuntimeStats.class));   
+        assertTrue(resp.containsHeader("content-disposition"));
+        assertEquals("inline;filename=wmts-getcapabilities.xml", resp.getHeader("content-disposition"));                            
+    
+        // System.out.println(resp.getOutputStreamContent());
+        
+        String result = resp.getOutputStreamContent();
+        
+        //Validator validator = new Validator(result);
+        //validator.useXMLSchema(true);
+        //validator.assertIsValid();
+        
+        Document doc = XMLUnit.buildTestDocument(result);
+        Map<String, String> namespaces = new HashMap<String, String>();
+        namespaces.put("xlink", "http://www.w3.org/1999/xlink");
+        namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+        namespaces.put("ows", "http://www.opengis.net/ows/1.1");        
+        namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
+        XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
+        XpathEngine xpath = XMLUnit.newXpathEngine();
+        
+        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer)", doc));
+        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer'])", doc));
+        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier)", doc));
+        assertEquals("", xpath.evaluate("//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier", doc));
+    }
+    public void testGetCapEmptyStyleFilter() throws Exception {
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        
+        service = new WMTSService(sb, tld,null , mock(RuntimeStats.class));
+    
+        @SuppressWarnings("unchecked")
+        Map<String, String> kvp = new CaseInsensitiveMap();
+        kvp.put("service", "WMS");
+        kvp.put("version", "1.1.1");
+        kvp.put("request", "GetCapabilities");
+       
+    
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        when(req.getCharacterEncoding()).thenReturn("UTF-8");
+        when(req.getParameterMap()).thenReturn(kvp);
+        
+        
+        {
+            List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale","EPSG:4326");
+            
+            ParameterFilter styleFilter = mock(ParameterFilter.class);
+            when(styleFilter.getKey()).thenReturn("STYLES");
+            when(styleFilter.getDefaultValue()).thenReturn("Foo");
+            when(styleFilter.getLegalValues()).thenReturn(Collections.<String>emptyList());
             
             TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames, Collections.singletonList(styleFilter));
             when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
