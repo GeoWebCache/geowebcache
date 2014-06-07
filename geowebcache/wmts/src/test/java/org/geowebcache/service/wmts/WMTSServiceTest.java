@@ -1,11 +1,14 @@
 package org.geowebcache.service.wmts;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasEntry;
 
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,6 +28,7 @@ import org.custommonkey.xmlunit.Validator;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.conveyor.Conveyor;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -36,8 +40,8 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
+import org.hamcrest.Matcher;
 import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
 
 import com.mockrunner.mock.web.MockHttpServletResponse;
 
@@ -119,8 +123,8 @@ public class WMTSServiceTest extends TestCase {
     
         @SuppressWarnings("unchecked")
         Map<String, String> kvp = new CaseInsensitiveMap();
-        kvp.put("service", "WMS");
-        kvp.put("version", "1.1.1");
+        kvp.put("service", "WMTS");
+        kvp.put("version", "1.0.0");
         kvp.put("request", "GetCapabilities");
        
     
@@ -181,8 +185,8 @@ public class WMTSServiceTest extends TestCase {
     
         @SuppressWarnings("unchecked")
         Map<String, String> kvp = new CaseInsensitiveMap();
-        kvp.put("service", "WMS");
-        kvp.put("version", "1.1.1");
+        kvp.put("service", "WMTS");
+        kvp.put("version", "1.0.0");
         kvp.put("request", "GetCapabilities");
        
     
@@ -247,8 +251,8 @@ public class WMTSServiceTest extends TestCase {
     
         @SuppressWarnings("unchecked")
         Map<String, String> kvp = new CaseInsensitiveMap();
-        kvp.put("service", "WMS");
-        kvp.put("version", "1.1.1");
+        kvp.put("service", "WMTS");
+        kvp.put("version", "1.0.0");
         kvp.put("request", "GetCapabilities");
        
     
@@ -303,6 +307,137 @@ public class WMTSServiceTest extends TestCase {
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer'])", doc));
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier)", doc));
         assertEquals("", xpath.evaluate("//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier", doc));
+    }
+    
+    public void testGetCapMultipleStyles() throws Exception {
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        
+        service = new WMTSService(sb, tld,null , mock(RuntimeStats.class));
+    
+        @SuppressWarnings("unchecked")
+        Map<String, String> kvp = new CaseInsensitiveMap();
+        kvp.put("service", "WMTS");
+        kvp.put("version", "1.0.0");
+        kvp.put("request", "GetCapabilities");
+       
+    
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        when(req.getCharacterEncoding()).thenReturn("UTF-8");
+        when(req.getParameterMap()).thenReturn(kvp);
+        
+        
+        {
+            List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale","EPSG:4326");
+            
+            ParameterFilter styleFilter = mock(ParameterFilter.class);
+            when(styleFilter.getKey()).thenReturn("STYLES");
+            when(styleFilter.getDefaultValue()).thenReturn("Foo");
+            when(styleFilter.getLegalValues()).thenReturn(Arrays.asList("Foo", "Bar", "Baz"));
+            
+            TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames, Collections.singletonList(styleFilter));
+            when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
+        }
+    
+        Conveyor conv = service.getConveyor(req, resp);
+        assertNotNull(conv);
+        
+        final String layerName = conv.getLayerId();
+        assertNull(layerName);
+        
+        assertEquals(Conveyor.RequestHandler.SERVICE,conv.reqHandler);
+        WMTSGetCapabilities wmsCap = new WMTSGetCapabilities(tld,gridsetBroker, conv.servletReq,"http://localhost:8080", "/service/wms", new NullURLMangler());
+        wmsCap.writeResponse(conv.servletResp,mock(RuntimeStats.class));   
+        assertTrue(resp.containsHeader("content-disposition"));
+        assertEquals("inline;filename=wmts-getcapabilities.xml", resp.getHeader("content-disposition"));                            
+    
+        // System.out.println(resp.getOutputStreamContent());
+        
+        String result = resp.getOutputStreamContent();
+        
+        //Validator validator = new Validator(result);
+        //validator.useXMLSchema(true);
+        //validator.assertIsValid();
+        
+        Document doc = XMLUnit.buildTestDocument(result);
+        Map<String, String> namespaces = new HashMap<String, String>();
+        namespaces.put("xlink", "http://www.w3.org/1999/xlink");
+        namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+        namespaces.put("ows", "http://www.opengis.net/ows/1.1");        
+        namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
+        XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
+        XpathEngine xpath = XMLUnit.newXpathEngine();
+        
+        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer)", doc));
+        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer'])", doc));
+        // There should be three styles
+        assertEquals("3", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer']/wmts:Style/ows:Identifier)", doc));
+        // Exactly one should be marked default
+        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer']/wmts:Style[@isDefault='true']/ows:Identifier)", doc));
+        // That one should be 'Foo'
+        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer']/wmts:Style[@isDefault='true']/ows:Identifier[text()='Foo'])", doc));
+        // Each of Bar and Baz should also occur
+        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer']/wmts:Style/ows:Identifier[text()='Bar'])", doc));
+        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer']/wmts:Style/ows:Identifier[text()='Baz'])", doc));
+    }
+    
+    public void testGetTileWithStyle() throws Exception {
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        
+        service = new WMTSService(sb, tld,null , mock(RuntimeStats.class));
+    
+        @SuppressWarnings("unchecked")
+        Map<String, String> kvp = new CaseInsensitiveMap();
+        kvp.put("service", "WMTS");
+        kvp.put("version", "1.0.0");
+        kvp.put("request", "GetTile");
+        kvp.put("layer", "mockLayer");
+        kvp.put("format", "image/png");
+        kvp.put("TileMatrixSet", "GlobalCRS84Pixel");
+        kvp.put("TileMatrix", "GlobalCRS84Pixel:1");
+        kvp.put("TileRow", "0");
+        kvp.put("TileCol", "0");
+        kvp.put("Style", "Bar"); // Note singular as required by WMTS
+    
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        //when(req.getCharacterEncoding()).thenReturn("UTF-8");
+        when(req.getParameterMap()).thenReturn(kvp);
+        
+        
+        {
+            List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale","EPSG:4326");
+            
+            ParameterFilter styleFilter = mock(ParameterFilter.class);
+            when(styleFilter.getKey()).thenReturn("STYLES");
+            when(styleFilter.getDefaultValue()).thenReturn("Foo");
+            when(styleFilter.getLegalValues()).thenReturn(Arrays.asList("Foo", "Bar", "Baz"));
+            
+            TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames, Collections.singletonList(styleFilter));
+            
+            // Style parameter should have been made plural by the time getModifiableParameters is called.
+            Map<String, String> map = new HashMap<>();
+            map.put("STYLES", "Bar");
+            when(tileLayer.getModifiableParameters((Map)argThat(hasEntry("styles", "Bar")), (String)any())).thenReturn(map);
+            when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
+        }
+    
+        Conveyor conv = service.getConveyor(req, resp);
+        assertNotNull(conv);
+        
+        final String layerName = conv.getLayerId();
+        assertEquals("mockLayer", layerName);
+        
+        assertThat(conv, instanceOf(ConveyorTile.class));
+        
+        ConveyorTile tile = (ConveyorTile) conv;
+        
+        Map<String,String> parameters = tile.getParameters();
+        assertThat(parameters, hasEntry("STYLES", "Bar")); // Changed to plural, as used by WMS.
     }
 
 }
