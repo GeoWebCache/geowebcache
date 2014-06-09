@@ -8,7 +8,6 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
 
 import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
