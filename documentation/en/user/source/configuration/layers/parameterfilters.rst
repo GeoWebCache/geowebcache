@@ -3,7 +3,7 @@
 Parameter Filters
 =================
 
-Parameter filters provide templates for extracting arbitrary parameters from a requests. This makes it possible to use GeoWebCache in scenarios such as time series data, multiple styles for the same layer or with CQL filters set by the client.
+Parameter filters provide templates for extracting arbitrary parameters from requests. This allows using GeoWebCache in scenarios such as time series data, multiple styles for the same layer or with CQL filters set by the client.
 
 There are three types of parameter filters:
 
@@ -11,7 +11,7 @@ There are three types of parameter filters:
 #. **Numerical filters** (``<floatParameterFilter>``)
 #. **Regular expression filters**  (``<regexParameterFilter>``)
 
-It is possible to have multiple types of parameter filters for a given layer.
+A given layer can have multiple types of parameter filters.
 
 If a request does not comply with the allowed values of the set parameter, the request will fail, usually with an error such as::
 
@@ -115,7 +115,7 @@ Thresholds are also valuable when managing possible floating point rounding erro
 Regular expression filter
 -------------------------
 
-For more fine control of parameter values, GeoWebCache can recognize regular expressions for the value in a filter.  If a requested value matches the pattern in the regular expression, the request will proceed.
+For a finer control of parameter values, GeoWebCache can recognize regular expressions for the value in a filter.  If a requested value matches the pattern in the regular expression, the request will proceed.
 
 .. note:: GeoWebCache uses standard Java regular expressions.  For more information, please see the regular expression pattern documentation at:  `<http://download.oracle.com/javase/1.5.0/docs/api/java/util/regex/Pattern.html>`_.
 
@@ -137,7 +137,7 @@ This information is presented in the following schema inside the ``<wmsLayer>`` 
      </regexParameterFilter>
    </parameterFilters>
 
-Using regular expressions, it is possible to specify the same allowed styles as in the above string filter example.  To set two allowed values for the "styles" parameter: "polygon", "population", with a third default blank value for when the parameter is unspecified, the regular expression would be::
+Using regular expressions lets specifying the same allowed styles as in the above string filter example.  To set two allowed values for the "styles" parameter: "polygon", "population", with a third default blank value for when the parameter is unspecified, the regular expression would be::
 
   ^(|polygon|population)$  
 
