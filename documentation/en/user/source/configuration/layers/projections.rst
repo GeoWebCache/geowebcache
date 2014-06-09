@@ -5,9 +5,9 @@ Custom projections
 
 .. note:: In GeoWebCache, a projection is also known as a :ref:`gridset <concepts.gridsets>`.
 
-GeoWebCache only advertises support for EPSG:4326 (longitude/latitude) and EPSG:900913 (spherical web mercator) by default.  Any other projections need to be manually defined and configured.
+By default, GeoWebCache only advertises support for EPSG:4326 (longitude/latitude) and EPSG:900913 (spherical web mercator).  Any other projection needs to be defined and configured manually.
 
-Adding a custom projection to GeoWebCache involves modifying (or creating, if it doesn't yet exist) the :file:`geowebcache.xml` configuration file to include a custom projection definition and then associating the layer with that projection.  (Read more about this file in the section on :ref:`configuration.layers.howto`.)
+Adding a custom projection to GeoWebCache requires modifying (or creating, if it doesn't already exist) the :file:`geowebcache.xml` configuration file to include a custom projection definition and then associating the layer with that projection.  (Read more about this file in the section :ref:`configuration.layers.howto`.)
 
 Defining a projection
 ---------------------
@@ -40,7 +40,7 @@ In order to add a custom projection to GeoWebCache, the following information is
      - A constant value of the amount of meters in the native units for the projection.
    * - Tile height and width
      - ``<tileHeight>``, ``<tileWidth>``
-     - Typically 256 pixels each, though other values are valid.
+     - Typically 256 pixels each, although other values are valid.
 
 .. note:: For full information, please see the GeoWebCache schema.  (Read more about the schema in the section on :ref:`configuration.layers.howto`.)
 
@@ -49,7 +49,7 @@ In order to add a custom projection to GeoWebCache, the following information is
 Determining SRS extent
 ~~~~~~~~~~~~~~~~~~~~~~
 
-If unsure about the full extent of the SRS, you can use an online resource such as `<http://spatialreference.org>`_ and use the :guilabel:`Projected Bounds`.  For example, on the `reference page for EPSG:2263 <http://spatialreference.org/ref/epsg/2263/>`_ the Projected Bounds is listed as::
+If you are unsure of the full extent of the SRS, you can use an online resource such as `<http://spatialreference.org>`_ and use the :guilabel:`Projected Bounds`.  For example, on the `reference page for EPSG:2263 <http://spatialreference.org/ref/epsg/2263/>`_ the Projected Bounds is listed as::
 
   909126.0155, 110626.2880, 1610215.3590, 424498.0529
 
@@ -58,7 +58,7 @@ Determining meters per unit
 
 While many SRS definitions are in meters, there are many other units possible.  Setting this will prevent grid shifts and unexpected output.
 
-The following is a short list of correct values of ``<metersPerUnit>`` for different units:
+Below a short list of correct values of ``<metersPerUnit>`` for different units:
 
 .. list-table::
    :widths: 50 50
@@ -75,7 +75,7 @@ The following is a short list of correct values of ``<metersPerUnit>`` for diffe
    * - Meters
      - 1
 
-While it is not necessary to put a ``<metersPerUnit>`` value when the projection is defined in meters, it is still good practice (and will prevent warnings from being displayed in the logs).
+While it is not required to put a ``<metersPerUnit>`` value when the projection is defined in meters, it is still good practice (and will prevent warnings from being displayed in the logs).
 
 Example
 ~~~~~~~
@@ -113,12 +113,12 @@ The following is an example of a custom projection definition, in this case `EPS
      ...
    </gridSets>
 
-Note that specific layers will need to be associated with this projection before they can be viewed as such.
+.. note:: specific layers will need to be associated with this projection before they can be viewed as such.
 
 Associate a layer with the projection
 -------------------------------------
 
-Once the projection is loaded in GeoWebCache, the next step is to associate a given layer with that projection.  This is done in the same :file:`geowebcache.xml` file.
+Once the projection is loaded in GeoWebCache, the next step is to associate the projection to a given layer.  This is done in the same :file:`geowebcache.xml` file.
 
 The necessary information is:
 
@@ -145,7 +145,7 @@ The necessary information is:
 Example
 ~~~~~~~
 
-The following is an example of a single layer added using the previously-defined (EPSG:2263) projection.
+Below an example of a single layer added using the previously-defined (EPSG:2263) projection.
 
 .. code-block:: xml
 
@@ -171,4 +171,4 @@ The following is an example of a single layer added using the previously-defined
      ...
    </layers>
 
-Once any changes are made to :file:`geowebcache.xml`, it is necessary to :ref:`reload the configuration <configuration.reload>`.
+Any change made to :file:`geowebcache.xml`, it is required to :ref:`reload the configuration <configuration.reload>`.
