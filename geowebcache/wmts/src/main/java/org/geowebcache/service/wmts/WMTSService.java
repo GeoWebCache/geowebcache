@@ -18,6 +18,7 @@
 package org.geowebcache.service.wmts;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -149,7 +150,16 @@ public class WMTSService extends Service {
 
         Map<String, String> fullParameters;
         try {
-            fullParameters = tileLayer.getModifiableParameters(request.getParameterMap(), encoding);
+            // WMTS uses the "STYLE" instead of "STYLES"
+            Map<String, Object> rawParameters = request.getParameterMap();
+            for(Entry<String, Object> e:rawParameters.entrySet()){
+                if(e.getKey().equalsIgnoreCase("STYLE")) {
+                    rawParameters.put("STYLES", e.getValue());
+                    break;
+                }
+            }
+            fullParameters = tileLayer.getModifiableParameters(rawParameters, encoding);
+
         } catch (GeoWebCacheException e) {
             throw new OWSException(500, "NoApplicableCode", "", e.getMessage()
                     + " while fetching modifiable parameters for LAYER " + layer);
