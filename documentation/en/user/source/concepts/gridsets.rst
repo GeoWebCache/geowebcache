@@ -3,18 +3,18 @@
 Gridsets and Gridsubsets
 ========================
 
-**Gridsets** and **gridsubsets** refer to the spatial reference system of the layers served by GeoWebCache.  By nature, GeoWebCache is agnostic to reference-systems.  (See the section on :ref:`concepts.tiles` for more information.)  When GeoWebCache makes a request to a WMS, it uses the gridset and gridsubset information to convert its internal tile index to a spatial request that the WMS will understand.
+**Gridsets** and **gridsubsets** refer to the spatial reference system of the layers served by GeoWebCache. By nature and as introduced in the :ref:`concepts.tiles`, GeoWebCache is agnostic to reference-systems. When GeoWebCache makes a request to a WMS, it uses the gridset and gridsubset information to convert its internal tile index to a spatial request that the WMS will understand.
 
 
-A **gridset** is a global definition (i.e. not layer-specific) that specifies:
+A **gridset** is a global definition (i.e. not layer-specific) specifying:
 
   * A spatial reference system (EPSG code)
-  * A bounding box describing an extent, typically the maximum extent for the above reference system
+  * A bounding box describing the extent, typically the maximum extent for the above reference system
   * One of either a list of scale denominators, resolutions, or zoom levels
-  * The tile dimensions in pixels (which will be constant for all zoom levels)
+  * The tile dimensions in pixels (constant for all zoom levels)
   * *(Optional)* Pixel size (to calculate scales).  The default is 0.28mm/pixel, corresponding to 90.71428571428572 DPI.
 
-A **gridsubset** is a layer-specific definition that specifies:
+A **gridsubset** is a layer-specific definition specifying:
 
   * The gridset for the layer
   * *(Optional)* The bounding box for that layer (which must be a subset of the extent of the gridSet)
@@ -25,7 +25,7 @@ By default, this information is set in :file:`geowebcache.xml`.
 From gridsets to tiles
 ----------------------
 
-The following describes the process of interpreting the gridset and gridsubset at a particular zoom level and determining which tiles are being requested.  This process described below is repeated for every zoom level.
+Below the description of the interpretation process of the gridset and gridsubset at a particular zoom level and determining which tiles are being requested.  The description is  is repeated for every zoom level.
 
 .. figure:: img/gridset_boundingbox.png
    :align: left
@@ -57,10 +57,11 @@ The following describes the process of interpreting the gridset and gridsubset a
 
    **Gridsubset tiles** - GeoWebCache will round up the extents to the nearest tile boundaries.
 
+
 Corresponding XML
 ~~~~~~~~~~~~~~~~~
 
-The above example could be implemented by the following configuration details, set in  :file:`geowebcache.xml`.
+The example above could be implemented by the following configuration details, set in  :file:`geowebcache.xml`.
 
 .. code-block:: xml
 
