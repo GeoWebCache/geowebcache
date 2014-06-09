@@ -3,7 +3,7 @@
 Services
 ========
 
-Below is a list of the standard services that are distributed with GeoWebCache. The program is modular and it is usually easy to add new services. You can also edit geowebcache-servlet.xml, should you choose to disable certain services.
+Below is a list of the standard services distributed with GeoWebCache. Being modular, it is usually easy to add new services. The file geowebcache-servlet.xml can be edited to disable certain services.
 
 .. toctree::
    :maxdepth: 1
