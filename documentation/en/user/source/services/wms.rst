@@ -18,7 +18,7 @@ However, GeoWebCache supports any set of resolutions (scales), tile sizes and pr
 Clients: uDig, GeoExplorer
 --------------------------
 
-On the front page of your GeoWebCache instance you will find a link to the WMS GetCapabilities document. Recent versions of uDig can use this URL to configure all layers automatically. The same is true for GeoExplorer and other GeoExt based applications.
+On the front page of your GeoWebCache instance you will find a link to the WMS GetCapabilities document. Recent versions of uDig can use this URL to configure all layers automatically. The same applies to GeoExplorer and other GeoExt based applications.
 
 Note that each output format results in a new set of tiles. The GetCapabilities document can also be downloaded and edited manually or be filtered automatically using XSL templates.
 
