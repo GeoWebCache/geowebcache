@@ -10,8 +10,9 @@ To achieve good performance, requests should conform to the tiles that GeoWebCac
 WMS-C - WMS Tiling Clients
 ==========================
 
-The WMS Tiling Client Recommendation, or WMS-C for short, is a recommendation set forth by OSGeo for making tiled requests using WMS. You can read more about it here: http://wiki.osgeo.org/wiki/WMS_Tiling_Client_Recommendation  By default, any layer that does not specify a gridSubset will be configured to implement the recommended Unprojected and Mercator profiles.
+The WMS Tiling Client Recommendation, or WMS-C for short, is a recommendation set forth by OSGeo for making tiled requests using WMS. You can read more about it here: http://wiki.osgeo.org/wiki/WMS_Tiling_Client_Recommendation. 
 
+By default, any layer that does not specify a gridSubset will be configured to implement the recommended Unprojected and Mercator profiles. 
 However, GeoWebCache supports any set of resolutions (scales), tile sizes and projections.
 
 Clients: uDig, GeoExplorer
