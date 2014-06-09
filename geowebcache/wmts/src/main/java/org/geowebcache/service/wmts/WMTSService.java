@@ -17,6 +17,7 @@
  */
 package org.geowebcache.service.wmts;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -151,7 +152,8 @@ public class WMTSService extends Service {
         Map<String, String> fullParameters;
         try {
             // WMTS uses the "STYLE" instead of "STYLES"
-            Map<String, Object> rawParameters = request.getParameterMap();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> rawParameters = new HashMap<>(request.getParameterMap());
             for(Entry<String, Object> e:rawParameters.entrySet()){
                 if(e.getKey().equalsIgnoreCase("STYLE")) {
                     rawParameters.put("STYLES", e.getValue());
