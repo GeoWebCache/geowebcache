@@ -3,12 +3,12 @@
 Community
 =========
 
-GeoWebCache is an open source project and thus it is dependent on its community of users and developers for its continued advancement.  We encourage you to get involved in any way to help improve the software.
+GeoWebCache is an open source project and thus it relies on its community of users and developers for its continued advancement.  We encourage you to get involved in any way to help improve the software.
 
 Homepage
 --------
 
-The homepage for GeoWebCache is `<http://geowebcache.org>`_.  This page has the latest information about GeoWebCache, as well as links to documentation, downloads, developer information, issue tracking, and other up-to-the-minute information.
+The GeoWebCache homepage is `<http://geowebcache.org>`_.  This page has the latest information about GeoWebCache, as well as links to documentation, downloads, developer information, issue tracking, and other up-to-the-minute information.
 
 .. _mailinglists:
 
@@ -23,12 +23,12 @@ There are two mailing lists for GeoWebCache.
 IRC
 ---
 
-GeoWebCache, because of its connection and shared resources with `GeoServer <http://geoserver.org>`_, shares the same IRC channel.
+Because of its connection and shared resources with `GeoServer <http://geoserver.org>`_, GeoWebCache shares the same IRC channel.
 
    * **Server** - `freenode.net <irc://irc.freenode.net>`_
    * **Channel** - #geoserver
 
-As this is a channel not specifically aimed at GeoWebCache, please mention it explicitly when asking questions.
+When asking questions please mention GeoWebCache explicitly, since this is a channel not specifically aimed at GeoWebCache.
 
 Source Code
 -----------
@@ -38,7 +38,7 @@ The GeoWebCache source code is available on GitHub at `<https://github.com/GeoWe
 Issue tracking
 --------------
 
-The GeoWebCache issue tracker is integrated with GitHub repository, and is available at `<https://github.com/GeoWebCache/geowebcache/issues>`_.
+The GeoWebCache issue tracker is integrated with GitHub repository and is available at `<https://github.com/GeoWebCache/geowebcache/issues>`_.
 
 .. _license:
  
