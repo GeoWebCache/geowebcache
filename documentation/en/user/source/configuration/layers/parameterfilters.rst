@@ -137,7 +137,7 @@ This information is presented in the following schema inside the ``<wmsLayer>`` 
      </regexParameterFilter>
    </parameterFilters>
 
-Using regular expressions lets specifying the same allowed styles as in the above string filter example.  To set two allowed values for the "styles" parameter: "polygon", "population", with a third default blank value for when the parameter is unspecified, the regular expression would be::
+Regular expressions allows you to specify the same allowed styles as in the above string filter example.  To set two allowed values for the "styles" parameter: "polygon", "population", with a third default blank value for when the parameter is unspecified, the regular expression would be::
 
   ^(|polygon|population)$  
 
