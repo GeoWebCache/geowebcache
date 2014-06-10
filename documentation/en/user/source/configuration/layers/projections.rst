@@ -58,7 +58,7 @@ Determining meters per unit
 
 While many SRS definitions are in meters, there are many other units possible.  Setting this will prevent grid shifts and unexpected output.
 
-Below a short list of correct values of ``<metersPerUnit>`` for different units:
+A short list of correct values  of ``<metersPerUnit>`` for different units is as follows:
 
 .. list-table::
    :widths: 50 50
