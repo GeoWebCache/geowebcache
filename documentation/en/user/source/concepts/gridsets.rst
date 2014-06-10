@@ -25,7 +25,7 @@ By default, this information is set in :file:`geowebcache.xml`.
 From gridsets to tiles
 ----------------------
 
-Below the description of the interpretation process of the gridset and gridsubset at a particular zoom level and determining which tiles are being requested.  The description is  is repeated for every zoom level.
+Below there is the description of the interpretation process of the gridset and gridsubset at a particular zoom level and determining which tiles are being requested.  The description is repeated for every zoom level.
 
 .. figure:: img/gridset_boundingbox.png
    :align: left
