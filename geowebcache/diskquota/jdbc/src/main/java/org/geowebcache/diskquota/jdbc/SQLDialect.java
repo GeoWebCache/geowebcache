@@ -40,23 +40,34 @@ import org.springframework.jdbc.support.MetaDataAccessException;
  */
 public class SQLDialect {
 
+    // size guesses: 128 characters should be more than enough for layer name, the gridset id
+    // is normally an epsg code so 32 is way more than enough, the blob format
+    // is normally a mime plus some extras, again 64 should fit, a param id is
+    // a SHA-1 sum that uses 41 chars, the id is the sum of all the above plus
+    // connecting chars, 320 is again more than enough
+    // bytes is going to be less than a zettabyte(one million petabytes, 10^21) for the
+    // foreseeable future
+    
+    protected static final int LAYER_NAME_SIZE = 128;
+    protected static final int GRIDSET_ID_SIZE = 32;
+    protected static final int BLOB_FORMAT_SIZE = 64;
+    protected static final int PARAMETERS_ID_SIZE = 41;
+    protected static final int BYTES_SIZE = 21;
+    protected static final int NUM_HITS_SIZE = 64;
+    protected static final int TILESET_KEY_SIZE = 320;
+    protected static final int TILEPAGE_KEY_SIZE = TILESET_KEY_SIZE;
+    
     protected final Map<String, List<String>> TABLE_CREATION_MAP = new LinkedHashMap<String, List<String>>() {
         {
-            // size guesses: layer name cannot be larger than 64 chars, the gridset id
-            // is normally an epsg code so 32 is way more than enough, the blob format
-            // is normally a mime plus some extras, again 64 should fit, a param id is
-            // a SHA-1 sum that uses 41 chars, the id is the sum of all the above plus
-            // connecting chars, 256 is again more than enough
-            // bytes is going to be less than a zettabyte(one million petabytes, 10^21) for the
-            // foreseeable future
+
             put("TILESET", Arrays.asList( //
                     "CREATE TABLE ${schema}TILESET (\n" + //
-                            "  KEY VARCHAR(256) PRIMARY KEY,\n" + //
-                            "  LAYER_NAME VARCHAR(64),\n" + //
-                            "  GRIDSET_ID VARCHAR(32),\n" + //
-                            "  BLOB_FORMAT VARCHAR(64),\n" + //
-                            "  PARAMETERS_ID VARCHAR(41),\n" + //
-                            "  BYTES NUMERIC(21) NOT NULL DEFAULT 0\n" + //
+                            "  KEY VARCHAR("+TILESET_KEY_SIZE+") PRIMARY KEY,\n" + //
+                            "  LAYER_NAME VARCHAR("+LAYER_NAME_SIZE+"),\n" + //
+                            "  GRIDSET_ID VARCHAR("+GRIDSET_ID_SIZE+"),\n" + //
+                            "  BLOB_FORMAT VARCHAR("+BLOB_FORMAT_SIZE+"),\n" + //
+                            "  PARAMETERS_ID VARCHAR("+PARAMETERS_ID_SIZE+"),\n" + //
+                            "  BYTES NUMERIC("+BYTES_SIZE+") NOT NULL DEFAULT 0\n" + //
                             ")", //
                     "CREATE INDEX TILESET_LAYER ON TILESET(LAYER_NAME)" //
             ));
@@ -65,9 +76,9 @@ public class SQLDialect {
             put("TILEPAGE", Arrays.asList(
                     "CREATE TABLE ${schema}TILEPAGE (\n"
                             + //
-                            " KEY VARCHAR(256) PRIMARY KEY,\n"
+                            " KEY VARCHAR("+TILEPAGE_KEY_SIZE+") PRIMARY KEY,\n"
                             + //
-                            " TILESET_ID VARCHAR(256) REFERENCES ${schema}TILESET(KEY) ON DELETE CASCADE,\n"
+                            " TILESET_ID VARCHAR("+TILESET_KEY_SIZE+") REFERENCES ${schema}TILESET(KEY) ON DELETE CASCADE,\n"
                             + //
                             " PAGE_Z SMALLINT,\n" + //
                             " PAGE_X INTEGER,\n" + //
@@ -76,7 +87,7 @@ public class SQLDialect {
                             " FREQUENCY_OF_USE FLOAT,\n" + //
                             " LAST_ACCESS_TIME_MINUTES INTEGER,\n" + //
                             " FILL_FACTOR FLOAT,\n" + //
-                            " NUM_HITS NUMERIC(64)\n" + //
+                            " NUM_HITS NUMERIC("+NUM_HITS_SIZE+")\n" + //
                             ")", //
                     "CREATE INDEX TILEPAGE_TILESET ON TILEPAGE(TILESET_ID, FILL_FACTOR)",
                     "CREATE INDEX TILEPAGE_FREQUENCY ON TILEPAGE(FREQUENCY_OF_USE DESC)",
