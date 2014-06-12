@@ -40,24 +40,22 @@ import org.springframework.jdbc.support.MetaDataAccessException;
  */
 public class SQLDialect {
 
-    // size guesses: layer name cannot be larger than 64 chars, the gridset id
+    // size guesses: 128 characters should be more than enough for layer name, the gridset id
     // is normally an epsg code so 32 is way more than enough, the blob format
     // is normally a mime plus some extras, again 64 should fit, a param id is
     // a SHA-1 sum that uses 41 chars, the id is the sum of all the above plus
-    // connecting chars, 256 is again more than enough
+    // connecting chars, 320 is again more than enough
     // bytes is going to be less than a zettabyte(one million petabytes, 10^21) for the
     // foreseeable future
     
-    // Where does the 64 char max for layer name come from? KS
-    
-    protected static final int LAYER_NAME_SIZE = 64;
+    protected static final int LAYER_NAME_SIZE = 128;
     protected static final int GRIDSET_ID_SIZE = 32;
     protected static final int BLOB_FORMAT_SIZE = 64;
     protected static final int PARAMETERS_ID_SIZE = 41;
     protected static final int BYTES_SIZE = 21;
     protected static final int NUM_HITS_SIZE = 64;
-    protected static final int TILESET_KEY_SIZE = 256;
-    protected static final int TILEPAGE_KEY_SIZE = 256;
+    protected static final int TILESET_KEY_SIZE = 320;
+    protected static final int TILEPAGE_KEY_SIZE = TILESET_KEY_SIZE;
     
     protected final Map<String, List<String>> TABLE_CREATION_MAP = new LinkedHashMap<String, List<String>>() {
         {
