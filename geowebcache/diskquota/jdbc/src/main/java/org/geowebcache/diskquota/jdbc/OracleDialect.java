@@ -31,12 +31,12 @@ public class OracleDialect extends SQLDialect {
     public OracleDialect() {
         TABLE_CREATION_MAP.put("TILESET", Arrays.asList( //
                 "CREATE TABLE ${schema}TILESET (\n" + //
-                        "  KEY VARCHAR(256) PRIMARY KEY,\n" + //
-                        "  LAYER_NAME VARCHAR(64),\n" + //
-                        "  GRIDSET_ID VARCHAR(32),\n" + //
-                        "  BLOB_FORMAT VARCHAR(64),\n" + //
-                        "  PARAMETERS_ID VARCHAR(41),\n" + //
-                        "  BYTES NUMBER(21) DEFAULT 0 NOT NULL\n" + //
+                        "  KEY VARCHAR("+TILESET_KEY_SIZE+") PRIMARY KEY,\n" + //
+                        "  LAYER_NAME VARCHAR("+LAYER_NAME_SIZE+"),\n" + //
+                        "  GRIDSET_ID VARCHAR("+GRIDSET_ID_SIZE+"),\n" + //
+                        "  BLOB_FORMAT VARCHAR("+BLOB_FORMAT_SIZE+"),\n" + //
+                        "  PARAMETERS_ID VARCHAR("+PARAMETERS_ID_SIZE+"),\n" + //
+                        "  BYTES NUMBER("+BYTES_SIZE+") DEFAULT 0 NOT NULL\n" + //
                         ") ORGANIZATION INDEX", //
                 "CREATE INDEX TILESET_LAYER ON TILESET(LAYER_NAME)" //
         ));
@@ -44,9 +44,9 @@ public class OracleDialect extends SQLDialect {
         TABLE_CREATION_MAP.put("TILEPAGE", Arrays.asList(
                 "CREATE TABLE ${schema}TILEPAGE (\n"
                         + //
-                        " KEY VARCHAR(256) PRIMARY KEY,\n"
+                        " KEY VARCHAR("+TILEPAGE_KEY_SIZE+") PRIMARY KEY,\n"
                         + //
-                        " TILESET_ID VARCHAR(256) REFERENCES ${schema}TILESET(KEY) ON DELETE CASCADE,\n"
+                        " TILESET_ID VARCHAR("+TILESET_KEY_SIZE+") REFERENCES ${schema}TILESET(KEY) ON DELETE CASCADE,\n"
                         + //
                         " PAGE_Z SMALLINT,\n" + //
                         " PAGE_X INTEGER,\n" + //
@@ -55,7 +55,7 @@ public class OracleDialect extends SQLDialect {
                         " FREQUENCY_OF_USE FLOAT,\n" + //
                         " LAST_ACCESS_TIME_MINUTES INTEGER,\n" + //
                         " FILL_FACTOR FLOAT,\n" + //
-                        " NUM_HITS NUMBER(38)\n" + //
+                        " NUM_HITS NUMBER("+NUM_HITS_SIZE+")\n" + //
                         ") ORGANIZATION INDEX", //
                 "CREATE INDEX TILEPAGE_TILESET ON TILEPAGE(TILESET_ID)",
                 "CREATE INDEX TILEPAGE_FILL_FACTOR ON TILEPAGE(FILL_FACTOR)",
