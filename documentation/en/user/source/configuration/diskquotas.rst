@@ -221,3 +221,12 @@ The local connection pool can instead be configured by specifying the following:
         <maxOpenPreparedStatements>50</maxOpenPreparedStatements>
       </connectionPool>
     </gwcJdbcConfiguration>
+
+Disk quota schema
+-----------------
+
+The schema used by a JDBC Disk Quota store specifies that a layer's name can be no longer than 128 characters.  If the database was created using GWC 1.5.2 or earlier then the limit will be 64 characters instead. If you have very long layer names and get SQLException messages in your log, it may be because your layer names are longer than this maximum.
+
+If this limit is too low, it can be changed using your database's administrative tools.  You need to increase the size of 4 fields on two tables, all by the same amount.  ``layer_name`` and ``key`` on the ``tileset`` table, and ``tileset_id`` and ``key`` on the ``tilepage`` table.  For details, see the documentation for the specific database you are using.
+
+ 
