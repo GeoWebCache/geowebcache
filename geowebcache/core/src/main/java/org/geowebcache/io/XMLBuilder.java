@@ -26,12 +26,17 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
+import com.google.common.base.Preconditions;
+
+@ParametersAreNonnullByDefault
 public class XMLBuilder {
     Appendable builder;
     
     public XMLBuilder(Appendable builder) {
         super();
+        Preconditions.checkNotNull(builder);
         this.builder = builder;
     }
 
@@ -63,7 +68,7 @@ public class XMLBuilder {
      * @return
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
-    public XMLBuilder appendUnescaped(String s) throws IOException {
+    public XMLBuilder appendUnescaped(@Nullable String s) throws IOException {
         builder.append(s);
         return this;
     }
@@ -85,6 +90,7 @@ public class XMLBuilder {
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
     public XMLBuilder startElement(String name, boolean indent) throws IOException {
+        Preconditions.checkNotNull(name);
         if(startOfElement) appendUnescaped(">");
         startOfElement=false;
         if(indent) {
@@ -127,7 +133,7 @@ public class XMLBuilder {
      * @return
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
-    public XMLBuilder endElement(String name) throws IOException {
+    public XMLBuilder endElement(@Nullable String name) throws IOException {
         NodeInfo ni = nodeStack.pop();
         
         assert name==null || name.equals(ni.name);
@@ -148,24 +154,27 @@ public class XMLBuilder {
     }
     
     /**
-     * Append an element that contains only text
+     * Append an element that contains only text.
      * @return
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
-    public XMLBuilder simpleElement(String name, String text, boolean indent) throws IOException {
+    public XMLBuilder simpleElement(String name, @Nullable String text, boolean indent) throws IOException {
         return startElement(name, indent).text(text).endElement();
     }
     
     /**
-     * Add text to the body of the element
+     * Add text to the body of the element.
      * @param str
      * @return
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
-    public XMLBuilder text(String str) throws IOException {
-        if(startOfElement) appendUnescaped(">");
-        startOfElement=false;
-        return appendEscaped(str);
+    public XMLBuilder text(@Nullable String str) throws IOException {
+        if(str!=null && !str.isEmpty()) {
+            if(startOfElement) appendUnescaped(">");
+            startOfElement=false;
+            return appendEscaped(str);
+        }
+        return this;
     }
     
     /**
@@ -174,19 +183,20 @@ public class XMLBuilder {
      * @return
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
-    public XMLBuilder appendEscaped(String str) throws IOException {
+    public XMLBuilder appendEscaped(@Nullable String str) throws IOException {
 
-        int offset = 0, strLen = str.length();
-        while (offset < strLen) {
-          int curChar = str.codePointAt(offset);
-          offset += Character.charCount(curChar);
-          
-          char[] chars = ESCAPE_ENTITIES.get(curChar);
-          if (chars==null) chars = Character.toChars(curChar);
-          
-          builder.append(new String(chars));
+        if(str!=null) {
+            int offset = 0, strLen = str.length();
+            while (offset < strLen) {
+              int curChar = str.codePointAt(offset);
+              offset += Character.charCount(curChar);
+              
+              char[] chars = ESCAPE_ENTITIES.get(curChar);
+              if (chars==null) chars = Character.toChars(curChar);
+              
+              builder.append(new String(chars));
+            }
         }
-        
         return this;
     }
 
@@ -197,6 +207,7 @@ public class XMLBuilder {
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
     public XMLBuilder entity(String name) throws IOException {
+        Preconditions.checkNotNull(name);
         if(startOfElement) appendUnescaped(">");
         startOfElement=false;
         appendUnescaped("&").appendUnescaped(name).appendUnescaped(";");
@@ -211,6 +222,8 @@ public class XMLBuilder {
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
     public XMLBuilder attribute(String name, String value) throws IOException {
+        Preconditions.checkNotNull(name);
+        Preconditions.checkNotNull(value);
         if(! startOfElement) throw new IllegalArgumentException();
         appendUnescaped(" ").appendUnescaped(name).appendUnescaped("=\"").appendEscaped(value).appendUnescaped("\"");
         return this;
@@ -274,6 +287,7 @@ public class XMLBuilder {
      * @throws IOException
      */
     public XMLBuilder header(String version, @Nullable String charset) throws IOException {
+        Preconditions.checkNotNull(version);
         appendUnescaped("<?xml version=\"").appendEscaped(version).appendUnescaped("\"");
         if(charset!=null){
             appendUnescaped(" encoding=\"").appendEscaped(charset).appendUnescaped("\"");
