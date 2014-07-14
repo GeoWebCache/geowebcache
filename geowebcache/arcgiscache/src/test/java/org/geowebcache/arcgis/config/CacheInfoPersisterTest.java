@@ -27,7 +27,6 @@ public class CacheInfoPersisterTest extends TestCase {
                 + "  <MTolerance>2</MTolerance>" //
                 + "  <HighPrecision>true</HighPrecision>" //
                 + "  <WKID>2193</WKID>" //
-                + "  <LatestWKID>2193</LatestWKID>" //
                 + "</SpatialReference>";
 
         CacheInfoPersister persister = new CacheInfoPersister();
@@ -48,7 +47,6 @@ public class CacheInfoPersisterTest extends TestCase {
         assertEquals(2, sr.getMTolerance(), 1e-6);
         assertEquals(true, sr.isHighPrecision());
         assertEquals(2193, sr.getWKID());
-        assertEquals(2193, sr.getLatestWKID());
     }
 
     public void testLoadTileOrigin() {
@@ -75,7 +73,6 @@ public class CacheInfoPersisterTest extends TestCase {
                 + "  <TileCols>512</TileCols>" //
                 + "  <TileRows>512</TileRows>" //
                 + "  <DPI>96</DPI>" //
-                + "  <PreciseDPI>96</PreciseDPI>" //
                 + "  <LODInfos xsi:type='typens:ArrayOfLODInfo'>" //
                 + "    <LODInfo xsi:type='typens:LODInfo'>" //
                 + "    </LODInfo>" //
@@ -90,8 +87,6 @@ public class CacheInfoPersisterTest extends TestCase {
         assertNotNull(tci.getTileOrigin());
         assertEquals(512, tci.getTileCols());
         assertEquals(512, tci.getTileRows());
-        assertEquals(96, tci.getDPI());
-        assertEquals(96, tci.getPreciseDPI());
         assertNotNull(tci.getLodInfos());
         assertEquals(1, tci.getLodInfos().size());
     }

@@ -20,7 +20,6 @@ import java.util.List;
  *     &lt;TileCols&gt;512&lt;/TileCols&gt;
  *     &lt;TileRows&gt;512&lt;/TileRows&gt;
  *     &lt;DPI&gt;96&lt;/DPI&gt;
- *     &lt;PreciseDPI&gt;96&lt;/PreciseDPI&gt;
  *     &lt;LODInfos xsi:type='typens:ArrayOfLODInfo'&gt;
  *       &lt;LODInfo xsi:type='typens:LODInfo'&gt;
  *         &lt;LevelID&gt;0&lt;/LevelID&gt;
@@ -50,8 +49,6 @@ public class TileCacheInfo {
 
     private int DPI;
 
-    private int PreciseDPI;
-
     private List<LODInfo> lodInfos;
 
     public SpatialReference getSpatialReference() {
@@ -72,14 +69,6 @@ public class TileCacheInfo {
 
     public int getDPI() {
         return DPI;
-    }
-
-    /**
-     * New in ArcGIS 10.1+
-     * @return
-     */
-    public int getPreciseDPI() {
-        return PreciseDPI;
     }
 
     public List<LODInfo> getLodInfos() {

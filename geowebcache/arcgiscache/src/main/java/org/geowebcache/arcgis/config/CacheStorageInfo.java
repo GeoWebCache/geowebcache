@@ -27,7 +27,6 @@ package org.geowebcache.arcgis.config;
 public class CacheStorageInfo {
 
     public static final String EXPLODED_FORMAT_CODE = "esriMapCacheStorageModeExploded";
-    public static final String COMPACT_FORMAT_CODE = "esriMapCacheStorageModeCompact";
 
     private String storageFormat;
 
