@@ -1,3 +1,25 @@
+GeoWebCache 1.6.0-beta (2014-07-21)
+------------------------------------
+
+First beta release for GeoWebCache 1.6.x
+
+Improvements:
++++++++++++++
+- WMSTileFuser improvements
+- Comprehensive proof reading of the docs
+- Update to Java 7 (A Version 7 JRE is now required)
+- Update to GeoTools 12
+- Update to JTS 1.13
+- Update to Guava 17
+- Update to ImageIO-Ext 1.1.10
+- Support for ArcGIS compact caches
+
+Fixes:
+++++++
+- Fix ArcGISCompactCacheTest failure in path with spaces
+- WMSTileFuser improvements
+
+
 GeoWebCache 1.5.3 (2014-07-21)
 ------------------------------
 
