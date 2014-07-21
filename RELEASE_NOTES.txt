@@ -1,3 +1,20 @@
+GeoWebCache 1.5.3 (2014-07-21)
+------------------------------
+
+Third maintenance release of GeoWebCache 1.5.x
+
+Improvements:
++++++++++++++
+- Increase Layer name field in DiscQuota DB to 128 chars
+
+Fixes:
+++++++
+- NioLock can fail to release the memory lock going with it in some cases
+- Fixed support for STYLE parameter in WMTS
+- Fixed unescaped XML characters in capabilities documents
+- Exception thrown when calling getCoverageIntersections on a GridSubset
+- GeoWebCache complains about unrecognized element gwcConfig on startup
+
 GeoWebCache 1.5.2 (2014-05-02)
 ------------------------------
 
