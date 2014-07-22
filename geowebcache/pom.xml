@@ -464,23 +464,6 @@
        </links>
       </configuration>
      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.2</version>
-        <configuration>
-          <!--descriptorRefs>
-            <descriptorRef>project</descriptorRef>
-          </descriptorRefs-->
-          <descriptors>
-            <descriptor>release/src.xml</descriptor>
-            <descriptor>release/war.xml</descriptor>
-            <descriptor>release/doc.xml</descriptor>
-          </descriptors>
-          <finalName>geowebcache-1.6.0-beta</finalName>
-          <outputDirectory>${project.build.directory}/release</outputDirectory>
-        </configuration>
-      </plugin>
-
     </plugins>
   </reporting>
 
@@ -597,6 +580,24 @@
           <skipPoms>false</skipPoms>
         </configuration>
       </plugin>
+
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2</version>
+        <configuration>
+          <!--descriptorRefs>
+            <descriptorRef>project</descriptorRef>
+          </descriptorRefs-->
+          <descriptors>
+            <descriptor>release/src.xml</descriptor>
+            <descriptor>release/war.xml</descriptor>
+            <descriptor>release/doc.xml</descriptor>
+          </descriptors>
+          <finalName>geowebcache-1.6.0-beta</finalName>
+          <outputDirectory>${project.build.directory}/release</outputDirectory>
+        </configuration>
+      </plugin>
+
 
     </plugins>
     
