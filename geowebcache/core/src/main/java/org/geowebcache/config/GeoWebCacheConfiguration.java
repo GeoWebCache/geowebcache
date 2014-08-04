@@ -72,6 +72,8 @@ public class GeoWebCacheConfiguration {
     private List<FormatModifier> formatModifiers;
 
     private List<XMLGridSet> gridSets;
+    
+    private Boolean fullWMS;
 
     /**
      * The persisted list of layers
@@ -285,5 +287,21 @@ public class GeoWebCacheConfiguration {
         }
         
         return lockProviderInstance;
+    }
+
+    /**
+     * Get the FullWMS value if present
+     * @return
+     */
+    public Boolean getFullWMS() {
+        return fullWMS;
+    }
+
+    /**
+     * Set the FullWMS value if present
+     * @return
+     */
+    public void setFullWMS(Boolean fullWMS) {
+        this.fullWMS = fullWMS;
     }
 }

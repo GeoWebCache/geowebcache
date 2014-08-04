@@ -356,7 +356,7 @@ public class MetaTile implements TileResponseReceiver {
         }
         
         // TODO should we recycle the writers ?
-        // GR: it'd be only a 2% perf gain according to profiler
+        // GR: it'd be only a 2% perf gain according to profile   
         Iterator<ImageWriter> it = javax.imageio.ImageIO.getImageWritersByFormatName(format);
         ImageWriter writer = it.next();
         ImageWriteParam param = writer.getDefaultWriteParam();
