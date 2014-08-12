@@ -620,6 +620,26 @@
     </pluginManagement>
   </build>
   
+  <profiles>
+    <profile>
+      <id>deploy.boundless</id>
+      <distributionManagement>
+        <repository>
+          <id>boundless</id>
+          <uniqueVersion>false</uniqueVersion>
+          <name>Boundless Maven Repository</name>
+          <url>http://repo.boundlessgeo.com/main</url>
+        </repository>
+        <snapshotRepository>
+          <id>boundless</id>
+          <uniqueVersion>false</uniqueVersion>
+          <name>Boundless Maven Repository</name>
+          <url>http://repo.boundlessgeo.com/main</url>
+        </snapshotRepository>
+      </distributionManagement>
+    </profile>
+  </profiles>
+
   <modules>
     <module>core</module>
     <module>georss</module>
