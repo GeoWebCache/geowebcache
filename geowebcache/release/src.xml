@@ -7,7 +7,7 @@
   <fileSets>
     <fileSet>
       <directory>${project.basedir}</directory>
-      <outputDirectory>geowebcache-1.6-SNAPSHOT/</outputDirectory>
+      <outputDirectory>geowebcache-1.6.0-RC1/</outputDirectory>
       <useDefaultExcludes>true</useDefaultExcludes>
       <excludes>
         <exclude>**/${project.build.directory}/**</exclude>

@@ -6,12 +6,12 @@
   <groupId>org.geowebcache</groupId>
   <artifactId>geowebcache</artifactId>
   <packaging>pom</packaging>
-  <version>1.6-SNAPSHOT</version>
+  <version>1.6.0-RC1</version>
   <name>geowebcache</name>
   <url>http://geowebcache.org</url>
 
   <properties>
-    <gt.version>12-SNAPSHOT</gt.version>
+    <gt.version>12-RC1</gt.version>
     <jts.version>1.13</jts.version>
     <spring.version>3.1.1.RELEASE</spring.version>
     <restlet.version>1.0.8</restlet.version>
@@ -600,7 +600,7 @@
             <descriptor>release/war.xml</descriptor>
             <descriptor>release/doc.xml</descriptor>
           </descriptors>
-          <finalName>geowebcache-1.6.0-SNAPSHOT</finalName>
+          <finalName>geowebcache-1.6.0-RC1</finalName>
           <outputDirectory>${project.build.directory}/release</outputDirectory>
         </configuration>
       </plugin>
