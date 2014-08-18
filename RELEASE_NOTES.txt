@@ -1,3 +1,13 @@
+GeoWebCache 1.6.0-RC1 (2014-08-18)
+----------------------------------
+
+First release candidate for GeoWebCache 1.6.x.
+
+Improvements:
++++++++++++++
+- UTF-8 compiler setting
+- Switch to new boundless maven repository
+
 GeoWebCache 1.6.0-beta (2014-07-21)
 ------------------------------------
 
