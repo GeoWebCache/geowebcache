@@ -77,6 +77,15 @@
     <constructor-arg ref="gwcDefaultStorageFinder" />
   </bean>
   
+  <bean id="gwcTransientCache" class="org.geowebcache.storage.TransientCache" >
+    <description>
+      In memory cache used when MetaTiling tiles that are published but not cached to disk.
+    </description>    
+    <constructor-arg ref="100" /> <!-- Max Tiles in cache-->
+    <constructor-arg ref="1024" /> <!-- Max Space used by cache, in KiB -->
+    <constructor-arg ref="2000" /> <!-- Expire Time, in ms -->
+  </bean>
+  
   <!-- Static definition of where to put the blobstore. 
        Note that the directory MUST EXIST when GWC is started. -->
   <!-- bean id="gwcBlobStore" class="org.geowebcache.storage.blobstore.file.FileBlobStore" destroy-method="destroy">
@@ -85,6 +94,7 @@
   
   <bean id="gwcStorageBroker" class="org.geowebcache.storage.DefaultStorageBroker" destroy-method="destroy">
     <constructor-arg ref="gwcBlobStore" />
+    <constructor-arg ref="gwcTransientCache" />
   </bean>
   
   

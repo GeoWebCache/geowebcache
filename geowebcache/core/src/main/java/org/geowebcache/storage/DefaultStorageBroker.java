@@ -32,11 +32,12 @@ public class DefaultStorageBroker implements StorageBroker {
 
     private TransientCache transientCache;
     
+    @Deprecated
     public DefaultStorageBroker(BlobStore blobStore) {
+        this(blobStore, new TransientCache(100, 1024));
+    }
+    public DefaultStorageBroker(BlobStore blobStore, TransientCache transientCache) {
         this.blobStore = blobStore;
-
-        // @todo are these settings reasonable? should they be configurable?
-        transientCache = new TransientCache(100,1000);
     }
 
     public void addBlobStoreListener(BlobStoreListener listener){
