@@ -60,16 +60,57 @@ public class PNGImageEncoder extends ImageEncoderImpl {
         supportedMimeTypes.add(ImageMime.png_24.getMimeType());
     }
 
+    /**
+     * Creates a new Instance of ImageEncoder supporting or not OutputStream optimization, with the defined MimeTypes and Spi classes.
+     * 
+     * @param aggressiveOutputStreamOptimization
+     * @param supportedMimeTypes
+     * @param writerSpi
+     * @param inputParams
+     * @param disablePNG
+     * 
+     * @deprecated
+     */
+    public PNGImageEncoder(boolean aggressiveOutputStreamOptimization, Float quality,
+            List<String> writerSpi, Map<String, String> inputParams, boolean disablePNG) {
+        this(aggressiveOutputStreamOptimization, quality, writerSpi, inputParams, disablePNG, null);
+    }
+    
+    /**
+     * Creates a new Instance of ImageEncoder supporting or not OutputStream optimization, with the defined MimeTypes and Spi classes.
+     * 
+     * @param aggressiveOutputStreamOptimization
+     * @param supportedMimeTypes
+     * @param writerSpi
+     * @param inputParams
+     * 
+     * @deprecated
+     */
     public PNGImageEncoder(boolean aggressiveOutputStreamOptimization, Float quality,
             List<String> writerSpi, Map<String, String> inputParams) {
-        super(aggressiveOutputStreamOptimization, supportedMimeTypes, writerSpi, inputParams);
+        this(aggressiveOutputStreamOptimization, quality, writerSpi, inputParams, false, null);
+    }    
+    
+    /**
+     * Creates a new Instance of ImageEncoder supporting or not OutputStream optimization, with the defined MimeTypes and Spi classes.
+     * 
+     * @param aggressiveOutputStreamOptimization
+     * @param supportedMimeTypes
+     * @param writerSpi
+     * @param inputParams
+     * @param disablePNG
+     * @param initializer
+     */
+    public PNGImageEncoder(boolean aggressiveOutputStreamOptimization, Float quality,
+            List<String> writerSpi, Map<String, String> inputParams, boolean disablePNG, ImageIOInitializer initializer) {
+        super(aggressiveOutputStreamOptimization, supportedMimeTypes, writerSpi, inputParams, initializer);
 
         if (quality != null) {
             this.quality = quality;
         } else {
             this.quality = DEFAULT_QUALITY;
         }
-
+        this.disablePNG = disablePNG;
         // Setting of the Aggressive OutputStream only if the first ImageWriterSpi object is an instance of the Default PNGImageWriterSpi
         this.isAggressiveSupported = (!this.disablePNG);
     }
@@ -152,12 +193,4 @@ public class PNGImageEncoder extends ImageEncoderImpl {
     public boolean isDisablePNG() {
         return disablePNG;
     }
-
-    /**
-     * Disable/Enable PNG encoding
-     */
-    public void setDisablePNG(boolean disablePNG) {
-        this.disablePNG = disablePNG;
-    }
-
 }
