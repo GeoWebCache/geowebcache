@@ -57,14 +57,12 @@ public class ImageEncoderImpl implements ImageEncoder {
      * Logger used
      */
     private static final Logger LOGGER = Logger.getLogger(ImageEncoderImpl.class);
-    /**
-     * Registry used for selecting the ImageReaderSpi instances
-     */
-    private static final IIORegistry theRegistry = IIORegistry.getDefaultInstance();
+
     /**
      * Default string used for exceptions
      */
     public static final String OPERATION_NOT_SUPPORTED = "Operation not supported";
+
     /**Boolean indicating is aggressive outputstream is supported*/
     private final boolean isAggressiveOutputStreamSupported;
     /**Supported Mimetypes*/
@@ -303,7 +301,7 @@ public class ImageEncoderImpl implements ImageEncoder {
      * 
      * @return
      */
-    private ImageWriterSpi getWriterSpi() {
+    ImageWriterSpi getWriterSpi() {
         return spi;
     }
 
@@ -333,12 +331,12 @@ public class ImageEncoderImpl implements ImageEncoder {
      * @param writerSpi
      */
     public ImageEncoderImpl(boolean aggressiveOutputStreamOptimization,
-            List<String> supportedMimeTypes, List<String> writerSpi, Map<String, String> inputParams) {
+            List<String> supportedMimeTypes, List<String> writerSpi, Map<String, String> inputParams,ImageIOInitializer initializer) {
         this.isAggressiveOutputStreamSupported = aggressiveOutputStreamOptimization;
         this.supportedMimeTypes = new ArrayList<String>(supportedMimeTypes);
         this.inputParams = inputParams;
-        // Registration of the plugins
-        theRegistry.registerApplicationClasspathSpis();
+        // Get the IIORegistry if needed
+        IIORegistry theRegistry = initializer.getRegistry();
         // Checks for each Spi class if it is present and then it is added to the list.
         for (String spi : writerSpi) {
             try {
