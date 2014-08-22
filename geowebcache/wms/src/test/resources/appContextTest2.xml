@@ -10,30 +10,28 @@
 
 	<context:annotation-config />
 
+  <bean id="ioInitializer" class="org.geowebcache.io.ImageIOInitializer" factory-method="getInstance">
+  		<constructor-arg index="0">
+			<list></list>
+		</constructor-arg>
+  </bean>
 
-	<!--Encoders -->
-	<bean id="BMPEncoder" class="org.geowebcache.io.ImageEncoderImpl">
-		<constructor-arg type="boolean" value="true" />
+	<bean id="TIFFDecoder" class="org.geowebcache.io.ImageDecoderImpl">
+		<constructor-arg type="boolean" value="false" />
 		<constructor-arg>
 			<list>
-				<value>image/bmp</value>
+				<value>image/tiff</value>
 			</list>
 		</constructor-arg>
 		<constructor-arg>
 			<list>
-				<value>com.sun.media.imageioimpl.plugins.bmp.BMPImageWriterSpi
-				</value>
-				<value>com.sun.imageio.plugins.bmp.BMPImageWriterSpi</value>
+				<value>it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReaderSpi</value>
+				<value>com.sun.media.imageioimpl.plugins.tiff.TIFFImageReaderSpi</value>
 			</list>
 		</constructor-arg>
-		<constructor-arg>
-			<map>
-				<entry key="COMPRESSION" value="NULL" />
-				<entry key="COMPRESSION_RATE" value="NULL" />
-			</map>
-		</constructor-arg>
+		<constructor-arg ref="ioInitializer" />
 	</bean>
 
-	<bean id="encoderContainer" class="org.geowebcache.io.ImageEncoderContainer" />
+	<bean id="decoderContainer" class="org.geowebcache.io.ImageDecoderContainer" />
 
 </beans>

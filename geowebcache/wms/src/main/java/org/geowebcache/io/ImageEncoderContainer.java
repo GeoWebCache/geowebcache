@@ -18,7 +18,6 @@
 package org.geowebcache.io;
 
 import java.awt.image.RenderedImage;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
