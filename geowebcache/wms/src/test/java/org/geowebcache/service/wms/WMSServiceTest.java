@@ -20,6 +20,8 @@ import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.filter.parameters.ParameterFilter;
+import org.geowebcache.filter.parameters.RegexParameterFilter;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -27,6 +29,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
@@ -208,4 +211,46 @@ public class WMSServiceTest extends TestCase {
     
     }
 
+    public void testGetConveyorWithParameters() throws Exception {
+
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
+
+        String layerName = "mockLayer";
+        String timeValue = "00:00";
+
+        @SuppressWarnings("unchecked")
+        Map<String, String> kvp = new CaseInsensitiveMap();
+        kvp.put("service", "WMS");
+        kvp.put("version", "1.1.1");
+        kvp.put("request", "GetFeatureInfo");
+        kvp.put("layers", layerName);
+        kvp.put("time", timeValue);
+
+        List<String> mimeFormats = new ArrayList<String>();
+        mimeFormats.add("image/png");
+        List<ParameterFilter> parameterFilters = new ArrayList<ParameterFilter>();
+        RegexParameterFilter filter = new RegexParameterFilter();
+        filter.setKey("time");
+        filter.setRegex("\\d{2}:\\d{2}");
+        parameterFilters.add(filter);
+        TileLayer tileLayer = new WMSLayer(layerName, null, null, layerName, mimeFormats, null,
+                parameterFilters, null, null, true);
+        when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
+
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        when(req.getCharacterEncoding()).thenReturn("UTF-8");
+        when(req.getParameterMap()).thenReturn(kvp);
+
+        ConveyorTile conv = service.getConveyor(req, resp);
+        assertNotNull(conv);
+        assertEquals(Conveyor.RequestHandler.SERVICE, conv.reqHandler);
+        assertNotNull(conv.getLayerId());
+        assertEquals(layerName, conv.getLayerId());
+        assertTrue(!conv.getFullParameters().isEmpty());
+        assertEquals(timeValue, conv.getFullParameters().get("TIME"));
+    }
 }
