@@ -34,7 +34,11 @@ public class XMLMime extends MimeType {
     public static final XMLMime gml = new XMLMime(
             "application/vnd.ogc.gml", "gml", "gml",
             "application/vnd.ogc.gml", false);
-    
+
+    public static final XMLMime gml3 = new XMLMime(
+            "application/vnd.ogc.gml/3.1.1", "gml3", "gml3",
+            "application/vnd.ogc.gml/3.1.1", false);
+
     private XMLMime(String mimeType, String fileExtension, 
                 String internalName, String format, boolean noop) {
         super(mimeType, fileExtension, internalName, format, false);
@@ -49,6 +53,8 @@ public class XMLMime extends MimeType {
             return ogcxml;
         } else if (formatStr.equalsIgnoreCase("application/vnd.ogc.gml")) {
             return gml;
+        } else if (formatStr.equalsIgnoreCase("application/vnd.ogc.gml/3.1.1")) {
+            return gml3;
         }
         
         return null;
@@ -61,6 +67,8 @@ public class XMLMime extends MimeType {
             return kmz;
         } else if (fileExtension.equalsIgnoreCase("gml")) {
             return gml;
+        } else if (fileExtension.equalsIgnoreCase("gml3")) {
+            return gml3;
         }
         
         return null;
