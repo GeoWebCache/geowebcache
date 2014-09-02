@@ -25,5 +25,20 @@ public class NullURLManglerTest extends TestCase {
         String url = urlMangler.buildURL("http://foo.example.com/", "foo/", "bar");
         assertEquals("http://foo.example.com/foo/bar", url);
     }
+    
+    public void testBuildRootContext() throws Exception {
+        String url = urlMangler.buildURL("http://foo.example.com/", "/", "/bar");
+        assertEquals("http://foo.example.com/bar", url);
+    }
+    
+    public void testBuildNullContext() throws Exception {
+        String url = urlMangler.buildURL("http://foo.example.com/", null, "/bar");
+        assertEquals("http://foo.example.com/bar", url);
+    }
+
+    public void testBuildEmptyContext() throws Exception {
+        String url = urlMangler.buildURL("http://foo.example.com/", "", "/bar");
+        assertEquals("http://foo.example.com/bar", url);
+    }
 
 }
