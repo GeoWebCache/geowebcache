@@ -25,10 +25,14 @@ import org.geowebcache.io.Resource;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Ticker;
+
 /**
  * Non-thread safe Resource cache. Currently in-memory only.
  * 
  * @author Ian Schneider <ischneider@opengeo.org>
+ * @author Kevin Smith, Boundless
  */
 public class TransientCache {
 
@@ -36,7 +40,11 @@ public class TransientCache {
 
     private final int maxStorage;
 
+    private final long expireDelay; 
+
     private long currentStorage;
+    
+    private Ticker ticker = Ticker.systemTicker();
 
     /**
      * A path generator that uses the key set as its key to build keys suitable for usage in the in
@@ -44,28 +52,58 @@ public class TransientCache {
      */
     private static FilePathGenerator keyGenerator = new FilePathGenerator("");
 
-    private Map<String, Resource> cache = new LinkedHashMap<String, Resource>() {
+    private Map<String, CachedResource> cache = new LinkedHashMap<String, CachedResource>() {
+
+        /** serialVersionUID */
+        private static final long serialVersionUID = -4106644240603796847L;
 
         @Override
-        protected boolean removeEldestEntry(Entry<String, Resource> eldest) {
+        protected boolean removeEldestEntry(Entry<String, CachedResource> eldest) {
             return removeEntries(eldest);
         }
 
     };
 
+    /**
+     * @deprecated Use {@link #TransientCache(int,int,long)} instead
+     */
     public TransientCache(int maxTiles, int maxStorageKB) {
-        this.maxTiles = maxTiles;
-        this.maxStorage = maxStorageKB * 1024;
+        this(maxTiles, maxStorageKB, 2000);
     }
 
+    /**
+     * 
+     * @param maxTiles Maximum number of tiles in cache
+     * @param maxStorageKB Maximum size of cached data in KiB
+     * @param expireDelay Duration for which the cached resource is valid in ms
+     */
+    public TransientCache(int maxTiles, int maxStorageKB, long expireDelay) {
+        this.maxTiles = maxTiles;
+        this.maxStorage = maxStorageKB * 1024;
+        this.expireDelay = expireDelay;
+    }
+
+    /**
+     * Count of cached resources.  May include expired resources not yet cleared.
+     * @return
+     */
     public int size() {
         return cache.size();
     }
 
+    /**
+     * The currently used storage.  May include expired resources not yet cleared.
+     * @return
+     */
     public long storageSize() {
         return currentStorage;
     }
 
+    /**
+     * Store a resource
+     * @param key key to store the resource under
+     * @param r the resource to cache
+     */
     public void put(String key, Resource r) {
         byte[] buf = new byte[(int) r.getSize()];
         try {
@@ -73,48 +111,53 @@ public class TransientCache {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        ByteArrayResource blob = new ByteArrayResource(buf);
+        CachedResource blob = new CachedResource(new ByteArrayResource(buf));
         currentStorage += r.getSize();
         cache.put(key, blob);
     }
-
+    
+    /**
+     * Retrieve a resource
+     * @param key
+     * @return The resource cached under the given key, or null if no resource is cached.
+     */
     public Resource get(String key) {
-        Resource cached = cache.get(key);
+        CachedResource cached = cache.get(key);
         if (cached != null) {
             cache.remove(key);
-            currentStorage -= cached.getSize();
-        }
-        return cached;
-    }
-
-    /**
-     * Loop through elements, removing and recompute currentStorage size
-     */
-    private void clean() {
-        // iterator returns items in order added so oldest items are first
-        Iterator<Resource> items = cache.values().iterator();
-        long storage = currentStorage;
-        while (items.hasNext()) {
-            Resource r = items.next();
-            storage -= r.getSize();
-            if (storage < maxStorage) {
-                break;
+            currentStorage -= cached.content.getSize();
+            
+            if( cached.time+expireDelay < currentTime() ) {
+                return null;
             } else {
-                items.remove();
+                return cached.content;
             }
         }
-        currentStorage = storage;
+        return null;
     }
-
-    private boolean removeEntries(Entry<String, Resource> eldest) {
-        boolean remove = false;
-        // not sure if we can do both at the same time?
-        if (currentStorage > maxStorage) {
-            clean();
-        } else if (cache.size() > maxTiles) {
-            remove = true;
+    
+    /**
+     * A timestamp in milliseconds
+     * @return
+     */
+    protected long currentTime() {
+        return ticker.read()/1000;
+    }
+    
+    // Gets called by overridden LinkedHashMap.removeEldestEntry
+    private boolean removeEntries(Entry<String, CachedResource> eldest) {
+        // iterator returns items in order added so oldest items are first
+        Iterator<CachedResource> items = cache.values().iterator();
+        while (items.hasNext() && (currentStorage>maxStorage || cache.size()>maxTiles)) {
+            CachedResource r = items.next();
+            currentStorage -= r.content.getSize();
+            items.remove();
         }
-        return remove;
+        assert currentStorage<=maxStorage;
+        assert currentStorage>=0;
+        assert cache.size()<=maxStorage;
+        
+        return false;
     }
 
     public static String computeTransientKey(TileObject tile) {
@@ -126,4 +169,27 @@ public class TransientCache {
         }
     }
 
+    private class CachedResource {
+        Resource content;
+        long time;
+        
+        public CachedResource(Resource content, long time) {
+            super();
+            this.content = content;
+            this.time = time;
+        }
+        
+        public CachedResource(Resource content) {
+            this(content, currentTime());
+        }
+    }
+    
+    /**
+     * Set a time source for computing expiry.
+     * @param ticker
+     */
+    public void setTicker(Ticker ticker) {
+        Preconditions.checkNotNull(ticker);
+        this.ticker=ticker;
+    }
 }
