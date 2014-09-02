@@ -81,9 +81,9 @@
     <description>
       In memory cache used when MetaTiling tiles that are published but not cached to disk.
     </description>    
-    <constructor-arg ref="100" /> <!-- Max Tiles in cache-->
-    <constructor-arg ref="1024" /> <!-- Max Space used by cache, in KiB -->
-    <constructor-arg ref="2000" /> <!-- Expire Time, in ms -->
+    <constructor-arg value="100" /> <!-- Max Tiles in cache-->
+    <constructor-arg value="1024" /> <!-- Max Space used by cache, in KiB -->
+    <constructor-arg value="2000" /> <!-- Expire Time, in ms -->
   </bean>
   
   <!-- Static definition of where to put the blobstore. 
