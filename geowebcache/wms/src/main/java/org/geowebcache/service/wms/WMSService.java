@@ -132,8 +132,10 @@ public class WMSService extends Service{
         String layers = values.get("layers");
 
         // Get the TileLayer
-        TileLayer tileLayer = tld.getTileLayer(layers);
-
+        TileLayer tileLayer = null;
+        if(layers!=null) {
+            tileLayer = tld.getTileLayer(layers);
+        }
         // Look for requests that are not getmap
         String req = values.get("request");
         if (req != null && !req.equalsIgnoreCase("getmap")) {
@@ -141,6 +143,10 @@ public class WMSService extends Service{
             if (layers == null || layers.length() == 0) {
                 layers = ServletUtils.stringFromMap(requestParameterMap, encoding, "layer");
                 values.put("LAYERS", layers);
+                
+                if(layers!=null) {
+                    tileLayer = tld.getTileLayer(layers);
+                }
             }
 
             Map<String, String> filteringParameters = null;
