@@ -37,6 +37,8 @@ import org.geowebcache.util.CompositeIterable;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.util.Assert;
 
+import com.google.common.base.Preconditions;
+
 /**
  * Serves tile layers from the {@link Configuration}s available in the application context.
  */
@@ -91,6 +93,7 @@ public class TileLayerDispatcher implements DisposableBean {
      *             if no such layer exists
      */
     public TileLayer getTileLayer(final String layerName) throws GeoWebCacheException {
+        Preconditions.checkNotNull(layerName, "layerName is null");
 
         for (int i = 0; i < configs.size(); i++) {
             Configuration configuration = configs.get(i);
