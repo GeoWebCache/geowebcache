@@ -47,6 +47,7 @@ import org.geowebcache.io.Resource;
 import org.geowebcache.layer.ProxyLayer;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
@@ -129,6 +130,12 @@ public class WMSService extends Service{
 
         // Look for layer
         String layers = values.get("layers");
+
+        // Get the TileLayer
+        TileLayer tileLayer = null;
+        if(layers!=null) {
+            tileLayer = tld.getTileLayer(layers);
+        }
         // Look for requests that are not getmap
         String req = values.get("request");
         if (req != null && !req.equalsIgnoreCase("getmap")) {
@@ -136,9 +143,22 @@ public class WMSService extends Service{
             if (layers == null || layers.length() == 0) {
                 layers = ServletUtils.stringFromMap(requestParameterMap, encoding, "layer");
                 values.put("LAYERS", layers);
+                
+                if(layers!=null) {
+                    tileLayer = tld.getTileLayer(layers);
+                }
             }
 
-            ConveyorTile tile = new ConveyorTile(sb, layers, request, response);
+            Map<String, String> filteringParameters = null;
+            // If tileLayer is not null, then request parameters are extracted from it-
+            if (tileLayer != null) {
+                filteringParameters = tileLayer.getModifiableParameters(requestParameterMap,
+                        encoding);
+            }
+
+            // Creation of a Conveyor Tile with a fake Image/png format and the associated parameters.
+            ConveyorTile tile = new ConveyorTile(sb, layers, null, null,
+                    ImageMime.png, filteringParameters, request, response);
             tile.setHint(req.toLowerCase());
             tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
             return tile;
@@ -155,8 +175,6 @@ public class WMSService extends Service{
             tile.setRequestHandler(Conveyor.RequestHandler.SERVICE);
             return tile;
         }
-
-        TileLayer tileLayer = tld.getTileLayer(layers);
 
         String[] paramKeys = { "format", "srs", "bbox" };
         final Map<String, String> paramValues = ServletUtils.selectedStringsFromMap(
@@ -350,7 +368,7 @@ public class WMSService extends Service{
         }
 
         ConveyorTile gfiConv = new ConveyorTile(sb, tl.getName(), gridSubset.getName(), null,
-                mimeType, null, tile.servletReq, tile.servletResp);
+                mimeType, tile.getFullParameters(), tile.servletReq, tile.servletResp);
         gfiConv.setTileLayer(tl);
 
         int x, y;
