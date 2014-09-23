@@ -1,3 +1,21 @@
+GeoWebCache 1.6.0 (2014-09-24)
+----------------------------------
+
+Final 1.6.0 version.
+
+Improvements:
++++++++++++++
+- GML3 MIME Type
+
+Fixes:
+++++++
+- Fix double slashes in capabilities when gwc is deployed on root context '/'
+- Transient Cache does not track removal of entries
+- Transient Cache does not expire resources
+- Parameters not passed down when running GetFeatureInfo
+- Null checks on layer name when building conveyor 
+
+
 GeoWebCache 1.6.0-RC1 (2014-08-18)
 ----------------------------------
 
@@ -7,6 +25,7 @@ Improvements:
 +++++++++++++
 - UTF-8 compiler setting
 - Switch to new boundless maven repository
+
 
 GeoWebCache 1.6.0-beta (2014-07-21)
 ------------------------------------
