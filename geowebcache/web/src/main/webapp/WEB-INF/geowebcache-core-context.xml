@@ -181,5 +181,21 @@
   </bean>
 
   <bean id="gwcURLMangler" class="org.geowebcache.util.NullURLMangler" />
-
+  
+  <bean id="cacheConfiguration" class="org.geowebcache.storage.blobstore.memory.CacheConfiguration">
+    <property name="hardMemoryLimit" value="64"/> <!-- 64 Mb -->
+    <property name="policy" value="EXPIRE_AFTER_ACCESS"/> <!-- 64 Mb -->
+  </bean>
+  
+   <bean id="guavaCacheProvider" class="org.geowebcache.storage.blobstore.memory.guava.GuavaCacheProvider">
+     <constructor-arg ref="cacheConfiguration"/>
+  </bean>
+  
+  <bean id="gwcMemoryBlobStore" class="org.geowebcache.storage.blobstore.memory.MemoryBlobStore" destroy-method="destroy">
+    <property name="store" ref="gwcBlobStore" />
+    <!--property name="cacheProvider" ref="guavaCacheProvider" /-->
+    <!-- property name="cacheBeanName" value="guavaCacheProvider" /-->
+  </bean>
+  
+  <bean id="gwcNullBlobStore" class="org.geowebcache.storage.blobstore.memory.NullBlobStore" destroy-method="destroy"/>
 </beans>

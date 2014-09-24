@@ -102,4 +102,13 @@ public class DefaultStorageBroker implements StorageBroker {
             transientCache.put(key, tile.getBlob());
         }
     }
+
+    /**
+     * Method for accessing directly the blobstore used by the following StorageBroker
+     * 
+     * @return the {@link BlobStore} object used
+     */
+    public BlobStore getBlobStore(){
+        return blobStore;
+    }
 }

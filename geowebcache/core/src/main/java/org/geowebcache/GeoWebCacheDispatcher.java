@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -58,8 +59,12 @@ import org.geowebcache.service.HttpErrorCodeException;
 import org.geowebcache.service.OWSException;
 import org.geowebcache.service.Service;
 import org.geowebcache.stats.RuntimeStats;
+import org.geowebcache.storage.BlobStore;
+import org.geowebcache.storage.DefaultStorageBroker;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.blobstore.memory.CacheStatistics;
+import org.geowebcache.storage.blobstore.memory.MemoryBlobStore;
 import org.geowebcache.util.ServletUtils;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
@@ -453,6 +458,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
         if (runtimeStats != null) {
             str.append("<h3>Runtime Statistics</h3>\n");
             str.append(runtimeStats.getHTMLStats());
+            str.append("</table>\n");
+        }
+        if(storageBroker != null){
+            appendInternalCacheStats(str);
         }
         str.append("</body></html>\n");
 
@@ -601,5 +610,118 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 log.debug("Caught IOException: " + ioe.getMessage() + "\n\n" + ioe.toString());
             }
         }
+    }
+
+    /**
+     * This method appends the cache statistics to the GWC homepage if the blobstore used is an instance of the {@link MemoryBlobStore} class
+     * 
+     * @param str Input {@link StringBuilder} containing the HTML for the GWC homepage
+     */
+    private void appendInternalCacheStats(StringBuilder strGlobal) {
+
+        if (storageBroker == null) {
+            return;
+        }
+
+        // Searches for the BlobStore inside the StorageBroker
+        BlobStore blobStore = null;
+        if (log.isDebugEnabled()) {
+            log.debug("Searching for the blobstore used");
+        }
+        // Getting the BlobStore if present
+        if (storageBroker instanceof DefaultStorageBroker) {
+            blobStore = ((DefaultStorageBroker) storageBroker).getBlobStore();
+        }
+
+        // If it is not present, or it is not a memory blobstore, nothing is done
+        if (blobStore == null || !(blobStore instanceof MemoryBlobStore)) {
+            if (log.isDebugEnabled()) {
+                log.debug("No Memory BlobStore found");
+            }
+            return;
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Memory BlobStore found");
+        }
+
+        // Get the MemoryBlobStore if present
+        MemoryBlobStore store = (MemoryBlobStore) blobStore;
+
+        if (log.isDebugEnabled()) {
+            log.debug("Getting statistics");
+        }
+        // Get the statistics
+        CacheStatistics statistics = store.getCacheStatistics();
+
+        // No Statistics found
+        if (statistics == null) {
+            return;
+        }
+
+        // Get the statistics values
+        long hitCount = statistics.getHitCount();
+        long missCount = statistics.getMissCount();
+        long evictionCount = statistics.getEvictionCount();
+        long requestCount = statistics.getRequestCount();
+        double hitRate = statistics.getHitRate();
+        double missRate = statistics.getMissRate();
+        double currentMemory = statistics.getCurrentMemoryOccupation();
+        long byteToMb = 1024 * 1024;
+        double actualSize = ((long) (100 * (statistics.getActualSize() * 1.0d) / byteToMb)) / 100d;
+        double totalSize = ((long) (100 * (statistics.getTotalSize() * 1.0d) / byteToMb)) / 100d;
+
+        // Append the HTML with the statistics to a new StringBuilder
+        StringBuilder str = new StringBuilder();
+
+        str.append("<h3>In Memory Cache Statistics</h3>\n");
+
+        str.append("<table border=\"0\" cellspacing=\"5\">");
+
+        str.append("<tr><td colspan=\"2\">Total number of requests:</td><td colspan=\"3\">"
+                +  (requestCount >= 0 ?  requestCount + "" : "Unavailable"));
+        str.append("</td></tr>\n");
+
+        str.append("<tr><td colspan=\"5\"> </td></tr>");
+
+        str.append("<tr><td colspan=\"2\">Internal Cache hit count:</td><td colspan=\"3\">");
+        str.append(hitCount >= 0 ?  hitCount + "" : "Unavailable");
+        str.append("</td></tr>\n");
+
+        str.append("<tr><td colspan=\"2\">Internal Cache miss count:</td><td colspan=\"3\">");
+        str.append(missCount >= 0 ?  missCount + "" : "Unavailable");
+        str.append("</td></tr>\n");
+
+        str.append("<tr><td colspan=\"2\">Internal Cache hit ratio:</td><td colspan=\"3\">");
+        str.append(hitRate >= 0 ?  hitRate + " %" : "Unavailable");
+        str.append("</td></tr>\n");
+
+        str.append("<tr><td colspan=\"2\">Internal Cache miss ratio:</td><td colspan=\"3\">");
+        str.append(missRate >= 0 ?  missRate + " %" : "Unavailable");
+        str.append("</td></tr>\n");
+
+        str.append("<tr><td colspan=\"5\"> </td></tr>");
+
+        str.append("<tr><td colspan=\"2\">Total number of evicted tiles:</td><td colspan=\"3\">"
+                + (evictionCount >= 0 ?  evictionCount + "" : "Unavailable"));
+        str.append("</td></tr>\n");
+
+        str.append("<tr><td colspan=\"5\"> </td></tr>");
+        
+        str.append("<tr><td colspan=\"2\">Cache Memory occupation:</td><td colspan=\"3\">"
+                + (currentMemory >= 0 ?  currentMemory + " %" : "Unavailable"));
+        str.append("</td></tr>\n");
+
+        str.append("<tr><td colspan=\"5\"> </td></tr>");
+        
+        str.append("<tr><td colspan=\"2\">Cache Actual Size/ Total Size :</td><td colspan=\"3\">"
+                + (totalSize >= 0 && actualSize >= 0?  actualSize + " / " + totalSize + " Mb" : "Unavailable") );
+        str.append("</td></tr>\n");
+
+        str.append("<tr><td colspan=\"5\"> </td></tr>");
+
+        str.append("</table>\n");
+
+        // Append to the homepage HTML
+        strGlobal.append(str);
     }
 }

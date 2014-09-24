@@ -87,6 +87,10 @@
           <key><value>/web/{filename}</value></key>
           <ref bean="gwcByteStreamerRestlet" />
         </entry>
+        <entry>
+          <key><value>/statistics.{extension}</value></key>
+          <ref bean="gwcMemoryStatsResourceFinder" />
+        </entry>
       </map>
     </property>
   </bean>
@@ -102,4 +106,7 @@
     </property>
   </bean>
 
+  <bean id="gwcMemoryStatsResourceFinder" class="org.geowebcache.rest.statistics.MemoryCacheStatsFinder">
+    <constructor-arg ref="gwcStorageBroker" />
+  </bean>
 </beans>
