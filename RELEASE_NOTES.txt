@@ -1,3 +1,19 @@
+GeoWebCache 1.5.4 (2014-10-21)
+------------------------------
+
+Fourth maintenance release of GeoWebCache 1.5.x
+
+Improvements:
++++++++++++++
+* WMSTileFuser improvements: faster, higher quality full WMS support
+* Support cascading GML3 GetFeatureInfo
+* Pass down layer parameters to GetFeatureInfo too
+
+Fixes:
+++++++
+- Switched repositories to Boundless
+
+
 GeoWebCache 1.5.3 (2014-07-21)
 ------------------------------
 
@@ -14,6 +30,7 @@ Fixes:
 - Fixed unescaped XML characters in capabilities documents
 - Exception thrown when calling getCoverageIntersections on a GridSubset
 - GeoWebCache complains about unrecognized element gwcConfig on startup
+
 
 GeoWebCache 1.5.2 (2014-05-02)
 ------------------------------
