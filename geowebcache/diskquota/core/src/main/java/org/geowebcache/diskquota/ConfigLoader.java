@@ -45,6 +45,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.util.ApplicationContextProvider;
+import org.geowebcache.util.FileUtils;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -131,7 +132,7 @@ public class ConfigLoader {
             configOut.close();
         }
         configFile.delete();
-        if (!tmpConfigFile.renameTo(configFile)) {
+        if (!FileUtils.renameFile(tmpConfigFile, configFile)) {
             throw new ConfigurationException("Couldn't save disk quota config file "
                     + configFile.getAbsolutePath());
         }

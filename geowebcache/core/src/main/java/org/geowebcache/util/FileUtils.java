@@ -20,6 +20,10 @@ package org.geowebcache.util;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,6 +107,41 @@ public class FileUtils {
                 }
             }
         }
+    }
+
+    /**
+     * Utility method for renaming Files using Java 7 {@link Files}.move() method
+     * which provides an atomical file renaming. If an exception occurred during the
+     * renaming, the method will fallback to the old File().renameTo() method and
+     * will log a Message. 
+     * 
+     * @return a boolean indicating if the rename operation has succeded
+     */
+    public static boolean renameFile(File src, File dst){
+        // Renaming result initialization
+        boolean renamed = false;
+        
+        // 1) try with Java 7 Files.move
+        Path srcPath = Paths.get(src.toURI());
+        Path dstPath = Paths.get(dst.toURI());
+        Path moved = null;
+        try{
+            // Execute renaming
+            moved = Files.move(srcPath, dstPath, StandardCopyOption.ATOMIC_MOVE);
+        } catch (Exception e){
+            // Exception occurred falling back to the old renameTo
+            if(log.isDebugEnabled()){
+                log.debug("An error occurred when executing atomic file renaming. Falling back to the old File.renameTo() method", e);
+            } 
+        } 
+        // 2) Check if succeeded. If failed, falling back to old renameTo
+        if(moved == null || !Files.exists(moved)){
+            renamed = src.renameTo(dst);
+        } else {
+            renamed = true;
+        }
+        
+        return renamed;
     }
 
     public static class ExtensionFileLister implements FilenameFilter {

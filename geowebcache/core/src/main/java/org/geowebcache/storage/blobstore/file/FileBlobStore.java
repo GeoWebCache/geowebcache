@@ -51,6 +51,7 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.StorageObject.Status;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
+import org.geowebcache.util.FileUtils;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 /**
@@ -220,7 +221,7 @@ public class FileBlobStore implements BlobStore {
             String dirName = filteredLayerName(targetName + "." + tries);
             tmpFolder = new File(stagingArea, dirName);
         }
-        boolean renamed = source.renameTo(tmpFolder);
+        boolean renamed = FileUtils.renameFile(source, tmpFolder);
         if (!renamed) {
             throw new IllegalStateException("Can't rename " + source.getAbsolutePath() + " to "
                     + tmpFolder.getAbsolutePath() + " for deletion");
@@ -291,7 +292,7 @@ public class FileBlobStore implements BlobStore {
             log.info(oldLayerPath + " is not writable");
             return false;
         }
-        boolean renamed = oldLayerPath.renameTo(newLayerPath);
+        boolean renamed = FileUtils.renameFile(oldLayerPath, newLayerPath);
         if (renamed) {
             this.listeners.sendLayerRenamed(oldLayerName, newLayerName);
         } else {
@@ -516,11 +517,11 @@ public class FileBlobStore implements BlobStore {
             
             // rename to final position. This will fail if another GWC also wrote this
             // file, in such case we'll just eliminate this one
-            if(temp.renameTo(target)) {
+            if(FileUtils.renameFile(temp, target)) {
                 temp = null;
             } else if(existed) {
                 // if we are trying to overwrite and old tile, on windows that might fail... delete and rename instead
-                if(target.delete() && temp.renameTo(target)) {
+                if(target.delete() && FileUtils.renameFile(temp, target)) {
                     temp = null;
                 }
             }
