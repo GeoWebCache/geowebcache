@@ -147,6 +147,9 @@ public class Demo {
         Set<String> layerList = new TreeSet<String>(tileLayerDispatcher.getLayerNames());
         for (String layerName : layerList) {
             TileLayer layer = tileLayerDispatcher.getTileLayer(layerName);
+            if(!layer.isAdvertised()){
+                continue;
+            }
             buf.append("<tr><td style=\"min-width: 100px;\"><strong>" + layer.getName()
                     + "</strong><br />\n");
             buf.append("<a href=\"rest/seed/" + layer.getName() + "\">Seed this layer</a>\n");

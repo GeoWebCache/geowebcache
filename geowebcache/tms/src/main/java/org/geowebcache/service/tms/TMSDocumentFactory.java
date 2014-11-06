@@ -102,7 +102,7 @@ public class TMSDocumentFactory {
             xml.indentElement("TileMaps");
             Iterable<TileLayer> iter = tld.getLayerList();
             for (TileLayer layer : iter) {
-                if(!layer.isEnabled()){
+                if(!layer.isEnabled() || !layer.isAdvertised()){
                     continue;
                 }
                 tileMapsForLayer(xml, layer);

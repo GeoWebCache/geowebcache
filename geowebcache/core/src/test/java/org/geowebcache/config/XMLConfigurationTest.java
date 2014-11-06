@@ -80,6 +80,14 @@ public class XMLConfigurationTest extends TestCase {
         }
     }
 
+    public void testNotAddLayer() throws Exception {
+        // Create a transient Layer and check if it can be accepted
+        TileLayer tl = mock(WMSLayer.class);
+        when(tl.getName()).thenReturn("testLayer");
+        when(tl.isTransientLayer()).thenReturn(true);
+        assertFalse(config.canSave(tl));
+    }
+
     public void testModifyLayer() throws Exception {
 
         TileLayer layer1 = mock(WMSLayer.class);

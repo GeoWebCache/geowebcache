@@ -6,9 +6,11 @@ import static org.easymock.classextension.EasyMock.replay;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,8 +22,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.easymock.classextension.EasyMock;
 import org.geowebcache.config.meta.ServiceInformation;
+import org.geowebcache.grid.GridSubset;
+import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.URLMangler;
 import org.hamcrest.xml.HasXPath;
@@ -59,7 +64,18 @@ public class WMSGetCapabilitiesTest {
         expect(servInfo.getAccessConstraints()).andStubReturn("NONE");
         expect(tld.getServiceInformation()).andStubReturn(servInfo);
         
-        expect(tld.getLayerList()).andStubReturn(Collections.<TileLayer>emptyList());
+        // Creating an advertised Layer and an unadvertised one
+        HashMap<String, GridSubset> subSets = new HashMap<String, GridSubset>();
+        TileLayer advertisedLayer = new WMSLayer("testAdv", null, null, null,
+                null, subSets, null, null, null, false, null);      
+        advertisedLayer.setEnabled(true);
+        advertisedLayer.setAdvertised(true);
+        TileLayer unAdvertisedLayer = new WMSLayer("testNotAdv", null, null, null,
+                null, subSets, null, null, null, false, null); 
+        unAdvertisedLayer.setEnabled(true);
+        unAdvertisedLayer.setAdvertised(false);
+        
+        expect(tld.getLayerList()).andStubReturn(Arrays.asList(advertisedLayer, unAdvertisedLayer));
 
         replay(tld, servReq, response, servInfo);
         
@@ -81,6 +97,9 @@ public class WMSGetCapabilitiesTest {
         assertThat(xml, not(containsString("<characters>")));
         assertThat(xml, not(containsString("'escaped'")));
         assertThat(xml, not(containsString("\"description\"")));
+        
+        assertThat(xml, containsString("testAdv"));
+        assertThat(xml, not(containsString("testNotAdv")));
         
         EasyMock.verify(tld, servReq, response, servInfo);
     }

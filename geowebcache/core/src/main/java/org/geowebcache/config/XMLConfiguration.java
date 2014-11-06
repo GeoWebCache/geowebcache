@@ -591,7 +591,7 @@ public class XMLConfiguration implements Configuration {
      * @see org.geowebcache.config.Configuration#canSave(org.geowebcache.layer.TileLayer)
      */
     public boolean canSave(TileLayer tl) {
-        return tl instanceof WMSLayer;
+        return tl instanceof WMSLayer && !tl.isTransientLayer();
     }
 
     /**
