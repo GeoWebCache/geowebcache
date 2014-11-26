@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<!-- Sample source code for loading maps form GeoWebCache -->
+<html lang="en-US">
+<head>
+	<title>Display a Geowebcache source  on OL3</title>
+	<meta name="viewport" content="width=device-width">
+	<meta charset="UTF-8" />
+	<title>Display a Geowebcache source  on OL3</title>
+	
+	<link rel="stylesheet" href="css/ol.css" type="text/css">
+	<script type="text/javascript" src="lib/ol.js"></script>
+	<script type="text/javascript" src="lib/jquery-1.11.1.min.js"></script>
+	<script type="text/javascript" src="js/wmts.js"></script>
+</head>
+
+<!-- replace it with 'http://localhost:8080/geowebcache/service/wms' -->
+<body onload="addAllMapNameFromWMTS('../service/wmts')";>
+<!-- call 
+ loadMap('http://localhost:8080/geowebcache/service/wms' ,'nameOfTheMap')
+-->
+
+<div id="map" class="map" > </div>
+
+</body>
+</html>
