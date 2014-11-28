@@ -135,7 +135,7 @@ public class MetastoreRemover {
                 // move the folders containing params
                 File origin = new File(buildFolderPath(root, layer, gridset, z, paramsId));
                 File destination = new File(buildFolderPath(root, layer, gridset, z, sha));
-                origin.renameTo(destination);
+                org.geowebcache.util.FileUtils.renameFile(origin, destination);
                 
                 count++;
                 if(count % 1000 == 0 || count >= total) {
