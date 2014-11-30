@@ -36,9 +36,10 @@
 	}
 	
 	// Call GetVendorWMSCapabilities
-	function addAllMapName(url,mapServiceName)
+	// in order to find all layer
+	function addAllMapNameFromWMS(url)
 	{
-		GetVendorWMSCapabilities(url,request,mapServiceName,0);		
+		GetVendorWMSCapabilities(url,request,'',0);		
 	}
 
 	

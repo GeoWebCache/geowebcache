@@ -103,7 +103,27 @@
 		return  "EPSG:3857";
 	}
 	
-	// retourne le nombre de TileSize
+	// Get the limits of each tile matrix
+	function getTileMatrixLimit(TileMatrixLimits,name)
+	{
+		var TileLimitList =[];
+	
+		for (var i=0;i<TileMatrixLimits.length;i++) {
+			var myTileMatrix = $(TileMatrixLimits[i]).find("TileMatrix").text();	
+			if (name==myTileMatrix)
+			{
+				var MinTileRow = $(TileMatrixLimits[i]).find("MinTileRow").text();	
+				var MinTileCol = $(TileMatrixLimits[i]).find("MinTileCol").text();	
+				var MaxTileRow = $(TileMatrixLimits[i]).find("MaxTileRow").text();	
+				var MaxTileCol = $(TileMatrixLimits[i]).find("MaxTileCol").text();	
+				
+				TileLimitList = [MinTileRow,MinTileCol,MaxTileRow,MaxTileCol];
+			}
+		}
+		return TileLimitList;
+	}
+	
+	// Get the tileSize by level
 	function getTileSizes(capabilitiesResponse,myTileMatrixSet)
 	{
 		var TileSizeList =[];
@@ -125,7 +145,8 @@
 		return  TileSizeList;
 	}
 	
-		// retourne les origins
+	
+	//Get the origins of each level
 	function getOrigines(capabilitiesResponse,myTileMatrixSet)
 	{
 		var origins =[];
@@ -149,14 +170,30 @@
 		return  origins;
 	}
 	
+	 function TileToWGS84( xTile, yTile,  level)
+        {
+		   var m= Math.pow(2.0, level);
+           var n = Math.PI - ((2.0 * Math.PI * yTile) / m);
+
+           var lon = (xTile / m * 360.0) - 180.0;
+           var lat = 180.0 / Math.PI * Math.atan(Math.sinh(n));
+		   return [lon,lat]; 
+        }
+	
 	// decode GetCapabilities and create the map, view and layer
+	// for mapServiceName layer
 	function loadMapFromParameter(capabilitiesResponse,uRLServer,mapServiceName)
 	{
-		var Layer = $(capabilitiesResponse).find("Layer");
+	
+		// Get All Layers from GetCapabilities
+		var Layers = $(capabilitiesResponse).find("Layer");
+		
+		// Retrieve my layer index from the selected name 
 		var i = getLayerIdx(Layer,mapServiceName);
-		var myFormat = $(Layer[i]).find("Format").text();		
-		var myTileMatrixSet = $(Layer[i]).find("TileMatrixSet").text();			
-		var TileMatrix = $(Layer[i]).find("TileMatrix");
+		
+		
+		var myFormat = $(Layers[i]).find("Format").text();		
+		var TileMatrix = $(Layers[i]).find("TileMatrix");
 	
 		var TileMatrixIds = [];
 		for (var t=0;t<TileMatrix.length;t++)
@@ -164,11 +201,14 @@
 				TileMatrixIds.push(	$(TileMatrix[t]).text());
 			}
 		
-		var i = getLayerIdx(Layer,mapServiceName);
+		var myTileMatrixSet = $(Layers[i]).find("TileMatrixSet").text();		
 		var epsg_projection = getProjection(capabilitiesResponse,myTileMatrixSet);
 		var projection = ol.proj.get(epsg_projection);
 		var projectionExtent = projection.getExtent();
+		
+		// Retrieve 256 as TileSize in the GetCapabilities
 		var size = ol.extent.getWidth(projectionExtent) / 256;
+		
 		var nbReso = TileMatrixIds.length;
 		var resolutions = new Array(nbReso);
 		var matrixIds = new Array(nbReso);
@@ -176,32 +216,43 @@
 			// generate resolutions and matrixIds arrays for this WMTS
 			resolutions[z] = size / Math.pow(2, z);
 		}
+		
+		
 		var tileSizeListe = getTileSizes(capabilitiesResponse,myTileMatrixSet);
 		var origines = getOrigines(capabilitiesResponse,myTileMatrixSet);
-		console.log (origines);
-		 var view = new ol.View({
-
-		});
+	
 		
+		/* Not Use Yet */ 
+		var TileMatrixLimits = $(Layers[i]).find("TileMatrixLimits");
+		getTileMatrixLimit(TileMatrixLimits,TileMatrixIds[1]);
+		
+		
+	   
+		var tileGrg  = new ol.tilegrid.WMTS({
+					  origins: origines,
+					  resolutions: resolutions,
+					  matrixIds: TileMatrixIds,
+					  tileSizes:tileSizeListe
+					});
+					
+		var WMTSsource = new ol.source.WMTS({
+					url: uRLServer ,
+					layer: mapServiceName,
+					matrixSet: myTileMatrixSet,
+					format: myFormat,
+					projection: projection,
+					tileGrid: tileGrg,
+					style: 'default'
+				  });
+				  
 		var myLayer =  new ol.layer.Tile({
-			  extent: projectionExtent,
-			  source: new ol.source.WMTS({
-				url: uRLServer ,
-				layer: mapServiceName,
-				matrixSet: myTileMatrixSet,
-				format: myFormat,
-				projection: projection,
-				tileGrid: new ol.tilegrid.WMTS({
-				  origins: origines,
-				  resolutions: resolutions,
-				  matrixIds: TileMatrixIds,
-				  tileSizes:tileSizeListe
-				}),
-				style: 'default'
-			  })
-			});
+				  extent: projectionExtent,
+				  source: WMTSsource
+				});
 		 
-		  
+		
+		var view = new ol.View({});
+	
 		map = new ol.Map({
 		target: 'map',
 		renderer: 'canvas',
@@ -216,7 +267,14 @@
 				]
 		});
 		view.fitExtent(projectionExtent, map.getSize());
-	//	view.setCenter(ol.proj.transform([10,10], 'EPSG:4326','EPSG:3857' ));
+		
+		// Get the coordinate for the tile 10,10 of the level 2 
+		//var pt = TileToWGS84(10,10,2);
+		//console.log(pt); 
+		
+		// Center the view on a point and a zoom 
+		// How to be sure of the position seen on a tile. 
+		view.setCenter(ol.proj.transform([69,35], 'EPSG:4326',epsg_projection ));
 		view.setZoom(10);
 	}
 	
