@@ -3,7 +3,7 @@
 How to configure layers
 =======================
 
-The main configuration file for GeoWebCache is :file:`geowebcache.xml`. It is located inside the the main GeoWebCache application directory at :file:`WEB-INF/classes/geowebcache.xml`.
+The main configuration file for GeoWebCache is :file:`geowebcache.xml`. By default, it is located in the same directory as the :ref:`cache <configuration.storage>`. If the configuration file does not exist, GeoWebCache will copy the default configuration file from :file:`WEB-INF/classes/geowebcache.xml` to the cache directory.
 
 Unless specified, all configuration changes in this section are done editing the file :file:`geowebcache.xml`.
 
