@@ -239,7 +239,7 @@ public class WMTSGetCapabilities {
          xml.indentElement("Contents");
          Iterable<TileLayer> iter = tld.getLayerList();
         for (TileLayer layer : iter) {
-            if (!layer.isEnabled()) {
+            if (!layer.isEnabled() || !layer.isAdvertised()) {
                 continue;
             }
             layer(xml, layer, baseUrl);

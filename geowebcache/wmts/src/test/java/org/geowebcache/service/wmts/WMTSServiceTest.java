@@ -63,12 +63,18 @@ public class WMTSServiceTest extends TestCase {
         gridsetBroker = new GridSetBroker(true, true);
     }
 
-    private TileLayer mockTileLayer(String layerName, List<String> gridSetNames, List<ParameterFilter> parameterFilters) throws Exception {
+    private TileLayer mockTileLayer(String layerName, List<String> gridSetNames,
+            List<ParameterFilter> parameterFilters) throws Exception {
+        return mockTileLayer(layerName, gridSetNames, parameterFilters, true);
+    }
+
+    private TileLayer mockTileLayer(String layerName, List<String> gridSetNames, List<ParameterFilter> parameterFilters, boolean advertised) throws Exception {
 
         TileLayer tileLayer = mock(TileLayer.class);
         when(tld.getTileLayer(eq(layerName))).thenReturn(tileLayer);
         when(tileLayer.getName()).thenReturn(layerName);
         when(tileLayer.isEnabled()).thenReturn(true);
+        when(tileLayer.isAdvertised()).thenReturn(advertised);
 
         final MimeType mimeType1 = MimeType.createFromFormat("image/png");
         final MimeType mimeType2 = MimeType.createFromFormat("image/jpeg");
@@ -140,7 +146,8 @@ public class WMTSServiceTest extends TestCase {
             List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale","EPSG:4326");
             
             TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames, Collections.<ParameterFilter>emptyList());
-            when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
+            TileLayer tileLayerUn = mockTileLayer("mockLayerUnadv", gridSetNames, Collections.<ParameterFilter>emptyList(), false);
+            when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer, tileLayerUn));
         }
     
         Conveyor conv = service.getConveyor(req, resp);
@@ -158,6 +165,10 @@ public class WMTSServiceTest extends TestCase {
         // System.out.println(resp.getOutputStreamContent());
         
         String result = resp.getOutputStreamContent();
+        
+        // Ensure the advertised Layer is contained and the unadvertised not
+        assertTrue(result.contains("mockLayer"));
+        assertFalse(result.contains("mockLayerUnadv"));
         
         //Validator validator = new Validator(result);
         //validator.useXMLSchema(true);
@@ -177,7 +188,7 @@ public class WMTSServiceTest extends TestCase {
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier)", doc));
         assertEquals("", xpath.evaluate("//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier", doc));
     }
-    
+
     public void testGetCapUnboundedStyleFilter() throws Exception {
         
         GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);

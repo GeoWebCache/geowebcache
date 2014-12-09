@@ -268,7 +268,7 @@ public class WMSGetCapabilities {
         HashSet<String> formats = new HashSet<String>();
 
         for (TileLayer layer : layerIter) {
-            if (!layer.isEnabled()) {
+            if (!layer.isEnabled()  || !layer.isAdvertised()) {
                 continue;
             }
             if (layer.getMimeTypes() != null) {
@@ -296,7 +296,7 @@ public class WMSGetCapabilities {
         HashSet<String> formats = new HashSet<String>();
 
         for (TileLayer layer : layerIter) {
-            if (!layer.isEnabled()) {
+            if (!layer.isEnabled()  || !layer.isAdvertised()) {
                 continue;
             }
             if (layer.getMimeTypes() != null) {
@@ -335,7 +335,7 @@ public class WMSGetCapabilities {
         xml.indentElement("VendorSpecificCapabilities");
         Iterable<TileLayer> layerIter = tld.getLayerList();
         for (TileLayer layer : layerIter) {
-            if (!layer.isEnabled()) {
+            if (!layer.isEnabled()  || !layer.isAdvertised()) {
                 continue;
             }
 
@@ -428,7 +428,7 @@ public class WMSGetCapabilities {
 
         Iterable<TileLayer> layerIter = tld.getLayerList();
         for (TileLayer layer : layerIter) {
-            if (!layer.isEnabled()) {
+            if (!layer.isEnabled()  || !layer.isAdvertised()) {
                 continue;
             }
             try {
