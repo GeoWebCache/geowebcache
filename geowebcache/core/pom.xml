@@ -92,7 +92,6 @@
       <artifactId>jsr305</artifactId>
     </dependency>
 
-
     <!-- Java Advanced Imaging (JAI) -->
     <dependency>
       <groupId>javax.media</groupId>

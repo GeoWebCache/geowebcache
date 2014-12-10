@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.geowebcache</groupId>
+    <artifactId>geowebcache</artifactId>
+    <version>1.7-SNAPSHOT</version>
+  </parent>
+  <groupId>org.geowebcache</groupId>
+  <artifactId>gwc-distributed</artifactId>
+  <packaging>jar</packaging>
+  <name>gwc-distributed</name>
+  <url>http://geowebcache.org</url>
+  <properties>
+    <hazelcast.version>3.3.1</hazelcast.version>
+  </properties>
+  
+  <repositories>
+    <repository>
+      <id>central</id>
+      <name>Central Maven Repository</name>
+      <url>http://repo1.maven.org/maven2</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+  
+  <dependencies>
+      <dependency>
+      <groupId>com.hazelcast</groupId>
+      <artifactId>hazelcast</artifactId>
+      <version>${hazelcast.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.hazelcast</groupId>
+      <artifactId>hazelcast-spring</artifactId>
+      <version>${hazelcast.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.hazelcast</groupId>
+      <artifactId>hazelcast-wm</artifactId>
+      <version>${hazelcast.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.geowebcache</groupId>
+      <artifactId>gwc-core</artifactId>
+	  <version>${project.version}</version>
+    </dependency>   
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>    
+  </dependencies>
+</project>
