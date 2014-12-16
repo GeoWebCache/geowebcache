@@ -59,7 +59,6 @@
 		
 		var Layer = $(capabilitiesResponse).find("Layer");
 		for (var i=0;i<Layer.length;i++) {
-		
 				var layerName =getNameInNodeList(Layer,i,"OWS:IDENTIFIER");
 				var sublayers = $(Layer[i]).find("Layer");
 				if (sublayers.length ==0)
@@ -189,7 +188,7 @@
 		var Layers = $(capabilitiesResponse).find("Layer");
 		
 		// Retrieve my layer index from the selected name 
-		var i = getLayerIdx(Layer,mapServiceName);
+		var i = getLayerIdx(Layers,mapServiceName);
 		
 		
 		var myFormat = $(Layers[i]).find("Format").text();		
@@ -206,21 +205,26 @@
 		var projection = ol.proj.get(epsg_projection);
 		var projectionExtent = projection.getExtent();
 		
+		
+		var tileSizeListe = getTileSizes(capabilitiesResponse,myTileMatrixSet);
+		var origines = getOrigines(capabilitiesResponse,myTileMatrixSet);
+	
 		// Retrieve 256 as TileSize in the GetCapabilities
-		var size = ol.extent.getWidth(projectionExtent) / 256;
+		var widthE =ol.extent.getWidth(projectionExtent) ; 
 		
 		var nbReso = TileMatrixIds.length;
 		var resolutions = new Array(nbReso);
 		var matrixIds = new Array(nbReso);
 		for (var z = 0; z < nbReso; ++z) {
 			// generate resolutions and matrixIds arrays for this WMTS
+			var size = widthE  / tileSizeListe[z];
 			resolutions[z] = size / Math.pow(2, z);
 		}
+		//var resolutions=[132291.9312505292, 66145.9656252646, 26458.386250105836, 19843.789687579378, 13229.193125052918, 5291.677250021167, 2645.8386250105837, 1984.3789687579376, 1322.9193125052918, 529.1677250021168, 264.5838625010584, 132.2919312505292];
+		
+
 		
 		
-		var tileSizeListe = getTileSizes(capabilitiesResponse,myTileMatrixSet);
-		var origines = getOrigines(capabilitiesResponse,myTileMatrixSet);
-	
 		
 		/* Not Use Yet */ 
 		var TileMatrixLimits = $(Layers[i]).find("TileMatrixLimits");
@@ -274,7 +278,7 @@
 		
 		// Center the view on a point and a zoom 
 		// How to be sure of the position seen on a tile. 
-		view.setCenter(ol.proj.transform([69,35], 'EPSG:4326',epsg_projection ));
+		view.setCenter(ol.proj.transform([0,0], 'EPSG:4326',epsg_projection ));
 		view.setZoom(10);
 	}
 	
