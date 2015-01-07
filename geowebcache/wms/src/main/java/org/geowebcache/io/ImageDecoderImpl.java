@@ -43,14 +43,12 @@ public class ImageDecoderImpl implements ImageDecoder{
      * Logger used
      */
     private static final Logger LOGGER = Logger.getLogger(ImageEncoderImpl.class);
-    /**
-     * Registry used for selecting the ImageReaderSpi instances
-     */
-    private static final IIORegistry theRegistry = IIORegistry.getDefaultInstance();
+
     /**
      * Default string used for exceptions
      */
     public static final String OPERATION_NOT_SUPPORTED = "Operation not supported";
+
     /**Boolean indicating is aggressive inputstream is supported*/
     private final boolean isAggressiveInputStreamSupported;
     /**Supported Mimetypes*/
@@ -59,19 +57,34 @@ public class ImageDecoderImpl implements ImageDecoder{
     private ImageReaderSpi spi;
 
     /**
-     * Creates a new Instance of ImageEncoder supporting or not OutputStream optimization, with the defined MimeTypes and Spi classes.
+     * Creates a new Instance of ImageDecoder supporting or not InputStream optimization, with the defined MimeTypes and Spi classes.
      * 
-     * @param aggressiveOutputStreamOptimization
+     * @param aggressiveInputStreamOptimization
      * @param supportedMimeTypes
-     * @param writerSpi
+     * @param readerSpi
+     * 
+     * @deprecated
      */
     public ImageDecoderImpl(boolean aggressiveInputStreamOptimization,
             List<String> supportedMimeTypes, List<String> readerSpi) {
+        this(aggressiveInputStreamOptimization, supportedMimeTypes, readerSpi, null);
+    }
+
+    /**
+     * Creates a new Instance of ImageDecoder supporting or not InputStream optimization, with the defined MimeTypes and Spi classes.
+     * 
+     * @param aggressiveInputStreamOptimization
+     * @param supportedMimeTypes
+     * @param readerSpi
+     * @param initializer
+     */
+    public ImageDecoderImpl(boolean aggressiveInputStreamOptimization,
+            List<String> supportedMimeTypes, List<String> readerSpi, ImageIOInitializer initializer) {
 
         this.isAggressiveInputStreamSupported = aggressiveInputStreamOptimization;
         this.supportedMimeTypes = new ArrayList<String>(supportedMimeTypes);
-        // Registration of the plugins
-        theRegistry.registerApplicationClasspathSpis();
+        // Get the IIORegistry if needed
+        IIORegistry theRegistry = initializer != null ? initializer.getRegistry() : IIORegistry.getDefaultInstance();
         // Checks for each Spi class if it is present and then it is added to the list.
         for (String spi : readerSpi) {
             try {
@@ -167,7 +180,7 @@ public class ImageDecoderImpl implements ImageDecoder{
      * Returns the ImageSpiReader associated to 
      * @return
      */
-    private ImageReaderSpi getReaderSpi() {
+    ImageReaderSpi getReaderSpi() {
         return spi;
     }
 
@@ -188,7 +201,5 @@ public class ImageDecoderImpl implements ImageDecoder{
     public boolean isAggressiveInputStreamSupported() {
         return isAggressiveInputStreamSupported;
     }
-    
-    
-    
+
 }
