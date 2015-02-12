@@ -33,7 +33,7 @@ import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
 /**
  * Builder class for HttpClients
- * 
+ *
  */
 public class HttpClientBuilder {
 
@@ -56,9 +56,9 @@ public class HttpClientBuilder {
     }
 
     /**
-     * Instantiates a new http client builder 
+     * Instantiates a new http client builder
      * @param url The server url, or null if no authentication is required or if the client is going to be
-     *            used against a single server only 
+     *            used against a single server only
      * @param backendTimeout
      * @param httpUsername
      * @param httpPassword
@@ -79,14 +79,21 @@ public class HttpClientBuilder {
         List<String> lst = runtimeMXBean.getInputArguments();
         String proxyHost = null;
         String proxyPort = null;
+
+        String nonProxyHosts = null;
+        boolean proxyApplicable = proxyUrl != null;
+
         for (String arg : lst) {
             if (arg.startsWith("-Dhttp.proxyHost=")) {
                 proxyHost = extractVMArg(arg);
             } else if (arg.startsWith("-Dhttp.proxyPort=")) {
                 proxyPort = extractVMArg(arg);
+            } else if (arg.startsWith("-Dhttp.nonProxyHosts=")) {
+                nonProxyHosts = extractVMArg(arg);
+                proxyApplicable = determineProxyApplicable(nonProxyHosts, url);
             }
         }
-        if (proxyHost != null)
+        if (proxyHost != null && proxyApplicable)
             try {
                 proxyUrl = new URL(proxyHost + ((proxyPort != null) ? (":" + proxyPort) : ("")));
             } catch (MalformedURLException e) {
@@ -95,6 +102,27 @@ public class HttpClientBuilder {
         this.setProxy(proxyUrl);
         this.setBackendTimeout(backendTimeout);
         this.concurrency = concurrency;
+    }
+
+    private boolean determineProxyApplicable(String nonProxyHosts, URL target) {
+        if (nonProxyHosts == null || nonProxyHosts.length() < 3) {
+            return true;
+        }
+
+        String[] strings = nonProxyHosts.split("|");
+        for (String s : strings) {
+            if (s.startsWith("'")) {
+                s = s.replace("'", "");
+            } else if (s.startsWith("*")) {
+                s = s.replace("*", "");
+            }
+
+            if (target.getHost().endsWith(s)) {
+                return false; //the proxy should not be used, the target url is defined in the nonProxyHosts
+            }
+        }
+
+        return true;
     }
 
     private String extractVMArg(String arg) {
@@ -125,7 +153,7 @@ public class HttpClientBuilder {
     /**
      * parses a proxyUrl parameter and configures (if possible) the builder to set a proxy when
      * generating a httpClient and (if possible) proxy authentication.
-     * 
+     *
      * @param proxyUrl
      */
     public void setProxy(URL proxyUrl) {
@@ -145,7 +173,7 @@ public class HttpClientBuilder {
 
     /**
      * uses the configuration of this builder to generate a HttpClient
-     * 
+     *
      * @return the generated HttpClient
      */
     public HttpClient buildClient() {
@@ -159,11 +187,14 @@ public class HttpClientBuilder {
             params.setMaxConnectionsPerHost(
                     HostConfiguration.ANY_HOST_CONFIGURATION, concurrency);
         }
-        
+
+        params.setMaxTotalConnections(concurrency);
+        params.setMaxConnectionsPerHost(HostConfiguration.ANY_HOST_CONFIGURATION, concurrency);
+
         connectionManager.setParams(params);
 
         HttpClient httpClient = new HttpClient(connectionManager);
-        
+
         if (authscope != null && httpcredentials != null) {
             httpClient.getState().setCredentials(authscope, httpcredentials);
             httpClient.getParams().setAuthenticationPreemptive(true);
@@ -182,7 +213,7 @@ public class HttpClientBuilder {
     /**
      * returns true if this builder was configured to pass HTTP credentials to the generated
      * HttpClient.
-     * 
+     *
      * @return
      */
     public boolean isDoAuthentication() {
