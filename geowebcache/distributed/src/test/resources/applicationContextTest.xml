@@ -16,9 +16,15 @@
 			<hz:group name="dev" password="password" />
 			<hz:network port="5701" port-auto-increment="true">
 				<hz:join>
-					<hz:multicast enabled="true" multicast-group="224.2.2.3"
+					<hz:multicast enabled="false" multicast-group="224.2.2.3"
 						multicast-port="54327" />
+					<hz:tcp-ip enabled="true">
+						<hz:interface>127.0.0.1</hz:interface>
+					</hz:tcp-ip>
 				</hz:join>
+				<hz:interfaces enabled="true">
+					<hz:interface>127.0.0.1</hz:interface>
+				</hz:interfaces>
 			</hz:network>
 			<hz:map name="CacheProviderMap" max-size="16" eviction-policy="LRU"
 				max-size-policy="USED_HEAP_SIZE" >
@@ -33,9 +39,15 @@
 			<hz:group name="dev" password="password" />
 			<hz:network port="5701" port-auto-increment="true">
 				<hz:join>
-					<hz:multicast enabled="true" multicast-group="224.2.2.3"
+					<hz:multicast enabled="false" multicast-group="224.2.2.3"
 						multicast-port="54327" />
+					<hz:tcp-ip enabled="true">
+						<hz:interface>127.0.0.1</hz:interface>
+					</hz:tcp-ip>
 				</hz:join>
+				<hz:interfaces enabled="true">
+					<hz:interface>127.0.0.1</hz:interface>
+				</hz:interfaces>
 			</hz:network>
 			<hz:map name="CacheProviderMap" max-size="16" eviction-policy="LRU"
 				max-size-policy="USED_HEAP_SIZE" >
