@@ -117,7 +117,7 @@ public class HttpClientBuilder {
                 s = s.replace("*", "");
             }
 
-            if (target.getHost().endsWith(s)) {
+            if (!s.isEmpty() && target.getHost().endsWith(s)) {
                 return false; //the proxy should not be used, the target url is defined in the nonProxyHosts
             }
         }
