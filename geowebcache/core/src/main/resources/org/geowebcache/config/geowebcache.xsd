@@ -609,6 +609,24 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="advertised" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Whether the layer is included in capabilities documents. Defaults 
+	    to true.  When false the layer will not be included in capabilities
+	    documents but will otherwise work normally.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="transientLayer" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Is the layer transient.  Defaults to false.  A transient layer's 
+	    configuration will not be persisted over restart/reload.  This does
+	    not affect the persistence of tiles.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="name" type="xs:string">
         <xs:annotation>
           <xs:documentation>
