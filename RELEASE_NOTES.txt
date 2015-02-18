@@ -1,3 +1,15 @@
+GeoWebCache 1.7.0-RC1 (2015-02-20)
+----------------------------------
+
+First release candidate for GeoWebCache 1.7.0.
+
+Fixes:
+++++++
+- Bad string format for Time Remaining when seeding tiles
+- HazelcastCacheProviderTest fails without multicast support
+- Updated config schema for advertised and transient properties
+
+
 GeoWebCache 1.7-beta (2015-01-19)
 ----------------------------------
 
