@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xml="http://www.w3.org/XML/1998/namespace"
-  targetNamespace="http://geowebcache.org/schema/1.7.0" xmlns:gwc="http://geowebcache.org/schema/1.7.0"
-  elementFormDefault="qualified" version="1.7.0">
+  targetNamespace="http://geowebcache.org/schema/1.8.0" xmlns:gwc="http://geowebcache.org/schema/1.8.0"
+  elementFormDefault="qualified" version="1.8.0">
 
   <xs:element name="gwcConfiguration">
     <xs:annotation>
