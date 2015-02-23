@@ -5,11 +5,7 @@
   <parent>
     <groupId>org.geowebcache</groupId>
     <artifactId>geowebcache</artifactId>
-<<<<<<< HEAD
-    <version>1.5-SNAPSHOT</version>
-=======
     <version>1.8-SNAPSHOT</version>
->>>>>>> 61f4f9d401993a7a7c3f1136a5bbedb434e73abd
   </parent>
   <groupId>org.geowebcache</groupId>
   <artifactId>gwc-web</artifactId>
