@@ -160,7 +160,7 @@ Create a new directory for the version in the files section on SourceForge.  Upl
 
 If it's the new stable release, bring up the info dialog for the war zip and set it to be the default download for all platforms and the name of the download to "GeoWebCache <version>"
 
-Use SSH/SCP to connect to the web server.  The root of the site is at /home/geowebcache_org/htdocs  The following paths are relative to this.
+Use SSH/SCP to connect to the web server.  The root of the site is at /var/www/geowebcache.org/htdocs The following paths are relative to this.
 
 Upload the doc zip to ./docs/ and unzip the doc subdirectory from within it.  Rename the new directory to the version number.
 

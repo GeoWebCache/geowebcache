@@ -10,14 +10,15 @@ To achieve good performance, requests should conform to the tiles that GeoWebCac
 WMS-C - WMS Tiling Clients
 ==========================
 
-The WMS Tiling Client Recommendation, or WMS-C for short, is a recommendation set forth by OSGeo for making tiled requests using WMS. You can read more about it here: http://wiki.osgeo.org/wiki/WMS_Tiling_Client_Recommendation  By default, any layer that does not specify a gridSubset will be configured to implement the recommended Unprojected and Mercator profiles.
+The WMS Tiling Client Recommendation, or WMS-C for short, is a recommendation set forth by OSGeo for making tiled requests using WMS. You can read more about it here: http://wiki.osgeo.org/wiki/WMS_Tiling_Client_Recommendation. 
 
+By default, any layer that does not specify a gridSubset will be configured to implement the recommended Unprojected and Mercator profiles. 
 However, GeoWebCache supports any set of resolutions (scales), tile sizes and projections.
 
 Clients: uDig, GeoExplorer
 --------------------------
 
-On the front page of your GeoWebCache instance you will find a link to the WMS GetCapabilities document. Recent versions of uDig can use this URL to configure all layers automatically. The same is true for GeoExplorer and other GeoExt based applications.
+On the front page of your GeoWebCache instance you will find a link to the WMS GetCapabilities document. Recent versions of uDig can use this URL to configure all layers automatically. The same applies to GeoExplorer and other GeoExt based applications.
 
 Note that each output format results in a new set of tiles. The GetCapabilities document can also be downloaded and edited manually or be filtered automatically using XSL templates.
 
@@ -38,6 +39,6 @@ Note that to use WMS you should not have two grid sets with the same SRS defined
 Support for Regular WMS Clients
 -------------------------------
 
-GeoWebCache can recombine and resample tiles to answer arbitrary WMS requests. To enable this feature, open ``geowebcache-wmsservice-context.xml``, find ``<property name="fullWMS"><value>FALSE</value></property>`` and change to ``<property name="fullWMS"><value>TRUE</value></property>``. All layers that are to support this feature must currently be configured to support a PNG format.
+GeoWebCache can recombine and resample tiles to answer arbitrary WMS requests. To enable this feature, open ``geowebcache-wmsservice-context.xml``, find ``<property name="fullWMS"><value>FALSE</value></property>`` and change to ``<property name="fullWMS"><value>TRUE</value></property>``. Another way to enable this feature is to add the following string to the ``geowebcache.xml`` file: ``<fullWMS>TRUE</fullWMS>``. All layers that are to support this feature must currently be configured to support a PNG format. Inside the WMS request the user can add a new WMS parameter called **hints** which can be set to one of the following configurations: *speed*, *default*, *quality*. Going from *speed* to *quality* the image quality is increased but also the computation time.    
 
-Note that this requires GeoWebCache to decompress many tiles and recompress the resulting canvas. Response times will therefore be on the order of seconds, depending on the size of the requested image and the tile sizes. You may have to increase the heap size of the Java process (``-Xmx256M``) to use this functionality.
+Note that this requires GeoWebCache to decompress many tiles and recompress the resulting canvas; also for PNG8 and GIF output formats an optimal palette is calculated. Response times will therefore be on the order of seconds, depending on the size of the requested image and the tile sizes. You may have to increase the heap size of the Java process (``-Xmx256M``) to use this functionality.

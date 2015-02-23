@@ -3,14 +3,14 @@
 How to configure layers
 =======================
 
-The main configuration file for GeoWebCache is :file:`geowebcache.xml`. It is located inside the the main GeoWebCache application directory at :file:`WEB-INF/classes/geowebcache.xml`.
+The main configuration file for GeoWebCache is :file:`geowebcache.xml`. By default, it is located in the same directory as the :ref:`cache <configuration.storage>`. If the configuration file does not exist, GeoWebCache will copy the default configuration file from :file:`WEB-INF/classes/geowebcache.xml` to the cache directory.
 
-Unless specified, all configuration in this section will be accomplished by editing :file:`geowebcache.xml`.
+Unless specified, all configuration changes in this section are done editing the file :file:`geowebcache.xml`.
 
 Changing the location of geowebcache.xml
 ----------------------------------------
 
-The location of the configuration file is set in :file:`WEB-INF/geowebcache-core-context.xml`.  If you wish to move the configuration file to a different location, open :file:`geowebcache-core-context.xml` and look for the ``<bean>`` tag referencing ``gwcXmlConfig``:
+The location of the configuration file is set in :file:`WEB-INF/geowebcache-core-context.xml`.  If you wish to set a different location for the configuration file, open :file:`geowebcache-core-context.xml` and look for the ``<bean>`` tag referencing ``gwcXmlConfig``:
 
 .. code-block: xml
 
@@ -27,9 +27,9 @@ Uncomment the bottom ``<constructor-arg value= ...>`` tag and specify the locati
 Tips for editing XML
 --------------------
 
-Editing the configuration file by hand can be tricky, since even a small typo may cause GeoWebCache to stop functioning.  **The order of the XML elements is crucial!** 
+Editing the configuration file by hand can be tricky, since the smallest typo may cause GeoWebCache to stop functioning.  Furthermore, **The order of the XML elements is crucial!** 
 
-It is recommended to use a special XML editing tool or at the very least a text editor with syntax highlighting.  The advantage of using an editor with XML schema validation is that it can tell you right away if you are missing a tag or have placed elements out of order.
+It is recommended to use a special XML editing tool or at the very least a text editor with syntax highlighting.  Furthermore, using an editor with XML schema validation will tell you right away if you are missing a tag or have placed elements out of order.
 
 Two recommended free editors, both of which have support for XML validation, are:
 
@@ -46,7 +46,7 @@ GeoWebCache validates the XML file against the schema during startup and will re
 Schema
 ------
 
-All configuration options and parameters are ultimately located in the XML schema.  While the documentation you are reading now is designed to translate and interpret the schema to make GeoWebCache configuration simpler, expert users can look to the schema to determine all details, including variable types, ordering of elements, and much more.
+All configuration options and parameters are ultimately located in the XML schema.  While the documentation you are reading now is designed to translate and interpret the schema to make the GeoWebCache configuration simpler, expert users can look at the schema to determine all details, including variable types, ordering of elements and much more.
 
 * GeoWebCache schema - ``http://geowebcache.org/schema/<version>/geowebcache.xsd``
 * GeoWebCache schema docs - ``http://geowebcache.org/schema/docs/<version>/``

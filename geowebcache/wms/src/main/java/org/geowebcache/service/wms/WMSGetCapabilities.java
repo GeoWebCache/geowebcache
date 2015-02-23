@@ -13,12 +13,18 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  * @author Arne Kepp, OpenGeo, Copyright 2009
+ * @author Kevin Smith, Boundless, Copyright 2014
  */
 package org.geowebcache.service.wms;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +45,7 @@ import org.geowebcache.filter.parameters.WMSDimensionProvider;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
+import org.geowebcache.io.XMLBuilder;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.LayerMetaInformation;
@@ -62,7 +69,7 @@ public class WMSGetCapabilities {
             String contextPath, URLMangler urlMangler) {
         this.tld = tld;
         
-        urlStr = urlMangler.buildURL(baseUrl, contextPath, WMSService.SERVICE_PATH) + "?SERVICE=WMS&amp;";
+        urlStr = urlMangler.buildURL(baseUrl, contextPath, WMSService.SERVICE_PATH) + "?SERVICE=WMS&";
 
         String[] tiledKey = { "TILED" };
         Map<String, String> tiledValue = ServletUtils.selectedStringsFromMap(
@@ -75,16 +82,16 @@ public class WMSGetCapabilities {
 
     protected void writeResponse(HttpServletResponse response) {
 
-        byte[] data = generateGetCapabilities().getBytes();
+        final Charset encoding = StandardCharsets.UTF_8;
+        byte[] data = generateGetCapabilities(encoding).getBytes(encoding);
 
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("text/xml");
-        response.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding(encoding.name());
         response.setContentLength(data.length);
         response.setHeader("content-disposition", "inline;filename=wms-getcapabilities.xml");
 
-        try {
-            OutputStream os = response.getOutputStream();
+        try (OutputStream os = response.getOutputStream();){
             os.write(data);
             os.flush();
         } catch (IOException ioe) {
@@ -92,7 +99,7 @@ public class WMSGetCapabilities {
         }
     }
 
-    private String generateGetCapabilities() {
+    String generateGetCapabilities(Charset encoding) {
         StringBuilder str = new StringBuilder();
         ServiceInformation servInfo = tld.getServiceInformation();
         String xsltUrl = null;
@@ -100,70 +107,73 @@ public class WMSGetCapabilities {
           xsltUrl = servInfo.getXsltTemplates().getWmsGetCapabilities();
         }
 
-        str.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        if (xsltUrl!=null) {
-          str.append("<?xml-stylesheet type=\"text/xsl\" href=\""+xsltUrl+"\" ?>\n");
+        XMLBuilder xml = new XMLBuilder(str);
+        
+        try {
+            xml.header("1.0", encoding);
+            if (xsltUrl!=null) {
+              xml.appendUnescaped("<?xml-stylesheet type=\"text/xsl\" href=\""+xsltUrl+"\" ?>\n");
+            }
+            xml.appendUnescaped("<!DOCTYPE WMT_MS_Capabilities SYSTEM \"http://schemas.opengis.net/wms/1.1.1/capabilities_1_1_1.dtd\" ");
+            if (includeVendorSpecific) {
+                xml.appendUnescaped("[\n");
+                xml.appendUnescaped("<!ELEMENT VendorSpecificCapabilities (TileSet*) >\n");
+                xml.appendUnescaped("<!ELEMENT TileSet (SRS, BoundingBox?, Resolutions, Width, Height, Format, Layers*, Styles*) >\n");
+                xml.appendUnescaped("<!ELEMENT Resolutions (#PCDATA) >\n");
+                xml.appendUnescaped("<!ELEMENT Width (#PCDATA) >\n");
+                xml.appendUnescaped("<!ELEMENT Height (#PCDATA) >\n");
+                xml.appendUnescaped("<!ELEMENT Layers (#PCDATA) >\n");
+                xml.appendUnescaped("<!ELEMENT Styles (#PCDATA) >\n");
+                xml.appendUnescaped("]");
+            }
+            xml.appendUnescaped(">\n");
+            xml.indentElement("WMT_MS_Capabilities").attribute("version", "1.1.1");
+    
+            // The actual meat
+            service(xml);
+            capability(xml);
+            xml.endElement();
+        } catch (IOException e) {
+            // Should not happen as StringBuilder doesn't throw IOException
+            throw new IllegalStateException(e);
         }
-        str.append("<!DOCTYPE WMT_MS_Capabilities SYSTEM \"http://schemas.opengis.net/wms/1.1.1/capabilities_1_1_1.dtd\" ");
-        if (includeVendorSpecific) {
-            str.append("[\n");
-            str.append("<!ELEMENT VendorSpecificCapabilities (TileSet*) >\n");
-            str.append("<!ELEMENT TileSet (SRS, BoundingBox?, Resolutions, Width, Height, Format, Layers*, Styles*) >\n");
-            str.append("<!ELEMENT Resolutions (#PCDATA) >\n");
-            str.append("<!ELEMENT Width (#PCDATA) >\n");
-            str.append("<!ELEMENT Height (#PCDATA) >\n");
-            str.append("<!ELEMENT Layers (#PCDATA) >\n");
-            str.append("<!ELEMENT Styles (#PCDATA) >\n");
-            str.append("]");
-        }
-        str.append(">\n");
-        str.append("<WMT_MS_Capabilities version=\"1.1.1\">\n");
-
-        // The actual meat
-        service(str);
-        capability(str);
-
-        str.append("</WMT_MS_Capabilities>\n");
 
         return str.toString();
     }
 
-    private void service(StringBuilder str) {
+    private void service(XMLBuilder xml) throws IOException {
         ServiceInformation servInfo = tld.getServiceInformation();
-        str.append("<Service>\n");
-        str.append("  <Name>OGC:WMS</Name>\n");
+        xml.indentElement("Service");
+        xml.indentElement("Name").text("OGC:WMS").endElement();
 
         if (servInfo == null) {
-            str.append("  <Title>Web Map Service - GeoWebCache</Title>\n");
+            xml.indentElement("Title").text("Web Map Service - GeoWebCache").endElement();
         } else {
-            str.append("  <Title>" + servInfo.getTitle() + "</Title>\n");
-            str.append("  <Abstract>" + servInfo.getDescription() + "</Abstract>\n");
+            xml.indentElement("Title").text(servInfo.getTitle()).endElement();
+            xml.indentElement("Abstract").text(servInfo.getDescription()).endElement();
 
             if (servInfo.getKeywords() != null) {
-                str.append("  <KeywordList>\n");
+                xml.indentElement("KeywordList");
                 Iterator<String> keywordIter = servInfo.getKeywords().iterator();
                 while (keywordIter.hasNext()) {
-                    str.append("    <Keyword>" + keywordIter.next() + "</Keyword>\n");
+                    xml.indentElement("Keyword").text(keywordIter.next()).endElement();
                 }
-                str.append("  </KeywordList>\n");
+                xml.endElement();
             }
         }
+        onlineResource(xml, urlStr);
 
-        str.append("  <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""
-                + urlStr + "\"/>\n");
-
-        serviceContact(str);
+        serviceContact(xml);
 
         if (servInfo != null) {
-            str.append("  <Fees>" + servInfo.getFees() + "</Fees>\n");
-            str.append("  <AccessConstraints>" + servInfo.getAccessConstraints()
-                    + "</AccessConstraints>\n");
+            xml.indentElement("Fees").text(servInfo.getFees()).endElement();
+            xml.indentElement("AccessConstraints").text(servInfo.getAccessConstraints()).endElement();
         }
 
-        str.append("</Service>\n");
+        xml.endElement();
     }
 
-    private void serviceContact(StringBuilder str) {
+    private void serviceContact(XMLBuilder xml) throws IOException {
         ServiceInformation servInfo = tld.getServiceInformation();
         if (servInfo == null) {
             return;
@@ -176,83 +186,98 @@ public class WMSGetCapabilities {
 
         ServiceContact servCont = servProv.getServiceContact();
 
-        str.append("  <ContactInformation>\n");
+        xml.indentElement("ContactInformation");
 
         if (servProv.getProviderName() != null || servCont != null) {
-            str.append("    <ContactPersonPrimary>\n");
+            xml.indentElement("ContactPersonPrimary");
             if (servCont != null) {
-                str.append("      <ContactPerson>" + servCont.getIndividualName()
-                        + "</ContactPerson>\n");
+                xml.simpleElement("ContactPerson",servCont.getIndividualName(), true);
             }
-            str.append("      <ContactOrganization>" + servProv.getProviderName()
-                    + "</ContactOrganization>\n");
-            str.append("    </ContactPersonPrimary>\n");
+            xml.simpleElement("ContactOrganization",servProv.getProviderName(), true);
+            xml.endElement();
 
             if (servCont != null) {
-                str.append("    <ContactPosition>" + servCont.getPositionName()
-                        + "</ContactPosition>\n");
+                xml.simpleElement("ContactPosition", servCont.getPositionName(), true);
 
-                str.append("    <ContactAddress>\n");
-                str.append("      <AddressType>" + servCont.getAddressType() + "</AddressType>\n");
-                str.append("      <Address>" + servCont.getAddressStreet() + "</Address>\n");
-                str.append("      <City>" + servCont.getAddressCity() + "</City>\n");
-                str.append("      <StateOrProvince>" + servCont.getAddressAdministrativeArea()
-                        + "</StateOrProvince>\n");
-                str.append("      <PostCode>" + servCont.getAddressPostalCode() + "</PostCode>\n");
-                str.append("      <Country>" + servCont.getAddressCountry() + "</Country>\n");
-                str.append("    </ContactAddress>\n");
-                str.append("    <ContactVoiceTelephone>" + servCont.getPhoneNumber()
-                        + "</ContactVoiceTelephone>\n");
-                str.append("    <ContactFacsimileTelephone>").append(servCont.getFaxNumber())
-                        .append("</ContactFacsimileTelephone>\n");
-                str.append("    <ContactElectronicMailAddress>" + servCont.getAddressEmail()
-                        + "</ContactElectronicMailAddress>\n");
+                xml.indentElement("ContactAddress");
+                xml.simpleElement("AddressType", servCont.getAddressType(), true);
+                xml.simpleElement("Address", servCont.getAddressStreet(), true);
+                xml.simpleElement("City", servCont.getAddressCity(), true);
+                xml.simpleElement("StateOrProvince", servCont.getAddressAdministrativeArea(), true);
+                xml.simpleElement("PostCode", servCont.getAddressPostalCode(), true);
+                xml.simpleElement("Country", servCont.getAddressCountry(), true);
+                xml.endElement();
+                
+                xml.simpleElement("ContactVoiceTelephone", servCont.getPhoneNumber(), true);
+                xml.simpleElement("ContactFacsimileTelephone", servCont.getFaxNumber(), true);
+                xml.simpleElement("ContactElectronicMailAddress", servCont.getAddressEmail(), true);
             }
         }
-
-        str.append("  </ContactInformation>\n");
+        xml.endElement();
     }
 
-    private void capability(StringBuilder str) {
-        str.append("<Capability>\n");
-        str.append("  <Request>\n");
-        capabilityRequestGetCapabilities(str);
-        capabilityRequestGetMap(str);
-        capabilityRequestGetFeatureInfo(str);
-        capabilityRequestDescribeLayer(str);
-        capabilityRequestGetLegendGraphic(str);
-        str.append("  </Request>\n");
-        capabilityException(str);
+    private void capability(XMLBuilder xml) throws IOException {
+        xml.indentElement("Capability");
+        xml.indentElement("Request");
+        capabilityRequestGetCapabilities(xml);
+        capabilityRequestGetMap(xml);
+        capabilityRequestGetFeatureInfo(xml);
+        capabilityRequestDescribeLayer(xml);
+        capabilityRequestGetLegendGraphic(xml);
+        xml.endElement();
+        capabilityException(xml);
         if (this.includeVendorSpecific) {
-            capabilityVendorSpecific(str);
+            capabilityVendorSpecific(xml);
         }
-        capabilityLayerOuter(str);
-        str.append("</Capability>\n");
+        capabilityLayerOuter(xml);
+        xml.endElement();
 
     }
 
-    private void capabilityRequestGetCapabilities(StringBuilder str) {
-        str.append("    <GetCapabilities>\n");
-        str.append("      <Format>application/vnd.ogc.wms_xml</Format>\n");
-        str.append("      <DCPType>\n");
-        str.append("        <HTTP>\n");
-        str.append("          <Get>\n");
-        str.append("            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""
-                + urlStr + "\"/>\n");
-        str.append("          </Get>\n");
-        str.append("        </HTTP>\n");
-        str.append("      </DCPType>\n");
-        str.append("    </GetCapabilities>\n");
+    XMLBuilder onlineResource(XMLBuilder xml, String url) throws IOException {
+        return xml.indentElement("OnlineResource")
+        .attribute("xmlns:xlink", "http://www.w3.org/1999/xlink")
+        .attribute("xlink:type", "simple")
+        .attribute("xlink:href", url)
+        .endElement();
+    }
+    XMLBuilder dcpType(XMLBuilder xml, String url) throws IOException {
+        xml.indentElement("DCPType");
+        xml.indentElement("HTTP");
+        xml.indentElement("Get");
+        
+        onlineResource(xml, url);
+        
+        xml.endElement();
+        xml.endElement();
+        xml.endElement();
+        return xml;
+    }
+    
+    XMLBuilder capability(XMLBuilder xml, String name, Collection<String> formats, String url) throws IOException {
+        xml.indentElement(name);
+        
+        for(String format:formats) {
+            xml.simpleElement("Format", format, true);
+        }
+        
+        dcpType(xml, url);
+        
+        xml.endElement();
+        return xml;
+    }
+    private void capabilityRequestGetCapabilities(XMLBuilder xml) throws IOException {
+        capability(xml, "GetCapabilities", Collections.singleton("application/vnd.ogc.wms_xml"), urlStr);
     }
 
-    private void capabilityRequestGetMap(StringBuilder str) {
+    private void capabilityRequestGetMap(XMLBuilder xml) throws IOException {
         // Find all the formats we support
         Iterable<TileLayer> layerIter = tld.getLayerList();
 
         HashSet<String> formats = new HashSet<String>();
 
         for (TileLayer layer : layerIter) {
-            if (!layer.isEnabled()) {
+            if (!layer.isEnabled()  || !layer.isAdvertised()) {
                 continue;
             }
             if (layer.getMimeTypes() != null) {
@@ -265,26 +290,14 @@ public class WMSGetCapabilities {
                 formats.add("image/png");
                 formats.add("image/jpeg");
             }
-
+            
         }
-
-        str.append("    <GetMap>\n");
-        Iterator<String> formatIter = formats.iterator();
-        while (formatIter.hasNext()) {
-            str.append("      <Format>" + formatIter.next() + "</Format>\n");
-        }
-        str.append("      <DCPType>\n");
-        str.append("        <HTTP>\n");
-        str.append("          <Get>\n");
-        str.append("            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""
-                + urlStr + "\"/>\n");
-        str.append("          </Get>\n");
-        str.append("        </HTTP>\n");
-        str.append("      </DCPType>\n");
-        str.append("    </GetMap>\n");
+        
+        capability(xml, "GetMap", formats, urlStr);
+        
     }
 
-    private void capabilityRequestGetFeatureInfo(StringBuilder str) {
+    private void capabilityRequestGetFeatureInfo(XMLBuilder xml) throws IOException {
     	
         // Find all the info formats we support
         Iterable<TileLayer> layerIter = tld.getLayerList();
@@ -292,7 +305,7 @@ public class WMSGetCapabilities {
         HashSet<String> formats = new HashSet<String>();
 
         for (TileLayer layer : layerIter) {
-            if (!layer.isEnabled()) {
+            if (!layer.isEnabled()  || !layer.isAdvertised()) {
                 continue;
             }
             if (layer.getMimeTypes() != null) {
@@ -306,69 +319,32 @@ public class WMSGetCapabilities {
                 formats.add("text/html");
                 formats.add("application/vnd.ogc.gml");
             }
-
+            
         }
-
-    	
-        str.append("    <GetFeatureInfo>\n");
-        Iterator<String> formatIter = formats.iterator();
-        while (formatIter.hasNext()) {
-            str.append("      <Format>" + formatIter.next() + "</Format>\n");
-        }
-        str.append("      <DCPType>\n");
-        str.append("        <HTTP>\n");
-        str.append("        <Get>\n");
-        str.append("          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""
-                + urlStr + "\"/>\n");
-        str.append("        </Get>\n");
-        str.append("        </HTTP>\n");
-        str.append("      </DCPType>\n");
-        str.append("    </GetFeatureInfo>\n");
-
+        
+        
+        capability(xml, "GetFeatureInfo", formats, urlStr);
     }
 
-    private void capabilityRequestDescribeLayer(StringBuilder str) {
-        str.append("    <DescribeLayer>\n");
-        str.append("      <Format>application/vnd.ogc.wms_xml</Format>\n");
-        str.append("      <DCPType>\n");
-        str.append("        <HTTP>\n");
-        str.append("        <Get>\n");
-        str.append("          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""
-                + urlStr + "\"/>\n");
-        str.append("        </Get>\n");
-        str.append("        </HTTP>\n");
-        str.append("      </DCPType>\n");
-        str.append("    </DescribeLayer>\n");
+    private void capabilityRequestDescribeLayer(XMLBuilder xml) throws IOException {
+        capability(xml, "DescribeLayer", Collections.singleton("application/vnd.ogc.wms_xml"), urlStr);
     }
 
-    private void capabilityRequestGetLegendGraphic(StringBuilder str) {
-        str.append("    <GetLegendGraphic>\n");
-        str.append("      <Format>image/png</Format>\n");
-        str.append("      <Format>image/jpeg</Format>\n");
-        str.append("      <Format>image/gif</Format>\n");
-        str.append("      <DCPType>\n");
-        str.append("        <HTTP>\n");
-        str.append("        <Get>\n");
-        str.append("          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""
-                + urlStr + "\"/>\n");
-        str.append("        </Get>\n");
-        str.append("        </HTTP>\n");
-        str.append("      </DCPType>\n");
-        str.append("    </GetLegendGraphic>\n");
-
+    private void capabilityRequestGetLegendGraphic(XMLBuilder xml) throws IOException {
+        capability(xml, "GetLegendGraphic", Arrays.asList("image/png", "image/jpeg", "image/gif"), urlStr);
     }
 
-    private void capabilityException(StringBuilder str) {
-        str.append("  <Exception>\n");
-        str.append("    <Format>application/vnd.ogc.se_xml</Format>\n");
-        str.append("  </Exception>\n");
+    private void capabilityException(XMLBuilder xml) throws IOException {
+        xml.indentElement("Exception");
+        xml.simpleElement("Format","application/vnd.ogc.se_xml", true);
+        xml.endElement();
     }
 
-    private void capabilityVendorSpecific(StringBuilder str) {
-        str.append("  <VendorSpecificCapabilities>\n");
+    private void capabilityVendorSpecific(XMLBuilder xml) throws IOException {
+        xml.indentElement("VendorSpecificCapabilities");
         Iterable<TileLayer> layerIter = tld.getLayerList();
         for (TileLayer layer : layerIter) {
-            if (!layer.isEnabled()) {
+            if (!layer.isEnabled()  || !layer.isAdvertised()) {
                 continue;
             }
 
@@ -390,7 +366,7 @@ public class WMSGetCapabilities {
                 for (String format : formats) {
                     for (String style : styles) {
                         try {
-                            capabilityVendorSpecificTileset(str, layer, grid, format, style);
+                            capabilityVendorSpecificTileset(xml, layer, grid, format, style);
                         } catch (GeoWebCacheException e) {
                             log.error(e.getMessage());
                         }
@@ -398,7 +374,7 @@ public class WMSGetCapabilities {
                 }
             }
         }
-        str.append("  </VendorSpecificCapabilities>\n");
+        xml.endElement();
     }
 
     /**
@@ -425,8 +401,8 @@ public class WMSGetCapabilities {
         return styles;
     }
 
-    private void capabilityVendorSpecificTileset(StringBuilder str, TileLayer layer,
-            GridSubset grid, String formatStr, String styleName) throws GeoWebCacheException {
+    private void capabilityVendorSpecificTileset(XMLBuilder xml, TileLayer layer,
+            GridSubset grid, String formatStr, String styleName) throws GeoWebCacheException, IOException {
 
         String srsStr = grid.getSRS().toString();
         StringBuilder resolutionsStr = new StringBuilder();
@@ -437,98 +413,101 @@ public class WMSGetCapabilities {
 
         String[] bs = boundsPrep(grid.getCoverageBestFitBounds());
 
-        str.append("    <TileSet>\n");
-        str.append("      <SRS>" + srsStr + "</SRS>\n");
-        str.append("      <BoundingBox SRS=\"" + srsStr + "\" minx=\"" + bs[0] + "\" miny=\""
-                + bs[1] + "\"  maxx=\"" + bs[2] + "\"  maxy=\"" + bs[3] + "\" />\n");
-        str.append("      <Resolutions>" + resolutionsStr.toString() + "</Resolutions>\n");
-        str.append("      <Width>" + grid.getTileWidth() + "</Width>\n");
-        str.append("      <Height>" + grid.getTileHeight() + "</Height>\n");
-        str.append("      <Format>" + formatStr + "</Format>\n");
-        str.append("      <Layers>" + layer.getName() + "</Layers>\n");
-        str.append("      <Styles>").append(ServletUtils.URLEncode(styleName))
-                .append("</Styles>\n");
-        str.append("    </TileSet>\n");
+        xml.indentElement("TileSet");
+        
+        xml.simpleElement("SRS", srsStr, true);
+        
+        xml.boundingBox(srsStr, bs[0], bs[1], bs[2], bs[3]);
+        
+        xml.simpleElement("Resolutions", resolutionsStr.toString(), true);
+        xml.simpleElement("Width", Integer.toString(grid.getTileWidth()), true);
+        xml.simpleElement("Height", Integer.toString(grid.getTileHeight()), true);
+        xml.simpleElement("Format", formatStr, true);
+        xml.simpleElement("Layers", layer.getName(), true);
+        xml.simpleElement("Styles", ServletUtils.URLEncode(styleName), true);
+
+        xml.endElement();
     }
 
-    private void capabilityLayerOuter(StringBuilder str) {
-        str.append("  <Layer>\n");
-        str.append("    <Title>GeoWebCache WMS</Title>\n");
-        str.append("    <Abstract>Note that not all GeoWebCache instances provide a full WMS service.</Abstract>\n");
-        str.append("    <LatLonBoundingBox minx=\"-180.0\" miny=\"-90.0\" maxx=\"180.0\" maxy=\"90.0\"/>\n");
+    private void capabilityLayerOuter(XMLBuilder xml) throws IOException {
+        xml.indentElement("Layer");
+        xml.simpleElement("Title", "GeoWebCache WMS", true);
+        xml.simpleElement("Abstract", "Note that not all GeoWebCache instances provide a full WMS service.", true);
+        xml.latLonBoundingBox(-180.0, -90.0, 180.0, 90.0);
 
         Iterable<TileLayer> layerIter = tld.getLayerList();
         for (TileLayer layer : layerIter) {
-            if (!layer.isEnabled()) {
+            if (!layer.isEnabled()  || !layer.isAdvertised()) {
                 continue;
             }
             try {
-                capabilityLayerInner(str, layer);
+                capabilityLayerInner(xml, layer);
             } catch (GeoWebCacheException e) {
                 log.error(e.getMessage());
             }
         }
 
-        str.append("  </Layer>\n");
+        xml.endElement();
     }
 
-    private void capabilityLayerInner(StringBuilder str, TileLayer layer)
-            throws GeoWebCacheException {
+    private void capabilityLayerInner(XMLBuilder xml, TileLayer layer)
+            throws GeoWebCacheException, IOException {
+        xml.indentElement("Layer");
+        
         if (layer.isQueryable()) {
-            str.append("    <Layer queryable=\"1\">\n");
-        } else {
-            str.append("    <Layer>\n");
+            xml.attribute("queryable", "1");
         }
 
-        str.append("      <Name>" + layer.getName() + "</Name>\n");
+        xml.simpleElement("Name", layer.getName(), true);
 
         if (layer.getMetaInformation() != null) {
             LayerMetaInformation metaInfo = layer.getMetaInformation();
-            str.append("      <Title>" + metaInfo.getTitle() + "</Title>\n");
-            str.append("      <Abstract>" + metaInfo.getDescription() + "</Abstract>\n");
+            xml.simpleElement("Title", metaInfo.getTitle(), true);
+            xml.simpleElement("Abstract", metaInfo.getDescription(), true);
         } else {
-            str.append("      <Title>" + layer.getName() + "</Title>\n");
+            xml.simpleElement("Title", layer.getName(), true);
         }
 
         if (layer.getMetadataURLs() != null) {
             for (MetadataURL metadataURL : layer.getMetadataURLs()) {
-                str.append("      <MetadataURL type=\"" + metadataURL.getType() + "\">\n");
-                str.append("        <Format>" + metadataURL.getFormat() + "</Format>\n");
-                str.append("        <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\""
-                        + metadataURL.getUrl() + "\"/>\n");
-                str.append("      </MetadataURL>\n");
+                xml.indentElement("MetadataURL");
+                xml.attribute("type", metadataURL.getType());
+                xml.simpleElement("Format", metadataURL.getFormat(), true);
+                onlineResource(xml, metadataURL.getUrl().toString()); // TODO should this be URLEncoded?
+                xml.endElement();
             }
         }
 
-        TreeSet<SRS> srsSet = new TreeSet<SRS>();
-        StringBuilder boundingBoxStr = new StringBuilder();
-        for (String gridSetId : layer.getGridSubsets()) {
-            GridSubset curGridSubSet = layer.getGridSubset(gridSetId);
-            SRS curSRS = curGridSubSet.getSRS();
-            if (!srsSet.contains(curSRS)) {
-                str.append("      <SRS>" + curSRS.toString() + "</SRS>\n");
-
-                // Save bounding boxes for later
+        {
+            TreeSet<SRS> srsSet = new TreeSet<>();
+            HashSet<GridSubset> gridSubsetSet = new HashSet<>();
+            for (String gridSetId : layer.getGridSubsets()) {
+                GridSubset curGridSubSet = layer.getGridSubset(gridSetId);
+                SRS curSRS = curGridSubSet.getSRS();
+                if (!srsSet.contains(curSRS)) {
+                    srsSet.add(curSRS);
+                    gridSubsetSet.add(curGridSubSet);
+                }
+            }
+            for(SRS curSRS: srsSet) {
+                xml.simpleElement("SRS", curSRS.toString(), true);
+            }
+    
+            GridSubset epsg4326GridSubSet = layer.getGridSubsetForSRS(SRS.getEPSG4326());
+            if (null != epsg4326GridSubSet) {
+                String[] bs = boundsPrep(epsg4326GridSubSet.getCoverageBestFitBounds());
+                xml.latLonBoundingBox(bs[0], bs[1], bs[2], bs[3]);
+            }
+            
+            for(GridSubset curGridSubSet: gridSubsetSet) {
                 String[] bs = boundsPrep(curGridSubSet.getCoverageBestFitBounds());
-                boundingBoxStr.append("      <BoundingBox SRS=\""
-                        + curGridSubSet.getSRS().toString() + "\" minx=\"" + bs[0] + "\" miny=\""
-                        + bs[1] + "\" maxx=\"" + bs[2] + "\" maxy=\"" + bs[3] + "\"/>\n");
-
-                srsSet.add(curSRS);
+                xml.boundingBox(curGridSubSet.getSRS().toString(), bs[0], bs[1], bs[2], bs[3]);
             }
         }
-
-        GridSubset epsg4326GridSubSet = layer.getGridSubsetForSRS(SRS.getEPSG4326());
-        if (null != epsg4326GridSubSet) {
-            String[] bs = boundsPrep(epsg4326GridSubSet.getCoverageBestFitBounds());
-            str.append("      <LatLonBoundingBox minx=\"" + bs[0] + "\" miny=\"" + bs[1]
-                    + "\" maxx=\"" + bs[2] + "\" maxy=\"" + bs[3] + "\"/>\n");
-        }
-
-        // Bounding boxes gathered earlier
-        str.append(boundingBoxStr);
 
         // WMS 1.1 Dimensions
+        // TODO change API to not use string builder.  Pass an XML Builder, or ask for a model
+        // object. KS
         if (layer.getParameterFilters() != null) {
             StringBuilder dims = new StringBuilder();
             StringBuilder extents = new StringBuilder();
@@ -540,13 +519,13 @@ public class WMSGetCapabilities {
             }
 
             if (dims.length() > 0 && extents.length() > 0) {
-                str.append(dims);
-                str.append(extents);
+                xml.appendUnescaped(dims.toString());
+                xml.appendUnescaped(extents.toString());
             }
         }
 
         // TODO style?
-        str.append("    </Layer>\n");
+        xml.endElement();
     }
 
     String[] boundsPrep(BoundingBox bbox) {

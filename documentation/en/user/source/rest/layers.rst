@@ -35,7 +35,7 @@ Layers list
      - 400
      -
 
-Note: JSON representation is intentionally left aside as the library used for JSON marshaling has issues with multi-valued properties such as `parameterFilters`.
+.. note:: JSON representation is intentionally left aside as the library used for JSON marshaling has issues with multi-valued properties such as `parameterFilters`.
 
 Sample request:
 
@@ -96,7 +96,7 @@ Layer Operations
 - :download:`XML minimal <representations/wmslayer_minimal.xml.txt>`
 - :download:`XML <representations/wmslayer.xml.txt>`
 
-Note: JSON representation is intentionally left aside as the library used for JSON marshaling has issues with multi-valued properties such as `parameterFilters`.
+.. note:: JSON representation is intentionally left aside as the library used for JSON marshaling has issues with multi-valued properties such as `parameterFilters`.
 
 REST API for Layers, cURL Examples
 ----------------------------------
@@ -141,7 +141,7 @@ Or if using the GeoServer integrated version of GeoWebCache:
 
  curl -v -u user:password -XPUT -H "Content-type: text/xml" -d @layer.xml  "http://localhost:8080/geoserver/gwc/rest/layers/layer1.xml"
 
-Note that the addressed resource ``layer1.xml``, without the ``.xml`` extension, must match the name of the layer in the xml representation.
+.. note:: the addressed resource ``layer1.xml``, without the ``.xml`` extension, must match the name of the layer in the xml representation.
 
 
 Modify Layer

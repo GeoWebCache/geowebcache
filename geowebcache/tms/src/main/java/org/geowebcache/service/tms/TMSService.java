@@ -17,6 +17,8 @@
 package org.geowebcache.service.tms;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -158,7 +160,9 @@ public class TMSService extends Service {
         String servletBase = ServletUtils.getServletBaseURL(conv.servletReq, servletPrefix);
         String context = ServletUtils.getServletContextPath(conv.servletReq, "/service/tms/1.0.0", servletPrefix);
         
-        TMSDocumentFactory tdf = new TMSDocumentFactory(tld, gsb, servletBase, context, urlMangler);
+        final Charset encoding = StandardCharsets.UTF_8;
+        
+        TMSDocumentFactory tdf = new TMSDocumentFactory(tld, gsb, servletBase, context, urlMangler, encoding);
         
         String ret = null;
         
@@ -182,7 +186,7 @@ public class TMSService extends Service {
             ret = tdf.getTileMapDoc(tl, gridSub, gsb, mimeType);
         }
         
-        byte[] data = ret.getBytes();
+        byte[] data = ret.getBytes(encoding);
         stats.log(data.length, CacheResult.OTHER);
         
         conv.servletResp.setStatus(200);

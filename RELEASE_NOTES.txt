@@ -1,3 +1,111 @@
+GeoWebCache 1.7-beta (2015-01-19)
+----------------------------------
+
+Beta release for the 1.7.x branch
+
+Improvements:
++++++++++++++
+- Documentation Updates
+- Mark layers as unadvertised to hide the from the capabilities documents
+- Mark layers as transient so they are not persisted
+- Clusterable in memory caching
+- Prototype for OpenLayers 3 based layer preview
+
+
+GeoWebCache 1.6.1 (2015-01-19)
+----------------------------------
+
+First maintenance release for the 1.6.x branch.
+
+Improvements:
++++++++++++++
+- Atomic File renaming on Windows.
+
+Fixes:
+++++++
+- Correctly Initialize ImageIO SPIs
+
+
+GeoWebCache 1.6.0 (2014-09-24)
+----------------------------------
+
+Final 1.6.0 version.
+
+Improvements:
++++++++++++++
+- GML3 MIME Type
+
+Fixes:
+++++++
+- Fix double slashes in capabilities when gwc is deployed on root context '/'
+- Transient Cache does not track removal of entries
+- Transient Cache does not expire resources
+- Parameters not passed down when running GetFeatureInfo
+- Null checks on layer name when building conveyor
+
+
+GeoWebCache 1.6.0-RC1 (2014-08-18)
+----------------------------------
+
+First release candidate for GeoWebCache 1.6.x.
+
+Improvements:
++++++++++++++
+- UTF-8 compiler setting
+- Switch to new boundless maven repository
+
+GeoWebCache 1.6.0-beta (2014-07-21)
+------------------------------------
+
+First beta release for GeoWebCache 1.6.x
+
+Improvements:
++++++++++++++
+- WMSTileFuser improvements
+- Comprehensive proof reading of the docs
+- Update to Java 7 (A Version 7 JRE is now required)
+- Update to GeoTools 12
+- Update to JTS 1.13
+- Update to Guava 17
+- Update to ImageIO-Ext 1.1.10
+- Support for ArcGIS compact caches
+
+Fixes:
+++++++
+- Fix ArcGISCompactCacheTest failure in path with spaces
+- WMSTileFuser improvements
+
+
+GeoWebCache 1.5.3 (2014-07-21)
+------------------------------
+
+Third maintenance release of GeoWebCache 1.5.x
+
+Improvements:
++++++++++++++
+- Increase Layer name field in DiscQuota DB to 128 chars
+
+Fixes:
+++++++
+- NioLock can fail to release the memory lock going with it in some cases
+- Fixed support for STYLE parameter in WMTS
+- Fixed unescaped XML characters in capabilities documents
+- Exception thrown when calling getCoverageIntersections on a GridSubset
+- GeoWebCache complains about unrecognized element gwcConfig on startup
+
+GeoWebCache 1.5.2 (2014-05-02)
+------------------------------
+
+Second maintenance release of GeoWebCache 1.5.x
+
+Fixes:
+++++++
+- Fix a bug in FilePathFilter that prevented truncate tasks from running if the tile layer had a cache for more than one gridset
+- Fixed a binary incompatible API change introduced in 1.5.1 by the additing of the abstract method TileLayer.getMetadataURLs(). Made it concrete and overridable by subclasses.
+- Fixed config file schema version, was mistakenly set to 1.6.0 while it should be 1.5.0
+
+
+>>>>>>> 61f4f9d401993a7a7c3f1136a5bbedb434e73abd
 GeoWebCache 1.5.1 (2014-01-19)
 ------------------------------
 
@@ -24,7 +132,6 @@ GeoWebCache 1.5.0 (2013-08-18)
 
 Final 1.5.0 version. (Same as beta) 
 
-=======
 GeoWebCache 1.5.0-beta (2013-07-17)
 ------------------------------
 

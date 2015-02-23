@@ -113,6 +113,26 @@ public abstract class TileLayer {
     public abstract void setEnabled(boolean enabled);
 
     /**
+     * @return {@code true} if the layer is advertised, {@code false} otherwise
+     */
+    public abstract boolean isAdvertised();
+
+    /**
+     * @param advertised whether to set this layer as advertised
+     */
+    public abstract void setAdvertised(boolean advertised);
+
+    /**
+     * @return {@code true} if the layer is transient, {@code false} otherwise
+     */
+    public abstract boolean isTransientLayer();
+
+    /**
+     * @param transientLayer whether to set this layer as transient
+     */
+    public abstract void setTransientLayer(boolean transientLayer);
+
+    /**
      * Layer meta information
      * 
      * @return
@@ -120,9 +140,12 @@ public abstract class TileLayer {
     public abstract LayerMetaInformation getMetaInformation();
 
     /**
-     * List of Metadata URLs for the layer.
+     * List of Metadata URLs for the layer, subclasses should override this method if they support
+     * declaring metaddata URLs
      */
-    public abstract List<MetadataURL> getMetadataURLs();
+    public List<MetadataURL> getMetadataURLs() {
+        return null;
+    }
 
     /**
      * Retrieves the GridSet names for this layer.

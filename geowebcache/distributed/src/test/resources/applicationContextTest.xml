@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- !DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd" -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:hz="http://www.hazelcast.com/schema/spring"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-3.0.xsd
+       http://www.hazelcast.com/schema/spring
+       http://www.hazelcast.com/schema/spring/hazelcast-spring.xsd">
+
+	<hz:hazelcast id="instance1">
+		<hz:config>
+			<hz:group name="dev" password="password" />
+			<hz:network port="5701" port-auto-increment="true">
+				<hz:join>
+					<hz:multicast enabled="false" multicast-group="224.2.2.3"
+						multicast-port="54327" />
+					<hz:tcp-ip enabled="true">
+						<hz:interface>127.0.0.1</hz:interface>
+					</hz:tcp-ip>
+				</hz:join>
+				<hz:interfaces enabled="true">
+					<hz:interface>127.0.0.1</hz:interface>
+				</hz:interfaces>
+			</hz:network>
+			<hz:map name="CacheProviderMap" max-size="16" eviction-policy="LRU"
+				max-size-policy="USED_HEAP_SIZE" >
+				    <hz:near-cache time-to-live-seconds="0" max-idle-seconds="60"
+        eviction-policy="LRU" max-size="5000"  invalidate-on-change="true"/>
+				    </hz:map>
+		</hz:config>
+	</hz:hazelcast>
+
+	<hz:hazelcast id="instance2">
+		<hz:config>
+			<hz:group name="dev" password="password" />
+			<hz:network port="5701" port-auto-increment="true">
+				<hz:join>
+					<hz:multicast enabled="false" multicast-group="224.2.2.3"
+						multicast-port="54327" />
+					<hz:tcp-ip enabled="true">
+						<hz:interface>127.0.0.1</hz:interface>
+					</hz:tcp-ip>
+				</hz:join>
+				<hz:interfaces enabled="true">
+					<hz:interface>127.0.0.1</hz:interface>
+				</hz:interfaces>
+			</hz:network>
+			<hz:map name="CacheProviderMap" max-size="16" eviction-policy="LRU"
+				max-size-policy="USED_HEAP_SIZE" >
+				    <hz:near-cache time-to-live-seconds="0" max-idle-seconds="60"
+        eviction-policy="LRU" max-size="5000"  invalidate-on-change="true"/>
+				    </hz:map>
+		</hz:config>
+	</hz:hazelcast>
+
+	<bean id="HazelCastCacheProvider1"
+		class="org.geowebcache.storage.blobstore.memory.distributed.HazelcastCacheProvider">
+		<constructor-arg ref="HazelCastLoader1" />
+	</bean>
+
+	<bean id="HazelCastLoader1"
+		class="org.geowebcache.storage.blobstore.memory.distributed.HazelcastLoader">
+		<property name="instance" ref="instance1" />
+	</bean>
+	
+		<bean id="HazelCastCacheProvider2"
+		class="org.geowebcache.storage.blobstore.memory.distributed.HazelcastCacheProvider">
+		<constructor-arg ref="HazelCastLoader2" />
+	</bean>
+
+	<bean id="HazelCastLoader2"
+		class="org.geowebcache.storage.blobstore.memory.distributed.HazelcastLoader">
+		<property name="instance" ref="instance2" />
+	</bean>
+
+</beans>

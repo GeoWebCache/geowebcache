@@ -591,7 +591,7 @@ public class XMLConfiguration implements Configuration {
      * @see org.geowebcache.config.Configuration#canSave(org.geowebcache.layer.TileLayer)
      */
     public boolean canSave(TileLayer tl) {
-        return tl instanceof WMSLayer;
+        return tl instanceof WMSLayer && !tl.isTransientLayer();
     }
 
     /**
@@ -794,8 +794,18 @@ public class XMLConfiguration implements Configuration {
         }
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.2.6")) {
-            log.info("Updating configuration from 1.2.6 to 1.3.0");
+            log.info("Updating configuration from 1.2.6 to 1.5.0");
             rootNode = applyTransform(rootNode, "geowebcache_126.xsl").getFirstChild();
+        }
+
+        if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.5.0")) {
+            log.info("Updating configuration from 1.5.0 to 1.5.1");
+            rootNode = applyTransform(rootNode, "geowebcache_150.xsl").getFirstChild();
+        }
+
+        if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.5.1")) {
+            log.info("Updating configuration from 1.5.1 to 1.6.0");
+            rootNode = applyTransform(rootNode, "geowebcache_151.xsl").getFirstChild();
         }
 
         // Check again after transform
@@ -1019,6 +1029,17 @@ public class XMLConfiguration implements Configuration {
 
     public String getVersion() {
         return gwcConfig.getVersion();
+    }
+    
+    /**
+     * Used for getting the "fullWMS" parameter from GeoWebCacheConfigration
+     * @return
+     */
+    public Boolean getfullWMS(){
+        if(gwcConfig!=null){
+            return gwcConfig.getFullWMS();
+        }
+        return null;        
     }
 
 }

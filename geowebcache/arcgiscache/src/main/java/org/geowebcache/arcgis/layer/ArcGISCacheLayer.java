@@ -14,8 +14,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.arcgis.compact.ArcGISCompactCache;
 import org.geowebcache.arcgis.config.CacheInfo;
 import org.geowebcache.arcgis.config.CacheInfoPersister;
+import org.geowebcache.arcgis.config.CacheStorageInfo;
 import org.geowebcache.arcgis.config.LODInfo;
 import org.geowebcache.arcgis.config.TileCacheInfo;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
@@ -63,6 +65,10 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
     private transient CacheInfo cacheInfo;
 
     private transient BoundingBox layerBounds;
+
+    private String storageFormat;
+
+    private ArcGISCompactCache compactCache;
 
     @Override
     public boolean isEnabled() {
@@ -133,6 +139,15 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
             log.info("Parsing layer bounds for " + getName());
             this.layerBounds = tilingSchemeLoader.parseLayerBounds(new FileReader(layerBoundsFile));
             log.info("Parsed layer bounds for " + getName() + ": " + layerBounds);
+
+            // compact
+            // TODO: use tileCachePath when set
+            storageFormat = cacheInfo.getCacheStorageInfo().getStorageFormat();
+            if (storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE)) {
+                log.info(getName() + " uses compact format");
+                compactCache = new ArcGISCompactCache(tilingScheme.getParent() + "/_alllayers");
+            }
+            // comcapt
         } catch (FileNotFoundException e) {
             throw new IllegalStateException("Tiling scheme file not found: "
                     + tilingScheme.getAbsolutePath());
@@ -142,6 +157,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
 
         super.subSets = createGridSubsets(gridSetBroker);
         super.formats = loadMimeTypes();
+
         return true;
     }
 
@@ -193,11 +209,33 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
     public ConveyorTile getTile(final ConveyorTile tile) throws GeoWebCacheException, IOException,
             OutsideCoverageException {
 
-        String path = getTilePath(tile);
-        File tileFile = new File(path);
+        Resource tileContent = null;
 
-        if (tileFile.exists()) {
-            Resource tileContent = readFile(tileFile);
+        if (storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE)) {
+            final long[] tileIndex = tile.getTileIndex();
+            final String gridSetId = tile.getGridSetId();
+            final GridSubset gridSubset = this.getGridSubset(gridSetId);
+
+            GridSet gridSet = gridSubset.getGridSet();
+            final int zoom = (int) tileIndex[2];
+
+            Grid grid = gridSet.getGridLevels()[zoom];
+            long coverageMaxY = grid.getNumTilesHigh() - 1;
+
+            final int col = (int) tileIndex[0];
+            final int row = (int) (coverageMaxY - tileIndex[1]);
+
+            if (compactCache.tileExists(zoom, row, col))
+                tileContent = compactCache.getBundleFileResource(zoom, row, col);
+        } else if (storageFormat.equals(CacheStorageInfo.EXPLODED_FORMAT_CODE)) {
+            String path = getTilePath(tile);
+            File tileFile = new File(path);
+
+            if (tileFile.exists())
+                tileContent = readFile(tileFile);
+        }
+
+        if (tileContent != null) {
             tile.setCacheResult(CacheResult.HIT);
             tile.setBlob(tileContent);
         } else {
@@ -304,7 +342,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         return String.valueOf(data);
     }
 
-    private Resource readFile(File fh)  {
+    private Resource readFile(File fh) {
         if (!fh.exists()) {
             return null;
         }

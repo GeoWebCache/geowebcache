@@ -3,7 +3,7 @@
 Tile expiration
 ===============
 
-GeoWebCache allows to control the expiration of tiles at server as well as client level. Modifications must be made within the general configuration file, ``geowebcache.xml`` as explained below:
+GeoWebCache allows controlling the expiration of tiles both at server and client level. Modifications must be made in the general configuration file, ``geowebcache.xml`` as explained below:
 
 Server tile expiration
 ----------------------
@@ -28,7 +28,7 @@ Attributes ``minZoom`` and ``expiration`` of the element ``<expirationRule>`` ca
 Client tile expiration
 ----------------------
 
-The tag ``<expireClientsList>`` controls the number of seconds that a client should cache a tile it has received from GeoWebCache. The default is to use the same expiration time as provided by the WMS server. If this value is not provided, 3600 seconds (two hours) is used.
+The tag ``<expireClientsList>`` controls the number of seconds that a client should cache a tile it has received from GeoWebCache. The default is to use the same expiration time as provided by the WMS server. If this value is not provided, 3600 seconds (one hour) is used.
 
 Attributes ``minZoom`` and ``expiration`` of the element ``<expirationRule>`` can be edited to define a list of expiration rules.
 

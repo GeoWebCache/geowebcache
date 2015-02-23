@@ -3,9 +3,9 @@
 Seed Pages
 ==========
 
-For each layer known to GeoWebCache, there is a corresponding Seed page that allows seed tasks o be started or managed.  These pages are effectively front-ends for the :ref:`rest`.
+For each layer known to GeoWebCache, there is a corresponding Seed page allowing to start or manage seed tasks.  These pages are front-ends for the :ref:`rest`.
 
-The URL format for the Seed pages are::
+The URL format for the Seed pages is::
 
   http://<GEOWEBCACHE_URL>/rest/seed/<LAYER_NAME>
 

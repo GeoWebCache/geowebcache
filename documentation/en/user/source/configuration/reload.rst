@@ -3,7 +3,9 @@
 Reloading Configuration
 =======================
 
-After making a change to the GeoWebCache configuration, it is necessary to reload it for the changes to take effect.  There are three ways to do this.
+After making a change to the GeoWebCache configuration, it has to be reloaded for the changes to take effect. 
+
+The three altertnatives to do this are described below.
 
 Reload the application
 ----------------------
@@ -22,5 +24,5 @@ The :guilabel:`Reload Configuration` button in the web interface merely makes a 
 
   curl -u <admin>:<password> -d "reload_configuration=1" http://<GEOWEBCACHE_URL>/rest/reload
 
-In this example, please make sure to change the ``<admin>`` to your administrator username, ``<password>`` for your administrator password, and <GEOWEBCACHE_URL> for the URL to your geowebcache endpoint (such as ``localhost:8080/geowebcache``).  See the section on :ref:`configuration.security` for more details about the username and password.
+In this example, make sure to change the ``<admin>`` to your administrator username, ``<password>`` for your administrator password, and <GEOWEBCACHE_URL> for the URL to your geowebcache endpoint (such as ``localhost:8080/geowebcache``).  See the section on :ref:`configuration.security` for more details about the username and password.
 

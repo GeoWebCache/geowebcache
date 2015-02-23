@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xml="http://www.w3.org/XML/1998/namespace"
-  targetNamespace="http://geowebcache.org/schema/1.6.0" xmlns:gwc="http://geowebcache.org/schema/1.6.0"
-  elementFormDefault="qualified" version="1.6.0">
+  targetNamespace="http://geowebcache.org/schema/1.8.0" xmlns:gwc="http://geowebcache.org/schema/1.8.0"
+  elementFormDefault="qualified" version="1.8.0">
 
   <xs:element name="gwcConfiguration">
     <xs:annotation>
@@ -39,7 +39,6 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-        
         <xs:element name="cacheBypassAllowed" type="xs:boolean" minOccurs="0">
           <xs:annotation>
             <xs:documentation xml:lang="en">
@@ -151,6 +150,13 @@
               <xs:element ref="gwc:arcgisLayer" />
             </xs:choice>
           </xs:complexType>
+        </xs:element>	        
+      	<xs:element name="fullWMS" type="xs:boolean" minOccurs="0">
+           <xs:annotation>
+             <xs:documentation xml:lang="en">
+		Parameter used for configuring full WMS requests for GeoWebCache. Setting this parameter to true enables full WMS requests. 
+             </xs:documentation>
+           </xs:annotation>
         </xs:element>
       </xs:sequence>
     </xs:complexType>
@@ -279,7 +285,8 @@
             repeated labels, but can overload the backend server.
           </xs:documentation>
         </xs:annotation>
-      </xs:element>      <xs:element name="expireCache" type="xs:integer" minOccurs="0">
+      </xs:element>
+      <xs:element name="expireCache" type="xs:integer" minOccurs="0">
         <xs:annotation>
           <xs:documentation xml:lang="en">
             How old the tile may be before it is refetched from the backend.
@@ -383,7 +390,8 @@
   <xs:complexType name="WmsLayer">
     <xs:complexContent>
       <xs:extension base="gwc:AbstractTileLayer">
-        <xs:sequence>          <!-- WMS Specific stuff, some of which is not really WMS specific -->
+        <xs:sequence>
+          <!-- WMS Specific stuff, some of which is not really WMS specific -->
           <xs:element name="wmsUrl" type="gwc:WmsUrl" minOccurs="0">
             <xs:annotation>
               <xs:documentation xml:lang="en">
@@ -543,7 +551,8 @@
                 be removed in 1.4.0.
               </xs:documentation> 
             </xs:annotation>
-          </xs:element>        </xs:sequence>
+          </xs:element>
+        </xs:sequence>
      </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -597,6 +606,24 @@
             against it will throw an exception. But a disabled layer CAN be seeded, as it's the
             administrator's choice
             whether to temporarily disable or not a Layer to perform a long seed
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="advertised" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Whether the layer is included in capabilities documents. Defaults 
+	    to true.  When false the layer will not be included in capabilities
+	    documents but will otherwise work normally.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="transientLayer" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Is the layer transient.  Defaults to false.  A transient layer's 
+	    configuration will not be persisted over restart/reload.  This does
+	    not affect the persistence of tiles.
           </xs:documentation>
         </xs:annotation>
       </xs:element>

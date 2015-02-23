@@ -17,6 +17,7 @@
  */
 package org.geowebcache.storage;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -28,7 +29,7 @@ import org.geowebcache.io.Resource;
  * either an image or a regionated KML tile, the class is format agnostic and carries a {@link Resource}
  * object with the data.
  */
-public class TileObject extends StorageObject {
+public class TileObject extends StorageObject implements Serializable{
     public static final String TYPE = "tile";
 
     long tile_id = -1L;

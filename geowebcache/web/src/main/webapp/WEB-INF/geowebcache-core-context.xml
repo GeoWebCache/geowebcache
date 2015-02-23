@@ -77,6 +77,15 @@
     <constructor-arg ref="gwcDefaultStorageFinder" />
   </bean>
   
+  <bean id="gwcTransientCache" class="org.geowebcache.storage.TransientCache" >
+    <description>
+      In memory cache used when MetaTiling tiles that are published but not cached to disk.
+    </description>    
+    <constructor-arg value="100" /> <!-- Max Tiles in cache-->
+    <constructor-arg value="1024" /> <!-- Max Space used by cache, in KiB -->
+    <constructor-arg value="2000" /> <!-- Expire Time, in ms -->
+  </bean>
+  
   <!-- Static definition of where to put the blobstore. 
        Note that the directory MUST EXIST when GWC is started. -->
   <!-- bean id="gwcBlobStore" class="org.geowebcache.storage.blobstore.file.FileBlobStore" destroy-method="destroy">
@@ -85,6 +94,7 @@
   
   <bean id="gwcStorageBroker" class="org.geowebcache.storage.DefaultStorageBroker" destroy-method="destroy">
     <constructor-arg ref="gwcBlobStore" />
+    <constructor-arg ref="gwcTransientCache" />
   </bean>
   
   
@@ -171,5 +181,21 @@
   </bean>
 
   <bean id="gwcURLMangler" class="org.geowebcache.util.NullURLMangler" />
-
+  
+  <bean id="cacheConfiguration" class="org.geowebcache.storage.blobstore.memory.CacheConfiguration">
+    <property name="hardMemoryLimit" value="64"/> <!-- 64 Mb -->
+    <property name="policy" value="EXPIRE_AFTER_ACCESS"/> <!-- 64 Mb -->
+  </bean>
+  
+   <bean id="guavaCacheProvider" class="org.geowebcache.storage.blobstore.memory.guava.GuavaCacheProvider">
+     <constructor-arg ref="cacheConfiguration"/>
+  </bean>
+  
+  <bean id="gwcMemoryBlobStore" class="org.geowebcache.storage.blobstore.memory.MemoryBlobStore" destroy-method="destroy">
+    <property name="store" ref="gwcBlobStore" />
+    <!--property name="cacheProvider" ref="guavaCacheProvider" /-->
+    <!-- property name="cacheBeanName" value="guavaCacheProvider" /-->
+  </bean>
+  
+  <bean id="gwcNullBlobStore" class="org.geowebcache.storage.blobstore.memory.NullBlobStore" destroy-method="destroy"/>
 </beans>

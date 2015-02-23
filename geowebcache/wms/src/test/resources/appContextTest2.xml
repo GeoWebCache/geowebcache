@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- !DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd" -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:annotation-config />
+
+  <bean id="ioInitializer" class="org.geowebcache.io.ImageIOInitializer" factory-method="getInstance">
+  		<constructor-arg index="0">
+			<list></list>
+		</constructor-arg>
+  </bean>
+
+	<bean id="TIFFDecoder" class="org.geowebcache.io.ImageDecoderImpl">
+		<constructor-arg type="boolean" value="false" />
+		<constructor-arg>
+			<list>
+				<value>image/tiff</value>
+			</list>
+		</constructor-arg>
+		<constructor-arg>
+			<list>
+				<value>it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReaderSpi</value>
+				<value>com.sun.media.imageioimpl.plugins.tiff.TIFFImageReaderSpi</value>
+			</list>
+		</constructor-arg>
+		<constructor-arg ref="ioInitializer" />
+	</bean>
+
+	<bean id="decoderContainer" class="org.geowebcache.io.ImageDecoderContainer" />
+
+</beans>
