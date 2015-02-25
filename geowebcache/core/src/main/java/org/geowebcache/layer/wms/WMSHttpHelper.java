@@ -11,9 +11,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
- *  
+ *
  */
 package org.geowebcache.layer.wms;
 
@@ -53,7 +53,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
     private final String httpUsername;
 
     private final String httpPassword;
-    
+
     private volatile HttpClient client;
 
     private boolean doAuthentication;
@@ -68,36 +68,34 @@ public class WMSHttpHelper extends WMSSourceHelper {
         this.httpPassword = httpPassword;
         this.proxyUrl = proxyUrl;
     }
-    
-    HttpClient getHttpClient() {
-        if(client == null) {
+
+    HttpClient getHttpClient(URL targetUrl) {
+        if (client == null) {
             synchronized (this) {
-                if(client != null) {
+                if (client != null) {
                     return client;
                 }
-                
-                HttpClientBuilder builder = new HttpClientBuilder(null, getBackendTimeout(), httpUsername,
-                        httpPassword, proxyUrl, getConcurrency());    
+
+                HttpClientBuilder builder = new HttpClientBuilder(targetUrl, getBackendTimeout(), httpUsername,
+                        httpPassword, proxyUrl, getConcurrency());
                 doAuthentication = builder.isDoAuthentication();
                 client = builder.buildClient();
             }
         }
-        
+
         return client;
     }
 
     /**
-     * Loops over the different backends, tries the request
-     * 
+     * Loops over the different back-ends, tries the request
+     *
      * @param tileRespRecv
-     * @param profile
-     * @param wmsparams
      * @return
      * @throws GeoWebCacheException
      */
     @Override
     protected void makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer,
-            Map<String, String> wmsParams, String expectedMimeType, Resource target)
+                               Map<String, String> wmsParams, String expectedMimeType, Resource target)
             throws GeoWebCacheException {
         Assert.notNull(target, "Target resource can't be null");
         Assert.isTrue(target.getSize() == 0, "Target resource is not empty");
@@ -105,7 +103,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
         URL wmsBackendUrl = null;
 
         final Integer backendTimeout = layer.getBackendTimeout();
-        int backendTries = 0; // keep track of how many backends we have tried
+        int backendTries = 0; // keep track of how many back-ends we have tried
         GeoWebCacheException fetchException = null;
         while (target.getSize() == 0 && backendTries < layer.getWMSurl().length) {
             String requestUrl = layer.nextWmsURL();
@@ -144,17 +142,14 @@ public class WMSHttpHelper extends WMSSourceHelper {
 
     /**
      * Executes the actual HTTP request, checks the response headers (status and MIME) and
-     * 
+     *
      * @param tileRespRecv
      * @param wmsBackendUrl
-     * @param data
-     * @param wmsparams
-     * @return
      * @throws GeoWebCacheException
      */
     private void connectAndCheckHeaders(TileResponseReceiver tileRespRecv, URL wmsBackendUrl,
-            Map<String, String> wmsParams, String requestMime, Integer backendTimeout,
-            Resource target) throws GeoWebCacheException {
+                                        Map<String, String> wmsParams, String requestMime, Integer backendTimeout,
+                                        Resource target) throws GeoWebCacheException {
 
         GetMethod getMethod = null;
         final int responseCode;
@@ -270,22 +265,19 @@ public class WMSHttpHelper extends WMSSourceHelper {
 
     /**
      * sets up a HTTP GET request to a URL and configures authentication.
-     * 
-     * @param url
-     *            endpoint to talk to
-     * @param queryParams
-     *            parameters for the query string
-     * @param backendTimeout
-     *            timeout to use in seconds
+     *
+     * @param url            endpoint to talk to
+     * @param queryParams    parameters for the query string
+     * @param backendTimeout timeout to use in seconds
      * @return executed GetMethod (that has to be closed after reading the response!)
      * @throws HttpException
      * @throws IOException
      */
     public GetMethod executeRequest(final URL url, final Map<String, String> queryParams,
-            final Integer backendTimeout) throws HttpException, IOException {
+                                    final Integer backendTimeout) throws HttpException, IOException {
         // grab the client
-        HttpClient httpClient = getHttpClient();
-        
+        HttpClient httpClient = getHttpClient(url);
+
         // prepare the request
         GetMethod getMethod = new GetMethod(url.toString());
         if (queryParams != null && queryParams.size() > 0) {
