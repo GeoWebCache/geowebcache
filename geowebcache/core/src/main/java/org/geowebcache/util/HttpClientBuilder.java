@@ -93,6 +93,7 @@ public class HttpClientBuilder {
                 proxyApplicable = determineProxyApplicable(nonProxyHosts, url);
             }
         }
+
         if (proxyHost != null && proxyApplicable)
             try {
                 proxyUrl = new URL(proxyHost + ((proxyPort != null) ? (":" + proxyPort) : ("")));
@@ -109,7 +110,7 @@ public class HttpClientBuilder {
             return true;
         }
 
-        String[] strings = nonProxyHosts.split("|");
+        String[] strings = nonProxyHosts.split("[|]");
         for (String s : strings) {
             if (s.startsWith("'")) {
                 s = s.replace("'", "");
