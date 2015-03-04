@@ -47,6 +47,8 @@ public class SRS implements Comparable<SRS> {
     private static final SRS EPSG900913 = new SRS(900913, new ArrayList<Integer>(asList(3857,
             102113, 102100)));
 
+    private static final SRS EPSG25833 = new SRS(25833, new ArrayList<Integer>(asList(32633)));
+
     private int number;
 
     private transient List<Integer> aliases;
