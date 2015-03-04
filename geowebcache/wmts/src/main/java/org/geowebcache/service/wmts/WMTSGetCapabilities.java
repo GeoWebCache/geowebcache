@@ -31,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.meta.ServiceContact;
 import org.geowebcache.config.meta.ServiceInformation;
+import org.geowebcache.config.meta.XsltTemplates;
 import org.geowebcache.config.meta.ServiceProvider;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -97,41 +98,19 @@ public class WMTSGetCapabilities {
 
     private String generateGetCapabilities(Charset encoding) {
         StringBuilder str = new StringBuilder();
-<<<<<<< HEAD
-
         ServiceInformation servInfo = tld.getServiceInformation();
         String xsltUrl = null;
         if ((servInfo != null) && (servInfo.getXsltTemplates()!=null)) {
           xsltUrl = servInfo.getXsltTemplates().getWmtsGetCapabilities();
         }
         
-        str.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        if (xsltUrl!=null) {
-          str.append("<?xml-stylesheet type=\"text/xsl\" href=\""+xsltUrl+"\" ?>\n");
-        }
-        str.append("<Capabilities xmlns=\"http://www.opengis.net/wmts/1.0\"\n");
-        str.append("xmlns:ows=\"http://www.opengis.net/ows/1.1\"\n"); 
-        str.append("xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n");
-        str.append("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
-        str.append("xmlns:gml=\"http://www.opengis.net/gml\" ");
-        str.append("xsi:schemaLocation=\"http://www.opengis.net/wmts/1.0 http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd\"\n"); 
-        // There were some contradictions in the draft schema, haven't checked whether they've fixed those
-        //str.append("xsi:schemaLocation=\"http://www.opengis.net/wmts/1.0 http://geowebcache.org/schema/opengis/wmts/1.0.0/wmtsGetCapabilities_response.xsd\"\n"); 
-        str.append("version=\"1.0.0\">\n");
-        
-        serviceIdentification(str);
-        serviceProvider(str);
-        operationsMetadata(str);
-        contents(str);
-        str.append("<ServiceMetadataURL xlink:href=\""+baseUrl+"?REQUEST=getcapabilities&amp;VERSION=1.0.0\"/>\n");
-        str.append("</Capabilities>");
-
-        return str.toString();
-=======
         XMLBuilder xml = new XMLBuilder(str);
         
         try {
             xml.header("1.0", encoding);
+            if (xsltUrl!=null) {
+              xml.appendUnescaped("<?xml-stylesheet type=\"text/xsl\" href=\""+xsltUrl+"\" ?>\n");
+            }
             xml.indentElement("Capabilities");
             xml.attribute("xmlns", "http://www.opengis.net/wmts/1.0");
             xml.attribute("xmlns:ows", "http://www.opengis.net/ows/1.1");
@@ -158,7 +137,6 @@ public class WMTSGetCapabilities {
             // Should not happen as StringBuilder doesn't throw
             throw new IllegalStateException(e);
         }
->>>>>>> 61f4f9d401993a7a7c3f1136a5bbedb434e73abd
     }
 
     private void serviceIdentification(XMLBuilder xml) throws IOException {

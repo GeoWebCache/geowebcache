@@ -22,6 +22,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.easymock.classextension.EasyMock;
 import org.geowebcache.config.meta.ServiceInformation;
+import org.geowebcache.config.meta.XsltTemplates;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.layer.TileLayer;
@@ -46,6 +47,7 @@ public class WMSGetCapabilitiesTest {
         String contextPath = "service/";
         URLMangler urlMangler = new NullURLMangler();
         ServiceInformation servInfo = createMock(ServiceInformation.class);
+        XsltTemplates xsltTemp = createMock(XsltTemplates.class);
         
         Map<String, String[]> parameterMap = new HashMap<>();
         parameterMap.put("SERVICE", new String[]{"WMS"});
@@ -62,6 +64,7 @@ public class WMSGetCapabilitiesTest {
         expect(servInfo.getServiceProvider()).andStubReturn(null);
         expect(servInfo.getFees()).andStubReturn("NONE");
         expect(servInfo.getAccessConstraints()).andStubReturn("NONE");
+        expect(servInfo.getXsltTemplates()).andStubReturn(xsltTemp);
         expect(tld.getServiceInformation()).andStubReturn(servInfo);
         
         // Creating an advertised Layer and an unadvertised one
