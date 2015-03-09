@@ -62,6 +62,12 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
      */
     private File tileCachePath;
 
+    /**
+     * Optional, configure whether or not the z-values should be hex-encoded or not.
+     * If not provided defaults to false
+     */
+    private Boolean hexZoom;
+
     private transient CacheInfo cacheInfo;
 
     private transient BoundingBox layerBounds;
@@ -106,6 +112,14 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         this.tileCachePath = tileCachePath;
     }
 
+    public boolean isHexZoom() {
+        return hexZoom;
+    }
+
+    public void setHexZoom(boolean hexZoom) {
+        this.hexZoom = hexZoom;
+    }
+
     /**
      * @see org.geowebcache.layer.TileLayer#initialize(org.geowebcache.grid.GridSetBroker)
      * @return {@code true} if success. Note this method's return type should be void. It's not
@@ -127,6 +141,9 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
                         + "' is set to '" + tileCachePath
                         + "' but the directory either does not exist or is not readable");
             }
+        }
+        if (this.hexZoom == null) {
+            this.hexZoom = false;
         }
         try {
             CacheInfoPersister tilingSchemeLoader = new CacheInfoPersister();
@@ -292,7 +309,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         // bottom-right, and GWC computes tiles in bottom-left to top-right order
         final long y = (coverageMaxY - tileIndex[1]);
 
-        String level = Integer.toHexString(z);
+        String level = (this.hexZoom) ? Integer.toHexString(z) : Integer.toString(z);
         level = zeroPadder(level, 2);
 
         String row = Long.toHexString(y);
