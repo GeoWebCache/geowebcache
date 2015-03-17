@@ -34,7 +34,7 @@ public class ContactInformation {
     }
     
     public String companyName() {
-        return companyName();
+        return companyName;
     }
     
     public String getUrl() {
