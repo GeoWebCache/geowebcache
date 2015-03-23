@@ -11,14 +11,14 @@ import org.geowebcache.io.Resource;
 
 /**
  * Represents complete ArcGIS compact cache data.
- * 
+ *
  * On initialization, an index data structure is build according to the directory structure of the
  * cache directory.
- * 
+ *
  * @see org.geowebcache.arcgis.compact.ArcGISCacheBundle
- * 
+ *
  * @author Bjoern Saxe
- * 
+ *
  */
 public class ArcGISCompactCache {
     private Map<Integer, ArcGISCacheBundle[][]> bundles;
@@ -29,7 +29,7 @@ public class ArcGISCompactCache {
 
     /**
      * Constructs new ArcGIS compact cache.
-     * 
+     *
      * @param cacheRootPath
      *            Path to compact cache directory (usually ".../_alllayers/"). Path must contain
      *            directories for zoom levels (named "Lxx").
@@ -44,7 +44,7 @@ public class ArcGISCompactCache {
 
     /**
      * Get tile image data.
-     * 
+     *
      * @param zoom
      *            Zoom level.
      * @param row
@@ -68,7 +68,7 @@ public class ArcGISCompactCache {
 
     /**
      * Get Resource object for tile.
-     * 
+     *
      * @param zoom
      *            Zoom level.
      * @param row
@@ -93,7 +93,7 @@ public class ArcGISCompactCache {
 
     /**
      * Check if tile exists.
-     * 
+     *
      * @param zoom
      *            Zoom level of tile.
      * @param row
@@ -136,7 +136,7 @@ public class ArcGISCompactCache {
     /**
      * Read cache directory structure. All needed information (available zoom levels, rows and
      * columns) is extracted from path and file names.
-     * 
+     *
      * Steps: 1. Check for available zoom levels (how many Lxx directories?) 2. For every zoom level
      * determine highest values for row and column and add a two-dimensional array of cache bundle
      * objects (each representing a .bundlx file) 3. Initialize cache bundle objects
@@ -157,10 +157,10 @@ public class ArcGISCompactCache {
             try {
                 int idx = indexFile.lastIndexOf('L') + 1;
                 zoomLevel = Integer.parseInt(indexFile.substring(idx, idx + 2)); // zoom level is
-                                                                                 // decimal, not
-                                                                                 // hexadecimal like
-                                                                                 // rows and
-                                                                                 // columns!
+                // decimal, not
+                // hexadecimal like
+                // rows and
+                // columns!
             } catch (NumberFormatException e) {
                 System.err
                         .println("Error parsing zoom level xx from cache directory path (.../Lxx/...): "

@@ -139,15 +139,14 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
             log.info("Parsing layer bounds for " + getName());
             this.layerBounds = tilingSchemeLoader.parseLayerBounds(new FileReader(layerBoundsFile));
             log.info("Parsed layer bounds for " + getName() + ": " + layerBounds);
-
-            // compact
-            // TODO: use tileCachePath when set
+            /** compact */
+            /** TODO: use tileCachePath when set */
             storageFormat = cacheInfo.getCacheStorageInfo().getStorageFormat();
             if (storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE)) {
                 log.info(getName() + " uses compact format");
                 compactCache = new ArcGISCompactCache(tilingScheme.getParent() + "/_alllayers");
-            }
-            // comcapt
+                }
+            /** comcapt */
         } catch (FileNotFoundException e) {
             throw new IllegalStateException("Tiling scheme file not found: "
                     + tilingScheme.getAbsolutePath());
@@ -157,7 +156,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
 
         super.subSets = createGridSubsets(gridSetBroker);
         super.formats = loadMimeTypes();
-
+        
         return true;
     }
 
@@ -225,16 +224,16 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
             final int col = (int) tileIndex[0];
             final int row = (int) (coverageMaxY - tileIndex[1]);
 
-            if (compactCache.tileExists(zoom, row, col))
+            if (compactCache.tileExists(zoom, row, col)) {
                 tileContent = compactCache.getBundleFileResource(zoom, row, col);
+            }
         } else if (storageFormat.equals(CacheStorageInfo.EXPLODED_FORMAT_CODE)) {
             String path = getTilePath(tile);
             File tileFile = new File(path);
-
-            if (tileFile.exists())
+            if (tileFile.exists()) {
                 tileContent = readFile(tileFile);
+            }
         }
-
         if (tileContent != null) {
             tile.setCacheResult(CacheResult.HIT);
             tile.setBlob(tileContent);

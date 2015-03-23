@@ -1,4 +1,4 @@
-package org.geowebcache.arcgis.compact;
+ackage org.geowebcache.arcgis.compact;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -14,16 +14,16 @@ import java.nio.channels.FileChannel;
 /**
  * Represents ArcGIS compact cache bundle (index file (*.bundlx) and bundle file with actual data
  * (*.bundle))
- * 
+ *
  * Every .bundlx file contains a 16 byte header and 16 byte footer. Between header and footer is
  * 128x128 matrix (16384 tiles) of 5 byte offsets. Every offset points to a 4 byte word in the
  * corresponding .bundle file which contains the size of the tile image data. The actual image data
  * starts at offset+4. If the size is zero there is no image data available and the index entry is
  * not used. If the map cache has more than 128 rows or columns it is divided into several .bundlx +
  * .bundle files.
- * 
+ *
  * @author Bjoern Saxe
- * 
+ *
  */
 public class ArcGISCacheBundle {
     private long[][] bundleOffsetMatrix;
@@ -62,7 +62,7 @@ public class ArcGISCacheBundle {
 
     /**
      * Get tile specified by row and column
-     * 
+     *
      * @param row
      *            row of the tile
      * @param col
@@ -70,7 +70,7 @@ public class ArcGISCacheBundle {
      * @return The tile image data
      */
     public final byte[] getTile(int row, int col) {
-        if (!rowAndColAreValid(row, col))
+        if (row >= indexMaxRow || col >= indexMaxCol)
             return null;
 
         long offset = bundleOffsetMatrix[col][row];
@@ -85,7 +85,7 @@ public class ArcGISCacheBundle {
 
     /**
      * Get tile specified by row and column
-     * 
+     *
      * @param row
      *            row of the tile
      * @param col
@@ -93,7 +93,7 @@ public class ArcGISCacheBundle {
      * @return Offset for tile. -1 if row and or column are invalid
      */
     public long getTileOffset(int row, int col) {
-        if (!rowAndColAreValid(row, col))
+        if (row >= indexMaxRow || col >= indexMaxCol)
             return -1;
 
         // offset points to tile size. Actual data is at offset+4
@@ -102,7 +102,7 @@ public class ArcGISCacheBundle {
 
     /**
      * Get name of associated bundle file.
-     * 
+     *
      * @return Associated name of bundle file.
      */
     public String getBundleFileName() {
@@ -111,7 +111,7 @@ public class ArcGISCacheBundle {
 
     /**
      * Check if image data exists for tile specified by row and column
-     * 
+     *
      * @param row
      *            row of the tile
      * @param col
@@ -119,7 +119,7 @@ public class ArcGISCacheBundle {
      * @return true if image data exists; false if no data exists or row and or column are invalid
      */
     public boolean tileExists(int row, int col) {
-        if (!rowAndColAreValid(row, col))
+        if (row >= indexMaxRow || col >= indexMaxCol)
             return false;
 
         long offset = bundleOffsetMatrix[col][row];
@@ -130,7 +130,7 @@ public class ArcGISCacheBundle {
 
     /**
      * Get size of tile specified by row and column
-     * 
+     *
      * @param row
      *            row of the tile
      * @param col
@@ -138,7 +138,7 @@ public class ArcGISCacheBundle {
      * @return size of image data; -1 if row and or column are invalid
      */
     public int getTileSize(int row, int col) {
-        if (!rowAndColAreValid(row, col))
+        if (row >= indexMaxRow || col >= indexMaxCol)
             return -1;
 
         long offset = bundleOffsetMatrix[col][row];
@@ -180,10 +180,6 @@ public class ArcGISCacheBundle {
     }
 
     // debug
-
-    private boolean rowAndColAreValid(int row, int col) {
-        return (row < indexMaxRow && col < indexMaxCol && row >= 0 && col >= 0);
-    }
 
     private void processIndex() {
         int row = 0, col = 0;

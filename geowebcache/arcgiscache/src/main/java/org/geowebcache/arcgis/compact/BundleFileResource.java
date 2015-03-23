@@ -12,9 +12,9 @@ import java.nio.channels.WritableByteChannel;
 import org.geowebcache.io.Resource;
 
 /**
- * 
+ *
  * @author Bjoern Saxe
- * 
+ *
  */
 public class BundleFileResource implements Resource {
     private ArcGISCacheBundle bundle;
@@ -56,7 +56,7 @@ public class BundleFileResource implements Resource {
 
     /**
      * Not supported for ArcGIS caches as they are read only.
-     * 
+     *
      * @see org.geowebcache.io.Resource#transferFrom()
      */
     public long transferFrom(ReadableByteChannel channel) throws IOException {
@@ -76,7 +76,7 @@ public class BundleFileResource implements Resource {
 
     /**
      * Not supported for ArcGIS caches as they are read only.
-     * 
+     *
      * @see org.geowebcache.io.Resource#getOutputStream()
      */
     public OutputStream getOutputStream() throws IOException {
