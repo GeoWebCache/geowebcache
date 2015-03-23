@@ -32,8 +32,10 @@ import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.io.FileResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.AbstractTileLayer;
+import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.util.GWCVars;
 
 /**
  * 
@@ -242,14 +244,16 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
             final int col = (int) tileIndex[0];
             final int row = (int) (coverageMaxY - tileIndex[1]);
 
-            if (compactCache.tileExists(zoom, row, col))
+            if (compactCache.tileExists(zoom, row, col)) {
                 tileContent = compactCache.getBundleFileResource(zoom, row, col);
+            }
         } else if (storageFormat.equals(CacheStorageInfo.EXPLODED_FORMAT_CODE)) {
             String path = getTilePath(tile);
             File tileFile = new File(path);
 
-            if (tileFile.exists())
+            if (tileFile.exists()) {
                 tileContent = readFile(tileFile);
+            }
         }
 
         if (tileContent != null) {
@@ -261,9 +265,45 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
                 throw new OutsideCoverageException(tile.getTileIndex(), 0, 0);
             }
         }
+        
+        // TODO Add here 
+        saveExpirationInformation((int) (tile.getExpiresHeader() / 1000));
+        
         return tile;
     }
 
+    protected void saveExpirationInformation(int backendExpire) {
+        this.saveExpirationHeaders = false;
+
+    try {
+        if (getExpireCache(0) == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+            if (backendExpire == -1) {
+                this.expireCacheList.set(0, new ExpirationRule(0, 7200));
+                log.error("Layer profile wants MaxAge from backend,"
+                        + " but backend does not provide this. Setting to 7200 seconds.");
+            } else {
+                this.expireCacheList.set(backendExpire, new ExpirationRule(0, 7200));
+            }
+            log.trace("Setting expireCache to: " + expireCache);
+        }
+        if (getExpireCache(0) == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+            if (backendExpire == -1) {
+                this.expireClientsList.set(0, new ExpirationRule(0, 7200));
+                log.error("Layer profile wants MaxAge from backend,"
+                        + " but backend does not provide this. Setting to 7200 seconds.");
+            } else {
+                this.expireClientsList.set(0, new ExpirationRule(0, backendExpire));
+                log.trace("Setting expireClients to: " + expireClients);
+            }
+
+        }
+    } catch (Exception e) {
+        // Sometimes this doesn't work (network conditions?),
+        // and it's really not worth getting caught up on it.
+        e.printStackTrace();
+    }
+}
+    
     private boolean setLayerBlankTile(ConveyorTile tile) {
         // TODO cache result
         String layerPath = getLayerPath().append(File.separatorChar).toString();
