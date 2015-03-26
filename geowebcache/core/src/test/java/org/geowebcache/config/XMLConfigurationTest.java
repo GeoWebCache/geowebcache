@@ -2,6 +2,7 @@ package org.geowebcache.config;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,13 +15,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.StringParameterFilter;
 import org.geowebcache.grid.BoundingBox;
@@ -32,9 +29,13 @@ import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.xml.sax.SAXParseException;
 
-public class XMLConfigurationTest extends TestCase {
+public class XMLConfigurationTest {
 
     private static final Log log = LogFactory.getLog(XMLConfigurationTest.class);
 
@@ -45,14 +46,17 @@ public class XMLConfigurationTest extends TestCase {
     private GridSetBroker gridSetBroker;
 
     private XMLConfiguration config;
-
-    protected void setUp() throws Exception {
-        configDir = new File("target", "testConfig");
-        FileUtils.deleteDirectory(configDir);
-        configDir.mkdirs();
+    
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
+    
+    @Before
+    public void setUp() throws Exception {
+        configDir = temp.getRoot();
+        configFile = temp.newFile("geowebcache.xml");
+        
         URL source = XMLConfiguration.class
                 .getResource(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
-        configFile = new File(configDir, "geowebcache.xml");
         FileUtils.copyURLToFile(source, configFile);
 
         gridSetBroker = new GridSetBroker(true, true);
@@ -60,10 +64,7 @@ public class XMLConfigurationTest extends TestCase {
         config.initialize(gridSetBroker);
     }
     
-    protected void tearDown() throws Exception {
-    	FileUtils.deleteDirectory(configDir);
-    }
-
+    @Test
     public void testAddLayer() throws Exception {
         int count = config.getTileLayerCount();
 
@@ -80,6 +81,7 @@ public class XMLConfigurationTest extends TestCase {
         }
     }
 
+    @Test
     public void testNotAddLayer() throws Exception {
         // Create a transient Layer and check if it can be accepted
         TileLayer tl = mock(WMSLayer.class);
@@ -88,6 +90,7 @@ public class XMLConfigurationTest extends TestCase {
         assertFalse(config.canSave(tl));
     }
 
+    @Test
     public void testModifyLayer() throws Exception {
 
         TileLayer layer1 = mock(WMSLayer.class);
@@ -112,6 +115,7 @@ public class XMLConfigurationTest extends TestCase {
         }
     }
 
+    @Test
     public void testRemoveLayer() {
 
         assertFalse(config.removeLayer("nonExistent"));
@@ -124,6 +128,7 @@ public class XMLConfigurationTest extends TestCase {
         }
     }
 
+    @Test
     public void testTemplate() throws Exception {
         assertTrue(configFile.delete());
         config.setTemplate("/geowebcache_empty.xml");
@@ -136,6 +141,7 @@ public class XMLConfigurationTest extends TestCase {
         assertEquals(3, config.getTileLayerCount());
     }
 
+    @Test
     public void testSave() throws Exception {
         for (String name : config.getTileLayerNames()) {
             int count = config.getTileLayerCount();
@@ -197,6 +203,7 @@ public class XMLConfigurationTest extends TestCase {
         }
     }
 
+    @Test
     public void testSaveGridSet() throws Exception {
         String name = "testGrid";
         SRS srs = SRS.getEPSG4326();
@@ -236,6 +243,7 @@ public class XMLConfigurationTest extends TestCase {
         assertEquals(gridSet, gridSet2);
     }
 
+    @Test
     public void testSaveCurrentVersion() throws Exception {
 
         URL source = XMLConfiguration.class
