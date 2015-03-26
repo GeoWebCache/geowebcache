@@ -83,6 +83,8 @@ import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.seed.TruncateLayerRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.util.ApplicationContextProvider;
+import org.geowebcache.util.GWCVars;
+import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import org.w3c.dom.Document;
@@ -104,7 +106,9 @@ public class XMLConfiguration implements Configuration {
 
     private static Log log = LogFactory.getLog(org.geowebcache.config.XMLConfiguration.class);
 
-    private static final String DEFAULT_CONFIGURATION_FILE_NAME = "geowebcache.xml";
+    static final String DEFAULT_CONFIGURATION_FILE_NAME = "geowebcache.xml";
+
+    static final String GWC_CONFIG_DIR_VAR = "GEOWEBCACHE_CONFIG_DIR";
 
     /**
      * Web app context, used to look up {@link XMLConfigurationProvider}s. Will be null if used the
@@ -139,7 +143,48 @@ public class XMLConfiguration implements Configuration {
         this(appCtx, storageDirFinder);
         log.warn("This constructor is deprecated");
     }
+    
+    XMLConfiguration(final ApplicationContextProvider appCtx,
+            final String configFileDirectory,
+            final DefaultStorageFinder storageDirFinder) throws ConfigurationException {
+        
+        if(configFileDirectory==null && storageDirFinder==null) {
+            throw new NullPointerException("At least one of configFileDirectory or storageDirFinder must not be null");
+        }
+        
+        this.context = appCtx == null ? null : appCtx.getApplicationContext();
+        this.configFileName = DEFAULT_CONFIGURATION_FILE_NAME;
+        this.templateLocation = "/" + DEFAULT_CONFIGURATION_FILE_NAME;
+        
+        if(configFileDirectory!=null) {
+            // Use the given path
+            if (configFileDirectory.startsWith("/") || configFileDirectory.contains(":\\")
+                    || configFileDirectory.startsWith("\\\\")) {
+                
+                log.info("Provided configuration directory as absolute path '" + configFileDirectory + "'");
+                this.configDirectory = new File(configFileDirectory);
+            } else {
 
+                String baseDir = context.getServletContext().getRealPath("");
+                log.info("Provided configuration directory relative to servlet context '" + baseDir + "': "
+                        + configFileDirectory);
+                this.configDirectory = new File(baseDir, configFileDirectory);
+            }
+        } else {
+            // Otherwise use the storage directory
+            this.configDirectory = new File(storageDirFinder.getDefaultPath());
+        }
+        log.info("Will look for geowebcache.xml in '" + configDirectory + "'");
+    }
+    
+    private static String getConfigDirVar(ApplicationContextProvider ctxtProv){
+        ApplicationContext ctxt = null;
+        if(ctxtProv!=null) {
+            ctxt = ctxtProv.getApplicationContext();
+        }
+        return GWCVars.findEnvVar(ctxt, GWC_CONFIG_DIR_VAR);
+    }
+    
     /**
      * Constructor that will look for {@code geowebcache.xml} at the directory defined by
      * {@code storageDirFinder}
@@ -151,18 +196,7 @@ public class XMLConfiguration implements Configuration {
      */
     public XMLConfiguration(final ApplicationContextProvider appCtx,
             final DefaultStorageFinder storageDirFinder) throws ConfigurationException {
-
-        Assert.notNull(storageDirFinder);
-
-        if (appCtx == null) {
-            log.warn("No application context provider given, configuration extensions won't be available");
-        }
-        this.context = appCtx == null ? null : appCtx.getApplicationContext();
-        this.configFileName = DEFAULT_CONFIGURATION_FILE_NAME;
-        this.configDirectory = new File(storageDirFinder.getDefaultPath());
-        this.templateLocation = "/" + DEFAULT_CONFIGURATION_FILE_NAME;
-
-        log.info("Will look for geowebcache.xml in '" + configDirectory + "'");
+        this(appCtx, getConfigDirVar(appCtx), storageDirFinder);
     }
 
     /**
@@ -185,29 +219,7 @@ public class XMLConfiguration implements Configuration {
      */
     public XMLConfiguration(final ApplicationContextProvider appCtx,
             final String configFileDirectory) throws ConfigurationException {
-
-        Assert.notNull(configFileDirectory);
-        if (appCtx == null) {
-            log.warn("No application context provider given, configuration extensions won't be available");
-        }
-        this.context = appCtx == null ? null : appCtx.getApplicationContext();
-        this.configFileName = DEFAULT_CONFIGURATION_FILE_NAME;
-        this.templateLocation = "/" + DEFAULT_CONFIGURATION_FILE_NAME;
-
-        if (configFileDirectory.startsWith("/") || configFileDirectory.contains(":\\")
-                || configFileDirectory.startsWith("\\\\")) {
-
-            log.info("Provided configuration directory as absolute path '" + configFileDirectory + "'");
-            this.configDirectory = new File(configFileDirectory);
-        } else {
-
-            String baseDir = context.getServletContext().getRealPath("");
-            log.info("Provided configuration directory relative to servlet context '" + baseDir + "': "
-                    + configFileDirectory);
-            this.configDirectory = new File(baseDir, configFileDirectory);
-        }
-
-        log.info("Will look for geowebcache.xml in '" + configFileDirectory + "'");
+        this(appCtx, configFileDirectory, null);
     }
 
     /**
