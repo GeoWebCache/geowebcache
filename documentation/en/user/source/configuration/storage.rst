@@ -51,6 +51,11 @@ Finally, although not recommended, it is possible to set this location directly 
 
 making sure to edit the path.  As usual, any changes to the servlet configuration files will require :ref:`configuration.reload`.
 
+Configuration File
+------------------
+
+The configuration file, :file:`geowebcache.xml`, will be looked for or created in the cache directory by default.  A separate location can be set with the ``GEOWEBCACHE_CACHE_DIR`` variable or property in the same way as decribed above for ``GEOWEBCACHE_CACHE_DIR``.
+
 BlobStore configuration
 -----------------------
 
