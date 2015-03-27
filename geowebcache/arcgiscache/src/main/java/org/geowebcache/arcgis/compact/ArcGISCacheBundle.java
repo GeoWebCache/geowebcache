@@ -70,7 +70,7 @@ public class ArcGISCacheBundle {
      * @return The tile image data
      */
     public final byte[] getTile(int row, int col) {
-        if (row < 0 || col < 0 || row >= indexMaxRow || col >= indexMaxCol)
+        if (!rowAndColAreValid(row, col))
             return null;
 
         long offset = bundleOffsetMatrix[col][row];
@@ -93,7 +93,7 @@ public class ArcGISCacheBundle {
      * @return Offset for tile. -1 if row and or column are invalid
      */
     public long getTileOffset(int row, int col) {
-        if (row < 0 || col < 0 || row >= indexMaxRow || col >= indexMaxCol)
+        if (!rowAndColAreValid(row, col))
             return -1;
 
         // offset points to tile size. Actual data is at offset+4
@@ -119,7 +119,7 @@ public class ArcGISCacheBundle {
      * @return true if image data exists; false if no data exists or row and or column are invalid
      */
     public boolean tileExists(int row, int col) {
-        if (row < 0 || col < 0 || row >= indexMaxRow || col >= indexMaxCol)
+        if (!rowAndColAreValid(row, col))
             return false;
 
         long offset = bundleOffsetMatrix[col][row];
@@ -138,7 +138,7 @@ public class ArcGISCacheBundle {
      * @return size of image data; -1 if row and or column are invalid
      */
     public int getTileSize(int row, int col) {
-        if (row < 0 || col < 0 || row >= indexMaxRow || col >= indexMaxCol)
+        if (!rowAndColAreValid(row, col))
             return -1;
 
         long offset = bundleOffsetMatrix[col][row];
@@ -180,6 +180,10 @@ public class ArcGISCacheBundle {
     }
 
     // debug
+	
+	private boolean rowAndColAreValid(int row, int col) {
+-        return (row < indexMaxRow && col < indexMaxCol && row >= 0 && col >= 0);
+-    }
 
     private void processIndex() {
         int row = 0, col = 0;
