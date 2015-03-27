@@ -182,8 +182,8 @@ public class ArcGISCacheBundle {
     // debug
 	
 	private boolean rowAndColAreValid(int row, int col) {
--        return (row < indexMaxRow && col < indexMaxCol && row >= 0 && col >= 0);
--    }
+        return (row < indexMaxRow && col < indexMaxCol && row >= 0 && col >= 0);
+    }
 
     private void processIndex() {
         int row = 0, col = 0;
