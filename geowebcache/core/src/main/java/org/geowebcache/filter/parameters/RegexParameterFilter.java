@@ -23,10 +23,14 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import org.geowebcache.filter.parameters.CaseNormalizer.Case;
+
 import com.google.common.base.Preconditions;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 @ParametersAreNonnullByDefault
-public class RegexParameterFilter extends ParameterFilter {
+@XStreamAlias("regexParameterFilter")
+public class RegexParameterFilter extends CaseNormalizingParameterFilter {
 
     private static final long serialVersionUID = -1496940509350980799L;
 
@@ -34,7 +38,7 @@ public class RegexParameterFilter extends ParameterFilter {
 
     private String regex = DEFAULT_EXPRESSION;
 
-    private transient Pattern pat = Pattern.compile(regex);
+    private transient Pattern pat = compile(regex, getNormalize().getCase());
 
     public RegexParameterFilter() {
         super();
@@ -49,6 +53,15 @@ public class RegexParameterFilter extends ParameterFilter {
         return pat.matcher(value);
     }
 
+    static Pattern compile(String regex, Case c) {
+        int flags = 0;
+        if (c!=Case.NONE) {
+            flags += Pattern.CASE_INSENSITIVE;
+            flags += Pattern.UNICODE_CASE;
+        }
+        return Pattern.compile(regex, flags);
+    }
+    
     protected RegexParameterFilter readResolve() {
         super.readResolve();
         Preconditions.checkNotNull(regex);
@@ -63,7 +76,7 @@ public class RegexParameterFilter extends ParameterFilter {
         }
         
         if (getMatcher(str).matches()) {
-            return str;
+            return getNormalize().apply(str);
         }
 
         throw new ParameterException(str + " violates filter for parameter " + getKey());
@@ -101,7 +114,13 @@ public class RegexParameterFilter extends ParameterFilter {
     public void setRegex(@Nullable String regex) {
         if(regex==null) regex = DEFAULT_EXPRESSION;
         this.regex = regex;
-        this.pat = Pattern.compile(this.regex);
+        this.pat = compile(this.regex, getNormalize().getCase());
+    }
+    
+    @Override
+    public void setNormalize(CaseNormalizer normalize) {
+        super.setNormalize(normalize);
+        this.pat = compile(this.regex, getNormalize().getCase());
     }
 
     @Override
@@ -111,5 +130,10 @@ public class RegexParameterFilter extends ParameterFilter {
         clone.setKey(getKey());
         clone.regex = regex;
         return clone;
+    }
+
+    @Override
+    public List<String> getValues() {
+        return null;
     }
 }

@@ -18,21 +18,22 @@ package org.geowebcache.filter.parameters;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import com.google.common.base.Preconditions;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 @ParametersAreNonnullByDefault
-public class StringParameterFilter extends ParameterFilter {
+@XStreamAlias("stringParameterFilter")
+public class StringParameterFilter extends CaseNormalizingParameterFilter {
 
     private static final long serialVersionUID = 7383381085250203901L;
 
     private List<String> values;
-
+    
     public StringParameterFilter() {
         values = new ArrayList<String>(0);
     }
@@ -53,24 +54,22 @@ public class StringParameterFilter extends ParameterFilter {
         if (str == null || str.length() == 0) {
             return getDefaultValue();
         }
-
-        Iterator<String> iter = values.iterator();
-        while (iter.hasNext()) {
-            if (iter.next().equals(str)) {
-                return str;
-            }
+        
+        str = getNormalize().apply(str);
+        
+        if(getLegalValues().contains(str)){
+            return str;
         }
-
+        
         throw new ParameterException(str + " violates filter for parameter " + getKey());
     }
 
     /**
-     * @return the values the parameter can take.  Altering this list is deprecated and in future 
-     * it will be unmodifiable; use {@link setValues} instead.
+     * @return the values the parameter can take.
      */
+    @Override
     public List<String> getValues() {
-        // TODO: apply Collections.unmodifiableList(...)
-        return values;
+        return Collections.unmodifiableList(values);
     }
 
     /**
@@ -83,12 +82,7 @@ public class StringParameterFilter extends ParameterFilter {
         }
         this.values = new ArrayList<String>(values);
     }
-
-    @Override
-    public @Nullable List<String> getLegalValues() {
-        return getValues();
-    }
-
+    
     /**
      * Checks whether a given parameter value applies to this filter.
      *
@@ -99,7 +93,7 @@ public class StringParameterFilter extends ParameterFilter {
      */
     @Override
     public boolean applies(@Nullable String parameterValue) {
-        return getLegalValues().contains(parameterValue);
+        return getLegalValues().contains(getNormalize().apply(parameterValue));
     }
 
     @Override
