@@ -77,6 +77,18 @@ It is also possible to get rid of the standard tiling scheme layout and separate
         <tileCachePath>D:\\arcgistiles\\naturalearth\\</tileCachePath>
       </arcgisLayer>
 
+Levels hex-encoded
+------------------
+Configure whether or not the z-values (levels) should be hex-encoded or not by using the ``hexZoom`` property. Default to false (decimal).
+
+.. code-block:: xml
+
+      <arcgisLayer>
+        <name>naturalearth</name>
+        <tilingScheme>C:\\arcgiscache\\naturalearth\\Layers\\conf.xml</tilingScheme>
+        <hexZoom>true</hexZoom>
+      </arcgisLayer>
+
 OpenLayers Configuration
 ------------------------
 
