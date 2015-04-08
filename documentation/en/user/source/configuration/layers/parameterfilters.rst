@@ -153,3 +153,23 @@ The resulting parameter filter would be:
      </regexParameterFilter>
    </parameterFilters>
 
+Case normalization
+------------------
+
+You can normalize the case of a Regular Expression or String rule to upper or lower case by adding a ``normalize`` element.  This takes a ``case`` and an optional ``locale``.  ``case`` may be ``NONE`` for no normalization, ``UPPER`` for upper case, or ``LOWER`` for lower case.  ``locale`` may be any Java locale identifier supported by the JVM and the JVM default locale will be used if not specified.
+
+.. code-block:: xml
+
+   <parameterFilters>
+     <regexParameterFilter>
+       <key>styles</key>
+       <defaultValue></defaultValue>
+       <normalize>
+         <case>UPPER</case>
+	 <locale>en_CA</locale> <!-- Canadian English locale-->
+       <regex>^(|polygon|population)$</regex>
+     </regexParameterFilter>
+   </parameterFilters>
+
+If upper or lower case normalization is used, matching with legal values will be case insensitive, otherwise it will be case sensitive.  The default value is never normalized.
+
