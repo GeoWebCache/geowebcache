@@ -987,6 +987,13 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="normalize" type="gwc:CaseNormalize" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+	    Case normalization rule for this filter.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="regex" type="xs:string">
         <xs:annotation>
           <xs:documentation xml:lang="en">
@@ -1074,11 +1081,37 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="normalize" type="gwc:CaseNormalize" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+	    Case normalization rule for this filter.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="values" type="gwc:StringList">
         <xs:annotation>
           <xs:documentation xml:lang="en">
             A list of strings that represent possible values. These are case
             sensitive.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CaseNormalize">
+    <xs:sequence>
+      <xs:element name="case" type="xs:string">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+	    The case to normalize to: NONE for no normalization, UPPER for upper case, LOWER for lower case.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="locale" type="xs:string" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+	    The locale to use when normalizing the case.  For instance: "en" for English, "en_CA" for Canadian English.
           </xs:documentation>
         </xs:annotation>
       </xs:element>
