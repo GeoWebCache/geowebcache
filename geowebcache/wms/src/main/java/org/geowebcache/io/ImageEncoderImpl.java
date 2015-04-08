@@ -18,6 +18,8 @@
 package org.geowebcache.io;
 
 import it.geosolutions.imageio.stream.output.ImageOutputStreamAdapter;
+import it.geosolutions.jaiext.colorindexer.ColorIndexer;
+import it.geosolutions.jaiext.colorindexer.Quantizer;
 
 import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
@@ -39,9 +41,6 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
 import org.apache.log4j.Logger;
 import org.geotools.image.ImageWorker;
 import org.geotools.image.ImageWorker.PNGImageWriteParam;
-import org.geotools.image.palette.ColorIndexer;
-import org.geotools.image.palette.ColorIndexerDescriptor;
-import org.geotools.image.palette.Quantizer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 
@@ -376,7 +375,7 @@ public class ImageEncoderImpl implements ImageEncoder {
 
             // if we have an indexer transform the image
             if (indexer != null) {
-                image = ColorIndexerDescriptor.create(image, indexer, null);
+                image = new ImageWorker(image).colorIndex(indexer).getRenderedImage();
             }
             return image;
         }
