@@ -518,7 +518,7 @@ public class XMLConfiguration implements Configuration {
         xs.processAnnotations(CaseNormalizer.class);
         xs.processAnnotations(StringParameterFilter.class);
         xs.processAnnotations(RegexParameterFilter.class);
-        xs.alias("floatParameterFilter", FloatParameterFilter.class);
+        xs.processAnnotations(FloatParameterFilter.class);
 
         xs.alias("formatModifier", FormatModifier.class);
 
