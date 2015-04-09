@@ -12,7 +12,9 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Arne Kepp, The Open Planning Project, Copyright 2009
+ * @author Kevin Smith, Boundless, Copyright 2015
+ * 
+ * Based on FloatParameterFilter: Arne Kepp, The Open Planning Project, Copyright 2009
  */
 package org.geowebcache.filter.parameters;
 
@@ -29,7 +31,7 @@ import com.google.common.base.Preconditions;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
- * Filter to select the closest Integering point value within a threshold.
+ * Filter to select the closest Integer value within a threshold.
  */
 @ParametersAreNonnullByDefault
 @XStreamAlias("integerParameterFilter")
