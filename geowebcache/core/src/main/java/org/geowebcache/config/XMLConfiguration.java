@@ -64,6 +64,7 @@ import org.geowebcache.config.ContextualConfigurationProvider.Context;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.parameters.CaseNormalizer;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
+import org.geowebcache.filter.parameters.IntegerParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.RegexParameterFilter;
 import org.geowebcache.filter.parameters.StringParameterFilter;
@@ -519,6 +520,7 @@ public class XMLConfiguration implements Configuration {
         xs.processAnnotations(StringParameterFilter.class);
         xs.processAnnotations(RegexParameterFilter.class);
         xs.processAnnotations(FloatParameterFilter.class);
+        xs.processAnnotations(IntegerParameterFilter.class);
 
         xs.alias("formatModifier", FormatModifier.class);
 

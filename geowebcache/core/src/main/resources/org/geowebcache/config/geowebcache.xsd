@@ -1058,6 +1058,54 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="IntegerParameterFilter">
+    <xs:sequence>
+      <xs:element name="key" type="xs:string">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            The key for which the filter should be invoked. The key is NOT
+            casesensitive.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="defaultValue" type="xs:string" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            The default value. This value is used When the client does not
+            specify
+            the parameter in the request. If you omit this element, the entire parameter
+            wil be omitted if the
+            client does not include it in request.
+
+            This value must be included in the list of values
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="values" type="gwc:IntegerList">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            A list of integers that are possible values. When a
+            client request is
+            received these are scanned linearly and that best match, in terms of smallest
+            absolute
+            difference, is used.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="threshold" type="xs:integer">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            For a request to be accepted, the difference between the value and
+            the best match
+            must not exceed the threshold specified here. A reasonable value is the largest
+            difference
+            between two adjacent values.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="StringParameterFilter">
     <xs:sequence>
       <xs:element name="key" type="xs:string">
@@ -1127,6 +1175,12 @@
   <xs:complexType name="FloatList">
     <xs:sequence>
       <xs:element name="float" type="xs:float" minOccurs="1" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="IntegerList">
+    <xs:sequence>
+      <xs:element name="int" type="xs:integer" minOccurs="1" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
