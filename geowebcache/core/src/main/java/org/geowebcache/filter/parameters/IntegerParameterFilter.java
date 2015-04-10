@@ -12,7 +12,9 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Arne Kepp, The Open Planning Project, Copyright 2009
+ * @author Kevin Smith, Boundless, Copyright 2015
+ * 
+ * Based on FloatParameterFilter: Arne Kepp, The Open Planning Project, Copyright 2009
  */
 package org.geowebcache.filter.parameters;
 
@@ -29,36 +31,35 @@ import com.google.common.base.Preconditions;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
- * Filter to select the closest floating point value within a threshold.
+ * Filter to select the closest Integer value within a threshold.
  */
 @ParametersAreNonnullByDefault
-@XStreamAlias("floatParameterFilter")
-public class FloatParameterFilter extends ParameterFilter {
-
-    private static final long serialVersionUID = 4186888723396139208L;
+@XStreamAlias("integerParameterFilter")
+public class IntegerParameterFilter extends ParameterFilter {
     
-    private static Float DEFAULT_THRESHOLD = Float.valueOf(1E-6f);
+    
+    private static Integer DEFAULT_THRESHOLD = Integer.valueOf(1);
 
     // These members get set by XStream
-    private List<Float> values;
+    private List<Integer> values;
 
-    private Float threshold;
+    private Integer threshold;
 
 
-    public FloatParameterFilter() {
+    public IntegerParameterFilter() {
         super();
-        values = new ArrayList<Float>(0);
+        values = new ArrayList<Integer>(0);
     }
 
-    protected FloatParameterFilter readResolve() {
+    protected IntegerParameterFilter readResolve() {
         super.readResolve();
         if (values == null) {
-            values = new ArrayList<Float>(0);
+            values = new ArrayList<Integer>(0);
         }
         if (threshold == null) {
             threshold = getDefaultThreshold();
         }
-        for(Float value: values) {
+        for(Integer value: values) {
             Preconditions.checkNotNull(value, "Value list included a null pointer.");
         }
         return this;
@@ -67,7 +68,7 @@ public class FloatParameterFilter extends ParameterFilter {
     /**
      * @return
      */
-    protected Float getDefaultThreshold() {
+    protected Integer getDefaultThreshold() {
         return DEFAULT_THRESHOLD;
     }
 
@@ -75,7 +76,7 @@ public class FloatParameterFilter extends ParameterFilter {
      * @return the values the parameter can take.  Altering this list is deprecated and in future 
      * it will be unmodifiable; use {@link setValues} instead.
      */
-    public List<Float> getValues() {
+    public List<Integer> getValues() {
         // TODO: apply Collections.unmodifiableList(...)
         return values;
     }
@@ -83,19 +84,19 @@ public class FloatParameterFilter extends ParameterFilter {
     /**
      *  Set the values
      */
-    public void setValues(List<Float> values) {
+    public void setValues(List<Integer> values) {
         Preconditions.checkNotNull(values);
-        for(Float f: values) {
+        for(Integer f: values) {
             Preconditions.checkNotNull(f);
         }
         
-        this.values = new ArrayList<Float>(values);
+        this.values = new ArrayList<Integer>(values);
     }
 
     /**
      * @return the threshold
      */
-    public Float getThreshold() {
+    public Integer getThreshold() {
         return threshold;
     }
 
@@ -103,7 +104,7 @@ public class FloatParameterFilter extends ParameterFilter {
      * @param threshold
      *            the threshold to set
      */
-    public void setThreshold(@Nullable Float threshold) {
+    public void setThreshold(@Nullable Integer threshold) {
         if(threshold==null) threshold = getDefaultThreshold();
         this.threshold = threshold;
     }
@@ -114,21 +115,21 @@ public class FloatParameterFilter extends ParameterFilter {
             return getDefaultValue();
         }
 
-        float val = Float.parseFloat(str);
+        int val = Integer.parseInt(str);
         if (values.isEmpty()) {
             // this is an accept all filter. At least it will match 2.0 and 2.000 as the same value
             return String.valueOf(val);
         }
 
-        float best = Float.MIN_VALUE;
+        int best = Integer.MIN_VALUE;
 
-        float bestMismatch = Float.MAX_VALUE;
+        int bestMismatch = Integer.MAX_VALUE;
 
-        Iterator<Float> iter = getValues().iterator();
+        Iterator<Integer> iter = getValues().iterator();
         while (iter.hasNext()) {
-            Float fl = iter.next();
+            int fl = iter.next();
 
-            float mismatch = Math.abs(fl - val);
+            int mismatch = Math.abs(fl - val);
             if (mismatch < bestMismatch) {
                 best = fl;
                 bestMismatch = mismatch;
@@ -136,33 +137,33 @@ public class FloatParameterFilter extends ParameterFilter {
         }
 
         if (threshold != null && threshold > 0 && Math.abs(bestMismatch) < threshold) {
-            return Float.toString(best);
+            return Integer.toString(best);
         }
 
         throw new ParameterException("Closest match for " + super.getKey() + "=" + str + " is "
-                + Float.toString(best) + ", but this exceeds the threshold of "
-                + Float.toString(threshold));
+                + Integer.toString(best) + ", but this exceeds the threshold of "
+                + Integer.toString(threshold));
     }
 
     @Override
     public @Nullable List<String> getLegalValues() {
         List<String> ret = new LinkedList<String>();
 
-        Iterator<Float> iter = getValues().iterator();
+        Iterator<Integer> iter = getValues().iterator();
         while (iter.hasNext()) {
-            ret.add(Float.toString(iter.next()));
+            ret.add(Integer.toString(iter.next()));
         }
 
         return ret;
     }
 
     @Override
-    public FloatParameterFilter clone() {
-        FloatParameterFilter clone = new FloatParameterFilter();
+    public IntegerParameterFilter clone() {
+        IntegerParameterFilter clone = new IntegerParameterFilter();
         clone.setDefaultValue(getDefaultValue());
         clone.setKey(getKey());
         if (values != null) {
-            clone.values = new ArrayList<Float>(values);
+            clone.values = new ArrayList<Integer>(values);
         }
         clone.setThreshold(this.threshold);
         return clone;
