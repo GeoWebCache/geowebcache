@@ -658,6 +658,14 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="hexZoom" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Optional. Configure whether or not the z-values (levels) should be hex-encoded or not.
+            Defaults to false
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
     </xs:sequence>
   </xs:complexType>
 
