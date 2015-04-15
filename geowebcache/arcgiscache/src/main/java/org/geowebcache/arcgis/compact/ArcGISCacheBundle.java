@@ -14,16 +14,16 @@ import java.nio.channels.FileChannel;
 /**
  * Represents ArcGIS compact cache bundle (index file (*.bundlx) and bundle file with actual data
  * (*.bundle))
- *
+ * 
  * Every .bundlx file contains a 16 byte header and 16 byte footer. Between header and footer is
  * 128x128 matrix (16384 tiles) of 5 byte offsets. Every offset points to a 4 byte word in the
  * corresponding .bundle file which contains the size of the tile image data. The actual image data
  * starts at offset+4. If the size is zero there is no image data available and the index entry is
  * not used. If the map cache has more than 128 rows or columns it is divided into several .bundlx +
  * .bundle files.
- *
+ * 
  * @author Bjoern Saxe
- *
+ * 
  */
 public class ArcGISCacheBundle {
     private long[][] bundleOffsetMatrix;
@@ -62,7 +62,7 @@ public class ArcGISCacheBundle {
 
     /**
      * Get tile specified by row and column
-     *
+     * 
      * @param row
      *            row of the tile
      * @param col
@@ -85,7 +85,7 @@ public class ArcGISCacheBundle {
 
     /**
      * Get tile specified by row and column
-     *
+     * 
      * @param row
      *            row of the tile
      * @param col
@@ -102,7 +102,7 @@ public class ArcGISCacheBundle {
 
     /**
      * Get name of associated bundle file.
-     *
+     * 
      * @return Associated name of bundle file.
      */
     public String getBundleFileName() {
@@ -111,7 +111,7 @@ public class ArcGISCacheBundle {
 
     /**
      * Check if image data exists for tile specified by row and column
-     *
+     * 
      * @param row
      *            row of the tile
      * @param col
@@ -130,7 +130,7 @@ public class ArcGISCacheBundle {
 
     /**
      * Get size of tile specified by row and column
-     *
+     * 
      * @param row
      *            row of the tile
      * @param col
@@ -180,8 +180,8 @@ public class ArcGISCacheBundle {
     }
 
     // debug
-	
-	private boolean rowAndColAreValid(int row, int col) {
+
+    private boolean rowAndColAreValid(int row, int col) {
         return (row < indexMaxRow && col < indexMaxCol && row >= 0 && col >= 0);
     }
 

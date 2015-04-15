@@ -72,7 +72,6 @@ public class ArcGISCompactCacheTest extends TestCase {
         assertTrue(cache.tileExists(6, 22, 10));
         assertTrue(cache.tileExists(6, 22, 10));
         assertTrue(cache.tileExists(6, 25, 17));
-		
     }
 
     public void testBundleFileResource() throws Exception {
