@@ -16,6 +16,10 @@ public final class BlobStoreListenerList {
         return listeners.isEmpty();
     }
 
+    public boolean isEmpty() {
+        return listeners.isEmpty();
+    }
+
     public synchronized void addListener(BlobStoreListener listener) {
         if (listener != null && !listeners.contains(listener)) {
             listeners.add(listener);

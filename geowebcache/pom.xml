@@ -662,5 +662,6 @@
     <module>diskquota</module>
     <module>arcgiscache</module>
 	<module>distributed</module>
+    <module>s3storage</module>
   </modules>
 </project>
