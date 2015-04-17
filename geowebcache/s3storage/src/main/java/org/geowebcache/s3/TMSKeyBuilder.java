@@ -2,11 +2,12 @@ package org.geowebcache.s3;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.regex.Pattern;
+import java.util.Map;
 
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.TileObject;
+import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 
 import com.google.common.base.Throwables;
 
@@ -42,13 +43,21 @@ class TMSKeyBuilder {
         checkNotNull(obj.getLayerName());
         checkNotNull(obj.getGridSetId());
         checkNotNull(obj.getBlobFormat());
-        checkNotNull(obj.getParameters());
         checkNotNull(obj.getXYZ());
 
         String layer = obj.getLayerName();
         String gridset = obj.getGridSetId();
         String shortFormat;
-        String paramsHash = obj.getParametersId();
+        String parametersId = obj.getParametersId();
+        if (parametersId == null) {
+            Map<String, String> parameters = obj.getParameters();
+            parametersId = FilePathGenerator.getParametersId(parameters);
+            if (parametersId == null) {
+                parametersId = "default";
+            } else {
+                obj.setParametersId(parametersId);
+            }
+        }
         Long x = Long.valueOf(obj.getXYZ()[0]);
         Long y = Long.valueOf(obj.getXYZ()[1]);
         Long z = Long.valueOf(obj.getXYZ()[2]);
@@ -62,8 +71,8 @@ class TMSKeyBuilder {
             throw Throwables.propagate(e);
         }
 
-        String key = String.format(TILE_FORMAT, prefix, layer, gridset, shortFormat, paramsHash, z,
-                x, y, extension);
+        String key = String.format(TILE_FORMAT, prefix, layer, gridset, shortFormat, parametersId,
+                z, x, y, extension);
         return key;
     }
 
