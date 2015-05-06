@@ -13,6 +13,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +26,7 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.FileResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
@@ -40,6 +43,7 @@ import org.mockito.Mockito;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.io.Files;
 
 /**
  * Integration tests for {@link S3BlobStore}.
@@ -87,6 +91,25 @@ public class S3BlobStoreIntegrationTest {
 		Resource resource = queryTile.getBlob();
 		assertNotNull(resource);
 		assertEquals(bytes.length, resource.getSize());
+	}
+
+	@Test
+	public void testPutGetBlobIsNotByteArrayResource() throws MimeException,
+			IOException {
+		File tileFile = File.createTempFile("tile", ".png");
+		Files.write(new byte[1024], tileFile);
+		Resource blob = new FileResource(tileFile);
+		TileObject tile = queryTile(20, 30, 12);
+		tile.setBlob(blob);
+
+		blobStore.put(tile);
+
+		TileObject queryTile = queryTile(20, 30, 12);
+		boolean found = blobStore.get(queryTile);
+		assertTrue(found);
+		Resource resource = queryTile.getBlob();
+		assertNotNull(resource);
+		assertEquals(1024, resource.getSize());
 	}
 
 	@Test
