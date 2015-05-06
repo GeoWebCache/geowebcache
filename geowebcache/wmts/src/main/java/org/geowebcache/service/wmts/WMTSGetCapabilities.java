@@ -294,6 +294,30 @@ public class WMTSGetCapabilities {
             xml.simpleElement("ows:UpperCorner", coords[2]+" "+coords[3], true);
             xml.endElement("ows:WGS84BoundingBox");   
         }
+        subset = layer.getGridSubsetForSRS(SRS.getEPSG900913());
+        if(subset != null) {
+        	double[] coords = subset.getOriginalExtent().getCoords();
+        	double originShift = 2 * Math.PI * 6378137 / 2.0;
+        	double mx = coords[0];
+        	double my = coords[1];
+        	double lon = (mx / originShift) * 180.0 ;
+        	double lat = (my / originShift) * 180.0 ;
+
+        	lat = 180 / Math.PI * (2 * Math.atan( Math.exp( lat * Math.PI / 180.0)) - Math.PI / 2.0);
+        	xml.indentElement("ows:WGS84BoundingBox");
+        	xml.simpleElement("ows:LowerCorner", lon+" "+lat, true);
+        	
+        	mx = coords[2];
+        	my = coords[3];
+        	lon = (mx / originShift) * 180.0 ;
+        	lat = (my / originShift) * 180.0 ;
+
+        	lat = 180 / Math.PI * (2 * Math.atan( Math.exp( lat * Math.PI / 180.0)) - Math.PI / 2.0);
+        	
+        	xml.simpleElement("ows:UpperCorner", lon+" "+lat, true);
+        	xml.endElement("ows:WGS84BoundingBox");
+        	
+        }
      }
      
      private void layerStyles(XMLBuilder xml, TileLayer layer, List<ParameterFilter> filters) throws IOException {
