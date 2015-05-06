@@ -7,7 +7,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
@@ -22,169 +23,177 @@ import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+/**
+ * Integration tests for {@link S3BlobStore}.
+ * <p>
+ * For the tests to be run, a properties file
+ * {@code $HOME/.gwc_s3_tests.properties} must exist and contain entries for
+ * {@code bucket}, {@code accessKey}, and {@code secretKey}.
+ */
 public class S3BlobStoreIntegrationTest {
 
-    final String bucket = "test.gwc.boundlessgeo.com";
+	public PropertiesLoader testConfigLoader = new PropertiesLoader();
 
-    final String accessKey = "";
+	@Rule
+	public TemporaryS3Folder tempFolder = new TemporaryS3Folder(
+			testConfigLoader.getProperties());
 
-    final String secretKey = "";
+	private S3BlobStore blobStore;
 
-    @Rule
-    public TemporaryS3Folder tempFolder = new TemporaryS3Folder(bucket, accessKey, secretKey);
+	@Before
+	public void before() {
+		Assume.assumeTrue(tempFolder.isConfigured());
+		blobStore = new S3BlobStore(tempFolder.getConfig());
+	}
 
-    private S3BlobStore blobStore;
+	@After
+	public void after() {
 
-    @Before
-    public void before() {
-        blobStore = new S3BlobStore(tempFolder.getConfig());
-    }
+	}
 
-    @After
-    public void after() {
+	@Test
+	public void testPutGet() throws MimeException, StorageException {
+		String layerName = "topp:world";
+		long[] xyz = { 20, 30, 12 };
+		String gridSetId = "EPSG:4326";
+		String format = MimeType.createFromExtension("png").getFormat();
+		Map<String, String> parameters = new HashMap<>();
+		byte[] bytes = new byte[1024];
+		Arrays.fill(bytes, (byte) 0xaf);
 
-    }
+		Resource blob = new ByteArrayResource(bytes);
+		TileObject tile = TileObject.createCompleteTileObject(layerName, xyz,
+				gridSetId, format, parameters, blob);
+		blobStore.put(tile);
 
-    @Test
-    public void testPutGet() throws MimeException, StorageException {
-        String layerName = "topp:world";
-        long[] xyz = { 20, 30, 12 };
-        String gridSetId = "EPSG:4326";
-        String format = MimeType.createFromExtension("png").getFormat();
-        Map<String, String> parameters = new HashMap<>();
-        byte[] bytes = new byte[1024];
-        Arrays.fill(bytes, (byte) 0xaf);
+		TileObject queryTile = TileObject.createQueryTileObject(layerName, xyz,
+				gridSetId, format, parameters);
+		boolean found = blobStore.get(queryTile);
+		assertTrue(found);
+		Resource resource = queryTile.getBlob();
+		assertNotNull(resource);
+		assertEquals(bytes.length, resource.getSize());
+	}
 
-        Resource blob = new ByteArrayResource(bytes);
-        TileObject tile = TileObject.createCompleteTileObject(layerName, xyz, gridSetId, format,
-                parameters, blob);
-        blobStore.put(tile);
+	@Test
+	public void testPutWithListener() throws MimeException, StorageException {
 
-        TileObject queryTile = TileObject.createQueryTileObject(layerName, xyz, gridSetId, format,
-                parameters);
-        boolean found = blobStore.get(queryTile);
-        assertTrue(found);
-        Resource resource = queryTile.getBlob();
-        assertNotNull(resource);
-        assertEquals(bytes.length, resource.getSize());
-    }
+		String layerName = "topp:world";
+		long[] xyz = { 20, 30, 12 };
+		String gridSetId = "EPSG:4326";
+		String format = MimeType.createFromExtension("png").getFormat();
+		Map<String, String> parameters = new HashMap<>();
+		byte[] bytes = new byte[1024];
+		Arrays.fill(bytes, (byte) 0xaf);
 
-    @Test
-    public void testPutWithListener() throws MimeException, StorageException {
+		Resource blob = new ByteArrayResource(bytes);
+		TileObject tile = TileObject.createCompleteTileObject(layerName, xyz,
+				gridSetId, format, parameters, blob);
 
-        String layerName = "topp:world";
-        long[] xyz = { 20, 30, 12 };
-        String gridSetId = "EPSG:4326";
-        String format = MimeType.createFromExtension("png").getFormat();
-        Map<String, String> parameters = new HashMap<>();
-        byte[] bytes = new byte[1024];
-        Arrays.fill(bytes, (byte) 0xaf);
+		BlobStoreListener listener = mock(BlobStoreListener.class);
+		blobStore.addListener(listener);
+		blobStore.put(tile);
 
-        Resource blob = new ByteArrayResource(bytes);
-        TileObject tile = TileObject.createCompleteTileObject(layerName, xyz, gridSetId, format,
-                parameters, blob);
+		verify(listener).tileStored(eq(layerName), eq(gridSetId), eq(format),
+				anyString(), eq(20L), eq(30L), eq(12), eq((long) bytes.length));
 
-        BlobStoreListener listener = mock(BlobStoreListener.class);
-        blobStore.addListener(listener);
-        blobStore.put(tile);
+		// update tile
+		tile = TileObject.createCompleteTileObject(layerName, xyz, gridSetId,
+				format, parameters, new ByteArrayResource(new byte[512]));
 
-        verify(listener).tileStored(eq(layerName), eq(gridSetId), eq(format), anyString(), eq(20L),
-                eq(30L), eq(12), eq((long) bytes.length));
+		blobStore.put(tile);
 
-        // update tile
-        tile = TileObject.createCompleteTileObject(layerName, xyz, gridSetId, format, parameters,
-                new ByteArrayResource(new byte[512]));
+		verify(listener).tileUpdated(eq(layerName), eq(gridSetId), eq(format),
+				anyString(), eq(20L), eq(30L), eq(12), eq(512L), eq(1024L));
 
-        blobStore.put(tile);
+	}
 
-        verify(listener).tileUpdated(eq(layerName), eq(gridSetId), eq(format), anyString(),
-                eq(20L), eq(30L), eq(12), eq(512L), eq(1024L));
+	@Test
+	public void testDelete() throws MimeException, StorageException {
+		String layerName = "topp:world";
+		long[] xyz = { 20, 30, 12 };
+		String gridSetId = "EPSG:4326";
+		String format = MimeType.createFromExtension("png").getFormat();
+		Map<String, String> parameters = new HashMap<>();
+		byte[] bytes = new byte[1024];
+		Arrays.fill(bytes, (byte) 0xaf);
 
-    }
+		Resource blob = new ByteArrayResource(bytes);
+		TileObject tile = TileObject.createCompleteTileObject(layerName, xyz,
+				gridSetId, format, parameters, blob);
 
-    @Test
-    public void testDelete() throws MimeException, StorageException {
-        String layerName = "topp:world";
-        long[] xyz = { 20, 30, 12 };
-        String gridSetId = "EPSG:4326";
-        String format = MimeType.createFromExtension("png").getFormat();
-        Map<String, String> parameters = new HashMap<>();
-        byte[] bytes = new byte[1024];
-        Arrays.fill(bytes, (byte) 0xaf);
+		blobStore.put(tile);
 
-        Resource blob = new ByteArrayResource(bytes);
-        TileObject tile = TileObject.createCompleteTileObject(layerName, xyz, gridSetId, format,
-                parameters, blob);
+		tile.getXYZ()[0] = 21;
+		blobStore.put(tile);
 
-        blobStore.put(tile);
+		tile.getXYZ()[0] = 22;
+		blobStore.put(tile);
 
-        tile.getXYZ()[0] = 21;
-        blobStore.put(tile);
+		tile = TileObject.createQueryTileObject(layerName, new long[] { 20, 30,
+				12 }, gridSetId, format, parameters);
 
-        tile.getXYZ()[0] = 22;
-        blobStore.put(tile);
+		assertTrue(blobStore.delete(tile));
+		assertFalse(blobStore.delete(tile));
 
-        tile = TileObject.createQueryTileObject(layerName, new long[] { 20, 30, 12 }, gridSetId,
-                format, parameters);
+		tile.getXYZ()[0] = 21;
+		assertTrue(blobStore.delete(tile));
+		assertFalse(blobStore.delete(tile));
 
-        assertTrue(blobStore.delete(tile));
-        assertFalse(blobStore.delete(tile));
+		BlobStoreListener listener = mock(BlobStoreListener.class);
+		blobStore.addListener(listener);
+		tile.getXYZ()[0] = 22;
+		assertTrue(blobStore.delete(tile));
+		assertFalse(blobStore.delete(tile));
 
-        tile.getXYZ()[0] = 21;
-        assertTrue(blobStore.delete(tile));
-        assertFalse(blobStore.delete(tile));
+		verify(listener, times(1)).tileDeleted(eq(layerName), eq(gridSetId),
+				eq(format), anyString(), eq(22L), eq(30L), eq(12), eq(1024L));
+	}
 
-        BlobStoreListener listener = mock(BlobStoreListener.class);
-        blobStore.addListener(listener);
-        tile.getXYZ()[0] = 22;
-        assertTrue(blobStore.delete(tile));
-        assertFalse(blobStore.delete(tile));
+	@Test
+	public void testDeleteLayer() throws Exception {
+		String layerName = "topp:world";
+		long[] xyz = { 20, 30, 12 };
+		String gridSetId = "EPSG:4326";
+		String format = MimeType.createFromExtension("png").getFormat();
+		Map<String, String> parameters = new HashMap<>();
+		byte[] bytes = new byte[1024];
+		Arrays.fill(bytes, (byte) 0xaf);
 
-        verify(listener, times(1)).tileDeleted(eq(layerName), eq(gridSetId), eq(format),
-                anyString(), eq(22L), eq(30L), eq(12), eq(1024L));
-    }
+		Resource blob = new ByteArrayResource(bytes);
+		TileObject tile = TileObject.createCompleteTileObject(layerName, xyz,
+				gridSetId, format, parameters, blob);
 
-    @Test
-    public void testDeleteLayer() throws Exception {
-        String layerName = "topp:world";
-        long[] xyz = { 20, 30, 12 };
-        String gridSetId = "EPSG:4326";
-        String format = MimeType.createFromExtension("png").getFormat();
-        Map<String, String> parameters = new HashMap<>();
-        byte[] bytes = new byte[1024];
-        Arrays.fill(bytes, (byte) 0xaf);
+		blobStore.put(tile);
 
-        Resource blob = new ByteArrayResource(bytes);
-        TileObject tile = TileObject.createCompleteTileObject(layerName, xyz, gridSetId, format,
-                parameters, blob);
+		tile.getXYZ()[0] = 21;
+		blobStore.put(tile);
 
-        blobStore.put(tile);
+		tile.getXYZ()[0] = 22;
+		blobStore.put(tile);
 
-        tile.getXYZ()[0] = 21;
-        blobStore.put(tile);
+		BlobStoreListener listener = mock(BlobStoreListener.class);
+		blobStore.addListener(listener);
+		blobStore.delete(layerName);
+		blobStore.delete(layerName);
+		verify(listener, times(1)).layerDeleted(eq(layerName));
+	}
 
-        tile.getXYZ()[0] = 22;
-        blobStore.put(tile);
+	@Test
+	public void testLayerMetadata() {
+		blobStore.putLayerMetadata("test:layer", "prop1", "value1");
+		blobStore.putLayerMetadata("test:layer", "prop2", "value2");
 
-        BlobStoreListener listener = mock(BlobStoreListener.class);
-        blobStore.addListener(listener);
-        blobStore.delete(layerName);
-        blobStore.delete(layerName);
-        verify(listener, times(1)).layerDeleted(eq(layerName));
-    }
-
-    @Test
-    public void testLayerMetadata() {
-        blobStore.putLayerMetadata("test:layer", "prop1", "value1");
-        blobStore.putLayerMetadata("test:layer", "prop2", "value2");
-
-        assertNull(blobStore.getLayerMetadata("test:layer", "nonExistingKey"));
-        assertEquals("value1", blobStore.getLayerMetadata("test:layer", "prop1"));
-        assertEquals("value2", blobStore.getLayerMetadata("test:layer", "prop2"));
-    }
+		assertNull(blobStore.getLayerMetadata("test:layer", "nonExistingKey"));
+		assertEquals("value1",
+				blobStore.getLayerMetadata("test:layer", "prop1"));
+		assertEquals("value2",
+				blobStore.getLayerMetadata("test:layer", "prop2"));
+	}
 
 }
