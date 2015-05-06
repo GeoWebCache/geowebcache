@@ -14,9 +14,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import javax.annotation.Nullable;
 
@@ -31,6 +28,7 @@ import org.geowebcache.storage.BlobStoreListenerList;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
+import org.geowebcache.storage.TileRangeIterator;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -38,7 +36,6 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.AccessControlList;
@@ -51,7 +48,6 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.services.s3.transfer.TransferManager;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
@@ -60,7 +56,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class S3BlobStore implements BlobStore {
 
@@ -68,11 +63,7 @@ public class S3BlobStore implements BlobStore {
 
 	private final BlobStoreListenerList listeners = new BlobStoreListenerList();
 
-	private AmazonS3 conn;
-
-	private TransferManager transfers;
-
-	private final S3BlobStoreConfig config;
+	private AmazonS3Client conn;
 
 	private final TMSKeyBuilder keyBuilder;
 
@@ -84,7 +75,6 @@ public class S3BlobStore implements BlobStore {
 		checkNotNull(config.getAwsAccessKey(), "Access key not provided");
 		checkNotNull(config.getAwsSecretKey(), "Secret key not provided");
 
-		this.config = config;
 		this.bucketName = config.getBucket();
 		String prefix = config.getPrefix() == null ? "" : config.getPrefix();
 		this.keyBuilder = new TMSKeyBuilder(prefix);
@@ -122,24 +112,15 @@ public class S3BlobStore implements BlobStore {
 			throw new IllegalArgumentException("Unable to connect to AWS S3",
 					ce);
 		}
-		int nThreads = clientConfig.getMaxConnections();
-		ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(
-				"AWS S3 blobstore - %d").build();
-		ExecutorService threadPool = Executors.newFixedThreadPool(nThreads,
-				threadFactory);
-		boolean shutdownThreadPools = true;
-		this.transfers = new TransferManager(conn, threadPool,
-				shutdownThreadPools);
 	}
 
 	@Override
 	public void destroy() {
 		this.shutDown = true;
+		AmazonS3Client conn = this.conn;
+		this.conn = null;
 		if (conn != null) {
-			// shuts down TransferManager AND AmazonS3Client
-			transfers.shutdownNow();
-			transfers = null;
-			conn = null;
+			conn.shutdown();
 		}
 	}
 
@@ -270,13 +251,26 @@ public class S3BlobStore implements BlobStore {
 	}
 
 	@Override()
-	public boolean delete(TileRange tileRange) throws StorageException {
-		Iterator<long[]> tileLocations = new TileRangeIterator(tileRange);
+	public boolean delete(final TileRange tileRange) throws StorageException {
 
 		final String coordsPrefix = keyBuilder.coordinatesPrefix(tileRange);
 		if (!tilesExist(coordsPrefix)) {
 			return false;
 		}
+
+		final Iterator<long[]> tileLocations = new AbstractIterator<long[]>() {
+
+			// TileRange iterator with 1x1 meta tiling factor
+			private TileRangeIterator trIter = new TileRangeIterator(tileRange,
+					new int[] { 1, 1 });
+
+			@Override
+			protected long[] computeNext() {
+				long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
+				return gridLoc == null ? endOfData() : gridLoc;
+			}
+		};
+
 		if (listeners.isEmpty()) {
 			// if there are no listeners, don't bother requesting every tile
 			// metadata to notify the listeners
@@ -508,64 +502,5 @@ public class S3BlobStore implements BlobStore {
 			}
 		}
 		return count;
-	}
-
-	private class TileRangeIterator extends AbstractIterator<long[]> {
-		private final TileRange tr;
-		private final String coordsPrefix;
-
-		private int currentZoom;
-		private long lastX, lastY;
-
-		public TileRangeIterator(TileRange tr) {
-			this.tr = tr;
-			this.currentZoom = tr.getZoomStart();
-			long[] currentGridBounds = tr.rangeBounds(currentZoom);
-			final long minx = currentGridBounds[0];
-			final long miny = currentGridBounds[1];
-			lastX = minx - 1;
-			lastY = miny - 1;
-			this.coordsPrefix = keyBuilder.coordinatesPrefix(tr);
-		}
-
-		@Override
-		protected long[] computeNext() {
-			if (currentZoom > tr.getZoomStop()) {
-				return endOfData();
-			}
-
-			long[] currentGridBounds = tr.rangeBounds(currentZoom);
-			long minx = currentGridBounds[0];
-			long miny = currentGridBounds[1];
-			long maxx = currentGridBounds[2];
-			long maxy = currentGridBounds[3];
-
-			final int z = currentZoom;
-			for (long x = lastX + 1; x <= maxx; x++) {
-				lastX = x;
-				for (long y = lastY + 1; y <= maxy; y++) {
-					lastY = y;
-					if (tr.contains(x, y, z)) {
-						return new long[] { x, y, z };
-					}
-				}
-				// reset y
-				lastY = miny - 1;
-			}
-
-			currentZoom++;
-			if (currentZoom > tr.getZoomStop()) {
-				return endOfData();
-			}
-			// reset x,y
-
-			currentGridBounds = tr.rangeBounds(currentZoom);
-			minx = currentGridBounds[0];
-			miny = currentGridBounds[1];
-			lastX = minx - 1;
-			lastY = miny - 1;
-
-			return computeNext();
-		}
 	}
 }
