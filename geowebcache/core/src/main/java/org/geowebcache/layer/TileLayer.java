@@ -654,6 +654,7 @@ public abstract class TileLayer {
                                 tileProto.getParameters(), resource);
                         tile.setCreated(requestTime);
                         
+                        tile.setProfile(tileProto.getStorageObject().getProfile());
                         tile.setOutputFolder(tileProto.getStorageObject().getOutputFolder());
 
                         try {

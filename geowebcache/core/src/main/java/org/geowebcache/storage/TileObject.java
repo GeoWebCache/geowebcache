@@ -120,6 +120,14 @@ public class TileObject extends StorageObject implements Serializable{
         return layer_name;
     }
 
+    public void setProfile(String profile) {
+        this.profile = profile;
+    }
+    public String getProfile() {
+        return profile;
+    }
+    private String profile = null;
+    
     public void setOutputFolder(String outputFolder) {
         this.outputFolder = outputFolder;
     }
