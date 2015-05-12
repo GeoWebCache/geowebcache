@@ -94,7 +94,17 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         GuavaCacheProvider startingCache = new GuavaCacheProvider(new CacheConfiguration());
         this.cacheProvider = startingCache;
     }
-
+    
+    @Override
+	public boolean layerExists(String layerName) {
+        componentsStateLock.lock();
+        try {
+            return store.layerExists(layerName);
+        } finally {
+            componentsStateLock.unlock();
+        }
+	}
+    
     @Override
     public boolean delete(String layerName) throws StorageException {
         componentsStateLock.lock();

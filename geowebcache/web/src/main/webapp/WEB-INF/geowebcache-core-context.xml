@@ -73,10 +73,12 @@
   	<constructor-arg ref="gwcAppCtx" />
   </bean>
 
-  <bean id="gwcBlobStore" class="org.geowebcache.storage.blobstore.file.FileBlobStore" destroy-method="destroy">
+  <bean id="gwcBlobStore" class="org.geowebcache.storage.CompositeBlobStore" destroy-method="destroy">
+    <constructor-arg ref="gwcTLDispatcher"/>
     <constructor-arg ref="gwcDefaultStorageFinder" />
+    <constructor-arg ref="gwcXmlConfig"/>
   </bean>
-  
+
   <bean id="gwcTransientCache" class="org.geowebcache.storage.TransientCache" >
     <description>
       In memory cache used when MetaTiling tiles that are published but not cached to disk.

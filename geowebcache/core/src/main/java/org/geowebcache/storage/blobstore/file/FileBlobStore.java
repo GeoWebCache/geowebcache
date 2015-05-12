@@ -67,7 +67,7 @@ public class FileBlobStore implements BlobStore {
     private final File stagingArea;
 
     private final String path;
-
+    
     private final BlobStoreListenerList listeners = new BlobStoreListenerList();
 
     private FilePathGenerator pathGenerator;
@@ -80,8 +80,8 @@ public class FileBlobStore implements BlobStore {
         this(defStoreFinder.getDefaultPath());
     }
 
-    public FileBlobStore(String rootPath) throws StorageException {
-        path = rootPath;
+	public FileBlobStore(String rootPath) throws StorageException {
+        this.path = rootPath;
         pathGenerator = new FilePathGenerator(this.path);
 
         // prepare the root
@@ -131,7 +131,7 @@ public class FileBlobStore implements BlobStore {
         tf.setThreadPriority(Thread.MIN_PRIORITY);
         deleteExecutorService = Executors.newFixedThreadPool(1);
     }
-
+    
     /**
      * Destroy method for Spring
      */
@@ -677,5 +677,10 @@ public class FileBlobStore implements BlobStore {
         File metadataFile = new File(layerPath, "metadata.properties");
         return metadataFile;
     }
+
+	@Override
+	public boolean layerExists(String layerName) {
+		return getLayerPath(layerName).exists();
+	}
 
 }

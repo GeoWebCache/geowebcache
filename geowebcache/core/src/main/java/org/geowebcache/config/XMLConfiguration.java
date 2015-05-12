@@ -502,6 +502,10 @@ public class XMLConfiguration implements Configuration {
         // xs.alias("layers", List.class);
         xs.alias("wmsLayer", WMSLayer.class);
 
+        xs.alias("blobStores", new ArrayList<BlobStoreConfig>().getClass());
+        xs.alias("FileBlobStore", FileBlobStoreConfig.class);
+        xs.aliasAttribute(BlobStoreConfig.class, "_default", "default");
+
         // These two are for 1.1.x compatibility
         xs.alias("grids", new ArrayList<XMLOldGrid>().getClass());
         xs.alias("grid", XMLOldGrid.class);
@@ -1058,4 +1062,7 @@ public class XMLConfiguration implements Configuration {
         return null;        
     }
 
+    public List<? extends BlobStoreConfig> getBlobStores() {
+        return gwcConfig.getBlobStores();
+    }
 }
