@@ -35,12 +35,6 @@ public abstract class StorageObject {
     
     int blob_size;
     
-
-
-    /** 
-     * @return the unique id for this object (within the type), -1 if it has not been set
-     */
-    abstract public long getId();
     
     /**
      * @return the name of the type of object. Identical for all objects of a class.

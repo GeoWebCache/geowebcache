@@ -80,13 +80,11 @@ public class MemoryBlobStoreTest {
         parameters.put("b", "ø");
         TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, "EPSG:4326",
                 "image/jpeg", parameters, bytes);
-        to.setId(11231231);
 
         mbs.put(to);
         // Try to get the same TileObject
         TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326",
                 "image/jpeg", parameters);
-        to2.setId(11231231);
         mbs.get(to2);
 
         // Checks on the format
@@ -129,14 +127,12 @@ public class MemoryBlobStoreTest {
         parameters.put("b", "ø");
         TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, "EPSG:4326",
                 "image/jpeg", parameters, bytes);
-        to.setId(11231231);
 
         mbs.put(to);
 
         // Try to get the same TileObject
         TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326",
                 "image/jpeg", parameters);
-        to2.setId(11231231);
         mbs.get(to2);
 
         // Checks on the format
@@ -177,14 +173,12 @@ public class MemoryBlobStoreTest {
         long[] xyz = { 5L, 6L, 7L };
         TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, "EPSG:4326",
                 "image/jpeg", parameters, bytes);
-        to.setId(11231231);
 
         mbs.put(to);
 
         // Try to get the same TileObject
         TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326",
                 "image/jpeg", parameters);
-        to2.setId(11231231);
         mbs.get(to2);
 
         // Checks if the resources are equals
