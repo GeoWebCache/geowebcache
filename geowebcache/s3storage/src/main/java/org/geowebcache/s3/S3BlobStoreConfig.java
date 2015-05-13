@@ -1,16 +1,36 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Gabriel Roldan, Boundless Spatial Inc, Copyright 2015
+ */
 package org.geowebcache.s3;
+
+import static com.google.common.base.Preconditions.checkState;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.geowebcache.config.BlobStoreConfig;
+import org.geowebcache.storage.BlobStore;
+import org.geowebcache.storage.StorageException;
 
 /**
  * Plain old java object representing the configuration for an S3 blob store.
  */
-public class S3BlobStoreConfig {
-
-    private String storeId;
+public class S3BlobStoreConfig extends BlobStoreConfig {
 
     private String bucket;
 
@@ -38,22 +58,26 @@ public class S3BlobStoreConfig {
 
     private boolean useGzip;
 
-    public String getStoreId() {
-        return storeId;
-    }
-
-    public void setStoreId(String storeId) {
-        this.storeId = storeId;
-    }
-
+    /**
+     * @return the name of the AWS S3 bucket where to store tiles
+     */
     public String getBucket() {
         return bucket;
     }
 
+    /**
+     * Sets the name of the AWS S3 bucket where to store tiles
+     */
     public void setBucket(String bucket) {
         this.bucket = bucket;
     }
 
+    /**
+     * Returns the base prefix, which is a prefix path to use as the root to store tiles under the
+     * bucket.
+     * 
+     * @return optional string for a "base prefix"
+     */
     @Nullable
     public String getPrefix() {
         return prefix;
@@ -254,6 +278,19 @@ public class S3BlobStoreConfig {
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
+    }
+
+    @Override
+    public BlobStore createInstance() throws StorageException {
+        checkState(getId() != null);
+        checkState(isEnabled(),
+                "Can't call S3BlobStoreConfig.createInstance() is blob store is not enabled");
+        return new S3BlobStore(this);
     }
 
 }
