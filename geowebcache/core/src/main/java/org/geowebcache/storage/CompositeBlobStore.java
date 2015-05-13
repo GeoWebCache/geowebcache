@@ -330,6 +330,8 @@ public class CompositeBlobStore implements BlobStore {
             if (!stores.containsKey(BlobStore.DEFAULT_STORE_DEFAULT_ID)) {
 
                 FileBlobStoreConfig config = new FileBlobStoreConfig();
+                config.setEnabled(true);
+                config.setDefault(true);
                 config.setBaseDirectory(defaultStorageFinder.getDefaultPath());
                 FileBlobStore store;
                 store = new FileBlobStore(config.getBaseDirectory());
