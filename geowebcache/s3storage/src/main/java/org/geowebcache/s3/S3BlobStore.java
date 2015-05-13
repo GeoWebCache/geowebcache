@@ -37,6 +37,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
+import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.BlobStoreListener;
@@ -56,6 +57,7 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.AccessControlList;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.Grant;
@@ -100,17 +102,23 @@ public class S3BlobStore implements BlobStore {
         AWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
 
         ClientConfiguration clientConfig = new ClientConfiguration();
-        clientConfig.setProtocol(config.isUseHTTPS() ? Protocol.HTTPS : Protocol.HTTP);
-        if (config.getMaxConnections() > 0) {
+        if (null != config.isUseHTTPS()) {
+            clientConfig.setProtocol(config.isUseHTTPS() ? Protocol.HTTPS : Protocol.HTTP);
+        }
+        if (null != config.getMaxConnections() && config.getMaxConnections() > 0) {
             clientConfig.setMaxConnections(config.getMaxConnections());
         }
         clientConfig.setProxyDomain(config.getProxyDomain());
         clientConfig.setProxyWorkstation(config.getProxyWorkstation());
         clientConfig.setProxyHost(config.getProxyHost());
-        clientConfig.setProxyPort(config.getProxyPort());
+        if (null != config.getProxyPort()) {
+            clientConfig.setProxyPort(config.getProxyPort());
+        }
         clientConfig.setProxyUsername(config.getProxyUsername());
         clientConfig.setProxyPassword(config.getProxyPassword());
-
+        if (null != config.isUseGzip()) {
+            clientConfig.setUseGzip(config.isUseGzip());
+        }
         log.debug("Initializing AWS S3 connection");
         this.conn = new AmazonS3Client(awsCredentials, clientConfig);
 
@@ -155,7 +163,15 @@ public class S3BlobStore implements BlobStore {
         final String key = keyBuilder.forTile(obj);
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(blob.getSize());
-        objectMetadata.setContentType(obj.getBlobFormat());
+
+        String blobFormat = obj.getBlobFormat();
+        String mimeType;
+        try {
+            mimeType = MimeType.createFromFormat(blobFormat).getMimeType();
+        } catch (MimeException me) {
+            throw Throwables.propagate(me);
+        }
+        objectMetadata.setContentType(mimeType);
 
         // don't bother for the extra call if there are no listeners
         final boolean existed;
@@ -178,7 +194,7 @@ public class S3BlobStore implements BlobStore {
 
         final ByteArrayInputStream input = toByteArray(blob);
         PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, input,
-                objectMetadata);
+                objectMetadata).withCannedAcl(CannedAccessControlList.PublicRead);
 
         log.trace(log.isTraceEnabled() ? ("Storing " + key) : "");
         try {

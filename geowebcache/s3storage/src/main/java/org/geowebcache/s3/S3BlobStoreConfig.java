@@ -40,9 +40,9 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
 
     private String awsSecretKey;
 
-    private int maxConnections;
+    private Integer maxConnections;
 
-    private boolean useHTTPS = true;
+    private Boolean useHTTPS = true;
 
     private String proxyDomain;
 
@@ -50,13 +50,13 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
 
     private String proxyHost;
 
-    private int proxyPort;
+    private Integer proxyPort;
 
     private String proxyUsername;
 
     private String proxyPassword;
 
-    private boolean useGzip;
+    private Boolean useGzip;
 
     /**
      * @return the name of the AWS S3 bucket where to store tiles
@@ -106,28 +106,28 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
     /**
      * @return The maximum number of allowed open HTTP connections.
      */
-    public int getMaxConnections() {
+    public Integer getMaxConnections() {
         return maxConnections;
     }
 
     /**
      * Sets the maximum number of allowed open HTTP connections.
      */
-    public void setMaxConnections(int maxConnections) {
+    public void setMaxConnections(Integer maxConnections) {
         this.maxConnections = maxConnections;
     }
 
     /**
      * @return whether to use HTTPS (true) or HTTP (false) when talking to S3 (defaults to true)
      */
-    public boolean isUseHTTPS() {
+    public Boolean isUseHTTPS() {
         return useHTTPS;
     }
 
     /**
      * @param useHTTPS whether to use HTTPS (true) or HTTP (false) when talking to S3
      */
-    public void setUseHTTPS(boolean useHTTPS) {
+    public void setUseHTTPS(Boolean useHTTPS) {
         this.useHTTPS = useHTTPS;
     }
 
@@ -200,7 +200,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
      *
      * @return The proxy port the client will connect through.
      */
-    public int getProxyPort() {
+    public Integer getProxyPort() {
         return proxyPort;
     }
 
@@ -209,7 +209,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
      *
      * @param proxyPort The proxy port the client will connect through.
      */
-    public void setProxyPort(int proxyPort) {
+    public void setProxyPort(Integer proxyPort) {
         this.proxyPort = proxyPort;
     }
 
@@ -257,7 +257,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
      *
      * @return if gzip compression is used
      */
-    public boolean isUseGzip() {
+    public Boolean isUseGzip() {
         return useGzip;
     }
 
@@ -266,7 +266,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
      *
      * @param use whether gzip compression should be used
      */
-    public void setUseGzip(boolean use) {
+    public void setUseGzip(Boolean use) {
         this.useGzip = use;
     }
 

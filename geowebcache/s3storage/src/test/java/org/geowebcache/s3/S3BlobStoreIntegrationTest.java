@@ -87,7 +87,8 @@ public class S3BlobStoreIntegrationTest {
     @Before
     public void before() {
         Assume.assumeTrue(tempFolder.isConfigured());
-        blobStore = new S3BlobStore(tempFolder.getConfig());
+        S3BlobStoreConfig config = tempFolder.getConfig();
+        blobStore = new S3BlobStore(config);
     }
 
     @Test
