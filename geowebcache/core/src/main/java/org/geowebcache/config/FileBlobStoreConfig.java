@@ -34,6 +34,14 @@ public class FileBlobStoreConfig extends BlobStoreConfig {
 
     private int fileSystemBlockSize;
 
+    public FileBlobStoreConfig() {
+        super();
+    }
+
+    public FileBlobStoreConfig(String id) {
+        super(id);
+    }
+
     public String getBaseDirectory() {
         return baseDirectory;
     }
@@ -76,11 +84,12 @@ public class FileBlobStoreConfig extends BlobStoreConfig {
 
     @Override
     public FileBlobStore createInstance() throws StorageException {
-        checkState(getId() != null);
+        checkState(getId() != null, "id not set");
         checkState(isEnabled(),
                 "Can't call FileBlobStoreConfig.createInstance() is blob store is not enabled");
         checkState(baseDirectory != null, "baseDirectory not provided");
-        checkState(fileSystemBlockSize >= 0);
+        checkState(fileSystemBlockSize >= 0, "fileSystemBlockSize must be a positive integer: %s",
+                fileSystemBlockSize);
         return new FileBlobStore(baseDirectory);
     }
 

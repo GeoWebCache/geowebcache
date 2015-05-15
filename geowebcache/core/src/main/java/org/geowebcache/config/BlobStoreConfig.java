@@ -16,6 +16,8 @@
  */
 package org.geowebcache.config;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.StorageException;
@@ -62,6 +64,10 @@ public abstract class BlobStoreConfig {
         return id;
     }
 
+    void setId(String id) {
+        this.id = id;
+    }
+
     /**
      * @return whether the blob store is enabled ({@code true}) or not.
      */
@@ -96,6 +102,16 @@ public abstract class BlobStoreConfig {
 
     @Override
     public abstract String toString();
+
+    @Override
+    public boolean equals(Object o) {
+        return EqualsBuilder.reflectionEquals(this, o);
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
 
     /**
      * Factory method for this class of blobstore, configured as per this configuration object

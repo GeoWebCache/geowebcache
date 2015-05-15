@@ -256,7 +256,7 @@ public class GeoWebCacheConfiguration {
         this.formatModifiers = formatModifiers;
     }
 
-    public List<? extends BlobStoreConfig> getBlobStores(){
+    public List<BlobStoreConfig> getBlobStores(){
     	return blobStores;
     }
     

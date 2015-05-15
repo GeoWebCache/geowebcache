@@ -1062,7 +1062,7 @@ public class XMLConfiguration implements Configuration {
         return null;        
     }
 
-    public List<? extends BlobStoreConfig> getBlobStores() {
+    public List<BlobStoreConfig> getBlobStores() {
         return gwcConfig.getBlobStores();
     }
 }

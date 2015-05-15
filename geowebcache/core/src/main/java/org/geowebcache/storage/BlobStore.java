@@ -27,8 +27,6 @@ package org.geowebcache.storage;
  */
 public interface BlobStore {
 	
-	public static final String DEFAULT_STORE_DEFAULT_ID = "_DEFAULT_STORE_";
-	
     /**
      * Delete the cache for the named layer
      * 

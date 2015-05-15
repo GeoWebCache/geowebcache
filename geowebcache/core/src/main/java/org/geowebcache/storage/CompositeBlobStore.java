@@ -35,6 +35,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
@@ -59,20 +60,23 @@ public class CompositeBlobStore implements BlobStore {
 
     private static Log log = LogFactory.getLog(CompositeBlobStore.class);
 
-    private Map<String, LiveStore> blobStores = new ConcurrentHashMap<>();
+    public static final String DEFAULT_STORE_DEFAULT_ID = "_DEFAULT_STORE_";
+
+    @VisibleForTesting
+    Map<String, LiveStore> blobStores = new ConcurrentHashMap<>();
 
     private TileLayerDispatcher layers;
 
     private DefaultStorageFinder defaultStorageFinder;
 
+    @VisibleForTesting
     static final class LiveStore {
-        private BlobStoreConfig config;
+        BlobStoreConfig config;
 
-        private BlobStore liveInstance;
+        BlobStore liveInstance;
 
         public LiveStore(BlobStoreConfig config, @Nullable BlobStore store) {
-            Preconditions.checkArgument((config.isEnabled() && store != null)
-                    || !config.isEnabled());
+            Preconditions.checkArgument(config.isEnabled() == (store != null));
             this.config = config;
             this.liveInstance = store;
         }
@@ -149,7 +153,9 @@ public class CompositeBlobStore implements BlobStore {
     private void destroy(Map<String, LiveStore> blobStores) {
         for (LiveStore bs : blobStores.values()) {
             try {
-                bs.liveInstance.destroy();
+                if (bs.config.isEnabled()) {
+                    bs.liveInstance.destroy();
+                }
             } catch (Exception e) {
                 log.error("Error disposing BlobStore " + bs.config.getId(), e);
             }
@@ -263,7 +269,7 @@ public class CompositeBlobStore implements BlobStore {
     }
 
     private LiveStore defaultStore() throws StorageException {
-        LiveStore store = blobStores.get(BlobStore.DEFAULT_STORE_DEFAULT_ID);
+        LiveStore store = blobStores.get(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID);
         if (store == null) {
             throw new StorageException("No default BlobStore has been defined");
         }
@@ -302,6 +308,10 @@ public class CompositeBlobStore implements BlobStore {
                     throw new ConfigurationException("Duplicate blob store id: " + id
                             + ". Check your configuration.");
                 }
+                if (CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID.equals(id)) {
+                    throw new ConfigurationException(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID
+                            + " is a reserved identifier, please don't use it in the configuration");
+                }
 
                 BlobStore store = null;
                 if (enabled) {
@@ -319,7 +329,7 @@ public class CompositeBlobStore implements BlobStore {
                         }
 
                         defaultStore = config;
-                        stores.put(BlobStore.DEFAULT_STORE_DEFAULT_ID, liveStore);
+                        stores.put(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID, liveStore);
                     } else {
                         throw new ConfigurationException("Duplicate default blob store: "
                                 + defaultStore.getId() + " and " + config.getId());
@@ -327,7 +337,7 @@ public class CompositeBlobStore implements BlobStore {
                 }
             }
 
-            if (!stores.containsKey(BlobStore.DEFAULT_STORE_DEFAULT_ID)) {
+            if (!stores.containsKey(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID)) {
 
                 FileBlobStoreConfig config = new FileBlobStoreConfig();
                 config.setEnabled(true);
@@ -336,7 +346,8 @@ public class CompositeBlobStore implements BlobStore {
                 FileBlobStore store;
                 store = new FileBlobStore(config.getBaseDirectory());
 
-                stores.put(BlobStore.DEFAULT_STORE_DEFAULT_ID, new LiveStore(config, store));
+                stores.put(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID,
+                        new LiveStore(config, store));
             }
         } catch (ConfigurationException | StorageException e) {
             destroy(stores);
