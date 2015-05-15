@@ -90,7 +90,11 @@ public class FileBlobStoreConfig extends BlobStoreConfig {
         checkState(baseDirectory != null, "baseDirectory not provided");
         checkState(fileSystemBlockSize >= 0, "fileSystemBlockSize must be a positive integer: %s",
                 fileSystemBlockSize);
-        return new FileBlobStore(baseDirectory);
+        FileBlobStore fileBlobStore = new FileBlobStore(baseDirectory);
+        if(fileSystemBlockSize > 0){
+            fileBlobStore.setBlockSize(fileSystemBlockSize);
+        }
+        return fileBlobStore;
     }
 
 }
