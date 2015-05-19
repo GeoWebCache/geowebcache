@@ -1,3 +1,13 @@
+GeoWebCache 1.7.1 (2015-05-19)
+----------------------------------
+
+First maintenance release for the 1.7.x branch.
+
+Improvements:
++++++++++++++
+- Configure location of geowebcache.xml via property/environment variable
+
+
 GeoWebCache 1.7.0 (2015-03-19)
 ----------------------------------
 
