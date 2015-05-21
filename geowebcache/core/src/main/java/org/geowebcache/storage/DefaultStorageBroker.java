@@ -38,6 +38,7 @@ public class DefaultStorageBroker implements StorageBroker {
     }
     public DefaultStorageBroker(BlobStore blobStore, TransientCache transientCache) {
         this.blobStore = blobStore;
+        this.transientCache = transientCache;
     }
 
     public void addBlobStoreListener(BlobStoreListener listener){
