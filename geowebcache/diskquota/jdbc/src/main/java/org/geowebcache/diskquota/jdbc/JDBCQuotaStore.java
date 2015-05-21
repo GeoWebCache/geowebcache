@@ -50,6 +50,7 @@ import org.geowebcache.diskquota.storage.TileSet;
 import org.geowebcache.diskquota.storage.TileSetVisitor;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
@@ -232,7 +233,9 @@ public class JDBCQuotaStore implements QuotaStore {
                     layerTileSets = Collections.singleton(new TileSet(GLOBAL_QUOTA_NAME));
                 }
                 for (TileSet tset : layerTileSets) {
-                    createTileSet(tset);
+                    // other nodes in the cluster might be trying to create the same layer,
+                    // so use getOrCreate
+                    getOrCreateTileSet(tset);
                 }
 
             }
@@ -412,19 +415,25 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     protected TileSet getOrCreateTileSet(TileSet tileSet) {
+        Exception lastException = null;
         for (int i = 0; i < maxLoops; i++) {
             TileSet tset = getTileSetByIdInternal(tileSet.getId());
             if (tset != null) {
                 return tset;
             }
 
-            if (createTileSet(tileSet)) {
-                return tileSet;
+            try {
+                if (createTileSet(tileSet)) {
+                    return tileSet;
+                }
+            } catch (DataAccessException e) {
+                // fine, it might be another node created this table
+                lastException = e;
             }
         }
 
         throw new ConcurrencyFailureException("Failed to create or locate tileset " + tileSet
-                + " after " + maxLoops + " attempts");
+                + " after " + maxLoops + " attempts", lastException);
     }
 
     public TilePageCalculator getTilePageCalculator() {
