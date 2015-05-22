@@ -3,14 +3,33 @@
 Storage
 =======
 
+.. note:: The cache is the physical location of the layers tiles, whether it is on the local file system, an S3 bucket, a pure in-memory cache, 
+    or anything else. A "blobstore" is a software component that provides the operations to store and retrieve tiles to and from a given
+    storage mechanism.
+
+
 Cache
 -----
 
-.. note:: The cache is sometimes referred to as the "blobstore".
+Starting with version 1.8.0, there are two types of persistent storage mechanisms for tiles:
 
-The cache is a directory structure consisting of various image files organized by layer and zoom level.  By default, the cache is stored in the temporary storage folder specified by the web application container.  (For Tomcat, this is the :file:`temp` directory inside the root.)   The directory created will be called :file:`geowebcache`.  If this directory is not available, GeoWebCache will attempt to create a new :file:`geowebcache` directory in the location specified by the ``TEMP`` system environment variable.
+* File blob store: stores tiles in a directory structure consisting of various image files organized by layer and zoom level.  
+* S3 blob store: stores tiles in an `Amazon Simple Storage Service <http://aws.amazon.com/s3/>`_ bucket, as individual "objects" following a 
+  `TMS <http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification>`_-like key structure.
 
-There are a few ways to change the location of the cache:
+Zero or more blobstores can be configured in the configuration file to store tiles at different locations and on different storage back-ends.
+One of the configured blobstores will be the **default** one. Meaning that it will be used to store the tiles of every layer whose configuration
+does not explicitly indicate which blobstore shall be used.
+
+.. note:: **there will always be a "default" blobstore**. If a blobstore to be used by default is not explicitly configured, one will
+   be created automatically following the legacy cache location lookup mechanism used in versions prior to 1.8.0.
+ 
+Configuration File
+------------------
+
+The location of the configuration file, :file:`geowebcache.xml`, will be defined by the ``GEOWEBCACHE_CACHE_DIR`` application argument.
+
+There are a few ways to define this argument:
 
 * JVM system environment variable
 * Servlet context parameteter
@@ -18,7 +37,8 @@ There are a few ways to change the location of the cache:
 
 The variable in all cases is defined as ``GEOWEBCACHE_CACHE_DIR``.
 
-To set as a JVM system environment variable, add the parameter ``-DGEOWEBCACHE_CACHE_DIR=<path>`` to your servlet startup script.  In Tomcat, this can be added to the Java Options (JAVA_OPTS) variable in the startup script.
+To set as a JVM system environment variable, add the parameter ``-DGEOWEBCACHE_CACHE_DIR=<path>`` to your servlet startup script.  
+In Tomcat, this can be added to the Java Options (JAVA_OPTS) variable in the startup script.
 
 To set as a servlet context parameter, edit the GeoWebCache :file:`web.xml` file and add the following code:
 
@@ -51,13 +71,209 @@ Finally, although not recommended, it is possible to set this location directly 
 
 making sure to edit the path.  As usual, any changes to the servlet configuration files will require :ref:`configuration.reload`.
 
-Configuration File
-------------------
+.. note:: if ``GEOWEBCACHE_CACHE_DIR`` is not provided by any of the above mentioned methods, the directory will default
+    to the temporary storage folder specified by the web application container. (For Tomcat, this is the :file:`temp` directory inside the root.)
+    The directory created will be called :file:`geowebcache`.  If this directory is not available, GeoWebCache will attempt to create a new 
+    :file:`geowebcache` directory in the location specified by the ``TEMP`` system environment variable. It is **highly** recommended
+    to explicitly define the location of the configuration/cache directory.
 
-The configuration file, :file:`geowebcache.xml`, will be looked for or created in the cache directory by default.  A separate location can be set with the ``GEOWEBCACHE_CONFIG_DIR`` variable or property in the same way as decribed above for ``GEOWEBCACHE_CACHE_DIR``.
 
 BlobStore configuration
 -----------------------
+
+A basic installation does not require to configure a blobstore. One will be created automatically following the same cache location lookup
+mechanism as for versions prior to 1.8.0, meaning that a file blobstore will be used at the directory defined by the ``GEOWEBCACHE_CACHE_DIR``
+application argument.
+
+Starting with 1.8.0, it is possible to configure multiple blobstores, which provides several advantages:
+
+* Allow to decouple the location of the configuration and the storage;
+* Allow for multiple cache base directories;
+* Allow for alternate storage mechanisms than the current ``FileBlobStore``;
+* Allow for different storage mechanisms to coexist;
+* Allow to chose which "blob store" to save tiles to on a per "tile layer" basis;
+* Allow serving pre-seeded caches directly from S3.
+
+The :file:`geowebcache.xml` file must be edited to configure blob stores. 
+
+The following is the excerpt of the schema definition that allows to configure
+blob stores: :download:`BlobStores XML schema <storage_blobstore_schema.txt>`
+
+Between the ``formatModifiers`` and ``gridSets`` elements of the root ``gwcConfiguration`` element, a list of blob stores can be configured as
+children of the ``blobStores`` element. For example:
+
+.. code-block:: xml
+
+    <gwcConfiguration>
+      ...
+      <formatModifiers>...</formatModifiers>
+      
+      <blobStores>
+       <FileBlobStore default="true"><id>default_cache</id><enabled>true</enabled>...</FileBlobStore>
+       <S3BlobStore><id>default_cache</id><enabled>true</enabled>...</S3BlobStore>
+       <FileBlobStore><id>default_cache</id><enabled>false</enabled>...</FileBlobStore>
+      </blobStores>
+      
+      <gridSets>...</gridSets>
+      ...
+    </gwcConfiguration>
+
+Common properties
++++++++++++++++++
+
+All blob stores have the *default*, *id*, and *enabled* properties.
+
+* **default** is an optional attribute which defines if the blob store is the *default* one. Only one blob store can have this attribute set to *true*.
+  Having more than one blob store with ``default="true"`` will raise an exception at startup time. Yet, if no blob store has ``default="true"``, a
+  default ``FileBlobStore`` will be automatically created at the directory specified by the ``GEOWEBCACHE_CACHE_DIR`` application argument for
+  backwards compatibility.
+* **id** is a **mandatory** string property defining a unique identifier for the blobstore for the geowebcache instance. Not defining a unique id
+  for a blobstore, or configuring more than one with the same id, will raise an exception at application startup time. This identifier can then
+  be referred to by the ``blobStoreId`` element of a ``wmsLayer`` in the same configuration file, in order to explicitly state which blob store
+  to use for a given layer.
+* **enabled** is an **optional** attribute that **defaults to true**. If a blobstore is not enabled (i.e. ``<enabled>false</enabled>``), then it cannot
+  be used and any attempt to store or retrieve a tile from it will result in a runtime exception making the operation fail. Note that **it is invalid** to
+  have the ``default="true"`` and ``<enabled>false</enabled>`` properties at the same time, resulting in a startup failure.
+
+Besides these common properties, each kind of blob store defines its own, as follows:
+
+File Blob Store
++++++++++++++++
+
+The file blob store saves tiles on disk following the traditional geowebcache cache directory layout.
+
+Example:
+
+.. code-block:: xml
+
+    <FileBlobStore default="false">
+      <id>defaultCache</id>
+      <enabled>false</enabled>
+      <baseDirectory>/opt/defaultCache</baseDirectory>
+      <fileSystemBlockSize>4096</fileSystemBlockSize>
+    </FileBlobStore>
+
+Properties:
+
+
+* **baseDirectory**: Mandatory. The absolute path for the cache's root directory.
+* **fileSystemBlockSize**: Optional, defaults to 4096. A positive integer representing the file system block size (usually 4096, 8292, or 16384, depending on 
+  the `file system <http://en.wikipedia.org/wiki/File_system>`_ where the base directory resides.
+  This value is used to pad the size of tile files to the actual size of the file on disk before notifying the internal blob store listeners when tiles
+  are stored, deleted, or updated. This is useful, for example, for the "disk-quota" subsystem to correctly compute the cache's disk usage.
+
+Amazon Simple Storage Service (S3) Blob Store
++++++++++++++++++++++++++++++++++++++++++++++
+
+The following documentation assumes you're familiar with the `Amazon Simple Storage Service <http://aws.amazon.com/s3/>`_.
+
+This blob store allows to configure a cache for layers on an S3 bucket with the following `TMS <http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification>`_-like
+key structure:
+
+    [prefix]/<layer name>/<gridset id>/<format id>/<parameters hash | "default">/<z>/<x>/<y>.<extension>
+    
+* prefix: if provided in the configuration, it will be used as the "root path" for tile keys. Otherwise the keys will be built starting at the bucket's root.
+* layer name: the name of the layer
+* gridset id: the name of the gridset of the tile
+* format id: the gwc internal name for the tile format. E.g.: ``png``, ``png8``, ``jpeg``, etc.
+* parameters hash: if the request that originated that tiles included parameter filters, a unique hash code of the set of parameter filters, otherwise the constant ``default``.
+* z: the z ordinate of the tile in the gridset space.
+* x: the x ordinate of the tile in the gridset space.
+* y: the y ordinate of the tile in the gridset space.
+* extension: the file extension associated to the tile format. E.g. ``png``, ``jpeg``, etc. (Note the extension is the same for the ``png`` and ``png8`` formats, for example).
+
+Configuration example:
+
+.. code-block:: xml
+
+    <S3BlobStore default="false">
+      <id>myS3Cache</id>
+      <enabled>false</enabled>
+      <bucket>put-your-actual-bucket-name-here</bucket>
+      <prefix>test-cache</prefix>
+      <awsAccessKey>putYourActualAccessKeyHere</awsAccessKey>
+      <awsSecretKey>putYourActualSecretKeyHere</awsSecretKey>
+      <maxConnections>50</maxConnections>
+      <useHTTPS>true</useHTTPS>
+      <proxyDomain></proxyDomain>
+      <proxyWorkstation></proxyWorkstation>
+      <proxyHost></proxyHost>
+      <proxyPort></proxyPort>
+      <proxyUsername></proxyUsername>
+      <proxyPassword></proxyPassword>
+      <useGzip>true</useGzip>
+    </S3BlobStore>
+
+
+Properties:
+
+* **bucket**: Mandatory. The name of the AWS S3 bucket where to store tiles.
+* **prefix**: Optional. A prefix path to use as the "root folder" to store tiles at. For example, if the bucket is ``bucket.gwc.example`` and 
+  prefix is "mycache", all tiles will be stored under ``bucket.gwc.example/mycache/{layer name}`` instead of ``bucket.gwc.example/{layer name}``.
+* **awsAccessKey**: Mandatory. The public access key the client uses to connect to S3.
+* **awsSecretKey**: Mandatory. The secret key the client uses to connect to S3.
+* **maxConnections**: Optional, default: ``50``. Maximum number of concurrent HTTP connections the S3 client may use.
+* **useHTTPS**: Optional, default: ``true``. Whether to use HTTPS when connecting to S3 or not.
+* **proxyDomain**: Optional. The Windows domain name for configuring an NTLM proxy. If you are not using a Windows NTLM proxy, you don't need to set this property.
+* **proxyWorkstation**: Optional. The Windows domain name for configuring an NTLM proxy. If you are not using a Windows NTLM proxy, you don't need to set this property.
+* **proxyHost**: Optional. The proxy host the client will connect through.
+* **proxyPort**: Optional. The proxy port the client will connect through.
+* **proxyUsername**: Optional. The proxy user name to use if connecting through a proxy.
+* **proxyPassword**: Optional. The proxy password to use when connecting through a proxy.
+* **useGzip**: Optional, default: ``true``. Whether gzip compression should be used when transferring tiles to/from S3.
+
+Additional Information:
+=======================
+
+
+The S3 objects for tiles are created with public visibility to allow for "standalone" pre-seeded caches to be used directly from S3 without geowebcache
+as middleware. In the future this behavior could be disabled through a configuration option.
+
+**Beware of amazon services costs**. Especially in terms of bandwidth usage when serving tiles out of the Amazon cloud, and S3 storage prices. **We haven't conducted
+a thorough assessment of costs associated to seeding and serving caches**. Yet we can provide some general purpose advise:
+
+* Do not seed at high zoom levels (except if you know what you're doing). The number of tiles grow exponentially as the zoom level increases.
+* Use the tile format that produces the smalles possible tiles. For instance, png8 is a great compromise for quality/size. Keep in mind that the smaller the tiles
+  the bigger the size difference between two identical caches on S3 vs a regular file system. The S3 cache takes less space because the actual space used for each
+  tile is not padded to a file system block size. For example, the ``topp:states`` layer seeded up to zoom level 10 for EPSG:4326 with png8 format takes roughly
+  240MB on an Ext4 file system, and about 21MB on S3.
+* Use in-memory caching. When serving S3 tiles from GeoWebcache, you can greately reduce the number of GET requests to S3 by configuring an in-memory cache as
+  described in the "In-Memory caching" section bellow. This will allow for frequently requested tiles to be kept in memory instead of retrieved from S3 on each
+  call.
+
+The following is an example OpenLayers 3 HTML/JavaScript to set up a map that fetches tiles from a pre-seeded geowebcache layer directly from S3. We're using the typical
+GeoServer ``topp:states`` sample layer on a fictitious ``my-geowebcache-bucket`` bucket, using ``test-cache`` as the cache prefix, png8 tile format, and EPSG:4326 CRS.
+
+.. code-block:: html
+
+    <div class="row-fluid">
+      <div class="span12">
+        <div id="map" class="map"></div>
+      </div>
+    </div>
+
+.. code-block:: javascript
+
+    var map = new ol.Map({
+      target: 'map',
+      controls: ol.control.defaults(),
+      layers: [
+        new ol.layer.Tile({
+          source: new ol.source.XYZ({
+            projection: "EPSG:4326",
+            url: 'http://my-geowebcache-bucket.s3.amazonaws.com/test-cache/topp%3Astates/EPSG%3A4326/png8/default/{z}/{x}/{-y}.png'
+          })
+        })
+      ],
+      view: new ol.View({
+        projection: "EPSG:4326",
+        center: [-104, 39],
+        zoom: 2
+      })
+    });
+
+In-Memory caching
+-----------------
 
 Default **blobstore** can be changed with a new one called **MemoryBlobStore**, which allows in memory tile caching. The **MemoryBlobStore** is a wrapper of a **blobstore** 
 implementation, which can be the default one(*FileBlobStore*) or another one. For using the new **blobstore** implementation, the user have to 
