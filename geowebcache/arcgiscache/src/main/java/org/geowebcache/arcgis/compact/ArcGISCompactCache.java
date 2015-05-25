@@ -157,10 +157,10 @@ public class ArcGISCompactCache {
             try {
                 int idx = indexFile.lastIndexOf('L') + 1;
                 zoomLevel = Integer.parseInt(indexFile.substring(idx, idx + 2)); // zoom level is
-                                                                                 // decimal, not
-                                                                                 // hexadecimal like
-                                                                                 // rows and
-                                                                                 // columns!
+                // decimal, not
+                // hexadecimal like
+                // rows and
+                // columns!
             } catch (NumberFormatException e) {
                 System.err
                         .println("Error parsing zoom level xx from cache directory path (.../Lxx/...): "
