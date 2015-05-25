@@ -21,6 +21,7 @@ package org.geowebcache.arcgis.config;
  *       &lt;MTolerance&gt;2&lt;/MTolerance&gt;
  *       &lt;HighPrecision&gt;true&lt;/HighPrecision&gt;
  *       &lt;WKID&gt;2193&lt;/WKID&gt;
+ *       &lt;LatestWKID&gt;2193&lt;/LatestWKID&gt;
  * &lt;/SpatialReference&gt;
  * </pre>
  * </code>
@@ -57,6 +58,8 @@ public class SpatialReference {
     private boolean HighPrecision;
 
     private int WKID;
+
+    private int LatestWKID;
 
     private double LeftLongitude;
 
@@ -110,6 +113,14 @@ public class SpatialReference {
 
     public int getWKID() {
         return WKID;
+    }
+
+    /**
+     * New in ArcGIS 10.1+
+     * @return
+     */
+    public int getLatestWKID() {
+        return LatestWKID;
     }
 
     /**
