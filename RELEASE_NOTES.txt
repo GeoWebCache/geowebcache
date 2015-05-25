@@ -1,3 +1,22 @@
+GeoWebCache 1.8-M0 (2015-05-26)
+----------------------------------
+
+Tech Preview Milestone for 1.8.x
+
+Improvements:
++++++++++++++
+- StringParameterFilter and RegexParameterFilter support case normalization
+- IntegerParameterFilter
+- Additional configuration options for ArcGIS Cache
+- TileObject API revised to remove unused properties
+- Updated for GeoTools 14
+
+Fixes:
+++++++
+- Fix for a issue in GS-GWC integrations's handling of DiskQuota
+- Fixed missing assignment of TransientCache
+- Doc Fixes
+
 GeoWebCache 1.7.1 (2015-05-19)
 ----------------------------------
 
