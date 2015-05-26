@@ -37,6 +37,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
+import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.BlobStore;
@@ -89,13 +90,19 @@ public class S3BlobStore implements BlobStore {
 
     private volatile boolean shutDown;
 
-    public S3BlobStore(S3BlobStoreConfig config) {
+    private final TileLayerDispatcher layers;
+
+    public S3BlobStore(S3BlobStoreConfig config, TileLayerDispatcher layers) {
+        checkNotNull(config);
+        checkNotNull(layers);
         checkNotNull(config.getAwsAccessKey(), "Access key not provided");
         checkNotNull(config.getAwsSecretKey(), "Secret key not provided");
 
+        this.layers = layers;
+
         this.bucketName = config.getBucket();
         String prefix = config.getPrefix() == null ? "" : config.getPrefix();
-        this.keyBuilder = new TMSKeyBuilder(prefix);
+        this.keyBuilder = new TMSKeyBuilder(prefix, layers);
 
         String accessKey = config.getAwsAccessKey();
         String secretKey = config.getAwsSecretKey();
@@ -341,7 +348,7 @@ public class S3BlobStore implements BlobStore {
 
     @Override
     public boolean delete(String layerName) throws StorageException {
-        String layerPrefix = keyBuilder.forLayer(layerName);
+        final String layerPrefix = keyBuilder.forLayer(layerName);
         final long tileCount = deleteTiles(layerPrefix);
         final String metadataKey = keyBuilder.layerMetadata(layerName);
         boolean layerExisted;
@@ -362,12 +369,14 @@ public class S3BlobStore implements BlobStore {
     @Override
     public boolean deleteByGridsetId(String layerName, String gridSetId) throws StorageException {
         final String gridsetPrefix = keyBuilder.forGridset(layerName, gridSetId);
+        final boolean tilesExist = tilesExist(gridsetPrefix);
+
         final long tileCount = deleteTiles(gridsetPrefix);
         if (tileCount > 0) {
             listeners.sendGridSubsetDeleted(layerName, gridSetId);
         }
 
-        return tileCount > 0;
+        return tilesExist;
     }
 
     @Nullable
@@ -402,7 +411,11 @@ public class S3BlobStore implements BlobStore {
 
     @Override
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
-        throw new UnsupportedOperationException("Not yet implemented");
+        log.debug("No need to rename layers, S3BlobStore uses layer id as key root");
+        if (tilesExist(oldLayerName)) {
+            listeners.sendLayerRenamed(oldLayerName, newLayerName);
+        }
+        return true;
     }
 
     @Override

@@ -17,9 +17,11 @@
 package org.geowebcache.config;
 
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
 
+import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 import org.junit.Before;
@@ -40,16 +42,19 @@ public class FileBlobStoreConfigTest {
     @Rule
     public ExpectedException ex = ExpectedException.none();
 
+    private TileLayerDispatcher layers;
+
     @Before
     public void before() {
         config = new FileBlobStoreConfig();
+        layers = mock(TileLayerDispatcher.class);
     }
 
     @Test
     public void testCreateInstanceNoId() throws StorageException {
         ex.expect(IllegalStateException.class);
         ex.expectMessage("id not set");
-        config.createInstance();
+        config.createInstance(layers);
     }
 
     @Test
@@ -58,7 +63,7 @@ public class FileBlobStoreConfigTest {
         config.setEnabled(false);
         ex.expect(IllegalStateException.class);
         ex.expectMessage("store is not enabled");
-        config.createInstance();
+        config.createInstance(layers);
     }
 
     @Test
@@ -67,7 +72,7 @@ public class FileBlobStoreConfigTest {
         config.setEnabled(true);
         ex.expect(IllegalStateException.class);
         ex.expectMessage("baseDirectory not provided");
-        config.createInstance();
+        config.createInstance(layers);
     }
 
     @Test
@@ -78,7 +83,7 @@ public class FileBlobStoreConfigTest {
         config.setBaseDirectory(tmp.getRoot().getAbsolutePath());
         ex.expect(IllegalStateException.class);
         ex.expectMessage("must be a positive integer");
-        config.createInstance();
+        config.createInstance(layers);
     }
 
     @Test
@@ -88,7 +93,7 @@ public class FileBlobStoreConfigTest {
         File root = tmp.getRoot();
         Preconditions.checkState(root.exists() && root.isDirectory());
         config.setBaseDirectory(root.getAbsolutePath());
-        FileBlobStore store = config.createInstance();
+        FileBlobStore store = config.createInstance(layers);
         assertNotNull(store);
     }
 

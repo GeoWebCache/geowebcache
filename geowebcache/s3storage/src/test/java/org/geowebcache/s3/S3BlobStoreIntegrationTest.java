@@ -28,6 +28,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +45,8 @@ import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.FileResource;
 import org.geowebcache.io.Resource;
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.BlobStoreListener;
@@ -85,10 +88,16 @@ public class S3BlobStoreIntegrationTest {
     private S3BlobStore blobStore;
 
     @Before
-    public void before() {
+    public void before() throws Exception {
         Assume.assumeTrue(tempFolder.isConfigured());
         S3BlobStoreConfig config = tempFolder.getConfig();
-        blobStore = new S3BlobStore(config);
+
+        TileLayerDispatcher layers = mock(TileLayerDispatcher.class);
+        TileLayer layer = mock(TileLayer.class);
+        when(layers.getTileLayer(eq(DEFAULT_LAYER))).thenReturn(layer);
+        when(layer.getName()).thenReturn(DEFAULT_LAYER);
+        when(layer.getId()).thenReturn(DEFAULT_LAYER);
+        blobStore = new S3BlobStore(config, layers);
     }
 
     @Test
@@ -231,12 +240,12 @@ public class S3BlobStoreIntegrationTest {
 
     @Test
     public void testLayerMetadata() {
-        blobStore.putLayerMetadata("test:layer", "prop1", "value1");
-        blobStore.putLayerMetadata("test:layer", "prop2", "value2");
+        blobStore.putLayerMetadata(DEFAULT_LAYER, "prop1", "value1");
+        blobStore.putLayerMetadata(DEFAULT_LAYER, "prop2", "value2");
 
-        assertNull(blobStore.getLayerMetadata("test:layer", "nonExistingKey"));
-        assertEquals("value1", blobStore.getLayerMetadata("test:layer", "prop1"));
-        assertEquals("value2", blobStore.getLayerMetadata("test:layer", "prop2"));
+        assertNull(blobStore.getLayerMetadata(DEFAULT_LAYER, "nonExistingKey"));
+        assertEquals("value1", blobStore.getLayerMetadata(DEFAULT_LAYER, "prop1"));
+        assertEquals("value2", blobStore.getLayerMetadata(DEFAULT_LAYER, "prop2"));
     }
 
     @Test

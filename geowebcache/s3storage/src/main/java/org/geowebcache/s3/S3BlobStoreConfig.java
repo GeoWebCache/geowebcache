@@ -16,7 +16,7 @@
  */
 package org.geowebcache.s3;
 
-import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Preconditions.*;
 
 import javax.annotation.Nullable;
 
@@ -24,6 +24,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.geowebcache.config.BlobStoreConfig;
+import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.StorageException;
 
@@ -288,11 +289,12 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
     }
 
     @Override
-    public BlobStore createInstance() throws StorageException {
+    public BlobStore createInstance(TileLayerDispatcher layers) throws StorageException {
+        checkNotNull(layers);
         checkState(getId() != null);
         checkState(isEnabled(),
                 "Can't call S3BlobStoreConfig.createInstance() is blob store is not enabled");
-        return new S3BlobStore(this);
+        return new S3BlobStore(this, layers);
     }
 
 }

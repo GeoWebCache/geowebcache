@@ -21,6 +21,7 @@ import java.io.Serializable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.StorageException;
 
@@ -127,5 +128,5 @@ public abstract class BlobStoreConfig implements Serializable{
      * @throws IllegalStateException if {@link #isEnabled() isEnabled() == false} or
      *         {@link #getId() getId() == null}
      */
-    public abstract BlobStore createInstance() throws StorageException;
+    public abstract BlobStore createInstance(TileLayerDispatcher layers) throws StorageException;
 }

@@ -20,6 +20,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
 
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.TileObject;
@@ -28,7 +31,7 @@ import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 
 import com.google.common.base.Throwables;
 
-class TMSKeyBuilder {
+final class TMSKeyBuilder {
 
     /**
      * Key format, comprised of
@@ -57,8 +60,21 @@ class TMSKeyBuilder {
 
     private String prefix;
 
-    public TMSKeyBuilder(final String prefix) {
+    private TileLayerDispatcher layers;
+
+    public TMSKeyBuilder(final String prefix, TileLayerDispatcher layers) {
         this.prefix = prefix;
+        this.layers = layers;
+    }
+
+    public String layerId(String layerName) {
+        TileLayer layer;
+        try {
+            layer = layers.getTileLayer(layerName);
+        } catch (GeoWebCacheException e) {
+            throw Throwables.propagate(e);
+        }
+        return layer.getId();
     }
 
     public String forTile(TileObject obj) {
@@ -67,7 +83,7 @@ class TMSKeyBuilder {
         checkNotNull(obj.getBlobFormat());
         checkNotNull(obj.getXYZ());
 
-        String layer = obj.getLayerName();
+        String layer = layerId(obj.getLayerName());
         String gridset = obj.getGridSetId();
         String shortFormat;
         String parametersId = obj.getParametersId();
@@ -99,15 +115,18 @@ class TMSKeyBuilder {
     }
 
     public String forLayer(final String layerName) {
-        return String.format(LAYER_PREFIX_FORMAT, prefix, layerName);
+        String layerId = layerId(layerName);
+        return String.format(LAYER_PREFIX_FORMAT, prefix, layerId);
     }
 
     public String forGridset(final String layerName, final String gridsetId) {
-        return String.format(GRIDSET_PREFIX_FORMAT, prefix, layerName, gridsetId);
+        String layerId = layerId(layerName);
+        return String.format(GRIDSET_PREFIX_FORMAT, prefix, layerId, gridsetId);
     }
 
     public String layerMetadata(final String layerName) {
-        return String.format(LAYER_METADATA_FORMAT, prefix, layerName);
+        String layerId = layerId(layerName);
+        return String.format(LAYER_METADATA_FORMAT, prefix, layerId);
     }
 
     /**
@@ -119,7 +138,7 @@ class TMSKeyBuilder {
         checkNotNull(obj.getGridSetId());
         checkNotNull(obj.getMimeType());
 
-        String layer = obj.getLayerName();
+        String layer = layerId(obj.getLayerName());
         String gridset = obj.getGridSetId();
         MimeType mimeType = obj.getMimeType();
 

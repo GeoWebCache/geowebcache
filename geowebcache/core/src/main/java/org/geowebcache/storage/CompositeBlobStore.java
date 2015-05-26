@@ -315,7 +315,7 @@ public class CompositeBlobStore implements BlobStore {
 
                 BlobStore store = null;
                 if (enabled) {
-                    store = config.createInstance();
+                    store = config.createInstance(layers);
                 }
 
                 LiveStore liveStore = new LiveStore(config, store);
