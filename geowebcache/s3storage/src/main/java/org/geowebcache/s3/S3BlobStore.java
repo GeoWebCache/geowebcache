@@ -21,11 +21,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -35,9 +32,11 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.locks.LockProvider;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.BlobStore;
@@ -55,9 +54,7 @@ import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.AccessControlList;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
@@ -66,19 +63,16 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 
 public class S3BlobStore implements BlobStore {
 
-    private static Log log = LogFactory.getLog(S3BlobStore.class);
+    static Log log = LogFactory.getLog(S3BlobStore.class);
 
     private final BlobStoreListenerList listeners = new BlobStoreListenerList();
 
@@ -90,15 +84,14 @@ public class S3BlobStore implements BlobStore {
 
     private volatile boolean shutDown;
 
-    private final TileLayerDispatcher layers;
+    private final S3Ops s3Ops;
 
-    public S3BlobStore(S3BlobStoreConfig config, TileLayerDispatcher layers) {
+    public S3BlobStore(S3BlobStoreConfig config, TileLayerDispatcher layers,
+            LockProvider lockProvider) {
         checkNotNull(config);
         checkNotNull(layers);
         checkNotNull(config.getAwsAccessKey(), "Access key not provided");
         checkNotNull(config.getAwsSecretKey(), "Secret key not provided");
-
-        this.layers = layers;
 
         this.bucketName = config.getBucket();
         String prefix = config.getPrefix() == null ? "" : config.getPrefix();
@@ -139,6 +132,11 @@ public class S3BlobStore implements BlobStore {
         } catch (AmazonClientException ce) {
             throw new IllegalArgumentException("Unable to connect to AWS S3", ce);
         }
+        try {
+            this.s3Ops = new S3Ops(conn, bucketName, keyBuilder, lockProvider);
+        } catch (GeoWebCacheException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @Override
@@ -147,6 +145,7 @@ public class S3BlobStore implements BlobStore {
         AmazonS3Client conn = this.conn;
         this.conn = null;
         if (conn != null) {
+            s3Ops.shutDown();
             conn.shutdown();
         }
     }
@@ -187,15 +186,7 @@ public class S3BlobStore implements BlobStore {
             existed = false;
             oldObj = null;
         } else {
-            try {
-                oldObj = conn.getObjectMetadata(bucketName, key);
-            } catch (AmazonS3Exception e) {
-                if (404 != e.getStatusCode()) {// 404 == not found
-                    throw new StorageException("Error checking existence of " + key + ": "
-                            + e.getMessage(), e);
-                }
-                oldObj = null;
-            }
+            oldObj = s3Ops.getObjectMetadata(key);
             existed = oldObj != null;
         }
 
@@ -204,11 +195,7 @@ public class S3BlobStore implements BlobStore {
                 objectMetadata).withCannedAcl(CannedAccessControlList.PublicRead);
 
         log.trace(log.isTraceEnabled() ? ("Storing " + key) : "");
-        try {
-            conn.putObject(putObjectRequest);
-        } catch (RuntimeException e) {
-            throw new StorageException("Error storing " + key, e);
-        }
+        s3Ops.putObject(putObjectRequest);
 
         /*
          * This is important because listeners may be tracking tile existence
@@ -244,7 +231,7 @@ public class S3BlobStore implements BlobStore {
     @Override
     public boolean get(TileObject obj) throws StorageException {
         final String key = keyBuilder.forTile(obj);
-        final S3Object object = getObject(key);
+        final S3Object object = s3Ops.getObject(key);
         if (object == null) {
             return false;
         }
@@ -282,11 +269,11 @@ public class S3BlobStore implements BlobStore {
 
     }
 
-    @Override()
+    @Override
     public boolean delete(final TileRange tileRange) throws StorageException {
 
         final String coordsPrefix = keyBuilder.coordinatesPrefix(tileRange);
-        if (!tilesExist(coordsPrefix)) {
+        if (!s3Ops.prefixExists(coordsPrefix)) {
             return false;
         }
 
@@ -337,59 +324,46 @@ public class S3BlobStore implements BlobStore {
         return true;
     }
 
-    /**
-     * Simply checks if there are objects starting with {@code prefix}
-     */
-    private boolean tilesExist(String prefix) {
-        boolean hasNext = S3Objects.withPrefix(conn, bucketName, prefix).withBatchSize(1)
-                .iterator().hasNext();
-        return hasNext;
-    }
-
     @Override
     public boolean delete(String layerName) throws StorageException {
-        final String layerPrefix = keyBuilder.forLayer(layerName);
-        final long tileCount = deleteTiles(layerPrefix);
+        checkNotNull(layerName, "layerName");
+
         final String metadataKey = keyBuilder.layerMetadata(layerName);
-        boolean layerExisted;
-        if (tileCount == 0) {
-            S3Object layerMetadata = getObject(metadataKey);
-            layerExisted = layerMetadata != null;
-        } else {
-            layerExisted = true;
+        final String layerPrefix = keyBuilder.forLayer(layerName);
+
+        s3Ops.deleteObject(metadataKey);
+
+        boolean layerExists;
+        try {
+            layerExists = s3Ops.scheduleAsyncDelete(layerPrefix);
+        } catch (GeoWebCacheException e) {
+            throw Throwables.propagate(e);
         }
-        if (layerExisted) {
-            conn.deleteObject(bucketName, metadataKey);
+        if (layerExists) {
             listeners.sendLayerDeleted(layerName);
         }
-
-        return layerExisted;
+        return layerExists;
     }
 
     @Override
-    public boolean deleteByGridsetId(String layerName, String gridSetId) throws StorageException {
-        final String gridsetPrefix = keyBuilder.forGridset(layerName, gridSetId);
-        final boolean tilesExist = tilesExist(gridsetPrefix);
+    public boolean deleteByGridsetId(final String layerName, final String gridSetId)
+            throws StorageException {
 
-        final long tileCount = deleteTiles(gridsetPrefix);
-        if (tileCount > 0) {
+        checkNotNull(layerName, "layerName");
+        checkNotNull(gridSetId, "gridSetId");
+
+        final String gridsetPrefix = keyBuilder.forGridset(layerName, gridSetId);
+
+        boolean prefixExists;
+        try {
+            prefixExists = s3Ops.scheduleAsyncDelete(gridsetPrefix);
+        } catch (GeoWebCacheException e) {
+            throw Throwables.propagate(e);
+        }
+        if (prefixExists) {
             listeners.sendGridSubsetDeleted(layerName, gridSetId);
         }
-
-        return tilesExist;
-    }
-
-    @Nullable
-    private ObjectMetadata getObjectMetadata(String key) throws StorageException {
-        try {
-            return conn.getObjectMetadata(bucketName, key);
-        } catch (AmazonS3Exception e) {
-            if (404 != e.getStatusCode()) {// 404 == not found
-                throw new StorageException("Error checking existence of " + key + ": "
-                        + e.getMessage(), e);
-            }
-        }
-        return null;
+        return prefixExists;
     }
 
     @Override
@@ -397,13 +371,17 @@ public class S3BlobStore implements BlobStore {
         final String key = keyBuilder.forTile(obj);
 
         // don't bother for the extra call if there are no listeners
-        ObjectMetadata oldObj = getObjectMetadata(key);
+        if (listeners.isEmpty()) {
+            return s3Ops.deleteObject(key);
+        }
+
+        ObjectMetadata oldObj = s3Ops.getObjectMetadata(key);
 
         if (oldObj == null) {
             return false;
         }
 
-        conn.deleteObject(bucketName, key);
+        s3Ops.deleteObject(key);
         obj.setBlobSize((int) oldObj.getContentLength());
         listeners.sendTileDeleted(obj);
         return true;
@@ -412,7 +390,7 @@ public class S3BlobStore implements BlobStore {
     @Override
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
         log.debug("No need to rename layers, S3BlobStore uses layer id as key root");
-        if (tilesExist(oldLayerName)) {
+        if (s3Ops.prefixExists(oldLayerName)) {
             listeners.sendLayerRenamed(oldLayerName, newLayerName);
         }
         return true;
@@ -436,103 +414,22 @@ public class S3BlobStore implements BlobStore {
         Properties properties = getLayerMetadata(layerName);
         properties.setProperty(key, value);
         String resourceKey = keyBuilder.layerMetadata(layerName);
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
-            properties.store(out, "");
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
+            s3Ops.putProperties(resourceKey, properties);
+        } catch (StorageException e) {
+            Throwables.propagate(e);
         }
-
-        byte[] bytes = out.toByteArray();
-        ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentLength(bytes.length);
-        objectMetadata.setContentType("text/plain");
-
-        InputStream in = new ByteArrayInputStream(bytes);
-        PutObjectRequest putReq = new PutObjectRequest(bucketName, resourceKey, in, objectMetadata);
-        conn.putObject(putReq);
     }
 
     private Properties getLayerMetadata(String layerName) {
-        Properties properties = new Properties();
-        byte[] bytes;
-        try {
-            bytes = getBytes(keyBuilder.layerMetadata(layerName));
-        } catch (StorageException e) {
-            throw Throwables.propagate(e);
-        }
-        if (bytes != null) {
-            try {
-                properties.load(new InputStreamReader(new ByteArrayInputStream(bytes),
-                        Charsets.UTF_8));
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            }
-        }
-        return properties;
-    }
-
-    @Nullable
-    private S3Object getObject(String key) throws StorageException {
-        final S3Object object;
-        try {
-            object = conn.getObject(bucketName, key);
-        } catch (AmazonS3Exception e) {
-            if (404 == e.getStatusCode()) {// 404 == not found
-                return null;
-            }
-            throw new StorageException("Error fetching " + key + ": " + e.getMessage(), e);
-        }
-        return object;
-    }
-
-    @Nullable
-    private byte[] getBytes(String key) throws StorageException {
-        S3Object object = getObject(key);
-        if (object == null) {
-            return null;
-        }
-        try (S3ObjectInputStream in = object.getObjectContent()) {
-            byte[] bytes = ByteStreams.toByteArray(in);
-            return bytes;
-        } catch (IOException e) {
-            throw new StorageException("Error getting " + key, e);
-        }
-
-    }
-
-    /**
-     * Deletes all tiles under the given prefix and returns the number of tiles deleted
-     */
-    private long deleteTiles(String keyPrefix) {
-        Iterable<S3ObjectSummary> objects = S3Objects.withPrefix(conn, bucketName, keyPrefix);
-        Iterable<List<S3ObjectSummary>> partitions = Iterables.partition(objects, 1000);
-
-        long count = 0;
-        for (List<S3ObjectSummary> partition : partitions) {
-            List<KeyVersion> keys = new ArrayList<>(partition.size());
-            for (S3ObjectSummary so : partition) {
-                String key = so.getKey();
-                if (!key.endsWith(TMSKeyBuilder.LAYER_METADATA_OBJECT_NAME)) {
-                    keys.add(new KeyVersion(key));
-                }
-            }
-            if (!keys.isEmpty()) {
-                DeleteObjectsRequest deleteReq = new DeleteObjectsRequest(bucketName);
-                deleteReq.setQuiet(true);
-                deleteReq.setKeys(keys);
-                conn.deleteObjects(deleteReq);
-                count += keys.size();
-            }
-        }
-        return count;
+        String key = keyBuilder.layerMetadata(layerName);
+        return s3Ops.getProperties(key);
     }
 
     @Override
     public boolean layerExists(String layerName) {
         final String coordsPrefix = keyBuilder.forLayer(layerName);
-        boolean layerExists = tilesExist(coordsPrefix);
+        boolean layerExists = s3Ops.prefixExists(coordsPrefix);
         return layerExists;
     }
 }

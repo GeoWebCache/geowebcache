@@ -159,4 +159,8 @@ final class TMSKeyBuilder {
                 parametersId);
         return key;
     }
+
+    public String pendingDeletes() {
+        return String.format("%s/%s", prefix, "_pending_deletes.propertires");
+    }
 }

@@ -80,6 +80,7 @@ import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.locks.LockProvider;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.seed.TruncateLayerRequest;
@@ -1080,6 +1081,10 @@ public class XMLConfiguration implements Configuration, InitializingBean {
 
     public List<BlobStoreConfig> getBlobStores() {
         return gwcConfig.getBlobStores();
+    }
+    
+    public LockProvider getLockProvider() {
+        return gwcConfig.getLockProvider();
     }
 
 }

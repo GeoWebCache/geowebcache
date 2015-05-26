@@ -33,6 +33,7 @@ import org.geowebcache.config.FileBlobStoreConfig;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -68,6 +69,8 @@ public class CompositeBlobStore implements BlobStore {
     private TileLayerDispatcher layers;
 
     private DefaultStorageFinder defaultStorageFinder;
+
+    private LockProvider lockProvider;
 
     @VisibleForTesting
     static final class LiveStore {
@@ -106,6 +109,7 @@ public class CompositeBlobStore implements BlobStore {
 
         this.layers = layers;
         this.defaultStorageFinder = defaultStorageFinder;
+        this.lockProvider = configuration.getLockProvider();
         this.blobStores = loadBlobStores(configuration.getBlobStores());
     }
 
@@ -315,7 +319,7 @@ public class CompositeBlobStore implements BlobStore {
 
                 BlobStore store = null;
                 if (enabled) {
-                    store = config.createInstance(layers);
+                    store = config.createInstance(layers, lockProvider);
                 }
 
                 LiveStore liveStore = new LiveStore(config, store);
