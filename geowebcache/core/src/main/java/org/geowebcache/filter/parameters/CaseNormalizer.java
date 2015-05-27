@@ -17,12 +17,30 @@
 package org.geowebcache.filter.parameters;
 
 import java.util.Locale;
+import java.io.Serializable;
+
+import javax.annotation.Nullable;
 
 import com.google.common.base.Function;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
-public class CaseNormalizer implements Function<String, String>{
+/**
+ * Normalizes the case of strings based on a particular locale.
+ * 
+ * @author Kevin Smith, Boundless
+ *
+ */
+public class CaseNormalizer implements Function<String, String>, Serializable {
+    /**
+     * Ways to normalize case
+     * 
+     * @author Kevin Smith, Boundless
+     *
+     */
     public static enum Case {
+        /**
+         * Preserve case
+         */
         NONE(){
             @Override
             public String apply(String input, Locale loc) {
@@ -30,12 +48,18 @@ public class CaseNormalizer implements Function<String, String>{
             }
             
         },
+        /**
+         * Upper case
+         */
         UPPER {
             @Override
             public String apply(String input, Locale loc) {
                 return input.toUpperCase(loc);
             }
         },
+        /**
+         * Upper case
+         */
         LOWER {
             @Override
             public String apply(String input, Locale loc) {
@@ -43,6 +67,12 @@ public class CaseNormalizer implements Function<String, String>{
             }
         }
         ;
+        /**
+         * Normalize the case of the given string according to the rules of the given locale
+         * @param input string to normalize
+         * @param loc locale to use for case changes
+         * @return
+         */
         abstract public String apply(String input, Locale loc);
     }
     
@@ -50,14 +80,23 @@ public class CaseNormalizer implements Function<String, String>{
     Case kase;
     Locale locale;
     
+    /**
+     * Create a Case Normalizer with default case and locale
+     */
     public CaseNormalizer() {
         this((Case) null);
     }
     
+    /**
+     * Create a Case Normalizer with the given case and default locale
+     */
     public CaseNormalizer(Case kase) {
         this(kase, (Locale) null);
     }
     
+    /**
+     * Create a Case Normalizer with the given case and locale
+     */
     public CaseNormalizer(Case kase, Locale locale) {
         super();
         this.kase = kase;
@@ -73,6 +112,10 @@ public class CaseNormalizer implements Function<String, String>{
         return getCase().apply(input, getLocale());
     }
     
+    /**
+     * Get the case
+     * @return
+     */
     public Case getCase() {
         if(kase==null) {
             return Case.NONE;
@@ -81,11 +124,39 @@ public class CaseNormalizer implements Function<String, String>{
         }
     }
     
+    /**
+     * Set the case
+     * @param kase
+     */
+    public void setCase(Case kase) {
+        this.kase = kase;
+    }
+    
+    /**
+     * Get the locale.  If unset, the default locale will be returned.
+     * @return
+     */
     public Locale getLocale() {
         if (locale==null) {
             return Locale.getDefault();
         } else {
             return locale;
         }
+    }
+    
+    /**
+     * Get the locale.  If unset, returns {@code null}.
+     * @return
+     */
+    public @Nullable Locale getConfiguredLocale() {
+        return locale;
+    }
+    
+    /**
+     * Set the locale.
+     * @param locale The locale.  {@code} to set to the default.
+     */
+    public void setConfiguredLocale(@Nullable Locale locale) {
+        this.locale = locale;
     }
 }
