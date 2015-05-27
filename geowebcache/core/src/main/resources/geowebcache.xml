@@ -134,10 +134,10 @@
         </gridSubset>
       </gridSubsets>
       <expireCacheList>
-        <expirationRule expiration='60' minZoom='0'/>
+        <expirationRule minZoom="0" expiration="60" />
       </expireCacheList>
       <expireClientsList>
-        <expirationRule expiration='500' minZoom='0'/>
+        <expirationRule minZoom="0" expiration="500" />
       </expireClientsList>
       <wmsUrl>
         <string>http://demo.opengeo.org/geoserver/wms</string>

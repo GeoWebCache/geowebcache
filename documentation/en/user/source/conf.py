@@ -45,7 +45,7 @@ copyright = u'OpenGeo, License: Creative Commons 3.0 - Attribution Share Alike'
 # other places throughout the built documents.
 #
 # The short X.Y version.
-version = '1.8-M0'
+version = '1.8'
 # The full version, including alpha/beta/rc tags.
 release = '1.8.x'
 
