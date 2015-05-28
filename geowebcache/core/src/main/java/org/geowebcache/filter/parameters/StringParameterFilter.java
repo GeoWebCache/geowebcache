@@ -104,6 +104,7 @@ public class StringParameterFilter extends CaseNormalizingParameterFilter {
         if (values != null) {
             clone.values = new ArrayList<String>(values);
         }
+        clone.setNormalize(getNormalize().clone());
         return clone;
     }
 }

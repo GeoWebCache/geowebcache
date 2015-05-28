@@ -141,4 +141,10 @@ public class FloatParameterFilterTest {
         assertThat(o, hasProperty("values", containsInAnyOrder(42f, 6.283f, -17.5f)));
     }
     
+    @Test
+    public void testCloneable() throws Exception {
+        FloatParameterFilter clone = filter.clone();
+        assertThat(clone.getDefaultValue(), equalTo(filter.getDefaultValue()));
+        assertThat(clone.getValues(), equalTo(filter.getValues()));
+    }
 }

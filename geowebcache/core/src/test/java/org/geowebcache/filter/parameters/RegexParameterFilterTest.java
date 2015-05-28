@@ -283,5 +283,14 @@ public class RegexParameterFilterTest {
                 )));
         assertThat(o, hasProperty("regex", equalTo("foo|Bar|BAZ")));
     }
-
+    
+    @Test
+    public void testCloneable() throws Exception {
+        filter.setNormalize(new CaseNormalizer(Case.UPPER, Locale.ENGLISH));
+        RegexParameterFilter clone = filter.clone();
+        assertThat(clone.getDefaultValue(), equalTo(filter.getDefaultValue()));
+        assertThat(clone.getRegex(), equalTo(filter.getRegex()));
+        assertThat(clone.getNormalize().getConfiguredLocale(), equalTo(filter.getNormalize().getConfiguredLocale()));
+        assertThat(clone.getNormalize().getCase(), equalTo(filter.getNormalize().getCase()));
+    }
 }

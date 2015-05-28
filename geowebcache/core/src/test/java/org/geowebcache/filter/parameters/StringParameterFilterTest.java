@@ -311,4 +311,14 @@ public class StringParameterFilterTest {
                 )));
         assertThat(o, hasProperty("values", containsInAnyOrder("foo", "Bar", "BAZ")));
     }
+    
+    @Test
+    public void testCloneable() throws Exception {
+        filter.setNormalize(new CaseNormalizer(Case.UPPER, Locale.ENGLISH));
+        StringParameterFilter clone = filter.clone();
+        assertThat(clone.getDefaultValue(), equalTo(filter.getDefaultValue()));
+        assertThat(clone.getValues(), equalTo(filter.getValues()));
+        assertThat(clone.getNormalize().getConfiguredLocale(), equalTo(filter.getNormalize().getConfiguredLocale()));
+        assertThat(clone.getNormalize().getCase(), equalTo(filter.getNormalize().getCase()));
+    }
 }
