@@ -30,7 +30,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  * @author Kevin Smith, Boundless
  *
  */
-public class CaseNormalizer implements Function<String, String>, Serializable {
+public class CaseNormalizer implements Function<String, String>, Serializable, Cloneable {
     /**
      * Ways to normalize case
      * 
@@ -158,5 +158,10 @@ public class CaseNormalizer implements Function<String, String>, Serializable {
      */
     public void setConfiguredLocale(@Nullable Locale locale) {
         this.locale = locale;
+    }
+    
+    @Override
+    public CaseNormalizer clone() {
+        return new CaseNormalizer(kase, locale);
     }
 }

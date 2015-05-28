@@ -154,4 +154,10 @@ public class IntegerParameterFilterTest {
         assertThat(o, hasProperty("values", containsInAnyOrder(42, 2, 0, -1, -200)));
     }
     
+    @Test
+    public void testCloneable() throws Exception {
+        IntegerParameterFilter clone = filter.clone();
+        assertThat(clone.getDefaultValue(), equalTo(filter.getDefaultValue()));
+        assertThat(clone.getValues(), equalTo(filter.getValues()));
+    }
 }

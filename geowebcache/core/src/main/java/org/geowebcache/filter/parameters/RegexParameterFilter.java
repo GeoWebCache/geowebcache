@@ -129,6 +129,7 @@ public class RegexParameterFilter extends CaseNormalizingParameterFilter {
         clone.setDefaultValue(getDefaultValue());
         clone.setKey(getKey());
         clone.regex = regex;
+        clone.setNormalize(getNormalize().clone());
         return clone;
     }
 
