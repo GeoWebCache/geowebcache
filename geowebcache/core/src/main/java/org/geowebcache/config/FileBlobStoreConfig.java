@@ -30,6 +30,8 @@ import org.geowebcache.storage.blobstore.file.FileBlobStore;
  */
 public class FileBlobStoreConfig extends BlobStoreConfig {
 
+    private static final long serialVersionUID = -6470560864068854508L;
+
     private String baseDirectory;
 
     private int fileSystemBlockSize;

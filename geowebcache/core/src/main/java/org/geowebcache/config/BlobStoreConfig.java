@@ -16,6 +16,8 @@
  */
 package org.geowebcache.config;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.geowebcache.layer.TileLayer;
@@ -40,7 +42,9 @@ import org.geowebcache.storage.StorageException;
  * @since 1.8
  * @see FileBlobStoreConfig
  */
-public abstract class BlobStoreConfig {
+public abstract class BlobStoreConfig implements Serializable{
+
+    private static final long serialVersionUID = 1L;
 
     private String id;
 
