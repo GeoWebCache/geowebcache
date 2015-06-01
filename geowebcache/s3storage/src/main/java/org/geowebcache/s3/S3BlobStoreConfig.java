@@ -32,6 +32,8 @@ import org.geowebcache.storage.StorageException;
  */
 public class S3BlobStoreConfig extends BlobStoreConfig {
 
+    private static final long serialVersionUID = 9072751143836460389L;
+
     private String bucket;
 
     private String prefix;
