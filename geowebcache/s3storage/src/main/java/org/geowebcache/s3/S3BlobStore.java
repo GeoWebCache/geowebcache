@@ -87,7 +87,7 @@ public class S3BlobStore implements BlobStore {
     private final S3Ops s3Ops;
 
     public S3BlobStore(S3BlobStoreConfig config, TileLayerDispatcher layers,
-            LockProvider lockProvider) {
+            LockProvider lockProvider) throws StorageException{
         checkNotNull(config);
         checkNotNull(layers);
         checkNotNull(config.getAwsAccessKey(), "Access key not provided");

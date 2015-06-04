@@ -44,7 +44,7 @@ import org.geowebcache.storage.StorageException;
  * @since 1.8
  * @see FileBlobStoreConfig
  */
-public abstract class BlobStoreConfig implements Serializable {
+public abstract class BlobStoreConfig implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
 
@@ -117,6 +117,15 @@ public abstract class BlobStoreConfig implements Serializable {
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
+    }
+    
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new UnsupportedOperationException(e);
+        }
     }
 
     /**
