@@ -279,6 +279,19 @@ public class CompositeBlobStore implements BlobStore {
         }
         return store;
     }
+    
+    
+    public void setBlobStores(Iterable<? extends BlobStoreConfig> configs) throws StorageException,
+            ConfigurationException {
+        Map<String, LiveStore> newStores = loadBlobStores(configs);
+        Map<String, LiveStore> oldStores = this.blobStores;
+        this.blobStores = newStores;
+        for (LiveStore ls : oldStores.values()) {
+            if (ls.liveInstance != null) {
+                ls.liveInstance.destroy();
+            }
+        }
+    }
 
     /**
      * Loads the blob stores from the list of configuration objects
@@ -294,7 +307,7 @@ public class CompositeBlobStore implements BlobStore {
      *         {@link BlobStoreConfig#createInstance() created} of an enabled
      *         {@link BlobStoreConfig}
      */
-    Map<String, LiveStore> loadBlobStores(List<? extends BlobStoreConfig> configs)
+    Map<String, LiveStore> loadBlobStores(Iterable<? extends BlobStoreConfig> configs)
             throws StorageException, ConfigurationException {
 
         Map<String, LiveStore> stores = new HashMap<>();
