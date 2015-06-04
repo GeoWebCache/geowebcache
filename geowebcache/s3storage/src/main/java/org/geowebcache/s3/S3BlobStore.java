@@ -87,7 +87,7 @@ public class S3BlobStore implements BlobStore {
     private final S3Ops s3Ops;
 
     public S3BlobStore(S3BlobStoreConfig config, TileLayerDispatcher layers,
-            LockProvider lockProvider) throws StorageException{
+            LockProvider lockProvider) throws StorageException {
         checkNotNull(config);
         checkNotNull(layers);
         checkNotNull(config.getAwsAccessKey(), "Access key not provided");
@@ -128,15 +128,12 @@ public class S3BlobStore implements BlobStore {
             List<Grant> grants = bucketAcl.getGrantsAsList();
             log.debug("Bucket " + bucketName + " permissions: " + grants);
         } catch (AmazonServiceException se) {
-            throw new RuntimeException("Server error listing buckets: " + se.getMessage(), se);
+            throw new StorageException("Server error listing buckets: " + se.getMessage(), se);
         } catch (AmazonClientException ce) {
-            throw new IllegalArgumentException("Unable to connect to AWS S3", ce);
+            throw new StorageException("Unable to connect to AWS S3", ce);
         }
-        try {
-            this.s3Ops = new S3Ops(conn, bucketName, keyBuilder, lockProvider);
-        } catch (GeoWebCacheException e) {
-            throw Throwables.propagate(e);
-        }
+
+        this.s3Ops = new S3Ops(conn, bucketName, keyBuilder, lockProvider);
     }
 
     @Override

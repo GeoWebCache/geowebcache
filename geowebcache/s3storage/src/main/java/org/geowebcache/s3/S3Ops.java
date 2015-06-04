@@ -73,7 +73,7 @@ class S3Ops {
     private Map<String, Long> pendingDeletesKeyTime = new ConcurrentHashMap<>();
 
     public S3Ops(AmazonS3Client conn, String bucketName, TMSKeyBuilder keyBuilder,
-            LockProvider locks) throws GeoWebCacheException {
+            LockProvider locks) throws StorageException {
         this.conn = conn;
         this.bucketName = bucketName;
         this.keyBuilder = keyBuilder;
@@ -93,9 +93,14 @@ class S3Ops {
         deleteExecutorService.shutdownNow();
     }
 
-    private void issuePendingBulkDeletes() throws GeoWebCacheException {
+    private void issuePendingBulkDeletes() throws StorageException {
         final String pendingDeletesKey = keyBuilder.pendingDeletes();
-        final Lock lock = locks.getLock(pendingDeletesKey);
+        Lock lock;
+        try {
+            lock = locks.getLock(pendingDeletesKey);
+        } catch (GeoWebCacheException e) {
+            throw new StorageException("Unable to lock pending deletes", e);
+        }
 
         try {
             Properties deletes = getProperties(pendingDeletesKey);
@@ -107,7 +112,11 @@ class S3Ops {
                 asyncDelete(prefix, timestamp);
             }
         } finally {
-            lock.release();
+            try {
+                lock.release();
+            } catch (GeoWebCacheException e) {
+                throw new StorageException("Unable to unlock pending deletes", e);
+            }
         }
     }
 
