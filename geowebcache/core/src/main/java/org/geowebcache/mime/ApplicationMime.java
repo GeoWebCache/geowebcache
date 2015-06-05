@@ -31,6 +31,12 @@ public class ApplicationMime extends MimeType {
             "application/json", "json", "json",
             "application/json", false);
     
+    public static final ApplicationMime topojson = new ApplicationMime("application/json",
+            "topojson", "topojson", "application/json;type=topojson", false);
+
+    public static final ApplicationMime geojson = new ApplicationMime("application/json",
+            "geojson", "geojson", "application/json;type=geojson", false);
+
     private ApplicationMime(String mimeType, String fileExtension, 
                 String internalName, String format, boolean noop) {
         super(mimeType, fileExtension, internalName, format, false);
@@ -46,6 +52,10 @@ public class ApplicationMime extends MimeType {
             return bil16;
         } else if (formatStr.equalsIgnoreCase(bil32.format)) {
             return bil32;
+        } else if (formatStr.equalsIgnoreCase(topojson.format)) {
+            return topojson;
+        } else if (formatStr.equalsIgnoreCase(geojson.format)) {
+            return geojson;
         } else if (formatStr.equalsIgnoreCase(json.format)) {
             return json;
         }
@@ -58,6 +68,10 @@ public class ApplicationMime extends MimeType {
             return bil16;
         } else if (fileExtension.equals(bil32.fileExtension)) {
             return bil32;
+        } else if (fileExtension.equals(topojson.fileExtension)) {
+            return topojson;
+        } else if (fileExtension.equals(geojson.fileExtension)) {
+            return geojson;
         } else if (fileExtension.equals(json.fileExtension)) {
             return json;
         }
