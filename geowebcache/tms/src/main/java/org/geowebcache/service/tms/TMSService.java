@@ -30,10 +30,12 @@ import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.service.HttpErrorCodeException;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.stats.RuntimeStats;
@@ -134,11 +136,28 @@ public class TMSService extends Service {
 
         MimeType mimeType = null;
         try {
-            mimeType = MimeType.createFromExtension(yExt[1]);
+            String fileExtension = yExt[1];
+            mimeType = MimeType.createFromExtension(fileExtension);
+            if (mimeType == null) {
+                throw new HttpErrorCodeException(400, "Unsupported format: " + fileExtension);
+            }
         } catch (MimeException me) {
-            throw new ServiceException("Unable to determine requested format based on extension " + yExt[1]);
+            throw new ServiceException("Unable to determine requested format based on extension "
+                    + yExt[1]);
         }
-
+        try {
+            TileLayer tileLayer = tld.getTileLayer(layerId);
+            GridSubset gridSubset = tileLayer.getGridSubset(gridSetId);
+            if (gridSubset == null) {
+                throw new HttpErrorCodeException(400, "Unsupported gridset: " + gridSetId);
+            }
+            gridSubset.checkCoverage(gridLoc);
+        } catch (OutsideCoverageException e) {
+            throw new HttpErrorCodeException(404, e.getMessage(), e);
+        } catch (GeoWebCacheException e) {
+            throw new HttpErrorCodeException(400, e.getMessage(), e);
+        }
+        
         ConveyorTile ret = new ConveyorTile(sb, layerId, gridSetId, gridLoc, mimeType, null, request, response);
         
         return ret;
