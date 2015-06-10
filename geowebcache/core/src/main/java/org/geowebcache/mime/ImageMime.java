@@ -17,7 +17,12 @@
  */
 package org.geowebcache.mime;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class ImageMime extends MimeType {
+
+    private static Log log = LogFactory.getLog(org.geowebcache.mime.ImageMime.class);
     
     boolean supportsAlphaChannel;
     
@@ -56,25 +61,35 @@ public class ImageMime extends MimeType {
         this.supportsAlphaBit = alphaBit;
     }
 
-    protected static ImageMime checkForFormat(String formatStr)
-    throws MimeException {
-        String tmpStr = formatStr.substring(6,formatStr.length());
-        
-        if ( tmpStr.equalsIgnoreCase("png")) {
+    protected static ImageMime checkForFormat(String formatStr) throws MimeException {
+        if (!formatStr.startsWith("image/")) {
+            return null;
+        }
+        final String tmpStr = formatStr.substring(6, formatStr.length());
+
+        // TODO Making a special exception, generalize later
+        if (!formatStr.equals("image/png; mode=24bit") && formatStr.contains(";")) {
+            if (log.isDebugEnabled()) {
+                log.debug("Slicing off " + formatStr.split(";")[1]);
+            }
+            formatStr = formatStr.split(";")[0];
+        }
+ 
+        if (tmpStr.equalsIgnoreCase("png")) {
             return png;
-        } else if ( tmpStr.equalsIgnoreCase("jpeg")) {
+        } else if (tmpStr.equalsIgnoreCase("jpeg")) {
             return jpeg;
-        } else if ( tmpStr.equalsIgnoreCase("gif")) {
+        } else if (tmpStr.equalsIgnoreCase("gif")) {
             return gif;
-        } else if ( tmpStr.equalsIgnoreCase("tiff")) {
+        } else if (tmpStr.equalsIgnoreCase("tiff")) {
             return tiff;
-        } else if ( tmpStr.equalsIgnoreCase("png8")) {
+        } else if (tmpStr.equalsIgnoreCase("png8")) {
             return png8;
-        } else if ( tmpStr.equalsIgnoreCase("png24")) {
+        } else if (tmpStr.equalsIgnoreCase("png24")) {
             return png24;
-        } else if ( tmpStr.equalsIgnoreCase("png; mode=24bit")) {
+        } else if (tmpStr.equalsIgnoreCase("png; mode=24bit")) {
             return png_24;
-        } else if ( tmpStr.equalsIgnoreCase("png;%20mode=24bit")) {
+        } else if (tmpStr.equalsIgnoreCase("png;%20mode=24bit")) {
             return png_24;
         }
         return null;

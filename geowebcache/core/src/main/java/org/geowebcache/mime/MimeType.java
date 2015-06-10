@@ -95,45 +95,30 @@ public class MimeType {
      */
     public static MimeType createFromFormat(String formatStr) throws MimeException {
         MimeType mimeType = null;
-        if(formatStr == null) {
+        if (formatStr == null) {
             throw new MimeException("formatStr was not set");
         }
-        
-        // TODO Making a special exception, generalize later
-        if(! formatStr.equals("image/png; mode=24bit") && formatStr.contains(";")) {
-            if(log.isDebugEnabled()) {
-                log.debug("Slicing off "+ formatStr.split(";")[1]);
-            }
-            formatStr = formatStr.split(";")[0];
-        }
-        
-        if (formatStr.length() > 6 
-                && formatStr.substring(0, 6).equalsIgnoreCase("image/")) {
-            mimeType = ImageMime.checkForFormat(formatStr);
-            
-            if(mimeType != null) {
-                return mimeType;
-            }
-        }
- 
-        mimeType = XMLMime.checkForFormat(formatStr);
-        if(mimeType != null) {
+        mimeType = ImageMime.checkForFormat(formatStr);
+        if (mimeType != null) {
             return mimeType;
         }
-        
+        mimeType = XMLMime.checkForFormat(formatStr);
+        if (mimeType != null) {
+            return mimeType;
+        }
+
         mimeType = TextMime.checkForFormat(formatStr);
         if (mimeType != null) {
             return mimeType;
         }
-        
+
         mimeType = ApplicationMime.checkForFormat(formatStr);
-        if(mimeType != null) {
+        if (mimeType != null) {
             return mimeType;
         }
 
         throw new MimeException("Unsupported format request: " + formatStr);
     }
-
 
     /**
      * Get the MIME type object for a given file extension
