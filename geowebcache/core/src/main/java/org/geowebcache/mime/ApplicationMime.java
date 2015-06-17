@@ -17,6 +17,13 @@
  */
 package org.geowebcache.mime;
 
+import java.util.Map;
+import java.util.Set;
+
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+
 public class ApplicationMime extends MimeType {
 
     public static final ApplicationMime bil16 = new ApplicationMime(
@@ -37,6 +44,30 @@ public class ApplicationMime extends MimeType {
     public static final ApplicationMime geojson = new ApplicationMime("application/json",
             "geojson", "geojson", "application/json;type=geojson", false);
 
+    public static final ApplicationMime mapboxVector = new ApplicationMime("application/x-protobuf",
+            "pbf", "mapbox-vectortile", "application/x-protobuf;type=mapbox-vector", false);
+
+    private static Set<ApplicationMime> ALL = ImmutableSet.of(bil16, bil32, json, topojson,
+            geojson, mapboxVector);
+
+    private static Map<String, ApplicationMime> BY_FORMAT = Maps.uniqueIndex(ALL,
+            new Function<ApplicationMime, String>() {
+
+                @Override
+                public String apply(ApplicationMime mimeType) {
+                    return mimeType.getFormat();
+                }
+            });
+    
+    private static Map<String, ApplicationMime> BY_EXTENSION = Maps.uniqueIndex(ALL,
+            new Function<ApplicationMime, String>() {
+
+                @Override
+                public String apply(ApplicationMime mimeType) {
+                    return mimeType.getFileExtension();
+                }
+            });
+
     private ApplicationMime(String mimeType, String fileExtension, 
                 String internalName, String format, boolean noop) {
         super(mimeType, fileExtension, internalName, format, false);
@@ -48,34 +79,12 @@ public class ApplicationMime extends MimeType {
     }
 
     protected static ApplicationMime checkForFormat(String formatStr) throws MimeException {
-        if (formatStr.equalsIgnoreCase(bil16.format)) {
-            return bil16;
-        } else if (formatStr.equalsIgnoreCase(bil32.format)) {
-            return bil32;
-        } else if (formatStr.equalsIgnoreCase(topojson.format)) {
-            return topojson;
-        } else if (formatStr.equalsIgnoreCase(geojson.format)) {
-            return geojson;
-        } else if (formatStr.equalsIgnoreCase(json.format)) {
-            return json;
-        }
-        
-        return null;
+        ApplicationMime mimeType = BY_FORMAT.get(formatStr);
+        return mimeType;
     }
     
     protected static ApplicationMime checkForExtension(String fileExtension) throws MimeException {
-        if (fileExtension.equals(bil16.fileExtension)) {
-            return bil16;
-        } else if (fileExtension.equals(bil32.fileExtension)) {
-            return bil32;
-        } else if (fileExtension.equals(topojson.fileExtension)) {
-            return topojson;
-        } else if (fileExtension.equals(geojson.fileExtension)) {
-            return geojson;
-        } else if (fileExtension.equals(json.fileExtension)) {
-            return json;
-        }
-        
-        return null;
+        ApplicationMime mimeType = BY_EXTENSION.get(fileExtension);
+        return mimeType;
     }
 }
