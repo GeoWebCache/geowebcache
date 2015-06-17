@@ -1,29 +1,17 @@
-GeoWebCache 1.7-beta (2015-01-19)
+GeoWebCache 1.6.2 (2015-06-17)
 ----------------------------------
 
-Beta release for the 1.7.x branch
+Second maintenance release of 1.6 series
 
 Improvements:
 +++++++++++++
-- Documentation Updates
-- Mark layers as unadvertised to hide the from the capabilities documents
-- Mark layers as transient so they are not persisted
-- Clusterable in memory caching
-- Prototype for OpenLayers 3 based layer preview
-
-
-GeoWebCache 1.6.1 (2015-01-19)
-----------------------------------
-
-First maintenance release for the 1.6.x branch.
-
-Improvements:
-+++++++++++++
-- Atomic File renaming on Windows.
+- Documentation updates
+- Changes disk quota to faciliate integration with GeoServer
 
 Fixes:
 ++++++
-- Correctly Initialize ImageIO SPIs
+- Corrected initialization of transient cache
+- Corrected infinite loop
 
 
 GeoWebCache 1.6.0 (2014-09-24)
