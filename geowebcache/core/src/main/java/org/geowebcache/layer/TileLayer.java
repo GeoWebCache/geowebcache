@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
@@ -94,6 +95,13 @@ public abstract class TileLayer {
      * @return
      */
     public abstract String getId();
+    
+	/**
+	 * @return the identifier for the blob store that manages this layer tiles,
+	 *         or {@code null} if the default blob store shall be used
+	 */
+	@Nullable
+	public abstract String getBlobStoreId();
     
     /**
      * Then name of the layer

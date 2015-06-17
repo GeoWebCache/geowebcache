@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -53,6 +55,9 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     private static final int[] DEFAULT_METATILING_FACTORS = { 1, 1 };
 
+    @Nullable
+    protected String blobStoreId;
+    
     protected Boolean enabled;
     
     protected Boolean advertised;
@@ -154,7 +159,13 @@ public abstract class AbstractTileLayer extends TileLayer {
     public String getId(){
         return getName();
     }
-    
+
+	@Override
+	@Nullable
+	public String getBlobStoreId() {
+		return blobStoreId;
+	}
+
     /**
      * Then name of the layer
      * 

@@ -134,4 +134,9 @@ public class NullBlobStore implements BlobStore {
             metadataMap.put(layerName, props);
         }
     }
+    
+	@Override
+	public boolean layerExists(String layerName) {
+		return false;
+	}
 }

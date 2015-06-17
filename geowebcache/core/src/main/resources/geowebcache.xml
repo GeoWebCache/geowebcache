@@ -35,6 +35,16 @@
     <accessConstraints>NONE</accessConstraints>
   </serviceInformation>
 
+  <blobStores>
+    <!-- A sample blob store configuration. Enable and set as default to override the legacy lookup method for the cache directory  -->
+    <FileBlobStore default="false">
+      <id>defaultCache</id>
+      <enabled>false</enabled>
+      <baseDirectory>/tmp/defaultCache</baseDirectory>
+      <fileSystemBlockSize>4096</fileSystemBlockSize>
+    </FileBlobStore>
+  </blobStores>
+
   <gridSets>
     <!-- Grid Set Example, by default EPSG:900913 and EPSG:4326 are defined -->
     <gridSet>

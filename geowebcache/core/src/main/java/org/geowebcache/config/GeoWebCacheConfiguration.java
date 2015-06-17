@@ -71,6 +71,8 @@ public class GeoWebCacheConfiguration {
 
     private List<FormatModifier> formatModifiers;
 
+    private List<BlobStoreConfig> blobStores;
+
     private List<XMLGridSet> gridSets;
     
     private Boolean fullWMS;
@@ -108,6 +110,10 @@ public class GeoWebCacheConfiguration {
 
         if (gridSets == null) {
             gridSets = new ArrayList<XMLGridSet>();
+        }
+        
+        if(blobStores == null){
+        	blobStores = new ArrayList<>();
         }
         return this;
     }
@@ -250,6 +256,10 @@ public class GeoWebCacheConfiguration {
         this.formatModifiers = formatModifiers;
     }
 
+    public List<BlobStoreConfig> getBlobStores(){
+    	return blobStores;
+    }
+    
     /**
      * @return the gridSets
      */

@@ -135,6 +135,13 @@ public class XMLConfiguration implements Configuration {
     private String templateLocation;
 
     private GridSetBroker gridSetBroker;
+    
+    /**
+     * A flag for whether the config needs to be loaded at {@link #initialize(GridSetBroker)}. If
+     * the constructor loads the configuration, will set it to false, then each call to initialize()
+     * will reset this flag to true
+     */
+    private boolean reloadConfigOnInit = true;
 
     /**
      * @deprecated use {@link #XMLConfiguration(ApplicationContextProvider, DefaultStorageFinder)}
@@ -177,6 +184,8 @@ public class XMLConfiguration implements Configuration {
             this.configDirectory = new File(storageDirFinder.getDefaultPath());
         }
         log.info("Will look for geowebcache.xml in '" + configDirectory + "'");
+        this.gwcConfig = loadConfiguration();
+        this.reloadConfigOnInit = false;
     }
     
     private static String getConfigDirVar(ApplicationContextProvider ctxtProv){
@@ -501,6 +510,10 @@ public class XMLConfiguration implements Configuration {
 
         // xs.alias("layers", List.class);
         xs.alias("wmsLayer", WMSLayer.class);
+
+        xs.alias("blobStores", new ArrayList<BlobStoreConfig>().getClass());
+        xs.alias("FileBlobStore", FileBlobStoreConfig.class);
+        xs.aliasAttribute(BlobStoreConfig.class, "_default", "default");
 
         // These two are for 1.1.x compatibility
         xs.alias("grids", new ArrayList<XMLOldGrid>().getClass());
@@ -915,7 +928,7 @@ public class XMLConfiguration implements Configuration {
 
         this.gridSetBroker = gridSetBroker;
 
-        if (this.configFileName != null) {
+        if (this.reloadConfigOnInit && this.configFileName != null) {
             this.gwcConfig = loadConfiguration();
         }
 
@@ -935,6 +948,8 @@ public class XMLConfiguration implements Configuration {
 
         updateLayers();
 
+        this.reloadConfigOnInit = true;
+        
         return getTileLayerCount();
     }
 
@@ -1058,4 +1073,7 @@ public class XMLConfiguration implements Configuration {
         return null;        
     }
 
+    public List<BlobStoreConfig> getBlobStores() {
+        return gwcConfig.getBlobStores();
+    }
 }

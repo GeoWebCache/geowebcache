@@ -17,6 +17,7 @@
  */
 package org.geowebcache.storage;
 
+
 /**
  * Manages the persistence of the actual data contained in cacheable objects (tiles, WFS responses).
  * <p>
@@ -25,6 +26,7 @@ package org.geowebcache.storage;
  * </p>
  */
 public interface BlobStore {
+	
     /**
      * Delete the cache for the named layer
      * 
@@ -85,6 +87,7 @@ public interface BlobStore {
      * 
      * @throws StorageException
      */
+    @Deprecated
     public void clear() throws StorageException;
 
     /**
@@ -112,7 +115,7 @@ public interface BlobStore {
      * @param oldLayerName the old name of the layer
      * @param newLayerName the new name
      * @return {@literal true} if successful or the layer didn't exist, {@literal false} otherwise
-     * @throws StorageException
+     * @throws StorageException if {@code newLayerName} already exists or the rename can't be accomplished for other reason
      */
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException;
 
@@ -126,6 +129,12 @@ public interface BlobStore {
      * Stores a metadata key/value pair for the given layer
      */
     public void putLayerMetadata(String layerName, String key, String value);
+
+	/**
+	 * @return {@code true} if the blobstore has a layer named {@code layerName}
+	 *         in use, {@code false} otherwise
+	 */
+	public boolean layerExists(String layerName);
 
     // /**
     // * Test to see whether the blobstore is ready or not

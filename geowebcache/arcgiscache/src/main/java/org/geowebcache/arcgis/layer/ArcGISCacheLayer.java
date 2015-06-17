@@ -78,6 +78,14 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
 
     private ArcGISCompactCache compactCache;
 
+	/**
+	 * @return {@code null}, this kind of layer handles its own storage.
+	 */
+	@Override
+	public String getBlobStoreId() {
+		return null;
+	}
+    
     @Override
     public boolean isEnabled() {
         return enabled;

@@ -242,6 +242,53 @@ public class XMLConfigurationTest {
         assertNotNull(gridSet2);
         assertEquals(gridSet, gridSet2);
     }
+    
+    @Test
+    public void testNoBlobStores() throws Exception{
+        assertNotNull(config.getBlobStores());
+        assertTrue(config.getBlobStores().isEmpty());
+    }
+
+    @Test
+    public void testSaveBlobStores() throws Exception{
+        FileBlobStoreConfig store1 = new FileBlobStoreConfig();
+        store1.setId("store1");
+        store1.setDefault(true);
+        store1.setEnabled(true);
+        store1.setFileSystemBlockSize(8096);
+        store1.setBaseDirectory("/tmp/test");
+        
+        FileBlobStoreConfig store2 = new FileBlobStoreConfig();
+        store2.setId("store2");
+        store2.setDefault(false);
+        store2.setEnabled(false);
+        store2.setFileSystemBlockSize(512);
+        store2.setBaseDirectory("/tmp/test2");
+
+        config.getBlobStores().add(store1);
+        config.getBlobStores().add(store2);
+        config.save();
+
+        try {
+            XMLConfiguration.validate(XMLConfiguration
+                    .loadDocument(new FileInputStream(configFile)));
+        } catch (SAXParseException e) {
+            log.error(e.getMessage());
+            fail(e.getMessage());
+        }
+
+        XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
+        config2.initialize(new GridSetBroker(true, false));
+        
+        List<BlobStoreConfig> stores = config2.getBlobStores();
+        assertNotNull(stores);
+        assertEquals(2, stores.size());
+        assertNotSame(store1, stores.get(0));
+        assertEquals(store1, stores.get(0));
+
+        assertNotSame(store2, stores.get(1));
+        assertEquals(store2, stores.get(1));
+    }
 
     @Test
     public void testSaveCurrentVersion() throws Exception {

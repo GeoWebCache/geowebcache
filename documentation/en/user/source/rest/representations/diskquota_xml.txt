@@ -1,6 +1,5 @@
 <gwcQuotaConfiguration>
   <enabled>true</enabled>
-  <diskBlockSize>2048</diskBlockSize>
   <cacheCleanUpFrequency>5</cacheCleanUpFrequency>
   <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
   <maxConcurrentCleanUps>5</maxConcurrentCleanUps>

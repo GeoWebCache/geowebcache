@@ -124,6 +124,22 @@
             </xs:documentation>
           </xs:annotation>
         </xs:element>
+        
+        <xs:element name="blobStores" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              The list of  blob stores. BlobStores allow to define a storage mechanism and format, such as the legacy file system
+              based storage, an Amazon S3 instance with a TMS-like key structure, etc; independently of where the tiles come from
+              in the TileLayer configuration. 
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="gwc:blobstore" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        
         <xs:element name="gridSets" minOccurs="0">
           <xs:annotation>
             <xs:documentation xml:lang="en">
@@ -162,8 +178,71 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:complexType name="AbstractBlobStore" abstract="true">
+    <xs:sequence>
+      <xs:element name="id" minOccurs="1" maxOccurs="1" type="xs:string" nillable="false">
+        <xs:annotation>
+          <xs:documentation>
+            A blob store must have a unique identifier assigned through this element, which can be referenced
+            by any number of TileLayer's 'blobStoreId'.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="enabled" minOccurs="0" maxOccurs="1" type="xs:boolean" default="true">
+        <xs:annotation>
+          <xs:documentation>
+            Defines whether the blob store is enabled (true) or disabled (false). Attempting to use
+            a TileLayer whose blob store is disabled will result in a runtime exception.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="default" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">
+          The default attribute can only be true for one of the configured blob stores.
+          If no blob store is configured as the default one, then one will be created automatically
+          following the legacy location discovery method of looking for the GEOWEBCACHE_CACHE_DIR environment
+          variable, servlet context parameter, or JVM argument.
+          Additionally, any layer that has no blobStoreId set will default to use the default blob store,
+          whether it is defined in the configuration file, or created automatically using the legacy method.
+          So, it is allowed that none of the configured blob stores has its 'default' attribute set to true,
+          but it's a configuration error that more than one is set as the default one. In such case, an exception
+          will be thrown at application startup.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  
+  <xs:element name="blobstore" type="gwc:AbstractBlobStore">
+  </xs:element>
+  
+  <xs:element name="FileBlobStore" substitutionGroup="gwc:blobstore">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="gwc:AbstractBlobStore">
+          <xs:sequence>
+            <xs:element name="baseDirectory" type="xs:string" minOccurs="1" maxOccurs="1">
+              
+            </xs:element>
+            <xs:element name="fileSystemBlockSize" type="xs:positiveInteger" minOccurs="0" maxOccurs="1" nillable="true">
+            </xs:element>
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  
   <xs:complexType name="AbstractTileLayer" abstract="true">
     <xs:sequence>
+      <xs:element name="blobStoreId" type="xs:string" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            The identifier of the BlobStore this layer tiles shall be saved on.
+			If not provided, the default blob store will be used.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="enabled" type="xs:boolean" minOccurs="0">
         <xs:annotation>
           <xs:documentation xml:lang="en">

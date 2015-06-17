@@ -42,6 +42,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
 
     private static final long serialVersionUID = 4376471696761297546L;
 
+    @Deprecated
     static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
 
     static final int DEFAULT_CLEANUP_FREQUENCY = 10;
@@ -54,7 +55,8 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
     
     private Boolean enabled;
 
-    private Integer diskBlockSize;
+    @Deprecated
+    private transient Integer diskBlockSize;
 
     private Integer cacheCleanUpFrequency;
 
@@ -118,10 +120,12 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
         this.enabled = enabled;
     }
 
+    @Deprecated
     public Integer getDiskBlockSize() {
         return diskBlockSize;
     }
 
+    @Deprecated
     public void setDiskBlockSize(int blockSizeBytes) {
         if (blockSizeBytes <= 0) {
             throw new IllegalArgumentException("Block size shall be a positive integer");

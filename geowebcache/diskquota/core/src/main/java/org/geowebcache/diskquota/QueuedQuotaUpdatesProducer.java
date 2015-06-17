@@ -79,11 +79,8 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
         if (blobSize == 0) {
             return;
         }
-        final int blockSize = quotaConfig.getDiskBlockSize();
 
-        long actuallyUsedStorage = blockSize * (int) Math.ceil((double) blobSize / blockSize);
-
-        quotaUpdate(layerName, gridSetId, blobFormat, parametersId, actuallyUsedStorage,
+        quotaUpdate(layerName, gridSetId, blobFormat, parametersId, blobSize,
                 new long[] { x, y, z });
     }
 
@@ -94,9 +91,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
             final String blobFormat, final String parametersId, final long x, final long y,
             final int z, final long blobSize) {
 
-        int blockSize = quotaConfig.getDiskBlockSize();
-
-        long actualSizeFreed = -1 * (blockSize * (int) Math.ceil((double) blobSize / blockSize));
+        long actualSizeFreed = -1 * blobSize;
 
         quotaUpdate(layerName, gridSetId, blobFormat, parametersId, actualSizeFreed, new long[] {
                 x, y, z });
@@ -109,16 +104,14 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
     public void tileUpdated(String layerName, String gridSetId, String blobFormat,
             String parametersId, long x, long y, int z, long blobSize, long oldSize) {
 
-        int blockSize = quotaConfig.getDiskBlockSize();
-        double delta = blobSize - oldSize;
-        long actualDifference = blockSize * (int) Math.ceil(delta / blockSize);
+        long delta = blobSize - oldSize;
 
-        if (actualDifference == 0) {
+        if (delta == 0) {
             return;
         }
 
         long[] tileIndex = new long[] { x, y, z };
-        quotaUpdate(layerName, gridSetId, blobFormat, parametersId, actualDifference, tileIndex);
+        quotaUpdate(layerName, gridSetId, blobFormat, parametersId, delta, tileIndex);
     }
 
     /**

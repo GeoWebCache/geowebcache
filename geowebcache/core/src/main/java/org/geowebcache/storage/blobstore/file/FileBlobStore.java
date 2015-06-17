@@ -54,6 +54,8 @@ import org.geowebcache.storage.TileRange;
 import org.geowebcache.util.FileUtils;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
+import com.google.common.base.Preconditions;
+
 /**
  * See BlobStore interface description for details
  * 
@@ -62,12 +64,16 @@ public class FileBlobStore implements BlobStore {
     private static Log log = LogFactory
             .getLog(org.geowebcache.storage.blobstore.file.FileBlobStore.class);
 
+    static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
+
     public static final int BUFFER_SIZE = 32768;
 
     private final File stagingArea;
 
     private final String path;
-
+ 
+    private int diskBlockSize = DEFAULT_DISK_BLOCK_SIZE;
+    
     private final BlobStoreListenerList listeners = new BlobStoreListenerList();
 
     private FilePathGenerator pathGenerator;
@@ -81,7 +87,7 @@ public class FileBlobStore implements BlobStore {
     }
 
     public FileBlobStore(String rootPath) throws StorageException {
-        path = rootPath;
+        this.path = rootPath;
         pathGenerator = new FilePathGenerator(this.path);
 
         // prepare the root
@@ -131,7 +137,7 @@ public class FileBlobStore implements BlobStore {
         tf.setThreadPriority(Thread.MIN_PRIORITY);
         deleteExecutorService = Executors.newFixedThreadPool(1);
     }
-
+    
     /**
      * Destroy method for Spring
      */
@@ -324,7 +330,7 @@ public class FileBlobStore implements BlobStore {
             if (!fh.delete()) {
                 throw new StorageException("Unable to delete " + fh.getAbsolutePath());
             }
-            stObj.setBlobSize((int) length);
+            stObj.setBlobSize((int) padSize(length));
             listeners.sendTileDeleted(stObj);
 
             ret = true;
@@ -387,7 +393,7 @@ public class FileBlobStore implements BlobStore {
                         long x = Long.parseLong(coords[0]);
                         long y = Long.parseLong(coords[1]);
                         listeners.sendTileDeleted(layerName, gridSetId, blobFormat, parametersId,
-                                x, y, zoomLevel, length);
+                                x, y, zoomLevel, padSize(length));
                         count++;
                     }
                 }
@@ -450,8 +456,9 @@ public class FileBlobStore implements BlobStore {
         /*
          * This is important because listeners may be tracking tile existence
          */
+        stObj.setBlobSize((int) padSize(stObj.getBlobSize()));
         if (existed) {
-            listeners.sendTileUpdated(stObj, oldSize);
+            listeners.sendTileUpdated(stObj, padSize(oldSize));
         } else {
             listeners.sendTileStored(stObj);
         }
@@ -676,6 +683,40 @@ public class FileBlobStore implements BlobStore {
         File layerPath = getLayerPath(layerName);
         File metadataFile = new File(layerPath, "metadata.properties");
         return metadataFile;
+    }
+
+    @Override
+    public boolean layerExists(String layerName) {
+        return getLayerPath(layerName).exists();
+    }
+
+    /**
+     * Specify the file system block size, used to pad out tile lenghts to whole blocks when
+     * reporting {@link BlobStoreListener#tileDeleted tileDeleted},
+     * {@link BlobStoreListener#tileStored tileStored}, or {@link BlobStoreListener#tileUpdated
+     * tileUpdated} events.
+     * 
+     * @param fileSystemBlockSize the size of a filesystem block; must be a positive integer,
+     *        usually a power of 2 greater or equal to 512.
+     */
+    public void setBlockSize(int fileSystemBlockSize) {
+        Preconditions.checkArgument(fileSystemBlockSize > 0);
+        this.diskBlockSize = fileSystemBlockSize;
+    }
+
+    /**
+     * Pads the size of a tile to whole filesystem blocks
+     * 
+     * @param fileSize the size of the tile file as reported by {@link File#length()}
+     * @return {@code fileSize} padded to whole blocks as per {@link #diskBlockSize}
+     */
+    private long padSize(long fileSize) {
+
+        final int blockSize = this.diskBlockSize;
+
+        long actuallyUsedStorage = blockSize * (int) Math.ceil((double) fileSize / blockSize);
+
+        return actuallyUsedStorage;
     }
 
 }
