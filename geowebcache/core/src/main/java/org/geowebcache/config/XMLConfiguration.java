@@ -86,6 +86,7 @@ import org.geowebcache.seed.TruncateLayerRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.geowebcache.util.GWCVars;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
@@ -104,7 +105,7 @@ import com.thoughtworks.xstream.io.xml.DomReader;
  * otherwise this configuration is in an inconsistent and unpredictable state.
  * </p>
  */
-public class XMLConfiguration implements Configuration {
+public class XMLConfiguration implements Configuration, InitializingBean {
 
     private static Log log = LogFactory.getLog(org.geowebcache.config.XMLConfiguration.class);
 
@@ -184,10 +185,14 @@ public class XMLConfiguration implements Configuration {
             this.configDirectory = new File(storageDirFinder.getDefaultPath());
         }
         log.info("Will look for geowebcache.xml in '" + configDirectory + "'");
+    }
+    
+    @Override
+    public void afterPropertiesSet() throws Exception {
         this.gwcConfig = loadConfiguration();
         this.reloadConfigOnInit = false;
     }
-    
+
     private static String getConfigDirVar(ApplicationContextProvider ctxtProv){
         ApplicationContext ctxt = null;
         if(ctxtProv!=null) {
@@ -1076,4 +1081,5 @@ public class XMLConfiguration implements Configuration {
     public List<BlobStoreConfig> getBlobStores() {
         return gwcConfig.getBlobStores();
     }
+
 }
