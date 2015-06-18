@@ -170,10 +170,10 @@ The following documentation assumes you're familiar with the `Amazon Simple Stor
 This blob store allows to configure a cache for layers on an S3 bucket with the following `TMS <http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification>`_-like
 key structure:
 
-    [prefix]/<layer name>/<gridset id>/<format id>/<parameters hash | "default">/<z>/<x>/<y>.<extension>
+    [prefix]/<layer id>/<gridset id>/<format id>/<parameters hash | "default">/<z>/<x>/<y>.<extension>
     
 * prefix: if provided in the configuration, it will be used as the "root path" for tile keys. Otherwise the keys will be built starting at the bucket's root.
-* layer name: the name of the layer
+* layer id: the unique identifier for the layer. Note it equals to the layer name for standalone configured layers, but to the geoserver catalog's object id for GeoServer tile layers.
 * gridset id: the name of the gridset of the tile
 * format id: the gwc internal name for the tile format. E.g.: ``png``, ``png8``, ``jpeg``, etc.
 * parameters hash: if the request that originated that tiles included parameter filters, a unique hash code of the set of parameter filters, otherwise the constant ``default``.
