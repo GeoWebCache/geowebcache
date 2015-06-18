@@ -18,9 +18,10 @@
 package org.geowebcache.storage;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.annotation.Nullable;
 
@@ -33,6 +34,7 @@ import org.geowebcache.config.FileBlobStoreConfig;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -68,6 +70,12 @@ public class CompositeBlobStore implements BlobStore {
     private TileLayerDispatcher layers;
 
     private DefaultStorageFinder defaultStorageFinder;
+
+    private LockProvider lockProvider;
+
+    private final ReadWriteLock configLock = new ReentrantReadWriteLock();
+
+    private final BlobStoreListenerList listeners = new BlobStoreListenerList();
 
     @VisibleForTesting
     static final class LiveStore {
@@ -106,37 +114,68 @@ public class CompositeBlobStore implements BlobStore {
 
         this.layers = layers;
         this.defaultStorageFinder = defaultStorageFinder;
+        this.lockProvider = configuration.getLockProvider();
         this.blobStores = loadBlobStores(configuration.getBlobStores());
     }
 
     @Override
     public boolean delete(String layerName) throws StorageException {
-        return store(layerName).delete(layerName);
+        configLock.readLock().lock();
+        try {
+            return store(layerName).delete(layerName);
+        } finally {
+            configLock.readLock().unlock();
+        }
     }
 
     @Override
     public boolean deleteByGridsetId(String layerName, String gridSetId) throws StorageException {
-        return store(layerName).deleteByGridsetId(layerName, gridSetId);
+        configLock.readLock().lock();
+        try {
+            return store(layerName).deleteByGridsetId(layerName, gridSetId);
+        } finally {
+            configLock.readLock().unlock();
+        }
     }
 
     @Override
     public boolean delete(TileObject obj) throws StorageException {
-        return store(obj.getLayerName()).delete(obj);
+        configLock.readLock().lock();
+        try {
+            return store(obj.getLayerName()).delete(obj);
+        } finally {
+            configLock.readLock().unlock();
+        }
     }
 
     @Override
     public boolean delete(TileRange obj) throws StorageException {
-        return store(obj.getLayerName()).delete(obj);
+        configLock.readLock().lock();
+        try {
+            return store(obj.getLayerName()).delete(obj);
+        } finally {
+            configLock.readLock().unlock();
+        }
     }
 
     @Override
     public boolean get(TileObject obj) throws StorageException {
-        return store(obj.getLayerName()).get(obj);
+        configLock.readLock().lock();
+        try {
+            return store(obj.getLayerName()).get(obj);
+        } finally {
+            configLock.readLock().unlock();
+        }
     }
 
     @Override
     public void put(TileObject obj) throws StorageException {
-        store(obj.getLayerName()).put(obj);
+        configLock.readLock().lock();
+        try {
+            store(obj.getLayerName()).put(obj);
+        } finally {
+            configLock.readLock().unlock();
+        }
     }
 
     @Deprecated
@@ -168,10 +207,17 @@ public class CompositeBlobStore implements BlobStore {
      */
     @Override
     public void addListener(BlobStoreListener listener) {
-        for (LiveStore bs : blobStores.values()) {
-            if (bs.config.isEnabled()) {
-                bs.liveInstance.addListener(listener);
+        configLock.readLock().lock();
+        try {
+            this.listeners.addListener(listener);// save it for later in case setBlobStores is
+                                                 // called
+            for (LiveStore bs : blobStores.values()) {
+                if (bs.config.isEnabled()) {
+                    bs.liveInstance.addListener(listener);
+                }
             }
+        } finally {
+            configLock.readLock().unlock();
         }
     }
 
@@ -180,59 +226,83 @@ public class CompositeBlobStore implements BlobStore {
      */
     @Override
     public boolean removeListener(BlobStoreListener listener) {
+        configLock.readLock().lock();
+
         boolean removed = false;
-        for (LiveStore bs : blobStores.values()) {
-            if (bs.config.isEnabled()) {
-                removed |= bs.liveInstance.removeListener(listener);
+        try {
+            this.listeners.removeListener(listener);
+            for (LiveStore bs : blobStores.values()) {
+                if (bs.config.isEnabled()) {
+                    removed |= bs.liveInstance.removeListener(listener);
+                }
             }
+        } finally {
+            configLock.readLock().unlock();
         }
         return removed;
+
     }
 
     @Override
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
-        LiveStore store = forLayer(oldLayerName);
-        if (!store.config.isEnabled()) {
-            throw new StorageException("Attempt to use a disabled blob store: "
-                    + store.config.getId());
-        }
-        for (LiveStore bs : blobStores.values()) {
-            BlobStoreConfig config = store.config;
-            if (config.isEnabled() && !config.getId().equals(bs.config.getId())) {
-                if (bs.liveInstance.layerExists(newLayerName)) {
-                    throw new StorageException("Can't rename layer directory " + oldLayerName
-                            + " to " + newLayerName + ". Target layer already exists");
+        configLock.readLock().lock();
+        try {
+            LiveStore store = forLayer(oldLayerName);
+            if (!store.config.isEnabled()) {
+                throw new StorageException("Attempt to use a disabled blob store: "
+                        + store.config.getId());
+            }
+            for (LiveStore bs : blobStores.values()) {
+                BlobStoreConfig config = store.config;
+                if (config.isEnabled() && !config.getId().equals(bs.config.getId())) {
+                    if (bs.liveInstance.layerExists(newLayerName)) {
+                        throw new StorageException("Can't rename layer directory " + oldLayerName
+                                + " to " + newLayerName + ". Target layer already exists");
+                    }
                 }
             }
-        }
 
-        return store.liveInstance.rename(oldLayerName, newLayerName);
+            return store.liveInstance.rename(oldLayerName, newLayerName);
+        } finally {
+            configLock.readLock().unlock();
+        }
     }
 
     @Override
     public String getLayerMetadata(String layerName, String key) {
+        configLock.readLock().lock();
         try {
             return store(layerName).getLayerMetadata(layerName, key);
         } catch (StorageException e) {
             throw Throwables.propagate(e);
+        } finally {
+            configLock.readLock().unlock();
         }
     }
 
     @Override
     public void putLayerMetadata(String layerName, String key, String value) {
+        configLock.readLock().lock();
         try {
             store(layerName).putLayerMetadata(layerName, key, value);
         } catch (StorageException e) {
             throw Throwables.propagate(e);
+        } finally {
+            configLock.readLock().unlock();
         }
     }
 
     @Override
     public boolean layerExists(String layerName) {
-        for (LiveStore bs : blobStores.values()) {
-            if (bs.config.isEnabled() && bs.liveInstance.layerExists(layerName)) {
-                return true;
+        configLock.readLock().lock();
+        try {
+            for (LiveStore bs : blobStores.values()) {
+                if (bs.config.isEnabled() && bs.liveInstance.layerExists(layerName)) {
+                    return true;
+                }
             }
+        } finally {
+            configLock.readLock().unlock();
         }
         return false;
     }
@@ -276,6 +346,23 @@ public class CompositeBlobStore implements BlobStore {
         return store;
     }
 
+    public void setBlobStores(Iterable<? extends BlobStoreConfig> configs) throws StorageException,
+            ConfigurationException {
+        configLock.writeLock().lock();
+        try {
+            Map<String, LiveStore> newStores = loadBlobStores(configs);
+            Map<String, LiveStore> oldStores = this.blobStores;
+            this.blobStores = newStores;
+            for (LiveStore ls : oldStores.values()) {
+                if (ls.liveInstance != null) {
+                    ls.liveInstance.destroy();
+                }
+            }
+        } finally {
+            configLock.writeLock().unlock();
+        }
+    }
+
     /**
      * Loads the blob stores from the list of configuration objects
      * 
@@ -290,7 +377,7 @@ public class CompositeBlobStore implements BlobStore {
      *         {@link BlobStoreConfig#createInstance() created} of an enabled
      *         {@link BlobStoreConfig}
      */
-    Map<String, LiveStore> loadBlobStores(List<? extends BlobStoreConfig> configs)
+    Map<String, LiveStore> loadBlobStores(Iterable<? extends BlobStoreConfig> configs)
             throws StorageException, ConfigurationException {
 
         Map<String, LiveStore> stores = new HashMap<>();
@@ -315,7 +402,7 @@ public class CompositeBlobStore implements BlobStore {
 
                 BlobStore store = null;
                 if (enabled) {
-                    store = config.createInstance();
+                    store = config.createInstance(layers, lockProvider);
                 }
 
                 LiveStore liveStore = new LiveStore(config, store);

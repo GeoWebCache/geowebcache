@@ -17,7 +17,9 @@
  */
 package org.geowebcache.storage.blobstore.file;
 
-import static org.geowebcache.storage.blobstore.file.FilePathUtils.*;
+import static org.geowebcache.storage.blobstore.file.FilePathUtils.filteredGridSetId;
+import static org.geowebcache.storage.blobstore.file.FilePathUtils.filteredLayerName;
+import static org.geowebcache.storage.blobstore.file.FilePathUtils.findZoomLevel;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -71,18 +73,19 @@ public class FileBlobStore implements BlobStore {
     private final File stagingArea;
 
     private final String path;
- 
+
     private int diskBlockSize = DEFAULT_DISK_BLOCK_SIZE;
-    
+
     private final BlobStoreListenerList listeners = new BlobStoreListenerList();
 
     private FilePathGenerator pathGenerator;
 
     private File tmp;
 
-    private static ExecutorService deleteExecutorService;
+    private ExecutorService deleteExecutorService;
 
-    public FileBlobStore(DefaultStorageFinder defStoreFinder) throws StorageException, ConfigurationException {
+    public FileBlobStore(DefaultStorageFinder defStoreFinder) throws StorageException,
+            ConfigurationException {
         this(defStoreFinder.getDefaultPath());
     }
 
@@ -96,14 +99,14 @@ public class FileBlobStore implements BlobStore {
         if (!fh.exists() || !fh.isDirectory() || !fh.canWrite()) {
             throw new StorageException(path + " is not writable directory.");
         }
-        
+
         // and the temporary directory
         tmp = new File(path, "tmp");
         tmp.mkdirs();
         if (!tmp.exists() || !tmp.isDirectory() || !tmp.canWrite()) {
             throw new StorageException(tmp.getPath() + " is not writable directory.");
         }
-        
+
         stagingArea = new File(path, "_gwc_in_progress_deletes_");
         createDeleteExecutorService();
         issuePendingDeletes();
@@ -126,8 +129,7 @@ public class FileBlobStore implements BlobStore {
     }
 
     private void deletePending(final File pendingDeleteDirectory) {
-        FileBlobStore.deleteExecutorService.submit(new DefferredDirectoryDeleteTask(
-                pendingDeleteDirectory));
+        deleteExecutorService.submit(new DefferredDirectoryDeleteTask(pendingDeleteDirectory));
     }
 
     private void createDeleteExecutorService() {
@@ -137,7 +139,7 @@ public class FileBlobStore implements BlobStore {
         tf.setThreadPriority(Thread.MIN_PRIORITY);
         deleteExecutorService = Executors.newFixedThreadPool(1);
     }
-    
+
     /**
      * Destroy method for Spring
      */
@@ -261,8 +263,7 @@ public class FileBlobStore implements BlobStore {
         });
 
         for (File gridSubsetCache : gridSubsetCaches) {
-            String target = filteredLayerName(layerName) + "_"
-                    + gridSubsetCache.getName();
+            String target = filteredLayerName(layerName) + "_" + gridSubsetCache.getName();
             stageDelete(gridSubsetCache, target);
         }
 
@@ -277,8 +278,7 @@ public class FileBlobStore implements BlobStore {
      * @return true if the directory for the layer was renamed, or the original directory didn't
      *         exist in first place. {@code false} if the original directory exists but can't be
      *         renamed to the target directory
-     * @throws StorageException
-     *             if the target directory already exists
+     * @throws StorageException if the target directory already exists
      * @see org.geowebcache.storage.BlobStore#rename
      */
     public boolean rename(final String oldLayerName, final String newLayerName)
@@ -352,21 +352,20 @@ public class FileBlobStore implements BlobStore {
     public boolean delete(TileRange trObj) throws StorageException {
         int count = 0;
 
-        String prefix = path + File.separator
-                + filteredLayerName(trObj.getLayerName());
+        String prefix = path + File.separator + filteredLayerName(trObj.getLayerName());
 
         final File layerPath = new File(prefix);
 
-        // If it wasn't there to be deleted, 
+        // If it wasn't there to be deleted,
         if (!layerPath.exists()) {
             return true;
         }
-        
+
         // We either want to delete it, or stuff within it
         if (!layerPath.isDirectory() || !layerPath.canWrite()) {
             throw new StorageException(prefix + " does is not a directory or is not writable.");
         }
-        
+
         final FilePathFilter tileFinder = new FilePathFilter(trObj);
 
         final String layerName = trObj.getLayerName();
@@ -418,12 +417,13 @@ public class FileBlobStore implements BlobStore {
 
     /**
      * Set the blob property of a TileObject.
-     * @param stObj the tile to load.  Its setBlob() method will be called.
+     * 
+     * @param stObj the tile to load. Its setBlob() method will be called.
      * @return true if successful, false otherwise
      */
     public boolean get(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, false);
-        if(!fh.exists()) {
+        if (!fh.exists()) {
             stObj.setStatus(Status.MISS);
             return false;
         } else {
@@ -445,13 +445,13 @@ public class FileBlobStore implements BlobStore {
         writeFile(fh, stObj, existed);
         // mark the last modification as the tile creation time if set, otherwise
         // we'll leave it to the writing time
-        if(stObj.getCreated() > 0) {
+        if (stObj.getCreated() > 0) {
             try {
                 fh.setLastModified(stObj.getCreated());
-            } catch(Exception e) {
+            } catch (Exception e) {
                 log.debug("Failed to set the last modified time to match the tile request time", e);
             }
-        } 
+        }
 
         /*
          * This is important because listeners may be tracking tile existence
@@ -494,26 +494,28 @@ public class FileBlobStore implements BlobStore {
         // first write to temp file
         tmp.mkdirs();
         File temp = new File(tmp, UUID.randomUUID().toString());
-        
+
         try {
             // Open the output stream and read the blob into the tile
             FileOutputStream fos = null;
             FileChannel channel = null;
             try {
                 fos = new FileOutputStream(temp);
-                
+
                 channel = fos.getChannel();
                 try {
                     stObj.getBlob().transferTo(channel);
                 } catch (IOException ioe) {
-                    throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
+                    throw new StorageException(ioe.getMessage() + " for "
+                            + target.getAbsolutePath());
                 } finally {
                     try {
-                        if(channel != null) {
+                        if (channel != null) {
                             channel.close();
                         }
                     } catch (IOException ioe) {
-                        throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
+                        throw new StorageException(ioe.getMessage() + " for "
+                                + target.getAbsolutePath());
                     }
                 }
             } catch (FileNotFoundException ioe) {
@@ -521,25 +523,27 @@ public class FileBlobStore implements BlobStore {
             } finally {
                 IOUtils.closeQuietly(fos);
             }
-            
+
             // rename to final position. This will fail if another GWC also wrote this
             // file, in such case we'll just eliminate this one
-            if(FileUtils.renameFile(temp, target)) {
+            if (FileUtils.renameFile(temp, target)) {
                 temp = null;
-            } else if(existed) {
-                // if we are trying to overwrite and old tile, on windows that might fail... delete and rename instead
-                if(target.delete() && FileUtils.renameFile(temp, target)) {
+            } else if (existed) {
+                // if we are trying to overwrite and old tile, on windows that might fail... delete
+                // and rename instead
+                if (target.delete() && FileUtils.renameFile(temp, target)) {
                     temp = null;
                 }
             }
         } finally {
-            
-            if(temp != null) {
-                log.warn("Tile " + target.getPath() + " was already written by another thread/process");
+
+            if (temp != null) {
+                log.warn("Tile " + target.getPath()
+                        + " was already written by another thread/process");
                 temp.delete();
             }
         }
-        
+
     }
 
     public void clear() throws StorageException {

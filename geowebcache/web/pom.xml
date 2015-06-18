@@ -79,6 +79,11 @@
       <artifactId>gwc-distributed</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.geowebcache</groupId>
+      <artifactId>gwc-aws-s3</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- This is for Acegi -->
     <dependency>

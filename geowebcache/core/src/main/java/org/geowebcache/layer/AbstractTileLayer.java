@@ -160,12 +160,17 @@ public abstract class AbstractTileLayer extends TileLayer {
         return getName();
     }
 
-	@Override
-	@Nullable
-	public String getBlobStoreId() {
-		return blobStoreId;
-	}
+    @Override
+    @Nullable
+    public String getBlobStoreId() {
+        return blobStoreId;
+    }
 
+    @Override
+    public void setBlobStoreId(@Nullable String blobStoreId){
+        this.blobStoreId = blobStoreId;
+    }
+    
     /**
      * Then name of the layer
      * 

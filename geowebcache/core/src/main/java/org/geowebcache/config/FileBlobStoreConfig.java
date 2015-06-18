@@ -18,6 +18,8 @@ package org.geowebcache.config;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
@@ -85,7 +87,7 @@ public class FileBlobStoreConfig extends BlobStoreConfig {
     }
 
     @Override
-    public FileBlobStore createInstance() throws StorageException {
+    public FileBlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider) throws StorageException {
         checkState(getId() != null, "id not set");
         checkState(isEnabled(),
                 "Can't call FileBlobStoreConfig.createInstance() is blob store is not enabled");

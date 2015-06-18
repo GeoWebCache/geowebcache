@@ -36,13 +36,33 @@
   </serviceInformation>
 
   <blobStores>
-    <!-- A sample blob store configuration. Enable and set as default to override the legacy lookup method for the cache directory  -->
+    <!-- A sample file blob store configuration. Enable and set as default to override the legacy lookup method for the cache directory  -->
     <FileBlobStore default="false">
       <id>defaultCache</id>
       <enabled>false</enabled>
       <baseDirectory>/tmp/defaultCache</baseDirectory>
       <fileSystemBlockSize>4096</fileSystemBlockSize>
     </FileBlobStore>
+    <!-- A sample AWS S3 blob store configuration.   -->
+    <!-- 
+    <S3BlobStore>
+      <id>myS3Cache</id>
+      <enabled>false</enabled>
+      <bucket>put-your-actual-bucket-name-here</bucket>
+      <prefix>test-cache</prefix>
+      <awsAccessKey>putYourActualAccessKeyHere</awsAccessKey>
+      <awsSecretKey>putYourActualSecretKeyHere</awsSecretKey>
+      <maxConnections>50</maxConnections>
+      <useHTTPS>true</useHTTPS>
+      <proxyDomain></proxyDomain>
+      <proxyWorkstation></proxyWorkstation>
+      <proxyHost></proxyHost>
+      <proxyPort></proxyPort>
+      <proxyUsername></proxyUsername>
+      <proxyPassword></proxyPassword>
+      <useGzip>true</useGzip>
+    </S3BlobStore>
+     -->
   </blobStores>
 
   <gridSets>
@@ -75,6 +95,9 @@
   <layers>
 
     <wmsLayer>
+      <!-- 
+      <blobStoreId>myS3Cache</blobStoreId>
+      -->
       <name>topp:states</name>
       <mimeFormats>
         <string>image/gif</string>
@@ -83,6 +106,17 @@
         <string>image/png8</string>
       </mimeFormats>
       <gridSubsets>
+        <gridSubset>
+          <gridSetName>EPSG:4326</gridSetName>
+          <extent>
+            <coords>
+              <double>-129.6</double>
+              <double>3.45</double>
+              <double>-62.1</double>
+              <double>70.9</double>
+            </coords>
+          </extent>
+        </gridSubset>
         <gridSubset>
           <gridSetName>EPSG:2163</gridSetName>
         </gridSubset>
@@ -157,5 +191,5 @@
       <bgColor>0x0066FF</bgColor>
     </wmsLayer>
   </layers>
-  
+
 </gwcConfiguration>

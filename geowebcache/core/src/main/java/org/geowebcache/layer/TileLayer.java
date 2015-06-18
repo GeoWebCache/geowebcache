@@ -96,12 +96,14 @@ public abstract class TileLayer {
      */
     public abstract String getId();
     
-	/**
-	 * @return the identifier for the blob store that manages this layer tiles,
-	 *         or {@code null} if the default blob store shall be used
-	 */
-	@Nullable
-	public abstract String getBlobStoreId();
+    /**
+     * @return the identifier for the blob store that manages this layer tiles, or {@code null} if
+     *         the default blob store shall be used
+     */
+    @Nullable
+    public abstract String getBlobStoreId();
+
+    public abstract void setBlobStoreId(@Nullable String blobStoreId);
     
     /**
      * Then name of the layer

@@ -21,6 +21,8 @@ import java.io.Serializable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.StorageException;
 
@@ -42,7 +44,7 @@ import org.geowebcache.storage.StorageException;
  * @since 1.8
  * @see FileBlobStoreConfig
  */
-public abstract class BlobStoreConfig implements Serializable{
+public abstract class BlobStoreConfig implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
 
@@ -116,6 +118,15 @@ public abstract class BlobStoreConfig implements Serializable{
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
+    
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new UnsupportedOperationException(e);
+        }
+    }
 
     /**
      * Factory method for this class of blobstore, configured as per this configuration object
@@ -123,9 +134,13 @@ public abstract class BlobStoreConfig implements Serializable{
      * <p>
      * May only be called if {@link #isEnabled() == true}.
      * 
+     * @param layers
+     * @param lockProvider
+     * 
      * @throws StorageException if the blob store can't be created with this configuration settings
      * @throws IllegalStateException if {@link #isEnabled() isEnabled() == false} or
      *         {@link #getId() getId() == null}
      */
-    public abstract BlobStore createInstance() throws StorageException;
+    public abstract BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider)
+            throws StorageException;
 }
