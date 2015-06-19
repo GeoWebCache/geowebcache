@@ -247,25 +247,18 @@ public class CompositeBlobStore implements BlobStore {
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
         configLock.readLock().lock();
         try {
-            LiveStore store = forLayer(oldLayerName);
-            if (!store.config.isEnabled()) {
-                throw new StorageException("Attempt to use a disabled blob store: "
-                        + store.config.getId());
-            }
             for (LiveStore bs : blobStores.values()) {
-                BlobStoreConfig config = store.config;
-                if (config.isEnabled() && !config.getId().equals(bs.config.getId())) {
-                    if (bs.liveInstance.layerExists(newLayerName)) {
-                        throw new StorageException("Can't rename layer directory " + oldLayerName
-                                + " to " + newLayerName + ". Target layer already exists");
+                BlobStoreConfig config = bs.config;
+                if (config.isEnabled()) {
+                    if (bs.liveInstance.rename(oldLayerName, newLayerName)) {
+                        return true;
                     }
                 }
             }
-
-            return store.liveInstance.rename(oldLayerName, newLayerName);
         } finally {
             configLock.readLock().unlock();
         }
+        return false;
     }
 
     @Override
@@ -309,7 +302,12 @@ public class CompositeBlobStore implements BlobStore {
 
     private BlobStore store(String layerId) throws StorageException {
 
-        LiveStore store = forLayer(layerId);
+        LiveStore store;
+        try {
+            store = forLayer(layerId);
+        } catch (GeoWebCacheException e) {
+            throw new StorageException(e.getMessage(), e);
+        }
         if (!store.config.isEnabled()) {
             throw new StorageException("Attempted to use a blob store that's disabled: "
                     + store.config.getId());
@@ -318,12 +316,16 @@ public class CompositeBlobStore implements BlobStore {
         return store.liveInstance;
     }
 
-    private LiveStore forLayer(String layerName) throws StorageException {
+    /**
+     * @throws StorageException if the blobstore is not enabled or does not exist
+     * @throws GeoWebCacheException if the layer is not found
+     */
+    private LiveStore forLayer(String layerName) throws StorageException, GeoWebCacheException {
         TileLayer layer;
         try {
             layer = layers.getTileLayer(layerName);
         } catch (GeoWebCacheException e) {
-            throw new StorageException("Error getting layer " + layerName, e);
+            throw e;
         }
         String storeId = layer.getBlobStoreId();
         LiveStore store;

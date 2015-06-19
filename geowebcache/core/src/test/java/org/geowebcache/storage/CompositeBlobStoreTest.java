@@ -265,7 +265,7 @@ public class CompositeBlobStoreTest {
         TileObject tile = queryTile("someLayer", DEFAULT_GRIDSET, DEFAULT_FORMAT, 0, 0, 0);
 
         ex.expect(StorageException.class);
-        ex.expectMessage("Error getting layer someLayer");
+        ex.expectMessage("layer not found");
         store.get(tile);
     }
 
