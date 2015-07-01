@@ -27,9 +27,11 @@ public class MimeType {
 
     protected String fileExtension;
 
+    
     protected String internalName;
     
     protected boolean supportsTiling;
+        
 
     private static Log log = LogFactory.getLog(org.geowebcache.mime.MimeType.class);
 
@@ -41,6 +43,7 @@ public class MimeType {
         this.format = format;
         this.supportsTiling = supportsTiling;
     }
+
     
     
     /**
@@ -87,6 +90,18 @@ public class MimeType {
         return supportsTiling;
     }
     
+    
+    /**
+     * Indicates whether this is a vector format rather than a raster format. Output in vector
+     * formats should have no guttering.
+     * 
+     * @return {@code true} if represents a vector or other kind of non raster format where applying
+     *         a gutter to the request originating the tile would lead to an incorrect result.
+     */
+    public boolean isVector() {
+        return false;
+    }
+
     /**
      * Get the MIME type object for a given MIME type string
      * 

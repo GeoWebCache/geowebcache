@@ -141,7 +141,7 @@ public class MetaTile implements TileResponseReceiver {
         this.formatModifier = formatModifier;
         this.metaX = metaX;
         this.metaY = metaY;
-        this.gutterConfig = gutter == null ? 0 : gutter.intValue();
+        this.gutterConfig = responseFormat.isVector() || gutter == null ? 0 : gutter.intValue();
 
         metaGridCov = calculateMetaTileGridBounds(
                 gridSubset.getCoverage((int) tileGridPosition[2]), tileGridPosition);

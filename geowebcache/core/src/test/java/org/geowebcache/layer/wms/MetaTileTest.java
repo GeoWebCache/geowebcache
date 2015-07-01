@@ -13,6 +13,7 @@ import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
+import org.geowebcache.mime.ApplicationMime;
 import org.geowebcache.mime.ImageMime;
 
 public class MetaTileTest extends TestCase {
@@ -168,7 +169,7 @@ public class MetaTileTest extends TestCase {
 
         int height = Integer.parseInt(wmsParams.get("HEIGHT"));
         
-        //assertEquals(height, 256 + 50);
+        assertEquals(height, 256 + 50);
 
         long[] midGridPos = { 83, 45, 6 };
         mt = new WMSMetaTile(
@@ -192,6 +193,44 @@ public class MetaTileTest extends TestCase {
         // Lets check some specific coordinates too
         assertTrue(Math.abs( Double.parseDouble(coordStrs[0]) - 47.26318359375) < 0.001);   
         assertTrue(Math.abs( Double.parseDouble(coordStrs[3]) - 45.54931640625) < 0.001);
+    }
+    
+    /**
+     * 
+     * @throws Exception
+     */
+    public void test6MetaTileNoGutterWithVector() throws Exception {
+        BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
+        
+        WMSLayer layer = createWMSLayer(bbox);
+
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
+                gridSetBroker.WORLD_EPSG4326,
+                bbox,
+                0,
+                30);
+        
+        // Set the gutter
+        layer.gutter = 50;
+
+        // Lets make a tile close to the edge, this should only have a gutter to west / south
+        long[] gridPos = { 127, 63, 6 };
+        WMSMetaTile mt = new WMSMetaTile(
+                    layer, grid, ApplicationMime.topojson, null, 
+                    gridPos, layer.getMetaTilingFactors()[0], 
+                    layer.getMetaTilingFactors()[1], Collections.singletonMap("test", "test1"));
+
+        // The actual gutter is calculated right at construction time
+        Map<String, String> wmsParams = mt.getWMSParams();
+        assertEquals(0, mt.getGutter()[0]);
+        assertEquals(0, mt.getGutter()[1]);
+        assertEquals(0, mt.getGutter()[2]);
+        assertEquals(0, mt.getGutter()[3]);
+
+        int height = Integer.parseInt(wmsParams.get("HEIGHT"));
+        
+        assertEquals(height, 256);
+
     }
     
     private WMSLayer createWMSLayer(BoundingBox layerBounds) {

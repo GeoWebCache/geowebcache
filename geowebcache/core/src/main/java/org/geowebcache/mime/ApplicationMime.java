@@ -25,6 +25,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 public class ApplicationMime extends MimeType {
+    
+    protected boolean vector;
 
     public static final ApplicationMime bil16 = new ApplicationMime(
             "application/bil16", "bil16", "bil16",
@@ -39,13 +41,13 @@ public class ApplicationMime extends MimeType {
             "application/json", false);
     
     public static final ApplicationMime topojson = new ApplicationMime("application/json",
-            "topojson", "topojson", "application/json;type=topojson", false);
+            "topojson", "topojson", "application/json;type=topojson", true);
 
     public static final ApplicationMime geojson = new ApplicationMime("application/json",
-            "geojson", "geojson", "application/json;type=geojson", false);
+            "geojson", "geojson", "application/json;type=geojson", true);
 
     public static final ApplicationMime mapboxVector = new ApplicationMime("application/x-protobuf",
-            "pbf", "mapbox-vectortile", "application/x-protobuf;type=mapbox-vector", false);
+            "pbf", "mapbox-vectortile", "application/x-protobuf;type=mapbox-vector", true);
 
     private static Set<ApplicationMime> ALL = ImmutableSet.of(bil16, bil32, json, topojson,
             geojson, mapboxVector);
@@ -69,8 +71,9 @@ public class ApplicationMime extends MimeType {
             });
 
     private ApplicationMime(String mimeType, String fileExtension, 
-                String internalName, String format, boolean noop) {
+            String internalName, String format, boolean vector) {
         super(mimeType, fileExtension, internalName, format, false);
+        this.vector = vector;
     }
         
     public ApplicationMime(String mimeType, String fileExtension, 
@@ -86,5 +89,10 @@ public class ApplicationMime extends MimeType {
     protected static ApplicationMime checkForExtension(String fileExtension) throws MimeException {
         ApplicationMime mimeType = BY_EXTENSION.get(fileExtension);
         return mimeType;
+    }
+    
+    @Override
+    public boolean isVector() {
+        return vector;
     }
 }
