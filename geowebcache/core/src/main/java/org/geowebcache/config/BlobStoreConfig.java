@@ -143,4 +143,9 @@ public abstract class BlobStoreConfig implements Serializable, Cloneable {
      */
     public abstract BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider)
             throws StorageException;
+    
+    /**
+     * A string description of the location used for storage such as a URI or file path
+     */
+    public abstract String getLocation();
 }
