@@ -270,6 +270,16 @@ public class XMLConfiguration implements Configuration {
         File xmlFile = new File(configDirectory, configFileName);
         return xmlFile;
     }
+    
+    public String getConfigLocation() throws ConfigurationException {
+        File f = findConfigFile();
+        try {
+            return f.getCanonicalPath();
+        } catch (IOException ex) {
+            log.error("Could not canonize config path", ex);
+            return f.getPath();
+        }
+    }
 
     private File findOrCreateConfFile() throws ConfigurationException {
         File xmlFile = findConfigFile();

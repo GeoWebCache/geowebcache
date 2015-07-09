@@ -40,6 +40,8 @@ import org.apache.commons.httpclient.util.DateUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.Configuration;
+import org.geowebcache.config.ConfigurationException;
+import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.conveyor.ConveyorTile;
@@ -97,6 +99,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
     private String servletPrefix = null;
 
+    private Configuration mainConfiguration;
+    
     /**
      * Should be invoked through Spring
      * 
@@ -111,7 +115,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
         this.gridSetBroker = gridSetBroker;
         this.runtimeStats = runtimeStats;
         this.storageBroker = storageBroker;
-
+        this.mainConfiguration = mainConfiguration;
+        
         if (mainConfiguration.isRuntimeStatsEnabled()) {
             this.runtimeStats.start();
         } else {
@@ -460,12 +465,50 @@ public class GeoWebCacheDispatcher extends AbstractController {
             str.append(runtimeStats.getHTMLStats());
             str.append("</table>\n");
         }
+        if(!Boolean.parseBoolean(GeoWebCacheExtensions.getProperty("GEOWEBCACHE_HIDE_STORAGE_LOCATIONS")))
+        {
+            appendStorageLocations(str);
+        }
+        
         if(storageBroker != null){
             appendInternalCacheStats(str);
         }
         str.append("</body></html>\n");
 
         writePage(response, 200, str.toString());
+    }
+
+    private void appendStorageLocations(StringBuilder str) {
+        str.append("<h3>Storage Locations</h3>\n");
+        str.append("<table class=\"stats\">\n");
+        str.append("<tbody>");
+        XMLConfiguration config;
+        if(mainConfiguration instanceof XMLConfiguration) {
+            config = (XMLConfiguration) mainConfiguration;
+        } else {
+            config = GeoWebCacheExtensions.bean(XMLConfiguration.class);
+        }
+        String configLoc;
+        String localStorageLoc;
+        // TODO: Disk Quota location
+        try {
+            configLoc = config.getConfigLocation();
+        } catch (ConfigurationException ex) {
+            configLoc = "Error";
+            log.error("Could not find config location", ex);
+        }            
+        try {
+            localStorageLoc = defaultStorageFinder.getDefaultPath();
+        } catch (ConfigurationException ex) {
+            localStorageLoc = "Error";
+            log.error("Could not find local cache location", ex);
+        }
+        str.append("<tr><th scope=\"row\">Config file:</th><td><tt>").append(configLoc).append("</tt></td></tr>");
+        str.append("<tr><th scope=\"row\">Local Storage:</th><td><tt>").append(localStorageLoc).append("</tt></td></tr>");
+        str.append("</tbody>");
+        
+        str.append("</tbody>");
+        str.append("</table>\n");
     }
 
     /**
