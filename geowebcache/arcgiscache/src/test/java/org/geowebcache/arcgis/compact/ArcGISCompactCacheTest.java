@@ -37,22 +37,6 @@ public class ArcGISCompactCacheTest extends TestCase {
     private final static byte[] JFIFHeader = { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0,
             0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01 };
 
-    public void testCacheBundle() throws Exception {
-        URL url = getClass().getResource("/compactcache/_alllayers/L05/R0000C0000.bundlx");
-        ArcGISCacheBundle bundle = new ArcGISCacheBundle(url.toURI().getPath());
-
-        assertNotNull(bundle);
-
-        assertFalse(bundle.tileExists(-1, -1));
-        assertFalse(bundle.tileExists(9, 3));
-        assertFalse(bundle.tileExists(14, 11));
-        assertFalse(bundle.tileExists(128, 128));
-
-        assertTrue(bundle.tileExists(10, 4));
-        assertTrue(bundle.tileExists(13, 10));
-        assertTrue(bundle.tileExists(12, 7));
-    }
-
     public void testCompactCache() throws Exception {
         URL url = getClass().getResource("/compactcache/_alllayers/");
         ArcGISCompactCache cache = new ArcGISCompactCache(url.toURI().getPath());
@@ -81,7 +65,7 @@ public class ArcGISCompactCacheTest extends TestCase {
         assertNotNull(cache);
 
         Resource resource = cache.getBundleFileResource(5, 0, 0);
-        assertNotNull(resource);
+        assertNull(resource);
 
         resource = cache.getBundleFileResource(5, 12, 7);
         assertNotNull(resource);

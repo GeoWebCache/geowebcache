@@ -12,22 +12,22 @@ import java.nio.channels.WritableByteChannel;
 import org.geowebcache.io.Resource;
 
 /**
- * 
+ *
  * @author Bjoern Saxe
- * 
+ *
  */
+
 public class BundleFileResource implements Resource {
-    private ArcGISCacheBundle bundle;
+    private final String bundleFilePath;
 
-    private long tileOffset;
+    private final long tileOffset;
 
-    private int tileSize;
+    private final int tileSize;
 
-    public BundleFileResource(ArcGISCacheBundle bundle, int row, int col) {
-        this.bundle = bundle;
-
-        tileOffset = bundle.getTileOffset(row, col);
-        tileSize = bundle.getTileSize(row, col);
+    public BundleFileResource(String bundleFilePath, long tileOffset, int tileSize) {
+        this.bundleFilePath = bundleFilePath;
+        this.tileOffset = tileOffset;
+        this.tileSize = tileSize;
     }
 
     /**
@@ -41,22 +41,18 @@ public class BundleFileResource implements Resource {
      * @see org.geowebcache.io.Resource#transferTo()
      */
     public long transferTo(WritableByteChannel target) throws IOException {
-        FileChannel in = new FileInputStream(new File(bundle.getBundleFileName())).getChannel();
-
-        try {
+        try (FileChannel in = new FileInputStream(new File(bundleFilePath)).getChannel()) {
             final long size = tileSize;
             long written = 0;
             while ((written += in.transferTo(tileOffset + written, size, target)) < size)
                 ;
             return size;
-        } finally {
-            in.close();
         }
     }
 
     /**
      * Not supported for ArcGIS caches as they are read only.
-     * 
+     *
      * @see org.geowebcache.io.Resource#transferFrom()
      */
     public long transferFrom(ReadableByteChannel channel) throws IOException {
@@ -68,7 +64,7 @@ public class BundleFileResource implements Resource {
      * @see org.geowebcache.io.Resource#getInputStream()
      */
     public InputStream getInputStream() throws IOException {
-        FileInputStream fis = new FileInputStream(bundle.getBundleFileName());
+        FileInputStream fis = new FileInputStream(bundleFilePath);
         fis.skip(tileOffset);
 
         return fis;
@@ -76,7 +72,7 @@ public class BundleFileResource implements Resource {
 
     /**
      * Not supported for ArcGIS caches as they are read only.
-     * 
+     *
      * @see org.geowebcache.io.Resource#getOutputStream()
      */
     public OutputStream getOutputStream() throws IOException {
@@ -88,7 +84,7 @@ public class BundleFileResource implements Resource {
      * @see org.geowebcache.io.Resource#getLastModified()
      */
     public long getLastModified() {
-        File f = new File(bundle.getBundleFileName());
+        File f = new File(bundleFilePath);
 
         return f.lastModified();
     }
