@@ -101,4 +101,9 @@ public class FileBlobStoreConfig extends BlobStoreConfig {
         return fileBlobStore;
     }
 
+    @Override
+    public String getLocation() {
+        return getBaseDirectory();
+    }
+
 }

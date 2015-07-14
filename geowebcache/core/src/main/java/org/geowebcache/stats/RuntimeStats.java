@@ -151,30 +151,31 @@ public class RuntimeStats {
         
         StringBuilder str = new StringBuilder();
         
-        str.append("<table border=\"0\" cellspacing=\"5\">");
-        
+        str.append("<table border=\"0\" cellspacing=\"5\" class=\"stats\">");
         
         synchronized(bytes) {
             // Starting time
-            str.append("<tr><td colspan=\"2\">Started:</td><td colspan=\"3\">");
+            str.append("<tbody>");
+            str.append("<tr><th colspan=\"2\" scope=\"row\">Started:</th><td colspan=\"3\">");
             str.append(ServletUtils.formatTimestamp(this.startTime)+ " (" + formatTimeDiff(runningTime) + ") ");
             str.append("</td></tr>\n");
             
-            str.append("<tr><td colspan=\"2\">Total number of requests:</td><td colspan=\"3\">"+totalRequests);
+            str.append("<tr><th colspan=\"2\" scope=\"row\">Total number of requests:</th><td colspan=\"3\">"+totalRequests);
             str.append(" (" + totalRequests / (runningTime) +"/s ) ");
             str.append("</td></tr>\n");
             
-            str.append("<tr><td colspan=\"2\">Total number of untiled WMS requests:</td><td colspan=\"3\">"+totalWMS);
+            str.append("<tr><th colspan=\"2\" scope=\"row\">Total number of untiled WMS requests:</th><td colspan=\"3\">"+totalWMS);
             str.append(" (" + totalWMS / (runningTime) +"/s ) ");
             str.append("</td></tr>\n");
             
-            str.append("<tr><td colspan=\"2\">Total number of bytes:</td><td colspan=\"3\">"+totalBytes);
+            str.append("<tr><th colspan=\"2\" scope=\"row\">Total number of bytes:</th><td colspan=\"3\">"+totalBytes);
             str.append(" ("+formatBits((totalBytes*8.0)/(runningTime))+") ");
             str.append("</td></tr>\n");
             
-            str.append("<tr><td colspan=\"5\"> </td></tr>");
+            str.append("</tbody>");
+            str.append("<tbody>");
             
-            str.append("<tr><td colspan=\"2\">Cache hit ratio:</td><td colspan=\"3\">");
+            str.append("<tr><th colspan=\"2\" scope=\"row\">Cache hit ratio:</th><td colspan=\"3\">");
             if(totalHits + totalMisses > 0) {
                 double hitPercentage = (totalHits * 100.0) / (totalHits + totalMisses);
                 int rounded = (int) Math.round(hitPercentage * 100.0);
@@ -187,7 +188,7 @@ public class RuntimeStats {
 
             str.append("</td></tr>\n");
             
-            str.append("<tr><td colspan=\"2\">Blank/KML/HTML:</td><td colspan=\"3\">");
+            str.append("<tr><th colspan=\"2\" scope=\"row\">Blank/KML/HTML:</th><td colspan=\"3\">");
             if(totalRequests > 0) {
                 if(totalHits + totalMisses == 0) {
                     str.append("100.0% of requests");
@@ -202,9 +203,10 @@ public class RuntimeStats {
             }
             str.append("</td></tr>\n");
             
-            str.append("<tr><td colspan=\"5\"> </td></tr>");
+            str.append("</tbody>");
+            str.append("<tbody>");
             
-            str.append("<tr><td colspan=\"2\">Peak request rate:</td><td colspan=\"3\">");
+            str.append("<tr><th colspan=\"2\" scope=\"row\">Peak request rate:</th><td colspan=\"3\">");
             if(totalRequests > 0) {
                 str.append(formatRequests( (peakRequests * 1.0) / pollInterval));
                 str.append(" ("+ServletUtils.formatTimestamp(peakRequestsTime)+") ");
@@ -213,7 +215,7 @@ public class RuntimeStats {
             }
             str.append("</td></tr>\n");
             
-            str.append("<tr><td colspan=\"2\">Peak bandwidth:</td><td colspan=\"3\">");
+            str.append("<tr><th colspan=\"2\" scope=\"row\">Peak bandwidth:</th><td colspan=\"3\">");
             if(totalRequests > 0) {
                 str.append(formatBits((peakBytes * 8.0) / pollInterval));
                 str.append(" ("+ServletUtils.formatTimestamp(peakRequestsTime)+") ");
@@ -222,9 +224,10 @@ public class RuntimeStats {
             }
             str.append("</td></tr>\n");
             
-            str.append("<tr><td colspan=\"5\"> </td></tr>");
+            str.append("</tbody>");
+            str.append("<tbody>");
                         
-            str.append("<tr><td>Interval</td><td>Requests</td><td>Rate</td><td>Bytes</td><td>Bandwidth</td></tr>\n");
+            str.append("<tr><th scope=\"col\">Interval</th><th scope=\"col\">Requests</th><th scope=\"col\">Rate</th><th scope=\"col\">Bytes</th><th scope=\"col\">Bandwidth</th></tr>\n");
             
             for(int i=0; i<intervals.length; i++) {
                 if(runningTime < intervals[i]) {
@@ -244,13 +247,17 @@ public class RuntimeStats {
                         +"</tr>\n");
             }
             
-            str.append("<tr><td colspan=\"5\"> </td></tr>");
+            str.append("</tbody>");
+            str.append("<tbody>");
             
             str.append("<tr><td colspan=\"5\">All figures are "+pollInterval+" second(s) delayed and do not include HTTP overhead</td></tr>");
             
             str.append("<tr><td colspan=\"5\">The cache hit ratio does not account for metatiling</td></tr>");
+            
+            str.append("</tbody>");
+            
         }
-        
+       
         return str.toString();
     }
     
@@ -305,11 +312,11 @@ public class RuntimeStats {
         String avg;
         
         if(bitsps > 1000000) {
-            avg = (Math.round(bitsps / 100000.0) / 10.0)  + " mbps";
+            avg = (Math.round(bitsps / 100000.0) / 10.0)  + "&nbsp;mbps";
         } else if(bitsps > 1000) {
-            avg = (Math.round(bitsps / 100.0) / 10.0)  + " kbps";
+            avg = (Math.round(bitsps / 100.0) / 10.0)  + "&nbsp;kbps";
         } else {
-            avg = (Math.round(bitsps * 10.0) / 10.0)  + " bps";
+            avg = (Math.round(bitsps * 10.0) / 10.0)  + "&nbsp;bps";
         }
         
         return avg;
