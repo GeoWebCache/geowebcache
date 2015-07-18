@@ -75,10 +75,23 @@ public class BundlxCache {
         indexCache = new LRUMap<>(maxSize);
     }
 
+    /**
+     * Get the entry for a key from the cache.
+     *
+     * @param key Key.
+     * @return Returns the entry. Returns null if the key has a null value or if the key has no entry.
+     */
     public synchronized CacheEntry get(CacheKey key) {
         return indexCache.get(key);
     }
 
+    /**
+     * Puts a key-entry mapping into this cache.
+     *
+     * @param key the key to add.
+     * @param entry the entry to add.
+     * @return the entry previously mapped to this key, null if none
+     */
     public synchronized CacheEntry put(CacheKey key, CacheEntry entry) {
         return indexCache.put(key, entry);
     }

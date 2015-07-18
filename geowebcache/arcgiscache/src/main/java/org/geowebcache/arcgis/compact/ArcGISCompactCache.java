@@ -4,14 +4,12 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import org.geowebcache.io.Resource;
 
 /**
  * Represents complete ArcGIS compact cache data.
- *
+ * <p/>
  * ArcGIS compact caches consist of bundle index files (*.bundlx) and bundle files (*.bundle), that contain
  * the actual image data.
  * Every .bundlx file contains a 16 byte header and 16 byte footer. Between header and footer is
@@ -70,8 +68,13 @@ public class ArcGISCompactCache {
         if ((entry = indexCache.get(key)) != null) {
             exists = entry.size > 0;
         } else {
-            String pathToBundleFile = buildBundleFilePath(zoom, row, col, BUNDLE_EXT);
-            String pathToBundlxFile = buildBundleFilePath(zoom, row, col, BUNDLX_EXT);
+
+            String basePath = buildBundleFilePath(zoom, row, col);
+            String pathToBundlxFile = basePath + BUNDLX_EXT;
+            String pathToBundleFile = basePath + BUNDLE_EXT;
+
+            System.out.println(pathToBundleFile);
+            System.out.println(pathToBundlxFile);
 
             if (!(new File(pathToBundleFile)).exists() || !(new File(pathToBundlxFile)).exists())
                 return false;
@@ -109,8 +112,10 @@ public class ArcGISCompactCache {
             if (entry.size > 0)
                 res = new BundleFileResource(entry.pathToBundleFile, entry.offset, entry.size);
         } else {
-            String pathToBundleFile = buildBundleFilePath(zoom, row, col, BUNDLE_EXT);
-            String pathToBundlxFile = buildBundleFilePath(zoom, row, col, BUNDLX_EXT);
+
+            String basePath = buildBundleFilePath(zoom, row, col);
+            String pathToBundlxFile = basePath + BUNDLX_EXT;
+            String pathToBundleFile = basePath + BUNDLE_EXT;
 
             if (!(new File(pathToBundleFile)).exists() || !(new File(pathToBundlxFile)).exists())
                 return null;
@@ -131,7 +136,7 @@ public class ArcGISCompactCache {
         return res;
     }
 
-    private String buildBundleFilePath(int zoom, int row, int col, String fileExtension) {
+    private String buildBundleFilePath(int zoom, int row, int col) {
         StringBuilder bundlePath = new StringBuilder(pathToCacheRoot);
 
         int baseRow = (row / BUNDLX_MAXIDX) * BUNDLX_MAXIDX;
@@ -154,7 +159,7 @@ public class ArcGISCompactCache {
             rowStr.insert(0, "0");
 
         bundlePath.append("L").append(zoomStr).append(File.separatorChar).append("R").append(rowStr)
-            .append("C").append(colStr).append(fileExtension);
+            .append("C").append(colStr);
 
         return bundlePath.toString();
     }
