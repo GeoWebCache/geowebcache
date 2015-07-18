@@ -249,9 +249,8 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
             final int col = (int) tileIndex[0];
             final int row = (int) (coverageMaxY - tileIndex[1]);
 
-            if (compactCache.tileExists(zoom, row, col)) {
-                tileContent = compactCache.getBundleFileResource(zoom, row, col);
-            }
+            tileContent = compactCache.getBundleFileResource(zoom, row, col);
+
         } else if (storageFormat.equals(CacheStorageInfo.EXPLODED_FORMAT_CODE)) {
             String path = getTilePath(tile);
             File tileFile = new File(path);
