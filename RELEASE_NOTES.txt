@@ -1,4 +1,22 @@
-GeoWebCache 1.7.0 (2015-05-19)
+GeoWebCache 1.7.2 (2015-07-20)
+----------------------------------
+
+Second maintenance release for the 1.7.x branch.
+
+Improvements:
++++++++++++++
+- Statistics page readability improvements
+- Include storage/config locations in statistics 
+
+Fixes:
+++++++
+- Layer Demo GFI requests reflect filter specified parameters
+- Problem loading the GWC's disk quota store
+- Fixed Transient Cache Initialization
+- Updated documentation for GEOWEBCACHE_CONFIG_DIR parameter
+
+
+GeoWebCache 1.7.1 (2015-05-19)
 ----------------------------------
 
 First maintenance release for the 1.7.x branch.
