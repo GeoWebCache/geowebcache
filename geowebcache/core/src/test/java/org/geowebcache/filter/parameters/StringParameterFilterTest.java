@@ -29,9 +29,12 @@ import java.util.Arrays;
 import java.util.Locale;
 
 import org.custommonkey.xmlunit.XMLAssert;
+import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.filter.parameters.CaseNormalizer.Case;
+import org.geowebcache.io.GeoWebCacheXStream;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.web.context.support.StaticWebApplicationContext;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -47,9 +50,8 @@ public class StringParameterFilterTest {
         filter.setValues(Arrays.asList("foo", "Bar", "BAZ"));
         filter.setDefaultValue("Default");
         
-        xs = new XStream();
-        xs.processAnnotations(CaseNormalizer.class);
-        xs.processAnnotations(StringParameterFilter.class);
+        xs = new GeoWebCacheXStream();
+        xs = XMLConfiguration.getConfiguredXStream(xs, new StaticWebApplicationContext());
     }
     
     @Test
