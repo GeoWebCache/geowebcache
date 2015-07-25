@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
+import org.geowebcache.io.GeoWebCacheXStream;
 import org.restlet.data.MediaType;
 import org.restlet.resource.StreamRepresentation;
 
@@ -27,7 +28,8 @@ public class XstreamRepresentation extends StreamRepresentation {
     public XstreamRepresentation(final Object data) {
         super(MediaType.TEXT_XML);
         this.data = data;
-        this.xstream = new XStream();
+        this.xstream = new GeoWebCacheXStream();
+        this.xstream.allowTypesByWildcard(new String[]{"org.geowebcache.**"});
     }
 
     /**

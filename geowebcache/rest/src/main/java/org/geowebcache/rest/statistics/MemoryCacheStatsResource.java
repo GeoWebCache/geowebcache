@@ -17,6 +17,7 @@ package org.geowebcache.rest.statistics;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.blobstore.memory.CacheStatistics;
 import org.geowebcache.storage.blobstore.memory.MemoryBlobStore;
@@ -132,7 +133,7 @@ public class MemoryCacheStatsResource extends Resource {
      * @throws JSONException
      */
     private JsonRepresentation getJsonRepresentation(CacheStatistics stats) throws JSONException {
-        XStream xs = getConfiguredXStream(new XStream(new JsonHierarchicalStreamDriver()));
+        XStream xs = getConfiguredXStream(new GeoWebCacheXStream(new JsonHierarchicalStreamDriver()));
         JSONObject obj = new JSONObject(xs.toXML(stats));
         JsonRepresentation rep = new JsonRepresentation(obj);
         return rep;
@@ -146,7 +147,7 @@ public class MemoryCacheStatsResource extends Resource {
      * @throws JSONException
      */
     private Representation getXmlRepresentation(CacheStatistics stats) {
-        XStream xStream = getConfiguredXStream(new XStream());
+        XStream xStream = getConfiguredXStream(new GeoWebCacheXStream());
         String xml = xStream.toXML(stats);
         return new StringRepresentation(xml, MediaType.TEXT_XML);
     }

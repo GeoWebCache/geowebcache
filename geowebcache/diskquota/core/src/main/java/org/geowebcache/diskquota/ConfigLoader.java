@@ -41,6 +41,7 @@ import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.diskquota.storage.LayerQuota;
 import org.geowebcache.diskquota.storage.Quota;
 import org.geowebcache.diskquota.storage.StorageUnit;
+import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
@@ -56,6 +57,8 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.security.NoTypePermission;
+import com.thoughtworks.xstream.security.PrimitiveTypePermission;
 
 /**
  * Utility class to load the disk quota configuration
@@ -118,7 +121,7 @@ public class ConfigLoader {
      */
     public void saveConfig(DiskQuotaConfig config) throws IOException, ConfigurationException {
         File rootCacheDir = getRootCacheDir();
-        XStream xStream = getConfiguredXStream(new XStream());
+        XStream xStream = getConfiguredXStream(new GeoWebCacheXStream());
         final File configFile = new File(rootCacheDir, CONFIGURATION_FILE_NAME);
         final File tmpConfigFile = new File(rootCacheDir, CONFIGURATION_FILE_NAME + ".tmp");
         log.debug("Saving disk quota config to " + configFile.getAbsolutePath());
@@ -262,7 +265,7 @@ public class ConfigLoader {
 
     private DiskQuotaConfig loadConfiguration(final InputStream configStream)
             throws XStreamException {
-        XStream xstream = getConfiguredXStream(new XStream());
+        XStream xstream = getConfiguredXStream(new GeoWebCacheXStream());
         Reader reader;
         try {
             reader = new InputStreamReader(configStream, "UTF-8");
@@ -280,6 +283,10 @@ public class ConfigLoader {
     }
 
     public static XStream getConfiguredXStream(XStream xs) {
+        // Allow anything that's part of GWC Diskquota
+        // TODO: replace this with a more narrow whitelist
+        xs.allowTypesByWildcard(new String[]{"org.geowebcache.**"});
+        
         xs.setMode(XStream.NO_REFERENCES);
 
         xs.alias("gwcQuotaConfiguration", DiskQuotaConfig.class);
