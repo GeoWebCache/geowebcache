@@ -17,6 +17,8 @@
 
 package org.geowebcache.io;
 
+import org.geowebcache.GeoWebCacheExtensions;
+
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConverterLookup;
 import com.thoughtworks.xstream.converters.ConverterRegistry;
@@ -154,6 +156,12 @@ public class GeoWebCacheXStream extends XStream {
             java.util.concurrent.CopyOnWriteArrayList.class, 
             java.util.concurrent.ConcurrentHashMap.class, 
         });
+        
+        String whitelistProp = GeoWebCacheExtensions.getProperty("GEOWEBCACHE_XSTREAM_WHITELIST");
+        if(whitelistProp != null) {
+            String[] wildcards = whitelistProp.split("\\s+|(\\s*;\\s*)");
+            this.allowTypesByWildcard(wildcards);
+        }
     }
     
 }
