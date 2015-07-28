@@ -25,6 +25,7 @@ import org.easymock.Capture;
 import org.easymock.IAnswer;
 import org.easymock.classextension.EasyMock;
 import org.geowebcache.io.GeoWebCacheXStream;
+import org.geowebcache.util.PropertyRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,6 +39,9 @@ public class XMLConfigurationXSchemaTest {
     
     @Rule
     public ExpectedException exception = ExpectedException.none();
+    
+    @Rule
+    public PropertyRule whitelistProperty = PropertyRule.system("GEOWEBCACHE_XSTREAM_WHITELIST");
     
     @Test
     public void testNotAllowNonGWCClass() throws Exception {
@@ -104,6 +108,46 @@ public class XMLConfigurationXSchemaTest {
         assertThat(o, instanceOf(org.easymock.Capture.class));
         
         EasyMock.verify(wac,provider);
+    }
+    
+    @Test
+    public void testPropertyCanAllow() throws Exception {
+        // Check that additional whitelist entries can be added via a system property.
+        
+        whitelistProperty.setValue("org.easymock.**");
+        
+        ContextualConfigurationProvider.Context pc = ContextualConfigurationProvider.Context.REST;
+        WebApplicationContext wac = new StaticWebApplicationContext();
+        XStream xs = new GeoWebCacheXStream();
+        
+        
+        xs = XMLConfiguration.getConfiguredXStreamWithContext(xs, wac, pc);
+        
+        Object o = xs.fromXML("<"+org.easymock.Capture.class.getCanonicalName()+" />");
+        
+        assertThat(o, instanceOf(org.easymock.Capture.class));
+        
+    }
+    
+    @Test
+    public void testPropertyCanAllowMultiple() throws Exception {
+        // Check that additional whitelist entries can be added via a system property.
+        
+        whitelistProperty.setValue("org.easymock.**; org.junit.**");
+        
+        ContextualConfigurationProvider.Context pc = ContextualConfigurationProvider.Context.REST;
+        WebApplicationContext wac = new StaticWebApplicationContext();
+        XStream xs = new GeoWebCacheXStream();
+        
+        
+        xs = XMLConfiguration.getConfiguredXStreamWithContext(xs, wac, pc);
+        
+        Object o1 = xs.fromXML("<"+org.easymock.Capture.class.getCanonicalName()+" />");
+        Object o2 = xs.fromXML("<"+org.junit.rules.TestName.class.getCanonicalName()+" />");
+        
+        assertThat(o1, instanceOf(org.easymock.Capture.class));
+        assertThat(o2, instanceOf(org.junit.rules.TestName.class));
+        
     }
 
 }
