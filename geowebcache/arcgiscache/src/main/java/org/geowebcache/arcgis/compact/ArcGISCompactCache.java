@@ -1,11 +1,12 @@
 package org.geowebcache.arcgis.compact;
 
-import java.io.*;
+import org.geowebcache.io.Resource;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
-
-import org.geowebcache.io.Resource;
 
 /**
  * Represents complete ArcGIS compact cache data.
@@ -22,74 +23,14 @@ import org.geowebcache.io.Resource;
  * @author Bjoern Saxe
  */
 
-public class ArcGISCompactCache {
-    private static final String BUNDLX_EXT = ".bundlx";
+public abstract class ArcGISCompactCache {
+    protected static final String BUNDLX_EXT = ".bundlx";
 
-    private static final String BUNDLE_EXT = ".bundle";
+    protected static final String BUNDLE_EXT = ".bundle";
 
-    private static final int BUNDLX_MAXIDX = 128;
+    protected static final int BUNDLX_MAXIDX = 128;
 
-    private final String pathToCacheRoot;
-
-    private BundlxCache indexCache;
-
-    /**
-     * Constructs new ArcGIS compact cache.
-     *
-     * @param pathToCacheRoot Path to compact cache directory (usually ".../_alllayers/"). Path must contain
-     *                        directories for zoom levels (named "Lxx").
-     */
-    public ArcGISCompactCache(String pathToCacheRoot) {
-        if (pathToCacheRoot.endsWith("" + File.separatorChar))
-            this.pathToCacheRoot = pathToCacheRoot;
-        else
-            this.pathToCacheRoot = pathToCacheRoot + File.separatorChar;
-
-        indexCache = new BundlxCache(10000);
-    }
-
-    /**
-     * Check if tile exists.
-     *
-     * @param zoom Zoom level of tile.
-     * @param row  Row of tile.
-     * @param col  Column of tile.
-     * @return True if tile exists (actual image data is available); false otherwise.
-     */
-    public boolean tileExists(int zoom, int row, int col) {
-        if (zoom < 0 || col < 0 || row < 0)
-            return false;
-
-        boolean exists = false;
-
-        BundlxCache.CacheKey key = new BundlxCache.CacheKey(zoom, row, col);
-        BundlxCache.CacheEntry entry = null;
-
-        if ((entry = indexCache.get(key)) != null) {
-            exists = entry.size > 0;
-        } else {
-
-            String basePath = buildBundleFilePath(zoom, row, col);
-            String pathToBundlxFile = basePath + BUNDLX_EXT;
-            String pathToBundleFile = basePath + BUNDLE_EXT;
-
-            System.out.println(pathToBundleFile);
-            System.out.println(pathToBundlxFile);
-
-            if (!(new File(pathToBundleFile)).exists() || !(new File(pathToBundlxFile)).exists())
-                return false;
-
-            long tileOffset = readTileStartOffset(pathToBundlxFile, row, col);
-            int tileSize = readTileSize(pathToBundleFile, tileOffset);
-
-            exists = tileSize > 0;
-
-            entry = new BundlxCache.CacheEntry(pathToBundleFile, tileOffset, tileSize);
-            indexCache.put(key, entry);
-        }
-
-        return exists;
-    }
+    protected String pathToCacheRoot = "";
 
     /**
      * Get Resource object for tile.
@@ -99,44 +40,9 @@ public class ArcGISCompactCache {
      * @param col  Column of tile.
      * @return Resource object associated with tile image data if tile exists; null otherwise.
      */
-    public Resource getBundleFileResource(int zoom, int row, int col) {
-        if (zoom < 0 || col < 0 || row < 0)
-            return null;
+    public abstract Resource getBundleFileResource(int zoom, int row, int col);
 
-        BundlxCache.CacheKey key = new BundlxCache.CacheKey(zoom, row, col);
-        BundlxCache.CacheEntry entry = null;
-
-        Resource res = null;
-
-        if ((entry = indexCache.get(key)) != null) {
-            if (entry.size > 0)
-                res = new BundleFileResource(entry.pathToBundleFile, entry.offset, entry.size);
-        } else {
-
-            String basePath = buildBundleFilePath(zoom, row, col);
-            String pathToBundlxFile = basePath + BUNDLX_EXT;
-            String pathToBundleFile = basePath + BUNDLE_EXT;
-
-            if (!(new File(pathToBundleFile)).exists() || !(new File(pathToBundlxFile)).exists())
-                return null;
-
-            long tileOffset = readTileStartOffset(pathToBundlxFile, row, col);
-            int tileSize = readTileSize(pathToBundleFile, tileOffset);
-
-            tileOffset += 4;
-
-            if (tileSize > 0)
-                res = new BundleFileResource(pathToBundleFile, tileOffset, tileSize);
-
-            entry = new BundlxCache.CacheEntry(pathToBundleFile, tileOffset, tileSize);
-
-            indexCache.put(key, entry);
-        }
-
-        return res;
-    }
-
-    private String buildBundleFilePath(int zoom, int row, int col) {
+    protected String buildBundleFilePath(int zoom, int row, int col) {
         StringBuilder bundlePath = new StringBuilder(pathToCacheRoot);
 
         int baseRow = (row / BUNDLX_MAXIDX) * BUNDLX_MAXIDX;
@@ -164,38 +70,20 @@ public class ArcGISCompactCache {
         return bundlePath.toString();
     }
 
-    private long readTileStartOffset(String bundlxFile, int row, int col) {
-        int index = BUNDLX_MAXIDX * (col % BUNDLX_MAXIDX) + (row % BUNDLX_MAXIDX);
+    protected ByteBuffer readFromLittleEndianFile(String filePath, long offset, int length) {
+        ByteBuffer result = null;
 
-        byte[] data = readFromFile(bundlxFile, (index * 5) + 16, 5);
+        try (RandomAccessFile file = new RandomAccessFile(filePath, "r")) {
+            file.seek(offset);
+            // pad to multiples of 4 so we can use getInt() and getLong()
+            int padding = 4 - (length % 4);
+            byte data[] = new byte[length + padding];
 
-        ByteBuffer idxBytes = ByteBuffer.allocate(8);
-        idxBytes.order(ByteOrder.LITTLE_ENDIAN);
-        idxBytes.put(data);
-        idxBytes.rewind();
+            if (file.read(data, 0, length) != length)
+                throw new IOException("not enough bytes read or reached end of file");
 
-        return idxBytes.getLong();
-    }
-
-    private int readTileSize(String bundlxFile, long offset) {
-        byte[] data = readFromFile(bundlxFile, offset, 4);
-        ByteBuffer tileSize = ByteBuffer.allocate(4);
-        tileSize.put(data);
-        tileSize.rewind();
-        tileSize.order(ByteOrder.LITTLE_ENDIAN);
-
-        return tileSize.getInt();
-    }
-
-    private byte[] readFromFile(String filePath, long offset, int length) {
-        byte[] result = new byte[0];
-
-        try (FileInputStream fileInputStream = new FileInputStream(
-            new File(filePath)); FileChannel fileChannel = fileInputStream.getChannel()) {
-            ByteBuffer content = ByteBuffer.allocate(length);
-            fileChannel.read(content, offset);
-
-            result = content.array();
+            result = ByteBuffer.wrap(data);
+            result.order(ByteOrder.LITTLE_ENDIAN);
         } catch (IOException e) {
             System.err.println(e);
         }

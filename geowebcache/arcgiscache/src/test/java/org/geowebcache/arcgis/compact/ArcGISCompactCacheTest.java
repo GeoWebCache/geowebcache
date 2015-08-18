@@ -1,13 +1,12 @@
 package org.geowebcache.arcgis.compact;
 
+import junit.framework.TestCase;
+import org.geowebcache.io.Resource;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.URL;
-
-import junit.framework.TestCase;
-
-import org.geowebcache.io.Resource;
 
 /**
  * Unit test for ArcGIS compact cache classes. Available data in supplied test cache:
@@ -37,12 +36,13 @@ public class ArcGISCompactCacheTest extends TestCase {
     private final static byte[] JFIFHeader = { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0,
             0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01 };
 
-    public void testCompactCache() throws Exception {
+    public void testCompactCacheV1() throws Exception {
         URL url = getClass().getResource("/compactcache/_alllayers/");
-        ArcGISCompactCache cache = new ArcGISCompactCache(url.toURI().getPath());
+        ArcGISCompactCache cache = new ArcGISCompactCacheV1(url.toURI().getPath());
 
         assertNotNull(cache);
 
+        /*
         assertFalse(cache.tileExists(5, -1, -1));
         assertFalse(cache.tileExists(4, 10, 4));
         assertFalse(cache.tileExists(7, 22, 10));
@@ -56,11 +56,26 @@ public class ArcGISCompactCacheTest extends TestCase {
         assertTrue(cache.tileExists(6, 22, 10));
         assertTrue(cache.tileExists(6, 22, 10));
         assertTrue(cache.tileExists(6, 25, 17));
+        */
+
+        assertNull(cache.getBundleFileResource(5, -1, -1));
+        assertNull(cache.getBundleFileResource(4, 10, 4));
+        assertNull(cache.getBundleFileResource(7, 22, 10));
+
+        assertNull(cache.getBundleFileResource(5, 0, 0));
+        assertNotNull(cache.getBundleFileResource(5, 10, 4));
+        assertNotNull(cache.getBundleFileResource(5, 13, 10));
+        assertNotNull(cache.getBundleFileResource(5, 12, 7));
+
+        assertNull(cache.getBundleFileResource(6, 0, 0));
+        assertNotNull(cache.getBundleFileResource(6, 22, 10));
+        assertNotNull(cache.getBundleFileResource(6, 22, 10));
+        assertNotNull(cache.getBundleFileResource(6, 25, 17));
     }
 
     public void testBundleFileResource() throws Exception {
         URL url = getClass().getResource("/compactcache/_alllayers/");
-        ArcGISCompactCache cache = new ArcGISCompactCache(url.toURI().getPath());
+        ArcGISCompactCache cache = new ArcGISCompactCacheV1(url.toURI().getPath());
 
         assertNotNull(cache);
 

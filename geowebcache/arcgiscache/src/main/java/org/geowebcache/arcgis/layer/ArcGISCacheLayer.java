@@ -1,5 +1,24 @@
 package org.geowebcache.arcgis.layer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.arcgis.compact.ArcGISCompactCache;
+import org.geowebcache.arcgis.compact.ArcGISCompactCacheV1;
+import org.geowebcache.arcgis.compact.ArcGISCompactCacheV2;
+import org.geowebcache.arcgis.config.*;
+import org.geowebcache.conveyor.Conveyor.CacheResult;
+import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.grid.*;
+import org.geowebcache.io.FileResource;
+import org.geowebcache.io.Resource;
+import org.geowebcache.layer.AbstractTileLayer;
+import org.geowebcache.layer.ExpirationRule;
+import org.geowebcache.mime.MimeException;
+import org.geowebcache.mime.MimeType;
+import org.geowebcache.util.GWCVars;
+
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -8,34 +27,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.arcgis.compact.ArcGISCompactCache;
-import org.geowebcache.arcgis.config.CacheInfo;
-import org.geowebcache.arcgis.config.CacheInfoPersister;
-import org.geowebcache.arcgis.config.CacheStorageInfo;
-import org.geowebcache.arcgis.config.LODInfo;
-import org.geowebcache.arcgis.config.TileCacheInfo;
-import org.geowebcache.conveyor.Conveyor.CacheResult;
-import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.Grid;
-import org.geowebcache.grid.GridSet;
-import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubset;
-import org.geowebcache.grid.GridSubsetFactory;
-import org.geowebcache.grid.OutsideCoverageException;
-import org.geowebcache.io.FileResource;
-import org.geowebcache.io.Resource;
-import org.geowebcache.layer.AbstractTileLayer;
-import org.geowebcache.layer.ExpirationRule;
-import org.geowebcache.mime.MimeException;
-import org.geowebcache.mime.MimeType;
-import org.geowebcache.util.GWCVars;
 
 /**
  * @author Gabriel Roldan
@@ -164,14 +155,19 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
             log.info("Parsed layer bounds for " + getName() + ": " + layerBounds);
 
             storageFormat = cacheInfo.getCacheStorageInfo().getStorageFormat();
-            if (storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE)) {
-                log.info(getName() + " uses compact format");
-
+            if (storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE) || storageFormat
+                .equals(CacheStorageInfo.COMPACT_FORMAT_CODE_V2)) {
                 String pathToCacheRoot = tilingScheme.getParent() + "/_alllayers";
                 if (tileCachePath != null)
                     pathToCacheRoot = tileCachePath.getAbsolutePath();
 
-                compactCache = new ArcGISCompactCache(pathToCacheRoot);
+                if (storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE)) {
+                    log.info(getName() + " uses compact format (ArcGIS 10.0 - 10.2)");
+                    compactCache = new ArcGISCompactCacheV1(pathToCacheRoot);
+                } else if (storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE_V2)) {
+                    log.info(getName() + " uses compact format (ArcGIS 10.3)");
+                    compactCache = new ArcGISCompactCacheV2(pathToCacheRoot);
+                }
             }
         } catch (FileNotFoundException e) {
             throw new IllegalStateException(
