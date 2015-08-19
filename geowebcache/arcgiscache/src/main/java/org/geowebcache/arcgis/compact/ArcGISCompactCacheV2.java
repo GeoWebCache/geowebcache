@@ -8,7 +8,7 @@ import java.nio.ByteOrder;
 
 /**
  * Implementation of ArcGIS compact caches for ArcGIS 10.3
- * <p/>
+ *
  * The compact cache consists of bundle files (*.bundle), that contain an index and the actual
  * image data. Every .bundle file starts with a 64 byte header. After the header
  * 128x128 matrix (16384 tiles) of 8 byte words. The first 5 bytes of every word is the offset

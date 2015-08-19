@@ -28,7 +28,7 @@ public class TileImageInfo {
 
     private boolean antialiasing;
 
-    private int bandCount;
+    private int BandCount;
 
     private float LERCError;
 
@@ -51,7 +51,7 @@ public class TileImageInfo {
     }
 
     public int getBandCount() {
-        return bandCount;
+        return BandCount;
     }
 
     public float getLERCError() {
