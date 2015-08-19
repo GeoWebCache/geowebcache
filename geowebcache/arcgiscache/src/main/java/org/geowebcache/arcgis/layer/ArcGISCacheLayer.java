@@ -231,7 +231,8 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
 
         Resource tileContent = null;
 
-        if (storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE)) {
+        if (storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE) || storageFormat
+            .equals(CacheStorageInfo.COMPACT_FORMAT_CODE_V2)) {
             final long[] tileIndex = tile.getTileIndex();
             final String gridSetId = tile.getGridSetId();
             final GridSubset gridSubset = this.getGridSubset(gridSetId);

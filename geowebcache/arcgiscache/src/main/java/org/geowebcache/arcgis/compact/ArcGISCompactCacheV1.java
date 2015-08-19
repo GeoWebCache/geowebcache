@@ -6,15 +6,27 @@ import java.io.File;
 import java.nio.ByteBuffer;
 
 /**
- * Created by backe on 18/08/15.
+ * Implementation of ArcGIS compact caches for ArcGIS 10.0 - 10.2
+ *
+ * The compact cache consists of bundle index files (*.bundlx) and bundle files (*.bundle), that contain
+ * the actual image data.
+ * Every .bundlx file contains a 16 byte header and 16 byte footer. Between header and footer is
+ * 128x128 matrix (16384 tiles) of 5 byte offsets. Every offset points to a 4 byte word in the
+ * corresponding .bundle file which contains the size of the tile image data. The actual image data
+ * starts at offset+4. If the size is zero there is no image data available and the index entry is
+ * not used. If the map cache has more than 128 rows or columns it is divided into several .bundlx
+ * and .bundle files.
+ *
+ * @author Bjoern Saxe
  */
+
 public class ArcGISCompactCacheV1 extends ArcGISCompactCache {
     private static final int COMPACT_CACHE_HEADER_LENGTH = 16;
 
     private BundlxCache indexCache;
 
     /**
-     * Constructs new ArcGIS compact cache.
+     * Constructs new ArcGIS 10.0-10.2 compact cache.
      *
      * @param pathToCacheRoot Path to compact cache directory (usually ".../_alllayers/"). Path must contain
      *                        directories for zoom levels (named "Lxx").

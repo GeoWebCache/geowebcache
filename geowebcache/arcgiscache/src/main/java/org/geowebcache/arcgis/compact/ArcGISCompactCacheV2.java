@@ -4,14 +4,29 @@ import org.geowebcache.io.Resource;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
+/**
+ * Implementation of ArcGIS compact caches for ArcGIS 10.3
+ * <p/>
+ * The compact cache consists of bundle files (*.bundle), that contain an index and the actual
+ * image data. Every .bundle file starts with a 64 byte header. After the header
+ * 128x128 matrix (16384 tiles) of 8 byte words. The first 5 bytes of every word is the offset
+ * that points to the tile image data inside the same .bundle file. The next 3 bytes is the size
+ * of the image data. The size of the image data is repeated at offset-4 in 4 byte word.
+ * Unused index entries use 04|00|00|00|00|00|00|00. If the size is zero than there is no image
+ * data available and the index entry is. If the map cache has more than 128 rows or columns it is
+ * divided into several .bundle files.
+ *
+ * @author Bjoern Saxe
+ */
 public class ArcGISCompactCacheV2 extends ArcGISCompactCache {
     private static final int COMPACT_CACHE_HEADER_LENGTH = 64;
 
     private BundlxCache indexCache;
 
     /**
-     * Constructs new ArcGIS compact cache.
+     * Constructs new ArcGIS 10.3 compact cache.
      *
      * @param pathToCacheRoot Path to compact cache directory (usually ".../_alllayers/"). Path must contain
      *                        directories for zoom levels (named "Lxx").
@@ -45,15 +60,10 @@ public class ArcGISCompactCacheV2 extends ArcGISCompactCache {
             if (!(new File(pathToBundleFile)).exists())
                 return null;
 
-            long tileOffset = readTileStartOffset(pathToBundleFile, row, col);
-            int tileSize = readTileSize(pathToBundleFile, row, col);
+            entry = createCacheEntry(pathToBundleFile, row, col);
 
-            tileOffset += 4;
-
-            if (tileSize > 0)
-                res = new BundleFileResource(pathToBundleFile, tileOffset, tileSize);
-
-            entry = new BundlxCache.CacheEntry(pathToBundleFile, tileOffset, tileSize);
+            if (entry.size > 0)
+                res = new BundleFileResource(pathToBundleFile, entry.offset, entry.size);
 
             indexCache.put(key, entry);
         }
@@ -61,21 +71,23 @@ public class ArcGISCompactCacheV2 extends ArcGISCompactCache {
         return res;
     }
 
-    private long readTileStartOffset(String bundleFile, int row, int col) {
-        int index = BUNDLX_MAXIDX * (col % BUNDLX_MAXIDX) + (row % BUNDLX_MAXIDX);
+    private BundlxCache.CacheEntry createCacheEntry(String bundleFile, int row, int col) {
+        // col and row are inverted for 10.3 caches
+        int index = BUNDLX_MAXIDX * (row % BUNDLX_MAXIDX) + (col % BUNDLX_MAXIDX);
 
-        ByteBuffer idxBytes = readFromLittleEndianFile(bundleFile,
-            (index * 8) + COMPACT_CACHE_HEADER_LENGTH, 5);
+        // to save one addtional read, we read all 8 bytes in one read
+        ByteBuffer offsetAndSize = readFromLittleEndianFile(bundleFile,
+            (index * 8) + COMPACT_CACHE_HEADER_LENGTH, 8);
 
-        return idxBytes.getLong();
-    }
+        byte[] offsetBytes = new byte[8];
+        byte[] sizeBytes = new byte[4];
 
-    private int readTileSize(String bundleFile, int row, int col) {
-        int index = BUNDLX_MAXIDX * (col % BUNDLX_MAXIDX) + (row % BUNDLX_MAXIDX);
+        offsetAndSize.get(offsetBytes, 0, 5);
+        offsetAndSize.get(sizeBytes, 0, 3);
 
-        ByteBuffer tileSize = readFromLittleEndianFile(bundleFile,
-            (index * 8) + COMPACT_CACHE_HEADER_LENGTH + 5, 3);
+        long tileOffset = ByteBuffer.wrap(offsetBytes).order(ByteOrder.LITTLE_ENDIAN).getLong();
+        int tileSize = ByteBuffer.wrap(sizeBytes).order(ByteOrder.LITTLE_ENDIAN).getInt();
 
-        return tileSize.getInt();
+        return new BundlxCache.CacheEntry(bundleFile, tileOffset, tileSize);
     }
 }

@@ -9,16 +9,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
- * Represents complete ArcGIS compact cache data.
- * <p/>
- * ArcGIS compact caches consist of bundle index files (*.bundlx) and bundle files (*.bundle), that contain
- * the actual image data.
- * Every .bundlx file contains a 16 byte header and 16 byte footer. Between header and footer is
- * 128x128 matrix (16384 tiles) of 5 byte offsets. Every offset points to a 4 byte word in the
- * corresponding .bundle file which contains the size of the tile image data. The actual image data
- * starts at offset+4. If the size is zero there is no image data available and the index entry is
- * not used. If the map cache has more than 128 rows or columns it is divided into several .bundlx
- * and .bundle files.
+ * Abstract base class for ArcGIS compact caches.
  *
  * @author Bjoern Saxe
  */
@@ -42,6 +33,15 @@ public abstract class ArcGISCompactCache {
      */
     public abstract Resource getBundleFileResource(int zoom, int row, int col);
 
+    /**
+     * Build path to a bundle from zoom, col, and row without file extension.
+     *
+     * @param zoom Zoom levl
+     * @param row  Row
+     * @param col  Column
+     * @return String containing complete path without file extension in the form
+     * of .../Lzz/RrrrrCcccc with the number of c and r at least 4.
+     */
     protected String buildBundleFilePath(int zoom, int row, int col) {
         StringBuilder bundlePath = new StringBuilder(pathToCacheRoot);
 
@@ -70,6 +70,16 @@ public abstract class ArcGISCompactCache {
         return bundlePath.toString();
     }
 
+    /**
+     * Read from a file that uses little endian byte order.
+     *
+     * @param filePath Path to file
+     * @param offset   Read at offset
+     * @param length   Read length bytes
+     * @return ByteBuffer that contains read bytes and has byte order set to little endian.
+     * The length of the byte buffer is multiple of 4, so getInt() and getLong() can be used
+     * even when fewer bytes are read.
+     */
     protected ByteBuffer readFromLittleEndianFile(String filePath, long offset, int length) {
         ByteBuffer result = null;
 
@@ -82,8 +92,7 @@ public abstract class ArcGISCompactCache {
             if (file.read(data, 0, length) != length)
                 throw new IOException("not enough bytes read or reached end of file");
 
-            result = ByteBuffer.wrap(data);
-            result.order(ByteOrder.LITTLE_ENDIAN);
+            result = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         } catch (IOException e) {
             System.err.println(e);
         }
