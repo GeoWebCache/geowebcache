@@ -27,9 +27,12 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 
 import org.custommonkey.xmlunit.XMLAssert;
+import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.io.GeoWebCacheXStream;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.web.context.support.StaticWebApplicationContext;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -46,9 +49,8 @@ public class IntegerParameterFilterTest {
         filter.setDefaultValue("Default");
         filter.setThreshold(1);
         
-        xs = new XStream();
-        xs.processAnnotations(CaseNormalizer.class);
-        xs.processAnnotations(IntegerParameterFilter.class);
+        xs = new GeoWebCacheXStream();
+        xs = XMLConfiguration.getConfiguredXStream(xs, new StaticWebApplicationContext());
     }
     
     @Test

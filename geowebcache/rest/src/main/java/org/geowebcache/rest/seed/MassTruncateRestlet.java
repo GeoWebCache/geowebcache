@@ -23,6 +23,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.Configuration;
+import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.seed.MassTruncateRequest;
 import org.geowebcache.seed.TruncateLayerRequest;
@@ -54,7 +55,7 @@ public class MassTruncateRestlet extends GWCSeedingRestlet {
         Representation rep = null;
         
         // Just use this for figuring out what the correct element names are
-        XStream xs = configXStream(new XStream());
+        XStream xs = configXStream(new GeoWebCacheXStream());
         
         // Not worth the trouble of messing with XStream for the output so just assemble some XML.
         

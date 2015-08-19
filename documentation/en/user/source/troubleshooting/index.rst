@@ -31,6 +31,15 @@ Logging
 
 Logging can be controlled through :file:`WEB-INF/classes/log4j.properties`. By default, log messages will end up in the standard log of the container, which is for Apache Tomcat is inside the :file:`logs` directory.
 
+XStream
+-------
+
+GeoWebCache uses XStream to read and write XML for configuration and for its REST API.  In order to do this securely, it needs a list of Java classes that are safe to convert between objects and XML.  If a class not on that list is given to XStream, it will generate the error ``com.thoughtworks.xstream.security.ForbiddenClassException``.  The specific class that was a problem should aslo be included.  This may be a result of GeoWebCache's list of allowed classes missing a class, which should be reported as a bug, or it may be caused by an extension/plugin not adding its classes to the list.  
+
+This can be worked arround by setting the system property ``GEOWEBCACHE_XSTREAM_WHITELIST`` to a semicolon separated list of qualified class names.  The class names may include wildcards ``?`` for a single character, ``*`` for any number of characters not including the separater ``.``, and ``**`` for any number of characters including separators.  For instance, ``org.example.blah.SomeClass; com.demonstration.*; ca.test.**`` will allow, the specific class ``org.example.blah.SomeClass``, any class immediately within the package ``com.demonstration``, and any class within the package ``ca.test`` or any of its descendant packages.
+
+``GEOWEBCACHE_XSTREAM_WHITELIST`` should only be used as a workarround until GWC or the extension causing the problem has been updated.
+
 Getting help
 ------------
 

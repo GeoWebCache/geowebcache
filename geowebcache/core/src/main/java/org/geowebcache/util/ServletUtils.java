@@ -395,9 +395,14 @@ public class ServletUtils {
 
     public static String gwcHtmlHeader(String pageTitle) {
         return "<head>\n" + "<title>" + pageTitle + "</title>" + "<style type=\"text/css\">\n"
-                + "body, td {\n"
+                + "body, td, th {\n"
                 + "font-family: Verdana,Arial,\'Bitstream Vera Sans\',Helvetica,sans-serif;\n"
-                + "font-size: 0.85em;\n" + "vertical-align: top;\n" + "}\n" + "</style>\n"
+                + "font-size: 0.85em;\n" + "vertical-align: top;\n" + "}\n"
+                + "table.stats tbody + tbody tr * {padding-top: 1em;}\n"
+                + "table.stats tbody + tbody tr + tr * {padding-top: inherit;}\n"
+                + "table.stats th[scope=row] {text-align: right}\n"
+                + "table.stats th[scope=col] {text-align: left}\n"
+                + "</style>\n"
                 + "</head>\n";
     }
 

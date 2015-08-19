@@ -73,6 +73,7 @@ import org.geowebcache.filter.request.FileRasterFilter;
 import org.geowebcache.filter.request.WMSRasterFilter;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.meta.ContactInformation;
@@ -98,6 +99,10 @@ import org.xml.sax.SAXException;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomReader;
+import com.thoughtworks.xstream.security.NoPermission;
+import com.thoughtworks.xstream.security.NoTypePermission;
+import com.thoughtworks.xstream.security.PrimitiveTypePermission;
+import com.thoughtworks.xstream.security.WildcardTypePermission;
 
 /**
  * XMLConfiguration class responsible for reading/writing layer configurations to and from XML file
@@ -287,6 +292,16 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         File xmlFile = new File(configDirectory, configFileName);
         return xmlFile;
     }
+    
+    public String getConfigLocation() throws ConfigurationException {
+        File f = findConfigFile();
+        try {
+            return f.getCanonicalPath();
+        } catch (IOException ex) {
+            log.error("Could not canonize config path", ex);
+            return f.getPath();
+        }
+    }
 
     private File findOrCreateConfFile() throws ConfigurationException {
         File xmlFile = findConfigFile();
@@ -424,7 +439,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
     private GeoWebCacheConfiguration loadConfiguration(InputStream xmlFile) throws IOException,
             ConfigurationException {
         Node rootNode = loadDocument(xmlFile);
-        XStream xs = getConfiguredXStreamWithContext(new XStream(), Context.PERSIST);
+        XStream xs = getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.PERSIST);
 
         GeoWebCacheConfiguration config;
         config = (GeoWebCacheConfiguration) xs.unmarshal(new DomReader((Element) rootNode));
@@ -502,7 +517,20 @@ public class XMLConfiguration implements Configuration, InitializingBean {
     
     public static XStream getConfiguredXStreamWithContext(XStream xs, WebApplicationContext context, 
             ContextualConfigurationProvider.Context providerContext) {
-        // XStream xs = xstream;
+        
+        {
+            // Allow any implementation of these extension points
+            xs.allowTypeHierarchy(org.geowebcache.layer.TileLayer.class);
+            xs.allowTypeHierarchy(org.geowebcache.filter.parameters.ParameterFilter.class);
+            xs.allowTypeHierarchy(org.geowebcache.filter.request.RequestFilter.class);
+            xs.allowTypeHierarchy(org.geowebcache.config.BlobStoreConfig.class);
+            xs.allowTypeHierarchy(org.geowebcache.config.Configuration.class);
+            
+            // Allow anything that's part of GWC
+            // TODO: replace this with a more narrow whitelist
+            xs.allowTypesByWildcard(new String[]{"org.geowebcache.**"});
+        }
+        
         xs.setMode(XStream.NO_REFERENCES);
 
         xs.addDefaultImplementation(ArrayList.class, List.class);
@@ -590,7 +618,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
      */
     private void persistToFile(File xmlFile) throws IOException {
         // create the XStream for serializing the configuration
-        XStream xs = getConfiguredXStreamWithContext(new XStream(), Context.PERSIST);
+        XStream xs = getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.PERSIST);
 
         OutputStreamWriter writer = null;
         try {

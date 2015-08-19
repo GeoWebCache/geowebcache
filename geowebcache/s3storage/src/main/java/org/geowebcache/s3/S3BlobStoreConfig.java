@@ -301,4 +301,16 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
         return new S3BlobStore(this, layers, lockProvider);
     }
 
+    @Override
+    public String getLocation() {
+        String bucket = this.getBucket();
+        String prefix = this.getPrefix();
+        if(prefix==null){
+            return String.format("bucket: %s", bucket);
+        } else {
+            return String.format("bucket: %s prefix: %s", bucket, prefix);
+        }
+        
+    }
+
 }

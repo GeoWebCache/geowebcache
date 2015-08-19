@@ -25,6 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.ContextualConfigurationProvider;
 import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
 import org.json.JSONObject;
@@ -84,7 +85,7 @@ abstract public class GWCSeedingRestlet extends GWCRestlet {
     public void doPost(Request req, Response resp) throws RestletException, IOException {
         String formatExtension = (String) req.getAttributes().get("extension");
 
-        XStream xs = configXStream(new XStream(new DomDriver()));
+        XStream xs = configXStream(new GeoWebCacheXStream(new DomDriver()));
 
         Object obj = null;
         

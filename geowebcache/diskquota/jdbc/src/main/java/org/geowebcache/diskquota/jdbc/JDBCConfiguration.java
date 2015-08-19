@@ -24,8 +24,11 @@ import java.io.Serializable;
 
 import org.apache.commons.io.IOUtils;
 import org.geowebcache.config.ConfigurationException;
+import org.geowebcache.io.GeoWebCacheXStream;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.NoTypePermission;
+import com.thoughtworks.xstream.security.PrimitiveTypePermission;
 
 /**
  * A JDBC configuration for the GeoWebCache disk quota subsystem
@@ -103,7 +106,11 @@ public class JDBCConfiguration implements Serializable {
     }
 
     private static XStream getXStream() {
-        XStream xs = new XStream();
+        XStream xs = new GeoWebCacheXStream();
+        // Allow anything that's part of GWC
+        // TODO: replace this with a more narrow whitelist
+        xs.allowTypesByWildcard(new String[]{"org.geowebcache.**"});
+        
         xs.setMode(XStream.NO_REFERENCES);
 
         xs.alias("gwcJdbcConfiguration", JDBCConfiguration.class);
