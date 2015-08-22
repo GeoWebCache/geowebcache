@@ -1,14 +1,13 @@
 package org.geowebcache.arcgis.config;
 
+import com.thoughtworks.xstream.XStream;
+import junit.framework.TestCase;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
-
-import junit.framework.TestCase;
-
-import com.thoughtworks.xstream.XStream;
 
 public class CacheInfoPersisterTest extends TestCase {
 
@@ -117,6 +116,8 @@ public class CacheInfoPersisterTest extends TestCase {
                 + "  <CacheTileFormat>JPEG</CacheTileFormat>"//
                 + "  <CompressionQuality>80</CompressionQuality>"//
                 + "  <Antialiasing>true</Antialiasing>"//
+            + "  <BandCount>1</BandCount>"//
+            + "  <LERCError>0</LERCError>"//
                 + "</TileImageInfo>";
 
         CacheInfoPersister persister = new CacheInfoPersister();
@@ -126,6 +127,8 @@ public class CacheInfoPersisterTest extends TestCase {
         assertEquals("JPEG", tii.getCacheTileFormat());
         assertEquals(80f, tii.getCompressionQuality(), 1e-6f);
         assertTrue(tii.isAntialiasing());
+        assertEquals(1, tii.getBandCount());
+        assertEquals(0.0f, tii.getLERCError());
     }
 
     public void testLoadCacheStorageInfo() {
