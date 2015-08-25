@@ -1,9 +1,10 @@
 package org.geowebcache.arcgis.compact;
 
-import org.apache.commons.collections4.map.*;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 /**
- * LRU Cache that stores data from .bundlx files.
+ * Cache that stores data from .bundlx files.
  *
  * Zoom, row, and column of the tile are used as key. Entries contain the path to the .bundle file,
  * the size of the tile and the offset of the image data inside the .bundle file.
@@ -63,7 +64,7 @@ public class BundlxCache {
         public int size;
     }
 
-    private LRUMap<CacheKey, CacheEntry> indexCache;
+    private Cache<CacheKey, CacheEntry> indexCache;
 
     /**
      * Cache that stores the path ot the .
@@ -72,7 +73,7 @@ public class BundlxCache {
      *                entry will remove the least recently used entry from the cache.
      */
     public BundlxCache(int maxSize) {
-        indexCache = new LRUMap<>(maxSize);
+        indexCache = CacheBuilder.newBuilder().maximumSize(maxSize).build();
     }
 
     /**
@@ -82,7 +83,7 @@ public class BundlxCache {
      * @return Returns the entry. Returns null if the key has a null value or if the key has no entry.
      */
     public synchronized CacheEntry get(CacheKey key) {
-        return indexCache.get(key);
+        return indexCache.getIfPresent(key);
     }
 
     /**
@@ -90,10 +91,9 @@ public class BundlxCache {
      *
      * @param key the key to add.
      * @param entry the entry to add.
-     * @return the entry previously mapped to this key, null if none
      */
-    public synchronized CacheEntry put(CacheKey key, CacheEntry entry) {
-        return indexCache.put(key, entry);
+    public synchronized void put(CacheKey key, CacheEntry entry) {
+        indexCache.put(key, entry);
     }
 
 }
