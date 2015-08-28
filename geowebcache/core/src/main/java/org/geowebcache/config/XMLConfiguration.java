@@ -12,7 +12,7 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Arne Kepp, Marius Suta,  The Open Planning Project, Copyright 2008
+ * @author Arne Kepp, Marius Suta,  The Open Planning Project, Copyright 2008 - 2015
  */
 package org.geowebcache.config;
 
@@ -160,7 +160,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         log.warn("This constructor is deprecated");
     }
     
-    XMLConfiguration(final ApplicationContextProvider appCtx,
+    public XMLConfiguration(final ApplicationContextProvider appCtx,
             final String configFileDirectory,
             final DefaultStorageFinder storageDirFinder) throws ConfigurationException {
         
