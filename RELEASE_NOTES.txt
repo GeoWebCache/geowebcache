@@ -1,3 +1,21 @@
+GeoWebCache 1.8-beta (2015-08-28)
+----------------------------------
+
+Beta release for 1.8.x
+
+Improvements:
++++++++++++++
+- Different strage back ends can be assigned to individual layers
+- S3 storage back end
+- WMTS capabilites includes a computer WGS84 bounding box for Google Mercator gridsets
+- Support for reading ArcGIS 10.3 caches
+- Allow applications embedding GWC to set the config directory
+
+Fixes:
+++++++
+- Blocked remote code execution via REST.
+
+
 GeoWebCache 1.8-M0 (2015-05-26)
 ----------------------------------
 
