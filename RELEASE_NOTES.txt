@@ -1,3 +1,13 @@
+GeoWebCache 1.6.3 (2015-09-03)
+----------------------------------
+
+Final maintenance release of 1.6 series
+
+Fixes:
+++++++
+- Security Fix for remote code execution vulnerability in REST API
+- Fix for GetFeatureInfo requests on Demo page
+
 GeoWebCache 1.6.2 (2015-06-17)
 ----------------------------------
 
