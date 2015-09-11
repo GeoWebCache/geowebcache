@@ -51,11 +51,6 @@
       <url>http://download.osgeo.org/webdav/geotools/</url>
     </repository>
     <repository>
-      <id>codehaus</id>
-      <name>Code Haus</name>
-      <url>http://repository.codehaus.org</url>
-    </repository>
-    <repository>
       <id>maven-restlet</id>
       <name>Public online Restlet repository</name>
       <url>http://maven.restlet.org</url>
