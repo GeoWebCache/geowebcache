@@ -1,3 +1,13 @@
+GeoWebCache 1.8-RC1 (2015-09-11)
+--------------------------------
+
+First Release Candidate of the 1.8.x series
+
+Improvements:
++++++++++++++
+- Built using new automated release script
+
+
 GeoWebCache 1.8-beta (2015-08-28)
 ----------------------------------
 
