@@ -1,3 +1,10 @@
+GeoWebCache 1.8.0 (2015-09-30)
+------------------------------
+
+First stable release of the 1.8 series.
+
+No changes from RC1.
+
 GeoWebCache 1.8-RC1 (2015-09-11)
 --------------------------------
 
