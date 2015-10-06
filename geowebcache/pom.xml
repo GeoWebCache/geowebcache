@@ -40,7 +40,7 @@
     <repository>
       <id>boundless</id>
       <name>Boundless Maven Repository</name>
-      <url>http://repo.boundlessgeo.com/main</url>
+      <url>https://repo.boundlessgeo.com/main</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
@@ -72,14 +72,14 @@
     <repository>
       <id>boundless</id>
       <name>Boundless</name>
-      <url>http://repo.boundlessgeo.com/main</url>
+      <url>https://boundless.artifactoryonline.com/boundless/release/</url>
       <uniqueVersion>false</uniqueVersion>
     </repository>
     <snapshotRepository>
       <id>boundless</id>
       <uniqueVersion>false</uniqueVersion>
       <name>Boundless Maven Repository</name>
-      <url>http://repo.boundlessgeo.com/main</url>
+      <url>https://boundless.artifactoryonline.com/boundless/snapshot/</url>
      </snapshotRepository>
   </distributionManagement>
 
@@ -627,25 +627,6 @@
     </pluginManagement>
   </build>
   
-  <profiles>
-    <profile>
-      <id>deploy.boundless</id>
-      <distributionManagement>
-        <repository>
-          <id>boundless</id>
-          <uniqueVersion>false</uniqueVersion>
-          <name>Boundless Maven Repository</name>
-          <url>http://repo.boundlessgeo.com/main</url>
-        </repository>
-        <snapshotRepository>
-          <id>boundless</id>
-          <uniqueVersion>false</uniqueVersion>
-          <name>Boundless Maven Repository</name>
-          <url>http://repo.boundlessgeo.com/main</url>
-        </snapshotRepository>
-      </distributionManagement>
-    </profile>
-  </profiles>
 
   <modules>
     <module>core</module>
