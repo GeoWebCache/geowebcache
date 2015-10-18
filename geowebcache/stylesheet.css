@@ -1,0 +1,38 @@
+body { background-color: #FFFFFF; }
+
+p { margin: 3px; }
+
+.TableHeadingColor     { background: #CCCCFF }
+.TableSubHeadingColor  { background: #EEEEFF }
+.TableRowColor         { background: #FFFFFF }
+
+.NavBarCell1    { background-color:#EEEEFF;}/* Light mauve */
+.NavBarCell1Rev { background-color:#00008B;}/* Dark Blue */
+.NavBarFont1    { font-family: Arial, Helvetica, sans-serif; color:#000000;}
+.NavBarFont1Rev { font-family: Arial, Helvetica, sans-serif; color:#FFFFFF;}
+
+.NavBarCell2    { font-family: Arial, Helvetica, sans-serif; background-color:#FFFFFF;}
+.NavBarCell3    { font-family: Arial, Helvetica, sans-serif; background-color:#FFFFFF;}
+
+.FrameTitleFont   { font-size: normal; font-family: normal }
+.FrameHeadingFont { font-size: normal; font-family: normal }
+.FrameItemFont    { font-size: normal; font-family: normal }
+
+div.code span.elem { color: darkred; }
+div.code span.attr { color: red; }
+div.code span.cont { color: black; }
+div.code span.oper { color: blue; }
+div.code span.comm { color: grey; }
+div.code span.cdat { color: black; }
+div.code span.proc { color: lightseagreen; }
+div.code span.doct { color: dark-blue; }
+div.code span.anno { color: #888888; }
+
+div.hierar { margin-left: 1em; text-indent: 0em; border-style:solid; border-width:1px; border-color: #D0D0D0;}
+ul { margin-top: 0px; margin-bottom: 0px; }
+li { margin-top: 0px; margin-bottom: 0px; }
+
+dt { font-weight: bold; }
+
+.anno { color: #888888; }
+.smal { font-size: 60%; font-weight: bold; }
