@@ -12,7 +12,10 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Arne Kepp, The Open Planning Project, Copyright 2008
+ * Copyright OpenPlans 2008-2014
+ * Copyright OSGeo 2014
+ * 
+ * @author Arne Kepp, The Open Planning Project
  *  
  */
 package org.geowebcache.storage.blobstore.file;
