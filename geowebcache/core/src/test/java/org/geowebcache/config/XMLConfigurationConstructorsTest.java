@@ -36,7 +36,7 @@ public class XMLConfigurationConstructorsTest {
     public TemporaryFolder temp = new TemporaryFolder();
     
     @Rule
-    public PropertyRule gwcConfigDirProp  = PropertyRule.system(XMLConfiguration.GWC_CONFIG_DIR_VAR);
+    public PropertyRule gwcConfigDirProp  = PropertyRule.system(XMLFileResourceProvider.GWC_CONFIG_DIR_VAR);
     
     File configDir;
     File cacheDir;
