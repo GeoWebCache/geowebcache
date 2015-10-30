@@ -7,11 +7,11 @@ You are encouraged to help contribute code to GeoWebCache.  To do so, you will f
 
 This is the current prerequisites:
 
- * Sun/Oracle Java Developer Kit SE, version 1.5
- * `Maven 2.x <http://maven.apache.org/>`_
+ * Java 7 (`Oracle JDK <http://www.oracle.com/technetwork/java/javase/downloads/index.html>`__ or `OpenJDK <http://openjdk.java.net>`__ )
+ * `Maven <http://maven.apache.org/>`_
  * `Git <http://git-scm.com>`_
 
-Please make sure you use **Java 1.5** to compile to ensure that we do not introduce dependencies only available in 1.6.
+Please make sure you use **Java 7** to compile to ensure that we don't accidentally use new features only avaialble in Java 8.
 
 You are encouraged to join the `GeoWebCache Developers mailing list <https://lists.sourceforge.net/lists/listinfo/geowebcache-devel>`_ to discuss your work.  It is always a good idea to ask whether anyone else has already solved the same problem.
 
@@ -27,13 +27,13 @@ Setting Up
 
    .. code-block:: bash
 
-      set JAVA_HOME=C:\Program Files\Java\jdk1.5.0_21
+      set JAVA_HOME=C:\Program Files\Java\jdk1.7.0_79
 
    Linux/OS X:
 
    .. code-block:: bash
 
-      export JAVA_HOME=/opt/jdk1.5.0_21
+      export JAVA_HOME=/opt/jdk1.7.0_79
 
 #. You can download maven from http://maven.apache.org/download.html, unpack and include the :file:`bin` directory in your PATH variable.
 
