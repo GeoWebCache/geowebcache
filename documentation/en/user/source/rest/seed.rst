@@ -95,6 +95,7 @@ Here's a more complete xml fragment for a seed request, including parameter filt
 
    <!-- These are listed on http://localhost:8080/geowebcache/demo -->
    <gridSetId>EPSG:2163</gridSetId>
+   <!-- in case type is "truncate", if zoomStart and zoomStop are all equal to -1 then that means removing cache for all zoom levels and all parameters -->
    <zoomStart>0</zoomStart>
    <!-- This will be reduced to 3, since the layer is only defined for 0-3 -->
    <zoomStop>2</zoomStop>

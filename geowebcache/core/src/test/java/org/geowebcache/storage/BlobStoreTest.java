@@ -171,6 +171,51 @@ public class BlobStoreTest extends TestCase {
 
         assertNull(res);
     }
+    
+    public void testTilRangeDeleteWithZoomStartAndZoomStopEqualToMinus1() throws Exception {
+        FileBlobStore fbs = setup();
+
+        Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
+        Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put("a", "x");
+        parameters.put("b", "ø");
+        MimeType mime = ImageMime.png;
+        SRS srs = SRS.getEPSG4326();
+        String layerName = "test:123123 112";
+
+        int zoomLevel = 7;
+        int x = 25;
+        int y = 6;
+
+        TileObject[] tos = new TileObject[6];
+        for (int i = 0; i < tos.length; i++) {
+            long[] xyz = { x + i - 1, y, zoomLevel };
+            tos[i] = TileObject.createCompleteTileObject(layerName, xyz, srs.toString(),
+                    mime.getFormat(), parameters, bytes);
+            fbs.put(tos[i]);
+        }
+
+        long[][] rangeBounds = new long[zoomLevel + 2][5];
+        int zoomStart = - 1;
+        int zoomStop = -1;
+        
+        long[] range = { x-1, y, x + 5, y, zoomLevel};
+        rangeBounds[zoomLevel] = range;
+
+        TileRange trObj = new TileRange(layerName, srs.toString(), zoomStart, zoomStop,
+                rangeBounds, mime, (Map<String, String>)null);
+
+        fbs.delete(trObj);
+
+        for(int i = 0; i < tos.length; i++){
+            TileObject to = TileObject.createQueryTileObject(layerName,
+                    tos[i].xyz, srs.toString(), mime.getFormat(), parameters);
+            fbs.get(to);
+            Resource res = to.getBlob();
+
+            assertNull(res);
+        }
+    }
 
     public void testRenameLayer() throws Exception {
         FileBlobStore fbs = setup();
