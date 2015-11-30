@@ -104,7 +104,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
     static final String DEFAULT_CONFIGURATION_FILE_NAME = "geowebcache.xml";
 
     private static Log log = LogFactory.getLog(org.geowebcache.config.XMLConfiguration.class);
-    
+
     /**
      * Web app context, used to look up {@link XMLConfigurationProvider}s. Will be null if used the
      * {@link #XMLConfiguration(File)} constructor
@@ -118,14 +118,14 @@ public class XMLConfiguration implements Configuration, InitializingBean {
     private transient Map<String, TileLayer> layers;
 
     private GridSetBroker gridSetBroker;
-        
+
     /**
      * A flag for whether the config needs to be loaded at {@link #initialize(GridSetBroker)}. If
      * the constructor loads the configuration, will set it to false, then each call to initialize()
      * will reset this flag to true
      */
     private boolean reloadConfigOnInit = true;
-   
+
     /**
      * Base Constructor with custom ConfiguratioNResourceProvider
      *  
@@ -170,7 +170,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
                 appCtx, storageDirFinder));
         resourceProvider.setTemplate("/" + DEFAULT_CONFIGURATION_FILE_NAME);
     }
-    
+
     /**
      * Constructor that will accept an absolute or relative path for finding {@code geowebcache.xml}
      * 
@@ -187,16 +187,18 @@ public class XMLConfiguration implements Configuration, InitializingBean {
     /**
      * @deprecated use {@link #XMLFileConfiguration(ApplicationContextProvider, DefaultStorageFinder)}
      */
+    @Deprecated
     public XMLConfiguration(final ApplicationContextProvider appCtx,
             final GridSetBroker gridSetBroker, final DefaultStorageFinder storageDirFinder)
             throws ConfigurationException {
         this(appCtx, storageDirFinder);
         log.warn("This constructor is deprecated");
     }
-    
+
     /**
      * @deprecated use {@link #XMLFileConfiguration(ApplicationContextProvider, String)}
      */
+    @Deprecated
     public XMLConfiguration(final ApplicationContextProvider appCtx,
             final GridSetBroker gridSetBroker, final String configFileDirectory)
             throws ConfigurationException {
@@ -216,7 +218,6 @@ public class XMLConfiguration implements Configuration, InitializingBean {
     /**
      * Constructor with inputstream (only for testing)
      * @throws ConfigurationException 
-     * @throws  
      */
     public XMLConfiguration(final InputStream is) throws ConfigurationException {
         this (null, new ConfigurationResourceProvider() {
@@ -519,30 +520,21 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         // create the XStream for serializing the configuration
         XStream xs = getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.PERSIST);
 
-        OutputStreamWriter writer = null;
-        try {
-            try {
-                writer = new OutputStreamWriter(resourceProvider.out(), "UTF-8");
-            } catch (UnsupportedEncodingException uee) {
-                uee.printStackTrace();
-                throw new IOException(uee.getMessage());
-            } catch (FileNotFoundException fnfe) {
-                throw fnfe;
-            }
-    
-            try {
-                // set version to latest
-                String currentSchemaVersion = getCurrentSchemaVersion();
-                gwcConfig.setVersion(currentSchemaVersion);
-    
-                writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-                xs.toXML(gwcConfig, writer);
-            } catch (IOException e) {
-                throw (IOException) new IOException("Error writing to " + resourceProvider.getId()
-                        + ": " + e.getMessage()).initCause(e);
-            }
-        } finally {
-            IOUtils.closeQuietly(writer);
+        try (OutputStreamWriter writer = new OutputStreamWriter(resourceProvider.out(), "UTF-8")) {
+            // set version to latest
+            String currentSchemaVersion = getCurrentSchemaVersion();
+            gwcConfig.setVersion(currentSchemaVersion);
+
+            writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+            xs.toXML(gwcConfig, writer);
+        } catch (UnsupportedEncodingException uee) {
+            uee.printStackTrace();
+            throw new IOException(uee.getMessage());
+        } catch (FileNotFoundException fnfe) {
+            throw fnfe;
+        } catch (IOException e) {
+            throw (IOException) new IOException("Error writing to " + resourceProvider.getId()
+                    + ": " + e.getMessage()).initCause(e);
         }
 
         log.info("Wrote configuration to " + resourceProvider.getId());

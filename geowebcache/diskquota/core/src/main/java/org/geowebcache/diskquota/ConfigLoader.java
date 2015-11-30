@@ -146,50 +146,37 @@ public class ConfigLoader {
         XStream xStream = getConfiguredXStream(new GeoWebCacheXStream());
         
         log.debug("Saving disk quota config to " + resourceProvider.getLocation());
-        OutputStream configOut = resourceProvider.out();
-        try {
+        try (OutputStream configOut = resourceProvider.out()) {
             xStream.toXML(config, new OutputStreamWriter(configOut, "UTF-8"));
         } catch (RuntimeException e) {
             log.error("Error saving DiskQuota config to file :"
                     + resourceProvider.getLocation());
-        } finally {
-            configOut.close();
         }
     }
 
     public DiskQuotaConfig loadConfig() throws IOException, ConfigurationException {
-        DiskQuotaConfig quotaConfig;
-        InputStream configIn;
-        if (resourceProvider.hasInput()) {
-            try{
-                configIn = resourceProvider.in();
-            } catch (IOException e) {    
-                configIn = null;
-            }
-        } else {
-            configIn = null;
-        }
+        DiskQuotaConfig quotaConfig = null;
         
-        if (configIn != null) {
+        if (resourceProvider.hasInput()) {
             log.info("Quota config is: " + resourceProvider.getLocation());
             
-            try {
+            try (InputStream configIn = resourceProvider.in()) {
                 quotaConfig = loadConfiguration(configIn);
                 if (null == quotaConfig) {
                     throw new ConfigurationException("Couldn't parse configuration file "
                             + resourceProvider.getLocation());
                 }
-            } catch (RuntimeException e) {
+            } catch (IOException | RuntimeException e) {
                 log.error(
                         "Error loading DiskQuota configuration from "
                                 + resourceProvider.getLocation() + ": " + e.getMessage()
                                 + ". Deferring to a default (disabled) configuration", e);
-                quotaConfig = new DiskQuotaConfig();
-            } finally {
-                configIn.close();
             }
         } else {
-            log.info("DiskQuota configuration could not be read: " + resourceProvider.getLocation());  
+            log.info("DiskQuota configuration is not readable: " + resourceProvider.getLocation());
+        }
+
+        if (quotaConfig == null) {
             quotaConfig = new DiskQuotaConfig();
         }
         

@@ -81,8 +81,7 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
         
         if(configFileDirectory!=null) {
             // Use the given path
-            if (configFileDirectory.startsWith("/") || configFileDirectory.contains(":\\")
-                    || configFileDirectory.startsWith("\\\\")) {
+            if (new File(configFileDirectory).isAbsolute()) {
                 
                 log.info("Provided configuration directory as absolute path '" + configFileDirectory + "'");
                 this.configDirectory = new File(configFileDirectory);
