@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 
 import org.apache.commons.io.IOUtils;
@@ -52,20 +54,32 @@ public class JDBCConfiguration implements Serializable {
      * @throws IOException
      */
     public static JDBCConfiguration load(File sourceFile) throws ConfigurationException {
-        XStream xs = getXStream();
-
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(sourceFile);
-            JDBCConfiguration conf = (JDBCConfiguration) xs.fromXML(fis);
-            validateConfiguration(conf);
-            return conf;
+            return load(fis);
         } catch (IOException e) {
             throw new ConfigurationException("Failed to load the configuration from "
                     + sourceFile.getAbsolutePath(), e);
         } finally {
             IOUtils.closeQuietly(fis);
         }
+    }
+    
+    /**
+     * Loads a XML configuration from the specified file. The file must adhere to the
+     * {@code geowebcache-diskquota-jdbc.xsd} schema.
+     * 
+     * @param sourceFile
+     * @return
+     * @throws IOException
+     */
+    public static JDBCConfiguration load(InputStream is) throws ConfigurationException {
+        XStream xs = getXStream();
+
+        JDBCConfiguration conf = (JDBCConfiguration) xs.fromXML(is);
+        validateConfiguration(conf);
+        return conf;
     }
 
     private static void validateConfiguration(JDBCConfiguration conf) throws ConfigurationException {
@@ -88,14 +102,18 @@ public class JDBCConfiguration implements Serializable {
         }
         
     }
+    
+    public static void store(JDBCConfiguration config, OutputStream os) {
+        XStream xs = getXStream();
+        xs.toXML(config, os);
+    }
 
     public static void store(JDBCConfiguration config, File file) throws ConfigurationException {
-        XStream xs = getXStream();
-
+       
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file);
-            xs.toXML(config, fos);
+            store(config, fos);
         } catch (IOException e) {
             throw new ConfigurationException("Failed to store the configuration into "
                     + file.getAbsolutePath(), e);
