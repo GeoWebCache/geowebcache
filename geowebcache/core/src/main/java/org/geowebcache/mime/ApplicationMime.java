@@ -45,12 +45,15 @@ public class ApplicationMime extends MimeType {
 
     public static final ApplicationMime geojson = new ApplicationMime("application/json",
             "geojson", "geojson", "application/json;type=geojson", true);
+    
+    public static final ApplicationMime utfgrid = new ApplicationMime("application/json",
+            "utfgrid", "utfgrid", "application/json;type=utfgrid", true);
 
     public static final ApplicationMime mapboxVector = new ApplicationMime("application/x-protobuf",
             "pbf", "mapbox-vectortile", "application/x-protobuf;type=mapbox-vector", true);
 
-    private static Set<ApplicationMime> ALL = ImmutableSet.of(bil16, bil32, json, topojson,
-            geojson, mapboxVector);
+    static Set<ApplicationMime> ALL = ImmutableSet.of(bil16, bil32, json, topojson,
+            geojson, utfgrid, mapboxVector);
 
     private static Map<String, ApplicationMime> BY_FORMAT = Maps.uniqueIndex(ALL,
             new Function<ApplicationMime, String>() {
