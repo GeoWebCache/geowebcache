@@ -1,3 +1,14 @@
+GeoWebCache 1.9-M0 (2015-12-17)
+-------------------------------
+
+Tech Preview Milestone for 1.9.x
+
+Improvements:
++++++++++++++
+- Support for UTFGrid tiles
+- Updated Postgres driver to 9.4
+- Abstraction of configuration storage API
+
 GeoWebCache 1.8-beta (2015-08-28)
 ----------------------------------
 
