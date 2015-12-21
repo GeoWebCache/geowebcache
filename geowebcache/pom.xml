@@ -437,7 +437,7 @@
      <plugin>
       <artifactId>maven-javadoc-plugin</artifactId>
       <configuration>
-       <source>1.7</source>
+       <source>1.8</source>
        <version>false</version>
        <noqualifier>all</noqualifier>
        <maxmemory>256M</maxmemory>
@@ -535,8 +535,8 @@
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-compiler-plugin</artifactId>
     <configuration>
-      <source>1.7</source>
-      <target>1.7</target>
+      <source>1.8</source>
+      <target>1.8</target>
       <encoding>UTF-8</encoding>
     </configuration>
       </plugin>
