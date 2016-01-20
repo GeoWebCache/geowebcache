@@ -161,6 +161,6 @@ final class TMSKeyBuilder {
     }
 
     public String pendingDeletes() {
-        return String.format("%s/%s", prefix, "_pending_deletes.propertires");
+        return String.format("%s/%s", prefix, "_pending_deletes.properties");
     }
 }
