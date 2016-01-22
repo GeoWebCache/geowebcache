@@ -1,3 +1,18 @@
+GeoWebCache 1.8.1 (2016-01-22)
+------------------------------
+
+Update to the 1.8.x series.
+
+Improvements:
++++++++++++++
+- Updated postgres driver to 9.4
+- Documentation updates
+
+Fixes:
+++++++
+- Fixed typo in pending deletes file for S3 store
+
+
 GeoWebCache 1.8.0 (2015-09-30)
 ------------------------------
 
