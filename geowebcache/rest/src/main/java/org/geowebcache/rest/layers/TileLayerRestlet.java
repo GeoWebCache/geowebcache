@@ -332,7 +332,8 @@ public class TileLayerRestlet extends GWCRestlet {
      * @throws RestletException
      */
     private void doDelete(Request req, Response resp) throws RestletException, GeoWebCacheException {
-        String layerName = (String) req.getAttributes().get("layer");
+        String layerName = ServletUtils.URLDecode((String) req.getAttributes().get("layer"),
+                "UTF-8");
         findTileLayer(layerName, layerDispatcher);
         try {
             Configuration configuration = layerDispatcher.removeLayer(layerName);
