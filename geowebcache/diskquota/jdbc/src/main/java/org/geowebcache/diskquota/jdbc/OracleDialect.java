@@ -27,7 +27,13 @@ import java.util.List;
  * @author Andrea Aime - GeoSolutions
  */
 public class OracleDialect extends SQLDialect {
-
+    
+    // Oracle's Number type has a maximum precision of 38
+    static final int MAX_NUMBER_PRECISION = 38;
+    static int numberPrecision(int n) {
+        return Math.min(n, MAX_NUMBER_PRECISION);
+    }
+    
     public OracleDialect() {
         TABLE_CREATION_MAP.put("TILESET", Arrays.asList( //
                 "CREATE TABLE ${schema}TILESET (\n" + //
@@ -36,7 +42,7 @@ public class OracleDialect extends SQLDialect {
                         "  GRIDSET_ID VARCHAR("+GRIDSET_ID_SIZE+"),\n" + //
                         "  BLOB_FORMAT VARCHAR("+BLOB_FORMAT_SIZE+"),\n" + //
                         "  PARAMETERS_ID VARCHAR("+PARAMETERS_ID_SIZE+"),\n" + //
-                        "  BYTES NUMBER("+BYTES_SIZE+") DEFAULT 0 NOT NULL\n" + //
+                        "  BYTES NUMBER("+numberPrecision(BYTES_SIZE)+") DEFAULT 0 NOT NULL\n" + //
                         ") ORGANIZATION INDEX", //
                 "CREATE INDEX TILESET_LAYER ON TILESET(LAYER_NAME)" //
         ));
@@ -55,7 +61,7 @@ public class OracleDialect extends SQLDialect {
                         " FREQUENCY_OF_USE FLOAT,\n" + //
                         " LAST_ACCESS_TIME_MINUTES INTEGER,\n" + //
                         " FILL_FACTOR FLOAT,\n" + //
-                        " NUM_HITS NUMBER("+NUM_HITS_SIZE+")\n" + //
+                        " NUM_HITS NUMBER("+numberPrecision(NUM_HITS_SIZE)+")\n" + //
                         ") ORGANIZATION INDEX", //
                 "CREATE INDEX TILEPAGE_TILESET ON TILEPAGE(TILESET_ID)",
                 "CREATE INDEX TILEPAGE_FILL_FACTOR ON TILEPAGE(FILL_FACTOR)",
