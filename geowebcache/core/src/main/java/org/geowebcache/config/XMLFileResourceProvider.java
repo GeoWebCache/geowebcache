@@ -265,7 +265,11 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
 
     @Override
     public boolean hasInput() {
-        return true;
+        try {
+            return findOrCreateConfFile().exists();
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     @Override
