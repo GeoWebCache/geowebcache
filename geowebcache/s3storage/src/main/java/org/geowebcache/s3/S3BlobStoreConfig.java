@@ -324,7 +324,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
     }
 
     /**
-     * @return {@link AmazonS3Client} constructed from this {@link S3BlobStoreConfig.
+     * @return {@link AmazonS3Client} constructed from this {@link S3BlobStoreConfig}.
      */
     public AmazonS3Client buildClient() {
         AWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
