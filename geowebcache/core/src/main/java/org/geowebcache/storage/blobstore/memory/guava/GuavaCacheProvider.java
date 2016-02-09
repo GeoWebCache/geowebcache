@@ -591,6 +591,10 @@ public class GuavaCacheProvider implements CacheProvider {
         return true;
     }
 
+    public Cache<String, TileObject> getCache() {
+    	return cache;
+    }
+
     /**
      * Internal class representing a concurrent multimap which associates to each Layer name the related {@link TileObject} cache keys. This map is
      * useful when trying to remove a Layer, because it returns quicly all the cached keys of the selected layer, without having to cycle on the cache
