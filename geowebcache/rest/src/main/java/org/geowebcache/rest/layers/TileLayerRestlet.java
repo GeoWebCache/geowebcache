@@ -39,6 +39,8 @@ import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.rest.XstreamRepresentation;
 import org.geowebcache.service.HttpErrorCodeException;
+import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
@@ -81,13 +83,21 @@ public class TileLayerRestlet extends GWCRestlet {
     
     private GeoWebCacheDispatcher controller = null;
 
+    private StorageBroker storageBroker;
+
     // set by spring
     public void setUrlMangler(URLMangler urlMangler) {
         this.urlMangler = urlMangler;
     }
+
     // set by spring
     public void setController(GeoWebCacheDispatcher controller) {
         this.controller = controller;
+    }
+
+    // set by spring
+    public void setStorageBroker(StorageBroker storageBroker) {
+        this.storageBroker = storageBroker;
     }
 
     @Override
@@ -335,6 +345,16 @@ public class TileLayerRestlet extends GWCRestlet {
         String layerName = ServletUtils.URLDecode((String) req.getAttributes().get("layer"),
                 "UTF-8");
         findTileLayer(layerName, layerDispatcher);
+        // delete cached tiles first in case a blob store
+        // uses the configuration to perform the deletion
+        StorageException storageBrokerDeleteException = null;
+        try {
+            storageBroker.delete(layerName);
+        } catch (StorageException se) {
+            // save exception for later so failure to delete
+            // cached tiles does not prevent layer removal
+            storageBrokerDeleteException = se;
+        }
         try {
             Configuration configuration = layerDispatcher.removeLayer(layerName);
             if (configuration == null) {
@@ -344,6 +364,14 @@ public class TileLayerRestlet extends GWCRestlet {
             configuration.save();
         } catch (IOException e) {
             throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL, e);
+        }
+        if (storageBrokerDeleteException != null) {
+            // layer removal worked, so report failure to delete cached tiles
+            throw new RestletException(
+                    "Removal of layer " + layerName
+                            + " was successful but deletion of cached tiles failed: "
+                            + storageBrokerDeleteException.getMessage(),
+                    Status.SERVER_ERROR_INTERNAL, storageBrokerDeleteException);
         }
     }
 
