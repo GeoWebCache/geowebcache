@@ -97,30 +97,7 @@ public class S3BlobStore implements BlobStore {
         String prefix = config.getPrefix() == null ? "" : config.getPrefix();
         this.keyBuilder = new TMSKeyBuilder(prefix, layers);
 
-        String accessKey = config.getAwsAccessKey();
-        String secretKey = config.getAwsSecretKey();
-        AWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
-
-        ClientConfiguration clientConfig = new ClientConfiguration();
-        if (null != config.isUseHTTPS()) {
-            clientConfig.setProtocol(config.isUseHTTPS() ? Protocol.HTTPS : Protocol.HTTP);
-        }
-        if (null != config.getMaxConnections() && config.getMaxConnections() > 0) {
-            clientConfig.setMaxConnections(config.getMaxConnections());
-        }
-        clientConfig.setProxyDomain(config.getProxyDomain());
-        clientConfig.setProxyWorkstation(config.getProxyWorkstation());
-        clientConfig.setProxyHost(config.getProxyHost());
-        if (null != config.getProxyPort()) {
-            clientConfig.setProxyPort(config.getProxyPort());
-        }
-        clientConfig.setProxyUsername(config.getProxyUsername());
-        clientConfig.setProxyPassword(config.getProxyPassword());
-        if (null != config.isUseGzip()) {
-            clientConfig.setUseGzip(config.isUseGzip());
-        }
-        log.debug("Initializing AWS S3 connection");
-        this.conn = new AmazonS3Client(awsCredentials, clientConfig);
+        conn = config.buildClient();
 
         try {
             log.debug("Checking access rights to bucket " + bucketName);

@@ -24,16 +24,26 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.BlobStoreConfig;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.StorageException;
 
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.Protocol;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3Client;
+
 /**
  * Plain old java object representing the configuration for an S3 blob store.
  */
 public class S3BlobStoreConfig extends BlobStoreConfig {
+
+    static Log log = LogFactory.getLog(S3BlobStoreConfig.class);
 
     private static final long serialVersionUID = 9072751143836460389L;
 
@@ -311,6 +321,33 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
             return String.format("bucket: %s prefix: %s", bucket, prefix);
         }
         
+    }
+
+    /**
+     * @return {@link AmazonS3Client} constructed from this {@link S3BlobStoreConfig}.
+     */
+    public AmazonS3Client buildClient() {
+        AWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
+        ClientConfiguration clientConfig = new ClientConfiguration();
+        if (null != useHTTPS) {
+            clientConfig.setProtocol(useHTTPS ? Protocol.HTTPS : Protocol.HTTP);
+        }
+        if (null != maxConnections && maxConnections > 0) {
+            clientConfig.setMaxConnections(maxConnections);
+        }
+        clientConfig.setProxyDomain(proxyDomain);
+        clientConfig.setProxyWorkstation(proxyWorkstation);
+        clientConfig.setProxyHost(proxyHost);
+        if (null != proxyPort) {
+            clientConfig.setProxyPort(proxyPort);
+        }
+        clientConfig.setProxyUsername(proxyUsername);
+        clientConfig.setProxyPassword(proxyPassword);
+        if (null != useGzip) {
+            clientConfig.setUseGzip(useGzip);
+        }
+        log.debug("Initializing AWS S3 connection");
+        return new AmazonS3Client(awsCredentials, clientConfig);
     }
 
 }
