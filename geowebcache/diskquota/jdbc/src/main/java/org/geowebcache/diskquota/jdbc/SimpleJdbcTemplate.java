@@ -23,7 +23,9 @@ import javax.sql.DataSource;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.SqlParameterValue;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 /**
  * An {@link SimpleJDBCTemplate} extended with some utility methods and with failure reporting which
@@ -31,7 +33,7 @@ import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
  * 
  * @author Andrea Aime - GeoSolutions
  */
-public class SimpleJdbcTemplate extends org.springframework.jdbc.core.simple.SimpleJdbcTemplate {
+public class SimpleJdbcTemplate extends NamedParameterJdbcTemplate {
 
     public SimpleJdbcTemplate(DataSource dataSource) {
         super(dataSource);
@@ -46,9 +48,10 @@ public class SimpleJdbcTemplate extends org.springframework.jdbc.core.simple.Sim
      * @param params
      * @return
      */
-    public <T> T queryForOptionalObject(String sql, ParameterizedRowMapper<T> rowMapper, Map params) {
+    public <T> T queryForOptionalObject(String sql, RowMapper<T> rowMapper, Map params) {
+        SqlParameterValue value;
         try {
-            List<T> results = query(sql, rowMapper, params);
+            List<T> results = query(sql, params, rowMapper);
             if (results.size() > 1) {
                 throw new IncorrectResultSizeDataAccessException(1, results.size());
             } else if (results.size() == 1) {
@@ -61,7 +64,6 @@ public class SimpleJdbcTemplate extends org.springframework.jdbc.core.simple.Sim
         }
     }
 
-    @Override
     public int update(String sql, Map params) throws DataAccessException {
         try {
             return super.update(sql, params);
