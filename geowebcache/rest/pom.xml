@@ -21,7 +21,7 @@
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
+      <artifactId>javax.servlet-api</artifactId>
     </dependency>
 
     <dependency>
@@ -38,6 +38,12 @@
     <dependency>
       <groupId>com.noelios.restlet</groupId>
       <artifactId>com.noelios.restlet</artifactId>
+      <exclusions>
+       <exclusion>
+         <groupId>javax.servlet</groupId>
+         <artifactId>servlet-api</artifactId>
+       </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -63,6 +69,12 @@
     <dependency>
       <groupId>com.noelios.restlet</groupId>
       <artifactId>com.noelios.restlet.ext.servlet</artifactId>
+      <exclusions>
+       <exclusion>
+         <groupId>javax.servlet</groupId>
+         <artifactId>servlet-api</artifactId>
+       </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>

@@ -71,9 +71,8 @@ import org.geowebcache.storage.TileRangeIterator;
 import org.geowebcache.storage.TransientCache;
 import org.geowebcache.util.MockLockProvider;
 import org.geowebcache.util.MockWMSSourceHelper;
-
-import com.mockrunner.mock.web.MockHttpServletRequest;
-import com.mockrunner.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * Unit test suite for {@link WMSLayer}
@@ -132,7 +131,7 @@ public class WMSLayerTest extends TestCase {
         lockProvider.clear();
     }
     
-    public void testCascadeGetLegendGraphics() throws GeoWebCacheException {
+    public void testCascadeGetLegendGraphics() throws Exception {
         // setup the layer
         WMSLayer layer = createWMSLayer("image/png");
         final byte[] responseBody = new String("Fake body").getBytes();
@@ -173,8 +172,8 @@ public class WMSLayerTest extends TestCase {
         // proxy the request, and check the response
         layer.proxyRequest(tile);
         
-        assertEquals(200, servletResp.getStatusCode());
-        assertEquals("Fake body", servletResp.getOutputStreamContent());
+        assertEquals(200, servletResp.getStatus());
+        assertEquals("Fake body", servletResp.getContentAsString());
         assertEquals("image/png", servletResp.getContentType());
     }
 
