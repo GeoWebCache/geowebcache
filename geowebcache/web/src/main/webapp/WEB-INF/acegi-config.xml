@@ -109,15 +109,4 @@
 			</bean>
 		</property>
 	</bean>
-	<bean id="httpRequestAccessDecisionManager" class="org.acegisecurity.vote.AffirmativeBased">
-		<property name="allowIfAllAbstainDecisions" value="false" />
-		<property name="decisionVoters">
-			<list>
-				<ref local="roleVoter" />
-			</list>
-		</property>
-	</bean>
-	<bean id="roleVoter" class="org.acegisecurity.vote.RoleVoter">
-		<property name="rolePrefix" value="" />
-	</bean>
 </beans>

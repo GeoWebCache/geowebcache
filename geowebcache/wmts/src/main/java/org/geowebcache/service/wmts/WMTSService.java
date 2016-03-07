@@ -153,8 +153,8 @@ public class WMTSService extends Service {
         try {
             // WMTS uses the "STYLE" instead of "STYLES"
             @SuppressWarnings("unchecked")
-            Map<String, Object> rawParameters = new HashMap<>(request.getParameterMap());
-            for(Entry<String, Object> e:rawParameters.entrySet()){
+            Map<String, String[]> rawParameters = new HashMap<>(request.getParameterMap());
+            for(Entry<String, String[]> e:rawParameters.entrySet()){
                 if(e.getKey().equalsIgnoreCase("STYLE")) {
                     rawParameters.put("STYLES", e.getValue());
                     break;

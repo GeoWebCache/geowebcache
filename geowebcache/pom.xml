@@ -22,7 +22,7 @@
     <commons-lang.version>2.4</commons-lang.version>
     <commons-collections.version>3.1</commons-collections.version>
     <guava.version>17.0</guava.version>
-    <jsr305.version>2.0.3</jsr305.version>
+    <jsr305.version>3.0.1</jsr305.version>
     <log4j.version>1.2.14</log4j.version>
     <h2.version>1.1.119</h2.version>
     <postgresql.version>9.4-1201-jdbc41</postgresql.version>
@@ -91,8 +91,8 @@
     
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <version>2.5</version>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.0.1</version>
       <scope>provided</scope>
     </dependency>
     
