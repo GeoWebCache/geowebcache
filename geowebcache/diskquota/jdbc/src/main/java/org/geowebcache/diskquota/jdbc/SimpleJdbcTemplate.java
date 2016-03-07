@@ -24,11 +24,10 @@ import javax.sql.DataSource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.SqlParameterValue;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 /**
- * An {@link SimpleJDBCTemplate} extended with some utility methods and with failure reporting which
+ * An {@link NamedParameterJdbcTemplate} extended with some utility methods and with failure reporting which
  * includes the parameter values for parameterized statements
  * 
  * @author Andrea Aime - GeoSolutions
@@ -49,7 +48,6 @@ public class SimpleJdbcTemplate extends NamedParameterJdbcTemplate {
      * @return
      */
     public <T> T queryForOptionalObject(String sql, RowMapper<T> rowMapper, Map params) {
-        SqlParameterValue value;
         try {
             List<T> results = query(sql, params, rowMapper);
             if (results.size() > 1) {
@@ -64,6 +62,7 @@ public class SimpleJdbcTemplate extends NamedParameterJdbcTemplate {
         }
     }
 
+    @Override
     public int update(String sql, Map params) throws DataAccessException {
         try {
             return super.update(sql, params);

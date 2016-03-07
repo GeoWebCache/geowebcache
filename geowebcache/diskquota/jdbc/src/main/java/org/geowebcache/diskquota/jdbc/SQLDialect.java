@@ -26,8 +26,8 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.DatabaseMetaDataCallback;
+import org.springframework.jdbc.support.JdbcAccessor;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.MetaDataAccessException;
 
@@ -127,7 +127,7 @@ public class SQLDialect {
     private boolean tableExists(SimpleJdbcTemplate template, final String schema,
             final String tableName) {
         try {
-            DataSource ds = ((JdbcTemplate)template.getJdbcOperations()).getDataSource();
+            DataSource ds = ((JdbcAccessor) template.getJdbcOperations()).getDataSource();
             return (Boolean) JdbcUtils.extractDatabaseMetaData(ds, new DatabaseMetaDataCallback() {
 
                 public Object processMetaData(DatabaseMetaData dbmd) throws SQLException,

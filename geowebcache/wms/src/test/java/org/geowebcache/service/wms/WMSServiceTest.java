@@ -34,8 +34,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
-
-import com.mockrunner.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 public class WMSServiceTest extends TestCase {
 
@@ -85,7 +84,9 @@ public class WMSServiceTest extends TestCase {
 
         @SuppressWarnings("unchecked")
         Map<String, String[]> kvp = new CaseInsensitiveMap();
-        kvp.put("format", new String[]{"image/png"});
+        kvp.put("format", new String[]{"image/png"}
+        
+        );
         kvp.put("srs", new String[]{"EPSG:4326"});
         kvp.put("width", new String[]{"256"});
         kvp.put("height", new String[]{"256"});

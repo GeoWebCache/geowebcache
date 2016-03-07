@@ -24,8 +24,6 @@ import java.util.UUID;
 
 import org.junit.rules.ExternalResource;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.iterable.S3Objects;
@@ -42,6 +40,8 @@ import com.google.common.collect.Lists;
  */
 public class TemporaryS3Folder extends ExternalResource {
 
+    private Properties properties;
+
     private String bucket;
 
     private String accessKey;
@@ -53,14 +53,10 @@ public class TemporaryS3Folder extends ExternalResource {
     private AmazonS3Client s3;
 
     public TemporaryS3Folder(Properties properties) {
-        this(properties.getProperty("bucket"), properties.getProperty("accessKey"), properties
-                .getProperty("secretKey"));
-    }
-
-    public TemporaryS3Folder(String bucket, String accessKey, String secretKey) {
-        this.bucket = bucket;
-        this.accessKey = accessKey;
-        this.secretKey = secretKey;
+        this.properties = properties;
+        this.bucket = properties.getProperty("bucket");
+        this.accessKey = properties.getProperty("accessKey");
+        this.secretKey = properties.getProperty("secretKey");
     }
 
     @Override
@@ -69,8 +65,7 @@ public class TemporaryS3Folder extends ExternalResource {
             return;
         }
         this.temporaryPrefix = "tmp_" + UUID.randomUUID().toString().replace("-", "");
-        AWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
-        s3 = new AmazonS3Client(awsCredentials);
+        s3 = getConfig().buildClient();
     }
 
     @Override
@@ -98,7 +93,35 @@ public class TemporaryS3Folder extends ExternalResource {
         config.setAwsAccessKey(accessKey);
         config.setAwsSecretKey(secretKey);
         config.setPrefix(temporaryPrefix);
-        config.setUseGzip(true);
+        if (properties.getProperty("maxConnections") != null) {
+            config.setMaxConnections(Integer.valueOf(properties.getProperty("maxConnections")));
+        }
+        if (properties.getProperty("useHTTPS") != null) {
+            config.setUseHTTPS(Boolean.valueOf(properties.getProperty("useHTTPS")));
+        }
+        if (properties.getProperty("proxyDomain") != null) {
+            config.setProxyDomain(properties.getProperty("proxyDomain"));
+        }
+        if (properties.getProperty("proxyWorkstation") != null) {
+            config.setProxyWorkstation(properties.getProperty("proxyWorkstation"));
+        }
+        if (properties.getProperty("proxyHost") != null) {
+            config.setProxyHost(properties.getProperty("proxyHost"));
+        }
+        if (properties.getProperty("proxyPort") != null) {
+            config.setProxyPort(Integer.valueOf(properties.getProperty("proxyPort")));
+        }
+        if (properties.getProperty("proxyUsername") != null) {
+            config.setProxyUsername(properties.getProperty("proxyUsername"));
+        }
+        if (properties.getProperty("proxyPassword") != null) {
+            config.setProxyPassword(properties.getProperty("proxyPassword"));
+        }
+        if (properties.getProperty("useGzip") == null) {
+            config.setUseGzip(true);
+        } else {
+            config.setUseGzip(Boolean.valueOf(properties.getProperty("useGzip")));
+        }
         return config;
     }
 
@@ -123,22 +146,6 @@ public class TemporaryS3Folder extends ExternalResource {
             deleteRequest.setKeys(keys);
             s3.deleteObjects(deleteRequest);
         }
-    }
-
-    public String getBucket() {
-        return bucket;
-    }
-
-    public String getAccessKey() {
-        return accessKey;
-    }
-
-    public String getSecretKey() {
-        return secretKey;
-    }
-
-    public String getPrefix() {
-        return temporaryPrefix;
     }
 
     public boolean isConfigured() {
