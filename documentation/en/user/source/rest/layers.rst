@@ -24,11 +24,11 @@ Layers list
      - XML
    * - POST
      - 
-     - 400
+     - 405
      - 
    * - PUT
      - 
-     - 400
+     - 405
      - 
    * - DELETE
      - 
