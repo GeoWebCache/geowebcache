@@ -18,9 +18,13 @@
 package org.geowebcache.diskquota;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.DefaultStorageBroker;
 import org.springframework.util.Assert;
@@ -48,6 +52,8 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
     private boolean cancelled;
 
     private final QuotaStore quotaStore;
+    
+    int updateOfferTimeoutSeconds;
 
     /**
      * 
@@ -67,6 +73,12 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
         this.quotaConfig = quotaConfig;
         this.queuedUpdates = queuedUpdates;
         this.quotaStore = quotaStore;
+        
+        String timeoutStr = GeoWebCacheExtensions.getProperty("GEOWEBCACHE_QUOTA_DIFF_TIMEOUT");
+        this.updateOfferTimeoutSeconds = 5 * 60; // by default five minutes
+        if(timeoutStr != null) {
+            updateOfferTimeoutSeconds = Integer.parseInt(timeoutStr);
+        }
     }
 
     /**
@@ -157,7 +169,14 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
         QuotaUpdate payload = new QuotaUpdate(layerName, gridSetId, blobFormat, parametersId,
                 amount, tileIndex);
         try {
-            this.queuedUpdates.put(payload);
+            if(updateOfferTimeoutSeconds <= 0) {
+                this.queuedUpdates.put(payload);
+            } else {
+                if(!this.queuedUpdates.offer(payload, updateOfferTimeoutSeconds, TimeUnit.SECONDS)) {
+                    throw new RuntimeException("Failed to offer the quota diff to the updates queue "
+                            + "within the configured timeout of " + updateOfferTimeoutSeconds + " seconds");
+                }
+            }
         } catch (InterruptedException e) {
             if (cancelled(layerName)) {
                 return;
