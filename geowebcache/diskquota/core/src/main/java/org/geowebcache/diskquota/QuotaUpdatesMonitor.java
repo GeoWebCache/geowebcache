@@ -1,3 +1,18 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *  
+ */
 package org.geowebcache.diskquota;
 
 import java.util.concurrent.BlockingQueue;
@@ -8,12 +23,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.storage.StorageBroker;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.util.Assert;
 
 public class QuotaUpdatesMonitor {
-
+    
     private static final Log log = LogFactory.getLog(QuotaUpdatesMonitor.class);
 
     private static final CustomizableThreadFactory tf = new CustomizableThreadFactory(
@@ -42,13 +58,22 @@ public class QuotaUpdatesMonitor {
         this.quotaConfig = quotaConfig;
         this.storageBroker = storageBroker;
         this.quotaStore = quotaStore;
-
+        
+        String sizeStr = GeoWebCacheExtensions.getProperty("GEOWEBCACHE_QUOTA_QUEUE_SIZE");
+        int quotaQueueSize = 1000;
+        if(sizeStr != null) {
+            quotaQueueSize = Integer.parseInt(sizeStr);
+        }
+        if(quotaQueueSize > 0) {
+            this.sharedQueue = new LinkedBlockingQueue<QuotaUpdate>(quotaQueueSize);
+        } else {
+            this.sharedQueue = new LinkedBlockingQueue<QuotaUpdate>();
+        }
     }
 
     public void startUp() {
         executorService = Executors.newSingleThreadExecutor(tf);
 
-        sharedQueue = new LinkedBlockingQueue<QuotaUpdate>(1000);// set a capacity?
         quotaDiffsProducer = new QueuedQuotaUpdatesProducer(quotaConfig, sharedQueue, quotaStore);
 
         // the task that takes quota updates from the queue and saves them to the store
@@ -70,7 +95,7 @@ public class QuotaUpdatesMonitor {
                             + " Ignoring in order to continue with the monitor's shutdown "
                             + "process", e);
         }
-
+        
         if (cancel) {
             quotaDiffsProducer.setCancelled(true);
             executorService.shutdownNow();
@@ -91,6 +116,7 @@ public class QuotaUpdatesMonitor {
      * Calls for a shut down and waits until any remaining task finishes before returning
      */
     public void shutDown() {
+        quotaUsageUpdatesConsumer.shutdown();
         final boolean cancel = false;
         shutDown(cancel);
 
@@ -127,7 +153,7 @@ public class QuotaUpdatesMonitor {
             throw new IllegalStateException("Called awaitTermination but the "
                     + "UsageStatsMonitor is not shutting down");
         }
-        executorService.awaitTermination(10 * 1000, TimeUnit.MILLISECONDS);
+        executorService.awaitTermination(timeout, units);
     }
 
 }
