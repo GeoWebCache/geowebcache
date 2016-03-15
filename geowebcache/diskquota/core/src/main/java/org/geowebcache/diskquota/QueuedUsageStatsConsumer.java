@@ -31,7 +31,7 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
     /**
      * Default number of milliseconds before cached/aggregated quota update is saved to the store
      */
-    private static final long DEFAULT_SYNC_TIMEOUT = 10000;
+    private static final long DEFAULT_SYNC_TIMEOUT = 100;
 
     /**
      * Default number of per TileSet aggregated quota updates before ensuring they're synchronized
@@ -103,6 +103,11 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
                         + " finished due to interrupted thread.");
                 break;
             }
+            
+            if(terminate) {
+                log.debug("Exiting on explicit termination request: " + getClass().getSimpleName());
+                break;
+            }
 
             try {
                 /*
@@ -144,6 +149,8 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
     private final int[] pageIndexTarget = new int[3];
 
     private final StringBuilder pageIdTarget = new StringBuilder(128);
+
+    private boolean terminate = false;
 
     /**
      * 
@@ -224,5 +231,9 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
         aggregatedPendingUpdates.lastCommitTime = System.currentTimeMillis();
         aggregatedPendingUpdates.numAggregations = 0;
         aggregatedPendingUpdates.pages.clear();
+    }
+    
+    public void shutdown() {
+        this.terminate = true;
     }
 }
