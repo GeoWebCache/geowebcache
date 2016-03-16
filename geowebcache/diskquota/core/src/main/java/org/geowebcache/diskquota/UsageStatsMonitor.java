@@ -114,7 +114,7 @@ public class UsageStatsMonitor {
             throw new IllegalStateException("Called awaitTermination but the "
                     + "UsageStatsMonitor is not shutting down");
         }
-        executorService.awaitTermination(10 * 1000, TimeUnit.MILLISECONDS);
+        executorService.awaitTermination(timeout, units);
     }
 
     /**
@@ -137,6 +137,7 @@ public class UsageStatsMonitor {
             }
         }
 
+        usageStatsConsumer.shutdown();
         if (cancel) {
             usageStatsProducer.setCancelled(true);
             executorService.shutdownNow();
