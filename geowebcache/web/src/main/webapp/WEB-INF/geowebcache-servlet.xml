@@ -19,6 +19,7 @@
   <import resource="geowebcache-diskquota-context.xml"/>
   <import resource="geowebcache-arcgiscache-context.xml"/>
   <import resource="geowebcache-distributed.xml"/>
+  <import resource="geowebcache-security.xml"/>
     
   <bean id="gwcUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
     <property name="alwaysUseFullPath" value="true"/>
