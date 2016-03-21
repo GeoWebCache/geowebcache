@@ -1,3 +1,13 @@
+GeoWebCache 1.8.2 (2016-03-21)
+------------------------------
+
+Update to the 1.8.x series
+
+Fixes:
+++++++
+- Make Oracle table creation for disk quota work
+- Make sure that restarting disk-quota at runtime cannot lead to thread exshaustion
+
 GeoWebCache 1.8.1 (2016-01-22)
 ------------------------------
 
