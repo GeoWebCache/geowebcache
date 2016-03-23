@@ -117,7 +117,7 @@ public class MetastoreRemover {
                 + "     join parameters on parameters.id = tiles.parameters_id\n"
                 + "group by layer, gridset, z, parameters, parameters_id";
         
-        final long total = template.queryForLong("select count(*) from (" + query + ")");
+        final long total = template.queryForObject("select count(*) from (" + query + ")", Long.class);
         log.info("Migrating " + total + " parameters from the metastore to the file system");
         template.query(query, new RowCallbackHandler() {
 
@@ -195,7 +195,7 @@ public class MetastoreRemover {
         		"join formats on formats.id = tiles.format_id \n"  +
         		"order by layer_id, parameters_id, gridset, z, x, y";
 
-        final long total = template.queryForLong("select count(*) from (" + query + ")");
+        final long total = template.queryForObject("select count(*) from (" + query + ")", Long.class);
         log.info("Migrating " + total + " tile creation dates from the metastore to the file system");
         
         template.query(query, new RowCallbackHandler() {

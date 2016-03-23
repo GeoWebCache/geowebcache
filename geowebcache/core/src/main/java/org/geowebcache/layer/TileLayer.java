@@ -538,11 +538,9 @@ public abstract class TileLayer {
 
         Map<String, String> fullParameters = new HashMap<String, String>();
 
-        final String[] keys = new String[parameterFilters.size()];
-        for (int i = 0; i < parameterFilters.size(); i++) {
-            ParameterFilter parameterFilter = parameterFilters.get(i);
-            keys[i] = parameterFilter.getKey();
-        }
+        final String[] keys = parameterFilters.stream()
+                .map(ParameterFilter::getKey)
+                .toArray(i->new String[i]);
 
         final Map<String, String> requestValues;
         requestValues = ServletUtils.selectedStringsFromMap(map, encoding, keys);

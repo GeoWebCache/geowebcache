@@ -19,13 +19,12 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import com.mockrunner.mock.web.MockHttpServletRequest;
-import com.mockrunner.mock.web.MockHttpServletResponse;
 
 /**
  * Simple test class for testing advertised and unadvertised Layers in the Demo Page
@@ -66,7 +65,7 @@ public class DemoTest {
         // Generate the HTML
         Demo.makeMap(tld, null, null, servReq, response);
         // Get the HTML from the response
-        String result = response.getOutputStreamContent();
+        String result = response.getContentAsString();
 
         // Ensure the Advertised Layer is present and the Unadvertised Layer is not
         assertTrue(result.contains("testAdv"));

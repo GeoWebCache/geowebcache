@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.hasEntry;
 
@@ -44,9 +45,9 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.w3c.dom.Document;
 
-import com.mockrunner.mock.web.MockHttpServletResponse;
 
 public class WMTSServiceTest extends TestCase {
 
@@ -131,12 +132,12 @@ public class WMTSServiceTest extends TestCase {
         service = new WMTSService(sb, tld,null , mock(RuntimeStats.class));
     
         @SuppressWarnings("unchecked")
-        Map<String, String> kvp = new CaseInsensitiveMap();
-        kvp.put("service", "WMTS");
-        kvp.put("version", "1.0.0");
-        kvp.put("request", "GetCapabilities");
+        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        kvp.put("service", new String[]{"WMTS"});
+        kvp.put("version", new String[]{"1.0.0"});
+        kvp.put("request", new String[]{"GetCapabilities"});
        
-    
+        
         HttpServletRequest req = mock(HttpServletRequest.class);
         MockHttpServletResponse resp = new MockHttpServletResponse();
         when(req.getCharacterEncoding()).thenReturn("UTF-8");
@@ -163,9 +164,9 @@ public class WMTSServiceTest extends TestCase {
         assertTrue(resp.containsHeader("content-disposition"));
         assertEquals("inline;filename=wmts-getcapabilities.xml", resp.getHeader("content-disposition"));                            
     
-        // System.out.println(resp.getOutputStreamContent());
+        // System.out.println(resp.getContentAsString());
         
-        String result = resp.getOutputStreamContent();
+        String result = resp.getContentAsString();
         
         // Ensure the advertised Layer is contained and the unadvertised not
         assertTrue(result.contains("mockLayer"));
@@ -198,10 +199,10 @@ public class WMTSServiceTest extends TestCase {
         service = new WMTSService(sb, tld,null , mock(RuntimeStats.class));
     
         @SuppressWarnings("unchecked")
-        Map<String, String> kvp = new CaseInsensitiveMap();
-        kvp.put("service", "WMTS");
-        kvp.put("version", "1.0.0");
-        kvp.put("request", "GetCapabilities");
+        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        kvp.put("service", new String[]{"WMTS"});
+        kvp.put("version", new String[]{"1.0.0"});
+        kvp.put("request", new String[]{"GetCapabilities"});
        
     
         HttpServletRequest req = mock(HttpServletRequest.class);
@@ -236,9 +237,9 @@ public class WMTSServiceTest extends TestCase {
         assertTrue(resp.containsHeader("content-disposition"));
         assertEquals("inline;filename=wmts-getcapabilities.xml", resp.getHeader("content-disposition"));                            
     
-        // System.out.println(resp.getOutputStreamContent());
+        // System.out.println(resp.getContentAsString());
         
-        String result = resp.getOutputStreamContent();
+        String result = resp.getContentAsString();
         
         // Ensure the advertised Layer is contained and the unadvertised not
         assertTrue(result.contains("mockLayer"));
@@ -268,10 +269,10 @@ public class WMTSServiceTest extends TestCase {
         service = new WMTSService(sb, tld,null , mock(RuntimeStats.class));
     
         @SuppressWarnings("unchecked")
-        Map<String, String> kvp = new CaseInsensitiveMap();
-        kvp.put("service", "WMTS");
-        kvp.put("version", "1.0.0");
-        kvp.put("request", "GetCapabilities");
+        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        kvp.put("service", new String[]{"WMTS"});
+        kvp.put("version", new String[]{"1.0.0"});
+        kvp.put("request", new String[]{"GetCapabilities"});
        
     
         HttpServletRequest req = mock(HttpServletRequest.class);
@@ -304,9 +305,9 @@ public class WMTSServiceTest extends TestCase {
         assertTrue(resp.containsHeader("content-disposition"));
         assertEquals("inline;filename=wmts-getcapabilities.xml", resp.getHeader("content-disposition"));                            
     
-        // System.out.println(resp.getOutputStreamContent());
+        // System.out.println(resp.getContentAsString());
         
-        String result = resp.getOutputStreamContent();
+        String result = resp.getContentAsString();
         
         //Validator validator = new Validator(result);
         //validator.useXMLSchema(true);
@@ -334,10 +335,10 @@ public class WMTSServiceTest extends TestCase {
         service = new WMTSService(sb, tld,null , mock(RuntimeStats.class));
     
         @SuppressWarnings("unchecked")
-        Map<String, String> kvp = new CaseInsensitiveMap();
-        kvp.put("service", "WMTS");
-        kvp.put("version", "1.0.0");
-        kvp.put("request", "GetCapabilities");
+        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        kvp.put("service", new String[]{"WMTS"});
+        kvp.put("version", new String[]{"1.0.0"});
+        kvp.put("request", new String[]{"GetCapabilities"});
        
     
         HttpServletRequest req = mock(HttpServletRequest.class);
@@ -370,9 +371,9 @@ public class WMTSServiceTest extends TestCase {
         assertTrue(resp.containsHeader("content-disposition"));
         assertEquals("inline;filename=wmts-getcapabilities.xml", resp.getHeader("content-disposition"));                            
     
-        // System.out.println(resp.getOutputStreamContent());
+        // System.out.println(resp.getContentAsString());
         
-        String result = resp.getOutputStreamContent();
+        String result = resp.getContentAsString();
         
         Validator validator = new Validator(result);
         validator.useXMLSchema(true);
@@ -401,10 +402,10 @@ public class WMTSServiceTest extends TestCase {
         service = new WMTSService(sb, tld,null , mock(RuntimeStats.class));
     
         @SuppressWarnings("unchecked")
-        Map<String, String> kvp = new CaseInsensitiveMap();
-        kvp.put("service", "WMTS");
-        kvp.put("version", "1.0.0");
-        kvp.put("request", "GetCapabilities");
+        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        kvp.put("service", new String[]{"WMTS"});
+        kvp.put("version", new String[]{"1.0.0"});
+        kvp.put("request", new String[]{"GetCapabilities"});
        
     
         HttpServletRequest req = mock(HttpServletRequest.class);
@@ -437,9 +438,9 @@ public class WMTSServiceTest extends TestCase {
         assertTrue(resp.containsHeader("content-disposition"));
         assertEquals("inline;filename=wmts-getcapabilities.xml", resp.getHeader("content-disposition"));                            
     
-        // System.out.println(resp.getOutputStreamContent());
+        // System.out.println(resp.getContentAsString());
         
-        String result = resp.getOutputStreamContent();
+        String result = resp.getContentAsString();
         
         //Validator validator = new Validator(result);
         //validator.useXMLSchema(true);
@@ -475,17 +476,17 @@ public class WMTSServiceTest extends TestCase {
         
         service = new WMTSService(sb, tld,null , mock(RuntimeStats.class));
     
-        Map<String, String> kvp = new CaseInsensitiveMap();
-        kvp.put("service", "WMTS");
-        kvp.put("version", "1.0.0");
-        kvp.put("request", "GetTile");
-        kvp.put("layer", "mockLayer");
-        kvp.put("format", "image/png");
-        kvp.put("TileMatrixSet", "GlobalCRS84Pixel");
-        kvp.put("TileMatrix", "GlobalCRS84Pixel:1");
-        kvp.put("TileRow", "0");
-        kvp.put("TileCol", "0");
-        kvp.put("Style", "Bar"); // Note singular as required by WMTS
+        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        kvp.put("service", new String[]{ "WMTS"});
+        kvp.put("version", new String[]{ "1.0.0"});
+        kvp.put("request", new String[]{ "GetTile"});
+        kvp.put("layer", new String[]{ "mockLayer"});
+        kvp.put("format", new String[]{ "image/png"});
+        kvp.put("TileMatrixSet", new String[]{ "GlobalCRS84Pixel"});
+        kvp.put("TileMatrix", new String[]{ "GlobalCRS84Pixel:1"});
+        kvp.put("TileRow", new String[]{ "0"});
+        kvp.put("TileCol", new String[]{ "0"});
+        kvp.put("Style", new String[]{ "Bar"}); // Note singular as required by WMTS
     
         HttpServletRequest req = mock(HttpServletRequest.class);
         MockHttpServletResponse resp = new MockHttpServletResponse();
@@ -506,7 +507,13 @@ public class WMTSServiceTest extends TestCase {
             // Style parameter should have been made plural by the time getModifiableParameters is called.
             Map<String, String> map = new HashMap<>();
             map.put("STYLES", "Bar");
-            when(tileLayer.getModifiableParameters((Map)argThat(hasEntry(equalToIgnoringCase("styles"), equalToIgnoringCase("Bar"))), (String)any())).thenReturn(Collections.unmodifiableMap(map));
+            when(tileLayer.getModifiableParameters(
+                    (Map)argThat(
+                            hasEntry(
+                                    equalToIgnoringCase("styles"), 
+                                    arrayContaining(equalToIgnoringCase("Bar")))), 
+                    (String)any()))
+                    .thenReturn(Collections.unmodifiableMap(map));
             when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
         }
     

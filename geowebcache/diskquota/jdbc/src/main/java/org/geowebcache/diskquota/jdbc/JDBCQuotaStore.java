@@ -52,8 +52,9 @@ import org.geowebcache.storage.DefaultStorageFinder;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DeadlockLoserDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -186,7 +187,7 @@ public class JDBCQuotaStore implements QuotaStore {
 
                 // get the existing table names
                 List<String> existingLayers = jt.query(dialect.getAllLayersQuery(schema),
-                        new ParameterizedRowMapper<String>() {
+                        new RowMapper<String>() {
 
                             public String mapRow(ResultSet rs, int rowNum) throws SQLException {
                                 return rs.getString(1);
@@ -264,7 +265,7 @@ public class JDBCQuotaStore implements QuotaStore {
 
     protected Quota getUsedQuotaByTileSetIdInternal(final String tileSetId) {
         String sql = dialect.getUsedQuotaByTileSetId(schema, "key");
-        return jt.queryForOptionalObject(sql, new ParameterizedRowMapper<Quota>() {
+        return jt.queryForOptionalObject(sql, new RowMapper<Quota>() {
 
             public Quota mapRow(ResultSet rs, int rowNum) throws SQLException {
                 BigDecimal bytes = rs.getBigDecimal(1);
@@ -366,7 +367,7 @@ public class JDBCQuotaStore implements QuotaStore {
     public void accept(final TileSetVisitor visitor) {
         String getTileSet = dialect.getTileSetsQuery(schema);
         final TileSetRowMapper tileSetMapper = new TileSetRowMapper();
-        jt.getJdbcOperations().query(getTileSet, new RowCallbackHandler() {
+        jt.query(getTileSet, new RowCallbackHandler() {
 
             public void processRow(ResultSet rs) throws SQLException {
                 TileSet tileSet = tileSetMapper.mapRow(rs, 0);
@@ -604,7 +605,7 @@ public class JDBCQuotaStore implements QuotaStore {
 
     private PageStats getPageStats(String pageStatsKey) {
         String getPageStats = dialect.getPageStats(schema, "key");
-        return jt.queryForOptionalObject(getPageStats, new ParameterizedRowMapper<PageStats>() {
+        return jt.queryForOptionalObject(getPageStats, new RowMapper<PageStats>() {
 
             public PageStats mapRow(ResultSet rs, int rowNum) throws SQLException {
                 PageStats ps = new PageStats(0);
@@ -807,7 +808,7 @@ public class JDBCQuotaStore implements QuotaStore {
      * @author Andrea Aime - GeoSolutions
      *
      */
-    static class DiskQuotaMapper implements ParameterizedRowMapper<Quota> {
+    static class DiskQuotaMapper implements RowMapper<Quota> {
         public Quota mapRow(ResultSet rs, int rowNum) throws SQLException {
             BigDecimal bytes = rs.getBigDecimal(1);
             if (bytes == null) {
@@ -823,7 +824,7 @@ public class JDBCQuotaStore implements QuotaStore {
      * @author Andrea Aime - GeoSolutions
      * 
      */
-    static class TileSetRowMapper implements ParameterizedRowMapper<TileSet> {
+    static class TileSetRowMapper implements RowMapper<TileSet> {
 
         public TileSet mapRow(ResultSet rs, int rowNum) throws SQLException {
             String key = rs.getString(1);
@@ -845,7 +846,7 @@ public class JDBCQuotaStore implements QuotaStore {
      * @author Andrea Aime - GeoSolutions
      * 
      */
-    static class TilePageRowMapper implements ParameterizedRowMapper<TilePage> {
+    static class TilePageRowMapper implements RowMapper<TilePage> {
 
         public TilePage mapRow(ResultSet rs, int rowNum) throws SQLException {
             String tileSetId = rs.getString(1);

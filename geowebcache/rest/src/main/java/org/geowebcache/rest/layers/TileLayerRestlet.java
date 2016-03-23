@@ -25,6 +25,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
@@ -97,6 +98,10 @@ public class TileLayerRestlet extends GWCRestlet {
             if (met.equals(Method.GET)) {
                 doGet(request, response);
             } else {
+                if(Objects.isNull(request.getAttributes().get("layer"))) {
+                    throw new RestletException("Method not allowed",
+                            Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
+                }
                 // These modify layers, so we reload afterwards
                 if (met.equals(Method.POST)) {
                     doPost(request, response);
@@ -349,6 +354,7 @@ public class TileLayerRestlet extends GWCRestlet {
 
     protected TileLayer deserializeAndCheckLayer(Request req, Response resp, boolean isPut)
             throws RestletException, IOException {
+        
         // TODO UTF-8 may not always be right here
         String layerName = ServletUtils.URLDecode((String) req.getAttributes().get("layer"),
                 "UTF-8");
