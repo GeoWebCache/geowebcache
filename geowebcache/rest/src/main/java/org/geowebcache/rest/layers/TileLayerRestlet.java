@@ -345,6 +345,12 @@ public class TileLayerRestlet extends GWCRestlet {
         String layerName = ServletUtils.URLDecode((String) req.getAttributes().get("layer"),
                 "UTF-8");
         findTileLayer(layerName, layerDispatcher);
+        // TODO: refactor storage management to use a comprehensive event system;
+        // centralise duplicate functionality from GeoServer gs-gwc GWC.layerRemoved
+        // and CatalogConfiguration.removeLayer into GeoWebCache and use event system
+        // to ensure removal and rename operations are atomic and consistent. Until this
+        // is done, the following is a temporary workaround:
+        //
         // delete cached tiles first in case a blob store
         // uses the configuration to perform the deletion
         StorageException storageBrokerDeleteException = null;
