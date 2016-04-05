@@ -30,6 +30,7 @@ import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
+import org.easymock.EasyMock;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
@@ -42,6 +43,7 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.RestletException;
+import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.restlet.data.CharacterSet;
@@ -248,6 +250,11 @@ public class TileLayerRestletTest extends XMLTestCase {
     public void testDelete() throws Exception {
         String layerName = "topp:states";
         assertNotNull("Missing test layer", tld.getTileLayer(layerName));
+        StorageBroker storageBroker = org.easymock.classextension.EasyMock
+                .createMock(StorageBroker.class);
+        EasyMock.expect(storageBroker.delete(EasyMock.eq(layerName))).andReturn(true);
+        org.easymock.classextension.EasyMock.replay(storageBroker);
+        tlr.setStorageBroker(storageBroker);
         Request request = new Request();
         request.setMethod(Method.DELETE);
         request.getAttributes().put("layer", ServletUtils.URLEncode(layerName));
@@ -262,6 +269,7 @@ public class TileLayerRestletTest extends XMLTestCase {
         } catch (GeoWebCacheException e) {
             // success
         }
+        org.easymock.classextension.EasyMock.verify(storageBroker);
     }
 
     private XMLConfiguration loadXMLConfig() {
