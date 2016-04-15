@@ -54,7 +54,7 @@ public class ByteStreamerRestletTest {
     }
     
     @Test
-    public void testResourceFound() throws Exception {
+    public void testResourceFoundPNG() throws Exception {
         ByteStreamerRestlet restlet = new ByteStreamerRestlet();
         Request request = EasyMock.createMock("request", Request.class);
         Response response = EasyMock.createMock("response", Response.class);
@@ -76,6 +76,32 @@ public class ByteStreamerRestletTest {
         restlet.handle(request, response);
         
         assertThat(capRep.getValue().getText(), Matchers.is("TEST"));
+        
+        EasyMock.verify(request, response);
+    }
+    @Test
+    public void testResourceFoundCSS() throws Exception {
+        ByteStreamerRestlet restlet = new ByteStreamerRestlet();
+        Request request = EasyMock.createMock("request", Request.class);
+        Response response = EasyMock.createMock("response", Response.class);
+        
+        EasyMock.expect(request.getMethod()).andStubReturn(Method.GET);
+        
+        Map<String, Object> attributes = Collections.singletonMap("filename", "test.css");
+        
+        EasyMock.expect(request.getAttributes()).andStubReturn(attributes);
+        
+        Capture<Representation> capRep = new Capture<>();
+        
+        response.setEntity(EasyMock.capture(capRep)); EasyMock.expectLastCall().once();
+        
+        response.setStatus(Status.SUCCESS_OK);EasyMock.expectLastCall().once();
+        
+        EasyMock.replay(request, response);
+        
+        restlet.handle(request, response);
+        
+        assertThat(capRep.getValue().getText(), Matchers.is("CSS"));
         
         EasyMock.verify(request, response);
     }

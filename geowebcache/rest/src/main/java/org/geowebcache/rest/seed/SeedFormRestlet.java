@@ -447,7 +447,7 @@ public class SeedFormRestlet extends GWCRestlet {
     }
 
     private void makeHeader(StringBuilder doc) {
-        doc.append("<html>\n" + ServletUtils.gwcHtmlHeader("GWC Seed Form") + "<body>\n"
+        doc.append("<html>\n" + ServletUtils.gwcHtmlHeader("../../","GWC Seed Form") + "<body>\n"
                 + ServletUtils.gwcHtmlLogoLink("../../"));
     }
 

@@ -4,8 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.GWCRestlet;
@@ -19,7 +23,9 @@ import org.restlet.resource.OutputRepresentation;
 
 public class ByteStreamerRestlet extends GWCRestlet {
     
-    Class<?> context = ByteStreamerRestlet.class;
+    private static Log log = LogFactory.getLog(ByteStreamerRestlet.class);
+    
+    WebResourceBundle bundle;
     
     public void handle(Request request, Response response) {
         Method met = request.getMethod();
@@ -30,8 +36,28 @@ public class ByteStreamerRestlet extends GWCRestlet {
         }
     }
     
+    private static final WebResourceBundle DEFAULT_BUNDLE = ByteStreamerRestlet.class::getResource;
     protected URL getResource(String path) {
-        return context.getResource(path);
+        if(bundle==null) {
+            synchronized(this) {
+                if(bundle==null) {
+                    List<WebResourceBundle> result=GeoWebCacheExtensions.extensions(WebResourceBundle.class);
+                    if(result.isEmpty()) {
+                        bundle = DEFAULT_BUNDLE;
+                    } else {
+                        bundle = result.get(0);
+                        if(result.size()>1) {
+                            log.warn("Multiple web resource bundles present, using "+bundle.getClass().getName());
+                        }
+                    }
+                }
+            }
+        }
+        URL resource = bundle.apply(path);
+        if(resource==null && bundle != DEFAULT_BUNDLE) {
+            resource = DEFAULT_BUNDLE.apply(path);
+        }
+        return resource;
     }
     
     static final Pattern UNSAFE_RESOURCE = Pattern.compile("^/|/\\.\\./|^\\.\\./|\\.class$"); 

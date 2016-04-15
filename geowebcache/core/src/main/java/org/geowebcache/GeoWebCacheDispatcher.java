@@ -444,7 +444,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             commitId = "{NO BUILD INFO IN MANIFEST}";
         }
 
-        str.append("<html>\n" + ServletUtils.gwcHtmlHeader("GWC Home") + "<body>\n"
+        str.append("<html>\n" + ServletUtils.gwcHtmlHeader(baseUrl,"GWC Home") + "<body>\n"
                 + ServletUtils.gwcHtmlLogoLink(baseUrl));
         str.append("<h3>Welcome to GeoWebCache version " + version + ", build " + commitId + "</h3>\n");
         str.append("<p><a href=\"http://geowebcache.org\">GeoWebCache</a> is an advanced tile cache for WMS servers.");
@@ -542,7 +542,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private void writeError(HttpServletResponse response, int httpCode, String errorMsg) {
         log.debug(errorMsg);
 
-        errorMsg = "<html>\n" + ServletUtils.gwcHtmlHeader("GWC Error") + "<body>\n"
+        errorMsg = "<html>\n" + ServletUtils.gwcHtmlHeader("../", "GWC Error") + "<body>\n"
                 + ServletUtils.gwcHtmlLogoLink("../") + "<h4>" + httpCode + ": "
                 + ServletUtils.disableHTMLTags(errorMsg) + "</h4>" + "</body></html>\n";
         writePage(response, httpCode, errorMsg);
