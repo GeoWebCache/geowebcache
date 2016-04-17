@@ -1,0 +1,13 @@
+@CHARSET "UTF-8";
+
+body, td, th {
+  font-family: Verdana,Arial,\'Bitstream Vera Sans\',Helvetica,sans-serif;
+  font-size: 0.85em;
+  vertical-align: top;
+  }
+table.stats tbody + tbody tr * {padding-top: 1em;}
+table.stats tbody + tbody tr + tr * {padding-top: inherit;}
+table.stats th[scope=row] {text-align: right;}
+table.stats th[scope=col] {text-align: left;}
+
+#logo img {border-width: 0;}

@@ -106,7 +106,7 @@ public class Demo {
             GridSetBroker gridSetBroker) throws GeoWebCacheException {
         String reloadPath = "rest/reload";
 
-        String header = "<html>\n" + ServletUtils.gwcHtmlHeader("GWC Demos") + "<body>\n"
+        String header = "<html>\n" + ServletUtils.gwcHtmlHeader("","GWC Demos") + "<body>\n"
                 + ServletUtils.gwcHtmlLogoLink("") + "<table>\n"
                 + "<table cellspacing=\"10\" border=\"0\">\n"
                 + "<tr><td><strong>Layer name:</strong></td>\n"
