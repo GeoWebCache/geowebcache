@@ -1,3 +1,41 @@
+GeoWebCache 1.9-beta2 (2016-04-18)
+----------------------------------
+
+Second Beta of 1.9
+
+Improvements:
++++++++++++++
+- Refactored S3 Store for easier testing
+- Updated to Spring 4.2.5
+- Updated from ACEGI Security to Spring Security 4.0.4
+- Updated to Servlet 3.0.1 (note This means older application servers like Tomcat 6 are no longer supported)
+- Updated to Commons Collections 3.2.2
+- Extension point to allow plugins to reskin the UI
+
+Fixes:
+++++++
+- Delete cached tiles when deleting a layer via rest
+- Javascript fix on demo page
+- Fixed Thread Exhaustion bug on repeated restarts
+
+GeoWebCache 1.9-beta1 (2016-02-26)
+----------------------------------
+
+Beta of 1.9
+
+Improvements:
++++++++++++++
+- Build using Java 8
+- Pinned joda-time dependency used by S3 Store
+
+Fixes:
+++++++
+- Fixed typo in S3 Store pending deletes file
+- Fixed REST DELETE with URL endoced names
+- Fixed Oracle Diskquota init
+- Fixed exception in disk-quota-config
+
+
 GeoWebCache 1.9-M0 (2015-12-17)
 -------------------------------
 
