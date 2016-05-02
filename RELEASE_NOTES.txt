@@ -1,3 +1,9 @@
+GeoWebCache 1.9-RC1 (2016-05-02)
+--------------------------------
+
+First Release Candidate for 1.9.x
+
+
 GeoWebCache 1.9-beta2 (2016-04-18)
 ----------------------------------
 
