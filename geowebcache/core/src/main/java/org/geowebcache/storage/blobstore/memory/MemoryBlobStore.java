@@ -471,9 +471,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
             }
             ByteArrayResource byteArrayResource = (ByteArrayResource) obj.getBlob();
             byte[] contents = byteArrayResource.getContents();
-            byte[] copy = new byte[contents.length];
-            System.arraycopy(contents, 0, copy, 0, contents.length);
-            finalBlob = new ByteArrayResource(copy);
+            finalBlob = new ByteArrayResource(contents);
         } else {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Resource is not a Byte Array, data must be transferred");

@@ -315,9 +315,14 @@ public class MetaTile implements TileResponseReceiver {
     public RenderedImage createTile(final int minX, final int minY, final int tileWidth,
             final int tileHeight) {
 
+        // optimize if we get a bufferedimage
+        if(metaTileImage instanceof BufferedImage){
+            return ((BufferedImage) metaTileImage).getSubimage(minX, minY, tileWidth, tileHeight);
+        }
+        
         // do a crop, and then turn it into a buffered image so that we can release
         // the image chain
-        RenderedOp cropped = CropDescriptor.create(metaTileImage, Float.valueOf(minX),
+        PlanarImage cropped = CropDescriptor.create(metaTileImage, Float.valueOf(minX),
                 Float.valueOf(minY), Float.valueOf(tileWidth), Float.valueOf(tileHeight), NO_CACHE);
         if (nativeAccelAvailable()) {
             log.trace("created cropped tile");
