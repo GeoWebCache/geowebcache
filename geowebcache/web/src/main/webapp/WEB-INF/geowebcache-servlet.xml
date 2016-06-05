@@ -15,6 +15,7 @@
   <import resource="geowebcache-wmsservice-context.xml"/>
   <import resource="geowebcache-wmtsservice-context.xml"/>
   <import resource="geowebcache-s3storage-context.xml"/>
+  <import resource="geowebcache-sqlite-context.xml"/>
 
   <import resource="geowebcache-diskquota-context.xml"/>
   <import resource="geowebcache-arcgiscache-context.xml"/>
