@@ -43,8 +43,6 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.w3c.dom.Document;
 
@@ -65,16 +63,25 @@ public class WMTSServiceTest extends TestCase {
         gridsetBroker = new GridSetBroker(true, true);
     }
 
-    private TileLayer mockTileLayer(String layerName, List<String> gridSetNames,
-            List<ParameterFilter> parameterFilters) throws Exception {
-        return mockTileLayer(layerName, gridSetNames, parameterFilters, true);
+    private TileLayer mockTileLayer(String layerName, List<String> gridSetNames, List<ParameterFilter> parameterFilters) throws Exception {
+        return mockTileLayer(layerName, null, gridSetNames, parameterFilters, true);
     }
 
-    private TileLayer mockTileLayer(String layerName, List<String> gridSetNames, List<ParameterFilter> parameterFilters, boolean advertised) throws Exception {
+    private TileLayer mockTileLayer(String layerName, String advertisedName, List<String> gridSetNames,
+            List<ParameterFilter> parameterFilters) throws Exception {
+        return mockTileLayer(layerName, advertisedName, gridSetNames, parameterFilters, true);
+    }
+
+    private TileLayer mockTileLayer(String layerName, String advertisedName, List<String> gridSetNames, List<ParameterFilter> parameterFilters, boolean advertised) throws Exception {
 
         TileLayer tileLayer = mock(TileLayer.class);
         when(tld.getTileLayer(eq(layerName))).thenReturn(tileLayer);
         when(tileLayer.getName()).thenReturn(layerName);
+        if (advertisedName == null) {
+            when(tileLayer.getAdvertisedName()).thenReturn(layerName);
+        } else {
+            when(tileLayer.getAdvertisedName()).thenReturn(advertisedName);
+        }
         when(tileLayer.isEnabled()).thenReturn(true);
         when(tileLayer.isAdvertised()).thenReturn(advertised);
 
@@ -148,8 +155,9 @@ public class WMTSServiceTest extends TestCase {
             List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale","EPSG:4326");
             
             TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames, Collections.<ParameterFilter>emptyList());
-            TileLayer tileLayerUn = mockTileLayer("mockLayerUnadv", gridSetNames, Collections.<ParameterFilter>emptyList(), false);
-            when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer, tileLayerUn));
+            TileLayer tileLayerUn = mockTileLayer("mockLayerUnadv", null, gridSetNames, Collections.<ParameterFilter>emptyList(), false);
+            TileLayer tileLayerWithAdvertisedName = mockTileLayer("normal-name", "advertised-name", gridSetNames, Collections.<ParameterFilter>emptyList());
+            when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer, tileLayerUn, tileLayerWithAdvertisedName));
         }
     
         Conveyor conv = service.getConveyor(req, resp);
@@ -171,6 +179,9 @@ public class WMTSServiceTest extends TestCase {
         // Ensure the advertised Layer is contained and the unadvertised not
         assertTrue(result.contains("mockLayer"));
         assertFalse(result.contains("mockLayerUnadv"));
+        // check that the advertised name was used and not the layer name
+        assertTrue(result.contains("advertised-name"));
+        assertFalse(result.contains("normal-name"));
         
         //Validator validator = new Validator(result);
         //validator.useXMLSchema(true);
@@ -185,9 +196,10 @@ public class WMTSServiceTest extends TestCase {
         XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
         XpathEngine xpath = XMLUnit.newXpathEngine();
         
-        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer)", doc));
+        assertEquals("2", xpath.evaluate("count(//wmts:Contents/wmts:Layer)", doc));
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer'])", doc));
-        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier)", doc));
+        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='advertised-name'])", doc));
+        assertEquals("2", xpath.evaluate("count(//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier)", doc));
         assertEquals("", xpath.evaluate("//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier", doc));
     }
     
@@ -215,7 +227,7 @@ public class WMTSServiceTest extends TestCase {
             List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale","EPSG:4326", "EPSG:900913");
             
             TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames, Collections.<ParameterFilter>emptyList());
-            TileLayer tileLayerUn = mockTileLayer("mockLayerUnadv", gridSetNames, Collections.<ParameterFilter>emptyList(), false);
+            TileLayer tileLayerUn = mockTileLayer("mockLayerUnadv", null, gridSetNames, Collections.<ParameterFilter>emptyList(), false);
             when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer, tileLayerUn));
             GridSubset wgs84Subset = mock(GridSubset.class);
             when(wgs84Subset.getOriginalExtent()).thenReturn(new BoundingBox(-42d, -24d, 40d, 50d));

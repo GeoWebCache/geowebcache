@@ -113,6 +113,14 @@ public abstract class TileLayer {
     public abstract String getName();
 
     /**
+     * Name that should be used when advertising the layer (for example in a get capabilities result document).
+     * @return
+     */
+    public String getAdvertisedName() {
+        return getName();
+    }
+
+    /**
      * @return {@code true} if the layer is enabled, {@code false} otherwise
      */
     public abstract boolean isEnabled();
