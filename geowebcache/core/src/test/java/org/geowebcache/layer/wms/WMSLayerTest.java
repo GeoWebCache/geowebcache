@@ -451,4 +451,11 @@ public class WMSLayerTest extends TileLayerTest {
         tl.getParameterFilters().addAll(filters);
         return tl;
     }
+
+    @Test
+    public void testAdvertisedName() {
+        WMSLayer layer = createWMSLayer("image/png");
+        // the advertised  name should be equal to the layer name
+        assertEquals(layer.getName(), layer.getAdvertisedName());
+    }
 }
