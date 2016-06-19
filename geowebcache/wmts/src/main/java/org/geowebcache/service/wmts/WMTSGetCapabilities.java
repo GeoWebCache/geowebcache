@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -269,6 +270,7 @@ public class WMTSGetCapabilities {
     }
 
     private void serviceIdentification(XMLBuilder xml, ServiceInformation servInfo) throws IOException {
+        
         xml.indentElement("ows:ServiceIdentification");
         
         if (servInfo != null) {
@@ -479,6 +481,7 @@ public class WMTSGetCapabilities {
      
      private void layerStyles(XMLBuilder xml, TileLayer layer, List<ParameterFilter> filters) throws IOException {
          String defStyle = layer.getStyles();
+         Map<String, TileLayer.LegendInfo> legendsInfo = layer.getLegendsInfo();
          if(filters == null) {
              xml.indentElement("Style");
              xml.attribute("isDefault", "true");
@@ -487,6 +490,7 @@ public class WMTSGetCapabilities {
              } else {
                  xml.simpleElement("ows:Identifier", TileLayer.encodeDimensionValue(defStyle), true);
              }
+             encodeStyleLegenGraphic(xml, legendsInfo.get(defStyle));
              xml.endElement("Style");
          } else {
              ParameterFilter stylesFilter = null;
@@ -518,6 +522,7 @@ public class WMTSGetCapabilities {
                          xml.attribute("isDefault", "true");
                      }
                      xml.simpleElement("ows:Identifier", TileLayer.encodeDimensionValue(value), true);
+                     encodeStyleLegenGraphic(xml, legendsInfo.get(value));
                      xml.endElement();
                  }
              } else {
@@ -525,10 +530,29 @@ public class WMTSGetCapabilities {
                 xml.indentElement("Style");
                 xml.attribute("isDefault", "true");
                 xml.simpleElement("ows:Identifier", "", true);
+                if (defStyle != null) {
+                    encodeStyleLegenGraphic(xml, legendsInfo.get(defStyle));
+                }
                 xml.endElement();
              }
          }
      }
+
+    private void encodeStyleLegenGraphic(XMLBuilder xml, TileLayer.LegendInfo legendInfo) throws IOException {
+        if (legendInfo == null) {
+            return;
+        }
+        xml.indentElement("LegendURL");
+        xml.attribute("width", String.valueOf(legendInfo.width));
+        xml.attribute("height", String.valueOf(legendInfo.height));
+        if (legendInfo.format != null) {
+            xml.attribute("format", legendInfo.format);
+        }
+        if(legendInfo.legendUrl != null) {
+            xml.attribute("xlink:href", legendInfo.legendUrl);
+        }
+        xml.endElement("LegendURL");
+    }
      
      private void layerFormats(XMLBuilder xml, TileLayer layer) throws IOException {
          Iterator<MimeType> mimeIter = layer.getMimeTypes().iterator();
