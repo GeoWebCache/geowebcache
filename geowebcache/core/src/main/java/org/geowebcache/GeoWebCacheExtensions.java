@@ -2,7 +2,9 @@ package org.geowebcache;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.WeakHashMap;
 
 import javax.servlet.ServletContext;
@@ -27,7 +29,10 @@ import org.springframework.web.context.WebApplicationContext;
  * </code> It must be a singleton, and must not be loaded lazily. Furthermore, this bean must be
  * loaded before any beans that use it.
  * </p>
- * 
+ * <p>
+ * Priority will be respected for extensions that implement {@link GeoWebCacheExtensionPriority} interface.
+ * </p>
+ *
  * @author Gabriel Roldan based on GeoServer's {@code GeoServerExtensions}
  * 
  */
@@ -87,7 +92,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
             checkContext(context);
             if (context != null) {
                 try {
-                    names = context.getBeanNamesForType(extensionPoint);
+                    names = getBeansNamesOrderedByPriority(extensionPoint, context);
                     // update cache only if dealing with the same context
                     if (GeoWebCacheExtensions.context == context) {
                         extensionsCache.put(extensionPoint, names);
@@ -112,6 +117,37 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
         }
 
         return result;
+    }
+
+    /**
+     * We lookup all the beans names that correspond to the provided extension type. If the provided
+     * extensions type implements the {@link GeoWebCacheExtensionPriority} interface we sort the beans
+     * names by their priority.
+     *
+     * We return the bean names and not the beans themselves because we cache the beans by name rather
+     * than the bean itself to avoid breaking the singleton directive.
+     */
+    @SuppressWarnings("unchecked")
+    private static <T> String[] getBeansNamesOrderedByPriority(Class<T> extensionType, ApplicationContext context) {
+        // asking spring for a map that will contains all beans that match the extensions type indexed by their name
+        Map<String, T> beans = context.getBeansOfType(extensionType);
+        if (!GeoWebCacheExtensionPriority.class.isAssignableFrom(extensionType)) {
+            // no priority so nothing ot do
+            return beans.keySet().toArray(new String[beans.size()]);
+        }
+        // this extension type is priority aware
+        List<Map.Entry<String, T>> beansEntries = new ArrayList<>(beans.entrySet());
+        // sorting beans by their priority
+        Collections.sort(beansEntries, (extensionA, extensionB) -> {
+            GeoWebCacheExtensionPriority extensionPriorityA = ((Map.Entry<String, GeoWebCacheExtensionPriority>) extensionA).getValue();
+            GeoWebCacheExtensionPriority extensionPriorityB = ((Map.Entry<String, GeoWebCacheExtensionPriority>) extensionB).getValue();
+            if (extensionPriorityA.getPriority() < extensionPriorityB.getPriority()) {
+                return -1;
+            }
+            return extensionPriorityA.getPriority() == extensionPriorityB.getPriority() ? 0 : 1;
+        });
+        // returning only the beans names
+        return beansEntries.stream().map(Map.Entry::getKey).toArray(String[]::new);
     }
 
     /**
