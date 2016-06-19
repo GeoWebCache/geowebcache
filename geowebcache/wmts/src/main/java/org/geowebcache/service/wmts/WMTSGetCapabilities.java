@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -43,6 +45,7 @@ import org.geowebcache.io.XMLBuilder;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.LayerMetaInformation;
+import org.geowebcache.layer.meta.MetadataURL;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.util.ServletUtils;
@@ -57,9 +60,16 @@ public class WMTSGetCapabilities {
     private GridSetBroker gsb;
     
     private String baseUrl;
-    
+
+    private final Collection<WMTSExtension> extensions;
+
     protected WMTSGetCapabilities(TileLayerDispatcher tld, GridSetBroker gsb, HttpServletRequest servReq, String baseUrl,
-            String contextPath, URLMangler urlMangler) {
+                                  String contextPath, URLMangler urlMangler) {
+        this(tld, gsb, servReq, baseUrl, contextPath, urlMangler, Collections.emptyList());
+    }
+
+    protected WMTSGetCapabilities(TileLayerDispatcher tld, GridSetBroker gsb, HttpServletRequest servReq, String baseUrl,
+            String contextPath, URLMangler urlMangler, Collection<WMTSExtension> extensions) {
         this.tld = tld;
         this.gsb = gsb;
 
@@ -70,7 +80,8 @@ public class WMTSGetCapabilities {
         } else {
             this.baseUrl = urlMangler.buildURL(baseUrl, contextPath, WMTSService.SERVICE_PATH);
         }
-        
+
+        this.extensions = extensions;
     }
     
     protected void writeResponse(HttpServletResponse response, RuntimeStats stats) {
@@ -106,14 +117,31 @@ public class WMTSGetCapabilities {
             xml.attribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
             xml.attribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
             xml.attribute("xmlns:gml", "http://www.opengis.net/gml");
-            xml.attribute("xsi:schemaLocation", "http://www.opengis.net/wmts/1.0 http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd");
+            // allow extensions to register their names spaces
+            for(WMTSExtension extension : extensions) {
+                extension.registerNamespaces(xml);
+            }
+            StringBuilder schemasLocations = new StringBuilder("http://www.opengis.net/wmts/1.0 ");
+            schemasLocations.append("http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd ");
+            // allow extensions to register their schemas locations
+            for(WMTSExtension extension : extensions) {
+                for(String schemaLocation : extension.getSchemaLocations()) {
+                    schemasLocations.append(schemaLocation).append(" ");
+                }
+            }
+            schemasLocations.delete(schemasLocations.length() -1 , schemasLocations.length());
+            // add schemas locations
+            xml.attribute("xsi:schemaLocation", schemasLocations.toString());
             xml.attribute("version", "1.0.0");
             // There were some contradictions in the draft schema, haven't checked whether they've fixed those
             //str.append("xsi:schemaLocation=\"http://www.opengis.net/wmts/1.0 http://geowebcache.org/schema/opengis/wmts/1.0.0/wmtsGetCapabilities_response.xsd\"\n"); 
-            
-            serviceIdentification(xml);
-            serviceProvider(xml);
+
+            ServiceInformation serviceInformation = getServiceInformation();
+
+            serviceIdentification(xml, serviceInformation);
+            serviceProvider(xml, serviceInformation);
             operationsMetadata(xml);
+
             contents(xml);
             xml.indentElement("ServiceMetadataURL")
                 .attribute("xlink:href", baseUrl+"?REQUEST=getcapabilities&VERSION=1.0.0")
@@ -128,9 +156,119 @@ public class WMTSGetCapabilities {
         }
     }
 
-    private void serviceIdentification(XMLBuilder xml) throws IOException {
+    /**
+     * Composes service information using information provided by extensions.
+     */
+    private ServiceInformation getServiceInformation() {
         ServiceInformation servInfo = tld.getServiceInformation();
-        
+        for (WMTSExtension extension : extensions) {
+            ServiceInformation serviceInformation = extension.getServiceInformation();
+            if (serviceInformation != null) {
+                if (servInfo == null) {
+                    servInfo = new ServiceInformation();
+                }
+                mergeServiceInformation(servInfo, serviceInformation);
+            }
+        }
+        return servInfo;
+    }
+
+    /**
+     * Substitute serviceA information with no NULL information from serviceB.
+     */
+    private void mergeServiceInformation(ServiceInformation serviceA, ServiceInformation serviceB) {
+        if (serviceB.getTitle() != null) {
+            serviceA.setTitle(serviceB.getTitle());
+        }
+        if (serviceB.getDescription() != null) {
+            serviceA.setDescription(serviceB.getDescription());
+        }
+        if (serviceB.getKeywords() != null) {
+            serviceA.getKeywords().addAll(serviceB.getKeywords());
+        }
+        if (serviceB.getServiceProvider() != null) {
+            serviceA.setServiceProvider(serviceB.getServiceProvider());
+        }
+        if (serviceB.getFees() != null) {
+            serviceA.setFees(serviceB.getFees());
+        }
+        if (serviceB.getAccessConstraints() != null) {
+            serviceA.setAccessConstraints(serviceB.getAccessConstraints());
+        }
+        if (serviceB.getProviderName() != null) {
+            serviceA.setProviderName(serviceB.getProviderName());
+        }
+        if (serviceB.getProviderSite() != null) {
+            serviceA.setProviderSite(serviceB.getProviderSite());
+        }
+        if (serviceB.getServiceProvider() != null) {
+            if(serviceA.getServiceProvider() != null) {
+                mergeProviderInformation(serviceA.getServiceProvider(), serviceB.getServiceProvider());
+            } else {
+                serviceA.setServiceProvider(serviceB.getServiceProvider());
+            }
+        }
+    }
+
+    /**
+     * Substitute providerA information with no NULL information from providerB.
+     */
+    private void mergeProviderInformation(ServiceProvider providerA, ServiceProvider providerB) {
+        if (providerB.getProviderName() != null) {
+            providerA.setProviderName(providerB.getProviderName());
+        }
+        if (providerB.getProviderSite() != null) {
+            providerA.setProviderSite(providerB.getProviderSite());
+        }
+        if (providerB.getServiceContact() != null) {
+            if (providerA.getServiceContact() != null) {
+                mergeContactInformation(providerA.getServiceContact(), providerB.getServiceContact());
+            } else {
+                providerA.setServiceContact(providerB.getServiceContact());
+            }
+        }
+    }
+
+    /**
+     * Substitute contactA information with no NULL information from contactB.
+     */
+    private void mergeContactInformation(ServiceContact contactA, ServiceContact contactB) {
+        if (contactB.getIndividualName() != null) {
+            contactA.setIndividualName(contactB.getIndividualName());
+        }
+        if (contactB.getPositionName() != null) {
+            contactA.setPositionName(contactB.getPositionName());
+        }
+        if (contactB.getAddressType() != null) {
+            contactA.setAddressType(contactB.getAddressType());
+        }
+        if (contactB.getAddressStreet() != null) {
+            contactA.setAddressStreet(contactB.getAddressStreet());
+        }
+        if (contactB.getAddressCity() != null) {
+            contactA.setAddressCity(contactB.getAddressCity());
+        }
+        if (contactB.getAddressAdministrativeArea() != null) {
+            contactA.setAddressAdministrativeArea(contactB.getAddressAdministrativeArea());
+        }
+        if (contactB.getAddressPostalCode() != null) {
+            contactA.setAddressPostalCode(contactB.getAddressPostalCode());
+        }
+        if (contactB.getAddressCountry() != null) {
+            contactA.setAddressCountry(contactB.getAddressCountry());
+        }
+        if (contactB.getPhoneNumber() != null) {
+            contactA.setPhoneNumber(contactB.getPhoneNumber());
+        }
+        if (contactB.getFaxNumber() != null) {
+            contactA.setFaxNumber(contactB.getFaxNumber());
+        }
+        if (contactB.getAddressEmail() != null) {
+            contactA.setAddressEmail(contactB.getAddressEmail());
+        }
+    }
+
+    private void serviceIdentification(XMLBuilder xml, ServiceInformation servInfo) throws IOException {
         xml.indentElement("ows:ServiceIdentification");
         
         if (servInfo != null) {
@@ -159,8 +297,7 @@ public class WMTSGetCapabilities {
         xml.endElement("ows:ServiceIdentification");
     }
     
-    private void serviceProvider(XMLBuilder xml) throws IOException {
-        ServiceInformation servInfo = tld.getServiceInformation();
+    private void serviceProvider(XMLBuilder xml, ServiceInformation servInfo) throws IOException {
         ServiceProvider servProv = null;
         if(servInfo != null) {
             servProv = servInfo.getServiceProvider();
@@ -216,6 +353,10 @@ public class WMTSGetCapabilities {
         operation(xml, "GetCapabilities", baseUrl);
         operation(xml, "GetTile", baseUrl);
         operation(xml, "GetFeatureInfo", baseUrl);
+        // allow extension to inject their own metadata
+        for(WMTSExtension extension : extensions) {
+            extension.encodedOperationsMetadata(xml);
+        }
         xml.endElement("ows:OperationsMetadata");
     }
         
@@ -264,7 +405,22 @@ public class WMTSGetCapabilities {
         }
 
         layerWGS84BoundingBox(xml, layer);
+
         appendTag(xml, "ows:Identifier", layer.getName(), null);
+
+        if (layer.getMetadataURLs() != null) {
+             for (MetadataURL metadataURL : layer.getMetadataURLs()) {
+                 xml.indentElement("MetadataURL");
+                 xml.attribute("type", metadataURL.getType());
+                 xml.simpleElement("Format", metadataURL.getFormat(), true);
+                 xml.indentElement("OnlineResource")
+                         .attribute("xmlns:xlink", "http://www.w3.org/1999/xlink")
+                         .attribute("xlink:type", "simple")
+                         .attribute("xlink:href", metadataURL.getUrl().toString())
+                         .endElement();
+                 xml.endElement();
+             }
+         }
         
         // We need the filters for styles and dimensions
         List<ParameterFilter> filters = layer.getParameterFilters();
@@ -329,7 +485,7 @@ public class WMTSGetCapabilities {
              if(defStyle == null) {
                  xml.simpleElement("ows:Identifier", "", true);
              } else {
-                 xml.simpleElement("ows:Identifier", "TileLayer.encodeDimensionValue(defStyle)", true);
+                 xml.simpleElement("ows:Identifier", TileLayer.encodeDimensionValue(defStyle), true);
              }
              xml.endElement("Style");
          } else {

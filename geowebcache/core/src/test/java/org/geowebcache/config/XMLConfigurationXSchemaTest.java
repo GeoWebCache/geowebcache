@@ -35,6 +35,8 @@ import org.springframework.web.context.support.StaticWebApplicationContext;
 
 import com.thoughtworks.xstream.XStream;
 
+import java.util.Collections;
+
 public class XMLConfigurationXSchemaTest {
     
     @Rule
@@ -85,7 +87,7 @@ public class XMLConfigurationXSchemaTest {
         ContextualConfigurationProvider.Context pc = ContextualConfigurationProvider.Context.REST;
         WebApplicationContext wac = EasyMock.createMock("wac", WebApplicationContext.class);
         XMLConfigurationProvider provider = EasyMock.createMock("provider", XMLConfigurationProvider.class);
-        EasyMock.expect(wac.getBeanNamesForType(XMLConfigurationProvider.class)).andReturn(new String[]{"provider"});
+        EasyMock.expect(wac.getBeansOfType(XMLConfigurationProvider.class)).andReturn(Collections.singletonMap("provider", provider));
         EasyMock.expect(wac.getBean("provider")).andReturn(provider);
         final Capture<XStream> xsCap = new Capture<>();
         EasyMock.expect(provider.getConfiguredXStream(EasyMock.capture(xsCap))).andStubAnswer(new IAnswer<XStream>(){
