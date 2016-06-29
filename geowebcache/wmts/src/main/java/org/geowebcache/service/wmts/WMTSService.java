@@ -17,6 +17,8 @@
  */
 package org.geowebcache.service.wmts;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSetBroker;
@@ -43,7 +46,8 @@ import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
 
-public class WMTSService extends Service {
+public class WMTSService extends Service  {
+
     public static final String SERVICE_WMTS = "wmts";
     static final String SERVICE_PATH = "/"+GeoWebCacheDispatcher.TYPE_SERVICE+"/"+SERVICE_WMTS;
 
@@ -65,11 +69,14 @@ public class WMTSService extends Service {
     
     private GeoWebCacheDispatcher controller = null;
 
+    private final Collection<WMTSExtension> extensions;
+
     /**
      * Protected no-argument constructor to allow run-time instrumentation
      */
     protected WMTSService(){
         super(SERVICE_WMTS);
+        extensions = GeoWebCacheExtensions.extensions(WMTSExtension.class);
     }
     
     public WMTSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
@@ -80,6 +87,7 @@ public class WMTSService extends Service {
         this.tld = tld;
         this.gsb = gsb;
         this.stats = stats;
+        extensions = GeoWebCacheExtensions.extensions(WMTSExtension.class);
     }
     
     public WMTSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
@@ -92,6 +100,7 @@ public class WMTSService extends Service {
         this.stats = stats;
         this.urlMangler = urlMangler;
         this.controller = controller;
+        extensions = GeoWebCacheExtensions.extensions(WMTSExtension.class);
     }
 
     @Override
@@ -281,7 +290,7 @@ public class WMTSService extends Service {
 
         if (tile.getHint() != null) {
             if (tile.getHint().equals("getcapabilities")) {
-                WMTSGetCapabilities wmsGC = new WMTSGetCapabilities(tld, gsb, tile.servletReq, servletBase, context, urlMangler);
+                WMTSGetCapabilities wmsGC = new WMTSGetCapabilities(tld, gsb, tile.servletReq, servletBase, context, urlMangler, extensions);
                 wmsGC.writeResponse(tile.servletResp, stats);
 
             } else if (tile.getHint().equals("getfeatureinfo")) {
@@ -290,5 +299,9 @@ public class WMTSService extends Service {
                 wmsGFI.writeResponse(stats);
             }
         }
+    }
+
+    public Collection<WMTSExtension> getExtensions() {
+        return Collections.unmodifiableCollection(extensions);
     }
 }

@@ -150,6 +150,12 @@
       <artifactId>log4j</artifactId>
       <version>${log4j.version}</version>
     </dependency>
+
+    <dependency>
+      	<groupId>it.geosolutions.jaiext.utilities</groupId>
+	    <artifactId>jt-utilities</artifactId>
+        <version>1.0.11</version>
+    </dependency>
     
 	<!-- PNG Encoder dependencies -->
 	<dependency>
@@ -657,5 +663,6 @@
     <module>arcgiscache</module>
 	<module>distributed</module>
     <module>s3storage</module>
+    <module>sqlite</module>
   </modules>
 </project>

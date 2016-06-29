@@ -17,6 +17,7 @@
 package org.geowebcache.config.meta;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ServiceInformation implements Serializable{
@@ -27,7 +28,7 @@ public class ServiceInformation implements Serializable{
 
     private String description;
 
-    private List<String> keywords;
+    private List<String> keywords = new ArrayList<>();
 
     private ServiceProvider serviceProvider;
 

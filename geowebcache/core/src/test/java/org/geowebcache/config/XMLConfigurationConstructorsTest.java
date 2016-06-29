@@ -12,6 +12,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 
 import javax.servlet.ServletContext;
 
@@ -62,7 +63,7 @@ public class XMLConfigurationConstructorsTest {
         expect(appContext.getServletContext()).andStubReturn(svltContext);
         expect(svltContext.getInitParameter((String)anyObject())).andStubReturn(null);
         expect(storageFinder.getDefaultPath()).andStubReturn(cacheDir.getCanonicalPath());
-        expect(appContext.getBeanNamesForType(org.geowebcache.config.XMLConfigurationProvider.class)).andReturn(new String[]{});
+        expect(appContext.getBeansOfType(org.geowebcache.config.XMLConfigurationProvider.class)).andReturn(Collections.emptyMap());
         expect(svltContext.getRealPath("")).andStubReturn(temp.getRoot().getCanonicalPath());
 
         replay(provider, appContext, svltContext, storageFinder);

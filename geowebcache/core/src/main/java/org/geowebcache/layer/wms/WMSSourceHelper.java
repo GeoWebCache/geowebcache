@@ -26,6 +26,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileResponseReceiver;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.util.ServletUtils;
 
@@ -40,16 +41,16 @@ public abstract class WMSSourceHelper {
     private int backendTimetout;
 
     abstract protected void makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer,
-            Map<String, String> wmsParams, String expectedMimeType, Resource target)
+            Map<String, String> wmsParams, MimeType expectedMime, Resource target)
             throws GeoWebCacheException;
 
     public void makeRequest(WMSMetaTile metaTile, Resource target) throws GeoWebCacheException {
 
         Map<String, String> wmsParams = metaTile.getWMSParams();
         WMSLayer layer = metaTile.getLayer();
-        String format = metaTile.getRequestFormat().getFormat();
+        MimeType mime = metaTile.getRequestFormat();
 
-        makeRequest(metaTile, layer, wmsParams, format, target);
+        makeRequest(metaTile, layer, wmsParams, mime, target);
     }
 
     public void makeRequest(ConveyorTile tile, Resource target) throws GeoWebCacheException {
@@ -83,7 +84,7 @@ public abstract class WMSSourceHelper {
             wmsParams.put("format_options", "mode:superoverlay;overlaymode:auto");
         }
 
-        String mimeType = tile.getMimeType().getMimeType();
+        MimeType mimeType = tile.getMimeType();
         makeRequest(tile, layer, wmsParams, mimeType, target);
     }
 
@@ -123,21 +124,10 @@ public abstract class WMSSourceHelper {
             wmsParams.put("FEATURE_COUNT", featureCount);
         }
         
-        String mimeType = tile.getMimeType().getMimeType();
+        MimeType mimeType = tile.getMimeType();
         Resource target = new ByteArrayResource(2048);
         makeRequest(tile, layer, wmsParams, mimeType, target);
         return target;
-    }
-
-    protected boolean mimeStringCheck(String requestMime, String responseMime) {
-        if (responseMime.equalsIgnoreCase(requestMime)) {
-            return true;
-        } else if (responseMime.startsWith(requestMime)) {
-            return true;
-        } else if (requestMime.startsWith("image/png") && responseMime.startsWith("image/png")) {
-            return true;
-        }
-        return false;
     }
 
     /**
