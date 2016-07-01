@@ -25,12 +25,19 @@ import static org.geowebcache.TestHelpers.createRequest;
 import static org.geowebcache.TestHelpers.createWMSLayer;
 import static org.junit.Assert.*;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +48,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -48,18 +56,23 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.easymock.Capture;
+import org.easymock.CaptureType;
 import org.easymock.IAnswer;
 import org.easymock.classextension.EasyMock;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.TestHelpers;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.layer.wms.WMSLayer.RequestType;
+import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.seed.GWCTask;
@@ -129,6 +142,98 @@ public class WMSLayerTest extends TileLayerTest {
         assertNotNull(value.getBlob());
         assertTrue(value.getBlob().getSize() > 0);
 
+        verify(mockStorageBroker);
+        
+        // check the lock provider was called in a symmetric way
+        lockProvider.verify();
+        lockProvider.clear();
+    }
+    
+    @Test
+    public void testSeedJpegPngMetaTiled() throws Exception {
+        WMSLayer layer = createWMSLayer("image/vnd.jpeg-png");
+
+        WMSSourceHelper mockSourceHelper = new WMSSourceHelper() {
+
+            @Override
+            protected void makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer,
+                    Map<String, String> wmsParams, MimeType expectedMimeType, Resource target)
+                    throws GeoWebCacheException {
+                int width = Integer.parseInt(wmsParams.get("WIDTH"));
+                int height = Integer.parseInt(wmsParams.get("HEIGHT"));
+                assertEquals(768, width);
+                assertEquals(768, height);
+                BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+                Graphics2D graphics = img.createGraphics();
+                graphics.setColor(Color.BLACK);
+                // fill an L shaped set of tiles, making a few partially filled
+                graphics.fillRect(0, 0, width, 300);
+                graphics.fillRect(0, 0, 300, height);
+                graphics.dispose();
+                ByteArrayOutputStream output = new ByteArrayOutputStream();
+                try {
+                    ImageIO.write(img, "PNG", output);
+                    ImageIO.write(img, "PNG", new java.io.File("/tmp/meta.png"));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                try {
+                    target.transferFrom(
+                            Channels.newChannel(new ByteArrayInputStream(output.toByteArray())));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }
+            
+        };
+        MockLockProvider lockProvider = new MockLockProvider();
+        layer.setSourceHelper(mockSourceHelper);
+        layer.setLockProvider(lockProvider);
+
+        final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
+        Capture<TileObject> captured = new Capture<TileObject>(CaptureType.ALL);
+        expect(mockStorageBroker.put(EasyMock.capture(captured))).andAnswer(new IAnswer<Boolean>() {
+
+            @Override
+            public Boolean answer() throws Throwable {
+                TileObject to = (TileObject) EasyMock.getCurrentArguments()[0];
+                assertEquals("image/vnd.jpeg-png", to.getBlobFormat());
+                assertNotNull(to.getBlob());
+                assertTrue(to.getBlob().getSize() > 0);
+                String format = ImageMime.jpegPng.getMimeType(to.getBlob());
+                long[] xyz = to.getXYZ();
+                assertEquals(10, xyz[2]);
+                // check the ones in the full black area are jpeg, the others png
+                if(xyz[0] == 900 || xyz[1] == 602) {
+                    assertEquals("image/jpeg", format);
+                } else  {
+                    assertEquals("image/png", format);
+                }
+               
+                
+                return true;
+            }
+            
+        }).anyTimes();
+        replay(mockStorageBroker);
+
+        String layerId = layer.getName();
+        HttpServletRequest servletReq = new MockHttpServletRequest();
+        HttpServletResponse servletResp = new MockHttpServletResponse();
+
+        long[] gridLoc = { 900, 600, 10 };// x, y, level
+        MimeType mimeType = layer.getMimeTypes().get(0);
+        GridSet gridSet = gridSetBroker.WORLD_EPSG4326;
+        String gridSetId = gridSet.getName();
+        ConveyorTile tile = new ConveyorTile(mockStorageBroker, layerId, gridSetId, gridLoc,
+                mimeType, null, servletReq, servletResp);
+
+        boolean tryCache = false;
+        layer.seedTile(tile, tryCache);
+
+        assertEquals(9, captured.getValues().size());
         verify(mockStorageBroker);
         
         // check the lock provider was called in a symmetric way

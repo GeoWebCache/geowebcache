@@ -49,6 +49,7 @@ import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.layer.wms.WMSMetaTile;
 import org.geowebcache.layer.wms.WMSSourceHelper;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.seed.GWCTask.TYPE;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileObject;
@@ -171,7 +172,7 @@ public class SeedTaskTest extends TestCase {
 
             @Override
             protected void makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer,
-                    Map<String, String> wmsParams, String expectedMimeType, Resource target)
+                    Map<String, String> wmsParams, MimeType expectedMimeType, Resource target)
                     throws GeoWebCacheException {
                 numCalls++;
                 switch (numCalls) {
