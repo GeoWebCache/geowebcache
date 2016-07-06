@@ -308,6 +308,13 @@
       <groupId>org.restlet</groupId>
       <artifactId>org.restlet</artifactId>
       <version>${restlet.version}</version>
+      <classifier>noobjrep</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.restlet</groupId>
+      <artifactId>org.restlet</artifactId>
+      <version>${restlet.version}</version>
+      <scope>provided</scope>
     </dependency>
     
     <dependency>
