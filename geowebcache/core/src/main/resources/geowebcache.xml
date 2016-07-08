@@ -63,6 +63,23 @@
       <useGzip>true</useGzip>
     </S3BlobStore>
      -->
+    <!-- A sample MBTiles blob store configuration.   -->
+    <!--
+    <MbtilesBlobStore default="true">
+      <id>mbtiles-store</id>
+      <enabled>true</enabled>
+      <rootDirectory>/tmp/gwc-mbtiles</rootDirectory>
+      <templatePath>{layer}{grid}{format}{params}/{z}-{x}-{y}.sqlite</templatePath>
+      <poolSize>1000</poolSize>
+      <poolReaperIntervalMs>500</poolReaperIntervalMs>
+      <rowRangeCount>250</rowRangeCount>
+      <columnRangeCount>250</columnRangeCount>
+      <eagerDelete>false</eagerDelete>
+      <useCreateTime>true</useCreateTime>
+      <executorConcurrency>5</executorConcurrency>
+      <mbtilesMetadataDirectory>/tmp/gwc-mbtiles/layersMetadata</mbtilesMetadataDirectory>
+    </MbtilesBlobStore>
+    -->
   </blobStores>
 
   <gridSets>
