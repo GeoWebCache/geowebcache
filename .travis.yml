@@ -1,0 +1,14 @@
+sudo: false
+cache:
+  directories:
+    - "$HOME/.m2"
+language: java
+before_script:
+  - cd geowebcache
+script:
+  - mvn -B -U -T2 -fae -Prelease clean install -Dtest.maxHeapSize=512M -Djava.awt.headless=true
+notifications:
+  email:
+    on_success: never
+    on_failure: never
+jdk: oraclejdk8
