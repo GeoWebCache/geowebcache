@@ -16,6 +16,7 @@
  */
 package org.geowebcache.stats;
 
+import java.time.Clock;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -28,7 +29,7 @@ public class RuntimeStats {
     
     final int pollInterval;
     
-    long startTime = System.currentTimeMillis();
+    final long startTime;
     
     // These must be multiples of POLL_INTERVAL
     final int[] intervals;
@@ -64,6 +65,8 @@ public class RuntimeStats {
     int ringPos = 0;
     
     RuntimeStatsThread statsThread;
+
+    final private Clock clock;
     
     /**
      * 
@@ -73,6 +76,20 @@ public class RuntimeStats {
      * @param intervalDescs the description for each of the previously defined intervals
      */
     public RuntimeStats(int pollInterval, List<Integer> intervals, List<String> intervalDescs) {
+        this(pollInterval, intervals, intervalDescs, Clock.systemDefaultZone());
+    }
+    /**
+     * 
+     * @param pollInterval seconds between recording aggregate values
+     * @param intervals the intervals for which to report, in seconds, ascending. Each interval
+     * must be a multiple of the pollInterval
+     * @param intervalDescs the description for each of the previously defined intervals
+     * @param clock the clock to use to keep track of the time
+     */
+    public RuntimeStats(int pollInterval, List<Integer> intervals, List<String> intervalDescs, Clock clock) {
+        this.clock = clock;
+        this.startTime = this.clock.millis();
+        
         this.pollInterval = pollInterval;
         
         if(intervals.size() != intervalDescs.size()) {
@@ -147,7 +164,7 @@ public class RuntimeStats {
     }
 
     public String getHTMLStats() {
-        long runningTime = (System.currentTimeMillis() - startTime) / 1000;
+        long runningTime = (clock.millis() - startTime) / 1000;
         
         StringBuilder str = new StringBuilder();
         
@@ -155,26 +172,32 @@ public class RuntimeStats {
         
         synchronized(bytes) {
             // Starting time
-            str.append("<tbody>");
-            str.append("<tr><th colspan=\"2\" scope=\"row\">Started:</th><td colspan=\"3\">");
-            str.append(ServletUtils.formatTimestamp(this.startTime)+ " (" + formatTimeDiff(runningTime) + ") ");
-            str.append("</td></tr>\n");
-            
-            str.append("<tr><th colspan=\"2\" scope=\"row\">Total number of requests:</th><td colspan=\"3\">"+totalRequests);
-            str.append(" (" + totalRequests / (runningTime) +"/s ) ");
-            str.append("</td></tr>\n");
-            
-            str.append("<tr><th colspan=\"2\" scope=\"row\">Total number of untiled WMS requests:</th><td colspan=\"3\">"+totalWMS);
-            str.append(" (" + totalWMS / (runningTime) +"/s ) ");
-            str.append("</td></tr>\n");
-            
-            str.append("<tr><th colspan=\"2\" scope=\"row\">Total number of bytes:</th><td colspan=\"3\">"+totalBytes);
-            str.append(" ("+formatBits((totalBytes*8.0)/(runningTime))+") ");
-            str.append("</td></tr>\n");
-            
-            str.append("</tbody>");
-            str.append("<tbody>");
-            
+            if(runningTime > 0) {
+                str.append("<tbody>");
+                str.append("<tr><th colspan=\"2\" scope=\"row\">Started:</th><td colspan=\"3\">");
+                str.append(ServletUtils.formatTimestamp(this.startTime)+ " (" + formatTimeDiff(runningTime) + ") ");
+                str.append("</td></tr>\n");
+                
+                str.append("<tr><th colspan=\"2\" scope=\"row\">Total number of requests:</th><td colspan=\"3\">"+totalRequests);
+                str.append(" (" + totalRequests / (runningTime) +"/s ) ");
+                str.append("</td></tr>\n");
+                
+                str.append("<tr><th colspan=\"2\" scope=\"row\">Total number of untiled WMS requests:</th><td colspan=\"3\">"+totalWMS);
+                str.append(" (" + totalWMS / (runningTime) +"/s ) ");
+                str.append("</td></tr>\n");
+                
+                str.append("<tr><th colspan=\"2\" scope=\"row\">Total number of bytes:</th><td colspan=\"3\">"+totalBytes);
+                str.append(" ("+formatBits((totalBytes*8.0)/(runningTime))+") ");
+                str.append("</td></tr>\n");
+                
+                str.append("</tbody>");
+                str.append("<tbody>");
+            } else {  
+                str.append("<tbody>");
+                str.append("<tr><th colspan=\"5\">Runtime stats not yet available, try again in a few seconds.</th></tr>");
+                str.append("<tbody>");
+            }
+                
             str.append("<tr><th colspan=\"2\" scope=\"row\">Cache hit ratio:</th><td colspan=\"3\">");
             if(totalHits + totalMisses > 0) {
                 double hitPercentage = (totalHits * 100.0) / (totalHits + totalMisses);
@@ -363,12 +386,12 @@ public class RuntimeStats {
                 
                 if(bytesRequests[0] > peakBytes) {
                     peakBytes = bytesRequests[0];
-                    peakBytesTime = System.currentTimeMillis();
+                    peakBytesTime = clock.millis();
                 }
                 
                 if(bytesRequests[1] > peakRequests) {
                     peakRequests = bytesRequests[1];
-                    peakRequestsTime = System.currentTimeMillis();
+                    peakRequestsTime = clock.millis();
                 }
                 
                 bytes[ringPos] = bytesRequests[0];
