@@ -83,12 +83,6 @@
       </exclusions>
     </dependency>
 
-    <dependency>
-      <groupId>net.sf.json-lib</groupId>
-      <artifactId>json-lib</artifactId>
-      <classifier>jdk13</classifier>
-    </dependency>
-
     <!-- test dependencies  -->
     <dependency>
       <groupId>com.google.guava</groupId>
