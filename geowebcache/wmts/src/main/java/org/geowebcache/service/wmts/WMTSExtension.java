@@ -16,11 +16,19 @@
  */
 package org.geowebcache.service.wmts;
 
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensionPriority;
 import org.geowebcache.config.meta.ServiceInformation;
+import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.io.XMLBuilder;
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.service.OWSException;
+import org.geowebcache.storage.StorageBroker;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Implementations of this interface will be able to extend WMTS operations behavior.
@@ -47,9 +55,38 @@ public interface WMTSExtension extends GeoWebCacheExtensionPriority {
     void encodedOperationsMetadata(XMLBuilder xmlBuilder) throws IOException;
 
     /**
+     * Allow extensions to contribute extras operations to the GetCapabilities
+     * result. For more advanced use cases method {@link #encodedOperationsMetadata(XMLBuilder)}
+     * should be used.
+     */
+    List<OperationMetadata> getExtraOperationsMetadata() throws IOException;
+
+    /**
      * Allows extensions to provide extra information about the service.
      */
     ServiceInformation getServiceInformation();
+
+    /**
+     * A conveyor represents a request against the WMTS service and will contain the
+     * information need by the WMTS service to execute it. This method will be invoked
+     * by the WMTS service when identifying a request allowing extensions to support
+     * custom requests or produce a custom conveyor for a certain request. This method
+     * should return NULL if the extension is not interested in the current request.
+     */
+    Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response,
+                         StorageBroker storageBroker) throws GeoWebCacheException, OWSException;
+
+    /**
+     * Allows extensions to handle a WMTS operation. This method should return TRUE
+     * if the request was handled and FALSE otherwise.
+     */
+    boolean handleRequest(Conveyor conveyor) throws OWSException;
+
+    /**
+     * This method will be invoked during the production of a capabilities
+     * document allowing extensions to add extra metadata to a layer.
+     */
+    void encodeLayer(XMLBuilder xmlBuilder, TileLayer tileLayer) throws IOException;
 
     /**
      * By default an extension will have the lowest priority.
@@ -57,5 +94,31 @@ public interface WMTSExtension extends GeoWebCacheExtensionPriority {
     @Override
     default int getPriority() {
         return GeoWebCacheExtensionPriority.LOWEST;
+    }
+
+    /**
+     * Container for an operation metadata.
+     */
+    class OperationMetadata {
+
+        private final String name;
+        private final String baseUrl;
+
+        public OperationMetadata(String name) {
+            this(name, null);
+        }
+
+        public OperationMetadata(String name, String baseUrl) {
+            this.name = name;
+            this.baseUrl = baseUrl;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getBaseUrl() {
+            return baseUrl;
+        }
     }
 }

@@ -16,11 +16,20 @@
  */
 package org.geowebcache.service.wmts;
 
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensionPriority;
 import org.geowebcache.config.meta.ServiceInformation;
+import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.io.XMLBuilder;
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.service.OWSException;
+import org.geowebcache.storage.StorageBroker;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Default implementation of a WMTSExtension that does nothing.
@@ -43,6 +52,11 @@ public class WMTSExtensionImpl implements WMTSExtension {
     }
 
     @Override
+    public List<OperationMetadata> getExtraOperationsMetadata() throws IOException {
+        return Collections.emptyList();
+    }
+
+    @Override
     public ServiceInformation getServiceInformation() {
         return null;
     }
@@ -50,6 +64,20 @@ public class WMTSExtensionImpl implements WMTSExtension {
     @Override
     public int getPriority() {
         return priority;
+    }
+
+    @Override
+    public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response, StorageBroker storageBroker) throws GeoWebCacheException, OWSException {
+        return null;
+    }
+
+    @Override
+    public boolean handleRequest(Conveyor conveyor) throws OWSException {
+        return false;
+    }
+
+    @Override
+    public void encodeLayer(XMLBuilder xmlBuilder, TileLayer tileLayer) throws IOException {
     }
 
     public void setPriority(int priority) {
