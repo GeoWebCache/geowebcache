@@ -35,7 +35,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.config.ConfigurationResourceProvider;
 import org.geowebcache.config.XMLFileResourceProvider;
@@ -46,6 +48,7 @@ import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
+import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.springframework.util.Assert;
 
@@ -285,6 +288,14 @@ public class ConfigLoader {
 
     public static DiskQuotaConfig loadConfiguration(final Reader reader, XStream xstream) {
         DiskQuotaConfig fromXML = (DiskQuotaConfig) xstream.fromXML(reader);
+        
+        final GeoWebCacheEnvironment gwcEnvironment = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
+        
+        if (gwcEnvironment != null && GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION) {
+            fromXML.setQuotaStore((String) gwcEnvironment.resolveValue(fromXML.getQuotaStore()));
+        }
+        
+        
         return fromXML;
     }
 

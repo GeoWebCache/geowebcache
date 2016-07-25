@@ -131,10 +131,11 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
     private QuotaStore getJDBCStore(DefaultStorageFinder cacheDirFinder,
             TilePageCalculator tilePageCalculator, JDBCConfiguration config)
             throws ConfigurationException {
-        DataSource ds = getDataSource(config);
+        JDBCConfiguration expandedConfig = config.clone(true);
+        DataSource ds = getDataSource(expandedConfig);
         
         // prepare the dialect
-        String dialectName = config.getDialect();
+        String dialectName = expandedConfig.getDialect();
         String dialectBeanName = dialectName + "QuotaDialect";
         Object bean = appContext.getBean(dialectBeanName);
         
