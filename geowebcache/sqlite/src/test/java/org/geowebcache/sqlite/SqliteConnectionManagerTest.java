@@ -3,12 +3,12 @@
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * <p/>
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * <p/>
+ * <p>
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -16,6 +16,8 @@
  */
 package org.geowebcache.sqlite;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.storage.StorageException;
 import org.junit.Test;
 
@@ -27,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -41,6 +42,8 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public final class SqliteConnectionManagerTest extends TestSupport {
+
+    private static Log LOGGER = LogFactory.getLog(SqliteConnectionManagerTest.class);
 
     @Test
     public void testGetConnection() throws StorageException {
@@ -111,9 +114,12 @@ public final class SqliteConnectionManagerTest extends TestSupport {
         SqliteConnectionManager connectionManager = new SqliteConnectionManager(poolSize, 10);
         ExecutorService executor = Executors.newFixedThreadPool(threadsNumber);
         Random random = new Random();
-        List<Callable<Tuple<File, String>>> workers = new ArrayList<>();
+        List<Future<Tuple<File, String>>> results = new ArrayList<>();
         for (int i = 0; i < workersNumber; i++) {
-            workers.add(() -> {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(String.format("Submitted worker '%d'\\'%d'.", i, workersNumber));
+            }
+            executor.submit(() -> {
                 File file = files[random.nextInt(files.length)];
                 String key = UUID.randomUUID().toString();
                 return connectionManager.doWork(file, false, connection -> {
@@ -123,9 +129,8 @@ public final class SqliteConnectionManagerTest extends TestSupport {
                 });
             });
         }
-        List<Future<Tuple<File, String>>> results = executor.invokeAll(workers);
         executor.shutdown();
-        executor.awaitTermination(30, TimeUnit.SECONDS);
+        executor.awaitTermination(60, TimeUnit.SECONDS);
         connectionManager.reapAllConnections();
         assertThat(connectionManager.getPool().size(), is(0));
         for (Future<Tuple<File, String>> result : results) {
