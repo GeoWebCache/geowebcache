@@ -19,6 +19,7 @@ package org.geowebcache.sqlite;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.storage.StorageException;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -62,11 +63,13 @@ public final class SqliteConnectionManagerTest extends TestSupport {
     }
 
     @Test
+    @Ignore
     public void testMultiThreadsWithSingleFile() throws Exception {
         genericMultiThreadsTest(10, 500, Integer.MAX_VALUE, buildRootFile("data_base_a.sqlite"));
     }
 
     @Test
+    @Ignore
     public void testMultiThreadsWithMultipleFiles() throws Exception {
         genericMultiThreadsTest(10, 500, 10,
                 buildRootFile("data_base_a.sqlite"),
@@ -78,6 +81,7 @@ public final class SqliteConnectionManagerTest extends TestSupport {
     }
 
     @Test
+    @Ignore
     public void testMultiThreadsWithMultipleFilesWithCacheLimit() throws Exception {
         genericMultiThreadsTest(10, 500, 1,
                 buildRootFile("data_base_a.sqlite"),
@@ -89,6 +93,7 @@ public final class SqliteConnectionManagerTest extends TestSupport {
     }
 
     @Test
+    @Ignore
     public void testReplaceOperation() throws Exception {
         SqliteConnectionManager connectionManager = new SqliteConnectionManager(Integer.MAX_VALUE, 1000);
         File file1 = buildRootFile("tiles", "data_base_1.sqlite");
