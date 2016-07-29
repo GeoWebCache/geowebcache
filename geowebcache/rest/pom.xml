@@ -33,6 +33,12 @@
     <dependency>
       <groupId>org.restlet</groupId>
       <artifactId>org.restlet</artifactId>
+      <classifier>noobjrep</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.restlet</groupId>
+      <artifactId>org.restlet</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -75,12 +81,6 @@
          <artifactId>servlet-api</artifactId>
        </exclusion>
       </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>net.sf.json-lib</groupId>
-      <artifactId>json-lib</artifactId>
-      <classifier>jdk13</classifier>
     </dependency>
 
     <!-- test dependencies  -->
