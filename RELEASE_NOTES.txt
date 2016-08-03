@@ -1,3 +1,18 @@
+GeoWebCache 1.9.1 (2016-08-02)
+------------------------------
+
+Patch release for 1.9.x series
+
+Improvements:
++++++++++++++
+- Added MBTiles Blob Store.
+- Minor dependency updates.
+
+Fixes:
+++++++
+- Fixed error when viewing main page shortly after start up.
+
+
 GeoWebCache 1.9.0 (2016-05-27)
 ------------------------------
 
