@@ -24,6 +24,7 @@ import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.layer.wms.WMSMetaTile;
 import org.geowebcache.layer.wms.WMSSourceHelper;
+import org.geowebcache.mime.MimeType;
 
 public class MockWMSSourceHelper extends WMSSourceHelper {
     private Font font = Font.decode("Arial-BOLD-14");
@@ -32,7 +33,7 @@ public class MockWMSSourceHelper extends WMSSourceHelper {
 
     @Override
     protected void makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer,
-            Map<String, String> wmsParams, String expectedMimeType, Resource target)
+            Map<String, String> wmsParams, MimeType expectedMimeType, Resource target)
             throws GeoWebCacheException {
         long ts = System.currentTimeMillis();
         long[][] tiles;

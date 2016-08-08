@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -562,8 +561,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
         final CacheResult cacheResult = tile.getCacheResult();
         int httpCode = HttpServletResponse.SC_OK;
-        String mimeType = tile.getMimeType().getMimeType();
         Resource blob = tile.getBlob();
+        String mimeType = tile.getMimeType().getMimeType(blob);
 
         servletResp.setHeader("geowebcache-cache-result", String.valueOf(cacheResult));
         servletResp.setHeader("geowebcache-tile-index", Arrays.toString(tile.getTileIndex()));
