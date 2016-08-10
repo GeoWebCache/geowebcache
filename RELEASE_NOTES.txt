@@ -1,3 +1,17 @@
+GeoWebCache 1.8.3 (2016-08-10)
+------------------------------
+
+Maintenance release of 1.8.x series
+
+Improvements:
++++++++++++++
+- Updated Postgres driver to version 9.4-1208
+
+Security Fixes:
++++++++++++++++
+- Removed or patched dependendencies with remote execution vulnerabilities.  No means of attacking GWC using thsese vulnerabilities are known at this time but we strongly reccomend everyone update to version 1.8.3 or 1.9.1 immediately to be safe.
+
+
 GeoWebCache 1.8.2 (2016-03-21)
 ------------------------------
 
