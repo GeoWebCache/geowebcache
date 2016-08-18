@@ -29,7 +29,7 @@ import java.nio.file.Files;
 /**
  * Helper class with some utilities methods for using during the tests.
  */
-abstract class TestSupport {
+public abstract class TestSupport {
 
     private File rootDirectory;
 
