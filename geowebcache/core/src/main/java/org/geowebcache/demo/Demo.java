@@ -228,6 +228,7 @@ public class Demo {
         String layerName = layer.getName();
 
         GridSubset gridSubset = layer.getGridSubset(gridSetStr);
+        GridSet gridSet = gridSubset.getGridSet();
 
         BoundingBox bbox = gridSubset.getGridSetBounds();
         BoundingBox zoomBounds = gridSubset.getOriginalExtent();
@@ -240,120 +241,248 @@ public class Demo {
 
         String openLayersPath;
         if (asPlugin) {
-            openLayersPath = "../../openlayers/OpenLayers.js";
+            openLayersPath = "../../ol3/lib/";
         } else {
-            openLayersPath = "../openlayers/OpenLayers.js";
+            openLayersPath = "../ol3/lib/";
         }
         
         buf.append("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n");
-        
-        buf.append("<meta http-equiv=\"imagetoolbar\" content=\"no\">\n");
-        buf.append("<title>")
-            .append(layerName)
-            .append(" ")
-            .append(gridSubset.getName())
-            .append(" ")
-            .append(formatStr)
-            .append("</title>\n");
-        
-
+        buf.append("<meta http-equiv=\"imagetoolbar\" content=\"no\">\n" + "<title>")
+                .append(layerName);
+        buf.append(" ")
+                .append(gridSubset.getName());
+        buf.append(" ")
+                .append(formatStr);
+        buf.append("</title>\n");
         buf.append("<style type=\"text/css\">\n"
                 + "body { font-family: sans-serif; font-weight: bold; font-size: .8em; }\n"
                 + "body { border: 0px; margin: 0px; padding: 0px; }\n"
                 + "#map { width: 85%; height: 85%; border: 0px; padding: 0px; }\n"
+                + "#info iframe {border: none;}\n"
+                + ".ol-scale-value {top: 24px; right: 8px; position: absolute; }\n"
                 + "</style>\n");
 
         buf.append("<script src=\"")
-            .append(openLayersPath)
-            .append("\"></script>    \n"
-                + "<script type=\"text/javascript\">               \n"
-                + "var map, demolayer, params;                     \n"
-                + "filteredParams = {};                                    \n"
-                + "  // sets the chosen modifiable parameter        \n"
-                + "  function setParam(name, value){                \n"
-                + "   var newParams = {};                           \n"
-                + "   newParams[name] = value;                      \n"
-                + "   demolayer.mergeNewParams(newParams);          \n"
-                + "   filteredParams[name]=value;                   \n"
-                + "  }                                              \n"
-                + "OpenLayers.DOTS_PER_INCH = ")
-            .append(gridSubset.getDotsPerInch())
-            .append(";\n"
-                + "OpenLayers.Util.onImageLoadErrorColor = 'transparent';\n"
+                .append(openLayersPath)
+                .append("ol.js\"></script>\n");
+        buf.append("<link rel='stylesheet' href='")
+                .append(openLayersPath)
+                .append("ol.css' type='text/css'>\n");
+        buf.append("<script type=\"text/javascript\">\n"
                 + "function init(){\n"
-                + "var mapOptions = { \n")
-            .append(res)
-            .append("projection: new OpenLayers.Projection('")
-            .append(gridSubset.getSRS().toString())
-            .append("'),\n"
-                + "maxExtent: new OpenLayers.Bounds(")
-            .append(bbox.toString())
-            .append("),\n")
-            .append(units)
-            .append("controls: []\n"
+                + "function ScaleControl(opt_options) {\n"
+                + "  var options = opt_options || {};\n"
+                + "\n"
+                + "  var element = document.createElement('div');\n"
+                + "  element.className = 'ol-scale-value';\n"
+                + "\n"
+                + "  ol.control.Control.call(this, {\n"
+                + "    element: element,\n"
+                + "    target: options.target\n"
+                + "  });\n"
+                + "\n"
                 + "};\n"
-                + "map = new OpenLayers.Map('map', mapOptions );\n"
-                + "map.addControl(new OpenLayers.Control.PanZoomBar({\n"
-                + "		position: new OpenLayers.Pixel(2, 15)\n"
-                + "}));\n"
-                + "map.addControl(new OpenLayers.Control.Navigation());\n"
-                + "map.addControl(new OpenLayers.Control.Scale($('scale')));\n"
-                + "map.addControl(new OpenLayers.Control.MousePosition({element: $('location')}));\n"
-                + "demolayer = new OpenLayers.Layer.WMS(\n"
-                + "\"")
-            .append(layerName)
-            .append("\",\"../service/wms\",\n"
-                + "{layers: '")
-            .append(layerName)
-            .append("', format: '")
-            .append(formatStr)
-            .append("' },\n"
-                + "{ tileSize: new OpenLayers.Size(")
-            .append(gridSubset.getTileWidth()).append(",").append(gridSubset.getTileHeight()).append(")");
-
-        /*
-         * If the gridset has a top left tile origin, lets tell that to open layers. Otherwise it'll
-         * calculate tile bounds based on the bbox bottom left corner, leading to misaligned
-         * requests.
-         */
-        GridSet gridSet = gridSubset.getGridSet();
-        if (gridSet.isTopLeftAligned()) {
-            buf
-                .append(",\n tileOrigin: new OpenLayers.LonLat(")
-                .append(bbox.getMinX())
-                .append(", ")
-                .append(bbox.getMaxY())
-                .append(")");
-        }
-
-        buf
-            .append("});\n" + "map.addLayer(demolayer);\n" + "map.zoomToExtent(new OpenLayers.Bounds(")
-            .append(zoomBounds.toString())
-            .append("));\n"
-                + "// The following is just for GetFeatureInfo, which is not cached. Most people do not need this \n"
-                + "map.events.register('click', map, function (e) {\n"
-                + "  document.getElementById('nodelist').innerHTML = \"Loading... please wait...\";\n"
-                + "  var params = {\n" + "    REQUEST: \"GetFeatureInfo\",\n"
-                + "    EXCEPTIONS: \"application/vnd.ogc.se_xml\",\n"
-                + "    BBOX: map.getExtent().toBBOX(),\n" + "    X: e.xy.x,\n" + "    Y: e.xy.y,\n"
-                + "    INFO_FORMAT: 'text/html',\n"
-                + "    QUERY_LAYERS: map.layers[0].params.LAYERS,\n" + "    FEATURE_COUNT: 50,\n"
-                + "    Layers: '").append( layerName).append("',\n")
-            .append("    Srs: '").append(gridSubset.getSRS().toString()).append("',\n" 
-                + "    WIDTH: map.size.w,\n"
-                + "    HEIGHT: map.size.h,\n" 
-                + "    format: \"").append(formatStr).append("\" };\n"
-                + "  // Merge in filtered params\n"
-                + "  for(var p in filteredParams) {\n"
-                + "    params[p]=filteredParams[p];\n"
+                + "ol.inherits(ScaleControl, ol.control.Control);\n"
+                + "ScaleControl.prototype.setMap = function(map) {\n"
+                + "  map.on('postrender', function() {\n"
+                + "    var view = map.getView();\n"
+                + "    var resolution = view.getResolution();\n");
+        buf.append("    var dpi = ")
+                .append(gridSubset.getDotsPerInch())
+                .append(";\n");
+        buf.append("    var mpu = map.getView().getProjection().getMetersPerUnit();\n");
+        buf.append("    var scale = resolution * mpu * 39.37 * dpi;\n"
+                + "\n"
+                + "    if (scale >= 9500 && scale <= 950000) {\n"
+                + "        scale = Math.round(scale / 1000) + 'K';\n"
+                + "    } else if (scale >= 950000) {\n"
+                + "        scale = Math.round(scale / 1000000) + 'M';\n"
+                + "    } else {\n"
+                + "        scale = Math.round(scale);\n"
+                + "    } \n"
+                + "    this.element.innerHTML = 'Scale = 1 : ' + scale;\n"
+                + "  }, this);\n"
+                + "  ol.control.Control.prototype.setMap.call(this, map);\n"
+                + "}\n"
+                + "\n"
+                + "var projectionName = 'EPSG:4326';\n"
+                + "var baseUrl = '../service/wmts';\n"
+                + "var style = '';\n");
+        buf.append("var format = '")
+                .append(formatStr)
+                .append("';\n");
+        buf.append("var infoFormat = 'text/html';\n");
+        buf.append("var layerName = '")
+                .append(layerName)
+                .append("';\n");
+        buf.append("var projection = ol.proj.get('")
+                .append(gridSubset.getSRS().toString())
+                .append("');\n");
+        buf.append("var projectionExtent = projection.getExtent();\n");
+        buf.append("var size = ol.extent.getWidth(projectionExtent) / 256;\n");
+        buf.append("var resolutions = ")
+                .append(Arrays.toString(gridSubset.getResolutions()))
+                .append(";\n");
+        buf.append("var matrixIds = [];\n"
+                + "for (var z = 0; z < resolutions.length; ++z) {\n"
+                + "  matrixIds[z] = projectionName+':'+z;\n"
+                + "}\n"
+                + "\n"
+                + "baseParams = ['VERSION','LAYER','STYLE','TILEMATRIX','TILEMATRIXSET','SERVICE','FORMAT'];\n"
+                + "\n"
+                + "params = {\n"
+                + "  'VERSION': '1.0.0',\n"
+                + "  'LAYER': layerName,\n"
+                + "  'STYLE': style,\n"
+                + "  'TILEMATRIX': matrixIds,\n");
+        buf.append("  'TILEMATRIXSET': '")
+                .append(gridSubset.getSRS().toString())
+                .append("',\n");
+        buf.append("  'SERVICE': 'WMTS',\n"
+                + "  'FORMAT': format\n"
+                + "};\n"
+                + "\n"
+                + "function constructSource() {\n"
+                + "  var url = baseUrl+'?'\n"
+                + "  for (var param in params) {\n"
+                + "    if (baseParams.indexOf(param.toUpperCase()) < 0) {\n"
+                + "      url = url + param + '=' + params[param] + '&';\n"
+                + "    }\n"
                 + "  }\n"
-                + "  OpenLayers.loadURL(\"../service/wms\", params, this, setHTML, setHTML);\n"
-                + "  OpenLayers.Event.stop(e);\n" + "  });\n" + "}\n"
-                + "function setHTML(response){\n"
-                + "    document.getElementById('nodelist').innerHTML = response.responseText;\n"
-                + "};\n" + "</script>\n" + "</head>\n" + "<body onload=\"init()\">\n"
-                + "<div id=\"params\">").append(makeModifiableParameters(layer)).append("</div>\n"
-                + "<div id=\"map\"></div>\n" + "<div id=\"nodelist\"></div>\n" + "</body>\n"
+                + "  url = url.slice(0, -1);\n"
+                + "\n"
+                + "  var source = new ol.source.WMTS({\n"
+                + "    url: url,\n"
+                + "    layer: params['LAYER'],\n"
+                + "    matrixSet: params['TILEMATRIXSET'],\n"
+                + "    format: params['FORMAT'],\n"
+                + "    projection: projection,\n"
+                + "    tileGrid: new ol.tilegrid.WMTS({\n");
+        buf.append("      tileSize: [")
+                .append(gridSubset.getTileWidth()).append(",")
+                .append(gridSubset.getTileHeight()).append("],\n");
+        if (gridSet.isTopLeftAligned()) {
+            buf.append("      origin: [")
+                    .append(bbox.getMaxX()).append(", ")
+                    .append(bbox.getMinY()).append("],\n");
+        } else {
+            buf.append("      origin: [")
+                    .append(bbox.getMinX()).append(", ")
+                    .append(bbox.getMaxY()).append("],\n");
+        }
+        buf.append("      resolutions: resolutions,\n"
+                + "      matrixIds: params['TILEMATRIX']\n"
+                + "    }),\n"
+                + "    style: params['STYLE'],\n"
+                + "    wrapX: true\n"
+                + "  });\n"
+                + "  return source;\n"
+                + "}\n"
+                + "\n"
+                + "var layer = new ol.layer.Tile({\n"
+                + "  source: constructSource()\n"
+                + "});\n"
+                + "\n"
+                + "var view = new ol.View({\n"
+                + "  center: [0, 0],\n"
+                + "  zoom: 2,\n"
+                + "  projection: projection,\n");
+        buf.append("  extent: [")
+                .append(bbox.toString())
+                .append("]\n");
+        buf.append("});\n"
+                + "\n"
+                + "var map = new ol.Map({\n"
+                + "  controls: ol.control.defaults({attribution: false}).extend([\n"
+                + "    new ol.control.MousePosition(),\n"
+                + "    new ScaleControl()\n"
+                + "  ]),\n"
+                + "  layers: [layer],\n"
+                + "  target: 'map',\n"
+                + "  view: view\n"
+                + "});\n");
+        buf.append("map.getView().fit([")
+                .append(zoomBounds.toString())
+                .append("], map.getSize());\n");
+        buf.append("\n"
+                + "function setParam(name, value) {\n"
+                + "  params[name] = value;\n"
+                + "  layer.setSource(constructSource());\n"
+                + "} \n"
+                + "\n"
+                + "map.on('singleclick', function(evt) {\n"
+                + "  document.getElementById('info').innerHTML = '';\n"
+                + "\n"
+                + "  var source = layer.getSource();\n"
+                + "  var resolution = view.getResolution();\n"
+                + "  var tilegrid = source.getTileGrid();\n"
+                + "  var tileResolutions = tilegrid.getResolutions();\n"
+                + "  var zoomIdx, diff = Infinity;\n"
+                + "\n"
+                + "  for (var i = 0; i < tileResolutions.length; i++) {\n"
+                + "      var tileResolution = tileResolutions[i];\n"
+                + "      var diffP = Math.abs(resolution-tileResolution);\n"
+                + "      if (diffP < diff) {\n"
+                + "          diff = diffP;\n"
+                + "          zoomIdx = i;\n"
+                + "      }\n"
+                + "      if (tileResolution < resolution) {\n"
+                + "        break;\n"
+                + "      }\n"
+                + "  }\n"
+                + "  var tileSize = tilegrid.getTileSize(zoomIdx);\n"
+                + "  var tileOrigin = tilegrid.getOrigin(zoomIdx);\n"
+                + "\n"
+                + "  var fx = (evt.coordinate[0] - tileOrigin[0]) / (resolution * tileSize[0]);\n"
+                + "  var fy = (tileOrigin[1] - evt.coordinate[1]) / (resolution * tileSize[1]);\n"
+                + "  var tileCol = Math.floor(fx);\n"
+                + "  var tileRow = Math.floor(fy);\n"
+                + "  var tileI = Math.floor((fx - tileCol) * tileSize[0]);\n"
+                + "  var tileJ = Math.floor((fy - tileRow) * tileSize[1]);\n"
+                + "  var matrixIds = tilegrid.getMatrixIds()[zoomIdx];\n"
+                + "  var matrixSet = source.getMatrixSet();\n"
+                + "\n"
+                + "  var url = baseUrl+'?'\n"
+                + "  for (var param in params) {\n"
+                + "    if (param.toUpperCase() == 'TILEMATRIX') {\n"
+                + "      url = url + 'TILEMATRIX='+matrixIds+'&';\n"
+                + "    } else {\n"
+                + "      url = url + param + '=' + params[param] + '&';\n"
+                + "    }\n"
+                + "  }\n"
+                + "\n"
+                + "  url = url\n"
+                + "    + 'SERVICE=WMTS&REQUEST=GetFeatureInfo'\n"
+                + "    + '&INFOFORMAT=' +  infoFormat\n"
+                + "    + '&TileCol=' +  tileCol\n"
+                + "    + '&TileRow=' +  tileRow\n"
+                + "    + '&I=' +  tileI\n"
+                + "    + '&J=' +  tileJ;\n"
+                + "\n"
+                + "  if (url) {\n"
+                + "    document.getElementById('info').innerHTML = 'Loading... please wait...';\n"
+                + "    var xmlhttp = new XMLHttpRequest();"
+                + "    xmlhttp.onreadystatechange = function() {\n"
+                + "        if (xmlhttp.readyState == XMLHttpRequest.DONE ) {\n"
+                + "           if (xmlhttp.status == 200) {\n"
+                + "               document.getElementById('info').innerHTML = xmlhttp.responseText;\n"
+                + "           }\n"
+                + "           else {\n"
+                + "              document.getElementById('info').innerHTML = '';\n"
+                + "           }\n"
+                + "        }\n"
+                + "    }\n"
+                + "  xmlhttp.open('GET', url, true);\n"
+                + "  xmlhttp.send();\n"
+                + "  }\n"
+                + "});\n"
+                + "}\n");
+        buf.append("</script>\n" + "</head>\n" + "<body onload=\"init()\">\n");
+        buf.append("<div id=\"params\">")
+                .append(makeModifiableParameters(layer))
+                .append("</div>\n");
+                
+        buf.append("<div id=\"map\"></div>\n" + "<div id=\"info\"></div>\n</body>\n"
                 + "</html>");
         return buf.toString();
     }
