@@ -12,7 +12,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -107,19 +106,24 @@ public class Demo {
     private static String generateHTML(TileLayerDispatcher tileLayerDispatcher,
             GridSetBroker gridSetBroker) throws GeoWebCacheException {
         String reloadPath = "rest/reload";
+        
+        StringBuffer buf = new StringBuffer();
+        
+        buf.append("<html>\n");
+        buf.append(ServletUtils.gwcHtmlHeader("","GWC Demos"));
+        buf.append("<body>\n");
+        buf.append(ServletUtils.gwcHtmlLogoLink(""));
+        buf.append("<table cellspacing=\"10\" border=\"0\">\n"
+                +"<tr><td><strong>Layer name:</strong></td>\n"
+                +"<td><strong>Enabled:</strong></td>\n"
+                +"<td><strong>Grids Sets:</strong></td>\n");
+        buf.append("</tr>\n");
 
-        String header = "<html>\n" + ServletUtils.gwcHtmlHeader("","GWC Demos") + "<body>\n"
-                + ServletUtils.gwcHtmlLogoLink("") + "<table>\n"
-                + "<table cellspacing=\"10\" border=\"0\">\n"
-                + "<tr><td><strong>Layer name:</strong></td>\n"
-                + "<td><strong>Enabled:</strong></td>\n"
-                + "<td><strong>Grids Sets:</strong></td>\n" + "</tr>\n";
+        tableRows(buf, tileLayerDispatcher, gridSetBroker);
 
-        String rows = tableRows(tileLayerDispatcher, gridSetBroker);
-
-        String footer = "</table>\n"
-                + "<br />"
-                + "<strong>These are just quick demos. GeoWebCache also supports:</strong><br />\n"
+        buf.append("</table>\n");
+        buf.append("<br />");
+        buf.append("<strong>These are just quick demos. GeoWebCache also supports:</strong><br />\n"
                 + "<ul><li>WMTS, TMS, Virtual Earth and Google Maps</li>\n"
                 + "<li>Proxying GetFeatureInfo, GetLegend and other WMS requests</li>\n"
                 + "<li>Advanced request and parameter filters</li>\n"
@@ -132,19 +136,18 @@ public class Demo {
                 + "<p>You can reload the configuration by pressing the following button. "
                 + "The username / password is configured in WEB-INF/user.properties, or the admin "
                 + " user in GeoServer if you are using the plugin.</p>\n"
-                + "<form form id=\"kill\" action=\""
-                + reloadPath
-                + "\" method=\"post\">"
+                + "<form form id=\"kill\" action=\"")
+            .append(reloadPath)
+            .append("\" method=\"post\">"
                 + "<input type=\"hidden\" name=\"reload_configuration\"  value=\"1\" />"
                 + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Reload Configuration\"></span>"
-                + "</form>" + "</body></html>";
+                + "</form>" + "</body></html>");
 
-        return header + rows + footer;
+        return buf.toString();
     }
     
-    private static String tableRows(TileLayerDispatcher tileLayerDispatcher,
+    private static void tableRows(StringBuffer buf, TileLayerDispatcher tileLayerDispatcher,
             GridSetBroker gridSetBroker) throws GeoWebCacheException {
-        StringBuffer buf = new StringBuffer();
 
         Set<String> layerList = new TreeSet<String>(tileLayerDispatcher.getLayerNames());
         for (String layerName : layerList) {
@@ -152,13 +155,17 @@ public class Demo {
             if(!layer.isAdvertised()){
                 continue;
             }
-            buf.append("<tr><td style=\"min-width: 100px;\"><strong>" + layer.getName()
-                    + "</strong><br />\n");
-            buf.append("<a href=\"rest/seed/" + layer.getName() + "\">Seed this layer</a>\n");
-            buf.append("</td><td>" + layer.isEnabled() + "</td>");
+            buf.append("<tr><td style=\"min-width: 100px;\"><strong>")
+                .append(layer.getName())
+                .append("</strong><br />\n");
+            buf.append("<a href=\"rest/seed/")
+                .append(layer.getName())
+                .append("\">Seed this layer</a>\n");
+            buf.append("</td><td>")
+                .append(layer.isEnabled())
+                .append("</td>");
             buf.append("<td><table width=\"100%\">");
 
-            int count = 0;
             for (String gridSetId : layer.getGridSubsets()) {
                 GridSubset gridSubset = layer.getGridSubset(gridSetId);
                 String gridSetName = gridSubset.getName();
@@ -201,23 +208,19 @@ public class Demo {
                     // No Google Earth support
                 }
                 buf.append("</td></tr>");
-                count++;
             }
-
-            // if(count == 0) {
-            // buf.append("<tr><td colspan=\"2\"><i>None</i></td></tr>\n");
-            // }
-
+            
             buf.append("</table></td>\n");
             buf.append("</tr>\n");
         }
-
-        return buf.toString();
     }
 
     private static String generateDemoUrl(String layerName, String gridSetId, MimeType type) {
-        return "<a href=\"demo/" + layerName + "?gridSet=" + gridSetId + "&format="
-                + type.getFormat() + "\">" + type.getFileExtension() + "</a>";
+        return String.format("<a href=\"demo/%s?gridSet=%s&format=%s\">%s</a>", 
+                layerName, 
+                gridSetId,
+                type.getFormat(), 
+                type.getFileExtension());
     }
 
     private static String generateHTML(TileLayer layer, String gridSetStr, String formatStr,
@@ -228,6 +231,8 @@ public class Demo {
 
         BoundingBox bbox = gridSubset.getGridSetBounds();
         BoundingBox zoomBounds = gridSubset.getOriginalExtent();
+        
+        StringBuffer buf = new StringBuffer();
 
         String res = "resolutions: " + Arrays.toString(gridSubset.getResolutions()) + ",\n";
 
@@ -239,24 +244,28 @@ public class Demo {
         } else {
             openLayersPath = "../openlayers/OpenLayers.js";
         }
+        
+        buf.append("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n");
+        
+        buf.append("<meta http-equiv=\"imagetoolbar\" content=\"no\">\n");
+        buf.append("<title>")
+            .append(layerName)
+            .append(" ")
+            .append(gridSubset.getName())
+            .append(" ")
+            .append(formatStr)
+            .append("</title>\n");
+        
 
-        String page = "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n"
-                + "<meta http-equiv=\"imagetoolbar\" content=\"no\">\n" + "<title>"
-                + layerName
-                + " "
-                + gridSubset.getName()
-                + " "
-                + formatStr
-                + "</title>\n"
-                + "<style type=\"text/css\">\n"
+        buf.append("<style type=\"text/css\">\n"
                 + "body { font-family: sans-serif; font-weight: bold; font-size: .8em; }\n"
                 + "body { border: 0px; margin: 0px; padding: 0px; }\n"
                 + "#map { width: 85%; height: 85%; border: 0px; padding: 0px; }\n"
-                + "</style>\n"
+                + "</style>\n");
 
-                + "<script src=\""
-                + openLayersPath
-                + "\"></script>    \n"
+        buf.append("<script src=\"")
+            .append(openLayersPath)
+            .append("\"></script>    \n"
                 + "<script type=\"text/javascript\">               \n"
                 + "var map, demolayer, params;                     \n"
                 + "filteredParams = {};                                    \n"
@@ -267,23 +276,21 @@ public class Demo {
                 + "   demolayer.mergeNewParams(newParams);          \n"
                 + "   filteredParams[name]=value;                   \n"
                 + "  }                                              \n"
-
-                + "OpenLayers.DOTS_PER_INCH = "
-                + gridSubset.getDotsPerInch()
-                + ";\n"
+                + "OpenLayers.DOTS_PER_INCH = ")
+            .append(gridSubset.getDotsPerInch())
+            .append(";\n"
                 + "OpenLayers.Util.onImageLoadErrorColor = 'transparent';\n"
-
                 + "function init(){\n"
-                + "var mapOptions = { \n"
-                + res
-                + "projection: new OpenLayers.Projection('"
-                + gridSubset.getSRS().toString()
-                + "'),\n"
-                + "maxExtent: new OpenLayers.Bounds("
-                + bbox.toString()
-                + "),\n"
-                + units
-                + "controls: []\n"
+                + "var mapOptions = { \n")
+            .append(res)
+            .append("projection: new OpenLayers.Projection('")
+            .append(gridSubset.getSRS().toString())
+            .append("'),\n"
+                + "maxExtent: new OpenLayers.Bounds(")
+            .append(bbox.toString())
+            .append("),\n")
+            .append(units)
+            .append("controls: []\n"
                 + "};\n"
                 + "map = new OpenLayers.Map('map', mapOptions );\n"
                 + "map.addControl(new OpenLayers.Control.PanZoomBar({\n"
@@ -293,16 +300,16 @@ public class Demo {
                 + "map.addControl(new OpenLayers.Control.Scale($('scale')));\n"
                 + "map.addControl(new OpenLayers.Control.MousePosition({element: $('location')}));\n"
                 + "demolayer = new OpenLayers.Layer.WMS(\n"
-                + "\""
-                + layerName
-                + "\",\"../service/wms\",\n"
-                + "{layers: '"
-                + layerName
-                + "', format: '"
-                + formatStr
-                + "' },\n"
-                + "{ tileSize: new OpenLayers.Size("
-                + gridSubset.getTileWidth() + "," + gridSubset.getTileHeight() + ")";
+                + "\"")
+            .append(layerName)
+            .append("\",\"../service/wms\",\n"
+                + "{layers: '")
+            .append(layerName)
+            .append("', format: '")
+            .append(formatStr)
+            .append("' },\n"
+                + "{ tileSize: new OpenLayers.Size(")
+            .append(gridSubset.getTileWidth()).append(",").append(gridSubset.getTileHeight()).append(")");
 
         /*
          * If the gridset has a top left tile origin, lets tell that to open layers. Otherwise it'll
@@ -311,13 +318,18 @@ public class Demo {
          */
         GridSet gridSet = gridSubset.getGridSet();
         if (gridSet.isTopLeftAligned()) {
-            page += ",\n tileOrigin: new OpenLayers.LonLat(" + bbox.getMinX() + ", "
-                    + bbox.getMaxY() + ")";
+            buf
+                .append(",\n tileOrigin: new OpenLayers.LonLat(")
+                .append(bbox.getMinX())
+                .append(", ")
+                .append(bbox.getMaxY())
+                .append(")");
         }
 
-        page += "});\n" + "map.addLayer(demolayer);\n" + "map.zoomToExtent(new OpenLayers.Bounds("
-                + zoomBounds.toString()
-                + "));\n"
+        buf
+            .append("});\n" + "map.addLayer(demolayer);\n" + "map.zoomToExtent(new OpenLayers.Bounds(")
+            .append(zoomBounds.toString())
+            .append("));\n"
                 + "// The following is just for GetFeatureInfo, which is not cached. Most people do not need this \n"
                 + "map.events.register('click', map, function (e) {\n"
                 + "  document.getElementById('nodelist').innerHTML = \"Loading... please wait...\";\n"
@@ -326,10 +338,11 @@ public class Demo {
                 + "    BBOX: map.getExtent().toBBOX(),\n" + "    X: e.xy.x,\n" + "    Y: e.xy.y,\n"
                 + "    INFO_FORMAT: 'text/html',\n"
                 + "    QUERY_LAYERS: map.layers[0].params.LAYERS,\n" + "    FEATURE_COUNT: 50,\n"
-                + "    Layers: '" + layerName + "',\n"
-                + "    Srs: '"
-                + gridSubset.getSRS().toString() + "',\n" + "    WIDTH: map.size.w,\n"
-                + "    HEIGHT: map.size.h,\n" + "    format: \"" + formatStr + "\" };\n"
+                + "    Layers: '").append( layerName).append("',\n")
+            .append("    Srs: '").append(gridSubset.getSRS().toString()).append("',\n" 
+                + "    WIDTH: map.size.w,\n"
+                + "    HEIGHT: map.size.h,\n" 
+                + "    format: \"").append(formatStr).append("\" };\n"
                 + "  // Merge in filtered params\n"
                 + "  for(var p in filteredParams) {\n"
                 + "    params[p]=filteredParams[p];\n"
@@ -339,10 +352,10 @@ public class Demo {
                 + "function setHTML(response){\n"
                 + "    document.getElementById('nodelist').innerHTML = response.responseText;\n"
                 + "};\n" + "</script>\n" + "</head>\n" + "<body onload=\"init()\">\n"
-                + "<div id=\"params\">" + makeModifiableParameters(layer) + "</div>\n"
+                + "<div id=\"params\">").append(makeModifiableParameters(layer)).append("</div>\n"
                 + "<div id=\"map\"></div>\n" + "<div id=\"nodelist\"></div>\n" + "</body>\n"
-                + "</html>";
-        return page;
+                + "</html>");
+        return buf.toString();
     }
 
     private static String makeModifiableParameters(TileLayer tl) {
