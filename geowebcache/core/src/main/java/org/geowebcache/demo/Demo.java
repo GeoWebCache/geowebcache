@@ -12,6 +12,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -139,7 +141,7 @@ public class Demo {
 
         return header + rows + footer;
     }
-
+    
     private static String tableRows(TileLayerDispatcher tileLayerDispatcher,
             GridSetBroker gridSetBroker) throws GeoWebCacheException {
         StringBuffer buf = new StringBuffer();
@@ -166,48 +168,34 @@ public class Demo {
                 buf.append("<tr><td style=\"width: 170px;\">").append(gridSetName);
 
                 buf.append("</td><td>OpenLayers: [");
-                Iterator<MimeType> mimeIter = layer.getMimeTypes().iterator();
-                boolean prependComma = false;
-                while (mimeIter.hasNext()) {
-                    MimeType mime = mimeIter.next();
-                    if (mime instanceof ImageMime) {
-                        if (prependComma) {
-                            buf.append(", ");
-                        } else {
-                            prependComma = true;
-                        }
-                        buf.append(generateDemoUrl(layer.getName(), gridSubset.getName(),
-                                (ImageMime) mime));
-                    }
-                }
+                buf.append(layer.getMimeTypes().stream()
+                    .filter(MimeType::supportsTiling)
+                    .map(type -> generateDemoUrl(layer.getName(), gridSubset.getName(),type))
+                    .collect(Collectors.joining(", ")));
+                    
                 buf.append("]</td><td>\n");
-
+                
                 if (gridSubset.getName().equals(gridSetBroker.WORLD_EPSG4326.getName())) {
                     buf.append(" &nbsp; KML: [");
                     String prefix = "";
-                    prependComma = false;
-                    Iterator<MimeType> kmlIter = layer.getMimeTypes().iterator();
-                    while (kmlIter.hasNext()) {
-                        MimeType mime = kmlIter.next();
-                        if (mime instanceof ImageMime || mime == XMLMime.kml) {
-                            if (prependComma) {
-                                buf.append(", ");
+                    
+                    buf.append(layer.getMimeTypes().stream()
+                        .filter(type-> type instanceof ImageMime || type == XMLMime.kml || type == XMLMime.kmz)
+                        .map(type -> {
+                            if (type == XMLMime.kmz) {
+                                return String.format("<a href=\"%sservice/kml/%s.kml.kmz\">kmz</a>", 
+                                    prefix, 
+                                    layer.getName());
                             } else {
-                                prependComma = true;
+                                return String.format("<a href=\"%sservice/kml/%s.%s.kml\">%s</a>", 
+                                        prefix, 
+                                        layer.getName(), 
+                                        type.getFileExtension(), 
+                                        type.getFileExtension());
                             }
-                            buf.append("<a href=\"" + prefix + "service/kml/" + layer.getName()
-                                    + "." + mime.getFileExtension() + ".kml\">"
-                                    + mime.getFileExtension() + "</a>");
-                        } else if (mime == XMLMime.kmz) {
-                            if (prependComma) {
-                                buf.append(", ");
-                            } else {
-                                prependComma = true;
-                            }
-                            buf.append("<a href=\"" + prefix + "service/kml/" + layer.getName()
-                                    + ".kml.kmz\">kmz</a>");
-                        }
-                    }
+                        })
+                        .collect(Collectors.joining(", ")));
+
                     buf.append("]");
                 } else {
                     // No Google Earth support
@@ -227,9 +215,9 @@ public class Demo {
         return buf.toString();
     }
 
-    private static String generateDemoUrl(String layerName, String gridSetId, ImageMime imageMime) {
+    private static String generateDemoUrl(String layerName, String gridSetId, MimeType type) {
         return "<a href=\"demo/" + layerName + "?gridSet=" + gridSetId + "&format="
-                + imageMime.getFormat() + "\">" + imageMime.getFileExtension() + "</a>";
+                + type.getFormat() + "\">" + type.getFileExtension() + "</a>";
     }
 
     private static String generateHTML(TileLayer layer, String gridSetStr, String formatStr,
