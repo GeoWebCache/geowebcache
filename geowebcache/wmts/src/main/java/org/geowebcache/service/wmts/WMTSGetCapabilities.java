@@ -356,7 +356,14 @@ public class WMTSGetCapabilities {
         operation(xml, "GetTile", baseUrl);
         operation(xml, "GetFeatureInfo", baseUrl);
         // allow extension to inject their own metadata
-        for(WMTSExtension extension : extensions) {
+        for (WMTSExtension extension : extensions) {
+            List<WMTSExtension.OperationMetadata> operationsMetaData = extension.getExtraOperationsMetadata();
+            if (operationsMetaData != null) {
+                for (WMTSExtension.OperationMetadata operationMetadata : operationsMetaData) {
+                    operation(xml, operationMetadata.getName(),
+                            operationMetadata.getBaseUrl() == null ? baseUrl : operationMetadata.getBaseUrl());
+                }
+            }
             extension.encodedOperationsMetadata(xml);
         }
         xml.endElement("ows:OperationsMetadata");
@@ -440,6 +447,12 @@ public class WMTSGetCapabilities {
         layerGridSubSets(xml, layer);
         // TODO REST
         // str.append("    <ResourceURL format=\"image/png\" resourceType=\"tile\" template=\"http://www.maps.cat/wmts/BlueMarbleNextGeneration/default/BigWorldPixel/{TileMatrix}/{TileRow}/{TileCol}.png\"/>\n");
+
+        // allow extensions to contribute extra metadata to this layer
+        for (WMTSExtension extension : extensions) {
+            extension.encodeLayer(xml, layer);
+        }
+
         xml.endElement("Layer");
     }
      

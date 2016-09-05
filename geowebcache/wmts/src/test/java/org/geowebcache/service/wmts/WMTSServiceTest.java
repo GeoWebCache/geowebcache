@@ -1,5 +1,7 @@
 package org.geowebcache.service.wmts;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -12,17 +14,17 @@ import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.hasEntry;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import junit.framework.TestCase;
 
@@ -32,13 +34,13 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
 import org.custommonkey.xmlunit.Validator;
 import org.geowebcache.GeoWebCacheDispatcher;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.config.meta.ServiceContact;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.config.meta.ServiceProvider;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.filter.parameters.ParameterException;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.StringParameterFilter;
 import org.geowebcache.grid.BoundingBox;
@@ -49,18 +51,13 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.io.XMLBuilder;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.layer.meta.ContactInformation;
 import org.geowebcache.layer.meta.MetadataURL;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.service.OWSException;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
-import org.junit.runner.RunWith;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.w3c.dom.Document;
 
 public class WMTSServiceTest extends TestCase {
@@ -245,10 +242,13 @@ public class WMTSServiceTest extends TestCase {
         MockHttpServletResponse resp = new MockHttpServletResponse();
         when(req.getCharacterEncoding()).thenReturn("UTF-8");
         when(req.getParameterMap()).thenReturn(kvp);
-        when(tld.getLayerList()).thenReturn(Collections.EMPTY_LIST);
+        List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale","EPSG:4326");
+        TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames, Collections.<ParameterFilter>emptyList());
+        when(tld.getLayerList()).thenReturn(Collections.singletonList(tileLayer));
         Conveyor conv = service.getConveyor(req, resp);
         assertNotNull(conv);
         assertEquals(Conveyor.RequestHandler.SERVICE, conv.reqHandler);
+        // setup a wmts extension
         List<WMTSExtension> extensions = new ArrayList<>();
         extensions.add(new WMTSExtension() {
             @Override
@@ -268,10 +268,31 @@ public class WMTSServiceTest extends TestCase {
             }
 
             @Override
+            public List<OperationMetadata> getExtraOperationsMetadata() throws IOException {
+                return Arrays.asList(new OperationMetadata("ExtraOperation1"),
+                        new OperationMetadata("ExtraOperation2", "custom-url"));
+            }
+
+            @Override
             public ServiceInformation getServiceInformation() {
                 ServiceInformation serviceInformation = new ServiceInformation();
                 serviceInformation.setTitle("custom-service");
                 return serviceInformation;
+            }
+
+            @Override
+            public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response, StorageBroker storageBroker) throws GeoWebCacheException, OWSException {
+                return null;
+            }
+
+            @Override
+            public boolean handleRequest(Conveyor conveyor) throws OWSException {
+                return false;
+            }
+
+            @Override
+            public void encodeLayer(XMLBuilder xmlBuilder, TileLayer tileLayer) throws IOException {
+                xmlBuilder.simpleElement("extra-layer-metadata", "metadatada", true);
             }
         });
         extensions.add(new WMTSExtensionImpl() {
@@ -288,7 +309,8 @@ public class WMTSServiceTest extends TestCase {
             }
         });
         extensions.add(new WMTSExtensionImpl());
-        WMTSGetCapabilities wmsCap = new WMTSGetCapabilities(tld, gridsetBroker, conv.servletReq, "http://localhost:8080", "/service/wms",
+        // perform the get capabilities request
+        WMTSGetCapabilities wmsCap = new WMTSGetCapabilities(tld, gridsetBroker, conv.servletReq, "http://localhost:8080", "/service/wmts",
                 new NullURLMangler(), extensions);
         wmsCap.writeResponse(conv.servletResp, mock(RuntimeStats.class));
         assertTrue(resp.containsHeader("content-disposition"));
@@ -296,7 +318,7 @@ public class WMTSServiceTest extends TestCase {
         String result = resp.getContentAsString();
         assertTrue(result.contains("xmlns:custom=\"custom\""));
         assertTrue(result.contains("name-space schema-location"));
-
+        // instantiate the xpath engine
         Document doc = XMLUnit.buildTestDocument(result);
         Map<String, String> namespaces = new HashMap<>();
         namespaces.put("xlink", "http://www.w3.org/1999/xlink");
@@ -305,10 +327,20 @@ public class WMTSServiceTest extends TestCase {
         namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
         XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
         XpathEngine xpath = XMLUnit.newXpathEngine();
+        // checking that we have the service extra information
         assertEquals("1", xpath.evaluate("count(//wmts:custom-metadata)", doc));
         assertEquals("1", xpath.evaluate("count(//ows:ServiceIdentification[ows:Title='custom-service'])", doc));
         assertEquals("1", xpath.evaluate("count(//ows:ServiceProvider[ows:ProviderName='custom-provider'])", doc));
         assertEquals("1", xpath.evaluate("count(//ows:ServiceProvider/ows:ServiceContact[ows:PositionName='custom-position'])", doc));
+        // checking that the extra operations were encoded
+        assertEquals("1", xpath.evaluate("count(//ows:OperationsMetadata/ows:Operation[@name='ExtraOperation1'])", doc));
+        assertEquals("1", xpath.evaluate("count(//ows:OperationsMetadata/ows:Operation[@name='ExtraOperation1']" +
+                "/ows:DCP/ows:HTTP/ows:Get[@xlink:href='http://localhost:8080/service/wmts/service/wmts?'])", doc));
+        assertEquals("1", xpath.evaluate("count(//ows:OperationsMetadata/ows:Operation[@name='ExtraOperation2'])", doc));
+        assertEquals("1", xpath.evaluate("count(//ows:OperationsMetadata/ows:Operation[@name='ExtraOperation2']" +
+                "/ows:DCP/ows:HTTP/ows:Get[@xlink:href='custom-url?'])", doc));
+        // checking that layer extra metadata was encoded
+        xpath.evaluate("count(//wmts:Contents/wmts:Layer[wmts:extra-layer-metadata='metadatada'])", doc);
     }
     
     public void testGetCapOneWGS84BBox() throws Exception {
@@ -651,4 +683,53 @@ public class WMTSServiceTest extends TestCase {
         assertThat(parameters, hasEntry("STYLES", "Bar")); // Changed to plural, as used by WMS.
     }
 
+    public void testDispatchCustomOperations() throws Exception {
+        // instantiating all the necessary machinery to perform the request
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
+        @SuppressWarnings("unchecked")
+        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        kvp.put("service", new String[]{"WMTS"});
+        kvp.put("version", new String[]{"1.0.0"});
+        kvp.put("request", new String[]{"CustomOperation"});
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        when(req.getCharacterEncoding()).thenReturn("UTF-8");
+        when(req.getParameterMap()).thenReturn(kvp);
+        // setup a wmts extension
+        service.addExtension(new WMTSExtensionImpl() {
+
+            @Override
+            public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response,
+                                        StorageBroker storageBroker) throws GeoWebCacheException, OWSException {
+                if ((request.getParameterMap().get("request")[0]).equalsIgnoreCase("CustomOperation")) {
+                    Conveyor conveyor = new ConveyorTile(sb, null, req, resp);
+                    conveyor.setHint("CustomOperation");
+                    return conveyor;
+                }
+                return null;
+            }
+
+            @Override
+            public boolean handleRequest(Conveyor conveyor) throws OWSException {
+                if (conveyor.getHint().equalsIgnoreCase("CustomOperation")) {
+                    try {
+                        OutputStream os = conveyor.servletResp.getOutputStream();
+                        os.write("CustomOperation Result".getBytes());
+                        os.flush();
+                    } catch (IOException exception) {
+                        throw new RuntimeException(exception);
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
+        // invoke the custom operation
+        Conveyor conveyor = service.getConveyor(req, resp);
+        assertThat(conveyor, notNullValue());
+        service.handleRequest(conveyor);
+        assertThat(resp.getContentAsString(), is("CustomOperation Result"));
+    }
 }
