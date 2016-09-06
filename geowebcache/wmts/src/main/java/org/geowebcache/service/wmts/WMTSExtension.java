@@ -28,6 +28,7 @@ import org.geowebcache.storage.StorageBroker;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -59,7 +60,9 @@ public interface WMTSExtension extends GeoWebCacheExtensionPriority {
      * result. For more advanced use cases method {@link #encodedOperationsMetadata(XMLBuilder)}
      * should be used.
      */
-    List<OperationMetadata> getExtraOperationsMetadata() throws IOException;
+    default List<OperationMetadata> getExtraOperationsMetadata() throws IOException {
+        return Collections.emptyList();
+    }
 
     /**
      * Allows extensions to provide extra information about the service.
@@ -73,20 +76,26 @@ public interface WMTSExtension extends GeoWebCacheExtensionPriority {
      * custom requests or produce a custom conveyor for a certain request. This method
      * should return NULL if the extension is not interested in the current request.
      */
-    Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response,
-                         StorageBroker storageBroker) throws GeoWebCacheException, OWSException;
+    default Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response,
+                         StorageBroker storageBroker) throws GeoWebCacheException, OWSException {
+        return null;
+    }
 
     /**
      * Allows extensions to handle a WMTS operation. This method should return TRUE
      * if the request was handled and FALSE otherwise.
      */
-    boolean handleRequest(Conveyor conveyor) throws OWSException;
+    default boolean handleRequest(Conveyor conveyor) throws OWSException {
+        return false;
+    }
 
     /**
      * This method will be invoked during the production of a capabilities
      * document allowing extensions to add extra metadata to a layer.
      */
-    void encodeLayer(XMLBuilder xmlBuilder, TileLayer tileLayer) throws IOException;
+    default void encodeLayer(XMLBuilder xmlBuilder, TileLayer tileLayer) throws IOException {
+        // nothing to do
+    }
 
     /**
      * By default an extension will have the lowest priority.
