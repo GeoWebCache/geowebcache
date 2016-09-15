@@ -16,19 +16,26 @@
  */
 package org.geowebcache.sqlite;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geotools.mbtiles.GeoToolsMbtilesUtils;
 import org.geotools.mbtiles.MBTilesFile;
 import org.geotools.mbtiles.MBTilesMetadata;
+import org.geotools.mbtiles.MBTilesMetadata.t_format;
 import org.geotools.mbtiles.MBTilesTile;
 import org.geotools.sql.SqlUtil;
+import org.geowebcache.mime.ApplicationMime;
+import org.geowebcache.mime.MimeException;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.BlobStoreListenerList;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -44,6 +51,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Blobstore that store the tiles in a sqlite database using the mbtiles specification.
@@ -72,6 +81,9 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
     // Executor that can be used to perform parallel operations
     private final ExecutorService executorService;
 
+    // Apply GZIP compression to uncompressed vector tile formats.
+    private final boolean gzipVector;
+    
     MbtilesBlobStore(MbtilesConfiguration configuration) {
         // caution this constructor will create a new connection pool
         this(configuration, new SqliteConnectionManager(
@@ -85,12 +97,17 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         useCreateTime = configuration.useCreateTime();
         executorService = Executors.newFixedThreadPool(configuration.getExecutorConcurrency());
         listeners = new BlobStoreListenerList();
+        gzipVector = configuration.isGzipVector();
         initMbtilesLayersMetadata(configuration.getMbtilesMetadataDirectory());
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format("MBTiles blob store initiated: [eagerDelete='%b', useCreateTime='%b'.", eagerDelete, useCreateTime));
         }
     }
-
+    
+    private boolean tileIsGzipped(TileObject tile) throws MimeException {
+        return gzipVector && MimeType.createFromFormat(tile.getBlobFormat()).isVector();
+    }
+    
     @Override
     public void put(TileObject tile) throws StorageException {
         File file = fileManager.getFile(tile);
@@ -103,8 +120,22 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
             // instantiating geotools needed objects
             MBTilesFile mbtiles = GeoToolsMbtilesUtils.getMBTilesFile(connection, file);
             MBTilesTile gtTile = new MBTilesTile(tile.getXYZ()[2], tile.getXYZ()[0], tile.getXYZ()[1]);
-            gtTile.setData(Utils.resourceToByteArray(tile.getBlob()));
             try {
+                final boolean gzipped = tileIsGzipped(tile);
+                
+                byte[] bytes;
+                if (gzipped) {
+                    try (
+                            ByteArrayOutputStream byteStream  = new ByteArrayOutputStream();
+                            GZIPOutputStream gzOut = new GZIPOutputStream(byteStream);
+                    ) {
+                        bytes = byteStream.toByteArray();
+                    }
+                } else {
+                    bytes = Utils.resourceToByteArray(tile.getBlob());
+                }
+                gtTile.setData(bytes);
+                
                 // if necessary getting old data size for listeners
                 byte[] olData = null;
                 if (!listeners.isEmpty()) {
@@ -136,8 +167,9 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         });
     }
 
+    
     @Override
-    public boolean get(TileObject tile) throws StorageException {
+    public boolean get(final TileObject tile) throws StorageException {
         File file = fileManager.getFile(tile);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(String.format("Tile '%s' mapped to file '%s'.", tile, file));
@@ -148,11 +180,28 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
             // instantiating geotools mbtiles reader
             MBTilesFile mbtiles = GeoToolsMbtilesUtils.getMBTilesFile(connection, file);
             try {
+                
+                final boolean gzipped = tileIsGzipped(tile);
+                
                 // loading the tile using geotools reader
                 MBTilesTile gtTile = mbtiles.loadTile(tile.getXYZ()[2], tile.getXYZ()[0], tile.getXYZ()[1]);
+                
+                byte[] bytes = gtTile.getData();
                 if (gtTile.getData() != null) {
-                    // the tile exists lets add the data to the tile object
-                    tile.setBlob(Utils.byteArrayToResource(gtTile.getData()));
+                    if (gzipped) {
+                        try (
+                                ByteArrayOutputStream byteOut  = new ByteArrayOutputStream();
+                                ByteArrayInputStream byteIn  = new ByteArrayInputStream(gtTile.getData());
+                                GZIPInputStream gzIn = new GZIPInputStream(byteIn);
+                        ) {
+                            IOUtils.copy(gzIn, byteOut);
+                            bytes = byteOut.toByteArray();
+                        }
+                    } else {
+                        bytes = gtTile.getData();
+                    }
+                    tile.setBlob(Utils.byteArrayToResource(bytes));
+                    
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug(String.format("Tile '%s' found on file '%s'.", tile, file));
                     }
@@ -514,6 +563,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
             gtMetadata.setFormat(MBTilesMetadata.t_format.PNG);
         } else if (format.contains("jpeg")) {
             gtMetadata.setFormat(MBTilesMetadata.t_format.JPEG);
+        } else if (format.contains("protobuf")) {
+            gtMetadata.setFormat(MBTilesMetadata.t_format.PBF);
         }
         MBTilesMetadata existingMetadata = layersMetadata.get(FileManager.normalizePathValue(layerName));
         if (existingMetadata != null) {

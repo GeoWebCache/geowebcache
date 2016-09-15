@@ -354,6 +354,11 @@ As an example, to add metadata ``description`` and ``attribution`` entries to la
 
 The directory that contains this metadata files is defined by a configuration property.
 
+Vector Tile Compression
+```````````````````````
+
+Some non-standard MBTiles files contain vector tiles, and these are sometimes compressed using gzip.  A ``gzipVector`` entry to the the store configuration with a value of ``true`` will enable this behaviour.  Raster tiles will not be affected.
+
 Expiration Rules
 `````````````````
 

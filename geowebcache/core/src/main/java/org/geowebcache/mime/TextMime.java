@@ -17,6 +17,10 @@ public class TextMime extends MimeType {
     public static final TextMime txtCss = new TextMime(
             "text/css", "css", "css",
             "text/css", true);
+    
+    public static final TextMime txtJs = new TextMime(
+            "text/javascript", "js", "javascript",
+            "text/javascript", true);
         
     private TextMime(String mimeType, String fileExtension, 
             String internalName, String format, boolean noop) {
@@ -33,7 +37,10 @@ public class TextMime extends MimeType {
                 return txtXml;
             } else if(formatStr.startsWith("text/css")) {
                 return txtCss;
-            }
+            } else if(formatStr.startsWith("text/javscript")) {
+                return txtJs;
+            } 
+
         }
         
         return null;
@@ -44,11 +51,15 @@ public class TextMime extends MimeType {
             return txt;
         } else if(fileExtension.equalsIgnoreCase("txt.html")) {
             return txtHtml;
+        } else if(fileExtension.equalsIgnoreCase("html")) {
+            return txtHtml;
         } else if(fileExtension.equalsIgnoreCase("xml")) {
             return txtXml;
         } else if(fileExtension.equalsIgnoreCase("css")) {
             return txtCss;
-        }
+        } else if(fileExtension.equalsIgnoreCase("js")) {
+            return txtJs;
+        } 
         
         return null;
     }

@@ -38,6 +38,8 @@ public class MbtilesConfiguration extends SqliteConfiguration {
 
     private int executorConcurrency = 5;
 
+    private Boolean gzipVector = false;
+
     public String getMbtilesMetadataDirectory() {
         return mbtilesMetadataDirectory;
     }
@@ -52,6 +54,14 @@ public class MbtilesConfiguration extends SqliteConfiguration {
 
     public void setExecutorConcurrency(int executorConcurrency) {
         this.executorConcurrency = executorConcurrency;
+    }
+
+    public boolean isGzipVector() {
+        return gzipVector!=null && gzipVector;
+    }
+
+    public void setGzipVector(boolean gzipVector) {
+        this.gzipVector = gzipVector;
     }
 
     @Override
