@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -304,8 +305,16 @@ public class Demo {
                 + "  }, this);\n"
                 + "  ol.control.Control.prototype.setMap.call(this, map);\n"
                 + "}\n"
-                + "\n"
-                + "var projectionName = 'EPSG:4326';\n"
+                + "\n");
+        buf.append("var gridsetName = '")
+                .append(gridSubset.getGridSet().getName())
+                .append("';\n"
+                + "var gridNames = ")
+                .append(Arrays.stream(gridSubset.getGridNames())
+                        .map(StringEscapeUtils::escapeJavaScript)
+                        .map(s->String.format("'%s'", s))
+                        .collect(Collectors.joining(", ", "[", "]")))
+                .append(";\n"
                 + "var baseUrl = '../service/wmts';\n"
                 + "var style = '';\n");
         buf.append("var format = '")
@@ -323,22 +332,15 @@ public class Demo {
         buf.append("var resolutions = ")
                 .append(Arrays.toString(gridSubset.getResolutions()))
                 .append(";\n");
-        buf.append("var matrixIds = [];\n"
-                + "for (var z = 0; z < resolutions.length; ++z) {\n"
-                + "  matrixIds[z] = projectionName+':'+z;\n"
-                + "}\n"
-                + "\n"
-                + "baseParams = ['VERSION','LAYER','STYLE','TILEMATRIX','TILEMATRIXSET','SERVICE','FORMAT'];\n"
+        buf.append("baseParams = ['VERSION','LAYER','STYLE','TILEMATRIX','TILEMATRIXSET','SERVICE','FORMAT'];\n"
                 + "\n"
                 + "params = {\n"
                 + "  'VERSION': '1.0.0',\n"
                 + "  'LAYER': layerName,\n"
                 + "  'STYLE': style,\n"
-                + "  'TILEMATRIX': matrixIds,\n");
-        buf.append("  'TILEMATRIXSET': '")
-                .append(gridSubset.getSRS().toString())
-                .append("',\n");
-        buf.append("  'SERVICE': 'WMTS',\n"
+                + "  'TILEMATRIX': gridNames,\n"
+                + "  'TILEMATRIXSET': gridsetName,\n"
+                + "  'SERVICE': 'WMTS',\n"
                 + "  'FORMAT': format\n"
                 + "};\n"
                 + "\n"
