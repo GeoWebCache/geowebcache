@@ -150,8 +150,6 @@ Setting up Eclipse
 Contributing patches
 --------------------
 
-The prefered way of providing patches is to create an issue in GitHub a patch, which you create by running::
+The prefered way of providing patches is to create an issue in GitHub, develop the patch, and then make a GitHub Pull Request referencing the ticket.  If approriate please backport fixes to the Stable and Maintenance branches.  New features may be backported if they have been on Master for a month without issue and if they are backward compatible for users and down stream developers.
 
-  git diff > patch.txt
-
-In addition to creating the issue, you are highly encouraged to jump on the `GeoWebCache Developers mailing list <https://lists.sourceforge.net/lists/listinfo/geowebcache-devel>`_ to introduce the patch.
+In addition to creating the issue ticket, you are highly encouraged to bring it up on the `GeoWebCache Developers mailing list <https://lists.sourceforge.net/lists/listinfo/geowebcache-devel>`_ first.  Other developers or users may have considered the problem before or have other useful input.
