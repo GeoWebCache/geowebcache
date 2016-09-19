@@ -1,3 +1,14 @@
+GeoWebCache 1.10-beta (2016-09-19)
+----------------------------------
+
+Beta release for 1.10 series.
+
+Improvements:
++++++++++++++
+- Custom WMTS operations
+- MapBox PBF Vector tiles supported in MBTiles blob store
+
+
 GeoWebCache 1.10-M0 (2016-08-12)
 --------------------------------
 
