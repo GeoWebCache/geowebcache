@@ -17,8 +17,19 @@ public interface QuotaStore {
 
     public abstract void createLayer(final String layerName) throws InterruptedException;
 
+    /**
+     * Returns the globally used quota 
+     * @return A Quota object (may be null)
+     * @throws InterruptedException
+     */
     public abstract Quota getGloballyUsedQuota() throws InterruptedException;
 
+    /**
+     * Returns the quota used by the specified tileSetId
+     * @param tileSetId
+     * @return A Quota object (never null)
+     * @throws InterruptedException
+     */
     public abstract Quota getUsedQuotaByTileSetId(final String tileSetId)
             throws InterruptedException;
 
