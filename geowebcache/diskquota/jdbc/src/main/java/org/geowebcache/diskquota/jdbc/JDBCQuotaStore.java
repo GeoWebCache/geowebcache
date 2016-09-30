@@ -52,7 +52,6 @@ import org.geowebcache.storage.DefaultStorageFinder;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DeadlockLoserDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -244,22 +243,22 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     public Quota getGloballyUsedQuota() throws InterruptedException {
-        return getUsedQuotaByTileSetIdInternal(GLOBAL_QUOTA_NAME);
+        return nonNullQuota(getUsedQuotaByTileSetIdInternal(GLOBAL_QUOTA_NAME));
     }
 
     public Quota getUsedQuotaByTileSetId(String tileSetId) {
-        return getUsedQuotaByTileSetIdInternal(tileSetId);
+        return nonNullQuota(getUsedQuotaByTileSetIdInternal(tileSetId));
     }
 
     public Quota getUsedQuotaByLayerName(String layerName) {
         String sql = dialect.getUsedQuotaByLayerName(schema, "layerName");
-        return jt.queryForOptionalObject(sql, new DiskQuotaMapper(), Collections.singletonMap("layerName", layerName));
+        return nonNullQuota(jt.queryForOptionalObject(sql, new DiskQuotaMapper(), Collections.singletonMap("layerName", layerName)));
 
     }
     
     public Quota getUsedQuotaByGridsetid(String gridsetId) {
         String sql = dialect.getUsedQuotaByGridSetId(schema, "gridSetId");
-        return jt.queryForOptionalObject(sql, new DiskQuotaMapper(), Collections.singletonMap("gridSetId", gridsetId));
+        return nonNullQuota(jt.queryForOptionalObject(sql, new DiskQuotaMapper(), Collections.singletonMap("gridSetId", gridsetId)));
 
     }
 
@@ -274,6 +273,19 @@ public class JDBCQuotaStore implements QuotaStore {
                 return quota;
             }
         }, Collections.singletonMap("key", tileSetId));
+    }
+    
+    /**
+     * Return a empty quota object in case a null value is passed, otherwise return the passed value
+     * @param optionalQuota
+     * @return
+     */
+    private Quota nonNullQuota(Quota optionalQuota) {
+        if(optionalQuota == null) {
+            return new Quota();
+        } else {
+            return optionalQuota;
+        }
     }
 
     public void deleteLayer(final String layerName) {
@@ -801,7 +813,7 @@ public class JDBCQuotaStore implements QuotaStore {
         tt = null;
         jt = null;
     }
-
+    
     /**
      * Maps a BigDecimal column into a Quota object
      * 
