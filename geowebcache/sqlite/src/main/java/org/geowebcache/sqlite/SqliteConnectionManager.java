@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -400,12 +401,14 @@ public final class SqliteConnectionManager {
         }
 
         void getReadLock() {
+            String logId = "";
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("Waiting for read lock on file '%s'.", file));
+                logId = UUID.randomUUID().toString();
+                LOGGER.debug(String.format("[%s] Waiting for read lock on file '%s'.", logId, file));
             }
             lock.readLock().lock();
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("Read lock on file '%s' obtained.", file));
+                LOGGER.debug(String.format("[%s] Read lock on file '%s' obtained.", logId, file));
             }
         }
 
@@ -436,12 +439,14 @@ public final class SqliteConnectionManager {
         }
 
         void getWriteLock() {
+            String logId = "";
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("Waiting for write lock on file '%s'.", file));
+                logId = UUID.randomUUID().toString();
+                LOGGER.debug(String.format("[%s] Waiting for write lock on file '%s'.", logId, file));
             }
             lock.writeLock().lock();
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("Write lock on file '%s' obtained.", file));
+                LOGGER.debug(String.format("[%s] Write lock on file '%s' obtained.", logId, file));
             }
         }
 
