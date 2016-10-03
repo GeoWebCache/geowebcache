@@ -148,7 +148,7 @@ public final class FileManagerTest extends TestSupport {
         String expectedPath = Utils.buildPath("jpeg-tiles", "wgs84", "africa-dark_borders", "zoom-11", "ranges-7000_4000.sqlite");
         FileManager fileManager = new FileManager(getRootDirectory(), pathTemplate, 2000, 1000);
         File file = fileManager.getFile(tile);
-        assertThat(file.getPath(), is(getRootDirectoryPath() + File.separator + expectedPath));
+        assertThat(file.getCanonicalPath(), is(getRootDirectoryPath() + File.separator + expectedPath));
     }
 
     @Test
