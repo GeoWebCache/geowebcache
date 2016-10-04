@@ -36,12 +36,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geotools.data.ows.CRSEnvelope;
 import org.geotools.data.ows.Layer;
+import org.geotools.data.ows.SimpleHttpClient;
 import org.geotools.data.ows.StyleImpl;
 import org.geotools.data.ows.WMSCapabilities;
 import org.geotools.data.wms.WebMapServer;
 import org.geotools.data.wms.xml.Dimension;
 import org.geotools.data.wms.xml.Extent;
 import org.geotools.ows.ServiceException;
+import org.geotools.xml.NoExternalEntityResolver;
+import org.geotools.xml.XMLHandlerHints;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.parameters.NaiveWMSDimensionFilter;
@@ -356,7 +359,9 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
     WebMapServer getWMS() {
         try {
-            return new WebMapServer(new URL(url));
+            Map<String, Object> hints = new HashMap<>();
+            hints.put(XMLHandlerHints.ENTITY_RESOLVER, NoExternalEntityResolver.INSTANCE);
+            return new WebMapServer(new URL(url), new SimpleHttpClient(), hints);
         } catch (IOException ioe) {
             log.error(url + " -> " + ioe.getMessage());
         } catch (ServiceException se) {
