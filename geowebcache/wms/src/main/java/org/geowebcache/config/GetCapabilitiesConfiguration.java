@@ -142,10 +142,10 @@ public class GetCapabilitiesConfiguration implements Configuration {
         try {
             wms = getWMS();
         } catch (ServiceException | IOException e) {
-            throw new ConfigurationException("Unable to connect to " + this.url + " :"+e.getMessage(), e);
-        }        
+            throw new ConfigurationException("Could not retrieve (or parse) GetCapaibilities " + this.url + " :"+e.getMessage(), e);
+        }
         String wmsUrl = getWMSUrl(wms);
-        log.info("Using " + wmsUrl + " to generate URLs for WMS requests");
+        log.info("Using GetCapabilities " + wmsUrl + " to generate URLs for WMS requests");
 
         String urlVersion = parseVersion(url);
 
