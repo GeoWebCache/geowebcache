@@ -137,11 +137,13 @@ public class GetCapabilitiesConfiguration implements Configuration {
     private synchronized List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
         List<TileLayer> layers = null;
 
-        WebMapServer wms = getWMS();
-        if (wms == null) {
-            throw new ConfigurationException("Unable to connect to " + this.url);
-        }
-
+        WebMapServer wms = null;
+        
+        try {
+            wms = getWMS();
+        } catch (ServiceException | IOException e) {
+            throw new ConfigurationException("Unable to connect to " + this.url + " :"+e.getMessage(), e);
+        }        
         String wmsUrl = getWMSUrl(wms);
         log.info("Using " + wmsUrl + " to generate URLs for WMS requests");
 
@@ -357,17 +359,10 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 metaWidthHeight, this.vendorParameters, queryable, null);
     }
 
-    WebMapServer getWMS() {
-        try {
-            Map<String, Object> hints = new HashMap<>();
-            hints.put(XMLHandlerHints.ENTITY_RESOLVER, NoExternalEntityResolver.INSTANCE);
-            return new WebMapServer(new URL(url), new SimpleHttpClient(), hints);
-        } catch (IOException ioe) {
-            log.error(url + " -> " + ioe.getMessage());
-        } catch (ServiceException se) {
-            log.error(se.getMessage());
-        }
-        return null;
+    WebMapServer getWMS() throws IOException, ServiceException{
+        Map<String, Object> hints = new HashMap<>();
+        hints.put(XMLHandlerHints.ENTITY_RESOLVER, NoExternalEntityResolver.INSTANCE);
+        return new WebMapServer(new URL(url), new SimpleHttpClient(), hints);
     }
 
     private String parseVersion(String url) {
