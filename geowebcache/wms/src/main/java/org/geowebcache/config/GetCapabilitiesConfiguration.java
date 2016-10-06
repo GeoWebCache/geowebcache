@@ -18,7 +18,6 @@
 package org.geowebcache.config;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,7 +42,7 @@ import org.geotools.data.wms.WebMapServer;
 import org.geotools.data.wms.xml.Dimension;
 import org.geotools.data.wms.xml.Extent;
 import org.geotools.ows.ServiceException;
-import org.geotools.xml.NoExternalEntityResolver;
+import org.geotools.xml.PreventLocalEntityResolver;
 import org.geotools.xml.XMLHandlerHints;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.meta.ServiceInformation;
@@ -361,7 +360,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
     WebMapServer getWMS() throws IOException, ServiceException{
         Map<String, Object> hints = new HashMap<>();
-        hints.put(XMLHandlerHints.ENTITY_RESOLVER, NoExternalEntityResolver.INSTANCE);
+        hints.put(XMLHandlerHints.ENTITY_RESOLVER, PreventLocalEntityResolver.INSTANCE);
         return new WebMapServer(new URL(url), new SimpleHttpClient(), hints);
     }
 
