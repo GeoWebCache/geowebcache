@@ -1,3 +1,20 @@
+GeoWebCache 1.9.2 (2016-10-11)
+------------------------------
+
+Patch release for 1.9.x series
+
+Improvements:
++++++++++++++
+- Support for image/vnd.jpeg-png format
+- Support expanding parameters in the disk quota connection configuration
+- Add extra WMTS metadata in the capabilities documents, and allow its customization
+
+Fixes:
+++++++
+- Disallow entity expansion when reading remote WMS capabilities documents
+- Avoid NPE in disk quota while using JDBCQuotaStore
+
+
 GeoWebCache 1.9.1 (2016-08-02)
 ------------------------------
 
