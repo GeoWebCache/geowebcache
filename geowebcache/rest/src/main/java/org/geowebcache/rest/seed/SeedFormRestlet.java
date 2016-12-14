@@ -447,7 +447,7 @@ public class SeedFormRestlet extends GWCRestlet {
     }
 
     private void makeHeader(StringBuilder doc) {
-        doc.append("<html>\n" + ServletUtils.gwcHtmlHeader("GWC Seed Form") + "<body>\n"
+        doc.append("<html>\n" + ServletUtils.gwcHtmlHeader("../../","GWC Seed Form") + "<body>\n"
                 + ServletUtils.gwcHtmlLogoLink("../../"));
     }
 
@@ -557,8 +557,10 @@ public class SeedFormRestlet extends GWCRestlet {
                 timeString = " A decade or three.";
             } else {
                 if (timeSeconds > DAY_SECONDS) {
-                    timeString = (timeSeconds / DAY_SECONDS) + " day(s) ";
-                    timeString += ((timeSeconds % DAY_SECONDS) / HOUR_SECONDS) + "h)";
+                    long days = timeSeconds / DAY_SECONDS;
+                    long hours = (timeSeconds % DAY_SECONDS) / HOUR_SECONDS;
+                    timeString = days + " day" + (days > 1 ? "s " : " ");
+                    timeString += hours == 0 ? "" : (hours + " h");
                 } else if (timeSeconds > HOUR_SECONDS) {
                     long hours = timeSeconds / HOUR_SECONDS;
                     long minutes = (timeSeconds % HOUR_SECONDS) / MINUTE_SECONDS;

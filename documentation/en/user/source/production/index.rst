@@ -3,7 +3,7 @@
 Production
 ==========
 
-This section is work in progress, and will eventually be extended to cover topics such as
+This section is a work in progress, and will eventually be extended to cover topics such as:
 
 * Service architecture
 * Apache Portable Runtime
@@ -23,7 +23,7 @@ GeoWebCache does not need a lot of heap memory assigned to the JVM. Usually 512M
 
 Servlet container settings
 ++++++++++++++++++++++++++
-Depending on the power of your hardware set up and your expected user load, consider increasing the number of concurrent connections the servlet container is allowed to handle. For a high end set up you can even set it to 2000. In tomcat, that's performed by modifying the maxThreads attribute for the tomcatThreadPool Executor in server.xml.
+Depending on the power of your hardware setup and your expected user load, consider increasing the number of concurrent connections the servlet container is allowed to handle. For a high end set up you can even set it to 2000. In Tomcat, that's performed by modifying the maxThreads attribute for the tomcatThreadPool Executor in server.xml.
 
 Hardware considerations
 -----------------------
@@ -31,7 +31,7 @@ Having substantial (spare) RAM is of great help. Not for the JVM Heap, but for t
 
 Regular SATA drives or RAID arrays work fine, if you use NAS or SAN then things become a bit more tricky. Often these devices have a ton of overhead due to capabilities like deduplication, shared locks and so forth, and sometimes they kill the disk block cache altogether. 
 
-Keeping an eye on the harddrive access LED indicators might be a good idea (if you are not using SSDs), but also the IO Wait percentange in utilities like top might help diagnose I/O bottlenecks.
+Keeping an eye on the hard-drive access LED indicators might be a good idea (if you are not using SSDs), but also the IO Wait percentange in utilities like top might help diagnose I/O bottlenecks.
 
 
 Operating system settings

@@ -24,12 +24,15 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+
 import com.google.common.base.Preconditions;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
  * Filter to select the closest floating point value within a threshold.
  */
 @ParametersAreNonnullByDefault
+@XStreamAlias("floatParameterFilter")
 public class FloatParameterFilter extends ParameterFilter {
 
     private static final long serialVersionUID = 4186888723396139208L;
@@ -53,12 +56,19 @@ public class FloatParameterFilter extends ParameterFilter {
             values = new ArrayList<Float>(0);
         }
         if (threshold == null) {
-            threshold = DEFAULT_THRESHOLD;
+            threshold = getDefaultThreshold();
         }
         for(Float value: values) {
             Preconditions.checkNotNull(value, "Value list included a null pointer.");
         }
         return this;
+    }
+
+    /**
+     * @return
+     */
+    protected Float getDefaultThreshold() {
+        return DEFAULT_THRESHOLD;
     }
 
     /**
@@ -94,7 +104,7 @@ public class FloatParameterFilter extends ParameterFilter {
      *            the threshold to set
      */
     public void setThreshold(@Nullable Float threshold) {
-        if(threshold==null) threshold = DEFAULT_THRESHOLD;
+        if(threshold==null) threshold = getDefaultThreshold();
         this.threshold = threshold;
     }
 

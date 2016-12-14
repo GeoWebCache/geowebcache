@@ -398,7 +398,7 @@ public class TileBreeder implements ApplicationContextAware {
      * Method returns List of Strings representing the status of the currently running and scheduled
      * threads
      * 
-     * @return array of {@code [[tilesDone, tilesTotal, tilesRemaining, taskID, taskStatus],...]}
+     * @return array of {@code [[tilesDone, tilesTotal, timeRemaining, taskID, taskStatus],...]}
      *         where {@code taskStatus} is one of:
      *         {@code 0 = PENDING, 1 = RUNNING, 2 = DONE, -1 = ABORTED}
      */
@@ -410,7 +410,7 @@ public class TileBreeder implements ApplicationContextAware {
      * Method returns List of Strings representing the status of the currently running and scheduled
      * threads for a specific layer.
      * 
-     * @return array of {@code [[tilesDone, tilesTotal, tilesRemaining, taskID, taskStatus],...]}
+     * @return array of {@code [[tilesDone, tilesTotal, timeRemaining, taskID, taskStatus],...]}
      *         where {@code taskStatus} is one of:
      *         {@code 0 = PENDING, 1 = RUNNING, 2 = DONE, -1 = ABORTED}
      * @param layerName the name of the layer.  null for all layers.

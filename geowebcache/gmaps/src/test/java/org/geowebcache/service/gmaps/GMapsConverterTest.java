@@ -22,8 +22,7 @@ import org.geowebcache.layer.TileLayerDispatcherMock;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.storage.StorageBroker;
-
-import com.mockrunner.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 public class GMapsConverterTest extends TestCase {
 
@@ -118,11 +117,11 @@ public class GMapsConverterTest extends TestCase {
         MockHttpServletRequest request = new MockHttpServletRequest();
         HttpServletResponse response = null;
 
-        request.setupAddParameter(CQL_FILTER_PARAMETER_NAME, CQL_FILTER_PARAMETER_VALUE);
-        request.setupAddParameter("layers", new String[] { TEST_LAYER_NAME });
-        request.setupAddParameter("zoom", "12");
-        request.setupAddParameter("x", "0");
-        request.setupAddParameter("y", "0");
+        request.addParameter(CQL_FILTER_PARAMETER_NAME, CQL_FILTER_PARAMETER_VALUE);
+        request.addParameter("layers", new String[] { TEST_LAYER_NAME });
+        request.addParameter("zoom", "12");
+        request.addParameter("x", "0");
+        request.addParameter("y", "0");
 
         GMapsConverter converter = new GMapsConverter(sb, tld, gsb);
 

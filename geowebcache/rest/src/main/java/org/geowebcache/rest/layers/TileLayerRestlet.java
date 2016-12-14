@@ -25,6 +25,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
@@ -32,12 +33,15 @@ import org.geowebcache.config.Configuration;
 import org.geowebcache.config.ContextualConfigurationProvider.Context;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.filter.parameters.ParameterFilter;
+import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.rest.XstreamRepresentation;
 import org.geowebcache.service.HttpErrorCodeException;
+import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
@@ -80,13 +84,21 @@ public class TileLayerRestlet extends GWCRestlet {
     
     private GeoWebCacheDispatcher controller = null;
 
+    private StorageBroker storageBroker;
+
     // set by spring
     public void setUrlMangler(URLMangler urlMangler) {
         this.urlMangler = urlMangler;
     }
+
     // set by spring
     public void setController(GeoWebCacheDispatcher controller) {
         this.controller = controller;
+    }
+
+    // set by spring
+    public void setStorageBroker(StorageBroker storageBroker) {
+        this.storageBroker = storageBroker;
     }
 
     @Override
@@ -96,6 +108,10 @@ public class TileLayerRestlet extends GWCRestlet {
             if (met.equals(Method.GET)) {
                 doGet(request, response);
             } else {
+                if(Objects.isNull(request.getAttributes().get("layer"))) {
+                    throw new RestletException("Method not allowed",
+                            Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
+                }
                 // These modify layers, so we reload afterwards
                 if (met.equals(Method.POST)) {
                     doPost(request, response);
@@ -331,8 +347,25 @@ public class TileLayerRestlet extends GWCRestlet {
      * @throws RestletException
      */
     private void doDelete(Request req, Response resp) throws RestletException, GeoWebCacheException {
-        String layerName = (String) req.getAttributes().get("layer");
+        String layerName = ServletUtils.URLDecode((String) req.getAttributes().get("layer"),
+                "UTF-8");
         findTileLayer(layerName, layerDispatcher);
+        // TODO: refactor storage management to use a comprehensive event system;
+        // centralise duplicate functionality from GeoServer gs-gwc GWC.layerRemoved
+        // and CatalogConfiguration.removeLayer into GeoWebCache and use event system
+        // to ensure removal and rename operations are atomic and consistent. Until this
+        // is done, the following is a temporary workaround:
+        //
+        // delete cached tiles first in case a blob store
+        // uses the configuration to perform the deletion
+        StorageException storageBrokerDeleteException = null;
+        try {
+            storageBroker.delete(layerName);
+        } catch (StorageException se) {
+            // save exception for later so failure to delete
+            // cached tiles does not prevent layer removal
+            storageBrokerDeleteException = se;
+        }
         try {
             Configuration configuration = layerDispatcher.removeLayer(layerName);
             if (configuration == null) {
@@ -343,10 +376,19 @@ public class TileLayerRestlet extends GWCRestlet {
         } catch (IOException e) {
             throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL, e);
         }
+        if (storageBrokerDeleteException != null) {
+            // layer removal worked, so report failure to delete cached tiles
+            throw new RestletException(
+                    "Removal of layer " + layerName
+                            + " was successful but deletion of cached tiles failed: "
+                            + storageBrokerDeleteException.getMessage(),
+                    Status.SERVER_ERROR_INTERNAL, storageBrokerDeleteException);
+        }
     }
 
     protected TileLayer deserializeAndCheckLayer(Request req, Response resp, boolean isPut)
             throws RestletException, IOException {
+        
         // TODO UTF-8 may not always be right here
         String layerName = ServletUtils.URLDecode((String) req.getAttributes().get("layer"),
                 "UTF-8");
@@ -374,7 +416,7 @@ public class TileLayerRestlet extends GWCRestlet {
     protected TileLayer deserializeAndCheckLayerInternal(String layerName, String formatExtension,
             InputStream is) throws RestletException, IOException {
 
-        XStream xs = xmlConfig.getConfiguredXStreamWithContext(new XStream(new DomDriver()), Context.REST);
+        XStream xs = xmlConfig.getConfiguredXStreamWithContext(new GeoWebCacheXStream(new DomDriver()), Context.REST);
 
         TileLayer newLayer;
 
@@ -442,7 +484,7 @@ public class TileLayerRestlet extends GWCRestlet {
      * @return
      */
     public Representation getXMLRepresentation(TileLayer layer) {
-        XStream xs = xmlConfig.getConfiguredXStreamWithContext(new XStream(), Context.REST);
+        XStream xs = xmlConfig.getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.REST);
         String xmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + xs.toXML(layer);
 
         return new StringRepresentation(xmlText, MediaType.TEXT_XML);
@@ -457,7 +499,7 @@ public class TileLayerRestlet extends GWCRestlet {
     public JsonRepresentation getJsonRepresentation(TileLayer layer) {
         JsonRepresentation rep = null;
         try {
-            XStream xs = xmlConfig.getConfiguredXStreamWithContext(new XStream(
+            XStream xs = xmlConfig.getConfiguredXStreamWithContext(new GeoWebCacheXStream(
                     new JsonHierarchicalStreamDriver()), Context.REST);
             JSONObject obj = new JSONObject(xs.toXML(layer));
             rep = new JsonRepresentation(obj);

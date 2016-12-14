@@ -6,7 +6,7 @@ Metatiles
 What's a metatile?
 ------------------
 
-A **metatile** is several tiles combined into one larger tile.  GeoWebCache will request metatiles from the WMS and then slice the metatile into smaller tiles for caching.
+A **metatile** is one larger tile combining several tiles.  GeoWebCache will request metatiles from the WMS and then slice the metatile into smaller tiles for caching.
 
 .. figure:: img/metatile.png
    :align: center
@@ -25,7 +25,7 @@ The most significant advantage of metatiling is to avoid duplicating the labelin
    
    *An example showing duplicate labels on a tile boundary*
 
-Metatiling may also achieve better overall performance.  It is usually quicker for the WMS backend to generate one large image rather than many small ones, since the WMS would only incur the overhead associated with one request.
+Metatiling may also achieve better overall performance.  It is usually faster for the WMS backend to generate one large image rather than many small ones, since the WMS would only incur the overhead associated with one request.
 
 Why not use metatiles?
 ----------------------
@@ -37,9 +37,9 @@ Memory consumption may also become an issue.  The amount of memory to compute a 
 Preventing double-metatiling
 ----------------------------
 
-Several backends also support a parameter to indicate that the client is tiling. If you are using metatiling in GeoWebCache you should generally set this to false to prevent the backend from metatiling the metatiles. For examples, if you use 3x3 metatiling (768x768 pixels), and have tiled=true, the server may metatile these metatiles, resulting in a 2304x2304 canvas.
+Several backends also support a parameter to indicate that the client is tiling. If you are using metatiling in GeoWebCache, you should generally set this to False to prevent the backend from metatiling the metatiles. For examples, if you use 3x3 metatiling (768x768 pixels), and have tiled=true, the server may metatile these metatiles, resulting in a 2304x2304 canvas.
 
-.. note:: GeoServer, if being used as the backend, will ignore the directive for requests that are not 256x256 pixels.
+.. note:: If being used as the backend, GeoServer will ignore the directive for requests that are not 256x256 pixels.
 
 Configuring Metatiling
 ----------------------

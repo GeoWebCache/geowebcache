@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns="http://geowebcache.org/schema/1.6.0"
-  xsi:schemaLocation="http://geowebcache.org/schema/1.6.0 http://geowebcache.org/schema/1.6.0/geowebcache.xsd">
-  <version>1.6.0</version>
+  xmlns="http://geowebcache.org/schema/1.9.0"
+  xsi:schemaLocation="http://geowebcache.org/schema/1.9.0 http://geowebcache.org/schema/1.9.0/geowebcache.xsd">
+  <version>1.8.0</version>
   <backendTimeout>120</backendTimeout>
   <serviceInformation>
     <title>GeoWebCache</title>
-    <description>GeoWebCache is an advanced tile cache for WMS servers.It supports a large variety of protocols and
+    <description>GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of protocols and
       formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</description>
     <keywords>
       <string>WFS</string>
@@ -34,6 +34,53 @@
     <fees>NONE</fees>
     <accessConstraints>NONE</accessConstraints>
   </serviceInformation>
+
+  <blobStores>
+    <!-- A sample file blob store configuration. Enable and set as default to override the legacy lookup method for the cache directory  -->
+    <FileBlobStore default="false">
+      <id>defaultCache</id>
+      <enabled>false</enabled>
+      <baseDirectory>/tmp/defaultCache</baseDirectory>
+      <fileSystemBlockSize>4096</fileSystemBlockSize>
+    </FileBlobStore>
+    <!-- A sample AWS S3 blob store configuration.   -->
+    <!-- 
+    <S3BlobStore>
+      <id>myS3Cache</id>
+      <enabled>false</enabled>
+      <bucket>put-your-actual-bucket-name-here</bucket>
+      <prefix>test-cache</prefix>
+      <awsAccessKey>putYourActualAccessKeyHere</awsAccessKey>
+      <awsSecretKey>putYourActualSecretKeyHere</awsSecretKey>
+      <maxConnections>50</maxConnections>
+      <useHTTPS>true</useHTTPS>
+      <proxyDomain></proxyDomain>
+      <proxyWorkstation></proxyWorkstation>
+      <proxyHost></proxyHost>
+      <proxyPort></proxyPort>
+      <proxyUsername></proxyUsername>
+      <proxyPassword></proxyPassword>
+      <useGzip>true</useGzip>
+    </S3BlobStore>
+     -->
+    <!-- A sample MBTiles blob store configuration.   -->
+    <!--
+    <MbtilesBlobStore default="true">
+      <id>mbtiles-store</id>
+      <enabled>true</enabled>
+      <rootDirectory>/tmp/gwc-mbtiles</rootDirectory>
+      <templatePath>{layer}{grid}{format}{params}/{z}-{x}-{y}.sqlite</templatePath>
+      <poolSize>1000</poolSize>
+      <poolReaperIntervalMs>500</poolReaperIntervalMs>
+      <rowRangeCount>250</rowRangeCount>
+      <columnRangeCount>250</columnRangeCount>
+      <eagerDelete>false</eagerDelete>
+      <useCreateTime>true</useCreateTime>
+      <executorConcurrency>5</executorConcurrency>
+      <mbtilesMetadataDirectory>/tmp/gwc-mbtiles/layersMetadata</mbtilesMetadataDirectory>
+    </MbtilesBlobStore>
+    -->
+  </blobStores>
 
   <gridSets>
     <!-- Grid Set Example, by default EPSG:900913 and EPSG:4326 are defined -->
@@ -65,6 +112,9 @@
   <layers>
 
     <wmsLayer>
+      <!-- 
+      <blobStoreId>myS3Cache</blobStoreId>
+      -->
       <name>topp:states</name>
       <mimeFormats>
         <string>image/gif</string>
@@ -73,6 +123,17 @@
         <string>image/png8</string>
       </mimeFormats>
       <gridSubsets>
+        <gridSubset>
+          <gridSetName>EPSG:4326</gridSetName>
+          <extent>
+            <coords>
+              <double>-129.6</double>
+              <double>3.45</double>
+              <double>-62.1</double>
+              <double>70.9</double>
+            </coords>
+          </extent>
+        </gridSubset>
         <gridSubset>
           <gridSetName>EPSG:2163</gridSetName>
         </gridSubset>
@@ -147,5 +208,5 @@
       <bgColor>0x0066FF</bgColor>
     </wmsLayer>
   </layers>
-  
+
 </gwcConfiguration>

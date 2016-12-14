@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns="http://geowebcache.org/schema/1.6.0"
-  xsi:schemaLocation="http://geowebcache.org/schema/1.6.0 http://geowebcache.org/schema/1.6.0/geowebcache.xsd">
-  <version>1.6.0</version>
+  xmlns="http://geowebcache.org/schema/1.8.0"
+  xsi:schemaLocation="http://geowebcache.org/schema/1.8.0 http://geowebcache.org/schema/1.8.0/geowebcache.xsd">
+  <version>1.8.0</version>
   <backendTimeout>120</backendTimeout>
   <!--
   <serviceInformation>
     <title>GeoWebCache</title>
-    <description>GeoWebCache is an advanced tile cache for WMS servers.It supports a large variety of protocols and
+    <description>GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of protocols and
       formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</description>
     <keywords>
       <string>WFS</string>

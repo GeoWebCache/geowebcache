@@ -32,11 +32,13 @@ public class DefaultStorageBroker implements StorageBroker {
 
     private TransientCache transientCache;
     
+    @Deprecated
     public DefaultStorageBroker(BlobStore blobStore) {
+        this(blobStore, new TransientCache(100, 1024));
+    }
+    public DefaultStorageBroker(BlobStore blobStore, TransientCache transientCache) {
         this.blobStore = blobStore;
-
-        // @todo are these settings reasonable? should they be configurable?
-        transientCache = new TransientCache(100,1000);
+        this.transientCache = transientCache;
     }
 
     public void addBlobStoreListener(BlobStoreListener listener){
@@ -100,5 +102,14 @@ public class DefaultStorageBroker implements StorageBroker {
         synchronized (transientCache) {
             transientCache.put(key, tile.getBlob());
         }
+    }
+
+    /**
+     * Method for accessing directly the blobstore used by the following StorageBroker
+     * 
+     * @return the {@link BlobStore} object used
+     */
+    public BlobStore getBlobStore(){
+        return blobStore;
     }
 }

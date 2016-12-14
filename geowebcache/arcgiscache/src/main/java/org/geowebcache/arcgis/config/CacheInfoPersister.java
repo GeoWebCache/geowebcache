@@ -4,8 +4,11 @@ import java.io.Reader;
 import java.util.ArrayList;
 
 import org.geowebcache.grid.BoundingBox;
+import org.geowebcache.io.GeoWebCacheXStream;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.NoTypePermission;
+import com.thoughtworks.xstream.security.PrimitiveTypePermission;
 
 /**
  * Loads {@link CacheInfo} objects from ArcGIS Server tile cache's {@code conf.xml} files.
@@ -22,7 +25,12 @@ public class CacheInfoPersister {
     }
 
     XStream getConfiguredXStream() {
-        XStream xs = new XStream();
+        XStream xs = new GeoWebCacheXStream();
+        
+        // Allow anything that's part of GWC
+        // TODO: replace this with a more narrow whitelist
+        xs.allowTypesByWildcard(new String[]{"org.geowebcache.**"});
+        
         xs.setMode(XStream.NO_REFERENCES);
 
         xs.alias("SpatialReference", SpatialReference.class);

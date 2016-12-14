@@ -35,18 +35,15 @@ public abstract class StorageObject {
     
     int blob_size;
     
-
-
-    /** 
-     * @return the unique id for this object (within the type), -1 if it has not been set
-     */
-    abstract public long getId();
     
     /**
      * @return the name of the type of object. Identical for all objects of a class.
      */
     abstract public String getType();
     
+    /**
+     * @return the size of the tile blob.
+     */
     public int getBlobSize() {
         return blob_size;
     }
@@ -77,6 +74,13 @@ public abstract class StorageObject {
         this.blob_format = blobFormat;
     }
     
+    /**
+     * Used to set the size of the blob when the tile is created, and the actual storage size once
+     * the {@link BlobStore} saves it, so notifications to {@link BlobStoreListener}s are sent with
+     * the actual storage size.
+     * 
+     * @param blob_size the size of tile as stored in the backend storage mechanism.
+     */
     public void setBlobSize(int blob_size) {
         this.blob_size = blob_size;
     }

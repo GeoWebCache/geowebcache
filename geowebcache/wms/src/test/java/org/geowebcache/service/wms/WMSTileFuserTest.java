@@ -17,19 +17,36 @@
  */
 package org.geowebcache.service.wms;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
+import org.geowebcache.grid.OutsideCoverageException;
+import org.geowebcache.io.FileResource;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.stats.RuntimeStats;
+import org.geowebcache.storage.DefaultStorageBroker;
+import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.TileObject;
+import org.geowebcache.storage.blobstore.file.FileBlobStore;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 public class WMSTileFuserTest extends TestCase {
     GridSetBroker gridSetBroker = new GridSetBroker(false, false);
@@ -105,6 +122,69 @@ public class WMSTileFuserTest extends TestCase {
         tileFuser.determineCanvasLayout();
     }
 
+    public void testWriteResponse() throws Exception {
+    	final TileLayer layer = createWMSLayer();
+    	// request larger than -30.0,15.0,45.0,30
+        BoundingBox bounds = new BoundingBox(-35.0,14.0,55.0,39);
+        
+        // One in between
+        int width = (int) bounds.getWidth() * 25;
+        int height= (int) bounds.getHeight() * 25;
+        layer.getGridSubset(layer.getGridSubsets().iterator().next());
+        File temp = File.createTempFile("gwc", "wms");
+        temp.delete();
+        temp.mkdirs();
+        try {
+	        TileLayerDispatcher dispatcher = new TileLayerDispatcher(gridSetBroker) {
+
+				@Override
+				public TileLayer getTileLayer(String layerName)
+						throws GeoWebCacheException {
+					return layer;
+				}
+	        	
+	        };  
+	        
+	        MockHttpServletRequest request = new MockHttpServletRequest();
+	        request.addParameter("layers", new String[] { "test:layer" });
+	        request.addParameter("srs", new String[] { "EPSG:4326" });
+	        request.addParameter("format", new String[] { "image/png8" });
+	        request.addParameter("width", width +"");
+	        request.addParameter("height", height +"");
+	        request.addParameter("bbox", bounds.toString());
+	        final File imageTile = new File(getClass().getResource("/image.png").toURI());
+	        
+	        StorageBroker broker = new DefaultStorageBroker(
+	        	new FileBlobStore(temp.getAbsolutePath()) {
+
+					@Override
+					public boolean get(TileObject stObj)
+							throws StorageException {
+						stObj.setBlob(new FileResource(imageTile));
+			            stObj.setCreated((new Date()).getTime());
+			            stObj.setBlobSize(1000);
+						return true;
+					}
+	        		
+	        	}
+	        );
+	        
+	        WMSTileFuser tileFuser = new WMSTileFuser(dispatcher, broker, request);
+	        	
+	        // Selection of the ApplicationContext associated
+	        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("appContextTest.xml");
+	        tileFuser.setApplicationContext(context);
+	        MockHttpServletResponse response = new MockHttpServletResponse();
+
+            tileFuser.writeResponse(response,
+                    new RuntimeStats(1, Arrays.asList(1), Arrays.asList("desc")));
+
+            assertTrue(response.getContentAsString().length() > 0);
+        } finally {
+        	temp.delete();
+        }
+    }
+    
     private WMSLayer createWMSLayer() {
         String[] urls = {"http://localhost:38080/wms"};
         List<String> formatList = new LinkedList<String>();

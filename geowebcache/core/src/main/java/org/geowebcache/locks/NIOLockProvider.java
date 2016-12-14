@@ -58,12 +58,13 @@ public class NIOLockProvider implements LockProvider {
     }
 
     public LockProvider.Lock getLock(final String lockKey) throws GeoWebCacheException {
+        File file = null;
         // first off, synchronize among threads in the same jvm (the nio locks won't lock 
         // threads in the same JVM)
         final LockProvider.Lock memoryLock = memoryProvider.getLock(lockKey);
         // then synch up between different processes
-        final File file = getFile(lockKey);
         try {
+            file = getFile(lockKey);
             FileOutputStream currFos = null;
             FileLock currLock = null;
             try {
@@ -111,6 +112,7 @@ public class NIOLockProvider implements LockProvider {
                 currFos = null;
                 currLock = null;
                 
+                final File lockFile = file;
                 return new LockProvider.Lock() {
                     
                     boolean released;
@@ -136,7 +138,7 @@ public class NIOLockProvider implements LockProvider {
                             try {
                                 lock.release();
                                 IOUtils.closeQuietly(fos);
-                                file.delete();
+                                lockFile.delete();
                                 
                                 if(LOGGER.isDebugEnabled()) {
                                     LOGGER.debug("Lock " + lockKey + " released by thread " + Thread.currentThread().getId());
@@ -152,12 +154,15 @@ public class NIOLockProvider implements LockProvider {
                     }
                 };
             } finally {
-                if (currLock != null) {
-                    currLock.release();
+                try {
+                    if (currLock != null) {
+                        currLock.release();
+                    }
+                    IOUtils.closeQuietly(currFos);
+                    file.delete();
+                } finally {
                     memoryLock.release();
                 }
-                IOUtils.closeQuietly(currFos);
-                file.delete();
             }
         } catch (IOException e) {
             throw new GeoWebCacheException("Failure while trying to get lock for key " + lockKey, e);

@@ -3,7 +3,7 @@
 Disk Quota REST API
 ===================
 
-The REST API for Disk Quota management provides a RESTful interface through which clients can 
+The REST API for Disk Quota management provides a RESTful interface through which clients can
 configure the disk usage limits and expiration policies for a GeoWebCache instance through simple HTTP calls.
 
 Operations
@@ -45,7 +45,7 @@ Disk quota cURL Examples
 ------------------------
 
 The examples in this section use the `cURL <http://curl.haxx.se/>`_
-utility, which is a handy command line tool for executing HTTP requests and 
+utility, which is a handy command line tool for executing HTTP requests and
 transferring files. Though cURL is used the examples apply to any HTTP-capable
 tool or library.
 
@@ -65,10 +65,9 @@ The response should look like:
 	< Server: Noelios-Restlet-Engine/1.0..8
 	< Content-Type: text/xml; charset=ISO-8859-1
 	< Content-Length: 422
-	< 
+	<
 	<gwcQuotaConfiguration>
 	  <enabled>true</enabled>
-	  <diskBlockSize>2048</diskBlockSize>
 	  <cacheCleanUpFrequency>5</cacheCleanUpFrequency>
 	  <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
 	  <maxConcurrentCleanUps>5</maxConcurrentCleanUps>
@@ -93,10 +92,10 @@ The response should look like:
 	< Server: Noelios-Restlet-Engine/1.0..8
 	< Content-Type: application/json; charset=ISO-8859-1
 	< Content-Length: 241
-	< 
+	<
 	* Connection #0 to host localhost left intact
 	* Closing connection #0
-	{"gwcQuotaConfiguration":{"diskBlockSize":2048,"enabled":true,"maxConcurrentCleanUps":5,"cacheCleanUpFrequency":5,"globalExpirationPolicyName":"LRU","globalQuota":{"value":"100","units":"MiB"},"cacheCleanUpUnits":"SECONDS"}}
+	{"gwcQuotaConfiguration":{"maxConcurrentCleanUps":5,"cacheCleanUpFrequency":5,"globalExpirationPolicyName":"LRU","globalQuota":{"value":"100","units":"MiB"},"cacheCleanUpUnits":"SECONDS"}}
 
 
 Changing Disk Quota configuration
@@ -108,15 +107,15 @@ The following will only change the maxConcurrentCleanups property in XML format:
 
   <gwcQuotaConfiguration><maxConcurrentCleanUps>2</maxConcurrentCleanUps></gwcQuotaConfiguration>
 
-The following will only change the diskBlockSize, enabled, and globalQuota properties in JSON format:
+The following will only change the enabled and globalQuota properties in JSON format:
 
-  {"gwcQuotaConfiguration":{"diskBlockSize":2048,"enabled":true,"globalQuota":{"value":"100","units":"MiB"}}
+  {"gwcQuotaConfiguration":{"enabled":true,"globalQuota":{"value":"100","units":"MiB"}}
 
 (valid values for "units" are <B|KiB|MiB|GiB|TiB>)
 
 Invalid XML request:
 ^^^^^^^^^^^^^^^^^^^^
-Invalid parameter (here maxConcurrentCleanUps must be > 0) produce a 400 response code and contains the error message as plain text: 
+Invalid parameter (here maxConcurrentCleanUps must be > 0) produce a 400 response code and contains the error message as plain text:
 
   curl -v -u geowebcache:secured "http://localhost:8090/geowebcache/rest/diskquota.xml" -X PUT -d "<gwcQuotaConfiguration><maxConcurrentCleanUps>-1</maxConcurrentCleanUps></gwcQuotaConfiguration>"
 
@@ -127,7 +126,7 @@ Invalid parameter (here maxConcurrentCleanUps must be > 0) produce a 400 respons
 	< Server: Noelios-Restlet-Engine/1.0..8
 	< Content-Type: text/plain; charset=ISO-8859-1
 	< Content-Length: 53
-	< 
+	<
 	* Connection #0 to host localhost left intact
 	* Closing connection #0
 	maxConcurrentCleanUps shall be a positive integer: -1
@@ -144,7 +143,7 @@ Invalid JSON request:
 	< Server: Noelios-Restlet-Engine/1.0..8
 	< Content-Type: text/plain; charset=ISO-8859-1
 	< Content-Length: 601
-	< 
+	<
 	No enum const class org.geowebcache.diskquota.storage.StorageUnit.ZZiB : No enum const class org.geowebcache.diskquota.storage.StorageUnit.ZZiB
 	---- Debugging information ----
 	message             : No enum const class org.geowebcache.diskquota.storage.StorageUnit.ZZiB
@@ -171,10 +170,9 @@ Change enabled and globalQuota in XML format:
 	< Server: Noelios-Restlet-Engine/1.0..8
 	< Content-Type: text/xml; charset=ISO-8859-1
 	< Content-Length: 422
-	< 
+	<
 	<gwcQuotaConfiguration>
 	  <enabled>true</enabled>
-	  <diskBlockSize>2048</diskBlockSize>
 	  <cacheCleanUpFrequency>5</cacheCleanUpFrequency>
 	  <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
 	  <maxConcurrentCleanUps>5</maxConcurrentCleanUps>
@@ -199,9 +197,9 @@ Change globalQuota and expirationPolicyName in JSON format:
 	< Server: Noelios-Restlet-Engine/1.0..8
 	< Content-Type: application/json; charset=ISO-8859-1
 	< Content-Length: 241
-	< 
+	<
 	* Connection #0 to host localhost left intact
 	* Closing connection #0
-	{"gwcQuotaConfiguration":{"diskBlockSize":2048,"enabled":true,"maxConcurrentCleanUps":5,"cacheCleanUpFrequency":5,"globalExpirationPolicyName":"LRU","globalQuota":{"value":"100","units":"MiB"},"cacheCleanUpUnits":"SECONDS","layerQuotas":[]}}
+	{"gwcQuotaConfiguration":{"maxConcurrentCleanUps":5,"cacheCleanUpFrequency":5,"globalExpirationPolicyName":"LRU","globalQuota":{"value":"100","units":"MiB"},"cacheCleanUpUnits":"SECONDS","layerQuotas":[]}}
 
 

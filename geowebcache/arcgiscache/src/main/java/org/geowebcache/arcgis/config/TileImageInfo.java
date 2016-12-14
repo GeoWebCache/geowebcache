@@ -28,6 +28,10 @@ public class TileImageInfo {
 
     private boolean antialiasing;
 
+    private int BandCount;
+
+    private float LERCError;
+
     /**
      * One of {@code PNG8, PNG24, PNG32, JPEG, Mixed}
      * <p>
@@ -44,5 +48,13 @@ public class TileImageInfo {
 
     public boolean isAntialiasing() {
         return antialiasing;
+    }
+
+    public int getBandCount() {
+        return BandCount;
+    }
+
+    public float getLERCError() {
+        return LERCError;
     }
 }

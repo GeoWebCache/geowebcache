@@ -18,7 +18,6 @@
 package org.geowebcache.config;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,12 +35,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geotools.data.ows.CRSEnvelope;
 import org.geotools.data.ows.Layer;
+import org.geotools.data.ows.SimpleHttpClient;
 import org.geotools.data.ows.StyleImpl;
 import org.geotools.data.ows.WMSCapabilities;
 import org.geotools.data.wms.WebMapServer;
 import org.geotools.data.wms.xml.Dimension;
 import org.geotools.data.wms.xml.Extent;
 import org.geotools.ows.ServiceException;
+import org.geotools.xml.PreventLocalEntityResolver;
+import org.geotools.xml.XMLHandlerHints;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.parameters.NaiveWMSDimensionFilter;
@@ -134,13 +136,15 @@ public class GetCapabilitiesConfiguration implements Configuration {
     private synchronized List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
         List<TileLayer> layers = null;
 
-        WebMapServer wms = getWMS();
-        if (wms == null) {
-            throw new ConfigurationException("Unable to connect to " + this.url);
+        WebMapServer wms = null;
+        
+        try {
+            wms = getWMS();
+        } catch (ServiceException | IOException e) {
+            throw new ConfigurationException("Could not retrieve (or parse) GetCapaibilities " + this.url + " :"+e.getMessage(), e);
         }
-
         String wmsUrl = getWMSUrl(wms);
-        log.info("Using " + wmsUrl + " to generate URLs for WMS requests");
+        log.info("Using GetCapabilities " + wmsUrl + " to generate URLs for WMS requests");
 
         String urlVersion = parseVersion(url);
 
@@ -354,15 +358,10 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 metaWidthHeight, this.vendorParameters, queryable, null);
     }
 
-    WebMapServer getWMS() {
-        try {
-            return new WebMapServer(new URL(url));
-        } catch (IOException ioe) {
-            log.error(url + " -> " + ioe.getMessage());
-        } catch (ServiceException se) {
-            log.error(se.getMessage());
-        }
-        return null;
+    WebMapServer getWMS() throws IOException, ServiceException{
+        Map<String, Object> hints = new HashMap<>();
+        hints.put(XMLHandlerHints.ENTITY_RESOLVER, PreventLocalEntityResolver.INSTANCE);
+        return new WebMapServer(new URL(url), new SimpleHttpClient(), hints);
     }
 
     private String parseVersion(String url) {

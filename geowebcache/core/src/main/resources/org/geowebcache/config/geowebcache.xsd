@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xml="http://www.w3.org/XML/1998/namespace"
-  targetNamespace="http://geowebcache.org/schema/1.6.0" xmlns:gwc="http://geowebcache.org/schema/1.6.0"
-  elementFormDefault="qualified" version="1.6.0">
+  targetNamespace="http://geowebcache.org/schema/1.9.0" xmlns:gwc="http://geowebcache.org/schema/1.9.0"
+  elementFormDefault="qualified" version="1.9.0">
 
   <xs:element name="gwcConfiguration">
     <xs:annotation>
@@ -39,7 +39,6 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-        
         <xs:element name="cacheBypassAllowed" type="xs:boolean" minOccurs="0">
           <xs:annotation>
             <xs:documentation xml:lang="en">
@@ -125,6 +124,22 @@
             </xs:documentation>
           </xs:annotation>
         </xs:element>
+        
+        <xs:element name="blobStores" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              The list of  blob stores. BlobStores allow to define a storage mechanism and format, such as the legacy file system
+              based storage, an Amazon S3 instance with a TMS-like key structure, etc; independently of where the tiles come from
+              in the TileLayer configuration. 
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="gwc:blobstore" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        
         <xs:element name="gridSets" minOccurs="0">
           <xs:annotation>
             <xs:documentation xml:lang="en">
@@ -151,13 +166,169 @@
               <xs:element ref="gwc:arcgisLayer" />
             </xs:choice>
           </xs:complexType>
+        </xs:element>	        
+      	<xs:element name="fullWMS" type="xs:boolean" minOccurs="0">
+           <xs:annotation>
+             <xs:documentation xml:lang="en">
+		Parameter used for configuring full WMS requests for GeoWebCache. Setting this parameter to true enables full WMS requests. 
+             </xs:documentation>
+           </xs:annotation>
         </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
 
+  <xs:complexType name="AbstractBlobStore" abstract="true">
+    <xs:sequence>
+      <xs:element name="id" minOccurs="1" maxOccurs="1" type="xs:string" nillable="false">
+        <xs:annotation>
+          <xs:documentation>
+            A blob store must have a unique identifier assigned through this element, which can be referenced
+            by any number of TileLayer's 'blobStoreId'.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="enabled" minOccurs="0" maxOccurs="1" type="xs:boolean" default="true">
+        <xs:annotation>
+          <xs:documentation>
+            Defines whether the blob store is enabled (true) or disabled (false). Attempting to use
+            a TileLayer whose blob store is disabled will result in a runtime exception.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="default" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">
+          The default attribute can only be true for one of the configured blob stores.
+          If no blob store is configured as the default one, then one will be created automatically
+          following the legacy location discovery method of looking for the GEOWEBCACHE_CACHE_DIR environment
+          variable, servlet context parameter, or JVM argument.
+          Additionally, any layer that has no blobStoreId set will default to use the default blob store,
+          whether it is defined in the configuration file, or created automatically using the legacy method.
+          So, it is allowed that none of the configured blob stores has its 'default' attribute set to true,
+          but it's a configuration error that more than one is set as the default one. In such case, an exception
+          will be thrown at application startup.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  
+  <xs:element name="blobstore" type="gwc:AbstractBlobStore">
+  </xs:element>
+  
+  <xs:element name="FileBlobStore" substitutionGroup="gwc:blobstore">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="gwc:AbstractBlobStore">
+          <xs:sequence>
+            <xs:element name="baseDirectory" type="xs:string" minOccurs="1" maxOccurs="1">
+              
+            </xs:element>
+            <xs:element name="fileSystemBlockSize" type="xs:positiveInteger" minOccurs="0" maxOccurs="1" nillable="true">
+            </xs:element>
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="S3BlobStore" substitutionGroup="gwc:blobstore">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="gwc:AbstractBlobStore">
+          <xs:sequence>
+            <xs:element name="bucket" type="xs:string" minOccurs="1">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">the name of the AWS S3 bucket where to store tiles</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="prefix" type="xs:string" minOccurs="0" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">
+                An optional prefix path to use as the "root folder" to store tiles at.
+                For example, if the bucket is bucket.gwc.example and prefix is "mycache", all tiles will be stored under
+                bucket.gwc.example/mycache/{layer name} instead of bucket.gwc.example/{layer name}.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="awsAccessKey" type="xs:string" minOccurs="1">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">The public access key the client uses to connect to S3.</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="awsSecretKey" type="xs:string" minOccurs="1">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">The secret key the client uses to connect to S3</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="maxConnections" type="xs:positiveInteger" minOccurs="0" default="50" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">Maximum number of concurrent HTTP connections the S3 client may use.</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="useHTTPS" type="xs:boolean" minOccurs="0" default="true" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">Whether to use HTTPS when connecting to S3 or not</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="proxyDomain" type="xs:string" minOccurs="0" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">
+                The optional Windows domain name for configuring an NTLM proxy.
+                If you aren't using a Windows NTLM proxy, you do not need to set this field. 
+                </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="proxyWorkstation" type="xs:string" minOccurs="0" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">
+                The optional Windows workstation name for configuring NTLM proxy support. 
+                If you aren't using a Windows NTLM proxy, you do not need to set this field.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="proxyHost" type="xs:string" minOccurs="0" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">The optional proxy host the client will connect through.</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="proxyPort" type="xs:positiveInteger" minOccurs="0" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">The optional proxy port the client will connect through.</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="proxyUsername" type="xs:string" minOccurs="0" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">The optional proxy user name to use if connecting through a proxy.</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="proxyPassword" type="xs:string" minOccurs="0" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">The optional proxy password to use when connecting through a proxy.</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="useGzip" type="xs:boolean" minOccurs="0" default="false" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">Whether gzip compression should be used.</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
   <xs:complexType name="AbstractTileLayer" abstract="true">
     <xs:sequence>
+      <xs:element name="blobStoreId" type="xs:string" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            The identifier of the BlobStore this layer tiles shall be saved on.
+			If not provided, the default blob store will be used.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="enabled" type="xs:boolean" minOccurs="0">
         <xs:annotation>
           <xs:documentation xml:lang="en">
@@ -279,7 +450,8 @@
             repeated labels, but can overload the backend server.
           </xs:documentation>
         </xs:annotation>
-      </xs:element>      <xs:element name="expireCache" type="xs:integer" minOccurs="0">
+      </xs:element>
+      <xs:element name="expireCache" type="xs:integer" minOccurs="0">
         <xs:annotation>
           <xs:documentation xml:lang="en">
             How old the tile may be before it is refetched from the backend.
@@ -383,7 +555,8 @@
   <xs:complexType name="WmsLayer">
     <xs:complexContent>
       <xs:extension base="gwc:AbstractTileLayer">
-        <xs:sequence>          <!-- WMS Specific stuff, some of which is not really WMS specific -->
+        <xs:sequence>
+          <!-- WMS Specific stuff, some of which is not really WMS specific -->
           <xs:element name="wmsUrl" type="gwc:WmsUrl" minOccurs="0">
             <xs:annotation>
               <xs:documentation xml:lang="en">
@@ -543,7 +716,8 @@
                 be removed in 1.4.0.
               </xs:documentation> 
             </xs:annotation>
-          </xs:element>        </xs:sequence>
+          </xs:element>
+        </xs:sequence>
      </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -600,6 +774,24 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="advertised" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Whether the layer is included in capabilities documents. Defaults 
+	    to true.  When false the layer will not be included in capabilities
+	    documents but will otherwise work normally.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="transientLayer" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Is the layer transient.  Defaults to false.  A transient layer's 
+	    configuration will not be persisted over restart/reload.  This does
+	    not affect the persistence of tiles.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="name" type="xs:string">
         <xs:annotation>
           <xs:documentation>
@@ -628,6 +820,14 @@
             property allows to separate the location of the tiling scheme definition (conf.xml) and the actual
             directory
             containing the tiles.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="hexZoom" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Optional. Configure whether or not the z-values (levels) should be hex-encoded or not.
+            Defaults to false
           </xs:documentation>
         </xs:annotation>
       </xs:element>
@@ -960,6 +1160,13 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="normalize" type="gwc:CaseNormalize" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+	    Case normalization rule for this filter.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="regex" type="xs:string">
         <xs:annotation>
           <xs:documentation xml:lang="en">
@@ -1024,6 +1231,54 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="IntegerParameterFilter">
+    <xs:sequence>
+      <xs:element name="key" type="xs:string">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            The key for which the filter should be invoked. The key is NOT
+            casesensitive.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="defaultValue" type="xs:string" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            The default value. This value is used When the client does not
+            specify
+            the parameter in the request. If you omit this element, the entire parameter
+            wil be omitted if the
+            client does not include it in request.
+
+            This value must be included in the list of values
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="values" type="gwc:IntegerList">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            A list of integers that are possible values. When a
+            client request is
+            received these are scanned linearly and that best match, in terms of smallest
+            absolute
+            difference, is used.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="threshold" type="xs:integer">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            For a request to be accepted, the difference between the value and
+            the best match
+            must not exceed the threshold specified here. A reasonable value is the largest
+            difference
+            between two adjacent values.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="StringParameterFilter">
     <xs:sequence>
       <xs:element name="key" type="xs:string">
@@ -1047,11 +1302,37 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="normalize" type="gwc:CaseNormalize" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+	    Case normalization rule for this filter.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="values" type="gwc:StringList">
         <xs:annotation>
           <xs:documentation xml:lang="en">
             A list of strings that represent possible values. These are case
             sensitive.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CaseNormalize">
+    <xs:sequence>
+      <xs:element name="case" type="xs:string">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+	    The case to normalize to: NONE for no normalization, UPPER for upper case, LOWER for lower case.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="locale" type="xs:string" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+	    The locale to use when normalizing the case.  For instance: "en" for English, "en_CA" for Canadian English.
           </xs:documentation>
         </xs:annotation>
       </xs:element>
@@ -1067,6 +1348,12 @@
   <xs:complexType name="FloatList">
     <xs:sequence>
       <xs:element name="float" type="xs:float" minOccurs="1" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="IntegerList">
+    <xs:sequence>
+      <xs:element name="int" type="xs:integer" minOccurs="1" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 

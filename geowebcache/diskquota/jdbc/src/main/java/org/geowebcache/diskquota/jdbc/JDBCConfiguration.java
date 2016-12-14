@@ -20,10 +20,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.SerializationUtils;
+import org.geowebcache.GeoWebCacheEnvironment;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.ConfigurationException;
+import org.geowebcache.io.GeoWebCacheXStream;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -49,20 +55,33 @@ public class JDBCConfiguration implements Serializable {
      * @throws IOException
      */
     public static JDBCConfiguration load(File sourceFile) throws ConfigurationException {
-        XStream xs = getXStream();
-
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(sourceFile);
-            JDBCConfiguration conf = (JDBCConfiguration) xs.fromXML(fis);
-            validateConfiguration(conf);
-            return conf;
+            return load(fis);
         } catch (IOException e) {
             throw new ConfigurationException("Failed to load the configuration from "
                     + sourceFile.getAbsolutePath(), e);
         } finally {
             IOUtils.closeQuietly(fis);
         }
+    }
+    
+    /**
+     * Loads a XML configuration from the specified file. The file must adhere to the
+     * {@code geowebcache-diskquota-jdbc.xsd} schema.
+     * 
+     * @param sourceFile
+     * @return
+     * @throws IOException
+     */
+    public static JDBCConfiguration load(InputStream is) throws ConfigurationException {
+        XStream xs = getXStream();
+
+        JDBCConfiguration conf = (JDBCConfiguration) xs.fromXML(is);
+        
+        validateConfiguration(conf.clone(true));
+        return conf;
     }
 
     private static void validateConfiguration(JDBCConfiguration conf) throws ConfigurationException {
@@ -85,14 +104,18 @@ public class JDBCConfiguration implements Serializable {
         }
         
     }
+    
+    public static void store(JDBCConfiguration config, OutputStream os) {
+        XStream xs = getXStream();
+        xs.toXML(config, os);
+    }
 
     public static void store(JDBCConfiguration config, File file) throws ConfigurationException {
-        XStream xs = getXStream();
-
+       
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file);
-            xs.toXML(config, fos);
+            store(config, fos);
         } catch (IOException e) {
             throw new ConfigurationException("Failed to store the configuration into "
                     + file.getAbsolutePath(), e);
@@ -103,7 +126,11 @@ public class JDBCConfiguration implements Serializable {
     }
 
     private static XStream getXStream() {
-        XStream xs = new XStream();
+        XStream xs = new GeoWebCacheXStream();
+        // Allow anything that's part of GWC
+        // TODO: replace this with a more narrow whitelist
+        xs.allowTypesByWildcard(new String[]{"org.geowebcache.**"});
+        
         xs.setMode(XStream.NO_REFERENCES);
 
         xs.alias("gwcJdbcConfiguration", JDBCConfiguration.class);
@@ -344,4 +371,34 @@ public class JDBCConfiguration implements Serializable {
 
     }
 
+    /**
+     * 
+     * 
+     * @param allowEnvParametrization
+     * @return
+     */
+    public JDBCConfiguration clone(boolean allowEnvParametrization) {
+        
+        JDBCConfiguration conf = (JDBCConfiguration) SerializationUtils.clone(this);
+        
+        final GeoWebCacheEnvironment gwcEnvironment = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
+        
+        if (allowEnvParametrization &&  gwcEnvironment != null && GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION) {
+            conf.setDialect((String) gwcEnvironment.resolveValue(getDialect()));
+            conf.setJNDISource((String) gwcEnvironment.resolveValue(getJNDISource()));
+            ConnectionPoolConfiguration connectionPoolConfig = getConnectionPool();
+            if (connectionPoolConfig != null) {
+                ConnectionPoolConfiguration expConnectionPoolConfig = (ConnectionPoolConfiguration) SerializationUtils.clone(connectionPoolConfig);
+                expConnectionPoolConfig.setDriver((String) gwcEnvironment.resolveValue(connectionPoolConfig.getDriver()));
+                expConnectionPoolConfig.setUrl((String) gwcEnvironment.resolveValue(connectionPoolConfig.getUrl()));
+                expConnectionPoolConfig.setUsername((String) gwcEnvironment.resolveValue(connectionPoolConfig.getUsername()));
+                expConnectionPoolConfig.setPassword((String) gwcEnvironment.resolveValue(connectionPoolConfig.getPassword()));
+                expConnectionPoolConfig.setValidationQuery((String) gwcEnvironment.resolveValue(connectionPoolConfig.getValidationQuery()));
+                
+                conf.setConnectionPool(expConnectionPoolConfig);
+            }
+        }
+        
+        return conf;
+    }
 }

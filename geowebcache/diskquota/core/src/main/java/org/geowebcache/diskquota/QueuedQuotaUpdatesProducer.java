@@ -18,9 +18,13 @@
 package org.geowebcache.diskquota;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.DefaultStorageBroker;
 import org.springframework.util.Assert;
@@ -48,6 +52,8 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
     private boolean cancelled;
 
     private final QuotaStore quotaStore;
+    
+    int updateOfferTimeoutSeconds;
 
     /**
      * 
@@ -67,6 +73,12 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
         this.quotaConfig = quotaConfig;
         this.queuedUpdates = queuedUpdates;
         this.quotaStore = quotaStore;
+        
+        String timeoutStr = GeoWebCacheExtensions.getProperty("GEOWEBCACHE_QUOTA_DIFF_TIMEOUT");
+        this.updateOfferTimeoutSeconds = 5 * 60; // by default five minutes
+        if(timeoutStr != null) {
+            updateOfferTimeoutSeconds = Integer.parseInt(timeoutStr);
+        }
     }
 
     /**
@@ -79,11 +91,8 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
         if (blobSize == 0) {
             return;
         }
-        final int blockSize = quotaConfig.getDiskBlockSize();
 
-        long actuallyUsedStorage = blockSize * (int) Math.ceil((double) blobSize / blockSize);
-
-        quotaUpdate(layerName, gridSetId, blobFormat, parametersId, actuallyUsedStorage,
+        quotaUpdate(layerName, gridSetId, blobFormat, parametersId, blobSize,
                 new long[] { x, y, z });
     }
 
@@ -94,9 +103,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
             final String blobFormat, final String parametersId, final long x, final long y,
             final int z, final long blobSize) {
 
-        int blockSize = quotaConfig.getDiskBlockSize();
-
-        long actualSizeFreed = -1 * (blockSize * (int) Math.ceil((double) blobSize / blockSize));
+        long actualSizeFreed = -1 * blobSize;
 
         quotaUpdate(layerName, gridSetId, blobFormat, parametersId, actualSizeFreed, new long[] {
                 x, y, z });
@@ -109,16 +116,14 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
     public void tileUpdated(String layerName, String gridSetId, String blobFormat,
             String parametersId, long x, long y, int z, long blobSize, long oldSize) {
 
-        int blockSize = quotaConfig.getDiskBlockSize();
-        double delta = blobSize - oldSize;
-        long actualDifference = blockSize * (int) Math.ceil(delta / blockSize);
+        long delta = blobSize - oldSize;
 
-        if (actualDifference == 0) {
+        if (delta == 0) {
             return;
         }
 
         long[] tileIndex = new long[] { x, y, z };
-        quotaUpdate(layerName, gridSetId, blobFormat, parametersId, actualDifference, tileIndex);
+        quotaUpdate(layerName, gridSetId, blobFormat, parametersId, delta, tileIndex);
     }
 
     /**
@@ -164,7 +169,14 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
         QuotaUpdate payload = new QuotaUpdate(layerName, gridSetId, blobFormat, parametersId,
                 amount, tileIndex);
         try {
-            this.queuedUpdates.put(payload);
+            if(updateOfferTimeoutSeconds <= 0) {
+                this.queuedUpdates.put(payload);
+            } else {
+                if(!this.queuedUpdates.offer(payload, updateOfferTimeoutSeconds, TimeUnit.SECONDS)) {
+                    throw new RuntimeException("Failed to offer the quota diff to the updates queue "
+                            + "within the configured timeout of " + updateOfferTimeoutSeconds + " seconds");
+                }
+            }
         } catch (InterruptedException e) {
             if (cancelled(layerName)) {
                 return;

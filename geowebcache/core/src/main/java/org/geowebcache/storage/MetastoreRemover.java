@@ -117,7 +117,7 @@ public class MetastoreRemover {
                 + "     join parameters on parameters.id = tiles.parameters_id\n"
                 + "group by layer, gridset, z, parameters, parameters_id";
         
-        final long total = template.queryForLong("select count(*) from (" + query + ")");
+        final long total = template.queryForObject("select count(*) from (" + query + ")", Long.class);
         log.info("Migrating " + total + " parameters from the metastore to the file system");
         template.query(query, new RowCallbackHandler() {
 
@@ -135,7 +135,7 @@ public class MetastoreRemover {
                 // move the folders containing params
                 File origin = new File(buildFolderPath(root, layer, gridset, z, paramsId));
                 File destination = new File(buildFolderPath(root, layer, gridset, z, sha));
-                origin.renameTo(destination);
+                org.geowebcache.util.FileUtils.renameFile(origin, destination);
                 
                 count++;
                 if(count % 1000 == 0 || count >= total) {
@@ -195,7 +195,7 @@ public class MetastoreRemover {
         		"join formats on formats.id = tiles.format_id \n"  +
         		"order by layer_id, parameters_id, gridset, z, x, y";
 
-        final long total = template.queryForLong("select count(*) from (" + query + ")");
+        final long total = template.queryForObject("select count(*) from (" + query + ")", Long.class);
         log.info("Migrating " + total + " tile creation dates from the metastore to the file system");
         
         template.query(query, new RowCallbackHandler() {

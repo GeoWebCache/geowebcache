@@ -72,5 +72,5 @@ The :ref:`seeding process <concepts.operations>` will respect selective zoom lev
 Interaction with metatiling
 ---------------------------
 
-Even when not caching tiles, GeoWebCache will still take advantage of :ref:`metatiling <concepts.metatiles>`.  When a request comes in that is outside of the cached zoom level range, metatiles will still be fetched and temporarily saved in memory in order to minimize redundant requests.
+Even when not caching tiles, GeoWebCache will still take advantage of :ref:`metatiling <concepts.metatiles>`.  When a request that is outside of the cached zoom level range comes in, metatiles will still be fetched and temporarily saved in memory in order to minimize redundant requests.
 

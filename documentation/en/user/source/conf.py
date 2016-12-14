@@ -45,9 +45,9 @@ copyright = u'OpenGeo, License: Creative Commons 3.0 - Attribution Share Alike'
 # other places throughout the built documents.
 #
 # The short X.Y version.
-version = '1.5'
+version = '1.9'
 # The full version, including alpha/beta/rc tags.
-release = '1.5.1'
+release = '1.9.2'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -187,7 +187,7 @@ latex_elements = {
     urlcolor = [rgb]{0,0.46,0.63}
 	}
 
-	
+
 """
 }
 

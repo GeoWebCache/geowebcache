@@ -17,6 +17,7 @@
 package org.geowebcache.diskquota.jdbc;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -30,6 +31,8 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.ConfigurationException;
+import org.geowebcache.config.ConfigurationResourceProvider;
+import org.geowebcache.config.XMLFileResourceProvider;
 import org.geowebcache.diskquota.QuotaStore;
 import org.geowebcache.diskquota.QuotaStoreFactory;
 import org.geowebcache.diskquota.jdbc.JDBCConfiguration.ConnectionPoolConfiguration;
@@ -49,11 +52,21 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
     
     private static final Log log = LogFactory.getLog(JDBCQuotaStore.class);
 
+    private static final String CONFIGURATION_FILE_NAME = "geowebcache-diskquota-jdbc.xml";
+    
     public static final String H2_STORE = "H2";
 
     public static final String JDBC_STORE = "JDBC";
     
     private ApplicationContext appContext;
+    
+    private ConfigurationResourceProvider defaultResourceProvider;
+    
+    public JDBCQuotaStoreFactory() {}
+    
+    public JDBCQuotaStoreFactory(final ConfigurationResourceProvider resourceProvider) {
+        this.defaultResourceProvider = resourceProvider;
+    }
     
     public List<String> getSupportedStoreNames() {
         return Arrays.asList(H2_STORE, JDBC_STORE);
@@ -76,18 +89,32 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
 
         return null;
     }
+    
+    private ConfigurationResourceProvider createResourceProvider(DefaultStorageFinder cacheDirFinder) 
+            throws ConfigurationException {
+        return new XMLFileResourceProvider(CONFIGURATION_FILE_NAME,
+               (org.springframework.web.context.WebApplicationContext) appContext, cacheDirFinder);
+    }
 
     private QuotaStore getJDBCStore(DefaultStorageFinder cacheDirFinder,
             TilePageCalculator tilePageCalculator) throws ConfigurationException {
         JDBCConfiguration config = null;
         
-        File configFile = new File(cacheDirFinder.getDefaultPath(),
-                "geowebcache-diskquota-jdbc.xml");
-        if (!configFile.exists()) {
-            throw new IllegalArgumentException("Failed to locate JDBC configuration file: "
-                    + configFile.getAbsolutePath());
-        }
-        config = JDBCConfiguration.load(configFile);
+        ConfigurationResourceProvider resourceProvider =
+                defaultResourceProvider == null ? createResourceProvider(cacheDirFinder) : 
+                    defaultResourceProvider;
+        
+        try {
+            if (!resourceProvider.hasInput()) {
+                throw new IllegalArgumentException("Unable to read JDBC configuration file: "
+                        + resourceProvider.getLocation());
+            }
+            config = JDBCConfiguration.load(resourceProvider.in());
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Failed to read JDBC configuration file at " + 
+                    resourceProvider.getId());
+        }       
+        
         return getJDBCStore(cacheDirFinder, tilePageCalculator, config);
     }
     
@@ -104,10 +131,11 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
     private QuotaStore getJDBCStore(DefaultStorageFinder cacheDirFinder,
             TilePageCalculator tilePageCalculator, JDBCConfiguration config)
             throws ConfigurationException {
-        DataSource ds = getDataSource(config);
+        JDBCConfiguration expandedConfig = config.clone(true);
+        DataSource ds = getDataSource(expandedConfig);
         
         // prepare the dialect
-        String dialectName = config.getDialect();
+        String dialectName = expandedConfig.getDialect();
         String dialectBeanName = dialectName + "QuotaDialect";
         Object bean = appContext.getBean(dialectBeanName);
         

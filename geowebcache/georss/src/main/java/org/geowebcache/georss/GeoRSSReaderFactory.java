@@ -52,6 +52,7 @@ class GeoRSSReaderFactory {
         HttpClient httpClient = builder.buildClient();
 
         GetMethod getMethod = new GetMethod(url.toString());
+        getMethod.setRequestHeader("Connection", "close");
         if (builder.isDoAuthentication()) {
             getMethod.setDoAuthentication(true);
             httpClient.getParams().setAuthenticationPreemptive(true);

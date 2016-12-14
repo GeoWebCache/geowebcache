@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
@@ -96,6 +97,15 @@ public abstract class TileLayer {
     public abstract String getId();
     
     /**
+     * @return the identifier for the blob store that manages this layer tiles, or {@code null} if
+     *         the default blob store shall be used
+     */
+    @Nullable
+    public abstract String getBlobStoreId();
+
+    public abstract void setBlobStoreId(@Nullable String blobStoreId);
+    
+    /**
      * Then name of the layer
      * 
      * @return
@@ -113,6 +123,26 @@ public abstract class TileLayer {
     public abstract void setEnabled(boolean enabled);
 
     /**
+     * @return {@code true} if the layer is advertised, {@code false} otherwise
+     */
+    public abstract boolean isAdvertised();
+
+    /**
+     * @param advertised whether to set this layer as advertised
+     */
+    public abstract void setAdvertised(boolean advertised);
+
+    /**
+     * @return {@code true} if the layer is transient, {@code false} otherwise
+     */
+    public abstract boolean isTransientLayer();
+
+    /**
+     * @param transientLayer whether to set this layer as transient
+     */
+    public abstract void setTransientLayer(boolean transientLayer);
+
+    /**
      * Layer meta information
      * 
      * @return
@@ -120,9 +150,12 @@ public abstract class TileLayer {
     public abstract LayerMetaInformation getMetaInformation();
 
     /**
-     * List of Metadata URLs for the layer.
+     * List of Metadata URLs for the layer, subclasses should override this method if they support
+     * declaring metaddata URLs
      */
-    public abstract List<MetadataURL> getMetadataURLs();
+    public List<MetadataURL> getMetadataURLs() {
+        return null;
+    }
 
     /**
      * Retrieves the GridSet names for this layer.
@@ -207,6 +240,32 @@ public abstract class TileLayer {
      * @return the styles configured for the layer, may be null
      */
     public abstract String getStyles();
+
+    /**
+     * Returns legend info indexed by style.
+     */
+    public Map<String, LegendInfo> getLegendsInfo() {
+        return Collections.EMPTY_MAP;
+    }
+
+    /**
+     * Information container for a style legend.
+     */
+    public static class LegendInfo {
+
+        public String id;
+        public int width;
+        public int height;
+        public String format;
+        public String legendUrl;
+    }
+
+    /**
+     * Helper constructor for legend info;
+     */
+    public static LegendInfo createLegendInfo() {
+        return new LegendInfo();
+    }
 
     /**
      * The size of a metatile in tiles.
@@ -505,11 +564,9 @@ public abstract class TileLayer {
 
         Map<String, String> fullParameters = new HashMap<String, String>();
 
-        final String[] keys = new String[parameterFilters.size()];
-        for (int i = 0; i < parameterFilters.size(); i++) {
-            ParameterFilter parameterFilter = parameterFilters.get(i);
-            keys[i] = parameterFilter.getKey();
-        }
+        final String[] keys = parameterFilters.stream()
+                .map(ParameterFilter::getKey)
+                .toArray(i->new String[i]);
 
         final Map<String, String> requestValues;
         requestValues = ServletUtils.selectedStringsFromMap(map, encoding, keys);
@@ -650,5 +707,4 @@ public abstract class TileLayer {
             }
         }
     }
-
 }

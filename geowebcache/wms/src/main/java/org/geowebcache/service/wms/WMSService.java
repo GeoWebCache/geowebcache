@@ -19,8 +19,10 @@ package org.geowebcache.service.wms;
 
 import static org.geowebcache.grid.GridUtil.findBestMatchingGrid;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.channels.Channels;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +34,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.GeoWebCacheExtensions;
+import org.geowebcache.config.Configuration;
+import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
@@ -42,6 +47,7 @@ import org.geowebcache.io.Resource;
 import org.geowebcache.layer.ProxyLayer;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
@@ -51,8 +57,13 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-public class WMSService extends Service {
+import com.thoughtworks.xstream.XStream;
+
+public class WMSService extends Service{
     public static final String SERVICE_WMS = "wms";
     
     static final String SERVICE_PATH = "/"+GeoWebCacheDispatcher.TYPE_SERVICE+"/"+SERVICE_WMS;
@@ -78,6 +89,9 @@ public class WMSService extends Service {
     
     private GeoWebCacheDispatcher controller = null;
     
+    private String hintsConfig = "DEFAULT";
+    
+    private WMSUtilities utility;
 
     /**
      * Protected no-argument constructor to allow run-time instrumentation
@@ -101,7 +115,7 @@ public class WMSService extends Service {
         this.tld = tld;
         this.stats = stats;
         this.urlMangler = urlMangler;
-        this.controller = controller;
+        this.controller = controller;       
     }
 
     @Override
@@ -116,6 +130,12 @@ public class WMSService extends Service {
 
         // Look for layer
         String layers = values.get("layers");
+
+        // Get the TileLayer
+        TileLayer tileLayer = null;
+        if(layers!=null) {
+            tileLayer = tld.getTileLayer(layers);
+        }
         // Look for requests that are not getmap
         String req = values.get("request");
         if (req != null && !req.equalsIgnoreCase("getmap")) {
@@ -123,9 +143,22 @@ public class WMSService extends Service {
             if (layers == null || layers.length() == 0) {
                 layers = ServletUtils.stringFromMap(requestParameterMap, encoding, "layer");
                 values.put("LAYERS", layers);
+                
+                if(layers!=null) {
+                    tileLayer = tld.getTileLayer(layers);
+                }
             }
 
-            ConveyorTile tile = new ConveyorTile(sb, layers, request, response);
+            Map<String, String> filteringParameters = null;
+            // If tileLayer is not null, then request parameters are extracted from it-
+            if (tileLayer != null) {
+                filteringParameters = tileLayer.getModifiableParameters(requestParameterMap,
+                        encoding);
+            }
+
+            // Creation of a Conveyor Tile with a fake Image/png format and the associated parameters.
+            ConveyorTile tile = new ConveyorTile(sb, layers, null, null,
+                    ImageMime.png, filteringParameters, request, response);
             tile.setHint(req.toLowerCase());
             tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
             return tile;
@@ -142,8 +175,6 @@ public class WMSService extends Service {
             tile.setRequestHandler(Conveyor.RequestHandler.SERVICE);
             return tile;
         }
-
-        TileLayer tileLayer = tld.getTileLayer(layers);
 
         String[] paramKeys = { "format", "srs", "bbox" };
         final Map<String, String> paramValues = ServletUtils.selectedStringsFromMap(
@@ -257,9 +288,13 @@ public class WMSService extends Service {
                 wmsCap.writeResponse(tile.servletResp);
             } else if (tile.getHint().equalsIgnoreCase("getmap")) {
                 WMSTileFuser wmsFuser = new WMSTileFuser(tld, sb, tile.servletReq);
+                // Setting of the applicationContext
+                wmsFuser.setApplicationContext(utility.getApplicationContext());
+                // Setting of the hintConfiguration if present
+                wmsFuser.setHintsConfiguration(hintsConfig);
                 try {
                     wmsFuser.writeResponse(tile.servletResp, stats);
-                } catch (IOException e) {
+                } catch (Exception e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
@@ -333,7 +368,7 @@ public class WMSService extends Service {
         }
 
         ConveyorTile gfiConv = new ConveyorTile(sb, tl.getName(), gridSubset.getName(), null,
-                mimeType, null, tile.servletReq, tile.servletResp);
+                mimeType, tile.getFullParameters(), tile.servletReq, tile.servletResp);
         gfiConv.setTileLayer(tl);
 
         int x, y;
@@ -369,7 +404,28 @@ public class WMSService extends Service {
     }
 
     public void setFullWMS(String trueFalse) {
-        this.fullWMS = Boolean.parseBoolean(trueFalse);
+        // Selection of the configurations 
+        List<Configuration> configs = new ArrayList<Configuration>(GeoWebCacheExtensions.extensions(Configuration.class));
+        // Selection of the Configuration file associated to geowebcache.xml
+        XMLConfiguration gwcXMLconfig = null;
+        for(Configuration config : configs){
+            if(config instanceof XMLConfiguration){
+                gwcXMLconfig = (XMLConfiguration) config;
+                break;
+            }
+        }
+        // From the configuration file the "fullWMS" parameter is searched
+        Boolean wmsFull = null;
+        if(gwcXMLconfig!=null){
+            wmsFull = gwcXMLconfig.getfullWMS();
+        }                
+        
+        if(wmsFull!=null){
+            this.fullWMS = wmsFull;
+        }else{
+            this.fullWMS = Boolean.parseBoolean(trueFalse);            
+        }
+        // Log if fullWMS is enabled
         if (this.fullWMS) {
             log.info("Will recombine tiles for non-tiling clients.");
         } else {
@@ -393,5 +449,13 @@ public class WMSService extends Service {
         } else {
             log.info("Will NOT proxy requests that miss tiled=true to backend.");
         }
+    }
+
+    public void setHintsConfig(String hintsConfig) {
+        this.hintsConfig = hintsConfig;
+    }
+    
+    public void setUtility(WMSUtilities utility) {
+        this.utility = utility;
     }
 }

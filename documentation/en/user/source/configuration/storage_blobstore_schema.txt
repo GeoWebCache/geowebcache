@@ -1,0 +1,168 @@
+  <xs:element name="gwcConfiguration">
+    <xs:complexType>
+      <xs:sequence>
+        ...
+        <xs:element name="formatModifiers" type="gwc:formatModifiers" minOccurs="0">...</xs:element>
+        
+        <xs:element name="blobStores" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              The list of  blob stores. BlobStores allow to define a storage mechanism and format, such as the legacy file system
+              based storage, an Amazon S3 instance with a TMS-like key structure, etc; independently of where the tiles come from
+              in the TileLayer configuration. 
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="gwc:blobstore" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        
+        <xs:element name="gridSets" minOccurs="0">
+        ...
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="AbstractBlobStore" abstract="true">
+    <xs:sequence>
+      <xs:element name="id" minOccurs="1" maxOccurs="1" type="xs:string" nillable="false">
+        <xs:annotation>
+          <xs:documentation>
+            A blob store must have a unique identifier assigned through this element, which can be referenced
+            by any number of TileLayer's 'blobStoreId'.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="enabled" minOccurs="0" maxOccurs="1" type="xs:boolean" default="true">
+        <xs:annotation>
+          <xs:documentation>
+            Defines whether the blob store is enabled (true) or disabled (false). Attempting to use
+            a TileLayer whose blob store is disabled will result in a runtime exception.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="default" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">
+          The default attribute can only be true for one of the configured blob stores.
+          If no blob store is configured as the default one, then one will be created automatically
+          following the legacy location discovery method of looking for the GEOWEBCACHE_CACHE_DIR environment
+          variable, servlet context parameter, or JVM argument.
+          Additionally, any layer that has no blobStoreId set will default to use the default blob store,
+          whether it is defined in the configuration file, or created automatically using the legacy method.
+          So, it is allowed that none of the configured blob stores has its 'default' attribute set to true,
+          but it's a configuration error that more than one is set as the default one. In such case, an exception
+          will be thrown at application startup.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  
+  <xs:element name="blobstore" type="gwc:AbstractBlobStore">
+  </xs:element>
+  
+  <xs:element name="FileBlobStore" substitutionGroup="gwc:blobstore">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="gwc:AbstractBlobStore">
+          <xs:sequence>
+            <xs:element name="baseDirectory" type="xs:string" minOccurs="1" maxOccurs="1">
+              
+            </xs:element>
+            <xs:element name="fileSystemBlockSize" type="xs:positiveInteger" minOccurs="0" maxOccurs="1" nillable="true">
+            </xs:element>
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="S3BlobStore" substitutionGroup="gwc:blobstore">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="gwc:AbstractBlobStore">
+          <xs:sequence>
+            <xs:element name="bucket" type="xs:string" minOccurs="1">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">the name of the AWS S3 bucket where to store tiles</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="prefix" type="xs:string" minOccurs="0" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">
+                An optional prefix path to use as the "root folder" to store tiles at.
+                For example, if the bucket is bucket.gwc.example and prefix is "mycache", all tiles will be stored under
+                bucket.gwc.example/mycache/{layer name} instead of bucket.gwc.example/{layer name}.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="awsAccessKey" type="xs:string" minOccurs="1">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">The public access key the client uses to connect to S3.</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="awsSecretKey" type="xs:string" minOccurs="1">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">The secret key the client uses to connect to S3</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="maxConnections" type="xs:positiveInteger" minOccurs="0" default="50" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">Maximum number of concurrent HTTP connections the S3 client may use.</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="useHTTPS" type="xs:boolean" minOccurs="0" default="true" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">Whether to use HTTPS when connecting to S3 or not</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="proxyDomain" type="xs:string" minOccurs="0" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">
+                The optional Windows domain name for configuring an NTLM proxy.
+                If you aren't using a Windows NTLM proxy, you do not need to set this field. 
+                </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="proxyWorkstation" type="xs:string" minOccurs="0" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">
+                The optional Windows workstation name for configuring NTLM proxy support. 
+                If you aren't using a Windows NTLM proxy, you do not need to set this field.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="proxyHost" type="xs:string" minOccurs="0" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">The optional proxy host the client will connect through.</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="proxyPort" type="xs:positiveInteger" minOccurs="0" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">The optional proxy port the client will connect through.</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="proxyUsername" type="xs:string" minOccurs="0" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">The optional proxy user name to use if connecting through a proxy.</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="proxyPassword" type="xs:string" minOccurs="0" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">The optional proxy password to use when connecting through a proxy.</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="useGzip" type="xs:boolean" minOccurs="0" default="false" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">Whether gzip compression should be used.</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+...

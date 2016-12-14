@@ -3,7 +3,7 @@
 Configuring Layers
 ==================
 
-This section will describe how to manually configure layers in GeoWebCache, as well as some basic configuration examples.
+This section describes how to manually configure layers in GeoWebCache and provides some basic configuration examples.
 
 
 .. toctree::

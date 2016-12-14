@@ -17,8 +17,11 @@
  */
 package org.geowebcache.mime;
 
+import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.io.Resource;
 
 public class MimeType {
     protected String mimeType;
@@ -27,9 +30,11 @@ public class MimeType {
 
     protected String fileExtension;
 
+    
     protected String internalName;
     
     protected boolean supportsTiling;
+        
 
     private static Log log = LogFactory.getLog(org.geowebcache.mime.MimeType.class);
 
@@ -41,6 +46,7 @@ public class MimeType {
         this.format = format;
         this.supportsTiling = supportsTiling;
     }
+
     
     
     /**
@@ -48,6 +54,15 @@ public class MimeType {
      * @return
      */
     public String getMimeType() {
+        return mimeType;
+    }
+    
+    /**
+     * The MIME identifier string for this format.
+     * @return
+     * @throws IOException 
+     */
+    public String getMimeType(Resource resource) throws IOException {
         return mimeType;
     }
     
@@ -87,6 +102,18 @@ public class MimeType {
         return supportsTiling;
     }
     
+    
+    /**
+     * Indicates whether this is a vector format rather than a raster format. Output in vector
+     * formats should have no guttering.
+     * 
+     * @return {@code true} if represents a vector or other kind of non raster format where applying
+     *         a gutter to the request originating the tile would lead to an incorrect result.
+     */
+    public boolean isVector() {
+        return false;
+    }
+
     /**
      * Get the MIME type object for a given MIME type string
      * 
@@ -95,45 +122,30 @@ public class MimeType {
      */
     public static MimeType createFromFormat(String formatStr) throws MimeException {
         MimeType mimeType = null;
-        if(formatStr == null) {
+        if (formatStr == null) {
             throw new MimeException("formatStr was not set");
         }
-        
-        // TODO Making a special exception, generalize later
-        if(! formatStr.equals("image/png; mode=24bit") && formatStr.contains(";")) {
-            if(log.isDebugEnabled()) {
-                log.debug("Slicing off "+ formatStr.split(";")[1]);
-            }
-            formatStr = formatStr.split(";")[0];
-        }
-        
-        if (formatStr.length() > 6 
-                && formatStr.substring(0, 6).equalsIgnoreCase("image/")) {
-            mimeType = ImageMime.checkForFormat(formatStr);
-            
-            if(mimeType != null) {
-                return mimeType;
-            }
-        }
- 
-        mimeType = XMLMime.checkForFormat(formatStr);
-        if(mimeType != null) {
+        mimeType = ImageMime.checkForFormat(formatStr);
+        if (mimeType != null) {
             return mimeType;
         }
-        
+        mimeType = XMLMime.checkForFormat(formatStr);
+        if (mimeType != null) {
+            return mimeType;
+        }
+
         mimeType = TextMime.checkForFormat(formatStr);
         if (mimeType != null) {
             return mimeType;
         }
-        
+
         mimeType = ApplicationMime.checkForFormat(formatStr);
-        if(mimeType != null) {
+        if (mimeType != null) {
             return mimeType;
         }
 
         throw new MimeException("Unsupported format request: " + formatStr);
     }
-
 
     /**
      * Get the MIME type object for a given file extension
@@ -172,7 +184,7 @@ public class MimeType {
     public boolean equals(Object obj) {
         if (obj != null && obj.getClass() == this.getClass()) {
             MimeType mimeObj = (MimeType) obj;
-            if (this.mimeType.equalsIgnoreCase(mimeObj.mimeType)) {
+            if (this.format.equalsIgnoreCase(mimeObj.format)) {
                 return true;
             }
         }
@@ -181,5 +193,16 @@ public class MimeType {
     
     public int hashCode() {
         return format.hashCode();
+    }
+
+
+
+    public boolean isCompatible(String otherMimeType) {
+        return mimeType.equalsIgnoreCase(otherMimeType) || otherMimeType.startsWith(otherMimeType);
+    }
+    
+    @Override
+    public String toString() {
+        return mimeType;
     }
 }

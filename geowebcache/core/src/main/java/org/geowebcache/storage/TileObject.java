@@ -17,6 +17,7 @@
  */
 package org.geowebcache.storage;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -28,20 +29,12 @@ import org.geowebcache.io.Resource;
  * either an image or a regionated KML tile, the class is format agnostic and carries a {@link Resource}
  * object with the data.
  */
-public class TileObject extends StorageObject {
+public class TileObject extends StorageObject implements Serializable{
     public static final String TYPE = "tile";
-
-    long tile_id = -1L;
 
     Resource blob;
 
     String parameters_id = null;
-
-    long layer_id = -1L;
-
-    long format_id = -1L;
-
-    long gridset_id = -1L;
 
     long[] xyz;
 
@@ -103,32 +96,8 @@ public class TileObject extends StorageObject {
         this.blob = blob;
     }
 
-    public long getId() {
-        return tile_id;
-    }
-
-    public void setId(long tile_id) {
-        this.tile_id = tile_id;
-    }
-
-    public long getFormatId() {
-        return this.format_id;
-    }
-
-    public void setFormatId(long format_id) {
-        this.format_id = format_id;
-    }
-
     public String getGridSetId() {
         return this.gridSetId;
-    }
-
-    public long getLayerId() {
-        return this.layer_id;
-    }
-
-    public void setLayerId(long layer_id) {
-        this.layer_id = layer_id;
     }
 
     public String getParametersId() {
@@ -146,14 +115,6 @@ public class TileObject extends StorageObject {
     // public int getSrs() {
     // return srs;
     // }
-
-    public long getGridSetIdId() {
-        return gridset_id;
-    }
-
-    public void setGridSetIdId(long gridset_id) {
-        this.gridset_id = gridset_id;
-    }
 
     public String getLayerName() {
         return layer_name;

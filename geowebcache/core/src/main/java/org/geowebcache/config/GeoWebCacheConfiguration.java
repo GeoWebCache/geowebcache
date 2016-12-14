@@ -71,7 +71,11 @@ public class GeoWebCacheConfiguration {
 
     private List<FormatModifier> formatModifiers;
 
+    private List<BlobStoreConfig> blobStores;
+
     private List<XMLGridSet> gridSets;
+    
+    private Boolean fullWMS;
 
     /**
      * The persisted list of layers
@@ -106,6 +110,10 @@ public class GeoWebCacheConfiguration {
 
         if (gridSets == null) {
             gridSets = new ArrayList<XMLGridSet>();
+        }
+        
+        if(blobStores == null){
+        	blobStores = new ArrayList<>();
         }
         return this;
     }
@@ -248,6 +256,10 @@ public class GeoWebCacheConfiguration {
         this.formatModifiers = formatModifiers;
     }
 
+    public List<BlobStoreConfig> getBlobStores(){
+    	return blobStores;
+    }
+    
     /**
      * @return the gridSets
      */
@@ -285,5 +297,21 @@ public class GeoWebCacheConfiguration {
         }
         
         return lockProviderInstance;
+    }
+
+    /**
+     * Get the FullWMS value if present
+     * @return
+     */
+    public Boolean getFullWMS() {
+        return fullWMS;
+    }
+
+    /**
+     * Set the FullWMS value if present
+     * @return
+     */
+    public void setFullWMS(Boolean fullWMS) {
+        this.fullWMS = fullWMS;
     }
 }

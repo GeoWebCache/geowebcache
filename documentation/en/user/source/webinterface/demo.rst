@@ -3,11 +3,11 @@
 Demo Page
 =========
 
-The Demo page contains a listing of all layers known to GeoWebCache, as well as the valid services associated with them.  This information is set in the file :file:`geowebcache.xml`.  To edit layer settings, please see the section on :ref:`configuration.layers`.
+The Demo page contains a listing of all layers known to GeoWebCache and the valid services associated with them.  This information is set in the file :file:`geowebcache.xml`.  To edit layer settings read the section on :ref:`configuration.layers`.
 
-Depending on settings, for each layer there will be a link to built-in OpenLayers demos for every projection and image format supported.  If EPSG:4326 (lat/lon) is supported for a particular layer, there will also be links to KML output, for display in Google Earth.
+For each layer and depending on settings,  there will be a link to built-in OpenLayers demos for every projection and image format supported.  If EPSG:4326 (lat/lon) is supported by a particular layer, there will also be links to KML output, for display in Google Earth.
 
-The URL format of the demos are as follows:
+The URL format of the demos is as follows:
 
 OpenLayers::
 
@@ -21,7 +21,7 @@ where:
 
 * ``<GEOWEBCACHE_URL>`` - URL to the GeoWebCache instance
 * ``<LAYER_NAME>`` - Name of the layer as known to GeoWebCache (``<wmsLayer>``).
-* ``<GRID_SET>`` - Name of the grid set as known in GeoWebCache (``<gridSet``).  Does not need to be in the form "EPSG:####".
+* ``<GRID_SET>`` - Name of the grid set as known in GeoWebCache (``<gridSet``).  It does not need to be in the form "EPSG:####".
 * ``<IMAGE_MIMEFORMAT>`` - MIME type of image format (``image/png``)
 * ``<IMAGE_FORMAT>`` = Typical extension for image format (``png``) 
 

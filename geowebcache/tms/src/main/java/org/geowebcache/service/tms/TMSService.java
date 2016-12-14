@@ -17,6 +17,8 @@
 package org.geowebcache.service.tms;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,10 +30,12 @@ import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.service.HttpErrorCodeException;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.stats.RuntimeStats;
@@ -132,11 +136,28 @@ public class TMSService extends Service {
 
         MimeType mimeType = null;
         try {
-            mimeType = MimeType.createFromExtension(yExt[1]);
+            String fileExtension = yExt[1];
+            mimeType = MimeType.createFromExtension(fileExtension);
+            if (mimeType == null) {
+                throw new HttpErrorCodeException(400, "Unsupported format: " + fileExtension);
+            }
         } catch (MimeException me) {
-            throw new ServiceException("Unable to determine requested format based on extension " + yExt[1]);
+            throw new ServiceException("Unable to determine requested format based on extension "
+                    + yExt[1]);
         }
-
+        try {
+            TileLayer tileLayer = tld.getTileLayer(layerId);
+            GridSubset gridSubset = tileLayer.getGridSubset(gridSetId);
+            if (gridSubset == null) {
+                throw new HttpErrorCodeException(400, "Unsupported gridset: " + gridSetId);
+            }
+            gridSubset.checkCoverage(gridLoc);
+        } catch (OutsideCoverageException e) {
+            throw new HttpErrorCodeException(404, e.getMessage(), e);
+        } catch (GeoWebCacheException e) {
+            throw new HttpErrorCodeException(400, e.getMessage(), e);
+        }
+        
         ConveyorTile ret = new ConveyorTile(sb, layerId, gridSetId, gridLoc, mimeType, null, request, response);
         
         return ret;
@@ -158,7 +179,9 @@ public class TMSService extends Service {
         String servletBase = ServletUtils.getServletBaseURL(conv.servletReq, servletPrefix);
         String context = ServletUtils.getServletContextPath(conv.servletReq, "/service/tms/1.0.0", servletPrefix);
         
-        TMSDocumentFactory tdf = new TMSDocumentFactory(tld, gsb, servletBase, context, urlMangler);
+        final Charset encoding = StandardCharsets.UTF_8;
+        
+        TMSDocumentFactory tdf = new TMSDocumentFactory(tld, gsb, servletBase, context, urlMangler, encoding);
         
         String ret = null;
         
@@ -182,7 +205,7 @@ public class TMSService extends Service {
             ret = tdf.getTileMapDoc(tl, gridSub, gsb, mimeType);
         }
         
-        byte[] data = ret.getBytes();
+        byte[] data = ret.getBytes(encoding);
         stats.log(data.length, CacheResult.OTHER);
         
         conv.servletResp.setStatus(200);

@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +29,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long>, Serializable 
     /**
      * Default number of milliseconds before cached/aggregated quota update is saved to the store
      */
-    private static final long DEFAULT_SYNC_TIMEOUT = 2000;
+    private static final long DEFAULT_SYNC_TIMEOUT = 100;
 
     /**
      * Default number of per TileSet aggregated quota updates before ensuring they're synchronized
@@ -50,6 +49,8 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long>, Serializable 
      * {@link #checkAggregatedTimeout(TimedQuotaUpdate)} at {@link #call()}
      */
     private Map<TileSet, TimedQuotaUpdate> aggregatedDelayedUpdates;
+    
+    boolean terminate = false;
 
     /**
      * Tracks accumulated quota difference for a single TileSet and accumulated number of tiles
@@ -170,6 +171,11 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long>, Serializable 
             if (Thread.interrupted()) {
                 log.debug("Job " + getClass().getSimpleName()
                         + " finished due to interrupted thread.");
+                break;
+            }
+            
+            if(terminate) {
+                log.debug("Exiting on explicit termination request: " + getClass().getSimpleName());
                 break;
             }
 
@@ -304,5 +310,9 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long>, Serializable 
         }
 
         quotaStore.addToQuotaAndTileCounts(tileSet, quotaDiff, tileCountDiffs);
+    }
+    
+    public void shutdown() {
+        this.terminate = true;
     }
 }

@@ -3,12 +3,12 @@
 Disk Quotas
 ===========
 
-Since disk usage increases geometrically by zoom level, one single seeding task could fill up an entire storage device.  Because of this, GeoWebCache employs a disk quota system where one can specify the maximum amount of disk space to use for a particular layer or for the entire set of layers (the "Global Quota"), as well as logic on how to proceed when that quota is reached.  There are two different policies for managing the disk quotas:  Least Frequently Used (LFU) and Least Recently Used (LRU).
+Since disk usage increases geometrically by zoom level, one single seeding task could fill up an entire storage device.  Because of this, GeoWebCache employs a disk quota system where one can specify the maximum amount of disk space to use for a particular layer or for the entire set of layers (the "Global Quota"), as well as logic on how to proceed when that quota is reached.  There are two different policies for managing the disk quotas:   **Least Frequently Used (LFU)** and  **Least Recently Used (LRU)**.
 
 Disk quotas are managed by the `gwc-diskquota-<version>.jar` library, which uses an embedded ``Berkeley DB Java Edition`` database in a directory called `diskquota_page_store`. This directory is created under the cache directory, next to the meta-store database directory, and is used to store tile usage statistics as well as to record cache disk usage. This database is internally referred to as the `page store`, because it stores usage statistics in `pages` of tiles of an automatically calculated dimension for each tile set zoom level.
 Whenever a tile is requested to GeoWebCache, the page for that tile is updated with information about the frequency of use and last access time for that page of tiles, in order to feed the LFU and LRU expiration policies, respectively.
 
-Whenever a tile is stored, deleted, or updated, a single database record representing the `tile set` that tile belongs to is updated to reflect its disk usage, calculating the actual disk space taken by that tile based on the configured `diskBlockSize` property, as shown in the example configuration file bellow.
+Whenever a tile is stored, deleted, or updated, a single database record representing the `tile set` that tile belongs to is updated to reflect its disk usage.
 
 The page store is independent of the meta store in order to keep usage statistics for the layer independently of the life cycle of individual times, as the whole point of the expiration policies is to act upon the usage history for each layer, independently of how often individual tiles are `truncated` and `seeded`.
 
@@ -17,14 +17,13 @@ Enabling disk quotas
 
 **Disk quotas are disabled by default.**  Before setting any disk quotas, it is necessary to first enable the disk quota subsystem.  To do this, a file called :file:`geowebcache-diskquota.xml` should be created in the GeoWebCache cache directory. If you don't create it beforehand, a default one will be created at start up time, with the `enabled` property set to `false`.
 
-All disk quota policy settings will be contained in this file.  You can also create this file using the following template as a guide.  
+All disk quota policy settings will be contained in this file.  You can also create this file using the following template as a guide.
 
 .. code-block:: xml
 
     <?xml version="1.0" encoding="utf-8"?>
     <gwcQuotaConfiguration>
       <enabled>false</enabled>
-      <diskBlockSize>4096</diskBlockSize>
       <cacheCleanUpFrequency>10</cacheCleanUpFrequency>
       <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
       <maxConcurrentCleanUps>2</maxConcurrentCleanUps>
@@ -67,7 +66,7 @@ Expiration policies
 
 When a disk quota is reached, further tiles will be saved at the expense of other tiles which will be truncated.  The **Least Frequently Used (LFU)** policy will analyze the disk quota page store and delete the pages of tiles that have been accessed the least often.  The **Least Recently Used (LRU)** policy will analyze the diskquota page store and delete the tiles that haven't been accessed in the longest amount of time.
 
-Both policies are set in exactly the same way, with only the policy name changing.  The policies operate both globally and on a per-layer basis. 
+Both policies are set in exactly the same way, with only the policy name changing.  The policies operate both globally and on a per-layer basis.
 
 .. code-block:: xml
 
@@ -129,17 +128,6 @@ For example, setting a LFU policy on the ``topp:states`` layer, with a disk quot
       </quota>
     </LayerQuota>
 
-
-Disk block size
----------------
-
-GeoWebCache doesn't know about the file system block size , so this will need to be set via the ``<diskBlockSize>`` tag.  Add this value to :file:`geowebcache-diskquota.xml`, just beneath the namespace information:
-
-.. code-block:: xml
-
-   <diskBlockSize>#</diskBlockSize>
-
-Where ``#`` is the block size in bytes (such as 4096, 8192, 16384, etc.).
 
 Polling time
 ------------
@@ -221,3 +209,12 @@ The local connection pool can instead be configured by specifying the following:
         <maxOpenPreparedStatements>50</maxOpenPreparedStatements>
       </connectionPool>
     </gwcJdbcConfiguration>
+
+Disk quota schema
+-----------------
+
+The schema used by a JDBC Disk Quota store specifies that a layer's name can be no longer than 128 characters.  If the database was created using GWC 1.5.2 or earlier then the limit will be 64 characters instead. If you have very long layer names and get SQLException messages in your log, it may be because your layer names are longer than this maximum.
+
+If this limit is too low, it can be changed using your database's administrative tools.  You need to increase the size of 4 fields on two tables, all by the same amount.  ``layer_name`` and ``key`` on the ``tileset`` table, and ``tileset_id`` and ``key`` on the ``tilepage`` table.  For details, see the documentation for the specific database you are using.
+
+

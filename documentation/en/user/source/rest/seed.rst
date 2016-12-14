@@ -208,7 +208,7 @@ If there are no pending or running tasks, the returned array is empty:
    {"long-array-array":[]}
    
 The returned array of arrays contains one array per seeding/truncate Task.
-The meaning of each long value in each thread array is: ``[tiles processed, total # of tiles to process, # of remaining tiles, Task ID, Task status]``.
+The meaning of each long value in each thread array is: ``[tiles processed, total # of tiles to process, expected remaining time in seconds, Task ID, Task status]``.
 The meaning of the ``Task status`` field is:
 -1 = ABORTED, 
 0 = PENDING, 

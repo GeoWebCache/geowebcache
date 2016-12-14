@@ -1,3 +1,273 @@
+GeoWebCache 1.9.2 (2016-10-11)
+------------------------------
+
+Patch release for 1.9.x series
+
+Improvements:
++++++++++++++
+- Support for image/vnd.jpeg-png format
+- Support expanding parameters in the disk quota connection configuration
+- Add extra WMTS metadata in the capabilities documents, and allow its customization
+
+Fixes:
+++++++
+- Disallow entity expansion when reading remote WMS capabilities documents
+- Avoid NPE in disk quota while using JDBCQuotaStore
+
+
+GeoWebCache 1.9.1 (2016-08-02)
+------------------------------
+
+Patch release for 1.9.x series
+
+Improvements:
++++++++++++++
+- Added MBTiles Blob Store.
+- Minor dependency updates.
+
+Fixes:
+++++++
+- Fixed error when viewing main page shortly after start up.
+
+
+GeoWebCache 1.9.0 (2016-05-27)
+------------------------------
+
+First stable release for 1.9.x
+
+
+GeoWebCache 1.9-RC1 (2016-05-02)
+--------------------------------
+
+First Release Candidate for 1.9.x
+
+
+GeoWebCache 1.9-beta2 (2016-04-18)
+----------------------------------
+
+Second Beta of 1.9
+
+Improvements:
++++++++++++++
+- Refactored S3 Store for easier testing
+- Updated to Spring 4.2.5
+- Updated from ACEGI Security to Spring Security 4.0.4
+- Updated to Servlet 3.0.1 (note This means older application servers like Tomcat 6 are no longer supported)
+- Updated to Commons Collections 3.2.2
+- Extension point to allow plugins to reskin the UI
+
+Fixes:
+++++++
+- Delete cached tiles when deleting a layer via rest
+- Javascript fix on demo page
+- Fixed Thread Exhaustion bug on repeated restarts
+
+GeoWebCache 1.9-beta1 (2016-02-26)
+----------------------------------
+
+Beta of 1.9
+
+Improvements:
++++++++++++++
+- Build using Java 8
+- Pinned joda-time dependency used by S3 Store
+
+Fixes:
+++++++
+- Fixed typo in S3 Store pending deletes file
+- Fixed REST DELETE with URL endoced names
+- Fixed Oracle Diskquota init
+- Fixed exception in disk-quota-config
+
+
+GeoWebCache 1.9-M0 (2015-12-17)
+-------------------------------
+
+Tech Preview Milestone for 1.9.x
+
+Improvements:
++++++++++++++
+- Support for UTFGrid tiles
+- Updated Postgres driver to 9.4
+- Abstraction of configuration storage API
+
+GeoWebCache 1.8-beta (2015-08-28)
+----------------------------------
+
+Beta release for 1.8.x
+
+Improvements:
++++++++++++++
+- Different strage back ends can be assigned to individual layers
+- S3 storage back end
+- WMTS capabilites includes a computer WGS84 bounding box for Google Mercator gridsets
+- Support for reading ArcGIS 10.3 caches
+- Allow applications embedding GWC to set the config directory
+
+Fixes:
+++++++
+- Blocked remote code execution via REST.
+
+
+GeoWebCache 1.8-M0 (2015-05-26)
+----------------------------------
+
+Tech Preview Milestone for 1.8.x
+
+Improvements:
++++++++++++++
+- StringParameterFilter and RegexParameterFilter support case normalization
+- IntegerParameterFilter
+- Additional configuration options for ArcGIS Cache
+- TileObject API revised to remove unused properties
+- Updated for GeoTools 14
+
+Fixes:
+++++++
+- Fix for a issue in GS-GWC integrations's handling of DiskQuota
+- Fixed missing assignment of TransientCache
+- Doc Fixes
+
+GeoWebCache 1.7.1 (2015-05-19)
+----------------------------------
+
+First maintenance release for the 1.7.x branch.
+
+Improvements:
++++++++++++++
+- Configure location of geowebcache.xml via property/environment variable
+
+
+GeoWebCache 1.7.0 (2015-03-19)
+----------------------------------
+
+First stable relase of the 1.7 branch.
+
+Fixes:
+++++++
+- Fixed errors in REST documentation
+- Fixed typo with potential for infinite recursion
+
+
+GeoWebCache 1.7.0-RC1 (2015-02-20)
+----------------------------------
+
+First release candidate for GeoWebCache 1.7.0.
+
+Fixes:
+++++++
+- Bad string format for Time Remaining when seeding tiles
+- HazelcastCacheProviderTest fails without multicast support
+- Updated config schema for advertised and transient properties
+
+
+GeoWebCache 1.7-beta (2015-01-19)
+----------------------------------
+
+Beta release for the 1.7.x branch
+
+Improvements:
++++++++++++++
+- Documentation Updates
+- Mark layers as unadvertised to hide the from the capabilities documents
+- Mark layers as transient so they are not persisted
+- Clusterable in memory caching
+- Prototype for OpenLayers 3 based layer preview
+
+
+GeoWebCache 1.6.1 (2015-01-19)
+----------------------------------
+
+First maintenance release for the 1.6.x branch.
+
+Improvements:
++++++++++++++
+- Atomic File renaming on Windows.
+
+Fixes:
+++++++
+- Correctly Initialize ImageIO SPIs
+
+
+GeoWebCache 1.6.0 (2014-09-24)
+----------------------------------
+
+Final 1.6.0 version.
+
+Improvements:
++++++++++++++
+- GML3 MIME Type
+
+Fixes:
+++++++
+- Fix double slashes in capabilities when gwc is deployed on root context '/'
+- Transient Cache does not track removal of entries
+- Transient Cache does not expire resources
+- Parameters not passed down when running GetFeatureInfo
+- Null checks on layer name when building conveyor
+
+
+GeoWebCache 1.6.0-RC1 (2014-08-18)
+----------------------------------
+
+First release candidate for GeoWebCache 1.6.x.
+
+Improvements:
++++++++++++++
+- UTF-8 compiler setting
+- Switch to new boundless maven repository
+
+GeoWebCache 1.6.0-beta (2014-07-21)
+------------------------------------
+
+First beta release for GeoWebCache 1.6.x
+
+Improvements:
++++++++++++++
+- WMSTileFuser improvements
+- Comprehensive proof reading of the docs
+- Update to Java 7 (A Version 7 JRE is now required)
+- Update to GeoTools 12
+- Update to JTS 1.13
+- Update to Guava 17
+- Update to ImageIO-Ext 1.1.10
+- Support for ArcGIS compact caches
+
+Fixes:
+++++++
+- Fix ArcGISCompactCacheTest failure in path with spaces
+- WMSTileFuser improvements
+
+
+GeoWebCache 1.5.3 (2014-07-21)
+------------------------------
+
+Third maintenance release of GeoWebCache 1.5.x
+
+Improvements:
++++++++++++++
+- Increase Layer name field in DiscQuota DB to 128 chars
+
+Fixes:
+++++++
+- NioLock can fail to release the memory lock going with it in some cases
+- Fixed support for STYLE parameter in WMTS
+- Fixed unescaped XML characters in capabilities documents
+- Exception thrown when calling getCoverageIntersections on a GridSubset
+- GeoWebCache complains about unrecognized element gwcConfig on startup
+
+GeoWebCache 1.5.2 (2014-05-02)
+------------------------------
+
+Second maintenance release of GeoWebCache 1.5.x
+
+Fixes:
+++++++
+- Fix a bug in FilePathFilter that prevented truncate tasks from running if the tile layer had a cache for more than one gridset
+- Fixed a binary incompatible API change introduced in 1.5.1 by the additing of the abstract method TileLayer.getMetadataURLs(). Made it concrete and overridable by subclasses.
+- Fixed config file schema version, was mistakenly set to 1.6.0 while it should be 1.5.0
+
+
 GeoWebCache 1.5.1 (2014-01-19)
 ------------------------------
 
@@ -22,9 +292,12 @@ Fixes:
 GeoWebCache 1.5.0 (2013-08-18)
 ------------------------------
 
-Final 1.5.0 version. (Same as beta) 
+Final 1.5.0 version. (Same as beta)
 
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 1.9.2
 GeoWebCache 1.5.0-beta (2013-07-17)
 ------------------------------
 
@@ -47,11 +320,11 @@ Notable Bug Fixes:
 GeoWebCache 1.4.0 (2013-07-09)
 ------------------------------
 
-After more than a year without a release and with GeoServer shipping with a 
+After more than a year without a release and with GeoServer shipping with a
 milestone of the GeoWebCache master, we've decided to synchronize releases with
 GeoServer and GeoTools once every 6 months starting with GeoWebCache 1.5 to be
 released in conjuntion with GeoServer 2.4.  GeoWebCache 1.4 is based on the
-milestone GeoServer was using and we are treating its use in GeoServer for 
+milestone GeoServer was using and we are treating its use in GeoServer for
 several months as being a successful release candidate.
 
 Improvements:
@@ -71,7 +344,7 @@ Notable Bug Fixes:
 - Fix an XSS vulnerability in OWSExceptions
 - fix XSS vulnerability in ExceptionReport
 - Force TileBreeder to drain currentPool.
-- ArrayIndexOutOfBoundsException when producing WMTS capabilities with layers 
+- ArrayIndexOutOfBoundsException when producing WMTS capabilities with layers
   that do cache grids
 - Update global quota when a layer or a gridset is removed
 - Fixed off by one error when converting between internal and WMTS coordinates
@@ -105,7 +378,7 @@ Improvements:
   * POST'ing to /rest/seed with the kill_all form parameter kills tasks for all layers;
   * It is possible to specify whether to kill only the running tasks (previous behavior), pending tasks, or both running and pending.
 
- 
+
 
 Bug fixes:
 +++++++++
@@ -127,7 +400,7 @@ This is the second release candidate of the 1.3 series, bringing a number
 of new functionalities and bug fixes.
 
 Thanks to Miles Jordan and Just van den Broecke for the bug reports and patches.
-Also a warm welcome to Ian Schneider from OpenGeo to the development team and 
+Also a warm welcome to Ian Schneider from OpenGeo to the development team and
 a big thanks for his contributions.
 
 New Functionality:
@@ -190,20 +463,20 @@ Bug fixes and improvements:
 
 
 GeoWebCache 1.2.6 (2011-04-19)
------------------------------- 
+------------------------------
 
 Bug fix release:
 
 - Prevent stale thread locals when getTile is called with cache miss.
 - Use layer's default mime type as FORMAT parameter for GetFeatureInfo, since the provided MimeType is valid only for INFO_FORMAT.
-- Fixes to WMTS exception codes, locators and http status codes. 
+- Fixes to WMTS exception codes, locators and http status codes.
 - Send HTTP basc authentication preemtively to backend WMS's to avoid double round-trip when seeding.
 - Do not use JAI's crop operation if native JAI is no available and storage format is jpeg, the non native JAI operation is buggy.
 - Allow to specify a different tile location than the config file for ArcGIS tiling schemes.
 
 
 GeoWebCache 1.2.5 (2011-04-02)
------------------------------- 
+------------------------------
 
 This release comes with a number of bug fixes and improvements (check the full list bellow), remarkably:
 
@@ -222,12 +495,12 @@ This release comes with a number of bug fixes and improvements (check the full l
 GeoWebCache 1.2.4 (2011-01-24)
 ------------------------------
 
-Since the last official release (1.2.2), the GeoWebCache development of new features and bug 
+Since the last official release (1.2.2), the GeoWebCache development of new features and bug
 fixes continued, the project sources moved from SVN hosting to GIT[1], the code base was modularized,
 and the documentation[2] also improved a lot (thanks to Mike Pumphrey from OpenGeo for the docs).
 
 Thanks also to our oldest contributor, Arne Kepp, for his continued community support, our
-newest one Miles Jordan, and Gabriel Roldan for some of the new features since joining the 
+newest one Miles Jordan, and Gabriel Roldan for some of the new features since joining the
 development team last year.
 
 In this release, besides numerous bug fixes, you'll find three new exciting features:

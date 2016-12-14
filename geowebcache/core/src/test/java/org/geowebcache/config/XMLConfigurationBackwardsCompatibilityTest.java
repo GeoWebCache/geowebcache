@@ -1,6 +1,7 @@
 package org.geowebcache.config;
 
 import static java.util.Arrays.asList;
+import static org.junit.Assert.*;
 
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -13,8 +14,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import junit.framework.TestCase;
-
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.request.RequestFilter;
@@ -24,20 +23,17 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.ImageMime;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-public class XMLConfigurationBackwardsCompatibilityTest extends TestCase {
+public class XMLConfigurationBackwardsCompatibilityTest {
 
     public static final String GWC_125_CONFIG_FILE = "geowebcache_125.xml";
 
     public static final String LATEST_FILENAME = "geowebcache_130.xml";
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
+    @Test
     public void testLoadPre10() throws Exception {
         List<TileLayer> layers = loadResource("geowebcache_pre10.xml");
         TileLayer layer = findLayer(layers, "topp:states");
@@ -48,6 +44,7 @@ public class XMLConfigurationBackwardsCompatibilityTest extends TestCase {
         assertTrue(grid != null);
     }
 
+    @Test
     public void testLoad10() throws Exception {
         List<TileLayer> layers = loadResource("geowebcache_10.xml");
         TileLayer layer = findLayer(layers, "topp:states");
@@ -59,6 +56,7 @@ public class XMLConfigurationBackwardsCompatibilityTest extends TestCase {
         assertTrue(grid != null);
     }
 
+    @Test
     public void testLoad101() throws Exception {
         List<TileLayer> layers = loadResource("geowebcache_101.xml");
         TileLayer layer = findLayer(layers, "topp:states");
@@ -76,6 +74,7 @@ public class XMLConfigurationBackwardsCompatibilityTest extends TestCase {
         assertEquals(layer2.isCacheBypassAllowed().booleanValue(), false);
     }
 
+    @Test
     public void testLoad114() throws Exception {
         List<TileLayer> layers = loadResource("geowebcache_114.xml");
         TileLayer layer = findLayer(layers, "topp:states");
@@ -101,6 +100,7 @@ public class XMLConfigurationBackwardsCompatibilityTest extends TestCase {
         assertEquals(filters.get(1).getName(), "testFileRasterFilter");
     }
 
+    @Test
     public void testLoad115() throws Exception {
         List<TileLayer> layers = loadResource("geowebcache_115.xml");
         TileLayer layer = findLayer(layers, "topp:states");
@@ -128,6 +128,7 @@ public class XMLConfigurationBackwardsCompatibilityTest extends TestCase {
         assertEquals(filter1.getName(), "testFileRasterFilter");
     }
 
+    @Test
     public void testLoad126() throws Exception {
 
         XMLConfiguration config = loadConfig("geowebcache_126.xml");

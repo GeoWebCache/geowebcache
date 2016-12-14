@@ -106,7 +106,7 @@ public class Demo {
             GridSetBroker gridSetBroker) throws GeoWebCacheException {
         String reloadPath = "rest/reload";
 
-        String header = "<html>\n" + ServletUtils.gwcHtmlHeader("GWC Demos") + "<body>\n"
+        String header = "<html>\n" + ServletUtils.gwcHtmlHeader("","GWC Demos") + "<body>\n"
                 + ServletUtils.gwcHtmlLogoLink("") + "<table>\n"
                 + "<table cellspacing=\"10\" border=\"0\">\n"
                 + "<tr><td><strong>Layer name:</strong></td>\n"
@@ -147,6 +147,9 @@ public class Demo {
         Set<String> layerList = new TreeSet<String>(tileLayerDispatcher.getLayerNames());
         for (String layerName : layerList) {
             TileLayer layer = tileLayerDispatcher.getTileLayer(layerName);
+            if(!layer.isAdvertised()){
+                continue;
+            }
             buf.append("<tr><td style=\"min-width: 100px;\"><strong>" + layer.getName()
                     + "</strong><br />\n");
             buf.append("<a href=\"rest/seed/" + layer.getName() + "\">Seed this layer</a>\n");
@@ -267,12 +270,14 @@ public class Demo {
                 + openLayersPath
                 + "\"></script>    \n"
                 + "<script type=\"text/javascript\">               \n"
-                + "var map, demolayer;                               \n"
+                + "var map, demolayer, params;                     \n"
+                + "filteredParams = {};                                    \n"
                 + "  // sets the chosen modifiable parameter        \n"
                 + "  function setParam(name, value){                \n"
-                + "   str = \"demolayer.mergeNewParams({\" + name + \": '\" + value + \"'})\" \n"
-                + "   // alert(str);                                   \n"
-                + "   eval(str);                                    \n"
+                + "   var newParams = {};                           \n"
+                + "   newParams[name] = value;                      \n"
+                + "   demolayer.mergeNewParams(newParams);          \n"
+                + "   filteredParams[name]=value;                   \n"
                 + "  }                                              \n"
 
                 + "OpenLayers.DOTS_PER_INCH = "
@@ -333,9 +338,14 @@ public class Demo {
                 + "    BBOX: map.getExtent().toBBOX(),\n" + "    X: e.xy.x,\n" + "    Y: e.xy.y,\n"
                 + "    INFO_FORMAT: 'text/html',\n"
                 + "    QUERY_LAYERS: map.layers[0].params.LAYERS,\n" + "    FEATURE_COUNT: 50,\n"
-                + "    Layers: '" + layerName + "',\n" + "    Styles: '',\n" + "    Srs: '"
+                + "    Layers: '" + layerName + "',\n"
+                + "    Srs: '"
                 + gridSubset.getSRS().toString() + "',\n" + "    WIDTH: map.size.w,\n"
                 + "    HEIGHT: map.size.h,\n" + "    format: \"" + formatStr + "\" };\n"
+                + "  // Merge in filtered params\n"
+                + "  for(var p in filteredParams) {\n"
+                + "    params[p]=filteredParams[p];\n"
+                + "  }\n"
                 + "  OpenLayers.loadURL(\"../service/wms\", params, this, setHTML, setHTML);\n"
                 + "  OpenLayers.Event.stop(e);\n" + "  });\n" + "}\n"
                 + "function setHTML(response){\n"

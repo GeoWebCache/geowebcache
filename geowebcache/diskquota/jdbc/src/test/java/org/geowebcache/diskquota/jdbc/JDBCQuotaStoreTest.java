@@ -327,8 +327,9 @@ public abstract class JDBCQuotaStoreTest extends OnlineTestCase {
         // verify the quota for tset2 got erased and that now the total is equal to tset1
         tset1Quota = store.getUsedQuotaByTileSetId(tset1.getId());
         tset2Quota = store.getUsedQuotaByTileSetId(tset2.getId());
+        assertNotNull(tset2Quota);
+        assertEquals(new BigInteger("0"), tset2Quota.getBytes());
         globalQuota = store.getGloballyUsedQuota();
-        assertNull(tset2Quota);
         assertEquals(tset1Quota.getBytes(), globalQuota.getBytes());
     }
 

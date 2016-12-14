@@ -17,7 +17,16 @@
  */
 package org.geowebcache.mime;
 
+import java.util.Map;
+import java.util.Set;
+
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+
 public class ApplicationMime extends MimeType {
+    
+    protected boolean vector;
 
     public static final ApplicationMime bil16 = new ApplicationMime(
             "application/bil16", "bil16", "bil16",
@@ -31,9 +40,43 @@ public class ApplicationMime extends MimeType {
             "application/json", "json", "json",
             "application/json", false);
     
+    public static final ApplicationMime topojson = new ApplicationMime("application/json",
+            "topojson", "topojson", "application/json;type=topojson", true);
+
+    public static final ApplicationMime geojson = new ApplicationMime("application/json",
+            "geojson", "geojson", "application/json;type=geojson", true);
+    
+    public static final ApplicationMime utfgrid = new ApplicationMime("application/json",
+            "utfgrid", "utfgrid", "application/json;type=utfgrid", true);
+
+    public static final ApplicationMime mapboxVector = new ApplicationMime("application/x-protobuf",
+            "pbf", "mapbox-vectortile", "application/x-protobuf;type=mapbox-vector", true);
+
+    static Set<ApplicationMime> ALL = ImmutableSet.of(bil16, bil32, json, topojson,
+            geojson, utfgrid, mapboxVector);
+
+    private static Map<String, ApplicationMime> BY_FORMAT = Maps.uniqueIndex(ALL,
+            new Function<ApplicationMime, String>() {
+
+                @Override
+                public String apply(ApplicationMime mimeType) {
+                    return mimeType.getFormat();
+                }
+            });
+    
+    private static Map<String, ApplicationMime> BY_EXTENSION = Maps.uniqueIndex(ALL,
+            new Function<ApplicationMime, String>() {
+
+                @Override
+                public String apply(ApplicationMime mimeType) {
+                    return mimeType.getFileExtension();
+                }
+            });
+
     private ApplicationMime(String mimeType, String fileExtension, 
-                String internalName, String format, boolean noop) {
+            String internalName, String format, boolean vector) {
         super(mimeType, fileExtension, internalName, format, false);
+        this.vector = vector;
     }
         
     public ApplicationMime(String mimeType, String fileExtension, 
@@ -42,26 +85,17 @@ public class ApplicationMime extends MimeType {
     }
 
     protected static ApplicationMime checkForFormat(String formatStr) throws MimeException {
-        if (formatStr.equalsIgnoreCase(bil16.format)) {
-            return bil16;
-        } else if (formatStr.equalsIgnoreCase(bil32.format)) {
-            return bil32;
-        } else if (formatStr.equalsIgnoreCase(json.format)) {
-            return json;
-        }
-        
-        return null;
+        ApplicationMime mimeType = BY_FORMAT.get(formatStr);
+        return mimeType;
     }
     
     protected static ApplicationMime checkForExtension(String fileExtension) throws MimeException {
-        if (fileExtension.equals(bil16.fileExtension)) {
-            return bil16;
-        } else if (fileExtension.equals(bil32.fileExtension)) {
-            return bil32;
-        } else if (fileExtension.equals(json.fileExtension)) {
-            return json;
-        }
-        
-        return null;
+        ApplicationMime mimeType = BY_EXTENSION.get(fileExtension);
+        return mimeType;
+    }
+    
+    @Override
+    public boolean isVector() {
+        return vector;
     }
 }

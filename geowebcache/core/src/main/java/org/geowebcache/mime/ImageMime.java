@@ -17,14 +17,38 @@
  */
 package org.geowebcache.mime;
 
+import java.awt.image.IndexColorModel;
+import java.awt.image.RenderedImage;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.Iterator;
+
+import javax.imageio.ImageWriter;
+import javax.media.jai.JAI;
+import javax.media.jai.RenderedOp;
+import javax.media.jai.operator.ExtremaDescriptor;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class ImageMime extends MimeType {
+
+    private static Log log = LogFactory.getLog(org.geowebcache.mime.ImageMime.class);
     
     boolean supportsAlphaChannel;
     
     boolean supportsAlphaBit;
 
     public static final ImageMime png = 
-        new ImageMime("image/png", "png", "png", "image/png", true, true, true);
+        new ImageMime("image/png", "png", "png", "image/png", true, true, true) {
+        
+        /**
+         * Any response mime starting with image/png will do
+         */
+        public boolean isCompatible(String otherMimeType) {
+            return super.isCompatible(otherMimeType) || otherMimeType.startsWith("image/png");
+        };
+    };
 
     public static final ImageMime jpeg = 
         new ImageMime("image/jpeg", "jpeg", "jpeg", "image/jpeg", true, false, false);
@@ -47,6 +71,68 @@ public class ImageMime extends MimeType {
     public static final ImageMime dds = 
         new ImageMime("image/dds", "dds", "dds", "image/dds", false, false, false);
     
+    public static final ImageMime jpegPng = 
+        new ImageMime("image/vnd.jpeg-png", "jpeg-png", "jpeg-png", "image/vnd.jpeg-png", true, true, true) {
+        
+        private static final int JPEG_MAGIC_MASK = 0xffd80000;
+        
+        /**
+         * Returns true if the best format to encode the image is jpeg (the image is rgb, or rgba without any actual
+         * transparency use). This code is duplicated in GeoServer JpegPngRenderedImageMapOutputFormat. Unfortunately
+         * gwc-core does not depend on GeoTools, so we don't have an easy place to share it. On the bright side, it's small.
+         *
+         * @param renderedImage
+         * @param renderingHints
+         * @return
+         */
+        boolean isBestFormatJpeg(RenderedImage renderedImage)
+        {
+            int numBands = renderedImage.getSampleModel().getNumBands();
+            if (numBands == 4 || numBands == 2)
+            {
+                RenderedOp extremaOp = ExtremaDescriptor.create(renderedImage, null, 1, 1, false, 1, JAI.getDefaultInstance().getRenderingHints());
+                double[][] extrema = (double[][]) extremaOp.getProperty("Extrema");
+                double[] mins = extrema[0];
+        
+                return mins[mins.length - 1] == 255; // fully opaque
+            } else if(renderedImage.getColorModel() instanceof IndexColorModel) {
+                // JPEG would still compress a bit better, but in order to figure out
+                // if the image has transparency we'd have to expand to RGB or roll
+                // a new JAI image op that looks for the transparent pixels. Out of scope for the moment
+                return false;
+            } else {
+                // otherwise support RGB or gray
+                return (numBands == 3) || (numBands == 1);
+            }
+        }
+        
+        public ImageWriter getImageWriter(RenderedImage image) {
+            if(isBestFormatJpeg(image)) {
+                return jpeg.getImageWriter(image);
+            } else {
+                return png.getImageWriter(image);
+            }
+        }
+        
+        public String getMimeType(org.geowebcache.io.Resource resource) throws IOException {
+            try(DataInputStream dis = new DataInputStream(resource.getInputStream()))
+            {
+                final int head = dis.readInt();
+                if((head & 0xFFFF0000) == JPEG_MAGIC_MASK) {
+                    return jpeg.getMimeType();
+                } else {
+                    return png.getMimeType();
+                }
+            }
+        };
+        
+        @Override
+            public boolean isCompatible(String otherMimeType) {
+                return jpeg.isCompatible(otherMimeType) || png.isCompatible(otherMimeType);
+            }
+        
+    };
+    
     private ImageMime(String mimeType, String fileExtension, 
             String internalName, String format, boolean tiled,
             boolean alphaChannel, boolean alphaBit) {
@@ -56,40 +142,41 @@ public class ImageMime extends MimeType {
         this.supportsAlphaBit = alphaBit;
     }
 
-    protected static ImageMime checkForFormat(String formatStr)
-    throws MimeException {
-        String tmpStr = formatStr.substring(6,formatStr.length());
-        
-        if ( tmpStr.equalsIgnoreCase("png")) {
+    protected static ImageMime checkForFormat(String formatStr) throws MimeException {
+        if (!formatStr.startsWith("image/")) {
+            return null;
+        }
+        final String tmpStr = formatStr.substring(6, formatStr.length());
+
+        // TODO Making a special exception, generalize later
+        if (!formatStr.equals("image/png; mode=24bit") && formatStr.contains(";")) {
+            if (log.isDebugEnabled()) {
+                log.debug("Slicing off " + formatStr.split(";")[1]);
+            }
+            formatStr = formatStr.split(";")[0];
+        }
+ 
+        if (tmpStr.equalsIgnoreCase("png")) {
             return png;
-        } else if ( tmpStr.equalsIgnoreCase("jpeg")) {
+        } else if (tmpStr.equalsIgnoreCase("jpeg")) {
             return jpeg;
-        } else if ( tmpStr.equalsIgnoreCase("gif")) {
+        } else if (tmpStr.equalsIgnoreCase("gif")) {
             return gif;
-        } else if ( tmpStr.equalsIgnoreCase("tiff")) {
+        } else if (tmpStr.equalsIgnoreCase("tiff")) {
             return tiff;
-        } else if ( tmpStr.equalsIgnoreCase("png8")) {
+        } else if (tmpStr.equalsIgnoreCase("png8")) {
             return png8;
-        } else if ( tmpStr.equalsIgnoreCase("png24")) {
+        } else if (tmpStr.equalsIgnoreCase("png24")) {
             return png24;
-        } else if ( tmpStr.equalsIgnoreCase("png; mode=24bit")) {
+        } else if (tmpStr.equalsIgnoreCase("png; mode=24bit")) {
             return png_24;
-        } else if ( tmpStr.equalsIgnoreCase("png;%20mode=24bit")) {
+        } else if (tmpStr.equalsIgnoreCase("png;%20mode=24bit")) {
             return png_24;
+        } else if(tmpStr.equalsIgnoreCase("vnd.jpeg-png")) {
+            return jpegPng;
         }
         return null;
     }
-
-//    public static ImageMime createFromMimeType(String mimeType) {
-//        ImageMime imageMime = checkForMimeType(mimeType);
-//        if (imageMime == null) {
-//            log.error("Unsupported MIME type: " + mimeType
-//                    + ", falling back to PNG.");
-//            imageMime = new ImageMime("image/png", "png", "png");
-//        }
-//
-//        return imageMime;
-//    }
 
     protected static ImageMime checkForExtension(String fileExtension) 
     throws MimeException {
@@ -107,6 +194,8 @@ public class ImageMime extends MimeType {
             return png24;
         } else if (fileExtension.equalsIgnoreCase("png_24")) {
             return png_24;
+        } else if (fileExtension.equalsIgnoreCase("jpeg-png")) {
+           return jpegPng;
         }
         return null;
     }
@@ -118,15 +207,11 @@ public class ImageMime extends MimeType {
     public boolean supportsAlphaChannel() {
         return supportsAlphaChannel;
     }
+    
+    public ImageWriter getImageWriter(RenderedImage image) {
+        Iterator<ImageWriter> it = javax.imageio.ImageIO.getImageWritersByFormatName(internalName);
+        ImageWriter writer = it.next();
+        return writer;
+    }
 
-//    public static ImageMime createFromExtension(String fileExtension) {
-//        ImageMime imageMime = checkForExtension(fileExtension);
-//        if (imageMime == null) {
-//            log.error("Unsupported MIME type: " + fileExtension
-//                    + ", falling back to PNG.");
-//            imageMime = new ImageMime("image/png", "png", "png");
-//        }
-//
-//        return imageMime;
-//    }
 }
