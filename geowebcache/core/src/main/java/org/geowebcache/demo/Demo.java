@@ -177,7 +177,7 @@ public class Demo {
 
                 buf.append("</td><td>OpenLayers: [");
                 buf.append(layer.getMimeTypes().stream()
-                    .filter(MimeType::supportsTiling)
+                    .filter(type -> type.supportsTiling() || type.isVector())
                     .map(type -> generateDemoUrl(layer.getName(), gridSubset.getName(),type))
                     .collect(Collectors.joining(", ")));
                     
@@ -233,6 +233,17 @@ public class Demo {
 
         BoundingBox bbox = gridSubset.getGridSetBounds();
         BoundingBox zoomBounds = gridSubset.getOriginalExtent();
+
+        MimeType formatMime = null;
+
+        for (MimeType mime : layer.getMimeTypes()) {
+            if (formatStr.equalsIgnoreCase(mime.getFormat())) {
+                formatMime = mime;
+            }
+        }
+        if (formatMime == null) {
+            formatMime = layer.getDefaultMimeType();
+        }
         
         StringBuffer buf = new StringBuffer();
 
@@ -242,9 +253,9 @@ public class Demo {
 
         String openLayersPath;
         if (asPlugin) {
-            openLayersPath = "../../ol3/lib/";
+            openLayersPath = "../../openlayers3/";
         } else {
-            openLayersPath = "../ol3/lib/";
+            openLayersPath = "../openlayers3/";
         }
         
         buf.append("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n");
@@ -324,68 +335,173 @@ public class Demo {
         buf.append("var layerName = '")
                 .append(layerName)
                 .append("';\n");
-        buf.append("var projection = ol.proj.get('")
+
+        String unit = "";
+        double mpu = gridSet.getMetersPerUnit();
+        if (doubleEquals(mpu, 1)) {
+            unit = "m";
+        } else if (doubleEquals(mpu, 0.3048)) {
+            unit = "ft";
+        //Use the average of equatorial and polar radius, and a large margin of error
+        } else if (doubleEquals(mpu, Math.PI*(6378137 + 6356752)/360,  Math.PI*(6378137 - 6356752)/360 )) {
+            unit = "degrees";
+        }
+
+        buf.append("var projection = new ol.proj.Projection({\n")
+                .append("code: '")
                 .append(gridSubset.getSRS().toString())
-                .append("');\n");
-        buf.append("var projectionExtent = projection.getExtent();\n");
-        buf.append("var size = ol.extent.getWidth(projectionExtent) / 256;\n");
+                .append("',\n")
+                .append("units: '")
+                .append(unit)
+                .append("',\n")
+                .append("axisOrientation: 'neu'\n")
+                .append("});\n");
         buf.append("var resolutions = ")
                 .append(Arrays.toString(gridSubset.getResolutions()))
                 .append(";\n");
-        buf.append("baseParams = ['VERSION','LAYER','STYLE','TILEMATRIX','TILEMATRIXSET','SERVICE','FORMAT'];\n"
-                + "\n"
-                + "params = {\n"
-                + "  'VERSION': '1.0.0',\n"
-                + "  'LAYER': layerName,\n"
-                + "  'STYLE': style,\n"
-                + "  'TILEMATRIX': gridNames,\n"
-                + "  'TILEMATRIXSET': gridsetName,\n"
-                + "  'SERVICE': 'WMTS',\n"
-                + "  'FORMAT': format\n"
-                + "};\n"
-                + "\n"
-                + "function constructSource() {\n"
-                + "  var url = baseUrl+'?'\n"
-                + "  for (var param in params) {\n"
-                + "    if (baseParams.indexOf(param.toUpperCase()) < 0) {\n"
-                + "      url = url + param + '=' + params[param] + '&';\n"
-                + "    }\n"
-                + "  }\n"
-                + "  url = url.slice(0, -1);\n"
-                + "\n"
-                + "  var source = new ol.source.WMTS({\n"
-                + "    url: url,\n"
-                + "    layer: params['LAYER'],\n"
-                + "    matrixSet: params['TILEMATRIXSET'],\n"
-                + "    format: params['FORMAT'],\n"
-                + "    projection: projection,\n"
-                + "    tileGrid: new ol.tilegrid.WMTS({\n");
-        buf.append("      tileSize: [")
-                .append(gridSubset.getTileWidth()).append(",")
-                .append(gridSubset.getTileHeight()).append("],\n");
-        if (gridSet.isTopLeftAligned()) {
-            buf.append("      origin: [")
-                    .append(bbox.getMaxX()).append(", ")
-                    .append(bbox.getMinY()).append("],\n");
+
+        if (formatMime.isVector()) {
+            buf.append("params = {\n"
+                    + "  'REQUEST': 'GetTile',\n"
+                    + "  'SERVICE': 'WMTS',\n"
+                    + "  'VERSION': '1.0.0',\n"
+                    + "  'LAYER': layerName,\n"
+                    + "  'STYLE': style,\n"
+                    + "  'TILEMATRIX': gridsetName + ':{z}',\n"
+                    + "  'TILEMATRIXSET': gridsetName,\n"
+                    + "  'FORMAT': format,\n"
+                    + "  'TILECOL': '{x}',\n"
+                    + "  'TILEROW': '{y}'\n"
+                    + "};\n"
+                    + "\n");
+            buf.append("function constructSource() {\n"
+                    + "  var url = baseUrl+'?'\n"
+                    + "  for (var param in params) {\n"
+                    + "    url = url + param + '=' + params[param] + '&';\n"
+                    + "  }\n"
+                    + "  url = url.slice(0, -1);\n"
+                    + "\n"
+                    + "  var source = new ol.source.VectorTile({\n"
+                    + "    url: url,\n");
+            //Examine mime type for correct VT format
+            String vtName = formatMime.getInternalName();
+            if ("mapbox-vectortile".equals(vtName)) {
+                buf.append("    format: new ol.format.MVT({}),\n");
+            } else if ("topojson".equals(vtName)) {
+                buf.append("    format: new ol.format.TopoJSON({}),\n");
+            } else if ("geojson".equals(vtName)) {
+                buf.append("    format: new ol.format.GeoJSON({}),\n");
+            }
+            buf.append("    projection: projection,\n"
+                    + "    tileGrid: new ol.tilegrid.WMTS({\n");
+            buf.append("      tileSize: [")
+                    .append(gridSubset.getTileWidth()).append(",")
+                    .append(gridSubset.getTileHeight()).append("],\n");
+            if (gridSet.isTopLeftAligned()) {
+                buf.append("      origin: [")
+                        .append(bbox.getMaxX()).append(", ")
+                        .append(bbox.getMinY()).append("],\n");
+            } else {
+                buf.append("      origin: [")
+                        .append(bbox.getMinX()).append(", ")
+                        .append(bbox.getMaxY()).append("],\n");
+            }
+            buf.append("      resolutions: resolutions,\n"
+                    + "      matrixIds: gridNames\n"
+                    + "    }),\n"
+                    + "    wrapX: true\n"
+                    + "  });\n"
+                    + "  return source;\n"
+                    + "}\n"
+                    + "\n"
+                    + "var layer = new ol.layer.VectorTile({\n"
+                    + "  source: constructSource()\n"
+                    + "});\n"
+                    + "\n");
+
         } else {
-            buf.append("      origin: [")
-                    .append(bbox.getMinX()).append(", ")
+            buf.append("baseParams = ['VERSION','LAYER','STYLE','TILEMATRIX','TILEMATRIXSET','SERVICE','FORMAT'];\n"
+                    + "\n"
+                    + "params = {\n"
+                    + "  'VERSION': '1.0.0',\n"
+                    + "  'LAYER': layerName,\n"
+                    + "  'STYLE': style,\n"
+                    + "  'TILEMATRIX': gridNames,\n"
+                    + "  'TILEMATRIXSET': gridsetName,\n"
+                    + "  'SERVICE': 'WMTS',\n"
+                    + "  'FORMAT': format\n"
+                    + "};\n"
+                    + "\n");
+            buf.append("function constructSource() {\n"
+                    + "  var url = baseUrl+'?'\n"
+                    + "  for (var param in params) {\n"
+                    + "    if (baseParams.indexOf(param.toUpperCase()) < 0) {\n"
+                    + "      url = url + param + '=' + params[param] + '&';\n"
+                    + "    }\n"
+                    + "  }\n"
+                    + "  url = url.slice(0, -1);\n"
+                    + "\n"
+                    + "  var source = new ol.source.WMTS({\n"
+                    + "    url: url,\n"
+                    + "    layer: params['LAYER'],\n"
+                    + "    matrixSet: params['TILEMATRIXSET'],\n"
+                    + "    format: params['FORMAT'],\n"
+                    + "    projection: projection,\n"
+                    + "    tileGrid: new ol.tilegrid.WMTS({\n");
+            buf.append("      tileSize: [")
+                    .append(gridSubset.getTileWidth()).append(",")
+                    .append(gridSubset.getTileHeight()).append("],\n");
+            buf.append("      extent: [")
+                    .append(bbox.getMinX()).append(",")
+                    .append(bbox.getMinY()).append(",")
+                    .append(bbox.getMaxX()).append(",")
                     .append(bbox.getMaxY()).append("],\n");
+
+            if (gridSubset.fullGridSetCoverage()) {
+                buf.append("      origins: [");
+                for (int i = 0; i < gridSet.getNumLevels(); i++) {
+                    if (i != 0) {
+                        buf.append(",");
+                    }
+                    BoundingBox subbox = gridSubset.getCoverageBounds(i);
+                    if (gridSet.isTopLeftAligned()) {
+                        buf.append("[")
+                                .append(subbox.getMaxX()).append(", ")
+                                .append(subbox.getMinY()).append("]");
+                    } else {
+                        buf.append("[")
+                                .append(subbox.getMinX()).append(", ")
+                                .append(subbox.getMaxY()).append("]");
+                    }
+                }
+                buf.append("],\n");
+            } else {
+                if (gridSet.isTopLeftAligned()) {
+                    buf.append("      origin: [")
+                            .append(bbox.getMaxX()).append(", ")
+                            .append(bbox.getMinY()).append("],\n");
+                } else {
+                    buf.append("      origin: [")
+                            .append(bbox.getMinX()).append(", ")
+                            .append(bbox.getMaxY()).append("],\n");
+                }
+            }
+            buf.append("      resolutions: resolutions,\n"
+                    + "      matrixIds: params['TILEMATRIX']\n"
+                    + "    }),\n"
+                    + "    style: params['STYLE'],\n"
+                    + "    wrapX: true\n"
+                    + "  });\n"
+                    + "  return source;\n"
+                    + "}\n"
+                    + "\n"
+                    + "var layer = new ol.layer.Tile({\n"
+                    + "  source: constructSource()\n"
+                    + "});\n"
+                    + "\n");
         }
-        buf.append("      resolutions: resolutions,\n"
-                + "      matrixIds: params['TILEMATRIX']\n"
-                + "    }),\n"
-                + "    style: params['STYLE'],\n"
-                + "    wrapX: true\n"
-                + "  });\n"
-                + "  return source;\n"
-                + "}\n"
-                + "\n"
-                + "var layer = new ol.layer.Tile({\n"
-                + "  source: constructSource()\n"
-                + "});\n"
-                + "\n"
-                + "var view = new ol.View({\n"
+
+        buf.append("var view = new ol.View({\n"
                 + "  center: [0, 0],\n"
                 + "  zoom: 2,\n"
                 + "  projection: projection,\n");
@@ -407,9 +523,13 @@ public class Demo {
                 .append(zoomBounds.toString())
                 .append("], map.getSize());\n");
         buf.append("\n"
-                + "function setParam(name, value) {\n"
+                + "window.setParam = function(name, value) {\n"
+                + "  if (name == \"STYLES\") {\n"
+                + "    name = \"STYLE\"\n"
+                + "  }\n"
                 + "  params[name] = value;\n"
                 + "  layer.setSource(constructSource());\n"
+                + "  map.updateSize();\n"
                 + "} \n"
                 + "\n"
                 + "map.on('singleclick', function(evt) {\n"
@@ -556,7 +676,7 @@ public class Demo {
 
     private static void makePullDown(StringBuilder doc, String id, Map<String, String> keysValues,
             String defaultKey) {
-        doc.append("<select name=\"" + id + "\" onchange=\"setParam('" + id + "', value)\">\n");
+        doc.append("<select name=\"" + id + "\" onchange=\"window.setParam('" + id + "', value)\">\n");
 
         Iterator<Entry<String, String>> iter = keysValues.entrySet().iterator();
 
@@ -578,6 +698,14 @@ public class Demo {
 
     private static void makeTextInput(StringBuilder doc, String id, int size) {
         doc.append("<input name=\"" + id + "\" type=\"text\" size=\"" + size
-                + "\" onblur=\"setParam('" + id + "', value)\" />\n");
+                + "\" onblur=\"window.setParam('" + id + "', value)\" />\n");
+    }
+
+    private static boolean doubleEquals(double d1, double d2) {
+        return doubleEquals(d1, d2, 0);
+    }
+    private static boolean doubleEquals(double d1, double d2, double buffer) {
+        double diff = Math.abs(d1 - d2);
+        return diff < (Math.ulp(d1) + Math.ulp(d2) + buffer);
     }
 }

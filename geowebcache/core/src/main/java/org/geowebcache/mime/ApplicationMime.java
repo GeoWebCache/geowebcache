@@ -75,7 +75,7 @@ public class ApplicationMime extends MimeType {
 
     private ApplicationMime(String mimeType, String fileExtension, 
             String internalName, String format, boolean vector) {
-        super(mimeType, fileExtension, internalName, format, vector);
+        super(mimeType, fileExtension, internalName, format, false);
         this.vector = vector;
     }
         
