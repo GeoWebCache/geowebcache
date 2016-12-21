@@ -33,6 +33,8 @@ import org.apache.commons.logging.LogFactory;
 
 public class ImageMime extends MimeType {
 
+    public static final String NATIVE_PNG_WRITER_CLASS_NAME = "com.sun.media.imageioimpl.plugins.png.CLibPNGImageWriter";
+
     private static Log log = LogFactory.getLog(org.geowebcache.mime.ImageMime.class);
     
     boolean supportsAlphaChannel;
@@ -211,6 +213,21 @@ public class ImageMime extends MimeType {
     public ImageWriter getImageWriter(RenderedImage image) {
         Iterator<ImageWriter> it = javax.imageio.ImageIO.getImageWritersByFormatName(internalName);
         ImageWriter writer = it.next();
+
+        //Native PNG Writer can't handle 2-4 bit PNG, so if our sample depth isn't 1/8 and the
+        //returned writer is the native version, let's skip it and move on to the next
+        //which will presumably be the pure Java version. A bit hacky, but it's roughly what
+        //GeoServer does to make sure it doesn't encode incompatible PNGs with the native writer
+        if (this.internalName.equals(ImageMime.png.internalName)
+            || this.internalName.equals(ImageMime.png8.internalName)) {
+
+            int bitDepth = image.getSampleModel().getSampleSize(0);
+            if (bitDepth > 1 && bitDepth < 8
+                && writer.getClass().getName().equals(NATIVE_PNG_WRITER_CLASS_NAME)) {
+
+                writer = it.next();
+            }
+        }
         return writer;
     }
 
