@@ -73,8 +73,9 @@ public class NIOLockProvider implements LockProvider {
                 while(currLock == null && count < maxLockAttempts) {
                     // the file output stream can also fail to be acquired due to the
                     // other nodes deleting the file
-                    currFos = new FileOutputStream(file);
                     try {
+                        currFos = new FileOutputStream(file);
+
                         currLock = currFos.getChannel().lock();
                     } catch(OverlappingFileLockException e) {
                         IOUtils.closeQuietly(currFos);
