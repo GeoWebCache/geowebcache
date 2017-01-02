@@ -118,7 +118,8 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
     private transient LockProvider lockProvider;
 
-    WMSLayer() {
+    // protected to be able extend
+    protected WMSLayer() {
         //default constructor for XStream
     }
     

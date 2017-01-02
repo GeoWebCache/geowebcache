@@ -103,7 +103,7 @@ public class MassTruncateRestlet extends GWCSeedingRestlet {
     }
     
     public Configuration getConfiguration() {
-        if(this.config==null) return this.xmlConfig;
+        if(this.config==null) return this.configDispatcher;
         return this.config;
     }
 

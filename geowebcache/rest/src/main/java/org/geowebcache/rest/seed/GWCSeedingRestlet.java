@@ -23,8 +23,8 @@ import java.io.StringWriter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.ConfigurationDispatcher;
 import org.geowebcache.config.ContextualConfigurationProvider;
-import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
@@ -52,7 +52,7 @@ abstract public class GWCSeedingRestlet extends GWCRestlet {
 
     public JSONObject myrequest;
 
-    protected XMLConfiguration xmlConfig;
+    protected ConfigurationDispatcher configDispatcher;
 
     public void handle(Request request, Response response) {
         Method met = request.getMethod();
@@ -127,11 +127,11 @@ abstract public class GWCSeedingRestlet extends GWCRestlet {
         return writer.toString();
     }
 
-    public void setXmlConfig(XMLConfiguration xmlConfig) {
-        this.xmlConfig = xmlConfig;
+    public void setConfigDispatcher(ConfigurationDispatcher configDispatcher) {
+        this.configDispatcher = configDispatcher;
     }
     
     protected XStream configXStream(XStream xs) {
-        return xmlConfig.getConfiguredXStreamWithContext(xs, ContextualConfigurationProvider.Context.REST);
+        return configDispatcher.getConfiguredXStreamWithContext(xs, ContextualConfigurationProvider.Context.REST);
     }
 }

@@ -22,12 +22,14 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 
 import org.custommonkey.xmlunit.XMLAssert;
-import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.config.AbsConfigurationDispatcher;
+import org.geowebcache.config.ContextualConfigurationProvider;
 import org.geowebcache.io.GeoWebCacheXStream;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -50,7 +52,8 @@ public class FloatParameterFilterTest {
         filter.setThreshold(0.00001f);
         
         xs = new GeoWebCacheXStream();
-        xs = XMLConfiguration.getConfiguredXStream(xs, new StaticWebApplicationContext());
+        xs = AbsConfigurationDispatcher.getConfiguredXStreamWithContext(xs,
+                new StaticWebApplicationContext(), (ContextualConfigurationProvider.Context) null);
     }
     
     @Test

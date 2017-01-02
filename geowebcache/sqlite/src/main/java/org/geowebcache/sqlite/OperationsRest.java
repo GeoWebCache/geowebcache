@@ -16,11 +16,20 @@
  */
 package org.geowebcache.sqlite;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.BlobStoreConfig;
-import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.config.ConfigurationDispatcher;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,15 +41,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.nio.file.Files;
-import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 @Controller
 @RequestMapping("**/sqlite")
 public class OperationsRest {
@@ -51,7 +51,7 @@ public class OperationsRest {
     private TileLayerDispatcher tileLayerDispatcher;
 
     @Autowired
-    private XMLConfiguration gwcConfiguration;
+    private ConfigurationDispatcher gwcConfiguration;
 
     @RequestMapping(value = "/replace", method = RequestMethod.POST)
     public

@@ -29,9 +29,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.BlobStoreConfig;
+import org.geowebcache.config.ConfigurationDispatcher;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.config.FileBlobStoreConfig;
-import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
@@ -95,22 +95,26 @@ public class CompositeBlobStore implements BlobStore {
      * on {@link BlobStoreConfig#getId() blobstore id} and TileLayers
      * {@link TileLayer#getBlobStoreId() BlobStoreId} matches.
      * 
-     * @param layers used to get the layer's {@link TileLayer#getBlobStoreId() blobstore id}
-     * @param defaultStorageFinder to resolve the location of the cache directory for the legacy
-     *        blob store when no {@link BlobStoreConfig#isDefault() default blob store} is given
-     * @param configuration the configuration as read from {@code geowebcache.xml} containing the
-     *        configured {@link XMLConfiguration#getBlobStores() blob stores}
-     * @throws ConfigurationException if there's a configuration error like a store confing having
-     *         no id, or two store configs having the same id, or more than one store config being
-     *         marked as the default one, or the default store is not
-     *         {@link BlobStoreConfig#isEnabled() enabled}
-     * @throws StorageException if the live {@code BlobStore} instance can't be
-     *         {@link BlobStoreConfig#createInstance() created} of an enabled
-     *         {@link BlobStoreConfig}
+     * @param layers
+     *            used to get the layer's {@link TileLayer#getBlobStoreId() blobstore id}
+     * @param defaultStorageFinder
+     *            to resolve the location of the cache directory for the legacy blob store when no
+     *            {@link BlobStoreConfig#isDefault() default blob store} is given
+     * @param configuration
+     *            the configuration as read from {@code geowebcache.xml} containing the configured
+     *            {@link ConfigurationDispatcher#getBlobStores() blob stores}
+     * @throws ConfigurationException
+     *             if there's a configuration error like a store confing having no id, or two store
+     *             configs having the same id, or more than one store config being marked as the
+     *             default one, or the default store is not {@link BlobStoreConfig#isEnabled()
+     *             enabled}
+     * @throws StorageException
+     *             if the live {@code BlobStore} instance can't be
+     *             {@link BlobStoreConfig#createInstance() created} of an enabled
+     *             {@link BlobStoreConfig}
      */
-    public CompositeBlobStore(TileLayerDispatcher layers,
-            DefaultStorageFinder defaultStorageFinder, XMLConfiguration configuration)
-            throws StorageException, ConfigurationException {
+    public CompositeBlobStore(TileLayerDispatcher layers, DefaultStorageFinder defaultStorageFinder,
+            ConfigurationDispatcher configuration) throws StorageException, ConfigurationException {
 
         this.layers = layers;
         this.defaultStorageFinder = defaultStorageFinder;

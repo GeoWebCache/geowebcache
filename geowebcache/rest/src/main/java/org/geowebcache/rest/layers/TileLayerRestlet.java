@@ -30,8 +30,8 @@ import java.util.Objects;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.Configuration;
+import org.geowebcache.config.ConfigurationDispatcher;
 import org.geowebcache.config.ContextualConfigurationProvider.Context;
-import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.layer.TileLayer;
@@ -76,7 +76,7 @@ import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
  */
 public class TileLayerRestlet extends GWCRestlet {
 
-    private XMLConfiguration xmlConfig;
+    private ConfigurationDispatcher configurationDispatcher;
 
     private TileLayerDispatcher layerDispatcher;
 
@@ -204,7 +204,7 @@ public class TileLayerRestlet extends GWCRestlet {
             final XStream xStream = ((XstreamRepresentation) representation).getXStream();
             xStream.alias("layers", List.class);
 
-            xmlConfig.getConfiguredXStreamWithContext(xStream, Context.REST);
+            configurationDispatcher.getConfiguredXStreamWithContext(xStream, Context.REST);
 
             xStream.registerConverter(new Converter() {
 
@@ -416,7 +416,8 @@ public class TileLayerRestlet extends GWCRestlet {
     protected TileLayer deserializeAndCheckLayerInternal(String layerName, String formatExtension,
             InputStream is) throws RestletException, IOException {
 
-        XStream xs = xmlConfig.getConfiguredXStreamWithContext(new GeoWebCacheXStream(new DomDriver()), Context.REST);
+        XStream xs = configurationDispatcher.getConfiguredXStreamWithContext(
+                new GeoWebCacheXStream(new DomDriver()), Context.REST);
 
         TileLayer newLayer;
 
@@ -484,7 +485,8 @@ public class TileLayerRestlet extends GWCRestlet {
      * @return
      */
     public Representation getXMLRepresentation(TileLayer layer) {
-        XStream xs = xmlConfig.getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.REST);
+        XStream xs = configurationDispatcher
+                .getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.REST);
         String xmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + xs.toXML(layer);
 
         return new StringRepresentation(xmlText, MediaType.TEXT_XML);
@@ -499,7 +501,8 @@ public class TileLayerRestlet extends GWCRestlet {
     public JsonRepresentation getJsonRepresentation(TileLayer layer) {
         JsonRepresentation rep = null;
         try {
-            XStream xs = xmlConfig.getConfiguredXStreamWithContext(new GeoWebCacheXStream(
+            XStream xs = configurationDispatcher.getConfiguredXStreamWithContext(
+                    new GeoWebCacheXStream(
                     new JsonHierarchicalStreamDriver()), Context.REST);
             JSONObject obj = new JSONObject(xs.toXML(layer));
             rep = new JsonRepresentation(obj);
@@ -513,7 +516,7 @@ public class TileLayerRestlet extends GWCRestlet {
         layerDispatcher = tileLayerDispatcher;
     }
 
-    public void setXMLConfiguration(XMLConfiguration xmlConfig) {
-        this.xmlConfig = xmlConfig;
+    public void setConfigurationDispatcher(ConfigurationDispatcher configurationDispatcher) {
+        this.configurationDispatcher = configurationDispatcher;
     }
 }

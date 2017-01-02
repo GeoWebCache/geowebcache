@@ -650,6 +650,8 @@
 
   <modules>
     <module>core</module>
+    <!-- module to have layers in xml -->
+    <module>config_xml</module>
     <module>georss</module>
     <module>gmaps</module>
     <module>kml</module>
@@ -664,5 +666,7 @@
 	<module>distributed</module>
     <module>s3storage</module>
     <module>sqlite</module>
+    <!-- module to have layers in postgres database -->
+    <module>config_postgres</module>
   </modules>
 </project>
