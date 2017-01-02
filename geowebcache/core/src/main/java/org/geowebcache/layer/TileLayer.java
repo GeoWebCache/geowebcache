@@ -656,6 +656,7 @@ public abstract class TileLayer {
 
         Resource resource;
         boolean encode;
+        boolean overrideResource = false;
         for (int i = 0; i < gridPositions.length; i++) {
             final long[] gridPos = gridPositions[i];
             if (Arrays.equals(gridLoc, gridPos)) {
@@ -664,6 +665,9 @@ public abstract class TileLayer {
                 resource = getImageBuffer(WMS_BUFFER2);
                 tileProto.setBlob(resource);
                 encode = true;
+
+                // this is the tile we want to send to client
+                overrideResource = true;
             } else {
                 resource = getImageBuffer(WMS_BUFFER);
                 encode = store;
@@ -693,6 +697,12 @@ public abstract class TileLayer {
                                 tileProto.getStorageBroker().putTransient(tile);
                             } else {
                                 tileProto.getStorageBroker().put(tile);
+
+                                // if GIF then reset blob from written file
+                                if (overrideResource && tileProto.getMimeType().getFormat()
+                                        .equals("image/gif")) {
+                                    tileProto.setBlob(tile.getBlob());
+                                }
                             }
                             tileProto.getStorageObject().setCreated(tile.getCreated());
                         } catch (StorageException e) {

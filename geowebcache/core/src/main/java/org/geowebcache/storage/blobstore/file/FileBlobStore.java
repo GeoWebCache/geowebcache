@@ -535,6 +535,12 @@ public class FileBlobStore implements BlobStore {
                     temp = null;
                 }
             }
+
+            Resource blob = readFile(target);
+            if (blob != null) {
+                // resets blob to handle GIF
+                stObj.setBlob(blob);
+            }
         } finally {
 
             if (temp != null) {
