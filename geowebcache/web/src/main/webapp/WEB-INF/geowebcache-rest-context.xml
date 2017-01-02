@@ -7,11 +7,11 @@
 
   <!-- Restlets -->
   <bean id="gwcSeedRestlet" class="org.geowebcache.rest.seed.SeedRestlet">
-    <property name="xmlConfig" ref="gwcXmlConfig"/>
+    <property name="configDispatcher" ref="gwcConfigDispatcher"/>
     <property name="tileBreeder" ref="gwcTileBreeder"/>
   </bean>
   <bean id="gwcMassTruncateRestlet" class="org.geowebcache.rest.seed.MassTruncateRestlet">
-    <property name="xmlConfig" ref="gwcXmlConfig"/>
+    <property name="configDispatcher" ref="gwcConfigDispatcher"/>
     <property name="storageBroker" ref="gwcStorageBroker"/>
   </bean>
 
@@ -22,7 +22,7 @@
     <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
   </bean>
   <bean id="gwcTileLayerRestlet" class="org.geowebcache.rest.layers.TileLayerRestlet">
-    <property name="XMLConfiguration" ref="gwcXmlConfig"/>
+    <property name="ConfigurationDispatcher" ref="gwcConfigDispatcher"/>
     <property name="tileLayerDispatcher" ref="gwcTLDispatcher"/>
     <property name="urlMangler" ref="gwcURLMangler"/>
     <property name="controller" ref="geowebcacheDispatcher"/>

@@ -203,10 +203,12 @@ public class JDBCQuotaStore implements QuotaStore {
                     deleteLayer(layerName);
                 }
 
+                // The tileset is created by #addHitsAndSetAccesTime when used
+
                 // add any missing tileset
-                for (String layerName : layerNames) {
-                    createLayerInternal(layerName);
-                }
+                // for (String layerName : layerNames) {
+                // createLayerInternal(layerName);
+                // }
 
                 // create the global quota if necessary
                 Quota global = getUsedQuotaByTileSetIdInternal(GLOBAL_QUOTA_NAME);

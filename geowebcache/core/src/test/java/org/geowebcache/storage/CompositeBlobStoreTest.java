@@ -35,9 +35,9 @@ import java.util.Map;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.BlobStoreConfig;
+import org.geowebcache.config.ConfigurationDispatcher;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.config.FileBlobStoreConfig;
-import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
@@ -85,7 +85,7 @@ public class CompositeBlobStoreTest {
 
     DefaultStorageFinder defaultStorageFinder;
 
-    XMLConfiguration configuration;
+    ConfigurationDispatcher configuration;
 
     List<BlobStoreConfig> configs;
 
@@ -98,7 +98,7 @@ public class CompositeBlobStoreTest {
 
         layers = mock(TileLayerDispatcher.class);
         defaultStorageFinder = mock(DefaultStorageFinder.class);
-        configuration = mock(XMLConfiguration.class);
+        configuration = mock(ConfigurationDispatcher.class);
 
         configs = new LinkedList<>();
         when(configuration.getBlobStores()).thenReturn(configs);

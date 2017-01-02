@@ -1,7 +1,10 @@
 package org.geowebcache.rest.seed;
 
-import static org.junit.Assert.*;
-import static org.easymock.classextension.EasyMock.*;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.classextension.EasyMock.createMock;
+import static org.easymock.classextension.EasyMock.replay;
+import static org.easymock.classextension.EasyMock.verify;
 
 import java.io.InputStream;
 
@@ -29,7 +32,7 @@ public class MassTruncateRestletTest {
         xmlConfig.initialize(gridSetBroker);
 
         mtr = new MassTruncateRestlet();
-        mtr.setXmlConfig(xmlConfig);
+        mtr.setConfigDispatcher(xmlConfig);
     }
     
     @Test

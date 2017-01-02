@@ -33,7 +33,7 @@ import org.geowebcache.storage.StorageException;
  * that acts both as configuration and {@link #createInstance() factory}.
  * <p>
  * Instances of this concrete subclasses of this class are meant to be obtained from
- * {@link XMLConfiguration#getBlobStores()} after parsed by {@code XStream} from the
+ * {@link ConfigurationDispatcher#getBlobStores()} after parsed by {@code XStream} from the
  * {@code geowebcache.xml} file.
  * <p>
  * When a blob store is defined in a module other than core, it is advisable that whatever

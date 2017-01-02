@@ -74,10 +74,14 @@ public class UsageStatsMonitor {
         executorService.submit(usageStatsConsumer);
 
         usageStatsProducer = new QueuedUsageStatsProducer(sharedQueue);
-        Iterable<TileLayer> allLayers = tileLayerDispatcher.getLayerList();
-        for (TileLayer layer : allLayers) {
-            layer.addLayerListener(usageStatsProducer);
-        }
+
+        
+        // Will be added to layer when used, see DiskQuotaMonitor#getLayerListener
+        // Iterable<TileLayer> allLayers = tileLayerDispatcher.getLayerList();
+        // for (TileLayer layer : allLayers) {
+        // layer.addLayerListener(usageStatsProducer);
+        // }
+         
     }
 
     /**
@@ -145,6 +149,10 @@ public class UsageStatsMonitor {
             executorService.shutdown();
         }
         sharedQueue = null;
+    }
+
+    public QueuedUsageStatsProducer getUsageStatsProducer() {
+        return usageStatsProducer;
     }
 
 }

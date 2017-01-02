@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.diskquota.CacheCleaner.GlobalQuotaResolver;
 import org.geowebcache.diskquota.CacheCleaner.LayerQuotaResolver;
@@ -37,6 +36,7 @@ import org.geowebcache.diskquota.storage.LayerQuota;
 import org.geowebcache.diskquota.storage.Quota;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.TileLayerListener;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
 import org.springframework.beans.factory.DisposableBean;
@@ -394,25 +394,21 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         cacheInfoBuilder = new LayerCacheInfoBuilder(cacheRoot, cleanUpExecutorService,
                 quotaUsageMonitor);
 
-        for (String layerName : tileLayerDispatcher.getLayerNames()) {
+        /*
+         * Commented out, will add layers when needed. See method addLayerToQuotaMonitor
+         * 
+         * for (String layerName : tileLayerDispatcher.getLayerNames()) {
+         * 
+         * Quota usedQuota = quotaStore.getUsedQuotaByLayerName(layerName); if
+         * (usedQuota.getBytes().compareTo(BigInteger.ZERO) > 0) { log.debug(
+         * "Using saved quota information for layer " + layerName + ": " +
+         * usedQuota.toNiceString()); } else { log.debug(layerName +
+         * " has no saved used quota information," +
+         * "traversing layer cache to compute its disk usage."); TileLayer tileLayer; try {
+         * tileLayer = tileLayerDispatcher.getTileLayer(layerName); } catch (GeoWebCacheException e)
+         * { e.printStackTrace(); continue; } cacheInfoBuilder.buildCacheInfo(tileLayer); } } <<<
+         */
 
-            Quota usedQuota = quotaStore.getUsedQuotaByLayerName(layerName);
-            if (usedQuota.getBytes().compareTo(BigInteger.ZERO) > 0) {
-                log.debug("Using saved quota information for layer " + layerName + ": "
-                        + usedQuota.toNiceString());
-            } else {
-                log.debug(layerName + " has no saved used quota information,"
-                        + "traversing layer cache to compute its disk usage.");
-                TileLayer tileLayer;
-                try {
-                    tileLayer = tileLayerDispatcher.getTileLayer(layerName);
-                } catch (GeoWebCacheException e) {
-                    e.printStackTrace();
-                    continue;
-                }
-                cacheInfoBuilder.buildCacheInfo(tileLayer);
-            }
-        }
         return cacheInfoBuilder;
     }
 
@@ -529,5 +525,39 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     public void expireByLayerNames(Set<String> layerNames, QuotaResolver quotaResolver)
             throws InterruptedException {
         cacheCleaner.expireByLayerNames(layerNames, quotaResolver, quotaStore);
+    }
+
+    /**
+     * @return listener to attach to layer for statistics or null
+     */
+    public TileLayerListener getLayerListener() {
+        return usageStatsMonitor == null || !diskQuotaEnabled ? null
+                : usageStatsMonitor.getUsageStatsProducer();
+    }
+
+    /**
+     * Adds layer to quota control
+     * 
+     * @param tileLayer
+     * @throws InterruptedException
+     * 
+     * @see {@link LayerCacheInfoBuilder#buildCacheInfo(TileLayer)}
+     */
+    public void addLayerToQuotaMonitor(TileLayer tileLayer) throws InterruptedException {
+        if (!diskQuotaEnabled || tileLayer == null || quotaStore == null) {
+            return;
+        }
+
+        String layerName = tileLayer.getName();
+
+        Quota usedQuota = quotaStore.getUsedQuotaByLayerName(layerName);
+        if (usedQuota.getBytes().compareTo(BigInteger.ZERO) > 0) {
+            log.debug("Using saved quota information for layer " + layerName + ": "
+                    + usedQuota.toNiceString());
+        } else {
+            log.debug(layerName + " has no saved used quota information,"
+                    + "traversing layer cache to compute its disk usage.");
+            cacheInfoBuilder.buildCacheInfo(tileLayer);
+        }
     }
 }

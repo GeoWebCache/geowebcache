@@ -21,6 +21,16 @@
     </dependency>
     <dependency>
       <groupId>org.geowebcache</groupId>
+      <artifactId>gwc-config-xml</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.geowebcache</groupId>
+  	  <artifactId>gwc-config-postgres</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.geowebcache</groupId>
       <artifactId>gwc-georss</artifactId>
       <version>${project.version}</version>
     </dependency>
