@@ -154,6 +154,8 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         JDBCQuotaStore store = new JDBCQuotaStore(cacheDirFinder, tilePageCalculator);
         store.setDataSource(ds);
         store.setDialect(dialect);
+        // sets schema if configured in geowebcache-diskquota-jdbc.xml
+        store.setSchema(expandedConfig.getSchema());
 
         // initialize it
         store.initialize();

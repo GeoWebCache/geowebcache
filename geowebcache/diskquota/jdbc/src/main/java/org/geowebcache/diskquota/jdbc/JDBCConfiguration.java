@@ -44,6 +44,11 @@ public class JDBCConfiguration implements Serializable {
 
     String JNDISource;
 
+    /**
+     * To be able configure schema in geowebcache-diskquota-jdbc.xml
+     */
+    String schema;
+
     ConnectionPoolConfiguration connectionPool;
 
     /**
@@ -144,6 +149,14 @@ public class JDBCConfiguration implements Serializable {
 
     public void setJNDISource(String jndiSource) {
         this.JNDISource = jndiSource;
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
     }
 
     public ConnectionPoolConfiguration getConnectionPool() {
