@@ -56,7 +56,7 @@
       </description>
     </property>
     <property name="maxBackendRequests" value="64">
-    <description>How many concurrent connections can be opened at the same time to generate new cached tiles for wms layers (-1=no limit, default=64). When limit is reached a 302 redirect is response of request, redirecting to origin source
+    <description>How many concurrent connections can be opened at the same time to generate new cached tiles for wms layers (<= 0 = no limit, default=64). When limit is reached a 302 redirect is response of request, redirecting to origin source
       </description>
     </property>
     -->

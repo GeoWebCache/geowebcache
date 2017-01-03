@@ -72,8 +72,6 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
     private static final AtomicInteger COUNTER = new AtomicInteger(0);
 
-    private int maxBackendRequests = -1;
-
     private String[] wmsUrl;
 
     private String wmsLayers;
@@ -123,6 +121,8 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     protected transient String sphericalMercatorOverride;
 
     private transient LockProvider lockProvider;
+
+    private transient int maxBackendRequests;
 
     // protected to be able extend
     protected WMSLayer() {
@@ -992,8 +992,8 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     }
 
     /**
-     * How many connections can be opened at the same time to generate new cached tiles (-1 no
-     * limit)
+     * How many connections can be opened at the same time to generate new cached tiles (<= 0 = no
+     * limit, defaults to 0)
      * 
      * @param maxBackendRequests
      */
