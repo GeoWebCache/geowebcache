@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -30,8 +31,11 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.meta.ServiceContact;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.config.meta.ServiceProvider;
@@ -60,6 +64,10 @@ public class WMTSGetCapabilities {
     
     private GridSetBroker gsb;
     
+    private List<TileLayer> layers = new ArrayList<TileLayer>();
+
+    private String srs;
+
     private String baseUrl;
 
     private final Collection<WMTSExtension> extensions;
@@ -73,6 +81,28 @@ public class WMTSGetCapabilities {
             String contextPath, URLMangler urlMangler, Collection<WMTSExtension> extensions) {
         this.tld = tld;
         this.gsb = gsb;
+
+        // To only serve one layer
+        CaseInsensitiveMap map = new CaseInsensitiveMap(servReq.getParameterMap());
+        if (map.containsKey("LAYERS")) {
+            for (String s : (String[]) map.get("LAYERS")) {
+                for (String layerName : s.split(",")) {
+                    try {
+                        layers.add(tld.getTileLayer(layerName));
+                    } catch (GeoWebCacheException e) {
+                        log.warn("Could not find layer " + layerName);
+                    }
+                }
+            }
+        }
+
+        if (layers.isEmpty()) {
+            // get all layers
+            CollectionUtils.addAll(layers, tld.getLayerList().iterator());
+        }
+
+        // only return grid set for following srs
+        srs = map.containsKey("SRS") ? ((String[]) map.get("SRS"))[0] : null;
 
         String forcedBaseUrl = ServletUtils.stringFromMap(servReq.getParameterMap(), servReq.getCharacterEncoding(), "base_url");
 
@@ -387,8 +417,7 @@ public class WMTSGetCapabilities {
      
      private void contents(XMLBuilder xml) throws IOException {
          xml.indentElement("Contents");
-         Iterable<TileLayer> iter = tld.getLayerList();
-        for (TileLayer layer : iter) {
+        for (TileLayer layer : layers) {
             if (!layer.isEnabled() || !layer.isAdvertised()) {
                 continue;
             }
@@ -396,7 +425,10 @@ public class WMTSGetCapabilities {
         }
          
         for (GridSet gset : gsb.getGridSets()) {
-            tileMatrixSet(xml, gset);
+            // only selected SRS
+            if (srs == null || srs.equals(gset.getName())) {
+                tileMatrixSet(xml, gset);
+            }
         }
          
          xml.endElement("Contents");
@@ -619,6 +651,8 @@ public class WMTSGetCapabilities {
      private void layerGridSubSets(XMLBuilder xml, TileLayer layer) throws IOException {
 
         for (String gridSetId : layer.getGridSubsets()) {
+            // only selected SRS
+            if (srs == null || srs.equals(gridSetId)) {
             GridSubset gridSubset = layer.getGridSubset(gridSetId);
          
              xml.indentElement("TileMatrixSetLink");
@@ -641,6 +675,7 @@ public class WMTSGetCapabilities {
                 xml.endElement();
             }
             xml.endElement("TileMatrixSetLink");
+            }
          }
      }
      

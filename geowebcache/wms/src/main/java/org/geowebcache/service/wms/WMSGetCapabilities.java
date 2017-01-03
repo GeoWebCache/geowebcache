@@ -34,6 +34,8 @@ import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -62,6 +64,8 @@ public class WMSGetCapabilities {
     private TileLayerDispatcher tld;
 
     private String urlStr;
+    
+    private List<TileLayer> layers = new ArrayList<TileLayer>();
 
     private boolean includeVendorSpecific = false;
 
@@ -70,6 +74,25 @@ public class WMSGetCapabilities {
         this.tld = tld;
         
         urlStr = urlMangler.buildURL(baseUrl, contextPath, WMSService.SERVICE_PATH) + "?SERVICE=WMS&";
+        
+        // To only serve one layer
+        CaseInsensitiveMap map = new CaseInsensitiveMap(servReq.getParameterMap());
+        if (map.containsKey("LAYERS")) {
+            for (String s : (String[]) map.get("LAYERS")) {
+                for (String layerName : s.split(",")) {
+                    try {
+                        layers.add(tld.getTileLayer(layerName));
+                    } catch (GeoWebCacheException e) {
+                        log.warn("Could not find layer " + layerName);
+                    }
+                }
+            }
+        }
+
+        if (layers.isEmpty()) {
+            // get all layers
+            CollectionUtils.addAll(layers, tld.getLayerList().iterator());
+        }
 
         String[] tiledKey = { "TILED" };
         Map<String, String> tiledValue = ServletUtils.selectedStringsFromMap(
@@ -263,11 +286,10 @@ public class WMSGetCapabilities {
 
     private void capabilityRequestGetMap(XMLBuilder xml) throws IOException {
         // Find all the formats we support
-        Iterable<TileLayer> layerIter = tld.getLayerList();
 
         HashSet<String> formats = new HashSet<String>();
 
-        for (TileLayer layer : layerIter) {
+        for (TileLayer layer : layers) {
             if (!layer.isEnabled()  || !layer.isAdvertised()) {
                 continue;
             }
@@ -289,13 +311,11 @@ public class WMSGetCapabilities {
     }
 
     private void capabilityRequestGetFeatureInfo(XMLBuilder xml) throws IOException {
-    	
         // Find all the info formats we support
-        Iterable<TileLayer> layerIter = tld.getLayerList();
 
         HashSet<String> formats = new HashSet<String>();
 
-        for (TileLayer layer : layerIter) {
+        for (TileLayer layer : layers) {
             if (!layer.isEnabled()  || !layer.isAdvertised()) {
                 continue;
             }
@@ -333,8 +353,8 @@ public class WMSGetCapabilities {
 
     private void capabilityVendorSpecific(XMLBuilder xml) throws IOException {
         xml.indentElement("VendorSpecificCapabilities");
-        Iterable<TileLayer> layerIter = tld.getLayerList();
-        for (TileLayer layer : layerIter) {
+
+        for (TileLayer layer : layers) {
             if (!layer.isEnabled()  || !layer.isAdvertised()) {
                 continue;
             }
@@ -426,8 +446,7 @@ public class WMSGetCapabilities {
         xml.simpleElement("Abstract", "Note that not all GeoWebCache instances provide a full WMS service.", true);
         xml.latLonBoundingBox(-180.0, -90.0, 180.0, 90.0);
 
-        Iterable<TileLayer> layerIter = tld.getLayerList();
-        for (TileLayer layer : layerIter) {
+        for (TileLayer layer : layers) {
             if (!layer.isEnabled()  || !layer.isAdvertised()) {
                 continue;
             }
