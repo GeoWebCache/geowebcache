@@ -272,19 +272,26 @@ public class WMSTileFuser{
         
         ImageMime firstMt = null;
         
-        if(iter.hasNext()){
-            firstMt = (ImageMime)iter.next();
-        }
-        boolean outputGif = outputFormat.getInternalName().equalsIgnoreCase("gif");
+        boolean outputJpeg = outputFormat.getInternalName().equalsIgnoreCase("jpeg");
         while (iter.hasNext()) {
-            MimeType mt = iter.next();           
-            if(outputGif){
-                if (mt.getInternalName().equalsIgnoreCase("gif")) {
+            MimeType mt = iter.next();
+
+            // Sets first here so that it will be part of loop
+            if (firstMt == null) {
+                firstMt = (ImageMime) mt;
+            }
+
+            if (outputJpeg) {
+                // use png for stitching to jpeg
+                if (mt.getFileExtension().equalsIgnoreCase("png")) {
                     this.srcFormat = (ImageMime) mt;
                     break;
                 }
             }
-            if (mt.getInternalName().equalsIgnoreCase("png")) {
+
+            // if supported format matches requested format use it
+            if (mt.getMimeType().equalsIgnoreCase(outputFormat.getMimeType())
+                    && mt.getFileExtension().equalsIgnoreCase(outputFormat.getFileExtension())) {
                 this.srcFormat = (ImageMime) mt;
             }
         }
