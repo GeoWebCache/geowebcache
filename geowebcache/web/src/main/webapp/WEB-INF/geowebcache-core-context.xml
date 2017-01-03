@@ -55,6 +55,10 @@
     <description>schema for layers table in database (defaults to public) (must exists) 
       </description>
     </property>
+    <property name="maxBackendRequests" value="64">
+    <description>How many concurrent connections can be opened at the same time to generate new cached tiles for wms layers (-1=no limit, default=64). When limit is reached a 302 redirect is response of request, redirecting to origin source
+      </description>
+    </property>
     -->
   </bean>
   
@@ -206,6 +210,10 @@
   
   <bean id="nioLock" class="org.geowebcache.locks.NIOLockProvider">
     <constructor-arg ref="gwcDefaultStorageFinder"/>
+    <!-- waitBeforeRetry -->
+    <constructor-arg type="int" value="100"/>
+	<!-- maxLockAttempts -->
+    <constructor-arg type="int" value="5"/>
   </bean>
 
   <!-- The tool performing the automatic migration between metastore and fs hashes -->

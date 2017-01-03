@@ -1398,6 +1398,8 @@ public class PostgresConfiguration extends AbsConfigurationDispatcher
     private WMSLayer parseLayer(String json) {
         WMSLayer layer = GSON.fromJson(json, GsonWMSLayer.class);
         
+        layer.setMaxBackendRequests(this.maxBackendRequests == null ? -1 : this.maxBackendRequests);
+
         // will set default and transient values
         initialize(layer);
 

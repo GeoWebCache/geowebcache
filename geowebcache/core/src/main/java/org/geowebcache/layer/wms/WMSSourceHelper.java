@@ -53,6 +53,45 @@ public abstract class WMSSourceHelper {
         makeRequest(metaTile, layer, wmsParams, mime, target);
     }
 
+    /**
+     * @param tile
+     * @return params
+     * @throws GeoWebCacheException
+     */
+    public Map<String, String> getWMSParams(ConveyorTile tile) throws GeoWebCacheException {
+        WMSLayer layer = (WMSLayer) tile.getLayer();
+
+        GridSubset gridSubset = layer.getGridSubset(tile.getGridSetId());
+
+        Map<String, String> wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(),
+                WMSLayer.RequestType.MAP);
+
+        wmsParams.put("FORMAT", tile.getMimeType().getMimeType());
+        wmsParams.put("SRS", layer.backendSRSOverride(gridSubset.getSRS()));
+        wmsParams.put("HEIGHT", String.valueOf(gridSubset.getTileHeight()));
+        wmsParams.put("WIDTH", String.valueOf(gridSubset.getTileWidth()));
+        // strBuilder.append("&TILED=").append(requestTiled);
+
+        BoundingBox bbox = gridSubset.boundsFromIndex(tile.getTileIndex());
+
+        wmsParams.put("BBOX", bbox.toString());
+
+        Map<String, String> fullParameters = tile.getFullParameters();
+        if (fullParameters.isEmpty()) {
+            fullParameters = layer.getDefaultParameterFilters();
+        }
+        wmsParams.putAll(fullParameters);
+
+        if (tile.getMimeType() == XMLMime.kml) {
+            // This is a hack for GeoServer to produce regionated KML,
+            // but it is unlikely to do much harm, especially since nobody
+            // else appears to produce regionated KML at this point
+            wmsParams.put("format_options", "mode:superoverlay;overlaymode:auto");
+        }
+
+        return wmsParams;
+    }
+
     public void makeRequest(ConveyorTile tile, Resource target) throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
 

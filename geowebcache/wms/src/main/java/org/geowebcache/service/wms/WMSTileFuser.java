@@ -587,7 +587,31 @@ public class WMSTileFuser{
                     continue;
                 }
 
-                layer.getTile(tile);
+                // Will try until gets a proper response
+                ConveyorTile singleTile = null;
+                for (int i = 0; singleTile == null && i < 100; i++) {
+                    try {
+                        singleTile = layer.getTile(tile);
+
+                        if (singleTile == null) {
+                            log.warn("Failed getting tile, will retry: count=" + i + " layer="
+                                    + layer.getName());
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed getting tile, will retry: count=" + i + " layer="
+                                + layer.getName() + " msg="
+                                + (e.getMessage() == null && e.getCause() != null
+                                        ? e.getCause().getMessage() : e.getMessage()));
+                    }
+                }
+
+                if (singleTile == null) {
+                    log.error("Was not able to get tile during tile stitching: layer="
+                            + layer.getName());
+
+                    continue;
+                }
+
                 // Selection of the resource input stream
                 Resource blob = tile.getBlob();
                 // Extraction of the image associated with the defined MimeType

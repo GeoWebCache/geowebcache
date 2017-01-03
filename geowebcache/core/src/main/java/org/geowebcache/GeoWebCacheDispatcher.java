@@ -373,8 +373,11 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 // A5) Ask the layer to provide the content for the tile
                 convTile = layer.getTile(convTile);
 
-                // A6) Write response
-                writeData(convTile);
+                // if not in cache and not able to lock then do not write
+                if (convTile != null) {
+                    // A6) Write response
+                    writeData(convTile);
+                }
 
                 // Alternatively:
             } catch (OutsideCoverageException e) {
