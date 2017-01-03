@@ -262,6 +262,14 @@ public abstract class JDBCQuotaStoreTest extends OnlineTestCase {
         store.setDataSource(getDataSource());
         store.initialize();
 
+        // Will do here since commented out from init
+
+        final Set<String> layerNames = store.calculator.getLayerNames();
+        // add any missing tileset
+        for (String layerName : layerNames) {
+            store.createLayer(layerName);
+        }
+
         tileSets = store.getTileSets();
         assertNotNull(tileSets);
         assertEquals(2, tileSets.size());
