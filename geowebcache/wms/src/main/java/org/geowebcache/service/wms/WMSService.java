@@ -292,6 +292,18 @@ public class WMSService extends Service{
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
+            } else if (tile.getHint().equalsIgnoreCase("gettiles")) {
+                WMSTileFuser wmsFuser = new WMSTileFuser(tld, sb, tile.servletReq);
+                // Setting of the applicationContext
+                wmsFuser.setApplicationContext(utility.getApplicationContext());
+                // Setting of the hintConfiguration if present
+                wmsFuser.setHintsConfiguration(hintsConfig);
+                try {
+                    wmsFuser.writeMissingTilesResponse(tile.servletResp);
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             } else if (tile.getHint().equalsIgnoreCase("getfeatureinfo")) {
                 handleGetFeatureInfo(tile);
             } else {

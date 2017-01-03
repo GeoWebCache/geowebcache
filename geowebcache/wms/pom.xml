@@ -13,6 +13,12 @@
   <packaging>jar</packaging>
   <name>gwc-wms</name>
   <url>http://geowebcache.org</url>
+  
+    
+  <properties>
+  		<!-- GSON -->
+		<gson.version>2.7</gson.version>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -42,6 +48,12 @@
     	<artifactId>commons-httpclient</artifactId>
     	<version>3.1</version>
     </dependency>
+    
+    <dependency>
+		<groupId>com.google.code.gson</groupId>
+		<artifactId>gson</artifactId>
+		<version>${gson.version}</version>
+	</dependency>
     
     <dependency>
       <groupId>it.geosolutions.imageio-ext</groupId>
