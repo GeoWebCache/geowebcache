@@ -195,10 +195,16 @@ public class MimeType {
         return format.hashCode();
     }
 
-
-
+    /**
+     * Determine whether otherMimeType is compatible with this MimeType. They're compatible if
+     * they're identical, or presumably if otherMimeType has this mime type as a prefix.
+     * @param otherMimeType the mime type to check for compatibility
+     * @return whether otherMimeType is "compatible" with this mime type
+     */
     public boolean isCompatible(String otherMimeType) {
-        return mimeType.equalsIgnoreCase(otherMimeType) || otherMimeType.startsWith(otherMimeType);
+        return mimeType.equalsIgnoreCase(otherMimeType) ||
+            (otherMimeType != null &&
+                otherMimeType.toLowerCase().startsWith(mimeType.toLowerCase()));
     }
     
     @Override
