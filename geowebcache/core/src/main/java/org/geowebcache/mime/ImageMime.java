@@ -210,7 +210,13 @@ public class ImageMime extends MimeType {
     
     public ImageWriter getImageWriter(RenderedImage image) {
         Iterator<ImageWriter> it = javax.imageio.ImageIO.getImageWritersByFormatName(internalName);
-        ImageWriter writer = it.next();
+        ImageWriter writer = null;
+        while (it.hasNext()) {
+            writer = it.next();
+            if (writer.getClass().toString().startsWith("com.sun.media.imageioimpl")) {
+                break;
+            }
+        }
         return writer;
     }
 
