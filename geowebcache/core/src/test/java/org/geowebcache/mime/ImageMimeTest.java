@@ -17,15 +17,21 @@
 package org.geowebcache.mime;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
+import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
@@ -113,5 +119,18 @@ public class ImageMimeTest {
         MimeType pngMimeType = ImageMime.jpeg;
         assertFalse("PNG mime type should not be compatible with XML error.",
             pngMimeType.isCompatible("application/vnd.ogc.se_xml"));
+    }
+
+    @Test
+    public void test4BitPNG() throws IOException, URISyntaxException {
+        URL url = this.getClass().getResource("/images/4bit.png");
+        RenderedImage tile = ImageIO.read(new File(url.toURI()));
+        ImageWriter writer = ImageMime.png8.getImageWriter(tile);
+        //Not a great test, but make sure our writer is the pure java one, not the native version
+        //since the native version can't handle 4bit pngs.
+        assertNotEquals(
+            "Writer for this image should not be the native version.",
+            writer.getClass().getName(),
+            ImageMime.NATIVE_PNG_WRITER_CLASS_NAME);
     }
 }
