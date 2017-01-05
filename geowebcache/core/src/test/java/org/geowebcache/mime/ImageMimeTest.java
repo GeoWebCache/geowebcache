@@ -17,6 +17,7 @@
 package org.geowebcache.mime;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.awt.Color;
@@ -105,5 +106,12 @@ public class ImageMimeTest {
         ImageWriter expectedWriter = expectedMime.getImageWriter(bi);
         // compare by class, these object are not meant to be compared by equality
         assertEquals(expectedWriter.getClass(), jpegPngWriter.getClass());
+    }
+
+    @Test
+    public void testIsCompatileFailsOnXMLMime() {
+        MimeType pngMimeType = ImageMime.jpeg;
+        assertFalse("PNG mime type should not be compatible with XML error.",
+            pngMimeType.isCompatible("application/vnd.ogc.se_xml"));
     }
 }
