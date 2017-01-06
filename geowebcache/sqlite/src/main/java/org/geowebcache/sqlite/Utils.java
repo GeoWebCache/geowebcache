@@ -38,6 +38,9 @@ final class Utils {
 
     private static Log LOGGER = LogFactory.getLog(Utils.class);
 
+    // if we get the windows path separator we need to escape it for regex use
+    static final String REGEX_FILE_SEPARATOR = File.separator.equals("\\") ? "\\\\" : File.separator;
+
     private Utils() {
     }
 

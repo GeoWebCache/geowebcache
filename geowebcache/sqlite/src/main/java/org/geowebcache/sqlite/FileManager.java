@@ -283,7 +283,7 @@ final class FileManager {
         // build the concrete path with the embedded regex values (.*?)
         String pathRegex = concatStringArray(pathBuilderCopy, 1);
         // separate all the path parts, useful to walk in the path hierarchy
-        String[] pathRegexParts = pathRegex.split(File.separator);
+        String[] pathRegexParts = pathRegex.split(Utils.REGEX_FILE_SEPARATOR);
         // walk the directory tree to find all the files that match the builder path
         return walkFileTreeWithRegex(rootPath, 0, pathRegexParts);
     }
@@ -348,7 +348,7 @@ final class FileManager {
      */
     private static Tuple<String[], Set<Tuple<String, Integer>>> parsePathTemplate(String rootPath, String pathTemplate) {
         // replacing chars '\' and '/' with the current os path separator
-        pathTemplate = pathTemplate.replaceAll("(\\\\)|/", File.separator);
+        pathTemplate = pathTemplate.replaceAll("(\\\\)|/", Utils.REGEX_FILE_SEPARATOR);
         List<String> pathBuilder = new ArrayList<>();
         // the first element of the path builder is the root directory
         pathBuilder.add(rootPath + File.separator);
