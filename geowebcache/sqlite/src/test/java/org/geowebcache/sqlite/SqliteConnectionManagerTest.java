@@ -19,10 +19,13 @@ package org.geowebcache.sqlite;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.storage.StorageException;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -46,10 +49,32 @@ public final class SqliteConnectionManagerTest extends TestSupport {
 
     private static Log LOGGER = LogFactory.getLog(SqliteConnectionManagerTest.class);
 
+    private List<SqliteConnectionManager> connectionManagersToClean;
+
+    @Before
+    public void beforeTest() throws Exception {
+        super.beforeTest();
+        connectionManagersToClean = new ArrayList<>();
+    }
+
+    @After
+    public void afterTest() throws Exception {
+        for (SqliteConnectionManager connectionManager : connectionManagersToClean) {
+            try {
+                connectionManager.reapAllConnections();
+                connectionManager.stopPoolReaper();
+            } catch (Exception exception) {
+                // nothing that we can do, so just ignoring this exception
+            }
+        }
+        super.afterTest();
+    }
+
     @Test
     public void testGetConnection() throws StorageException {
         SqliteConnectionManager connectionManager = new SqliteConnectionManager(Integer.MAX_VALUE, 1000);
-        connectionManager.doWork(buildRootFile("tiles", "data_base.sqlite"), false, connection -> {
+        connectionManagersToClean.add(connectionManager);
+        connectionManager.doWork(buildRootFile("tiles", "data_base.sqlite"), true, connection -> {
             insertInTestTable(connection, "name", "europe");
         });
         connectionManager.reapAllConnections();
@@ -96,6 +121,7 @@ public final class SqliteConnectionManagerTest extends TestSupport {
     @Ignore
     public void testReplaceOperation() throws Exception {
         SqliteConnectionManager connectionManager = new SqliteConnectionManager(Integer.MAX_VALUE, 1000);
+        connectionManagersToClean.add(connectionManager);
         File file1 = buildRootFile("tiles", "data_base_1.sqlite");
         Utils.createFileParents(file1);
         File file2 = buildRootFile("tiles", "data_base_2.sqlite");
@@ -114,9 +140,10 @@ public final class SqliteConnectionManagerTest extends TestSupport {
         });
     }
 
-    private static void genericMultiThreadsTest(int threadsNumber, int workersNumber,
+    private void genericMultiThreadsTest(int threadsNumber, int workersNumber,
                                                 long poolSize, File... files) throws Exception {
         SqliteConnectionManager connectionManager = new SqliteConnectionManager(poolSize, 10);
+        connectionManagersToClean.add(connectionManager);
         ExecutorService executor = Executors.newFixedThreadPool(threadsNumber);
         Random random = new Random();
         List<Future<Tuple<File, String>>> results = new ArrayList<>();

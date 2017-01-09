@@ -240,7 +240,7 @@ public final class SqliteConnectionManager {
             currentPooledConnection.releaseWriteLock();
         }
     }
-
+    
     void delete(File file) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(String.format("Deleting file '%s'.", file));
