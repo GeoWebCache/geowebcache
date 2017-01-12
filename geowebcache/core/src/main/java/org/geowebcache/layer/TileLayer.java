@@ -656,9 +656,10 @@ public abstract class TileLayer {
 
         Resource resource;
         boolean encode;
-        boolean overrideResource = false;
         for (int i = 0; i < gridPositions.length; i++) {
             final long[] gridPos = gridPositions[i];
+
+            boolean overrideResource = false;
             if (Arrays.equals(gridLoc, gridPos)) {
                 // Is this the one we need to save? then don't use the buffer or it'll be overridden
                 // by the next tile
@@ -700,7 +701,7 @@ public abstract class TileLayer {
 
                                 // if GIF then reset blob from written file
                                 if (overrideResource && tileProto.getMimeType().getFormat()
-                                        .equals("image/gif")) {
+                                        .toLowerCase().startsWith("image/gif")) {
                                     tileProto.setBlob(tile.getBlob());
                                 }
                             }
