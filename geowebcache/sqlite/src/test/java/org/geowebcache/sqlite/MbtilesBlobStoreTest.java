@@ -45,6 +45,7 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         // instantiating the store
         MbtilesConfiguration configuration = getDefaultConfiguration();
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
+        addStoresToClean(store);
         // create the tile that will be stored
         TileObject putTile = TileObject.createCompleteTileObject("africa",
                 new long[]{10, 50, 5}, "EPSG:4326", "image/png", null, stringToResource("IMAGE-10-50-5"));
@@ -75,6 +76,7 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         // instantiating the store
         MbtilesConfiguration configuration = getDefaultConfiguration();
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
+        addStoresToClean(store);
         // let's store some metadata
         store.putLayerMetadata("america", "background", "blue");
         store.putLayerMetadata("america", "style", "america-style");
@@ -92,6 +94,7 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         // instantiating the store
         MbtilesConfiguration configuration = getDefaultConfiguration();
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
+        addStoresToClean(store);
         // let's store some metadata with null values
         store.putLayerMetadata(null, null, null);
         store.putLayerMetadata("america", "style", null);
@@ -107,6 +110,7 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         // instantiating the store
         MbtilesConfiguration configuration = getDefaultConfiguration();
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
+        addStoresToClean(store);
         // created database files for different layers
         File asia1 = createFileInRootDir(Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-500.sqlite"));
         File asia2 = createFileInRootDir(Utils.buildPath("grid2", "asia", "image_png", "11", "tiles-100-500.sqlite"));
@@ -134,6 +138,7 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         // instantiating the store
         MbtilesConfiguration configuration = getDefaultConfiguration();
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
+        addStoresToClean(store);
         // created database files for different layers
         File asia1 = createFileInRootDir(Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-500.sqlite"));
         File asia2 = createFileInRootDir(Utils.buildPath("grid2", "asia", "image_png", "11", "tiles-100-500.sqlite"));
@@ -163,6 +168,7 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         // activate eager mode
         configuration.setEagerDelete(true);
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
+        addStoresToClean(store);
         // create the tile range
         long[][] rangeBounds = new long[][]{
                 {0, 490, 10, 500, 10},
@@ -190,6 +196,7 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         // instantiating the store
         MbtilesConfiguration configuration = getDefaultConfiguration();
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
+        addStoresToClean(store);
         // create the tile range
         long[][] rangeBounds = new long[][]{
                 {0, 10, 5, 15, 10},
@@ -221,6 +228,7 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         // instantiating the store
         MbtilesConfiguration configuration = getDefaultConfiguration();
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
+        addStoresToClean(store);
         // created layer database file
         createFileInRootDir(Utils.buildPath("grid1", "europe", "image_png", "10", "tiles-0-0.sqlite"));
         // checking if layer exists
@@ -233,6 +241,7 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         // instantiating the store
         MbtilesConfiguration configuration = getDefaultConfiguration();
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
+        addStoresToClean(store);
         // create layers database files
         File asia1 = createFileInRootDir(Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-0.sqlite"));
         File asia2 = createFileInRootDir(Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-500.sqlite"));
@@ -264,6 +273,7 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         configuration.setMbtilesMetadataDirectory(mbtilesMetadataDirectory.getPath());
         SqliteConnectionManager connectionManager = new SqliteConnectionManager(configuration);
         MbtilesBlobStore store = new MbtilesBlobStore(configuration, connectionManager);
+        addStoresToClean(store);
         // create the tile that will be stored
         TileObject putTile = TileObject.createCompleteTileObject("europe:asia",
                 new long[]{5, 5, 5}, "EPSG:4326", "image/png", null, stringToResource("IMAGE-5-5-5"));
