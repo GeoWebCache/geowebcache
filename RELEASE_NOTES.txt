@@ -1,3 +1,17 @@
+GeoWebCache 1.9.3 (2017-01-21)
+------------------------------
+
+Patch release for the 1.9.x series
+
+<Release Description>
+
+Fixes:
+++++++
+- #466 Fix variable mixup in MimeType.isCompatible that caused false positives.
+- Check for 2-4bit PNGs and skip the native writer if that's what comes up
+- Fixed windows build
+
+
 GeoWebCache 1.9.2 (2016-10-11)
 ------------------------------
 
