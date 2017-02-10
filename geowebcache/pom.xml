@@ -154,7 +154,7 @@
     <dependency>
       	<groupId>it.geosolutions.jaiext.utilities</groupId>
 	    <artifactId>jt-utilities</artifactId>
-        <version>1.0.11</version>
+        <version>1.0.13</version>
     </dependency>
     
 	<!-- PNG Encoder dependencies -->
