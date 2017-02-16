@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns="http://geowebcache.org/schema/1.11.0"
+                  xsi:schemaLocation="http://geowebcache.org/schema/1.11.0 http://geowebcache.org/schema/1.11.0/geowebcache.xsd">
+  <version>1.8.0</version>
+  <layers>
+    <wmsLayer>
+      <name>topp:states3</name>
+      <mimeFormats>
+        <string>image/png</string>
+      </mimeFormats>
+      <gridSubsets>
+        <gridSubset>
+          <gridSetName>EPSG:4326</gridSetName>
+        </gridSubset>
+        <gridSubset>
+          <gridSetName>EPSG:2163</gridSetName>
+        </gridSubset>
+      </gridSubsets>
+      <parameterFilters>
+        <stringParameterFilter>
+          <key>STYLES</key>
+          <defaultValue>population</defaultValue>
+        </stringParameterFilter>
+      </parameterFilters>
+      <wmsUrl>
+        <string>http://demo.opengeo.org/geoserver/topp/wms</string>
+      </wmsUrl>
+    </wmsLayer>
+  </layers>
+</gwcConfiguration>
