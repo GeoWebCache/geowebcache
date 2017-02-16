@@ -270,6 +270,16 @@ public class SQLDialect {
 
     }
 
+    public String getUsedQuotaByLayerGridset(String schema, String layerNameParam, String gridSetParam) {
+        StringBuilder sb = new StringBuilder("SELECT SUM(BYTES) FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET WHERE TILESET.LAYER_NAME = :").append(layerNameParam);
+        sb.append(" AND TILESET.GRIDSET_ID = :").append(gridSetParam);
+        return sb.toString();
+    }
+
     public String getRenameLayerStatement(String schema, String oldLayerName, String newLayerName) {
         StringBuilder sb = new StringBuilder("UPDATE ");
         if (schema != null) {
