@@ -1,3 +1,13 @@
+GeoWebCache 1.10.2 (2017-02-20)
+-------------------------------
+
+Second patch release for the 1.1 series.
+
+Fixes:
+++++++
+- Fix disk quota JDBC store layer gridset deletion
+
+
 GeoWebCache 1.10-beta (2016-09-19)
 ----------------------------------
 
