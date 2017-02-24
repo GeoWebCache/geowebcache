@@ -528,7 +528,9 @@ public class WMTSGetCapabilities {
                          defVal = "";
                      }
                  }
-                 
+                 if(!defVal.isEmpty()){
+                	 legalStyles.add(defVal);
+                 }
                  for(String value:legalStyles) {
                      xml.indentElement("Style");
                      if(value.equals(defVal)) {

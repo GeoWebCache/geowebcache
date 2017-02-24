@@ -572,7 +572,9 @@ public class WMTSServiceTest extends TestCase {
             ParameterFilter styleFilter = mock(ParameterFilter.class);
             when(styleFilter.getKey()).thenReturn("STYLES");
             when(styleFilter.getDefaultValue()).thenReturn("Foo");
-            when(styleFilter.getLegalValues()).thenReturn(Arrays.asList("Foo", "Bar", "Baz"));
+            //note Legal values doesn't include the default style 
+            ArrayList<String> list = new ArrayList<>(Arrays.asList( "Bar", "Baz"));
+			when(styleFilter.getLegalValues()).thenReturn(list);
             
             TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames, Collections.singletonList(styleFilter));
             when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
