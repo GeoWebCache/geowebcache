@@ -12,6 +12,7 @@
   <properties>
     <gt.version>16-SNAPSHOT</gt.version>
     <jts.version>1.13</jts.version>
+    <jaiext.version>1.0.13</jaiext.version>
     <spring.version>4.2.5.RELEASE</spring.version>
     <restlet.version>1.0.8</restlet.version>
     <xstream.version>1.4.7</xstream.version>
@@ -89,6 +90,18 @@
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>com.vividsolutions</groupId>
+      <artifactId>jts</artifactId>
+      <version>1.13</version>
+      <exclusions>
+        <exclusion>
+          <groupId>xerces</groupId>
+          <artifactId>xercesImpl</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -152,9 +165,9 @@
     </dependency>
 
     <dependency>
-      	<groupId>it.geosolutions.jaiext.utilities</groupId>
-	    <artifactId>jt-utilities</artifactId>
-        <version>1.0.11</version>
+      <groupId>it.geosolutions.jaiext.utilities</groupId>
+      <artifactId>jt-utilities</artifactId>
+      <version>${jaiext.version}</version>
     </dependency>
     
 	<!-- PNG Encoder dependencies -->

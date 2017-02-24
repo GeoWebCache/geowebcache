@@ -114,13 +114,6 @@
     <dependency>
       <groupId>it.geosolutions.jaiext.utilities</groupId>
       <artifactId>jt-utilities</artifactId>
-      <exclusions>
-         <exclusion>
-            <!-- This one depends on JTS, which depends on xerces, which breaks some tests -->
-            <groupId>org.jaitools</groupId>
-            <artifactId>jt-utils</artifactId>
-         </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
