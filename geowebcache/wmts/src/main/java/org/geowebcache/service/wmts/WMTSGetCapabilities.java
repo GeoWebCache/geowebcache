@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -515,8 +516,13 @@ public class WMTSGetCapabilities {
                  }
              }
              
-             List<String> legalStyles=null;
-             if(stylesFilter != null) legalStyles = stylesFilter.getLegalValues();
+			List<String> legalStyles = null;
+			if (stylesFilter != null) {
+				List<String> values = stylesFilter.getLegalValues();
+				if (values != null) {
+					legalStyles = new ArrayList<String>(values);
+				}
+			}
              
              if(legalStyles!=null && !legalStyles.isEmpty()) {
                  // There's a style filter listing at least one value
