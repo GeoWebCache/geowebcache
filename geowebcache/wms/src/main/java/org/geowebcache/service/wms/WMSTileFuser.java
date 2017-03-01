@@ -23,11 +23,19 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.media.jai.PlanarImage;
 import javax.servlet.ServletOutputStream;
@@ -35,6 +43,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geotools.resources.image.ImageUtilities;
@@ -61,6 +70,9 @@ import org.geowebcache.util.ServletUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 /*
  * It will work as follows
  * 2) Based on the dimensions and bounding box of the request, GWC will determine the smallest available resolution that equals or exceeds the requested resolution.
@@ -71,6 +83,30 @@ import org.springframework.context.ApplicationContext;
 public class WMSTileFuser{
     private static Log log = LogFactory.getLog(WMSTileFuser.class);
     
+    /**
+     * Available to parse GTWMSLayer with special deserializer
+     * 
+     * @see WMSLayerDeserializer
+     */
+    private final static Gson GSON;
+
+    private final static ExecutorService EXECUTOR_SERVICE;
+
+    // Creating shared object
+    private static final BlockingQueue<TilesInfo> SHARED_QUEUE;
+
+    static {
+        GSON = new GsonBuilder().create();
+        // pool of 20 threads checking/seeding missing tiles
+        EXECUTOR_SERVICE = Executors.newFixedThreadPool(20);
+        SHARED_QUEUE = new LinkedBlockingQueue<TilesInfo>();
+
+        Thread consThread = new Thread(new TilesConsumer(SHARED_QUEUE));
+
+        consThread.start();
+
+    }
+
     private ApplicationContext applicationContext;
     
     final StorageBroker sb;
@@ -86,6 +122,12 @@ public class WMSTileFuser{
     int reqHeight;
 
     int reqWidth;
+
+    // GetTiles
+    boolean seeding;
+
+    // GetTiles
+    int maxMiss;
 
     // The desired extent of the request
     final BoundingBox reqBounds;
@@ -253,7 +295,7 @@ public class WMSTileFuser{
         this.sb = sb;
 
         String[] keys = { "layers", "format", "srs", "bbox", "width", "height", "transparent",
-                "bgcolor", "hints" };
+                "bgcolor", "hints", "max_miss", "seeding" };
 
         Map<String, String> values = ServletUtils.selectedStringsFromMap(servReq.getParameterMap(),
                 servReq.getCharacterEncoding(), keys);
@@ -272,19 +314,26 @@ public class WMSTileFuser{
         
         ImageMime firstMt = null;
         
-        if(iter.hasNext()){
-            firstMt = (ImageMime)iter.next();
-        }
-        boolean outputGif = outputFormat.getInternalName().equalsIgnoreCase("gif");
+        boolean outputJpeg = outputFormat.getInternalName().equalsIgnoreCase("jpeg");
         while (iter.hasNext()) {
-            MimeType mt = iter.next();           
-            if(outputGif){
-                if (mt.getInternalName().equalsIgnoreCase("gif")) {
+            MimeType mt = iter.next();
+
+            // Sets first here so that it will be part of loop
+            if (firstMt == null) {
+                firstMt = (ImageMime) mt;
+            }
+
+            if (outputJpeg) {
+                // use png for stitching to jpeg
+                if (mt.getFileExtension().equalsIgnoreCase("png")) {
                     this.srcFormat = (ImageMime) mt;
                     break;
                 }
             }
-            if (mt.getInternalName().equalsIgnoreCase("png")) {
+
+            // if supported format matches requested format use it
+            if (mt.getMimeType().equalsIgnoreCase(outputFormat.getMimeType())
+                    && mt.getFileExtension().equalsIgnoreCase(outputFormat.getFileExtension())) {
                 this.srcFormat = (ImageMime) mt;
             }
         }
@@ -298,6 +347,12 @@ public class WMSTileFuser{
         reqWidth = Integer.valueOf(values.get("width"));
 
         reqHeight = Integer.valueOf(values.get("height"));
+
+        // GetTiles
+        // if seeding should be done for missing tiles
+        seeding = BooleanUtils.toBoolean(values.get("seeding"));
+        // how many misses before stopping checking
+        maxMiss = values.get("max_miss") == null ? -1 : Integer.valueOf(values.get("max_miss"));
 
         fullParameters = layer.getModifiableParameters(servReq.getParameterMap(),
                 servReq.getCharacterEncoding());
@@ -532,7 +587,31 @@ public class WMSTileFuser{
                     continue;
                 }
 
-                layer.getTile(tile);
+                // Will try until gets a proper response
+                ConveyorTile singleTile = null;
+                for (int i = 0; singleTile == null && i < 100; i++) {
+                    try {
+                        singleTile = layer.getTile(tile);
+
+                        if (singleTile == null) {
+                            log.warn("Failed getting tile, will retry: count=" + i + " layer="
+                                    + layer.getName());
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed getting tile, will retry: count=" + i + " layer="
+                                + layer.getName() + " msg="
+                                + (e.getMessage() == null && e.getCause() != null
+                                        ? e.getCause().getMessage() : e.getMessage()));
+                    }
+                }
+
+                if (singleTile == null) {
+                    log.error("Was not able to get tile during tile stitching: layer="
+                            + layer.getName());
+
+                    continue;
+                }
+
                 // Selection of the resource input stream
                 Resource blob = tile.getBlob();
                 // Extraction of the image associated with the defined MimeType
@@ -589,6 +668,122 @@ public class WMSTileFuser{
         }
 
         gfx.dispose();
+    }
+
+    /**
+     * @return information about missing tiles
+     * @throws OutsideCoverageException
+     * @throws GeoWebCacheException
+     * @throws IOException
+     * @throws Exception
+     */
+    private Map<String, Integer> getMissingTiles()
+            throws OutsideCoverageException, GeoWebCacheException, IOException, Exception {
+        List<Future<?>> futures = new ArrayList<Future<?>>();
+
+        AtomicInteger hit = new AtomicInteger(0);
+        AtomicInteger miss = new AtomicInteger(0);
+
+        // Now we loop over all the relevant tiles and create job to check if tile is
+        // missing
+
+        // Bottom row of tiles, in tile coordinates
+        long starty = srcRectangle[1];
+
+        // gridy is the tile row index
+        for (long gridy = starty; gridy <= srcRectangle[3]; gridy++) {
+            long startx = srcRectangle[0];
+            for (long gridx = startx; gridx <= srcRectangle[2]; gridx++) {
+                futures.add(EXECUTOR_SERVICE
+                        .submit(new CheckTileExistsTask(gridx, gridy, hit, miss, seeding)));
+            }
+        }
+
+        for (Future<?> future : futures) {
+            future.get(); // check if future is done
+
+            if (maxMiss > 0 && miss.get() >= maxMiss) {
+                break;
+            }
+        }
+
+        // the map with result
+        Map<String, Integer> map = new HashMap<String, Integer>();
+        map.put("hit", hit.get());
+        map.put("miss", miss.get());
+        map.put("total", hit.get() + miss.get());
+
+        return map;
+    }
+
+    final class CheckTileExistsTask implements Runnable {
+
+        private final long gridX;
+
+        private final long gridY;
+
+        private final AtomicInteger hit;
+
+        private final AtomicInteger miss;
+
+        private final boolean seeding;
+
+        /**
+         * 
+         * @param gridX
+         *            tile x position
+         * @param gridY
+         *            tile y position
+         * @param hit
+         *            counter for hit tiles
+         * @param miss
+         *            counter for miss tiles
+         * @param seeding
+         *            if missing tile should be seeded
+         */
+        public CheckTileExistsTask(long gridX, long gridY, AtomicInteger hit, AtomicInteger miss,
+                boolean seeding) {
+            this.gridX = gridX;
+            this.gridY = gridY;
+            this.hit = hit;
+            this.miss = miss;
+            this.seeding = seeding;
+        }
+
+        @Override
+        public void run() {
+            long[] gridLoc = { gridX, gridY, srcIdx };
+
+            ConveyorTile tile = new ConveyorTile(sb, layer.getName(), gridSubset.getName(), gridLoc,
+                    srcFormat, fullParameters, null, null);
+
+            // Check whether this tile is to be rendered at all
+            try {
+                layer.applyRequestFilters(tile);
+            } catch (RequestFilterException e) {
+                log.debug(e.getMessage(), e);
+                return;
+            }
+
+            // Check if tile is generated
+            if (layer instanceof WMSLayer) {
+                if (((WMSLayer) layer).tryCacheFetch(tile)) {
+                    hit.incrementAndGet();
+                } else {
+                    miss.incrementAndGet();
+
+                    // seed the tile
+                    if (seeding) {
+                        try {
+                            SHARED_QUEUE.put(new TilesInfo((WMSLayer) layer, tile));
+                        } catch (InterruptedException e) {
+                            log.warn("Interrupted put", e);
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     protected void scaleRaster() {
@@ -656,6 +851,38 @@ public class WMSTileFuser{
         	}
         }        
     }
+
+    /**
+     * Get missing tiles
+     * 
+     * @param response
+     * @throws IOException
+     * @throws OutsideCoverageException
+     * @throws GeoWebCacheException
+     * @throws Exception
+     */
+    protected void writeMissingTilesResponse(HttpServletResponse response)
+            throws IOException, OutsideCoverageException, GeoWebCacheException, Exception {
+        determineSourceResolution();
+        determineCanvasLayout();
+
+        try {
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+
+            try {
+                // returns response with information about hit/miss/total
+                IOUtils.write(GSON.toJson(getMissingTiles()), response.getOutputStream());
+                response.flushBuffer();
+            } catch (IOException ioe) {
+                // Do nothing
+            }
+
+        } catch (Exception e) {
+            log.debug("Could not read missing tiles: " + e.getMessage(), e);
+        }
+    }
 	
     /**
      * Setting of the ApplicationContext associated for extracting the related beans
@@ -679,5 +906,70 @@ public class WMSTileFuser{
             hints = HintsLevel.getHintsForMode(hintsConfig).getRenderingHints();
         }
         
+    }
+
+    /**
+     * Consumer for seeding missing tiles
+     * 
+     * @author ez
+     *
+     */
+    private static class TilesConsumer implements Runnable {
+
+        private final BlockingQueue<TilesInfo> sharedQueue;
+
+        public TilesConsumer(BlockingQueue<TilesInfo> sharedQueue) {
+            this.sharedQueue = sharedQueue;
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    TilesInfo info = sharedQueue.take();
+
+                    // Will try until gets a proper response
+                    ConveyorTile singleTile = null;
+                    for (int i = 0; singleTile == null && i < 100; i++) {
+                        try {
+                            singleTile = info.layer.getTile(info.tile);
+
+                            if (singleTile == null) {
+                                log.warn("Failed creating tile in consumer, will retry: count=" + i
+                                        + " layer=" + info.layer.getName());
+                            }
+                        } catch (Exception e) {
+                            log.warn("Failed creating tile in consumer, will retry: count=" + i
+                                    + " layer=" + info.layer.getName() + " msg=" + e.getMessage());
+                        }
+                    }
+
+                    if (singleTile == null) {
+                        log.error("Was not able to create tile in consumer: layer="
+                                + info.layer.getName());
+
+                        continue;
+                    }
+                } catch (InterruptedException ex) {
+                    log.error("Consumer interrupted", ex);
+
+                    break;
+                }
+            }
+        }
+
+    }
+
+    private class TilesInfo {
+
+        private final WMSLayer layer;
+
+        private final ConveyorTile tile;
+
+        public TilesInfo(WMSLayer layer, ConveyorTile tile) {
+            super();
+            this.layer = layer;
+            this.tile = tile;
+        }
     }
 }

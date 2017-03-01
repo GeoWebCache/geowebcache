@@ -27,7 +27,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.config.ConfigurationDispatcher;
 import org.geowebcache.layer.TileLayerDispatcher;
 
 public class GridSetBroker {
@@ -176,7 +176,7 @@ public class GridSetBroker {
      * Blindly removes a gridset from this gridset broker.
      * <p>
      * This method doesn't check whether there's any layer referencing the gridset nor removes it
-     * from the {@link XMLConfiguration}. For such a thing, check
+     * from the {@link ConfigurationDispatcher}. For such a thing, check
      * {@link TileLayerDispatcher#removeGridset(String)}, which cascades to this method.
      * </p>
      * 

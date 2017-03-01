@@ -19,7 +19,6 @@ package org.geowebcache.service.wms;
 
 import static org.geowebcache.grid.GridUtil.findBestMatchingGrid;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
@@ -36,7 +35,7 @@ import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.Configuration;
-import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.config.ConfigurationDispatcher;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
@@ -57,11 +56,6 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
-import com.thoughtworks.xstream.XStream;
 
 public class WMSService extends Service{
     public static final String SERVICE_WMS = "wms";
@@ -298,6 +292,18 @@ public class WMSService extends Service{
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
+            } else if (tile.getHint().equalsIgnoreCase("gettiles")) {
+                WMSTileFuser wmsFuser = new WMSTileFuser(tld, sb, tile.servletReq);
+                // Setting of the applicationContext
+                wmsFuser.setApplicationContext(utility.getApplicationContext());
+                // Setting of the hintConfiguration if present
+                wmsFuser.setHintsConfiguration(hintsConfig);
+                try {
+                    wmsFuser.writeMissingTilesResponse(tile.servletResp);
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             } else if (tile.getHint().equalsIgnoreCase("getfeatureinfo")) {
                 handleGetFeatureInfo(tile);
             } else {
@@ -407,10 +413,10 @@ public class WMSService extends Service{
         // Selection of the configurations 
         List<Configuration> configs = new ArrayList<Configuration>(GeoWebCacheExtensions.extensions(Configuration.class));
         // Selection of the Configuration file associated to geowebcache.xml
-        XMLConfiguration gwcXMLconfig = null;
+        ConfigurationDispatcher gwcXMLconfig = null;
         for(Configuration config : configs){
-            if(config instanceof XMLConfiguration){
-                gwcXMLconfig = (XMLConfiguration) config;
+            if (config instanceof ConfigurationDispatcher) {
+                gwcXMLconfig = (ConfigurationDispatcher) config;
                 break;
             }
         }

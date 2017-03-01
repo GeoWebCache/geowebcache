@@ -163,6 +163,14 @@ public abstract class JDBCQuotaStoreTest extends OnlineTestCase {
         // finally initialize the store
         store.initialize();
 
+        // Will create here since commented out from init
+
+        final Set<String> layerNames = store.calculator.getLayerNames();
+        // add any missing tileset
+        for (String layerName : layerNames) {
+            store.createLayer(layerName);
+        }
+
         testTileSet = tilePageCalculator.getTileSetsFor("topp:states2").iterator().next();
     }
 
@@ -270,6 +278,14 @@ public abstract class JDBCQuotaStoreTest extends OnlineTestCase {
         store.close();
         store.setDataSource(getDataSource());
         store.initialize();
+
+        // Will do here since commented out from init
+
+        final Set<String> layerNames = store.calculator.getLayerNames();
+        // add any missing tileset
+        for (String layerName : layerNames) {
+            store.createLayer(layerName);
+        }
 
         tileSets = store.getTileSets();
         assertNotNull(tileSets);

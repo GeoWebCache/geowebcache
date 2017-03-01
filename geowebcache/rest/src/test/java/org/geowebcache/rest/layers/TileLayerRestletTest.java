@@ -92,7 +92,7 @@ public class TileLayerRestletTest extends XMLTestCase {
         tld = new TileLayerDispatcher(gridSetBroker, configList);
 
         tlr = new TileLayerRestlet();
-        tlr.setXMLConfiguration(xmlConfig);
+        tlr.setConfigurationDispatcher(xmlConfig);
         tlr.setTileLayerDispatcher(tld);
         tlr.setUrlMangler(new NullURLMangler());
     }

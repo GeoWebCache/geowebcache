@@ -11,9 +11,11 @@
   
   <bean id="gwcAppCtx" class="org.geowebcache.util.ApplicationContextProvider" />
   
+  <!-- Use org.geowebcache.config.PostgresConfiguration to store WMS-layers in database -->
+  
   <!-- The location of a static configuration file for GeoWebCache. 
        By default this lives in WEB-INF/classes/geowebcache.xml -->
-  <bean id="gwcXmlConfig" class="org.geowebcache.config.XMLConfiguration">
+  <bean id="gwcConfigDispatcher" class="org.geowebcache.config.XMLConfiguration">
     <constructor-arg ref="gwcAppCtx" />
     <constructor-arg ref="gwcDefaultStorageFinder" />
     <!-- By default GWC will look for geowebcache.xml in {GEOWEBCACHE_CACHE_DIR},
@@ -27,6 +29,37 @@
         cache directory if one doesn't already exist.
       </description>
     </property>
+    
+    <!-- org.geowebcache.config.PostgresConfiguration options
+	<property name="jndiName" value="jdbc/DBDS"> 
+    <description>jndiName for DataSource 
+       </description> 
+     </property>
+    <property name="url" value="jdbc:postgresql://host:port/db">
+    <description>url to postgres database (mandatory if no jndiName)
+      </description>
+    </property>
+    <property name="user" value="postgres">
+    <description>user name to database (mandatory if no jndiName)
+      </description>
+    </property>
+    <property name="password" value="postgres">
+    <description>password to database (only if no jndiName)
+      </description>
+    </property>
+    <property name="registerDriver" value="false">
+    <description>In case it is needed to register the driver manually (e.g. Tomcat) set value to true
+      </description>
+    </property>
+    <property name="schema" value="gwc">
+    <description>schema for layers table in database (defaults to public) (must exists) 
+      </description>
+    </property>
+    <property name="maxBackendRequests" value="64">
+    <description>How many concurrent connections can be opened at the same time to generate new cached tiles for wms layers (<= 0 = no limit, default=64). When limit is reached a 302 redirect is response of request, redirecting to origin source
+      </description>
+    </property>
+    -->
   </bean>
   
   <!-- If you like to automatically configure GWC from a WMS Getcapabilities document,
@@ -57,7 +90,7 @@
       <description>Whether to allow cached=false to specificed for certain requests</description>
     </constructor-arg>
     
-    <property name="primaryConfig" ref="gwcXmlConfig">
+    <property name="primaryConfig" ref="gwcConfigDispatcher">
       <description>The configuration object with the global defaults to use for new layers</description>
     </property>
     
@@ -78,7 +111,7 @@
   <bean id="gwcBlobStore" class="org.geowebcache.storage.CompositeBlobStore" destroy-method="destroy">
     <constructor-arg ref="gwcTLDispatcher"/>
     <constructor-arg ref="gwcDefaultStorageFinder" />
-    <constructor-arg ref="gwcXmlConfig"/>
+    <constructor-arg ref="gwcConfigDispatcher"/>
   </bean>
 
   <bean id="gwcTransientCache" class="org.geowebcache.storage.TransientCache" >
@@ -147,7 +180,7 @@
     <constructor-arg ref="gwcTLDispatcher"/>
     <constructor-arg ref="gwcGridSetBroker"/>
     <constructor-arg ref="gwcStorageBroker"/>
-    <constructor-arg ref="gwcXmlConfig"/>
+    <constructor-arg ref="gwcConfigDispatcher"/>
     <constructor-arg ref="gwcRuntimeStats"/>
     <property name="defaultStorageFinder" ref="gwcDefaultStorageFinder"/>
   </bean>
@@ -177,6 +210,10 @@
   
   <bean id="nioLock" class="org.geowebcache.locks.NIOLockProvider">
     <constructor-arg ref="gwcDefaultStorageFinder"/>
+    <!-- waitBeforeRetry -->
+    <constructor-arg type="int" value="100"/>
+	<!-- maxLockAttempts -->
+    <constructor-arg type="int" value="5"/>
   </bean>
 
   <!-- The tool performing the automatic migration between metastore and fs hashes -->

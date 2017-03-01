@@ -27,7 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.Configuration;
-import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.config.ConfigurationDispatcher;
 import org.geowebcache.config.XMLGridSet;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.GridSet;
@@ -78,8 +78,8 @@ public class TileLayerDispatcher implements DisposableBean {
     public boolean layerExists(final String layerName) {
         for (int i = 0; i < configs.size(); i++) {
             Configuration configuration = configs.get(i);
-            TileLayer layer = configuration.getTileLayer(layerName);
-            if (layer != null) {
+            // containsLayer instead of getTileLayer
+            if (configuration.containsLayer(layerName)) {
                 return true;
             }
         }
@@ -292,8 +292,8 @@ public class TileLayerDispatcher implements DisposableBean {
     }
 
     /**
-     * Eliminates the gridset from the {@link GridSetBroker} and the {@link XMLConfiguration} only
-     * if no layer references the given GridSet.
+     * Eliminates the gridset from the {@link GridSetBroker} and the {@link ConfigurationDispatcher}
+     * only if no layer references the given GridSet.
      * <p>
      * NOTE this method does not save the configuration, it's up to the calling code to do that in
      * order to make the change persistent.
@@ -325,7 +325,7 @@ public class TileLayerDispatcher implements DisposableBean {
             throw new IllegalStateException("There are TileLayers referencing gridset '"
                     + gridSetName + "': " + refereningLayers.toString());
         }
-        XMLConfiguration persistingConfig = getXmlConfiguration();
+        ConfigurationDispatcher persistingConfig = getConfigurationDispatcher();
         GridSet removed = gridSetBroker.remove(gridSetName);
         Assert.notNull(removed != null);
         Assert.notNull(persistingConfig.removeGridset(gridSetName));
@@ -342,19 +342,19 @@ public class TileLayerDispatcher implements DisposableBean {
     }
 
     private void saveGridSet(final GridSet gridSet) throws IOException {
-        XMLConfiguration persistingConfig = getXmlConfiguration();
+        ConfigurationDispatcher persistingConfig = getConfigurationDispatcher();
         persistingConfig.addOrReplaceGridSet(new XMLGridSet(gridSet));
         persistingConfig.save();
         gridSetBroker.put(gridSet);
     }
 
-    private XMLConfiguration getXmlConfiguration() throws IllegalStateException {
+    private ConfigurationDispatcher getConfigurationDispatcher() throws IllegalStateException {
         for (Configuration c : configs) {
-            if (c instanceof XMLConfiguration) {
-                return (XMLConfiguration) c;
+            if (c instanceof ConfigurationDispatcher) {
+                return (ConfigurationDispatcher) c;
             }
         }
         throw new IllegalStateException("Found no configuration of type "
-                + XMLConfiguration.class.getName());
+ + ConfigurationDispatcher.class.getName());
     }
 }

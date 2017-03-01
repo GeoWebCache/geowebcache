@@ -49,41 +49,26 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.ContextualConfigurationProvider.Context;
 import org.geowebcache.config.meta.ServiceInformation;
-import org.geowebcache.filter.parameters.CaseNormalizer;
-import org.geowebcache.filter.parameters.FloatParameterFilter;
-import org.geowebcache.filter.parameters.IntegerParameterFilter;
-import org.geowebcache.filter.parameters.ParameterFilter;
-import org.geowebcache.filter.parameters.RegexParameterFilter;
-import org.geowebcache.filter.parameters.StringParameterFilter;
-import org.geowebcache.filter.request.CircularExtentFilter;
-import org.geowebcache.filter.request.FileRasterFilter;
-import org.geowebcache.filter.request.WMSRasterFilter;
+import org.geowebcache.diskquota.DiskQuotaMonitor;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.io.GeoWebCacheXStream;
-import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.meta.ContactInformation;
-import org.geowebcache.layer.meta.LayerMetaInformation;
-import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
+import org.geowebcache.layer.TileLayerListener;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.locks.LockProvider;
-import org.geowebcache.mime.FormatModifier;
-import org.geowebcache.seed.SeedRequest;
-import org.geowebcache.seed.TruncateLayerRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.StaticWebApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -99,18 +84,21 @@ import com.thoughtworks.xstream.io.xml.DomReader;
  * otherwise this configuration is in an inconsistent and unpredictable state.
  * </p>
  */
-public class XMLConfiguration implements Configuration, InitializingBean {
-    
+public class XMLConfiguration extends AbsConfigurationDispatcher
+        implements ConfigurationDispatcher, InitializingBean {
+
     static final String DEFAULT_CONFIGURATION_FILE_NAME = "geowebcache.xml";
 
     private static Log log = LogFactory.getLog(org.geowebcache.config.XMLConfiguration.class);
+
+    private Object locker = new Object();
 
     /**
      * Web app context, used to look up {@link XMLConfigurationProvider}s. Will be null if used the
      * {@link #XMLConfiguration(File)} constructor
      */
     private final WebApplicationContext context;
-    
+
     private final ConfigurationResourceProvider resourceProvider;
 
     private GeoWebCacheConfiguration gwcConfig;
@@ -118,6 +106,8 @@ public class XMLConfiguration implements Configuration, InitializingBean {
     private transient Map<String, TileLayer> layers;
 
     private GridSetBroker gridSetBroker;
+
+    private DiskQuotaMonitor monitor;
 
     /**
      * A flag for whether the config needs to be loaded at {@link #initialize(GridSetBroker)}. If
@@ -128,8 +118,9 @@ public class XMLConfiguration implements Configuration, InitializingBean {
 
     /**
      * Base Constructor with custom ConfiguratioNResourceProvider
-     *  
-     * @param appCtx use to lookup {@link XMLConfigurationProvider} extensions, may be {@code null}
+     * 
+     * @param appCtx
+     *            use to lookup {@link XMLConfigurationProvider} extensions, may be {@code null}
      * @param inFac
      */
     public XMLConfiguration(final ApplicationContextProvider appCtx,
@@ -137,23 +128,23 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         this.context = appCtx == null ? null : appCtx.getApplicationContext();
         this.resourceProvider = inFac;
     }
-    
+
     /**
      * File System based Constructor
      * 
-     * @param appCtx use to lookup {@link XMLConfigurationProvider} extensions, may be {@code null}
+     * @param appCtx
+     *            use to lookup {@link XMLConfigurationProvider} extensions, may be {@code null}
      * @param configFileDirectory
      * @param storageDirFinder
      * @throws ConfigurationException
      */
     public XMLConfiguration(final ApplicationContextProvider appCtx,
-            final String configFileDirectory,
-            final DefaultStorageFinder storageDirFinder) throws ConfigurationException {
-        this(appCtx, new XMLFileResourceProvider(DEFAULT_CONFIGURATION_FILE_NAME,
-                appCtx, configFileDirectory, storageDirFinder));
+            final String configFileDirectory, final DefaultStorageFinder storageDirFinder)
+                    throws ConfigurationException {
+        this(appCtx, new XMLFileResourceProvider(DEFAULT_CONFIGURATION_FILE_NAME, appCtx,
+                configFileDirectory, storageDirFinder));
         resourceProvider.setTemplate("/" + DEFAULT_CONFIGURATION_FILE_NAME);
     }
-    
 
     /**
      * Constructor that will look for {@code geowebcache.xml} at the directory defined by
@@ -166,8 +157,8 @@ public class XMLConfiguration implements Configuration, InitializingBean {
      */
     public XMLConfiguration(final ApplicationContextProvider appCtx,
             final DefaultStorageFinder storageDirFinder) throws ConfigurationException {
-        this(appCtx, new XMLFileResourceProvider(DEFAULT_CONFIGURATION_FILE_NAME,
-                appCtx, storageDirFinder));
+        this(appCtx, new XMLFileResourceProvider(DEFAULT_CONFIGURATION_FILE_NAME, appCtx,
+                storageDirFinder));
         resourceProvider.setTemplate("/" + DEFAULT_CONFIGURATION_FILE_NAME);
     }
 
@@ -183,14 +174,14 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         this(appCtx, configFileDirectory, null);
     }
 
-    
     /**
-     * @deprecated use {@link #XMLFileConfiguration(ApplicationContextProvider, DefaultStorageFinder)}
+     * @deprecated use
+     *             {@link #XMLFileConfiguration(ApplicationContextProvider, DefaultStorageFinder)}
      */
     @Deprecated
     public XMLConfiguration(final ApplicationContextProvider appCtx,
             final GridSetBroker gridSetBroker, final DefaultStorageFinder storageDirFinder)
-            throws ConfigurationException {
+                    throws ConfigurationException {
         this(appCtx, storageDirFinder);
         log.warn("This constructor is deprecated");
     }
@@ -201,27 +192,53 @@ public class XMLConfiguration implements Configuration, InitializingBean {
     @Deprecated
     public XMLConfiguration(final ApplicationContextProvider appCtx,
             final GridSetBroker gridSetBroker, final String configFileDirectory)
-            throws ConfigurationException {
+                    throws ConfigurationException {
 
         this(appCtx, configFileDirectory);
         log.warn("This constructor is deprecated");
     }
-    
+
     @Override
     public void afterPropertiesSet() throws Exception {
         if (resourceProvider.hasInput()) {
             this.gwcConfig = loadConfiguration();
+
+            /*
+             * >>> Emil Zail - T-Kartor 2016-09-05: Adds all layers to monitoring <<<
+             */
+            
+            // get monitor class
+            DiskQuotaMonitor monitor = getMonitor();
+            if (monitor != null) {
+                TileLayerListener listener = monitor.getLayerListener();
+
+                for (TileLayer layer : this.gwcConfig.getLayers()) {
+                    try {
+                        log.debug("Adding to quota monitor: layer='" + layer.getName() + "'");
+                        monitor.addLayerToQuotaMonitor(layer);
+                    } catch (InterruptedException e) {
+                        log.warn("Failed to add to quota monitor", e);
+                    }
+
+                    if (listener != null) {
+                        log.debug("Adding listener: layer='" + layer.getName() + "' class='"
+                                + listener.getClass().getName() + "'");
+                        layer.addLayerListener(listener);
+                    }
+                }
+            }
         }
         this.reloadConfigOnInit = false;
     }
-    
+
     /**
      * Constructor with inputstream (only for testing)
-     * @throws ConfigurationException 
+     * 
+     * @throws ConfigurationException
      */
     public XMLConfiguration(final InputStream is) throws ConfigurationException {
-        this (null, new ConfigurationResourceProvider() {
-                        
+        this(null, new ConfigurationResourceProvider() {
+
             @Override
             public InputStream in() {
                 throw new UnsupportedOperationException();
@@ -230,8 +247,8 @@ public class XMLConfiguration implements Configuration, InitializingBean {
             @Override
             public OutputStream out() throws IOException {
                 throw new UnsupportedOperationException();
-            }       
-            
+            }
+
             @Override
             public void backup() throws IOException {
                 throw new UnsupportedOperationException();
@@ -261,17 +278,42 @@ public class XMLConfiguration implements Configuration, InitializingBean {
             public boolean hasOutput() {
                 return false;
             }
-            
+
         });
         try {
             gwcConfig = loadConfiguration(is);
+            
+            /*
+             * >>> Emil Zail - T-Kartor 2016-09-05: Adds all layers to monitoring <<<
+             */
+            
+            // get monitor class
+            DiskQuotaMonitor monitor = getMonitor();
+            if (monitor != null) {
+                TileLayerListener listener = monitor.getLayerListener();
+
+                for (TileLayer layer : this.gwcConfig.getLayers()) {
+                    try {
+                        log.debug("Adding to quota monitor: layer='" + layer.getName() + "'");
+                        monitor.addLayerToQuotaMonitor(layer);
+                    } catch (InterruptedException e) {
+                        log.warn("Failed to add to quota monitor", e);
+                    }
+
+                    if (listener != null) {
+                        log.debug("Adding listener: layer='" + layer.getName() + "' class='"
+                                + listener.getClass().getName() + "'");
+                        layer.addLayerListener(listener);
+                    }
+                }
+            }
         } catch (IOException e) {
             throw new ConfigurationException(e.getMessage(), e);
         }
     }
-    
+
     public void setTemplate(String template) {
-       resourceProvider.setTemplate(template);
+        resourceProvider.setTemplate(template);
     }
 
     public String getConfigLocation() throws ConfigurationException {
@@ -282,6 +324,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         }
     }
 
+    @Override
     public boolean isRuntimeStatsEnabled() {
         if (gwcConfig == null || gwcConfig.getRuntimeStats() == null) {
             return true;
@@ -290,12 +333,14 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         }
     }
 
+    @Override
     public synchronized ServiceInformation getServiceInformation() {
         return gwcConfig.getServiceInformation();
     }
 
     /**
      * Configuration objects lacking their own defaults can delegate to this
+     * 
      * @param layer
      */
     public void setDefaultValues(TileLayer layer) {
@@ -371,13 +416,13 @@ public class XMLConfiguration implements Configuration, InitializingBean {
                 in.close();
             }
         } catch (IOException e) {
-            throw new ConfigurationException("Error parsing config file "
-                    + resourceProvider.getId(), e);
+            throw new ConfigurationException(
+                    "Error parsing config file " + resourceProvider.getId(), e);
         }
     }
 
-    private GeoWebCacheConfiguration loadConfiguration(InputStream xmlFile) throws IOException,
-            ConfigurationException {
+    private GeoWebCacheConfiguration loadConfiguration(InputStream xmlFile)
+            throws IOException, ConfigurationException {
         Node rootNode = loadDocument(xmlFile);
         XStream xs = getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.PERSIST);
 
@@ -393,121 +438,24 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         if (!resourceProvider.hasOutput()) {
             return;
         }
-        
+
         try {
             resourceProvider.backup();
         } catch (Exception e) {
             log.warn("Error creating back up of configuration file " + resourceProvider.getId(), e);
-        } 
-        
+        }
+
         persistToFile();
     }
 
     public XStream getConfiguredXStream(XStream xs) {
-        return getConfiguredXStreamWithContext(xs, this.context, (ContextualConfigurationProvider.Context)null);
+        return getConfiguredXStreamWithContext(xs, this.context,
+                (ContextualConfigurationProvider.Context) null);
     }
-    public static XStream getConfiguredXStream(XStream xs, WebApplicationContext context) {
-        return getConfiguredXStreamWithContext(xs, context, (ContextualConfigurationProvider.Context)null);
-    }
-    public XStream getConfiguredXStreamWithContext(XStream xs, 
+
+    public XStream getConfiguredXStreamWithContext(XStream xs,
             ContextualConfigurationProvider.Context providerContext) {
         return getConfiguredXStreamWithContext(xs, this.context, providerContext);
-    }
-    
-    public static XStream getConfiguredXStreamWithContext(XStream xs, WebApplicationContext context, 
-            ContextualConfigurationProvider.Context providerContext) {
-        
-        {
-            // Allow any implementation of these extension points
-            xs.allowTypeHierarchy(org.geowebcache.layer.TileLayer.class);
-            xs.allowTypeHierarchy(org.geowebcache.filter.parameters.ParameterFilter.class);
-            xs.allowTypeHierarchy(org.geowebcache.filter.request.RequestFilter.class);
-            xs.allowTypeHierarchy(org.geowebcache.config.BlobStoreConfig.class);
-            xs.allowTypeHierarchy(org.geowebcache.config.Configuration.class);
-            
-            // Allow anything that's part of GWC
-            // TODO: replace this with a more narrow whitelist
-            xs.allowTypesByWildcard(new String[]{"org.geowebcache.**"});
-        }
-        
-        xs.setMode(XStream.NO_REFERENCES);
-
-        xs.addDefaultImplementation(ArrayList.class, List.class);
-
-        xs.alias("gwcConfiguration", GeoWebCacheConfiguration.class);
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns_xsi");
-        xs.aliasField("xmlns:xsi", GeoWebCacheConfiguration.class, "xmlns_xsi");
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xsi_schemaLocation");
-        xs.aliasField("xsi:schemaLocation", GeoWebCacheConfiguration.class, "xsi_schemaLocation");
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
-
-        // xs.alias("layers", List.class);
-        xs.alias("wmsLayer", WMSLayer.class);
-
-        xs.alias("blobStores", new ArrayList<BlobStoreConfig>().getClass());
-        xs.alias("FileBlobStore", FileBlobStoreConfig.class);
-        xs.aliasAttribute(BlobStoreConfig.class, "_default", "default");
-
-        // These two are for 1.1.x compatibility
-        xs.alias("grids", new ArrayList<XMLOldGrid>().getClass());
-        xs.alias("grid", XMLOldGrid.class);
-
-        xs.alias("gridSet", XMLGridSet.class);
-        xs.alias("gridSubset", XMLGridSubset.class);
-
-        xs.alias("mimeFormats", new ArrayList<String>().getClass());
-        xs.alias("formatModifiers", new ArrayList<FormatModifier>().getClass());
-        xs.alias("srs", org.geowebcache.grid.SRS.class);
-        xs.alias("parameterFilters", new ArrayList<ParameterFilter>().getClass());
-        xs.alias("parameterFilter", ParameterFilter.class);
-        xs.alias("seedRequest", SeedRequest.class);
-        
-        xs.processAnnotations(CaseNormalizer.class);
-        xs.processAnnotations(StringParameterFilter.class);
-        xs.processAnnotations(RegexParameterFilter.class);
-        xs.processAnnotations(FloatParameterFilter.class);
-        xs.processAnnotations(IntegerParameterFilter.class);
-
-        xs.alias("formatModifier", FormatModifier.class);
-
-        xs.alias("circularExtentFilter", CircularExtentFilter.class);
-        xs.alias("wmsRasterFilter", WMSRasterFilter.class);
-        xs.alias("fileRasterFilter", FileRasterFilter.class);
-
-        xs.alias("expirationRule", ExpirationRule.class);
-        xs.useAttributeFor(ExpirationRule.class, "minZoom");
-        xs.useAttributeFor(ExpirationRule.class, "expiration");
-
-        xs.alias("geoRssFeed", GeoRSSFeedDefinition.class);
-
-        xs.alias("metaInformation", LayerMetaInformation.class);
-
-        xs.alias("serviceInformation", ServiceInformation.class);
-        xs.alias("contactInformation", ContactInformation.class);
-        
-        xs.processAnnotations(TruncateLayerRequest.class);
-
-        if (context != null) {
-            /*
-             * Look up XMLConfigurationProvider extension points and let them contribute to the
-             * configuration
-             */
-            List<XMLConfigurationProvider> configExtensions = GeoWebCacheExtensions.extensions(
-                    XMLConfigurationProvider.class, context);
-            for (XMLConfigurationProvider extension : configExtensions) {
-                // Check if the provider is context dependent
-                if(extension instanceof ContextualConfigurationProvider &&
-                        // Check if the context is applicable for the provider
-                        (providerContext==null ||
-                        !((ContextualConfigurationProvider)extension).appliesTo(providerContext))) {
-                            // If so, try the next one
-                            continue;
-                    }
-                
-                xs = extension.getConfiguredXStream(xs);
-            }
-        }
-        return xs;
     }
 
     /**
@@ -533,8 +481,9 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         } catch (FileNotFoundException fnfe) {
             throw fnfe;
         } catch (IOException e) {
-            throw (IOException) new IOException("Error writing to " + resourceProvider.getId()
-                    + ": " + e.getMessage()).initCause(e);
+            throw (IOException) new IOException(
+                    "Error writing to " + resourceProvider.getId() + ": " + e.getMessage())
+                            .initCause(e);
         }
 
         log.info("Wrote configuration to " + resourceProvider.getId());
@@ -561,8 +510,8 @@ public class XMLConfiguration implements Configuration, InitializingBean {
             throw new NullPointerException();
         }
         if (!(tl instanceof WMSLayer)) {
-            throw new IllegalArgumentException("Can't add layers of type "
-                    + tl.getClass().getName());
+            throw new IllegalArgumentException(
+                    "Can't add layers of type " + tl.getClass().getName());
         }
         if (null != getTileLayer(tl.getName())) {
             throw new IllegalArgumentException("Layer '" + tl.getName() + "' already exists");
@@ -570,6 +519,30 @@ public class XMLConfiguration implements Configuration, InitializingBean {
 
         initialize(tl);
         gwcConfig.getLayers().add(tl);
+
+        /*
+         * >>> Emil Zail - T-Kartor 2016-09-05: Adds layer to monitoring <<<
+         */
+        
+        // get monitor class
+        DiskQuotaMonitor monitor = getMonitor();
+        if (monitor != null) {
+            TileLayerListener listener = monitor.getLayerListener();
+
+            try {
+                log.debug("Adding to quota monitor: layer='" + tl.getName() + "'");
+                monitor.addLayerToQuotaMonitor(tl);
+            } catch (InterruptedException e) {
+                log.warn("Failed to add to quota monitor", e);
+            }
+
+            if (listener != null) {
+                log.debug("Adding listener: layer='" + tl.getName() + "' class='"
+                        + listener.getClass().getName() + "'");
+                tl.addLayerListener(listener);
+            }
+        }
+
         updateLayers();
     }
 
@@ -607,7 +580,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         removed = gwcConfig.getLayers().remove(tileLayer);
         if (removed) {
             updateLayers();
-            
+
         }
         return removed;
     }
@@ -778,7 +751,8 @@ public class XMLConfiguration implements Configuration, InitializingBean {
                 String warndecoration = new String(c).substring(0, 80);
                 log.warn(warndecoration);
                 log.warn(msg);
-                log.warn("*** Will try to use configuration anyway. Please check the order of declared elements against the schema.");
+                log.warn(
+                        "*** Will try to use configuration anyway. Please check the order of declared elements against the schema.");
                 log.warn(warndecoration);
             } catch (IOException e) {
                 throw new RuntimeException(e.getMessage(), e);
@@ -849,6 +823,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
     /**
      * @see org.geowebcache.config.Configuration#initialize(org.geowebcache.grid.GridSetBroker)
      */
+    @Override
     public int initialize(final GridSetBroker gridSetBroker) throws GeoWebCacheException {
 
         this.gridSetBroker = gridSetBroker;
@@ -872,7 +847,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         }
 
         updateLayers();
-        
+
         this.reloadConfigOnInit = true;
 
         return getTileLayerCount();
@@ -982,24 +957,46 @@ public class XMLConfiguration implements Configuration, InitializingBean {
     public String getVersion() {
         return gwcConfig.getVersion();
     }
-    
+
     /**
      * Used for getting the "fullWMS" parameter from GeoWebCacheConfigration
+     * 
      * @return
      */
-    public Boolean getfullWMS(){
-        if(gwcConfig!=null){
+    public Boolean getfullWMS() {
+        if (gwcConfig != null) {
             return gwcConfig.getFullWMS();
         }
-        return null;        
+        return null;
     }
 
     public List<BlobStoreConfig> getBlobStores() {
         return gwcConfig.getBlobStores();
     }
-    
+
     public LockProvider getLockProvider() {
         return gwcConfig.getLockProvider();
+    }
+
+    public void setMonitor(final DiskQuotaMonitor monitor) {
+        this.monitor = monitor;
+    }
+
+    /**
+     * @return bean for monitoring
+     */
+    public DiskQuotaMonitor getMonitor() {
+        if (this.monitor == null && context != null) {
+            synchronized (locker) {
+                if (this.monitor == null) {
+                    log.info("Getting bean: class=" + DiskQuotaMonitor.class.getName());
+
+                    setMonitor(context.getBean(DiskQuotaMonitor.class));
+                }
+            }
+        }
+
+        return this.monitor;
     }
 
 }

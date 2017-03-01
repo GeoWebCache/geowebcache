@@ -40,8 +40,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.BlobStoreConfig;
 import org.geowebcache.config.Configuration;
+import org.geowebcache.config.ConfigurationDispatcher;
 import org.geowebcache.config.ConfigurationException;
-import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.conveyor.ConveyorTile;
@@ -66,7 +66,6 @@ import org.geowebcache.storage.CompositeBlobStore;
 import org.geowebcache.storage.DefaultStorageBroker;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
-import org.geowebcache.storage.blobstore.file.FileBlobStore;
 import org.geowebcache.storage.blobstore.memory.CacheStatistics;
 import org.geowebcache.storage.blobstore.memory.MemoryBlobStore;
 import org.geowebcache.util.ServletUtils;
@@ -374,8 +373,11 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 // A5) Ask the layer to provide the content for the tile
                 convTile = layer.getTile(convTile);
 
-                // A6) Write response
-                writeData(convTile);
+                // if not in cache and not able to lock then do not write
+                if (convTile != null) {
+                    // A6) Write response
+                    writeData(convTile);
+                }
 
                 // Alternatively:
             } catch (OutsideCoverageException e) {
@@ -484,11 +486,11 @@ public class GeoWebCacheDispatcher extends AbstractController {
         str.append("<h3>Storage Locations</h3>\n");
         str.append("<table class=\"stats\">\n");
         str.append("<tbody>");
-        XMLConfiguration config;
-        if(mainConfiguration instanceof XMLConfiguration) {
-            config = (XMLConfiguration) mainConfiguration;
+        ConfigurationDispatcher config;
+        if (mainConfiguration instanceof ConfigurationDispatcher) {
+            config = (ConfigurationDispatcher) mainConfiguration;
         } else {
-            config = GeoWebCacheExtensions.bean(XMLConfiguration.class);
+            config = GeoWebCacheExtensions.bean(ConfigurationDispatcher.class);
         }
         String configLoc;
         String localStorageLoc;

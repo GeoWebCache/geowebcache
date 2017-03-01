@@ -25,9 +25,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -67,6 +69,8 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     public enum RequestType {
         MAP, FEATUREINFO
     };
+
+    private static final AtomicInteger COUNTER = new AtomicInteger(0);
 
     private String[] wmsUrl;
 
@@ -118,7 +122,10 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
     private transient LockProvider lockProvider;
 
-    WMSLayer() {
+    private transient int maxBackendRequests;
+
+    // protected to be able extend
+    protected WMSLayer() {
         //default constructor for XStream
     }
     
@@ -292,54 +299,123 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         // Final preflight check, throws exception if necessary
         gridSubset.checkCoverage(gridLoc);
 
-        ConveyorTile returnTile;
+        ConveyorTile returnTile = null;
 
         tile.setMetaTileCacheOnly(!gridSubset.shouldCacheAtZoom(gridLoc[2]));
+
+        // Will do lock around check in cache to only lock if tile is not found in cache
         try {
-            if (tryCacheFetch(tile)) {
-                returnTile = finalizeTile(tile);
-            } else if (mime.supportsTiling()) { // Okay, so we need to go to the backend
-                returnTile = getMetatilingReponse(tile, true);
-            } else {
-                returnTile = getNonMetatilingReponse(tile, true);
+            // build meta tile
+            WMSMetaTile metaTile = mime.supportsTiling() ? createMetaTile(tile) : null;
+            String metaKey = buildLockKey(tile, metaTile);
+            Lock lock = null;
+            try {
+                long startTime = System.currentTimeMillis();
+                for (int i = 0; i < 10; i++) {
+                    if (tryCacheFetch(tile)) {
+                        returnTile = finalizeTile(tile);
+                        break;
+                    }
+
+                    if (lock == null) {
+                        try {
+                            lock = lockProvider.getLock(metaKey);
+                        } catch (Exception e) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Failed fetching lock.. will sleep.. key=" + metaKey
+                                        + " count=" + i + " elapsedTime="
+                                        + (System.currentTimeMillis() - startTime));
+                            }
+
+                            try {
+                                Thread.sleep(100);
+                            } catch (InterruptedException ie) {
+                                // ok, moving on
+                            }
+
+                            continue;
+                        }
+                    }
+
+                    // check cache again
+                    if (tryCacheFetch(tile)) {
+                        returnTile = finalizeTile(tile);
+                        break;
+                    }
+
+                    // Will count concurrent backend requests
+                    int count = COUNTER.addAndGet(1);
+                    try {
+                        if (maxBackendRequests > 0 && count > maxBackendRequests) {
+                            // log.warn("To many requests: count=" + count);
+                        } else {
+                            // Okay, so we need to go to the backend
+                            if (mime.supportsTiling()) {
+                                returnTile = getMetatilingReponse(tile, false, lock, metaTile);
+                            } else {
+                                returnTile = getNonMetatilingReponse(tile, false, lock);
+                            }
+                        }
+
+                        break;
+                    } finally {
+                        COUNTER.decrementAndGet();
+                    }
+                }
+
+                if (returnTile == null) {
+                    // create a base for GetMap
+                    GetMethod method = new GetMethod(nextWmsURL());
+
+                    try {
+                        if (tile.servletReq != null) {
+                            // add query parameters
+                            setQueryParams(method, tile);
+                        }
+
+                        String redirectUrl = method.getURI().getURI();
+
+                        log.warn(
+                                "Could not get lock or to many concurrent requests to backend.. elapsedTime= "
+                                        + (System.currentTimeMillis() - startTime) + " redirect="
+                                        + redirectUrl);
+
+                        if (tile.servletResp != null) {
+                            // send redirect to origin source
+                            tile.servletResp.sendRedirect(redirectUrl);
+                        } else {
+                            // throw error
+                            throw new GeoWebCacheException(
+                                    "Could not get lock or to many concurrent requests to backend: request="
+                                            + redirectUrl);
+                        }
+                    } finally {
+                        method.releaseConnection();
+                    }
+
+                    // return null (no tile generated)
+                    return null;
+                }
+            } finally {
+                if (lock != null) {
+                    lock.release();
+                }
+                if (metaTile != null) {
+                    metaTile.dispose();
+                }
             }
         } finally {
             cleanUpThreadLocals();
         }
         
-        sendTileRequestedEvent(returnTile);
+        if (returnTile != null) {
+            sendTileRequestedEvent(returnTile);
+        }
 
         return returnTile;
     }
 
-    /**
-     * Used for seeding
-     */
-    public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException,
-            IOException {
-        GridSubset gridSubset = getGridSubset(tile.getGridSetId());
-        if (gridSubset.shouldCacheAtZoom(tile.getTileIndex()[2])) {
-            if (tile.getMimeType().supportsTiling()
-                    && (metaWidthHeight[0] > 1 || metaWidthHeight[1] > 1)) {
-                getMetatilingReponse(tile, tryCache);
-            } else {
-                getNonMetatilingReponse(tile, tryCache);
-            }
-        }
-    }
-
-    /**
-     * Metatiling request forwarding
-     * 
-     * @param tile
-     *            the Tile with all the information
-     * @param tryCache
-     *            whether to try the cache, or seed
-     * @throws GeoWebCacheException
-     */
-    private ConveyorTile getMetatilingReponse(ConveyorTile tile, boolean tryCache)
-            throws GeoWebCacheException {
-
+    private WMSMetaTile createMetaTile(ConveyorTile tile) {
         // int idx = this.getSRSIndex(tile.getSRS());
         long[] gridLoc = tile.getTileIndex();
 
@@ -360,12 +436,67 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         if (saveExpirationHeaders) {
             metaTile.setExpiresHeader(GWCVars.CACHE_USE_WMS_BACKEND_VALUE);
         }
+        return metaTile;
+    }
 
-        String metaKey = buildLockKey(tile, metaTile);
-        Lock lock = null;
+    private void setQueryParams(GetMethod getMethod, ConveyorTile tile) {
+        Map<String, String[]> queryParams = tile.servletReq.getParameterMap();
+        if (queryParams != null && queryParams.size() > 0) {
+            NameValuePair[] params = new NameValuePair[queryParams.size()];
+            int i = 0;
+            for (Map.Entry<String, String[]> e : queryParams.entrySet()) {
+                if (e.getValue().length > 0) {
+                    String key = e.getKey();
+                    // will set origin layers
+                    String value = key.equalsIgnoreCase("LAYERS") ? getWmsLayers()
+                            : e.getValue()[0];
+
+                    params[i] = new NameValuePair(key, value);
+                    i++;
+                }
+            }
+
+            getMethod.setQueryString(params);
+        }
+    }
+
+    /**
+     * Used for seeding
+     */
+    public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException,
+            IOException {
+        GridSubset gridSubset = getGridSubset(tile.getGridSetId());
+        if (gridSubset.shouldCacheAtZoom(tile.getTileIndex()[2])) {
+            if (tile.getMimeType().supportsTiling()
+                    && (metaWidthHeight[0] > 1 || metaWidthHeight[1] > 1)) {
+                getMetatilingReponse(tile, tryCache, null, null);
+            } else {
+                getNonMetatilingReponse(tile, tryCache, null);
+            }
+        }
+    }
+
+    /**
+     * Metatiling request forwarding
+     * 
+     * @param tile
+     *            the Tile with all the information
+     * @param tryCache
+     *            whether to try the cache, or seed
+     * @throws GeoWebCacheException
+     */
+    private ConveyorTile getMetatilingReponse(ConveyorTile tile, boolean tryCache, Lock lock,
+            WMSMetaTile metaTile)
+            throws GeoWebCacheException {
+
+        WMSMetaTile internalMetaTile = metaTile == null ? createMetaTile(tile) : metaTile;
+
+        Lock internalLock = null;
         try {
             /** ****************** Acquire lock ******************* */
-            lock = lockProvider.getLock(metaKey);
+            String lockKey = buildLockKey(tile, internalMetaTile);
+
+            internalLock = lock == null ? lockProvider.getLock(lockKey) : null;
             /** ****************** Check cache again ************** */
             if (tryCache && tryCacheFetch(tile)) {
                 // Someone got it already, return lock and we're done
@@ -382,14 +513,16 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             /** ****************** No luck, Request metatile ****** */
             // Leave a hint to save expiration, if necessary
             if (saveExpirationHeaders) {
-                metaTile.setExpiresHeader(GWCVars.CACHE_USE_WMS_BACKEND_VALUE);
+                internalMetaTile.setExpiresHeader(GWCVars.CACHE_USE_WMS_BACKEND_VALUE);
             }
-            long requestTime = System.currentTimeMillis();
-            sourceHelper.makeRequest(metaTile, buffer);
 
-            if (metaTile.getError()) {
-                throw new GeoWebCacheException("Empty metatile, error message: "
-                        + metaTile.getErrorMessage());
+            long requestTime = System.currentTimeMillis();
+
+            sourceHelper.makeRequest(internalMetaTile, buffer);
+
+            if (internalMetaTile.getError()) {
+                throw new GeoWebCacheException(
+                        "Empty metatile, error message: " + internalMetaTile.getErrorMessage());
             }
 
             if (saveExpirationHeaders) {
@@ -397,16 +530,19 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
                 saveExpirationInformation((int) (tile.getExpiresHeader() / 1000));
             }
 
-            metaTile.setImageBytes(buffer);
+            internalMetaTile.setImageBytes(buffer);
 
-            saveTiles(metaTile, tile, requestTime);
+            saveTiles(internalMetaTile, tile, requestTime);
 
             /** ****************** Return lock and response ****** */
         } finally {
-            if(lock != null) {
-                lock.release();
+            if (internalLock != null) {
+                internalLock.release();
             }
-            metaTile.dispose();
+            // release only if generated here
+            if (metaTile == null) {
+                internalMetaTile.dispose();
+            }
         }
         return finalizeTile(tile);
     }
@@ -446,16 +582,16 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
      *            whether to try the cache, or seed
      * @throws GeoWebCacheException
      */
-    private ConveyorTile getNonMetatilingReponse(ConveyorTile tile, boolean tryCache)
+    private ConveyorTile getNonMetatilingReponse(ConveyorTile tile, boolean tryCache, Lock lock)
             throws GeoWebCacheException {
         // String debugHeadersStr = null;
         long[] gridLoc = tile.getTileIndex();
 
         String lockKey = buildLockKey(tile, null);
-        Lock lock = null;
+        Lock internalLock = null;
         try {
             /** ****************** Acquire lock ******************* */
-            lock = lockProvider.getLock(lockKey);
+            internalLock = lock == null ? lockProvider.getLock(lockKey) : null;
             
             /** ****************** Check cache again ************** */
             if (tryCache && tryCacheFetch(tile)) {
@@ -484,8 +620,8 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
             /** ****************** Return lock and response ****** */
         } finally {
-            if(lock != null) {
-                lock.release();
+            if (internalLock != null) {
+                internalLock.release();
             }
         }
         return finalizeTile(tile);
@@ -853,5 +989,15 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             IOUtils.closeQuietly(is);
         }
         
+    }
+
+    /**
+     * How many connections can be opened at the same time to generate new cached tiles (<= 0 = no
+     * limit, defaults to 0)
+     * 
+     * @param maxBackendRequests
+     */
+    public void setMaxBackendRequests(int maxBackendRequests) {
+        this.maxBackendRequests = maxBackendRequests;
     }
 }

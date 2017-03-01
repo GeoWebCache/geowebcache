@@ -17,22 +17,22 @@
 package org.geowebcache.filter.parameters;
 
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Locale;
 
 import org.custommonkey.xmlunit.XMLAssert;
-import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.config.AbsConfigurationDispatcher;
+import org.geowebcache.config.ContextualConfigurationProvider;
 import org.geowebcache.filter.parameters.CaseNormalizer.Case;
 import org.geowebcache.io.GeoWebCacheXStream;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.web.context.support.StaticWebApplicationContext;
@@ -52,7 +52,8 @@ public class RegexParameterFilterTest {
         filter.setDefaultValue("Default");
         
         xs = new GeoWebCacheXStream();
-        xs = XMLConfiguration.getConfiguredXStream(xs, new StaticWebApplicationContext());
+        xs = AbsConfigurationDispatcher.getConfiguredXStreamWithContext(xs,
+                new StaticWebApplicationContext(), (ContextualConfigurationProvider.Context) null);
     }
     
     @Test
