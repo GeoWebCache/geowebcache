@@ -87,7 +87,7 @@ import com.thoughtworks.xstream.io.xml.DomReader;
 public class XMLConfiguration extends AbsConfigurationDispatcher
         implements ConfigurationDispatcher, InitializingBean {
 
-    static final String DEFAULT_CONFIGURATION_FILE_NAME = "geowebcache.xml";
+    public static final String DEFAULT_CONFIGURATION_FILE_NAME = "geowebcache.xml";
 
     private static Log log = LogFactory.getLog(org.geowebcache.config.XMLConfiguration.class);
 
