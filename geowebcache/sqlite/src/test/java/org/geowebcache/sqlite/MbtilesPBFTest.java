@@ -54,6 +54,7 @@ public class MbtilesPBFTest extends TestSupport {
     public void testGetTileDefaultUnzip() throws Exception {
         MbtilesConfiguration configuration = getDefaultConfiguration();
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
+        addStoresToClean(store);
         TileObject tile = TileObject.createQueryTileObject(layer,
                 new long[]{0, 0, 0}, "EPSG:900913", ApplicationMime.mapboxVector.getFormat(), null);
         assertThat(store.get(tile), is(true));
@@ -69,6 +70,7 @@ public class MbtilesPBFTest extends TestSupport {
         MbtilesConfiguration configuration = getDefaultConfiguration();
         configuration.setGzipVector(true);
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
+        addStoresToClean(store);
         TileObject tile = TileObject.createQueryTileObject(layer,
                 new long[]{0, 0, 0}, "EPSG:900913", ApplicationMime.mapboxVector.getFormat(), null);
         assertThat(store.get(tile), is(true));
@@ -84,6 +86,7 @@ public class MbtilesPBFTest extends TestSupport {
         MbtilesConfiguration configuration = getDefaultConfiguration();
         configuration.setGzipVector(false);
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
+        addStoresToClean(store);
         TileObject tile = TileObject.createQueryTileObject(layer,
                 new long[]{0, 0, 0}, "EPSG:900913", ApplicationMime.mapboxVector.getFormat(), null);
         assertThat(store.get(tile), is(true));

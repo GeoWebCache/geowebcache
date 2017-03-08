@@ -25,6 +25,8 @@ import org.junit.Before;
 import java.io.File;
 import java.io.FileWriter;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Helper class with some utilities methods for using during the tests.
@@ -33,14 +35,31 @@ public abstract class TestSupport {
 
     private File rootDirectory;
 
+    private List<File> filesToDelete;
+    private List<MbtilesBlobStore> storesToClean;
+
     @Before
     public void beforeTest() throws Exception {
         rootDirectory = Files.createTempDirectory("gwc-").toFile();
+        filesToDelete = new ArrayList<>();
+        filesToDelete.add(rootDirectory);
+        storesToClean = new ArrayList<>();
     }
 
     @After
     public void afterTest() throws Exception {
-        FileUtils.deleteQuietly(rootDirectory);
+        // let's first make sure all the stores connection were removed
+        for (MbtilesBlobStore store: storesToClean) {
+            try {
+                store.destroy();
+            } catch (Exception exception) {
+                // there is nothing we can do
+            }
+        }
+        // deleting all the files to delete
+        for (File file : filesToDelete) {
+            FileUtils.deleteQuietly(file);
+        }
     }
 
     protected File getRootDirectory() {
@@ -104,5 +123,17 @@ public abstract class TestSupport {
 
     protected static String resourceToString(Resource resource) {
         return new String(Utils.resourceToByteArray(resource));
+    }
+
+    protected void addStoresToClean(MbtilesBlobStore ... stores) {
+        for (MbtilesBlobStore store : stores) {
+            storesToClean.add(store);
+        }
+    }
+
+    protected void addFilesToDelete(File ... files) {
+        for (File file : files) {
+            filesToDelete.add(file);
+        }
     }
 }

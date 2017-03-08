@@ -1,3 +1,27 @@
+GeoWebCache 1.11-beta (2017-02-21)
+----------------------------------
+
+Beta release for the 1.11 branch
+
+Improvements:
++++++++++++++
+- OpenLayers 3 based layer preview page with support for Vector Tiles
+- Extension point for custom TMS capabilities documents
+- Configurable schema for JDBC quota store
+
+Fixes:
+++++++
+- Prevent negative quota being reccorded in JDBC qupta store
+- Fixed misidentification of compatible tile formats
+- Fixed error when caching 2 or 4 bit indexed PNGs
+
+Updated Dependencies:
++++++++++++++++++++++
+- GeoTools 17-beta
+- jt-utilities 1.0.13
+- imageio-ext 1.1.17
+
+
 GeoWebCache 1.10-beta (2016-09-19)
 ----------------------------------
 

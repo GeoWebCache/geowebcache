@@ -12,10 +12,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -105,19 +107,24 @@ public class Demo {
     private static String generateHTML(TileLayerDispatcher tileLayerDispatcher,
             GridSetBroker gridSetBroker) throws GeoWebCacheException {
         String reloadPath = "rest/reload";
+        
+        StringBuffer buf = new StringBuffer();
+        
+        buf.append("<html>\n");
+        buf.append(ServletUtils.gwcHtmlHeader("","GWC Demos"));
+        buf.append("<body>\n");
+        buf.append(ServletUtils.gwcHtmlLogoLink(""));
+        buf.append("<table cellspacing=\"10\" border=\"0\">\n"
+                +"<tr><td><strong>Layer name:</strong></td>\n"
+                +"<td><strong>Enabled:</strong></td>\n"
+                +"<td><strong>Grids Sets:</strong></td>\n");
+        buf.append("</tr>\n");
 
-        String header = "<html>\n" + ServletUtils.gwcHtmlHeader("","GWC Demos") + "<body>\n"
-                + ServletUtils.gwcHtmlLogoLink("") + "<table>\n"
-                + "<table cellspacing=\"10\" border=\"0\">\n"
-                + "<tr><td><strong>Layer name:</strong></td>\n"
-                + "<td><strong>Enabled:</strong></td>\n"
-                + "<td><strong>Grids Sets:</strong></td>\n" + "</tr>\n";
+        tableRows(buf, tileLayerDispatcher, gridSetBroker);
 
-        String rows = tableRows(tileLayerDispatcher, gridSetBroker);
-
-        String footer = "</table>\n"
-                + "<br />"
-                + "<strong>These are just quick demos. GeoWebCache also supports:</strong><br />\n"
+        buf.append("</table>\n");
+        buf.append("<br />");
+        buf.append("<strong>These are just quick demos. GeoWebCache also supports:</strong><br />\n"
                 + "<ul><li>WMTS, TMS, Virtual Earth and Google Maps</li>\n"
                 + "<li>Proxying GetFeatureInfo, GetLegend and other WMS requests</li>\n"
                 + "<li>Advanced request and parameter filters</li>\n"
@@ -130,19 +137,18 @@ public class Demo {
                 + "<p>You can reload the configuration by pressing the following button. "
                 + "The username / password is configured in WEB-INF/user.properties, or the admin "
                 + " user in GeoServer if you are using the plugin.</p>\n"
-                + "<form form id=\"kill\" action=\""
-                + reloadPath
-                + "\" method=\"post\">"
+                + "<form form id=\"kill\" action=\"")
+            .append(reloadPath)
+            .append("\" method=\"post\">"
                 + "<input type=\"hidden\" name=\"reload_configuration\"  value=\"1\" />"
                 + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Reload Configuration\"></span>"
-                + "</form>" + "</body></html>";
+                + "</form>" + "</body></html>");
 
-        return header + rows + footer;
+        return buf.toString();
     }
-
-    private static String tableRows(TileLayerDispatcher tileLayerDispatcher,
+    
+    private static void tableRows(StringBuffer buf, TileLayerDispatcher tileLayerDispatcher,
             GridSetBroker gridSetBroker) throws GeoWebCacheException {
-        StringBuffer buf = new StringBuffer();
 
         Set<String> layerList = new TreeSet<String>(tileLayerDispatcher.getLayerNames());
         for (String layerName : layerList) {
@@ -150,13 +156,17 @@ public class Demo {
             if(!layer.isAdvertised()){
                 continue;
             }
-            buf.append("<tr><td style=\"min-width: 100px;\"><strong>" + layer.getName()
-                    + "</strong><br />\n");
-            buf.append("<a href=\"rest/seed/" + layer.getName() + "\">Seed this layer</a>\n");
-            buf.append("</td><td>" + layer.isEnabled() + "</td>");
+            buf.append("<tr><td style=\"min-width: 100px;\"><strong>")
+                .append(layer.getName())
+                .append("</strong><br />\n");
+            buf.append("<a href=\"rest/seed/")
+                .append(layer.getName())
+                .append("\">Seed this layer</a>\n");
+            buf.append("</td><td>")
+                .append(layer.isEnabled())
+                .append("</td>");
             buf.append("<td><table width=\"100%\">");
 
-            int count = 0;
             for (String gridSetId : layer.getGridSubsets()) {
                 GridSubset gridSubset = layer.getGridSubset(gridSetId);
                 String gridSetName = gridSubset.getName();
@@ -166,70 +176,52 @@ public class Demo {
                 buf.append("<tr><td style=\"width: 170px;\">").append(gridSetName);
 
                 buf.append("</td><td>OpenLayers: [");
-                Iterator<MimeType> mimeIter = layer.getMimeTypes().iterator();
-                boolean prependComma = false;
-                while (mimeIter.hasNext()) {
-                    MimeType mime = mimeIter.next();
-                    if (mime instanceof ImageMime) {
-                        if (prependComma) {
-                            buf.append(", ");
-                        } else {
-                            prependComma = true;
-                        }
-                        buf.append(generateDemoUrl(layer.getName(), gridSubset.getName(),
-                                (ImageMime) mime));
-                    }
-                }
+                buf.append(layer.getMimeTypes().stream()
+                    .filter(type -> type.supportsTiling() || type.isVector())
+                    .map(type -> generateDemoUrl(layer.getName(), gridSubset.getName(),type))
+                    .collect(Collectors.joining(", ")));
+                    
                 buf.append("]</td><td>\n");
-
+                
                 if (gridSubset.getName().equals(gridSetBroker.WORLD_EPSG4326.getName())) {
                     buf.append(" &nbsp; KML: [");
                     String prefix = "";
-                    prependComma = false;
-                    Iterator<MimeType> kmlIter = layer.getMimeTypes().iterator();
-                    while (kmlIter.hasNext()) {
-                        MimeType mime = kmlIter.next();
-                        if (mime instanceof ImageMime || mime == XMLMime.kml) {
-                            if (prependComma) {
-                                buf.append(", ");
+                    
+                    buf.append(layer.getMimeTypes().stream()
+                        .filter(type-> type instanceof ImageMime || type == XMLMime.kml || type == XMLMime.kmz)
+                        .map(type -> {
+                            if (type == XMLMime.kmz) {
+                                return String.format("<a href=\"%sservice/kml/%s.kml.kmz\">kmz</a>", 
+                                    prefix, 
+                                    layer.getName());
                             } else {
-                                prependComma = true;
+                                return String.format("<a href=\"%sservice/kml/%s.%s.kml\">%s</a>", 
+                                        prefix, 
+                                        layer.getName(), 
+                                        type.getFileExtension(), 
+                                        type.getFileExtension());
                             }
-                            buf.append("<a href=\"" + prefix + "service/kml/" + layer.getName()
-                                    + "." + mime.getFileExtension() + ".kml\">"
-                                    + mime.getFileExtension() + "</a>");
-                        } else if (mime == XMLMime.kmz) {
-                            if (prependComma) {
-                                buf.append(", ");
-                            } else {
-                                prependComma = true;
-                            }
-                            buf.append("<a href=\"" + prefix + "service/kml/" + layer.getName()
-                                    + ".kml.kmz\">kmz</a>");
-                        }
-                    }
+                        })
+                        .collect(Collectors.joining(", ")));
+
                     buf.append("]");
                 } else {
                     // No Google Earth support
                 }
                 buf.append("</td></tr>");
-                count++;
             }
-
-            // if(count == 0) {
-            // buf.append("<tr><td colspan=\"2\"><i>None</i></td></tr>\n");
-            // }
-
+            
             buf.append("</table></td>\n");
             buf.append("</tr>\n");
         }
-
-        return buf.toString();
     }
 
-    private static String generateDemoUrl(String layerName, String gridSetId, ImageMime imageMime) {
-        return "<a href=\"demo/" + layerName + "?gridSet=" + gridSetId + "&format="
-                + imageMime.getFormat() + "\">" + imageMime.getFileExtension() + "</a>";
+    private static String generateDemoUrl(String layerName, String gridSetId, MimeType type) {
+        return String.format("<a href=\"demo/%s?gridSet=%s&format=%s\">%s</a>", 
+                layerName, 
+                gridSetId,
+                type.getFormat(), 
+                type.getFileExtension());
     }
 
     private static String generateHTML(TileLayer layer, String gridSetStr, String formatStr,
@@ -237,9 +229,23 @@ public class Demo {
         String layerName = layer.getName();
 
         GridSubset gridSubset = layer.getGridSubset(gridSetStr);
+        GridSet gridSet = gridSubset.getGridSet();
 
         BoundingBox bbox = gridSubset.getGridSetBounds();
         BoundingBox zoomBounds = gridSubset.getOriginalExtent();
+
+        MimeType formatMime = null;
+
+        for (MimeType mime : layer.getMimeTypes()) {
+            if (formatStr.equalsIgnoreCase(mime.getFormat())) {
+                formatMime = mime;
+            }
+        }
+        if (formatMime == null) {
+            formatMime = layer.getDefaultMimeType();
+        }
+        
+        StringBuffer buf = new StringBuffer();
 
         String res = "resolutions: " + Arrays.toString(gridSubset.getResolutions()) + ",\n";
 
@@ -247,114 +253,360 @@ public class Demo {
 
         String openLayersPath;
         if (asPlugin) {
-            openLayersPath = "../../openlayers/OpenLayers.js";
+            openLayersPath = "../../openlayers3/";
         } else {
-            openLayersPath = "../openlayers/OpenLayers.js";
+            openLayersPath = "../openlayers3/";
         }
-
-        String page = "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n"
-                + "<meta http-equiv=\"imagetoolbar\" content=\"no\">\n" + "<title>"
-                + layerName
-                + " "
-                + gridSubset.getName()
-                + " "
-                + formatStr
-                + "</title>\n"
-                + "<style type=\"text/css\">\n"
+        
+        buf.append("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n");
+        buf.append("<meta http-equiv=\"imagetoolbar\" content=\"no\">\n" + "<title>")
+                .append(layerName);
+        buf.append(" ")
+                .append(gridSubset.getName());
+        buf.append(" ")
+                .append(formatStr);
+        buf.append("</title>\n");
+        buf.append("<style type=\"text/css\">\n"
                 + "body { font-family: sans-serif; font-weight: bold; font-size: .8em; }\n"
                 + "body { border: 0px; margin: 0px; padding: 0px; }\n"
                 + "#map { width: 85%; height: 85%; border: 0px; padding: 0px; }\n"
-                + "</style>\n"
+                + "#info iframe {border: none;}\n"
+                + ".ol-scale-value {top: 24px; right: 8px; position: absolute; }\n"
+                + "</style>\n");
 
-                + "<script src=\""
-                + openLayersPath
-                + "\"></script>    \n"
-                + "<script type=\"text/javascript\">               \n"
-                + "var map, demolayer, params;                     \n"
-                + "filteredParams = {};                                    \n"
-                + "  // sets the chosen modifiable parameter        \n"
-                + "  function setParam(name, value){                \n"
-                + "   var newParams = {};                           \n"
-                + "   newParams[name] = value;                      \n"
-                + "   demolayer.mergeNewParams(newParams);          \n"
-                + "   filteredParams[name]=value;                   \n"
-                + "  }                                              \n"
-
-                + "OpenLayers.DOTS_PER_INCH = "
-                + gridSubset.getDotsPerInch()
-                + ";\n"
-                + "OpenLayers.Util.onImageLoadErrorColor = 'transparent';\n"
-
+        buf.append("<script src=\"")
+                .append(openLayersPath)
+                .append("ol.js\"></script>\n");
+        buf.append("<link rel='stylesheet' href='")
+                .append(openLayersPath)
+                .append("ol.css' type='text/css'>\n");
+        buf.append("<script type=\"text/javascript\">\n"
                 + "function init(){\n"
-                + "var mapOptions = { \n"
-                + res
-                + "projection: new OpenLayers.Projection('"
-                + gridSubset.getSRS().toString()
-                + "'),\n"
-                + "maxExtent: new OpenLayers.Bounds("
-                + bbox.toString()
-                + "),\n"
-                + units
-                + "controls: []\n"
+                + "function ScaleControl(opt_options) {\n"
+                + "  var options = opt_options || {};\n"
+                + "\n"
+                + "  var element = document.createElement('div');\n"
+                + "  element.className = 'ol-scale-value';\n"
+                + "\n"
+                + "  ol.control.Control.call(this, {\n"
+                + "    element: element,\n"
+                + "    target: options.target\n"
+                + "  });\n"
+                + "\n"
                 + "};\n"
-                + "map = new OpenLayers.Map('map', mapOptions );\n"
-                + "map.addControl(new OpenLayers.Control.PanZoomBar({\n"
-                + "		position: new OpenLayers.Pixel(2, 15)\n"
-                + "}));\n"
-                + "map.addControl(new OpenLayers.Control.Navigation());\n"
-                + "map.addControl(new OpenLayers.Control.Scale($('scale')));\n"
-                + "map.addControl(new OpenLayers.Control.MousePosition({element: $('location')}));\n"
-                + "demolayer = new OpenLayers.Layer.WMS(\n"
-                + "\""
-                + layerName
-                + "\",\"../service/wms\",\n"
-                + "{layers: '"
-                + layerName
-                + "', format: '"
-                + formatStr
-                + "' },\n"
-                + "{ tileSize: new OpenLayers.Size("
-                + gridSubset.getTileWidth() + "," + gridSubset.getTileHeight() + ")";
+                + "ol.inherits(ScaleControl, ol.control.Control);\n"
+                + "ScaleControl.prototype.setMap = function(map) {\n"
+                + "  map.on('postrender', function() {\n"
+                + "    var view = map.getView();\n"
+                + "    var resolution = view.getResolution();\n");
+        buf.append("    var dpi = ")
+                .append(gridSubset.getDotsPerInch())
+                .append(";\n");
+        buf.append("    var mpu = map.getView().getProjection().getMetersPerUnit();\n");
+        buf.append("    var scale = resolution * mpu * 39.37 * dpi;\n"
+                + "\n"
+                + "    if (scale >= 9500 && scale <= 950000) {\n"
+                + "        scale = Math.round(scale / 1000) + 'K';\n"
+                + "    } else if (scale >= 950000) {\n"
+                + "        scale = Math.round(scale / 1000000) + 'M';\n"
+                + "    } else {\n"
+                + "        scale = Math.round(scale);\n"
+                + "    } \n"
+                + "    this.element.innerHTML = 'Scale = 1 : ' + scale;\n"
+                + "  }, this);\n"
+                + "  ol.control.Control.prototype.setMap.call(this, map);\n"
+                + "}\n"
+                + "\n");
+        buf.append("var gridsetName = '")
+                .append(gridSubset.getGridSet().getName())
+                .append("';\n"
+                + "var gridNames = ")
+                .append(Arrays.stream(gridSubset.getGridNames())
+                        .map(StringEscapeUtils::escapeJavaScript)
+                        .map(s->String.format("'%s'", s))
+                        .collect(Collectors.joining(", ", "[", "]")))
+                .append(";\n"
+                + "var baseUrl = '../service/wmts';\n"
+                + "var style = '';\n");
+        buf.append("var format = '")
+                .append(formatStr)
+                .append("';\n");
+        buf.append("var infoFormat = 'text/html';\n");
+        buf.append("var layerName = '")
+                .append(layerName)
+                .append("';\n");
 
-        /*
-         * If the gridset has a top left tile origin, lets tell that to open layers. Otherwise it'll
-         * calculate tile bounds based on the bbox bottom left corner, leading to misaligned
-         * requests.
-         */
-        GridSet gridSet = gridSubset.getGridSet();
-        if (gridSet.isTopLeftAligned()) {
-            page += ",\n tileOrigin: new OpenLayers.LonLat(" + bbox.getMinX() + ", "
-                    + bbox.getMaxY() + ")";
+        String unit = "";
+        double mpu = gridSet.getMetersPerUnit();
+        if (doubleEquals(mpu, 1)) {
+            unit = "m";
+        } else if (doubleEquals(mpu, 0.3048)) {
+            unit = "ft";
+        //Use the average of equatorial and polar radius, and a large margin of error
+        } else if (doubleEquals(mpu, Math.PI*(6378137 + 6356752)/360,  Math.PI*(6378137 - 6356752)/360 )) {
+            unit = "degrees";
         }
 
-        page += "});\n" + "map.addLayer(demolayer);\n" + "map.zoomToExtent(new OpenLayers.Bounds("
-                + zoomBounds.toString()
-                + "));\n"
-                + "// The following is just for GetFeatureInfo, which is not cached. Most people do not need this \n"
-                + "map.events.register('click', map, function (e) {\n"
-                + "  document.getElementById('nodelist').innerHTML = \"Loading... please wait...\";\n"
-                + "  var params = {\n" + "    REQUEST: \"GetFeatureInfo\",\n"
-                + "    EXCEPTIONS: \"application/vnd.ogc.se_xml\",\n"
-                + "    BBOX: map.getExtent().toBBOX(),\n" + "    X: e.xy.x,\n" + "    Y: e.xy.y,\n"
-                + "    INFO_FORMAT: 'text/html',\n"
-                + "    QUERY_LAYERS: map.layers[0].params.LAYERS,\n" + "    FEATURE_COUNT: 50,\n"
-                + "    Layers: '" + layerName + "',\n"
-                + "    Srs: '"
-                + gridSubset.getSRS().toString() + "',\n" + "    WIDTH: map.size.w,\n"
-                + "    HEIGHT: map.size.h,\n" + "    format: \"" + formatStr + "\" };\n"
-                + "  // Merge in filtered params\n"
-                + "  for(var p in filteredParams) {\n"
-                + "    params[p]=filteredParams[p];\n"
+        buf.append("var projection = new ol.proj.Projection({\n")
+                .append("code: '")
+                .append(gridSubset.getSRS().toString())
+                .append("',\n")
+                .append("units: '")
+                .append(unit)
+                .append("',\n")
+                .append("axisOrientation: 'neu'\n")
+                .append("});\n");
+        buf.append("var resolutions = ")
+                .append(Arrays.toString(gridSubset.getResolutions()))
+                .append(";\n");
+
+        if (formatMime.isVector()) {
+            buf.append("params = {\n"
+                    + "  'REQUEST': 'GetTile',\n"
+                    + "  'SERVICE': 'WMTS',\n"
+                    + "  'VERSION': '1.0.0',\n"
+                    + "  'LAYER': layerName,\n"
+                    + "  'STYLE': style,\n"
+                    + "  'TILEMATRIX': gridsetName + ':{z}',\n"
+                    + "  'TILEMATRIXSET': gridsetName,\n"
+                    + "  'FORMAT': format,\n"
+                    + "  'TILECOL': '{x}',\n"
+                    + "  'TILEROW': '{y}'\n"
+                    + "};\n"
+                    + "\n");
+            buf.append("function constructSource() {\n"
+                    + "  var url = baseUrl+'?'\n"
+                    + "  for (var param in params) {\n"
+                    + "    url = url + param + '=' + params[param] + '&';\n"
+                    + "  }\n"
+                    + "  url = url.slice(0, -1);\n"
+                    + "\n"
+                    + "  var source = new ol.source.VectorTile({\n"
+                    + "    url: url,\n");
+            //Examine mime type for correct VT format
+            String vtName = formatMime.getInternalName();
+            if ("mapbox-vectortile".equals(vtName)) {
+                buf.append("    format: new ol.format.MVT({}),\n");
+            } else if ("topojson".equals(vtName)) {
+                buf.append("    format: new ol.format.TopoJSON({}),\n");
+            } else if ("geojson".equals(vtName)) {
+                buf.append("    format: new ol.format.GeoJSON({}),\n");
+            }
+            buf.append("    projection: projection,\n"
+                    + "    tileGrid: new ol.tilegrid.WMTS({\n");
+            buf.append("      tileSize: [")
+                    .append(gridSubset.getTileWidth()).append(",")
+                    .append(gridSubset.getTileHeight()).append("],\n");
+            if (gridSet.isTopLeftAligned()) {
+                buf.append("      origin: [")
+                        .append(bbox.getMaxX()).append(", ")
+                        .append(bbox.getMinY()).append("],\n");
+            } else {
+                buf.append("      origin: [")
+                        .append(bbox.getMinX()).append(", ")
+                        .append(bbox.getMaxY()).append("],\n");
+            }
+            buf.append("      resolutions: resolutions,\n"
+                    + "      matrixIds: gridNames\n"
+                    + "    }),\n"
+                    + "    wrapX: true\n"
+                    + "  });\n"
+                    + "  return source;\n"
+                    + "}\n"
+                    + "\n"
+                    + "var layer = new ol.layer.VectorTile({\n"
+                    + "  source: constructSource()\n"
+                    + "});\n"
+                    + "\n");
+
+        } else {
+            buf.append("baseParams = ['VERSION','LAYER','STYLE','TILEMATRIX','TILEMATRIXSET','SERVICE','FORMAT'];\n"
+                    + "\n"
+                    + "params = {\n"
+                    + "  'VERSION': '1.0.0',\n"
+                    + "  'LAYER': layerName,\n"
+                    + "  'STYLE': style,\n"
+                    + "  'TILEMATRIX': gridNames,\n"
+                    + "  'TILEMATRIXSET': gridsetName,\n"
+                    + "  'SERVICE': 'WMTS',\n"
+                    + "  'FORMAT': format\n"
+                    + "};\n"
+                    + "\n");
+            buf.append("function constructSource() {\n"
+                    + "  var url = baseUrl+'?'\n"
+                    + "  for (var param in params) {\n"
+                    + "    if (baseParams.indexOf(param.toUpperCase()) < 0) {\n"
+                    + "      url = url + param + '=' + params[param] + '&';\n"
+                    + "    }\n"
+                    + "  }\n"
+                    + "  url = url.slice(0, -1);\n"
+                    + "\n"
+                    + "  var source = new ol.source.WMTS({\n"
+                    + "    url: url,\n"
+                    + "    layer: params['LAYER'],\n"
+                    + "    matrixSet: params['TILEMATRIXSET'],\n"
+                    + "    format: params['FORMAT'],\n"
+                    + "    projection: projection,\n"
+                    + "    tileGrid: new ol.tilegrid.WMTS({\n");
+            buf.append("      tileSize: [")
+                    .append(gridSubset.getTileWidth()).append(",")
+                    .append(gridSubset.getTileHeight()).append("],\n");
+            buf.append("      extent: [")
+                    .append(bbox.getMinX()).append(",")
+                    .append(bbox.getMinY()).append(",")
+                    .append(bbox.getMaxX()).append(",")
+                    .append(bbox.getMaxY()).append("],\n");
+
+            if (gridSubset.fullGridSetCoverage()) {
+                buf.append("      origins: [");
+                for (int i = 0; i < gridSet.getNumLevels(); i++) {
+                    if (i != 0) {
+                        buf.append(",");
+                    }
+                    BoundingBox subbox = gridSubset.getCoverageBounds(i);
+                    if (gridSet.isTopLeftAligned()) {
+                        buf.append("[")
+                                .append(subbox.getMaxX()).append(", ")
+                                .append(subbox.getMinY()).append("]");
+                    } else {
+                        buf.append("[")
+                                .append(subbox.getMinX()).append(", ")
+                                .append(subbox.getMaxY()).append("]");
+                    }
+                }
+                buf.append("],\n");
+            } else {
+                if (gridSet.isTopLeftAligned()) {
+                    buf.append("      origin: [")
+                            .append(bbox.getMaxX()).append(", ")
+                            .append(bbox.getMinY()).append("],\n");
+                } else {
+                    buf.append("      origin: [")
+                            .append(bbox.getMinX()).append(", ")
+                            .append(bbox.getMaxY()).append("],\n");
+                }
+            }
+            buf.append("      resolutions: resolutions,\n"
+                    + "      matrixIds: params['TILEMATRIX']\n"
+                    + "    }),\n"
+                    + "    style: params['STYLE'],\n"
+                    + "    wrapX: true\n"
+                    + "  });\n"
+                    + "  return source;\n"
+                    + "}\n"
+                    + "\n"
+                    + "var layer = new ol.layer.Tile({\n"
+                    + "  source: constructSource()\n"
+                    + "});\n"
+                    + "\n");
+        }
+
+        buf.append("var view = new ol.View({\n"
+                + "  center: [0, 0],\n"
+                + "  zoom: 2,\n"
+                + "  projection: projection,\n");
+        buf.append("  extent: [")
+                .append(bbox.toString())
+                .append("]\n");
+        buf.append("});\n"
+                + "\n"
+                + "var map = new ol.Map({\n"
+                + "  controls: ol.control.defaults({attribution: false}).extend([\n"
+                + "    new ol.control.MousePosition(),\n"
+                + "    new ScaleControl()\n"
+                + "  ]),\n"
+                + "  layers: [layer],\n"
+                + "  target: 'map',\n"
+                + "  view: view\n"
+                + "});\n");
+        buf.append("map.getView().fit([")
+                .append(zoomBounds.toString())
+                .append("], map.getSize());\n");
+        buf.append("\n"
+                + "window.setParam = function(name, value) {\n"
+                + "  if (name == \"STYLES\") {\n"
+                + "    name = \"STYLE\"\n"
                 + "  }\n"
-                + "  OpenLayers.loadURL(\"../service/wms\", params, this, setHTML, setHTML);\n"
-                + "  OpenLayers.Event.stop(e);\n" + "  });\n" + "}\n"
-                + "function setHTML(response){\n"
-                + "    document.getElementById('nodelist').innerHTML = response.responseText;\n"
-                + "};\n" + "</script>\n" + "</head>\n" + "<body onload=\"init()\">\n"
-                + "<div id=\"params\">" + makeModifiableParameters(layer) + "</div>\n"
-                + "<div id=\"map\"></div>\n" + "<div id=\"nodelist\"></div>\n" + "</body>\n"
-                + "</html>";
-        return page;
+                + "  params[name] = value;\n"
+                + "  layer.setSource(constructSource());\n"
+                + "  map.updateSize();\n"
+                + "} \n"
+                + "\n"
+                + "map.on('singleclick', function(evt) {\n"
+                + "  document.getElementById('info').innerHTML = '';\n"
+                + "\n"
+                + "  var source = layer.getSource();\n"
+                + "  var resolution = view.getResolution();\n"
+                + "  var tilegrid = source.getTileGrid();\n"
+                + "  var tileResolutions = tilegrid.getResolutions();\n"
+                + "  var zoomIdx, diff = Infinity;\n"
+                + "\n"
+                + "  for (var i = 0; i < tileResolutions.length; i++) {\n"
+                + "      var tileResolution = tileResolutions[i];\n"
+                + "      var diffP = Math.abs(resolution-tileResolution);\n"
+                + "      if (diffP < diff) {\n"
+                + "          diff = diffP;\n"
+                + "          zoomIdx = i;\n"
+                + "      }\n"
+                + "      if (tileResolution < resolution) {\n"
+                + "        break;\n"
+                + "      }\n"
+                + "  }\n"
+                + "  var tileSize = tilegrid.getTileSize(zoomIdx);\n"
+                + "  var tileOrigin = tilegrid.getOrigin(zoomIdx);\n"
+                + "\n"
+                + "  var fx = (evt.coordinate[0] - tileOrigin[0]) / (resolution * tileSize[0]);\n"
+                + "  var fy = (tileOrigin[1] - evt.coordinate[1]) / (resolution * tileSize[1]);\n"
+                + "  var tileCol = Math.floor(fx);\n"
+                + "  var tileRow = Math.floor(fy);\n"
+                + "  var tileI = Math.floor((fx - tileCol) * tileSize[0]);\n"
+                + "  var tileJ = Math.floor((fy - tileRow) * tileSize[1]);\n"
+                + "  var matrixIds = tilegrid.getMatrixIds()[zoomIdx];\n"
+                + "  var matrixSet = source.getMatrixSet();\n"
+                + "\n"
+                + "  var url = baseUrl+'?'\n"
+                + "  for (var param in params) {\n"
+                + "    if (param.toUpperCase() == 'TILEMATRIX') {\n"
+                + "      url = url + 'TILEMATRIX='+matrixIds+'&';\n"
+                + "    } else {\n"
+                + "      url = url + param + '=' + params[param] + '&';\n"
+                + "    }\n"
+                + "  }\n"
+                + "\n"
+                + "  url = url\n"
+                + "    + 'SERVICE=WMTS&REQUEST=GetFeatureInfo'\n"
+                + "    + '&INFOFORMAT=' +  infoFormat\n"
+                + "    + '&TileCol=' +  tileCol\n"
+                + "    + '&TileRow=' +  tileRow\n"
+                + "    + '&I=' +  tileI\n"
+                + "    + '&J=' +  tileJ;\n"
+                + "\n"
+                + "  if (url) {\n"
+                + "    document.getElementById('info').innerHTML = 'Loading... please wait...';\n"
+                + "    var xmlhttp = new XMLHttpRequest();"
+                + "    xmlhttp.onreadystatechange = function() {\n"
+                + "        if (xmlhttp.readyState == XMLHttpRequest.DONE ) {\n"
+                + "           if (xmlhttp.status == 200) {\n"
+                + "               document.getElementById('info').innerHTML = xmlhttp.responseText;\n"
+                + "           }\n"
+                + "           else {\n"
+                + "              document.getElementById('info').innerHTML = '';\n"
+                + "           }\n"
+                + "        }\n"
+                + "    }\n"
+                + "  xmlhttp.open('GET', url, true);\n"
+                + "  xmlhttp.send();\n"
+                + "  }\n"
+                + "});\n"
+                + "}\n");
+        buf.append("</script>\n" + "</head>\n" + "<body onload=\"init()\">\n");
+        buf.append("<div id=\"params\">")
+                .append(makeModifiableParameters(layer))
+                .append("</div>\n");
+                
+        buf.append("<div id=\"map\"></div>\n" + "<div id=\"info\"></div>\n</body>\n"
+                + "</html>");
+        return buf.toString();
     }
 
     private static String makeModifiableParameters(TileLayer tl) {
@@ -424,7 +676,7 @@ public class Demo {
 
     private static void makePullDown(StringBuilder doc, String id, Map<String, String> keysValues,
             String defaultKey) {
-        doc.append("<select name=\"" + id + "\" onchange=\"setParam('" + id + "', value)\">\n");
+        doc.append("<select name=\"" + id + "\" onchange=\"window.setParam('" + id + "', value)\">\n");
 
         Iterator<Entry<String, String>> iter = keysValues.entrySet().iterator();
 
@@ -446,6 +698,14 @@ public class Demo {
 
     private static void makeTextInput(StringBuilder doc, String id, int size) {
         doc.append("<input name=\"" + id + "\" type=\"text\" size=\"" + size
-                + "\" onblur=\"setParam('" + id + "', value)\" />\n");
+                + "\" onblur=\"window.setParam('" + id + "', value)\" />\n");
+    }
+
+    private static boolean doubleEquals(double d1, double d2) {
+        return doubleEquals(d1, d2, 0);
+    }
+    private static boolean doubleEquals(double d1, double d2, double buffer) {
+        double diff = Math.abs(d1 - d2);
+        return diff < (Math.ulp(d1) + Math.ulp(d2) + buffer);
     }
 }

@@ -21,6 +21,12 @@
             <xs:documentation>JNDI resource used to locate the connection pool, optional, if this is missing then the connection pool element must be configured</xs:documentation>
           </xs:annotation>
         </xs:element>
+        <!-- Support for schema in configuration -->
+        <xs:element name="schema" type="xs:string" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>Database schema where the tables will be created. Defaults to public. Schema must exists.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
 
         <xs:element name="connectionPool" minOccurs="0">
           <xs:annotation>

@@ -46,7 +46,7 @@ public class MetaTileTest extends TestCase {
                 30);
         
         long[] gridPos = { 0, 0, 0 };
-        
+
         //int[] gridBounds, int[] tileGridPosition, int metaX, int metaY
         WMSMetaTile mt = new WMSMetaTile(
                 null, grid, ImageMime.png, null,

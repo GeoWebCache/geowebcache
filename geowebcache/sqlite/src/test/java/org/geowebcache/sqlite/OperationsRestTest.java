@@ -17,8 +17,12 @@
 package org.geowebcache.sqlite;
 
 import org.apache.commons.io.FileUtils;
+import org.geowebcache.config.BlobStoreConfig;
+import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.sqlite.Utils.Tuple;
+import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.TileObject;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,12 +41,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -56,13 +57,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = OperationsRestWebConfig.class)
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles("test")
-public class OperationsRestTest {
+public class OperationsRestTest extends TestSupport {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
 
-    @AfterClass
-    public static void afterClass() throws Exception {
+    @After
+    public void afterClass() throws Exception {
+        closeSqliteStoresConnections();
+        super.afterTest();
         FileUtils.deleteQuietly(OperationsRestWebConfig.ROOT_DIRECTORY);
     }
 
@@ -71,30 +74,27 @@ public class OperationsRestTest {
         // creates some database files for the tests
         Tuple<File, Tuple<String, String>> testFiles = createTestFiles();
         File rootDirectory = testFiles.first;
-        FileInputStream fileA = new FileInputStream(new File(rootDirectory, testFiles.second.first));
-        FileInputStream fileB = new FileInputStream(new File(rootDirectory, testFiles.second.second));
-        // perform the rest request
-        MockMultipartFile fileUploadA = new MockMultipartFile("file", fileA);
-        MockMultipartFile fileUploadB = new MockMultipartFile("file", fileB);
-        MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        // first request
-        mockMvc.perform(MockMvcRequestBuilders.fileUpload("/sqlite/replace")
-                .file(fileUploadA)
-                .param("layer", "europe")
-                .param("destination", testFiles.second.first))
-                .andExpect(status().is(200));
-        // second request
-        mockMvc.perform(MockMvcRequestBuilders.fileUpload("/sqlite/replace")
-                .file(fileUploadB)
-                .param("layer", "europe")
-                .param("destination", testFiles.second.second))
-                .andExpect(status().is(200));
-        // check that files were replaced
-        checkThatStoreContainsReplacedTiles(testFiles.second.first, testFiles.second.second);
-        // clean up
-        fileA.close();
-        fileB.close();
-        FileUtils.deleteQuietly(rootDirectory);
+        try (FileInputStream fileA = new FileInputStream(new File(rootDirectory, testFiles.second.first));
+        FileInputStream fileB = new FileInputStream(new File(rootDirectory, testFiles.second.second))) {
+            // perform the rest request
+            MockMultipartFile fileUploadA = new MockMultipartFile("file", fileA);
+            MockMultipartFile fileUploadB = new MockMultipartFile("file", fileB);
+            MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+            // first request
+            mockMvc.perform(MockMvcRequestBuilders.fileUpload("/sqlite/replace")
+                    .file(fileUploadA)
+                    .param("layer", "europe")
+                    .param("destination", testFiles.second.first))
+                    .andExpect(status().is(200));
+            // second request
+            mockMvc.perform(MockMvcRequestBuilders.fileUpload("/sqlite/replace")
+                    .file(fileUploadB)
+                    .param("layer", "europe")
+                    .param("destination", testFiles.second.second))
+                    .andExpect(status().is(200));
+            // check that files were replaced
+            checkThatStoreContainsReplacedTiles(testFiles.second.first, testFiles.second.second);
+        }
     }
 
     @Test
@@ -103,22 +103,22 @@ public class OperationsRestTest {
         Tuple<File, Tuple<String, String>> testFiles = createTestFiles();
         File rootDirectory = testFiles.first;
         // zip store files
-        File zipFile = new File(rootDirectory, "replace.zip");
+        File tempDirectory = Files.createTempDirectory("gwc-").toFile();
+        addFilesToDelete(tempDirectory);
+        File zipFile = new File(tempDirectory, "replace.zip");
         zipDirectory(Paths.get(rootDirectory.getPath()), zipFile);
-        FileInputStream zipFileInputStream = new FileInputStream(zipFile);
-        // perform the rest request
-        MockMultipartFile zipUpload = new MockMultipartFile("file", zipFileInputStream);
-        MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        // execute request
-        mockMvc.perform(MockMvcRequestBuilders.fileUpload("/sqlite/replace")
-                .file(zipUpload)
-                .param("layer", "europe"))
-                .andExpect(status().is(200));
-        // check that files were replaced
-        checkThatStoreContainsReplacedTiles(testFiles.second.first, testFiles.second.second);
-        // clean up
-        zipFileInputStream.close();
-        FileUtils.deleteQuietly(rootDirectory);
+        try (FileInputStream zipFileInputStream = new FileInputStream(zipFile)) {
+            // perform the rest request
+            MockMultipartFile zipUpload = new MockMultipartFile("file", zipFileInputStream);
+            MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+            // execute request
+            mockMvc.perform(MockMvcRequestBuilders.fileUpload("/sqlite/replace")
+                    .file(zipUpload)
+                    .param("layer", "europe"))
+                    .andExpect(status().is(200));
+            // check that files were replaced
+            checkThatStoreContainsReplacedTiles(testFiles.second.first, testFiles.second.second);
+        }
     }
 
     @Test
@@ -135,16 +135,16 @@ public class OperationsRestTest {
                 .andExpect(status().is(200));
         // check that files were replaced
         checkThatStoreContainsReplacedTiles(testFiles.second.first, testFiles.second.second);
-        // clean up
-        FileUtils.deleteQuietly(rootDirectory);
     }
 
     private Tuple<File, Tuple<String, String>> createTestFiles() throws Exception {
         // instantiating the stores
         File rootDirectoryA = OperationsRestWebConfig.ROOT_DIRECTORY;
+        addFilesToDelete(rootDirectoryA);
         FileUtils.deleteQuietly(OperationsRestWebConfig.ROOT_DIRECTORY);
         OperationsRestWebConfig.ROOT_DIRECTORY.mkdirs();
         File rootDirectoryB = Files.createTempDirectory("gwc-").toFile();
+        addFilesToDelete(rootDirectoryB);
         MbtilesConfiguration configurationA = new MbtilesConfiguration();
         configurationA.setRootDirectory(rootDirectoryA.getPath());
         configurationA.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
@@ -153,6 +153,7 @@ public class OperationsRestTest {
         configurationB.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
         MbtilesBlobStore storeA = new MbtilesBlobStore(configurationA);
         MbtilesBlobStore storeB = new MbtilesBlobStore(configurationB);
+        addStoresToClean(storeA, storeB);
         // create the tiles that will be stored
         TileObject putTileA = TileObject.createCompleteTileObject("africa",
                 new long[]{10, 50, 5}, "EPSG:4326", "image/png", null, TestSupport.stringToResource("IMAGE-10-50-5-A"));
@@ -164,6 +165,9 @@ public class OperationsRestTest {
         storeA.put(putTileA);
         storeB.put(putTileB);
         storeB.put(putTileC);
+        // make sure no sqlite file is in use to allow the move operation
+        storeA.clear();
+        storeB.clear();
         // return relative paths
         String relativePathA = Utils.buildPath("EPSG_4326", "africa", "image_png", "5", "tiles-0-0.sqlite");
         String relativePathB = Utils.buildPath("EPSG_4326", "africa", "image_png", "15", "tiles-0-5000.sqlite");
@@ -177,6 +181,7 @@ public class OperationsRestTest {
         configuration.setRootDirectory(rootDirectory.getPath());
         configuration.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
+        addStoresToClean(store);
         // checking that all the files are present
         File fileA = new File(OperationsRestWebConfig.ROOT_DIRECTORY, relativePathA);
         File fileB = new File(OperationsRestWebConfig.ROOT_DIRECTORY, relativePathB);
@@ -209,11 +214,33 @@ public class OperationsRestTest {
                 }
 
                 public FileVisitResult preVisitDirectory(Path directory, BasicFileAttributes attrs) throws IOException {
-                    zipOutputStream.putNextEntry(new ZipEntry(directoryToZip.relativize(directory).toString() + File.separator));
+                    if (directory.equals(directoryToZip)) {
+                        return FileVisitResult.CONTINUE;
+                    }
+                    // the zip structure is not tied the OS file separator
+                    zipOutputStream.putNextEntry(new ZipEntry(directoryToZip.relativize(directory).toString() + "/"));
                     zipOutputStream.closeEntry();
                     return FileVisitResult.CONTINUE;
                 }
             });
+        }
+    }
+
+    /**
+     * Helper method that simply makes sure that all the connections to the sqlite databases
+     * are closed allowing file operations to be performed on the databases files.
+     */
+    private void closeSqliteStoresConnections() {
+        XMLConfiguration configuration = webApplicationContext.getBean(XMLConfiguration.class);
+        assertThat(configuration, notNullValue());
+        List<BlobStoreConfig> blobStoresConfig = configuration.getBlobStores();
+        assertThat(blobStoresConfig, notNullValue());
+        // let's iterate over all the available blob stores configurations
+        for (BlobStoreConfig blobStoreConfig : blobStoresConfig) {
+            if (blobStoreConfig instanceof SqliteConfiguration) {
+                // we have a sqlite based blob store, let's close all the connections
+                ((MbtilesConfiguration) blobStoreConfig).getConnectionManager().reapAllConnections();
+            }
         }
     }
 }

@@ -39,34 +39,55 @@ import org.geowebcache.util.URLMangler;
  * The commented out sections are optional parts of the OSGeo standard
  */
 public class TMSDocumentFactory {
-    
-    TileLayerDispatcher tld;
-    
-    GridSetBroker gsb;
-    
-    String baseUrl;
 
-    private final String contextPath;
+    protected TileLayerDispatcher tld;
 
-    private final URLMangler urlMangler;
-    
+    protected GridSetBroker gsb;
+
+    private String defaultBaseUrl;
+
+    private String defaultContextPath;
+
+    protected URLMangler urlMangler;
+
     Charset encoding;
-    
+
+    public final static String TILEMAPSERVICE_LEADINGPATH = "tms/1.0.0";
+
+    public final static String SERVICE_PATH = "service/" + TILEMAPSERVICE_LEADINGPATH;
+
+    protected TMSDocumentFactory(TileLayerDispatcher tld, GridSetBroker gsb, URLMangler urlMangler,
+        String serviceName, Charset encoding) {
+        this.tld = tld;
+        this.gsb = gsb;
+        this.urlMangler = urlMangler;
+        this.encoding = encoding;
+    }
+
     protected TMSDocumentFactory(TileLayerDispatcher tld, GridSetBroker gsb, String baseUrl,
             String contextPath, URLMangler urlMangler) {
         this(tld, gsb, baseUrl, contextPath, urlMangler, StandardCharsets.UTF_8);
     }
+
     protected TMSDocumentFactory(TileLayerDispatcher tld, GridSetBroker gsb, String baseUrl,
             String contextPath, URLMangler urlMangler, Charset encoding) {
         this.tld = tld;
         this.gsb = gsb;
-        this.baseUrl = baseUrl;
-        this.contextPath = contextPath;
+        this.defaultBaseUrl = baseUrl;
+        this.defaultContextPath = contextPath;
         this.urlMangler = urlMangler;
         this.encoding = encoding;
     }
-    
+
+    protected TMSDocumentFactory(TileLayerDispatcher tld, GridSetBroker gsb, URLMangler urlMangler) {
+        this (tld, gsb, null, null, urlMangler);
+    }
+
     protected String getTileMapServiceDoc() {
+        return getTileMapServiceDoc(defaultBaseUrl, defaultContextPath);
+    }
+
+    protected String getTileMapServiceDoc(String baseUrl, String contextPath) {
         StringBuilder str = new StringBuilder();
         XMLBuilder xml = new XMLBuilder(str);
         try {
@@ -105,7 +126,7 @@ public class TMSDocumentFactory {
                 if(!layer.isEnabled() || !layer.isAdvertised()){
                     continue;
                 }
-                tileMapsForLayer(xml, layer);
+                tileMapsForLayer(xml, layer, baseUrl, contextPath);
             }
             xml.endElement();
             xml.endElement();
@@ -117,7 +138,8 @@ public class TMSDocumentFactory {
         }
     }
     
-    private void tileMapsForLayer(XMLBuilder xml, TileLayer layer) throws IOException {
+    protected void tileMapsForLayer(XMLBuilder xml, TileLayer layer,
+            String baseUrl, String contextPath) throws IOException {
         for(String gridSetId : layer.getGridSubsets()){
             GridSubset gridSub = layer.getGridSubset(gridSetId);
             for(MimeType mimeType : layer.getMimeTypes()) {
@@ -126,20 +148,30 @@ public class TMSDocumentFactory {
                     .attribute("title", tileMapTitle(layer))
                     .attribute("srs", gridSub.getSRS().toString())
                     .attribute("profile", profileForGridSet(gridSub.getGridSet()))
-                    .attribute("href", tileMapUrl(layer, gridSub, mimeType))
+                    .attribute("href", tileMapUrl(layer, gridSub, mimeType, baseUrl, contextPath))
                     .endElement();
             }
         }
     }
     
     protected String getTileMapDoc(TileLayer layer, GridSubset gridSub, GridSetBroker gsb, MimeType mimeType) {
+        return getTileMapDoc(layer, gridSub, gsb, mimeType, defaultBaseUrl, defaultContextPath);
+    }
+
+    protected String getTileMapDoc(TileLayer layer, GridSubset gridSub, MimeType mimeType, String baseUrl,
+            String contextPath) {
+        return getTileMapDoc(layer, gridSub, gsb, mimeType, baseUrl, contextPath);
+    }
+
+    protected String getTileMapDoc(TileLayer layer, GridSubset gridSub, GridSetBroker gsb, MimeType mimeType,
+            String baseUrl, String contextPath) {
         StringBuilder str = new StringBuilder();
         XMLBuilder xml = new XMLBuilder(str);
         try {
             xml.header("1.0", encoding);
             xml.indentElement("TileMap")
             .attribute("version", "1.0.0")
-            .attribute("tilemapservice", urlMangler.buildURL(baseUrl, contextPath, "/service/tms/1.0.0"));
+            .attribute("tilemapservice", urlMangler.buildURL(baseUrl, contextPath, SERVICE_PATH));
             xml.simpleElement("Title", tileMapTitle(layer), true);
             xml.simpleElement("Abstract", tileMapDescription(layer), true);
             
@@ -175,7 +207,7 @@ public class TMSDocumentFactory {
            
             for(int zoom = gridSub.getZoomStart(); zoom <= gridSub.getZoomStop(); zoom++) {
                 xml.indentElement("TileSet");
-                xml.attribute("href", tileMapUrl(layer, gridSub, mimeType, zoom));
+                xml.attribute("href", tileMapUrl(layer, gridSub, mimeType, zoom, baseUrl, contextPath));
                 xml.attribute("units-per-pixel", Double.toString(resolutions[resIdx]));
                 xml.attribute("order", Integer.toString(resIdx));
                 xml.endElement();;
@@ -192,7 +224,7 @@ public class TMSDocumentFactory {
         }
     }
     
-    private String profileForGridSet(GridSet gridSet) {
+    protected String profileForGridSet(GridSet gridSet) {
         if(gridSet == gsb.WORLD_EPSG4326) {
             return "global-geodetic";
         } else if(gridSet == gsb.WORLD_EPSG3857) {
@@ -202,15 +234,17 @@ public class TMSDocumentFactory {
         }
     }
     
-    private String tileMapUrl(TileLayer tl, GridSubset gridSub, MimeType mimeType) {
-        return urlMangler.buildURL(baseUrl, contextPath, "/service/tms/1.0.0/" + tileMapName(tl,gridSub,mimeType));
+    protected String tileMapUrl(TileLayer tl, GridSubset gridSub, MimeType mimeType,
+            String baseUrl, String contextPath) {
+        return urlMangler.buildURL(baseUrl, contextPath, SERVICE_PATH + "/" + tileMapName(tl,gridSub,mimeType));
     }
-    
-    private String tileMapUrl(TileLayer tl, GridSubset gridSub, MimeType mimeType, int z) {
-        return tileMapUrl(tl, gridSub, mimeType) + "/" + z;
+
+    protected String tileMapUrl(TileLayer tl, GridSubset gridSub, MimeType mimeType, int z,
+            String baseUrl, String contextPath) {
+        return tileMapUrl(tl, gridSub, mimeType, baseUrl, contextPath) + "/" + z;
     }
-    
-    private String tileMapName(TileLayer tl, GridSubset gridSub, MimeType mimeType) {
+
+    protected String tileMapName(TileLayer tl, GridSubset gridSub, MimeType mimeType) {
         try {
             String name = URLEncoder.encode(tl.getName(), "UTF-8");
             String gridSubset = URLEncoder.encode(gridSub.getName(), "UTF-8");
@@ -219,8 +253,8 @@ public class TMSDocumentFactory {
             throw new RuntimeException(e);
         }
     }
-    
-    private String tileMapTitle(TileLayer tl) {
+
+    protected String tileMapTitle(TileLayer tl) {
         LayerMetaInformation metaInfo = tl.getMetaInformation();
         if(metaInfo != null && metaInfo.getTitle() != null) {
             return metaInfo.getTitle();
@@ -228,12 +262,12 @@ public class TMSDocumentFactory {
         
         return tl.getName();
     }
-    private String tileMapDescription(TileLayer tl) {
+
+    protected String tileMapDescription(TileLayer tl) {
         LayerMetaInformation metaInfo = tl.getMetaInformation();
         if(metaInfo != null && metaInfo.getDescription() != null) {
             return metaInfo.getDescription();
         }
-        
         return "";
     }
 }

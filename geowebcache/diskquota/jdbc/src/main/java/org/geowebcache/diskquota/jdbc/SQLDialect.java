@@ -68,7 +68,7 @@ public class SQLDialect {
                             "  PARAMETERS_ID VARCHAR("+PARAMETERS_ID_SIZE+"),\n" + //
                             "  BYTES NUMERIC("+BYTES_SIZE+") NOT NULL DEFAULT 0\n" + //
                             ")", //
-                    "CREATE INDEX TILESET_LAYER ON TILESET(LAYER_NAME)" //
+                            "CREATE INDEX TILESET_LAYER ON ${schema}TILESET(LAYER_NAME)" //
             ));
 
             // this one embeds both tile page and page stats, since they are linked 1-1
@@ -88,9 +88,9 @@ public class SQLDialect {
                             " FILL_FACTOR FLOAT,\n" + //
                             " NUM_HITS NUMERIC("+NUM_HITS_SIZE+")\n" + //
                             ")", //
-                    "CREATE INDEX TILEPAGE_TILESET ON TILEPAGE(TILESET_ID, FILL_FACTOR)",
-                    "CREATE INDEX TILEPAGE_FREQUENCY ON TILEPAGE(FREQUENCY_OF_USE DESC)",
-                    "CREATE INDEX TILEPAGE_LAST_ACCESS ON TILEPAGE(LAST_ACCESS_TIME_MINUTES DESC)"));
+                    "CREATE INDEX TILEPAGE_TILESET ON ${schema}TILEPAGE(TILESET_ID, FILL_FACTOR)",
+                    "CREATE INDEX TILEPAGE_FREQUENCY ON ${schema}TILEPAGE(FREQUENCY_OF_USE DESC)",
+                    "CREATE INDEX TILEPAGE_LAST_ACCESS ON ${schema}TILEPAGE(LAST_ACCESS_TIME_MINUTES DESC)"));
 
         }
     };
@@ -268,6 +268,16 @@ public class SQLDialect {
         sb.append("TILESET WHERE TILESET.LAYER_NAME = :").append(layerNameParam);
         return sb.toString();
 
+    }
+
+    public String getUsedQuotaByLayerGridset(String schema, String layerNameParam, String gridSetParam) {
+        StringBuilder sb = new StringBuilder("SELECT SUM(BYTES) FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET WHERE TILESET.LAYER_NAME = :").append(layerNameParam);
+        sb.append(" AND TILESET.GRIDSET_ID = :").append(gridSetParam);
+        return sb.toString();
     }
 
     public String getRenameLayerStatement(String schema, String oldLayerName, String newLayerName) {

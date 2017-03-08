@@ -17,25 +17,14 @@
 package org.geowebcache.sqlite;
 
 import org.apache.commons.io.FileUtils;
-import org.geowebcache.io.ByteArrayResource;
-import org.geowebcache.io.Resource;
-import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.TileObject;
-import org.geowebcache.storage.TileRange;
 import org.junit.Test;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-import static org.geowebcache.sqlite.Utils.Tuple.tuple;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public final class SqliteBlobStoreTest extends TestSupport {
@@ -45,12 +34,14 @@ public final class SqliteBlobStoreTest extends TestSupport {
         // instantiating the stores
         File rootDirectoryA = Files.createTempDirectory("gwc-").toFile();
         File rootDirectoryB = Files.createTempDirectory("gwc-").toFile();
+        addFilesToDelete(rootDirectoryA, rootDirectoryB);
         MbtilesConfiguration configurationA = getDefaultConfiguration();
         configurationA.setRootDirectory(rootDirectoryA.getPath());
         MbtilesConfiguration configurationB = getDefaultConfiguration();
         configurationB.setRootDirectory(rootDirectoryB.getPath());
         MbtilesBlobStore storeA = new MbtilesBlobStore(configurationA);
         MbtilesBlobStore storeB = new MbtilesBlobStore(configurationB);
+        addStoresToClean(storeA, storeB);
         // create the tiles that will be stored
         TileObject putTileA = TileObject.createCompleteTileObject("africa",
                 new long[]{10, 50, 5}, "EPSG:4326", "image/png", null, stringToResource("IMAGE-10-50-5-A"));
@@ -59,6 +50,9 @@ public final class SqliteBlobStoreTest extends TestSupport {
         // storing the tile
         storeA.put(putTileA);
         storeB.put(putTileB);
+        // make sure connections to the created stores a re closed
+        storeA.clear();
+        storeB.clear();
         // check that database files exists
         String relativePath = Utils.buildPath("EPSG_4326", "africa", "image_png", "5", "tiles-0-0.sqlite");
         File fileA = new File(rootDirectoryA, relativePath);
@@ -83,12 +77,14 @@ public final class SqliteBlobStoreTest extends TestSupport {
         // instantiating the stores
         File rootDirectoryA = Files.createTempDirectory("replace-tests-a-").toFile();
         File rootDirectoryB = Files.createTempDirectory("replace-tests-a-").toFile();
+        addFilesToDelete(rootDirectoryA, rootDirectoryB);
         MbtilesConfiguration configurationA = getDefaultConfiguration();
         configurationA.setRootDirectory(rootDirectoryA.getPath());
         MbtilesConfiguration configurationB = getDefaultConfiguration();
         configurationB.setRootDirectory(rootDirectoryB.getPath());
         MbtilesBlobStore storeA = new MbtilesBlobStore(configurationA);
         MbtilesBlobStore storeB = new MbtilesBlobStore(configurationB);
+        addStoresToClean(storeA, storeB);
         // create the tiles that will be stored
         TileObject putTileA = TileObject.createCompleteTileObject("africa",
                 new long[]{10, 50, 5}, "EPSG:4326", "image/png", null, stringToResource("IMAGE-10-50-5-A"));
@@ -100,6 +96,9 @@ public final class SqliteBlobStoreTest extends TestSupport {
         storeA.put(putTileA);
         storeB.put(putTileB);
         storeB.put(putTileC);
+        // make sure connections to the created stores a re closed
+        storeA.clear();
+        storeB.clear();
         // check that database files exists
         String relativePathA = Utils.buildPath("EPSG_4326", "africa", "image_png", "5", "tiles-0-0.sqlite");
         String relativePathB = Utils.buildPath("EPSG_4326", "africa", "image_png", "15", "tiles-0-5000.sqlite");

@@ -37,24 +37,35 @@ public class NIOLockProvider implements LockProvider {
     
     public static Log LOGGER = LogFactory.getLog(NIOLockProvider.class);
 
-    private String root;
+    private final String root;
+
     /**
      * The wait to occur in case the lock cannot be acquired
      */
-    int waitBeforeRetry = 20; 
+    private final int waitBeforeRetry;
+
     /**
      * max lock attempts
      */
-    int maxLockAttempts = 120 * 1000 / waitBeforeRetry;
+    private final int maxLockAttempts;
 
     MemoryLockProvider memoryProvider = new MemoryLockProvider();
 
     public NIOLockProvider(DefaultStorageFinder storageFinder) throws ConfigurationException {
+        this(storageFinder.getDefaultPath());
+    }
+
+    public NIOLockProvider(DefaultStorageFinder storageFinder, int waitBeforeRetry,
+            int maxLockAttempts) throws ConfigurationException {
         this.root = storageFinder.getDefaultPath();
+        this.waitBeforeRetry = waitBeforeRetry;
+        this.maxLockAttempts = maxLockAttempts;
     }
 
     public NIOLockProvider(String root) throws ConfigurationException {
         this.root = root;
+        this.waitBeforeRetry = 20;
+        this.maxLockAttempts = 120 * 1000 / waitBeforeRetry;
     }
 
     public LockProvider.Lock getLock(final String lockKey) throws GeoWebCacheException {
@@ -73,13 +84,14 @@ public class NIOLockProvider implements LockProvider {
                 while(currLock == null && count < maxLockAttempts) {
                     // the file output stream can also fail to be acquired due to the
                     // other nodes deleting the file
-                    currFos = new FileOutputStream(file);
                     try {
+                        currFos = new FileOutputStream(file);
+
                         currLock = currFos.getChannel().lock();
                     } catch(OverlappingFileLockException e) {
                         IOUtils.closeQuietly(currFos);
                         try {
-                            Thread.sleep(20);
+                            Thread.sleep(waitBeforeRetry);
                         } catch (InterruptedException ie) {
                             // ok, moving on
                         }
@@ -87,7 +99,7 @@ public class NIOLockProvider implements LockProvider {
                         // this one is also thrown with a message "avoided fs deadlock"
                         IOUtils.closeQuietly(currFos);
                         try {
-                            Thread.sleep(20);
+                            Thread.sleep(waitBeforeRetry);
                         } catch (InterruptedException ie) {
                             // ok, moving on
                         }
