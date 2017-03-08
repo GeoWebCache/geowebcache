@@ -42,6 +42,7 @@ import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridMismatchException;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.ProxyLayer;
@@ -294,6 +295,9 @@ public class WMSService extends Service{
                 wmsFuser.setHintsConfiguration(hintsConfig);
                 try {
                     wmsFuser.writeResponse(tile.servletResp, stats);
+                } catch (OutsideCoverageException e) {
+                    // throw up to handle as empty image
+                    throw e;
                 } catch (Exception e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();

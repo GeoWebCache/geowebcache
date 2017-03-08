@@ -34,4 +34,8 @@ public class OutsideCoverageException extends GeoWebCacheException {
         super("Coverage [minx,miny,maxx,maxy] is " + Arrays.toString(coverage) + ", index [x,y,z] is " + Arrays.toString(index));
     }
 
+    public OutsideCoverageException(String msg) {
+        super(msg);
+    }
+
 }

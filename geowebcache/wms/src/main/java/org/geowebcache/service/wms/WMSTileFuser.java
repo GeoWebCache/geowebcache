@@ -374,10 +374,19 @@ public class WMSTileFuser{
         // At worst, we have the best resolution possible
     }
 
-    protected void determineCanvasLayout() {
+    protected void determineCanvasLayout() throws OutsideCoverageException {
         // Find the spatial extent of the tiles needed to cover the desired extent
         srcRectangle = gridSubset.getCoverageIntersection(srcIdx, reqBounds);
         srcBounds = gridSubset.boundsFromRectangle(srcRectangle);
+
+        // Will control that req intersects src at all to avoid #497
+        if (!reqBounds.intersects(srcBounds)) {
+            String msg = String.format("Request BBOX do not intersect with source: req=%s src=%s",
+                    reqBounds.toString(), srcBounds.toString());
+            log.debug(msg);
+
+            throw new OutsideCoverageException(msg);
+        }
 
         // We now have the complete area, lets figure out our offsets
         // Positive means that there is blank space to the first tile,

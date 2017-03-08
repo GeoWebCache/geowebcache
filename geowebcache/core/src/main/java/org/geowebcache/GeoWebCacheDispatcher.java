@@ -352,9 +352,13 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
         // Check where this should be dispatched
         if (conv.reqHandler == Conveyor.RequestHandler.SERVICE) {
-            // A3 The service object takes it from here
-            service.handleRequest(conv);
-
+            try {
+                // A3 The service object takes it from here
+                service.handleRequest(conv);
+            } catch (OutsideCoverageException e) {
+                // if outside of coverage respond with empty tile
+                writeEmpty((ConveyorTile) conv, e.getMessage());
+            }
         } else {
             ConveyorTile convTile = (ConveyorTile) conv;
 
