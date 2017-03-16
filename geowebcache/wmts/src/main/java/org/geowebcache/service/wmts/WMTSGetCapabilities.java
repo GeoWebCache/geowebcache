@@ -34,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.meta.ServiceContact;
 import org.geowebcache.config.meta.ServiceInformation;
+import org.geowebcache.config.meta.XsltTemplates;
 import org.geowebcache.config.meta.ServiceProvider;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -90,7 +91,8 @@ public class WMTSGetCapabilities {
         byte[] data = generateGetCapabilities(encoding).getBytes(encoding);
         
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("application/vnd.ogc.wms_xml");
+        //response.setContentType("application/vnd.ogc.wms_xml");
+        response.setContentType("text/xml");
         response.setCharacterEncoding(encoding.name());
         response.setContentLength(data.length);
         response.setHeader("content-disposition", "inline;filename=wmts-getcapabilities.xml");
@@ -108,10 +110,19 @@ public class WMTSGetCapabilities {
 
     private String generateGetCapabilities(Charset encoding) {
         StringBuilder str = new StringBuilder();
+        ServiceInformation servInfo = tld.getServiceInformation();
+        String xsltUrl = null;
+        if ((servInfo != null) && (servInfo.getXsltTemplates()!=null)) {
+          xsltUrl = servInfo.getXsltTemplates().getWmtsGetCapabilities();
+        }
+        
         XMLBuilder xml = new XMLBuilder(str);
         
         try {
             xml.header("1.0", encoding);
+            if (xsltUrl!=null) {
+              xml.appendUnescaped("<?xml-stylesheet type=\"text/xsl\" href=\""+xsltUrl+"\" ?>\n");
+            }
             xml.indentElement("Capabilities");
             xml.attribute("xmlns", "http://www.opengis.net/wmts/1.0");
             xml.attribute("xmlns:ows", "http://www.opengis.net/ows/1.1");

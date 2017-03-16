@@ -32,6 +32,8 @@ public class ServiceInformation implements Serializable{
 
     private ServiceProvider serviceProvider;
 
+    private XsltTemplates xsltTemplates;
+
     private String fees;
 
     private String accessConstraints;
@@ -150,6 +152,21 @@ public class ServiceInformation implements Serializable{
      */
     public void setServiceProvider(ServiceProvider serviceProvider) {
         this.serviceProvider = serviceProvider;
+    }
+
+    /**
+     * @return the xsltTemplates
+     */
+    public XsltTemplates getXsltTemplates() {
+        return xsltTemplates;
+    }
+
+    /**
+     * @param xsltTemplates
+     *            the xsltTemplates to set
+     */
+    public void setXsltTemplates (XsltTemplates xsltTemplates) {
+        this.xsltTemplates = xsltTemplates;
     }
 
 }

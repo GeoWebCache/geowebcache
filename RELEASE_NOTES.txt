@@ -278,6 +278,7 @@ Fixes:
 - Fixed config file schema version, was mistakenly set to 1.6.0 while it should be 1.5.0
 
 
+>>>>>>> 61f4f9d401993a7a7c3f1136a5bbedb434e73abd
 GeoWebCache 1.5.1 (2014-01-19)
 ------------------------------
 
