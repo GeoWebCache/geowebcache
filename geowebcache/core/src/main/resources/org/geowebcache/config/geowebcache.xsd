@@ -717,6 +717,13 @@
               </xs:documentation> 
             </xs:annotation>
           </xs:element>
+          <xs:element type="gwc:legendsType" name="legends" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                Defines legends information for this layer styles.
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
         </xs:sequence>
      </xs:extension>
     </xs:complexContent>
@@ -2055,5 +2062,97 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="legendType" mixed="true">
+    <xs:sequence>
+      <xs:element type="xs:integer" name="width" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Legend width.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:integer" name="height" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Legend height.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:string" name="format" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Legend format.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:string" name="url" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            URL that should be used to produce the legend get URL.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:string" name="completeUrl" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Complete URL that should be used as is.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:double" name="minScale" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Minimum scale denominator (inclusive) for which this legend image is valid.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:double" name="maxScale" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Maximum scale denominator (exclusive) for which this legend image is valid.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="style" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">
+          The style that corresponds to this legend.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="legendsType">
+    <xs:sequence>
+      <xs:element type="gwc:legendType" name="legend" maxOccurs="unbounded" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            A style legend definition.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="defaultWidth">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">
+          Default width that should be used if no legend width is defined.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="xs:string" name="defaultHeight">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">
+          Default height that should be used if no legend height is defined.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="xs:string" name="defaultFormat">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">
+          Default format that should be used if no legend format is defined.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 </xs:schema>

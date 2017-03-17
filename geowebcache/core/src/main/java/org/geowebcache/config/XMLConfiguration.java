@@ -49,12 +49,13 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.ContextualConfigurationProvider.Context;
+import org.geowebcache.config.legends.LegendsRawInfo;
+import org.geowebcache.config.legends.LegendsRawInfoConverter;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.parameters.CaseNormalizer;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
@@ -443,6 +444,10 @@ public class XMLConfiguration implements Configuration, InitializingBean {
 
         // xs.alias("layers", List.class);
         xs.alias("wmsLayer", WMSLayer.class);
+
+        // configuration for legends info
+        xs.registerConverter(new LegendsRawInfoConverter());
+        xs.alias("legends", LegendsRawInfo.class);
 
         xs.alias("blobStores", new ArrayList<BlobStoreConfig>().getClass());
         xs.alias("FileBlobStore", FileBlobStoreConfig.class);
