@@ -19,9 +19,12 @@ package org.geowebcache.storage;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -120,62 +123,32 @@ public class CompositeBlobStore implements BlobStore {
 
     @Override
     public boolean delete(String layerName) throws StorageException {
-        configLock.readLock().lock();
-        try {
-            return store(layerName).delete(layerName);
-        } finally {
-            configLock.readLock().unlock();
-        }
+        return readFunctionUnsafe(()->store(layerName).delete(layerName));
     }
 
     @Override
     public boolean deleteByGridsetId(String layerName, String gridSetId) throws StorageException {
-        configLock.readLock().lock();
-        try {
-            return store(layerName).deleteByGridsetId(layerName, gridSetId);
-        } finally {
-            configLock.readLock().unlock();
-        }
+        return readFunctionUnsafe(()->store(layerName).deleteByGridsetId(layerName, gridSetId));
     }
 
     @Override
     public boolean delete(TileObject obj) throws StorageException {
-        configLock.readLock().lock();
-        try {
-            return store(obj.getLayerName()).delete(obj);
-        } finally {
-            configLock.readLock().unlock();
-        }
+        return readFunctionUnsafe(()->store(obj.getLayerName()).delete(obj));
     }
 
     @Override
     public boolean delete(TileRange obj) throws StorageException {
-        configLock.readLock().lock();
-        try {
-            return store(obj.getLayerName()).delete(obj);
-        } finally {
-            configLock.readLock().unlock();
-        }
+        return readFunctionUnsafe(()->store(obj.getLayerName()).delete(obj));
     }
 
     @Override
     public boolean get(TileObject obj) throws StorageException {
-        configLock.readLock().lock();
-        try {
-            return store(obj.getLayerName()).get(obj);
-        } finally {
-            configLock.readLock().unlock();
-        }
+        return readFunctionUnsafe(()->store(obj.getLayerName()).get(obj));
     }
 
     @Override
     public void put(TileObject obj) throws StorageException {
-        configLock.readLock().lock();
-        try {
-            store(obj.getLayerName()).put(obj);
-        } finally {
-            configLock.readLock().unlock();
-        }
+        readActionUnsafe(()->store(obj.getLayerName()).put(obj));
     }
 
     @Deprecated
@@ -207,18 +180,15 @@ public class CompositeBlobStore implements BlobStore {
      */
     @Override
     public void addListener(BlobStoreListener listener) {
-        configLock.readLock().lock();
-        try {
+        readAction(()->{
             this.listeners.addListener(listener);// save it for later in case setBlobStores is
-                                                 // called
+            // called
             for (LiveStore bs : blobStores.values()) {
                 if (bs.config.isEnabled()) {
                     bs.liveInstance.addListener(listener);
                 }
             }
-        } finally {
-            configLock.readLock().unlock();
-        }
+        });
     }
 
     /**
@@ -226,27 +196,19 @@ public class CompositeBlobStore implements BlobStore {
      */
     @Override
     public boolean removeListener(BlobStoreListener listener) {
-        configLock.readLock().lock();
-
-        boolean removed = false;
-        try {
+        return readFunction(()->{
             this.listeners.removeListener(listener);
-            for (LiveStore bs : blobStores.values()) {
-                if (bs.config.isEnabled()) {
-                    removed |= bs.liveInstance.removeListener(listener);
-                }
-            }
-        } finally {
-            configLock.readLock().unlock();
-        }
-        return removed;
-
+            return blobStores.values().stream()
+                .filter(bs->bs.config.isEnabled())
+                .map(bs->bs.liveInstance.removeListener(listener))
+                .collect(Collectors.reducing((x,y)->x||y)) // Don't use anyMatch or findFirst as we don't want it to shortcut
+                .orElse(false);
+        });
     }
-
+    
     @Override
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
-        configLock.readLock().lock();
-        try {
+        return readFunctionUnsafe(()->{
             for (LiveStore bs : blobStores.values()) {
                 BlobStoreConfig config = bs.config;
                 if (config.isEnabled()) {
@@ -255,49 +217,26 @@ public class CompositeBlobStore implements BlobStore {
                     }
                 }
             }
-        } finally {
-            configLock.readLock().unlock();
-        }
-        return false;
+            return false;
+        });
     }
 
     @Override
     public String getLayerMetadata(String layerName, String key) {
-        configLock.readLock().lock();
-        try {
-            return store(layerName).getLayerMetadata(layerName, key);
-        } catch (StorageException e) {
-            throw Throwables.propagate(e);
-        } finally {
-            configLock.readLock().unlock();
-        }
+        return readFunction(()->store(layerName).getLayerMetadata(layerName, key));
     }
 
     @Override
     public void putLayerMetadata(String layerName, String key, String value) {
-        configLock.readLock().lock();
-        try {
+        readAction(()->{
             store(layerName).putLayerMetadata(layerName, key, value);
-        } catch (StorageException e) {
-            throw Throwables.propagate(e);
-        } finally {
-            configLock.readLock().unlock();
-        }
+        });
     }
 
     @Override
     public boolean layerExists(String layerName) {
-        configLock.readLock().lock();
-        try {
-            for (LiveStore bs : blobStores.values()) {
-                if (bs.config.isEnabled() && bs.liveInstance.layerExists(layerName)) {
-                    return true;
-                }
-            }
-        } finally {
-            configLock.readLock().unlock();
-        }
-        return false;
+        return readFunction(()->blobStores.values().stream()
+                .anyMatch(bs->bs.config.isEnabled() && bs.liveInstance.layerExists(layerName)));
     }
 
     private BlobStore store(String layerId) throws StorageException {
@@ -432,7 +371,7 @@ public class CompositeBlobStore implements BlobStore {
                 config.setEnabled(true);
                 config.setDefault(true);
                 config.setBaseDirectory(defaultStorageFinder.getDefaultPath());
-                FileBlobStore store;
+                BlobStore store;
                 store = new FileBlobStore(config.getBaseDirectory());
 
                 stores.put(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID,
@@ -446,4 +385,58 @@ public class CompositeBlobStore implements BlobStore {
         return new ConcurrentHashMap<>(stores);
     }
 
+    @Override
+    public boolean deleteByParametersId(String layerName, String parametersId)
+            throws StorageException {
+        return readFunctionUnsafe(()->store(layerName).deleteByParametersId(layerName, parametersId));
+    }
+    
+    @Override
+    public Set<Map<String, String>> getParameters(String layerName) {
+        return readFunction(()-> store(layerName).getParameters(layerName));
+    }
+    
+    @Override
+    public Set<String> getParameterIds(String layerName) {
+        return readFunction(()->store(layerName).getParameterIds(layerName));
+    }
+
+    @FunctionalInterface
+    static interface StorageAction {
+        void run() throws StorageException;
+    }
+    @FunctionalInterface
+    static interface StorageAccessor<T> {
+        T get() throws StorageException;
+    }
+    
+    
+    protected <T> T readFunctionUnsafe(StorageAccessor<T> function) throws StorageException {
+        configLock.readLock().lock();
+        try {
+            return function.get();
+        } finally {
+            configLock.readLock().unlock();
+        }
+    }
+    
+    protected <T> T readFunction(StorageAccessor<T> function) {
+        try {
+            return readFunctionUnsafe(function);
+        } catch (StorageException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+    
+    protected void readActionUnsafe(StorageAction function) throws StorageException {
+        readFunctionUnsafe((StorageAccessor<Void>)()->{function.run();return null;});
+    }
+    
+    protected void readAction(StorageAction function) {
+        readFunction((StorageAccessor<Void>)()->{function.run();return null;});
+    }
+
+    public Map<String,Optional<Map<String, String>>> getParametersMapping(String layerName) {
+        return readFunction(()->store(layerName).getParametersMapping(layerName));
+    }
 }

@@ -23,8 +23,8 @@ import java.io.File;
 
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
+import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.StorageException;
-import org.geowebcache.storage.blobstore.file.FileBlobStore;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -97,7 +97,7 @@ public class FileBlobStoreConfigTest {
         File root = tmp.getRoot();
         Preconditions.checkState(root.exists() && root.isDirectory());
         config.setBaseDirectory(root.getAbsolutePath());
-        FileBlobStore store = config.createInstance(layers, lockProvider);
+        BlobStore store = config.createInstance(layers, lockProvider);
         assertNotNull(store);
     }
 

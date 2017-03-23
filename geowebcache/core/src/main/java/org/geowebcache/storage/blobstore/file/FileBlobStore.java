@@ -28,19 +28,35 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.channels.FileChannel;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import org.apache.commons.collections.BidiMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.ConfigurationException;
+import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.io.FileResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.mime.MimeException;
@@ -57,6 +73,7 @@ import org.geowebcache.util.FileUtils;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.BiMap;
 
 /**
  * See BlobStore interface description for details
@@ -443,6 +460,7 @@ public class FileBlobStore implements BlobStore {
         final long oldSize = fh.length();
         final boolean existed = oldSize > 0;
         writeFile(fh, stObj, existed);
+        
         // mark the last modification as the tile creation time if set, otherwise
         // we'll leave it to the writing time
         if (stObj.getCreated() > 0) {
@@ -535,6 +553,8 @@ public class FileBlobStore implements BlobStore {
                     temp = null;
                 }
             }
+            
+            persistParameterMap(stObj);
         } finally {
 
             if (temp != null) {
@@ -545,7 +565,16 @@ public class FileBlobStore implements BlobStore {
         }
 
     }
-
+    
+    protected void persistParameterMap(TileObject stObj) {
+        if(Objects.nonNull(stObj.getParametersId())) {
+            putLayerMetadata(
+                    stObj.getLayerName(), 
+                    "parameters."+stObj.getParametersId(), 
+                    ParametersUtils.getKvp(stObj.getParameters()));
+        }
+    }
+    
     public void clear() throws StorageException {
         throw new StorageException("Not implemented yet!");
     }
@@ -602,11 +631,16 @@ public class FileBlobStore implements BlobStore {
         Properties metadata = getLayerMetadata(layerName);
         String value = metadata.getProperty(key);
         if (value != null) {
-            try {
-                value = URLDecoder.decode(value, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
+            value = urlDecUtf8(value);
+        }
+        return value;
+    }
+
+    private static String urlDecUtf8(String value) {
+        try {
+            value = URLDecoder.decode(value, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
         }
         return value;
     }
@@ -638,7 +672,7 @@ public class FileBlobStore implements BlobStore {
                 }
                 out = new FileOutputStream(metadataFile);
             } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
+                throw new UncheckedIOException(e);
             }
             try {
                 String comments = "auto generated file, do not edit by hand";
@@ -654,7 +688,7 @@ public class FileBlobStore implements BlobStore {
             }
         }
     }
-
+    
     private Properties getLayerMetadata(final String layerName) {
         final File metadataFile = getMetadataFile(layerName);
         Properties properties = new Properties();
@@ -665,7 +699,7 @@ public class FileBlobStore implements BlobStore {
                 try {
                     in = new FileInputStream(metadataFile);
                 } catch (FileNotFoundException e) {
-                    throw new RuntimeException(e);
+                    throw new UncheckedIOException(e);
                 }
                 try {
                     properties.load(in);
@@ -723,4 +757,102 @@ public class FileBlobStore implements BlobStore {
         return actuallyUsedStorage;
     }
 
+    @Override
+    public boolean deleteByParametersId(String layerName, String parametersId)
+            throws StorageException {
+        
+        final File layerPath = getLayerPath(layerName);
+        if (!layerPath.exists() || !layerPath.canWrite()) {
+            log.info(layerPath + " does not exist or is not writable");
+            return false;
+        }
+        
+        File[] parameterCaches = layerPath.listFiles(new FileFilter() {
+            public boolean accept(File pathname) {
+                if (!pathname.isDirectory()) {
+                    return false;
+                }
+                String dirName = pathname.getName();
+                return dirName.endsWith(parametersId);
+            }
+        });
+        
+        for (File parameterCache : parameterCaches) {
+            String target = filteredLayerName(layerName) + "_" + parameterCache.getName();
+            stageDelete(parameterCache, target);
+        }
+        
+        listeners.sendParametersDeleted(layerName, parametersId);
+        
+        return true;
+    }
+    
+    class CarrierException extends RuntimeException {
+        public CarrierException(Throwable cause) {
+            super(cause);
+        }
+        
+        @SuppressWarnings("unchecked")
+        public <T extends Throwable> void propagate(Class<T> klass) throws T {
+            if(klass.isAssignableFrom(this.getCause().getClass())) {
+                throw (T)this.getCause();
+            }
+        }
+    }
+    
+    
+    private Stream<Path> layerChildStream(final String layerName, DirectoryStream.Filter<Path> filter) throws IOException {
+        final File layerPath = getLayerPath(layerName);
+        if (!layerPath.exists()) {
+            return Stream.of();
+        }
+        final DirectoryStream<Path> layerDirStream = Files.newDirectoryStream(layerPath.toPath(), filter);
+        return StreamSupport.stream(layerDirStream.spliterator(),false)
+             .onClose(()->{
+                 try {
+                    layerDirStream.close();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+             });
+    }
+    
+    public boolean isParameterIdCached(String layerName, final String parametersId) throws IOException {
+        try (Stream<Path> layerChildStream = layerChildStream(layerName, (p)-> Files.isDirectory(p) && p.endsWith(parametersId))) {
+            return layerChildStream
+                .findAny()
+                .isPresent();
+        }
+    }
+    
+    @Override
+    public Map<String,Optional<Map<String, String>>> getParametersMapping(String layerName) {
+        Properties p = getLayerMetadata(layerName);
+        return getParameterIds(layerName).stream()
+            .collect(Collectors.toMap(
+                (id)->id,
+                (id)->{
+                    String kvp =p.getProperty("parameters."+id);
+                    if (Objects.isNull(kvp)) { 
+                        return Optional.empty();
+                    }
+                    kvp=urlDecUtf8(kvp);
+                    return Optional.of(ParametersUtils.getMap(kvp));
+                }));
+    }
+    
+    static final int paramIdLength = ParametersUtils.getId(Collections.singletonMap("A", "B")).length();
+    
+    @Override
+    public Set<String> getParameterIds(String layerName) {
+        try (Stream<Path> layerChildStream = layerChildStream(layerName, (p)-> Files.isDirectory(p))) {
+            return layerChildStream
+                .map(p->p.getFileName().toString())
+                .map(s->s.substring(s.lastIndexOf('_')+1))
+                .filter(s->s.length()==paramIdLength) // Zoom level should never be the same length so this should be safe
+                .collect(Collectors.toSet());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 }

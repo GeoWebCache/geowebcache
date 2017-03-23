@@ -21,12 +21,11 @@ import static org.geowebcache.storage.blobstore.file.FilePathUtils.*;
 
 import java.io.File;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.TileObject;
 
@@ -84,7 +83,7 @@ public class FilePathGenerator {
         String parametersId = tile.getParametersId();
         Map<String, String> parameters = tile.getParameters();
         if (parametersId == null && parameters != null && !parameters.isEmpty()) {
-            parametersId = getParametersId(parameters);
+            parametersId = ParametersUtils.getId(parameters);
             tile.setParametersId(parametersId);
         }
         if(parametersId != null) {
@@ -107,7 +106,7 @@ public class FilePathGenerator {
         return tileFile;
     }
 
-    protected static String buildKey(String parametersKvp) {
+    public static String buildKey(String parametersKvp) {
         return DigestUtils.shaHex(parametersKvp);
     }
     
@@ -115,13 +114,10 @@ public class FilePathGenerator {
      * Returns the parameters identifier for the given parameters map
      * @param parameters
      * @return
+     * @deprecated Use {@link ParametersUtils#getParametersId(Map<String, String>)} instead
      */
     public static String getParametersId(Map<String, String> parameters) {
-        if(parameters == null || parameters.size() == 0) {
-            return null;
-        }
-        String parametersKvp = getParametersKvp(parameters);
-        return buildKey(parametersKvp);
+        return ParametersUtils.getId(parameters);
     }
 
     /**
@@ -129,20 +125,10 @@ public class FilePathGenerator {
      * 
      * @param parameters
      * @return
+     * @deprecated Use {@link ParametersUtils#getParametersKvp(Map<String, String>)} instead
      */
     public static String getParametersKvp(Map<String, String> parameters) {
-        StringBuilder sb = new StringBuilder();
-        SortedMap<String, String> sorted = new TreeMap<String, String>(parameters);
-        for (Map.Entry<String, String> e : sorted.entrySet()) {
-            if(sb.length() == 0) {
-                sb.append("?");
-            } else {
-                sb.append("&");
-            }
-            sb.append(e.getKey()).append('=').append(e.getValue());
-        }
-        String paramtersKvp = sb.toString();
-        return paramtersKvp;
+        return ParametersUtils.getLegacyParametersKvp(parameters);
     }
 
 

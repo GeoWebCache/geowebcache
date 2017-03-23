@@ -1,5 +1,6 @@
 package org.geowebcache.seed;
 
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
@@ -19,5 +20,5 @@ public interface MassTruncateRequest {
      * @return {@literal true} if successful, {@literal false} otherwise
      * @throws StorageException
      */
-    public boolean doTruncate(StorageBroker sb, Configuration config) throws StorageException;
+    public boolean doTruncate(StorageBroker sb, Configuration config, TileBreeder breeder) throws StorageException, GeoWebCacheException;
 }

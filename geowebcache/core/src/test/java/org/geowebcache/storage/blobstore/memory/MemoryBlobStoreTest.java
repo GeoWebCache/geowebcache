@@ -29,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
+import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.StorageBrokerTest;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
@@ -112,7 +113,7 @@ public class MemoryBlobStoreTest {
     @Test
     public void testTilePut() throws Exception {
         // Add a fileblobstore to the memory blobstore
-        FileBlobStore fbs = setup();
+        BlobStore fbs = setup();
         cache.clear();
 
         MemoryBlobStore mbs = new MemoryBlobStore();
@@ -157,7 +158,7 @@ public class MemoryBlobStoreTest {
     @Test
     public void testTileDelete() throws Exception {
         // Add a fileblobstore to the memory blobstore
-        FileBlobStore fbs = setup();
+        BlobStore fbs = setup();
         cache.clear();
 
         MemoryBlobStore mbs = new MemoryBlobStore();
@@ -207,7 +208,7 @@ public class MemoryBlobStoreTest {
      * @return a new FileBlobStore
      * @throws Exception
      */
-    private FileBlobStore setup() throws Exception {
+    private BlobStore setup() throws Exception {
         File fh = new File(StorageBrokerTest.findTempDir() + File.separator + TEST_BLOB_DIR_NAME);
 
         if (fh.exists()) {

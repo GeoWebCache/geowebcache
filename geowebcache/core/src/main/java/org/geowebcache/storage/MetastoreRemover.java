@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;
@@ -161,7 +162,7 @@ public class MetastoreRemover {
 
             private String getParamsSha1(String paramsKvp) {
                 Map<String, String> params = toMap(paramsKvp);
-                return FilePathGenerator.getParametersId(params);
+                return ParametersUtils.getId(params);
             }
 
             /**

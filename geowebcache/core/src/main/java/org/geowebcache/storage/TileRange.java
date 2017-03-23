@@ -20,8 +20,8 @@ package org.geowebcache.storage;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 import org.geowebcache.util.ServletUtils;
 
 /**
@@ -57,7 +57,7 @@ public class TileRange {
 
     public TileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,
             long[][] rangeBounds, MimeType mimeType, Map<String, String> parameters) {
-        this(layerName, gridSetId, zoomStart, zoomStop, rangeBounds, mimeType, parameters, FilePathGenerator.getParametersId(parameters));
+        this(layerName, gridSetId, zoomStart, zoomStop, rangeBounds, mimeType, parameters, ParametersUtils.getId(parameters));
     }
 
     public TileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,

@@ -100,10 +100,18 @@ public class TileObject extends StorageObject implements Serializable{
         return this.gridSetId;
     }
 
+    /**
+     * May be null until this object has been handled by the BlobStore
+     * @return
+     */
     public String getParametersId() {
         return this.parameters_id;
     }
 
+    /**
+     * The BlobStore is responsible for setting this based on the value of {@link getParameters} 
+     * @param parameters_id
+     */
     public void setParametersId(String parameters_id) {
         this.parameters_id = parameters_id;
     }

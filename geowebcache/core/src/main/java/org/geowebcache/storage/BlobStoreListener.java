@@ -98,5 +98,11 @@ public interface BlobStoreListener {
      * been deleted in the blob store's backend storage.
      */
     void gridSubsetDeleted(String layerName, String gridSetId);
+    
+    /**
+     * Notifies that all tiles for the parameter ID {@code parametersId} of layer {@code layerName} 
+     * have been deleted in the blob store's backend storage.
+     */
+    void parametersDeleted(String layerName, String parametersId);
 
 }

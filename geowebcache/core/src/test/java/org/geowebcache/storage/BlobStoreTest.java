@@ -38,7 +38,7 @@ public class BlobStoreTest extends TestCase {
     public static final String TEST_BLOB_DIR_NAME = "gwcTestBlobs";
 
     public void testTile() throws Exception {
-        FileBlobStore fbs = setup();
+        BlobStore fbs = setup();
 
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
         long[] xyz = { 1L, 2L, 3L };
@@ -66,7 +66,7 @@ public class BlobStoreTest extends TestCase {
     }
 
     public void testTileDelete() throws Exception {
-        FileBlobStore fbs = setup();
+        BlobStore fbs = setup();
 
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("a", "x");
@@ -102,7 +102,7 @@ public class BlobStoreTest extends TestCase {
     }
 
     public void testTilRangeDelete() throws Exception {
-        FileBlobStore fbs = setup();
+        BlobStore fbs = setup();
 
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
         Map<String, String> parameters = new HashMap<String, String>();
@@ -173,7 +173,7 @@ public class BlobStoreTest extends TestCase {
     }
 
     public void testRenameLayer() throws Exception {
-        FileBlobStore fbs = setup();
+        BlobStore fbs = setup();
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("a", "x");
@@ -217,7 +217,7 @@ public class BlobStoreTest extends TestCase {
         }
     }
 
-    public FileBlobStore setup() throws Exception {
+    public BlobStore setup() throws Exception {
         File fh = new File(StorageBrokerTest.findTempDir() + File.separator + TEST_BLOB_DIR_NAME);
 
         if (fh.exists()) {
@@ -232,7 +232,7 @@ public class BlobStoreTest extends TestCase {
     }
 
     public void testLayerMetadata() throws Exception {
-        FileBlobStore fbs = setup();
+        BlobStore fbs = setup();
 
         final String layerName = "TestLayer";
         final String key1 = "Test.Metadata.Property_1";
