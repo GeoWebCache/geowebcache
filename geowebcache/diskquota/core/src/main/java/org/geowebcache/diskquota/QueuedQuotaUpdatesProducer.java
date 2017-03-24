@@ -137,6 +137,10 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
     public void gridSubsetDeleted(String layerName, String gridSetId) {
         quotaStore.deleteGridSubset(layerName, gridSetId);
     }
+    
+    public void parametersDeleted(String layerName, String parametersId) {
+        quotaStore.deleteParameters(layerName, parametersId);
+    }
 
     public void layerRenamed(String oldLayerName, String newLayerName) {
         try {
