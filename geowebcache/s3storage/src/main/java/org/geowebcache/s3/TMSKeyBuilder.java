@@ -19,15 +19,17 @@ package org.geowebcache.s3;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
-import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 
 import com.google.common.base.Throwables;
 
@@ -55,8 +57,16 @@ final class TMSKeyBuilder {
     private static final String GRIDSET_PREFIX_FORMAT = "%s/%s/%s/";
 
     public static final String LAYER_METADATA_OBJECT_NAME = "metadata.properties";
+    public static final String PARAMETERS_METADATA_OBJECT_PREFIX = "parameters-";
+    public static final String PARAMETERS_METADATA_OBJECT_NAME = 
+            PARAMETERS_METADATA_OBJECT_PREFIX+"%s.properties";
 
-    private static final String LAYER_METADATA_FORMAT = "%s/%s/" + LAYER_METADATA_OBJECT_NAME;
+    private static final String LAYER_METADATA_FORMAT = "%s/%s/" + 
+            LAYER_METADATA_OBJECT_NAME;
+    private static final String PARAMETERS_METADATA_FORMAT = "%s/%s/" + 
+            PARAMETERS_METADATA_OBJECT_NAME;
+    private static final String PARAMETERS_METADATA_PREFIX_FORMAT = 
+            "%s/%s/" + PARAMETERS_METADATA_OBJECT_PREFIX;
 
     private String prefix;
 
@@ -76,6 +86,26 @@ final class TMSKeyBuilder {
         }
         return layer.getId();
     }
+    public Set<String> layerGridsets(String layerName) {
+        TileLayer layer;
+        try {
+            layer = layers.getTileLayer(layerName);
+        } catch (GeoWebCacheException e) {
+            throw Throwables.propagate(e);
+        }
+        return layer.getGridSubsets();
+    }
+    public Set<String> layerFormats(String layerName) {
+        TileLayer layer;
+        try {
+            layer = layers.getTileLayer(layerName);
+        } catch (GeoWebCacheException e) {
+            throw Throwables.propagate(e);
+        }
+        return layer.getMimeTypes().stream()
+            .map(MimeType::getFileExtension)
+            .collect(Collectors.toSet());
+    }
 
     public String forTile(TileObject obj) {
         checkNotNull(obj.getLayerName());
@@ -89,7 +119,7 @@ final class TMSKeyBuilder {
         String parametersId = obj.getParametersId();
         if (parametersId == null) {
             Map<String, String> parameters = obj.getParameters();
-            parametersId = FilePathGenerator.getParametersId(parameters);
+            parametersId = ParametersUtils.getId(parameters);
             if (parametersId == null) {
                 parametersId = "default";
             } else {
@@ -123,10 +153,28 @@ final class TMSKeyBuilder {
         String layerId = layerId(layerName);
         return String.format(GRIDSET_PREFIX_FORMAT, prefix, layerId, gridsetId);
     }
+    
+    public Set<String> forParameters(final String layerName, final String parametersId) {
+        String layerId = layerId(layerName);
+        return layerGridsets(layerName).stream()
+            .flatMap(gridsetId -> layerFormats(layerName).stream()
+                .map(format -> 
+                    String.format(COORDINATES_PREFIX_FORMAT, prefix, 
+                            layerId, gridsetId, format, parametersId)))
+            .collect(Collectors.toSet());
+    }
 
     public String layerMetadata(final String layerName) {
         String layerId = layerId(layerName);
         return String.format(LAYER_METADATA_FORMAT, prefix, layerId);
+    }
+    public String parametersMetadata(final String layerName, final String parametersId) {
+        String layerId = layerId(layerName);
+        return String.format(PARAMETERS_METADATA_FORMAT, prefix, layerId, parametersId);
+    }
+    public String parametersMetadataPrefix(final String layerName) {
+        String layerId = layerId(layerName);
+        return String.format(PARAMETERS_METADATA_PREFIX_FORMAT, prefix, layerId);
     }
 
     /**
@@ -146,7 +194,7 @@ final class TMSKeyBuilder {
         String parametersId = obj.getParametersId();
         if (parametersId == null) {
             Map<String, String> parameters = obj.getParameters();
-            parametersId = FilePathGenerator.getParametersId(parameters);
+            parametersId = ParametersUtils.getId(parameters);
             if (parametersId == null) {
                 parametersId = "default";
             } else {
