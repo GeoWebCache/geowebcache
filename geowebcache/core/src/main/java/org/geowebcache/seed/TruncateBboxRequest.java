@@ -57,9 +57,9 @@ public class TruncateBboxRequest implements MassTruncateRequest {
     }
 
     @Override
-    public boolean doTruncate(StorageBroker sb, Configuration config, TileBreeder breeder) throws StorageException, GeoWebCacheException {
+    public boolean doTruncate(StorageBroker sb, TileBreeder breeder) throws StorageException, GeoWebCacheException {
         final Set<Map<String,String>> allParams = sb.getCachedParameters(layerName);
-        final TileLayer tileLayer = config.getTileLayer(layerName);
+        final TileLayer tileLayer = breeder.findTileLayer(layerName);
         final Collection<MimeType> allFormats = tileLayer.getMimeTypes();
         final GridSubset subSet = tileLayer.getGridSubset(gridSetId);
         final int minZ = Optional.fromNullable(subSet.getMinCachedZoom()).or(subSet.getZoomStart());

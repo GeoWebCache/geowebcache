@@ -23,7 +23,6 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.Configuration;
 import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.seed.MassTruncateRequest;
@@ -47,7 +46,6 @@ public class MassTruncateRestlet extends GWCSeedingRestlet {
     private static Log log = LogFactory.getLog(MassTruncateRestlet.class);
 
     private StorageBroker broker;
-    private Configuration config;
     private TileBreeder breeder;
     
     static final Class<?>[] DEFAULT_REQUEST_TYPES = {
@@ -95,7 +93,7 @@ public class MassTruncateRestlet extends GWCSeedingRestlet {
     protected void handleRequest(Request req, Response resp, Object obj) {
         MassTruncateRequest mtr = (MassTruncateRequest) obj;
         try {
-            if(!mtr.doTruncate(broker, getConfiguration(), breeder)) {
+            if(!mtr.doTruncate(broker, breeder)) {
                 throw new RestletException("Truncation failed", Status.SERVER_ERROR_INTERNAL);
             }
         } catch (IllegalArgumentException e) {
@@ -111,18 +109,11 @@ public class MassTruncateRestlet extends GWCSeedingRestlet {
         this.broker = broker;
     }
     
-    public void setConfiguration(Configuration config) {
-        this.config = config;
-    }
     
     public void setTileBreeder(TileBreeder breeder) {
         this.breeder = breeder;
     }
     
-    public Configuration getConfiguration() {
-        if(this.config==null) return this.xmlConfig;
-        return this.config;
-    }
 
     protected Class<?>[] getRequestTypes() {
         if(requestTypes==null) requestTypes=DEFAULT_REQUEST_TYPES;

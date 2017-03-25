@@ -20,5 +20,5 @@ public interface MassTruncateRequest {
      * @return {@literal true} if successful, {@literal false} otherwise
      * @throws StorageException
      */
-    public boolean doTruncate(StorageBroker sb, Configuration config, TileBreeder breeder) throws StorageException, GeoWebCacheException;
+    public boolean doTruncate(StorageBroker sb, TileBreeder breeder) throws StorageException, GeoWebCacheException;
 }

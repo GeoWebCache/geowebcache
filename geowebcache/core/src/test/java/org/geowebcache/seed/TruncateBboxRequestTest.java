@@ -74,7 +74,6 @@ public class TruncateBboxRequestTest {
         TruncateBboxRequest request = new TruncateBboxRequest(layerName, bbox, gridSetName);
         
         StorageBroker broker = EasyMock.createMock("broker", StorageBroker.class);
-        Configuration config = EasyMock.createMock("config", Configuration.class);
         TileBreeder breeder = EasyMock.createMock("breeder", TileBreeder.class);
         TileLayer layer = EasyMock.createMock("layer", TileLayer.class);
         GridSubset subSet = EasyMock.createMock("subSet", GridSubset.class);
@@ -94,7 +93,7 @@ public class TruncateBboxRequestTest {
         // Boring mocks
         EasyMock.expect(broker.getCachedParameters(layerName))
             .andStubReturn(Collections.unmodifiableSet(allParams));
-        EasyMock.expect(config.getTileLayer(layerName))
+        EasyMock.expect(breeder.findTileLayer(layerName))
             .andStubReturn(layer);
         EasyMock.expect(layer.getGridSubset(gridSetName))
             .andStubReturn(subSet);
@@ -132,12 +131,12 @@ public class TruncateBboxRequestTest {
         breeder.seed(eq(layerName), seedRequest(layerName, gridSetName, "image/jpeg", 0, 2, bbox, null)); // Default
         EasyMock.expectLastCall().once();
         
-        EasyMock.replay(broker, config, breeder, layer, subSet);
+        EasyMock.replay(broker, breeder, layer, subSet);
         EasyMock.replay(pngStyle1, pngStyle2, jpegStyle1, jpegStyle2);
         
-        assertThat(request.doTruncate(broker, config, breeder), is(true));
+        assertThat(request.doTruncate(broker, breeder), is(true));
         
-        EasyMock.verify(broker, config, breeder, layer, subSet);
+        EasyMock.verify(broker, breeder, layer, subSet);
     }
 
 }
