@@ -1,5 +1,6 @@
 package org.geowebcache.config;
 
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.junit.Assert.*;
@@ -18,6 +19,8 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.legends.LegendRawInfo;
+import org.geowebcache.config.legends.LegendsRawInfo;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.StringParameterFilter;
 import org.geowebcache.grid.BoundingBox;
@@ -173,8 +176,35 @@ public class XMLConfigurationTest {
         WMSLayer layer = new WMSLayer(layerName, wmsURL, wmsStyles, wmsLayers, mimeFormats,
                 subSets, parameterFilters, metaWidthHeight, vendorParams, queryable, wmsQueryLayers);
 
-        config.addLayer(layer);
+        // create legends information
+        LegendsRawInfo legendsRawInfo = new LegendsRawInfo();
+        legendsRawInfo.setDefaultWidth(50);
+        legendsRawInfo.setDefaultHeight(100);
+        legendsRawInfo.setDefaultFormat("image/png");
+        // legend with all values and custom url
+        LegendRawInfo legendRawInfoA = new LegendRawInfo();
+        legendRawInfoA.setStyle("polygon");
+        legendRawInfoA.setWidth(75);
+        legendRawInfoA.setHeight(125);
+        legendRawInfoA.setFormat("image/jpeg");
+        legendRawInfoA.setUrl("http://url");
+        legendRawInfoA.setMinScale(5000D);
+        legendRawInfoA.setMaxScale(10000D);
 
+        // legend with a complete url
+        LegendRawInfo legendRawInfoB = new LegendRawInfo();
+        legendRawInfoB.setStyle("point");
+        legendRawInfoB.setCompleteUrl("http://url");
+        // default style legend
+        LegendRawInfo legendRawInfoC = new LegendRawInfo();
+        legendRawInfoC.setStyle("");
+        // tie the legend information together
+        legendsRawInfo.addLegendRawInfo(legendRawInfoA);
+        legendsRawInfo.addLegendRawInfo(legendRawInfoB);
+        legendsRawInfo.addLegendRawInfo(legendRawInfoC);
+        layer.setLegends(legendsRawInfo);
+
+        config.addLayer(layer);
         config.save();
 
         try {
@@ -201,6 +231,14 @@ public class XMLConfigurationTest {
             assertNotNull(actual);
             assertEquals(new XMLGridSubset(expected), new XMLGridSubset(actual));
         }
+
+        // check legends info
+        assertThat(l.getLegends(), notNullValue());
+        assertThat(l.getLegends().getDefaultWidth(), is(50));
+        assertThat(l.getLegends().getDefaultHeight(), is(100));
+        assertThat(l.getLegends().getDefaultFormat(), is("image/png"));
+        assertThat(l.getLegends().getLegendsRawInfo().size(), is(3));
+        assertThat(l.getLegends().getLegendsRawInfo(), containsInAnyOrder(legendRawInfoA, legendRawInfoB, legendRawInfoC));
     }
 
     @Test

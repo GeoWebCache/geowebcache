@@ -152,6 +152,14 @@
       <wmsUrl>
         <string>http://demo.opengeo.org/geoserver/topp/wms</string>
       </wmsUrl>
+      <legends defaultWidth="81" defaultHeight="80" defaultFormat="image/png">
+        <legend style="population"/>
+        <legend style="pophatch"/>
+        <legend style="polygon">
+          <width>20</width>
+          <height>20</height>
+        </legend>
+      </legends>
     </wmsLayer>
 
     <wmsLayer>
@@ -166,6 +174,9 @@
         <string>http://demo.opengeo.org/geoserver/wms</string>
       </wmsUrl>
       <wmsLayers>nurc:Img_Sample</wmsLayers>
+      <legends defaultWidth="20" defaultHeight="20" defaultFormat="image/png">
+        <legend style=""/>
+      </legends>
     </wmsLayer>
 
     <wmsLayer>
@@ -206,6 +217,20 @@
       <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
       <transparent>false</transparent>
       <bgColor>0x0066FF</bgColor>
+      <legends defaultWidth="81" defaultHeight="80" defaultFormat="image/png">
+        <legend style="population"/>
+        <legend style="pophatch"/>
+        <legend style="polygon">
+          <width>20</width>
+          <height>20</height>
+          <minScale>5000</minScale>
+          <maxScale>10000</maxScale>
+        </legend>
+        <legend style="raster">
+          <width>20</width>
+          <height>20</height>
+        </legend>
+      </legends>
     </wmsLayer>
   </layers>
 
