@@ -34,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLGridSubset;
+import org.geowebcache.config.legends.LegendsRawInfo;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -117,6 +118,8 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     protected transient String sphericalMercatorOverride;
 
     private transient LockProvider lockProvider;
+
+    private LegendsRawInfo legends;
 
     // protected to be able extend
     protected WMSLayer() {
@@ -854,5 +857,20 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             IOUtils.closeQuietly(is);
         }
         
+    }
+
+    public LegendsRawInfo getLegends() {
+        return legends;
+    }
+
+    public void setLegends(LegendsRawInfo legends) {
+        this.legends = legends;
+    }
+
+    @Override
+    public Map<String, org.geowebcache.config.legends.LegendInfo> getLayerLegendsInfo() {
+        String layerName = wmsLayers == null ? getName() : wmsLayers;
+        return legends == null ? super.getLayerLegendsInfo() :
+                legends.getLegendsInfo(layerName, wmsUrl != null && wmsUrl.length > 0 ? wmsUrl[0] : null);
     }
 }
