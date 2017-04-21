@@ -59,14 +59,31 @@ import org.geowebcache.util.URLMangler;
 public class WMTSGetCapabilities {
     
     private static Log log = LogFactory.getLog(WMTSGetCapabilities.class);
-    
+
     private TileLayerDispatcher tld;
     
     private GridSetBroker gsb;
     
+    /**
+     * @see #GWC_LAYERS
+     */
     private List<TileLayer> layers = new ArrayList<TileLayer>();
 
+    /**
+     * @see #GWC_SRS
+     */
     private String srs;
+
+    /**
+     * To restrict response provide SRS parameter
+     */
+    private static final String GWC_SRS = "SRS";
+
+    /**
+     * To restrict response to a specific layer provide LAYERS parameter
+     */
+    private static final String GWC_LAYERS = "LAYERS";
+
 
     private String baseUrl;
 
@@ -74,18 +91,19 @@ public class WMTSGetCapabilities {
 
     protected WMTSGetCapabilities(TileLayerDispatcher tld, GridSetBroker gsb, HttpServletRequest servReq, String baseUrl,
                                   String contextPath, URLMangler urlMangler) {
-        this(tld, gsb, servReq, baseUrl, contextPath, urlMangler, Collections.emptyList());
+        this(tld, gsb, servReq, baseUrl, contextPath, urlMangler, Collections.emptyList(), true);
     }
 
-    protected WMTSGetCapabilities(TileLayerDispatcher tld, GridSetBroker gsb, HttpServletRequest servReq, String baseUrl,
-            String contextPath, URLMangler urlMangler, Collection<WMTSExtension> extensions) {
+    protected WMTSGetCapabilities(TileLayerDispatcher tld, GridSetBroker gsb,
+            HttpServletRequest servReq, String baseUrl, String contextPath, URLMangler urlMangler,
+            Collection<WMTSExtension> extensions, boolean allowAllLayers) {
         this.tld = tld;
         this.gsb = gsb;
 
         // To only serve one layer
         CaseInsensitiveMap map = new CaseInsensitiveMap(servReq.getParameterMap());
-        if (map.containsKey("LAYERS")) {
-            for (String s : (String[]) map.get("LAYERS")) {
+        if (map.containsKey(GWC_LAYERS)) {
+            for (String s : (String[]) map.get(GWC_LAYERS)) {
                 for (String layerName : s.split(",")) {
                     try {
                         layers.add(tld.getTileLayer(layerName));
@@ -97,12 +115,17 @@ public class WMTSGetCapabilities {
         }
 
         if (layers.isEmpty()) {
+            if (!allowAllLayers) {
+                throw new IllegalArgumentException(
+                        "LAYERS-parameter is mandatory with atleast one existing layer");
+            }
+
             // get all layers
             CollectionUtils.addAll(layers, tld.getLayerList().iterator());
         }
 
         // only return grid set for following srs
-        srs = map.containsKey("SRS") ? ((String[]) map.get("SRS"))[0] : null;
+        srs = map.containsKey(GWC_SRS) ? ((String[]) map.get(GWC_SRS))[0] : null;
 
         String forcedBaseUrl = ServletUtils.stringFromMap(servReq.getParameterMap(), servReq.getCharacterEncoding(), "base_url");
 

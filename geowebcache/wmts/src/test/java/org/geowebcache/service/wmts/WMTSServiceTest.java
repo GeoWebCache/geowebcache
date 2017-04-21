@@ -1,17 +1,17 @@
 package org.geowebcache.service.wmts;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContaining;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.arrayContaining;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.hamcrest.Matchers.hasEntry;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -26,13 +26,11 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
+import org.custommonkey.xmlunit.Validator;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
-import org.custommonkey.xmlunit.Validator;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLGridSubset;
@@ -59,6 +57,8 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.w3c.dom.Document;
+
+import junit.framework.TestCase;
 
 public class WMTSServiceTest extends TestCase {
 
@@ -310,8 +310,8 @@ public class WMTSServiceTest extends TestCase {
         });
         extensions.add(new WMTSExtensionImpl());
         // perform the get capabilities request
-        WMTSGetCapabilities wmsCap = new WMTSGetCapabilities(tld, gridsetBroker, conv.servletReq, "http://localhost:8080", "/service/wmts",
-                new NullURLMangler(), extensions);
+        WMTSGetCapabilities wmsCap = new WMTSGetCapabilities(tld, gridsetBroker, conv.servletReq,
+                "http://localhost:8080", "/service/wmts", new NullURLMangler(), extensions, true);
         wmsCap.writeResponse(conv.servletResp, mock(RuntimeStats.class));
         assertTrue(resp.containsHeader("content-disposition"));
         assertEquals("inline;filename=wmts-getcapabilities.xml", resp.getHeader("content-disposition"));

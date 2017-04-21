@@ -71,6 +71,11 @@ public class WMTSService extends Service  {
     
     private GeoWebCacheDispatcher controller = null;
 
+    /**
+     * If all layers should be supported in GetCapabilities
+     */
+    private boolean allowAllLayers = true;
+
     // list of this service extensions ordered by their priority
     private final List<WMTSExtension> extensions = new ArrayList<>();
 
@@ -103,6 +108,20 @@ public class WMTSService extends Service  {
         this.stats = stats;
         this.urlMangler = urlMangler;
         this.controller = controller;
+        extensions.addAll(GeoWebCacheExtensions.extensions(WMTSExtension.class));
+    }
+
+    public WMTSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
+            RuntimeStats stats, URLMangler urlMangler, GeoWebCacheDispatcher controller, boolean allowAllLayers) {
+        super(SERVICE_WMTS);
+
+        this.sb = sb;
+        this.tld = tld;
+        this.gsb = gsb;
+        this.stats = stats;
+        this.urlMangler = urlMangler;
+        this.controller = controller;
+        this.allowAllLayers = allowAllLayers;
         extensions.addAll(GeoWebCacheExtensions.extensions(WMTSExtension.class));
     }
 
@@ -311,7 +330,8 @@ public class WMTSService extends Service  {
 
         if (tile.getHint() != null) {
             if (tile.getHint().equals("getcapabilities")) {
-                WMTSGetCapabilities wmsGC = new WMTSGetCapabilities(tld, gsb, tile.servletReq, servletBase, context, urlMangler, extensions);
+                WMTSGetCapabilities wmsGC = new WMTSGetCapabilities(tld, gsb, tile.servletReq,
+                        servletBase, context, urlMangler, extensions, allowAllLayers);
                 wmsGC.writeResponse(tile.servletResp, stats);
 
             } else if (tile.getHint().equals("getfeatureinfo")) {
