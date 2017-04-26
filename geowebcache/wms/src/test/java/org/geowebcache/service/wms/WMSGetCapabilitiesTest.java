@@ -6,7 +6,6 @@ import static org.easymock.classextension.EasyMock.replay;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
 
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
@@ -21,9 +20,13 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.easymock.classextension.EasyMock;
+import org.geowebcache.config.legends.LegendRawInfo;
+import org.geowebcache.config.legends.LegendsRawInfo;
 import org.geowebcache.config.meta.ServiceInformation;
+import org.geowebcache.filter.parameters.StringParameterFilter;
+import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
-import org.geowebcache.layer.AbstractTileLayer;
+import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -63,13 +66,36 @@ public class WMSGetCapabilitiesTest {
         expect(servInfo.getFees()).andStubReturn("NONE");
         expect(servInfo.getAccessConstraints()).andStubReturn("NONE");
         expect(tld.getServiceInformation()).andStubReturn(servInfo);
-        
-        // Creating an advertised Layer and an unadvertised one
-        HashMap<String, GridSubset> subSets = new HashMap<String, GridSubset>();
-        TileLayer advertisedLayer = new WMSLayer("testAdv", null, null, null,
-                null, subSets, null, null, null, false, null);      
+
+        // creating some styles for the advertised layer
+        StringParameterFilter stylesParameterFilter = new StringParameterFilter();
+        stylesParameterFilter.setKey("STYLES");
+        stylesParameterFilter.setValues(Arrays.asList("style1", "style2"));
+        // create grid sets for this layer
+        Map<String, GridSubset> subSets = new HashMap<>();
+        GridSubset gridSubSet = GridSubsetFactory.createGridSubSet(new GridSetBroker(true, true).get("EPSG:4326"));
+        subSets.put(gridSubSet.getName(), gridSubSet);
+        // create the layer
+        WMSLayer advertisedLayer = new WMSLayer("testAdv", null, "style,style2", null,
+                null, subSets, Collections.singletonList(stylesParameterFilter), null, null, false, null);
         advertisedLayer.setEnabled(true);
         advertisedLayer.setAdvertised(true);
+        // add legends info to the advertised layer
+        LegendsRawInfo legendsRawInfo = new LegendsRawInfo();
+        legendsRawInfo.setDefaultWidth(50);
+        legendsRawInfo.setDefaultHeight(100);
+        legendsRawInfo.setDefaultFormat("image/png");
+        LegendRawInfo legendRawInfo1 = new LegendRawInfo();
+        legendRawInfo1.setStyle("style1");
+        legendRawInfo1.setUrl("htp://localhost:8080/geoserver");
+        LegendRawInfo legendRawInfo2 = new LegendRawInfo();
+        legendRawInfo2.setStyle("style2");
+        legendRawInfo2.setUrl("htp://localhost:8080/geoserver");
+        // tie legend information together
+        legendsRawInfo.addLegendRawInfo(legendRawInfo1);
+        legendsRawInfo.addLegendRawInfo(legendRawInfo2);
+        advertisedLayer.setLegends(legendsRawInfo);
+
         TileLayer unAdvertisedLayer = new WMSLayer("testNotAdv", null, null, null,
                 null, subSets, null, null, null, false, null); 
         unAdvertisedLayer.setEnabled(true);
@@ -100,6 +126,18 @@ public class WMSGetCapabilitiesTest {
         
         assertThat(xml, containsString("testAdv"));
         assertThat(xml, not(containsString("testNotAdv")));
+
+        // check for legends URL for style 1
+        assertThat(document.getDocumentElement(), HasXPath.hasXPath("/WMT_MS_Capabilities/Capability/VendorSpecificCapabilities/" +
+                "TileSet/Styles/Style[Identifier='style1']/LegendURL[@width='50'][@height='100'][Format='image/png']" +
+                "/OnlineResource[@type='simple'][@href='htp://localhost:8080/geoserver?service=WMS&request=GetLegendGraphic&" +
+                "format=image/png&width=50&height=100&layer=testAdv&style=style1']"));
+
+        // check for legends URL for style 2
+        assertThat(document.getDocumentElement(), HasXPath.hasXPath("/WMT_MS_Capabilities/Capability/VendorSpecificCapabilities/" +
+                "TileSet/Styles/Style[Identifier='style2']/LegendURL[@width='50'][@height='100'][Format='image/png']" +
+                "/OnlineResource[@type='simple'][@href='htp://localhost:8080/geoserver?service=WMS&request=GetLegendGraphic&" +
+                "format=image/png&width=50&height=100&layer=testAdv&style=style2']"));
         
         EasyMock.verify(tld, servReq, response, servInfo);
     }

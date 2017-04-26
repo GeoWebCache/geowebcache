@@ -34,6 +34,8 @@ import org.custommonkey.xmlunit.XpathEngine;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLGridSubset;
+import org.geowebcache.config.legends.LegendInfo;
+import org.geowebcache.config.legends.LegendInfoBuilder;
 import org.geowebcache.config.meta.ServiceContact;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.config.meta.ServiceProvider;
@@ -167,15 +169,25 @@ public class WMTSServiceTest extends TestCase {
             styles.setKey("STYLES");
             styles.setValues(Arrays.asList("style-a", "style-b"));
             when(tileLayer.getParameterFilters()).thenReturn(Collections.singletonList(styles));
-
+            // add legend info for style-a
+            TileLayer.LegendInfo legendInfo1 = TileLayer.createLegendInfo();
+            legendInfo1.id = "styla-a-legend";
+            legendInfo1.width = 250;
+            legendInfo1.height = 500;
+            legendInfo1.format = "image/jpeg";
+            legendInfo1.legendUrl = "https://some-url?some-parameter=value1&another-parameter=value2";
+            when(tileLayer.getLegendsInfo()).thenReturn(Collections.singletonMap("style-a", legendInfo1));
             // add legend info for style-b
-            TileLayer.LegendInfo legendInfo = TileLayer.createLegendInfo();
-            legendInfo.id = "styla-a-legend";
-            legendInfo.width = 125;
-            legendInfo.height = 130;
-            legendInfo.format = "image/png";
-            legendInfo.legendUrl = "https://some-url?some-parameter=value&another-parameter=value";
-            when(tileLayer.getLegendsInfo()).thenReturn(Collections.singletonMap("style-b", legendInfo));
+            LegendInfo legendInfo2 = new LegendInfoBuilder()
+                    .withStyleName("styla-b-legend")
+                    .withWidth(125)
+                    .withHeight(130)
+                    .withFormat("image/png")
+                    .withCompleteUrl("https://some-url?some-parameter=value3&another-parameter=value4")
+                    .withMinScale(5000D)
+                    .withMaxScale(10000D)
+                    .build();
+            when(tileLayer.getLayerLegendsInfo()).thenReturn(Collections.singletonMap("style-b", legendInfo2));
 
             // add some layer metadata
             MetadataURL metadataURL = new MetadataURL("some-type", "some-format", new URL("http://localhost:8080/some-url"));
@@ -219,10 +231,13 @@ public class WMTSServiceTest extends TestCase {
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer'])", doc));
         assertEquals("2", xpath.evaluate("count(//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier)", doc));
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer/wmts:Style[ows:Identifier='style-a'])", doc));
+        // checking that style-a has the correct legend url
+        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer/wmts:Style[ows:Identifier='style-a']/wmts:LegendURL" +
+                "[@width='250'][@height='500'][@format='image/jpeg'][@xlink:href='https://some-url?some-parameter=value1&another-parameter=value2'])", doc));
         // checking that style-b has the correct legend url
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer/wmts:Style[ows:Identifier='style-b']/wmts:LegendURL" +
-                "[@width='125'][@height='130'][@format='image/png']" +
-                "[@xlink:href='https://some-url?some-parameter=value&another-parameter=value'])", doc));
+                "[@width='125'][@height='130'][@format='image/png'][@minScaleDenominator='5000.0'][@maxScaleDenominator='10000.0']" +
+                "[@xlink:href='https://some-url?some-parameter=value3&another-parameter=value4'])", doc));
         // checking that the layer has an associated metadata URL
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer/wmts:MetadataURL[@type='some-type'][wmts:Format='some-format'])", doc));
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer/wmts:MetadataURL[@type='some-type']" +
