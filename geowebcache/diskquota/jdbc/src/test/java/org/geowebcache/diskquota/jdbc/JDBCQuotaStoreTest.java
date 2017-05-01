@@ -1,7 +1,6 @@
 package org.geowebcache.diskquota.jdbc;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
@@ -51,10 +50,8 @@ import org.geowebcache.diskquota.storage.TileSetVisitor;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
-import org.junit.Assert;
 
 import com.google.common.base.Objects;
 
@@ -272,8 +269,6 @@ public abstract class JDBCQuotaStoreTest extends OnlineTestCase {
         assertNotNull(tileSets);
         assertEquals(expectedTileSets.size(), tileSets.size());
         
-        String[] paramIds = parameterIdsMap.get("topp:states").toArray(new String[2]);
-        
         for(TileSet tileSet : expectedTileSets) {
             assertTrue(tileSets.contains(tileSet));
             assertQuotaZero(tileSet);
@@ -326,7 +321,7 @@ public abstract class JDBCQuotaStoreTest extends OnlineTestCase {
         TilePage page = new TilePage(tileSet.getId(), 0, 0, (byte) 0);
         store.addHitsAndSetAccesTime(Collections.singleton(new PageStatsPayload(page)));
         store.addToQuotaAndTileCounts(tileSet, new Quota(BigInteger.valueOf(1024)),
-                Collections.EMPTY_LIST);
+                Collections.emptyList());
 
         Quota expectedQuota = store.getUsedQuotaByLayerName(oldLayerName);
         assertEquals(1024L, expectedQuota.getBytes().longValue());
@@ -560,10 +555,9 @@ public abstract class JDBCQuotaStoreTest extends OnlineTestCase {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public void testUpdateUsedQuotaWithParameters() throws Exception {
         // prepare a tileset with params
-        String paramId = DigestUtils.shaHex("&styles=polygon");
+        String paramId = DigestUtils.sha1Hex("&styles=polygon");
         TileSet tset = new TileSet("topp:states2", "EPSG:2163", "image/jpeg", paramId);
 
         Quota quotaDiff = new Quota(10D * Math.random(), StorageUnit.MiB);

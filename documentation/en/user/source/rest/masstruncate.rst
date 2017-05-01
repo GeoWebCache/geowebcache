@@ -145,7 +145,7 @@ Checks the layer ``points`` for cached tiles that are not accessible to its curr
 Truncate parameter set
 ++++++++++++++++++++++++++++++++++++
 
-Checks the layer ``points`` for cached tiles that are not accessible to its current parameter filters and truncates them.  Depending on the Blob Store used, this may be considerably faster than using a regular truncate job.
+Checks the layer ``points`` for cached tiles that are not accessible to its current parameter filters and truncates them.  Depending on the Blob Store used, this may be considerably faster than using a regular truncate job.  The File System blob store in particular can use directory deletes which are usually much faster than having GeoWebCache traverse all the tile files to delete them individually.  Depending on the OS/File System a traverse may be done, but it will usually be significantly faster than an application can manage.
 
 .. code-block:: xml 
 

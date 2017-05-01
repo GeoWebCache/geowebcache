@@ -17,7 +17,6 @@ package org.geowebcache.storage.blobstore.memory;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;

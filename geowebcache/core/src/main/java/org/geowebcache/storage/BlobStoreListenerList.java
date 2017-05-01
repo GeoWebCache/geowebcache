@@ -27,31 +27,31 @@ public final class BlobStoreListenerList {
     }
 
     public void sendLayerDeleted(String layerName) {
-        listeners.stream().forEachOrdered(listener->{
+        listeners.forEach(listener->{
             listener.layerDeleted(layerName);
         });
     }
 
     public void sendLayerRenamed(String oldLayerName, String newLayerName) {
-        listeners.stream().forEachOrdered(listener->{
+        listeners.forEach(listener->{
             listener.layerRenamed(oldLayerName, newLayerName);
         });
     }
 
     public void sendGridSubsetDeleted(String layerName, String gridSetId) {
-        listeners.stream().forEachOrdered(listener->{
+        listeners.forEach(listener->{
             listener.gridSubsetDeleted(layerName, gridSetId);
         });
     }
     public void sendParametersDeleted(String layerName, String parametersId) {
-        listeners.stream().forEachOrdered(listener->{
+        listeners.forEach(listener->{
             listener.parametersDeleted(layerName, parametersId);
         });
     }
 
     public void sendTileDeleted(String layerName, String gridSetId, String blobFormat,
             String parametersId, long x, long y, int z, long length) {
-        listeners.stream().forEachOrdered(listener->{
+        listeners.forEach(listener->{
             listener.tileDeleted(layerName, gridSetId, blobFormat, parametersId, x, y,
                     z, length);
         });
@@ -72,7 +72,7 @@ public final class BlobStoreListenerList {
     
     public void sendTileStored(String layerName, String gridSetId, String blobFormat,
             String parametersId, long x, long y, int z, long length) {
-        listeners.stream().forEachOrdered(listener->{
+        listeners.forEach(listener->{
             listener.tileStored(layerName, gridSetId, blobFormat, parametersId, x, y,
                     z, length);
         });
@@ -93,7 +93,7 @@ public final class BlobStoreListenerList {
     
     public void sendTileUpdated(String layerName, String gridSetId, String blobFormat,
             String parametersId, long x, long y, int z, long blobSize, long oldSize) {
-        listeners.stream().forEachOrdered(listener->{
+        listeners.forEach(listener->{
             listener.tileUpdated(layerName, gridSetId, blobFormat, parametersId, x, y,
                     z, blobSize, oldSize);
         });

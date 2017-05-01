@@ -18,12 +18,10 @@
 package org.geowebcache.diskquota;
 
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.DefaultStorageBroker;

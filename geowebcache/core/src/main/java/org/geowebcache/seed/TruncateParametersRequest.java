@@ -24,6 +24,11 @@ import org.geowebcache.storage.StorageException;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+/**
+ * Truncate a particular combination of parameter values from a layer 
+ * @author smithkm
+ *
+ */
 @XStreamAlias("truncateParameters")
 public class TruncateParametersRequest implements MassTruncateRequest {
     String layerName;

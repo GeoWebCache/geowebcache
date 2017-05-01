@@ -108,7 +108,7 @@ public class CompositeBlobStoreTest {
 
         defaultLayer = mock(TileLayer.class);
         when(layers.getTileLayer(eq(DEFAULT_LAYER))).thenReturn(defaultLayer);
-        when(layers.getTileLayer((String) argThat(new NotEq(DEFAULT_LAYER)))).thenThrow(
+        when(layers.getTileLayer((String) argThat(new NotEq<>(DEFAULT_LAYER)))).thenThrow(
                 new GeoWebCacheException("layer not found"));
     }
 

@@ -49,7 +49,7 @@ public class LayerCacheInfoBuilderTest extends TestCase {
         protected String getParametersId(String base, java.util.Map<String,String> parameters) throws IOException {
             // we assume no collisions for these tests
             String parametersKvp = ParametersUtils.getKvp(parameters);
-            return buildKey(parametersKvp);
+            return ParametersUtils.buildKey(parametersKvp);
         };
     };
 

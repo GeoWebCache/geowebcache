@@ -31,14 +31,15 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.geowebcache.storage.blobstore.file.FilePathGenerator;
+import org.apache.commons.codec.digest.DigestUtils;
 
 public class ParametersUtils {
     
     /**
      * 
-     * This is not safe to parse as it does not do escaping.  It is used for the parameters ID hash
-     * to maintain compatibility with old caches.  For any other uses, {@link getKVP} is preferred.
+     * This should be treated as an opaque Identifier and should not be parsed, it is used to 
+     * to maintain compatibility with old caches.  For any other uses, {@link getKVP} is preferred
+     * as it uses safe escaping of values.
      * 
      * @param parameters
      * @return
@@ -125,7 +126,11 @@ public class ParametersUtils {
             return null;
         }
         String parametersKvp = getLegacyParametersKvp(parameters);
-        return FilePathGenerator.buildKey(parametersKvp);
+        return ParametersUtils.buildKey(parametersKvp);
+    }
+
+    public static String buildKey(String parametersKvp) {
+        return DigestUtils.sha1Hex(parametersKvp);
     }
     
     

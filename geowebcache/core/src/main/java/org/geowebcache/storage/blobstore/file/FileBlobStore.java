@@ -36,8 +36,6 @@ import java.nio.channels.FileChannel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -51,7 +49,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.apache.commons.collections.BidiMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,7 +70,6 @@ import org.geowebcache.util.FileUtils;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.BiMap;
 
 /**
  * See BlobStore interface description for details
@@ -767,14 +763,12 @@ public class FileBlobStore implements BlobStore {
             return false;
         }
         
-        File[] parameterCaches = layerPath.listFiles(new FileFilter() {
-            public boolean accept(File pathname) {
-                if (!pathname.isDirectory()) {
-                    return false;
-                }
-                String dirName = pathname.getName();
-                return dirName.endsWith(parametersId);
+        File[] parameterCaches = layerPath.listFiles((pathname)-> {
+            if (!pathname.isDirectory()) {
+                return false;
             }
+            String dirName = pathname.getName();
+            return dirName.endsWith(parametersId);
         });
         
         for (File parameterCache : parameterCaches) {
@@ -786,20 +780,6 @@ public class FileBlobStore implements BlobStore {
         
         return true;
     }
-    
-    class CarrierException extends RuntimeException {
-        public CarrierException(Throwable cause) {
-            super(cause);
-        }
-        
-        @SuppressWarnings("unchecked")
-        public <T extends Throwable> void propagate(Class<T> klass) throws T {
-            if(klass.isAssignableFrom(this.getCause().getClass())) {
-                throw (T)this.getCause();
-            }
-        }
-    }
-    
     
     private Stream<Path> layerChildStream(final String layerName, DirectoryStream.Filter<Path> filter) throws IOException {
         final File layerPath = getLayerPath(layerName);

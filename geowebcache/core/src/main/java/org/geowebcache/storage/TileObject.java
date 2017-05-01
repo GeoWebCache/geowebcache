@@ -30,6 +30,9 @@ import org.geowebcache.io.Resource;
  * object with the data.
  */
 public class TileObject extends StorageObject implements Serializable{
+    /** serialVersionUID */
+    private static final long serialVersionUID = 2204318806003485110L;
+
     public static final String TYPE = "tile";
 
     Resource blob;

@@ -21,9 +21,6 @@ import org.geowebcache.storage.AbstractBlobStoreTest;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-import org.easymock.Capture;
-import org.easymock.EasyMock;
-
 public class MbtilesBlobStoreConformanceTest extends AbstractBlobStoreTest<MbtilesBlobStore> {
     
     @Rule

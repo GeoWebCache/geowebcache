@@ -76,17 +76,42 @@ public interface StorageBroker {
      * Destroy method for Spring
      */
     public abstract void destroy();
-
+    
+    /**
+     * Get an entry from the layer's metadata map
+     * @param layerName
+     * @param key
+     * @return
+     */
     public abstract String getLayerMetadata(String layerName, String key);
 
+    /**
+     * Add/set an entry in the layer's metadata map
+     * @param layerName
+     * @param key
+     * @return
+     */
     public abstract void putLayerMetadata(String layerName, String key, String value);
 
     public abstract boolean getTransient(TileObject tile);
 
     public abstract void putTransient(TileObject tile);
     
+    /**
+     * Get the set of parameter IDs cached for the given layer
+     * @param layerName
+     * @param key
+     * @return
+     */
     public abstract Set<String> getCachedParameterIds(String layerName) throws StorageException;
     
+    /**
+     * Get the set of map cached for the given layer, for those parameterizations that have reverse
+     * mappings (Created by GWC 1.12 or later)
+     * @param layerName
+     * @param key
+     * @return
+     */
     public abstract Set<Map<String, String>> getCachedParameters(String layerName) throws StorageException;
 
     /**

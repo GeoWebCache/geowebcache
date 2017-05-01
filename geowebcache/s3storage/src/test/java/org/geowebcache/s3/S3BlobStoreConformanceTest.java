@@ -20,7 +20,6 @@ package org.geowebcache.s3;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.classextension.EasyMock.createMock;
-import static org.easymock.classextension.EasyMock.createNiceMock;
 import static org.easymock.classextension.EasyMock.replay;
 import static org.junit.Assert.fail;
 
@@ -34,7 +33,6 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.NoOpLockProvider;
 import org.geowebcache.storage.AbstractBlobStoreTest;
-import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Rule;
 

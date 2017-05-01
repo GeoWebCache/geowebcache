@@ -56,6 +56,7 @@ public class SQLDialect {
     protected static final int TILESET_KEY_SIZE = 320;
     protected static final int TILEPAGE_KEY_SIZE = TILESET_KEY_SIZE;
     
+    @SuppressWarnings("serial")
     protected final Map<String, List<String>> TABLE_CREATION_MAP = new LinkedHashMap<String, List<String>>() {
         {
 
@@ -185,6 +186,7 @@ public class SQLDialect {
 
         return sb.toString();
     }
+    
     public String getLayerParametersDeletionStatement(String schema, String layerNameParam,
             String parametersIdParam) {
         StringBuilder sb = new StringBuilder("DELETE FROM ");

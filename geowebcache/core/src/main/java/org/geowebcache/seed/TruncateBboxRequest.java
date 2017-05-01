@@ -24,7 +24,6 @@ import java.util.stream.Stream;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.UncheckedGeoWebCacheException;
-import org.geowebcache.config.Configuration;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
@@ -33,7 +32,6 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 
 import com.google.common.base.Optional;
-import com.sun.media.imageio.stream.StreamSegment;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
@@ -69,11 +67,13 @@ public class TruncateBboxRequest implements MassTruncateRequest {
                                 Stream.of((Map<String,String>)null)) // Add null for the default parameters
                 .flatMap(params->allFormats.stream()
                     .map(format->
-                            new SeedRequest(layerName, bounds, gridSetId, 1, minZ, maxZ, format.getMimeType(), GWCTask.TYPE.TRUNCATE, params)))
+                        // Create seed request for each combination of params and format
+                        new SeedRequest(layerName, bounds, gridSetId, 1, minZ, maxZ, 
+                                format.getMimeType(), GWCTask.TYPE.TRUNCATE, params)))
                 .map(request->{
                     try {
                         breeder.seed(layerName, request);
-                        return 1;
+                        return 1; 
                     } catch (GeoWebCacheException e) {
                         throw new UncheckedGeoWebCacheException(e);
                     }

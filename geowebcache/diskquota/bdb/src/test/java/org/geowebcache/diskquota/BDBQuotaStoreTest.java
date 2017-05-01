@@ -8,7 +8,6 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.InputStream;
@@ -21,7 +20,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -44,18 +42,14 @@ import org.geowebcache.diskquota.storage.TileSet;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.FileMatchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-
-import com.sun.media.imageio.stream.StreamSegment;
 
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;

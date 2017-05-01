@@ -24,6 +24,12 @@ import org.geowebcache.storage.StorageException;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+/**
+ * Truncate atiles from a cache where we know they are no longer reachable, or we can't know that 
+ * due to missing metadata.
+ * @author smithkm
+ *
+ */
 @XStreamAlias("truncateOrphans")
 public class TruncateOrphansRequest implements MassTruncateRequest {
     String layerName;

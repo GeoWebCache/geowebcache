@@ -19,17 +19,15 @@ package org.geowebcache.diskquota.storage;
 
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.diskquota.CacheCleaner;
 import org.geowebcache.diskquota.storage.PagePyramid.PageLevelInfo;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
@@ -120,15 +118,16 @@ public class TilePageCalculator {
         return getTileSetsFor(layerName, Optional.of(gridSubSets), Optional.of(mimeTypes), Optional.empty());
     }
     
+    @SuppressWarnings("unchecked")
     public Set<TileSet> getTileSetsFor(
             final String layerName, 
-            final Optional<? extends Collection<GridSubset>> gridSubsets, 
-            final Optional<? extends Collection<MimeType>> mimeTypes,
-            final Optional<? extends Collection<String>> parameterIds) {
+            final Optional<? extends Collection<GridSubset>> optGridSubsets, 
+            final Optional<? extends Collection<MimeType>> optMimeTypes,
+            final Optional<? extends Collection<String>> optParameterIds) {
         
         // If we don't have gridsets or mime types, we need to look up the layer object
         final TileLayer tileLayer;
-        if(!(gridSubsets.isPresent() && mimeTypes.isPresent())) {
+        if(!(optGridSubsets.isPresent() && optMimeTypes.isPresent())) {
             try {
                 tileLayer = tld.getTileLayer(layerName);
             } catch (GeoWebCacheException e) {
@@ -138,30 +137,49 @@ public class TilePageCalculator {
             tileLayer = null;
         }
         
-        // Loop over the gridset names, getting them from the layer if they were not provided
+        Collection<String> gridsetNames = getGridSubsetNames((Optional<Collection<GridSubset>>) optGridSubsets, tileLayer);
+        Collection<String> formatNames = getFormatNames((Optional<Collection<MimeType>>) optMimeTypes, tileLayer);
+        Collection<String> parameterIds = getParameterIds(layerName, (Optional<Collection<String>>) optParameterIds);
+        
+        return 
+            gridsetNames.stream()
+                .flatMap(gridset->
+                    formatNames.stream()
+                        .flatMap(format->
+                            parameterIds.stream()
+                                .map(parametersId->
+                                    new TileSet(layerName, gridset, format, parametersId)
+                            )
+                    )
+            )
+            .collect(Collectors.toSet());
+    }
+    
+    private Collection<String> getGridSubsetNames(Optional<Collection<GridSubset>> gridSubsets, TileLayer tileLayer) {
         return gridSubsets
             .map(Collection::stream)
             .map(stream->stream.map(GridSubset::getName))
-            .orElse(tileLayer.getGridSubsets().stream())
-            // Loop over the mime type names, getting them from the layer if they were not provided
-            .flatMap(gridsetId->mimeTypes
-                    .map(Collection::stream)
-                    .orElse(tileLayer.getMimeTypes().stream())
-                    .map(MimeType::getFormat)
-                    // Loop over the parameter ids, getting them from the storage broker if they were not provided
-                    .flatMap(blobFormat->parameterIds
-                            .map(Collection::stream)
-                            .orElseGet(()->{
-                                try {
-                                    return sb.getCachedParameterIds(layerName).stream();
-                                } catch (StorageException e) {
-                                    log.error("Error while retreiving cached parameter IDs for layer "+layerName, e);
-                                    return Stream.of();
-                                }
-                            })
-                        .map(parametersId->
-                            new TileSet(layerName, gridsetId, blobFormat, parametersId))))
-            .collect(Collectors.toSet());
+            .map(stream->stream.collect(Collectors.toSet()))
+            .orElseGet(()->tileLayer.getGridSubsets());
+    }
+    
+    private Collection<String> getFormatNames(Optional<Collection<MimeType>> mimeTypes, TileLayer tileLayer) {
+        return mimeTypes
+            .map(Collection::stream)
+            .orElseGet(()->tileLayer.getMimeTypes().stream())
+            .map(MimeType::getFormat)
+            .collect(Collectors.toList());
+    }
+    
+    private Collection<String> getParameterIds (String layerName, Optional<Collection<String>> parameterIds) {
+        return parameterIds.orElseGet(()->{
+                try {
+                    return sb.getCachedParameterIds(layerName);
+                } catch (StorageException e) {
+                    log.error("Error while retreiving cached parameter IDs for layer "+layerName, e);
+                    return Collections.emptySet();
+                }
+            });
     }
     
     private PagePyramid newPagePyramid(final TileSet tileSet) {

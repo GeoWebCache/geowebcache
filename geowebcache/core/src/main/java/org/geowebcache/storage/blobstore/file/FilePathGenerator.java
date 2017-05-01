@@ -22,7 +22,6 @@ import static org.geowebcache.storage.blobstore.file.FilePathUtils.*;
 import java.io.File;
 import java.util.Map;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.filter.parameters.ParametersUtils;
@@ -31,6 +30,7 @@ import org.geowebcache.storage.TileObject;
 
 public class FilePathGenerator {
     
+    @SuppressWarnings("unused")
     private static Log log = LogFactory.getLog(FilePathGenerator.class);
     
     String cacheRoot;
@@ -106,8 +106,11 @@ public class FilePathGenerator {
         return tileFile;
     }
 
+    /**
+     * @deprecated Use {@link ParametersUtils#buildKey(String)} instead
+     */
     public static String buildKey(String parametersKvp) {
-        return DigestUtils.shaHex(parametersKvp);
+        return ParametersUtils.buildKey(parametersKvp);
     }
     
     /**

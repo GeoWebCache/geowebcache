@@ -24,7 +24,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -55,10 +54,6 @@ import org.geowebcache.storage.TileRangeIterator;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.Protocol;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AccessControlList;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -71,7 +66,6 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.base.Function;
-import com.google.common.base.Objects;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
@@ -425,17 +419,13 @@ public class S3BlobStore implements BlobStore {
         }
     }
 
-    private Properties getParametersMetadata(String layerName, String parametersId) {
-        String key = keyBuilder.parametersMetadata(layerName, parametersId);
-        return s3Ops.getProperties(key);
-    }
-
     @Override
     public boolean layerExists(String layerName) {
         final String coordsPrefix = keyBuilder.forLayer(layerName);
         boolean layerExists = s3Ops.prefixExists(coordsPrefix);
         return layerExists;
     }
+    
     @Override
     public boolean deleteByParametersId(String layerName, String parametersId)
             throws StorageException {

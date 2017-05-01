@@ -17,8 +17,6 @@
 
 package org.geowebcache.seed;
 
-import static org.easymock.EasyMock.anyBoolean;
-import static org.easymock.EasyMock.anyInt;
 import static org.easymock.EasyMock.eq;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.any;
@@ -33,17 +31,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.geowebcache.config.Configuration;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.ImageMime;
-import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
-import org.geowebcache.storage.TileRange;
 import org.junit.Test;
 
-import org.hamcrest.Matchers;
 import org.hamcrest.integration.EasyMock2Adapter;
 
 import org.easymock.classextension.EasyMock;

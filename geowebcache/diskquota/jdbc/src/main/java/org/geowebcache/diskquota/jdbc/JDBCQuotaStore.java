@@ -657,7 +657,7 @@ public class JDBCQuotaStore implements QuotaStore {
         return executor.submit(new Callable<List<PageStats>>() {
 
             public List<PageStats> call() throws Exception {
-                return (List<PageStats>) tt.execute(new TransactionCallback() {
+                return (List<PageStats>) tt.execute(new TransactionCallback<Object>() {
 
                     public Object doInTransaction(TransactionStatus status) {
                         List<PageStats> result = new ArrayList<PageStats>();
@@ -794,7 +794,7 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     public PageStats setTruncated(final TilePage page) throws InterruptedException {
-        return (PageStats) tt.execute(new TransactionCallback() {
+        return (PageStats) tt.execute(new TransactionCallback<Object>() {
 
             public Object doInTransaction(TransactionStatus status) {
                 if (log.isDebugEnabled()) {

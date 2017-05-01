@@ -18,25 +18,19 @@
 package org.geowebcache.storage;
 
 import java.io.UncheckedIOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
-import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.filter.parameters.ParameterException;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.ParametersUtils;
-import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.mime.MimeType;
 
 /**
  * Manages the persistence of the actual data contained in cacheable objects (tiles, WFS responses).
@@ -206,7 +200,16 @@ public interface BlobStore {
 	 *         in use, {@code false} otherwise
 	 */
 	public boolean layerExists(String layerName);
-
+    
+    /**
+     * Gets the mapping from parameter IDs to parameter maps.  For cache parameter IDs that lack 
+     * reverse mappings (as produced by GWC before 1.12) the ID will map to an empty 
+     * {@link Optional}.
+     * @param layerName The layer to look up.
+     * @return A map from parameter IDs to {@link Optional}s containing parameter maps, or empty 
+     *          {@link Optional}s.
+     * @since 1.12
+     */
     Map<String,Optional<Map<String, String>>> getParametersMapping(String layerName);
     
     /**
@@ -219,25 +222,27 @@ public interface BlobStore {
         try{
             final List<ParameterFilter> parameterFilters = layer.getParameterFilters();
             
+            // Given known parameter mapping, figures out if the parameters need to be purged
+            final Function<Map<String,String>, Boolean> parametersNeedPurge = parameters-> {
+                return parameters.size() != parameterFilters.size() || // Should have the same number of parameters as the layer has filters
+                    parameterFilters.stream()
+                        .allMatch(pfilter -> { // Do all the parameter filters on the layer consider their parameter legal
+                            final String key = pfilter.getKey();
+                            final String value = parameters.get(key);
+                            if(Objects.isNull(value)) {
+                                return true; // No parameter for this filter so purge
+                            }
+                            return !pfilter.isFilteredValue(value); // purge if it's not a filtered value
+                        });
+            };
+            
             return getParametersMapping(layer.getName()).entrySet().stream()
                 .filter(parameterMapping -> {
                     return parameterMapping.getValue()
-                        .map(parameters-> {
-                            // We know what the original parameters are
-                            return parameters.size() != parameterFilters.size() || // Should have the same number of parameters as the layer has filters
-                                parameterFilters.stream()
-                                    .allMatch(pfilter -> {
-                                        final String key = pfilter.getKey();
-                                        final String value = parameters.get(key);
-                                        if(Objects.isNull(value)) {
-                                            return true; // No parameter for this filter so purge
-                                        }
-                                        return !pfilter.isFilteredValue(value); // purge if it's not a filtered value
-                                    });
-                            })
+                        .map(parametersNeedPurge)
                         .orElse(true); // Don't have the original values so purge
-                    })
-                .map(Map.Entry::getKey)
+                })
+                .map(Map.Entry::getKey) // The parameter id
                 .map(id->{
                     try {
                         return this.deleteByParametersId(layer.getName(), id);

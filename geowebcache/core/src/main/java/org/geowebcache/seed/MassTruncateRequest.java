@@ -1,7 +1,6 @@
 package org.geowebcache.seed;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.Configuration;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 

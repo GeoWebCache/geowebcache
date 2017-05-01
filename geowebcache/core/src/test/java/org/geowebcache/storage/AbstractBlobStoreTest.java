@@ -48,8 +48,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.hamcrest.Matchers;
-
 import org.easymock.Capture;
 import org.easymock.classextension.EasyMock;
 
@@ -456,6 +454,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         assertThat(store.getLayerMetadata("testLayer", "testKey"), equalTo("test%Value"));
     }
     
+    @SuppressWarnings("unchecked")
     @Test
     public void testParameterList() throws Exception {
         Map<String, String> params1 = Collections.singletonMap("testKey", "testValue1");
@@ -663,15 +662,8 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         String paramID2 = ParametersUtils.getId(params2);
         final String gridset = "testGridSet";
         final String format = "image/png";
-        TileObject toCache1 = TileObject.createCompleteTileObject(layerName,  new long[]{0L, 0L, 0L}, gridset, format, params1, new ByteArrayResource("1,2,4,5,6 test".getBytes(StandardCharsets.UTF_8)));
-        TileObject toCache2 = TileObject.createCompleteTileObject(layerName, new long[]{0L, 0L, 0L}, gridset, format, params2, new ByteArrayResource("7,8,9,10 test".getBytes(StandardCharsets.UTF_8)));
         BlobStoreListener listener = EasyMock.createMock(BlobStoreListener.class);
         store.addListener(listener);
-        
-        TileObject fromCache1_1 = TileObject.createQueryTileObject(layerName,  new long[]{0L, 0L, 0L}, gridset, format, params1);
-        TileObject fromCache2_1 = TileObject.createQueryTileObject(layerName, new long[]{0L, 0L, 0L}, gridset, format, params2);
-        TileObject fromCache1_2 = TileObject.createQueryTileObject(layerName,  new long[]{0L, 0L, 0L}, gridset, format, params1);
-        TileObject fromCache2_2 = TileObject.createQueryTileObject(layerName, new long[]{0L, 0L, 0L}, gridset, format, params2);
         
         if(events) {
             listener.tileStored(eq(layerName), eq(gridset), eq(format), eq(paramID1), eq(0L), eq(0L), eq(0), 
