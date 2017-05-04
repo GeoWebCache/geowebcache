@@ -19,6 +19,10 @@ package org.geowebcache.service.tms;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -87,11 +91,72 @@ public class TMSService extends Service {
             RuntimeStats stats) {
         this(sb, tld, gsb, stats, new NullURLMangler(), null);
     }
-
+    
     @Override
     public ConveyorTile getConveyor(HttpServletRequest request,
             HttpServletResponse response) throws GeoWebCacheException {
-
+        final String pathInfo = request.getPathInfo();
+        Optional<Map<String, String>> possibleSplit = splitParams(request);
+        if(possibleSplit.isPresent()) {
+            Map<String, String> split = possibleSplit.get();
+            long[] gridLoc = new long[3];
+            try {
+                gridLoc[0] = Integer.parseInt(split.get("x"));
+                gridLoc[1] = Integer.parseInt(split.get("y"));
+                gridLoc[2] = Integer.parseInt(split.get("z"));
+            } catch (NumberFormatException nfe) {
+                throw new ServiceException("Unable to parse number " + nfe.getMessage() + " from " + pathInfo);
+            }
+            String layerId = split.get("layerId");
+            
+            String gridSetId = split.get("gridSetId");
+            if(Objects.isNull(gridSetId)) {
+                gridSetId = tld.getTileLayer(layerId)
+                                .getGridSubsets().iterator().next();
+            }
+            MimeType mimeType = null;
+            String fileExtension = split.get("fileExtension");
+            try {
+                mimeType = MimeType.createFromExtension(fileExtension);
+                if (mimeType == null) {
+                    throw new HttpErrorCodeException(400, "Unsupported format: " + fileExtension);
+                }
+            } catch (MimeException me) {
+                throw new ServiceException("Unable to determine requested format based on extension "
+                        + fileExtension);
+            }
+            try {
+                TileLayer tileLayer = tld.getTileLayer(layerId);
+                GridSubset gridSubset = tileLayer.getGridSubset(gridSetId);
+                if (gridSubset == null) {
+                    throw new HttpErrorCodeException(400, "Unsupported gridset: " + gridSetId);
+                }
+                gridSubset.checkCoverage(gridLoc);
+            } catch (OutsideCoverageException e) {
+                throw new HttpErrorCodeException(404, e.getMessage(), e);
+            } catch (GeoWebCacheException e) {
+                throw new HttpErrorCodeException(400, e.getMessage(), e);
+            }
+            ConveyorTile ret = new ConveyorTile(sb, layerId, gridSetId, gridLoc, mimeType, null, request, response);
+            return ret;
+        } else {
+            // Not a tile request, lets pass it back out
+            ConveyorTile tile = new ConveyorTile(sb, null, request, response);
+            tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
+            return tile;
+        }
+    }
+    
+    /**
+     * Split the TMS parameters out of the given request
+     * @param request
+     * @return A map of the parameters with keys {@literal "layerId"}, {@literal "gridSetId"},
+     * {@literal "x"}, {@literal "y"}, {@literal "z"}, and {@literal "fileExtension"}.  Optionally
+     * also {@literal "gridSetId"} and {@literal "format"}.  Returns an empty Optional if it can not
+     * fill the mandatory entries
+     */
+    public static Optional<Map<String,String>> splitParams(HttpServletRequest request) {
+        
         // get all elements of the pathInfo after the leading "/tms/1.0.0/" part.
         String pathInfo = request.getPathInfo();
         pathInfo = pathInfo.substring(pathInfo.indexOf(TMSDocumentFactory.TILEMAPSERVICE_LEADINGPATH));
@@ -100,68 +165,29 @@ public class TMSService extends Service {
         
         int paramsLength = params.length;
         
-        if(params.length < 4) {
-            // Not a tile request, lets pass it back out
-            ConveyorTile tile = new ConveyorTile(sb, null, request, response);
-            tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
-            return tile;
-        }
+        Map<String, String> parsed = new HashMap<>();
         
-        long[] gridLoc = new long[3];
+        if(params.length < 4) {
+            return Optional.empty();
+        }
         
         String[] yExt = params[paramsLength - 1].split("\\.");
         
-        try {
-            gridLoc[0] = Integer.parseInt(params[paramsLength - 2]);
-            gridLoc[1] = Integer.parseInt(yExt[0]);
-            gridLoc[2] = Integer.parseInt(params[paramsLength - 3]);
-        } catch (NumberFormatException nfe) {
-            throw new ServiceException("Unable to parse number " + nfe.getMessage() + " from " + pathInfo);
-        }
-
-        String layerId;
-        String gridSetId;
+        parsed.put("x", params[paramsLength - 2]);
+        parsed.put("y", yExt[0]);
+        parsed.put("z", params[paramsLength - 3]);
         
-        // For backwards compatibility, we'll look for @s and use defaults if not found
         String layerNameAndSRS = params[2];
         String[] lsf = ServletUtils.URLDecode(layerNameAndSRS, request.getCharacterEncoding()).split("@");
-        if(lsf.length < 3) {
-            layerId = lsf[0];
-            TileLayer layer = tld.getTileLayer(layerId);
-            gridSetId = layer.getGridSubsets().iterator().next();
-        } else {
-           layerId = lsf[0];
-           gridSetId = lsf[1];
-           // We don't actually care about the format, we'll pick it from the extension
-        }
-
-        MimeType mimeType = null;
-        try {
-            String fileExtension = yExt[1];
-            mimeType = MimeType.createFromExtension(fileExtension);
-            if (mimeType == null) {
-                throw new HttpErrorCodeException(400, "Unsupported format: " + fileExtension);
-            }
-        } catch (MimeException me) {
-            throw new ServiceException("Unable to determine requested format based on extension "
-                    + yExt[1]);
-        }
-        try {
-            TileLayer tileLayer = tld.getTileLayer(layerId);
-            GridSubset gridSubset = tileLayer.getGridSubset(gridSetId);
-            if (gridSubset == null) {
-                throw new HttpErrorCodeException(400, "Unsupported gridset: " + gridSetId);
-            }
-            gridSubset.checkCoverage(gridLoc);
-        } catch (OutsideCoverageException e) {
-            throw new HttpErrorCodeException(404, e.getMessage(), e);
-        } catch (GeoWebCacheException e) {
-            throw new HttpErrorCodeException(400, e.getMessage(), e);
+        parsed.put("layerId", lsf[0]);
+        if(lsf.length >= 3) {
+           parsed.put("gridSetId", lsf[1]);
+           parsed.put("format", lsf[2]);
         }
         
-        ConveyorTile ret = new ConveyorTile(sb, layerId, gridSetId, gridLoc, mimeType, null, request, response);
+        parsed.put("fileExtension", yExt[1]);
         
-        return ret;
+        return Optional.of(parsed);
     }
     
     public void handleRequest(Conveyor conv)
