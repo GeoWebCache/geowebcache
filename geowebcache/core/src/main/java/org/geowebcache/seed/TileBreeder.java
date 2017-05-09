@@ -14,7 +14,10 @@
  * 
  * @author Marius Suta / The Open Planning Project 2008 (original code from SeedRestlet)
  * @author Arne Kepp / The Open Planning Project 2009 (original code from SeedRestlet)
- * @author Gabriel Roldan / OpenGeo 2010  
+ * Copyright OpenPlans 2010-2014
+ * Copyright OSGeo 2014
+ * 
+ * @author Gabriel Roldan, OpenGeo
  */
 package org.geowebcache.seed;
 
