@@ -17,6 +17,9 @@ package org.geowebcache.storage.blobstore.memory;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -693,6 +696,17 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
                 return store.deleteByGridsetId((String) objs[0], (String) objs[1]);
             }
         },
+        DELETE_PARAMS_ID {
+            @Override
+            public boolean executeOperation(BlobStore store, Object... objs)
+                    throws StorageException {
+                if (objs == null || objs.length < 2 || !(objs[0] instanceof String)
+                        || !(objs[1] instanceof String)) {
+                    return false;
+                }
+                return store.deleteByParametersId((String) objs[0], (String) objs[1]);
+            }
+        },
         DELETE_LAYER {
             @Override
             public boolean executeOperation(BlobStore store, Object... objs)
@@ -741,5 +755,52 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
          */
         public abstract boolean executeOperation(BlobStore store, Object... objs)
                 throws StorageException;
+    }
+
+    @Override
+    public boolean deleteByParametersId(String layerName, String parametersId)
+            throws StorageException {
+        componentsStateLock.lock();
+        try {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Removing Layer: " + layerName);
+            }
+            // Remove the layer from the cacheProvider
+            cacheProvider.removeLayer(layerName);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Scheduling Parameters: " + parametersId + " removal for Layer: " + layerName);
+            }
+            // Remove selected parameters
+            executorService.submit(new BlobStoreTask(store, BlobStoreAction.DELETE_PARAMS_ID,
+                    layerName, parametersId));
+            return true;
+        } finally {
+            componentsStateLock.unlock();
+        }
+    }
+
+    @Override
+    public Set<Map<String, String>> getParameters(String layerName) throws StorageException {
+        componentsStateLock.lock();
+        try {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Getting parameters for Layer: " + layerName);
+            }
+            return store.getParameters(layerName);
+        } finally {
+            componentsStateLock.unlock();
+        }
+    }
+
+    public Map<String,Optional<Map<String, String>>> getParametersMapping(String layerName) {
+        componentsStateLock.lock();
+        try {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Getting parameters for Layer: " + layerName);
+            }
+            return store.getParametersMapping(layerName);
+        } finally {
+            componentsStateLock.unlock();
+        }
     }
 }

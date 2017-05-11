@@ -34,6 +34,12 @@
             <classifier>tests</classifier>
         </dependency>
         <dependency>
+            <groupId>org.geowebcache</groupId>
+            <artifactId>gwc-core</artifactId>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
         </dependency>
@@ -61,6 +67,16 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.easymock</groupId>
+          <artifactId>easymock</artifactId>
+          <scope>test</scope>
+          </dependency>
+        <dependency>
+          <groupId>org.easymock</groupId>
+          <artifactId>easymockclassextension</artifactId>
+          <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

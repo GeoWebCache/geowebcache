@@ -56,6 +56,7 @@ public class SQLDialect {
     protected static final int TILESET_KEY_SIZE = 320;
     protected static final int TILEPAGE_KEY_SIZE = TILESET_KEY_SIZE;
     
+    @SuppressWarnings("serial")
     protected final Map<String, List<String>> TABLE_CREATION_MAP = new LinkedHashMap<String, List<String>>() {
         {
 
@@ -185,6 +186,18 @@ public class SQLDialect {
 
         return sb.toString();
     }
+    
+    public String getLayerParametersDeletionStatement(String schema, String layerNameParam,
+            String parametersIdParam) {
+        StringBuilder sb = new StringBuilder("DELETE FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET WHERE LAYER_NAME = :").append(layerNameParam);
+        sb.append(" AND PARAMETERS_ID = :").append(parametersIdParam);
+
+        return sb.toString();
+    }
 
     public String getTileSetsQuery(String schema) {
         StringBuilder sb = new StringBuilder(
@@ -257,6 +270,15 @@ public class SQLDialect {
             sb.append(schema).append(".");
         }
         sb.append("TILESET WHERE GRIDSET_ID = :").append(gridsetIdParam);
+        return sb.toString();
+    }
+    
+    public String getUsedQuotaByParametersId(String schema, String parametersIdParam) {
+        StringBuilder sb = new StringBuilder("SELECT SUM(BYTES) FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET WHERE PARAMETERS_ID = :").append(parametersIdParam);
         return sb.toString();
     }
 

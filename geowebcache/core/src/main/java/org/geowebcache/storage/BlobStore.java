@@ -17,6 +17,20 @@
  */
 package org.geowebcache.storage;
 
+import java.io.UncheckedIOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.geowebcache.filter.parameters.ParameterFilter;
+import org.geowebcache.filter.parameters.ParametersUtils;
+import org.geowebcache.layer.TileLayer;
 
 /**
  * Manages the persistence of the actual data contained in cacheable objects (tiles, WFS responses).
@@ -26,7 +40,8 @@ package org.geowebcache.storage;
  * </p>
  */
 public interface BlobStore {
-	
+    static Log log = LogFactory.getLog(BlobStore.class);
+
     /**
      * Delete the cache for the named layer
      * 
@@ -44,6 +59,30 @@ public interface BlobStore {
      * @throws StorageException
      */
     public boolean deleteByGridsetId(final String layerName, final String gridSetId)
+            throws StorageException;
+
+    /**
+     * Delete the cache for the named layer and parameters.
+     * 
+     * @param layerName
+     * @param parameters Complete filtered parameters to generate the ID
+     * @return {@literal true} if successful, {@literal false} otherwise
+     * @throws StorageException
+     */
+    public default boolean deleteByParameters(final String layerName, final Map<String, String> parameters)
+            throws StorageException {
+        return deleteByParametersId(layerName, ParametersUtils.getId(parameters));
+    }
+    
+    /**
+     * Delete the cache for the named layer and parameters id.
+     * 
+     * @param layerName
+     * @param parameters
+     * @return {@literal true} if successful, {@literal false} otherwise
+     * @throws StorageException
+     */
+    public boolean deleteByParametersId(final String layerName, String parametersId)
             throws StorageException;
 
     /**
@@ -109,7 +148,33 @@ public interface BlobStore {
      * @see BlobStoreListener
      */
     public boolean removeListener(BlobStoreListener listener);
-
+    
+    /**
+     * Get the cached parameter maps for a layer
+     * @param layerName
+     * @return
+     */
+    public default Set<Map<String, String>> getParameters(String layerName) throws StorageException {
+        return getParametersMapping(layerName).values().stream()
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toSet());
+    }
+    
+    /**
+     * Get the IDs of the cached parameter maps for a layer. 
+     * 
+     * <p>Stores that predate 1.12 should implement this to provide any parameters for which maps
+     * are not available.  Stores not using {@link ParametersUtils.getId} or which have more 
+     * efficient ways to provide it should also implement it.
+     * @param layerName
+     * @return
+     */
+    public default Set<String> getParameterIds(String layerName) throws StorageException {
+        return getParametersMapping(layerName).keySet();
+    }
+    
+    
     /**
      * Rename a stored layer
      * @param oldLayerName the old name of the layer
@@ -135,7 +200,67 @@ public interface BlobStore {
 	 *         in use, {@code false} otherwise
 	 */
 	public boolean layerExists(String layerName);
-
+    
+    /**
+     * Gets the mapping from parameter IDs to parameter maps.  For cache parameter IDs that lack 
+     * reverse mappings (as produced by GWC before 1.12) the ID will map to an empty 
+     * {@link Optional}.
+     * @param layerName The layer to look up.
+     * @return A map from parameter IDs to {@link Optional}s containing parameter maps, or empty 
+     *          {@link Optional}s.
+     * @since 1.12
+     */
+    Map<String,Optional<Map<String, String>>> getParametersMapping(String layerName);
+    
+    /**
+     * If the given layer is cached, remove 
+     * @param layer
+     * @throws StorageException
+     */
+    public default boolean purgeOrphans(TileLayer layer) throws StorageException {
+        // TODO maybe do purging based on gridset and format
+        try{
+            final List<ParameterFilter> parameterFilters = layer.getParameterFilters();
+            
+            // Given known parameter mapping, figures out if the parameters need to be purged
+            final Function<Map<String,String>, Boolean> parametersNeedPurge = parameters-> {
+                return parameters.size() != parameterFilters.size() || // Should have the same number of parameters as the layer has filters
+                    parameterFilters.stream()
+                        .allMatch(pfilter -> { // Do all the parameter filters on the layer consider their parameter legal
+                            final String key = pfilter.getKey();
+                            final String value = parameters.get(key);
+                            if(Objects.isNull(value)) {
+                                return true; // No parameter for this filter so purge
+                            }
+                            return !pfilter.isFilteredValue(value); // purge if it's not a filtered value
+                        });
+            };
+            
+            return getParametersMapping(layer.getName()).entrySet().stream()
+                .filter(parameterMapping -> {
+                    return parameterMapping.getValue()
+                        .map(parametersNeedPurge)
+                        .orElse(true); // Don't have the original values so purge
+                })
+                .map(Map.Entry::getKey) // The parameter id
+                .map(id->{
+                    try {
+                        return this.deleteByParametersId(layer.getName(), id);
+                    } catch (StorageException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                })
+                .reduce((x,y)->x||y) // OR results without short circuiting
+                .orElse(false);
+        } catch (UncheckedIOException ex) {
+            if(ex.getCause() instanceof StorageException) {
+                throw (StorageException) ex.getCause();
+            } else {
+                throw ex;
+            }
+        }
+    }
+    
     // /**
     // * Test to see whether the blobstore is ready or not
     // */

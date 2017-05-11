@@ -17,6 +17,7 @@
 package org.geowebcache.s3;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.isNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -26,13 +27,17 @@ import java.nio.channels.WritableByteChannel;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -49,10 +54,6 @@ import org.geowebcache.storage.TileRangeIterator;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.Protocol;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AccessControlList;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -63,6 +64,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
@@ -170,7 +172,9 @@ public class S3BlobStore implements BlobStore {
 
         log.trace(log.isTraceEnabled() ? ("Storing " + key) : "");
         s3Ops.putObject(putObjectRequest);
-
+        
+        putParametersMetadata(obj.getLayerName(), obj.getParametersId(), obj.getParameters());
+        
         /*
          * This is important because listeners may be tracking tile existence
          */
@@ -399,11 +403,67 @@ public class S3BlobStore implements BlobStore {
         String key = keyBuilder.layerMetadata(layerName);
         return s3Ops.getProperties(key);
     }
+    
+    private void putParametersMetadata(String layerName, String parametersId, Map<String, String> parameters) {
+        assert(isNull(parametersId)==isNull(parameters));
+        if(isNull(parametersId)) {
+            return;
+        }
+        Properties properties = new Properties();
+        parameters.forEach(properties::setProperty);
+        String resourceKey = keyBuilder.parametersMetadata(layerName, parametersId);
+        try {
+            s3Ops.putProperties(resourceKey, properties);
+        } catch (StorageException e) {
+            Throwables.propagate(e);
+        }
+    }
 
     @Override
     public boolean layerExists(String layerName) {
         final String coordsPrefix = keyBuilder.forLayer(layerName);
         boolean layerExists = s3Ops.prefixExists(coordsPrefix);
         return layerExists;
+    }
+    
+    @Override
+    public boolean deleteByParametersId(String layerName, String parametersId)
+            throws StorageException {
+        checkNotNull(layerName, "layerName");
+        checkNotNull(parametersId, "parametersId");
+        
+        boolean prefixExists = keyBuilder.forParameters(layerName, parametersId).stream()
+            .map(prefix->{
+                try {
+                    return s3Ops.scheduleAsyncDelete(prefix);
+                } catch (RuntimeException|GeoWebCacheException e) {
+                    throw Throwables.propagate(e);
+                }
+            })
+            .reduce(Boolean::logicalOr) // Don't use Stream.anyMatch as it would short circuit
+            .orElse(false);
+        if (prefixExists) {
+            listeners.sendParametersDeleted(layerName, parametersId);
+        }
+        return prefixExists;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<Map<String, String>> getParameters(String layerName) {
+        return s3Ops.objectStream(keyBuilder.parametersMetadataPrefix(layerName))
+            .map(S3ObjectSummary::getKey)
+            .map(s3Ops::getProperties)
+            .map(props->(Map<String,String>)(Map<?,?>)props)
+            .collect(Collectors.toSet());
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String,Optional<Map<String, String>>> getParametersMapping(String layerName) {
+        return s3Ops.objectStream(keyBuilder.parametersMetadataPrefix(layerName))
+            .map(S3ObjectSummary::getKey)
+            .map(s3Ops::getProperties)
+            .map(props->(Map<String,String>)(Map<?,?>)props)
+            .collect(Collectors.toMap(ParametersUtils::getId, Optional::of));
     }
 }

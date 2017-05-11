@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutorService;
 
 import junit.framework.TestCase;
 
+import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeException;
@@ -47,8 +48,8 @@ public class LayerCacheInfoBuilderTest extends TestCase {
     FilePathGenerator pathGenerator = new FilePathGenerator("") {
         protected String getParametersId(String base, java.util.Map<String,String> parameters) throws IOException {
             // we assume no collisions for these tests
-            String parametersKvp = getParametersKvp(parameters);
-            return buildKey(parametersKvp);
+            String parametersKvp = ParametersUtils.getKvp(parameters);
+            return ParametersUtils.buildKey(parametersKvp);
         };
     };
 

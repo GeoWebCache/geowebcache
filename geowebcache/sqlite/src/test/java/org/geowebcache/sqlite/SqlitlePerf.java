@@ -19,6 +19,7 @@ package org.geowebcache.sqlite;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 
@@ -226,7 +227,7 @@ final class SqlitlePerf {
         ExecutorService executor = Executors.newFixedThreadPool(WORKERS);
         long startTime = System.currentTimeMillis();
         // instantiate the file blobstore
-        FileBlobStore fileBlobStore = new FileBlobStore(seedDirectory.getPath());
+        BlobStore fileBlobStore = new FileBlobStore(seedDirectory.getPath());
         for (int i = 0; i < tiles.length; i++) {
             long[] tile = tiles[i];
             executor.submit((Runnable) () -> {
@@ -268,7 +269,7 @@ final class SqlitlePerf {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format("Start seeding file system '%s'.", seedDirectory));
         }
-        FileBlobStore fileBlobStore = new FileBlobStore(seedDirectory.getPath());
+        BlobStore fileBlobStore = new FileBlobStore(seedDirectory.getPath());
         // start seeding the tiles
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < TILES; i++) {

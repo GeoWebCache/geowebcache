@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,9 +32,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.io.IOUtils;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.LockProvider.Lock;
@@ -51,11 +54,12 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.google.common.base.Charsets;
-import com.google.common.base.Predicate;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 import com.google.common.base.Throwables;
-import com.google.common.collect.Iterables;
-import com.google.common.io.ByteStreams;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 class S3Ops {
@@ -256,7 +260,7 @@ class S3Ops {
             String parentKey = e.getKey();
             if (key.startsWith(parentKey)) {
                 long deleteTime = e.getValue().longValue();
-                return deleteTime > lastModified;
+                return deleteTime >= lastModified;
             }
         }
         return false;
@@ -269,7 +273,7 @@ class S3Ops {
             return null;
         }
         try (S3ObjectInputStream in = object.getObjectContent()) {
-            byte[] bytes = ByteStreams.toByteArray(in);
+            byte[] bytes = IOUtils.toByteArray(in);
             return bytes;
         } catch (IOException e) {
             throw new StorageException("Error getting " + key, e);
@@ -297,7 +301,7 @@ class S3Ops {
         if (bytes != null) {
             try {
                 properties.load(new InputStreamReader(new ByteArrayInputStream(bytes),
-                        Charsets.UTF_8));
+                        StandardCharsets.UTF_8));
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
@@ -322,6 +326,10 @@ class S3Ops {
         InputStream in = new ByteArrayInputStream(bytes);
         PutObjectRequest putReq = new PutObjectRequest(bucketName, resourceKey, in, objectMetadata);
         putObject(putReq);
+    }
+    
+    public Stream<S3ObjectSummary> objectStream(String prefix) {
+        return StreamSupport.stream(S3Objects.withPrefix(conn, bucketName, prefix).spliterator(), false);
     }
 
     private class BulkDelete implements Callable<Long> {
@@ -349,11 +357,12 @@ class S3Ops {
                 checkInterrupted();
                 S3BlobStore.log.info(String.format("Running bulk delete on '%s/%s':%d", bucketName,
                         prefix, timestamp));
-                Iterable<S3ObjectSummary> objects = S3Objects.withPrefix(conn, bucketName, prefix);
                 Predicate<S3ObjectSummary> filter = new TimeStampFilter(timestamp);
-                objects = Iterables.filter(objects, filter);
-
-                Iterable<List<S3ObjectSummary>> partitions = Iterables.partition(objects, 1000);
+                AtomicInteger n = new AtomicInteger(0); 
+                Iterable<List<S3ObjectSummary>> partitions = objectStream(prefix)
+                        .filter(filter)
+                        .collect(Collectors.groupingBy((x)->n.getAndIncrement()%1000))
+                        .values();
 
                 for (List<S3ObjectSummary> partition : partitions) {
 
@@ -418,7 +427,7 @@ class S3Ops {
         }
 
         @Override
-        public boolean apply(S3ObjectSummary summary) {
+        public boolean test(S3ObjectSummary summary) {
             long lastModified = summary.getLastModified().getTime();
             boolean applies = timeStamp >= lastModified;
             return applies;

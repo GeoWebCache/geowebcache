@@ -30,6 +30,9 @@ import org.geowebcache.io.Resource;
  * object with the data.
  */
 public class TileObject extends StorageObject implements Serializable{
+    /** serialVersionUID */
+    private static final long serialVersionUID = 2204318806003485110L;
+
     public static final String TYPE = "tile";
 
     Resource blob;
@@ -100,10 +103,18 @@ public class TileObject extends StorageObject implements Serializable{
         return this.gridSetId;
     }
 
+    /**
+     * May be null until this object has been handled by the BlobStore
+     * @return
+     */
     public String getParametersId() {
         return this.parameters_id;
     }
 
+    /**
+     * The BlobStore is responsible for setting this based on the value of {@link getParameters} 
+     * @param parameters_id
+     */
     public void setParametersId(String parameters_id) {
         this.parameters_id = parameters_id;
     }

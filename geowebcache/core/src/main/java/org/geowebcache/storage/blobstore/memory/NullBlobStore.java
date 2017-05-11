@@ -15,10 +15,14 @@
 package org.geowebcache.storage.blobstore.memory;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -107,7 +111,11 @@ public class NullBlobStore implements BlobStore {
         Properties properties = metadataMap.get(layerName);
         if (properties != null) {
             // Returns the property associated to the key
-            return (String) properties.get(key);
+            try {
+                return URLDecoder.decode((String) properties.get(key), "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                LOGGER.error(e.getLocalizedMessage(), e);
+            }
         }
         return null;
     }
@@ -135,8 +143,23 @@ public class NullBlobStore implements BlobStore {
         }
     }
     
-	@Override
-	public boolean layerExists(String layerName) {
-		return false;
-	}
+    @Override
+    public boolean layerExists(String layerName) {
+        return false;
+    }
+    
+    @Override
+    public boolean deleteByParametersId(String layerName, String parametersId)
+            throws StorageException {
+        return true;
+    }
+
+    @Override
+    public Set<Map<String, String>> getParameters(String layerName) {
+        return Collections.emptySet();
+    }
+
+    public Map<String,Optional<Map<String, String>>> getParametersMapping(String layerName) {
+        return Collections.emptyMap();
+    }
 }

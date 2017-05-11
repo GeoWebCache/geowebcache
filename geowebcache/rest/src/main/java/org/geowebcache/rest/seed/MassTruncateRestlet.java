@@ -22,11 +22,15 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.config.Configuration;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.rest.RestletException;
 import org.geowebcache.seed.MassTruncateRequest;
+import org.geowebcache.seed.TileBreeder;
+import org.geowebcache.seed.TruncateBboxRequest;
 import org.geowebcache.seed.TruncateLayerRequest;
+import org.geowebcache.seed.TruncateOrphansRequest;
+import org.geowebcache.seed.TruncateParametersRequest;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.restlet.data.MediaType;
@@ -42,9 +46,14 @@ public class MassTruncateRestlet extends GWCSeedingRestlet {
     private static Log log = LogFactory.getLog(MassTruncateRestlet.class);
 
     private StorageBroker broker;
-    private Configuration config;
+    private TileBreeder breeder;
     
-    static final Class<?>[] DEFAULT_REQUEST_TYPES = {TruncateLayerRequest.class};
+    static final Class<?>[] DEFAULT_REQUEST_TYPES = {
+            TruncateLayerRequest.class, 
+            TruncateParametersRequest.class,
+            TruncateOrphansRequest.class,
+            TruncateBboxRequest.class
+            };
 
     Class<?>[] requestTypes;
     
@@ -84,12 +93,14 @@ public class MassTruncateRestlet extends GWCSeedingRestlet {
     protected void handleRequest(Request req, Response resp, Object obj) {
         MassTruncateRequest mtr = (MassTruncateRequest) obj;
         try {
-            if(!mtr.doTruncate(broker, config)) {
+            if(!mtr.doTruncate(broker, breeder)) {
                 throw new RestletException("Truncation failed", Status.SERVER_ERROR_INTERNAL);
             }
         } catch (IllegalArgumentException e) {
             throw new RestletException(e.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
         } catch (StorageException e) {
+            throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL);
+        } catch (GeoWebCacheException e) {
             throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL);
         }
     }
@@ -98,14 +109,11 @@ public class MassTruncateRestlet extends GWCSeedingRestlet {
         this.broker = broker;
     }
     
-    public void setConfiguration(Configuration config) {
-        this.config = config;
+    
+    public void setTileBreeder(TileBreeder breeder) {
+        this.breeder = breeder;
     }
     
-    public Configuration getConfiguration() {
-        if(this.config==null) return this.xmlConfig;
-        return this.config;
-    }
 
     protected Class<?>[] getRequestTypes() {
         if(requestTypes==null) requestTypes=DEFAULT_REQUEST_TYPES;
