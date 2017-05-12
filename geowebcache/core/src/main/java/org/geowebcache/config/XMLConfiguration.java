@@ -431,7 +431,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
             xs.allowTypesByWildcard(new String[]{"org.geowebcache.**"});
         }
         
-        xs.setMode(XStream.NO_REFERENCES);
+        xs.setMode(XStream.ID_REFERENCES);
 
         xs.addDefaultImplementation(ArrayList.class, List.class);
 

@@ -677,5 +677,6 @@
 	<module>distributed</module>
     <module>s3storage</module>
     <module>sqlite</module>
+    <module>nestedstorage</module>
   </modules>
 </project>
