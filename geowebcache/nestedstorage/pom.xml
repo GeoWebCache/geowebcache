@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.geowebcache</groupId>
+    <artifactId>geowebcache</artifactId>
+    <version>1.12-SNAPSHOT</version>
+  </parent>
+  <groupId>org.geowebcache</groupId>
+  <artifactId>gwc-nestedstorage</artifactId>
+  <name>gwc-nestedstorage</name>
+  <url>http://geowebcache.org</url>
+  <dependencies>
+        <dependency>
+            <groupId>org.geowebcache</groupId>
+            <artifactId>gwc-core</artifactId>
+            <scope>compile</scope>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+  <description>A Module to allow you to configure geowebcache with a layered blobstorage configuration.  This allows you to make use of cheap/relatively fast local storage such as AWS ephemeral drives alongside scalable cheap persistent storage such as AWS S3.  </description>
+</project>
