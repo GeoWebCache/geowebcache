@@ -87,6 +87,8 @@ public class S3BlobStore implements BlobStore {
     private volatile boolean shutDown;
 
     private final S3Ops s3Ops;
+    
+    private CannedAccessControlList acl;
 
     public S3BlobStore(S3BlobStoreConfig config, TileLayerDispatcher layers,
             LockProvider lockProvider) throws StorageException {
@@ -100,6 +102,7 @@ public class S3BlobStore implements BlobStore {
         this.keyBuilder = new TMSKeyBuilder(prefix, layers);
 
         conn = config.buildClient();
+        acl = config.getAccessControlList();
 
         try {
             log.debug("Checking access rights to bucket " + bucketName);
@@ -168,7 +171,7 @@ public class S3BlobStore implements BlobStore {
 
         final ByteArrayInputStream input = toByteArray(blob);
         PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, input,
-                objectMetadata).withCannedAcl(CannedAccessControlList.PublicRead);
+                objectMetadata).withCannedAcl(acl);
 
         log.trace(log.isTraceEnabled() ? ("Storing " + key) : "");
         s3Ops.putObject(putObjectRequest);
