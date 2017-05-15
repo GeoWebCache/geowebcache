@@ -51,6 +51,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.legends.LegendRawInfo;
 import org.geowebcache.config.legends.LegendsRawInfo;
 import org.geowebcache.config.meta.ServiceInformation;
+import org.geowebcache.filter.parameters.FreeStringParameterFilter;
 import org.geowebcache.filter.parameters.NaiveWMSDimensionFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.StringParameterFilter;
@@ -89,6 +90,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
     private String vendorParameters = null;
 
+    private String cachedParameters = null;
+
     private boolean allowCacheBypass = false;
 
     private final HashMap<String, TileLayer> layers;
@@ -120,6 +123,12 @@ public class GetCapabilitiesConfiguration implements Configuration {
             this.allowCacheBypass = true;
         }
         log.info("Constructing from url " + url);
+    }
+
+    public GetCapabilitiesConfiguration(GridSetBroker gridSetBroker, String url, String mimeTypes,
+                                        String metaTiling, String vendorParameters, String cachedParameters, String allowCacheBypass) {
+        this(gridSetBroker, url, mimeTypes, metaTiling, vendorParameters, allowCacheBypass);
+        this.cachedParameters = cachedParameters;
     }
 
     /**
@@ -268,6 +277,23 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 for (Dimension dimension : layer.getDimensions().values()) {
                     Extent dimExtent = layer.getExtent(dimension.getName());
                     paramFilters.add(new NaiveWMSDimensionFilter(dimension, dimExtent));
+                }
+
+                if (this.cachedParameters != null && this.cachedParameters.length() != 0) {
+                    String[] cparams = this.cachedParameters.split("&");
+                    for (String cp : cparams) {
+                        if (cp.length() > 0) {
+                            String[] split = cp.split("=", 2);
+                            String key = split[0];
+                            String defaultValue = split[1];
+                            log.info(key + " and " + defaultValue);
+                            if (key.length() > 0) {
+                                paramFilters.add(
+                                    new FreeStringParameterFilter(key, defaultValue)
+                                );
+                            }
+                        }
+                    }
                 }
 
                 WMSLayer wmsLayer = null;

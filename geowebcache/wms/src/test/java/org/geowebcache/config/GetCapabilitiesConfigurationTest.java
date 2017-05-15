@@ -8,11 +8,14 @@ import static org.easymock.classextension.EasyMock.*;
 import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
+
 
 import org.easymock.Capture;
 import org.geotools.data.ows.*;
 import org.geotools.data.wms.WebMapServer;
+import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -21,7 +24,7 @@ import org.junit.Test;
 
 import com.google.common.collect.Sets;
 
-public class GetCapabilitiesConfigurationTest {
+    public class GetCapabilitiesConfigurationTest {
     
     @Before
     public void setUp() throws Exception {
@@ -32,6 +35,8 @@ public class GetCapabilitiesConfigurationTest {
         GridSetBroker broker = new GridSetBroker(false, false);
         String url = "http://test/wms";
         String mimeTypes = "image/png";
+        String vendorParameters = "map=/osgeo/mapserver/msautotest/world/world.map";
+        String cachedParameters = "angle=0";
         
         final WebMapServer server = createMock(WebMapServer.class);
         WMSCapabilities cap = createMock(WMSCapabilities.class);
@@ -40,8 +45,8 @@ public class GetCapabilitiesConfigurationTest {
         XMLConfiguration globalConfig = createMock(XMLConfiguration.class);
         Capture<TileLayer> layerCapture = new Capture<TileLayer>();
         
-        GetCapabilitiesConfiguration config = 
-                new GetCapabilitiesConfiguration(broker, url, mimeTypes, "3x3", "false"){
+        GetCapabilitiesConfiguration config =
+                new GetCapabilitiesConfiguration(broker, url, mimeTypes, "3x3", vendorParameters, cachedParameters, "false"){
 
                     @Override
                     WebMapServer getWMS() {
@@ -100,6 +105,18 @@ public class GetCapabilitiesConfigurationTest {
         assertThat(wmsLayer.getLegends().getLegendsRawInfo().get(0).getWidth(), is(50));
         assertThat(wmsLayer.getLegends().getLegendsRawInfo().get(0).getHeight(), is(100));
         assertThat(wmsLayer.getLegends().getLegendsRawInfo().get(0).getFormat(), is("image/gif"));
+
+        List<ParameterFilter> parameterFilters = wmsLayer.getParameterFilters();
+        List<String> filterKeys = new ArrayList<String>();
+        for (ParameterFilter filter : parameterFilters) {
+            filterKeys.add(filter.getKey());
+        }
+
+        List<String> expectedFilterKeys = new ArrayList<String>();
+        expectedFilterKeys.add("STYLES");
+        expectedFilterKeys.add("angle");
+
+        assertTrue(filterKeys.containsAll(expectedFilterKeys));
     }
     
 }

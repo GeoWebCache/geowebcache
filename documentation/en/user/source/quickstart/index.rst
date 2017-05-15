@@ -87,6 +87,23 @@ Replace:
    .. code-block:: xml
 
       <constructor-arg value="map=name&amp;otherkey=othervalue"/>
+	
+Cached vendor parameters
+~~~~~~~~~~~~~~~~~~~~~
+
+By default vendor parameters included in requests recieved by GeoWebCache are ignored. To pass the value of a vendor parameter onto geoserver, and cache the result seperately depending on the given value, set the sixth ``constructor-arg`` value.
+
+Replace:
+
+   .. code-block:: xml
+
+      <constructor-arg value=""/>
+
+   with:
+
+   .. code-block:: xml
+
+      <constructor-arg value="parameterkey=defaultvalue&amp;otherkey=otherdefaultvalue"/>
 
 Other image formats
 ~~~~~~~~~~~~~~~~~~~

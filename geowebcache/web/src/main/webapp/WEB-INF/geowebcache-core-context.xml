@@ -53,6 +53,11 @@
           to add any vendor specific parameter.
       </description>
     </constructor-arg>
+    <constructor-arg value="angle=0">
+      <description>
+        Cached parameters, requests will be cached separately based on the value of these filters. Given value after the '=' is the default.
+      </description>
+    </constructor-arg>
     <constructor-arg value="false">
       <description>Whether to allow cached=false to specificed for certain requests</description>
     </constructor-arg>
