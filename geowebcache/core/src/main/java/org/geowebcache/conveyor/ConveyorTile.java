@@ -243,6 +243,8 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
                 this.setCacheResult(CacheResult.MISS);
             }
 
+            log.info(this.toString() + " " + this.getCacheResult());
+
             return ret;
 
         } catch (StorageException se) {
