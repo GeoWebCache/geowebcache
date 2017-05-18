@@ -1,6 +1,6 @@
 package org.geowebcache.s3;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
@@ -21,5 +21,4 @@ public class S3BlobStoreConfigTest {
         config.setAccess("private");
         assertEquals(CannedAccessControlList.BucketOwnerFullControl, config.getAccessControlList());
     }
-
 }

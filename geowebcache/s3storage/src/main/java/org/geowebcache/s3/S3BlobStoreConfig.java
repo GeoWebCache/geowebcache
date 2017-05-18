@@ -56,6 +56,8 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
 
     private String awsSecretKey;
 
+    private String access = "public";
+
     private Integer maxConnections;
 
     private Boolean useHTTPS = true;
@@ -74,7 +76,14 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
 
     private Boolean useGzip;
 
-    private CannedAccessControlList accessControlList;
+    
+    protected S3BlobStoreConfig() {
+        super();
+    }
+    
+    public S3BlobStoreConfig(String id) {
+        super(id);
+    }
 
     /**
      * @return the name of the AWS S3 bucket where to store tiles
@@ -276,6 +285,12 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
      * @return public or private access
      */
     public CannedAccessControlList getAccessControlList() {
+        CannedAccessControlList accessControlList;
+        if(access.equalsIgnoreCase("private")) {
+            accessControlList = CannedAccessControlList.BucketOwnerFullControl;
+        } else {
+            accessControlList = CannedAccessControlList.PublicRead;
+        }
         return accessControlList;
     }
 
@@ -285,11 +300,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
      * @param access whether access is private or public
      */
     public void setAccess(String access) {
-        if(access.equalsIgnoreCase("private")) {
-            accessControlList = CannedAccessControlList.BucketOwnerFullControl;
-        } else {
-            accessControlList = CannedAccessControlList.PublicRead;
-        }
+        this.access = access;
     }
 
     /**

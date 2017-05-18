@@ -193,6 +193,7 @@ Configuration example:
       <prefix>test-cache</prefix>
       <awsAccessKey>putYourActualAccessKeyHere</awsAccessKey>
       <awsSecretKey>putYourActualSecretKeyHere</awsSecretKey>
+      <access>private</access>
       <maxConnections>50</maxConnections>
       <useHTTPS>true</useHTTPS>
       <proxyDomain></proxyDomain>
@@ -212,6 +213,7 @@ Properties:
   prefix is "mycache", all tiles will be stored under ``bucket.gwc.example/mycache/{layer name}`` instead of ``bucket.gwc.example/{layer name}``.
 * **awsAccessKey**: Mandatory. The public access key the client uses to connect to S3.
 * **awsSecretKey**: Mandatory. The secret key the client uses to connect to S3.
+* **access**: Optional.  Whether direct access in S3 will be readable by the public or only to the owner of the bucket.  Defaults to public, set to private to disable public access.  
 * **maxConnections**: Optional, default: ``50``. Maximum number of concurrent HTTP connections the S3 client may use.
 * **useHTTPS**: Optional, default: ``true``. Whether to use HTTPS when connecting to S3 or not.
 * **proxyDomain**: Optional. The Windows domain name for configuring an NTLM proxy. If you are not using a Windows NTLM proxy, you don't need to set this property.
