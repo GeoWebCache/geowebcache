@@ -131,6 +131,14 @@ public class TileObject extends StorageObject implements Serializable{
         return layer_name;
     }
 
+    public void setOutputFolder(String outputFolder) {
+        this.outputFolder = outputFolder;
+    }
+    public String getOutputFolder() {
+        return outputFolder;
+    }
+    private String outputFolder = null;
+    
     public Map<String, String> getParameters() {
         return parameters;
     }

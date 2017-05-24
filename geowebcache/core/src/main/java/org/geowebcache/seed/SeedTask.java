@@ -135,6 +135,8 @@ class SeedTask extends GWCTask {
             ConveyorTile tile = new ConveyorTile(storageBroker, layerName, tr.getGridSetId(), gridLoc,
                     tr.getMimeType(), fullParameters, null, null);
 
+            tile.getStorageObject().setOutputFolder(tr.getOutputFolder());
+            
             for (int fetchAttempt = 0; fetchAttempt <= tileFailureRetryCount; fetchAttempt++) {
                 try {
                     checkInterrupted();

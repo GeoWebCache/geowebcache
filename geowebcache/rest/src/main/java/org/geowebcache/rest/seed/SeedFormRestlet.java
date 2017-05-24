@@ -188,6 +188,8 @@ public class SeedFormRestlet extends GWCRestlet {
 
         makeBboxFields(doc);
 
+        makeOptionalOutputFolder(doc);
+        
         makeSubmit(doc);
 
         makeFormFooter(doc);
@@ -319,6 +321,14 @@ public class SeedFormRestlet extends GWCRestlet {
 
     }
 
+    private void makeOptionalOutputFolder(StringBuilder doc) {
+        
+        doc.append("<tr><td valign=\"top\">Output cache path:</td><td>\n");
+        makeTextInput(doc, "OutputFolder", 64);
+        doc.append("</br>These are optional.");
+        doc.append("</td></tr>\n");                
+    }
+    
     private void makeTextInput(StringBuilder doc, String id, int size) {
         doc.append("<input name=\"" + id + "\" type=\"text\" size=\"" + size + "\" />\n");
     }
@@ -767,6 +777,9 @@ public class SeedFormRestlet extends GWCRestlet {
 
         TileRange tr = TileBreeder.createTileRange(sr, tl);
 
+        String outputFolder = form.getFirst("OutputFolder").getValue();        
+        tr.setOutputFolder(outputFolder);
+        
         GWCTask[] tasks;
         try {
             tasks = seeder.createTasks(tr, tl, sr.getType(), sr.getThreadCount(),

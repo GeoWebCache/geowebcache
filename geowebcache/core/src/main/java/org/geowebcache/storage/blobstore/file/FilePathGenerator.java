@@ -75,7 +75,12 @@ public class FilePathGenerator {
 
         String fileExtension = mimeType.getFileExtension();
 
-        path.append(cacheRoot);
+        // Override to customize the rootPath by one optional user directory.
+        String pathRoot = cacheRoot;
+        String optionalPath = tile.getOutputFolder();
+        if (optionalPath!=null && optionalPath.length()>0) pathRoot = optionalPath;
+        path.append(pathRoot);
+        
         path.append(File.separatorChar);
         appendFiltered(tile.getLayerName(), path);
         path.append(File.separatorChar);
