@@ -702,6 +702,9 @@ public abstract class TileLayer {
                                 tileProto.getGridSetId(), tileProto.getMimeType().getFormat(),
                                 tileProto.getParameters(), resource);
                         tile.setCreated(requestTime);
+                        
+                        tile.setProfile(tileProto.getStorageObject().getProfile());
+                        tile.setOutputFolder(tileProto.getStorageObject().getOutputFolder());
 
                         try {
                             if (tileProto.isMetaTileCacheOnly()) {

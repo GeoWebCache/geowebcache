@@ -188,6 +188,10 @@ public class SeedFormRestlet extends GWCRestlet {
 
         makeBboxFields(doc);
 
+        makeOutputFormat(doc);
+        
+        makeOptionalOutputFolder(doc);
+        
         makeSubmit(doc);
 
         makeFormFooter(doc);
@@ -319,6 +323,25 @@ public class SeedFormRestlet extends GWCRestlet {
 
     }
 
+    private void makeOutputFormat(StringBuilder doc) 
+    {
+        Map<String,String> profileValues = new TreeMap<String,String>();
+        profileValues.put("GWC",     "GWC"    );
+        profileValues.put("RESTful", "RESTful");
+        
+        doc.append("<tr><td valign=\"top\">Profile:</td><td>\n");
+        makePullDown(doc, "Profile", profileValues, "GWC");
+        doc.append("</td></tr>\n");
+    }
+    
+    private void makeOptionalOutputFolder(StringBuilder doc) {
+        
+        doc.append("<tr><td valign=\"top\">Output cache path:</td><td>\n");
+        makeTextInput(doc, "OutputFolder", 64);
+        doc.append("</br>These are optional.");
+        doc.append("</td></tr>\n");                
+    }
+    
     private void makeTextInput(StringBuilder doc, String id, int size) {
         doc.append("<input name=\"" + id + "\" type=\"text\" size=\"" + size + "\" />\n");
     }
@@ -767,6 +790,11 @@ public class SeedFormRestlet extends GWCRestlet {
 
         TileRange tr = TileBreeder.createTileRange(sr, tl);
 
+        String outputFolder = form.getFirst("OutputFolder").getValue();        
+        tr.setOutputFolder(outputFolder);        
+        String profile = form.getFirst("Profile").getValue();
+        tr.setProfile(profile);
+        
         GWCTask[] tasks;
         try {
             tasks = seeder.createTasks(tr, tl, sr.getType(), sr.getThreadCount(),

@@ -157,6 +157,28 @@ public class TileRange {
         return parameters;
     }
 
+    /**
+     * @return the Profile
+     */
+    public void setProfile(String profile) {
+        this.profile = profile;
+    }
+    public String getProfile() {
+        return profile;
+    }
+    private String profile = null;
+    
+    /**
+     * @return the OutputFolder
+     */
+    public void setOutputFolder(String outputFolder) {
+        this.outputFolder = outputFolder;
+    }
+    public String getOutputFolder() {
+        return outputFolder;
+    }
+    private String outputFolder = null;
+    
     public long[] rangeBounds(final int zoomLevel) {
         if (zoomLevel < zoomStart) {
             throw new IllegalArgumentException(zoomLevel + " < zoomStart (" + zoomStart + ")");

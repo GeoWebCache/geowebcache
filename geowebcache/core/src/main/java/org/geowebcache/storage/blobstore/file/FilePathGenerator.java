@@ -75,7 +75,53 @@ public class FilePathGenerator {
 
         String fileExtension = mimeType.getFileExtension();
 
-        path.append(cacheRoot);
+        // Override to customize the rootPath by one optional user directory.
+        String pathRoot = cacheRoot;
+        String optionalPath = tile.getOutputFolder();
+        if (optionalPath!=null && optionalPath.length()>0) pathRoot = optionalPath;
+
+        // --------------------------------------------------------------------------
+        // Other output formats: (RESTful...)
+        
+        Map<String,String> parameters2 = tile.getParameters();
+        
+        String profile = tile.getProfile();
+        if (profile==null || profile.length()==0) profile = "GWC";
+       	        
+        if (profile.equalsIgnoreCase("RESTful"))
+        {
+            long y_inverse = (long)Math.pow(2,z) - (y+1);
+            y = y_inverse;
+       	    
+            path.append(pathRoot);
+            path.append(File.separatorChar);
+            appendFiltered(tile.getLayerName(), path);
+            path.append(File.separatorChar);
+            
+            String styleName = "default";
+            if (parameters2!=null && parameters2.containsKey("STYLES")) styleName = parameters2.get("STYLES");   
+            appendFiltered(styleName, path);
+            path.append(File.separatorChar);
+            
+            appendFiltered(tile.getGridSetId(), path);
+            path.append(File.separatorChar);
+            path.append(z);
+            
+            path.append(File.separatorChar);
+            path.append(y);
+            path.append(File.separatorChar);
+            path.append(x);
+            path.append('.');
+            path.append(fileExtension);
+
+            File tileFile = new File(path.toString());
+            return tileFile;
+        }
+       	
+        path.append(pathRoot);
+       	
+        // --------------------------------------------------------------------------
+       	                
         path.append(File.separatorChar);
         appendFiltered(tile.getLayerName(), path);
         path.append(File.separatorChar);
