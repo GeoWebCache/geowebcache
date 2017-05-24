@@ -93,7 +93,8 @@ public class TileRange {
             return true;
         }
 
-        if (z >= getZoomStart() && z <= getZoomStop()) {
+        if ((getZoomStart() == -1 && getZoomStop() == -1) 
+                || (z >= getZoomStart() && z <= getZoomStop())) {
 
             long[] rB = rangeBounds((int) z);
 
@@ -158,10 +159,10 @@ public class TileRange {
     }
 
     public long[] rangeBounds(final int zoomLevel) {
-        if (zoomLevel < zoomStart) {
+        if (zoomStart != -1 && zoomLevel < zoomStart) {
             throw new IllegalArgumentException(zoomLevel + " < zoomStart (" + zoomStart + ")");
         }
-        if (zoomLevel > zoomStop) {
+        if (zoomStop != -1 && zoomLevel > zoomStop) {
             throw new IllegalArgumentException(zoomLevel + " > zoomStop (" + zoomStop + ")");
         }
         long[] zlevelBounds = rangeBounds.get(Integer.valueOf(zoomLevel));
