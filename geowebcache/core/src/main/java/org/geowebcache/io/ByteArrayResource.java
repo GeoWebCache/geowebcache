@@ -165,6 +165,10 @@ public class ByteArrayResource implements Resource, Serializable {
         length = 0;
     }
 
+    public void setLastModified(long lastModified) {
+        this.lastModified = lastModified;
+    }
+
     /**
      * @see org.geowebcache.io.Resource#getOutputStream()
      */
