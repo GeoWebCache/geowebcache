@@ -466,7 +466,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     private TileObject getByteResourceTile(TileObject obj) throws StorageException {
         // Get TileObject resource
         Resource blob = obj.getBlob();
-        final Resource finalBlob;
+        final ByteArrayResource finalBlob;
         // If it is a ByteArrayResource, the result is simply copied
         if (obj.getBlob() instanceof ByteArrayResource) {
             if (LOG.isDebugEnabled()) {
@@ -490,6 +490,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
             }
             finalBlob = new ByteArrayResource(bOut.toByteArray());
         }
+        finalBlob.setLastModified(blob.getLastModified());
         // Creation of a new Resource
         TileObject cached = TileObject.createCompleteTileObject(obj.getLayerName(), obj.getXYZ(),
                 obj.getGridSetId(), obj.getBlobFormat(), obj.getParameters(), finalBlob);

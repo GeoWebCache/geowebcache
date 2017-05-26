@@ -201,6 +201,43 @@ public class MemoryBlobStoreTest {
         TileObject to5 = cache.getTileObj(to);
         assertNull(to5);
     }
+    
+    @Test
+    public void testLastModifiedFromFilesystem() throws Exception {
+        // Add a fileblobstore to the memory blobstore
+        BlobStore fbs = setup();
+        cache.clear();
+
+        MemoryBlobStore mbs = new MemoryBlobStore();
+        mbs.setStore(fbs);
+        mbs.setCacheProvider(cache);
+
+        // Put a TileObject
+        Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
+        long[] xyz = { 1L, 2L, 3L };
+        Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put("a", "x");
+        parameters.put("b", "ø");
+        TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, "EPSG:4326",
+                "image/jpeg", parameters, bytes);
+
+        mbs.put(to);
+        mbs.clear();
+
+        // Try to get the same TileObject twice with a cache cleanup in the middle
+        TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326",
+                "image/jpeg", parameters);
+        mbs.get(to2);
+        mbs.clear();
+        // wait a second to ensure we are not getting the same time because the machine is just that fast
+        Thread.sleep(1000); 
+        TileObject to3 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326",
+                "image/jpeg", parameters);
+        mbs.get(to3);
+        
+        // check the last modified is the same
+        assertEquals(to2.getCreated(), to3.getCreated());
+    }
 
     /***
      * Private method for creating a {@link FileBlobStore}
