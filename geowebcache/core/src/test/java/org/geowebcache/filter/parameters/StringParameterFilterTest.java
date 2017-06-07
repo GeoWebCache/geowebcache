@@ -173,10 +173,10 @@ public class StringParameterFilterTest {
     
     @Test
     public void testToXMLNullNormalizer() throws Exception {
-        XMLAssert.assertXMLEqual("<stringParameterFilter>\n"+
+        XMLAssert.assertXMLEqual("<stringParameterFilter id=\"1\">\n"+
                 "  <key>TEST</key>\n"+
                 "  <defaultValue>Default</defaultValue>\n"+
-                "  <values>\n"+
+                "  <values id=\"2\">\n"+
                 "    <string>foo</string>\n"+
                 "    <string>Bar</string>\n"+
                 "    <string>BAZ</string>\n"+
@@ -187,11 +187,11 @@ public class StringParameterFilterTest {
     @Test
     public void testToXMLDefaultNormalizer() throws Exception {
         filter.setNormalize(new CaseNormalizer());
-        XMLAssert.assertXMLEqual("<stringParameterFilter>\n"+
+        XMLAssert.assertXMLEqual("<stringParameterFilter id=\"1\">\n"+
                 "  <key>TEST</key>\n"+
                 "  <defaultValue>Default</defaultValue>\n"+
-                "  <normalize/>\n"+
-                "  <values>\n"+
+                "  <normalize id=\"2\"/>\n"+
+                "  <values id=\"3\">\n"+
                 "    <string>foo</string>\n"+
                 "    <string>Bar</string>\n"+
                 "    <string>BAZ</string>\n"+
@@ -202,13 +202,13 @@ public class StringParameterFilterTest {
     @Test
     public void testToXMLNoneNormalizer() throws Exception {
         filter.setNormalize(new CaseNormalizer(Case.NONE));
-        XMLAssert.assertXMLEqual("<stringParameterFilter>\n"+
+        XMLAssert.assertXMLEqual("<stringParameterFilter id=\"1\">\n"+
                                  "  <key>TEST</key>\n"+
                                  "  <defaultValue>Default</defaultValue>\n"+
-                                 "  <normalize>\n"+
+                                 "  <normalize id=\"2\">\n"+
                                  "    <case>NONE</case>\n"+
                                  "  </normalize>\n"+
-                                 "  <values>\n"+
+                                 "  <values id=\"3\">\n"+
                                  "    <string>foo</string>\n"+
                                  "    <string>Bar</string>\n"+
                                  "    <string>BAZ</string>\n"+
@@ -219,14 +219,14 @@ public class StringParameterFilterTest {
     @Test
     public void testToXMLUpperCanadianEnglish() throws Exception {
         filter.setNormalize(new CaseNormalizer(Case.UPPER, Locale.CANADA));
-        XMLAssert.assertXMLEqual("<stringParameterFilter>\n"+
+        XMLAssert.assertXMLEqual("<stringParameterFilter id=\"1\">\n"+
                                  "  <key>TEST</key>\n"+
                                  "  <defaultValue>Default</defaultValue>\n"+
-                                 "  <normalize>\n"+
+                                 "  <normalize id=\"2\">\n"+
                                  "    <case>UPPER</case>\n"+
-                                 "    <locale>en_CA</locale>\n"+
+                                 "    <locale id=\"3\">en_CA</locale>\n"+
                                  "  </normalize>\n"+
-                                 "  <values>\n"+
+                                 "  <values id=\"4\">\n"+
                                  "    <string>foo</string>\n"+
                                  "    <string>Bar</string>\n"+
                                  "    <string>BAZ</string>\n"+

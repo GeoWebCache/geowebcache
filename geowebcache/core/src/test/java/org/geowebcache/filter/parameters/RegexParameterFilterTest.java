@@ -173,7 +173,7 @@ public class RegexParameterFilterTest {
     }
     @Test
     public void testToXMLNullNormalizer() throws Exception {
-        XMLAssert.assertXMLEqual("<regexParameterFilter>\n"+
+        XMLAssert.assertXMLEqual("<regexParameterFilter id=\"1\">\n"+
                 "  <key>TEST</key>\n"+
                 "  <defaultValue>Default</defaultValue>\n"+
                 "  <regex>foo|Bar|BAZ</regex>\n"+
@@ -183,10 +183,10 @@ public class RegexParameterFilterTest {
     @Test
     public void testToXMLDefaultNormalizer() throws Exception {
         filter.setNormalize(new CaseNormalizer());
-        XMLAssert.assertXMLEqual("<regexParameterFilter>\n"+
+        XMLAssert.assertXMLEqual("<regexParameterFilter id=\"1\">\n"+
                 "  <key>TEST</key>\n"+
                 "  <defaultValue>Default</defaultValue>\n"+
-                "  <normalize/>\n"+
+                "  <normalize id=\"2\"/>\n"+
                 "  <regex>foo|Bar|BAZ</regex>\n"+
                 "</regexParameterFilter>", xs.toXML(filter));
     }
@@ -194,10 +194,10 @@ public class RegexParameterFilterTest {
     @Test
     public void testToXMLNoneNormalizer() throws Exception {
         filter.setNormalize(new CaseNormalizer(Case.NONE));
-        XMLAssert.assertXMLEqual("<regexParameterFilter>\n"+
+        XMLAssert.assertXMLEqual("<regexParameterFilter id=\"1\">\n"+
                                  "  <key>TEST</key>\n"+
                                  "  <defaultValue>Default</defaultValue>\n"+
-                                 "  <normalize>\n"+
+                                 "  <normalize id=\"2\">\n"+
                                  "    <case>NONE</case>\n"+
                                  "  </normalize>\n"+
                                  "  <regex>foo|Bar|BAZ</regex>\n"+
@@ -207,12 +207,12 @@ public class RegexParameterFilterTest {
     @Test
     public void testToXMLUpperCanadianEnglish() throws Exception {
         filter.setNormalize(new CaseNormalizer(Case.UPPER, Locale.CANADA));
-        XMLAssert.assertXMLEqual("<regexParameterFilter>\n"+
+        XMLAssert.assertXMLEqual("<regexParameterFilter id=\"1\">\n"+
                                  "  <key>TEST</key>\n"+
                                  "  <defaultValue>Default</defaultValue>\n"+
-                                 "  <normalize>\n"+
+                                 "  <normalize id=\"2\">\n"+
                                  "    <case>UPPER</case>\n"+
-                                 "    <locale>en_CA</locale>\n"+
+                                 "    <locale id=\"3\">en_CA</locale>\n"+
                                  "  </normalize>\n"+
                                  "  <regex>foo|Bar|BAZ</regex>\n"+
                                  "</regexParameterFilter>", xs.toXML(filter));

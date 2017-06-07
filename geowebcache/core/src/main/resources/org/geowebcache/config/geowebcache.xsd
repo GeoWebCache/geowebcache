@@ -137,6 +137,7 @@
             <xs:sequence>
               <xs:element ref="gwc:blobstore" minOccurs="0" maxOccurs="unbounded"/>
             </xs:sequence>
+            <xs:attribute name="id" type="xs:string"></xs:attribute>
           </xs:complexType>
         </xs:element>
         
@@ -151,6 +152,7 @@
             <xs:sequence>
               <xs:element name="gridSet" type="gwc:GridSet" minOccurs="0" maxOccurs="unbounded" />
             </xs:sequence>
+            <xs:attribute name="id" type="xs:string"></xs:attribute>
           </xs:complexType>
         </xs:element>
         <xs:element name="layers">
@@ -165,6 +167,7 @@
               <xs:element name="wmsLayer" type="gwc:WmsLayer" />
               <xs:element ref="gwc:arcgisLayer" />
             </xs:choice>
+            <xs:attribute name="id" type="xs:string"></xs:attribute>
           </xs:complexType>
         </xs:element>	        
       	<xs:element name="fullWMS" type="xs:boolean" minOccurs="0">
@@ -175,6 +178,7 @@
            </xs:annotation>
         </xs:element>
       </xs:sequence>
+      <xs:attribute name="id" type="xs:string"></xs:attribute>
     </xs:complexType>
   </xs:element>
 
@@ -228,6 +232,7 @@
             <xs:element name="fileSystemBlockSize" type="xs:positiveInteger" minOccurs="0" maxOccurs="1" nillable="true">
             </xs:element>
           </xs:sequence>
+          <xs:attribute name="id" type="xs:string"></xs:attribute>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -614,8 +619,6 @@
           <xs:element name="wmsVersion" minOccurs="0">
             <xs:annotation>
               <xs:documentation xml:lang="en">
-                The VERSION parameter sent to the WMS backend.
-                The default is 1.1.1
               </xs:documentation>
             </xs:annotation>
             <xs:simpleType>
@@ -725,6 +728,7 @@
             </xs:annotation>
           </xs:element>
         </xs:sequence>
+      <xs:attribute name="id" type="xs:string"></xs:attribute>
      </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -839,12 +843,14 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="MimeFormats">
     <xs:sequence>
       <xs:element name="string" type="xs:string" minOccurs="1" maxOccurs="unbounded" />
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="Srs">
@@ -857,6 +863,7 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="GridSet">
@@ -1022,12 +1029,14 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="GridSubsets">
     <xs:sequence>
       <xs:element name="gridSubset" type="gwc:GridSubset" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="GridSubset">
@@ -1092,30 +1101,36 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="Bounds">
     <xs:sequence>
       <xs:element name="coords" type="gwc:coords" />
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="coords">
     <xs:sequence>
       <xs:element name="double" type="xs:double" minOccurs="4" maxOccurs="4" />
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="WmsUrl">
     <xs:sequence>
       <xs:element name="string" type="xs:string" minOccurs="1" maxOccurs="unbounded" />
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="MetaWidthHeight">
     <xs:sequence>
       <xs:element name="int" type="xs:integer" minOccurs="2" maxOccurs="2" />
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="ParameterFilters">
@@ -1144,6 +1159,7 @@
         </xs:element>
       </xs:choice>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="RegexParameterFilter">
@@ -1188,6 +1204,7 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="FloatParameterFilter">
@@ -1236,6 +1253,7 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="IntegerParameterFilter">
@@ -1325,6 +1343,7 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="CaseNormalize">
@@ -1350,24 +1369,28 @@
     <xs:sequence>
       <xs:element name="double" type="xs:double" minOccurs="1" maxOccurs="unbounded" />
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="FloatList">
     <xs:sequence>
       <xs:element name="float" type="xs:float" minOccurs="1" maxOccurs="unbounded" />
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="IntegerList">
     <xs:sequence>
       <xs:element name="int" type="xs:integer" minOccurs="1" maxOccurs="unbounded" />
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="StringList">
     <xs:sequence>
       <xs:element name="string" type="xs:string" minOccurs="1" maxOccurs="unbounded" />
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="formatModifiers">
@@ -1381,6 +1404,7 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="FormatModifier">
@@ -1443,6 +1467,7 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="RequestFilters">
@@ -1481,6 +1506,7 @@
         </xs:annotation>
       </xs:element>
     </xs:choice>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="circularExtentFilter">
@@ -1495,6 +1521,7 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="WmsRasterFilter">
@@ -1596,6 +1623,7 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="FileRasterFilter">
@@ -1689,6 +1717,7 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="ExpireList">
@@ -1703,11 +1732,13 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="ExpirationRule">
     <xs:attribute name="minZoom" type="xs:int" />
     <xs:attribute name="expiration" type="xs:int" />
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="DEPRECATEDgrids">
@@ -1942,6 +1973,7 @@
       </xs:element>
     </xs:sequence>
 
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="KeywordsType">
@@ -1954,6 +1986,7 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="ServiceProviderType">
@@ -1980,6 +2013,7 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="ServiceContactType">
@@ -2062,6 +2096,7 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
   <xs:complexType name="legendType" mixed="true">
     <xs:sequence>
@@ -2154,5 +2189,6 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="id" type="xs:string"></xs:attribute>
   </xs:complexType>
 </xs:schema>

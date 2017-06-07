@@ -119,10 +119,10 @@ public class IntegerParameterFilterTest {
     
     @Test
     public void testToXML() throws Exception {
-        XMLAssert.assertXMLEqual("<integerParameterFilter>\n"+
+        XMLAssert.assertXMLEqual("<integerParameterFilter id=\"1\">\n"+
                 "  <key>TEST</key>\n"+
                 "  <defaultValue>Default</defaultValue>\n"+
-                "  <values>\n"+
+                "  <values id=\"2\">\n"+
                 "    <int>42</int>\n"+
                 "    <int>2</int>\n"+
                 "    <int>0</int>\n"+

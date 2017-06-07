@@ -110,10 +110,10 @@ public class FloatParameterFilterTest {
     
     @Test
     public void testToXML() throws Exception {
-        XMLAssert.assertXMLEqual("<floatParameterFilter>\n"+
+        XMLAssert.assertXMLEqual("<floatParameterFilter id=\"1\">\n"+
                 "  <key>TEST</key>\n"+
                 "  <defaultValue>Default</defaultValue>\n"+
-                "  <values>\n"+
+                "  <values id=\"2\">\n"+
                 "    <float>42.0</float>\n"+
                 "    <float>6.283</float>\n"+
                 "    <float>-17.5</float>\n"+
