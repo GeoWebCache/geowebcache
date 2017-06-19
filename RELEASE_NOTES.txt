@@ -1,3 +1,18 @@
+GeoWebCache 1.10.3 (2017-06-19)
+-------------------------------
+
+Maintenance Release of GeoWebCache 1.10 series
+
+Improvements:
++++++++++++++
+- JT Utilities library updated to 1.0.13
+
+Fixes:
+++++++
+- MemoryBlobStore fails to preserve the delegate store last modified date, breaking If-Modified-Since
+- Use correct value for timeout between requests to back endwhile seeding
+
+
 GeoWebCache 1.10.2 (2017-02-20)
 -------------------------------
 
