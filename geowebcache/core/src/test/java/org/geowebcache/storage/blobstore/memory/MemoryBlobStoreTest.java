@@ -29,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
+import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.StorageBrokerTest;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
