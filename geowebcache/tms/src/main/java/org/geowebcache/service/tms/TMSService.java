@@ -19,6 +19,10 @@ package org.geowebcache.service.tms;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,10 +34,12 @@ import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.service.HttpErrorCodeException;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.stats.RuntimeStats;
@@ -49,14 +55,12 @@ public class TMSService extends Service {
     private StorageBroker sb;
 
     private TileLayerDispatcher tld;
-    
-    private GridSetBroker gsb;
-    
+
     private RuntimeStats stats;
 
-    private URLMangler urlMangler = new NullURLMangler();
-    
     private GeoWebCacheDispatcher controller = null;
+
+    private TMSDocumentFactory tmsFactory;
 
     /**
      * Protected no-argument constructor to allow run-time instrumentation
@@ -67,88 +71,130 @@ public class TMSService extends Service {
 
     public TMSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
             RuntimeStats stats, URLMangler urlMangler, GeoWebCacheDispatcher controller) {
+        this (sb, stats, controller, new TMSDocumentFactory(tld, gsb, urlMangler));
+    }
+
+    public TMSService(StorageBroker sb, RuntimeStats stats, GeoWebCacheDispatcher controller,
+            TMSDocumentFactory tmsFactory) {
         super(SERVICE_TMS);
         this.sb = sb;
-        this.tld = tld;
-        this.gsb = gsb;
         this.stats = stats;
-        this.urlMangler = urlMangler;
         this.controller = controller;
+        this.tmsFactory = tmsFactory;
+        if (tmsFactory == null) {
+            throw new IllegalArgumentException("Specified TMSFactory should not be null ");
+        }
+        this.tld = tmsFactory.tld;
     }
-    
+
     public TMSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
             RuntimeStats stats) {
-        super(SERVICE_TMS);
-        this.sb = sb;
-        this.tld = tld;
-        this.gsb = gsb;
-        this.stats = stats;
+        this(sb, tld, gsb, stats, new NullURLMangler(), null);
     }
     
     @Override
     public ConveyorTile getConveyor(HttpServletRequest request,
             HttpServletResponse response) throws GeoWebCacheException {
-
-        // get all elements of the pathInfo after the leading "/tms/1.0.0/" part.
-        String pathInfo = request.getPathInfo();
-        pathInfo = pathInfo.substring(pathInfo.indexOf("tms/1.0.0"));
-        String[] params = pathInfo.split("/");
-        // {"tms", "1.0.0", "img states@EPSG:4326", ... } 
-        
-        int paramsLength = params.length;
-        
-        if(params.length < 4) {
+        final String pathInfo = request.getPathInfo();
+        Optional<Map<String, String>> possibleSplit = splitParams(request);
+        if(possibleSplit.isPresent()) {
+            Map<String, String> split = possibleSplit.get();
+            long[] gridLoc = new long[3];
+            try {
+                gridLoc[0] = Integer.parseInt(split.get("x"));
+                gridLoc[1] = Integer.parseInt(split.get("y"));
+                gridLoc[2] = Integer.parseInt(split.get("z"));
+            } catch (NumberFormatException nfe) {
+                throw new ServiceException("Unable to parse number " + nfe.getMessage() + " from " + pathInfo);
+            }
+            String layerId = split.get("layerId");
+            
+            String gridSetId = split.get("gridSetId");
+            if(Objects.isNull(gridSetId)) {
+                gridSetId = tld.getTileLayer(layerId)
+                                .getGridSubsets().iterator().next();
+            }
+            MimeType mimeType = null;
+            String fileExtension = split.get("fileExtension");
+            try {
+                mimeType = MimeType.createFromExtension(fileExtension);
+                if (mimeType == null) {
+                    throw new HttpErrorCodeException(400, "Unsupported format: " + fileExtension);
+                }
+            } catch (MimeException me) {
+                throw new ServiceException("Unable to determine requested format based on extension "
+                        + fileExtension);
+            }
+            try {
+                TileLayer tileLayer = tld.getTileLayer(layerId);
+                GridSubset gridSubset = tileLayer.getGridSubset(gridSetId);
+                if (gridSubset == null) {
+                    throw new HttpErrorCodeException(400, "Unsupported gridset: " + gridSetId);
+                }
+                gridSubset.checkCoverage(gridLoc);
+            } catch (OutsideCoverageException e) {
+                throw new HttpErrorCodeException(404, e.getMessage(), e);
+            } catch (GeoWebCacheException e) {
+                throw new HttpErrorCodeException(400, e.getMessage(), e);
+            }
+            ConveyorTile ret = new ConveyorTile(sb, layerId, gridSetId, gridLoc, mimeType, null, request, response);
+            return ret;
+        } else {
             // Not a tile request, lets pass it back out
             ConveyorTile tile = new ConveyorTile(sb, null, request, response);
             tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
             return tile;
         }
+    }
+    
+    /**
+     * Split the TMS parameters out of the given request
+     * @param request
+     * @return A map of the parameters with keys {@literal "layerId"}, {@literal "gridSetId"},
+     * {@literal "x"}, {@literal "y"}, {@literal "z"}, and {@literal "fileExtension"}.  Optionally
+     * also {@literal "gridSetId"} and {@literal "format"}.  Returns an empty Optional if it can not
+     * fill the mandatory entries
+     */
+    public static Optional<Map<String,String>> splitParams(HttpServletRequest request) {
         
-        long[] gridLoc = new long[3];
+        // get all elements of the pathInfo after the leading "/tms/1.0.0/" part.
+        String pathInfo = request.getPathInfo();
+        pathInfo = pathInfo.substring(pathInfo.indexOf(TMSDocumentFactory.TILEMAPSERVICE_LEADINGPATH));
+        String[] params = pathInfo.split("/");
+        // {"tms", "1.0.0", "img states@EPSG:4326", ... } 
+        
+        int paramsLength = params.length;
+        
+        Map<String, String> parsed = new HashMap<>();
+        
+        if(params.length < 4) {
+            return Optional.empty();
+        }
         
         String[] yExt = params[paramsLength - 1].split("\\.");
         
-        try {
-            gridLoc[0] = Integer.parseInt(params[paramsLength - 2]);
-            gridLoc[1] = Integer.parseInt(yExt[0]);
-            gridLoc[2] = Integer.parseInt(params[paramsLength - 3]);
-        } catch (NumberFormatException nfe) {
-            throw new ServiceException("Unable to parse number " + nfe.getMessage() + " from " + pathInfo);
-        }
-
-        String layerId;
-        String gridSetId;
+        parsed.put("x", params[paramsLength - 2]);
+        parsed.put("y", yExt[0]);
+        parsed.put("z", params[paramsLength - 3]);
         
-        // For backwards compatibility, we'll look for @s and use defaults if not found
         String layerNameAndSRS = params[2];
         String[] lsf = ServletUtils.URLDecode(layerNameAndSRS, request.getCharacterEncoding()).split("@");
-        if(lsf.length < 3) {
-            layerId = lsf[0];
-            TileLayer layer = tld.getTileLayer(layerId);
-            gridSetId = layer.getGridSubsets().iterator().next();
-        } else {
-           layerId = lsf[0];
-           gridSetId = lsf[1];
-           // We don't actually care about the format, we'll pick it from the extension
+        parsed.put("layerId", lsf[0]);
+        if(lsf.length >= 3) {
+           parsed.put("gridSetId", lsf[1]);
+           parsed.put("format", lsf[2]);
         }
-
-        MimeType mimeType = null;
-        try {
-            mimeType = MimeType.createFromExtension(yExt[1]);
-        } catch (MimeException me) {
-            throw new ServiceException("Unable to determine requested format based on extension " + yExt[1]);
-        }
-
-        ConveyorTile ret = new ConveyorTile(sb, layerId, gridSetId, gridLoc, mimeType, null, request, response);
         
-        return ret;
+        parsed.put("fileExtension", yExt[1]);
+        
+        return Optional.of(parsed);
     }
     
     public void handleRequest(Conveyor conv)
     throws GeoWebCacheException {
         // get all elements of the pathInfo after the leading "/tms/1.0.0/" part.
         String pathInfo = conv.servletReq.getPathInfo();
-        pathInfo = pathInfo.substring(pathInfo.indexOf("tms/1.0.0"));
+        pathInfo = pathInfo.substring(pathInfo.indexOf(TMSDocumentFactory.TILEMAPSERVICE_LEADINGPATH));
         String[] params = pathInfo.split("/");
         // {"tms", "1.0.0", "img states@EPSG:4326" } 
         
@@ -158,12 +204,9 @@ public class TMSService extends Service {
         if (controller!=null) servletPrefix=controller.getServletPrefix();
         
         String servletBase = ServletUtils.getServletBaseURL(conv.servletReq, servletPrefix);
-        String context = ServletUtils.getServletContextPath(conv.servletReq, "/service/tms/1.0.0", servletPrefix);
+        String context = ServletUtils.getServletContextPath(conv.servletReq, TMSDocumentFactory.SERVICE_PATH, servletPrefix);
         
         final Charset encoding = StandardCharsets.UTF_8;
-        
-        TMSDocumentFactory tdf = new TMSDocumentFactory(tld, gsb, servletBase, context, urlMangler, encoding);
-        
         String ret = null;
         
         if(paramsLength < 2) {
@@ -173,7 +216,7 @@ public class TMSService extends Service {
             if(! version.equals("1.0.0")) {
                 throw new GeoWebCacheException("Unknown version " + version + ", only 1.0.0 is supported.");
             } else {
-                ret = tdf.getTileMapServiceDoc();
+                ret = tmsFactory.getTileMapServiceDoc(servletBase, context);
             }
         } else {
             String layerNameAndSRS = params[2];
@@ -183,7 +226,7 @@ public class TMSService extends Service {
             TileLayer tl = tld.getTileLayer(layerSRSFormatExtension[0]);
             GridSubset gridSub = tl.getGridSubset(layerSRSFormatExtension[1]);
             MimeType mimeType =  MimeType.createFromExtension(layerSRSFormatExtension[2]);
-            ret = tdf.getTileMapDoc(tl, gridSub, gsb, mimeType);
+            ret = tmsFactory.getTileMapDoc(tl, gridSub, mimeType, servletBase, context);
         }
         
         byte[] data = ret.getBytes(encoding);

@@ -4,13 +4,13 @@
 Serving Layers From Pre-Cached ArcGIS Tiling Schemes
 ====================================================
 
-GeoWebCache offers the possibility of serving cached tiles created by ArcGIS Server 9.2, 9.3 and 10.0, as long as the ArcGIS cache is in the so called "exploded format", and not in the "compact format" introduced in ArcGIS Server 10. This is so because the compact storage format uses a legacy file format to store multiple tiles inside a single file, but it's structure is not published by ESRI.
+GeoWebCache can serve cached tiles created by ArcGIS Server 9.2, 9.3 and 10.x, in either the so called "exploded format" or the "compact format" introduced in ArcGIS Server 10.
 
 Features and Limitations
 ------------------------
 GeoWebCache can publish pre-generated caches in ArcGIS exploded format, it cannot seed or truncate these layers. So if you have a set of cached Layers created with ArcGIS Server, you can publish them using GeoWebCache as WMS-C Layers without needing to have ArcGIS Server running at all.
 
-Also, GeoWebcache supports only `fused` ArcGIS caches. That is, caches that contain a single tile set for all the layers in the cached ArcGIS Map.
+Also, GeoWebCache supports only `fused` ArcGIS caches. That is, caches that contain a single tile set for all the layers in the cached ArcGIS Map.
 
 ArcGIS Tiling Scheme
 --------------------
@@ -24,7 +24,7 @@ In this example, the :file:`arcgiscache` folder is the root of the ArcGIS Server
 
 In ArcGIS terminology, each of these cached layers constitutes "fused caches", since there's a single :file:`_allLayers` folder holding the tile files for all the overlaid layers composing that "Map".
 
-The :file:`conf.xml` XML file contains the 'ArcGIS Tiling Scheme' definition, containing information about the Layer's Coordinate Reference System, the 'tileOrigin', and tile dimensions, the tiles image format, and the list of zoom levels defined by a pair of equivalent resolutions and scale denominators, among other information.
+The :file:`conf.xml` (sometimes `Conf.xml`) XML file contains the 'ArcGIS Tiling Scheme' definition, containing information about the Layer's Coordinate Reference System, the 'tileOrigin', and tile dimensions, the tiles image format, and the list of zoom levels defined by a pair of equivalent resolutions and scale denominators, among other information.
 
 The :file:`conf.cdi` file is an accompanying XML file that defines the actual bounding box of the Layer cached by this tile set.
 
@@ -39,11 +39,12 @@ The structure of the "conf.cdi" file is as follows:
     <YMax>90</YMax>
   </EnvelopeN>
 
-.. note:: GeoWebCache will need those two files to automatically create a GridSet and GridSubset for this Layer. If your cache doesn't come with a :file:`conf.cdi` file (ArcGIS Server versions prior to 10.0) you'll need to create one by hand and place it next to :file:`conf.xml`, so that GeoWebcache can map that to its internal representation of the gridded set of tiles.
+.. note:: GeoWebCache will need those two files to automatically create a GridSet and GridSubset for this Layer. If your cache does not come with a :file:`conf.cdi` file (ArcGIS Server versions prior to 10.0) you will need to create one by hand and place it next to :file:`conf.xml`, so that GeoWebcache can map that to its internal representation of the grided set of tiles.
 
 Configuration
 -------------
-An 'arcgisLayer' element needs to be created in :file:`geowebcache.xml` under the 'layers' section. 'wmsLayer' definitions and 'arcgisLayer' definitions can be intermixed.
+An 'arcgisLayer' element needs to be created in :file:`geowebcache.xml` under the 'layers' section (i.e. at the same level as the 'wmsLayer' entries). 
+'wmsLayer' definitions and 'arcgisLayer' definitions can be intermixed.
 
 This is an example :file:`geowebcache.xml` fragment showing how to set up such a cached Layer:
 
@@ -62,7 +63,7 @@ This is an example :file:`geowebcache.xml` fragment showing how to set up such a
     </layers>
   </gwcConfiguration>
 
-The 'name' element is the Layer name GeoWebcache will publish the ArcGIS cache for that layer with.
+The 'name' element is the Layer name that GeoWebcache use to publish the ArcGIS cache.
 The 'tilingScheme' element expects the full path to the cache's :file:`conf.xml` file.
 
 Alternative cache directory
@@ -77,10 +78,22 @@ It is also possible to get rid of the standard tiling scheme layout and separate
         <tileCachePath>D:\\arcgistiles\\naturalearth\\</tileCachePath>
       </arcgisLayer>
 
+Levels hex-encoded
+------------------
+Configure whether or not the z-values (levels) should be hex-encoded or not by using the ``hexZoom`` property. Default to false (decimal).
+
+.. code-block:: xml
+
+      <arcgisLayer>
+        <name>naturalearth</name>
+        <tilingScheme>C:\\arcgiscache\\naturalearth\\Layers\\conf.xml</tilingScheme>
+        <hexZoom>true</hexZoom>
+      </arcgisLayer>
+
 OpenLayers Configuration
 ------------------------
 
-One particularity of ArcGIS Tiling Schemes is that they define an explicit cache tile origin as an X/Y coordinate in the cache's Coordinate Refernce System, that is located at the top left of the tiling scheme valid coordinate range. Since both GeoWebCache and OpenLayers by default compute tile bounding boxes based on the bottom left GridSet envelope corner, it is necessary to instruct OpenLayers to use an explicit 'tileOrigin' for each Layer served off an ArcGIS Tiling Scheme.
+One peculiarity of ArcGIS Tiling Schemes is that they define an explicit cache tile origin as an X/Y coordinate in the cache's Coordinate Reference System, that is located at the top left of the tiling scheme valid coordinate range. Since both GeoWebCache and OpenLayers by default compute tile bounding boxes based on the bottom left GridSet envelope corner, it is necessary to instruct OpenLayers to use an explicit 'tileOrigin' for each Layer served off an ArcGIS Tiling Scheme.
 
 The GeoWebCache demo pages for this kind of Layers do that automatically.
 
@@ -94,5 +107,5 @@ To set up an OpenLayers WMS layer that access an ArcGIS cache through the GeoWeb
 
 And make sure the 'tileOrigin' property matches the tile origin defined in :file:`conf.xml`.
 
-.. note:: The OpenLayers tileOrigin property is new and available since revision #11033 in svn. This new functionality will be available in OpenLayers 2.11, which at the time of writing is not yet released. The OpenLayers version that comes with GeoWebCache already contains the needed patch.
+.. note:: The OpenLayers tileOrigin property is available in OpenLayers 2.11 and later.
 

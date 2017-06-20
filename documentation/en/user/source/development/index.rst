@@ -7,11 +7,11 @@ You are encouraged to help contribute code to GeoWebCache.  To do so, you will f
 
 This is the current prerequisites:
 
- * Sun/Oracle Java Developer Kit SE, version 1.5
- * `Maven 2.x <http://maven.apache.org/>`_
+ * Java 7 (`Oracle JDK <http://www.oracle.com/technetwork/java/javase/downloads/index.html>`__ or `OpenJDK <http://openjdk.java.net>`__ )
+ * `Maven <http://maven.apache.org/>`_
  * `Git <http://git-scm.com>`_
 
-Please make sure you use **Java 1.5** to compile to ensure that we do not introduce dependencies only available in 1.6.
+Please make sure you use **Java 7** to compile to ensure that we don't accidentally use new features only available in Java 8.
 
 You are encouraged to join the `GeoWebCache Developers mailing list <https://lists.sourceforge.net/lists/listinfo/geowebcache-devel>`_ to discuss your work.  It is always a good idea to ask whether anyone else has already solved the same problem.
 
@@ -27,13 +27,13 @@ Setting Up
 
    .. code-block:: bash
 
-      set JAVA_HOME=C:\Program Files\Java\jdk1.5.0_21
+      set JAVA_HOME=C:\Program Files\Java\jdk1.7.0_79
 
    Linux/OS X:
 
    .. code-block:: bash
 
-      export JAVA_HOME=/opt/jdk1.5.0_21
+      export JAVA_HOME=/opt/jdk1.7.0_79
 
 #. You can download maven from http://maven.apache.org/download.html, unpack and include the :file:`bin` directory in your PATH variable.
 
@@ -150,8 +150,14 @@ Setting up Eclipse
 Contributing patches
 --------------------
 
-The prefered way of providing patches is to create an issue in GitHub a patch, which you create by running::
+The preferred way of providing patches is to create an issue in GitHub, develop the patch, and then make a GitHub Pull Request referencing the ticket.  If appropriate please backport fixes to the Stable and Maintenance branches.  New features may be backported if they have been on Master for a month without issue and if they are backward compatible for users and down stream developers.
 
-  git diff > patch.txt
+In addition to creating the issue ticket, you are highly encouraged to bring it up on the `GeoWebCache Developers mailing list <https://lists.sourceforge.net/lists/listinfo/geowebcache-devel>`_ first.  Other developers or users may have considered the problem before or have other useful input.
 
-In addition to creating the issue, you are highly encouraged to jump on the `GeoWebCache Developers mailing list <https://lists.sourceforge.net/lists/listinfo/geowebcache-devel>`_ to introduce the patch.
+Please include unit tests for any patches that change behaviour: For a bug fix, include tests to confirm the bug is fixed, for a new feature include tests to check that the feature works. Please also include the copyright header for the LGPL 3.0 in any new source files.
+
+Please squash your working commits before creating a pull request.  The commits in a pull request should represent clear semantic parts of the patch, not the work history.  :kbd:`Added extension point` -> :kbd:`New module implementing extension point` -> :kbd:`Added documentation for new module`  is a good break down while  :kbd:`Did some work` -> :kbd:`Work from tuesday` -> :kbd:`Stuff I forgot` is not.  
+
+Avoid non-semantic whitespace and formatting changes as this makes your intent less clear and makes it harder to understand the change history.  If you do clean things up, please do so via a separate commit.  In particular, please avoid using automatic code formatters to reformat an entire existing file.
+
+Use javadoc comments to document APIs and additional comments to clarify obtuse code.  Do not use comments to identify yourself as that's what the Git history is for.  Do not leave commented out code blocks. Commented out examples in human readable config files however are OK.

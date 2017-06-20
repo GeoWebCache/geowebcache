@@ -18,7 +18,6 @@
 package org.geowebcache.config;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,21 +30,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geotools.data.ows.CRSEnvelope;
 import org.geotools.data.ows.Layer;
+import org.geotools.data.ows.SimpleHttpClient;
 import org.geotools.data.ows.StyleImpl;
 import org.geotools.data.ows.WMSCapabilities;
 import org.geotools.data.wms.WebMapServer;
 import org.geotools.data.wms.xml.Dimension;
 import org.geotools.data.wms.xml.Extent;
 import org.geotools.ows.ServiceException;
+import org.geotools.xml.PreventLocalEntityResolver;
+import org.geotools.xml.XMLHandlerHints;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.legends.LegendRawInfo;
+import org.geowebcache.config.legends.LegendsRawInfo;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.parameters.NaiveWMSDimensionFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
+import org.geowebcache.filter.parameters.StringParameterFilter;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -60,8 +68,14 @@ import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 
 public class GetCapabilitiesConfiguration implements Configuration {
+
     private static Log log = LogFactory
             .getLog(org.geowebcache.config.GetCapabilitiesConfiguration.class);
+
+    // regex patterns used to parse legends urls parameters
+    private static final Pattern LEGEND_WIDTH_PATTERN = Pattern.compile(".*width=(\\d+).*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern LEGEND_HEIGHT_PATTERN = Pattern.compile(".*height=(\\d+).*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern LEGEND_FORMAT_PATTERN = Pattern.compile(".*format=([^&]+).*", Pattern.CASE_INSENSITIVE);
 
     private GridSetBroker gridSetBroker;
 
@@ -134,13 +148,15 @@ public class GetCapabilitiesConfiguration implements Configuration {
     private synchronized List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
         List<TileLayer> layers = null;
 
-        WebMapServer wms = getWMS();
-        if (wms == null) {
-            throw new ConfigurationException("Unable to connect to " + this.url);
+        WebMapServer wms = null;
+        
+        try {
+            wms = getWMS();
+        } catch (ServiceException | IOException e) {
+            throw new ConfigurationException("Could not retrieve (or parse) GetCapaibilities " + this.url + " :"+e.getMessage(), e);
         }
-
         String wmsUrl = getWMSUrl(wms);
-        log.info("Using " + wmsUrl + " to generate URLs for WMS requests");
+        log.info("Using GetCapabilities " + wmsUrl + " to generate URLs for WMS requests");
 
         String urlVersion = parseVersion(url);
 
@@ -210,6 +226,8 @@ public class GetCapabilitiesConfiguration implements Configuration {
             boolean queryable = layer.isQueryable();
 
             if (name != null) {
+
+                LinkedList<ParameterFilter> paramFilters = new LinkedList<ParameterFilter>();
                 List<StyleImpl> styles = layer.getStyles();
 
                 StringBuffer buf = new StringBuffer();
@@ -224,6 +242,11 @@ public class GetCapabilitiesConfiguration implements Configuration {
                         hasOne = true;
                     }
                     stylesStr = buf.toString();
+                    // set styles parameters
+                    StringParameterFilter stylesParameterFilter = new StringParameterFilter();
+                    stylesParameterFilter.setKey("STYLES");
+                    stylesParameterFilter.setValues(styles.stream().map(StyleImpl::getName).collect(Collectors.toList()));
+                    paramFilters.add(stylesParameterFilter);
                 }
 
                 double minX = layer.getLatLonBoundingBox().getMinX();
@@ -242,7 +265,6 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
                 String[] wmsUrls = { wmsUrl };
 
-                LinkedList<ParameterFilter> paramFilters = new LinkedList<ParameterFilter>();
                 for (Dimension dimension : layer.getDimensions().values()) {
                     Extent dimExtent = layer.getExtent(dimension.getName());
                     paramFilters.add(new NaiveWMSDimensionFilter(dimension, dimExtent));
@@ -283,12 +305,65 @@ public class GetCapabilitiesConfiguration implements Configuration {
                         wmsLayer.setMetadataURLs(convertedMetadataURLs);
                     }
 
+                    // add styles legend information
+                    wmsLayer.setLegends(extractLegendsInfo(styles));
+
                     layers.add(wmsLayer);
                 }
             }
         }
 
         return layers;
+    }
+
+    /**
+     * Helper method that extracts from a legend url the width, height and format parameters.
+     */
+    private LegendsRawInfo extractLegendsInfo(List<StyleImpl> styles) {
+        LegendsRawInfo legendsRawInfo = new LegendsRawInfo();
+        // setting some acceptable default values
+        legendsRawInfo.setDefaultWidth(20);
+        legendsRawInfo.setDefaultHeight(20);
+        legendsRawInfo.setDefaultFormat("image/png");
+        for (StyleImpl style : styles) {
+            // extracting legend information from each style
+            LegendRawInfo legendRawInfo = new LegendRawInfo();
+            legendRawInfo.setStyle(style.getName());
+            List legendUrls = style.getLegendURLs();
+            if (legendUrls != null && !legendUrls.isEmpty()) {
+                String legendUrl = (String) legendUrls.get(0);
+                // let's see if we can extract width, height and format from the style legend url
+                legendRawInfo.setWidth(extractIntegerParameter(legendUrl, LEGEND_WIDTH_PATTERN));
+                legendRawInfo.setHeight(extractIntegerParameter(legendUrl, LEGEND_HEIGHT_PATTERN));
+                legendRawInfo.setFormat(extractParameter(legendUrl, LEGEND_FORMAT_PATTERN));
+                // setting the complete legend url
+                legendRawInfo.setCompleteUrl(legendUrl);
+            }
+            legendsRawInfo.addLegendRawInfo(legendRawInfo);
+        }
+        return legendsRawInfo;
+    }
+
+    /**
+     * Helper method that simply extracts from the provided url a certain parameter.
+     */
+    private String extractParameter(String url, Pattern pattern) {
+        Matcher matcher = pattern.matcher(url);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+
+    /**
+     * Helper method that simply extracts from the provided url a certain integer parameter.
+     */
+    private Integer extractIntegerParameter(String url, Pattern pattern) {
+        String value = extractParameter(url, pattern);
+        if (value == null) {
+            return null;
+        }
+        return Integer.valueOf(value);
     }
 
     private WMSLayer getLayer(String name, String[] wmsurl, BoundingBox bounds4326,
@@ -354,15 +429,10 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 metaWidthHeight, this.vendorParameters, queryable, null);
     }
 
-    WebMapServer getWMS() {
-        try {
-            return new WebMapServer(new URL(url));
-        } catch (IOException ioe) {
-            log.error(url + " -> " + ioe.getMessage());
-        } catch (ServiceException se) {
-            log.error(se.getMessage());
-        }
-        return null;
+    WebMapServer getWMS() throws IOException, ServiceException{
+        Map<String, Object> hints = new HashMap<>();
+        hints.put(XMLHandlerHints.ENTITY_RESOLVER, PreventLocalEntityResolver.INSTANCE);
+        return new WebMapServer(new URL(url), new SimpleHttpClient(), hints);
     }
 
     private String parseVersion(String url) {

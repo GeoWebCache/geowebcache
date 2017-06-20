@@ -3,6 +3,7 @@ package org.geowebcache.io;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -10,7 +11,7 @@ import java.nio.channels.WritableByteChannel;
 
 import org.springframework.util.Assert;
 
-public class ByteArrayResource implements Resource {
+public class ByteArrayResource implements Resource, Serializable {
 
     private byte[] data;
 
@@ -162,6 +163,10 @@ public class ByteArrayResource implements Resource {
     public void truncate() {
         offset = 0;
         length = 0;
+    }
+
+    public void setLastModified(long lastModified) {
+        this.lastModified = lastModified;
     }
 
     /**

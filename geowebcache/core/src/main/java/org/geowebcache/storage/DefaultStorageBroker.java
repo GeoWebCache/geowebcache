@@ -17,9 +17,13 @@
  */
 package org.geowebcache.storage;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.io.Resource;
+import org.geowebcache.layer.TileLayer;
 
 /**
  * Handles cacheable objects (tiles, wfs responses) both in terms of data storage and metadata
@@ -38,6 +42,7 @@ public class DefaultStorageBroker implements StorageBroker {
     }
     public DefaultStorageBroker(BlobStore blobStore, TransientCache transientCache) {
         this.blobStore = blobStore;
+        this.transientCache = transientCache;
     }
 
     public void addBlobStoreListener(BlobStoreListener listener){
@@ -55,6 +60,21 @@ public class DefaultStorageBroker implements StorageBroker {
     public boolean deleteByGridSetId(final String layerName, final String gridSetId)
             throws StorageException {
         return blobStore.deleteByGridsetId(layerName, gridSetId);
+    }
+    
+    public boolean deleteByParameters(final String layerName, final Map<String, String> parameters)
+            throws StorageException {
+        return blobStore.deleteByParameters(layerName, parameters);
+    }
+    
+    public boolean deleteByParametersId(final String layerName, String parametersId)
+            throws StorageException {
+        return blobStore.deleteByParametersId(layerName, parametersId);
+    }
+    @Override
+    public boolean purgeOrphans(final TileLayer layer)
+            throws StorageException {
+        return blobStore.purgeOrphans(layer);
     }
 
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
@@ -101,5 +121,24 @@ public class DefaultStorageBroker implements StorageBroker {
         synchronized (transientCache) {
             transientCache.put(key, tile.getBlob());
         }
+    }
+
+    /**
+     * Method for accessing directly the blobstore used by the following StorageBroker
+     * 
+     * @return the {@link BlobStore} object used
+     */
+    public BlobStore getBlobStore(){
+        return blobStore;
+    }
+    
+    @Override
+    public Set<String> getCachedParameterIds(String layerName) throws StorageException {
+        return this.blobStore.getParameterIds(layerName);
+    }
+    
+    @Override
+    public Set<Map<String, String>> getCachedParameters(String layerName) throws StorageException  {
+        return this.blobStore.getParameters(layerName);
     }
 }

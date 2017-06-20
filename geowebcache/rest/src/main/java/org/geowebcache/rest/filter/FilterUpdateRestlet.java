@@ -19,6 +19,7 @@ package org.geowebcache.rest.filter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.List;
 
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.TileLayer;
@@ -70,12 +71,14 @@ public class FilterUpdateRestlet extends GWCRestlet {
 
         while (lIter.hasNext() && filter == null) {
             tl = lIter.next();
-
-            Iterator<RequestFilter> fIter = tl.getRequestFilters().iterator();
-            while (fIter.hasNext() && filter == null) {
-                RequestFilter cFilter = fIter.next();
-                if (cFilter.getName().equals(filterName)) {
-                    filter = cFilter;
+            List<RequestFilter> filters = tl.getRequestFilters();
+            if(filters!=null){
+                Iterator<RequestFilter> fIter = filters.iterator();
+                while (fIter.hasNext() && filter == null) {
+                    RequestFilter cFilter = fIter.next();
+                    if (cFilter.getName().equals(filterName)) {
+                        filter = cFilter;
+                    }
                 }
             }
         }

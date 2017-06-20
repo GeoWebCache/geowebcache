@@ -393,18 +393,23 @@ public class ServletUtils {
         return decodedValues;
     }
 
-    public static String gwcHtmlHeader(String pageTitle) {
-        return "<head>\n" + "<title>" + pageTitle + "</title>" + "<style type=\"text/css\">\n"
-                + "body, td {\n"
-                + "font-family: Verdana,Arial,\'Bitstream Vera Sans\',Helvetica,sans-serif;\n"
-                + "font-size: 0.85em;\n" + "vertical-align: top;\n" + "}\n" + "</style>\n"
-                + "</head>\n";
+    public static String gwcHtmlHeader(String relBasePath, String pageTitle) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("<head>\n");
+        builder.append("<title>").append(pageTitle).append("</title>\n");
+        builder.append("<link rel=\"stylesheet\" href=\"").append(relBasePath).append("rest/web/gwc.css\" type=\"text/css\"/>\n");
+        builder.append("</head>\n");
+        return builder.toString();
     }
 
     public static String gwcHtmlLogoLink(String relBasePath) {
-        return "<a id=\"logo\" href=\"" + relBasePath + "\">" + "<img src=\"" + relBasePath
-                + "rest/web/geowebcache_logo.png\"" + "height=\"70\" width=\"247\" border=\"0\"/>"
-                + "</a>\n";
+        StringBuilder builder = new StringBuilder();
+        builder.append("<div id=\"pageHeader\">");
+        builder.append("<a id=\"logo\" href=\"").append(relBasePath).append("\">");
+        builder.append("<img src=\"").append(relBasePath).append("rest/web/geowebcache_logo.png\"/>");
+        builder.append("</a>");
+        builder.append("</div>\n");
+        return builder.toString();
     }
 
     public static long[][] arrayDeepCopy(long[][] array) {

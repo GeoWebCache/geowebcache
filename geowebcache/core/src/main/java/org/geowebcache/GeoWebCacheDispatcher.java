@@ -38,7 +38,10 @@ import org.apache.commons.httpclient.util.DateParseException;
 import org.apache.commons.httpclient.util.DateUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.BlobStoreConfig;
 import org.geowebcache.config.Configuration;
+import org.geowebcache.config.ConfigurationException;
+import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.conveyor.ConveyorTile;
@@ -58,8 +61,14 @@ import org.geowebcache.service.HttpErrorCodeException;
 import org.geowebcache.service.OWSException;
 import org.geowebcache.service.Service;
 import org.geowebcache.stats.RuntimeStats;
+import org.geowebcache.storage.BlobStore;
+import org.geowebcache.storage.CompositeBlobStore;
+import org.geowebcache.storage.DefaultStorageBroker;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.blobstore.file.FileBlobStore;
+import org.geowebcache.storage.blobstore.memory.CacheStatistics;
+import org.geowebcache.storage.blobstore.memory.MemoryBlobStore;
 import org.geowebcache.util.ServletUtils;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
@@ -92,6 +101,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
     private String servletPrefix = null;
 
+    private Configuration mainConfiguration;
+    
     /**
      * Should be invoked through Spring
      * 
@@ -106,7 +117,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
         this.gridSetBroker = gridSetBroker;
         this.runtimeStats = runtimeStats;
         this.storageBroker = storageBroker;
-
+        this.mainConfiguration = mainConfiguration;
+        
         if (mainConfiguration.isRuntimeStatsEnabled()) {
             this.runtimeStats.start();
         } else {
@@ -431,7 +443,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             commitId = "{NO BUILD INFO IN MANIFEST}";
         }
 
-        str.append("<html>\n" + ServletUtils.gwcHtmlHeader("GWC Home") + "<body>\n"
+        str.append("<html>\n" + ServletUtils.gwcHtmlHeader(baseUrl,"GWC Home") + "<body>\n"
                 + ServletUtils.gwcHtmlLogoLink(baseUrl));
         str.append("<h3>Welcome to GeoWebCache version " + version + ", build " + commitId + "</h3>\n");
         str.append("<p><a href=\"http://geowebcache.org\">GeoWebCache</a> is an advanced tile cache for WMS servers.");
@@ -453,10 +465,70 @@ public class GeoWebCacheDispatcher extends AbstractController {
         if (runtimeStats != null) {
             str.append("<h3>Runtime Statistics</h3>\n");
             str.append(runtimeStats.getHTMLStats());
+            str.append("</table>\n");
+        }
+        if(!Boolean.parseBoolean(GeoWebCacheExtensions.getProperty("GEOWEBCACHE_HIDE_STORAGE_LOCATIONS")))
+        {
+            appendStorageLocations(str);
+        }
+        
+        if(storageBroker != null){
+            appendInternalCacheStats(str);
         }
         str.append("</body></html>\n");
 
         writePage(response, 200, str.toString());
+    }
+
+    private void appendStorageLocations(StringBuilder str) {
+        str.append("<h3>Storage Locations</h3>\n");
+        str.append("<table class=\"stats\">\n");
+        str.append("<tbody>");
+        XMLConfiguration config;
+        if(mainConfiguration instanceof XMLConfiguration) {
+            config = (XMLConfiguration) mainConfiguration;
+        } else {
+            config = GeoWebCacheExtensions.bean(XMLConfiguration.class);
+        }
+        String configLoc;
+        String localStorageLoc;
+        // TODO: Disk Quota location
+        Map<String, String> blobStoreLocations = new HashMap<>();
+        if(storageBroker instanceof DefaultStorageBroker) {
+            BlobStore bStore = ((DefaultStorageBroker) storageBroker).getBlobStore();
+            if(bStore instanceof CompositeBlobStore) {
+                for(BlobStoreConfig bsConfig: config.getBlobStores()) {
+                    blobStoreLocations.put(bsConfig.getId(), bsConfig.getLocation());
+                }
+            }
+        }
+        try {
+            configLoc = config.getConfigLocation();
+        } catch (ConfigurationException ex) {
+            configLoc = "Error";
+            log.error("Could not find config location", ex);
+        }            
+        try {
+            localStorageLoc = defaultStorageFinder.getDefaultPath();
+        } catch (ConfigurationException ex) {
+            localStorageLoc = "Error";
+            log.error("Could not find local cache location", ex);
+        }
+        str.append("<tr><th scope=\"row\">Config file:</th><td><tt>").append(configLoc).append("</tt></td></tr>");
+        str.append("<tr><th scope=\"row\">Local Storage:</th><td><tt>").append(localStorageLoc).append("</tt></td></tr>");
+        str.append("</tbody>");
+        if(!blobStoreLocations.isEmpty()){
+            str.append("<tbody>");
+            str.append("<tr><th scope=\"rowgroup\" colspan=\"2\">Blob Stores</th></tr>");
+            for(Map.Entry<String, String> e : blobStoreLocations.entrySet())
+            {
+                str.append("<tr><th scope=\"row\">").append(e.getKey()).append(":</th><td><tt>").append(e.getValue()).append("</tt></td></tr>");
+            }
+            str.append("</tbody>");
+        }
+        
+        str.append("</tbody>");
+        str.append("</table>\n");
     }
 
     /**
@@ -469,7 +541,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private void writeError(HttpServletResponse response, int httpCode, String errorMsg) {
         log.debug(errorMsg);
 
-        errorMsg = "<html>\n" + ServletUtils.gwcHtmlHeader("GWC Error") + "<body>\n"
+        errorMsg = "<html>\n" + ServletUtils.gwcHtmlHeader("../", "GWC Error") + "<body>\n"
                 + ServletUtils.gwcHtmlLogoLink("../") + "<h4>" + httpCode + ": "
                 + ServletUtils.disableHTMLTags(errorMsg) + "</h4>" + "</body></html>\n";
         writePage(response, httpCode, errorMsg);
@@ -489,8 +561,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
         final CacheResult cacheResult = tile.getCacheResult();
         int httpCode = HttpServletResponse.SC_OK;
-        String mimeType = tile.getMimeType().getMimeType();
         Resource blob = tile.getBlob();
+        String mimeType = tile.getMimeType().getMimeType(blob);
 
         servletResp.setHeader("geowebcache-cache-result", String.valueOf(cacheResult));
         servletResp.setHeader("geowebcache-tile-index", Arrays.toString(tile.getTileIndex()));
@@ -601,5 +673,118 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 log.debug("Caught IOException: " + ioe.getMessage() + "\n\n" + ioe.toString());
             }
         }
+    }
+
+    /**
+     * This method appends the cache statistics to the GWC homepage if the blobstore used is an instance of the {@link MemoryBlobStore} class
+     * 
+     * @param str Input {@link StringBuilder} containing the HTML for the GWC homepage
+     */
+    private void appendInternalCacheStats(StringBuilder strGlobal) {
+
+        if (storageBroker == null) {
+            return;
+        }
+
+        // Searches for the BlobStore inside the StorageBroker
+        BlobStore blobStore = null;
+        if (log.isDebugEnabled()) {
+            log.debug("Searching for the blobstore used");
+        }
+        // Getting the BlobStore if present
+        if (storageBroker instanceof DefaultStorageBroker) {
+            blobStore = ((DefaultStorageBroker) storageBroker).getBlobStore();
+        }
+
+        // If it is not present, or it is not a memory blobstore, nothing is done
+        if (blobStore == null || !(blobStore instanceof MemoryBlobStore)) {
+            if (log.isDebugEnabled()) {
+                log.debug("No Memory BlobStore found");
+            }
+            return;
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Memory BlobStore found");
+        }
+
+        // Get the MemoryBlobStore if present
+        MemoryBlobStore store = (MemoryBlobStore) blobStore;
+
+        if (log.isDebugEnabled()) {
+            log.debug("Getting statistics");
+        }
+        // Get the statistics
+        CacheStatistics statistics = store.getCacheStatistics();
+
+        // No Statistics found
+        if (statistics == null) {
+            return;
+        }
+
+        // Get the statistics values
+        long hitCount = statistics.getHitCount();
+        long missCount = statistics.getMissCount();
+        long evictionCount = statistics.getEvictionCount();
+        long requestCount = statistics.getRequestCount();
+        double hitRate = statistics.getHitRate();
+        double missRate = statistics.getMissRate();
+        double currentMemory = statistics.getCurrentMemoryOccupation();
+        long byteToMb = 1024 * 1024;
+        double actualSize = ((long) (100 * (statistics.getActualSize() * 1.0d) / byteToMb)) / 100d;
+        double totalSize = ((long) (100 * (statistics.getTotalSize() * 1.0d) / byteToMb)) / 100d;
+
+        // Append the HTML with the statistics to a new StringBuilder
+        StringBuilder str = new StringBuilder();
+
+        str.append("<h3>In Memory Cache Statistics</h3>\n");
+
+        str.append("<table border=\"0\" cellspacing=\"5\">");
+
+        str.append("<tr><td colspan=\"2\">Total number of requests:</td><td colspan=\"3\">"
+                +  (requestCount >= 0 ?  requestCount + "" : "Unavailable"));
+        str.append("</td></tr>\n");
+
+        str.append("<tr><td colspan=\"5\"> </td></tr>");
+
+        str.append("<tr><td colspan=\"2\">Internal Cache hit count:</td><td colspan=\"3\">");
+        str.append(hitCount >= 0 ?  hitCount + "" : "Unavailable");
+        str.append("</td></tr>\n");
+
+        str.append("<tr><td colspan=\"2\">Internal Cache miss count:</td><td colspan=\"3\">");
+        str.append(missCount >= 0 ?  missCount + "" : "Unavailable");
+        str.append("</td></tr>\n");
+
+        str.append("<tr><td colspan=\"2\">Internal Cache hit ratio:</td><td colspan=\"3\">");
+        str.append(hitRate >= 0 ?  hitRate + " %" : "Unavailable");
+        str.append("</td></tr>\n");
+
+        str.append("<tr><td colspan=\"2\">Internal Cache miss ratio:</td><td colspan=\"3\">");
+        str.append(missRate >= 0 ?  missRate + " %" : "Unavailable");
+        str.append("</td></tr>\n");
+
+        str.append("<tr><td colspan=\"5\"> </td></tr>");
+
+        str.append("<tr><td colspan=\"2\">Total number of evicted tiles:</td><td colspan=\"3\">"
+                + (evictionCount >= 0 ?  evictionCount + "" : "Unavailable"));
+        str.append("</td></tr>\n");
+
+        str.append("<tr><td colspan=\"5\"> </td></tr>");
+        
+        str.append("<tr><td colspan=\"2\">Cache Memory occupation:</td><td colspan=\"3\">"
+                + (currentMemory >= 0 ?  currentMemory + " %" : "Unavailable"));
+        str.append("</td></tr>\n");
+
+        str.append("<tr><td colspan=\"5\"> </td></tr>");
+        
+        str.append("<tr><td colspan=\"2\">Cache Actual Size/ Total Size :</td><td colspan=\"3\">"
+                + (totalSize >= 0 && actualSize >= 0?  actualSize + " / " + totalSize + " Mb" : "Unavailable") );
+        str.append("</td></tr>\n");
+
+        str.append("<tr><td colspan=\"5\"> </td></tr>");
+
+        str.append("</table>\n");
+
+        // Append to the homepage HTML
+        strGlobal.append(str);
     }
 }

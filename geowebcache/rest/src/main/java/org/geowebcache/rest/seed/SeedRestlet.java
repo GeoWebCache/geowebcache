@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ContextualConfigurationProvider.Context;
 import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.rest.GWCRestlet;
 import org.geowebcache.rest.RestletException;
@@ -64,7 +65,7 @@ public class SeedRestlet extends GWCSeedingRestlet {
             layerName = null;
         }
         try {
-            XStream xs = new XStream(new JsonHierarchicalStreamDriver());
+            XStream xs = new GeoWebCacheXStream(new JsonHierarchicalStreamDriver());
             JSONObject obj = null;
             long[][] list;
             if (null == layerName) {

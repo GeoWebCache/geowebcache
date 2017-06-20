@@ -1,6 +1,5 @@
 package org.geowebcache.seed;
 
-import org.geowebcache.config.Configuration;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 
@@ -16,7 +15,7 @@ public class TruncateLayerRequest implements MassTruncateRequest {
 
     String layerName;
 
-    public boolean doTruncate(StorageBroker sb, Configuration config) throws StorageException {
+    public boolean doTruncate(StorageBroker sb, TileBreeder breeder) throws StorageException {
         return sb.delete(layerName);
     }
 

@@ -84,7 +84,7 @@ Sample request to truncate all cached tiles for the ``topp:states`` layer using 
 
 .. code-block:: xml 
 
- curl -v -u geowebOST -H "Content-type: text/xml" -d "<truncateLayer><layerName>topp:states</layerName></truncateLayer>"  "http://localhost:8080/geowebcache/rest/masstruncate"
+ curl -v -u geowebcache:secured -X POST -H "Content-type: text/xml" -d "<truncateLayer><layerName>topp:states</layerName></truncateLayer>"  "http://localhost:8080/geowebcache/rest/masstruncate"
 
 Sample response:
 
@@ -110,3 +110,51 @@ Sample response:
  * Connection #0 to host localhost left intact
  * Closing connection #0
  * About to connect() to localhost port 8080 (#0)
+
+Truncate extent across parameters and formats
++++++++++++++++++++++++++++++++++++++++++++++
+
+This will issue truncate jobs within the extent <-100, 40, -99, 41> for each parameter set and format in the ``EPSG:432g`` gridset of layer ``points``.
+
+.. code-block:: xml 
+
+ <truncateExtent>
+   <layerName>points</layerName>
+   <gridSetId>EPSG:4326</gridSetId>
+   <bounds>
+     <coords>
+       <double>-100</double>
+       <double>40</double>
+       <double>-99</double>
+       <double>41</double>
+     </coords>
+   </bounds>
+ </truncateExtent>
+
+Purge orphan parameters from a layer
+++++++++++++++++++++++++++++++++++++
+
+Checks the layer ``points`` for cached tiles that are not accessible to its current parameter filters and truncates them.
+
+.. code-block:: xml 
+
+ <truncateOrphans>
+   <layerName>points</layerName>
+ </truncateOrphans>
+
+Truncate parameter set
+++++++++++++++++++++++++++++++++++++
+
+Checks the layer ``points`` for cached tiles that are not accessible to its current parameter filters and truncates them.  Depending on the Blob Store used, this may be considerably faster than using a regular truncate job.  The File System blob store in particular can use directory deletes which are usually much faster than having GeoWebCache traverse all the tile files to delete them individually.  Depending on the OS/File System a traverse may be done, but it will usually be significantly faster than an application can manage.
+
+.. code-block:: xml 
+
+ <truncateParameters>
+   <layerName>points</layerName>
+   <parameters>
+     <entry>
+       <string>STYLES</string>
+       <string>point</string>
+     </entry>
+   </parameters>
+ </truncateParameters>

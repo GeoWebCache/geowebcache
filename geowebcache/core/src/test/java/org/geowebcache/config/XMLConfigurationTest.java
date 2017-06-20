@@ -1,7 +1,9 @@
 package org.geowebcache.config;
 
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,13 +16,11 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.legends.LegendRawInfo;
+import org.geowebcache.config.legends.LegendsRawInfo;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.StringParameterFilter;
 import org.geowebcache.grid.BoundingBox;
@@ -32,9 +32,13 @@ import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.xml.sax.SAXParseException;
 
-public class XMLConfigurationTest extends TestCase {
+public class XMLConfigurationTest {
 
     private static final Log log = LogFactory.getLog(XMLConfigurationTest.class);
 
@@ -45,14 +49,17 @@ public class XMLConfigurationTest extends TestCase {
     private GridSetBroker gridSetBroker;
 
     private XMLConfiguration config;
-
-    protected void setUp() throws Exception {
-        configDir = new File("target", "testConfig");
-        FileUtils.deleteDirectory(configDir);
-        configDir.mkdirs();
+    
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
+    
+    @Before
+    public void setUp() throws Exception {
+        configDir = temp.getRoot();
+        configFile = temp.newFile("geowebcache.xml");
+        
         URL source = XMLConfiguration.class
                 .getResource(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
-        configFile = new File(configDir, "geowebcache.xml");
         FileUtils.copyURLToFile(source, configFile);
 
         gridSetBroker = new GridSetBroker(true, true);
@@ -60,10 +67,7 @@ public class XMLConfigurationTest extends TestCase {
         config.initialize(gridSetBroker);
     }
     
-    protected void tearDown() throws Exception {
-    	FileUtils.deleteDirectory(configDir);
-    }
-
+    @Test
     public void testAddLayer() throws Exception {
         int count = config.getTileLayerCount();
 
@@ -80,6 +84,16 @@ public class XMLConfigurationTest extends TestCase {
         }
     }
 
+    @Test
+    public void testNotAddLayer() throws Exception {
+        // Create a transient Layer and check if it can be accepted
+        TileLayer tl = mock(WMSLayer.class);
+        when(tl.getName()).thenReturn("testLayer");
+        when(tl.isTransientLayer()).thenReturn(true);
+        assertFalse(config.canSave(tl));
+    }
+
+    @Test
     public void testModifyLayer() throws Exception {
 
         TileLayer layer1 = mock(WMSLayer.class);
@@ -104,6 +118,7 @@ public class XMLConfigurationTest extends TestCase {
         }
     }
 
+    @Test
     public void testRemoveLayer() {
 
         assertFalse(config.removeLayer("nonExistent"));
@@ -116,6 +131,7 @@ public class XMLConfigurationTest extends TestCase {
         }
     }
 
+    @Test
     public void testTemplate() throws Exception {
         assertTrue(configFile.delete());
         config.setTemplate("/geowebcache_empty.xml");
@@ -128,6 +144,7 @@ public class XMLConfigurationTest extends TestCase {
         assertEquals(3, config.getTileLayerCount());
     }
 
+    @Test
     public void testSave() throws Exception {
         for (String name : config.getTileLayerNames()) {
             int count = config.getTileLayerCount();
@@ -159,8 +176,35 @@ public class XMLConfigurationTest extends TestCase {
         WMSLayer layer = new WMSLayer(layerName, wmsURL, wmsStyles, wmsLayers, mimeFormats,
                 subSets, parameterFilters, metaWidthHeight, vendorParams, queryable, wmsQueryLayers);
 
-        config.addLayer(layer);
+        // create legends information
+        LegendsRawInfo legendsRawInfo = new LegendsRawInfo();
+        legendsRawInfo.setDefaultWidth(50);
+        legendsRawInfo.setDefaultHeight(100);
+        legendsRawInfo.setDefaultFormat("image/png");
+        // legend with all values and custom url
+        LegendRawInfo legendRawInfoA = new LegendRawInfo();
+        legendRawInfoA.setStyle("polygon");
+        legendRawInfoA.setWidth(75);
+        legendRawInfoA.setHeight(125);
+        legendRawInfoA.setFormat("image/jpeg");
+        legendRawInfoA.setUrl("http://url");
+        legendRawInfoA.setMinScale(5000D);
+        legendRawInfoA.setMaxScale(10000D);
 
+        // legend with a complete url
+        LegendRawInfo legendRawInfoB = new LegendRawInfo();
+        legendRawInfoB.setStyle("point");
+        legendRawInfoB.setCompleteUrl("http://url");
+        // default style legend
+        LegendRawInfo legendRawInfoC = new LegendRawInfo();
+        legendRawInfoC.setStyle("");
+        // tie the legend information together
+        legendsRawInfo.addLegendRawInfo(legendRawInfoA);
+        legendsRawInfo.addLegendRawInfo(legendRawInfoB);
+        legendsRawInfo.addLegendRawInfo(legendRawInfoC);
+        layer.setLegends(legendsRawInfo);
+
+        config.addLayer(layer);
         config.save();
 
         try {
@@ -187,8 +231,17 @@ public class XMLConfigurationTest extends TestCase {
             assertNotNull(actual);
             assertEquals(new XMLGridSubset(expected), new XMLGridSubset(actual));
         }
+
+        // check legends info
+        assertThat(l.getLegends(), notNullValue());
+        assertThat(l.getLegends().getDefaultWidth(), is(50));
+        assertThat(l.getLegends().getDefaultHeight(), is(100));
+        assertThat(l.getLegends().getDefaultFormat(), is("image/png"));
+        assertThat(l.getLegends().getLegendsRawInfo().size(), is(3));
+        assertThat(l.getLegends().getLegendsRawInfo(), containsInAnyOrder(legendRawInfoA, legendRawInfoB, legendRawInfoC));
     }
 
+    @Test
     public void testSaveGridSet() throws Exception {
         String name = "testGrid";
         SRS srs = SRS.getEPSG4326();
@@ -227,7 +280,55 @@ public class XMLConfigurationTest extends TestCase {
         assertNotNull(gridSet2);
         assertEquals(gridSet, gridSet2);
     }
+    
+    @Test
+    public void testNoBlobStores() throws Exception{
+        assertNotNull(config.getBlobStores());
+        assertTrue(config.getBlobStores().isEmpty());
+    }
 
+    @Test
+    public void testSaveBlobStores() throws Exception{
+        FileBlobStoreConfig store1 = new FileBlobStoreConfig();
+        store1.setId("store1");
+        store1.setDefault(true);
+        store1.setEnabled(true);
+        store1.setFileSystemBlockSize(8096);
+        store1.setBaseDirectory("/tmp/test");
+        
+        FileBlobStoreConfig store2 = new FileBlobStoreConfig();
+        store2.setId("store2");
+        store2.setDefault(false);
+        store2.setEnabled(false);
+        store2.setFileSystemBlockSize(512);
+        store2.setBaseDirectory("/tmp/test2");
+
+        config.getBlobStores().add(store1);
+        config.getBlobStores().add(store2);
+        config.save();
+
+        try {
+            XMLConfiguration.validate(XMLConfiguration
+                    .loadDocument(new FileInputStream(configFile)));
+        } catch (SAXParseException e) {
+            log.error(e.getMessage());
+            fail(e.getMessage());
+        }
+
+        XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
+        config2.initialize(new GridSetBroker(true, false));
+        
+        List<BlobStoreConfig> stores = config2.getBlobStores();
+        assertNotNull(stores);
+        assertEquals(2, stores.size());
+        assertNotSame(store1, stores.get(0));
+        assertEquals(store1, stores.get(0));
+
+        assertNotSame(store2, stores.get(1));
+        assertEquals(store2, stores.get(1));
+    }
+
+    @Test
     public void testSaveCurrentVersion() throws Exception {
 
         URL source = XMLConfiguration.class

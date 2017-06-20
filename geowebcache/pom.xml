@@ -1,46 +1,49 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <!-- mvn -Dtest=StorageBrokerTest -Dmaven.test.jvmargs='-XX:+HeapDumpOnOutOfMemoryError -Xms32m -Xmx32m' test -->  
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.geowebcache</groupId>
   <artifactId>geowebcache</artifactId>
   <packaging>pom</packaging>
-  <version>1.7-SNAPSHOT</version>
+  <version>1.12-SNAPSHOT</version><!-- GWC VERSION -->
   <name>geowebcache</name>
   <url>http://geowebcache.org</url>
 
   <properties>
-    <gt.version>13-SNAPSHOT</gt.version>
+    <gt.version>18-SNAPSHOT</gt.version>
     <jts.version>1.13</jts.version>
-    <spring.version>3.1.1.RELEASE</spring.version>
+    <jaiext.version>1.0.13</jaiext.version>
+    <spring.version>4.2.5.RELEASE</spring.version>
     <restlet.version>1.0.8</restlet.version>
-    <xstream.version>1.4.3</xstream.version>
-    <acegi.version>1.0.7</acegi.version>
+    <xstream.version>1.4.7</xstream.version>
+    <spring.security.version>4.0.4.RELEASE</spring.security.version>
     <commons-logging.version>1.1.1</commons-logging.version>
     <commons-io.version>2.1</commons-io.version>
-    <commons-dbcp.version>1.3</commons-dbcp.version>
+    <commons-dbcp.version>1.4</commons-dbcp.version>
     <commons-lang.version>2.4</commons-lang.version>
-    <commons-collections.version>3.1</commons-collections.version>
+    <commons-collections.version>3.2.2</commons-collections.version>
+    <commons-codec.version>1.10</commons-codec.version>
     <guava.version>17.0</guava.version>
-    <jsr305.version>2.0.3</jsr305.version>
+    <jsr305.version>3.0.1</jsr305.version>
     <log4j.version>1.2.14</log4j.version>
     <h2.version>1.1.119</h2.version>
-    <postgresql.version>8.4-701.jdbc3</postgresql.version>
-    <oracle.version></oracle.version>
+    <postgresql.version>9.4.1208</postgresql.version>
+    <oracle.version/>
     <java.awt.headless>true</java.awt.headless>
     <jalopy.phase>disabled</jalopy.phase>
     <jalopy.srcExcludesPattern>disabled</jalopy.srcExcludesPattern>
     <test.maxHeapSize>64M</test.maxHeapSize>
-    <maven.test.jvmargs></maven.test.jvmargs>
-    <imageio-ext.version>1.1.10</imageio-ext.version>
+    <maven.test.jvmargs/>
+    <imageio-ext.version>1.1.17</imageio-ext.version>
+    <hazelcast.version>2.3.1</hazelcast.version>
+    <joda-time.version>2.8.1</joda-time.version>
   </properties>
   
   <repositories>
     <repository>
       <id>boundless</id>
       <name>Boundless Maven Repository</name>
-      <url>http://repo.boundlessgeo.com/main</url>
+      <url>https://repo.boundlessgeo.com/main/</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
@@ -49,11 +52,6 @@
       <id>osgeo</id>
       <name>Open Source Geospatial Foundation Repository</name>
       <url>http://download.osgeo.org/webdav/geotools/</url>
-    </repository>
-    <repository>
-      <id>codehaus</id>
-      <name>Code Haus</name>
-      <url>http://repository.codehaus.org</url>
     </repository>
     <repository>
       <id>maven-restlet</id>
@@ -72,14 +70,14 @@
     <repository>
       <id>boundless</id>
       <name>Boundless</name>
-      <url>http://repo.boundlessgeo.com/main</url>
+      <url>https://repo.boundlessgeo.com/release/</url>
       <uniqueVersion>false</uniqueVersion>
     </repository>
     <snapshotRepository>
       <id>boundless</id>
       <uniqueVersion>false</uniqueVersion>
       <name>Boundless Maven Repository</name>
-      <url>http://repo.boundlessgeo.com/main</url>
+      <url>https://repo.boundlessgeo.com/snapshot/</url>
      </snapshotRepository>
   </distributionManagement>
 
@@ -92,11 +90,23 @@
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>com.vividsolutions</groupId>
+      <artifactId>jts</artifactId>
+      <version>1.13</version>
+      <exclusions>
+        <exclusion>
+          <groupId>xerces</groupId>
+          <artifactId>xercesImpl</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <version>2.5</version>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.0.1</version>
       <scope>provided</scope>
     </dependency>
     
@@ -142,11 +152,22 @@
       <artifactId>commons-collections</artifactId>
       <version>${commons-collections.version}</version>
     </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>${commons-codec.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
       <version>${log4j.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>it.geosolutions.jaiext.utilities</groupId>
+      <artifactId>jt-utilities</artifactId>
+      <version>${jaiext.version}</version>
     </dependency>
     
 	<!-- PNG Encoder dependencies -->
@@ -225,15 +246,10 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.mockrunner</groupId>
-      <artifactId>mockrunner</artifactId>
-      <version>0.3.6</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>xmlunit</groupId>
       <artifactId>xmlunit</artifactId>
       <version>1.3</version>
+      <scope>test</scope>
     </dependency>
     
     <!-- Spring dependencies -->
@@ -257,8 +273,13 @@
       <artifactId>spring-webmvc</artifactId>
       <version>${spring.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <version>${spring.version}</version>
+      <scope>test</scope>
+    </dependency>
 
-    <!-- This is for Acegi -->
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-jdbc</artifactId>
@@ -306,6 +327,13 @@
       <groupId>org.restlet</groupId>
       <artifactId>org.restlet</artifactId>
       <version>${restlet.version}</version>
+      <classifier>noobjrep</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.restlet</groupId>
+      <artifactId>org.restlet</artifactId>
+      <version>${restlet.version}</version>
+      <scope>provided</scope>
     </dependency>
     
     <dependency>
@@ -345,37 +373,20 @@
     </dependency>
     
     <dependency>
-      <groupId>net.sf.json-lib</groupId>
-      <artifactId>json-lib</artifactId>
-      <version>2.1</version>
-      <classifier>jdk13</classifier>
-    </dependency>
-    
-    <dependency>
       <groupId>com.thoughtworks.xstream</groupId>
       <artifactId>xstream</artifactId>
       <version>${xstream.version}</version>
     </dependency>
     
-    <!-- acegi dependencies -->
     <dependency>
-      <groupId>org.acegisecurity</groupId>
-      <artifactId>acegi-security</artifactId>
-      <version>${acegi.version}</version>
-      <exclusions>
-    <exclusion>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-remoting</artifactId>
-    </exclusion>
-    <exclusion>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-jdbc</artifactId>
-    </exclusion>
-    <exclusion>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-support</artifactId>
-    </exclusion>
-      </exclusions>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-web</artifactId>
+      <version>${spring.security.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-config</artifactId>
+      <version>${spring.security.version}</version>
     </dependency>
     
     <dependency>
@@ -404,7 +415,7 @@
     </dependency>
 
     <dependency>
-      <groupId>postgresql</groupId>
+      <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <version>${postgresql.version}</version>
     </dependency>
@@ -420,6 +431,14 @@
       <groupId>com.sleepycat</groupId>
       <artifactId>je</artifactId>
       <version>4.1.10</version>
+    </dependency>
+
+    <!-- Pinned transitive dependency of gwc-aws-s3 via aws-java-sdk-core. -->
+    <!-- Other code should use Java 8 JSR 310 java.time instead of joda-time. -->
+    <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+      <version>${joda-time.version}</version>
     </dependency>
 
   </dependencies>
@@ -441,7 +460,7 @@
      <plugin>
       <artifactId>maven-javadoc-plugin</artifactId>
       <configuration>
-       <source>1.7</source>
+       <source>1.8</source>
        <version>false</version>
        <noqualifier>all</noqualifier>
        <maxmemory>256M</maxmemory>
@@ -539,8 +558,8 @@
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-compiler-plugin</artifactId>
     <configuration>
-      <source>1.7</source>
-      <target>1.7</target>
+      <source>1.8</source>
+      <target>1.8</target>
       <encoding>UTF-8</encoding>
     </configuration>
       </plugin>
@@ -567,6 +586,20 @@
           <forkMode>pertest</forkMode>
           <argLine>${maven.test.jvmargs}</argLine>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.19.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <!-- initialize git revision info -->
@@ -600,7 +633,7 @@
             <descriptor>release/war.xml</descriptor>
             <descriptor>release/doc.xml</descriptor>
           </descriptors>
-          <finalName>geowebcache-1.6.0-SNAPSHOT</finalName>
+          <finalName>geowebcache-1.12-SNAPSHOT</finalName>
           <outputDirectory>${project.build.directory}/release</outputDirectory>
         </configuration>
       </plugin>
@@ -627,25 +660,6 @@
     </pluginManagement>
   </build>
   
-  <profiles>
-    <profile>
-      <id>deploy.boundless</id>
-      <distributionManagement>
-        <repository>
-          <id>boundless</id>
-          <uniqueVersion>false</uniqueVersion>
-          <name>Boundless Maven Repository</name>
-          <url>http://repo.boundlessgeo.com/main</url>
-        </repository>
-        <snapshotRepository>
-          <id>boundless</id>
-          <uniqueVersion>false</uniqueVersion>
-          <name>Boundless Maven Repository</name>
-          <url>http://repo.boundlessgeo.com/main</url>
-        </snapshotRepository>
-      </distributionManagement>
-    </profile>
-  </profiles>
 
   <modules>
     <module>core</module>
@@ -660,5 +674,8 @@
     <module>web</module>
     <module>diskquota</module>
     <module>arcgiscache</module>
+	<module>distributed</module>
+    <module>s3storage</module>
+    <module>sqlite</module>
   </modules>
 </project>

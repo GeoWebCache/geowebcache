@@ -1,14 +1,13 @@
 package org.geowebcache.arcgis.config;
 
+import com.thoughtworks.xstream.XStream;
+import junit.framework.TestCase;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
-
-import junit.framework.TestCase;
-
-import com.thoughtworks.xstream.XStream;
 
 public class CacheInfoPersisterTest extends TestCase {
 
@@ -27,6 +26,7 @@ public class CacheInfoPersisterTest extends TestCase {
                 + "  <MTolerance>2</MTolerance>" //
                 + "  <HighPrecision>true</HighPrecision>" //
                 + "  <WKID>2193</WKID>" //
+                + "  <LatestWKID>2193</LatestWKID>" //
                 + "</SpatialReference>";
 
         CacheInfoPersister persister = new CacheInfoPersister();
@@ -47,6 +47,7 @@ public class CacheInfoPersisterTest extends TestCase {
         assertEquals(2, sr.getMTolerance(), 1e-6);
         assertEquals(true, sr.isHighPrecision());
         assertEquals(2193, sr.getWKID());
+        assertEquals(2193, sr.getLatestWKID());
     }
 
     public void testLoadTileOrigin() {
@@ -73,6 +74,7 @@ public class CacheInfoPersisterTest extends TestCase {
                 + "  <TileCols>512</TileCols>" //
                 + "  <TileRows>512</TileRows>" //
                 + "  <DPI>96</DPI>" //
+                + "  <PreciseDPI>96</PreciseDPI>" //
                 + "  <LODInfos xsi:type='typens:ArrayOfLODInfo'>" //
                 + "    <LODInfo xsi:type='typens:LODInfo'>" //
                 + "    </LODInfo>" //
@@ -87,6 +89,8 @@ public class CacheInfoPersisterTest extends TestCase {
         assertNotNull(tci.getTileOrigin());
         assertEquals(512, tci.getTileCols());
         assertEquals(512, tci.getTileRows());
+        assertEquals(96, tci.getDPI());
+        assertEquals(96, tci.getPreciseDPI());
         assertNotNull(tci.getLodInfos());
         assertEquals(1, tci.getLodInfos().size());
     }
@@ -112,6 +116,8 @@ public class CacheInfoPersisterTest extends TestCase {
                 + "  <CacheTileFormat>JPEG</CacheTileFormat>"//
                 + "  <CompressionQuality>80</CompressionQuality>"//
                 + "  <Antialiasing>true</Antialiasing>"//
+            + "  <BandCount>1</BandCount>"//
+            + "  <LERCError>0</LERCError>"//
                 + "</TileImageInfo>";
 
         CacheInfoPersister persister = new CacheInfoPersister();
@@ -121,6 +127,8 @@ public class CacheInfoPersisterTest extends TestCase {
         assertEquals("JPEG", tii.getCacheTileFormat());
         assertEquals(80f, tii.getCompressionQuality(), 1e-6f);
         assertTrue(tii.isAntialiasing());
+        assertEquals(1, tii.getBandCount());
+        assertEquals(0.0f, tii.getLERCError());
     }
 
     public void testLoadCacheStorageInfo() {

@@ -12,15 +12,12 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Arne Kepp, Marius Suta,  The Open Planning Project, Copyright 2008
+ * @author Arne Kepp, Marius Suta,  The Open Planning Project, Copyright 2008 - 2015
  */
 package org.geowebcache.config;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,11 +25,9 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -54,15 +49,17 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.ContextualConfigurationProvider.Context;
+import org.geowebcache.config.legends.LegendsRawInfo;
+import org.geowebcache.config.legends.LegendsRawInfoConverter;
 import org.geowebcache.config.meta.ServiceInformation;
+import org.geowebcache.filter.parameters.CaseNormalizer;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
+import org.geowebcache.filter.parameters.IntegerParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.RegexParameterFilter;
 import org.geowebcache.filter.parameters.StringParameterFilter;
@@ -71,6 +68,7 @@ import org.geowebcache.filter.request.FileRasterFilter;
 import org.geowebcache.filter.request.WMSRasterFilter;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.meta.ContactInformation;
@@ -78,11 +76,13 @@ import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.locks.LockProvider;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.seed.TruncateLayerRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.util.ApplicationContextProvider;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import org.w3c.dom.Document;
@@ -100,45 +100,61 @@ import com.thoughtworks.xstream.io.xml.DomReader;
  * otherwise this configuration is in an inconsistent and unpredictable state.
  * </p>
  */
-public class XMLConfiguration implements Configuration {
+public class XMLConfiguration implements Configuration, InitializingBean {
+    
+    public static final String DEFAULT_CONFIGURATION_FILE_NAME = "geowebcache.xml";
 
     private static Log log = LogFactory.getLog(org.geowebcache.config.XMLConfiguration.class);
-
-    private static final String DEFAULT_CONFIGURATION_FILE_NAME = "geowebcache.xml";
 
     /**
      * Web app context, used to look up {@link XMLConfigurationProvider}s. Will be null if used the
      * {@link #XMLConfiguration(File)} constructor
      */
     private final WebApplicationContext context;
-
-    /**
-     * Location of the configuration file
-     */
-    private final File configDirectory;
-
-    /**
-     * Name of the configuration file
-     */
-    private final String configFileName;
+    
+    private final ConfigurationResourceProvider resourceProvider;
 
     private GeoWebCacheConfiguration gwcConfig;
 
     private transient Map<String, TileLayer> layers;
 
-    private String templateLocation;
-
     private GridSetBroker gridSetBroker;
 
     /**
-     * @deprecated use {@link #XMLConfiguration(ApplicationContextProvider, DefaultStorageFinder)}
+     * A flag for whether the config needs to be loaded at {@link #initialize(GridSetBroker)}. If
+     * the constructor loads the configuration, will set it to false, then each call to initialize()
+     * will reset this flag to true
+     */
+    private boolean reloadConfigOnInit = true;
+
+    /**
+     * Base Constructor with custom ConfiguratioNResourceProvider
+     *  
+     * @param appCtx use to lookup {@link XMLConfigurationProvider} extensions, may be {@code null}
+     * @param inFac
      */
     public XMLConfiguration(final ApplicationContextProvider appCtx,
-            final GridSetBroker gridSetBroker, final DefaultStorageFinder storageDirFinder)
-            throws ConfigurationException {
-        this(appCtx, storageDirFinder);
-        log.warn("This constructor is deprecated");
+            final ConfigurationResourceProvider inFac) {
+        this.context = appCtx == null ? null : appCtx.getApplicationContext();
+        this.resourceProvider = inFac;
     }
+    
+    /**
+     * File System based Constructor
+     * 
+     * @param appCtx use to lookup {@link XMLConfigurationProvider} extensions, may be {@code null}
+     * @param configFileDirectory
+     * @param storageDirFinder
+     * @throws ConfigurationException
+     */
+    public XMLConfiguration(final ApplicationContextProvider appCtx,
+            final String configFileDirectory,
+            final DefaultStorageFinder storageDirFinder) throws ConfigurationException {
+        this(appCtx, new XMLFileResourceProvider(DEFAULT_CONFIGURATION_FILE_NAME,
+                appCtx, configFileDirectory, storageDirFinder));
+        resourceProvider.setTemplate("/" + DEFAULT_CONFIGURATION_FILE_NAME);
+    }
+    
 
     /**
      * Constructor that will look for {@code geowebcache.xml} at the directory defined by
@@ -151,29 +167,9 @@ public class XMLConfiguration implements Configuration {
      */
     public XMLConfiguration(final ApplicationContextProvider appCtx,
             final DefaultStorageFinder storageDirFinder) throws ConfigurationException {
-
-        Assert.notNull(storageDirFinder);
-
-        if (appCtx == null) {
-            log.warn("No application context provider given, configuration extensions won't be available");
-        }
-        this.context = appCtx == null ? null : appCtx.getApplicationContext();
-        this.configFileName = DEFAULT_CONFIGURATION_FILE_NAME;
-        this.configDirectory = new File(storageDirFinder.getDefaultPath());
-        this.templateLocation = "/" + DEFAULT_CONFIGURATION_FILE_NAME;
-
-        log.info("Will look for geowebcache.xml in '" + configDirectory + "'");
-    }
-
-    /**
-     * @deprecated use {@link #XMLConfiguration(ApplicationContextProvider, String)}
-     */
-    public XMLConfiguration(final ApplicationContextProvider appCtx,
-            final GridSetBroker gridSetBroker, final String configFileDirectory)
-            throws ConfigurationException {
-
-        this(appCtx, configFileDirectory);
-        log.warn("This constructor is deprecated");
+        this(appCtx, new XMLFileResourceProvider(DEFAULT_CONFIGURATION_FILE_NAME,
+                appCtx, storageDirFinder));
+        resourceProvider.setTemplate("/" + DEFAULT_CONFIGURATION_FILE_NAME);
     }
 
     /**
@@ -185,111 +181,106 @@ public class XMLConfiguration implements Configuration {
      */
     public XMLConfiguration(final ApplicationContextProvider appCtx,
             final String configFileDirectory) throws ConfigurationException {
+        this(appCtx, configFileDirectory, null);
+    }
 
-        Assert.notNull(configFileDirectory);
-        if (appCtx == null) {
-            log.warn("No application context provider given, configuration extensions won't be available");
-        }
-        this.context = appCtx == null ? null : appCtx.getApplicationContext();
-        this.configFileName = DEFAULT_CONFIGURATION_FILE_NAME;
-        this.templateLocation = "/" + DEFAULT_CONFIGURATION_FILE_NAME;
-
-        if (configFileDirectory.startsWith("/") || configFileDirectory.contains(":\\")
-                || configFileDirectory.startsWith("\\\\")) {
-
-            log.info("Provided configuration directory as absolute path '" + configFileDirectory + "'");
-            this.configDirectory = new File(configFileDirectory);
-        } else {
-
-            String baseDir = context.getServletContext().getRealPath("");
-            log.info("Provided configuration directory relative to servlet context '" + baseDir + "': "
-                    + configFileDirectory);
-            this.configDirectory = new File(baseDir, configFileDirectory);
-        }
-
-        log.info("Will look for geowebcache.xml in '" + configFileDirectory + "'");
+    
+    /**
+     * @deprecated use {@link #XMLFileConfiguration(ApplicationContextProvider, DefaultStorageFinder)}
+     */
+    @Deprecated
+    public XMLConfiguration(final ApplicationContextProvider appCtx,
+            final GridSetBroker gridSetBroker, final DefaultStorageFinder storageDirFinder)
+            throws ConfigurationException {
+        this(appCtx, storageDirFinder);
+        log.warn("This constructor is deprecated");
     }
 
     /**
-     * Constructor that receives the configuration file. Only used for unit testing.
+     * @deprecated use {@link #XMLFileConfiguration(ApplicationContextProvider, String)}
      */
-    public XMLConfiguration(final InputStream in) throws ConfigurationException {
+    @Deprecated
+    public XMLConfiguration(final ApplicationContextProvider appCtx,
+            final GridSetBroker gridSetBroker, final String configFileDirectory)
+            throws ConfigurationException {
 
-        this.configDirectory = null;
-        this.configFileName = null;
-        this.context = null;
-        this.templateLocation = "/" + DEFAULT_CONFIGURATION_FILE_NAME;
-
-        try {
-            this.gwcConfig = loadConfiguration(in);
-        } catch (IOException e) {
-            throw new ConfigurationException("Error parsing config file", e);
-        }
+        this(appCtx, configFileDirectory);
+        log.warn("This constructor is deprecated");
     }
-
+    
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        if (resourceProvider.hasInput()) {
+            this.gwcConfig = loadConfiguration();
+        }
+        this.reloadConfigOnInit = false;
+    }
+    
     /**
-     * Allows to set the location of the template file to create geowebcache.xml from when it's not
-     * found in the cache directory.
-     * 
-     * @param templateLocation
-     *            location of the template geowebcache.xml file, must be a classpath location. If
-     *            not set defaults to /geowebcache.xml
+     * Constructor with inputstream (only for testing)
+     * @throws ConfigurationException 
      */
-    public void setTemplate(final String templateLocation) {
-        this.templateLocation = templateLocation;
-    }
-
-    private File findConfigFile() throws ConfigurationException {
-        if (null == configDirectory) {
-            // used the InputStream constructor
-            throw new IllegalStateException();
-        }
-
-        if (!configDirectory.exists() && !configDirectory.mkdirs()) {
-            throw new ConfigurationException(
-                    "Configuration directory does not exist and cannot be created: '"
-                            + configDirectory.getAbsolutePath() + "'");
-        }
-        if (!configDirectory.canWrite()) {
-            throw new ConfigurationException("Configuration directory is not writable: '"
-                    + configDirectory.getAbsolutePath() + "'");
-        }
-
-        File xmlFile = new File(configDirectory, configFileName);
-        return xmlFile;
-    }
-
-    private File findOrCreateConfFile() throws ConfigurationException {
-        File xmlFile = findConfigFile();
-
-        if (xmlFile.exists()) {
-            log.info("Found configuration file in " + configDirectory.getAbsolutePath());
-        } else {
-            log.warn("Found no configuration file in config directory, will create one at '"
-                    + xmlFile.getAbsolutePath() + "' from template "
-                    + getClass().getResource(templateLocation).toExternalForm());
-            // grab template from classpath
-            try {
-                InputStream templateStream = getClass().getResourceAsStream(templateLocation);
-                try {
-                    OutputStream output = new FileOutputStream(xmlFile);
-                    try {
-                        IOUtils.copy(templateStream, output);
-                    } finally {
-                        output.flush();
-                        output.close();
-                    }
-                } finally {
-                    templateStream.close();
-                }
-            } catch (IOException e) {
-                throw new ConfigurationException("Error copying template config to "
-                        + xmlFile.getAbsolutePath(), e);
+    public XMLConfiguration(final InputStream is) throws ConfigurationException {
+        this (null, new ConfigurationResourceProvider() {
+                        
+            @Override
+            public InputStream in() {
+                throw new UnsupportedOperationException();
             }
 
-        }
+            @Override
+            public OutputStream out() throws IOException {
+                throw new UnsupportedOperationException();
+            }       
+            
+            @Override
+            public void backup() throws IOException {
+                throw new UnsupportedOperationException();
+            }
 
-        return xmlFile;
+            @Override
+            public void setTemplate(String template) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String getLocation() throws IOException {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String getId() {
+                return "mockConfig";
+            }
+
+            @Override
+            public boolean hasInput() {
+                return false;
+            }
+
+            @Override
+            public boolean hasOutput() {
+                return false;
+            }
+            
+        });
+        try {
+            gwcConfig = loadConfiguration(is);
+        } catch (IOException e) {
+            throw new ConfigurationException(e.getMessage(), e);
+        }
+    }
+    
+    public void setTemplate(String template) {
+       resourceProvider.setTemplate(template);
+    }
+
+    public String getConfigLocation() throws ConfigurationException {
+        try {
+            return resourceProvider.getLocation();
+        } catch (IOException e) {
+            throw new ConfigurationException(e.getMessage(), e);
+        }
     }
 
     public boolean isRuntimeStatsEnabled() {
@@ -371,16 +362,10 @@ public class XMLConfiguration implements Configuration {
     }
 
     private GeoWebCacheConfiguration loadConfiguration() throws ConfigurationException {
-        File xmlFile = findOrCreateConfFile();
-        Assert.notNull(xmlFile);
-        GeoWebCacheConfiguration config = loadConfiguration(xmlFile);
-        return config;
-    }
-
-    private GeoWebCacheConfiguration loadConfiguration(File xmlFile) throws ConfigurationException {
+        Assert.isTrue(resourceProvider.hasInput());
         InputStream in;
         try {
-            in = new FileInputStream(xmlFile);
+            in = resourceProvider.in();
             try {
                 return loadConfiguration(in);
             } finally {
@@ -388,14 +373,14 @@ public class XMLConfiguration implements Configuration {
             }
         } catch (IOException e) {
             throw new ConfigurationException("Error parsing config file "
-                    + xmlFile.getAbsolutePath(), e);
+                    + resourceProvider.getId(), e);
         }
     }
 
     private GeoWebCacheConfiguration loadConfiguration(InputStream xmlFile) throws IOException,
             ConfigurationException {
         Node rootNode = loadDocument(xmlFile);
-        XStream xs = getConfiguredXStreamWithContext(new XStream(), Context.PERSIST);
+        XStream xs = getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.PERSIST);
 
         GeoWebCacheConfiguration config;
         config = (GeoWebCacheConfiguration) xs.unmarshal(new DomReader((Element) rootNode));
@@ -406,58 +391,17 @@ public class XMLConfiguration implements Configuration {
      * @see org.geowebcache.config.Configuration#save()
      */
     public synchronized void save() throws IOException {
-        File xmlFile;
-        try {
-            xmlFile = findOrCreateConfFile();
-        } catch (IllegalStateException e) {
-            // ignore, used the InputStream constructor
+        if (!resourceProvider.hasOutput()) {
             return;
-        } catch (ConfigurationException e) {
-            if (e.getCause() instanceof IOException) {
-                throw (IOException) e.getCause();
-            }
-            throw (IOException) new IOException(e.getMessage()).initCause(e);
         }
-
+        
         try {
-            backUpConfig(xmlFile);
+            resourceProvider.backup();
         } catch (Exception e) {
-            log.warn("Error creating back up of configuration file " + configFileName, e);
-        }
-        persistToFile(xmlFile);
-    }
-
-    private void backUpConfig(final File xmlFile) throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyy-MM-dd'T'HHmmss").format(new Date());
-        String backUpFileName = "geowebcache_" + timeStamp + ".bak";
-        File parentFile = xmlFile.getParentFile();
-
-        log.debug("Backing up config file " + xmlFile.getName() + " to " + backUpFileName);
-
-        String[] previousBackUps = parentFile.list(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                if (configFileName.equals(name)) {
-                    return false;
-                }
-                if (name.startsWith(configFileName) && name.endsWith(".bak")) {
-                    return true;
-                }
-                return false;
-            }
-        });
-
-        final int maxBackups = 10;
-        if (previousBackUps.length > maxBackups) {
-            Arrays.sort(previousBackUps);
-            String oldest = previousBackUps[0];
-            log.debug("Deleting oldest config backup " + oldest + " to keep a maximum of "
-                    + maxBackups + " backups.");
-            new File(parentFile, oldest).delete();
-        }
-
-        File backUpFile = new File(parentFile, backUpFileName);
-        FileUtils.copyFile(xmlFile, backUpFile);
-        log.debug("Config backup done");
+            log.warn("Error creating back up of configuration file " + resourceProvider.getId(), e);
+        } 
+        
+        persistToFile();
     }
 
     public XStream getConfiguredXStream(XStream xs) {
@@ -473,7 +417,20 @@ public class XMLConfiguration implements Configuration {
     
     public static XStream getConfiguredXStreamWithContext(XStream xs, WebApplicationContext context, 
             ContextualConfigurationProvider.Context providerContext) {
-        // XStream xs = xstream;
+        
+        {
+            // Allow any implementation of these extension points
+            xs.allowTypeHierarchy(org.geowebcache.layer.TileLayer.class);
+            xs.allowTypeHierarchy(org.geowebcache.filter.parameters.ParameterFilter.class);
+            xs.allowTypeHierarchy(org.geowebcache.filter.request.RequestFilter.class);
+            xs.allowTypeHierarchy(org.geowebcache.config.BlobStoreConfig.class);
+            xs.allowTypeHierarchy(org.geowebcache.config.Configuration.class);
+            
+            // Allow anything that's part of GWC
+            // TODO: replace this with a more narrow whitelist
+            xs.allowTypesByWildcard(new String[]{"org.geowebcache.**"});
+        }
+        
         xs.setMode(XStream.NO_REFERENCES);
 
         xs.addDefaultImplementation(ArrayList.class, List.class);
@@ -488,6 +445,14 @@ public class XMLConfiguration implements Configuration {
         // xs.alias("layers", List.class);
         xs.alias("wmsLayer", WMSLayer.class);
 
+        // configuration for legends info
+        xs.registerConverter(new LegendsRawInfoConverter());
+        xs.alias("legends", LegendsRawInfo.class);
+
+        xs.alias("blobStores", new ArrayList<BlobStoreConfig>().getClass());
+        xs.alias("FileBlobStore", FileBlobStoreConfig.class);
+        xs.aliasAttribute(BlobStoreConfig.class, "_default", "default");
+
         // These two are for 1.1.x compatibility
         xs.alias("grids", new ArrayList<XMLOldGrid>().getClass());
         xs.alias("grid", XMLOldGrid.class);
@@ -501,10 +466,12 @@ public class XMLConfiguration implements Configuration {
         xs.alias("parameterFilters", new ArrayList<ParameterFilter>().getClass());
         xs.alias("parameterFilter", ParameterFilter.class);
         xs.alias("seedRequest", SeedRequest.class);
-
-        xs.alias("floatParameterFilter", FloatParameterFilter.class);
-        xs.alias("regexParameterFilter", RegexParameterFilter.class);
-        xs.alias("stringParameterFilter", StringParameterFilter.class);
+        
+        xs.processAnnotations(CaseNormalizer.class);
+        xs.processAnnotations(StringParameterFilter.class);
+        xs.processAnnotations(RegexParameterFilter.class);
+        xs.processAnnotations(FloatParameterFilter.class);
+        xs.processAnnotations(IntegerParameterFilter.class);
 
         xs.alias("formatModifier", FormatModifier.class);
 
@@ -553,37 +520,29 @@ public class XMLConfiguration implements Configuration {
      * 
      * throws an exception if it does not succeed
      */
-    private void persistToFile(File xmlFile) throws IOException {
+    private void persistToFile() throws IOException {
+        Assert.isTrue(resourceProvider.hasOutput());
         // create the XStream for serializing the configuration
-        XStream xs = getConfiguredXStreamWithContext(new XStream(), Context.PERSIST);
+        XStream xs = getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.PERSIST);
 
-        OutputStreamWriter writer = null;
-        try {
-            try {
-                writer = new OutputStreamWriter(new FileOutputStream(xmlFile), "UTF-8");
-            } catch (UnsupportedEncodingException uee) {
-                uee.printStackTrace();
-                throw new IOException(uee.getMessage());
-            } catch (FileNotFoundException fnfe) {
-                throw fnfe;
-            }
-    
-            try {
-                // set version to latest
-                String currentSchemaVersion = getCurrentSchemaVersion();
-                gwcConfig.setVersion(currentSchemaVersion);
-    
-                writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-                xs.toXML(gwcConfig, writer);
-            } catch (IOException e) {
-                throw (IOException) new IOException("Error writing to " + xmlFile.getAbsolutePath()
-                        + ": " + e.getMessage()).initCause(e);
-            }
-        } finally {
-            IOUtils.closeQuietly(writer);
+        try (OutputStreamWriter writer = new OutputStreamWriter(resourceProvider.out(), "UTF-8")) {
+            // set version to latest
+            String currentSchemaVersion = getCurrentSchemaVersion();
+            gwcConfig.setVersion(currentSchemaVersion);
+
+            writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+            xs.toXML(gwcConfig, writer);
+        } catch (UnsupportedEncodingException uee) {
+            uee.printStackTrace();
+            throw new IOException(uee.getMessage());
+        } catch (FileNotFoundException fnfe) {
+            throw fnfe;
+        } catch (IOException e) {
+            throw (IOException) new IOException("Error writing to " + resourceProvider.getId()
+                    + ": " + e.getMessage()).initCause(e);
         }
 
-        log.info("Wrote configuration to " + xmlFile.getAbsolutePath());
+        log.info("Wrote configuration to " + resourceProvider.getId());
     }
 
     /**
@@ -591,7 +550,7 @@ public class XMLConfiguration implements Configuration {
      * @see org.geowebcache.config.Configuration#canSave(org.geowebcache.layer.TileLayer)
      */
     public boolean canSave(TileLayer tl) {
-        return tl instanceof WMSLayer;
+        return tl instanceof WMSLayer && !tl.isTransientLayer();
     }
 
     /**
@@ -899,7 +858,7 @@ public class XMLConfiguration implements Configuration {
 
         this.gridSetBroker = gridSetBroker;
 
-        if (this.configFileName != null) {
+        if (this.reloadConfigOnInit && resourceProvider.hasInput()) {
             this.gwcConfig = loadConfiguration();
         }
 
@@ -918,6 +877,8 @@ public class XMLConfiguration implements Configuration {
         }
 
         updateLayers();
+        
+        this.reloadConfigOnInit = true;
 
         return getTileLayerCount();
     }
@@ -959,11 +920,7 @@ public class XMLConfiguration implements Configuration {
      * @see org.geowebcache.config.Configuration#getIdentifier()
      */
     public String getIdentifier() {
-        if (configDirectory != null) {
-            return configDirectory.getAbsolutePath();
-        }
-
-        return "mockConfig";
+        return resourceProvider.getId();
     }
 
     public void setRelativePath(String relPath) {
@@ -1040,6 +997,14 @@ public class XMLConfiguration implements Configuration {
             return gwcConfig.getFullWMS();
         }
         return null;        
+    }
+
+    public List<BlobStoreConfig> getBlobStores() {
+        return gwcConfig.getBlobStores();
+    }
+    
+    public LockProvider getLockProvider() {
+        return gwcConfig.getLockProvider();
     }
 
 }

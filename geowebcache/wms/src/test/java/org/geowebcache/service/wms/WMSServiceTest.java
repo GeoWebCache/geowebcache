@@ -4,6 +4,8 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,8 +36,9 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
-
-import com.mockrunner.mock.web.MockHttpServletResponse;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 public class WMSServiceTest extends TestCase {
 
@@ -84,14 +87,16 @@ public class WMSServiceTest extends TestCase {
         service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
 
         @SuppressWarnings("unchecked")
-        Map<String, String> kvp = new CaseInsensitiveMap();
-        kvp.put("format", "image/png");
-        kvp.put("srs", "EPSG:4326");
-        kvp.put("width", "256");
-        kvp.put("height", "256");
-        kvp.put("layers", "mockLayer");
-        kvp.put("tiled", "true");
-        kvp.put("request", "GetMap");
+        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        kvp.put("format", new String[]{"image/png"}
+        
+        );
+        kvp.put("srs", new String[]{"EPSG:4326"});
+        kvp.put("width", new String[]{"256"});
+        kvp.put("height", new String[]{"256"});
+        kvp.put("layers", new String[]{"mockLayer"});
+        kvp.put("tiled", new String[]{"true"});
+        kvp.put("request", new String[]{"GetMap"});
 
         List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale",
                 "EPSG:4326");
@@ -100,7 +105,7 @@ public class WMSServiceTest extends TestCase {
         // make the request match a tile in the expected gridset
         BoundingBox bounds;
         bounds = tileLayer.getGridSubset(expectedGridset).boundsFromIndex(tileIndex);
-        kvp.put("bbox", bounds.toString());
+        kvp.put("bbox", new String[]{bounds.toString()});
 
         HttpServletRequest req = mock(HttpServletRequest.class);
         HttpServletResponse resp = mock(HttpServletResponse.class);
@@ -126,6 +131,7 @@ public class WMSServiceTest extends TestCase {
         when(tld.getTileLayer(eq(layerName))).thenReturn(tileLayer);
         when(tileLayer.getName()).thenReturn(layerName);
         when(tileLayer.isEnabled()).thenReturn(true);
+        when(tileLayer.isAdvertised()).thenReturn(true);
 
         final MimeType mimeType1 = MimeType.createFromFormat("image/png");
         final MimeType mimeType2 = MimeType.createFromFormat("image/jpeg");
@@ -179,10 +185,10 @@ public class WMSServiceTest extends TestCase {
         service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
     
         @SuppressWarnings("unchecked")
-        Map<String, String> kvp = new CaseInsensitiveMap();
-        kvp.put("service", "WMS");
-        kvp.put("version", "1.1.1");
-        kvp.put("request", "GetCapabilities");
+        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        kvp.put("service", new String[]{"WMS"});
+        kvp.put("version", new String[]{"1.1.1"});
+        kvp.put("request", new String[]{"GetCapabilities"});
        
     
         HttpServletRequest req = mock(HttpServletRequest.class);
@@ -210,6 +216,44 @@ public class WMSServiceTest extends TestCase {
         assertEquals("inline;filename=wms-getcapabilities.xml", resp.getHeader("content-disposition"));                            
     
     }
+    
+    public void testGetCapEncoding() throws Exception {
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
+    
+        @SuppressWarnings("unchecked")
+        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        kvp.put("service", new String[]{"WMS"});
+        kvp.put("version", new String[]{"1.1.1"});
+        kvp.put("request", new String[]{"GetCapabilities"});
+       
+    
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        when(req.getCharacterEncoding()).thenReturn("UTF-8");
+        when(req.getParameterMap()).thenReturn(kvp);
+
+        List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale","EPSG:4326");
+        TileLayer tileLayer = mockTileLayer("möcklāyer😎", gridSetNames);
+        when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
+        
+    
+        ConveyorTile conv = service.getConveyor(req, resp);
+        assertNotNull(conv);
+        
+        
+        assertEquals(Conveyor.RequestHandler.SERVICE,conv.reqHandler);
+        WMSGetCapabilities wmsCap = new WMSGetCapabilities(tld, conv.servletReq,"http://localhost:8080", "/service/wms", new NullURLMangler());
+        wmsCap.writeResponse(conv.servletResp);
+        
+        String capAsString = new String(resp.getContentAsByteArray(), StandardCharsets.UTF_8);
+        
+        Assert.assertThat(capAsString, Matchers.containsString("möcklāyer😎"));
+    
+    }
 
     public void testGetConveyorWithParameters() throws Exception {
 
@@ -222,12 +266,12 @@ public class WMSServiceTest extends TestCase {
         String timeValue = "00:00";
 
         @SuppressWarnings("unchecked")
-        Map<String, String> kvp = new CaseInsensitiveMap();
-        kvp.put("service", "WMS");
-        kvp.put("version", "1.1.1");
-        kvp.put("request", "GetFeatureInfo");
-        kvp.put("layers", layerName);
-        kvp.put("time", timeValue);
+        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        kvp.put("service", new String[]{"WMS"});
+        kvp.put("version", new String[]{"1.1.1"});
+        kvp.put("request", new String[]{"GetFeatureInfo"});
+        kvp.put("layers", new String[]{layerName});
+        kvp.put("time", new String[]{timeValue});
 
         List<String> mimeFormats = new ArrayList<String>();
         mimeFormats.add("image/png");

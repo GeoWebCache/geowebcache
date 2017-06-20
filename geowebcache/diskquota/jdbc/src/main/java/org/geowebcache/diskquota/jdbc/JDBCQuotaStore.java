@@ -50,9 +50,10 @@ import org.geowebcache.diskquota.storage.TileSet;
 import org.geowebcache.diskquota.storage.TileSetVisitor;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -185,7 +186,7 @@ public class JDBCQuotaStore implements QuotaStore {
 
                 // get the existing table names
                 List<String> existingLayers = jt.query(dialect.getAllLayersQuery(schema),
-                        new ParameterizedRowMapper<String>() {
+                        new RowMapper<String>() {
 
                             public String mapRow(ResultSet rs, int rowNum) throws SQLException {
                                 return rs.getString(1);
@@ -232,7 +233,9 @@ public class JDBCQuotaStore implements QuotaStore {
                     layerTileSets = Collections.singleton(new TileSet(GLOBAL_QUOTA_NAME));
                 }
                 for (TileSet tset : layerTileSets) {
-                    createTileSet(tset);
+                    // other nodes in the cluster might be trying to create the same layer,
+                    // so use getOrCreate
+                    getOrCreateTileSet(tset);
                 }
 
             }
@@ -240,28 +243,47 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     public Quota getGloballyUsedQuota() throws InterruptedException {
-        return getUsedQuotaByTileSetIdInternal(GLOBAL_QUOTA_NAME);
+        return nonNullQuota(getUsedQuotaByTileSetIdInternal(GLOBAL_QUOTA_NAME));
     }
 
     public Quota getUsedQuotaByTileSetId(String tileSetId) {
-        return getUsedQuotaByTileSetIdInternal(tileSetId);
+        return nonNullQuota(getUsedQuotaByTileSetIdInternal(tileSetId));
     }
 
     public Quota getUsedQuotaByLayerName(String layerName) {
         String sql = dialect.getUsedQuotaByLayerName(schema, "layerName");
-        return jt.queryForOptionalObject(sql, new DiskQuotaMapper(), Collections.singletonMap("layerName", layerName));
+        return nonNullQuota(jt.queryForOptionalObject(sql, new DiskQuotaMapper(), Collections.singletonMap("layerName", layerName)));
 
     }
     
     public Quota getUsedQuotaByGridsetid(String gridsetId) {
         String sql = dialect.getUsedQuotaByGridSetId(schema, "gridSetId");
-        return jt.queryForOptionalObject(sql, new DiskQuotaMapper(), Collections.singletonMap("gridSetId", gridsetId));
+        return nonNullQuota(jt.queryForOptionalObject(sql, new DiskQuotaMapper(), Collections.singletonMap("gridSetId", gridsetId)));
+    }
+
+    /**
+     * Utility method that retrieves the disk quota used by a layer gridset.
+     */
+    public Quota getUsedQuotaByLayerGridset(String layerName, String gridsetId) {
+        // getting the sql query for the current database
+        String sql = dialect.getUsedQuotaByLayerGridset(schema, "layerName", "gridSetId");
+        // setup the parameters for the sql query
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("layerName", layerName);
+        parameters.put("gridSetId", gridsetId);
+        // execute the sql query
+        return nonNullQuota(jt.queryForOptionalObject(sql, new DiskQuotaMapper(), parameters));
+    }
+    
+    public Quota getUsedQuotaByParametersId(String parametersId) {
+        String sql = dialect.getUsedQuotaByParametersId(schema, "parametersId");
+        return nonNullQuota(jt.queryForOptionalObject(sql, new DiskQuotaMapper(), Collections.singletonMap("parametersId", parametersId)));
 
     }
 
     protected Quota getUsedQuotaByTileSetIdInternal(final String tileSetId) {
         String sql = dialect.getUsedQuotaByTileSetId(schema, "key");
-        return jt.queryForOptionalObject(sql, new ParameterizedRowMapper<Quota>() {
+        return jt.queryForOptionalObject(sql, new RowMapper<Quota>() {
 
             public Quota mapRow(ResultSet rs, int rowNum) throws SQLException {
                 BigDecimal bytes = rs.getBigDecimal(1);
@@ -270,6 +292,19 @@ public class JDBCQuotaStore implements QuotaStore {
                 return quota;
             }
         }, Collections.singletonMap("key", tileSetId));
+    }
+    
+    /**
+     * Return a empty quota object in case a null value is passed, otherwise return the passed value
+     * @param optionalQuota
+     * @return
+     */
+    private Quota nonNullQuota(Quota optionalQuota) {
+        if(optionalQuota == null) {
+            return new Quota();
+        } else {
+            return optionalQuota;
+        }
     }
 
     public void deleteLayer(final String layerName) {
@@ -287,18 +322,18 @@ public class JDBCQuotaStore implements QuotaStore {
 
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
-                // first gather the disk quota used by the gridset, and update the global quota
-                Quota quota = getUsedQuotaByGridsetid(gridSetId);
+                // get the disk quota used by the layer gridset
+                Quota quota = getUsedQuotaByLayerGridset(layerName, gridSetId);
+                // we will subtracting the current disk quota value
                 quota.setBytes(quota.getBytes().negate());
+                // update the global disk quota by subtracting the value above
                 String updateQuota = dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
-                Map<String, Object> params = new HashMap<String, Object>();
+                Map<String, Object> params = new HashMap<>();
                 params.put("tileSetId", GLOBAL_QUOTA_NAME);
                 params.put("bytes", new BigDecimal(quota.getBytes()));
                 jt.update(updateQuota, params);
-                
-                // then delete all the gridsets with the specified id
-                String statement = dialect.getLayerGridDeletionStatement(schema, "layerName",
-                        "gridSetId");
+                // delete layer gridset
+                String statement = dialect.getLayerGridDeletionStatement(schema, "layerName", "gridSetId");
                 params = new HashMap<String, Object>();
                 params.put("layerName", layerName);
                 params.put("gridSetId", gridSetId);
@@ -363,7 +398,7 @@ public class JDBCQuotaStore implements QuotaStore {
     public void accept(final TileSetVisitor visitor) {
         String getTileSet = dialect.getTileSetsQuery(schema);
         final TileSetRowMapper tileSetMapper = new TileSetRowMapper();
-        jt.getJdbcOperations().query(getTileSet, new RowCallbackHandler() {
+        jt.query(getTileSet, new RowCallbackHandler() {
 
             public void processRow(ResultSet rs) throws SQLException {
                 TileSet tileSet = tileSetMapper.mapRow(rs, 0);
@@ -412,19 +447,25 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     protected TileSet getOrCreateTileSet(TileSet tileSet) {
+        Exception lastException = null;
         for (int i = 0; i < maxLoops; i++) {
             TileSet tset = getTileSetByIdInternal(tileSet.getId());
             if (tset != null) {
                 return tset;
             }
 
-            if (createTileSet(tileSet)) {
-                return tileSet;
+            try {
+                if (createTileSet(tileSet)) {
+                    return tileSet;
+                }
+            } catch (DataAccessException e) {
+                // fine, it might be another node created this table
+                lastException = e;
             }
         }
 
         throw new ConcurrencyFailureException("Failed to create or locate tileset " + tileSet
-                + " after " + maxLoops + " attempts");
+                + " after " + maxLoops + " attempts", lastException);
     }
 
     public TilePageCalculator getTilePageCalculator() {
@@ -595,7 +636,7 @@ public class JDBCQuotaStore implements QuotaStore {
 
     private PageStats getPageStats(String pageStatsKey) {
         String getPageStats = dialect.getPageStats(schema, "key");
-        return jt.queryForOptionalObject(getPageStats, new ParameterizedRowMapper<PageStats>() {
+        return jt.queryForOptionalObject(getPageStats, new RowMapper<PageStats>() {
 
             public PageStats mapRow(ResultSet rs, int rowNum) throws SQLException {
                 PageStats ps = new PageStats(0);
@@ -616,7 +657,7 @@ public class JDBCQuotaStore implements QuotaStore {
         return executor.submit(new Callable<List<PageStats>>() {
 
             public List<PageStats> call() throws Exception {
-                return (List<PageStats>) tt.execute(new TransactionCallback() {
+                return (List<PageStats>) tt.execute(new TransactionCallback<Object>() {
 
                     public Object doInTransaction(TransactionStatus status) {
                         List<PageStats> result = new ArrayList<PageStats>();
@@ -753,7 +794,7 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     public PageStats setTruncated(final TilePage page) throws InterruptedException {
-        return (PageStats) tt.execute(new TransactionCallback() {
+        return (PageStats) tt.execute(new TransactionCallback<Object>() {
 
             public Object doInTransaction(TransactionStatus status) {
                 if (log.isDebugEnabled()) {
@@ -791,14 +832,14 @@ public class JDBCQuotaStore implements QuotaStore {
         tt = null;
         jt = null;
     }
-
+    
     /**
      * Maps a BigDecimal column into a Quota object
      * 
      * @author Andrea Aime - GeoSolutions
      *
      */
-    static class DiskQuotaMapper implements ParameterizedRowMapper<Quota> {
+    static class DiskQuotaMapper implements RowMapper<Quota> {
         public Quota mapRow(ResultSet rs, int rowNum) throws SQLException {
             BigDecimal bytes = rs.getBigDecimal(1);
             if (bytes == null) {
@@ -814,7 +855,7 @@ public class JDBCQuotaStore implements QuotaStore {
      * @author Andrea Aime - GeoSolutions
      * 
      */
-    static class TileSetRowMapper implements ParameterizedRowMapper<TileSet> {
+    static class TileSetRowMapper implements RowMapper<TileSet> {
 
         public TileSet mapRow(ResultSet rs, int rowNum) throws SQLException {
             String key = rs.getString(1);
@@ -836,7 +877,7 @@ public class JDBCQuotaStore implements QuotaStore {
      * @author Andrea Aime - GeoSolutions
      * 
      */
-    static class TilePageRowMapper implements ParameterizedRowMapper<TilePage> {
+    static class TilePageRowMapper implements RowMapper<TilePage> {
 
         public TilePage mapRow(ResultSet rs, int rowNum) throws SQLException {
             String tileSetId = rs.getString(1);
@@ -847,5 +888,31 @@ public class JDBCQuotaStore implements QuotaStore {
 
             return new TilePage(tileSetId, pageX, pageY, pageZ, creationTimeMinutes);
         }
+    }
+
+    @Override
+    public void deleteParameters(final String layerName, final String parametersId) {
+        tt.execute(new TransactionCallbackWithoutResult() {
+
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                // first gather the disk quota used by the gridset, and update the global quota
+                Quota quota = getUsedQuotaByParametersId(parametersId);
+                quota.setBytes(quota.getBytes().negate());
+                String updateQuota = dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
+                Map<String, Object> params = new HashMap<String, Object>();
+                params.put("tileSetId", GLOBAL_QUOTA_NAME);
+                params.put("bytes", new BigDecimal(quota.getBytes()));
+                jt.update(updateQuota, params);
+                
+                // then delete all the gridsets with the specified id
+                String statement = dialect.getLayerParametersDeletionStatement(schema, "layerName",
+                        "parametersId");
+                params = new HashMap<String, Object>();
+                params.put("layerName", layerName);
+                params.put("parametersId", parametersId);
+                jt.update(statement, params);
+            }
+        });
     }
 }

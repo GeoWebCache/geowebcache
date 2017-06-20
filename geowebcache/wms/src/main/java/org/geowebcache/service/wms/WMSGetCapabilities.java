@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.legends.LegendInfo;
 import org.geowebcache.config.meta.ServiceContact;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.config.meta.ServiceProvider;
@@ -54,6 +55,8 @@ import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class WMSGetCapabilities {
 
@@ -268,7 +271,7 @@ public class WMSGetCapabilities {
         HashSet<String> formats = new HashSet<String>();
 
         for (TileLayer layer : layerIter) {
-            if (!layer.isEnabled()) {
+            if (!layer.isEnabled()  || !layer.isAdvertised()) {
                 continue;
             }
             if (layer.getMimeTypes() != null) {
@@ -296,7 +299,7 @@ public class WMSGetCapabilities {
         HashSet<String> formats = new HashSet<String>();
 
         for (TileLayer layer : layerIter) {
-            if (!layer.isEnabled()) {
+            if (!layer.isEnabled()  || !layer.isAdvertised()) {
                 continue;
             }
             if (layer.getMimeTypes() != null) {
@@ -335,7 +338,7 @@ public class WMSGetCapabilities {
         xml.indentElement("VendorSpecificCapabilities");
         Iterable<TileLayer> layerIter = tld.getLayerList();
         for (TileLayer layer : layerIter) {
-            if (!layer.isEnabled()) {
+            if (!layer.isEnabled()  || !layer.isAdvertised()) {
                 continue;
             }
 
@@ -354,10 +357,11 @@ public class WMSGetCapabilities {
                 }
 
                 List<String> styles = getStyles(layer.getParameterFilters());
+                Map<String, LegendInfo> legendsInfo = layer.getLayerLegendsInfo();
                 for (String format : formats) {
                     for (String style : styles) {
                         try {
-                            capabilityVendorSpecificTileset(xml, layer, grid, format, style);
+                            capabilityVendorSpecificTileset(xml, layer, grid, format, style, legendsInfo.get(style));
                         } catch (GeoWebCacheException e) {
                             log.error(e.getMessage());
                         }
@@ -393,7 +397,7 @@ public class WMSGetCapabilities {
     }
 
     private void capabilityVendorSpecificTileset(XMLBuilder xml, TileLayer layer,
-            GridSubset grid, String formatStr, String styleName) throws GeoWebCacheException, IOException {
+            GridSubset grid, String formatStr, String styleName, LegendInfo legendInfo) throws GeoWebCacheException, IOException {
 
         String srsStr = grid.getSRS().toString();
         StringBuilder resolutionsStr = new StringBuilder();
@@ -415,9 +419,43 @@ public class WMSGetCapabilities {
         xml.simpleElement("Height", Integer.toString(grid.getTileHeight()), true);
         xml.simpleElement("Format", formatStr, true);
         xml.simpleElement("Layers", layer.getName(), true);
-        xml.simpleElement("Styles", ServletUtils.URLEncode(styleName), true);
+        xml.indentElement("Styles");
+        xml.indentElement("Style");
+        xml.simpleElement("ows:Identifier", ServletUtils.URLEncode(styleName), true);
+        encodeStyleLegendGraphic(xml, legendInfo);
+        xml.endElement();
 
         xml.endElement();
+        xml.endElement();
+    }
+
+    /**
+     * XML encodes the provided legend information. If the provided information legend is NULL
+     * nothing is done.
+     */
+    private void encodeStyleLegendGraphic(XMLBuilder xml, LegendInfo legendInfo) throws IOException {
+        if (legendInfo == null) {
+            // nothing to do
+            return;
+        }
+        // validate legend info (this attributes are mandatory for WMS 1.1.0, 1.1.1 and 1.3.0)
+        checkNotNull(legendInfo.getWidth(), "Legend with is mandatory in WMS (1.1.0, 1.1.1 and 1.3.0).");
+        checkNotNull(legendInfo.getHeight(), "Legend height is mandatory in WMS (1.1.0, 1.1.1 and 1.3.0).");
+        checkNotNull(legendInfo.getFormat(), "Legend format is mandatory in WMS (1.1.0, 1.1.1 and 1.3.0).");
+        checkNotNull(legendInfo.getLegendUrl(), "Legend URL is mandatory in WMS (1.1.0, 1.1.1 and 1.3.0).");
+        xml.indentElement("LegendURL");
+        // add with and height attributes
+        xml.attribute("width", String.valueOf(legendInfo.getWidth()));
+        xml.attribute("height", String.valueOf(legendInfo.getHeight()));
+        // add format element
+        xml.simpleElement("Format", legendInfo.getFormat(), true);
+        // add online resource element
+        xml.indentElement("OnlineResource");
+        xml.attribute("xlink:type", "simple");
+        xml.attribute("xlink:href", legendInfo.getLegendUrl());
+        xml.endElement("OnlineResource");
+        // close legend URL element
+        xml.endElement("LegendURL");
     }
 
     private void capabilityLayerOuter(XMLBuilder xml) throws IOException {
@@ -428,7 +466,7 @@ public class WMSGetCapabilities {
 
         Iterable<TileLayer> layerIter = tld.getLayerList();
         for (TileLayer layer : layerIter) {
-            if (!layer.isEnabled()) {
+            if (!layer.isEnabled()  || !layer.isAdvertised()) {
                 continue;
             }
             try {

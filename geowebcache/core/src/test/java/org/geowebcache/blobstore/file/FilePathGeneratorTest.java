@@ -44,7 +44,7 @@ public class FilePathGeneratorTest extends TestCase {
         Map<String, String> params = new HashMap<String, String>();
         params.put("style", "population");
         TileObject tile = TileObject.createCompleteTileObject("states", new long[] {0, 0, 0}, "EPSG:2163", "png", params, null);
-        String sha1 = DigestUtils.shaHex("?style=population");
+        String sha1 = DigestUtils.sha1Hex("?style=population");
         
 
         // first time, this will also create the path on disk
@@ -64,7 +64,7 @@ public class FilePathGeneratorTest extends TestCase {
         params.put("style", "polygon");
         tile = TileObject.createCompleteTileObject("states", new long[] {0, 0, 0}, "EPSG:2163", "png", params, null);
         path = generator.tilePath(tile, ImageMime.png);
-        sha1 = DigestUtils.shaHex("?style=polygon");
+        sha1 = DigestUtils.sha1Hex("?style=polygon");
         testParameterId(path, sha1, "?style=polygon");
     }
 

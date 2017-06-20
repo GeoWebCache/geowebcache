@@ -17,18 +17,10 @@
  */
 package org.geowebcache.service.wmts;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.legends.LegendInfo;
+import org.geowebcache.config.legends.LegendInfoBuilder;
 import org.geowebcache.config.meta.ServiceContact;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.config.meta.ServiceProvider;
@@ -43,10 +35,26 @@ import org.geowebcache.io.XMLBuilder;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.LayerMetaInformation;
+import org.geowebcache.layer.meta.MetadataURL;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class WMTSGetCapabilities {
     
@@ -57,9 +65,16 @@ public class WMTSGetCapabilities {
     private GridSetBroker gsb;
     
     private String baseUrl;
-    
+
+    private final Collection<WMTSExtension> extensions;
+
     protected WMTSGetCapabilities(TileLayerDispatcher tld, GridSetBroker gsb, HttpServletRequest servReq, String baseUrl,
-            String contextPath, URLMangler urlMangler) {
+                                  String contextPath, URLMangler urlMangler) {
+        this(tld, gsb, servReq, baseUrl, contextPath, urlMangler, Collections.emptyList());
+    }
+
+    protected WMTSGetCapabilities(TileLayerDispatcher tld, GridSetBroker gsb, HttpServletRequest servReq, String baseUrl,
+            String contextPath, URLMangler urlMangler, Collection<WMTSExtension> extensions) {
         this.tld = tld;
         this.gsb = gsb;
 
@@ -70,7 +85,8 @@ public class WMTSGetCapabilities {
         } else {
             this.baseUrl = urlMangler.buildURL(baseUrl, contextPath, WMTSService.SERVICE_PATH);
         }
-        
+
+        this.extensions = extensions;
     }
     
     protected void writeResponse(HttpServletResponse response, RuntimeStats stats) {
@@ -106,14 +122,31 @@ public class WMTSGetCapabilities {
             xml.attribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
             xml.attribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
             xml.attribute("xmlns:gml", "http://www.opengis.net/gml");
-            xml.attribute("xsi:schemaLocation", "http://www.opengis.net/wmts/1.0 http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd");
+            // allow extensions to register their names spaces
+            for(WMTSExtension extension : extensions) {
+                extension.registerNamespaces(xml);
+            }
+            StringBuilder schemasLocations = new StringBuilder("http://www.opengis.net/wmts/1.0 ");
+            schemasLocations.append("http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd ");
+            // allow extensions to register their schemas locations
+            for(WMTSExtension extension : extensions) {
+                for(String schemaLocation : extension.getSchemaLocations()) {
+                    schemasLocations.append(schemaLocation).append(" ");
+                }
+            }
+            schemasLocations.delete(schemasLocations.length() -1 , schemasLocations.length());
+            // add schemas locations
+            xml.attribute("xsi:schemaLocation", schemasLocations.toString());
             xml.attribute("version", "1.0.0");
             // There were some contradictions in the draft schema, haven't checked whether they've fixed those
             //str.append("xsi:schemaLocation=\"http://www.opengis.net/wmts/1.0 http://geowebcache.org/schema/opengis/wmts/1.0.0/wmtsGetCapabilities_response.xsd\"\n"); 
-            
-            serviceIdentification(xml);
-            serviceProvider(xml);
+
+            ServiceInformation serviceInformation = getServiceInformation();
+
+            serviceIdentification(xml, serviceInformation);
+            serviceProvider(xml, serviceInformation);
             operationsMetadata(xml);
+
             contents(xml);
             xml.indentElement("ServiceMetadataURL")
                 .attribute("xlink:href", baseUrl+"?REQUEST=getcapabilities&VERSION=1.0.0")
@@ -128,8 +161,119 @@ public class WMTSGetCapabilities {
         }
     }
 
-    private void serviceIdentification(XMLBuilder xml) throws IOException {
+    /**
+     * Composes service information using information provided by extensions.
+     */
+    private ServiceInformation getServiceInformation() {
         ServiceInformation servInfo = tld.getServiceInformation();
+        for (WMTSExtension extension : extensions) {
+            ServiceInformation serviceInformation = extension.getServiceInformation();
+            if (serviceInformation != null) {
+                if (servInfo == null) {
+                    servInfo = new ServiceInformation();
+                }
+                mergeServiceInformation(servInfo, serviceInformation);
+            }
+        }
+        return servInfo;
+    }
+
+    /**
+     * Substitute serviceA information with no NULL information from serviceB.
+     */
+    private void mergeServiceInformation(ServiceInformation serviceA, ServiceInformation serviceB) {
+        if (serviceB.getTitle() != null) {
+            serviceA.setTitle(serviceB.getTitle());
+        }
+        if (serviceB.getDescription() != null) {
+            serviceA.setDescription(serviceB.getDescription());
+        }
+        if (serviceB.getKeywords() != null) {
+            serviceA.getKeywords().addAll(serviceB.getKeywords());
+        }
+        if (serviceB.getServiceProvider() != null) {
+            serviceA.setServiceProvider(serviceB.getServiceProvider());
+        }
+        if (serviceB.getFees() != null) {
+            serviceA.setFees(serviceB.getFees());
+        }
+        if (serviceB.getAccessConstraints() != null) {
+            serviceA.setAccessConstraints(serviceB.getAccessConstraints());
+        }
+        if (serviceB.getProviderName() != null) {
+            serviceA.setProviderName(serviceB.getProviderName());
+        }
+        if (serviceB.getProviderSite() != null) {
+            serviceA.setProviderSite(serviceB.getProviderSite());
+        }
+        if (serviceB.getServiceProvider() != null) {
+            if(serviceA.getServiceProvider() != null) {
+                mergeProviderInformation(serviceA.getServiceProvider(), serviceB.getServiceProvider());
+            } else {
+                serviceA.setServiceProvider(serviceB.getServiceProvider());
+            }
+        }
+    }
+
+    /**
+     * Substitute providerA information with no NULL information from providerB.
+     */
+    private void mergeProviderInformation(ServiceProvider providerA, ServiceProvider providerB) {
+        if (providerB.getProviderName() != null) {
+            providerA.setProviderName(providerB.getProviderName());
+        }
+        if (providerB.getProviderSite() != null) {
+            providerA.setProviderSite(providerB.getProviderSite());
+        }
+        if (providerB.getServiceContact() != null) {
+            if (providerA.getServiceContact() != null) {
+                mergeContactInformation(providerA.getServiceContact(), providerB.getServiceContact());
+            } else {
+                providerA.setServiceContact(providerB.getServiceContact());
+            }
+        }
+    }
+
+    /**
+     * Substitute contactA information with no NULL information from contactB.
+     */
+    private void mergeContactInformation(ServiceContact contactA, ServiceContact contactB) {
+        if (contactB.getIndividualName() != null) {
+            contactA.setIndividualName(contactB.getIndividualName());
+        }
+        if (contactB.getPositionName() != null) {
+            contactA.setPositionName(contactB.getPositionName());
+        }
+        if (contactB.getAddressType() != null) {
+            contactA.setAddressType(contactB.getAddressType());
+        }
+        if (contactB.getAddressStreet() != null) {
+            contactA.setAddressStreet(contactB.getAddressStreet());
+        }
+        if (contactB.getAddressCity() != null) {
+            contactA.setAddressCity(contactB.getAddressCity());
+        }
+        if (contactB.getAddressAdministrativeArea() != null) {
+            contactA.setAddressAdministrativeArea(contactB.getAddressAdministrativeArea());
+        }
+        if (contactB.getAddressPostalCode() != null) {
+            contactA.setAddressPostalCode(contactB.getAddressPostalCode());
+        }
+        if (contactB.getAddressCountry() != null) {
+            contactA.setAddressCountry(contactB.getAddressCountry());
+        }
+        if (contactB.getPhoneNumber() != null) {
+            contactA.setPhoneNumber(contactB.getPhoneNumber());
+        }
+        if (contactB.getFaxNumber() != null) {
+            contactA.setFaxNumber(contactB.getFaxNumber());
+        }
+        if (contactB.getAddressEmail() != null) {
+            contactA.setAddressEmail(contactB.getAddressEmail());
+        }
+    }
+
+    private void serviceIdentification(XMLBuilder xml, ServiceInformation servInfo) throws IOException {
         
         xml.indentElement("ows:ServiceIdentification");
         
@@ -159,8 +303,7 @@ public class WMTSGetCapabilities {
         xml.endElement("ows:ServiceIdentification");
     }
     
-    private void serviceProvider(XMLBuilder xml) throws IOException {
-        ServiceInformation servInfo = tld.getServiceInformation();
+    private void serviceProvider(XMLBuilder xml, ServiceInformation servInfo) throws IOException {
         ServiceProvider servProv = null;
         if(servInfo != null) {
             servProv = servInfo.getServiceProvider();
@@ -216,6 +359,17 @@ public class WMTSGetCapabilities {
         operation(xml, "GetCapabilities", baseUrl);
         operation(xml, "GetTile", baseUrl);
         operation(xml, "GetFeatureInfo", baseUrl);
+        // allow extension to inject their own metadata
+        for (WMTSExtension extension : extensions) {
+            List<WMTSExtension.OperationMetadata> operationsMetaData = extension.getExtraOperationsMetadata();
+            if (operationsMetaData != null) {
+                for (WMTSExtension.OperationMetadata operationMetadata : operationsMetaData) {
+                    operation(xml, operationMetadata.getName(),
+                            operationMetadata.getBaseUrl() == null ? baseUrl : operationMetadata.getBaseUrl());
+                }
+            }
+            extension.encodedOperationsMetadata(xml);
+        }
         xml.endElement("ows:OperationsMetadata");
     }
         
@@ -239,7 +393,7 @@ public class WMTSGetCapabilities {
          xml.indentElement("Contents");
          Iterable<TileLayer> iter = tld.getLayerList();
         for (TileLayer layer : iter) {
-            if (!layer.isEnabled()) {
+            if (!layer.isEnabled() || !layer.isAdvertised()) {
                 continue;
             }
             layer(xml, layer, baseUrl);
@@ -264,7 +418,22 @@ public class WMTSGetCapabilities {
         }
 
         layerWGS84BoundingBox(xml, layer);
+
         appendTag(xml, "ows:Identifier", layer.getName(), null);
+
+        if (layer.getMetadataURLs() != null) {
+             for (MetadataURL metadataURL : layer.getMetadataURLs()) {
+                 xml.indentElement("MetadataURL");
+                 xml.attribute("type", metadataURL.getType());
+                 xml.simpleElement("Format", metadataURL.getFormat(), true);
+                 xml.indentElement("OnlineResource")
+                         .attribute("xmlns:xlink", "http://www.w3.org/1999/xlink")
+                         .attribute("xlink:type", "simple")
+                         .attribute("xlink:href", metadataURL.getUrl().toString())
+                         .endElement();
+                 xml.endElement();
+             }
+         }
         
         // We need the filters for styles and dimensions
         List<ParameterFilter> filters = layer.getParameterFilters();
@@ -282,6 +451,12 @@ public class WMTSGetCapabilities {
         layerGridSubSets(xml, layer);
         // TODO REST
         // str.append("    <ResourceURL format=\"image/png\" resourceType=\"tile\" template=\"http://www.maps.cat/wmts/BlueMarbleNextGeneration/default/BigWorldPixel/{TileMatrix}/{TileRow}/{TileCol}.png\"/>\n");
+
+        // allow extensions to contribute extra metadata to this layer
+        for (WMTSExtension extension : extensions) {
+            extension.encodeLayer(xml, layer);
+        }
+
         xml.endElement("Layer");
     }
      
@@ -292,20 +467,68 @@ public class WMTSGetCapabilities {
             xml.indentElement("ows:WGS84BoundingBox");
             xml.simpleElement("ows:LowerCorner", coords[0]+" "+coords[1], true);
             xml.simpleElement("ows:UpperCorner", coords[2]+" "+coords[3], true);
-            xml.endElement("ows:WGS84BoundingBox");   
+            xml.endElement("ows:WGS84BoundingBox"); 
+            return;
+        }
+        subset = layer.getGridSubsetForSRS(SRS.getEPSG900913());
+        if(subset != null) {
+        	double[] coords = subset.getOriginalExtent().getCoords();
+        	double originShift = 2 * Math.PI * 6378137 / 2.0;
+        	double mx = coords[0];
+        	double my = coords[1];
+        	double lon = (mx / originShift) * 180.0 ;
+        	double lat = (my / originShift) * 180.0 ;
+
+        	lat = 180 / Math.PI * (2 * Math.atan( Math.exp( lat * Math.PI / 180.0)) - Math.PI / 2.0);
+        	xml.indentElement("ows:WGS84BoundingBox");
+        	xml.simpleElement("ows:LowerCorner", lon+" "+lat, true);
+        	
+        	mx = coords[2];
+        	my = coords[3];
+        	lon = (mx / originShift) * 180.0 ;
+        	lat = (my / originShift) * 180.0 ;
+
+        	lat = 180 / Math.PI * (2 * Math.atan( Math.exp( lat * Math.PI / 180.0)) - Math.PI / 2.0);
+        	
+        	xml.simpleElement("ows:UpperCorner", lon+" "+lat, true);
+        	xml.endElement("ows:WGS84BoundingBox");
+        	return;
         }
      }
-     
+
+    /**
+     * Helper method that get layer legends info by merging deprecated
+     * legends info objects with the new ones.
+     */
+     private Map<String, LegendInfo> getLegendsInfo(TileLayer layer) {
+         Map<String, LegendInfo> legendsInfo = new HashMap<>();
+         for (Map.Entry<String, TileLayer.LegendInfo> entry : layer.getLegendsInfo().entrySet()) {
+             // convert deprecated model to new model
+             legendsInfo.put(entry.getKey(), new LegendInfoBuilder()
+                     .withWidth(entry.getValue().width)
+                     .withHeight(entry.getValue().height)
+                     .withFormat(entry.getValue().format)
+                     .withCompleteUrl(entry.getValue().legendUrl)
+                     .withStyleName(entry.getKey())
+                     .build());
+         }
+         // add the new legend info model objects
+         legendsInfo.putAll(layer.getLayerLegendsInfo());
+         return legendsInfo;
+    }
+
      private void layerStyles(XMLBuilder xml, TileLayer layer, List<ParameterFilter> filters) throws IOException {
          String defStyle = layer.getStyles();
+         Map<String, LegendInfo> legendsInfo = getLegendsInfo(layer);
          if(filters == null) {
              xml.indentElement("Style");
              xml.attribute("isDefault", "true");
              if(defStyle == null) {
-                 xml.simpleElement("ows:Identifier", "", true);
+                 xml.simpleElement("ows:Identifier", "", true); 
              } else {
-                 xml.simpleElement("ows:Identifier", "TileLayer.encodeDimensionValue(defStyle)", true);
+                 xml.simpleElement("ows:Identifier", TileLayer.encodeDimensionValue(defStyle), true);
              }
+             encodeStyleLegendGraphic(xml, legendsInfo.get(defStyle));
              xml.endElement("Style");
          } else {
              ParameterFilter stylesFilter = null;
@@ -337,6 +560,7 @@ public class WMTSGetCapabilities {
                          xml.attribute("isDefault", "true");
                      }
                      xml.simpleElement("ows:Identifier", TileLayer.encodeDimensionValue(value), true);
+                     encodeStyleLegendGraphic(xml, legendsInfo.get(value));
                      xml.endElement();
                  }
              } else {
@@ -344,10 +568,45 @@ public class WMTSGetCapabilities {
                 xml.indentElement("Style");
                 xml.attribute("isDefault", "true");
                 xml.simpleElement("ows:Identifier", "", true);
+                if (defStyle != null) {
+                    encodeStyleLegendGraphic(xml, legendsInfo.get(defStyle));
+                }
                 xml.endElement();
              }
          }
      }
+
+    /**
+     * XML encodes the provided legend information. If the provided information legend is NULL
+     * nothing is done.
+     */
+    private void encodeStyleLegendGraphic(XMLBuilder xml, LegendInfo legendInfo) throws IOException {
+        if (legendInfo == null) {
+            // nothing to do
+            return;
+        }
+        xml.indentElement("LegendURL");
+        // validate mandatory attributes
+        checkNotNull(legendInfo.getFormat(), "Legend format is mandatory in WMTS.");
+        checkNotNull(legendInfo.getLegendUrl(), "Legend URL is mandatory in WMTS.");
+        // add mandatory attributes
+        xml.attribute("format", legendInfo.getFormat());
+        xml.attribute("xlink:href", legendInfo.getLegendUrl());
+        // add optional attributes
+        if (legendInfo.getWidth() != null) {
+            xml.attribute("width", String.valueOf(legendInfo.getWidth()));
+        }
+        if (legendInfo.getHeight() != null) {
+            xml.attribute("height", String.valueOf(legendInfo.getHeight()));
+        }
+        if (legendInfo.getMinScale() != null) {
+            xml.attribute("minScaleDenominator", String.valueOf(legendInfo.getMinScale()));
+        }
+        if (legendInfo.getMaxScale() != null) {
+            xml.attribute("maxScaleDenominator", String.valueOf(legendInfo.getMaxScale()));
+        }
+        xml.endElement("LegendURL");
+    }
      
      private void layerFormats(XMLBuilder xml, TileLayer layer) throws IOException {
          Iterator<MimeType> mimeIter = layer.getMimeTypes().iterator();

@@ -1,6 +1,5 @@
 {
 	"gwcQuotaConfiguration":{
-		"diskBlockSize":2048,
 		"enabled":true,
 		"maxConcurrentCleanUps":2,
 		"cacheCleanUpFrequency":5,

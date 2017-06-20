@@ -9,7 +9,7 @@ programatically add, modify, or remove cached Layers.
 Layers list
 -----------
 
-``/rest/seed/layers.xml``
+``/rest/layers.xml``
 
 .. list-table::
    :header-rows: 1
@@ -24,11 +24,11 @@ Layers list
      - XML
    * - POST
      - 
-     - 400
+     - 405
      - 
    * - PUT
      - 
-     - 400
+     - 405
      - 
    * - DELETE
      - 
@@ -65,7 +65,7 @@ Sample response:
 Layer Operations
 ----------------
 
-``/rest/seed/layers/<layer>.xml``
+``/rest/layers/<layer>.xml``
 
 .. list-table::
    :header-rows: 1

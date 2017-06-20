@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.geowebcache</groupId>
     <artifactId>geowebcache</artifactId>
-    <version>1.7-SNAPSHOT</version>
+    <version>1.12-SNAPSHOT</version><!-- GWC VERSION -->
   </parent>
   <groupId>org.geowebcache</groupId>
   <artifactId>gwc-rest</artifactId>
@@ -21,7 +21,7 @@
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
+      <artifactId>javax.servlet-api</artifactId>
     </dependency>
 
     <dependency>
@@ -33,11 +33,23 @@
     <dependency>
       <groupId>org.restlet</groupId>
       <artifactId>org.restlet</artifactId>
+      <classifier>noobjrep</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.restlet</groupId>
+      <artifactId>org.restlet</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>com.noelios.restlet</groupId>
       <artifactId>com.noelios.restlet</artifactId>
+      <exclusions>
+       <exclusion>
+         <groupId>javax.servlet</groupId>
+         <artifactId>servlet-api</artifactId>
+       </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -63,12 +75,12 @@
     <dependency>
       <groupId>com.noelios.restlet</groupId>
       <artifactId>com.noelios.restlet.ext.servlet</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>net.sf.json-lib</groupId>
-      <artifactId>json-lib</artifactId>
-      <classifier>jdk13</classifier>
+      <exclusions>
+       <exclusion>
+         <groupId>javax.servlet</groupId>
+         <artifactId>servlet-api</artifactId>
+       </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- test dependencies  -->
@@ -102,6 +114,11 @@
     <dependency>
       <groupId>org.easymock</groupId>
       <artifactId>easymockclassextension</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

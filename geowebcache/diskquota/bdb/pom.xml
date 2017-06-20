@@ -5,9 +5,8 @@
   <parent>
     <groupId>org.geowebcache</groupId>
     <artifactId>gwc-diskquota</artifactId>
-    <version>1.7-SNAPSHOT</version>
+    <version>1.12-SNAPSHOT</version><!-- GWC VERSION -->
   </parent>
-  <groupId>org.geowebcache</groupId>
   <artifactId>gwc-diskquota-bdb</artifactId>
   <packaging>jar</packaging>
   <name>Disk Quota management module - BerkeleyDB backend</name>
@@ -41,16 +40,20 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.mockrunner</groupId>
-      <artifactId>mockrunner</artifactId>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.geowebcache</groupId>
       <artifactId>gwc-core</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
       <classifier>tests</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

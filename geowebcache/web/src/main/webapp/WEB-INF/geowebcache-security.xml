@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security.xsd">
+    
+    <security:authentication-manager>
+        <security:authentication-provider>
+            <security:user-service id="userDetailsService" properties="/WEB-INF/users.properties"/>
+        </security:authentication-provider>
+    </security:authentication-manager>
+    
+    <security:http>
+        <security:intercept-url method="GET" pattern="/rest/web/**" access="permitAll"/>
+        <security:intercept-url pattern="/rest/**" access="hasRole('ROLE_ADMINISTRATOR')"/>
+        
+        <security:http-basic entry-point-ref="authenticationEntryPoint"/>
+        <security:csrf disabled="true"/> <!-- TODO Update forms so we can enable this -->
+    </security:http>
+    
+    <bean id="authenticationEntryPoint"
+        class="org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint">
+        <property name="realmName" value="GeoWebCache Secured"/>
+    </bean>
+</beans>

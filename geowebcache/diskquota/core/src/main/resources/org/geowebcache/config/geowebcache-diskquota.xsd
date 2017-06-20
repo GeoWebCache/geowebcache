@@ -23,9 +23,9 @@
         </xs:element>
         <xs:element name="diskBlockSize" type="xs:int">
           <xs:annotation>
-            <xs:documentation xml:lang="en">Cache's file system block size, in bytes. Usually 4096, 8192,
-              etc.
-              There's no way in
+            <xs:documentation xml:lang="en">Deprecated. This element has no effect in the configuration since 1.8.0. Use FileBlobStore in
+              geowebcache.xsd instead to configure the file system block size.
+              Cache's file system block size, in bytes. Usually 4096, 8192, etc.  There's no way in
               the Java5 API to guess the filesystem block size. This parameter tells the disk quota monitor what the block size is so it can
               make better computations with regard to the actual disk usage for the cache</xs:documentation>
           </xs:annotation>

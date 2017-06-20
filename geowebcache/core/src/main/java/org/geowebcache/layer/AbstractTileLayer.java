@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -53,7 +55,14 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     private static final int[] DEFAULT_METATILING_FACTORS = { 1, 1 };
 
+    @Nullable
+    protected String blobStoreId;
+    
     protected Boolean enabled;
+    
+    protected Boolean advertised;
+
+    protected Boolean transientLayer;
 
     protected String name;
 
@@ -150,6 +159,17 @@ public abstract class AbstractTileLayer extends TileLayer {
     public String getId(){
         return getName();
     }
+
+    @Override
+    @Nullable
+    public String getBlobStoreId() {
+        return blobStoreId;
+    }
+
+    @Override
+    public void setBlobStoreId(@Nullable String blobStoreId){
+        this.blobStoreId = blobStoreId;
+    }
     
     /**
      * Then name of the layer
@@ -169,6 +189,26 @@ public abstract class AbstractTileLayer extends TileLayer {
     @Override
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    @Override
+    public boolean isAdvertised(){
+        return advertised == null ? true : advertised.booleanValue();
+    }
+
+    @Override
+    public void setAdvertised(boolean advertised){
+        this.advertised = advertised;
+    }
+
+    @Override
+    public boolean isTransientLayer(){
+        return transientLayer == null ? false : transientLayer.booleanValue();
+    }
+
+    @Override
+    public void setTransientLayer(boolean transientLayer){
+        this.transientLayer = transientLayer;
     }
 
     /**

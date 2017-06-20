@@ -13,6 +13,7 @@ This section describes how to manually configure layers in GeoWebCache and provi
    projections
    palettes
    parameterfilters
+   styleslegends
    requestfilters
    arcgistilingschemes
    staticcaps

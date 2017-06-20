@@ -26,7 +26,6 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.jdbc.support.DatabaseMetaDataCallback;
 import org.springframework.jdbc.support.JdbcAccessor;
 import org.springframework.jdbc.support.JdbcUtils;
@@ -57,6 +56,7 @@ public class SQLDialect {
     protected static final int TILESET_KEY_SIZE = 320;
     protected static final int TILEPAGE_KEY_SIZE = TILESET_KEY_SIZE;
     
+    @SuppressWarnings("serial")
     protected final Map<String, List<String>> TABLE_CREATION_MAP = new LinkedHashMap<String, List<String>>() {
         {
 
@@ -69,7 +69,7 @@ public class SQLDialect {
                             "  PARAMETERS_ID VARCHAR("+PARAMETERS_ID_SIZE+"),\n" + //
                             "  BYTES NUMERIC("+BYTES_SIZE+") NOT NULL DEFAULT 0\n" + //
                             ")", //
-                    "CREATE INDEX TILESET_LAYER ON TILESET(LAYER_NAME)" //
+                            "CREATE INDEX TILESET_LAYER ON ${schema}TILESET(LAYER_NAME)" //
             ));
 
             // this one embeds both tile page and page stats, since they are linked 1-1
@@ -89,9 +89,9 @@ public class SQLDialect {
                             " FILL_FACTOR FLOAT,\n" + //
                             " NUM_HITS NUMERIC("+NUM_HITS_SIZE+")\n" + //
                             ")", //
-                    "CREATE INDEX TILEPAGE_TILESET ON TILEPAGE(TILESET_ID, FILL_FACTOR)",
-                    "CREATE INDEX TILEPAGE_FREQUENCY ON TILEPAGE(FREQUENCY_OF_USE DESC)",
-                    "CREATE INDEX TILEPAGE_LAST_ACCESS ON TILEPAGE(LAST_ACCESS_TIME_MINUTES DESC)"));
+                    "CREATE INDEX TILEPAGE_TILESET ON ${schema}TILEPAGE(TILESET_ID, FILL_FACTOR)",
+                    "CREATE INDEX TILEPAGE_FREQUENCY ON ${schema}TILEPAGE(FREQUENCY_OF_USE DESC)",
+                    "CREATE INDEX TILEPAGE_LAST_ACCESS ON ${schema}TILEPAGE(LAST_ACCESS_TIME_MINUTES DESC)"));
 
         }
     };
@@ -186,6 +186,18 @@ public class SQLDialect {
 
         return sb.toString();
     }
+    
+    public String getLayerParametersDeletionStatement(String schema, String layerNameParam,
+            String parametersIdParam) {
+        StringBuilder sb = new StringBuilder("DELETE FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET WHERE LAYER_NAME = :").append(layerNameParam);
+        sb.append(" AND PARAMETERS_ID = :").append(parametersIdParam);
+
+        return sb.toString();
+    }
 
     public String getTileSetsQuery(String schema) {
         StringBuilder sb = new StringBuilder(
@@ -260,6 +272,15 @@ public class SQLDialect {
         sb.append("TILESET WHERE GRIDSET_ID = :").append(gridsetIdParam);
         return sb.toString();
     }
+    
+    public String getUsedQuotaByParametersId(String schema, String parametersIdParam) {
+        StringBuilder sb = new StringBuilder("SELECT SUM(BYTES) FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET WHERE PARAMETERS_ID = :").append(parametersIdParam);
+        return sb.toString();
+    }
 
     public String getUsedQuotaByLayerName(String schema, String layerNameParam) {
         StringBuilder sb = new StringBuilder("SELECT SUM(BYTES) FROM ");
@@ -269,6 +290,16 @@ public class SQLDialect {
         sb.append("TILESET WHERE TILESET.LAYER_NAME = :").append(layerNameParam);
         return sb.toString();
 
+    }
+
+    public String getUsedQuotaByLayerGridset(String schema, String layerNameParam, String gridSetParam) {
+        StringBuilder sb = new StringBuilder("SELECT SUM(BYTES) FROM ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET WHERE TILESET.LAYER_NAME = :").append(layerNameParam);
+        sb.append(" AND TILESET.GRIDSET_ID = :").append(gridSetParam);
+        return sb.toString();
     }
 
     public String getRenameLayerStatement(String schema, String oldLayerName, String newLayerName) {

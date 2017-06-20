@@ -17,7 +17,9 @@
  */
 package org.geowebcache.storage.blobstore.file;
 
-import static org.geowebcache.storage.blobstore.file.FilePathUtils.*;
+import static org.geowebcache.storage.blobstore.file.FilePathUtils.filteredGridSetId;
+import static org.geowebcache.storage.blobstore.file.FilePathUtils.filteredLayerName;
+import static org.geowebcache.storage.blobstore.file.FilePathUtils.findZoomLevel;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -26,19 +28,32 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.channels.FileChannel;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.ConfigurationException;
+import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.io.FileResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.mime.MimeException;
@@ -51,7 +66,10 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.StorageObject.Status;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
+import org.geowebcache.util.FileUtils;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
+
+import com.google.common.base.Preconditions;
 
 /**
  * See BlobStore interface description for details
@@ -61,11 +79,15 @@ public class FileBlobStore implements BlobStore {
     private static Log log = LogFactory
             .getLog(org.geowebcache.storage.blobstore.file.FileBlobStore.class);
 
+    static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
+
     public static final int BUFFER_SIZE = 32768;
 
     private final File stagingArea;
 
     private final String path;
+
+    private int diskBlockSize = DEFAULT_DISK_BLOCK_SIZE;
 
     private final BlobStoreListenerList listeners = new BlobStoreListenerList();
 
@@ -73,14 +95,15 @@ public class FileBlobStore implements BlobStore {
 
     private File tmp;
 
-    private static ExecutorService deleteExecutorService;
+    private ExecutorService deleteExecutorService;
 
-    public FileBlobStore(DefaultStorageFinder defStoreFinder) throws StorageException, ConfigurationException {
+    public FileBlobStore(DefaultStorageFinder defStoreFinder) throws StorageException,
+            ConfigurationException {
         this(defStoreFinder.getDefaultPath());
     }
 
     public FileBlobStore(String rootPath) throws StorageException {
-        path = rootPath;
+        this.path = rootPath;
         pathGenerator = new FilePathGenerator(this.path);
 
         // prepare the root
@@ -89,14 +112,14 @@ public class FileBlobStore implements BlobStore {
         if (!fh.exists() || !fh.isDirectory() || !fh.canWrite()) {
             throw new StorageException(path + " is not writable directory.");
         }
-        
+
         // and the temporary directory
         tmp = new File(path, "tmp");
         tmp.mkdirs();
         if (!tmp.exists() || !tmp.isDirectory() || !tmp.canWrite()) {
             throw new StorageException(tmp.getPath() + " is not writable directory.");
         }
-        
+
         stagingArea = new File(path, "_gwc_in_progress_deletes_");
         createDeleteExecutorService();
         issuePendingDeletes();
@@ -119,8 +142,7 @@ public class FileBlobStore implements BlobStore {
     }
 
     private void deletePending(final File pendingDeleteDirectory) {
-        FileBlobStore.deleteExecutorService.submit(new DefferredDirectoryDeleteTask(
-                pendingDeleteDirectory));
+        deleteExecutorService.submit(new DefferredDirectoryDeleteTask(pendingDeleteDirectory));
     }
 
     private void createDeleteExecutorService() {
@@ -220,7 +242,7 @@ public class FileBlobStore implements BlobStore {
             String dirName = filteredLayerName(targetName + "." + tries);
             tmpFolder = new File(stagingArea, dirName);
         }
-        boolean renamed = source.renameTo(tmpFolder);
+        boolean renamed = FileUtils.renameFile(source, tmpFolder);
         if (!renamed) {
             throw new IllegalStateException("Can't rename " + source.getAbsolutePath() + " to "
                     + tmpFolder.getAbsolutePath() + " for deletion");
@@ -254,8 +276,7 @@ public class FileBlobStore implements BlobStore {
         });
 
         for (File gridSubsetCache : gridSubsetCaches) {
-            String target = filteredLayerName(layerName) + "_"
-                    + gridSubsetCache.getName();
+            String target = filteredLayerName(layerName) + "_" + gridSubsetCache.getName();
             stageDelete(gridSubsetCache, target);
         }
 
@@ -270,8 +291,7 @@ public class FileBlobStore implements BlobStore {
      * @return true if the directory for the layer was renamed, or the original directory didn't
      *         exist in first place. {@code false} if the original directory exists but can't be
      *         renamed to the target directory
-     * @throws StorageException
-     *             if the target directory already exists
+     * @throws StorageException if the target directory already exists
      * @see org.geowebcache.storage.BlobStore#rename
      */
     public boolean rename(final String oldLayerName, final String newLayerName)
@@ -291,7 +311,7 @@ public class FileBlobStore implements BlobStore {
             log.info(oldLayerPath + " is not writable");
             return false;
         }
-        boolean renamed = oldLayerPath.renameTo(newLayerPath);
+        boolean renamed = FileUtils.renameFile(oldLayerPath, newLayerPath);
         if (renamed) {
             this.listeners.sendLayerRenamed(oldLayerName, newLayerName);
         } else {
@@ -323,7 +343,7 @@ public class FileBlobStore implements BlobStore {
             if (!fh.delete()) {
                 throw new StorageException("Unable to delete " + fh.getAbsolutePath());
             }
-            stObj.setBlobSize((int) length);
+            stObj.setBlobSize((int) padSize(length));
             listeners.sendTileDeleted(stObj);
 
             ret = true;
@@ -345,21 +365,20 @@ public class FileBlobStore implements BlobStore {
     public boolean delete(TileRange trObj) throws StorageException {
         int count = 0;
 
-        String prefix = path + File.separator
-                + filteredLayerName(trObj.getLayerName());
+        String prefix = path + File.separator + filteredLayerName(trObj.getLayerName());
 
         final File layerPath = new File(prefix);
 
-        // If it wasn't there to be deleted, 
+        // If it wasn't there to be deleted,
         if (!layerPath.exists()) {
             return true;
         }
-        
+
         // We either want to delete it, or stuff within it
         if (!layerPath.isDirectory() || !layerPath.canWrite()) {
             throw new StorageException(prefix + " does is not a directory or is not writable.");
         }
-        
+
         final FilePathFilter tileFinder = new FilePathFilter(trObj);
 
         final String layerName = trObj.getLayerName();
@@ -386,7 +405,7 @@ public class FileBlobStore implements BlobStore {
                         long x = Long.parseLong(coords[0]);
                         long y = Long.parseLong(coords[1]);
                         listeners.sendTileDeleted(layerName, gridSetId, blobFormat, parametersId,
-                                x, y, zoomLevel, length);
+                                x, y, zoomLevel, padSize(length));
                         count++;
                     }
                 }
@@ -411,12 +430,13 @@ public class FileBlobStore implements BlobStore {
 
     /**
      * Set the blob property of a TileObject.
-     * @param stObj the tile to load.  Its setBlob() method will be called.
+     * 
+     * @param stObj the tile to load. Its setBlob() method will be called.
      * @return true if successful, false otherwise
      */
     public boolean get(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, false);
-        if(!fh.exists()) {
+        if (!fh.exists()) {
             stObj.setStatus(Status.MISS);
             return false;
         } else {
@@ -436,21 +456,23 @@ public class FileBlobStore implements BlobStore {
         final long oldSize = fh.length();
         final boolean existed = oldSize > 0;
         writeFile(fh, stObj, existed);
+        
         // mark the last modification as the tile creation time if set, otherwise
         // we'll leave it to the writing time
-        if(stObj.getCreated() > 0) {
+        if (stObj.getCreated() > 0) {
             try {
                 fh.setLastModified(stObj.getCreated());
-            } catch(Exception e) {
+            } catch (Exception e) {
                 log.debug("Failed to set the last modified time to match the tile request time", e);
             }
-        } 
+        }
 
         /*
          * This is important because listeners may be tracking tile existence
          */
+        stObj.setBlobSize((int) padSize(stObj.getBlobSize()));
         if (existed) {
-            listeners.sendTileUpdated(stObj, oldSize);
+            listeners.sendTileUpdated(stObj, padSize(oldSize));
         } else {
             listeners.sendTileStored(stObj);
         }
@@ -486,26 +508,28 @@ public class FileBlobStore implements BlobStore {
         // first write to temp file
         tmp.mkdirs();
         File temp = new File(tmp, UUID.randomUUID().toString());
-        
+
         try {
             // Open the output stream and read the blob into the tile
             FileOutputStream fos = null;
             FileChannel channel = null;
             try {
                 fos = new FileOutputStream(temp);
-                
+
                 channel = fos.getChannel();
                 try {
                     stObj.getBlob().transferTo(channel);
                 } catch (IOException ioe) {
-                    throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
+                    throw new StorageException(ioe.getMessage() + " for "
+                            + target.getAbsolutePath());
                 } finally {
                     try {
-                        if(channel != null) {
+                        if (channel != null) {
                             channel.close();
                         }
                     } catch (IOException ioe) {
-                        throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
+                        throw new StorageException(ioe.getMessage() + " for "
+                                + target.getAbsolutePath());
                     }
                 }
             } catch (FileNotFoundException ioe) {
@@ -513,27 +537,40 @@ public class FileBlobStore implements BlobStore {
             } finally {
                 IOUtils.closeQuietly(fos);
             }
-            
+
             // rename to final position. This will fail if another GWC also wrote this
             // file, in such case we'll just eliminate this one
-            if(temp.renameTo(target)) {
+            if (FileUtils.renameFile(temp, target)) {
                 temp = null;
-            } else if(existed) {
-                // if we are trying to overwrite and old tile, on windows that might fail... delete and rename instead
-                if(target.delete() && temp.renameTo(target)) {
+            } else if (existed) {
+                // if we are trying to overwrite and old tile, on windows that might fail... delete
+                // and rename instead
+                if (target.delete() && FileUtils.renameFile(temp, target)) {
                     temp = null;
                 }
             }
-        } finally {
             
-            if(temp != null) {
-                log.warn("Tile " + target.getPath() + " was already written by another thread/process");
+            persistParameterMap(stObj);
+        } finally {
+
+            if (temp != null) {
+                log.warn("Tile " + target.getPath()
+                        + " was already written by another thread/process");
                 temp.delete();
             }
         }
-        
-    }
 
+    }
+    
+    protected void persistParameterMap(TileObject stObj) {
+        if(Objects.nonNull(stObj.getParametersId())) {
+            putLayerMetadata(
+                    stObj.getLayerName(), 
+                    "parameters."+stObj.getParametersId(), 
+                    ParametersUtils.getKvp(stObj.getParameters()));
+        }
+    }
+    
     public void clear() throws StorageException {
         throw new StorageException("Not implemented yet!");
     }
@@ -590,11 +627,16 @@ public class FileBlobStore implements BlobStore {
         Properties metadata = getLayerMetadata(layerName);
         String value = metadata.getProperty(key);
         if (value != null) {
-            try {
-                value = URLDecoder.decode(value, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
+            value = urlDecUtf8(value);
+        }
+        return value;
+    }
+
+    private static String urlDecUtf8(String value) {
+        try {
+            value = URLDecoder.decode(value, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
         }
         return value;
     }
@@ -626,7 +668,7 @@ public class FileBlobStore implements BlobStore {
                 }
                 out = new FileOutputStream(metadataFile);
             } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
+                throw new UncheckedIOException(e);
             }
             try {
                 String comments = "auto generated file, do not edit by hand";
@@ -642,7 +684,7 @@ public class FileBlobStore implements BlobStore {
             }
         }
     }
-
+    
     private Properties getLayerMetadata(final String layerName) {
         final File metadataFile = getMetadataFile(layerName);
         Properties properties = new Properties();
@@ -653,7 +695,7 @@ public class FileBlobStore implements BlobStore {
                 try {
                     in = new FileInputStream(metadataFile);
                 } catch (FileNotFoundException e) {
-                    throw new RuntimeException(e);
+                    throw new UncheckedIOException(e);
                 }
                 try {
                     properties.load(in);
@@ -677,4 +719,120 @@ public class FileBlobStore implements BlobStore {
         return metadataFile;
     }
 
+    @Override
+    public boolean layerExists(String layerName) {
+        return getLayerPath(layerName).exists();
+    }
+
+    /**
+     * Specify the file system block size, used to pad out tile lenghts to whole blocks when
+     * reporting {@link BlobStoreListener#tileDeleted tileDeleted},
+     * {@link BlobStoreListener#tileStored tileStored}, or {@link BlobStoreListener#tileUpdated
+     * tileUpdated} events.
+     * 
+     * @param fileSystemBlockSize the size of a filesystem block; must be a positive integer,
+     *        usually a power of 2 greater or equal to 512.
+     */
+    public void setBlockSize(int fileSystemBlockSize) {
+        Preconditions.checkArgument(fileSystemBlockSize > 0);
+        this.diskBlockSize = fileSystemBlockSize;
+    }
+
+    /**
+     * Pads the size of a tile to whole filesystem blocks
+     * 
+     * @param fileSize the size of the tile file as reported by {@link File#length()}
+     * @return {@code fileSize} padded to whole blocks as per {@link #diskBlockSize}
+     */
+    private long padSize(long fileSize) {
+
+        final int blockSize = this.diskBlockSize;
+
+        long actuallyUsedStorage = blockSize * (int) Math.ceil((double) fileSize / blockSize);
+
+        return actuallyUsedStorage;
+    }
+
+    @Override
+    public boolean deleteByParametersId(String layerName, String parametersId)
+            throws StorageException {
+        
+        final File layerPath = getLayerPath(layerName);
+        if (!layerPath.exists() || !layerPath.canWrite()) {
+            log.info(layerPath + " does not exist or is not writable");
+            return false;
+        }
+        
+        File[] parameterCaches = layerPath.listFiles((pathname)-> {
+            if (!pathname.isDirectory()) {
+                return false;
+            }
+            String dirName = pathname.getName();
+            return dirName.endsWith(parametersId);
+        });
+        
+        for (File parameterCache : parameterCaches) {
+            String target = filteredLayerName(layerName) + "_" + parameterCache.getName();
+            stageDelete(parameterCache, target);
+        }
+        
+        listeners.sendParametersDeleted(layerName, parametersId);
+        
+        return true;
+    }
+    
+    private Stream<Path> layerChildStream(final String layerName, DirectoryStream.Filter<Path> filter) throws IOException {
+        final File layerPath = getLayerPath(layerName);
+        if (!layerPath.exists()) {
+            return Stream.of();
+        }
+        final DirectoryStream<Path> layerDirStream = Files.newDirectoryStream(layerPath.toPath(), filter);
+        return StreamSupport.stream(layerDirStream.spliterator(),false)
+             .onClose(()->{
+                 try {
+                    layerDirStream.close();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+             });
+    }
+    
+    public boolean isParameterIdCached(String layerName, final String parametersId) throws IOException {
+        try (Stream<Path> layerChildStream = layerChildStream(layerName, (p)-> Files.isDirectory(p) && p.endsWith(parametersId))) {
+            return layerChildStream
+                .findAny()
+                .isPresent();
+        }
+    }
+    
+    @Override
+    public Map<String,Optional<Map<String, String>>> getParametersMapping(String layerName) {
+        Properties p = getLayerMetadata(layerName);
+        return getParameterIds(layerName).stream()
+            .collect(Collectors.toMap(
+                (id)->id,
+                (id)->{
+                    String kvp =p.getProperty("parameters."+id);
+                    if (Objects.isNull(kvp)) { 
+                        return Optional.empty();
+                    }
+                    kvp=urlDecUtf8(kvp);
+                    return Optional.of(ParametersUtils.getMap(kvp));
+                }));
+    }
+    
+    static final int paramIdLength = ParametersUtils.getId(Collections.singletonMap("A", "B")).length();
+    
+    @Override
+    public Set<String> getParameterIds(String layerName) {
+        try (Stream<Path> layerChildStream = layerChildStream(layerName, (p)-> Files.isDirectory(p))) {
+            return layerChildStream
+                .map(p->p.getFileName().toString())
+                .map(s->s.substring(s.lastIndexOf('_')+1))
+                .filter(s->s.length()==paramIdLength) // Zoom level should never be the same length so this should be safe
+                .collect(Collectors.toSet());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 }

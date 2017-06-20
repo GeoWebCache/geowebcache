@@ -36,6 +36,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.ErrorMime;
+import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.HttpClientBuilder;
@@ -97,7 +98,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
      */
     @Override
     protected void makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer,
-            Map<String, String> wmsParams, String expectedMimeType, Resource target)
+            Map<String, String> wmsParams, MimeType expectedMimeType, Resource target)
             throws GeoWebCacheException {
         Assert.notNull(target, "Target resource can't be null");
         Assert.isTrue(target.getSize() == 0, "Target resource is not empty");
@@ -153,7 +154,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
      * @throws GeoWebCacheException
      */
     private void connectAndCheckHeaders(TileResponseReceiver tileRespRecv, URL wmsBackendUrl,
-            Map<String, String> wmsParams, String requestMime, Integer backendTimeout,
+            Map<String, String> wmsParams, MimeType requestMimeType, Integer backendTimeout,
             Resource target) throws GeoWebCacheException {
 
         GetMethod getMethod = null;
@@ -185,7 +186,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
             // Check that we're not getting an error MIME back.
             String responseMime = getMethod.getResponseHeader("Content-Type").getValue();
             if (responseCode != 204 && responseMime != null
-                    && !mimeStringCheck(requestMime, responseMime)) {
+                    && !requestMimeType.isCompatible(responseMime)) {
                 String message = null;
                 if (responseMime.equalsIgnoreCase(ErrorMime.vnd_ogc_se_inimage.getFormat())) {
                     // TODO: revisit: I don't understand why it's trying to create a String message
@@ -212,7 +213,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
                         IOUtils.closeQuietly(stream);
                     }
                 }
-                String msg = "MimeType mismatch, expected " + requestMime + " but got "
+                String msg = "MimeType mismatch, expected " + requestMimeType + " but got "
                         + responseMime + " from " + wmsBackendUrl.toString()
                         + (message == null ? "" : (":\n" + message));
                 tileRespRecv.setError();

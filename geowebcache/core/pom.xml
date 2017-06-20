@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.geowebcache</groupId>
     <artifactId>geowebcache</artifactId>
-    <version>1.7-SNAPSHOT</version>
+    <version>1.12-SNAPSHOT</version><!-- GWC VERSION -->
   </parent>
   <groupId>org.geowebcache</groupId>
   <artifactId>gwc-core</artifactId>
@@ -54,7 +54,7 @@
 
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
+      <artifactId>javax.servlet-api</artifactId>
     </dependency>
 
     <dependency>
@@ -92,7 +92,6 @@
       <artifactId>jsr305</artifactId>
     </dependency>
 
-
     <!-- Java Advanced Imaging (JAI) -->
     <dependency>
       <groupId>javax.media</groupId>
@@ -113,6 +112,11 @@
     </dependency>
 
     <dependency>
+      <groupId>it.geosolutions.jaiext.utilities</groupId>
+      <artifactId>jt-utilities</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>commons-httpclient</groupId>
       <artifactId>commons-httpclient</artifactId>
       <version>3.1</version>
@@ -122,6 +126,16 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-integration</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -140,13 +154,18 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.mockrunner</groupId>
-      <artifactId>mockrunner</artifactId>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.mockrunner</groupId>
-      <artifactId>mockrunner</artifactId>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>xmlunit</groupId>
+      <artifactId>xmlunit</artifactId>
       <scope>test</scope>
     </dependency>
 

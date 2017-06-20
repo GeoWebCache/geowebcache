@@ -19,7 +19,6 @@ package org.geowebcache.diskquota;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,17 +35,22 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.ConfigurationException;
+import org.geowebcache.config.ConfigurationResourceProvider;
+import org.geowebcache.config.XMLFileResourceProvider;
 import org.geowebcache.diskquota.storage.LayerQuota;
 import org.geowebcache.diskquota.storage.Quota;
 import org.geowebcache.diskquota.storage.StorageUnit;
+import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
+import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.springframework.util.Assert;
-import org.springframework.web.context.WebApplicationContext;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.XStreamException;
@@ -78,10 +82,10 @@ public class ConfigLoader {
 
     private static final String CONFIGURATION_FILE_NAME = "geowebcache-diskquota.xml";
 
-    private final WebApplicationContext context;
-
     private final TileLayerDispatcher tileLayerDispatcher;
 
+    private final ConfigurationResourceProvider resourceProvider;
+    
     private final DefaultStorageFinder storageFinder;
 
     /**
@@ -101,12 +105,33 @@ public class ConfigLoader {
      */
     public ConfigLoader(final DefaultStorageFinder storageFinder,
             final ApplicationContextProvider contextProvider, final TileLayerDispatcher tld)
-            throws IOException {
-
+            throws ConfigurationException {
+        this(new XMLFileResourceProvider(CONFIGURATION_FILE_NAME,
+                contextProvider, null, storageFinder), storageFinder, tld);
+    }
+    
+    /**
+     * 
+     * 
+     * @param resourceProvider provides custom configuration resource
+     * @param storageFinder
+     *            used to get the location of the cache directory
+     * @param tld
+     *            used only to validate the presence of a layer at {@link #loadConfig()} and ignore
+     *            the layer quota definition if the {@link TileLayer} does not exist
+     * @param quotaStore
+     *            storage for layer quota information and paged tiles statistics
+     * @throws IOException
+     */
+    public ConfigLoader(final ConfigurationResourceProvider resourceProvider,
+            final DefaultStorageFinder storageFinder, final TileLayerDispatcher tld)
+            throws ConfigurationException {
+        this.resourceProvider = resourceProvider;
         this.storageFinder = storageFinder;
-        this.context = contextProvider.getApplicationContext();
         this.tileLayerDispatcher = tld;
     }
+    
+    
 
     /**
      * Saves the configuration to the root cache directory
@@ -116,66 +141,54 @@ public class ConfigLoader {
      * @throws ConfigurationException
      */
     public void saveConfig(DiskQuotaConfig config) throws IOException, ConfigurationException {
-        File rootCacheDir = getRootCacheDir();
-        XStream xStream = getConfiguredXStream(new XStream());
-        final File configFile = new File(rootCacheDir, CONFIGURATION_FILE_NAME);
-        final File tmpConfigFile = new File(rootCacheDir, CONFIGURATION_FILE_NAME + ".tmp");
-        log.debug("Saving disk quota config to " + configFile.getAbsolutePath());
-        OutputStream configOut = new FileOutputStream(tmpConfigFile);
-        try {
+        if (!resourceProvider.hasOutput()) {
+            log.error("Unable to save DiskQuota to resource :" + resourceProvider.getLocation());
+            return;
+        }
+        
+        XStream xStream = getConfiguredXStream(new GeoWebCacheXStream());
+        
+        log.debug("Saving disk quota config to " + resourceProvider.getLocation());
+        try (OutputStream configOut = resourceProvider.out()) {
             xStream.toXML(config, new OutputStreamWriter(configOut, "UTF-8"));
         } catch (RuntimeException e) {
-            log.error("Error saving DiskQuota config to temp file :"
-                    + tmpConfigFile.getAbsolutePath());
-        } finally {
-            configOut.close();
-        }
-        configFile.delete();
-        if (!tmpConfigFile.renameTo(configFile)) {
-            throw new ConfigurationException("Couldn't save disk quota config file "
-                    + configFile.getAbsolutePath());
+            log.error("Error saving DiskQuota config to file :"
+                    + resourceProvider.getLocation());
         }
     }
 
     public DiskQuotaConfig loadConfig() throws IOException, ConfigurationException {
-        DiskQuotaConfig quotaConfig;
-        final File configFile = getConfigResource();
-        if (!configFile.exists()) {
-            log.info("DiskQuota configuration not found: " + configFile.getAbsolutePath());
-            quotaConfig = new DiskQuotaConfig();
-        } else {
-            log.info("Quota config is: " + configFile.getAbsolutePath());
-            InputStream configIn = new FileInputStream(configFile);
-            try {
+        DiskQuotaConfig quotaConfig = null;
+        
+        if (resourceProvider.hasInput()) {
+            log.info("Quota config is: " + resourceProvider.getLocation());
+            
+            try (InputStream configIn = resourceProvider.in()) {
                 quotaConfig = loadConfiguration(configIn);
                 if (null == quotaConfig) {
                     throw new ConfigurationException("Couldn't parse configuration file "
-                            + configFile.getAbsolutePath());
+                            + resourceProvider.getLocation());
                 }
-            } catch (RuntimeException e) {
+            } catch (IOException | RuntimeException e) {
                 log.error(
                         "Error loading DiskQuota configuration from "
-                                + configFile.getAbsolutePath() + ": " + e.getMessage()
+                                + resourceProvider.getLocation() + ": " + e.getMessage()
                                 + ". Deferring to a default (disabled) configuration", e);
-                quotaConfig = new DiskQuotaConfig();
-            } finally {
-                configIn.close();
             }
+        } else {
+            log.info("DiskQuota configuration is not readable: " + resourceProvider.getLocation());
         }
+
+        if (quotaConfig == null) {
+            quotaConfig = new DiskQuotaConfig();
+        }
+        
         // set default values
         quotaConfig.setDefaults();
 
         validateConfig(quotaConfig);
 
         return quotaConfig;
-    }
-
-    private File getConfigResource() throws ConfigurationException, FileNotFoundException {
-        String cachePath = storageFinder.getDefaultPath();
-
-        File file = new File(cachePath, CONFIGURATION_FILE_NAME);
-
-        return file;
     }
 
     private void validateConfig(DiskQuotaConfig quotaConfig) throws ConfigurationException {
@@ -261,7 +274,7 @@ public class ConfigLoader {
 
     private DiskQuotaConfig loadConfiguration(final InputStream configStream)
             throws XStreamException {
-        XStream xstream = getConfiguredXStream(new XStream());
+        XStream xstream = getConfiguredXStream(new GeoWebCacheXStream());
         Reader reader;
         try {
             reader = new InputStreamReader(configStream, "UTF-8");
@@ -275,10 +288,22 @@ public class ConfigLoader {
 
     public static DiskQuotaConfig loadConfiguration(final Reader reader, XStream xstream) {
         DiskQuotaConfig fromXML = (DiskQuotaConfig) xstream.fromXML(reader);
+        
+        final GeoWebCacheEnvironment gwcEnvironment = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
+        
+        if (gwcEnvironment != null && GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION) {
+            fromXML.setQuotaStore((String) gwcEnvironment.resolveValue(fromXML.getQuotaStore()));
+        }
+        
+        
         return fromXML;
     }
 
     public static XStream getConfiguredXStream(XStream xs) {
+        // Allow anything that's part of GWC Diskquota
+        // TODO: replace this with a more narrow whitelist
+        xs.allowTypesByWildcard(new String[]{"org.geowebcache.**"});
+        
         xs.setMode(XStream.NO_REFERENCES);
 
         xs.alias("gwcQuotaConfiguration", DiskQuotaConfig.class);
@@ -352,7 +377,6 @@ public class ConfigLoader {
         /**
          * @see com.thoughtworks.xstream.converters.ConverterMatcher#canConvert(java.lang.Class)
          */
-        @SuppressWarnings("rawtypes")
         public boolean canConvert(Class type) {
             return Quota.class.equals(type);
         }

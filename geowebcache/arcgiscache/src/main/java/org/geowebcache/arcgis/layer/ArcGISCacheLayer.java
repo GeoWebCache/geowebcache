@@ -1,5 +1,24 @@
 package org.geowebcache.arcgis.layer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.arcgis.compact.ArcGISCompactCache;
+import org.geowebcache.arcgis.compact.ArcGISCompactCacheV1;
+import org.geowebcache.arcgis.compact.ArcGISCompactCacheV2;
+import org.geowebcache.arcgis.config.*;
+import org.geowebcache.conveyor.Conveyor.CacheResult;
+import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.grid.*;
+import org.geowebcache.io.FileResource;
+import org.geowebcache.io.Resource;
+import org.geowebcache.layer.AbstractTileLayer;
+import org.geowebcache.layer.ExpirationRule;
+import org.geowebcache.mime.MimeException;
+import org.geowebcache.mime.MimeType;
+import org.geowebcache.util.GWCVars;
+
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -9,36 +28,8 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.arcgis.compact.ArcGISCompactCache;
-import org.geowebcache.arcgis.config.CacheInfo;
-import org.geowebcache.arcgis.config.CacheInfoPersister;
-import org.geowebcache.arcgis.config.CacheStorageInfo;
-import org.geowebcache.arcgis.config.LODInfo;
-import org.geowebcache.arcgis.config.TileCacheInfo;
-import org.geowebcache.conveyor.Conveyor.CacheResult;
-import org.geowebcache.conveyor.ConveyorTile;
-import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.Grid;
-import org.geowebcache.grid.GridSet;
-import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubset;
-import org.geowebcache.grid.GridSubsetFactory;
-import org.geowebcache.grid.OutsideCoverageException;
-import org.geowebcache.io.FileResource;
-import org.geowebcache.io.Resource;
-import org.geowebcache.layer.AbstractTileLayer;
-import org.geowebcache.mime.MimeException;
-import org.geowebcache.mime.MimeType;
-
 /**
- * 
  * @author Gabriel Roldan
- * 
  */
 public class ArcGISCacheLayer extends AbstractTileLayer {
 
@@ -62,6 +53,12 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
      */
     private File tileCachePath;
 
+    /**
+     * Optional, configure whether or not the z-values should be hex-encoded or not.
+     * If not provided defaults to false
+     */
+    private Boolean hexZoom;
+
     private transient CacheInfo cacheInfo;
 
     private transient BoundingBox layerBounds;
@@ -70,13 +67,18 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
 
     private ArcGISCompactCache compactCache;
 
-    @Override
-    public boolean isEnabled() {
+    /**
+     * @return {@code null}, this kind of layer handles its own storage.
+     */
+    @Override public String getBlobStoreId() {
+        return null;
+    }
+
+    @Override public boolean isEnabled() {
         return enabled;
     }
 
-    @Override
-    public void setEnabled(boolean enabled) {
+    @Override public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
@@ -106,54 +108,74 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         this.tileCachePath = tileCachePath;
     }
 
+    public boolean isHexZoom() {
+        return hexZoom;
+    }
+
+    public void setHexZoom(boolean hexZoom) {
+        this.hexZoom = hexZoom;
+    }
+
     /**
-     * @see org.geowebcache.layer.TileLayer#initialize(org.geowebcache.grid.GridSetBroker)
      * @return {@code true} if success. Note this method's return type should be void. It's not
-     *         checked anywhere
+     * checked anywhere
+     * @see org.geowebcache.layer.TileLayer#initialize(org.geowebcache.grid.GridSetBroker)
      */
-    @Override
-    protected boolean initializeInternal(GridSetBroker gridSetBroker) {
+    @Override protected boolean initializeInternal(GridSetBroker gridSetBroker) {
         if (this.enabled == null) {
             this.enabled = true;
         }
         if (this.tilingScheme == null) {
             throw new IllegalStateException(
-                    "tilingScheme has not been set. It should point to the ArcGIS "
-                            + "cache tiling scheme file for this layer (conf.xml)");
+                "tilingScheme has not been set. It should point to the ArcGIS "
+                    + "cache tiling scheme file for this layer (conf.xml)");
         }
         if (tileCachePath != null) {
-            if (!tileCachePath.exists() || !tileCachePath.isDirectory() || !tileCachePath.canRead()) {
-                throw new IllegalStateException("tileCachePath property for layer '" + getName()
-                        + "' is set to '" + tileCachePath
+            if (!tileCachePath.exists() || !tileCachePath.isDirectory() || !tileCachePath
+                .canRead()) {
+                throw new IllegalStateException(
+                    "tileCachePath property for layer '" + getName() + "' is set to '"
+                        + tileCachePath
                         + "' but the directory either does not exist or is not readable");
             }
+        }
+        if (this.hexZoom == null) {
+            this.hexZoom = false;
         }
         try {
             CacheInfoPersister tilingSchemeLoader = new CacheInfoPersister();
             cacheInfo = tilingSchemeLoader.load(new FileReader(tilingScheme));
             File layerBoundsFile = new File(tilingScheme.getParentFile(), "conf.cdi");
             if (!layerBoundsFile.exists()) {
-                throw new RuntimeException("Layer bounds file not found: "
-                        + layerBoundsFile.getAbsolutePath());
+                throw new RuntimeException(
+                    "Layer bounds file not found: " + layerBoundsFile.getAbsolutePath());
             }
             log.info("Parsing layer bounds for " + getName());
             this.layerBounds = tilingSchemeLoader.parseLayerBounds(new FileReader(layerBoundsFile));
             log.info("Parsed layer bounds for " + getName() + ": " + layerBounds);
 
-            // compact
-            // TODO: use tileCachePath when set
             storageFormat = cacheInfo.getCacheStorageInfo().getStorageFormat();
-            if (storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE)) {
-                log.info(getName() + " uses compact format");
-                compactCache = new ArcGISCompactCache(tilingScheme.getParent() + "/_alllayers");
+            if (storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE) || storageFormat
+                .equals(CacheStorageInfo.COMPACT_FORMAT_CODE_V2)) {
+                String pathToCacheRoot = tilingScheme.getParent() + "/_alllayers";
+                if (tileCachePath != null)
+                    pathToCacheRoot = tileCachePath.getAbsolutePath();
+
+                if (storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE)) {
+                    log.info(getName() + " uses compact format (ArcGIS 10.0 - 10.2)");
+                    compactCache = new ArcGISCompactCacheV1(pathToCacheRoot);
+                } else if (storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE_V2)) {
+                    log.info(getName() + " uses compact format (ArcGIS 10.3)");
+                    compactCache = new ArcGISCompactCacheV2(pathToCacheRoot);
+                }
             }
-            // comcapt
         } catch (FileNotFoundException e) {
-            throw new IllegalStateException("Tiling scheme file not found: "
-                    + tilingScheme.getAbsolutePath());
+            throw new IllegalStateException(
+                "Tiling scheme file not found: " + tilingScheme.getAbsolutePath());
         }
-        log.info("Configuring layer " + getName() + " out of the ArcGIS tiling scheme "
-                + tilingScheme.getAbsolutePath());
+        log.info(
+            "Configuring layer " + getName() + " out of the ArcGIS tiling scheme " + tilingScheme
+                .getAbsolutePath());
 
         super.subSets = createGridSubsets(gridSetBroker);
         super.formats = loadMimeTypes();
@@ -193,8 +215,8 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         Integer zoomStart = lodInfos.get(0).getLevelID();
         Integer zoomStop = lodInfos.get(lodInfos.size() - 1).getLevelID();
 
-        GridSubset subSet = GridSubsetFactory.createGridSubSet(gridSet, this.layerBounds,
-                zoomStart, zoomStop);
+        GridSubset subSet = GridSubsetFactory
+            .createGridSubSet(gridSet, this.layerBounds, zoomStart, zoomStop);
 
         Hashtable<String, GridSubset> subsets = new Hashtable<String, GridSubset>();
         subsets.put(gridSet.getName(), subSet);
@@ -202,16 +224,15 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
     }
 
     /**
-     * 
      * @see org.geowebcache.layer.TileLayer#getTile(org.geowebcache.conveyor.ConveyorTile)
      */
-    @Override
-    public ConveyorTile getTile(final ConveyorTile tile) throws GeoWebCacheException, IOException,
-            OutsideCoverageException {
+    @Override public ConveyorTile getTile(final ConveyorTile tile)
+        throws GeoWebCacheException, IOException, OutsideCoverageException {
 
         Resource tileContent = null;
 
-        if (storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE)) {
+        if (storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE) || storageFormat
+            .equals(CacheStorageInfo.COMPACT_FORMAT_CODE_V2)) {
             final long[] tileIndex = tile.getTileIndex();
             final String gridSetId = tile.getGridSetId();
             final GridSubset gridSubset = this.getGridSubset(gridSetId);
@@ -225,14 +246,15 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
             final int col = (int) tileIndex[0];
             final int row = (int) (coverageMaxY - tileIndex[1]);
 
-            if (compactCache.tileExists(zoom, row, col))
-                tileContent = compactCache.getBundleFileResource(zoom, row, col);
+            tileContent = compactCache.getBundleFileResource(zoom, row, col);
+
         } else if (storageFormat.equals(CacheStorageInfo.EXPLODED_FORMAT_CODE)) {
             String path = getTilePath(tile);
             File tileFile = new File(path);
 
-            if (tileFile.exists())
+            if (tileFile.exists()) {
                 tileContent = readFile(tileFile);
+            }
         }
 
         if (tileContent != null) {
@@ -244,7 +266,43 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
                 throw new OutsideCoverageException(tile.getTileIndex(), 0, 0);
             }
         }
+
+        // TODO Add here 
+        saveExpirationInformation((int) (tile.getExpiresHeader() / 1000));
+
         return tile;
+    }
+
+    protected void saveExpirationInformation(int backendExpire) {
+        this.saveExpirationHeaders = false;
+
+        try {
+            if (getExpireCache(0) == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+                if (backendExpire == -1) {
+                    this.expireCacheList.set(0, new ExpirationRule(0, 7200));
+                    log.error("Layer profile wants MaxAge from backend,"
+                        + " but backend does not provide this. Setting to 7200 seconds.");
+                } else {
+                    this.expireCacheList.set(backendExpire, new ExpirationRule(0, 7200));
+                }
+                log.trace("Setting expireCache to: " + expireCache);
+            }
+            if (getExpireCache(0) == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+                if (backendExpire == -1) {
+                    this.expireClientsList.set(0, new ExpirationRule(0, 7200));
+                    log.error("Layer profile wants MaxAge from backend,"
+                        + " but backend does not provide this. Setting to 7200 seconds.");
+                } else {
+                    this.expireClientsList.set(0, new ExpirationRule(0, backendExpire));
+                    log.trace("Setting expireClients to: " + expireClients);
+                }
+
+            }
+        } catch (Exception e) {
+            // Sometimes this doesn't work (network conditions?),
+            // and it's really not worth getting caught up on it.
+            e.printStackTrace();
+        }
     }
 
     private boolean setLayerBlankTile(ConveyorTile tile) {
@@ -292,7 +350,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         // bottom-right, and GWC computes tiles in bottom-left to top-right order
         final long y = (coverageMaxY - tileIndex[1]);
 
-        String level = Integer.toHexString(z);
+        String level = (this.hexZoom) ? Integer.toHexString(z) : Integer.toString(z);
         level = zeroPadder(level, 2);
 
         String row = Long.toHexString(y);
@@ -304,7 +362,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         StringBuilder path = getLayerPath();
 
         path.append(File.separatorChar).append('L').append(level).append(File.separatorChar)
-                .append('R').append(row).append(File.separatorChar).append('C').append(col);
+            .append('R').append(row).append(File.separatorChar).append('C').append(col);
 
         String fileExtension = mimeType.getFileExtension();
         if ("jpeg".equalsIgnoreCase(fileExtension)) {
@@ -351,49 +409,40 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
     }
 
     /**
-     * 
      * @see org.geowebcache.layer.TileLayer#getNoncachedTile(org.geowebcache.conveyor.ConveyorTile)
      */
-    @Override
-    public ConveyorTile getNoncachedTile(ConveyorTile tile) throws GeoWebCacheException {
+    @Override public ConveyorTile getNoncachedTile(ConveyorTile tile) throws GeoWebCacheException {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * 
      * @see org.geowebcache.layer.TileLayer#seedTile(org.geowebcache.conveyor.ConveyorTile, boolean)
      */
-    @Override
-    public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException,
-            IOException {
+    @Override public void seedTile(ConveyorTile tile, boolean tryCache)
+        throws GeoWebCacheException, IOException {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * 
      * @see org.geowebcache.layer.TileLayer#doNonMetatilingRequest(org.geowebcache.conveyor.ConveyorTile)
      */
-    @Override
-    public ConveyorTile doNonMetatilingRequest(ConveyorTile tile) throws GeoWebCacheException {
+    @Override public ConveyorTile doNonMetatilingRequest(ConveyorTile tile)
+        throws GeoWebCacheException {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * 
      * @see org.geowebcache.layer.TileLayer#getStyles()
      */
-    @Override
-    public String getStyles() {
+    @Override public String getStyles() {
         return null;
     }
 
     /**
-     * 
      * @see org.geowebcache.layer.TileLayer#setExpirationHeader(javax.servlet.http.HttpServletResponse,
-     *      int)
+     * int)
      */
-    @Override
-    public void setExpirationHeader(HttpServletResponse response, int zoomLevel) {
+    @Override public void setExpirationHeader(HttpServletResponse response, int zoomLevel) {
         /*
          * NOTE: this method doesn't seem like belonging to TileLayer, but to GeoWebCacheDispatcher
          * itself

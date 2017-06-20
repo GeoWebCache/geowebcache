@@ -39,6 +39,31 @@ In this case, the assumptions are:
 #. Exceptions are reported inside images (``exceptions=application/vnd.ogc.se_inimage``)
 #. Requests using OpenLayers are made with ``transparent=true``
 
+Explicit blob store configuration
+---------------------------------
+
+Unless otherwise specified, the tiles produced by a ``wmsLayer`` will be persisted to the cache defined by the default blob store.
+The ``blobStoreId`` element allows to define an alternate blob store where to store the layer tiles.
+See the :ref:`configuration.storage` page for more information on how to configure blob stores.
+
+In this example, the layer is configured to use the ``myBlobStore`` blob store, which must be defined in the ``blobStores`` section
+of ``gwcConfiguration`` with the same identifier.
+
+.. code-block:: xml
+
+   <gwcConfiguration>
+     <!-- ... -->
+     <layers>
+       <!-- ... -->
+       <wmsLayer>
+         <blobStoreId>myBlobStore</blobStoreId>
+         <name>topp:states</name>
+         <wmsUrl><string>http://demo.opengeo.org/geoserver/wms</string></wmsUrl>
+       </wmsLayer>
+       <!-- ... -->
+     </layers>
+   </gwcConfiguration>
+
 
 Simple configuration
 --------------------

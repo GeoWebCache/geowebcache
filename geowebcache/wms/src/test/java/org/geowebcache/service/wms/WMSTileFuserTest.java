@@ -45,9 +45,8 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import com.mockrunner.mock.web.MockHttpServletRequest;
-import com.mockrunner.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 public class WMSTileFuserTest extends TestCase {
     GridSetBroker gridSetBroker = new GridSetBroker(false, false);
@@ -147,12 +146,12 @@ public class WMSTileFuserTest extends TestCase {
 	        };  
 	        
 	        MockHttpServletRequest request = new MockHttpServletRequest();
-	        request.setupAddParameter("layers", new String[] { "test:layer" });
-	        request.setupAddParameter("srs", new String[] { "EPSG:4326" });
-	        request.setupAddParameter("format", new String[] { "image/png8" });
-	        request.setupAddParameter("width", width +"");
-	        request.setupAddParameter("height", height +"");
-	        request.setupAddParameter("bbox", bounds.toString());
+	        request.addParameter("layers", new String[] { "test:layer" });
+	        request.addParameter("srs", new String[] { "EPSG:4326" });
+	        request.addParameter("format", new String[] { "image/png8" });
+	        request.addParameter("width", width +"");
+	        request.addParameter("height", height +"");
+	        request.addParameter("bbox", bounds.toString());
 	        final File imageTile = new File(getClass().getResource("/image.png").toURI());
 	        
 	        StorageBroker broker = new DefaultStorageBroker(
@@ -180,7 +179,7 @@ public class WMSTileFuserTest extends TestCase {
             tileFuser.writeResponse(response,
                     new RuntimeStats(1, Arrays.asList(1), Arrays.asList("desc")));
 
-            assertTrue(response.getOutputStreamContent().length() > 0);
+            assertTrue(response.getContentAsString().length() > 0);
         } finally {
         	temp.delete();
         }

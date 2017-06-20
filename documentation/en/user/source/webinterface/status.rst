@@ -30,3 +30,8 @@ Runtime statistics
 
 The Status page displays basic runtime statistics including: uptime; how many requests have been made; total and peak throughput and statitics over intervals of 3, 15, and 60 seconds.
 
+In Memory Cache statistics
+--------------------------
+
+If the **blobstore** object used is an instance of **MemoryBlobStore**, the user can find a new section called *In Memory Cache statistics*, containing the statistics of the cache used
+by the **blobstore**. Note that these statistics are related to the local entries, even in case of distributed in-memory caching. 

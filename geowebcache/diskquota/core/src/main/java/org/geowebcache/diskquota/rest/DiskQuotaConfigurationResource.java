@@ -6,6 +6,7 @@ import java.io.StringReader;
 import org.geowebcache.diskquota.ConfigLoader;
 import org.geowebcache.diskquota.DiskQuotaConfig;
 import org.geowebcache.diskquota.DiskQuotaMonitor;
+import org.geowebcache.io.GeoWebCacheXStream;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.restlet.data.MediaType;
@@ -170,7 +171,7 @@ public class DiskQuotaConfigurationResource extends Resource {
 
     private JsonRepresentation getJsonRepresentation(DiskQuotaConfig config) throws JSONException {
         JsonRepresentation rep = null;
-        XStream xs = ConfigLoader.getConfiguredXStream(new XStream(
+        XStream xs = ConfigLoader.getConfiguredXStream(new GeoWebCacheXStream(
                 new JsonHierarchicalStreamDriver()));
         JSONObject obj = new JSONObject(xs.toXML(config));
         rep = new JsonRepresentation(obj);
@@ -178,7 +179,7 @@ public class DiskQuotaConfigurationResource extends Resource {
     }
 
     private Representation getXmlRepresentation(DiskQuotaConfig config) {
-        XStream xStream = ConfigLoader.getConfiguredXStream(new XStream());
+        XStream xStream = ConfigLoader.getConfiguredXStream(new GeoWebCacheXStream());
         String xml = xStream.toXML(config);
         return new StringRepresentation(xml, MediaType.TEXT_XML);
     }
@@ -187,7 +188,7 @@ public class DiskQuotaConfigurationResource extends Resource {
 
         final String text = entity.getText();
         StringReader reader = new StringReader(text);
-        XStream xstream = ConfigLoader.getConfiguredXStream(new XStream());
+        XStream xstream = ConfigLoader.getConfiguredXStream(new GeoWebCacheXStream());
         DiskQuotaConfig diskQuotaConfig = ConfigLoader.loadConfiguration(reader, xstream);
         return diskQuotaConfig;
     }
@@ -198,7 +199,7 @@ public class DiskQuotaConfigurationResource extends Resource {
 
         HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();
 
-        XStream xStream = new XStream(driver);
+        XStream xStream = new GeoWebCacheXStream(driver);
 
         xStream = ConfigLoader.getConfiguredXStream(xStream);
 

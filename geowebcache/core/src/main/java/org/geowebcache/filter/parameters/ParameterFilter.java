@@ -18,6 +18,8 @@ package org.geowebcache.filter.parameters;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
+
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -26,6 +28,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
 /**
@@ -165,5 +168,24 @@ public abstract class ParameterFilter implements Serializable, Cloneable {
         if(defaultValue==null) defaultValue ="";
         return this;
     }
-
+    
+    /**
+     * Is the given value exactly a value that could be produced by the filter.
+     * @param value
+     * @return
+     * @throws ParameterException
+     */
+    public boolean isFilteredValue(final String value) {
+        if(Objects.equal(value, this.getDefaultValue())) {
+            return true;
+        }
+        if(Optional.ofNullable(this.getLegalValues()).map(values->values.contains(value)).orElse(false)) {
+            return true;
+        }
+        try {
+            return Objects.equal(value, this.apply(value));
+        } catch (ParameterException ex) {
+            return false;
+        }
+    }
 }

@@ -19,6 +19,7 @@ package org.geowebcache.rest.config;
 import java.io.InputStream;
 
 import org.geowebcache.config.GeoWebCacheConfiguration;
+import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.rest.filter.WMSRasterFilterUpdate;
 import org.geowebcache.rest.filter.XmlFilterUpdate;
 
@@ -32,7 +33,23 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 public class XMLConfiguration {
 
     private static XStream getConfiguredXStream(XStream xs) {
-        // XStream xs = xstream;
+        // Restrict classes that can be serialized/deserialized
+        // Allowing arbitrary classes to be deserialized is a security issue.
+        {
+
+            
+            // Allow any implementation of these extension points
+            xs.allowTypeHierarchy(org.geowebcache.layer.TileLayer.class);
+            xs.allowTypeHierarchy(org.geowebcache.filter.parameters.ParameterFilter.class);
+            xs.allowTypeHierarchy(org.geowebcache.filter.request.RequestFilter.class);
+            xs.allowTypeHierarchy(org.geowebcache.config.BlobStoreConfig.class);
+            xs.allowTypeHierarchy(org.geowebcache.config.Configuration.class);
+            
+            // Allow anything that's part of GWC
+            // TODO: replace this with a more narrow whitelist
+            xs.allowTypesByWildcard(new String[]{"org.geowebcache.**"});
+        }
+        
         xs.setMode(XStream.NO_REFERENCES);
 
         xs.alias("gwcConfiguration", GeoWebCacheConfiguration.class);
@@ -49,7 +66,7 @@ public class XMLConfiguration {
     }
 
     public static XmlFilterUpdate parseXMLFilterUpdate(final InputStream in) {
-        XStream xs = getConfiguredXStream(new XStream(new DomDriver()));
+        XStream xs = getConfiguredXStream(new GeoWebCacheXStream(new DomDriver()));
 
         XmlFilterUpdate fu = (XmlFilterUpdate) xs.fromXML(in);
 

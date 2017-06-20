@@ -17,7 +17,11 @@
  */
 package org.geowebcache.service.wmts;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -26,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSetBroker;
@@ -43,7 +48,8 @@ import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
 
-public class WMTSService extends Service {
+public class WMTSService extends Service  {
+
     public static final String SERVICE_WMTS = "wmts";
     static final String SERVICE_PATH = "/"+GeoWebCacheDispatcher.TYPE_SERVICE+"/"+SERVICE_WMTS;
 
@@ -65,11 +71,15 @@ public class WMTSService extends Service {
     
     private GeoWebCacheDispatcher controller = null;
 
+    // list of this service extensions ordered by their priority
+    private final List<WMTSExtension> extensions = new ArrayList<>();
+
     /**
      * Protected no-argument constructor to allow run-time instrumentation
      */
     protected WMTSService(){
         super(SERVICE_WMTS);
+        extensions.addAll(GeoWebCacheExtensions.extensions(WMTSExtension.class));
     }
     
     public WMTSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
@@ -80,6 +90,7 @@ public class WMTSService extends Service {
         this.tld = tld;
         this.gsb = gsb;
         this.stats = stats;
+        extensions.addAll(GeoWebCacheExtensions.extensions(WMTSExtension.class));
     }
     
     public WMTSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
@@ -92,11 +103,21 @@ public class WMTSService extends Service {
         this.stats = stats;
         this.urlMangler = urlMangler;
         this.controller = controller;
+        extensions.addAll(GeoWebCacheExtensions.extensions(WMTSExtension.class));
     }
 
     @Override
     public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response)
             throws GeoWebCacheException, OWSException {
+        // let's see if we have any extension that wants to provide a conveyor for this request
+        for(WMTSExtension extension : extensions) {
+            Conveyor conveyor = extension.getConveyor(request, response, sb);
+            if (conveyor != null) {
+                // this extension provides a conveyor for this request, we are done
+                return conveyor;
+            }
+        }
+        // no extension wants to handle this request
         String encoding = request.getCharacterEncoding();
         String[] keys = { "layer", "request", "style", "format", "tilematrixset", "tilematrix",
                 "tilerow", "tilecol" };
@@ -153,8 +174,8 @@ public class WMTSService extends Service {
         try {
             // WMTS uses the "STYLE" instead of "STYLES"
             @SuppressWarnings("unchecked")
-            Map<String, Object> rawParameters = new HashMap<>(request.getParameterMap());
-            for(Entry<String, Object> e:rawParameters.entrySet()){
+            Map<String, String[]> rawParameters = new HashMap<>(request.getParameterMap());
+            for(Entry<String, String[]> e:rawParameters.entrySet()){
                 if(e.getKey().equalsIgnoreCase("STYLE")) {
                     rawParameters.put("STYLES", e.getValue());
                     break;
@@ -271,6 +292,15 @@ public class WMTSService extends Service {
 
     public void handleRequest(Conveyor conv) throws OWSException {
 
+        // let's see if any extension wants to handle this request
+        for (WMTSExtension extension : extensions) {
+            if (extension.handleRequest(conv)) {
+                // the request was handled by this extension
+                return;
+            }
+        }
+
+        // no extension wants to handle this request, so let's proceed with a normal execution
         ConveyorTile tile = (ConveyorTile) conv;
         
         String servletPrefix=null;
@@ -281,7 +311,7 @@ public class WMTSService extends Service {
 
         if (tile.getHint() != null) {
             if (tile.getHint().equals("getcapabilities")) {
-                WMTSGetCapabilities wmsGC = new WMTSGetCapabilities(tld, gsb, tile.servletReq, servletBase, context, urlMangler);
+                WMTSGetCapabilities wmsGC = new WMTSGetCapabilities(tld, gsb, tile.servletReq, servletBase, context, urlMangler, extensions);
                 wmsGC.writeResponse(tile.servletResp, stats);
 
             } else if (tile.getHint().equals("getfeatureinfo")) {
@@ -290,5 +320,13 @@ public class WMTSService extends Service {
                 wmsGFI.writeResponse(stats);
             }
         }
+    }
+
+    void addExtension(WMTSExtension extension) {
+        extensions.add(extension);
+    }
+
+    public Collection<WMTSExtension> getExtensions() {
+        return Collections.unmodifiableCollection(extensions);
     }
 }
