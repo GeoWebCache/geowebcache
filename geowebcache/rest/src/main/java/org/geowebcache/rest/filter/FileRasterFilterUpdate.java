@@ -13,17 +13,18 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  * @author Arne Kepp, OpenGeo, Copyright 2009
+ * @author David Vick, Boundless 2017
  */
 package org.geowebcache.rest.filter;
-
-import java.io.IOException;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.filter.request.WMSRasterFilter;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.rest.RestletException;
-import org.restlet.data.Status;
+import org.geowebcache.rest.exception.RestException;
+import org.springframework.http.HttpStatus;
+
+import java.io.IOException;
 
 public class FileRasterFilterUpdate extends XmlFilterUpdate {
     String gridSetId;
@@ -31,19 +32,19 @@ public class FileRasterFilterUpdate extends XmlFilterUpdate {
     int zoomStop;
     
     
-    protected void runUpdate(RequestFilter filter, TileLayer tl) throws IOException, RestletException {
+    public void runUpdate(RequestFilter filter, TileLayer tl) throws IOException, RestException {
         if(! (filter instanceof WMSRasterFilter)) { 
-            throw new RestletException("The filter " + filter.getName() + " is not a WMSRasterFilter.", 
-                    Status.CLIENT_ERROR_BAD_REQUEST);
+            throw new RestException("The filter " + filter.getName() + " is not a WMSRasterFilter.", 
+                    HttpStatus.BAD_REQUEST);
         }
         
         WMSRasterFilter wmsFilter = (WMSRasterFilter) filter;
         
         // Check that the SRS makes sense
         if (tl.getGridSubset(gridSetId) == null) {
-            throw new RestletException("The filter " + wmsFilter.getName()
+            throw new RestException("The filter " + wmsFilter.getName()
                     + " is associated with a layer that does not support "
-                    + gridSetId, Status.CLIENT_ERROR_BAD_REQUEST);
+                    + gridSetId, HttpStatus.BAD_REQUEST);
         }
 
         // Run the actual update
@@ -52,8 +53,8 @@ public class FileRasterFilterUpdate extends XmlFilterUpdate {
                 wmsFilter.setMatrix(tl, gridSetId, z, true);
             }
         } catch (GeoWebCacheException e) {
-            throw new RestletException("Error updating " + wmsFilter.getName()
-                    + ": " + e.getMessage(), Status.SERVER_ERROR_INTERNAL);
+            throw new RestException("Error updating " + wmsFilter.getName()
+                    + ": " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

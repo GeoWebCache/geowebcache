@@ -11,65 +11,60 @@
  *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * @author Arne Kepp / The Open Planning Project 2009 
+ *
+ * @author David Vick, Boundless, 2017
  */
+
 package org.geowebcache.rest.layers;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.custommonkey.xmlunit.NamespaceContext;
-import org.custommonkey.xmlunit.SimpleNamespaceContext;
-import org.custommonkey.xmlunit.XMLTestCase;
-import org.custommonkey.xmlunit.XMLUnit;
-import org.custommonkey.xmlunit.XpathEngine;
 import org.easymock.EasyMock;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
-import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridSet;
-import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSetFactory;
-import org.geowebcache.grid.SRS;
+import org.geowebcache.grid.*;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.rest.RestletException;
+import org.geowebcache.rest.controller.TileLayerController;
+import org.geowebcache.rest.exception.RestException;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
-import org.geowebcache.util.ServletUtils;
-import org.restlet.data.CharacterSet;
-import org.restlet.data.MediaType;
-import org.restlet.data.Method;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.data.Status;
-import org.restlet.resource.Representation;
-import org.restlet.resource.StringRepresentation;
-import org.w3c.dom.Document;
-import org.xmlunit.xpath.JAXPXPathEngine;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
+import java.io.InputStream;
+import java.util.LinkedList;
 
-/**
- * Most of the work is done by XMLConfig and XStream, so this is fairly short
- */
-public class TileLayerRestletTest extends XMLTestCase {
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration({
+        "file*:/webapp/WEB-INF/web.xml",
+        "file*:/webapp/WEB-INF/geowebcache-servlet.xml"
+})
+public class TileLayerRestTest {
+
+    private MockMvc mockMvc;
+
     TileLayerDispatcher tld;
 
-    // For the gets we'll use a shared one
-    TileLayerRestlet tlr;
+    TileLayerController tlc;
 
-    protected void setUp() throws Exception {
+    @Before
+    public void setup() throws GeoWebCacheException {
         GridSetBroker gridSetBroker = new GridSetBroker(false, false);
 
         BoundingBox extent = new BoundingBox(0, 0, 10E6, 10E6);
@@ -92,16 +87,18 @@ public class TileLayerRestletTest extends XMLTestCase {
 
         tld = new TileLayerDispatcher(gridSetBroker, configList);
 
-        tlr = new TileLayerRestlet();
-        tlr.setXMLConfiguration(xmlConfig);
-        tlr.setTileLayerDispatcher(tld);
-        tlr.setUrlMangler(new NullURLMangler());
+        tlc = new TileLayerController();
+        tlc.setXMLConfiguration(xmlConfig);
+        tlc.setTileLayerDispatcher(tld);
+        tlc.setUrlMangler(new NullURLMangler());
+        this.mockMvc = MockMvcBuilders.standaloneSetup(tlc).build();
     }
 
-    public void testGetXml() throws Exception {
-        Representation rep = tlr.doGetInternal("topp:states", "xml");
+    @Test
+    public void testGetXml() {
+        ResponseEntity rep = tlc.doGetInternal("topp:states", "xml");
 
-        String str = rep.getText();
+        String str = rep.getBody().toString();
 
         assertTrue(str.indexOf("<name>topp:states</name>") > 0);
         // TODO This needs to get back in
@@ -111,10 +108,11 @@ public class TileLayerRestletTest extends XMLTestCase {
         assertTrue(str.indexOf("states2") == -1);
     }
 
-    public void testGetJson() throws Exception {
-        Representation rep = tlr.doGetInternal("topp:states2", "json");
+    @Test
+    public void testGetJson() {
+        ResponseEntity rep = tlc.doGetInternal("topp:states2", "json");
 
-        String str = rep.getText();
+        String str = rep.getBody().toString();
 
         assertTrue(str.indexOf(",\"name\":\"topp:states2\",") > 0);
         // TODO this needs to go back in
@@ -123,57 +121,27 @@ public class TileLayerRestletTest extends XMLTestCase {
         assertTrue(str.indexOf("}}") > 0);
     }
 
-    public void testGetInvalid() throws Exception {
-        Representation rep = null;
+    @Test
+    public void testGetInvalid() {
+        ResponseEntity rep = null;
         try {
-            rep = tlr.doGetInternal("topp:states", "jpeg");
-        } catch (RestletException re) {
+            rep = tlc.doGetInternal("topp:states", "jpeg");
+        } catch (RestException re) {
             // Format should be invalid
-            assertTrue(re.getRepresentation().getText().indexOf("format") > 0);
+            assertTrue(re.getStatus().is4xxClientError());
         }
         assertTrue(rep == null);
     }
 
+    @Test
     public void testGetList() throws Exception {
-
-        final String rootPath = "http://my.gwc.org";
-        final String contextPath = "/rest";
-        Representation rep = tlr.listLayers("xml", rootPath, contextPath);
-        assertNotNull(rep);
-        assertEquals(CharacterSet.UTF_8, rep.getCharacterSet());
-
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        rep.write(output);
-
-        // System.err.println(output.toString());
-
-        Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-                .parse(new ByteArrayInputStream(output.toByteArray()));
-
-        List<String> layerNames = Lists.newArrayList(tld.getLayerNames());
-        Collections.sort(layerNames);
-        assertXpathExists("/layers", dom);
-
-        NamespaceContext ctx = new SimpleNamespaceContext(ImmutableMap.of("atom",
-                "http://www.w3.org/2005/Atom"));
-        XpathEngine xpathEngine = XMLUnit.newXpathEngine();
-        xpathEngine.setNamespaceContext(ctx);
-
-        for (int i = 0; i < layerNames.size(); i++) {
-            int xpathIndex = i + 1;
-
-            String layerName = layerNames.get(i);
-            String xpath = "/layers/layer[" + xpathIndex + "]/name";
-            assertXpathEvaluatesTo(layerName, xpath, dom);
-
-            String href = rootPath + contextPath + "/layers/" + ServletUtils.URLEncode(layerName) + ".xml";
-            xpath = "/layers/layer[" + xpathIndex + "]/link/@href";
-            String actual = new JAXPXPathEngine().evaluate(xpath, dom);
-            // System.err.println("-------- " + actual);
-            assertEquals(href, actual);
-        }
+        this.mockMvc.perform(get("/rest/layers.xml")
+                .contentType(MediaType.APPLICATION_ATOM_XML)
+                .contextPath("/rest"))
+                .andExpect(status().is2xxSuccessful());
     }
 
+    @Test
     public void testPut() throws Exception {
         String layerXml = "<wmsLayer>" + //
                 "  <name>newLayer1</name>" + //
@@ -207,35 +175,21 @@ public class TileLayerRestletTest extends XMLTestCase {
                 "  <wmsLayers>topp:states</wmsLayers>" + //
                 "</wmsLayer>";
 
-        Request request;
-        Representation entity;
-        Response response;
-
-        request = new Request();
-        request.setMethod(Method.PUT);
-        request.getAttributes().put("layer", "newLayer1");
-        request.getAttributes().put("extension", "xml");
-        entity = new StringRepresentation(layerXml, MediaType.TEXT_XML);
-        request.setEntity(entity);
-        response = new Response(request);
-
-        tlr.handle(request, response);
-        assertEquals(Status.SUCCESS_OK, response.getStatus());
+        this.mockMvc.perform(put("/rest/layers/newLayer1.xml")
+                .contentType(MediaType.APPLICATION_ATOM_XML)
+                .contextPath("/rest")
+                .content(layerXml))
+                .andExpect(status().is2xxSuccessful());
 
         TileLayer tileLayer1 = tld.getTileLayer("newLayer1");
         assertEquals(1, tileLayer1.getGridSubsets().size());
         assertNotNull(tileLayer1.getGridSubset("EPSG:3395"));
 
-        request = new Request();
-        request.setMethod(Method.PUT);
-        request.getAttributes().put("layer", "newLayer2");
-        request.getAttributes().put("extension", "xml");
-        entity = new StringRepresentation(layerXml2, MediaType.TEXT_XML);
-        request.setEntity(entity);
-        response = new Response(request);
-
-        tlr.handle(request, response);
-        assertEquals(Status.SUCCESS_OK, response.getStatus());
+        this.mockMvc.perform(put("/rest/layers/newLayer2.xml")
+                .contentType(MediaType.APPLICATION_ATOM_XML)
+                .contextPath("/rest")
+                .content(layerXml2))
+                .andExpect(status().is2xxSuccessful());
 
         TileLayer tileLayer2 = tld.getTileLayer("newLayer2");
         assertEquals(1, tileLayer2.getGridSubsets().size());
@@ -248,29 +202,28 @@ public class TileLayerRestletTest extends XMLTestCase {
     /**
      * Test deletion of topp:states layer.
      */
+    @Test
     public void testDelete() throws Exception {
         String layerName = "topp:states";
         assertNotNull("Missing test layer", tld.getTileLayer(layerName));
-        StorageBroker storageBroker = org.easymock.EasyMock
+        StorageBroker storageBroker = EasyMock
                 .createMock(StorageBroker.class);
         EasyMock.expect(storageBroker.delete(EasyMock.eq(layerName))).andReturn(true);
-        org.easymock.EasyMock.replay(storageBroker);
-        tlr.setStorageBroker(storageBroker);
-        Request request = new Request();
-        request.setMethod(Method.DELETE);
-        request.getAttributes().put("layer", ServletUtils.URLEncode(layerName));
-        assertFalse("Test layer name not URL encoded",
-                ((String) request.getAttributes().get("layer")).contains(":"));
-        Response response = new Response(request);
-        tlr.handle(request, response);
-        assertEquals("Test layer deletion unsuccessful", Status.SUCCESS_OK, response.getStatus());
+        EasyMock.replay(storageBroker);
+        tlc.setStorageBroker(storageBroker);
+
+        this.mockMvc.perform(delete("/rest/layers/" + layerName)
+                .contextPath("/rest"))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().string(containsString("topp:states deleted")));
+
         try {
             tld.getTileLayer(layerName);
             fail("Test layer not deleted");
         } catch (GeoWebCacheException e) {
             // success
         }
-        org.easymock.EasyMock.verify(storageBroker);
+        EasyMock.verify(storageBroker);
     }
 
     private XMLConfiguration loadXMLConfig() {

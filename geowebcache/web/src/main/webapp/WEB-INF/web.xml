@@ -14,7 +14,7 @@
       org.springframework.web.filter.DelegatingFilterProxy
     </filter-class>
   </filter>
-  
+
   <filter-mapping>
     <filter-name>springSecurityFilterChain</filter-name>
     <url-pattern>/*</url-pattern>
@@ -56,6 +56,11 @@
   <servlet-mapping>
     <servlet-name>geowebcache</servlet-name>
     <url-pattern>/proxy/*</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+    <servlet-name>geowebcache</servlet-name>
+    <url-pattern>/restlet/*</url-pattern>
   </servlet-mapping>
   
   <servlet-mapping>

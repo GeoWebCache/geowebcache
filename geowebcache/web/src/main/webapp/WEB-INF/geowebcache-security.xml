@@ -16,6 +16,7 @@
     <security:http>
         <security:intercept-url method="GET" pattern="/rest/web/**" access="permitAll"/>
         <security:intercept-url pattern="/rest/**" access="hasRole('ROLE_ADMINISTRATOR')"/>
+        <security:intercept-url pattern="/restng/**" access="hasRole('ROLE_ADMINISTRATOR')"/>
         
         <security:http-basic entry-point-ref="authenticationEntryPoint"/>
         <security:csrf disabled="true"/> <!-- TODO Update forms so we can enable this -->

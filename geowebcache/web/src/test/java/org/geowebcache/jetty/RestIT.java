@@ -1,45 +1,58 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @author Kevin Smith, Boundless
+ * @author David Vick, Boundless, 2017
+ */
+
 package org.geowebcache.jetty;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.describedAs;
-import static org.hamcrest.Matchers.either;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
-
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Arrays;
-
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.client.methods.*;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.xml.SimpleNamespaceContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.net.URI;
+import java.util.Arrays;
+
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
 /**
- * Integration test for the REST API in a full GWC instance
- * 
- * @author Kevin Smith, Boundless
- *
+ * Integration test for the REST API in a full GWC instance *
  */
 public class RestIT {
+    private MockMvc mockMvc;
+
     @ClassRule
     static public JettyRule jetty = new JettyRule();
     
@@ -204,19 +217,19 @@ public class RestIT {
                 new HttpDelete(jetty.getUri().resolve("rest/layers.xml")),
                 new HttpPost(jetty.getUri().resolve("rest/layers.xml")),
                 new HttpPut(jetty.getUri().resolve("rest/layers.xml")),
-                
-                new HttpPut(jetty.getUri().resolve("rest/seed/img+states.xml")),
-                new HttpDelete(jetty.getUri().resolve("rest/seed/img+states.xml")),
-                new HttpDelete(jetty.getUri().resolve("rest/seed")),
-                new HttpPut(jetty.getUri().resolve("rest/seed")),
-                
+
+                new HttpPut(jetty.getUri().resolve("rest/seed/img%20states.xml")),
+                new HttpDelete(jetty.getUri().resolve("rest/seed/img%20states.xml")),
+                new HttpDelete(jetty.getUri().resolve("rest/seed/ui_form")),
+                new HttpPut(jetty.getUri().resolve("rest/seed/ui_form")),
+
                 new HttpDelete(jetty.getUri().resolve("rest/diskquota.xml")),
                 new HttpDelete(jetty.getUri().resolve("rest/diskquota.json")),
                 new HttpDelete(jetty.getUri().resolve("rest/diskquota")),
-                
+
                 new HttpPut(jetty.getUri().resolve("rest/masstruncate")),
                 new HttpDelete(jetty.getUri().resolve("rest/masstruncate")),
-                
+
                 new HttpPut(jetty.getUri().resolve("rest/statistics")),
                 new HttpPost(jetty.getUri().resolve("rest/statistics")),
                 new HttpDelete(jetty.getUri().resolve("rest/statistics")),
@@ -233,12 +246,12 @@ public class RestIT {
     public void testSecure() throws Exception {
         for(HttpUriRequest request: Arrays.asList(
                 new HttpGet(jetty.getUri().resolve("rest/layers.xml")),
-                new HttpGet(jetty.getUri().resolve("rest/seed/img+states")),
+                new HttpGet(jetty.getUri().resolve("rest/seed/img%20states")),
                 new HttpPost(jetty.getUri().resolve("rest/reload")),
-                new HttpPost(jetty.getUri().resolve("rest/seed/img+states.xml")),
-                new HttpGet(jetty.getUri().resolve("rest/seed/img+states.xml")),
-                new HttpGet(jetty.getUri().resolve("rest/seed")),
-                new HttpPost(jetty.getUri().resolve("rest/seed")),
+                new HttpPost(jetty.getUri().resolve("rest/seed/img%20states.xml")),
+                new HttpGet(jetty.getUri().resolve("rest/seed/img%20states.xml")),
+                new HttpGet(jetty.getUri().resolve("rest/seed/ui_form")),
+                new HttpPost(jetty.getUri().resolve("rest/seed/ui_form")),
                 new HttpGet(jetty.getUri().resolve("rest/masstruncate")),
                 new HttpPost(jetty.getUri().resolve("rest/masstruncate"))
                 )) {
@@ -249,7 +262,7 @@ public class RestIT {
     @Test
     public void testGetLayer() throws Exception {
         doGetXML(
-            "rest/layers/img+states.xml",
+            "rest/layers/img%20states.xml",
             admin.getClient(),
             equalTo(200),
             doc->{
@@ -272,7 +285,7 @@ public class RestIT {
                 notAUser.getClient()
                 )){
             doGetXML(
-                "rest/layers/img+states.xml",
+                "rest/layers/img%20states.xml",
                 client,
                 equalTo(401),
                 doc->{
@@ -334,7 +347,7 @@ public class RestIT {
     @Test
     public void testAddLayer() throws Exception {
         doGetXML(
-            "rest/layers/img+states.xml",
+            "rest/layers/img%20states.xml",
             notAUser.getClient(),
             equalTo(401),
             doc->{
@@ -359,6 +372,94 @@ public class RestIT {
                     hasXPath("//wmsLayer", 
                     containsString("states"))));
             });
+    }
+    /*
+    DISK QUOTA CONTROLLER TEST
+     */
+    @Test
+    public void testDiskQuotaXML() throws Exception {
+        CloseableHttpResponse response = handleGet(URI.create("/geowebcache/rest/diskquota.xml"), admin.getClient());
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        if (response.getStatusLine().getStatusCode() == 200) {
+            Document doc = getResponseEntityAsXML(response);
+            assertThat(doc,
+                    hasXPath("//enabled",
+                            equalTo("false")));
+            assertThat(doc,
+                    hasXPath("//cacheCleanUpFrequency",
+                            equalTo("10")));
+            assertThat(doc,
+                    hasXPath("//cacheCleanUpUnits",
+                            equalTo("SECONDS")));
+            assertThat(doc,
+                    hasXPath("//maxConcurrentCleanUps",
+                            equalTo("2")));
+            assertThat(doc,
+                    hasXPath("//globalExpirationPolicyName",
+                            equalTo("LFU")));
+            assertThat(doc,
+                    hasXPath("//globalQuota/id",
+                            equalTo("0")));
+            assertThat(doc,
+                    hasXPath("//globalQuota/bytes",
+                            equalTo("524288000")));
+        }
+    }
+
+    @Test
+    public void testDiskQuotaJson() throws Exception {
+        CloseableHttpResponse response = handleGet(URI.create("/geowebcache/rest/diskquota.json"), admin.getClient());
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        if (response.getStatusLine().getStatusCode() == 200) {
+            JSONObject jsonObject = getResponseEntityAsJSON(response);
+            Object obj = jsonObject.get("org.geowebcache.diskquota.DiskQuotaConfig");
+            if (obj instanceof JSONObject) {
+                assertEquals(false, ((JSONObject) obj).get("enabled"));
+                assertEquals(10, ((JSONObject) obj).get("cacheCleanUpFrequency"));
+                assertEquals("SECONDS", ((JSONObject) obj).get("cacheCleanUpUnits"));
+                assertEquals(2, ((JSONObject) obj).get("maxConcurrentCleanUps"));
+                assertEquals("LFU", ((JSONObject) obj).get("globalExpirationPolicyName"));
+                Object globalQuota = ((JSONObject) obj).get("globalQuota");
+                if (globalQuota instanceof JSONObject) {
+                    assertEquals(0, ((JSONObject) globalQuota).get("id"));
+                    assertEquals(524288000, ((JSONObject) globalQuota).get("bytes"));
+                }
+            }
+
+        }
+    }
+
+
+    private Document getResponseEntityAsXML(CloseableHttpResponse response) throws Exception {
+        Document doc;
+
+        doc = XMLUnit.buildTestDocument(new InputSource(response.getEntity().getContent()));
+        doc.normalizeDocument();
+
+        return doc;
+    }
+
+    private JSONObject getResponseEntityAsJSON(CloseableHttpResponse response) throws Exception {
+        JSONObject jsonObject = new JSONObject(getResponseEntity(response));
+        return jsonObject;
+    }
+
+    private String getResponseEntity(CloseableHttpResponse response) {
+        String doc;
+        try {
+            StringWriter writer = new StringWriter();
+            IOUtils.copy(response.getEntity().getContent(), writer, null);
+            doc = writer.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+            doc = e.getMessage().toString();
+        }
+        return doc;
+    }
+    private CloseableHttpResponse handleGet(URI uri, CloseableHttpClient client) throws Exception {
+        HttpGet request = new HttpGet(jetty.getUri().resolve(uri));
+        CloseableHttpResponse response = client.execute(request);
+        return response;
     }
     
     interface Assertions<T> {
