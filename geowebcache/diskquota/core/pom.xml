@@ -33,47 +33,6 @@
       <artifactId>javax.servlet-api</artifactId>
     </dependency>
 
-    <!-- restlet.org dependencies -->
-    <dependency>
-      <groupId>org.restlet</groupId>
-      <artifactId>org.restlet</artifactId>
-      <classifier>noobjrep</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.restlet</groupId>
-      <artifactId>org.restlet</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.noelios.restlet</groupId>
-      <artifactId>com.noelios.restlet</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.noelios.restlet</groupId>
-      <artifactId>com.noelios.restlet.ext.simple</artifactId>
-    </dependency>
-
-    <!--
-      dependency> <groupId>org.restlet</groupId> <artifactId>org.restlet.ext.freemarker</artifactId> </dependency
-    -->
-
-    <dependency>
-      <groupId>org.restlet</groupId>
-      <artifactId>org.restlet.ext.spring</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.restlet</groupId>
-      <artifactId>org.restlet.ext.json</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.noelios.restlet</groupId>
-      <artifactId>com.noelios.restlet.ext.servlet</artifactId>
-    </dependency>
-
     <dependency>
       <groupId>org.codehaus.jettison</groupId>
       <artifactId>jettison</artifactId>

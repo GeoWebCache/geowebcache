@@ -11,69 +11,73 @@
  *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * @author Arne Kepp / The Open Planning Project 2008 
+ *
+ * @author Arne Kepp / The Open Planning Project 2008
+ * @author David Vick / Boundless 2017
+ *
+ * Original file
+ *
+ * ReloadRestlet.java
  */
-package org.geowebcache.rest.reload;
+
+package org.geowebcache.rest.controller;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.rest.GWCRestlet;
-import org.geowebcache.rest.RestletException;
+import org.geowebcache.rest.exception.RestException;
 import org.geowebcache.util.ServletUtils;
-import org.restlet.data.Form;
-import org.restlet.data.MediaType;
-import org.restlet.data.Method;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.data.Status;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.*;
 
-public class ReloadRestlet extends GWCRestlet {
-    private static Log log = LogFactory.getLog(org.geowebcache.rest.reload.ReloadRestlet.class);
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
+@Component
+@RestController
+@RequestMapping(path="${gwc.context.suffix:}/rest")
+public class ReloadController {
+    private static Log log = LogFactory.getLog(ReloadController.class);
+
+    @Autowired
     TileLayerDispatcher layerDispatcher;
 
-    public void handle(Request request, Response response) {
-        Method met = request.getMethod();
-        try {
-            if (met.equals(Method.POST)) {
-                doPost(request, response);
-            } else {
-                throw new RestletException("Method not allowed",
-                        Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
-            }
-        } catch (RestletException re) {
-            response.setEntity(re.getRepresentation());
-            response.setStatus(re.getStatus());
-        }
+    @ExceptionHandler(RestException.class)
+    public ResponseEntity<?> handleRestException(RestException ex) {
+        return new ResponseEntity<Object>(ex.toString(), ex.getStatus());
     }
 
-    public void doPost(Request req, Response resp) throws RestletException {
-        Form form = req.getEntityAsForm();
+    @RequestMapping(value = "/reload", method = RequestMethod.POST)
+    public @ResponseBody
+    ResponseEntity<?> doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws GeoWebCacheException, RestException, IOException {
 
-        if (form == null || form.getFirst("reload_configuration") == null) {
-            throw new RestletException(
+        if (req.getParameterMap() == null || req.getParameter("reload_configuration") == null) {
+            throw new RestException(
                     "Unknown or malformed request. Please try again, somtimes the form "
-                    +"is not properly received. This frequently happens on the first POST "
-                    +"after a restart. The POST was to " + req.getResourceRef().getPath(), 
-                    Status.CLIENT_ERROR_BAD_REQUEST );
+                            +"is not properly received. This frequently happens on the first POST "
+                            +"after a restart. The POST was to " + req.getRequestURI(),
+                    HttpStatus.BAD_REQUEST);
         }
 
         StringBuilder doc = new StringBuilder();
 
-        doc.append("<html>\n"+ServletUtils.gwcHtmlHeader("../","GWC Reload") +"<body>\n" + ServletUtils.gwcHtmlLogoLink("../"));
+        doc.append("<html>\n"+ ServletUtils.gwcHtmlHeader("../","GWC Reload") +"<body>\n" + ServletUtils.gwcHtmlLogoLink("../"));
 
         try {
             layerDispatcher.reInit();
             String info = "Configuration reloaded. Read "
-                + layerDispatcher.getLayerCount() 
-                + " layers from configuration resources.";
-            
+                    + layerDispatcher.getLayerCount()
+                    + " layers from configuration resources.";
+
             log.info(info);
             doc.append("<p>"+info+"</p>");
-            
+
             doc.append("<p>Note that this functionality has not been rigorously tested,"
                     + " please reload the servlet if you run into any problems."
                     + " Also note that you must truncate the tiles of any layers that have changed.</p>");
@@ -90,7 +94,8 @@ public class ReloadRestlet extends GWCRestlet {
         doc.append("<p><a href=\"../demo\">Go back</a></p>\n");
         doc.append("</body></html>");
 
-        resp.setEntity(doc.toString(), MediaType.TEXT_HTML);
+
+        return new ResponseEntity<Object>(doc.toString(), HttpStatus.OK);
     }
 
     public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {

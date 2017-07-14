@@ -14,7 +14,7 @@
       org.springframework.web.filter.DelegatingFilterProxy
     </filter-class>
   </filter>
-  
+
   <filter-mapping>
     <filter-name>springSecurityFilterChain</filter-name>
     <url-pattern>/*</url-pattern>
@@ -32,35 +32,10 @@
     <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
     <load-on-startup>1</load-on-startup>
   </servlet>
-  
-  <servlet-mapping>
-    <servlet-name>geowebcache</servlet-name>
-    <url-pattern>/service/*</url-pattern>
-  </servlet-mapping>
-  
-  <servlet-mapping>
-    <servlet-name>geowebcache</servlet-name>
-    <url-pattern>/seed/*</url-pattern>
-  </servlet-mapping>
 
   <servlet-mapping>
     <servlet-name>geowebcache</servlet-name>
-    <url-pattern>/truncate/*</url-pattern>
-  </servlet-mapping>
-  
-  <servlet-mapping>
-    <servlet-name>geowebcache</servlet-name>
-    <url-pattern>/demo/*</url-pattern>
-  </servlet-mapping>
-  
-  <servlet-mapping>
-    <servlet-name>geowebcache</servlet-name>
-    <url-pattern>/proxy/*</url-pattern>
-  </servlet-mapping>
-  
-  <servlet-mapping>
-    <servlet-name>geowebcache</servlet-name>
-    <url-pattern>/rest/*</url-pattern>
+    <url-pattern>/*</url-pattern>
   </servlet-mapping>
   
   <servlet-mapping>

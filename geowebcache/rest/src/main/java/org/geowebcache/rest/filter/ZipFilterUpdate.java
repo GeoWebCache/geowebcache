@@ -13,22 +13,23 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  * @author Arne Kepp, OpenGeo, Copyright 2009
+ * @author David Vick, Boundless, 2017
  */
 package org.geowebcache.rest.filter;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.rest.RestletException;
+import org.geowebcache.rest.exception.RestException;
 import org.geowebcache.util.ServletUtils;
-import org.restlet.data.Status;
+import org.springframework.http.HttpStatus;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class ZipFilterUpdate {
     private static Log log = LogFactory.getLog(ZipFilterUpdate.class);
@@ -40,7 +41,7 @@ public class ZipFilterUpdate {
     }
 
     public void runUpdate(RequestFilter filter, TileLayer tl)
-    throws RestletException {
+    throws RestException {
         
         try {
             ZipInputStream zis = new ZipInputStream(is);
@@ -51,8 +52,8 @@ public class ZipFilterUpdate {
                 log.info("Reading " + ze.getName() + " (" + ze.getSize() + " bytes ) for " + filter.getName());
                 
                 if (ze.isDirectory()) {
-                    throw new RestletException("Zip file cannot contain directories.",
-                            Status.CLIENT_ERROR_BAD_REQUEST);
+                    throw new RestException("Zip file cannot contain directories.",
+                            HttpStatus.BAD_REQUEST);
                 }
                 
                 String[] parsedName = parseName(ze.getName());
@@ -67,8 +68,8 @@ public class ZipFilterUpdate {
                             Integer.parseInt(parsedName[1]));
                     
                 } catch (GeoWebCacheException e) {
-                    throw new RestletException("Error updating " + filter.getName()
-                            + ": " + e.getMessage(), Status.SERVER_ERROR_INTERNAL);
+                    throw new RestException("Error updating " + filter.getName()
+                            + ": " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
                 }
                 
                 ze = zis.getNextEntry();
@@ -76,7 +77,7 @@ public class ZipFilterUpdate {
             
             
         } catch (IOException ioe) {
-            throw new RestletException("IOException while reading zip, " + ioe.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
+            throw new RestException("IOException while reading zip, " + ioe.getMessage(), HttpStatus.BAD_REQUEST);
         } finally {
             try {
                 is.close();
@@ -87,7 +88,7 @@ public class ZipFilterUpdate {
         }
     }
     
-    String[] parseName(String fileName) throws RestletException {
+    String[] parseName(String fileName) throws RestException {
         String[] strs = fileName.split("_");
 
         // Slice away the extension, we dont have the data to test it
