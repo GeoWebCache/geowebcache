@@ -29,60 +29,6 @@
      <artifactId>freemarker</artifactId>
     </dependency>
 
-    <!-- restlet.org dependencies -->
-    <dependency>
-      <groupId>org.restlet</groupId>
-      <artifactId>org.restlet</artifactId>
-      <classifier>noobjrep</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.restlet</groupId>
-      <artifactId>org.restlet</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.noelios.restlet</groupId>
-      <artifactId>com.noelios.restlet</artifactId>
-      <exclusions>
-       <exclusion>
-         <groupId>javax.servlet</groupId>
-         <artifactId>servlet-api</artifactId>
-       </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>com.noelios.restlet</groupId>
-      <artifactId>com.noelios.restlet.ext.simple</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.restlet</groupId>
-      <artifactId>org.restlet.ext.freemarker</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.restlet</groupId>
-      <artifactId>org.restlet.ext.spring</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.restlet</groupId>
-      <artifactId>org.restlet.ext.json</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.noelios.restlet</groupId>
-      <artifactId>com.noelios.restlet.ext.servlet</artifactId>
-      <exclusions>
-       <exclusion>
-         <groupId>javax.servlet</groupId>
-         <artifactId>servlet-api</artifactId>
-       </exclusion>
-      </exclusions>
-    </dependency>
-
     <!-- test dependencies  -->
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -115,6 +61,19 @@
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-library</artifactId>
       <scope>test</scope>
+    </dependency>
+      <dependency>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-test</artifactId>
+      </dependency>
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>org.json</artifactId>
+      <version>2.0</version>
     </dependency>
   </dependencies>
 

@@ -11,34 +11,39 @@
  *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * @author Arne Kepp / The Open Planning Project 2009 
+ *
+ * @author Arne Kepp / The Open Planning Project 2009
+ * @author David Vick, Boundless, Copyright 2017
+ *
+ * Original file
+ * GWCRestlet.java
  */
-package org.geowebcache.rest;
+
+package org.geowebcache.rest.controller;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.restlet.Restlet;
-import org.restlet.data.Status;
+import org.geowebcache.rest.exception.RestException;
+import org.springframework.http.HttpStatus;
 
-public class GWCRestlet extends Restlet {
-
-    protected static TileLayer findTileLayer(String layerName, TileLayerDispatcher layerDispatcher) {
+public class GWCController {
+    protected static TileLayer findTileLayer(String layerName, 
+            TileLayerDispatcher layerDispatcher) throws RestException {
         if (layerName == null || layerName.length() == 0) {
-            throw new RestletException("Layer not specified", Status.CLIENT_ERROR_BAD_REQUEST);
+            throw new RestException("Layer not specified", HttpStatus.BAD_REQUEST );
         }
 
         if (!layerDispatcher.layerExists(layerName)) {
-            throw new RestletException("Unknown layer: " + layerName, Status.CLIENT_ERROR_NOT_FOUND);
+            throw new RestException("Unknown layer: " + layerName, HttpStatus.NOT_FOUND);
         }
 
         TileLayer layer;
         try {
             layer = layerDispatcher.getTileLayer(layerName);
         } catch (GeoWebCacheException gwce) {
-            throw new RestletException("Encountered error: " + gwce.getMessage(),
-                    Status.SERVER_ERROR_INTERNAL);
+            throw new RestException("Encountered error: " + gwce.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return layer;

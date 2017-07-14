@@ -11,24 +11,19 @@
  *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * @author Arne Kepp / The Open Planning Project 2008 
+ *
+ * @author Arne Kepp / The Open Planning Project 2008
+ * @author David Vick, Boundless, Copyright 2017
+ *
+ * Original file
+ * SeedFormRestlet.java
+ *
  */
-package org.geowebcache.rest.seed;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.text.NumberFormat;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
 
+package org.geowebcache.rest.controller;
+
+import com.google.common.base.Splitter;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -39,124 +34,137 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.rest.GWCRestlet;
-import org.geowebcache.rest.RestletException;
+import org.geowebcache.rest.exception.RestException;
 import org.geowebcache.seed.GWCTask;
-import org.geowebcache.seed.GWCTask.STATE;
-import org.geowebcache.seed.GWCTask.TYPE;
 import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.util.ServletUtils;
-import org.restlet.data.Form;
-import org.restlet.data.MediaType;
-import org.restlet.data.Method;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.data.Status;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.*;
 
-/**
- *
- */
-public class SeedFormRestlet extends GWCRestlet {
-    // private static Log log = LogFactory.getLog(org.geowebcache.rest.seed.SeedFormRestlet.class);
+import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.text.NumberFormat;
+import java.util.*;
 
-    private TileBreeder seeder;
+@Component
+@RestController
+@RequestMapping(path="${gwc.context.suffix:}/rest")
+public class SeedFormController extends GWCController {
 
-    public void handle(Request request, Response response) {
+    @Autowired
+    TileBreeder seeder;
 
-        Method met = request.getMethod();
-        try {
-            if (met.equals(Method.GET)) {
-                doGet(request, response);
-            } else if (met.equals(Method.POST)) {
-                try {
-                    doPost(request, response);
-                } catch (GeoWebCacheException e) {
-                    throw new RestletException(e.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
-                }
-            } else {
-                throw new RestletException("Method not allowed",
-                        Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
-            }
-        } catch (RestletException re) {
-            response.setEntity(re.getRepresentation());
-            response.setStatus(re.getStatus());
-        }
+    @ExceptionHandler(RestException.class)
+    public ResponseEntity<?> handleRestException(RestException ex) {
+        return new ResponseEntity<Object>(ex.toString(), ex.getStatus());
     }
 
-    public void doGet(Request request, Response response) throws RestletException {
-        // String layerName = (String) request.getAttributes().get("layer");
-        String layerName = null;
-        try {
-            layerName = URLDecoder.decode((String) request.getAttributes().get("layer"), "UTF-8");
-        } catch (UnsupportedEncodingException uee) {
-        }
-
+    @RequestMapping(value = "/seed/ui_form/{layer}", method = RequestMethod.GET)
+    public ResponseEntity<?> doGet(HttpServletRequest request,
+                                   @PathVariable String layer) {
+        String layerName = layer;
         TileLayer tl;
         try {
             tl = seeder.findTileLayer(layerName);
         } catch (GeoWebCacheException e) {
-            throw new RestletException(e.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
+            throw new RestException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
-
-        handleDoGet(response, tl, false);
+        return handleDoGet(tl, false);
     }
 
-    private void handleDoGet(Response response, TileLayer tl, boolean listAllTasks) {
-        response.setEntity(makeFormPage(tl, listAllTasks), MediaType.TEXT_HTML);
+    private HttpHeaders getHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_HTML);
+        return headers;
     }
 
-    public void doPost(Request req, Response resp) throws RestletException, GeoWebCacheException {
+    private ResponseEntity<?> handleDoGet(TileLayer tl, boolean listAllTasks) {
+        return new ResponseEntity<String>(makeFormPage(tl, listAllTasks), getHeaders(), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/seed/ui_form/{layer}", method = RequestMethod.POST)
+    public ResponseEntity<?> doPost(HttpServletRequest request,
+                                    @PathVariable String layer) throws GeoWebCacheException {
         final TileLayer tl;
         {
-            String layerName = null;
-            if (req.getAttributes().containsKey("layer")) {
-                try {
-                    layerName = URLDecoder.decode((String) req.getAttributes().get("layer"),
-                            "UTF-8");
-                } catch (UnsupportedEncodingException uee) {
-                    throw new RuntimeException(uee);
-                }
+            String layerName = layer;
+            if (layer != null) {
+//                try {
+//                    layerName = URLDecoder.decode((String) request.getParameter("layer"),
+//                            "UTF-8");
+//                } catch (UnsupportedEncodingException uee) {
+//                    throw new RuntimeException(uee);
+//                }
                 try {
                     tl = seeder.findTileLayer(layerName);
                 } catch (GeoWebCacheException e) {
-                    throw new RestletException(e.getMessage(), Status.CLIENT_ERROR_BAD_REQUEST);
+                    throw new RestException(e.getMessage(), HttpStatus.BAD_REQUEST);
                 }
             } else {
                 tl = null;
             }
         }
+        String data;
 
-        Form form = req.getEntityAsForm();
+        try {
+            StringBuilder buffer = new StringBuilder();
+            BufferedReader formReader = request.getReader();
+            String line;
+            while ((line = formReader.readLine()) != null) {
+                buffer.append(line);
+            }
+            data = buffer.toString();
 
-        if (form == null) {
-            throw new RestletException("Unable to parse form result.",
-                    Status.CLIENT_ERROR_BAD_REQUEST);
+        } catch (IOException e) {
+            data = null;
         }
 
-        if (form.getFirst("list") != null) {
+        if (data == null) {
+            throw new RestException("Unable to parse form result.",
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        Map<String, String> params = splitToMap(data);
+
+        if (params.containsKey("list")) {
             if (tl == null) {
-                throw new RestletException("No layer specified", Status.CLIENT_ERROR_BAD_REQUEST);
+                throw new RestException("No layer specified", HttpStatus.BAD_REQUEST);
             }
-            boolean listAllTasks = "all".equals(form.getFirst("list").getValue());
-            handleDoGet(resp, tl, listAllTasks);
-        } else if (form.getFirst("kill_thread") != null) {
-            handleKillThreadPost(form, tl, resp);
-        } else if (form.getFirst("kill_all") != null) {
-            handleKillAllThreadsPost(form, tl, resp);
-        } else if (form.getFirst("minX") != null) {
+            boolean listAllTasks = "all".equals(params.get("list"));
+            handleDoGet(tl, listAllTasks);
+        } else if (params.containsKey("kill_thread")) {
+            return handleKillThreadPost(params, tl);
+        } else if (params.containsKey("kill_all")) {
+            return handleKillAllThreadsPost(params, tl);
+        } else if (params.get("minX") != null) {
             if (tl == null) {
-                throw new RestletException("No layer specified", Status.CLIENT_ERROR_BAD_REQUEST);
+                throw new RestException("No layer specified", HttpStatus.BAD_REQUEST);
             }
-            handleDoSeedPost(form, tl, resp);
+            handleDoSeedPost(params, tl);
         } else {
-            throw new RestletException(
+            throw new RestException(
                     "Unknown or malformed request. Please try again, somtimes the form "
                             + "is not properly received. This frequently happens on the first POST "
-                            + "after a restart. The POST was to " + req.getResourceRef().getPath(),
-                    Status.CLIENT_ERROR_BAD_REQUEST);
+                            + "after a restart. The POST was to " + request.getRequestURI(),
+                    HttpStatus.BAD_REQUEST);
+        }
+        return null;
+    }
+
+    private Map<String, String> splitToMap(String data) {
+        if (data.contains("&")) {
+            return Splitter.on("&").withKeyValueSeparator("=").split(data);
+        }else {
+            return Splitter.on(" ").withKeyValueSeparator("=").split(data);
         }
     }
 
@@ -416,13 +424,13 @@ public class SeedFormRestlet extends GWCRestlet {
     }
 
     private void makePullDown(StringBuilder doc, String id, Map<String, String> keysValues,
-            String defaultKey) {
+                              String defaultKey) {
         doc.append("<select name=\"" + id + "\">\n");
 
-        Iterator<Entry<String, String>> iter = keysValues.entrySet().iterator();
+        Iterator<Map.Entry<String, String>> iter = keysValues.entrySet().iterator();
 
         while (iter.hasNext()) {
-            Entry<String, String> entry = iter.next();
+            Map.Entry<String, String> entry = iter.next();
             if (entry.getKey().equals(defaultKey)) {
                 doc.append("<option value=\"" + entry.getValue() + "\" selected=\"selected\">"
                         + entry.getKey() + "</option>\n");
@@ -447,8 +455,8 @@ public class SeedFormRestlet extends GWCRestlet {
     }
 
     private void makeHeader(StringBuilder doc) {
-        doc.append("<html>\n" + ServletUtils.gwcHtmlHeader("../../","GWC Seed Form") + "<body>\n"
-                + ServletUtils.gwcHtmlLogoLink("../../"));
+        doc.append("<html>\n" + ServletUtils.gwcHtmlHeader("../../../","GWC Seed Form") + "<body>\n"
+                + ServletUtils.gwcHtmlLogoLink("../../../"));
     }
 
     private void makeWarningsAndHints(StringBuilder doc, TileLayer tl) {
@@ -506,9 +514,9 @@ public class SeedFormRestlet extends GWCRestlet {
                 tilesTotalStr = nf.format(tilesTotal);
             }
             final String tilesDoneStr = nf.format(task.getTilesDone());
-            final STATE state = task.getState();
+            final GWCTask.STATE state = task.getState();
 
-            final String status = STATE.UNSET.equals(state) || STATE.READY.equals(state) ? "PENDING"
+            final String status = GWCTask.STATE.UNSET.equals(state) || GWCTask.STATE.READY.equals(state) ? "PENDING"
                     : state.toString();
 
             String timeSpent = toTimeString(spent, tilesDone, tilesTotal);
@@ -651,12 +659,12 @@ public class SeedFormRestlet extends GWCRestlet {
         doc.append("</body></html>\n");
     }
 
-    private void handleKillAllThreadsPost(Form form, TileLayer tl, Response resp)
-            throws RestletException {
+    private ResponseEntity<?> handleKillAllThreadsPost(Map<String, String> form, TileLayer tl)
+            throws RestException {
 
         final boolean allLayers = tl == null;
 
-        String killCode = form.getFirst("kill_all").getValue();
+        String killCode = form.get("kill_all");
 
         final Iterator<GWCTask> tasks;
         if ("1".equals(killCode) || "running".equalsIgnoreCase(killCode)) {
@@ -667,8 +675,8 @@ public class SeedFormRestlet extends GWCRestlet {
         } else if ("all".equalsIgnoreCase(killCode)) {
             tasks = seeder.getRunningAndPendingTasks();
         } else {
-            throw new RestletException("Unknown kill_all code: '" + killCode
-                    + "'. One of all|running|pending is expected.", Status.CLIENT_ERROR_BAD_REQUEST);
+            throw new RestException("Unknown kill_all code: '" + killCode
+                    + "'. One of all|running|pending is expected.", HttpStatus.BAD_REQUEST);
         }
 
         List<GWCTask> terminatedTasks = new LinkedList<GWCTask>();
@@ -703,11 +711,11 @@ public class SeedFormRestlet extends GWCRestlet {
             doc.append("</ul><p><a href=\"./" + tl.getName() + "\">Go back</a></p>\n");
         }
 
-        resp.setEntity(doc.toString(), MediaType.TEXT_HTML);
+        return new ResponseEntity<>(doc.toString(), getHeaders(), HttpStatus.OK);
     }
 
-    private void handleKillThreadPost(Form form, TileLayer tl, Response resp) {
-        String id = form.getFirstValue("thread_id");
+    private ResponseEntity<?> handleKillThreadPost(Map<String, String> form, TileLayer tl) {
+        String id = form.get("kill_thread");
 
         StringBuilder doc = new StringBuilder();
 
@@ -726,40 +734,41 @@ public class SeedFormRestlet extends GWCRestlet {
             doc.append("<p><a href=\"./" + tl.getName() + "\">Go back</a></p>\n");
         }
 
-        resp.setEntity(doc.toString(), MediaType.TEXT_HTML);
+//        resp.setEntity(doc.toString(), MediaType.TEXT_HTML);
+        return new ResponseEntity<Object>(doc.toString(), getHeaders(), HttpStatus.OK);
     }
 
-    private void handleDoSeedPost(Form form, TileLayer tl, Response resp) throws RestletException,
+    private ResponseEntity<?> handleDoSeedPost(Map<String, String> form, TileLayer tl) throws RestException,
             GeoWebCacheException {
         BoundingBox bounds = null;
 
-        if (form.getFirst("minX").getValue() != null) {
+        if (form.get("minX") != null) {
             bounds = new BoundingBox(parseDouble(form, "minX"), parseDouble(form, "minY"),
                     parseDouble(form, "maxX"), parseDouble(form, "maxY"));
         }
 
-        String gridSetId = form.getFirst("gridSetId").getValue();
+        String gridSetId = form.get("gridSetId");
 
-        int threadCount = Integer.parseInt(form.getFirst("threadCount").getValue());
-        int zoomStart = Integer.parseInt(form.getFirst("zoomStart").getValue());
-        int zoomStop = Integer.parseInt(form.getFirst("zoomStop").getValue());
-        String format = form.getFirst("format").getValue();
+        int threadCount = Integer.parseInt(form.get("threadCount"));
+        int zoomStart = Integer.parseInt(form.get("zoomStart"));
+        int zoomStop = Integer.parseInt(form.get("zoomStop"));
+        String format = form.get("format");
         Map<String, String> fullParameters;
         {
-            Map<String, String> parameters = new HashMap<String, String>();
-            Set<String> paramNames = form.getNames();
+            Map<String, String> parameters = new HashMap<String, String>();;
+            Set<String> paramNames = form.keySet();
             String prefix = "parameter_";
             for (String name : paramNames) {
                 if (name.startsWith(prefix)) {
                     String paramName = name.substring(prefix.length());
-                    String value = form.getFirstValue(name);
+                    String value = form.get(name);
                     parameters.put(paramName, value);
                 }
             }
             fullParameters = tl.getModifiableParameters(parameters, "UTF-8");
         }
 
-        TYPE type = GWCTask.TYPE.valueOf(form.getFirst("type").getValue().toUpperCase());
+        GWCTask.TYPE type = GWCTask.TYPE.valueOf(form.get("type").toUpperCase());
 
         final String layerName = tl.getName();
         SeedRequest sr = new SeedRequest(layerName, bounds, gridSetId, threadCount, zoomStart,
@@ -772,7 +781,7 @@ public class SeedFormRestlet extends GWCRestlet {
             tasks = seeder.createTasks(tr, tl, sr.getType(), sr.getThreadCount(),
                     sr.getFilterUpdate());
         } catch (GeoWebCacheException e) {
-            throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL);
+            throw new RestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         seeder.dispatchTasks(tasks);
@@ -784,23 +793,22 @@ public class SeedFormRestlet extends GWCRestlet {
             // Ok, no worries
         }
 
-        resp.setEntity(this.makeResponsePage(tl), MediaType.TEXT_HTML);
+        return new ResponseEntity<Object>(this.makeResponsePage(tl), getHeaders(), HttpStatus.OK);
     }
 
-    private static double parseDouble(Form form, String key) throws RestletException {
-        String value = form.getFirst(key).getValue();
+    private static double parseDouble(Map<String, String> form, String key) throws RestException {
+        String value = form.get(key);
         if (value == null || value.length() == 0)
-            throw new RestletException("Missing value for " + key, Status.CLIENT_ERROR_BAD_REQUEST);
+            throw new RestException("Missing value for " + key, HttpStatus.BAD_REQUEST);
         try {
             return Double.parseDouble(value);
         } catch (NumberFormatException nfe) {
-            throw new RestletException("Value for " + key + " is not a double",
-                    Status.CLIENT_ERROR_BAD_REQUEST);
+            throw new RestException("Value for " + key + " is not a double",
+                    HttpStatus.BAD_REQUEST);
         }
     }
 
     public void setTileBreeder(TileBreeder seeder) {
         this.seeder = seeder;
     }
-
 }
