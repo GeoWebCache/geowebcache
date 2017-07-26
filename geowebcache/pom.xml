@@ -12,7 +12,7 @@
   <properties>
     <gt.version>17-SNAPSHOT</gt.version>
     <jts.version>1.13</jts.version>
-    <jaiext.version>1.0.13</jaiext.version>
+    <jaiext.version>1.0.15</jaiext.version>
     <spring.version>4.2.5.RELEASE</spring.version>
     <restlet.version>1.0.8</restlet.version>
     <xstream.version>1.4.7</xstream.version>
