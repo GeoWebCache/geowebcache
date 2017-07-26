@@ -1,13 +1,25 @@
 package org.geowebcache.service.wms;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
 
-import java.lang.reflect.Array;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,33 +27,52 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.geowebcache.GeoWebCacheDispatcher;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.conveyor.Conveyor;
+import org.geowebcache.conveyor.Conveyor.RequestHandler;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.RegexParameterFilter;
+import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.layer.ProxyLayer;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.mime.XMLMime;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
+import org.geowebcache.util.PropertyRule;
+import org.h2.util.IOUtils;
+
 import org.hamcrest.Matchers;
-import org.junit.Assert;
+
+import org.junit.After;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.context.ApplicationContext;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-public class WMSServiceTest extends TestCase {
-
+public class WMSServiceTest{
+    
+    @Rule
+    public PropertyRule whitelistProperty = 
+        PropertyRule.system(WMSService.GEOWEBCACHE_WMS_PROXY_REQUEST_WHITELIST);
+    
     private WMSService service;
 
     private StorageBroker sb;
@@ -50,19 +81,22 @@ public class WMSServiceTest extends TestCase {
 
     private GridSetBroker gridsetBroker;
 
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         sb = mock(StorageBroker.class);
         tld = mock(TileLayerDispatcher.class);
         gridsetBroker = new GridSetBroker(true, true);
     }
-
-    protected void tearDown() throws Exception {
+    
+    @After
+    public void tearDown() throws Exception {
     }
 
     /**
      * Layer may be configured with mutliple GridSets for the same CRS, and should chose the best
      * fit for the request
      */
+    @Test
     public void testGetConveyorMultipleCrsMatchingGridSubsets() throws Exception {
 
         testMultipleCrsMatchingGridSubsets("EPSG:4326", "EPSG:4326", new long[] { 1, 1, 1 });
@@ -78,7 +112,7 @@ public class WMSServiceTest extends TestCase {
 
     }
 
-    private void testMultipleCrsMatchingGridSubsets(final String srs, final String expectedGridset,
+    protected void testMultipleCrsMatchingGridSubsets(final String srs, final String expectedGridset,
             long[] tileIndex) throws Exception {
 
         GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
@@ -177,6 +211,7 @@ public class WMSServiceTest extends TestCase {
         return tileLayer;
     }
 
+    @Test
     public void testGetCap() throws Exception {
     
         GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
@@ -217,6 +252,7 @@ public class WMSServiceTest extends TestCase {
     
     }
     
+    @Test
     public void testGetCapEncoding() throws Exception {
         
         GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
@@ -251,10 +287,11 @@ public class WMSServiceTest extends TestCase {
         
         String capAsString = new String(resp.getContentAsByteArray(), StandardCharsets.UTF_8);
         
-        Assert.assertThat(capAsString, Matchers.containsString("möcklāyer😎"));
+        assertThat(capAsString, Matchers.containsString("möcklāyer😎"));
     
     }
 
+    @Test
     public void testGetConveyorWithParameters() throws Exception {
 
         GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
@@ -296,5 +333,477 @@ public class WMSServiceTest extends TestCase {
         assertEquals(layerName, conv.getLayerId());
         assertTrue(!conv.getFullParameters().isEmpty());
         assertEquals(timeValue, conv.getFullParameters().get("TIME"));
+    }    
+    
+    @Test
+    public void testProxyRequest() throws Exception {
+        SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
+        when(secDisp.isSecurityEnabled()).thenReturn(false);
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
+        service.setSecurityDispatcher(secDisp);
+        
+        String layerName = "mockLayer";
+        TestLayer tileLayer = mock(TestLayer.class);
+        when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
+        
+        testProxyRequestAllowed(secDisp, layerName, tileLayer, "TROZ");
+    }
+    
+    @Test
+    public void testProxyDefaultWhitelistLimitedWhenSecure() throws Exception {
+        SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
+        when(secDisp.isSecurityEnabled()).thenReturn(true);
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
+        service.setSecurityDispatcher(secDisp);
+        
+        String layerName = "mockLayer";
+        TestLayer tileLayer = mock(TestLayer.class);
+        when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
+        
+        testProxyRequestPrevented(secDisp, layerName, tileLayer, "TROZ");
+    }
+    
+    @Test
+    public void testProxyRequestSecuredDefaultAllowGetLegendGraphic() throws Exception {
+        SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
+        when(secDisp.isSecurityEnabled()).thenReturn(true);
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
+        service.setSecurityDispatcher(secDisp);
+        
+        String layerName = "mockLayer";
+        TestLayer tileLayer = mock(TestLayer.class);
+        when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
+        
+        testProxyRequestAllowed(secDisp, layerName, tileLayer, "GetLegendGraphic");
+    }
+    
+    @Test
+    public void testProxyRequestDefaultWhitelistRestrictedByFilter() throws Exception {
+        SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
+        when(secDisp.isSecurityEnabled()).thenReturn(true);
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        
+        String layerName = "mockLayer";
+        TestLayer tileLayer = mock(TestLayer.class);
+        when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
+        
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
+        service.setSecurityDispatcher(secDisp);
+        
+        doThrow(new SecurityException()).when(secDisp).checkSecurity(Mockito.any());
+        
+        testProxyRequestPrevented(secDisp, layerName, tileLayer, "GetLegendGraphic");
+    }
+    
+    @Test
+    public void testProxyRequestWhitelistWhenNoSecurityFilters() throws Exception {
+        whitelistProperty.setValue("troz");
+        SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
+        when(secDisp.isSecurityEnabled()).thenReturn(false);
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
+        service.setSecurityDispatcher(secDisp);
+        String layerName = "mockLayer";
+        
+        TestLayer tileLayer = mock(TestLayer.class);
+        when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
+        
+        testProxyRequestAllowed(secDisp, layerName, tileLayer, "TROZ");
+        testProxyRequestPrevented(secDisp, layerName, tileLayer, "GetLegendGraphic");
+    }
+    
+    @Test
+    public void testProxyRequestWhitelistWithSecurityFilters() throws Exception {
+        whitelistProperty.setValue("troz");
+        SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
+        when(secDisp.isSecurityEnabled()).thenReturn(true);
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
+        service.setSecurityDispatcher(secDisp);
+        
+        String layerName = "mockLayer";
+        TestLayer tileLayer = mock(TestLayer.class);
+        when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
+        
+        testProxyRequestAllowed(secDisp, layerName, tileLayer, "TROZ");
+        testProxyRequestPrevented(secDisp, layerName, tileLayer, "GetLegendGraphic");
+    }
+    
+    @Test
+    public void testProxyRequestWhitelistWithSecurityFiltersAppliesFilters() throws Exception {
+        whitelistProperty.setValue("troz");
+        SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
+        when(secDisp.isSecurityEnabled()).thenReturn(true);
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
+        service.setSecurityDispatcher(secDisp);
+        
+        String layerName = "mockLayer";
+        TestLayer tileLayer = mock(TestLayer.class);
+        when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
+        
+        doThrow(new SecurityException()).when(secDisp).checkSecurity(Mockito.any());
+        
+        testProxyRequestPrevented(secDisp, layerName, tileLayer, "TROZ");
+    }
+    
+    // We might eventually do some security on GetCapabilities, but for now we want to make sure 
+    // nothing breaks.
+    @Test
+    public void testGetCapabilitiesNotAffectedBySecurityFilter() throws Exception {
+        SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
+        when(secDisp.isSecurityEnabled()).thenReturn(true);
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
+        service.setSecurityDispatcher(secDisp);
+        
+        String layerName = "mockLayer";
+        TestLayer tileLayer = mock(TestLayer.class);
+        when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
+        when(tld.getLayerList()).thenReturn(Collections.singleton(tileLayer));
+        
+        doThrow(new SecurityException()).when(secDisp).checkSecurity(Mockito.any());
+        
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        
+        req.addParameter("service", new String[]{"WMS"});
+        req.addParameter("version", new String[]{"1.1.1"});
+        req.addParameter("request", new String[]{"GetCapabilities"});
+        req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request="+"GetCapabilities");
+        
+        ConveyorTile conv = service.getConveyor(req, resp);
+        
+        assertThat(conv, hasProperty("hint", equalTo("GetCapabilities".toLowerCase())));
+        
+        service.handleRequest(conv);
+    }
+
+    @Test
+    public void testGetCapabilitiesNotAffectedByProxyWhitelist() throws Exception {
+        SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
+        when(secDisp.isSecurityEnabled()).thenReturn(false);
+        whitelistProperty.setValue("troz");
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
+        service.setSecurityDispatcher(secDisp);
+        
+        String layerName = "mockLayer";
+        TestLayer tileLayer = mock(TestLayer.class);
+        when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
+        when(tld.getLayerList()).thenReturn(Collections.singleton(tileLayer));
+        
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        
+        req.addParameter("service", new String[]{"WMS"});
+        req.addParameter("version", new String[]{"1.1.1"});
+        req.addParameter("request", new String[]{"GetCapabilities"});
+        req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request="+"GetCapabilities");
+        
+        ConveyorTile conv = service.getConveyor(req, resp);
+        
+        assertThat(conv, hasProperty("hint", equalTo("GetCapabilities".toLowerCase())));
+        
+        service.handleRequest(conv);
+    }
+    
+    @Test
+    public void testTileFuseNotAffectedByProxyWhitelist() throws Exception {
+        SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
+        when(secDisp.isSecurityEnabled()).thenReturn(true);
+        whitelistProperty.setValue("troz");
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        
+        WMSTileFuser fuser = mock(WMSTileFuser.class);
+        
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd) {
+            
+            @Override
+            protected WMSTileFuser getFuser(HttpServletRequest servletReq)
+                    throws GeoWebCacheException {
+                return fuser;
+            }
+            
+        };
+        service.setSecurityDispatcher(secDisp);
+        service.setFullWMS("true");
+        
+        GridSubset subset = mock(GridSubset.class);
+        
+        String layerName = "mockLayer";
+        TestLayer tileLayer = mock(TestLayer.class);
+        when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
+        when(tld.getLayerList()).thenReturn(Collections.singleton(tileLayer));
+        when(tileLayer.getGridSubsetsForSRS(SRS.getEPSG4326())).thenReturn(Collections.singletonList(subset));
+        
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        
+        req.addParameter("service", "WMS");
+        req.addParameter("version", "1.1.1");
+        req.addParameter("request", "GetMap");
+        req.addParameter("layers", layerName);
+        req.addParameter("format", "image/png");
+        req.addParameter("srs", SRS.getEPSG4326().toString());
+        req.addParameter("bbox", "0,0,40,60");
+        req.addParameter("width", "40");
+        req.addParameter("height", "60");
+        req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request=GetMap&layers="+layerName+"&format=image/png&srs="+SRS.getEPSG4326().toString()
+                +"&bbox=0,0,40,60&width=40&height=60");
+
+        ConveyorTile conv = service.getConveyor(req, resp);
+        
+        assertThat(conv, hasProperty("hint", equalTo("GetMap".toLowerCase())));
+        assertThat(conv, hasProperty("requestHandler", is(RequestHandler.SERVICE)));
+        
+        service.handleRequest(conv);
+        
+        verify(fuser).writeResponse(Mockito.same(resp), Mockito.any());
+    }
+    
+    @Test
+    public void testTileFuseSecuredByFilters() throws Exception {
+        SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
+        when(secDisp.isSecurityEnabled()).thenReturn(true);
+        whitelistProperty.setValue("troz");
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        
+        WMSTileFuser fuser = mock(WMSTileFuser.class);
+        
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd) {
+            
+            @Override
+            protected WMSTileFuser getFuser(HttpServletRequest servletReq)
+                    throws GeoWebCacheException {
+                return fuser;
+            }
+            
+        };
+        service.setSecurityDispatcher(secDisp);
+        service.setFullWMS("true");
+        
+        GridSubset subset = mock(GridSubset.class);
+        
+        String layerName = "mockLayer";
+        TestLayer tileLayer = mock(TestLayer.class);
+        when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
+        when(tld.getLayerList()).thenReturn(Collections.singleton(tileLayer));
+        when(tileLayer.getGridSubsetsForSRS(SRS.getEPSG4326())).thenReturn(Collections.singletonList(subset));
+        
+        doThrow(new SecurityException()).when(secDisp).checkSecurity(Mockito.any());
+        
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        
+        req.addParameter("service", "WMS");
+        req.addParameter("version", "1.1.1");
+        req.addParameter("request", "GetMap");
+        req.addParameter("layers", layerName);
+        req.addParameter("format", "image/png");
+        req.addParameter("srs", SRS.getEPSG4326().toString());
+        req.addParameter("bbox", "0,0,40,60");
+        req.addParameter("width", "40");
+        req.addParameter("height", "60");
+        req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request=GetMap&layers="+layerName+"&format=image/png&srs="+SRS.getEPSG4326().toString()
+                +"&bbox=0,0,40,60&width=40&height=60");
+
+        ConveyorTile conv = service.getConveyor(req, resp);
+        
+        assertThat(conv, hasProperty("hint", equalTo("GetMap".toLowerCase())));
+        assertThat(conv, hasProperty("requestHandler", is(RequestHandler.SERVICE)));
+        
+        try {
+            service.handleRequest(conv);
+            fail("Expected SecurityException");
+        } catch (SecurityException ex) {
+            verify(fuser, never()).writeResponse(Mockito.same(resp), Mockito.any());
+        }
+    }
+    
+    @Test
+    public void testGetFeature() throws Exception {
+        SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
+        when(secDisp.isSecurityEnabled()).thenReturn(false);
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
+        service.setSecurityDispatcher(secDisp);
+        
+        GridSubset subset = mock(GridSubset.class);
+        
+        String layerName = "mockLayer";
+        TestLayer tileLayer = mock(TestLayer.class);
+        when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
+        when(tld.getLayerList()).thenReturn(Collections.singleton(tileLayer));
+        when(tileLayer.getGridSubsetsForSRS(SRS.getEPSG4326())).thenReturn(Collections.singletonList(subset));
+        when(tileLayer.getInfoMimeTypes()).thenReturn(Collections.singletonList(XMLMime.gml));
+        //doThrow(new SecurityException()).when(secDisp).checkSecurity(Mockito.any());
+        
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        
+        req.addParameter("service", "WMS");
+        req.addParameter("version", "1.1.1");
+        req.addParameter("request", "GetFeatureInfo");
+        req.addParameter("layers", layerName);
+        req.addParameter("format", "image/png");
+        req.addParameter("srs", SRS.getEPSG4326().toString());
+        req.addParameter("bbox", "0,0,40,60");
+        req.addParameter("width", "40");
+        req.addParameter("height", "60");
+        req.addParameter("x", "2");
+        req.addParameter("y", "3");
+        req.addParameter("info_format", XMLMime.gml.getMimeType());
+        req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request=GetFeatureInfo&layers="+layerName+"&format=image/png&srs="+SRS.getEPSG4326().toString()
+                +"&bbox=0,0,40,60&width=40&height=60&x=3&y=3");
+        
+        ConveyorTile conv = service.getConveyor(req, resp);
+        
+        when(tileLayer.getFeatureInfo(any(ConveyorTile.class), any(BoundingBox.class), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt())).thenReturn(new ByteArrayResource("TEST FEATURE INFO".getBytes()));
+        
+        assertThat(conv, hasProperty("hint", equalTo("GetFeatureInfo".toLowerCase())));
+        assertThat(conv, hasProperty("requestHandler", is(RequestHandler.SERVICE)));
+        
+        service.handleRequest(conv);
+        //fail("Expected SecurityException");
+        
+        assertThat(resp.getContentAsString(), equalTo("TEST FEATURE INFO"));
+    }
+    
+    @Test
+    public void testGetFeatureSecure() throws Exception {
+        SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
+        when(secDisp.isSecurityEnabled()).thenReturn(true);
+        
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
+        service.setSecurityDispatcher(secDisp);
+        
+        GridSubset subset = mock(GridSubset.class);
+        
+        String layerName = "mockLayer";
+        TestLayer tileLayer = mock(TestLayer.class);
+        when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
+        when(tld.getLayerList()).thenReturn(Collections.singleton(tileLayer));
+        when(tileLayer.getGridSubsetsForSRS(SRS.getEPSG4326())).thenReturn(Collections.singletonList(subset));
+        when(tileLayer.getInfoMimeTypes()).thenReturn(Collections.singletonList(XMLMime.gml));
+        doThrow(new SecurityException()).when(secDisp).checkSecurity(Mockito.any());
+        
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        
+        req.addParameter("service", "WMS");
+        req.addParameter("version", "1.1.1");
+        req.addParameter("request", "GetFeatureInfo");
+        req.addParameter("layers", layerName);
+        req.addParameter("format", "image/png");
+        req.addParameter("srs", SRS.getEPSG4326().toString());
+        req.addParameter("bbox", "0,0,40,60");
+        req.addParameter("width", "40");
+        req.addParameter("height", "60");
+        req.addParameter("x", "2");
+        req.addParameter("y", "3");
+        req.addParameter("info_format", XMLMime.gml.getMimeType());
+        req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request=GetFeatureInfo&layers="+layerName+"&format=image/png&srs="+SRS.getEPSG4326().toString()
+                +"&bbox=0,0,40,60&width=40&height=60&x=3&y=3");
+        
+        ConveyorTile conv = service.getConveyor(req, resp);
+        
+        when(tileLayer.getFeatureInfo(any(ConveyorTile.class), any(BoundingBox.class), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt())).thenReturn(new ByteArrayResource("TEST FEATURE INFO".getBytes()));
+        
+        assertThat(conv, hasProperty("hint", equalTo("GetFeatureInfo".toLowerCase())));
+        assertThat(conv, hasProperty("requestHandler", is(RequestHandler.SERVICE)));
+        
+        try {
+            service.handleRequest(conv);
+            fail("Expected SecurityException");
+        } catch (SecurityException ex) { 
+            assertThat(resp.getContentAsString(), not(containsString("TEST FEATURE INFO")));
+        }
+    }
+    
+    protected void testProxyRequestPrevented(SecurityDispatcher mockSecDisp, String layerName,
+            TestLayer mockTileLayer, String requestName) throws GeoWebCacheException {
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        
+        req.addParameter("service", new String[]{"WMS"});
+        req.addParameter("version", new String[]{"1.1.1"});
+        req.addParameter("request", new String[]{requestName});
+        req.addParameter("layers", new String[]{layerName});
+        req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request="+requestName+"&layers="+layerName);
+        
+        ConveyorTile conv = service.getConveyor(req, resp);
+        
+        assertThat(conv, hasProperty("hint", equalTo(requestName.toLowerCase())));
+        
+        try {
+            service.handleRequest(conv);
+            fail("Expected SecurityException");
+        } catch (SecurityException ex) {
+            verify(mockTileLayer, never()).proxyRequest(conv);
+        }
+    }
+    
+    protected void testProxyRequestAllowed(SecurityDispatcher mockSecDisp, String layerName,
+            TestLayer mockTileLayer, String requestName) throws GeoWebCacheException {
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        
+        req.addParameter("service", new String[]{"WMS"});
+        req.addParameter("version", new String[]{"1.1.1"});
+        req.addParameter("request", new String[]{requestName});
+        req.addParameter("layers", new String[]{layerName});
+        req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request="+requestName+"&layers="+layerName);
+        
+        ConveyorTile conv = service.getConveyor(req, resp);
+        
+        assertThat(conv, hasProperty("hint", equalTo(requestName.toLowerCase())));
+        
+        service.handleRequest(conv);
+        
+        verify(mockTileLayer).proxyRequest(conv);
+    }
+    
+    protected static abstract class TestLayer extends TileLayer implements ProxyLayer {
+        
     }
 }
