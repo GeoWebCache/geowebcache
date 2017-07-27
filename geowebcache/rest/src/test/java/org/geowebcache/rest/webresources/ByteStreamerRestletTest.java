@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.easymock.Capture;
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 import org.geowebcache.rest.RestletException;
 import org.hamcrest.Matchers;
 import org.junit.Before;
