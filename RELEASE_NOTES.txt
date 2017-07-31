@@ -1,3 +1,17 @@
+GeoWebCache 1.11.1 (2017-07-31)
+-------------------------------
+
+
+Improvements:
++++++++++++++
+- Updated jai-ext dependency to 1.0.15
+
+Fixes:
+++++++
+- Fix #506, use correct value for timeout between requests to back end while seeding
+- Fix #516, MemoryBlobStore fails to preserve the delegate store last modified date, breaking If-Modified-Since
+
+
 GeoWebCache 1.11.0 (2017-03-22)
 -------------------------------
 
