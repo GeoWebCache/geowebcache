@@ -287,6 +287,38 @@ public class WMSLayerTest extends TileLayerTest {
         assertEquals("Fake body", servletResp.getContentAsString());
         assertEquals("image/png", servletResp.getContentType());
     }
+
+    @Test
+    public void testCascadeWithoutContentType() throws Exception {
+        // setup the layer
+        WMSLayer layer = createWMSLayer("image/png");
+        final byte[] responseBody = new String("Fake body").getBytes();
+        layer.setSourceHelper(new WMSHttpHelper() {
+            @Override
+            public GetMethod executeRequest(URL url, Map<String, String> queryParams,
+                    Integer backendTimeout) throws HttpException, IOException {
+                GetMethod response = EasyMock.createMock(GetMethod.class);
+                expect(response.getStatusCode()).andReturn(200);
+                expect(response.getResponseBodyAsStream()).andReturn(new ByteArrayInputStream(responseBody));
+                expect(response.getResponseCharSet()).andReturn("UTF-8");
+                expect(response.getResponseHeader("Content-Type")).andReturn(null);
+                response.releaseConnection();
+                expectLastCall();
+                replay(response);
+                return response;
+            }
+        });
+        final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
+        MockHttpServletRequest servletReq = new MockHttpServletRequest();
+        MockHttpServletResponse servletResp = new MockHttpServletResponse();
+
+        ConveyorTile tile = new ConveyorTile(mockStorageBroker, "name", servletReq, servletResp);
+
+        // proxy the request, and check the response
+        layer.proxyRequest(tile);
+
+        assertEquals(null, servletResp.getContentType());
+    }
     
     @Test
     public void testMinMaxCacheSeedTile() throws Exception {

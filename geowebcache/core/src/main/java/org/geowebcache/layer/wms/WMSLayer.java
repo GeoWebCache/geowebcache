@@ -29,6 +29,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -835,7 +836,10 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
             HttpServletResponse response = tile.servletResp;
             response.setCharacterEncoding(getMethod.getResponseCharSet());
-            response.setContentType(getMethod.getResponseHeader("Content-Type").getValue());
+            Header contentType = getMethod.getResponseHeader("Content-Type");
+            if(contentType != null) {
+                response.setContentType(contentType.getValue());
+            }
             
             int read = 0;
             byte[] data = new byte[1024];
