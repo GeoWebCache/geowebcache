@@ -6,11 +6,12 @@ import java.io.InputStreamReader;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mortbay.jetty.Connector;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.bio.SocketConnector;
-import org.mortbay.jetty.webapp.WebAppContext;
-import org.mortbay.thread.QueuedThreadPool;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
  * Jetty starter, will run GeoWebCache inside the Jetty web container.<br>
@@ -27,14 +28,15 @@ public class Start {
         final Server jettyServer = new Server();
 
         try {
-            SocketConnector conn = new SocketConnector();
-            String portVariable = System.getProperty("jetty.port");
-            int port = parsePort(portVariable);
-            if (port <= 0)
-                port = 8080;
-            conn.setPort(port);
-            conn.setAcceptQueueSize(100);
-            jettyServer.setConnectors(new Connector[] { conn });
+            HttpConfiguration httpConfiguration = new HttpConfiguration();
+            
+            ServerConnector http = new ServerConnector(jettyServer, new HttpConnectionFactory(httpConfiguration));
+            http.setPort(Integer.getInteger("jetty.port", 8080));
+            http.setAcceptQueueSize(100);
+            http.setIdleTimeout(1000 * 60 * 60);
+            http.setSoLingerTime(-1);
+            
+            jettyServer.setConnectors(new Connector[] { http });
 
             WebAppContext wah = new WebAppContext();
             wah.setContextPath("/geowebcache");
@@ -42,13 +44,9 @@ public class Start {
             jettyServer.setHandler(wah);
             wah.setTempDirectory(new File("target/work"));
 
-            // Use this to set a limit on the number of threads used to respond requests
-             QueuedThreadPool tp = new QueuedThreadPool();
-             tp.setMinThreads(50);
-             tp.setMaxThreads(50);
-             conn.setThreadPool(tp);
-
+            jettyServer.setHandler(wah);
             jettyServer.start();
+            jettyServer.join();
 
             /*
              * Reads from System.in looking for the string "stop\n" in order to gracefully terminate

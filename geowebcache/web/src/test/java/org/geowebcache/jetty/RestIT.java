@@ -374,9 +374,12 @@ public class RestIT {
         final Document doc;
         try( CloseableHttpResponse response = client.execute(request);
              InputStream in = response.getEntity().getContent()) {
-            doc = XMLUnit.buildTestDocument(new InputSource(in));
+            if (response.getStatusLine().getStatusCode() != 401) {
+                doc = XMLUnit.buildTestDocument(new InputSource(in));
+                body.accept(doc);
+            } 
             assertThat(response.getStatusLine(), hasProperty("statusCode",statusMatcher));
         }
-        body.accept(doc);
+        
     }
 }

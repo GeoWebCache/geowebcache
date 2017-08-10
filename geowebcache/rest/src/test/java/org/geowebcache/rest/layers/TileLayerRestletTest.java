@@ -55,6 +55,7 @@ import org.restlet.data.Status;
 import org.restlet.resource.Representation;
 import org.restlet.resource.StringRepresentation;
 import org.w3c.dom.Document;
+import org.xmlunit.xpath.JAXPXPathEngine;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -167,7 +168,7 @@ public class TileLayerRestletTest extends XMLTestCase {
 
             String href = rootPath + contextPath + "/layers/" + ServletUtils.URLEncode(layerName) + ".xml";
             xpath = "/layers/layer[" + xpathIndex + "]/link/@href";
-            String actual = xpathEngine.evaluate(xpath, dom);
+            String actual = new JAXPXPathEngine().evaluate(xpath, dom);
             // System.err.println("-------- " + actual);
             assertEquals(href, actual);
         }

@@ -10,11 +10,9 @@ import java.util.function.Consumer;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-import org.mortbay.jetty.Connector;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.bio.SocketConnector;
-import org.mortbay.jetty.webapp.WebAppContext;
-import org.mortbay.thread.QueuedThreadPool;
+import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
  * Rule that runs a live GWC instance inside of Jetty for integration tests
@@ -36,7 +34,7 @@ public class JettyRule extends org.junit.rules.ExternalResource {
     private File workDir;
     
     public int getPort() {
-        return getServer().getConnectors()[0].getLocalPort();
+        return ((ServerConnector)getServer().getConnectors()[0]).getLocalPort();
     }
     
     Initializer<File> confInit;
@@ -107,20 +105,15 @@ public class JettyRule extends org.junit.rules.ExternalResource {
         
         jettyServer = new Server();
         try {
-            SocketConnector conn = new SocketConnector();
-
-            int port;
-            for(port=8080; port<=8180; port++) {
-                conn.setPort(port);
-                try{
-                    conn.open();
-                } catch (BindException e) {
-                    continue;
-                }
-            }
-            conn.setPort(port);
-            conn.setAcceptQueueSize(100);
-            jettyServer.setConnectors(new Connector[] { conn });
+            HttpConfiguration httpConfiguration = new HttpConfiguration();
+            
+            ServerConnector http = new ServerConnector(jettyServer, new HttpConnectionFactory(httpConfiguration));
+            http.setPort(Integer.getInteger("jetty.port", 8080));
+            http.setAcceptQueueSize(100);
+            http.setIdleTimeout(1000 * 60 *60);
+            http.setSoLingerTime(-1);
+            
+            jettyServer.setConnectors(new Connector[] { http });
             
             WebAppContext wah = new WebAppContext();
             wah.setContextPath("/geowebcache");
@@ -136,7 +129,6 @@ public class JettyRule extends org.junit.rules.ExternalResource {
             QueuedThreadPool tp = new QueuedThreadPool();
             tp.setMinThreads(50);
             tp.setMaxThreads(50);
-            conn.setThreadPool(tp);
             
             jettyServer.start();
         } catch (Exception e) {

@@ -19,6 +19,7 @@ package org.geowebcache.util;
 import java.io.IOException;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 
 /**
  * This is just thin accounting wrapper for ServletOutputStream for
@@ -62,5 +63,36 @@ public class AccountingOutputStream extends ServletOutputStream {
     
     public int getCount() {
         return count;
+    }
+
+    /**
+     * This method can be used to determine if data can be written without blocking.
+     *
+     * @return <code>true</code> if a write to this <code>ServletOutputStream</code>
+     * will succeed, otherwise returns <code>false</code>.
+     * @since Servlet 3.1
+     */
+    @Override
+    public boolean isReady() {
+        return false;
+    }
+
+    /**
+     * Instructs the <code>ServletOutputStream</code> to invoke the provided
+     * {@link WriteListener} when it is possible to write
+     *
+     * @param writeListener the {@link WriteListener} that should be notified
+     *                      when it's possible to write
+     * @throws IllegalStateException if one of the following conditions is true
+     *                               <ul>
+     *                               <li>the associated request is neither upgraded nor the async started
+     *                               <li>setWriteListener is called more than once within the scope of the same request.
+     *                               </ul>
+     * @throws NullPointerException  if writeListener is null
+     * @since Servlet 3.1
+     */
+    @Override
+    public void setWriteListener(WriteListener writeListener) {
+
     }
 }
