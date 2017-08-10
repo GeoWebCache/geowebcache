@@ -11,14 +11,14 @@ public class S3BlobStoreConfigTest {
     @Test
     public void testACLPublic() {
         S3BlobStoreConfig config = new S3BlobStoreConfig();
-        config.setAccess("public");
+        config.setAccess(Access.PUBLIC);
         assertEquals(CannedAccessControlList.PublicRead, config.getAccessControlList());
     }
     
     @Test
     public void testACLPrivate() {
         S3BlobStoreConfig config = new S3BlobStoreConfig();
-        config.setAccess("private");
+        config.setAccess(Access.PRIVATE);
         assertEquals(CannedAccessControlList.BucketOwnerFullControl, config.getAccessControlList());
     }
 }

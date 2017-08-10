@@ -20,6 +20,7 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.NoOpLockProvider;
+import org.geowebcache.s3.Access;
 import org.geowebcache.s3.PropertiesLoader;
 import org.geowebcache.s3.S3BlobStoreConfig;
 import org.geowebcache.s3.S3BlobStoreConfigProvider;
@@ -78,7 +79,7 @@ public class S3BlobStoreConfigStoreLoadTest {
         setupXMLConfig();
         S3BlobStoreConfig store1 = createConfig("1");
         S3BlobStoreConfig store2 = createConfig("2");
-        store2.setAccess("private");
+        store2.setAccess(Access.PRIVATE);
 
         saveConfig(store1, store2);
         validateAndLoadSavedConfig();

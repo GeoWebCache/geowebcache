@@ -56,7 +56,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
 
     private String awsSecretKey;
 
-    private String access = "public";
+    private Access access = Access.PUBLIC;
 
     private Integer maxConnections;
 
@@ -286,7 +286,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
      */
     public CannedAccessControlList getAccessControlList() {
         CannedAccessControlList accessControlList;
-        if(access.equalsIgnoreCase("private")) {
+        if(access==Access.PRIVATE) {
             accessControlList = CannedAccessControlList.BucketOwnerFullControl;
         } else {
             accessControlList = CannedAccessControlList.PublicRead;
@@ -299,7 +299,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
      *
      * @param access whether access is private or public
      */
-    public void setAccess(String access) {
+    public void setAccess(Access access) {
         this.access = access;
     }
 
