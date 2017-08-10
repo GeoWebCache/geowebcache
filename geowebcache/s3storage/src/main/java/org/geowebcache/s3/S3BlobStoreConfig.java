@@ -37,6 +37,7 @@ import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 
 /**
  * Plain old java object representing the configuration for an S3 blob store.
@@ -55,6 +56,8 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
 
     private String awsSecretKey;
 
+    private String access = "public";
+
     private Integer maxConnections;
 
     private Boolean useHTTPS = true;
@@ -72,6 +75,15 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
     private String proxyPassword;
 
     private Boolean useGzip;
+
+    
+    protected S3BlobStoreConfig() {
+        super();
+    }
+    
+    public S3BlobStoreConfig(String id) {
+        super(id);
+    }
 
     /**
      * @return the name of the AWS S3 bucket where to store tiles
@@ -265,6 +277,30 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
      */
     public void setProxyPassword(String proxyPassword) {
         this.proxyPassword = proxyPassword;
+    }
+    
+    /**
+     * Checks access type
+     *
+     * @return public or private access
+     */
+    public CannedAccessControlList getAccessControlList() {
+        CannedAccessControlList accessControlList;
+        if(access.equalsIgnoreCase("private")) {
+            accessControlList = CannedAccessControlList.BucketOwnerFullControl;
+        } else {
+            accessControlList = CannedAccessControlList.PublicRead;
+        }
+        return accessControlList;
+    }
+
+    /**
+     * Sets whether access should be private or public
+     *
+     * @param access whether access is private or public
+     */
+    public void setAccess(String access) {
+        this.access = access;
     }
 
     /**

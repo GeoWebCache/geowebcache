@@ -109,6 +109,11 @@
                 <xs:documentation xml:lang="en">The secret key the client uses to connect to S3</xs:documentation>
               </xs:annotation>
             </xs:element>
+            <xs:element name="access" type="xs:string"  maxOccurs="1" minOccurs="0" default="public">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">Whether S3 object access is public or private</xs:documentation>
+              </xs:annotation>
+            </xs:element>
             <xs:element name="maxConnections" type="xs:positiveInteger" minOccurs="0" default="50" nillable="true">
               <xs:annotation>
                 <xs:documentation xml:lang="en">Maximum number of concurrent HTTP connections the S3 client may use.</xs:documentation>
