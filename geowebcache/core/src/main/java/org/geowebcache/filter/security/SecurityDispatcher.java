@@ -56,8 +56,15 @@ public class SecurityDispatcher implements ApplicationContextAware {
     public void checkSecurity(final ConveyorTile tile) throws SecurityException {
         final TileLayer layer = tile.getLayer();
         final GridSubset gridSubset = tile.getGridSubset();
-        final BoundingBox bounds = gridSubset.boundsFromIndex(tile.getTileIndex());
-        final SRS srs = gridSubset.getSRS();
+        final BoundingBox bounds;
+        final SRS srs;
+        if(Objects.nonNull(gridSubset)) {
+            bounds = gridSubset.boundsFromIndex(tile.getTileIndex());
+             srs = gridSubset.getSRS();
+        } else {
+            bounds = null;
+            srs = null;
+        }
         
         checkSecurity(layer, bounds, srs);
     }

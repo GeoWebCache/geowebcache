@@ -30,6 +30,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -351,10 +353,21 @@ public class GeoWebCacheDispatcher extends AbstractController {
         // 2) Find out what layer will be used and how
         conv = service.getConveyor(request, response);
         final String layerName = conv.getLayerId();
-        if (layerName != null && !tileLayerDispatcher.getTileLayer(layerName).isEnabled()) {
-            throw new OWSException(400, "InvalidParameterValue", "LAYERS", "Layer '" + layerName
-                    + "' is disabled");
+        
+        final TileLayer layer;
+        if(Objects.nonNull(layerName)) {
+            layer = tileLayerDispatcher.getTileLayer(layerName);
+            if(!layer.isEnabled()) {
+                throw new OWSException(400, "InvalidParameterValue", "LAYERS", "Layer '" + layerName
+                        + "' is disabled");
+            }
+            if(conv instanceof ConveyorTile) {
+                ((ConveyorTile) conv).setTileLayer(layer);
+            }
+        } else {
+            layer = null;
         }
+        
 
         // Check where this should be dispatched
         if (conv.reqHandler == Conveyor.RequestHandler.SERVICE) {
@@ -363,12 +376,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
         } else {
             ConveyorTile convTile = (ConveyorTile) conv;
-
-            // B3) Get the configuration that has to respond to this request
-            TileLayer layer = tileLayerDispatcher.getTileLayer(layerName);
-
-            // Save it for later
-            convTile.setTileLayer(layer);
 
             // Apply the filters
             layer.applyRequestFilters(convTile);
