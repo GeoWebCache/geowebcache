@@ -20,6 +20,7 @@ package org.geowebcache.filter.security;
 
 import javax.annotation.Nullable;
 
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
@@ -34,5 +35,5 @@ public interface SecurityFilter {
      * @param srs
      * @throws SecurityException if the request is not allowed.
      */
-    public void checkSecurity(TileLayer layer, @Nullable BoundingBox extent, @Nullable SRS srs) throws SecurityException;
+    public void checkSecurity(TileLayer layer, @Nullable BoundingBox extent, @Nullable SRS srs) throws SecurityException, GeoWebCacheException;
 }

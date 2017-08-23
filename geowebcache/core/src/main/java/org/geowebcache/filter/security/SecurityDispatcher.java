@@ -23,6 +23,7 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
@@ -53,7 +54,7 @@ public class SecurityDispatcher implements ApplicationContextAware {
      * @param tile
      * @throws SecurityException if any of the filter throw it
      */
-    public void checkSecurity(final ConveyorTile tile) throws SecurityException {
+    public void checkSecurity(final ConveyorTile tile) throws SecurityException, GeoWebCacheException {
         final TileLayer layer = tile.getLayer();
         final GridSubset gridSubset = tile.getGridSubset();
         final BoundingBox bounds;
@@ -76,7 +77,7 @@ public class SecurityDispatcher implements ApplicationContextAware {
      * @param srs
      * @throws SecurityException if any of the filter throw it
      */
-    public void checkSecurity(TileLayer layer, @Nullable BoundingBox extent, @Nullable SRS srs) throws SecurityException{
+    public void checkSecurity(TileLayer layer, @Nullable BoundingBox extent, @Nullable SRS srs) throws SecurityException, GeoWebCacheException {
         if(Objects.isNull(extent)!=Objects.isNull(srs)) {
             throw new NullPointerException("Extent and srs must either both be null or both be non-null");
         }
