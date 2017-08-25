@@ -1,7 +1,7 @@
 package org.geowebcache;
 
 import static org.easymock.EasyMock.expect;
-import static org.easymock.classextension.EasyMock.createMock;
+import static org.easymock.EasyMock.createMock;
 
 import java.io.IOException;
 import java.util.Arrays;

@@ -30,6 +30,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.GreenTileException;
 import org.geowebcache.filter.request.RequestFilterException;
+import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
@@ -60,7 +61,7 @@ public class KMZHelper {
      * @param linkGridLocs
      * @return
      */
-    public static long[][] filterGridLocs(StorageBroker sb, TileLayer tileLayer,
+    public static long[][] filterGridLocs(StorageBroker sb, SecurityDispatcher secDisp, TileLayer tileLayer,
             String gridSetId, MimeType mime, long[][] linkGridLocs) 
     throws GeoWebCacheException {
         
@@ -75,7 +76,10 @@ public class KMZHelper {
                 
                 // Apply request filters
                 try {
+                    secDisp.checkSecurity(tile);
                     tileLayer.applyRequestFilters(tile);
+                } catch(SecurityException ex) {
+                    linkGridLocs[i][2] = -1;
                 } catch(GreenTileException e) {
                     // We will link to this one
                 } catch(RequestFilterException e) {

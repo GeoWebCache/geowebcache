@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorKMLTile;
+import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
@@ -37,12 +38,14 @@ public class KMLSiteMap {
     private TileLayerDispatcher tLD = null;
     private StorageBroker storageBroker;
     private GridSetBroker gridSetBroker;
+    private SecurityDispatcher secDispatcher;
     
-    public KMLSiteMap(ConveyorKMLTile tile, TileLayerDispatcher tLD, GridSetBroker gridSetBroker) {
+    public KMLSiteMap(ConveyorKMLTile tile, TileLayerDispatcher tLD, GridSetBroker gridSetBroker, SecurityDispatcher secDispatcher) {
         this.tile = tile;
         this.tLD = tLD;
         this.storageBroker = tile.getStorageBroker();
         this.gridSetBroker = gridSetBroker;
+        this.secDispatcher = secDispatcher;
     }
     
     public void write() throws GeoWebCacheException, IOException {
@@ -152,7 +155,7 @@ public class KMLSiteMap {
             String gridSetId = gridSetBroker.WORLD_EPSG4326.getName();
             long[] curLoc = subTileList.removeFirst();
             long[][] linkGridLocs = tileLayer.getGridSubset(gridSetId).getSubGrid(curLoc);
-            linkGridLocs = KMZHelper.filterGridLocs(storageBroker, tileLayer, gridSetId, XMLMime.kml, linkGridLocs);
+            linkGridLocs = KMZHelper.filterGridLocs(storageBroker, secDispatcher, tileLayer, gridSetId, XMLMime.kml, linkGridLocs);
          
             // Save the links we still need to follow for later
             for(long[] subTile : linkGridLocs) {

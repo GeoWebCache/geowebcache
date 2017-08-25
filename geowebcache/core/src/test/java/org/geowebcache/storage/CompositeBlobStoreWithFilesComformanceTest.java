@@ -17,11 +17,11 @@
 
 package org.geowebcache.storage;
 
-import static org.easymock.classextension.EasyMock.not;
+import static org.easymock.EasyMock.not;
 import static org.easymock.EasyMock.or;
-import static org.easymock.classextension.EasyMock.createNiceMock;
-import static org.easymock.classextension.EasyMock.eq;
-import static org.easymock.classextension.EasyMock.expect;
+import static org.easymock.EasyMock.createNiceMock;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
 
 import java.util.LinkedList;
 
@@ -35,7 +35,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 
 public class CompositeBlobStoreWithFilesComformanceTest extends AbstractBlobStoreTest<CompositeBlobStore> {
     

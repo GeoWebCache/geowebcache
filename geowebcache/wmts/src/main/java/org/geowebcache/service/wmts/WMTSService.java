@@ -33,6 +33,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.OutsideCoverageException;
@@ -73,6 +74,8 @@ public class WMTSService extends Service  {
 
     // list of this service extensions ordered by their priority
     private final List<WMTSExtension> extensions = new ArrayList<>();
+    
+    private SecurityDispatcher securityDispatcher;
 
     /**
      * Protected no-argument constructor to allow run-time instrumentation
@@ -254,8 +257,8 @@ public class WMTSService extends Service  {
 
         String tileCol = values.get("tilecol");
         if (tileCol == null) {
-            throw new OWSException(400, "MissingParameterValue", "TILECOLUMN",
-                    "No TILECOLUMN specified");
+            throw new OWSException(400, "MissingParameterValue", "TILECOL",
+                    "No TILECOL specified");
         }
         long x = Long.parseLong(tileCol);
 
@@ -290,7 +293,7 @@ public class WMTSService extends Service  {
         return convTile;
     }
 
-    public void handleRequest(Conveyor conv) throws OWSException {
+    public void handleRequest(Conveyor conv) throws OWSException, GeoWebCacheException {
 
         // let's see if any extension wants to handle this request
         for (WMTSExtension extension : extensions) {
@@ -315,6 +318,7 @@ public class WMTSService extends Service  {
                 wmsGC.writeResponse(tile.servletResp, stats);
 
             } else if (tile.getHint().equals("getfeatureinfo")) {
+                getSecurityDispatcher().checkSecurity(tile);
                 ConveyorTile convTile = (ConveyorTile) conv;
                 WMTSGetFeatureInfo wmsGFI = new WMTSGetFeatureInfo(convTile);
                 wmsGFI.writeResponse(stats);
@@ -329,4 +333,13 @@ public class WMTSService extends Service  {
     public Collection<WMTSExtension> getExtensions() {
         return Collections.unmodifiableCollection(extensions);
     }
+
+    public void setSecurityDispatcher(SecurityDispatcher secDisp) {
+        this.securityDispatcher = secDisp;
+    }
+    
+    protected SecurityDispatcher getSecurityDispatcher() {
+        return securityDispatcher;
+    }
+
 }

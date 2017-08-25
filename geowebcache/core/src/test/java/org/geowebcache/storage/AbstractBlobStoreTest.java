@@ -19,9 +19,10 @@ package org.geowebcache.storage;
 
 import static org.easymock.EasyMock.anyLong;
 import static org.easymock.EasyMock.isNull;
-import static org.easymock.classextension.EasyMock.capture;
-import static org.easymock.classextension.EasyMock.eq;
-import static org.easymock.classextension.EasyMock.geq;
+import static org.easymock.EasyMock.capture;
+import static org.easymock.EasyMock.captureLong;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.geq;
 import static org.geowebcache.util.FileMatchers.resource;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.describedAs;
@@ -49,7 +50,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.easymock.Capture;
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 
 /**
  * Test to do 
@@ -157,7 +158,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         Capture<Long> sizeCapture = new Capture<>();
         if(events) {
             listener.tileStored(eq("testLayer"), eq("testGridSet"), eq("image/png"), eq(null), eq(0L), eq(0L), eq(0), 
-                capture(sizeCapture)
+                captureLong(sizeCapture)
                 );EasyMock.expectLastCall();
         }
         
@@ -194,7 +195,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         Capture<Long> sizeCapture = new Capture<>();
         if(events){
             listener.tileStored(eq("testLayer"), eq("testGridSet"), eq("image/png"), eq(null), eq(0L), eq(0L), eq(0), 
-                capture(sizeCapture)
+                captureLong(sizeCapture)
                 );EasyMock.expectLastCall();
         }
         EasyMock.replay(listener);
@@ -239,10 +240,10 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         Capture<Long> sizeCapture2 = new Capture<>();
         if(events) {
             listener.tileStored(eq("testLayer"), eq("testGridSet1"), eq("image/png"), eq(null), eq(0L), eq(0L), eq(0), 
-                capture(sizeCapture1)
+                captureLong(sizeCapture1)
                 );EasyMock.expectLastCall();
             listener.tileStored(eq("testLayer"), eq("testGridSet2"), eq("image/png"), eq(null), eq(0L), eq(0L), eq(0), 
-                capture(sizeCapture2)
+                captureLong(sizeCapture2)
                 );EasyMock.expectLastCall();
         }
         
@@ -361,10 +362,10 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         Capture<String> pidCapture2 = new Capture<>();
         if(events){
             listener.tileStored(eq("testLayer"), eq("testGridSet"), eq("image/png"), capture(pidCapture1), eq(0L), eq(0L), eq(0), 
-                capture(sizeCapture1)
+                captureLong(sizeCapture1)
                 );EasyMock.expectLastCall();
             listener.tileStored(eq("testLayer"), eq("testGridSet"), eq("image/png"), capture(pidCapture2), eq(0L), eq(0L), eq(0), 
-                capture(sizeCapture2)
+                captureLong(sizeCapture2)
                 );EasyMock.expectLastCall();
         }
         

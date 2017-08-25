@@ -1,7 +1,7 @@
 package org.geowebcache.rest.seed;
 
 import static org.junit.Assert.*;
-import static org.easymock.classextension.EasyMock.*;
+import static org.easymock.EasyMock.*;
 
 import java.io.InputStream;
 

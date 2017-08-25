@@ -19,8 +19,8 @@ package org.geowebcache.s3;
 
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
-import static org.easymock.classextension.EasyMock.createMock;
-import static org.easymock.classextension.EasyMock.replay;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
@@ -36,7 +36,7 @@ import org.geowebcache.storage.AbstractBlobStoreTest;
 import org.junit.Assume;
 import org.junit.Rule;
 
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 
 public class S3BlobStoreConformanceTest extends AbstractBlobStoreTest<S3BlobStore> {
     public PropertiesLoader testConfigLoader = new PropertiesLoader();

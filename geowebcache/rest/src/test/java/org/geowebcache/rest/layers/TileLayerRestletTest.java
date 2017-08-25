@@ -251,10 +251,10 @@ public class TileLayerRestletTest extends XMLTestCase {
     public void testDelete() throws Exception {
         String layerName = "topp:states";
         assertNotNull("Missing test layer", tld.getTileLayer(layerName));
-        StorageBroker storageBroker = org.easymock.classextension.EasyMock
+        StorageBroker storageBroker = org.easymock.EasyMock
                 .createMock(StorageBroker.class);
         EasyMock.expect(storageBroker.delete(EasyMock.eq(layerName))).andReturn(true);
-        org.easymock.classextension.EasyMock.replay(storageBroker);
+        org.easymock.EasyMock.replay(storageBroker);
         tlr.setStorageBroker(storageBroker);
         Request request = new Request();
         request.setMethod(Method.DELETE);
@@ -270,7 +270,7 @@ public class TileLayerRestletTest extends XMLTestCase {
         } catch (GeoWebCacheException e) {
             // success
         }
-        org.easymock.classextension.EasyMock.verify(storageBroker);
+        org.easymock.EasyMock.verify(storageBroker);
     }
 
     private XMLConfiguration loadXMLConfig() {

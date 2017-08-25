@@ -19,6 +19,7 @@ package org.geowebcache.service.kml;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.Arrays;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,6 +30,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorKMLTile;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
@@ -70,6 +72,8 @@ public class KMLService extends Service {
     private GridSetBroker gsb;
 
     private RuntimeStats stats;
+    
+    private SecurityDispatcher secDispatcher;
 
     /**
      * Protected no-argument constructor to allow run-time instrumentation
@@ -235,6 +239,16 @@ public class KMLService extends Service {
             }
         }
         tile.setTileLayer(layer);
+        
+        if(Objects.nonNull(tile.getLayer())) {
+            // The KML service uses negative magic numbers in the z coordinate 
+            // for superoverlays.
+            if(tile.getTileIndex()[2]<0) {
+                getSecurityDispatcher().checkSecurity(tile.getLayer(), null, null);
+            } else  {
+                getSecurityDispatcher().checkSecurity(tile);
+            }
+        }
 
         // if(tile.getHint() == HINT_SITEMAP_LAYER || tile.getHint() == HINT_SITEMAP_GLOBAL) {
         // KMLSiteMap sm = new KMLSiteMap(tile,tld);
@@ -467,7 +481,7 @@ public class KMLService extends Service {
      * @return
      * @throws ServiceException
      */
-    private static String createOverlay(ConveyorKMLTile tile, boolean isPackaged)
+    private String createOverlay(ConveyorKMLTile tile, boolean isPackaged)
             throws ServiceException, GeoWebCacheException {
         boolean isRaster = (tile.getMimeType() instanceof ImageMime);
 
@@ -501,7 +515,7 @@ public class KMLService extends Service {
         long[][] linkGridLocs = gridSubset.getSubGrid(gridLoc);
 
         // 3) Apply secondary filter against linking to empty tiles
-        linkGridLocs = KMZHelper.filterGridLocs(tile.getStorageBroker(), tileLayer,
+        linkGridLocs = KMZHelper.filterGridLocs(tile.getStorageBroker(), getSecurityDispatcher(), tileLayer,
                 gridSubset.getName(), tile.getMimeType(), linkGridLocs);
 
         // int moreData = 0;
@@ -707,4 +721,14 @@ public class KMLService extends Service {
         double dz = p1[2] - p2[2];
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
+
+    public void setSecurityDispatcher(SecurityDispatcher secDispatcher) {
+        this.secDispatcher = secDispatcher;
+    }
+
+    protected SecurityDispatcher getSecurityDispatcher() {
+        return secDispatcher;
+    }
+    
+    
 }

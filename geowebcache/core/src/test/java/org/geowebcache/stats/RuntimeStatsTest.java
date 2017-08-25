@@ -20,7 +20,7 @@ package org.geowebcache.stats;
 import java.time.Clock;
 import java.util.Arrays;
 
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Test;
 

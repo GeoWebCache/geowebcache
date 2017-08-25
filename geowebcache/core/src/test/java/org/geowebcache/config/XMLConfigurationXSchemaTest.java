@@ -23,7 +23,7 @@ import static org.junit.Assert.assertThat;
 
 import org.easymock.Capture;
 import org.easymock.IAnswer;
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.util.PropertyRule;
 import org.junit.Ignore;

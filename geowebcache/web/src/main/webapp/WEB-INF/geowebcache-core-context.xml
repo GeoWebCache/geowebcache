@@ -150,6 +150,7 @@
     <constructor-arg ref="gwcXmlConfig"/>
     <constructor-arg ref="gwcRuntimeStats"/>
     <property name="defaultStorageFinder" ref="gwcDefaultStorageFinder"/>
+    <property name="securityDispatcher" ref="gwcSecurityDispatcher"/>
   </bean>
 	
   <!-- Thread pool for seeding -->
@@ -185,6 +186,8 @@
   </bean>
 
   <bean id="gwcURLMangler" class="org.geowebcache.util.NullURLMangler" />
+  
+  <bean id="gwcSecurityDispatcher" class="org.geowebcache.filter.security.SecurityDispatcher" />
   
   <bean id="cacheConfiguration" class="org.geowebcache.storage.blobstore.memory.CacheConfiguration">
     <property name="hardMemoryLimit" value="64"/> <!-- 64 Mb -->

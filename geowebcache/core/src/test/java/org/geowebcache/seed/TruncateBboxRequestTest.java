@@ -40,7 +40,7 @@ import org.junit.Test;
 
 import org.hamcrest.integration.EasyMock2Adapter;
 
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 
 public class TruncateBboxRequestTest {
 

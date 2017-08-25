@@ -17,6 +17,10 @@
  */
 package org.geowebcache.service.wms;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -29,6 +33,7 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
@@ -44,14 +49,26 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-public class WMSTileFuserTest extends TestCase {
-    GridSetBroker gridSetBroker = new GridSetBroker(false, false);
+public class WMSTileFuserTest {
     
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+    
+    GridSetBroker gridSetBroker = new GridSetBroker(false, false);
+    SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
+    
+    @Test
     public void testTileFuserResolution() throws Exception {
+        
         TileLayer layer = createWMSLayer();
         
         // request fits inside -30.0,15.0,45.0,30
@@ -62,6 +79,7 @@ public class WMSTileFuserTest extends TestCase {
         int height= (int) bounds.getHeight() * 10;
         GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
         WMSTileFuser tileFuser = new WMSTileFuser(layer, gridSubset, bounds, width, height);
+        tileFuser.setSecurityDispatcher(secDisp);
         tileFuser.determineSourceResolution();
         assertEquals(0.087890625, tileFuser.srcResolution, 0.087890625*0.001);
         
@@ -69,6 +87,7 @@ public class WMSTileFuserTest extends TestCase {
         height = (int) bounds.getWidth() / 10;
         width = (int) bounds.getWidth() / 10;
         tileFuser = new WMSTileFuser(layer, gridSubset, bounds, width, height);
+        tileFuser.setSecurityDispatcher(secDisp);
         tileFuser.determineSourceResolution();
         assertEquals(0,tileFuser.srcIdx);
         
@@ -76,10 +95,35 @@ public class WMSTileFuserTest extends TestCase {
         height = (int) bounds.getWidth() * 10000;
         width = (int) bounds.getWidth() * 10000;
         tileFuser = new WMSTileFuser(layer, gridSubset, bounds, width, height);
+        tileFuser.setSecurityDispatcher(secDisp);
         tileFuser.determineSourceResolution();
         assertEquals(10,tileFuser.srcIdx);
     }
     
+    @Test
+    public void testTileFuserSecurity() throws Exception {
+        
+        Mockito.doThrow(new SecurityException()).when(secDisp).checkSecurity(Mockito.any());
+        
+        TileLayer layer = createWMSLayer();
+        
+        // request fits inside -30.0,15.0,45.0,30
+        BoundingBox bounds = new BoundingBox(-25.0,17.0,40.0,22);
+        
+        // One in between
+        int width = (int) bounds.getWidth() * 10;
+        int height= (int) bounds.getHeight() * 10;
+        GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
+        WMSTileFuser tileFuser = new WMSTileFuser(layer, gridSubset, bounds, width, height);
+        tileFuser.setSecurityDispatcher(secDisp);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        RuntimeStats stats = mock(RuntimeStats.class);
+        
+        exception.expect(SecurityException.class);
+        tileFuser.writeResponse(response, stats);
+    }
+    
+    @Test
     public void testTileFuserSubset() throws Exception {
         TileLayer layer = createWMSLayer();
         
@@ -91,6 +135,7 @@ public class WMSTileFuserTest extends TestCase {
         int height= (int) bounds.getHeight() * 10;
         GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
         WMSTileFuser tileFuser = new WMSTileFuser(layer, gridSubset, bounds, width, height);
+        tileFuser.setSecurityDispatcher(secDisp);
         tileFuser.determineSourceResolution();
         tileFuser.determineCanvasLayout();
         
@@ -107,6 +152,7 @@ public class WMSTileFuserTest extends TestCase {
         assertEquals(comparison.top, tileFuser.canvOfs.top);
     }
     
+    @Test
     public void testTileFuserSuperset() throws Exception {
         TileLayer layer = createWMSLayer();
         
@@ -118,10 +164,12 @@ public class WMSTileFuserTest extends TestCase {
         int height= (int) bounds.getHeight() * 25;
         GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
         WMSTileFuser tileFuser = new WMSTileFuser(layer, gridSubset, bounds, width, height);
+        tileFuser.setSecurityDispatcher(secDisp);
         tileFuser.determineSourceResolution();
         tileFuser.determineCanvasLayout();
     }
 
+    @Test
     public void testWriteResponse() throws Exception {
     	final TileLayer layer = createWMSLayer();
     	// request larger than -30.0,15.0,45.0,30
@@ -170,6 +218,7 @@ public class WMSTileFuserTest extends TestCase {
 	        );
 	        
 	        WMSTileFuser tileFuser = new WMSTileFuser(dispatcher, broker, request);
+	        tileFuser.setSecurityDispatcher(secDisp);
 	        	
 	        // Selection of the ApplicationContext associated
 	        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("appContextTest.xml");

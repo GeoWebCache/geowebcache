@@ -30,6 +30,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,6 +49,7 @@ import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.demo.Demo;
 import org.geowebcache.filter.request.RequestFilterException;
+import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
@@ -66,7 +69,6 @@ import org.geowebcache.storage.CompositeBlobStore;
 import org.geowebcache.storage.DefaultStorageBroker;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
-import org.geowebcache.storage.blobstore.file.FileBlobStore;
 import org.geowebcache.storage.blobstore.memory.CacheStatistics;
 import org.geowebcache.storage.blobstore.memory.MemoryBlobStore;
 import org.geowebcache.util.ServletUtils;
@@ -102,6 +104,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private String servletPrefix = null;
 
     private Configuration mainConfiguration;
+    
+    private SecurityDispatcher securityDispatcher;
     
     /**
      * Should be invoked through Spring
@@ -284,6 +288,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
             OWSException owsE = (OWSException) e;
             writeFixedResponse(response, owsE.getResponseCode(), owsE.getContentType(),
                     owsE.getResponse(), CacheResult.OTHER);
+        } catch (SecurityException e) {
+            writeFixedResponse(response, 403, "text/plain",
+                    new ByteArrayResource("Not Authorized".getBytes()), CacheResult.OTHER);
+            log.warn(e.getMessage());
         } catch (Exception e) {
             if (!(e instanceof BadTileException) || log.isDebugEnabled()) {
                 log.error(e.getMessage() + " " + request.getRequestURL().toString());
@@ -345,10 +353,21 @@ public class GeoWebCacheDispatcher extends AbstractController {
         // 2) Find out what layer will be used and how
         conv = service.getConveyor(request, response);
         final String layerName = conv.getLayerId();
-        if (layerName != null && !tileLayerDispatcher.getTileLayer(layerName).isEnabled()) {
-            throw new OWSException(400, "InvalidParameterValue", "LAYERS", "Layer '" + layerName
-                    + "' is disabled");
+        
+        final TileLayer layer;
+        if(Objects.nonNull(layerName)) {
+            layer = tileLayerDispatcher.getTileLayer(layerName);
+            if(!layer.isEnabled()) {
+                throw new OWSException(400, "InvalidParameterValue", "LAYERS", "Layer '" + layerName
+                        + "' is disabled");
+            }
+            if(conv instanceof ConveyorTile) {
+                ((ConveyorTile) conv).setTileLayer(layer);
+            }
+        } else {
+            layer = null;
         }
+        
 
         // Check where this should be dispatched
         if (conv.reqHandler == Conveyor.RequestHandler.SERVICE) {
@@ -358,15 +377,12 @@ public class GeoWebCacheDispatcher extends AbstractController {
         } else {
             ConveyorTile convTile = (ConveyorTile) conv;
 
-            // B3) Get the configuration that has to respond to this request
-            TileLayer layer = tileLayerDispatcher.getTileLayer(layerName);
-
-            // Save it for later
-            convTile.setTileLayer(layer);
-
             // Apply the filters
             layer.applyRequestFilters(convTile);
-
+            
+            // Throw an exception if not authorized
+            getSecurityDispatcher().checkSecurity(convTile);
+            
             // Keep the URI
             // tile.requestURI = request.getRequestURI();
 
@@ -787,4 +803,18 @@ public class GeoWebCacheDispatcher extends AbstractController {
         // Append to the homepage HTML
         strGlobal.append(str);
     }
+
+    protected SecurityDispatcher getSecurityDispatcher() {
+        return securityDispatcher;
+    }
+    
+    /**
+     * Set the security dispatcher to use to test service requests.
+     * @param secDispatcher
+     */
+    public void setSecurityDispatcher(SecurityDispatcher secDispatcher) {
+        this.securityDispatcher = secDispatcher;
+    }
+    
+    
 }

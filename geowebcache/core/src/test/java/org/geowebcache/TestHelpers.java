@@ -10,6 +10,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletResponse;
 
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
@@ -20,6 +21,11 @@ import org.geowebcache.locks.LockProvider;
 import org.geowebcache.seed.GWCTask;
 import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.util.MockLockProvider;
+import org.springframework.http.HttpStatus;
+
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 
 /**
  * Some common utility test functions.
@@ -82,5 +88,47 @@ public class TestHelpers {
         return req;
 
     }
+    
+    /**
+     * Matcher for an {@link HttpServletResponse} that checks its status.
+     * @param statusMatcher
+     * @return
+     */
+    public static Matcher<HttpServletResponse> hasStatus(HttpStatus expected) {
+        return new BaseMatcher<HttpServletResponse>() {
+            
+            @Override
+            public boolean matches(Object item) {
+                if(item instanceof HttpServletResponse) {
+                    return expected.equals(
+                            HttpStatus.valueOf(((HttpServletResponse) item).getStatus()));
+                }
+                return false;
+            }
+            
+            @Override
+            public void describeTo(Description description) {
+                description
+                    .appendText("Http response with status ");
+                describeStatus(expected, description);
+            }
 
+            protected void describeStatus(HttpStatus status, Description description) {
+                description.appendValue(status.value()).appendText(" ").appendValue(status.getReasonPhrase());
+            }
+
+            @Override
+            public void describeMismatch(Object item, Description description) {
+                if(item instanceof HttpServletResponse) {
+                    HttpStatus status = HttpStatus.valueOf(((HttpServletResponse) item).getStatus());
+                    description.appendText("status was ");
+                    describeStatus(status, description);
+                } else {
+                    description.appendText("was not an HttpServletResponse");
+                }
+            }
+            
+        };
+        
+    }
 }
