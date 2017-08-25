@@ -318,7 +318,7 @@ public class WMTSService extends Service  {
                 wmsGC.writeResponse(tile.servletResp, stats);
 
             } else if (tile.getHint().equals("getfeatureinfo")) {
-                securityDispatcher.checkSecurity(tile);
+                getSecurityDispatcher().checkSecurity(tile);
                 ConveyorTile convTile = (ConveyorTile) conv;
                 WMTSGetFeatureInfo wmsGFI = new WMTSGetFeatureInfo(convTile);
                 wmsGFI.writeResponse(stats);
@@ -337,4 +337,9 @@ public class WMTSService extends Service  {
     public void setSecurityDispatcher(SecurityDispatcher secDisp) {
         this.securityDispatcher = secDisp;
     }
+    
+    protected SecurityDispatcher getSecurityDispatcher() {
+        return securityDispatcher;
+    }
+
 }

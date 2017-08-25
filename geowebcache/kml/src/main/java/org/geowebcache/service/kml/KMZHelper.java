@@ -72,9 +72,10 @@ public class KMZHelper {
                         tileLayer.getName(), gridSetId, 
                         linkGridLocs[i], mime, null, null, null);
                 
+                tile.setTileLayer(tileLayer);
+                
                 // Apply request filters
                 try {
-                    tile.setTileLayer(tileLayer);
                     secDisp.checkSecurity(tile);
                     tileLayer.applyRequestFilters(tile);
                 } catch(SecurityException ex) {

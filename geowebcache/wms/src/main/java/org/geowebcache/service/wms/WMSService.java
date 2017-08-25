@@ -291,7 +291,7 @@ public class WMSService extends Service{
                 WMSGetCapabilities wmsCap = new WMSGetCapabilities(tld, tile.servletReq, servletBase, context, urlMangler);
                 wmsCap.writeResponse(tile.servletResp);
             } else if (tile.getHint().equalsIgnoreCase("getmap")) {
-                securityDispatcher.checkSecurity(tile);
+                getSecurityDispatcher().checkSecurity(tile);
                 WMSTileFuser wmsFuser = getFuser(tile.servletReq);
                 try {
                     wmsFuser.writeResponse(tile.servletResp, stats);
@@ -302,10 +302,10 @@ public class WMSService extends Service{
                     e.printStackTrace();
                 }
             } else if (tile.getHint().equalsIgnoreCase("getfeatureinfo")) {
-                securityDispatcher.checkSecurity(tile);
+                getSecurityDispatcher().checkSecurity(tile);
                 handleGetFeatureInfo(tile);
             } else {
-                securityDispatcher.checkSecurity(tile);
+                getSecurityDispatcher().checkSecurity(tile);
                 checkProxyRequest(tile.getHint());
                 // see if we can proxy the request
                 TileLayer tl = tld.getTileLayer(tile.getLayerId());
@@ -329,7 +329,7 @@ public class WMSService extends Service{
 
     protected WMSTileFuser getFuser(HttpServletRequest servletReq) throws GeoWebCacheException {
         WMSTileFuser wmsFuser = new WMSTileFuser(tld, sb, servletReq);
-        wmsFuser.setSecurityDispatcher(securityDispatcher);
+        wmsFuser.setSecurityDispatcher(getSecurityDispatcher());
         // Setting of the applicationContext
         wmsFuser.setApplicationContext(utility.getApplicationContext());
         // Setting of the hintConfiguration if present
@@ -476,7 +476,7 @@ public class WMSService extends Service{
     }
     
     protected Collection<String> getDefaultProxyRequestWhitelist() {
-        if(securityDispatcher.isSecurityEnabled()) {
+        if(getSecurityDispatcher().isSecurityEnabled()) {
             return Arrays.asList("getlegendgraphic");
         } else {
             return Arrays.asList("*");
@@ -506,5 +506,8 @@ public class WMSService extends Service{
         this.securityDispatcher = securityDispatcher;
     }
     
+    protected SecurityDispatcher getSecurityDispatcher() {
+        return securityDispatcher;
+    }
     
 }

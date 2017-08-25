@@ -241,10 +241,12 @@ public class KMLService extends Service {
         tile.setTileLayer(layer);
         
         if(Objects.nonNull(tile.getLayer())) {
+            // The KML service uses negative magic numbers in the z coordinate 
+            // for superoverlays.
             if(tile.getTileIndex()[2]<0) {
-                secDispatcher.checkSecurity(tile.getLayer(), null, null);
+                getSecurityDispatcher().checkSecurity(tile.getLayer(), null, null);
             } else  {
-                secDispatcher.checkSecurity(tile);
+                getSecurityDispatcher().checkSecurity(tile);
             }
         }
 
@@ -513,7 +515,7 @@ public class KMLService extends Service {
         long[][] linkGridLocs = gridSubset.getSubGrid(gridLoc);
 
         // 3) Apply secondary filter against linking to empty tiles
-        linkGridLocs = KMZHelper.filterGridLocs(tile.getStorageBroker(), secDispatcher, tileLayer,
+        linkGridLocs = KMZHelper.filterGridLocs(tile.getStorageBroker(), getSecurityDispatcher(), tileLayer,
                 gridSubset.getName(), tile.getMimeType(), linkGridLocs);
 
         // int moreData = 0;
@@ -722,6 +724,10 @@ public class KMLService extends Service {
 
     public void setSecurityDispatcher(SecurityDispatcher secDispatcher) {
         this.secDispatcher = secDispatcher;
+    }
+
+    protected SecurityDispatcher getSecurityDispatcher() {
+        return secDispatcher;
     }
     
     
