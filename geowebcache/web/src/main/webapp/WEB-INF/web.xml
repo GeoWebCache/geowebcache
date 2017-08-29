@@ -60,11 +60,6 @@
   
   <servlet-mapping>
     <servlet-name>geowebcache</servlet-name>
-    <url-pattern>/restlet/*</url-pattern>
-  </servlet-mapping>
-  
-  <servlet-mapping>
-    <servlet-name>geowebcache</servlet-name>
     <url-pattern>/rest/*</url-pattern>
   </servlet-mapping>
   
