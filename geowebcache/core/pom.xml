@@ -114,6 +114,12 @@
     <dependency>
       <groupId>it.geosolutions.jaiext.utilities</groupId>
       <artifactId>jt-utilities</artifactId>
+      <exclusions>
+         <exclusion>
+            <groupId>com.vividsolutions</groupId>
+            <artifactId>jts</artifactId>
+         </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
