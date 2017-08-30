@@ -40,6 +40,7 @@ import java.io.IOException;
 
 @Component
 @RestController
+@RequestMapping(path="${gwc.context.suffix:}/rest")
 public class ReloadController {
     private static Log log = LogFactory.getLog(ReloadController.class);
 

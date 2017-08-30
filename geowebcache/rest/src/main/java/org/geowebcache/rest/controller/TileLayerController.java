@@ -72,6 +72,7 @@ import java.util.List;
 
 @Component
 @RestController
+@RequestMapping(path="${gwc.context.suffix:}/rest")
 public class TileLayerController extends GWCController {
 
     @Autowired

@@ -57,6 +57,7 @@ import java.util.*;
 
 @Component
 @RestController
+@RequestMapping(path="${gwc.context.suffix:}/rest")
 public class SeedFormController extends GWCController {
 
     @Autowired

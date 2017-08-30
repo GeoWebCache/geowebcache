@@ -46,6 +46,7 @@ import java.util.regex.Pattern;
 
 @Component
 @RestController
+@RequestMapping(path="${gwc.context.suffix:}/rest")
 public class ByteStreamController {
     private static Log log = LogFactory.getLog(ByteStreamController.class);
 

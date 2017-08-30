@@ -38,6 +38,7 @@ import java.util.List;
 
 @Component
 @RestController
+@RequestMapping(path="${gwc.context.suffix:}/rest")
 public class FilterUpdateController extends GWCController {
 
     @Autowired

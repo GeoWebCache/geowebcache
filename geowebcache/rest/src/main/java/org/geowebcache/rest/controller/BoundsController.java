@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 
 @Component
 @RestController
+@RequestMapping(path="${gwc.context.suffix:}/rest")
 public class BoundsController extends GWCController {
     @Autowired
     TileLayerDispatcher tld;

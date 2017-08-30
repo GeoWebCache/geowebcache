@@ -51,6 +51,7 @@ import java.util.Set;
 
 @Component
 @RestController
+@RequestMapping(path="${gwc.context.suffix:}/rest")
 public class MassTruncateController extends GWCSeedingController{
     private static Log log = LogFactory.getLog(MassTruncateController.class);
 

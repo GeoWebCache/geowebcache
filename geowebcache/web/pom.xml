@@ -41,16 +41,6 @@
     </dependency>
     <dependency>
       <groupId>org.geowebcache</groupId>
-      <artifactId>gwc-rest-ng</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.geowebcache</groupId>
-      <artifactId>gwc-diskquota-rest</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.geowebcache</groupId>
       <artifactId>gwc-tms</artifactId>
       <version>${project.version}</version>
     </dependency>

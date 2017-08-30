@@ -47,6 +47,7 @@ import javax.servlet.http.HttpServletRequest;
 
 @Component
 @RestController
+@RequestMapping(path="${gwc.context.suffix:}/rest")
 public class MemoryCacheController {
     /** {@link Log} used for logging the exceptions */
     public static Log LOG = LogFactory.getLog(MemoryCacheController.class);

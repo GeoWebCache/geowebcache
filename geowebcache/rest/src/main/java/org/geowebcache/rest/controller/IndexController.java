@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 
 @Component
 @RestController
+@RequestMapping(path="${gwc.context.suffix:}/rest")
 public class IndexController {
 
     @RequestMapping(value = "/about", method = RequestMethod.GET, produces = "text/html")

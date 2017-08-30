@@ -61,6 +61,7 @@ import java.util.Map;
 
 @Component
 @RestController
+@RequestMapping(path="${gwc.context.suffix:}/rest")
 public class SeedController {
 
     @Autowired
