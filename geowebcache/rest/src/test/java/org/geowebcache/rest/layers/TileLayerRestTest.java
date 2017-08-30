@@ -139,7 +139,7 @@ public class TileLayerRestTest {
     public void testGetList() throws Exception {
         this.mockMvc.perform(get("/rest/layers.xml")
                 .contentType(MediaType.APPLICATION_ATOM_XML)
-                .contextPath("/rest"))
+                .contextPath(""))
                 .andExpect(status().is2xxSuccessful());
     }
 
@@ -179,7 +179,7 @@ public class TileLayerRestTest {
 
         this.mockMvc.perform(put("/rest/layers/newLayer1.xml")
                 .contentType(MediaType.APPLICATION_ATOM_XML)
-                .contextPath("/rest")
+                .contextPath("")
                 .content(layerXml))
                 .andExpect(status().is2xxSuccessful());
 
@@ -189,7 +189,7 @@ public class TileLayerRestTest {
 
         this.mockMvc.perform(put("/rest/layers/newLayer2.xml")
                 .contentType(MediaType.APPLICATION_ATOM_XML)
-                .contextPath("/rest")
+                .contextPath("")
                 .content(layerXml2))
                 .andExpect(status().is2xxSuccessful());
 
@@ -215,7 +215,7 @@ public class TileLayerRestTest {
         tlc.setStorageBroker(storageBroker);
 
         this.mockMvc.perform(delete("/rest/layers/" + layerName)
-                .contextPath("/rest"))
+                .contextPath(""))
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(content().string(containsString("topp:states deleted")));
 

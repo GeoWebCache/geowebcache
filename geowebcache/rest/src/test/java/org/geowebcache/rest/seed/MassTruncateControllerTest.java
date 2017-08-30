@@ -77,7 +77,7 @@ public class MassTruncateControllerTest {
         this.mockMvc.perform(post("/rest/masstruncate")
                 .contentType(MediaType.TEXT_XML)
                 .content(requestBody)
-                .contextPath("/rest")).andExpect(status().is2xxSuccessful());
+                .contextPath("")).andExpect(status().is2xxSuccessful());
         verify(sb);
     }
 
@@ -85,7 +85,7 @@ public class MassTruncateControllerTest {
     public void testGetMassTruncate() throws Exception {
         MvcResult result = this.mockMvc.perform(get("/rest/masstruncate")
                 .contentType(MediaType.APPLICATION_ATOM_XML)
-                .contextPath("/rest")).andReturn();
+                .contextPath("")).andReturn();
 
         assertEquals(200, result.getResponse().getStatus());
 

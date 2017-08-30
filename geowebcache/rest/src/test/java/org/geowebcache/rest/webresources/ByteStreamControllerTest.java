@@ -53,36 +53,36 @@ public class ByteStreamControllerTest {
 
     @Test
     public void setByteStreamController()  throws Exception {
-        mockMvc.perform(get("/web/doesnt%20exist")).andExpect(status().is4xxClientError());
+        mockMvc.perform(get("/rest/web/doesnt%20exist")).andExpect(status().is4xxClientError());
     }
 
     @Test
     public void testResourceFoundPNG() throws Exception {
-        mockMvc.perform(get("/web/test.png")).andExpect(status().is2xxSuccessful());
+        mockMvc.perform(get("/rest/web/test.png")).andExpect(status().is2xxSuccessful());
     }
 
     @Test
     public void testResourceFoundCSS() throws Exception {
-        mockMvc.perform(get("/web/test.css")).andExpect(status().is2xxSuccessful());
+        mockMvc.perform(get("/rest/web/test.css")).andExpect(status().is2xxSuccessful());
     }
 
     @Test
     public void testClass() throws Exception  {
-        mockMvc.perform(get("/web/ByteStreamerRestlet.class"));
+        mockMvc.perform(get("/rest/web/ByteStreamerRestlet.class"));
     }
 
     @Test
     public void testAbsolute() throws Exception  {
-        mockMvc.perform(get("/web/org/geowebcache/shouldnt/access/test.png")).andExpect(status().is4xxClientError());
+        mockMvc.perform(get("/rest/web/org/geowebcache/shouldnt/access/test.png")).andExpect(status().is4xxClientError());
     }
 
     @Test
     public void testBackreference() throws Exception  {
-        mockMvc.perform(get("/web/../../shouldnt/access/test.png")).andExpect(status().is4xxClientError());
+        mockMvc.perform(get("/rest/web/../../shouldnt/access/test.png")).andExpect(status().is4xxClientError());
     }
 
     @Test
     public void testBackreference2() throws Exception  {
-        mockMvc.perform(get("/web/foo/../../../shouldnt/access/test.png")).andExpect(status().is4xxClientError());
+        mockMvc.perform(get("/rest/web/foo/../../../shouldnt/access/test.png")).andExpect(status().is4xxClientError());
     }
 }

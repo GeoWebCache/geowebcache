@@ -74,8 +74,8 @@ public class MemoryCacheControllerTest {
         mcc.setBlobStore(mbs);
         mbs.setCacheProvider(cache);
 
-        this.mockMvc.perform(get("/restng/statistics.xml")
-                .contextPath("/restng")).andExpect(status().is2xxSuccessful());
+        this.mockMvc.perform(get("/rest/statistics.xml")
+                .contextPath("")).andExpect(status().is2xxSuccessful());
     }
 
     @Test
@@ -90,8 +90,8 @@ public class MemoryCacheControllerTest {
         mcc.setBlobStore(mbs);
         mbs.setCacheProvider(cache);
 
-        this.mockMvc.perform(get("/restng/statistics.json")
-                .contextPath("/restng")).andExpect(status().is2xxSuccessful());
+        this.mockMvc.perform(get("/rest/statistics.json")
+                .contextPath("")).andExpect(status().is2xxSuccessful());
     }
 
     private XMLConfiguration loadXMLConfig() {

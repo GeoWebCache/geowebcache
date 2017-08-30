@@ -79,12 +79,12 @@ public class BoundsControllerTest {
     
     @Test
     public void testBoundsGetBadSrs() throws Exception {
-        this.mockMvc.perform(get("/bounds/topp:states/4326/java")).andExpect(status().is4xxClientError());
+        this.mockMvc.perform(get("/rest/bounds/topp:states/4326/java")).andExpect(status().is4xxClientError());
     }
     
     @Test
     public void testBoundsGetGoodSrs() throws Exception {
-        this.mockMvc.perform(get("/bounds/topp:states/EPSG:900913/java")).andExpect(status().is2xxSuccessful());
+        this.mockMvc.perform(get("/rest/bounds/topp:states/EPSG:900913/java")).andExpect(status().is2xxSuccessful());
     }
     
     private XMLConfiguration loadXMLConfig() {
