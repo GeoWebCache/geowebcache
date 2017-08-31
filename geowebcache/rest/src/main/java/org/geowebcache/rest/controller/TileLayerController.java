@@ -90,7 +90,9 @@ public class TileLayerController extends GWCController {
 
     @ExceptionHandler(RestException.class)
     public ResponseEntity<?> handleRestException(RestException ex) {
-        return new ResponseEntity<Object>(ex.toString(), ex.getStatus());
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new ResponseEntity<Object>(ex.toString(), headers, ex.getStatus());
     }
 
     // set by spring
