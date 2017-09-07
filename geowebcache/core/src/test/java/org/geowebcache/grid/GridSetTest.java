@@ -71,4 +71,18 @@ public class GridSetTest extends TestCase {
         assertTrue(Math.abs(tlBL[1] - 90.0) < 0.01);
         assertTrue(Math.abs(tlTL[1] - 90.0) < 0.01);
     }
+    
+    public void testClosestIndexInvalidBounds() throws Exception {
+        assertInvalidBounds(new BoundingBox(0, -180, 180.0, 0));
+        assertInvalidBounds(new BoundingBox(0, 0, 180.0, 180));
+    }
+
+    private void assertInvalidBounds(BoundingBox box) throws GridMismatchException {
+        try {
+            gridSetTL.closestIndex(box);
+            fail("Unexpected, the bbox cannot match any tile");
+        } catch(GridAlignmentMismatchException e) {
+            // good, expected
+        }
+    }
 }
