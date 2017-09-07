@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping(path="${gwc.context.suffix:}/rest")
 public class GWCIndexController {
 
-    @RequestMapping(value = "/about", method = RequestMethod.GET, produces = "text/html")
+    @RequestMapping(value = "/", method = RequestMethod.GET, produces = "text/html")
     public ResponseEntity<?> handleRequestInternal(HttpServletRequest request) {
         String idx = "<html><body>\n"
                 + "<a id=\"logo\" href=\""

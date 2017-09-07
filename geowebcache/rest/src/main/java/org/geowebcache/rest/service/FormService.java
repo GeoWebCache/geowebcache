@@ -1,27 +1,4 @@
-/**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @author Arne Kepp / The Open Planning Project 2008
- * @author David Vick, Boundless, Copyright 2017
- *
- * Original file
- * SeedFormRestlet.java
- *
- */
-
-
-package org.geowebcache.rest.controller;
+package org.geowebcache.rest.service;
 
 import com.google.common.base.Splitter;
 import org.geowebcache.GeoWebCacheException;
@@ -45,9 +22,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
@@ -55,55 +31,96 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.*;
 
-@Component
-@RestController
-@RequestMapping(path="${gwc.context.suffix:}/rest")
-public class SeedFormController extends GWCController {
+@Service
+public class FormService {
 
     @Autowired
     TileBreeder seeder;
 
-    @ExceptionHandler(RestException.class)
-    public ResponseEntity<?> handleRestException(RestException ex) {
-        return new ResponseEntity<Object>(ex.toString(), ex.getStatus());
-    }
+    public ResponseEntity<?> handleKillAllThreadsPost(Map<String, String> form, TileLayer tl)
+            throws RestException {
 
-    @RequestMapping(value = "/seed/ui_form/{layer}", method = RequestMethod.GET)
-    public ResponseEntity<?> doGet(HttpServletRequest request,
-                                   @PathVariable String layer) {
-        String layerName = layer;
-        TileLayer tl;
-        try {
-            tl = seeder.findTileLayer(layerName);
-        } catch (GeoWebCacheException e) {
-            throw new RestException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        final boolean allLayers = tl == null;
+
+        String killCode = form.get("kill_all");
+
+        final Iterator<GWCTask> tasks;
+        if ("1".equals(killCode) || "running".equalsIgnoreCase(killCode)) {
+            killCode = "running";
+            tasks = seeder.getRunningTasks();
+        } else if ("pending".equalsIgnoreCase(killCode)) {
+            tasks = seeder.getPendingTasks();
+        } else if ("all".equalsIgnoreCase(killCode)) {
+            tasks = seeder.getRunningAndPendingTasks();
+        } else {
+            throw new RestException("Unknown kill_all code: '" + killCode
+                    + "'. One of all|running|pending is expected.", HttpStatus.BAD_REQUEST);
         }
-        return handleDoGet(tl, false);
+
+        List<GWCTask> terminatedTasks = new LinkedList<GWCTask>();
+        List<GWCTask> nonTerminatedTasks = new LinkedList<GWCTask>();
+        while (tasks.hasNext()) {
+            GWCTask task = tasks.next();
+            String layerName = task.getLayerName();
+            if (!allLayers && !tl.getName().equals(layerName)) {
+                continue;
+            }
+            long taskId = task.getTaskId();
+            boolean terminated = seeder.terminateGWCTask(taskId);
+            if (terminated) {
+                terminatedTasks.add(task);
+            } else {
+                nonTerminatedTasks.add(task);
+            }
+        }
+        StringBuilder doc = new StringBuilder();
+
+        makeHeader(doc);
+        doc.append("<p>Requested to terminate ").append(killCode).append(" tasks.");
+        doc.append("Terminated tasks: <ul>");
+        for (GWCTask t : terminatedTasks) {
+            doc.append("<li>").append(t).append("</li>");
+        }
+        doc.append("</ul>Tasks already finished: <ul>");
+        for (GWCTask t : nonTerminatedTasks) {
+            doc.append("<li>").append(t).append("</li>");
+        }
+        if (tl != null) {
+            doc.append("</ul><p><a href=\"./" + tl.getName() + "\">Go back</a></p>\n");
+        }
+
+        return new ResponseEntity<>(doc.toString(), getHeaders(), HttpStatus.OK);
     }
 
-    private HttpHeaders getHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.TEXT_HTML);
-        return headers;
+    public ResponseEntity<?> handleKillThreadPost(Map<String, String> form, TileLayer tl) {
+        String id = form.get("kill_thread");
+
+        StringBuilder doc = new StringBuilder();
+
+        makeHeader(doc);
+
+        if (seeder.terminateGWCTask(Long.parseLong(id))) {
+            doc.append("<ul><li>Requested to terminate task " + id + ".</li></ul>");
+        } else {
+            doc.append("<ul><li>Sorry, either task "
+                    + id
+                    + " has not started yet, or it is a truncate task that cannot be interrutped.</li></ul>");
+            ;
+        }
+
+        if (tl != null) {
+            doc.append("<p><a href=\"./" + tl.getName() + "\">Go back</a></p>\n");
+        }
+
+        return new ResponseEntity<Object>(doc.toString(), getHeaders(), HttpStatus.OK);
     }
 
-    private ResponseEntity<?> handleDoGet(TileLayer tl, boolean listAllTasks) {
-        return new ResponseEntity<String>(makeFormPage(tl, listAllTasks), getHeaders(), HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "/seed/ui_form/{layer}", method = RequestMethod.POST)
-    public ResponseEntity<?> doPost(HttpServletRequest request,
-                                    @PathVariable String layer) throws GeoWebCacheException {
+    public ResponseEntity<?> handleFormPost(HttpServletRequest request, String layer) throws RestException,
+            GeoWebCacheException {
         final TileLayer tl;
         {
             String layerName = layer;
             if (layer != null) {
-//                try {
-//                    layerName = URLDecoder.decode((String) request.getParameter("layer"),
-//                            "UTF-8");
-//                } catch (UnsupportedEncodingException uee) {
-//                    throw new RuntimeException(uee);
-//                }
                 try {
                     tl = seeder.findTileLayer(layerName);
                 } catch (GeoWebCacheException e) {
@@ -123,12 +140,11 @@ public class SeedFormController extends GWCController {
                 buffer.append(line);
             }
             data = buffer.toString();
-
         } catch (IOException e) {
             data = null;
         }
 
-        if (data == null) {
+        if (data == null || data == "") {
             throw new RestException("Unable to parse form result.",
                     HttpStatus.BAD_REQUEST);
         }
@@ -140,7 +156,7 @@ public class SeedFormController extends GWCController {
                 throw new RestException("No layer specified", HttpStatus.BAD_REQUEST);
             }
             boolean listAllTasks = "all".equals(params.get("list"));
-            handleDoGet(tl, listAllTasks);
+            return handleDoGet(tl, listAllTasks);
         } else if (params.containsKey("kill_thread")) {
             return handleKillThreadPost(params, tl);
         } else if (params.containsKey("kill_all")) {
@@ -160,12 +176,92 @@ public class SeedFormController extends GWCController {
         return null;
     }
 
-    private Map<String, String> splitToMap(String data) {
-        if (data.contains("&")) {
-            return Splitter.on("&").withKeyValueSeparator("=").split(data);
-        }else {
-            return Splitter.on(" ").withKeyValueSeparator("=").split(data);
+    private ResponseEntity<?> handleDoSeedPost(Map<String, String> form, TileLayer tl) throws RestException,
+            GeoWebCacheException {
+        BoundingBox bounds = null;
+
+        if (form.get("minX") != null) {
+            bounds = new BoundingBox(parseDouble(form, "minX"), parseDouble(form, "minY"),
+                    parseDouble(form, "maxX"), parseDouble(form, "maxY"));
         }
+
+        String gridSetId = form.get("gridSetId");
+
+        int threadCount = Integer.parseInt(form.get("threadCount"));
+        int zoomStart = Integer.parseInt(form.get("zoomStart"));
+        int zoomStop = Integer.parseInt(form.get("zoomStop"));
+        String format = form.get("format");
+        Map<String, String> fullParameters;
+        {
+            Map<String, String> parameters = new HashMap<String, String>();;
+            Set<String> paramNames = form.keySet();
+            String prefix = "parameter_";
+            for (String name : paramNames) {
+                if (name.startsWith(prefix)) {
+                    String paramName = name.substring(prefix.length());
+                    String value = form.get(name);
+                    parameters.put(paramName, value);
+                }
+            }
+            fullParameters = tl.getModifiableParameters(parameters, "UTF-8");
+        }
+
+        GWCTask.TYPE type = GWCTask.TYPE.valueOf(form.get("type").toUpperCase());
+
+        final String layerName = tl.getName();
+        SeedRequest sr = new SeedRequest(layerName, bounds, gridSetId, threadCount, zoomStart,
+                zoomStop, format, type, fullParameters);
+
+        TileRange tr = TileBreeder.createTileRange(sr, tl);
+
+        GWCTask[] tasks;
+        try {
+            tasks = seeder.createTasks(tr, tl, sr.getType(), sr.getThreadCount(),
+                    sr.getFilterUpdate());
+        } catch (GeoWebCacheException e) {
+            throw new RestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        seeder.dispatchTasks(tasks);
+
+        // Give the thread executor a chance to run
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            // Ok, no worries
+        }
+
+        return new ResponseEntity<Object>(this.makeResponsePage(tl), getHeaders(), HttpStatus.OK);
+    }
+
+    private static double parseDouble(Map<String, String> form, String key) throws RestException {
+        String value = form.get(key);
+        if (value == null || value.length() == 0)
+            throw new RestException("Missing value for " + key, HttpStatus.BAD_REQUEST);
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException nfe) {
+            throw new RestException("Value for " + key + " is not a double",
+                    HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public ResponseEntity<?> handleGet(HttpServletRequest request, String layer) {
+        TileLayer tl;
+        try {
+            tl = seeder.findTileLayer(layer);
+        } catch (GeoWebCacheException e) {
+            throw new RestException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        return handleDoGet(tl, false);
+    }
+
+    public void setTileBreeder(TileBreeder seeder) {
+        this.seeder = seeder;
+    }
+
+    private ResponseEntity<?> handleDoGet(TileLayer tl, boolean listAllTasks) {
+        return new ResponseEntity<String>(makeFormPage(tl, listAllTasks), getHeaders(), HttpStatus.OK);
     }
 
     private String makeFormPage(TileLayer tl, boolean listAllTasks) {
@@ -455,8 +551,8 @@ public class SeedFormController extends GWCController {
     }
 
     private void makeHeader(StringBuilder doc) {
-        doc.append("<html>\n" + ServletUtils.gwcHtmlHeader("../../../","GWC Seed Form") + "<body>\n"
-                + ServletUtils.gwcHtmlLogoLink("../../../"));
+        doc.append("<html>\n" + ServletUtils.gwcHtmlHeader("../../","GWC Seed Form") + "<body>\n"
+                + ServletUtils.gwcHtmlLogoLink("../../"));
     }
 
     private void makeWarningsAndHints(StringBuilder doc, TileLayer tl) {
@@ -659,156 +755,19 @@ public class SeedFormController extends GWCController {
         doc.append("</body></html>\n");
     }
 
-    private ResponseEntity<?> handleKillAllThreadsPost(Map<String, String> form, TileLayer tl)
-            throws RestException {
-
-        final boolean allLayers = tl == null;
-
-        String killCode = form.get("kill_all");
-
-        final Iterator<GWCTask> tasks;
-        if ("1".equals(killCode) || "running".equalsIgnoreCase(killCode)) {
-            killCode = "running";
-            tasks = seeder.getRunningTasks();
-        } else if ("pending".equalsIgnoreCase(killCode)) {
-            tasks = seeder.getPendingTasks();
-        } else if ("all".equalsIgnoreCase(killCode)) {
-            tasks = seeder.getRunningAndPendingTasks();
-        } else {
-            throw new RestException("Unknown kill_all code: '" + killCode
-                    + "'. One of all|running|pending is expected.", HttpStatus.BAD_REQUEST);
-        }
-
-        List<GWCTask> terminatedTasks = new LinkedList<GWCTask>();
-        List<GWCTask> nonTerminatedTasks = new LinkedList<GWCTask>();
-        while (tasks.hasNext()) {
-            GWCTask task = tasks.next();
-            String layerName = task.getLayerName();
-            if (!allLayers && !tl.getName().equals(layerName)) {
-                continue;
-            }
-            long taskId = task.getTaskId();
-            boolean terminated = seeder.terminateGWCTask(taskId);
-            if (terminated) {
-                terminatedTasks.add(task);
-            } else {
-                nonTerminatedTasks.add(task);
-            }
-        }
-        StringBuilder doc = new StringBuilder();
-
-        makeHeader(doc);
-        doc.append("<p>Requested to terminate ").append(killCode).append(" tasks.");
-        doc.append("Terminated tasks: <ul>");
-        for (GWCTask t : terminatedTasks) {
-            doc.append("<li>").append(t).append("</li>");
-        }
-        doc.append("</ul>Tasks already finished: <ul>");
-        for (GWCTask t : nonTerminatedTasks) {
-            doc.append("<li>").append(t).append("</li>");
-        }
-        if (tl != null) {
-            doc.append("</ul><p><a href=\"./" + tl.getName() + "\">Go back</a></p>\n");
-        }
-
-        return new ResponseEntity<>(doc.toString(), getHeaders(), HttpStatus.OK);
-    }
-
-    private ResponseEntity<?> handleKillThreadPost(Map<String, String> form, TileLayer tl) {
-        String id = form.get("kill_thread");
-
-        StringBuilder doc = new StringBuilder();
-
-        makeHeader(doc);
-
-        if (seeder.terminateGWCTask(Long.parseLong(id))) {
-            doc.append("<ul><li>Requested to terminate task " + id + ".</li></ul>");
-        } else {
-            doc.append("<ul><li>Sorry, either task "
-                    + id
-                    + " has not started yet, or it is a truncate task that cannot be interrutped.</li></ul>");
-            ;
-        }
-
-        if (tl != null) {
-            doc.append("<p><a href=\"./" + tl.getName() + "\">Go back</a></p>\n");
-        }
-
-//        resp.setEntity(doc.toString(), MediaType.TEXT_HTML);
-        return new ResponseEntity<Object>(doc.toString(), getHeaders(), HttpStatus.OK);
-    }
-
-    private ResponseEntity<?> handleDoSeedPost(Map<String, String> form, TileLayer tl) throws RestException,
-            GeoWebCacheException {
-        BoundingBox bounds = null;
-
-        if (form.get("minX") != null) {
-            bounds = new BoundingBox(parseDouble(form, "minX"), parseDouble(form, "minY"),
-                    parseDouble(form, "maxX"), parseDouble(form, "maxY"));
-        }
-
-        String gridSetId = form.get("gridSetId");
-
-        int threadCount = Integer.parseInt(form.get("threadCount"));
-        int zoomStart = Integer.parseInt(form.get("zoomStart"));
-        int zoomStop = Integer.parseInt(form.get("zoomStop"));
-        String format = form.get("format");
-        Map<String, String> fullParameters;
-        {
-            Map<String, String> parameters = new HashMap<String, String>();;
-            Set<String> paramNames = form.keySet();
-            String prefix = "parameter_";
-            for (String name : paramNames) {
-                if (name.startsWith(prefix)) {
-                    String paramName = name.substring(prefix.length());
-                    String value = form.get(name);
-                    parameters.put(paramName, value);
-                }
-            }
-            fullParameters = tl.getModifiableParameters(parameters, "UTF-8");
-        }
-
-        GWCTask.TYPE type = GWCTask.TYPE.valueOf(form.get("type").toUpperCase());
-
-        final String layerName = tl.getName();
-        SeedRequest sr = new SeedRequest(layerName, bounds, gridSetId, threadCount, zoomStart,
-                zoomStop, format, type, fullParameters);
-
-        TileRange tr = TileBreeder.createTileRange(sr, tl);
-
-        GWCTask[] tasks;
-        try {
-            tasks = seeder.createTasks(tr, tl, sr.getType(), sr.getThreadCount(),
-                    sr.getFilterUpdate());
-        } catch (GeoWebCacheException e) {
-            throw new RestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        seeder.dispatchTasks(tasks);
-
-        // Give the thread executor a chance to run
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            // Ok, no worries
-        }
-
-        return new ResponseEntity<Object>(this.makeResponsePage(tl), getHeaders(), HttpStatus.OK);
-    }
-
-    private static double parseDouble(Map<String, String> form, String key) throws RestException {
-        String value = form.get(key);
-        if (value == null || value.length() == 0)
-            throw new RestException("Missing value for " + key, HttpStatus.BAD_REQUEST);
-        try {
-            return Double.parseDouble(value);
-        } catch (NumberFormatException nfe) {
-            throw new RestException("Value for " + key + " is not a double",
-                    HttpStatus.BAD_REQUEST);
+    private Map<String, String> splitToMap(String data) {
+        if (data.contains("&")) {
+            return Splitter.on("&").withKeyValueSeparator("=").split(data);
+        }else {
+            return Splitter.on(" ").withKeyValueSeparator("=").split(data);
         }
     }
 
-    public void setTileBreeder(TileBreeder seeder) {
-        this.seeder = seeder;
+    private HttpHeaders getHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_HTML);
+        return headers;
     }
+
+
 }
