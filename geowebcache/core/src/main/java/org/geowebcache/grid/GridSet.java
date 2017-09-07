@@ -193,7 +193,7 @@ public class GridSet {
 
         long posY = (long) Math.round(y);
 
-        if (x - posX > 0.1 || y - posY > 0.1) {
+        if (Math.abs(x - posX) > 0.1 || Math.abs(y - posY) > 0.1) {
             throw new GridAlignmentMismatchException(x, posX, y, posY);
         }
 
