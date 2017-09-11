@@ -163,21 +163,21 @@ public class SpringRestIT {
 
     @Test
     public void testSeedGet() throws Exception {
-        CloseableHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed/ui_form/topp:states"),
+        CloseableHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed/topp:states"),
                 admin.getClient());
         assertEquals(200, response.getStatusLine().getStatusCode());
     }
 
     @Test
     public void testSeedGetNoLayer() throws Exception {
-        CloseableHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed/ui_form"),
+        CloseableHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed"),
                 admin.getClient());
-        assertEquals(400, response.getStatusLine().getStatusCode());
+        assertEquals(405, response.getStatusLine().getStatusCode());
     }
     
     @Test
     public void testSeedGetSeedForm() throws Exception {
-        CloseableHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed/ui_form/topp:states"),
+        CloseableHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed/topp:states"),
                 admin.getClient());
         assertEquals(200, response.getStatusLine().getStatusCode());
     }

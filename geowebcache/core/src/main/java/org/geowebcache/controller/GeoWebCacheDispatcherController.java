@@ -26,7 +26,7 @@ public class GeoWebCacheDispatcherController {
     @Qualifier("geowebcacheDispatcher")
     private GeoWebCacheDispatcher gwcDispatcher;
 
-    @RequestMapping(path = {"/home","/service/**", "/demo/**", "/proxy/**"})
+    @RequestMapping(path = {"", "/home","/service/**", "/demo/**", "/proxy/**"})
     public void handleRestApiRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
         gwcDispatcher.handleRequest(new HttpServletRequestWrapper(request) {
             @Override
