@@ -22,6 +22,7 @@
 
 package org.geowebcache.rest.controller;
 
+import com.google.common.base.Splitter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -36,7 +37,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Map;
 
 @Component
 @RestController
@@ -54,14 +57,30 @@ public class ReloadController {
 
     @RequestMapping(value = "/reload", method = RequestMethod.POST)
     public @ResponseBody
-    ResponseEntity<?> doPost(HttpServletRequest req, HttpServletResponse resp)
+    ResponseEntity<?> doPost(HttpServletRequest request, HttpServletResponse resp)
             throws GeoWebCacheException, RestException, IOException {
 
-        if (req.getParameterMap() == null || req.getParameter("reload_configuration") == null) {
+        String data;
+
+        try {
+            StringBuilder buffer = new StringBuilder();
+            BufferedReader formReader = request.getReader();
+            String line;
+            while ((line = formReader.readLine()) != null) {
+                buffer.append(line);
+            }
+            data = buffer.toString();
+        } catch (IOException e) {
+            data = null;
+        }
+
+        Map<String, String> params = splitToMap(data);
+
+        if (data == null || !params.containsKey("reload_configuration")) {
             throw new RestException(
                     "Unknown or malformed request. Please try again, somtimes the form "
                             +"is not properly received. This frequently happens on the first POST "
-                            +"after a restart. The POST was to " + req.getRequestURI(),
+                            +"after a restart. The POST was to " + request.getRequestURI(),
                     HttpStatus.BAD_REQUEST);
         }
 
@@ -100,5 +119,13 @@ public class ReloadController {
 
     public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {
         layerDispatcher = tileLayerDispatcher;
+    }
+
+    private Map<String, String> splitToMap(String data) {
+        if (data.contains("&")) {
+            return Splitter.on("&").withKeyValueSeparator("=").split(data);
+        }else {
+            return Splitter.on(" ").withKeyValueSeparator("=").split(data);
+        }
     }
 }
