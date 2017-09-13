@@ -1,3 +1,19 @@
+GeoWebCache 1.12-beta (2017-09-13)
+----------------------------------
+
+Beta release for the 1.12 series.
+
+Improvements:
++++++++++++++
+- Update the Rest API to use Spring MVC
+- Extension point for per tile security
+
+Fixes:
+++++++
+- MemoryBlobStore fails to preserve the delegate store last modified date, breaking "If-Modified-Since"
+- GWC_SEED_RETRY_WAIT not used correctly
+
+
 GeoWebCache 1.11-beta (2017-02-21)
 ----------------------------------
 
