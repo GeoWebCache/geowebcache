@@ -53,10 +53,17 @@
           to add any vendor specific parameter.
       </description>
     </constructor-arg>
-    <constructor-arg value="angle=0">
+    <constructor-arg>
       <description>
-        Cached parameters, requests will be cached separately based on the value of these filters. Given value after the '=' is the default.
+        Parameter filters
       </description>
+      <list>
+        <bean class="org.geowebcache.filter.parameters.RegexParameterFilter">
+          <property name="defaultValue" value="0"/>
+          <property name="regex" value="^(.*)$"/>
+          <property name="key" value="angle"/>
+        </bean>
+      </list>
     </constructor-arg>
     <constructor-arg value="false">
       <description>Whether to allow cached=false to specificed for certain requests</description>

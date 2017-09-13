@@ -20,6 +20,7 @@ package org.geowebcache.config;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,7 +52,6 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.legends.LegendRawInfo;
 import org.geowebcache.config.legends.LegendsRawInfo;
 import org.geowebcache.config.meta.ServiceInformation;
-import org.geowebcache.filter.parameters.FreeStringParameterFilter;
 import org.geowebcache.filter.parameters.NaiveWMSDimensionFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.StringParameterFilter;
@@ -90,7 +90,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
     private String vendorParameters = null;
 
-    private String cachedParameters = null;
+    private Collection<ParameterFilter> cachedParameters = null;
 
     private boolean allowCacheBypass = false;
 
@@ -126,7 +126,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
     }
 
     public GetCapabilitiesConfiguration(GridSetBroker gridSetBroker, String url, String mimeTypes,
-                                        String metaTiling, String vendorParameters, String cachedParameters, String allowCacheBypass) {
+                                        String metaTiling, String vendorParameters, Collection<ParameterFilter> cachedParameters, String allowCacheBypass) {
         this(gridSetBroker, url, mimeTypes, metaTiling, vendorParameters, allowCacheBypass);
         this.cachedParameters = cachedParameters;
     }
@@ -279,20 +279,9 @@ public class GetCapabilitiesConfiguration implements Configuration {
                     paramFilters.add(new NaiveWMSDimensionFilter(dimension, dimExtent));
                 }
 
-                if (this.cachedParameters != null && this.cachedParameters.length() != 0) {
-                    String[] cparams = this.cachedParameters.split("&");
-                    for (String cp : cparams) {
-                        if (cp.length() > 0) {
-                            String[] split = cp.split("=", 2);
-                            String key = split[0];
-                            String defaultValue = split[1];
-                            log.info(key + " and " + defaultValue);
-                            if (key.length() > 0) {
-                                paramFilters.add(
-                                    new FreeStringParameterFilter(key, defaultValue)
-                                );
-                            }
-                        }
+                if (this.cachedParameters != null) {
+                    for (ParameterFilter f : this.cachedParameters) {
+                        paramFilters.add(f);
                     }
                 }
 
