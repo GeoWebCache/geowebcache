@@ -48,8 +48,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -137,7 +137,7 @@ public class FormService {
         return new ResponseEntity<Object>(doc.toString(), getHeaders(), HttpStatus.OK);
     }
 
-    public ResponseEntity<?> handleFormPost(HttpServletRequest request, String layer) throws RestException,
+    public ResponseEntity<?> handleFormPost(HttpServletRequest request, String layer, String body) throws RestException,
             GeoWebCacheException {
         final TileLayer tl;
         {
@@ -152,26 +152,21 @@ public class FormService {
                 tl = null;
             }
         }
-        String data;
 
         try {
-            StringBuilder buffer = new StringBuilder();
-            BufferedReader formReader = request.getReader();
-            String line;
-            while ((line = formReader.readLine()) != null) {
-                buffer.append(line);
-            }
-            data = buffer.toString();
+            body = URLDecoder.decode(body, "UTF-8");
         } catch (IOException e) {
-            data = null;
+            body = null;
         }
 
-        if (data == null || data == "") {
+
+
+        if (body == null || body == "") {
             throw new RestException("Unable to parse form result.",
                     HttpStatus.BAD_REQUEST);
         }
 
-        Map<String, String> params = splitToMap(data);
+        Map<String, String> params = splitToMap(body);
 
         if (params.containsKey("list")) {
             if (tl == null) {

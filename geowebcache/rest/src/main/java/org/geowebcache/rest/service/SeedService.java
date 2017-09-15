@@ -195,20 +195,16 @@ public class SeedService {
      * @param layer
      * @return
      */
-    public ResponseEntity<?> doSeeding(HttpServletRequest request, String layer, String extension) {
+    public ResponseEntity<?> doSeeding(HttpServletRequest request, String layer, String extension, String body) {
         XStream xs = configXStream(new GeoWebCacheXStream(new DomDriver()));
 
         Object obj = null;
 
         try {
-            StringWriter writer = new StringWriter();
-            IOUtils.copy(request.getInputStream(), writer, "UTF-8");
-            String requestData = writer.toString();
-
             if (extension==null || extension.equalsIgnoreCase("xml")) {
-                obj = xs.fromXML(requestData);
+                obj = xs.fromXML(body);
             } else if (extension.equalsIgnoreCase("json")) {
-                obj = xs.fromXML(convertJson(requestData));
+                obj = xs.fromXML(convertJson(body));
             } else {
                 throw new RestException("Format extension unknown or not specified: "
                         + extension, HttpStatus.BAD_REQUEST);

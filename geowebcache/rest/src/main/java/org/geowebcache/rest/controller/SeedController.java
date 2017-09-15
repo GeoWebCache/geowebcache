@@ -114,10 +114,10 @@ public class SeedController {
      */
     @RequestMapping(value = "/seed/{layer:.+}", method = RequestMethod.POST)
     public ResponseEntity<?> doPost(HttpServletRequest request,
-                                    @PathVariable String layer) {
+                                    @PathVariable String layer, @RequestBody String body) {
         if (layer.indexOf(".") == -1) {
             try {
-                return formService.handleFormPost(request, layer);
+                return formService.handleFormPost(request, layer, body);
             } catch (GeoWebCacheException e) {
                 return new ResponseEntity<Object>("error", HttpStatus.INTERNAL_SERVER_ERROR);
             }
@@ -125,7 +125,7 @@ public class SeedController {
         } else {
             String extension = layer.substring(layer.indexOf(".") +1);
             String layerName = layer.substring(0, layer.indexOf("."));
-            return seedService.doSeeding(request, layerName, extension);
+            return seedService.doSeeding(request, layerName, extension, body);
         }
     }
 
