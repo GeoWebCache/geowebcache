@@ -10,6 +10,8 @@ import java.util.function.Consumer;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -21,6 +23,10 @@ import org.eclipse.jetty.webapp.WebAppContext;
  *
  */
 public class JettyRule extends org.junit.rules.ExternalResource {
+    
+    private static final String JETTY_PORT_PROPERTY = "jetty.port";
+
+    private static final Log log = LogFactory.getLog(JettyRule.class);
     
     Integer port = null;
     
@@ -103,12 +109,14 @@ public class JettyRule extends org.junit.rules.ExternalResource {
         confInit.accept(confDir);
         cacheInit.accept(cacheDir);
         
+        final Integer port = Integer.getInteger(JETTY_PORT_PROPERTY, 8080);
+        
         jettyServer = new Server();
         try {
             HttpConfiguration httpConfiguration = new HttpConfiguration();
             
             ServerConnector http = new ServerConnector(jettyServer, new HttpConnectionFactory(httpConfiguration));
-            http.setPort(Integer.getInteger("jetty.port", 8080));
+            http.setPort(port);
             http.setAcceptQueueSize(100);
             http.setIdleTimeout(1000 * 60 *60);
             http.setSoLingerTime(-1);
@@ -132,6 +140,9 @@ public class JettyRule extends org.junit.rules.ExternalResource {
             
             jettyServer.start();
         } catch (Exception e) {
+            if(e instanceof BindException) {
+                log.error("Could not bind to port "+port+", "+ e.getMessage()+ ", Set via property "+JETTY_PORT_PROPERTY);
+            }
             if (jettyServer != null) {
                 try {
                     jettyServer.stop();
