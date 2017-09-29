@@ -182,27 +182,26 @@ public class FormService {
             if (tl == null) {
                 throw new RestException("No layer specified", HttpStatus.BAD_REQUEST);
             }
-            handleDoSeedPost(params, tl);
-        } else {
-            throw new RestException(
-                    "Unknown or malformed request. Please try again, somtimes the form "
-                            + "is not properly received. This frequently happens on the first POST "
-                            + "after a restart. The POST was to " + request.getRequestURI(),
-                    HttpStatus.BAD_REQUEST);
+            return handleDoSeedPost(params, tl);
         }
-        return null;
+
+        return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
     }
 
     private ResponseEntity<?> handleDoSeedPost(Map<String, String> form, TileLayer tl) throws RestException,
             GeoWebCacheException {
+        String gridSetId = form.get("gridSetId");
+
         BoundingBox bounds = null;
 
-        if (form.get("minX") != null) {
+        if (form.get("minX") != null && !form.get("minX").equalsIgnoreCase("")) {
             bounds = new BoundingBox(parseDouble(form, "minX"), parseDouble(form, "minY"),
                     parseDouble(form, "maxX"), parseDouble(form, "maxY"));
+        } else {
+            // Use default values for tile layer
+            GridSubset subset = tl.getGridSubset(gridSetId);
+            bounds = subset.getOriginalExtent();
         }
-
-        String gridSetId = form.get("gridSetId");
 
         int threadCount = Integer.parseInt(form.get("threadCount"));
         int zoomStart = Integer.parseInt(form.get("zoomStart"));
