@@ -103,4 +103,8 @@ public class FilterUpdateController extends GWCController {
         return new ResponseEntity<Object>("Filter update completed, no problems encountered.\n", HttpStatus.OK);
     }
 
+    public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {
+        tld = tileLayerDispatcher;
+    }
+
 }

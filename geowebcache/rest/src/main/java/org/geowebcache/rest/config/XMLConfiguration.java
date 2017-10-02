@@ -55,9 +55,6 @@ public class XMLConfiguration {
         xs.alias("gwcConfiguration", GeoWebCacheConfiguration.class);
         xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns_xsi");
         xs.aliasField("xmlns:xsi", GeoWebCacheConfiguration.class, "xmlns_xsi");
-        xs.useAttributeFor(GeoWebCacheConfiguration.class, "xsi_noNamespaceSchemaLocation");
-        xs.aliasField("xsi:noNamespaceSchemaLocation", GeoWebCacheConfiguration.class,
-                "xsi_noNamespaceSchemaLocation");
         xs.useAttributeFor(GeoWebCacheConfiguration.class, "xmlns");
 
         xs.alias("wmsRasterFilterUpdate", WMSRasterFilterUpdate.class);
