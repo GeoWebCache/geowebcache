@@ -77,7 +77,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
     private Boolean useGzip;
 
     
-    protected S3BlobStoreConfig() {
+    public S3BlobStoreConfig() {
         super();
     }
     
