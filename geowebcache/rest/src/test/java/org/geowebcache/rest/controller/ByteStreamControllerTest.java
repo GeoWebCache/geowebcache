@@ -15,9 +15,10 @@
  * @author David Vick, Boundless, 2017
  */
 
-package org.geowebcache.rest.webresources;
+package org.geowebcache.rest.controller;
 
 import org.geowebcache.rest.controller.ByteStreamController;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,9 +27,12 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -58,12 +62,28 @@ public class ByteStreamControllerTest {
 
     @Test
     public void testResourceFoundPNG() throws Exception {
-        mockMvc.perform(get("/rest/web/test.png")).andExpect(status().is2xxSuccessful());
+        mockMvc.perform(get("/rest/web/test.png"))
+            .andExpect(status().is2xxSuccessful())
+            .andExpect(header().string("Content-Type", startsWith("image/png")));
     }
 
     @Test
     public void testResourceFoundCSS() throws Exception {
-        mockMvc.perform(get("/rest/web/test.css")).andExpect(status().is2xxSuccessful());
+        mockMvc.perform(get("/rest/web/test.css"))
+            .andExpect(status().is2xxSuccessful())
+            .andExpect(header().string("Content-Type", startsWith("text/css")));
+    }
+    
+    @Test
+    public void testResourceFoundJS() throws Exception {
+        mockMvc.perform(get("/rest/web/test.js"))
+            .andExpect(status().is2xxSuccessful())
+            .andExpect(header().string("Content-Type", startsWith("text/javascript")));
+    }
+    
+    @Test
+    public void testResourceFoundSubdir() throws Exception {
+        mockMvc.perform(get("/rest/web/subdir/foo.css")).andExpect(status().is2xxSuccessful());
     }
 
     @Test
