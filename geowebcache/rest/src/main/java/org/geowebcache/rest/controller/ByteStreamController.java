@@ -27,20 +27,21 @@ import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.rest.webresources.WebResourceBundle;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -79,9 +80,16 @@ public class ByteStreamController {
 
     static final Pattern UNSAFE_RESOURCE = Pattern.compile("^/|/\\.\\./|^\\.\\./|\\.class$");
 
-    @RequestMapping(value = "/web/{filename:.+}", method = RequestMethod.GET)
-    ResponseEntity<?> doGet(HttpServletRequest request, HttpServletResponse response, @PathVariable String filename) {
-
+    @RequestMapping(value = "/web/**", method = RequestMethod.GET)
+    ResponseEntity<?> doGet(HttpServletRequest request, HttpServletResponse response) {
+        
+        final String filename;
+        try {
+            filename = URLDecoder.decode(request.getPathInfo().substring("/rest/web/".length()), "UTF-8");
+        } catch (UnsupportedEncodingException e1) {
+            throw new IllegalStateException("Cound not decode encoding UTF-8",e1); // Should never happen
+        }
+        
         // Just to make sure we don't allow access to arbitrary resources
         if(UNSAFE_RESOURCE.matcher(filename).find()) {
             return new ResponseEntity<Object>(HttpStatus.FORBIDDEN);
@@ -104,10 +112,11 @@ public class ByteStreamController {
 
         // TODO write ByteArrayOutputStream ResponseEntity
 
-        try {
-            InputStream inputStream = resource.openStream();
-            StreamUtils.copy(inputStream, response.getOutputStream());
-            response.setContentType(MediaType.IMAGE_PNG_VALUE);
+        response.setContentType(mime.getFormat());
+        try(InputStream inputStream = resource.openStream();
+            ServletOutputStream outputStream = response.getOutputStream();
+        ) {
+            StreamUtils.copy(inputStream, outputStream);
         } catch (IOException e) {
             return new ResponseEntity<Object>("Internal error", HttpStatus.INTERNAL_SERVER_ERROR);
         }

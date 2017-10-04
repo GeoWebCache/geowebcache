@@ -71,14 +71,9 @@ public class Demo {
             } else {
                 formatStr = layer.getDefaultMimeType().getFormat();
             }
-
-            if (request.getPathInfo().startsWith("/demo")) {
-                // Running in GeoServer
-                page = generateHTML(layer, gridSetStr, formatStr, true);
-            } else {
-                page = generateHTML(layer, gridSetStr, formatStr, false);
-            }
-
+            
+            page = generateHTML(layer, gridSetStr, formatStr);
+            
         } else {
             if (request.getRequestURI().endsWith("/")) {
                 try {
@@ -224,8 +219,8 @@ public class Demo {
                 type.getFileExtension());
     }
 
-    private static String generateHTML(TileLayer layer, String gridSetStr, String formatStr,
-            boolean asPlugin) throws GeoWebCacheException {
+    private static String generateHTML(TileLayer layer, String gridSetStr, String formatStr)
+            throws GeoWebCacheException {
         String layerName = layer.getName();
 
         GridSubset gridSubset = layer.getGridSubset(gridSetStr);
@@ -251,12 +246,7 @@ public class Demo {
 
         String units = "units: \"" + gridSubset.getGridSet().guessMapUnits() + "\",\n";
 
-        String openLayersPath;
-        if (asPlugin) {
-            openLayersPath = "../../openlayers3/";
-        } else {
-            openLayersPath = "../openlayers3/";
-        }
+        String openLayersPath = "../rest/web/openlayers3/";
         
         buf.append("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n");
         buf.append("<meta http-equiv=\"imagetoolbar\" content=\"no\">\n" + "<title>")
