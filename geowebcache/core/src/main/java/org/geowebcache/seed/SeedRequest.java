@@ -28,12 +28,12 @@ import org.geowebcache.seed.GWCTask.TYPE;
 /**
  * Stores the information for a Seed Request.
  */
-public class SeedRequest {
+public class SeedRequest<Bounds> {
     private static Log log = LogFactory.getLog(org.geowebcache.seed.SeedRequest.class);
 
     private String name = null;
 
-    private BoundingBox bounds = null;
+    private Bounds bounds = null;
 
     private String gridSetId;
 
@@ -74,7 +74,7 @@ public class SeedRequest {
      * @param mimeFormat the MIME format requested
      * @param type 
      */
-    public SeedRequest(String layerName, BoundingBox bounds, String gridSetId, int threadCount,
+    public SeedRequest(String layerName, Bounds bounds, String gridSetId, int threadCount,
             int zoomStart, int zoomStop, String mimeFormat, GWCTask.TYPE type,
             Map<String, String> parameters) {
         this.name = layerName;
@@ -100,9 +100,9 @@ public class SeedRequest {
     /**
      * Method gets the bounds for the requested region
      * 
-     * @return a BBOX
+     * @return a Bounds
      */
-    public BoundingBox getBounds() {
+    public Bounds getBounds() {
         return this.bounds;
     }
 

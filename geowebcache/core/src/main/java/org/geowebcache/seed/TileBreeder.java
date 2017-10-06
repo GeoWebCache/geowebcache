@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.Future;
@@ -305,7 +306,7 @@ public class TileBreeder implements ApplicationContextAware {
      * @return
      * @throws GeoWebCacheException
      */
-    public static TileRange createTileRange(SeedRequest req, TileLayer tl)
+    public static TileRange createTileRange(SeedRequest<?> req, TileLayer tl)
             throws GeoWebCacheException {
         int zoomStart = req.getZoomStart().intValue();
         int zoomStop = req.getZoomStop().intValue();
@@ -347,21 +348,48 @@ public class TileBreeder implements ApplicationContextAware {
             throw new GeoWebCacheException("Unknown grid set " + gridSetId);
         }
 
-        long[][] coveredGridLevels;
-
-        BoundingBox bounds = req.getBounds();
-        if (bounds == null) {
-            coveredGridLevels = gridSubset.getCoverages();
+        Object bounds = req.getBounds();
+        Map<String, String> parameters = req.getParameters();
+        
+        if(Objects.isNull(bounds)) {
+            return getUnboundedTileRange(tl, zoomStart, zoomStop, mimeType, gridSetId, gridSubset, 
+                    parameters);
+        } else if(bounds instanceof BoundingBox) {
+            return getBBoxTileRange(tl, zoomStart, zoomStop, mimeType, gridSetId, gridSubset, (BoundingBox) bounds,
+                    parameters);
         } else {
-            coveredGridLevels = gridSubset.getCoverageIntersections(bounds);
+            throw new UnsupportedOperationException("Can not create a TileRange from a "+bounds.getClass());
         }
+    }
 
+    private static TileRange getBBoxTileRange(TileLayer tl, int zoomStart, int zoomStop,
+            MimeType mimeType, String gridSetId, GridSubset gridSubset, BoundingBox bounds,
+            Map<String, String> parameters) {
+        long[][] coveredGridLevels;
+        coveredGridLevels = gridSubset.getCoverageIntersections((BoundingBox) bounds);
+        
+        return getTileRangeFromCoverages(tl, zoomStart, zoomStop, mimeType, gridSetId, gridSubset,
+                coveredGridLevels, parameters);
+    }
+    
+    private static TileRange getUnboundedTileRange(TileLayer tl, int zoomStart, int zoomStop,
+            MimeType mimeType, String gridSetId, GridSubset gridSubset,
+            Map<String, String> parameters) {
+        long[][] coveredGridLevels;
+        coveredGridLevels = gridSubset.getCoverages();
+        
+        return getTileRangeFromCoverages(tl, zoomStart, zoomStop, mimeType, gridSetId, gridSubset,
+                coveredGridLevels, parameters);
+    }
+    private static TileRange getTileRangeFromCoverages(TileLayer tl, int zoomStart, int zoomStop,
+            MimeType mimeType, String gridSetId, GridSubset gridSubset, long[][] coveredGridLevels,
+            Map<String, String> parameters) {
         int[] metaTilingFactors = tl.getMetaTilingFactors();
 
         coveredGridLevels = gridSubset.expandToMetaFactors(coveredGridLevels, metaTilingFactors);
 
         String layerName = tl.getName();
-        Map<String, String> parameters = req.getParameters();
+
         return new TileRange(layerName, gridSetId, zoomStart, zoomStop, coveredGridLevels,
                 mimeType, parameters);
     }
