@@ -77,13 +77,12 @@ public class TestHelpers {
         return layer;
     }
     
-    public static SeedRequest createRequest(WMSLayer tl, GWCTask.TYPE type, int zoomStart,
-            int zoomStop) {
+    public static <Bounds> SeedRequest<Bounds> createRequest(WMSLayer tl, GWCTask.TYPE type, Bounds bounds,
+            int zoomStart, int zoomStop) {
         String gridSet = tl.getGridSubsets().iterator().next();
-        BoundingBox bounds = null;
         int threadCount = 1;
         String format = tl.getMimeTypes().get(0).getFormat();
-        SeedRequest req = new SeedRequest(tl.getName(), bounds, gridSet, threadCount, zoomStart,
+        SeedRequest<Bounds> req = new SeedRequest<Bounds>(tl.getName(), bounds, gridSet, threadCount, zoomStart,
                 zoomStop, format, type, null);
         return req;
 

@@ -326,7 +326,7 @@ public class WMSLayerTest extends TileLayerTest {
         
         MockTileSupport mock = new MockTileSupport(tl);
 
-        SeedRequest req = createRequest(tl, GWCTask.TYPE.SEED, 4, 7);
+        SeedRequest req = createRequest(tl, GWCTask.TYPE.SEED, null, 4, 7);
         TileRange tr = TileBreeder.createTileRange(req, tl);
         
         seedTiles(mock.storageBroker, tr, tl);
@@ -375,7 +375,7 @@ public class WMSLayerTest extends TileLayerTest {
         MockTileSupport mock = new MockTileSupport(tl);
 
         // we're not really seeding, just using the range
-        SeedRequest req = createRequest(tl, GWCTask.TYPE.SEED, 4, 7);
+        SeedRequest req = createRequest(tl, GWCTask.TYPE.SEED, null, 4, 7);
         TileRange tr = TileBreeder.createTileRange(req, tl);
 
         List<ConveyorTile> tiles = getTiles(mock.storageBroker, tr, tl);

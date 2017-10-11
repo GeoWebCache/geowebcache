@@ -25,6 +25,8 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.geowebcache.TestHelpers.createFakeSourceImage;
 import static org.geowebcache.TestHelpers.createWMSLayer;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.assertThat;
 import static org.geowebcache.TestHelpers.createRequest;
 
 import java.io.ByteArrayInputStream;
@@ -37,12 +39,14 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import junit.framework.TestCase;
 
 import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileResponseReceiver;
@@ -57,6 +61,8 @@ import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
 import org.geowebcache.util.MockWMSSourceHelper;
 import org.geowebcache.util.Sleeper;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
 
 /**
  * Unit test suite for {@link SeedTask}
@@ -121,7 +127,7 @@ public class SeedTaskTest extends TestCase {
         tl.setSourceHelper(mockSourceHelper);
 
         final int zoomLevel = 4;
-        SeedRequest req = createRequest(tl, TYPE.SEED, zoomLevel, zoomLevel);
+        SeedRequest req = createRequest(tl, TYPE.SEED, null, zoomLevel, zoomLevel);
 
         TileRange tr = TileBreeder.createTileRange(req, tl);
         TileRangeIterator trIter = new TileRangeIterator(tr, tl.getMetaTilingFactors());
@@ -205,7 +211,7 @@ public class SeedTaskTest extends TestCase {
         tl.setSourceHelper(mockSourceHelper);
 
         final int zoomLevel = 4;
-        SeedRequest req = createRequest(tl, TYPE.SEED, zoomLevel, zoomLevel);
+        SeedRequest req = createRequest(tl, TYPE.SEED, null, zoomLevel, zoomLevel);
 
         TileRange tr = TileBreeder.createTileRange(req, tl);
         TileRangeIterator trIter = new TileRangeIterator(tr, tl.getMetaTilingFactors());
@@ -272,7 +278,7 @@ public class SeedTaskTest extends TestCase {
 
         final String gridSetId = tl.getGridSubsets().iterator().next();
         final int zoomLevel = 2;
-        SeedRequest req = createRequest(tl, TYPE.SEED, zoomLevel, zoomLevel);
+        SeedRequest<Void> req = createRequest(tl, TYPE.SEED, null, zoomLevel, zoomLevel);
 
         /*
          * Create a mock storage broker that has never an image in its blob store and that captures
@@ -346,6 +352,110 @@ public class SeedTaskTest extends TestCase {
             tileKeys.add(new Tuple<Long>(obj.getXYZ()[0], obj.getXYZ()[1], obj.getXYZ()[2]));
         }
 
+        assertThat(tileKeys, containsInAnyOrder(expectedTiles.stream().map(Matchers::equalTo).collect(Collectors.toList())));
+        verify(sleeper);
+    }
+    /**
+     * Make sure when seeding a given zoom level, the correct tiles are sent to the
+     * {@link StorageBroker}
+     * 
+     * @throws Exception
+     */
+    @SuppressWarnings("serial")
+    public void testSeedStoredTilesBBox() throws Exception {
+
+        WMSLayer tl = createWMSLayer("image/png");
+        
+        // Full Subset: BoundingBox(-30.0, 15.0, 45.0, 30)
+        BoundingBox bounds = new BoundingBox(-30.0, 15.0, 45.0, 30);
+        bounds.scale(0.10);
+
+        // create an image to be returned by the mock WMSSourceHelper
+        // / final byte[] fakeWMSResponse = createFakeSourceImage(tl);
+        // WMSSourceHelper that on makeRequest() returns always the saqme fake image
+        WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper();// EasyMock.createMock(WMSSourceHelper.class);
+        // expect(mockSourceHelper.makeRequest((WMSMetaTile)
+        // anyObject())).andReturn(fakeWMSResponse)
+        // .anyTimes();
+        // replay(mockSourceHelper);
+        tl.setSourceHelper(mockSourceHelper);
+
+        final String gridSetId = tl.getGridSubsets().iterator().next();
+        final int zoomLevel = 4;
+        SeedRequest<BoundingBox> req = createRequest(tl, TYPE.SEED, bounds, zoomLevel, zoomLevel);
+
+        /*
+         * Create a mock storage broker that has never an image in its blob store and that captures
+         * the TileObject the seeder requests it to store for further test validation
+         */
+        final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
+        Capture<TileObject> storedObjects = new Capture<TileObject>() {
+            /**
+             * Override because setValue with anyTimes() resets the list of values
+             */
+            @Override
+            public void setValue(TileObject o) {
+                super.getValues().add(o);
+            }
+        };
+        expect(mockStorageBroker.put(capture(storedObjects))).andReturn(true).anyTimes();
+        expect(mockStorageBroker.get((TileObject) anyObject())).andReturn(false).anyTimes();
+        replay(mockStorageBroker);
+
+        TileRange tr = TileBreeder.createTileRange(req, tl);
+        TileRangeIterator trIter = new TileRangeIterator(tr, tl.getMetaTilingFactors());
+
+        boolean reseed = false;
+        SeedTask task = new SeedTask(mockStorageBroker, trIter, tl, reseed, false);
+        task.setTaskId(1L);
+        task.setThreadInfo(new AtomicInteger(), 0);
+        Sleeper sleeper = createMock(Sleeper.class);
+        // Should not be called
+        replay(sleeper);
+        task.sleeper = sleeper;
+        /*
+         * HACK: avoid SeedTask.getCurrentThreadArrayIndex failure.
+         */
+        Thread.currentThread().setName("pool-fake-thread-1");
+
+        /*
+         * Call the seed process
+         */
+        task.doAction();
+
+        final GridSubset gridSubset = tl.getGridSubset(gridSetId);
+
+        /*
+         * Make sure the seed process asked for the expected tiles to be stored
+         */
+        final long expectedSavedTileCount;
+
+        final long[] coveredGridLevels = gridSubset.getCoverageIntersection(zoomLevel, bounds);
+
+        // seeding should not include edge tiles produced by the meta tiling that don't fall into
+        // the gridsubset's coverage
+        long starty = coveredGridLevels[1];
+        long startx = coveredGridLevels[0];
+
+        expectedSavedTileCount = 6;  // Expand to 3x3 metatile, but subset chops off last row
+
+        List<TileObject> storedTiles = storedObjects.getValues();
+        final int seededTileCount = storedTiles.size();
+
+        assertEquals(expectedSavedTileCount, seededTileCount);
+
+        Set<Tuple<Long>> tileKeys = new TreeSet<Tuple<Long>>();
+        Set<Tuple<Long>> expectedTiles = new TreeSet<Tuple<Long>>();
+        for (long x = 15; x <= 17; x++) { // Columns of the metatile
+            for (long y = 9; y <= 10; y++) { // rows of the metatile, except 11 which is outside subset
+                expectedTiles.add(new Tuple<Long>(x, y, (long) zoomLevel));
+            }
+        }
+        for (TileObject obj : storedTiles) {
+            tileKeys.add(new Tuple<Long>(obj.getXYZ()[0], obj.getXYZ()[1], obj.getXYZ()[2]));
+        }
+
+        assertThat(tileKeys, containsInAnyOrder(expectedTiles.stream().map(Matchers::equalTo).collect(Collectors.toList())));
         assertEquals(expectedTiles, tileKeys);
         verify(sleeper);
     }
@@ -379,7 +489,7 @@ public class SeedTaskTest extends TestCase {
             for (int i = 0; i < members.length; i++) {
                 comparedVal = members[i].compareTo(o.members[i]);
                 if (comparedVal != 0) {
-                    break;
+                    return comparedVal;
                 }
             }
             return 0;
@@ -397,6 +507,13 @@ public class SeedTaskTest extends TestCase {
         public int hashCode() {
             return 17 * Arrays.hashCode(members);
         }
+
+        @Override
+        public String toString() {
+            return Arrays.stream(members).map(Object::toString).collect(Collectors.joining(", ", "<", ">"));
+        }
+        
+        
     }
 
 }

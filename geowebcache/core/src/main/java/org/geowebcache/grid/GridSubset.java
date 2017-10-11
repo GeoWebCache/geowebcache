@@ -17,6 +17,7 @@
 package org.geowebcache.grid;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -147,7 +148,19 @@ public class GridSubset {
                 cov[3] = numTilesHigh;
             }
         }
-
+        
+        // The first index should be the start of a metatile (%n==0) the last should be the end of a metatile (%n==n-1) or truncated by the grid 
+        assert Arrays.stream(ret).allMatch(c->
+            (c[0]>=0) &&
+            (c[2]>=c[0]) &&
+            (c[0]%metaFactors[0]==0) &&
+            (c[2]%metaFactors[0]==metaFactors[0]-1 || c[2]==this.gridSet.getGrid((int)c[4]).getNumTilesWide()) &&
+            (c[2]<=this.gridSet.getGrid((int)c[4]).getNumTilesWide()) &&
+            (c[1]%metaFactors[1]==0) &&
+            (c[1]>=0) &&
+            (c[3]>=c[1]) &&
+            (c[3]%metaFactors[1]==metaFactors[1]-1 || c[3]==this.gridSet.getGrid((int)c[4]).getNumTilesHigh()) &&
+            (c[3]<=this.gridSet.getGrid((int)c[4]).getNumTilesHigh()));
         return ret;
     }
 

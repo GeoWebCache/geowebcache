@@ -204,7 +204,7 @@ public class TileBreeder implements ApplicationContextAware {
      * @throws GeoWebCacheException
      */
     // TODO: The SeedRequest specifies a layer name. Would it make sense to use that instead of including one as a separate parameter?
-    public void seed(final String layerName, final SeedRequest sr) throws GeoWebCacheException {
+    public void seed(final String layerName, final SeedRequest<?> sr) throws GeoWebCacheException {
 
         TileLayer tl = findTileLayer(layerName);
 
@@ -311,36 +311,9 @@ public class TileBreeder implements ApplicationContextAware {
         int zoomStart = req.getZoomStart().intValue();
         int zoomStop = req.getZoomStop().intValue();
 
-        MimeType mimeType = null;
-        String format = req.getMimeFormat();
-        if (format == null) {
-            mimeType = tl.getMimeTypes().get(0);
-        } else {
-            try {
-                mimeType = MimeType.createFromFormat(format);
-            } catch (MimeException e4) {
-                e4.printStackTrace();
-            }
-        }
+        MimeType mimeType = getMimeType(req, tl);
 
-        String gridSetId = req.getGridSetId();
-
-        if (gridSetId == null) {
-            SRS srs = req.getSRS();
-            List<GridSubset> crsMatches = tl.getGridSubsetsForSRS(srs);
-            if (!crsMatches.isEmpty()) {
-                if (crsMatches.size() == 1) {
-                    gridSetId = crsMatches.get(0).getName();
-                } else {
-                    throw new IllegalArgumentException(
-                            "More than one GridSubet matches the requested SRS " + srs
-                                    + ". gridSetId must be specified");
-                }
-            }
-        }
-        if (gridSetId == null) {
-            gridSetId = tl.getGridSubsets().iterator().next();
-        }
+        String gridSetId = getGridsetId(req, tl);
 
         GridSubset gridSubset = tl.getGridSubset(gridSetId);
 
@@ -362,6 +335,43 @@ public class TileBreeder implements ApplicationContextAware {
         }
     }
 
+    private static String getGridsetId(SeedRequest<?> req, TileLayer tl) {
+        String gridSetId = req.getGridSetId();
+
+        if (gridSetId == null) {
+            SRS srs = req.getSRS();
+            List<GridSubset> crsMatches = tl.getGridSubsetsForSRS(srs);
+            if (!crsMatches.isEmpty()) {
+                if (crsMatches.size() == 1) {
+                    gridSetId = crsMatches.get(0).getName();
+                } else {
+                    throw new IllegalArgumentException(
+                            "More than one GridSubet matches the requested SRS " + srs
+                                    + ". gridSetId must be specified");
+                }
+            }
+        }
+        if (gridSetId == null) {
+            gridSetId = tl.getGridSubsets().iterator().next();
+        }
+        return gridSetId;
+    }
+
+    private static MimeType getMimeType(SeedRequest<?> req, TileLayer tl) {
+        MimeType mimeType = null;
+        String format = req.getMimeFormat();
+        if (format == null) {
+            mimeType = tl.getMimeTypes().get(0);
+        } else {
+            try {
+                mimeType = MimeType.createFromFormat(format);
+            } catch (MimeException e4) {
+                e4.printStackTrace();
+            }
+        }
+        return mimeType;
+    }
+
     private static TileRange getBBoxTileRange(TileLayer tl, int zoomStart, int zoomStop,
             MimeType mimeType, String gridSetId, GridSubset gridSubset, BoundingBox bounds,
             Map<String, String> parameters) {
@@ -381,6 +391,7 @@ public class TileBreeder implements ApplicationContextAware {
         return getTileRangeFromCoverages(tl, zoomStart, zoomStop, mimeType, gridSetId, gridSubset,
                 coveredGridLevels, parameters);
     }
+    
     private static TileRange getTileRangeFromCoverages(TileLayer tl, int zoomStart, int zoomStop,
             MimeType mimeType, String gridSetId, GridSubset gridSubset, long[][] coveredGridLevels,
             Map<String, String> parameters) {
