@@ -384,7 +384,7 @@ public class WMSService extends Service{
         }
 
         ConveyorTile gfiConv = new ConveyorTile(sb, tl.getName(), gridSubset.getName(), null,
-                mimeType, tile.getFullParameters(), tile.servletReq, tile.servletResp);
+                mimeType, tile.getFilteringParameters(), tile.servletReq, tile.servletResp);
         gfiConv.setTileLayer(tl);
 
         int x, y;

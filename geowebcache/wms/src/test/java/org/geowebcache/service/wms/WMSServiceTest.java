@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -15,7 +14,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.any;
 
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,7 +51,6 @@ import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.PropertyRule;
-import org.h2.util.IOUtils;
 
 import org.hamcrest.Matchers;
 
@@ -63,7 +60,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.context.ApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -331,8 +327,8 @@ public class WMSServiceTest{
         assertEquals(Conveyor.RequestHandler.SERVICE, conv.reqHandler);
         assertNotNull(conv.getLayerId());
         assertEquals(layerName, conv.getLayerId());
-        assertTrue(!conv.getFullParameters().isEmpty());
-        assertEquals(timeValue, conv.getFullParameters().get("TIME"));
+        assertTrue(!conv.getFilteringParameters().isEmpty());
+        assertEquals(timeValue, conv.getFilteringParameters().get("TIME"));
     }    
     
     @Test
@@ -759,7 +755,7 @@ public class WMSServiceTest{
             assertThat(resp.getContentAsString(), not(containsString("TEST FEATURE INFO")));
         }
     }
-    
+
     protected void testProxyRequestPrevented(SecurityDispatcher mockSecDisp, String layerName,
             TestLayer mockTileLayer, String requestName) throws GeoWebCacheException {
         MockHttpServletRequest req = new MockHttpServletRequest();
@@ -782,7 +778,7 @@ public class WMSServiceTest{
             verify(mockTileLayer, never()).proxyRequest(conv);
         }
     }
-    
+
     protected void testProxyRequestAllowed(SecurityDispatcher mockSecDisp, String layerName,
             TestLayer mockTileLayer, String requestName) throws GeoWebCacheException {
         MockHttpServletRequest req = new MockHttpServletRequest();
@@ -804,6 +800,5 @@ public class WMSServiceTest{
     }
     
     protected static abstract class TestLayer extends TileLayer implements ProxyLayer {
-        
     }
 }

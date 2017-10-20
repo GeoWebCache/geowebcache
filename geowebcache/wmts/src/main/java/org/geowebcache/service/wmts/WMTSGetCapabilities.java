@@ -13,9 +13,27 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  * @author Arne Kepp, OpenGeo, Copyright 2009
+ * @author Sandro Salari, GeoSolutions S.A.S., Copyright 2017
  * 
  */
 package org.geowebcache.service.wmts;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,25 +54,9 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.meta.MetadataURL;
-import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class WMTSGetCapabilities {
     
@@ -65,6 +67,8 @@ public class WMTSGetCapabilities {
     private GridSetBroker gsb;
     
     private String baseUrl;
+    
+    private String restBaseUrl;
 
     private final Collection<WMTSExtension> extensions;
 
@@ -85,6 +89,8 @@ public class WMTSGetCapabilities {
         } else {
             this.baseUrl = urlMangler.buildURL(baseUrl, contextPath, WMTSService.SERVICE_PATH);
         }
+        
+        this.restBaseUrl = urlMangler.buildURL(baseUrl, contextPath, WMTSService.REST_PATH);
 
         this.extensions = extensions;
     }
@@ -149,9 +155,13 @@ public class WMTSGetCapabilities {
 
             contents(xml);
             xml.indentElement("ServiceMetadataURL")
-                .attribute("xlink:href", baseUrl+"?REQUEST=getcapabilities&VERSION=1.0.0")
-                .endElement();
-            
+                    .attribute("xlink:href", baseUrl + "?REQUEST=getcapabilities&VERSION=1.0.0")
+                    .endElement();
+
+            xml.indentElement("ServiceMetadataURL")
+                    .attribute("xlink:href", restBaseUrl + "/WMTSCapabilities.xml")
+                    .endElement();
+
             xml.endElement("Capabilities");
             
             return str.toString();
@@ -449,9 +459,9 @@ public class WMTSGetCapabilities {
         }
         
         layerGridSubSets(xml, layer);
-        // TODO REST
-        // str.append("    <ResourceURL format=\"image/png\" resourceType=\"tile\" template=\"http://www.maps.cat/wmts/BlueMarbleNextGeneration/default/BigWorldPixel/{TileMatrix}/{TileRow}/{TileCol}.png\"/>\n");
 
+        layerResourceUrls(xml, layer, filters, restBaseUrl);
+        
         // allow extensions to contribute extra metadata to this layer
         for (WMTSExtension extension : extensions) {
             extension.encodeLayer(xml, layer);
@@ -609,41 +619,31 @@ public class WMTSGetCapabilities {
     }
      
      private void layerFormats(XMLBuilder xml, TileLayer layer) throws IOException {
-         Iterator<MimeType> mimeIter = layer.getMimeTypes().iterator();
-         
-         while(mimeIter.hasNext()){
-             xml.simpleElement("Format", mimeIter.next().getFormat(), true);
-         }
+        List<String> mimeFormats = WMTSUtils.getLayerFormats(layer);
+        for (String format : mimeFormats) {
+            xml.simpleElement("Format", format, true);
+        }
      }
      
-     private void layerInfoFormats(XMLBuilder xml, TileLayer layer) throws IOException {
-         if (layer.isQueryable()) {
-             Iterator<MimeType> mimeIter = layer.getInfoMimeTypes().iterator();
-        	 while (mimeIter.hasNext()) {
-        		 xml.simpleElement("InfoFormat", mimeIter.next().getFormat(), true);
-        	 }
-         }
-     }
+    private void layerInfoFormats(XMLBuilder xml, TileLayer layer) throws IOException {
+        if (layer.isQueryable()) {
+            List<String> infoFormats = WMTSUtils.getInfoFormats(layer);
+            for (String format : infoFormats) {
+                xml.simpleElement("InfoFormat", format, true);
+            }
+        }
+    }
      
-     private void layerDimensions(XMLBuilder xml, TileLayer layer, List<ParameterFilter> filters) throws IOException {
-         
-         Iterator<ParameterFilter> iter = filters.iterator();
-         
-         while(iter.hasNext()) {
-             ParameterFilter filter = iter.next();
-             
-             if(! filter.getKey().equalsIgnoreCase("STYLES")) {
-                 List<String> values = filter.getLegalValues();
-             
-                 if(values != null) {
-                     dimensionDescription(xml, filter, values);
-                 }
-             }
-         }
-     }
+    private void layerDimensions(XMLBuilder xml, TileLayer layer, List<ParameterFilter> filters)
+            throws IOException {
+        List<ParameterFilter> layerDimensions = WMTSUtils.getLayerDimensions(filters);
+        for (ParameterFilter dimension : layerDimensions) {
+            dimensionDescription(xml, dimension, dimension.getLegalValues());
+        }
+    }
          
      private void dimensionDescription(XMLBuilder xml, ParameterFilter filter, List<String> values) throws IOException {
-         xml.startElement("Dimension");
+         xml.indentElement("Dimension");
          xml.simpleElement("Identifier", filter.getKey(), false);
          String defaultStr = TileLayer.encodeDimensionValue(filter.getDefaultValue());
          xml.simpleElement("Default", defaultStr, false);
@@ -684,6 +684,47 @@ public class WMTSGetCapabilities {
             xml.endElement("TileMatrixSetLink");
          }
      }
+    /**
+     * For each layer discovers the available image formats, feature info formats and dimensions 
+     * and produce the necessary <ResourceURL> elements.
+     */
+    private void layerResourceUrls(XMLBuilder xml, TileLayer layer, List<ParameterFilter> filters,
+            String baseurl) throws IOException {
+        String commonTemplate = baseurl + "/" + layer.getName()
+                + "/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}";
+        String commonDimensions = "";
+        //Extracts layer dimension 
+        List<ParameterFilter> layerDimensions = WMTSUtils.getLayerDimensions(filters);
+        if (!layerDimensions.isEmpty()) {
+            commonDimensions = "&"
+                    + layerDimensions.stream().map(d -> d.getKey() + "={" + d.getKey() + "}")
+                            .collect(Collectors.joining("&"));
+        }
+        //Extracts image formats
+        List<String> mimeFormats = WMTSUtils.getLayerFormats(layer);
+        for (String format : mimeFormats) {
+            String template = commonTemplate + "?format=" + format + commonDimensions;
+            layerResourceUrlsGen(xml, format, "tile", template);
+        }
+        //Extracts feature info formats
+        List<String> infoFormats = WMTSUtils.getInfoFormats(layer);
+        for (String format : infoFormats) {
+            String template = commonTemplate + "/{J}/{I}?format=" + format + commonDimensions;
+            layerResourceUrlsGen(xml, format, "FeatureInfo", template);
+        }
+    }
+
+    /**
+     * Generate the <ResourceURL> element into XML.
+     */
+    private void layerResourceUrlsGen(XMLBuilder xml, String format, String type, String template)
+            throws IOException {
+        xml.indentElement("ResourceURL");
+        xml.attribute("format", format);
+        xml.attribute("resourceType", type);
+        xml.attribute("template", template);
+        xml.endElement("ResourceURL");
+    }
      
      private void tileMatrixSet(XMLBuilder xml, GridSet gridSet) throws IOException {
          xml.indentElement("TileMatrixSet");

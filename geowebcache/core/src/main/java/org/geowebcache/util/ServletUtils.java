@@ -483,7 +483,28 @@ public class ServletUtils {
         String servletBase = ServletUtils.getServletBaseURL(req, servletPrefix);
         int prefixIdx = servletBase.length();
         int suffixIdx = reqUrl.indexOf(trailingPath);
-        String context = reqUrl.substring(prefixIdx, suffixIdx);
+        String context = null;
+        if(suffixIdx > -1){
+            context = reqUrl.substring(prefixIdx, suffixIdx);
+        }
+        return context;
+    }
+
+    /**
+     * Generate the context path of the request, try the specified trailing path
+     * 
+     * @param req
+     * @param trailingPaths
+     */
+    public static String getServletContextPath(HttpServletRequest req, String[] trailingPaths,
+            String servletPrefix) {
+        String context = "";
+        for (String trailingPath : trailingPaths) {
+            context = getServletContextPath(req, trailingPath, servletPrefix);
+            if (context != null) {
+                break;
+            }
+        }
         return context;
     }
 }

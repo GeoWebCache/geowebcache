@@ -55,6 +55,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.lang.SystemUtils;
 import org.easymock.Capture;
 import org.easymock.CaptureType;
 import org.easymock.IAnswer;
@@ -173,7 +174,7 @@ public class WMSLayerTest extends TileLayerTest {
                 ByteArrayOutputStream output = new ByteArrayOutputStream();
                 try {
                     ImageIO.write(img, "PNG", output);
-                    ImageIO.write(img, "PNG", new java.io.File("/tmp/meta.png"));
+                    ImageIO.write(img, "PNG", new java.io.File("./target/meta.png"));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
