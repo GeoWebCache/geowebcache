@@ -12,9 +12,7 @@
   <description>
    Bean configuration file for the gwc-wmts module
   </description>
-  <mvc:annotation-driven/>
-  <context:annotation-config/>
-  <context:component-scan base-package="org.geowebcache.service.wmts"/>
+
   <bean id="gwcServiceWMTS"
 	class="org.geowebcache.service.wmts.WMTSService">
 	<constructor-arg ref="gwcStorageBroker"/>

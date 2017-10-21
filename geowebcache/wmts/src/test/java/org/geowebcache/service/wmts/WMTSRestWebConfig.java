@@ -16,24 +16,6 @@
  */
 package org.geowebcache.service.wmts;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.imageio.ImageIO;
-
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.config.legends.LegendInfo;
@@ -56,15 +38,34 @@ import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 @Configuration
-@ComponentScan({ "org.geowebcache.service.wmts" })
+@ComponentScan({"org.geowebcache.service.wmts"})
 @EnableWebMvc
 @Profile("test")
 class WMTSRestWebConfig extends WebMvcConfigurationSupport {
@@ -92,15 +93,15 @@ class WMTSRestWebConfig extends WebMvcConfigurationSupport {
         StringParameterFilter styles = new StringParameterFilter();
         styles.setKey("STYLES");
         styles.setValues(Arrays.asList("style-a", "style-b"));
-        
+
         StringParameterFilter time = new StringParameterFilter();
         time.setKey("time");
         time.setValues(Arrays.asList("2016-02-23T03:00:00.000Z"));
-        
+
         StringParameterFilter elevation = new StringParameterFilter();
         elevation.setKey("elevation");
         elevation.setValues(Arrays.asList("500"));
-        
+
         when(tileLayer.getParameterFilters()).thenReturn(Arrays.asList(styles, time, elevation));
 
         LegendInfo legendInfo2 = new LegendInfoBuilder().withStyleName("styla-b-legend")
@@ -170,11 +171,11 @@ class WMTSRestWebConfig extends WebMvcConfigurationSupport {
 
         when(tileLayer.getFeatureInfo(any(ConveyorTile.class), any(BoundingBox.class), anyInt(),
                 anyInt(), anyInt(), anyInt())).thenAnswer(new Answer<Resource>() {
-                    @Override
-                    public Resource answer(InvocationOnMock invocation) throws Throwable {
-                        return new ByteArrayResource(new byte[0]);
-                    }
-                });
+            @Override
+            public Resource answer(InvocationOnMock invocation) throws Throwable {
+                return new ByteArrayResource(new byte[0]);
+            }
+        });
 
         return tld;
     }
@@ -197,5 +198,11 @@ class WMTSRestWebConfig extends WebMvcConfigurationSupport {
         SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
         when(secDisp.isSecurityEnabled()).thenReturn(false);
         return secDisp;
+    }
+
+    @Bean
+    public PropertyPlaceholderConfigurer configurationPlaceholders() {
+        // necessary for spring configuration placeholders
+        return new PropertyPlaceholderConfigurer();
     }
 }
